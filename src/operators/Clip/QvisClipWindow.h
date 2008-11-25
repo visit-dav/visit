@@ -39,6 +39,7 @@
 #ifndef QVIS_CLIP_WINDOW_H
 #define QVIS_CLIP_WINDOW_H
 #include <QvisOperatorWindow.h>
+#include <QGroupBox>
 
 class QCheckBox;
 class QComboBox;
@@ -46,9 +47,47 @@ class QButtonGroup;
 class QGrid;
 class QLineEdit;
 class QLabel;
-class QVBox;
-class QVGroupBox;
+class QGroupBox;
+class QVBoxLayout;
+class QPlaneGroup;
 class ClipAttributes;
+
+
+// ****************************************************************************
+// Class: QPlaneGroup
+//
+// Purpose: 
+//   Widget that encapsualtes the options for a single clipping plane.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Aug 21 13:45:03 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+class QPlaneGroup: public QGroupBox
+{
+Q_OBJECT
+public:
+    QPlaneGroup(const QString &title,QWidget *parent=0);
+    
+    virtual ~QPlaneGroup();
+    
+    void SetOrigin(double val[3]);
+    void SetNormal(double val[3]);
+    bool GetOrigin(double val[3]);
+    bool GetNormal(double val[3]);
+
+signals:
+    void OriginChanged();
+    void NormalChanged();
+    
+private:
+    QLineEdit *origin;
+    QLineEdit *normal;
+    
+};
+
 
 // ****************************************************************************
 // Class: QvisClipWindow
@@ -77,6 +116,9 @@ class ClipAttributes;
 //   Cyrus Harrison, Wed Mar  5 10:25:39 PST 2008
 //   Removed tabWidget and slot for tabWidgetChanged 
 //   (to Match Sean's changes in QvisClipWindow.C)
+//
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
 //
 // ****************************************************************************
 
@@ -111,42 +153,23 @@ private slots:
     void plane1StatusToggled(bool);
     void plane2StatusToggled(bool);
     void plane3StatusToggled(bool);
-private:
-    // Method to create plane widgets.
-    void CreatePlaneGroup(QWidget *, QWidget **,
-#if QT_VERSION < 0x030200
-         QWidget **,
-#endif
-         QWidget **, QWidget **, const char *, const char *, const char *, int);
 
+private:
     QButtonGroup *qualityGroup;
     QButtonGroup *typeGroup;
-    QLineEdit    *plane1Origin;
-    QLineEdit    *plane2Origin;
-    QLineEdit    *plane3Origin;
-    QLineEdit    *plane1Normal;
-    QLineEdit    *plane2Normal;
-    QLineEdit    *plane3Normal;
-#if QT_VERSION >= 0x030200
-    QVGroupBox   *plane1Status;
-    QVGroupBox   *plane2Status;
-    QVGroupBox   *plane3Status;
-#else
-    QCheckBox    *plane1Status;
-    QCheckBox    *plane2Status;
-    QCheckBox    *plane3Status;
-    QVGroupBox   *plane1Group;
-    QVGroupBox   *plane2Group;
-    QVGroupBox   *plane3Group;
-#endif
+    
+    QPlaneGroup  *plane1Group;
+    QPlaneGroup  *plane2Group;
+    QPlaneGroup  *plane3Group;
+    
     QLineEdit    *centerLineEdit;
     QLineEdit    *radiusLineEdit;
     QCheckBox    *planeInverse;
     QButtonGroup *planeToolControlledClipPlane;
     QCheckBox    *sphereInverse;
-    QVBox        *planeWidgets;
+    QWidget      *planeWidgets;
     QWidget      *sphereWidgets;
 
-    ClipAttributes *clipAtts;
+    ClipAttributes *atts;
 };
 #endif

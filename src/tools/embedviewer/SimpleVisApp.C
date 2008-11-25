@@ -2,17 +2,17 @@
 #include <VisItViewer.h>
 #include <ViewerMethods.h>
 
-#include <qbuttongroup.h>
-#include <qdir.h>
-#include <qfiledialog.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlistbox.h>
-#include <qmenubar.h>
-#include <qpopupmenu.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
-#include <qwidget.h>
+#include <QButtonGroup>
+#include <QDir>
+#include <QFileDialog>
+#include <QLabel>
+#include <QLayout>
+#include <QListWidget>
+#include <QMenuBar>
+#include <QMenu>
+#include <QRadioButton>
+#include <QSpinBox>
+#include <QWidget>
 
 // State objects that we use.
 #include <avtDatabaseMetaData.h>
@@ -30,10 +30,28 @@ SimpleVisApp::ReturnVisWin(void *data)
     return This->viswin;
 }
 
+// ****************************************************************************
+// Method: SimpleVisApp::SimpleVisApp
+//
+// Purpose: 
+//   Constructor.
+//
+// Arguments:
+//   v : The VisItViewer object that we'll use to control the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 21 10:23:40 PST 2008
+//
+// Modifications:
+//   Brad Whitlock, Fri Nov 21 10:23:46 PST 2008
+//   Fixed some slots for Qt 4.
+//
+// ****************************************************************************
+
 SimpleVisApp::SimpleVisApp(VisItViewer *v) : QMainWindow()
 {
     viewer = v;
-    setCaption(tr("Simple visualization"));
+    setWindowTitle(tr("Simple visualization"));
     plotType = 0;
 
     // Create the window.
@@ -50,9 +68,9 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v) : QMainWindow()
     scalarLabel = new QLabel(tr("Scalar variables"), central);
     leftLayout->addWidget(scalarLabel);
 
-    variables = new QListBox(central);
+    variables = new QListWidget(central);
     leftLayout->addWidget(variables);
-    connect(variables, SIGNAL(selected(const QString &)),
+    connect(variables, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(changeVariable(const QString &)));
 
     plotTypeWidget = new QWidget(central);
@@ -60,14 +78,14 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v) : QMainWindow()
     QHBoxLayout *ptLayout = new QHBoxLayout(plotTypeWidget);
     ptLayout->setSpacing(10);
     ptLayout->addWidget(new QLabel(tr("Plot type"), plotTypeWidget));
-    plotType = new QButtonGroup(0);
+    plotType = new QButtonGroup(plotTypeWidget);
     QRadioButton *rb = new QRadioButton(tr("Pseudocolor"), plotTypeWidget);
-    plotType->insert(rb, 0);
+    plotType->addButton(rb, 0);
     ptLayout->addWidget(rb);
     rb = new QRadioButton(tr("Contour"), plotTypeWidget);
-    plotType->insert(rb, 1);
+    plotType->addButton(rb, 1);
     ptLayout->addWidget(rb);
-    connect(plotType, SIGNAL(clicked(int)),
+    connect(plotType, SIGNAL(buttonClicked(int)),
             this, SLOT(changePlotType(int)));
 
     contourWidget = new QWidget(central);
@@ -75,8 +93,7 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v) : QMainWindow()
     QHBoxLayout *cLayout = new QHBoxLayout(contourWidget);
     cLayout->setSpacing(10);
     nContours = new QSpinBox(contourWidget);
-    nContours->setMinValue(1);
-    nContours->setMaxValue(40);
+    nContours->setRange(1,40);
     nContours->setValue(10);
     connect(nContours, SIGNAL(valueChanged(int)),
             this, SLOT(setNContours(int)));
@@ -89,17 +106,15 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v) : QMainWindow()
     hLayout->addWidget(viswin, 100);
 
     // Create menus
-    QPopupMenu *fileMenu = new QPopupMenu();
-    fileMenu->insertItem(tr("Open . . ."), this, SLOT(selectFile()));
-    fileMenu->insertSeparator();
-    fileMenu->insertItem(tr("Save window"), this, SLOT(saveWindow()));
-    fileMenu->insertSeparator();
-    fileMenu->insertItem(tr("Quit"), qApp, SLOT(quit()));
-    menuBar()->insertItem(tr("File"), fileMenu);
-
-    QPopupMenu *controlsMenu = new QPopupMenu();
-    controlsMenu->insertItem(tr("Open GUI"), this, SLOT(openGUI()));
-    menuBar()->insertItem(tr("Controls"), controlsMenu);
+    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
+    fileMenu->addAction(tr("Open . . ."), this, SLOT(selectFile()));
+    fileMenu->addSeparator();
+    fileMenu->addAction(tr("Save window"), this, SLOT(saveWindow()));
+    fileMenu->addSeparator();
+    fileMenu->addAction(tr("Quit"), qApp, SLOT(quit()));
+    
+    QMenu *controlsMenu = menuBar()->addMenu(tr("Controls"));
+    controlsMenu->addAction(tr("Open GUI"), this, SLOT(openGUI()));
 
     //
     // Register a window creation function (before Setup) that will
@@ -113,9 +128,7 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v) : QMainWindow()
 }
 
 SimpleVisApp::~SimpleVisApp()
-{
-    delete plotType;
-}
+{}
 
 void
 SimpleVisApp::resetWindow()
@@ -125,7 +138,7 @@ SimpleVisApp::resetWindow()
     variables->blockSignals(false);
 
     plotType->blockSignals(true);
-    plotType->setButton(0);
+    plotType->button(0)->setChecked(true);
     plotType->blockSignals(false);
 
     scalarLabel->setEnabled(false);
@@ -157,33 +170,32 @@ void
 SimpleVisApp::selectFile()
 {
     // Get a filename from the file dialog.
-    QString filename = QFileDialog::getOpenFileName(
-        QDir::current().path(),
-        tr("Data files (*.silo *.vtk *.cgns *.nc *.h5 *.pdb *.visit)"),
-        this, 
-        tr("Open data file"));
-
+    QString filename = QFileDialog::getOpenFileName(this,
+               tr("Open File"),
+               QDir::current().path(),
+               tr("Data files (*.silo *.vtk *.cgns *.nc *.h5 *.pdb *.visit)"));
+        
     if(!filename.isEmpty())
     {
         // Open the file.
-        viewer->Methods()->OpenDatabase(filename.latin1());
+        viewer->Methods()->OpenDatabase(filename.toStdString());
 
         // Get the file's metadata and populate the variable list.
-        const avtDatabaseMetaData *md = viewer->GetMetaData(filename);
+        const avtDatabaseMetaData *md = viewer->GetMetaData(filename.toStdString());
         if(md != 0)
         {
             variables->blockSignals(true);
             for(int i = 0; i < md->GetNumScalars(); ++i)
-                variables->insertItem(md->GetScalar(i)->name.c_str());
-            variables->setCurrentItem(0);
+                variables->addItem(md->GetScalar(i)->name.c_str());
+            variables->setCurrentRow(0);
             variables->blockSignals(false);
             if(md->GetNumScalars() > 0)
             {
                 variables->setEnabled(true);
                 plotTypeWidget->setEnabled(true);
-                contourWidget->setEnabled(plotType->selectedId() == 1);
+                contourWidget->setEnabled(plotType->checkedId() == 1);
                 // Add a plot of the first variable
-                changePlotType(plotType->selectedId());
+                changePlotType(plotType->checkedId());
             }
             scalarLabel->setEnabled(true);
             variables->setEnabled(true);
@@ -198,17 +210,17 @@ SimpleVisApp::selectFile()
 void
 SimpleVisApp::changeVariable(const QString &var)
 {
-    viewer->Methods()->ChangeActivePlotsVar(var.latin1());
+    viewer->Methods()->ChangeActivePlotsVar(var.toStdString());
 }
 
 void
 SimpleVisApp::changePlotType(int val)
 {
-    if(variables->currentItem() == -1)
+    if(variables->currentRow() == -1)
         return;
 
     // Determine the variable.
-    std::string var(variables->currentText().latin1());
+    std::string var(variables->currentItem()->text().toStdString());
 
     // Delete the active plots.
     viewer->Methods()->DeleteActivePlots();

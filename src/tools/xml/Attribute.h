@@ -39,6 +39,8 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 #include <set>
+#include <QFile>
+#include <QTextStream>
 #include "AttributeBase.h"
 #include "Field.h"
 
@@ -94,6 +96,12 @@
 //    Brad Whitlock, Fri Apr 25 11:57:45 PDT 2008
 //    Added different access types for functions.
 //
+//    Brad Whitlock, Thu May  8 11:15:30 PDT 2008
+//    Qt 4. Use QTextStream.
+//
+//    Cyrus Harrison, Mon Sep 29 08:42:39 PDT 2008
+//    Fixed attempt to open the code file twice. 
+//
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -114,7 +122,7 @@ class Attribute : public AttributeBase
         fields.clear();
     }
 
-    virtual void Print(ostream &out)
+    virtual void Print(QTextStream &out)
     {
         size_t i;
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
@@ -128,7 +136,7 @@ class Attribute : public AttributeBase
             constants[i]->Print(out);
     }
 
-    void SaveXML(ostream &out, QString indent)
+    void SaveXML(QTextStream &out, QString indent)
     {
         StartOpenTag(out, "Attribute", indent);
         WriteTagAttr(out, "name", name);
@@ -269,9 +277,13 @@ class Attribute : public AttributeBase
         if (!codeFile)
             return;
 
-        ofstream out(codeFile->FileName(), ios::out);
-        if (!out)
+        QFile *f = new QFile(codeFile->FileName());
+        if (!f->open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            delete f;
             throw "Could not open code file for saving\n";
+        }
+        QTextStream out(f);
 
         size_t i;
         QString currentTarget = "xml2atts";
@@ -354,7 +366,8 @@ class Attribute : public AttributeBase
                 out << endl;
         }
 
-        out.close();
+        f->close();
+        delete f;
     }
 };
 

@@ -42,8 +42,8 @@
 #include <ViewerActionBase.h>
 
 class QAction;
-class QIconSet;
-class QPopupMenu;
+class QIcon;
+class QMenu;
 class QToolBar;
 
 // ****************************************************************************
@@ -67,13 +67,16 @@ class QToolBar;
 //   Brad Whitlock, Tue Apr 29 11:20:27 PDT 2008
 //   Use QString for visible text.
 //
+//   Brad Whitlock, Thu May 22 13:44:45 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerAction : public ViewerActionBase
 {
     Q_OBJECT
 public:
-    ViewerAction(ViewerWindow *win, const char *name = 0);
+    ViewerAction(ViewerWindow *win);
     virtual ~ViewerAction();
     
     virtual void Setup();
@@ -81,11 +84,11 @@ public:
     virtual void Update();
 
     virtual bool Enabled() const { return true;  }
-    virtual bool Toggled() const { return false; }
+    virtual bool Checked() const { return false; }
 
     // Methods to add the action to the menu and toolbar.
-    virtual void ConstructMenu(QPopupMenu *menu);
-    virtual void RemoveFromMenu(QPopupMenu *menu);
+    virtual void ConstructMenu(QMenu *menu);
+    virtual void RemoveFromMenu(QMenu *menu);
     virtual void ConstructToolbar(QToolBar *toolbar);
     virtual void RemoveFromToolbar(QToolBar *toolbar);
 
@@ -94,7 +97,7 @@ public:
     virtual void SetText(const QString &text);
     virtual void SetMenuText(const QString &text);
     virtual void SetToolTip(const QString &text);
-    virtual void SetIconSet(const QIconSet &icons);
+    virtual void SetIcon(const QIcon &icons);
     virtual void SetToggleAction(bool val);
 protected slots:
     virtual void HandleToggle(bool);

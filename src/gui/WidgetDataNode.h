@@ -38,7 +38,7 @@
 
 #ifndef WIDGET_DATA_NODE_H
 #define WIDGET_DATA_NODE_H
-#include <qwidget.h>
+#include <QWidget>
 #include <DataNode.h>
 
 // ****************************************************************************

@@ -43,7 +43,7 @@
 #include <ViewerBase.h>
 
 class DataNode;
-class QPopupMenu;
+class QMenu;
 class QToolBar;
 class ViewerWindow;
 class ViewerWindowManager;
@@ -78,17 +78,19 @@ class ViewerWindowManager;
 //   Brad Whitlock, Tue Apr 29 11:22:02 PDT 2008
 //   Use QString.
 //
+//   Brad Whitlock, Fri May  9 14:52:59 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionBase : public ViewerBase
 {
     Q_OBJECT
 public:
-    ViewerActionBase(ViewerWindow *win, const char *name = 0);
+    ViewerActionBase(ViewerWindow *win);
     virtual ~ViewerActionBase();
-    
+
     ViewerWindow *GetWindow() const        { return window; }
-    const char *GetName() const            { return name(); }
 
     virtual void Execute() = 0;
     virtual void Update() = 0;
@@ -106,13 +108,14 @@ public:
     virtual void SetFromNode(DataNode *,const std::string &)   { }
 
     // Methods to add the action to the menu and toolbar.
-    virtual void ConstructMenu(QPopupMenu *menu) = 0;
-    virtual void RemoveFromMenu(QPopupMenu *menu) = 0;
+    virtual void ConstructMenu(QMenu *menu) = 0;
+    virtual void RemoveFromMenu(QMenu *menu) = 0;
     virtual void ConstructToolbar(QToolBar *toolbar) = 0;
     virtual void RemoveFromToolbar(QToolBar *toolbar) = 0;
     virtual void UpdateConstruction() { }
 
     void         SetRPCType(ViewerRPC::ViewerRPCType);
+    std::string  GetName() const;
 
     static  void SetArgs(const ViewerRPC &a);
     static  const ViewerRPC &GetArgs();

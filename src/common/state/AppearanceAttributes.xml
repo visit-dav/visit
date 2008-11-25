@@ -1,10 +1,33 @@
 <?xml version="1.0"?>
-  <Attribute name="AppearanceAttributes" purpose="This class contains the GUI/viewer appearance attributes." exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AppearanceAttributes.code">
-    <Field name="background" type="string">#c0c0c0</Field>
-    <Field name="foreground" type="string">#000000</Field>
-    <Field name="fontName" type="string">Helvetica,12,-1,5,50,0,0,0,0,0</Field>
-    <Field name="style" type="string" init="true">motif</Field>
-    <Field name="orientation" type="int">0</Field>
+  <Attribute name="AppearanceAttributes" purpose="This class contains the GUI/viewer appearance attributes." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AppearanceAttributes.code">
+    <Field name="useSystemDefault" label="useSystemDefault" type="bool">
+      true
+    </Field>
+    <Field name="background" label="background" type="string" enabler="useSystemDefault:false">
+      #c0c0c0
+    </Field>
+    <Field name="foreground" label="foreground" type="string" enabler="useSystemDefault:false">
+      #000000
+    </Field>
+    <Field name="fontName" label="fontName" type="string" enabler="useSystemDefault:false">
+      Helvetica,12,-1,5,50,0,0,0,0,0
+    </Field>
+    <Field name="style" label="style" type="string" enabler="useSystemDefault:false" init="true">
+      motif
+    </Field>
+    <Field name="orientation" label="orientation" type="int" enabler="useSystemDefault:false">
+      0
+    </Field>
+    <Field name="defaultForeground" label="defaultForeground" type="string">
+    </Field>
+    <Field name="defaultBackground" label="defaultBackground" type="string">
+    </Field>
+    <Field name="defaultFontName" label="defaultFontName" type="string">
+    </Field>
+    <Field name="defaultStyle" label="defaultStyle" type="string">
+    </Field>
+    <Field name="defaultOrientation" label="defaultOrientation" type="int">
+    </Field>
     <Function name="InitializeStyle" user="true" member="true">
     </Function>
   </Attribute>

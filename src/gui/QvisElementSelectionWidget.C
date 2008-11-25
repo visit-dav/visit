@@ -38,10 +38,11 @@
 
 #include <QvisElementSelectionWidget.h>
 #include <QvisPeriodicTableWidget.h>
-#include <qapplication.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qtimer.h>
+#include <QApplication>
+#include <QLayout>
+#include <QMouseEvent>
+#include <QPushButton>
+#include <QTimer>
 
 // ****************************************************************************
 // Method: QvisElementSelectionWidget::QvisElementSelectionWidget
@@ -64,17 +65,20 @@
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Jun  3 14:44:38 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisElementSelectionWidget::QvisElementSelectionWidget(QWidget *parent,
-    const char *name, WFlags f) : QWidget(parent, name, f)
+    Qt::WindowFlags f) : QWidget(parent, f)
 {
     // Create the timer.
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(hide()));
 
     // Create the periodic table widget.
-    periodicTable = new QvisPeriodicTableWidget(this, "periodicTable");
+    periodicTable = new QvisPeriodicTableWidget(this);
     periodicTable->setFrame(true);
     periodicTable->move(0, 0);
     periodicTable->resize(periodicTable->sizeHint());
@@ -82,8 +86,7 @@ QvisElementSelectionWidget::QvisElementSelectionWidget(QWidget *parent,
             this, SLOT(handleSelectedElement(int)));
 
     // Create the "Match any element" button
-    matchAnyElementButton = new QPushButton(tr("Match any element"), this, 
-        "matchAnyElementButton");
+    matchAnyElementButton = new QPushButton(tr("Match any element"), this);
     matchAnyElementButton->move(0, periodicTable->sizeHint().height());
     matchAnyElementButton->resize(periodicTable->sizeHint().width(),
                                   matchAnyElementButton->sizeHint().height());
@@ -266,13 +269,17 @@ QvisElementSelectionWidget::matchAnyElementClicked()
 // Creation:   February 11, 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Jun  3 14:46:54 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisElementSelectionWidget::show()
 {
     QWidget::show();
-    timer->start(15000, true);
+    timer->setSingleShot(true);
+    timer->start(15000);
 }
 
 // ****************************************************************************

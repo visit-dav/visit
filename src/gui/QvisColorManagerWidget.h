@@ -40,15 +40,14 @@
 #define QVIS_COLOR_MANAGER_WIDGET_H
 #include <gui_exports.h>
 #include <vector>
-#include <qcolor.h>
-#include <qstring.h>
-#include <qwidget.h>
+#include <QColor>
+#include <QLayout>
+#include <QScrollArea>
+#include <QString>
 
 // Forward declarations.
 class QGrid;
 class QLabel;
-class QScrollView;
-class QVBox;
 class QvisColorButton;
 class QvisOpacitySlider;
 
@@ -75,9 +74,12 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Thu Aug 22 12:12:25 PDT 2002
 //   I added an override for the setEnabled method.
 //
+//   Brad Whitlock, Tue Jul 15 15:01:03 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class GUI_API QvisColorManagerWidget : public QWidget
+class GUI_API QvisColorManagerWidget : public QScrollArea
 {
     Q_OBJECT
 
@@ -90,7 +92,7 @@ class GUI_API QvisColorManagerWidget : public QWidget
 
     typedef std::vector<ColorEntry *> ColorEntryVector;
 public:
-    QvisColorManagerWidget(QWidget *parent = 0, const char *name = 0);
+    QvisColorManagerWidget(QWidget *parent = 0);
     virtual ~QvisColorManagerWidget();
     virtual QSize sizeHint() const;
     virtual void setEnabled(bool val);
@@ -114,14 +116,12 @@ public:
 signals:
     void colorChanged(const QColor &color, int index);
     void opacityChanged(int opacity, int index);
-protected:
-    virtual void paletteChange(const QPalette &);
 private slots:
     void selectedColor(const QColor &color, const void *userData);
     void changedOpacity(int opacity, const void *userData);
 private:
-    QScrollView      *scrollView;
-    QGrid            *grid;
+    QWidget          *top;
+    QGridLayout      *grid;
     QLabel           *nameLabel;
     QLabel           *colorLabel;
     QLabel           *opacityLabel;

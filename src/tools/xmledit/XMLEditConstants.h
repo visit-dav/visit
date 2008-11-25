@@ -39,15 +39,15 @@
 #ifndef XMLEDITCONSTANTS_H
 #define XMLEDITCONSTANTS_H
 
-#include <qframe.h>
+#include <QFrame>
 
 class XMLDocument;
 class QLineEdit;
 class QButtonGroup;
 class QComboBox;
 class QCheckBox;
-class QListBox;
-class QMultiLineEdit;
+class QListWidget;
+class QTextEdit;
 class QPushButton;
 
 // ****************************************************************************
@@ -63,12 +63,15 @@ class QPushButton;
 //    Brad Whitlock, Thu Mar 6 16:10:40 PST 2008
 //    Added target.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 class XMLEditConstants : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditConstants(QWidget *p, const QString &n);
+    XMLEditConstants(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:
@@ -90,12 +93,12 @@ class XMLEditConstants : public QFrame
     QPushButton    *newButton;
     QPushButton    *delButton;
 
-    QListBox       *constantlist;
+    QListWidget    *constantlist;
     QLineEdit      *target;
     QLineEdit      *name;
     QCheckBox      *member;
     QLineEdit      *declaration;
-    QMultiLineEdit *definition;
+    QTextEdit      *definition;
 };
 
 #endif

@@ -67,14 +67,16 @@
 #define _vtkQtRenderWindow_h
 #include <vtkqt_exports.h>
 
-#include <qapplication.h>
-#include <qmainwindow.h>
+#include <QtCore>
+#include <QtGui>
+#include <QApplication>
+#include <QMainWindow>
+#include <qgl.h>
+
 #include <vtkRenderWindow.h>
 #include <vtkOpenGLRenderer.h>
 
-#include <qgl.h>
 #if defined(Q_GLX) || (defined(Q_WS_X11) && defined(QT_MODULE_OPENGL))
-#include <qintdict.h>
 #define INT8  dummy_INT8
 #define INT32 dummy_INT32
 #include <GL/glx.h>
@@ -102,6 +104,9 @@ class VTKQT_API vtkQtRenderWindow : public vtkRenderWindow, public QMainWindow
 //  Added stereo methods, to override base class in order to enable red-green
 //  stereo support.
 //
+//  Brad Whitlock, Thu May  8 16:18:28 PDT 2008
+//  Qt 4.
+//
 //  Brad Whitlock, Wed Aug 20 09:41:03 PDT 2008
 //  Changed to a single constructor that defaults to an embedded widget.
 //
@@ -128,7 +133,7 @@ public:
     // Set name of rendering window
     virtual void SetWindowName(const char *);
 
-    vtkQtRenderWindow(QWidget *parent = 0, WFlags f = 0);
+    vtkQtRenderWindow(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~vtkQtRenderWindow();
     static vtkQtRenderWindow *New();
 
@@ -298,7 +303,6 @@ protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void moveEvent(QMoveEvent *);
     virtual void closeEvent(QCloseEvent *);
-    virtual void paintEvent(QPaintEvent *);
     virtual void hideEvent(QHideEvent *);
     virtual void showEvent(QShowEvent *);
 
@@ -317,6 +321,7 @@ private:
     void           *hideEventCallbackData;
     void          (*showEventCallback)(void *);
     void           *showEventCallbackData;
+    bool            usesBigPixmaps;
 };
 
 #endif

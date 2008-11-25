@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 #include <QvisGridWidget.h>
-#include <qcursor.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qtimer.h>
+
+#include <QMouseEvent>
+#include <QPainter>
+#include <QTimer>
 
 // ****************************************************************************
 // Method: QvisGridWidget::QvisGridWidget
@@ -66,10 +66,13 @@
 //   Jeremy Meredith, Thu Aug 31 15:47:38 EDT 2006
 //   Initialize isPopup.
 //
+//   Brad Whitlock, Mon Jun  2 16:29:14 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisGridWidget::QvisGridWidget(QWidget *parent, const char *name,
-    WFlags f) : QWidget(parent, name, f)
+QvisGridWidget::QvisGridWidget(QWidget *parent, Qt::WindowFlags f) : 
+    QWidget(parent, f)
 {
     numRows = 1;
     numColumns = 1;
@@ -79,8 +82,6 @@ QvisGridWidget::QvisGridWidget(QWidget *parent, const char *name,
     currentSelectedItem = -1;
 
     numGridSquares = 0;
-
-    drawPixmap = 0;
 
     boxSizeValue = 16;
     boxPaddingValue = 8;
@@ -104,13 +105,13 @@ QvisGridWidget::QvisGridWidget(QWidget *parent, const char *name,
 // Creation:   Mon Dec 4 19:52:32 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun  2 16:29:48 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisGridWidget::~QvisGridWidget()
 {
-    if(drawPixmap)
-       delete drawPixmap;
 }
 
 
@@ -124,8 +125,8 @@ QvisGridWidget::~QvisGridWidget()
 // Creation:   August 11, 2006
 //
 // Modifications:
-//    Jeremy Meredith, Thu Aug 31 15:48:05 EDT 2006
-//    Only initialize timer and mouse tracking if we are a popup.
+//   Jeremy Meredith, Thu Aug 31 15:48:05 EDT 2006
+//   Only initialize timer and mouse tracking if we are a popup.
 //   
 // ****************************************************************************
 
@@ -230,7 +231,9 @@ QvisGridWidget::boxPadding() const
 // Creation:   Tue Dec 5 10:35:25 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun  2 16:30:17 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -239,12 +242,6 @@ QvisGridWidget::setFrame(bool val)
     if(val != drawFrame)
     {
         drawFrame = val;
-
-        if(drawPixmap)
-        {
-            delete drawPixmap;
-            drawPixmap = 0;
-        }
 
         if(isVisible())
         {
@@ -325,6 +322,9 @@ QvisGridWidget::columns() const
 //   Changed the signal emits to a pure virtual function defined
 //   by the new concrete derived types.
 //
+//   Brad Whitlock, Mon Jun  2 16:31:01 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -332,11 +332,7 @@ QvisGridWidget::setSelectedIndex(int index)
 {
     if(index >= -1 && index < numGridSquares)
     {
-        QRegion region;
-
-        // If we currently have a selected color, unhighlight it.
-        if(currentSelectedItem != -1)
-            region = drawUnHighlightedItem(0, currentSelectedItem);
+        QRegion region = getItemRegion(currentSelectedItem);
 
         // Set the new value.
         currentSelectedItem = index;
@@ -344,18 +340,11 @@ QvisGridWidget::setSelectedIndex(int index)
         // If the selected color that we set is a real color, highlight
         // the new selected color.
         if(currentSelectedItem != -1)
-        {
-            region = region + drawSelectedItem(0, currentSelectedItem);
-        }
+            region = region + getItemRegion(currentSelectedItem);
 
         // Update the widget.
-        if(isVisible())
-            repaint(region);
-        else if(drawPixmap)
-        {
-            delete drawPixmap;
-            drawPixmap = 0;
-        }
+        if(isVisible() && !region.isEmpty())
+            update(region);
 
         // emit the selectedItem signal.
         if(currentSelectedItem != -1)
@@ -435,6 +424,9 @@ QvisGridWidget::activeIndex() const
 //   Brad Whitlock, Wed Feb 26 13:09:42 PST 2003
 //   I made some internal interface changes.
 //
+//   Brad Whitlock, Mon Jun  2 16:31:16 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -444,27 +436,18 @@ QvisGridWidget::setActiveIndex(int index)
     {
         QRegion region;
 
-        // If we currently have an active color, unhighlight it.
+        // Get the current region
         if(activeIndex() != -1)
-        {
-            if(activeIndex() == currentSelectedItem)
-                region = drawSelectedItem(0, activeIndex());
-            else
-                region = drawUnHighlightedItem(0, activeIndex());
-        }
+            region = getItemRegion(activeIndex());
 
         currentActiveItem = index;
 
-        // If the active color that we set is a real color, highlight the new
-        // active color.
-        if(activeIndex() == currentSelectedItem)
-            region = region + drawSelectedItem(0, activeIndex());
-        else if(activeIndex() != -1)
-            region = region + drawHighlightedItem(0, activeIndex());
+        // Add the new region to the current region
+        region = region + getItemRegion(activeIndex());
 
-        // Update the pixmap.
-        if(isVisible())
-            repaint(region);
+        // Update the widget.
+        if(isVisible() && !region.isEmpty())
+            update(region);
     }
 }
 
@@ -595,29 +578,24 @@ QvisGridWidget::mouseReleaseEvent(QMouseEvent *e)
 // Creation:   Mon Dec 4 20:03:36 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun  2 16:32:34 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisGridWidget::paintEvent(QPaintEvent *e)
 {
-    // If the pixmap has not been created, create it and draw into it.
-    if(drawPixmap == 0)
-    {
-        drawPixmap = new QPixmap(width(), height());
-        drawItemArray();
-    }
-
-    // Blit the pixmap onto the widget.
-    QPainter paint;
-    paint.begin(this);
-    if(!e->region().isNull())
+    // Set up a painter.
+    QPainter paint(this);
+    if(!e->region().isEmpty())
     {
         paint.setClipRegion(e->region());
         paint.setClipping(true);
     }
-    paint.drawPixmap(0, 0, *drawPixmap);
-    paint.end();
+
+    // Draw the widget.
+    drawItemArray(paint);
 }
 
 // ****************************************************************************
@@ -631,18 +609,15 @@ QvisGridWidget::paintEvent(QPaintEvent *e)
 // Creation:   Mon Dec 4 20:04:15 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun  2 16:33:38 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisGridWidget::resizeEvent(QResizeEvent *)
 {
-    // Delete the pixmap so the entire widget will be redrawn.
-    if(drawPixmap)
-    {
-        delete drawPixmap;
-        drawPixmap = 0;
-    }
+    update();
 }
 
 // ****************************************************************************
@@ -764,7 +739,7 @@ QvisGridWidget::getRowColumnFromIndex(int index, int &row, int &column) const
 
 void
 QvisGridWidget::getItemRect(int index, int &x, int &y,
-    int &w, int &h)
+    int &w, int &h) const
 {
     int column = index % numColumns;
     int row = index / numColumns;
@@ -779,6 +754,46 @@ QvisGridWidget::getItemRect(int index, int &x, int &y,
     // Figure out the width, height.
     w = boxWidth - boxPaddingValue;
     h = boxHeight - boxPaddingValue;
+}
+
+// ****************************************************************************
+// Method: QvisGridWidget::getItemRegion
+//
+// Purpose: 
+//   Returns the region that would be drawn if we change the index'th item.
+//
+// Arguments:
+//   index : the index of the item whose region we want.
+//   
+// Returns:    The region that would be drawn. The region is the itemRect()
+//             adjusted with the box padding that separates items.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun  2 16:51:25 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QRegion
+QvisGridWidget::getItemRegion(int index) const
+{
+    QRegion retval;
+
+    if(isValidIndex(index))
+    {
+        // Get the location of the index'th color box.
+        int x, y, boxWidth, boxHeight;
+        getItemRect(index, x, y, boxWidth, boxHeight);
+
+        // return the region that we would draw on.
+        retval = QRegion(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
+            boxWidth + boxPaddingValue, boxHeight + boxPaddingValue);
+    }
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -804,24 +819,18 @@ QvisGridWidget::getItemRect(int index, int &x, int &y,
 //   I changed how the brush to draw the background is selected so it looks
 //   better on MacOS X.
 //
+//   Brad Whitlock, Mon Jun  2 16:34:05 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisGridWidget::drawItemArray()
+QvisGridWidget::drawItemArray(QPainter &paint)
 {
-    // Fill the pixmap with the background color or draw a frame.
-    QPainter paint(drawPixmap);
-
-#ifdef Q_WS_MACX
-    paint.fillRect(rect(), colorGroup().brush(QColorGroup::Background));
-#else
-    paint.fillRect(rect(), colorGroup().brush(QColorGroup::Button));
-#endif
-
     if(drawFrame)
     {
-        drawBox(paint, rect(), colorGroup().light(),
-                colorGroup().dark());
+        drawBox(paint, rect(), palette().color(QPalette::Light),
+                palette().color(QPalette::Dark));
     }        
 
     // Draw all of the color boxes.
@@ -833,9 +842,9 @@ QvisGridWidget::drawItemArray()
             if(index < numGridSquares)
             {
                 if(index == currentSelectedItem)
-                    drawSelectedItem(&paint, index);
+                    drawSelectedItem(paint, index);
                 else if(index == activeIndex())
-                    drawHighlightedItem(&paint, index);
+                    drawHighlightedItem(paint, index);
                 else
                     drawItem(paint, index);
             }
@@ -914,14 +923,17 @@ QvisGridWidget::drawBox(QPainter &paint, const QRect &r,
 //   Brad Whitlock, Tue Mar 12 18:48:55 PST 2002
 //   Removed the style coding in favor of a custom drawing routine.
 //
+//   Brad Whitlock, Mon Jun  2 16:35:51 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QRegion
-QvisGridWidget::drawHighlightedItem(QPainter *paint, int index)
+QvisGridWidget::drawHighlightedItem(QPainter &paint, int index)
 {
     QRegion retval;
 
-    if(drawPixmap && isValidIndex(index))
+    if(isValidIndex(index))
     {
         // Get the location of the index'th color box.
         int x, y, boxWidth, boxHeight;
@@ -930,93 +942,19 @@ QvisGridWidget::drawHighlightedItem(QPainter *paint, int index)
         QRect r(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
                 boxWidth + boxPaddingValue, boxHeight + boxPaddingValue);
 
+        // Draw a highlight.
+        paint.fillRect(r, palette().color(QPalette::Highlight));
+
         // Draw the button and the color over the button.
-        if(paint == 0)
-        {
-            QPainter p2(drawPixmap);
-            drawBox(p2, r, colorGroup().light(),
-                    colorGroup().dark());
-            drawItem(p2, index);
-        }
-        else
-        {
-            drawBox(*paint, r, colorGroup().light(),
-                    colorGroup().dark());
-            drawItem(*paint, index);
-        }
-
-        // return the region that we drew on.
-        retval = QRegion(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
-            boxWidth + boxPaddingValue, boxHeight + boxPaddingValue);
-    }
-
-    return retval;
-}
-
-// ****************************************************************************
-// Method: QvisGridWidget::drawUnHighlightedItem
-//
-// Purpose: 
-//   Draws an unhighlighted color box.
-//
-// Arguments:
-//   paint : The painter to use or 0.
-//   index : The index of the color box to draw.
-//
-// Returns:    The region that was covered by drawing.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Dec 4 20:10:27 PST 2000
-//
-// Modifications:
-//   Brad Whitlock, Wed Aug 22 14:49:52 PST 2001
-//   I changed the color used to draw the rectange from background to button
-//   and it seems to look correct for all of the styles.
-//
-//   Brad Whitlock, Fri Apr 26 11:37:12 PDT 2002
-//   I fixed an error that cropped up on windows.
-//
-//   Brad Whitlock, Thu Aug 21 15:38:21 PST 2003
-//   I changed how the brush is selected so it looks better on MacOS X.
-//
-// ****************************************************************************
-
-QRegion
-QvisGridWidget::drawUnHighlightedItem(QPainter *paint, int index)
-{
-    QRegion retval;
-
-    if(drawPixmap && isValidIndex(index))
-    {
-        // Get the location of the index'th color box.
-        int x, y, boxWidth, boxHeight;
-        getItemRect(index, x, y, boxWidth, boxHeight);
-
+        drawBox(paint, r, palette().color(QPalette::Light),
 #ifdef Q_WS_MACX
-        QBrush brush(colorGroup().brush(QColorGroup::Background));
+                Qt::black
 #else
-        QBrush brush(colorGroup().brush(QColorGroup::Button));
+                palette().color(QPalette::Shadow)
 #endif
-
-        // Draw the button and the color over the button.
-        if(paint == 0)
-        {
-            QPainter p2(drawPixmap);
-            p2.fillRect(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
-                        boxWidth + boxPaddingValue, boxHeight + boxPaddingValue,
-                        brush);
-            drawItem(p2, index);
-        }
-        else
-        {
-            paint->fillRect(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
-                            boxWidth + boxPaddingValue, boxHeight + boxPaddingValue,
-                            brush);
-            drawItem(*paint, index);
-        }
-
+                );
+        drawItem(paint, index);
+ 
         // return the region that we drew on.
         retval = QRegion(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
             boxWidth + boxPaddingValue, boxHeight + boxPaddingValue);
@@ -1048,14 +986,17 @@ QvisGridWidget::drawUnHighlightedItem(QPainter *paint, int index)
 //   Brad Whitlock, Fri Apr 26 11:37:12 PDT 2002
 //   I fixed an error that cropped up on windows.
 //
+//   Brad Whitlock, Mon Jun  2 16:38:13 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QRegion
-QvisGridWidget::drawSelectedItem(QPainter *paint, int index)
+QvisGridWidget::drawSelectedItem(QPainter &paint, int index)
 {
     QRegion retval;
 
-    if(drawPixmap && isValidIndex(index))
+    if(isValidIndex(index))
     {
         // Get the location of the index'th color box.
         int x, y, boxWidth, boxHeight;
@@ -1064,23 +1005,17 @@ QvisGridWidget::drawSelectedItem(QPainter *paint, int index)
         QRect r(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
                 boxWidth + boxPaddingValue, boxHeight + boxPaddingValue);
 
-        if(paint == 0)
-        {
-            // Draw a sunken button.
-            QPainter p2(drawPixmap);
-            drawBox(p2, r, colorGroup().dark(), colorGroup().light());
+        // Draw a sunken button.
+        drawBox(paint, r,
+#ifdef Q_WS_MACX
+                Qt::black,
+#else
+                palette().color(QPalette::Dark),
+#endif
+                palette().color(QPalette::Light));
 
-            // Draw the color over the button.
-            drawItem(p2, index);
-        }
-        else
-        {
-            // Draw a sunken button.
-            drawBox(*paint, r, colorGroup().dark(), colorGroup().light());
-
-            // Draw the color over the button.
-            drawItem(*paint, index);
-        }
+        // Draw the color over the button.
+        drawItem(paint, index);
 
         // return the region that we drew on.
         retval = QRegion(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
@@ -1104,7 +1039,10 @@ QvisGridWidget::drawSelectedItem(QPainter *paint, int index)
 // Modifications:
 //    Jeremy Meredith, Thu Aug 31 15:47:12 EDT 2006
 //    Added support for subclasses being popups.
-//   
+//
+//    Brad Whitlock, Mon Jun  2 16:44:46 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1112,7 +1050,10 @@ QvisGridWidget::show()
 {
     QWidget::show();
     if (isPopup && timer)
-        timer->start(15000, true);
+    {
+        timer->setSingleShot(true);
+        timer->start(15000);
+    }
 }
 
 // ****************************************************************************
@@ -1155,7 +1096,7 @@ QvisGridWidget::hide()
 // ****************************************************************************
 
 bool
-QvisGridWidget::isValidIndex(int index)
+QvisGridWidget::isValidIndex(int index) const
 {
     return (index >= 0);
 }

@@ -70,6 +70,9 @@ class QVBox;
 //   Brad Whitlock, Wed Apr  9 11:35:25 PDT 2008
 //   QString for captionString, shortName.
 //
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisCommandWindow : public QvisPostableWindow
@@ -132,7 +135,7 @@ private:
     QCheckBox       *macroAppendCheckBox;
     QComboBox       *macroStorageComboBox;
 
-    QVBox           *macroTab;
+    QWidget         *macroTab;
     QTextEdit       *macroLineEdit;
     QPushButton     *macroUpdateButton;
     QPushButton     *macroClearButton;

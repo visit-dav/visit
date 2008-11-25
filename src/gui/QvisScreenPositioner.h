@@ -39,7 +39,7 @@
 #ifndef QVIS_SCREEN_POSITIONER_H
 #define QVIS_SCREEN_POSITIONER_H
 #include <gui_exports.h>
-#include <qframe.h>
+#include <QWidget>
 
 // ****************************************************************************
 // Class: QvisScreenPositioner
@@ -54,14 +54,16 @@
 // Creation:   Mon Dec 1 14:10:17 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 16:09:23 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class GUI_API QvisScreenPositioner : public QFrame
+class GUI_API QvisScreenPositioner : public QWidget
 {
     Q_OBJECT
 public:
-    QvisScreenPositioner(QWidget *parent = 0, const char *name = 0, WFlags = 0);
+    QvisScreenPositioner(QWidget *parent = 0, Qt::WindowFlags = 0);
     virtual ~QvisScreenPositioner();
     virtual QSize sizeHint () const;
     virtual QSize minimumSize() const;
@@ -88,10 +90,13 @@ protected:
     virtual void mousePressEvent(QMouseEvent *e);
     virtual void mouseMoveEvent(QMouseEvent *e);
     virtual void mouseReleaseEvent(QMouseEvent *e);
-    virtual void drawContents(QPainter *);
+    virtual void paintEvent(QPaintEvent *);
 
     void sendNewScreenPosition();
     void setTempPositionFromWidgetCoords(int wx, int wy);
+    void drawBox(QPainter &paint, const QRect &r,
+                 const QColor &light, const QColor &dark, int lw);
+    void drawLines(QPainter &paint);
 
     static const int minXScreenSize;
     static const int minYScreenSize;
@@ -105,6 +110,7 @@ protected:
     int pageIncrement_;
     bool dragging;
     bool paging;
+    bool drawFrame;
 };
 
 #endif

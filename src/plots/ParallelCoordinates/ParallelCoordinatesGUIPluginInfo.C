@@ -42,7 +42,7 @@
 
 #include <ParallelCoordinatesPluginInfo.h>
 #include <ParallelCoordinatesAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisParallelCoordinatesPlotWindow.h>
 
 #if defined(__APPLE__)
@@ -133,7 +133,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject 
         caption, shortName, notepad);
 }
 // ****************************************************************************
-// Method: ScatterGUIPluginInfo::CreatePluginWizard
+// Method:ParallelCoordinatesGUIPluginInfo::CreatePluginWizard
 //
 // Purpose:
 //   Creates a ParallelCoordinates plot wizard and returns a pointer to it.
@@ -159,6 +159,9 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject 
 //    you'll have the wrong number of axes defined in the plot attributes.
 //    As such, I extended the wizard to support a "no-op" mode.
 //   
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 #include <QvisParallelCoordinatesPlotWizard.h>
 #include <Expression.h>
@@ -168,7 +171,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject 
 QvisWizard *
 ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
     QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
-    const ExpressionList *expList, const char *name)
+    const ExpressionList *expList)
 {
     bool doNothing = false;
     if (md->GetScalar(varName) == NULL)
@@ -191,7 +194,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
     }
 
     return (new QvisParallelCoordinatesPlotWizard(attr, parent, varName,
-                                                  doNothing, name));
+                                                  doNothing));
 }
 
 

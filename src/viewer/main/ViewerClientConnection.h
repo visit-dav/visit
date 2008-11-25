@@ -70,15 +70,18 @@ class ViewerState;
 //   Brad Whitlock, Mon Feb 12 17:56:51 PST 2007
 //   Changed base class.
 //
+//   Brad Whitlock, Fri May  9 14:42:00 PDT 2008
+//   Added name since Qt 4 does not have it.
+//
 // ****************************************************************************
 
 class ViewerClientConnection : public ViewerBase, public SimpleObserver
 {
     Q_OBJECT
 public:
-    ViewerClientConnection(const ViewerState *, QObject *parent, const char *name=0);
+    ViewerClientConnection(const ViewerState *, QObject *parent, const QString &name);
     ViewerClientConnection(ParentProcess *, QSocketNotifier *, const ViewerState *,
-                           QObject *parent, const char *name=0);
+                           QObject *parent, const QString &name);
     virtual ~ViewerClientConnection();
 
     void LaunchClient(const std::string &program,
@@ -94,6 +97,8 @@ public:
 
     virtual void Update(Subject *);
 
+    const QString &Name() const;
+
     static const int FreelyExchangedState;
 signals:
     void DisconnectClient(ViewerClientConnection *);
@@ -101,6 +106,7 @@ signals:
 private slots:
     void ReadFromClientAndProcess(int);
 private:
+    QString            name;
     Xfer              *xfer;
     QSocketNotifier   *notifier;
     RemoteProcess     *remoteProcess;

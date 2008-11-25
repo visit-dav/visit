@@ -39,8 +39,7 @@
 #ifndef INCLUDE_H
 #define INCLUDE_H
 
-#include <qstring.h>
-#include <visitstream.h>
+#include <QTextStream>
 
 // ****************************************************************************
 //  Class:  Include
@@ -67,16 +66,17 @@ class Include
     Include(const QString &d, bool q, const QString &t) : destination(d), quoted(q), target(t)
     {
         if (d != "header" && d != "source")
-            throw QString().sprintf("Bad destination file '%s' for include.",d.latin1());
+            throw QString("Bad destination file '%1' for include.").arg(d);
     }
     void SetInclude(const QString &i)
     {
         include = i;
     }
-    void Print(ostream &out, const QString &generatorName = QString::null)
+    void Print(QTextStream &out, const QString &generatorName = QString::null)
     {
         if(generatorName.isEmpty() || generatorName == target)
-            out << "        Include: (" << target << ") " << include << endl;
+            out << "        Include: (" << target << ") "
+                << include << endl;
     }
 };
 

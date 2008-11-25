@@ -37,9 +37,10 @@
 *****************************************************************************/
 
 #include <QvisColorGridWidget.h>
-#include <qcursor.h>
-#include <qpainter.h>
-#include <qpixmap.h>
+
+#include <QCursor>
+#include <QMouseEvent>
+#include <QPainter>
 
 // ****************************************************************************
 // Method: QvisColorGridWidget::QvisColorGridWidget
@@ -59,10 +60,13 @@
 //   Brad Whitlock, Thu Nov 21 17:13:29 PST 2002
 //   Made boxSize and boxPadding values that can be set.
 //
+//   Brad Whitlock, Mon Jun  2 16:41:02 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisColorGridWidget::QvisColorGridWidget(QWidget *parent, const char *name,
-    WFlags f) : QvisGridWidget(parent, name, f)
+QvisColorGridWidget::QvisColorGridWidget(QWidget *parent, Qt::WindowFlags f) :
+    QvisGridWidget(parent, f)
 {
     paletteColors = 0;
 
@@ -210,6 +214,9 @@ QvisColorGridWidget::paletteColor(int index) const
 //   a suggested columns default argument to set the number of columns that
 //   we'd like to use.
 //
+//   Brad Whitlock, Mon Jun  2 16:58:14 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -244,16 +251,7 @@ QvisColorGridWidget::setPaletteColors(const QColor *c, int nColors,
 
         // Make the widget repaint if it is visible.
         if(isVisible())
-        {
-            delete drawPixmap;
-            drawPixmap = 0;
             update();
-        }
-        else if(drawPixmap)
-        {
-            delete drawPixmap;
-            drawPixmap = 0;
-        }
     }
 }
 
@@ -277,6 +275,9 @@ QvisColorGridWidget::setPaletteColors(const QColor *c, int nColors,
 //   Brad Whitlock, Wed Feb 26 12:53:07 PDT 2003
 //   I made it take a single index argument instead of row and column.
 //
+//   Brad Whitlock, Mon Jun  2 16:59:48 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -287,37 +288,14 @@ QvisColorGridWidget::setPaletteColor(const QColor &color, int index)
         // If the colors are different, update the widget.
         if(color != paletteColors[index])
         {
-            QRegion region;
-
             // Replace the color
             paletteColors[index] = color;
 
-            // Redraw the color in the appropriate manner.
-            if(index == currentSelectedItem)
-                region = drawSelectedItem(0, index);
-            else if(index == activeIndex())
-                region = drawHighlightedItem(0, index);
-            else
-            {
-                int x, y, w, h;
-                getItemRect(index, x, y, w, h);
-                region = QRegion(x, y, w, h);
-
-                if(drawPixmap)
-                {
-                    QPainter paint(drawPixmap);
-                    drawItem(paint, index);
-                }
-            }
+            QRegion region = getItemRegion(index);
 
             // Repaint the region that was changed.
-            if(isVisible())
-                repaint(region);
-            else if(drawPixmap)
-            {
-                delete drawPixmap;
-                drawPixmap = 0;
-            }
+            if(isVisible() && !region.isEmpty())
+                update(region);
         }
     }
 }
@@ -368,6 +346,9 @@ QvisColorGridWidget::containsColor(const QColor &color) const
 //   Brad Whitlock, Wed Feb 26 13:10:56 PST 2003
 //   Made some internal interface changes.
 //
+//   Brad Whitlock, Mon Jun  2 17:00:54 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void 
@@ -380,33 +361,33 @@ QvisColorGridWidget::keyPressEvent(QKeyEvent *e)
     // Handle the key strokes.
     switch(e->key())
     {
-    case Key_Escape:
+    case Qt::Key_Escape:
         // emit an empty color.
         emit selectedColor(temp);
         break;
-    case Key_Return:
-    case Key_Enter:
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
         setSelectedIndex(activeIndex());
         break;
-    case Key_Left:
+    case Qt::Key_Left:
         if(column == 0)
             setActiveIndex(getIndex(row, numColumns - 1));
         else
             setActiveIndex(getIndex(row, column - 1));
         break;
-    case Key_Right:
+    case Qt::Key_Right:
         if(column == numColumns - 1)
             setActiveIndex(getIndex(row, 0));
         else
             setActiveIndex(getIndex(row, column + 1));
         break;
-    case Key_Up:
+    case Qt::Key_Up:
         if(row == 0)
             setActiveIndex(getIndex(numRows - 1, column));
         else
             setActiveIndex(getIndex(row - 1, column));
         break;
-    case Key_Down:
+    case Qt::Key_Down:
         if(row == numRows - 1)
             setActiveIndex(getIndex(0, column));
         else
@@ -429,13 +410,15 @@ QvisColorGridWidget::keyPressEvent(QKeyEvent *e)
 // Creation:   Thu Nov 21 11:07:54 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun  2 17:01:14 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisColorGridWidget::mousePressEvent(QMouseEvent *e)
 {
-    if(e->button() == RightButton)
+    if(e->button() == Qt::RightButton)
     {
         int index = getIndexFromXY(e->x(), e->y());
 
@@ -472,6 +455,9 @@ QvisColorGridWidget::mousePressEvent(QMouseEvent *e)
 //   Brad Whitlock, Fri Apr 26 11:47:44 PDT 2002
 //   I fixed an error that cropped up on windows.
 //
+//   Brad Whitlock, Mon Jun  2 17:01:41 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -483,8 +469,8 @@ QvisColorGridWidget::drawItem(QPainter &paint, int index)
         int x, y, boxWidth, boxHeight;
         getItemRect(index, x, y, boxWidth, boxHeight);
 
-        paint.setPen(colorGroup().dark());
-        paint.drawRect(x, y, boxWidth, boxHeight);
+        paint.setPen(palette().color(QPalette::Dark));
+        paint.drawRect(x, y, boxWidth-1, boxHeight-1);
         paint.fillRect(x + 1, y + 1, boxWidth - 2, boxHeight - 2,
                        paletteColors[index]);
     }

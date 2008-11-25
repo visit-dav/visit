@@ -76,10 +76,10 @@ class QvisDeferExpressionWindow : public QvisOperatorWindow
     Q_OBJECT
   public:
     QvisDeferExpressionWindow(const int type,
-                         DeferExpressionAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
-                         QvisNotepadArea *notepad = 0);
+                              DeferExpressionAttributes *subj,
+                              const QString &caption = QString::null,
+                              const QString &shortName = QString::null,
+                              QvisNotepadArea *notepad = 0);
     virtual ~QvisDeferExpressionWindow();
     virtual void CreateWindowContents();
   protected:
@@ -91,8 +91,8 @@ class QvisDeferExpressionWindow : public QvisOperatorWindow
   private:
 
     DeferExpressionAttributes *atts;
-    QvisVariableButton  *varsButton;
-    QLineEdit           *varsLineEdit;
+    QvisVariableButton        *varsButton;
+    QLineEdit                 *varsLineEdit;
 };
 
 

@@ -37,76 +37,27 @@
 *****************************************************************************/
 
 #include "QvisKeyframeWindow.h"
-#include "KFListViewItem.h"
-#include "KFListView.h"
-#include "KFTimeSlider.h"
 
 #include <KeyframeAttributes.h>
 #include <ViewerProxy.h>
-#include <PlotPluginManager.h>
-#include <PlotPluginInfo.h>
-#include <Plot.h>
 #include <PlotList.h>
-#include <QualifiedFilename.h>
+
 #include <WindowInformation.h>
 
-#include <qapplication.h>
-#include <qcheckbox.h>
-#include <qcursor.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qpainter.h>
-#include <qpointarray.h>
-#include <qradiobutton.h>
-#include <qlistview.h>
-#include <qheader.h>
-#include <qpopupmenu.h>
-#include <qpushbutton.h>
-#include <stdio.h>
-#include <float.h>
-#include <math.h>
-#include <snprintf.h>
+#include <KeyframeDataModel.h>
+#include <QvisKeyframeDelegate.h>
 
-#include <algorithm>
-
-#define KF_TIME_SLIDER "Keyframe animation"
-
-using std::vector;
-using std::map;
-
-static QListViewItem *lastChild(QListViewItem *r);
-static QListViewItem *lastChild(QListView *r);
-
-static QListViewItem*
-lastChild(QListViewItem *r)
-{
-    QListViewItem *i = r->firstChild();
-    QListViewItem *j = NULL;
-    while (i != NULL)
-    {
-        j = i;
-        i = i->nextSibling();
-    }
-    return j;
-}
-
-static QListViewItem*
-lastChild(QListView *r)
-{
-    QListViewItem *i = r->firstChild();
-    QListViewItem *j = NULL;
-    while (i != NULL)
-    {
-        j = i;
-        i = i->nextSibling();
-    }
-    return j;
-}
-
+#include <QCheckBox>
+#include <QHeaderView>
+#include <QIcon>
+#include <QItemSelectionModel>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPainter>
+#include <QPolygon>
+#include <QPushButton>
+#include <QTreeView>
 
 // ****************************************************************************
 //  Constructor:  QvisKeyframeWindow::QvisKeyframeWindow
@@ -133,6 +84,9 @@ lastChild(QListView *r)
 //    Brad Whitlock, Wed Apr  9 11:09:51 PDT 2008
 //    QString for caption, shortName.
 //
+//    Brad Whitlock, Mon Nov 10 11:59:01 PST 2008
+//    Create keyframe data model.
+//
 // ****************************************************************************
 
 QvisKeyframeWindow::QvisKeyframeWindow(KeyframeAttributes *subj,
@@ -144,179 +98,32 @@ QvisKeyframeWindow::QvisKeyframeWindow(KeyframeAttributes *subj,
 {
     kfAtts = subj;
     kfAtts->Attach(this);
-    plotList = NULL;
     windowInfo = NULL;
-    lv = NULL;
-    ts = NULL;
-    viewItem = NULL;
+    nFrames = 0;
+    kv = 0;
+    model = new KeyframeDataModel(this);
+    model->ConnectKeyframeAttributes(kfAtts);
 }
 
 // ****************************************************************************
-//  Method:  QvisKeyframeWindow::AddSubjectToWindow
-//
-//  Purpose:
-//    Add a generic attribute subject to the keyframe window.
-//
-//  Arguments:
-//    subj       the subject
-//    name       the name of the subject
-//    parent     a possible parent listview item
+//  Destructor:  QvisKeyframeWindow::~QvisKeyframeWindow
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    May  8, 2002
-//
-// ****************************************************************************
-KFListViewItem *
-QvisKeyframeWindow::AddSubjectToWindow(AttributeSubject *subj, const char *name,
-                                       KFListViewItem *parent)
-{
-    KFListViewItem *root;
-    if (parent)
-    {
-        if (lastChild(parent))
-            root = new KFListViewItem(parent, lastChild(parent));
-        else
-            root = new KFListViewItem(parent);
-    }
-    else
-    {
-        if (lastChild(lv))
-            root = new KFListViewItem(lv, lastChild(lv));
-        else
-            root = new KFListViewItem(lv);
-    }
-    if (parent) parent->setOpen(true);
-    root->setText(0, name);
-
-#ifdef THIS_IS_FOR_THE_SUB_MEMBERS_OF_THE_ATTRIBUTES
-    KFListViewItem *item = NULL;
-    for (int i=0; i<subj->NumAttributes(); i++)
-    {
-        item = new KFListViewItem(root, /*old*/item);
-        item->setText(0, subj->GetFieldName(i).c_str());
-    }
-#endif
-    return root;
-}
-
-// ****************************************************************************
-//  Method:  QvisKeyframeWindow::AddPlotToWindow
-//
-//  Purpose:
-//    Add a plot attribute subject to the keyframe window.
-//
-//  Arguments:
-//    subj       the subject
-//    name       the name of the subject
-//    parent     a possible parent listview item
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    January 23, 2003
 //
 //  Modifications:
-//    Jeremy Meredith, Fri Jan 31 09:42:13 PST 2003
-//    Renamed "Time" to "State"
+//    Brad Whitlock, Fri May 10 10:43:33 PDT 2002
+//    Added code to detach the keyframe atts.
 //
 // ****************************************************************************
-KFListViewItem *
-QvisKeyframeWindow::AddPlotToWindow(AttributeSubject *subj, const char *name,
-                                    KFListViewItem *parent)
+
+QvisKeyframeWindow::~QvisKeyframeWindow()
 {
-    KFListViewItem *root;
-    if (parent)
-    {
-        if (lastChild(parent))
-            root = new KFListViewItem(parent, lastChild(parent));
-        else
-            root = new KFListViewItem(parent);
-    }
-    else
-    {
-        if (lastChild(lv))
-            root = new KFListViewItem(lv, lastChild(lv));
-        else
-            root = new KFListViewItem(lv);
-    }
-    if (parent) parent->setOpen(true);
-    root->setText(0, name);
-    root->AddPoint(0.0);
-    root->SetStyle(KFListViewItem::Style_Extents_and_Atts);
+    if(kfAtts)
+        kfAtts->Detach(this);
 
-    KFListViewItem *timeItem = new KFListViewItem(root);
-    timeItem->setText(0, tr("State"));
-    timeItem->SetStyle(KFListViewItem::Style_Times);
-    if (lv->GetNFrames() <= 1)
-        timeItem->AddPoint(0);
-    else
-    {
-        for (int j=0; j<lv->GetNFrames(); j++)
-            timeItem->AddPoint(double(j)/double(lv->GetNFrames()-1));
-    }
-
-    KFListViewItem *attsItem = new KFListViewItem(root, timeItem);
-    attsItem->setText(0, tr("Atts"));
-    attsItem->AddPoint(0.0);
-
-#ifdef THIS_IS_FOR_THE_SUB_MEMBERS_OF_THE_ATTRIBUTES
-    KFListViewItem *item = NULL;
-    for (int i=0; i<subj->NumAttributes(); i++)
-    {
-        item = new KFListViewItem(attsItem, /*old*/item);
-        item->setText(0, subj->GetFieldName(i).c_str());
-        item->AddPoint(0.0);
-    }
-#endif
-
-    //root->setOpen(true);
-    return root;
-}
-
-// ****************************************************************************
-//  Method:  QvisKeyframeWindow::ConnectAttributes
-//
-//  Purpose:
-//    Connect and add a generic attribute subject to the keyframe window.
-//
-//  Arguments:
-//    subj       the subject
-//    name       the name
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May  8, 2002
-//
-// ****************************************************************************
-void
-QvisKeyframeWindow::ConnectAttributes(AttributeSubject *subj, const char *name)
-{
-    atts.push_back(subj);
-    if (!name)
-        name = subj->TypeName().c_str();
-
-    nameMap[subj] = name;
-    subj->Attach(this);
-    if (lv)
-        AddSubjectToWindow(subj, name);
-}
-
-// ****************************************************************************
-//  Method:  QvisKeyframeWindow::ConnectPlotAttributes
-//
-//  Purpose:
-//    Connect a plot attribute subject to the keyframe window.
-//
-//  Arguments:
-//    subj       the subject
-//    index      the index
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May  8, 2002
-//
-// ****************************************************************************
-void
-QvisKeyframeWindow::ConnectPlotAttributes(AttributeSubject *subj, int index)
-{
-    plotAtts[index] = subj;
-    subj->Attach(this);
+    if(windowInfo)
+        windowInfo->Detach(this);
 }
 
 // ****************************************************************************
@@ -331,13 +138,19 @@ QvisKeyframeWindow::ConnectPlotAttributes(AttributeSubject *subj, int index)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May  8, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Tue Oct 28 12:11:09 PDT 2008
+//    Added the subject to the keyframe data model.
+//
 // ****************************************************************************
+
 void
 QvisKeyframeWindow::ConnectWindowInformation(WindowInformation *subj)
 {
     windowInfo = subj;
     windowInfo->Attach(this);
-    UpdateWindowInformation();
+
+    model->ConnectWindowInformation(subj);
 }
 
 // ****************************************************************************
@@ -352,12 +165,16 @@ QvisKeyframeWindow::ConnectWindowInformation(WindowInformation *subj)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May  8, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Tue Oct 28 12:11:09 PDT 2008
+//    Added the subject to the keyframe data model.
+//
 // ****************************************************************************
+
 void
 QvisKeyframeWindow::ConnectPlotList(PlotList *subj)
 {
-    plotList = subj;
-    subj->Attach(this);
+    model->ConnectPlotList(subj);
 }
 
 // ****************************************************************************
@@ -389,47 +206,6 @@ QvisKeyframeWindow::SubjectRemoved(Subject *subj)
         kfAtts = 0;
     else if(subj == windowInfo)
         windowInfo = 0;
-    else if(subj == plotList)
-        plotList = 0;
-    else
-    {
-        // STILL NEED TO DO SOME WORK TO REMOVE FROM WINDOW HERE
-
-        for (std::vector<AttributeSubject*>::iterator i=atts.begin(); i!=atts.end(); i++)
-        {
-            if (*i == subj)
-            {
-                atts.erase(i);
-                break;
-            }
-        }
-    }
-}
-
-// ****************************************************************************
-//  Destructor:  QvisKeyframeWindow::~QvisKeyframeWindow
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May  8, 2002
-//
-//  Modifications:
-//    Brad Whitlock, Fri May 10 10:43:33 PDT 2002
-//    Added code to detach the keyframe atts.
-//
-//    Brad Whitlock, Sat Jan 24 23:59:47 PST 2004
-//    I replaced 
-// ****************************************************************************
-
-QvisKeyframeWindow::~QvisKeyframeWindow()
-{
-    if(kfAtts)
-        kfAtts->Detach(this);
-
-    if(windowInfo)
-        windowInfo->Detach(this);
-
-    if(plotList)
-        plotList->Detach(this);
 }
 
 // ****************************************************************************
@@ -455,202 +231,68 @@ QvisKeyframeWindow::~QvisKeyframeWindow()
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Thu Oct 23 10:59:22 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisKeyframeWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 6,3,  4, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout;
+    topLayout->addLayout(mainLayout);
     int row=0;
 
-    keyframeEnabledCheck = new QCheckBox(tr("Keyframing enabled"),
-                                         central, "keyframeEnabledCheck");
-    mainLayout->addWidget(keyframeEnabledCheck, row,0);
-    row++;
-
-    snapToFrameCheck = new QCheckBox(tr("Snap to frame"),
-                                     central, "snapToFrameCheck");
-    mainLayout->addWidget(snapToFrameCheck, row, 0);
-    snapToFrameCheck->setEnabled(false);
-    row++;
-
-    mainLayout->addWidget(new QLabel(tr("Number of frames"), central,
-                          "nFramesLabel"),row,0);
-    nFrames = new QLineEdit(central, "nFrames");
-    mainLayout->addWidget(nFrames, row,1);
-    row++;
-
-    lv = new KFListView(central, "listview");
-    lv->header()->setResizeEnabled(false);
-    lv->header()->setClickEnabled(false);
-    lv->header()->setMovingEnabled(false);
-    lv->header()->setStretchEnabled(1,true);
-    lv->setRootIsDecorated(true);
-    lv->setSorting(-1);
-    lv->addColumn(tr("Attributes"));
-    lv->addColumn(tr("Keyframes"));
-    mainLayout->addMultiCellWidget(lv, row,row, 0,2);
-    row++;
-
-    for (int i=0; i<atts.size(); i++)
-        AddSubjectToWindow(atts[i],nameMap[atts[i]].c_str());
-
-    ts = new KFTimeSlider(central, "timeSlider", lv);
-    ts->setNSteps(lv->GetNFrames());
-    mainLayout->addMultiCellWidget(ts, row,row,0,2);
-    row++;
-
-    dbStateLineEdit = new QLineEdit(central, "dbStateLineEdit");
-    mainLayout->addWidget(dbStateLineEdit, row, 0);
-    dbStateButton = new QPushButton(tr("Add state keyframe"), central,
-                                    "dbStateButton");
-    mainLayout->addWidget(dbStateButton, row, 1);
-    row++;
-
-    mainLayout->setColStretch(0, 0);
-    mainLayout->setColStretch(1, 0);
-    mainLayout->setColStretch(2, 100);
-
-    snapToFrameCheck->setChecked(lv->GetSnap());
-
+    mainLayout->addWidget(new QLabel(tr("Number of frames"), central),row,0);
+    nFrames = new QLineEdit(central);
     connect(nFrames, SIGNAL(returnPressed()),
             this, SLOT(nFramesProcessText()));
     connect(nFrames, SIGNAL(textChanged(const QString &)),
             this, SLOT(userSetNFrames(const QString &)));
-    connect(ts, SIGNAL(valueChanged(int)),
-            lv, SLOT(timeChanged(int)));
-    connect(ts, SIGNAL(valueChanged(int)),
-            this, SLOT(timeChanged(int)));
+    mainLayout->addWidget(nFrames, row,1);
+    row++;
+
+    keyframeEnabledCheck = new QCheckBox(tr("Keyframing enabled"), central);
     connect(keyframeEnabledCheck, SIGNAL(toggled(bool)),
             this, SLOT(keyframeEnabledToggled(bool)));
-    connect(snapToFrameCheck, SIGNAL(toggled(bool)),
-            lv, SLOT(snapToFrameToggled(bool)));
-    connect(lv, SIGNAL(selectionChanged()),
+    mainLayout->addWidget(keyframeEnabledCheck, row,0);
+    row++;
+
+    kv = new QTreeView(central);
+    kv->setModel(model);
+    connect(model, SIGNAL(modelReset()),
+            kv, SLOT(expandAll()));
+    connect(kv->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             this, SLOT(newSelection()));
+    kv->header()->setResizeMode(QHeaderView::ResizeToContents);
+    kv->setEditTriggers(QAbstractItemView::AllEditTriggers);
+    kv->setItemDelegateForColumn(1, new QvisKeyframeDelegate(this));
+    mainLayout->addWidget(kv, row,0,1,3);
+    row++;
+
+    viewButton = new QPushButton(tr("Add view keyframe"), central);
+    connect(viewButton, SIGNAL(clicked()),
+            this, SLOT(addViewKeyframe()));
+    mainLayout->addWidget(viewButton, row, 0);
+    useViewKeyframes = new QCheckBox(tr("Use view keyframes"), central);
+    connect(useViewKeyframes, SIGNAL(toggled(bool)),
+            this, SLOT(useViewKFClicked(bool)));
+    mainLayout->addWidget(useViewKeyframes, row,1);
+    row++;
+
+    dbStateLineEdit = new QLineEdit(central);
+    mainLayout->addWidget(dbStateLineEdit, row, 1);
+    dbStateButton = new QPushButton(tr("Add state keyframe"), central);
     connect(dbStateButton, SIGNAL(clicked()),
             this, SLOT(stateKFClicked()));
+    mainLayout->addWidget(dbStateButton, row, 0);
+    row++;
+
+    mainLayout->setColumnStretch(0, 0);
+    mainLayout->setColumnStretch(1, 0);
+    mainLayout->setColumnStretch(2, 100);
 
     UpdateWindowInformation();
-    UpdatePlotList();
-    UpdateWindowSensitivity();
-}
-
-// ****************************************************************************
-//  Method:  QvisKeyframeWindow::apply
-//
-//  Purpose:
-//    apply button callback
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May  8, 2002
-//
-// ****************************************************************************
-void
-QvisKeyframeWindow::apply()
-{
-    Apply(true);
-}
-
-// ****************************************************************************
-//  Method:  QvisKeyframeWindow::timeChanged
-//
-//  Purpose:
-//    time slider changed callback
-//
-//  Arguments:
-//    t          the new timestep
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May  8, 2002
-//
-//  Modifications:
-//    Brad Whitlock, Tue Jan 27 21:47:40 PST 2004
-//    Changed to support multiple time sliders, etc.
-//
-//    Brad Whitlock, Wed Apr 7 00:08:51 PDT 2004
-//    I added code to switch to the keyframing time slider if that's not the
-//    current time slider.
-//
-// ****************************************************************************
-
-void
-QvisKeyframeWindow::timeChanged(int t)
-{
-    //
-    // Set the active time slider to be the keyframing time slider if that's
-    // not the currently active time slider.
-    //
-    if((windowInfo->GetActiveTimeSlider() >= 0) &&
-       (windowInfo->GetTimeSliders()[windowInfo->GetActiveTimeSlider()] !=
-        KF_TIME_SLIDER))
-    {
-        GetViewerMethods()->SetActiveTimeSlider(KF_TIME_SLIDER);
-    }
-
-    // Set the active time slider to the kf time slider???
-    GetViewerMethods()->SetTimeSliderState(t);
-}
-
-// ****************************************************************************
-// Method: QvisKeyframeWindow::userSetNFrames
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the number of frames
-//   changes. The purpose is only to record that the user entered a number 
-//   of frames so it is not okay to automatically calculate a number of
-//   frames.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Apr 6 23:50:53 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisKeyframeWindow::userSetNFrames(const QString &)
-{
-    kfAtts->SetNFramesWasUserSet(true);
-}
-
-// ****************************************************************************
-//  Method:  QvisKeyframeWindow::nFramesProcessText
-//
-//  Purpose:
-//    number of frames text callback
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May  8, 2002
-//
-//  Modifications:
-//    Jeremy Meredith, Fri Jan 31 09:42:36 PST 2003
-//    Added code to update the global atts.
-//
-// ****************************************************************************
-void
-QvisKeyframeWindow::nFramesProcessText()
-{
-    GetCurrentValues(0);
-    Apply();
-    UpdateWindowInformation();
-    UpdatePlotList();
-}
-
-// ****************************************************************************
-//  Method:  QvisKeyframeWindow::keyframeEnabledToggled
-//
-//  Purpose:
-//    toggle the keyframe enabled mode
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    January 23, 2003
-//
-// ****************************************************************************
-void
-QvisKeyframeWindow::keyframeEnabledToggled(bool k)
-{
-    kfAtts->SetEnabled(k);
-    Apply();
 }
 
 // ****************************************************************************
@@ -677,7 +319,7 @@ QvisKeyframeWindow::GetCurrentFrame() const
 
     for(int i = 0; i < windowInfo->GetTimeSliders().size(); ++i)
     {
-        if(windowInfo->GetTimeSliders()[i] == KF_TIME_SLIDER)
+        if(windowInfo->GetTimeSliders()[i] == KeyframeDataModel::KF_TIME_SLIDER)
         {
             curFrame = windowInfo->GetTimeSliderCurrentStates()[i];
             break;
@@ -710,12 +352,15 @@ QvisKeyframeWindow::GetCurrentFrame() const
 //    Brad Whitlock, Tue Apr 6 23:54:37 PST 2004
 //    I added code to block signals from nFrames.
 //
+//    Brad Whitlock, Mon Nov 10 11:36:20 PST 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisKeyframeWindow::UpdateWindowInformation()
 {
-    if (!windowInfo || !lv || !ts)
+    if (!windowInfo || nFrames==0)
         return;
 
     QString temp;
@@ -736,252 +381,14 @@ QvisKeyframeWindow::UpdateWindowInformation()
         numFrames = 1;
         curFrame = 0;
     }
-
-    ts->blockSignals(true);
-    lv->SetNFrames(numFrames);
-    ts->setNSteps(numFrames);
-    lv->timeChanged(curFrame);
-    ts->setValue(curFrame);
-    ts->blockSignals(false);
     temp.sprintf("%d", numFrames);
-
     nFrames->blockSignals(true);
     nFrames->setText(temp);
     nFrames->blockSignals(false);
 
-    if (!viewItem)
-    {
-        viewItem = new KFListViewItem(lv, NULL);
-        viewItem->setText(0, tr("View"));
-        viewItem->SetIsView(true);
-    }
-    double nframeminus1 = (numFrames - 1);
-    if (nframeminus1 < 1)
-        nframeminus1 = 1;
-
-    viewItem->Initialize();
-    const intVector &vkf = windowInfo->GetViewKeyframes();
-    for (int j=0; j<vkf.size(); j++)
-        viewItem->AddPoint(double(vkf[j]) / nframeminus1);
-    viewItem->repaint();
-}
-
-// ****************************************************************************
-//  Method:  QvisKeyframeWindow::UpdatePlotList
-//
-//  Purpose:
-//    Update the window based on a new plotlist
-//
-//  Arguments:
-//    none
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    January 23, 2003
-//
-//  Modifications:
-//    Jeremy Meredith, Fri Jan 31 09:42:54 PST 2003
-//    Fixed logic to see if all db state keyframes were the same across all
-//    plots.  Added code to set the plotid for the list view items.
-//
-//    Brad Whitlock, Tue Jun 24 12:04:28 PDT 2008
-//    I changed how we access the plugin manager.
-//
-// ****************************************************************************
-void
-QvisKeyframeWindow::UpdatePlotList()
-{
-    if (!plotList || !lv)
-        return;
-
-    // Determine if all plots for each database are the same
-    int nplots = plotList->GetNumPlots();
-    vector<bool> allsame(nplots, true);
-    vector<bool> counted(nplots, false);
-    int i;
-    for(i = 0; i < nplots; ++i)
-    {
-        if (counted[i])
-        {
-            continue;
-        }
-
-        counted[i] = true;
-        Plot &ploti = (*plotList)[i];
-        QualifiedFilename qfi(ploti.GetDatabaseName());
-        const intVector &dbkeysi = ploti.GetDatabaseKeyframes();
-        int plotbegi = ploti.GetBeginFrame();
-        bool same = true;
-        int j;
-        for (j=i+1; j<nplots && same; j++)
-        {
-            Plot &plotj = (*plotList)[j];
-            QualifiedFilename qfj(plotj.GetDatabaseName());
-            if (qfi == qfj)
-            {
-                counted[j] = true;
-                const intVector &dbkeysj = plotj.GetDatabaseKeyframes();
-                int plotbegj = plotj.GetBeginFrame();
-                if (dbkeysi.size() != dbkeysj.size())
-                    same = false;
-                int len = dbkeysi.size();
-                for (int k=0; k<len && same; k++)
-                {
-                    if (dbkeysi[k]+plotbegi != dbkeysj[k]+plotbegj)
-                        same = false;
-                    // NOTE: need to check actual values when available, not
-                    //       just the locations of them
-                }
-            }
-        }
-
-        allsame[i] = same;
-        for (j=i+1; j<nplots; j++)
-        {
-            Plot &plotj = (*plotList)[j];
-            QualifiedFilename qfj(plotj.GetDatabaseName());
-            if (qfi == qfj)
-            {
-                allsame[j] = same;
-            }
-        }
-    }
-
-    // Add the databases, plots to the window
-    vector<int> usedIds;
-    for(i = 0; i < plotList->GetNumPlots(); ++i)
-    {
-        Plot &current = plotList->operator[](i);
-        QualifiedFilename qualifiedFile(current.GetDatabaseName());
-        double nframeminus1 = (lv->GetNFrames()-1);
-        if (nframeminus1 < 1)
-            nframeminus1 = 1;
-
-        KFListViewItem *fileitem = NULL;
-        KFListViewItem *timeitem = NULL;
-        int j;
-        for (j=0; j<fileItems.size(); j++)
-        {
-            // look for an existing database item
-            if (fileItems[j]->text(0) == QString(qualifiedFile.filename.c_str()))
-                fileitem = fileItems[j];
-        }
-        if (!fileitem)
-        {
-            // Make the database item
-            fileitem = new KFListViewItem(lv, lastChild(lv));
-            fileitem->setText(0, qualifiedFile.filename.c_str());
-            fileItems.push_back(fileitem);
-
-            timeitem = new KFListViewItem(fileitem);
-        }
-        else
-        {
-            timeitem = (KFListViewItem*)fileitem->firstChild();
-        }
-
-        // get the plot begin and end frames (for keyframe index origin)
-        int plotbeg = current.GetBeginFrame();
-        int plotend = current.GetEndFrame();
-            
-        // update the database-wide times
-        const intVector &dbkeys = current.GetDatabaseKeyframes();
-        timeitem->Initialize();
-        timeitem->setText(0, tr("State"));
-        timeitem->SetStyle(KFListViewItem::Style_Times);
-        if (allsame[i])
-        {
-            for (j=0; j<dbkeys.size(); j++)
-            {
-                timeitem->AddPoint(double(dbkeys[j]+plotbeg)/nframeminus1);
-            }
-        }
-
-        PlotPluginManager *pmgr = GetViewerProxy()->GetPlotPluginManager();
-        int type = current.GetPlotType();
-        std::string id = pmgr->GetEnabledID(type);
-
-        char plotname[256];
-        SNPRINTF(plotname, 256, "%s(%s)", 
-                 pmgr->GetCommonPluginInfo(id)->GetName(),
-                 current.GetPlotVar().c_str());
-        plotname[255]=0;
-
-        KFListViewItem *plotitem;
-        if (plotMap.count(current.GetId()) == 0)
-        {
-            plotitem = AddPlotToWindow(GetViewerState()->GetPlotAttributes(type),
-                                       plotname, fileitem);
-            plotMap[current.GetId()] = plotitem;
-        }
-        else
-        {
-            plotitem = plotMap[current.GetId()];
-            plotitem->setText(0, plotname);
-        }
-
-        // Set the keyframe points
-        timeitem=(KFListViewItem*)plotitem->firstChild();
-        KFListViewItem *attsitem=(KFListViewItem*)timeitem->nextSibling();
-        plotitem->Initialize();
-        timeitem->Initialize();
-        attsitem->Initialize();
-
-        plotitem->SetPlotId(i);
-        timeitem->SetPlotId(i);
-        attsitem->SetPlotId(i);
-
-        plotitem->SetBegin(plotbeg/nframeminus1);
-        plotitem->SetEnd(plotend/nframeminus1);
-        //const intVector &dbkeys = current.GetDatabaseKeyframes();
-        for (j=0; j<dbkeys.size(); j++)
-        {
-            timeitem->AddPoint(double(dbkeys[j]+plotbeg)/nframeminus1);
-        }
-
-        vector<int> keyframes = current.GetKeyframes();
-        for (j=0; j<keyframes.size(); j++)
-        {
-            plotitem->AddPoint(double(keyframes[j]+plotbeg)/nframeminus1);
-            attsitem->AddPoint(double(keyframes[j]+plotbeg)/nframeminus1);
-        }
-            
-        usedIds.push_back(current.GetId());
-    }
-
-    // Clear any unused plots
-    for (std::map<int,KFListViewItem*>::iterator it=plotMap.begin(); it!=plotMap.end(); it++)
-    {
-        int id = it->first;
-        bool used = false;
-        for (int j=0; j<usedIds.size(); j++)
-            if (usedIds[j] == id)
-                used = true;
-        if (!used) 
-        {
-            delete it->second;
-            plotMap.erase(it->first);
-        }
-    }
-
-    // Clear any empty file containers
-    bool done = false;
-    while (!done)
-    {
-        done = true;
-        std::vector<KFListViewItem*>::iterator i;
-        for (i=fileItems.begin(); i!=fileItems.end(); i++)
-        {
-            if ((*i)->childCount() == 1)
-            {
-                // Contains only the time stamps
-                done = false;
-                delete (*i)->firstChild();
-                delete (*i);
-                fileItems.erase(i);
-                break;
-            }
-        }
-    }
+    useViewKeyframes->blockSignals(true);
+    useViewKeyframes->setChecked(windowInfo->GetCameraViewMode());
+    useViewKeyframes->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -1025,6 +432,9 @@ QvisKeyframeWindow::UpdatePlotList()
 //    Brad Whitlock, Fri Dec 14 17:29:46 PST 2007
 //    Made it use ids.
 //
+//    Brad Whitlock, Mon Nov 10 11:35:37 PST 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1051,7 +461,6 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
                 keyframeEnabledCheck->blockSignals(true);
                 keyframeEnabledCheck->setChecked(kfAtts->GetEnabled());
                 keyframeEnabledCheck->blockSignals(false);
-                ts->setEnabled(kfAtts->GetEnabled());
                 break;
             case KeyframeAttributes::ID_nFrames:
                 UpdateWindowInformation();
@@ -1064,59 +473,12 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
         // Be selective over what to update everything for.
         if(windowInfo->IsSelected(WindowInformation::ID_timeSliders) ||
            windowInfo->IsSelected(WindowInformation::ID_timeSliderCurrentStates) ||
-           windowInfo->IsSelected(WindowInformation::ID_viewKeyframes))
+           windowInfo->IsSelected(WindowInformation::ID_viewKeyframes) ||
+           windowInfo->IsSelected(WindowInformation::ID_cameraViewMode))
         {
             UpdateWindowInformation();
         }
     }
-    else if (SelectedSubject() == plotList)
-    {
-        UpdatePlotList();
-    }
-    else
-    {
-        bool isPlot = false;
-        std::map<int, AttributeSubject*>::iterator i;
-        for (i = plotAtts.begin(); i != plotAtts.end(); i++)
-        {
-            if ((i->second) == SelectedSubject())
-            {
-                isPlot = true;
-                break;
-            }
-        }
-        if (isPlot)
-        {
-            //cerr << "Plot atts changed: "<<(i->second)->TypeName()<<"\n";
-            for (int i=0; i<plotList->GetNumPlots(); i++)
-            {
-                const Plot &p = (*plotList)[i];
-                if (p.GetActiveFlag())
-                {
-                    AttributeSubject *a = plotAtts[p.GetPlotType()];
-                    KFListViewItem *item = plotMap[p.GetId()];
-                    KFListViewItem *field = (KFListViewItem*)item->firstChild();
-                    for (int j=0; j<a->NumAttributes(); j++)
-                    {
-                        if (a->IsSelected(j))
-                        {
-                            if (lv->GetNFrames() > 1)
-                                field->AddPoint(double(GetCurrentFrame())/double(lv->GetNFrames()-1));
-                        }
-                        field = (KFListViewItem*)field->nextSibling();
-                    }
-                }
-            }
-        }
-        else
-        {
-            // ONE OF OUR OTHER KEYFRAMED SUBJECTS CHANGED
-            //cerr << "Unknown subject changed\n";
-        }
-    }
-
-    ts->updateSize();
-    qApp->processEvents();
 }
 
 // ****************************************************************************
@@ -1135,8 +497,11 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Sun Jan 25 00:22:14 PDT 2004
 //    I made it use the keyframing attributes for the number of frames.
 //
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
+//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Support for internationalization.
+//
+//    Brad Whitlock, Thu Oct 23 11:12:35 PDT 2008
+//    QT 4.
 //
 // ****************************************************************************
 
@@ -1147,21 +512,14 @@ QvisKeyframeWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do nFrames
-    if(which_widget == 0 || doAll)
+    if(which_widget == KeyframeAttributes::ID_nFrames || doAll)
     {
-        temp = nFrames->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
+        int val;
+        if(LineEditGetInt(nFrames, val))
             GetViewerMethods()->AnimationSetNFrames(val);
-        }
-
-        if(!okay)
+        else
         {
-            msg = tr("The value for the number of frames was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(kfAtts->GetNFrames());
+            ResettingError("number of frames", IntToQString(kfAtts->GetNFrames()));
             Message(msg);
             GetViewerMethods()->AnimationSetNFrames(kfAtts->GetNFrames());
         }
@@ -1211,6 +569,9 @@ QvisKeyframeWindow::Apply(bool ignore)
         kfAtts->Notify();
 }
 
+//
+// Qt slots.
+//
 
 // ****************************************************************************
 //  Method:  QvisKeyframeWindow::newSelection
@@ -1228,7 +589,6 @@ QvisKeyframeWindow::Apply(bool ignore)
 void
 QvisKeyframeWindow::newSelection()
 {
-    UpdateWindowSensitivity();
     dbStateLineEdit->clear();
 }
 
@@ -1245,12 +605,17 @@ QvisKeyframeWindow::newSelection()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Mon Nov 10 14:42:31 PST 2008
+//    Rewrote for Qt 4.
+//
 // ****************************************************************************
+
 void
 QvisKeyframeWindow::stateKFClicked()
 {
-    KFListViewItem *item = (KFListViewItem*)lv->selectedItem();
-    if (item->GetStyle() != KFListViewItem::Style_Times)
+    QModelIndex index(kv->currentIndex());
+    if(!index.isValid())
         return;
 
     int state = dbStateLineEdit->text().toInt();
@@ -1260,50 +625,143 @@ QvisKeyframeWindow::stateKFClicked()
         return;
     }
 
-    int pos = lv->GetCurrentIndex();
-
-    if (item->GetPlotId() >= 0)
+    int dt = index.data(KeyframeDataModel::DelegateTypeRole).toInt();
+    int pos = index.data(KeyframeDataModel::CurrentIndexRole).toInt();
+    int plotId = -1;
+    if(dt == KeyframeDataModel::PlotDelegate ||
+       dt == KeyframeDataModel::PlotAttsDelegate ||
+       dt == KeyframeDataModel::PlotStateDelegate)
     {
-        GetViewerMethods()->SetPlotDatabaseState(item->GetPlotId(), pos, state);
+        plotId = index.data(KeyframeDataModel::GetIdRole).toInt();
     }
+
+    if(plotId != -1)
+        GetViewerMethods()->SetPlotDatabaseState(plotId, pos, state);
     else
     {
-        KFListViewItem *p = (KFListViewItem*)item->nextSibling();
-        while (p)
-        {
-            GetViewerMethods()->SetPlotDatabaseState(p->GetPlotId(), pos, state);
-            p = (KFListViewItem*)p->nextSibling();
-        }
+        int nPlots = GetViewerState()->GetPlotList()->GetNumPlots();
+        for(int i = 0; i < nPlots; ++i)
+            GetViewerMethods()->SetPlotDatabaseState(i, pos, state);
     }
     dbStateLineEdit->clear();
 }
 
 // ****************************************************************************
-//  Method:  QvisKeyframeWindow::UpdateWindowSensitivity
+//  Method:  QvisKeyframeWindow::apply
 //
 //  Purpose:
-//    Updates sensitivity for any items that are variably enabled.
-//
-//  Arguments:
-//    none
+//    apply button callback
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    January 31, 2003
+//  Creation:    May  8, 2002
 //
 // ****************************************************************************
 void
-QvisKeyframeWindow::UpdateWindowSensitivity()
+QvisKeyframeWindow::apply()
 {
-    KFListViewItem *item = (KFListViewItem*)lv->selectedItem();
-    if (!item || item->GetStyle() != KFListViewItem::Style_Times)
-    {
-        dbStateButton->setEnabled(false);
-        dbStateLineEdit->setEnabled(false);
-    }
-    else
-    {
-        dbStateButton->setEnabled(true);
-        dbStateLineEdit->setEnabled(true);
-    }
+    Apply(true);
 }
 
+// ****************************************************************************
+// Method: QvisKeyframeWindow::userSetNFrames
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the number of frames
+//   changes. The purpose is only to record that the user entered a number 
+//   of frames so it is not okay to automatically calculate a number of
+//   frames.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 6 23:50:53 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisKeyframeWindow::userSetNFrames(const QString &)
+{
+    kfAtts->SetNFramesWasUserSet(true);
+}
+
+// ****************************************************************************
+//  Method:  QvisKeyframeWindow::nFramesProcessText
+//
+//  Purpose:
+//    number of frames text callback
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May  8, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Jan 31 09:42:36 PST 2003
+//    Added code to update the global atts.
+//
+// ****************************************************************************
+void
+QvisKeyframeWindow::nFramesProcessText()
+{
+    GetCurrentValues(KeyframeAttributes::ID_nFrames);
+    Apply();
+    UpdateWindowInformation();
+}
+
+// ****************************************************************************
+//  Method:  QvisKeyframeWindow::keyframeEnabledToggled
+//
+//  Purpose:
+//    toggle the keyframe enabled mode
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Tue Oct 28 09:27:41 PDT 2008
+//    Don't update.
+//
+// ****************************************************************************
+void
+QvisKeyframeWindow::keyframeEnabledToggled(bool k)
+{
+    kfAtts->SetEnabled(k);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisKeyframeWindow::addViewKeyframe
+//
+// Purpose: 
+//   Add a view keyframe.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov  4 16:48:16 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisKeyframeWindow::addViewKeyframe()
+{
+    GetViewerMethods()->SetViewKeyframe();
+}
+
+// ****************************************************************************
+// Method: QvisKeyframeWindow::useViewKFClicked
+//
+// Purpose: 
+//   Tells VisIt to use the view keyframes for setting the view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 10 14:02:26 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisKeyframeWindow::useViewKFClicked(bool)
+{
+    GetViewerMethods()->ToggleCameraViewMode();
+}

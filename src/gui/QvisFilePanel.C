@@ -38,19 +38,19 @@
 
 #include <visitstream.h>
 
-#include <qcombobox.h>
-#include <qheader.h>
-#include <qlabel.h>
-#include <qlistview.h> 
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qlineedit.h> 
-#include <qtimer.h>
+#include <QComboBox>
+#include <QLabel>
+#include <QTreeWidget>
+#include <QTreeWidgetItem> 
+#include <QLayout>
+#include <QPushButton>
+#include <QLineEdit> 
+#include <QTimer>
 
 #include <QvisFilePanel.h>
 #include <QvisAnimationSlider.h>
 #include <QvisVCRControl.h>
-#include <QvisListViewFileItem.h>
+#include <QvisFilePanelItem.h>
 
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
@@ -93,8 +93,12 @@
 //
 //   Brad Whitlock, Thu Aug 5 17:36:02 PST 2004
 //   I added methods to look for long node names.
+//   
+//   Cyrus Harrison, Tue Jul  1 14:28:23 PDT 2008
+//   Initial Qt4 Port.
 //
 // ****************************************************************************
+
 
 class FileTree
 {
@@ -116,15 +120,16 @@ public:
         int Size() const;
         bool HasChildrenOfType(int type);
         bool HasNodeNameExceeding(int len) const;
-        void AddElementsToListViewItem(QListViewItem *item, int &fileIndex,
-                                       bool addRoot,
-                                       const QPixmap &folderPixmap,
-                                       const QPixmap &dbPixmap,
-                                       QvisFilePanel *filePanel);
-        void AddElementsToListView(QListView *listview, int &fileIndex,
+        void AddElementsToTreeItem(QTreeWidgetItem *item, int &fileIndex,
+                                   bool addRoot,
                                    const QPixmap &folderPixmap,
-                                   const QPixmap &databasePixmap,
+                                   const QPixmap &dbPixmap,
                                    QvisFilePanel *filePanel);
+                                   
+        void AddElementsToTree(QTreeWidget *tree, int &fileIndex,
+                               const QPixmap &folderPixmap,
+                               const QPixmap &databasePixmap,
+                               QvisFilePanel *filePanel);
         QString NumberedFilename(int fileIndex) const;
 
         std::string separator_str()
@@ -154,12 +159,12 @@ public:
     bool TreeContainsDirectories() const;
     bool HasNodeNameExceeding(int len) const;
 
-    void AddElementsToListViewItem(QListViewItem *item, int &fileIndex,
-                                   const QPixmap &folderPixmap,
-                                   const QPixmap &dbPixmap);
-    void AddElementsToListView(QListView *item, int &fileIndex,
+    void AddElementsToTreeItem(QTreeWidgetItem *item, int &fileIndex,
                                const QPixmap &folderPixmap,
-                               const QPixmap &databasePixmap);
+                               const QPixmap &dbPixmap);
+    void AddElementsToTree(QTreeWidget *tree, int &fileIndex,
+                           const QPixmap &folderPixmap,
+                           const QPixmap &databasePixmap);
 
     friend ostream &operator << (ostream &os, const FileTree &t);
 private:
@@ -227,10 +232,16 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //   enabled allows changing of the sort and in some circumstances broke
 //   time sequences.  ('5391)
 //
+//   Brad Whitlock, Fri May 30 14:22:50 PDT 2008
+//   Qt 4.
+//
+//   Cyrus Harrison, Tue Jul  1 14:28:23 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
-QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
-   QWidget(parent, name), SimpleObserver(), GUIBase(), displayInfo(),
+QvisFilePanel::QvisFilePanel(QWidget *parent) :
+   QWidget(parent), SimpleObserver(), GUIBase(), displayInfo(),
    timeStateFormat()
 {
     showSelectedFiles = true;
@@ -240,57 +251,66 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
     
+    fileTree = new QTreeWidget(this);
+    
+   
     // Create the selected file list.
-    fileListView = new QListView(this, "fileList");
-    fileListView->header()->setClickEnabled(false);
-    fileListView->addColumn(tr("Selected files"), 1);
-    fileListView->setColumnWidth(0, fileListView->visibleWidth());
-    fileListView->setVScrollBarMode(QScrollView::AlwaysOn);
-    fileListView->setHScrollBarMode(QScrollView::Auto);
-    connect(fileListView, SIGNAL(doubleClicked(QListViewItem *)),
-            this, SLOT(openFileDblClick(QListViewItem *)));
-    connect(fileListView, SIGNAL(selectionChanged(QListViewItem *)),
-            this, SLOT(highlightFile(QListViewItem *)));
-    connect(fileListView, SIGNAL(expanded(QListViewItem *)),
-            this, SLOT(fileExpanded(QListViewItem *)));
-    connect(fileListView, SIGNAL(collapsed(QListViewItem *)),
-            this, SLOT(fileCollapsed(QListViewItem *)));
-    topLayout->addWidget(fileListView, 10);
+    QTreeWidgetItem *header = new QTreeWidgetItem();
+    header->setText(0,tr("Selected Files"));
+    fileTree->setHeaderItem(header);
+    fileTree->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    fileTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    
+    connect(fileTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)),
+            this, SLOT(openFileDblClick(QTreeWidgetItem *)));
+    connect(fileTree, SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
+            this, SLOT(highlightFile(QTreeWidgetItem *)));
+    connect(fileTree, SIGNAL(itemExpanded(QTreeWidgetItem *)),
+            this, SLOT(fileExpanded(QTreeWidgetItem *)));
+    connect(fileTree, SIGNAL(itemCollapsed(QTreeWidgetItem *)),
+            this, SLOT(fileCollapsed(QTreeWidgetItem *)));
+    
+    topLayout->addWidget(fileTree, 10);
 
     // Create the file opening buttons.
-    QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
+    QHBoxLayout *buttonLayout = new QHBoxLayout(0);
+    buttonLayout->setMargin(0);
+    topLayout->addLayout(buttonLayout);
     topLayout->setStretchFactor(buttonLayout, 10);
-    openButton = new QPushButton(tr("Open"), this, "openButton");
+    openButton = new QPushButton(tr("Open"));
     openButton->setEnabled(false);
     connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
     buttonLayout->addWidget(openButton);
 
-    replaceButton = new QPushButton(tr("Replace"), this, "replaceButton");
+    replaceButton = new QPushButton(tr("Replace"));
     replaceButton->setEnabled(false);
     connect(replaceButton, SIGNAL(clicked()), this, SLOT(replaceFile()));
     buttonLayout->addWidget(replaceButton);
 
-    overlayButton = new QPushButton(tr("Overlay"), this, "overlayButton");
+    overlayButton = new QPushButton(tr("Overlay"));
     overlayButton->setEnabled(false);
     connect(overlayButton, SIGNAL(clicked()), this, SLOT(overlayFile()));
     buttonLayout->addWidget(overlayButton);
 
     // Create the active time slider.
-    QHBoxLayout *tsLayout = new QHBoxLayout(topLayout);
-    activeTimeSlider = new QComboBox(this, "activeTimeSlider");
+    QHBoxLayout *tsLayout = new QHBoxLayout(0);
+    tsLayout->setMargin(0);
+    topLayout->addLayout(tsLayout);
+    activeTimeSlider = new QComboBox(this);
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
-    activeTimeSliderLabel = new QLabel(activeTimeSlider,
-        tr("Active time slider"), this, "activeTimeSliderLabel");
+    activeTimeSliderLabel = new QLabel(tr("Active time slider"), this);
     tsLayout->addWidget(activeTimeSliderLabel);
     activeTimeSliderLabel->hide();
     tsLayout->addWidget(activeTimeSlider, 10);
     activeTimeSlider->hide();
 
     // Create the animation position slider bar
-    QHBoxLayout *animationLayout = new QHBoxLayout(topLayout);
+    QHBoxLayout *animationLayout = new QHBoxLayout(0);
+    animationLayout->setMargin(0);
+    topLayout->addLayout(animationLayout);
     topLayout->setStretchFactor(animationLayout, 10);
-    animationPosition = new QvisAnimationSlider(Qt::Horizontal, this, "animationPosition");
+    animationPosition = new QvisAnimationSlider(Qt::Horizontal, this);
     animationPosition->setEnabled(false);
     connect(animationPosition, SIGNAL(sliderPressed()),
             this, SLOT(sliderStart()));
@@ -300,19 +320,16 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
             this, SLOT(sliderEnd()));
     connect(animationPosition, SIGNAL(sliderValueChanged(int)),
             this, SLOT(sliderChange(int)));
-#if QT_VERSION >= 0x030000
     animationLayout->addWidget(animationPosition, 25);
-#else
-    animationLayout->addWidget(animationPosition, 1000);
-#endif
+
     // Create the animation time field.
-    timeField = new QLineEdit(this, "timeField");
+    timeField = new QLineEdit(this);
     timeField->setEnabled(false);
     connect(timeField, SIGNAL(returnPressed()), this, SLOT(processTimeText()));
     animationLayout->addWidget(timeField, 5);
 
     // Create the VCR controls.
-    vcrControls = new QvisVCRControl(this, "vcr" );
+    vcrControls = new QvisVCRControl(this);
     vcrControls->setEnabled(false);
     connect(vcrControls, SIGNAL(prevFrame()), this, SLOT(backwardStep()));
     connect(vcrControls, SIGNAL(reversePlay()), this, SLOT(reversePlay()));
@@ -396,6 +413,9 @@ QvisFilePanel::~QvisFilePanel()
 //   Propogated knowledge that item was updated with metadata that was forced
 //   to get accurate cycles/times.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
@@ -407,30 +427,29 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
 
         // Count the number of items in the fileListView. I didn't see a way to
         // count them all without traversing them all.
-        int i, count = 0;
-        QListViewItemIterator it(fileListView);
-        for ( ; it.current(); ++it )
-            ++count;
-
-        // If there are no items, return early.
-        if(count < 1)
-            return;
-
+        int i = 0;
+        int count = 0;
+        
         // Create an array to store pointers to all of the items. We save the
         // pointers in an array because later when we expand databases, we
         // can't traverse using an iterator because as we add items, the
         // iterator is invalidated.
-        QvisListViewFileItem **items = new QvisListViewFileItem*[count];
-        it = QListViewItemIterator(fileListView);
-        for (i = 0; it.current(); ++it, ++i)
-            items[i] = (QvisListViewFileItem *)it.current();
+        QList<QvisFilePanelItem*> items;
+        QTreeWidgetItemIterator it(fileTree);
+        for ( ; *it; ++it )
+            items.append((QvisFilePanelItem*)*it);
+        count = items.count();
 
+        // If there are no items, return early.
+        if(count < 1)
+            return;
+        
         //
         // Iterate through the items and expand them if they are databases.
         //
         for(i = 0; i < count; ++i)
         {
-            QvisListViewFileItem *item = items[i];
+            QvisFilePanelItem *item = items[i];
             if(item != 0)
             {
                 if(HaveFileInformation(item->file))
@@ -443,16 +462,18 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
                                                !FileServerList::GET_NEW_MD);
                     if(md != 0 && md->GetNumStates() > 1)
                     {
-                        int j, maxts = QMIN(md->GetNumStates(), item->childCount());
-                        QListViewItemIterator it(item); ++it;
+                        int j, maxts = qMin(md->GetNumStates(), item->childCount());
+                        
+                        QTreeWidgetItemIterator it(item); ++it;
                         bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
 
                         // Set the label so that it shows the right values.
                         for(j = 0; j < maxts; ++j, ++it)
                         {
-                             it.current()->setText(0, CreateItemLabel(md, j,
+                             (*it)->setText(0, CreateItemLabel(md, j,
                                  useVirtualDBInfo));
                         }
+
                         item->timeStateHasBeenForced =
                             fileServer->GetForceReadAllCyclesTimes();
                     }
@@ -461,9 +482,9 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
         }
 
         // Delete the temporary array.
-        delete [] items;
+        //delete [] items;
 
-        //
+       
         // Update the time text field using the current time slider.
         //
         int activeTS = windowInfo->GetActiveTimeSlider();
@@ -594,7 +615,10 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   scrollbar mode of the listview appropriately.
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
-//   Changed interface to FileServerList::GetMetaData
+//   Changed interface to FileServerList::GetMetaData\
+//   Cyrus Harrison, Tue Jul  1 14:28:23 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -602,7 +626,8 @@ QvisFilePanel::RepopulateFileList()
 {
     const QualifiedFilenameVector &f = fileServer->GetAppliedFileList();
     // Holds pointers to the list item for each host.
-    std::map<std::string, QListViewItem *> hostMap;
+    std::map<std::string, QTreeWidgetItem *> hostMap;
+    // TODO: QMap?
 
     // Go through all of the files and build a list of unique hosts.
     bool hostOtherThanLocalHost = false;
@@ -642,27 +667,29 @@ QvisFilePanel::RepopulateFileList()
     }
 
     // Clear out the fileListView widget.
-    fileListView->clear();
+    fileTree->clear();
 
+    QvisFilePanelItem::resetNodeNumber();
     // Reset the node numbers that will be used to create the nodes.
-    QvisListViewFileItem::resetNodeNumber();
+    //QvisListViewFileItem::resetNodeNumber();
 
     // Assume that we want automatic scrollbars instead of always having them.
-    QScrollView::ScrollBarMode hScrollMode = QScrollView::Auto;
+    Qt::ScrollBarPolicy hScrollMode = Qt::ScrollBarAsNeeded;
 
     // If there are multiple hosts or just one and it is not localhost,
     // add nodes in the file tree for the host. This makes sure that it
     // is always clear which host a file came from.
+
     if(hostMap.size() > 1)
     {
-        std::map<std::string, QListViewItem *>::iterator hpos;
+        std::map<std::string, QTreeWidgetItem *>::iterator hpos;
 
         // Create the root for the host list.
         QualifiedFilename rootName("Hosts", "(root)", "(root)");
-        QListViewItem *root = new QvisListViewFileItem(fileListView, 
-            QString(tr("Hosts")),
-            rootName,
-            QvisListViewFileItem::ROOT_NODE);
+        QTreeWidgetItem *root = new QvisFilePanelItem(fileTree,
+                                                      QString(tr("Hosts")),
+                                                      rootName,
+                                                      QvisFilePanelItem::ROOT_NODE);
 
         // Always expand the root node.
         AddExpandedFile(rootName);
@@ -674,10 +701,12 @@ QvisFilePanel::RepopulateFileList()
             char separator = fileServer->GetSeparator(hpos->first);
             QualifiedFilename hostOnly(hpos->first, "(host)", "(host)");
             hostOnly.separator = separator;
-            QListViewItem *newFile = new QvisListViewFileItem(root, 
-                QString(hpos->first.c_str()), hostOnly,
-                QvisListViewFileItem::HOST_NODE);
-            newFile->setPixmap (0, *computerPixmap);
+            
+            QTreeWidgetItem *newFile = new QvisFilePanelItem(root, 
+                                                             QString(hpos->first.c_str()),
+                                                             hostOnly,
+                                                             QvisFilePanelItem::HOST_NODE);
+            newFile->setIcon(0,*computerPixmap);
             // Add the widget to the host map.
             hpos->second = newFile;
 
@@ -693,12 +722,12 @@ QvisFilePanel::RepopulateFileList()
             // If there are any nodes with long names then we should have
             // scrollbars in the selected files list.
             if(files.HasNodeNameExceeding(30))
-                hScrollMode = QScrollView::AlwaysOn;
+                hScrollMode = Qt::ScrollBarAlwaysOn;
 
             // Add all the elements in the files list to the host list
             // view item.
-            files.AddElementsToListViewItem(newFile, fileIndex,
-                                            *folderPixmap, *databasePixmap);
+            files.AddElementsToTreeItem(newFile, fileIndex,
+                                        *folderPixmap, *databasePixmap);
         }
     }
     else
@@ -717,7 +746,7 @@ QvisFilePanel::RepopulateFileList()
         // If there are any nodes with long names then we should have
         // scrollbars in the selected files list.
         if(files.HasNodeNameExceeding(30))
-            hScrollMode = QScrollView::AlwaysOn;
+            hScrollMode = Qt::ScrollBarAlwaysOn;
 
         // If there are top level directories in the file tree, then we
         // need to create a node for the host.
@@ -727,33 +756,34 @@ QvisFilePanel::RepopulateFileList()
         {
             // Create the root for the host list.
             QualifiedFilename rootName(f[0].host, "(host)", "(host)");
-            QListViewItem *root = new QvisListViewFileItem(fileListView, 
-                QString(f[0].host.c_str()), rootName,
-                QvisListViewFileItem::ROOT_NODE);
-            root->setPixmap (0, *computerPixmap);
+            QTreeWidgetItem *root = new QvisFilePanelItem(fileTree, 
+                                                          QString(f[0].host.c_str()),
+                                                          rootName,
+                                                          QvisFilePanelItem::ROOT_NODE);
+            root->setIcon(0, *computerPixmap);
 
             // Make sure that the host is expanded.
             AddExpandedFile(rootName);
 
             int fileIndex = 1;
-            files.AddElementsToListViewItem(root, fileIndex, *folderPixmap,
-                                            *databasePixmap);
+            files.AddElementsToTreeItem(root, fileIndex, *folderPixmap,
+                                        *databasePixmap);
         }
         else
         {
             // Traverse the file tree and make widgets for the items in it.
             int fileIndex = 1;
-            files.AddElementsToListView(fileListView, fileIndex, *folderPixmap,
-                                        *databasePixmap);
+            files.AddElementsToTree(fileTree, fileIndex, *folderPixmap,
+                                     *databasePixmap);
         }
     }
 
     //
     // Set the list view's scrollbar mode.
     //
-    bool hScrollModeChanged = (hScrollMode != fileListView->hScrollBarMode());
+    bool hScrollModeChanged = (hScrollMode != fileTree->horizontalScrollBarPolicy());
     if(hScrollModeChanged)
-        fileListView->setHScrollBarMode(hScrollMode);
+        fileTree->setHorizontalScrollBarPolicy(hScrollMode);
 
     // Expand any databases that we know about. This just means that we add
     // the extra information that databases have, we don't expand the tree
@@ -762,16 +792,6 @@ QvisFilePanel::RepopulateFileList()
 
     // Highlight the selected file.
     UpdateFileSelection();
-
-    // Set the width of the zeroeth column.
-    if(hScrollMode == QScrollView::AlwaysOn)
-        QTimer::singleShot(100, this, SLOT(updateHeaderWidthForLongName()));
-    else
-        QTimer::singleShot(100, this, SLOT(updateHeaderWidth()));
-
-    // If the scroll mode changed, force the list view to update.
-    if(hScrollModeChanged)
-        QTimer::singleShot(110, fileListView, SLOT(triggerUpdate()));
 }
 
 // ****************************************************************************
@@ -915,15 +935,15 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
                 {
                     // The time slider is not a source so use the original
                     // time slider name.
-                    activeTimeSlider->insertItem(tsNames[i].c_str());
+                    activeTimeSlider->addItem(tsNames[i].c_str());
                 }
                 else
                 {
                     // The time slider was a source, use the short name.
-                    activeTimeSlider->insertItem(shortNames[index].c_str());
+                    activeTimeSlider->addItem(shortNames[index].c_str());
                 }
             }
-            activeTimeSlider->setCurrentItem(activeTS);
+            activeTimeSlider->setCurrentIndex(activeTS);
             activeTimeSlider->blockSignals(false);
 
             bool enableSlider = windowInfo->GetTimeSliders().size() > 1;
@@ -983,8 +1003,11 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
             // slider. Get the number of keyframes and use that as the
             // length of the time slider.
             //
-            currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
-            nTotalStates = GetViewerState()->GetKeyframeAttributes()->GetNFrames();
+            if(activeTS >= 0)
+            {
+                currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
+                nTotalStates = GetViewerState()->GetKeyframeAttributes()->GetNFrames();
+            }
         }
 
         animationPosition->blockSignals(true);
@@ -1242,25 +1265,26 @@ void
 QvisFilePanel::ExpandDatabases()
 {
 debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
-    // Count the number of items in the fileListView. I didn't see a way to
-    // count them all without traversing them all.
-    int i, count = 0;
-    QListViewItemIterator it(fileListView);
-    for ( ; it.current(); ++it )
-        ++count;
-
-    // If there are no items, return early.
-    if(count < 1)
-        return;
-
-    // Create an array to store pointers to all of the items. We save the
+    
+    int i = 0;
+    int count = 0;
+    
+    // Create a list to store pointers to all of the items. We save the
     // pointers in an array because later when we expand databases, we
     // can't traverse using an iterator because as we add items, the
     // iterator is invalidated.
-    QvisListViewFileItem **items = new QvisListViewFileItem*[count];
-    it = QListViewItemIterator(fileListView);
-    for (i = 0; it.current(); ++it, ++i)
-        items[i] = (QvisListViewFileItem *)it.current();
+    QList<QvisFilePanelItem*> items;
+    QTreeWidgetItemIterator itr(fileTree);
+    while(*itr) 
+    {
+        items.append((QvisFilePanelItem*)*itr);
+        ++itr;
+    }     
+    count = items.count();
+      
+    // If there are no items, return early.
+    if(count < 1)
+        return;
 
     //
     // Iterate through the items and expand them if they are databases.
@@ -1269,11 +1293,11 @@ debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
 
     for(i = 0; i < count; ++i)
     {
-        QvisListViewFileItem *item = items[i];
+        QvisFilePanelItem *item = items[i];
 
         if(item != 0)
         {
-            if(item->firstChild() == 0)
+            if(item->childCount() == 0)
             {
                 if(item->timeState == -1)
                     ExpandDatabaseItem(item);
@@ -1288,8 +1312,8 @@ debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
                                            !FileServerList::GET_NEW_MD);
                 if(md != 0 && md->GetNumStates() > 1)
                 {
-		    if (fileServer->GetForceReadAllCyclesTimes() &&
-		        !item->timeStateHasBeenForced)
+                    if (fileServer->GetForceReadAllCyclesTimes() &&
+                        !item->timeStateHasBeenForced)
                         SetFileShowsCorrectData(item->file, false);
 
                     if(md->GetNumStates() != item->childCount())
@@ -1306,19 +1330,19 @@ debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
                     {
                         bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
                         int j;
-                        QListViewItemIterator it(item); ++it;
+                        
+                        QTreeWidgetItemIterator it(item); ++it;
                         for(j = 0; j < item->childCount(); ++j, ++it)
                         {
-                             // Reset the label so that it shows the right values.
-                             it.current()->setText(0, CreateItemLabel(md, j, 
-                                 useVirtualDBInfo));
+                            // Reset the label so that it shows the right values.
+                            (*it)->setText(0, CreateItemLabel(md, j,useVirtualDBInfo)); 
                         }
 
                         // Remember that the item now has the correct information
                         // displayed through its children.
                         SetFileShowsCorrectData(item->file, true);
-		        item->timeStateHasBeenForced =
-			    fileServer->GetForceReadAllCyclesTimes();
+                        item->timeStateHasBeenForced =
+                            fileServer->GetForceReadAllCyclesTimes();
                     }
                 }
             }           
@@ -1335,9 +1359,6 @@ debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
     {
         QTimer::singleShot(100, this, SLOT(internalUpdateFileList()));
     }
-
-    // Delete the temporary array.
-    delete [] items;
 }
 
 // ****************************************************************************
@@ -1372,17 +1393,20 @@ debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
 //   I changed the code so it sets the time state for files that we've
 //   never seen before to 0 so it is not the default -1.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
+QvisFilePanel::ExpandDatabaseItem(QvisFilePanelItem *item)
 {
     //
     // It could be that this method is being called on the child timestate of 
     // a previously expanded database. If that is the case, then the parent
     // will exist and it will have the same filename as the item.
     //
-    QvisListViewFileItem *parent = (QvisListViewFileItem *)item->parent();
+    QvisFilePanelItem *parent = (QvisFilePanelItem *)item->parent();
     if(parent != 0 && parent->file == item->file)
         return;
 
@@ -1419,10 +1443,14 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 //
 //   Propogated knowledge that item was updated with metadata that was forced
 //   to get accurate cycles/times.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item)
+QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisFilePanelItem *item)
 {
     // See if the file is a database
     const avtDatabaseMetaData *md =
@@ -1434,21 +1462,22 @@ QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item)
     {
         if(md->GetNumStates() > 1)
         {
-            fileListView->blockSignals(true);
+            fileTree->blockSignals(true);
             bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
             for(int i = 0; i < md->GetNumStates(); ++i)
             {
-                QvisListViewFileItem *fi = new QvisListViewFileItem(
-                    item, CreateItemLabel(md, i, useVirtualDBInfo),
-                    item->file, QvisListViewFileItem::FILE_NODE, i);
-                fi->setOpen(false);
+                QvisFilePanelItem *fi = new QvisFilePanelItem(
+                                   item, 
+                                   CreateItemLabel(md, i, useVirtualDBInfo),
+                                   item->file, QvisFilePanelItem::FILE_NODE, i);
+                fi->setExpanded(false);
             }
-	    item->timeStateHasBeenForced =
-	        fileServer->GetForceReadAllCyclesTimes();
+            item->timeStateHasBeenForced =
+                fileServer->GetForceReadAllCyclesTimes();
 
             // Set the database pixmap.
-            item->setPixmap(0, *databasePixmap);
-            fileListView->blockSignals(false);
+            item->setIcon(0, *databasePixmap);
+            fileTree->blockSignals(false);
 
             // Remember that the item now has the correct information
             // displayed through its children.
@@ -1476,15 +1505,17 @@ QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item)
 // Creation:   Mon Dec 29 12:23:37 PDT 2003
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition(QvisListViewFileItem *item)
+QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition(QvisFilePanelItem *item)
 {
     if(DisplayVirtualDBInformation(item->file))
     {
-        fileListView->blockSignals(true);
+        fileTree->blockSignals(true);
 
         // Get the virtual file definition instead of reading the metadata.
         stringVector files(fileServer->GetVirtualFileDefinition(item->file));
@@ -1492,15 +1523,14 @@ QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition(QvisListViewFileItem *
         for(int i = 0; i < files.size(); ++i)
         {
             QString label(files[i].c_str());
-            QvisListViewFileItem *fi = new QvisListViewFileItem(
-                item, label, item->file,
-                QvisListViewFileItem::FILE_NODE, i);
-            fi->setOpen(false);
+            QvisFilePanelItem *fi = new QvisFilePanelItem(item, label, item->file,
+                                                  QvisFilePanelItem::FILE_NODE, i);
+            fi->setExpanded(false);
         }
 
         // Set the database pixmap.
-        item->setPixmap(0, *databasePixmap);
-        fileListView->blockSignals(false);
+        item->setIcon(0, *databasePixmap);
+        fileTree->blockSignals(false);
 
         // Remember that the item does not have the correct information
         // displayed through its children since we have not opened it yet.
@@ -1653,7 +1683,7 @@ QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
     {
         QString formatString;
         formatString.sprintf("%%.%dg", timeStateFormat.GetPrecision());
-        retval.sprintf((const char *)formatString.latin1(), t);
+        retval.sprintf(formatString.toStdString().c_str(), t);
     }
     return retval;
 }
@@ -1728,6 +1758,9 @@ QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
 //   Brad Whitlock, Mon Dec 20 16:19:23 PST 2004
 //   Added code to update the state of the Replace button.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
@@ -1744,14 +1777,14 @@ QvisFilePanel::UpdateFileSelection()
 
     // If the file changed, then we have to update the selected item.
     blockSignals(true);
-    fileListView->blockSignals(true);
+    fileTree->blockSignals(true);
 
     //
     // Iterate through all items of the listview and open up the appropriate items
     // so that expansion is preserved.
     //
-    QListViewItemIterator it(fileListView);
-    QvisListViewFileItem *selectedItem = 0;
+    QTreeWidgetItemIterator it(fileTree);
+    QvisFilePanelItem *selectedItem = 0;
 
     //
     // Try and find a correlation for the active time slider if there is
@@ -1784,22 +1817,24 @@ QvisFilePanel::UpdateFileSelection()
     //
     // Iterate through the file items and look for the right item to highlight.
     //
-    for(; it.current(); ++it)
+    for(; *it; ++it)
     {
-        QvisListViewFileItem *item = (QvisListViewFileItem *)it.current();
+        QvisFilePanelItem *item = (QvisFilePanelItem *) *it;
 
         // If it is the root of the tree, open it and continue.
-        if(item->nodeType == QvisListViewFileItem::ROOT_NODE)
+        if(item->nodeType == QvisFilePanelItem::ROOT_NODE)
         {
             AddExpandedFile(item->file);
-            fileListView->setOpen(item, true);
-            fileListView->setSelected(item, false);
+            item->setExpanded(true);
+            item->setSelected(true);
+            //fileTree->setExpanded(, true);
+            //fileTree->setSelected(item, false);
             continue;
         }
 
         if(item->file == activeSource)
         {
-            QvisListViewFileItem *parentItem = (QvisListViewFileItem *)item->parent();
+            QvisFilePanelItem *parentItem = (QvisFilePanelItem *)item->parent();
 
             //
             // If the correlation involves the active source then we
@@ -1825,8 +1860,8 @@ QvisFilePanel::UpdateFileSelection()
                     //
                     if(item->timeState != -1)
                     {
-                        item = (QvisListViewFileItem *)item->parent();
-                        parentItem = (QvisListViewFileItem *)parentItem->parent();
+                        item = (QvisFilePanelItem *)item->parent();
+                        parentItem = (QvisFilePanelItem *)parentItem->parent();
                     }
                 }
 
@@ -1845,22 +1880,22 @@ QvisFilePanel::UpdateFileSelection()
             }
 
             // Make sure the item is visible.
-            QvisListViewFileItem *p = item;
+            QvisFilePanelItem *p = item;
             while((p = parentItem) != 0)
             {
-                QvisListViewFileItem *fi = (QvisListViewFileItem *)p;
+                QvisFilePanelItem *fi = (QvisFilePanelItem *)p;
                 if(fi->file != item->file)
                 {
                     AddExpandedFile(fi->file);
-                    fi->setOpen(true);
+                    fi->setExpanded(true);
                 }
-                parentItem = (QvisListViewFileItem *)parentItem->parent();
+                parentItem = (QvisFilePanelItem *)parentItem->parent();
             }
         }
         else if(HaveFileInformation(item->file) &&
                 FileIsExpanded(item->file) && item->timeState == -1)
         {
-            item->setOpen(true);
+            item->setExpanded(true);
         }
     }
 
@@ -1869,13 +1904,13 @@ QvisFilePanel::UpdateFileSelection()
     if(selectedItem != 0 && (allowFileSelectionChange ||
        HighlightedItemIsInvalid()))
     {
-        fileListView->setSelected(selectedItem, true);
-        fileListView->setCurrentItem(selectedItem);
-        fileListView->ensureItemVisible(selectedItem);
+        selectedItem->setSelected(true);
+        fileTree->setCurrentItem(selectedItem);
+        // TODO: fileTree->ensureItemVisible(selectedItem);
     }
 
     // Restore signals.
-    fileListView->blockSignals(false);
+    fileTree->blockSignals(false);
     blockSignals(false);
 
     // Update the state of the Replace button.
@@ -1897,16 +1932,19 @@ QvisFilePanel::UpdateFileSelection()
 //   
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 bool
 QvisFilePanel::HighlightedItemIsInvalid() const
 {
     bool currentItemInvalid = false;
-    if(fileListView->currentItem() != 0)
+    if(fileTree->currentItem() != 0)
     {
-        QvisListViewFileItem *ci = (QvisListViewFileItem *)
-            fileListView->currentItem();
+        QvisFilePanelItem *ci = (QvisFilePanelItem*) fileTree->currentItem();
 
         // If the highlighted item is not a file, then it is not valid and
         // we are allowed to change the highlight.
@@ -1955,9 +1993,12 @@ QvisFilePanel::HighlightedItemIsInvalid() const
 // Creation:   Mon Dec 20 16:17:55 PST 2004
 //
 // Modifications:
-//   
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 bool
@@ -1966,10 +2007,10 @@ QvisFilePanel::UpdateReplaceButtonEnabledState()
     bool enabled = false;
     if(!fileServer->GetOpenFile().Empty())
     {
-        QListViewItem *item = fileListView->currentItem();
+        QTreeWidgetItem *item = fileTree->currentItem();
         if(item != 0)
         {
-            QvisListViewFileItem *ci = (QvisListViewFileItem *)item;
+            QvisFilePanelItem *ci = (QvisFilePanelItem *)item;
             bool differentFiles = fileServer->GetOpenFile() != ci->file;
 
             stringVector defs(fileServer->GetVirtualFileDefinition(ci->file));
@@ -2478,7 +2519,9 @@ QvisFilePanel::SetTimeSliderState(int state)
 // Creation:   Fri Jan 30 14:56:14 PST 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
@@ -2490,18 +2533,18 @@ QvisFilePanel::SetShowSelectedFiles(bool val)
 
         if(!showSelectedFiles)
         {
-            if(fileListView->isVisible())
+            if(fileTree->isVisible())
             {
-                fileListView->hide();
+                fileTree->hide();
                 openButton->hide();
                 replaceButton->hide();
                 overlayButton->hide();
                 updateGeometry();
             }
         }
-        else if(!fileListView->isVisible())
+        else if(!fileTree->isVisible())
         {
-            fileListView->show();
+            fileTree->show();
             openButton->show();
             replaceButton->show();
             overlayButton->show();
@@ -2587,17 +2630,19 @@ QvisFilePanel::GetAllowFileSelectionChange() const
 // Creation:   Mon Jun 27 14:53:26 PST 2005
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
 QvisFilePanel::UpdateOpenButtonState()
 {
-    QListViewItem *item = fileListView->selectedItem();
+    QTreeWidgetItem *item = fileTree->currentItem();
     if(item != 0)
     {
         // Cast to a derived type.
-        QvisListViewFileItem *fileItem = (QvisListViewFileItem *)item;
+        QvisFilePanelItem *fileItem = (QvisFilePanelItem*)item;
         UpdateOpenButtonState(fileItem);
     }
 }
@@ -2782,16 +2827,19 @@ QvisFilePanel::forwardStep()
 //   Brad Whitlock, Mon Sep 8 14:54:20 PST 2003
 //   Changed the logic for removing files from the list of expanded files.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-QvisFilePanel::fileCollapsed(QListViewItem *item)
+QvisFilePanel::fileCollapsed(QTreeWidgetItem *item)
 {
     if(item == 0)
         return;
 
     // Cast to a derived type.
-    QvisListViewFileItem *fileItem = (QvisListViewFileItem *)item;
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem*)item;
 
     if(!fileItem->isRoot())
     {
@@ -2841,16 +2889,20 @@ QvisFilePanel::fileCollapsed(QListViewItem *item)
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
+// 
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-QvisFilePanel::fileExpanded(QListViewItem *item)
+QvisFilePanel::fileExpanded(QTreeWidgetItem *item)
 {
     if(item == 0)
         return;
 
     // Cast to a derived type.
-    QvisListViewFileItem *fileItem = (QvisListViewFileItem *)item;
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem*)item;
     AddExpandedFile(fileItem->file);
 
     // If the file is a database then we want to update the file selection so
@@ -2913,16 +2965,19 @@ QvisFilePanel::fileExpanded(QListViewItem *item)
 //   I moved the code that updates the text and enabled state for the Open
 //   button into its own method.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-QvisFilePanel::highlightFile(QListViewItem *item)
+QvisFilePanel::highlightFile(QTreeWidgetItem *item)
 {
     if(item == 0)
         return;
 
     // Cast to a derived type.
-    QvisListViewFileItem *fileItem = (QvisListViewFileItem *)item;
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem*)item;
     UpdateOpenButtonState(fileItem);
 
     //
@@ -2946,11 +3001,13 @@ QvisFilePanel::highlightFile(QListViewItem *item)
 // Creation:   Mon Jun 27 14:57:22 PST 2005
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-QvisFilePanel::UpdateOpenButtonState(QvisListViewFileItem *fileItem)
+QvisFilePanel::UpdateOpenButtonState(QvisFilePanelItem *fileItem)
 {
     // If the filename is not a file. Disable the open files button.
     if(!fileItem->isFile())
@@ -2997,13 +3054,15 @@ QvisFilePanel::UpdateOpenButtonState(QvisListViewFileItem *fileItem)
 //   I changed how we calculate the current time state for a database that
 //   we're reopening so it takes into account the active time slider.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
 QvisFilePanel::openFile()
 {
-    QvisListViewFileItem *fileItem = (QvisListViewFileItem *)
-        fileListView->currentItem();
+    QvisFilePanelItem* fileItem = (QvisFilePanelItem *) fileTree->currentItem();
 
     if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
     {
@@ -3090,12 +3149,15 @@ QvisFilePanel::openFile()
 //   database that we're opening before trying to figure out the time state
 //   of the database.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-QvisFilePanel::openFileDblClick(QListViewItem *item)
+QvisFilePanel::openFileDblClick(QTreeWidgetItem *item)
 {
-    QvisListViewFileItem *fileItem = (QvisListViewFileItem *)item;
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem *)item;
 
     if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
     {
@@ -3178,13 +3240,15 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
 //   ReplaceDatabase functionality in the viewer so changes the animation
 //   time state if we're replacing with the same database.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
 QvisFilePanel::replaceFile()
 {
-    QvisListViewFileItem *fileItem = (QvisListViewFileItem *)
-        fileListView->currentItem();
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem *) fileTree->currentItem();
 
     if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
     {
@@ -3212,6 +3276,9 @@ QvisFilePanel::replaceFile()
 //   Brad Whitlock, Wed Mar 21 00:38:22 PDT 2001
 //   Added a check to make sure it's a file.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 //   Brad Whitlock, Thu Jul 24 09:16:23 PDT 2008
 //   Make it possible to overlay at a particular time step.
 //
@@ -3220,8 +3287,7 @@ QvisFilePanel::replaceFile()
 void
 QvisFilePanel::overlayFile()
 {
-    QvisListViewFileItem *fileItem = (QvisListViewFileItem *)
-        fileListView->currentItem();
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem *) fileTree->currentItem();
 
     if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
     {
@@ -3385,6 +3451,9 @@ QvisFilePanel::sliderChange(int val)
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
 // 
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 //   Cyrus Harrison, Fri Aug  1 09:06:03 PDT 2008
 //   Changed set of time field text to use SetTimeFieldText to make sure
 //   long time values remain visible.
@@ -3395,7 +3464,7 @@ void
 QvisFilePanel::processTimeText()
 {
     // Convert the text to an integer value.
-    QString temp(timeField->text().stripWhiteSpace());
+    QString temp(timeField->text().trimmed());
     if(temp.isEmpty())
         return;
 
@@ -3411,7 +3480,7 @@ QvisFilePanel::processTimeText()
     //
     // If the string has a decimal in it then assume it is a time.
     //
-    if(temp.find('.') != -1)
+    if(temp.indexOf('.') != -1)
     {
         double t = temp.toDouble(&okay);
         if(!okay)
@@ -3462,64 +3531,6 @@ QvisFilePanel::processTimeText()
     // Call the slider's slot function.
     sliderVal = index;
     sliderEnd();
-}
-
-// ****************************************************************************
-// Method: QvisFilePanel::updateHeaderWidth
-//
-// Purpose: 
-//   This is a Qt flot function that updates the width of the list view that
-//   shows the contents of the selected files list.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Aug 19 13:37:20 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilePanel::updateHeaderWidth()
-{
-    fileListView->setColumnWidth(0, fileListView->visibleWidth());
-}
-
-// ****************************************************************************
-// Method: QvisFilePanel::updateHeaderWidthForLongName
-//
-// Purpose: 
-//   This is a Qt slot function that updates the width of the first column
-//   so it is as wide as the longest node name in the file tree. This allows
-//   the horizontal scrollbar to be active.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 6 12:17:46 PDT 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilePanel::updateHeaderWidthForLongName()
-{
-    if(fileListView->childCount() < 1)
-        updateHeaderWidth();
-    else
-    {
-        int maxWidth = 0;
-        QListViewItemIterator it(fileListView);
-        for ( ; it.current(); ++it )
-        {
-            int w = it.current()->width(fontMetrics(), fileListView, 0);
-            if(w > maxWidth)
-                maxWidth = w;
-        }
-
-        if(maxWidth < fileListView->visibleWidth())
-            maxWidth = fileListView->visibleWidth();
-
-        fileListView->setColumnWidth(0, maxWidth);
-    }
 }
 
 // ****************************************************************************
@@ -3802,7 +3813,7 @@ FileTree::TreeContainsDirectories() const
 }
 
 // ****************************************************************************
-// Method: FileTree::AddElementsToListViewItem
+// Method: FileTree::AddElementsToTreeItem
 //
 // Purpose: 
 //   This method adds adds the appropriate list view items for the file tree
@@ -3824,18 +3835,21 @@ FileTree::TreeContainsDirectories() const
 //   Brad Whitlock, Wed May 14 15:31:14 PST 2003
 //   I added filePanel.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-FileTree::AddElementsToListViewItem(QListViewItem *item, int &fileIndex,
+FileTree::AddElementsToTreeItem(QTreeWidgetItem *item, int &fileIndex,
     const QPixmap &folderPixmap, const QPixmap &databasePixmap)
 {
-    root->AddElementsToListViewItem(item, fileIndex, false, folderPixmap,
-                                    databasePixmap, filePanel);
+    root->AddElementsToTreeItem(item, fileIndex, false, folderPixmap,
+                                databasePixmap, filePanel);
 }
 
 // ****************************************************************************
-// Method: FileTree::AddElementsToListView
+// Method: FileTree::AddElementsToTree
 //
 // Purpose: 
 //   This method adds adds the appropriate list view items for the file tree
@@ -3852,14 +3866,17 @@ FileTree::AddElementsToListViewItem(QListViewItem *item, int &fileIndex,
 //   Brad Whitlock, Wed May 14 15:31:21 PST 2003
 //   I added filePanel.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-FileTree::AddElementsToListView(QListView *listview, int &fileIndex,
+FileTree::AddElementsToTree(QTreeWidget *tree, int &fileIndex,
     const QPixmap &folderPixmap, const QPixmap &databasePixmap)
 {
-    root->AddElementsToListView(listview, fileIndex, folderPixmap,
-                                databasePixmap, filePanel);
+    root->AddElementsToTree(tree, fileIndex, folderPixmap,
+                            databasePixmap, filePanel);
 }
 
 // ****************************************************************************
@@ -4276,7 +4293,7 @@ FileTree::FileTreeNode::HasNodeNameExceeding(int len) const
 }
 
 // ****************************************************************************
-// Method: FileTree::FileTreeNode::AddElementsToListViewItem
+// Method: FileTree::FileTreeNode::AddElementsToTreeItem
 //
 // Purpose: 
 //   Creates the widgets used to represent the file tree.
@@ -4310,14 +4327,17 @@ FileTree::FileTreeNode::HasNodeNameExceeding(int len) const
 //   I fixed a bug where if the first file in a directory lacked read access
 //   then the directory would be displayed as having no access.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-FileTree::FileTreeNode::AddElementsToListViewItem(QListViewItem *item,
+FileTree::FileTreeNode::AddElementsToTreeItem(QTreeWidgetItem *item,
     int &fileIndex, bool addRoot, const QPixmap &folderPixmap,
     const QPixmap &databasePixmap, QvisFilePanel *filePanel)
 {
-    QListViewItem *root = item;
+    QTreeWidgetItem *root = item;
 
     // Add the current node.
     if(addRoot)
@@ -4325,17 +4345,17 @@ FileTree::FileTreeNode::AddElementsToListViewItem(QListViewItem *item,
         if(nodeType == FILE_NODE)
         {
             // Add a file node.
-            new QvisListViewFileItem(item, NumberedFilename(fileIndex),
-                    fileName, QvisListViewFileItem::FILE_NODE);
+            new QvisFilePanelItem(item, NumberedFilename(fileIndex),
+                                  fileName, QvisFilePanelItem::FILE_NODE);
             ++fileIndex;
         }
         else if(nodeType == DATABASE_NODE)
         {
             // Add a file node.
-            QvisListViewFileItem *node = new QvisListViewFileItem(item,
+            QvisFilePanelItem *node = new QvisFilePanelItem(item,
                 NumberedFilename(fileIndex), fileName,
-                QvisListViewFileItem::FILE_NODE);
-            node->setPixmap(0, databasePixmap);
+                QvisFilePanelItem::FILE_NODE);
+            node->setIcon(0, databasePixmap);
             ++fileIndex;
 
             // If the file is a virtual file, make it be expanded by default.
@@ -4360,9 +4380,9 @@ FileTree::FileTreeNode::AddElementsToListViewItem(QListViewItem *item,
                 temp.sprintf("%c%s", separator, nodeName.c_str());
             else
                 temp = QString(nodeName.c_str());
-            root = new QvisListViewFileItem(item, temp, fileName,
-                           QvisListViewFileItem::DIRECTORY_NODE);
-            root->setPixmap(0, folderPixmap);
+            root = new QvisFilePanelItem(item, temp, fileName,
+                           QvisFilePanelItem::DIRECTORY_NODE);
+            root->setIcon(0, folderPixmap);
         }
     }
 
@@ -4371,15 +4391,15 @@ FileTree::FileTreeNode::AddElementsToListViewItem(QListViewItem *item,
     {
         for(int i = 0; i < numChildren; ++i)
         {
-            children[i]->AddElementsToListViewItem(root, fileIndex, true,
-                                                   folderPixmap, databasePixmap,
-                                                   filePanel);
+            children[i]->AddElementsToTreeItem(root, fileIndex, true,
+                                               folderPixmap, databasePixmap,
+                                               filePanel);
         }
     }        
 }
 
 // ****************************************************************************
-// Method: FileTree::FileTreeNode::AddElementsToListView
+// Method: FileTree::FileTreeNode::AddElementsToTree
 //
 // Purpose: 
 //   Creates the widgets used to represent the file tree.
@@ -4402,10 +4422,13 @@ FileTree::FileTreeNode::AddElementsToListViewItem(QListViewItem *item,
 //   Brad Whitlock, Wed May 14 15:35:32 PST 2003
 //   I made virtual files come expanded by default.
 //
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 // ****************************************************************************
 
 void
-FileTree::FileTreeNode::AddElementsToListView(QListView *listview,
+FileTree::FileTreeNode::AddElementsToTree(QTreeWidget *tree,
     int &fileIndex, const QPixmap &folderPixmap, const QPixmap &databasePixmap,
     QvisFilePanel *filePanel)
 {
@@ -4414,19 +4437,19 @@ FileTree::FileTreeNode::AddElementsToListView(QListView *listview,
     {
         if(children[i]->nodeType == PATH_NODE)
         {
-            QvisListViewFileItem *item = new QvisListViewFileItem(listview,
+            QvisFilePanelItem *item = new QvisFilePanelItem(tree,
                     children[i]->NumberedFilename(fileIndex),
                     children[i]->fileName,
-                    QvisListViewFileItem::DIRECTORY_NODE);
-            item->setPixmap(0, folderPixmap);
+                    QvisFilePanelItem::DIRECTORY_NODE);
+            item->setIcon(0, folderPixmap);
         }
         else if(children[i]->nodeType == DATABASE_NODE)
         {
-            QvisListViewFileItem *item = new QvisListViewFileItem(listview,
+            QvisFilePanelItem *item = new QvisFilePanelItem(tree,
                     children[i]->NumberedFilename(fileIndex),
                     children[i]->fileName,
-                    QvisListViewFileItem::FILE_NODE);
-            item->setPixmap(0, databasePixmap);
+                    QvisFilePanelItem::FILE_NODE);
+            item->setIcon(0, databasePixmap);
 
             // If the file is a virtual file, make it be expanded by default.
             if(children[i]->fileName.IsVirtual())
@@ -4437,10 +4460,10 @@ FileTree::FileTreeNode::AddElementsToListView(QListView *listview,
         }
         else
         {
-            new QvisListViewFileItem(listview,
+            new QvisFilePanelItem(tree,
                     children[i]->NumberedFilename(fileIndex),
                     children[i]->fileName,
-                    QvisListViewFileItem::FILE_NODE);
+                    QvisFilePanelItem::FILE_NODE);
         }
 
         ++fileIndex;

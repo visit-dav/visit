@@ -38,12 +38,12 @@
 
 #include <QvisLine2DInterface.h>
 
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qspinbox.h>
-#include <qtooltip.h>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLayout>
+#include <QSpinBox>
+#include <QToolTip>
 
 #include <AnnotationObject.h>
 
@@ -71,84 +71,89 @@
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Mon Jul 21 10:39:10 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisLine2DInterface::QvisLine2DInterface(QWidget *parent,
-    const char *name) : QvisAnnotationObjectInterface(parent, name)
+QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
+    QvisAnnotationObjectInterface(parent)
 {
     // Set the title of the group box.
     this->setTitle(GetName());
 
-    QGridLayout *cLayout = new QGridLayout(topLayout, 7, 4);
+    QGridLayout *cLayout = new QGridLayout(0);
+    topLayout->addLayout(cLayout);
     cLayout->setSpacing(10);
 
     // Add controls for the start position
-    positionStartEdit = new QvisScreenPositionEdit(this, "positionStartEdit");
+    positionStartEdit = new QvisScreenPositionEdit(this);
     connect(positionStartEdit, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(positionStartChanged(double, double)));
-    QLabel *startLabel = new QLabel(positionStartEdit, "Start", this);
+    QLabel *startLabel = new QLabel(tr("Start"), this);
     QString startTip(tr("Start of line in screen coordinates [0,1]"));
-    QToolTip::add(startLabel, startTip);
-    cLayout->addMultiCellWidget(positionStartEdit, 0, 0, 1, 3);
+    startLabel->setToolTip(startTip);
+    cLayout->addWidget(positionStartEdit, 0, 1, 1, 3);
     cLayout->addWidget(startLabel, 0, 0);
 
     // Add controls for the end position
-    positionEndEdit = new QvisScreenPositionEdit(this, "positionEndEdit");
+    positionEndEdit = new QvisScreenPositionEdit(this);
     connect(positionEndEdit, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(positionEndChanged(double, double)));
-    QLabel *endLabel = new QLabel(positionEndEdit, "End", this);
+    QLabel *endLabel = new QLabel(tr("End"), this);
     QString endTip(tr("End of line in screen coordinates [0,1]"));
-    QToolTip::add(endLabel, endTip);
-    cLayout->addMultiCellWidget(positionEndEdit, 1, 1, 1, 3);
+    endLabel->setToolTip(endTip);
+    cLayout->addWidget(positionEndEdit, 1, 1, 1, 3);
     cLayout->addWidget(endLabel, 1, 0);
    
     // Add controls for width.
-    widthSpinBox = new QSpinBox(1, 100, 1, this, "widthSpinBox");
+    widthSpinBox = new QSpinBox(this);
+    widthSpinBox->setMinimum(1);
+    widthSpinBox->setMaximum(100);
     widthSpinBox->setButtonSymbols(QSpinBox::PlusMinus);
     connect(widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(widthChanged(int)));
     cLayout->addWidget(widthSpinBox, 2, 1);
-    cLayout->addWidget(new QLabel(widthSpinBox, tr("Width"), this), 2, 0);
+    cLayout->addWidget(new QLabel(tr("Width"), this), 2, 0);
 
     // Add controls for the line color.
-    colorButton = new QvisColorButton(this, "colorButton");
+    colorButton = new QvisColorButton(this);
     connect(colorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(colorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(colorButton, tr("Line color"), this),
+    cLayout->addWidget(new QLabel(tr("Line color"), this),
                        3, 0, Qt::AlignLeft);
     cLayout->addWidget(colorButton, 3, 1);
 
     // Add controls for the line opacity.
-    opacitySlider = new QvisOpacitySlider(0, 255, 10, 0, this,
-                                          "opacitySlider");
+    opacitySlider = new QvisOpacitySlider(0, 255, 10, 0, this);
     connect(opacitySlider, SIGNAL(valueChanged(int)),
             this, SLOT(opacityChanged(int)));
-    cLayout->addMultiCellWidget(opacitySlider, 3, 3, 2, 3);
+    cLayout->addWidget(opacitySlider, 3, 2, 1, 2);
 
     // Beginning arrow control.
-    beginArrowComboBox = new QComboBox(this, "beginArrowControl");
-    beginArrowComboBox->insertItem(tr("None"), 0);
-    beginArrowComboBox->insertItem(tr("Line"), 1);
-    beginArrowComboBox->insertItem(tr("Solid"), 2);
+    beginArrowComboBox = new QComboBox(this);
+    beginArrowComboBox->addItem(tr("None"));
+    beginArrowComboBox->addItem(tr("Line"));
+    beginArrowComboBox->addItem(tr("Solid"));
     beginArrowComboBox->setEditable(false);
     connect(beginArrowComboBox, SIGNAL(activated(int)),
             this, SLOT(beginArrowChanged(int)));
-    cLayout->addMultiCellWidget(beginArrowComboBox, 4, 4, 1, 3);
-    cLayout->addWidget(new QLabel(tr("Begin Arrow"), this), 4, 0);
+    cLayout->addWidget(beginArrowComboBox, 4, 1, 1, 3);
+    cLayout->addWidget(new QLabel(tr("Begin arrow"), this), 4, 0);
 
     // Beginning arrow control.
-    endArrowComboBox = new QComboBox(this, "endArrowControl");
-    endArrowComboBox->insertItem(tr("None"), 0);
-    endArrowComboBox->insertItem(tr("Line"), 1);
-    endArrowComboBox->insertItem(tr("Solid"), 2);
+    endArrowComboBox = new QComboBox(this);
+    endArrowComboBox->addItem(tr("None"));
+    endArrowComboBox->addItem(tr("Line"));
+    endArrowComboBox->addItem(tr("Solid"));
     endArrowComboBox->setEditable(false);
     connect(endArrowComboBox, SIGNAL(activated(int)),
             this, SLOT(endArrowChanged(int)));
-    cLayout->addMultiCellWidget(endArrowComboBox, 5, 5, 1, 3);
-    cLayout->addWidget(new QLabel(tr("End Arrow"), this), 5, 0);
+    cLayout->addWidget(endArrowComboBox, 5, 1, 1, 3);
+    cLayout->addWidget(new QLabel(tr("End arrow"), this), 5, 0);
 
     // Added a visibility toggle
-    visibleCheckBox = new QCheckBox(tr("Visible"), this, "visibleCheckBox");
+    visibleCheckBox = new QCheckBox(tr("Visible"), this);
     connect(visibleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(visibilityToggled(bool)));
     cLayout->addWidget(visibleCheckBox, 6, 0);
@@ -185,16 +190,16 @@ QvisLine2DInterface::~QvisLine2DInterface()
 // Creation:   Fri Sep 03 09:31:41 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 21 10:45:24 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 QString
 QvisLine2DInterface::GetMenuText(const AnnotationObject &annot) const
 {
     QString retval;
     if(annot.GetText().size() > 0)
-        retval.sprintf("%s - %s",
-                       GetName().latin1(),
-                       annot.GetText()[0].c_str());
+        retval = QString("%1 - %2").arg(GetName()).arg(annot.GetText()[0].c_str());
     else
         retval = GetName();
 
@@ -212,7 +217,9 @@ QvisLine2DInterface::GetMenuText(const AnnotationObject &annot) const
 // Creation:   Fri Sep 03 09:31:46 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 21 10:46:14 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 void
 QvisLine2DInterface::UpdateControls()
@@ -233,8 +240,8 @@ QvisLine2DInterface::UpdateControls()
     // Set the begin and end arrow styles.
     beginArrowComboBox->blockSignals(true);
     endArrowComboBox->blockSignals(true);
-    beginArrowComboBox->setCurrentItem(annot->GetColor2().Green());
-    endArrowComboBox->setCurrentItem(annot->GetColor2().Blue());
+    beginArrowComboBox->setCurrentIndex(annot->GetColor2().Green());
+    endArrowComboBox->setCurrentIndex(annot->GetColor2().Blue());
     beginArrowComboBox->blockSignals(false);
     endArrowComboBox->blockSignals(false);
 

@@ -47,15 +47,17 @@ class QButtonGroup;
 class QCheckBox;
 class QComboBox;
 class QGroupBox;
-class QIconView;
+class QListWidget;
 class QLabel;
 class QLineEdit;
-class QListBox;
-class QListView;
+class QListWidget;
+class QTreeWidget;
 class QPushButton;
 class QRadioButton;
+class QScrollArea;
 class QSpinBox;
 class QTextEdit;
+class QVBoxLayout;
 
 class QvisColorButton;
 class QvisDialogLineEdit;
@@ -92,14 +94,17 @@ class MovieTemplateConfig;
 //   Dave Bremer, Tue Oct  9 14:13:12 PDT 2007
 //   Added a new page to set fps and start/end index, moved pages 
 //   10-12 to 11-13, and added a methods to set/get the number of frames
+//
+//   Brad Whitlock, Tue Oct  7 13:08:01 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisSaveMovieWizard : public QvisWizard
 {
     Q_OBJECT
 public:
-    QvisSaveMovieWizard(AttributeSubject *, QWidget *parent, 
-                        const char *name = 0);
+    QvisSaveMovieWizard(AttributeSubject *, QWidget *parent);
     virtual ~QvisSaveMovieWizard();
 
     int Exec();
@@ -107,12 +112,11 @@ public:
     void SetDefaultNumFrames(int);
     int  GetDefaultNumFrames();
 
-    virtual void showPage(QWidget *page);
+    virtual int nextId() const;
+    virtual bool validateCurrentPage();
 protected:
-    virtual void keyPressEvent(QKeyEvent *e);
+    virtual void initializePage(int id);
 private slots:
-    void pageChanged(const QString &);
-
     void page0_movieTypeChanged(int);
 
     void page1_newTemplateChanged(int);
@@ -184,6 +188,30 @@ private slots:
     void page13_generationMethodChanged(int);
 
 private:
+    enum {
+        Page_MovieType,        // page0
+        Page_TemplateAction,   // page1
+        Page_PickTemplate,     // page2
+        Page_TemplateSources,  // page3
+        Page_Viewports,        // page4
+        Page_Sequences,        // page5
+        Page_SaveTemplate,     // page6
+        Page_SaveTemplateAs,   // page7
+        Page_ReviewSettings,   // page8
+        Page_Formats,          // page9
+        Page_NumFrames,        // page10
+        Page_Filenames,        // page11
+        Page_Email,            // page12
+        Page_Generation,       // page13
+        Page_Custom0
+    };
+
+    enum {
+        Template_Use,
+        Template_Edit,
+        Template_Create
+    };
+
     struct MovieTemplateData
     {
         std::string              filename;
@@ -193,28 +221,41 @@ private:
   
     typedef std::map<std::string, MovieTemplateData> StringMovieTemplateDataMap;
 
+    class QvisCustomWizardPage : public QWizardPage
+    {
+    public:
+        QvisCustomWizardPage(QWidget *parent = 0);
+        virtual ~QvisCustomWizardPage();
+        void addWidget(QWidget *ui);
+        void removeWidget(QWidget *ui);
+        void setNextId(int);
+        virtual int nextId() const;
+    private:
+        int          nid;
+        QVBoxLayout *vlayout;
+        QScrollArea *scroll;
+    };
+
     struct SequenceUI
     {
-        std::string name;
-        QWidget    *ui;
+        std::string           name;
+        QvisCustomWizardPage *page;
+        QWidget              *ui;
     };
 
     typedef std::vector<SequenceUI> SequenceUIVector;
 
-    QWidget *CreateSimplePage(int i);
-    void CreateYesNoPage(int pageIndex, QWidget **page,
-                         QButtonGroup **bg, const char *slot);
-    void UpdatePage();
-    void UpdatePageLinking(int);
-    int  CurrentPageToStaticPageIndex() const;
+    void CreateYesNoPage(QWizardPage **page, QButtonGroup **bg, 
+                         const char *slot);
 
     void page2_PopulateTemplates();
+
     bool LoadTemplateSpecification(const std::string &);
     void UpdateCustomPagesWithDefaultValues();
     void UpdateDefaultValuesFromCustomPages();
-
-    void RemoveSequencePages();
     bool AddSequencePages();
+    int  NumSequencePages() const;
+
     void WriteTemplateSpecification();
 
     void page3_PopulateSources();
@@ -253,8 +294,6 @@ private:
     void CreateEmailPage();             // page12
     void CreateGenerationMethodPage();  // page13
 
-    QString SplitPrompt(const QString &s) const;
-
     std::string GetMovieAttsOutputDir();
 
     // Some movie template-related members.
@@ -277,31 +316,30 @@ private:
 
     // Custom sequence pages.
     SequenceUIVector        sequencePages;
-    bool                    sequencePagesAdded;
 
     // Use last settings, simple, template?
-    QWidget                *page0;
+    QWizardPage            *page0;
     QButtonGroup           *page0_buttongroup;
     QRadioButton           *page0_r1;
 
     // Use, Modify, Create template?
-    QWidget                *page1;
+    QWizardPage            *page1;
     QButtonGroup           *page1_buttongroup;
 
     // Choose template
-    QWidget                *page2;
-    QListBox               *page2_templates;
+    QWizardPage            *page2;
+    QListWidget            *page2_templates;
     QLabel                 *page2_template_image;
     QTextEdit              *page2_template_description;
 
     // Pick new sources
-    QWidget                *page3;
+    QWizardPage            *page3;
     QvisSessionSourceChanger *page3_sessionSources;
 
     // Viewports
-    QWidget                *page4;
+    QWizardPage            *page4;
     QvisViewportWidget     *page4_viewportDisplay;
-    QListBox               *page4_viewportList;
+    QListWidget            *page4_viewportList;
     QPushButton            *page4_deleteViewportButton;
     QvisScreenPositionEdit *page4_lowerLeft;
     QvisScreenPositionEdit *page4_upperRight;
@@ -311,9 +349,9 @@ private:
     QCheckBox              *page4_dropShadow;
 
     // Sequences
-    QWidget                *page5;
+    QWizardPage            *page5;
     QGroupBox              *page5_sequenceProperties;
-    QListBox               *page5_sequenceList;
+    QListWidget            *page5_sequenceList;
     QPushButton            *page5_deleteSequence;
     QLineEdit              *page5_sequenceName;
     QLabel                 *page5_sequenceUILabel;
@@ -324,23 +362,23 @@ private:
     QvisSequenceView       *page5_sequenceView;
 
     // Save template?
-    QWidget                *page6;
+    QWizardPage            *page6;
     QButtonGroup           *page6_buttongroup;
 
     // Save template as
-    QWidget                *page7;
+    QWizardPage            *page7;
     QLineEdit              *page7_templateName;
     QTextEdit              *page7_templateDescription;
     QvisDialogLineEdit     *page7_templateFile;
     QvisDialogLineEdit     *page7_previewImageFile;
 
     // Last settings look okay?
-    QWidget                *page8;
+    QWizardPage            *page8;
     QButtonGroup           *page8_buttongroup;
-    QListView              *page8_settingsListView;
+    QTreeWidget            *page8_settings;
 
     // Choose formats
-    QWidget                *page9;
+    QWizardPage            *page9;
     QComboBox              *page9_formatComboBox;
     QButtonGroup           *page9_sizeTypeButtonGroup;
     QSpinBox               *page9_scaleSpinBox;
@@ -355,10 +393,10 @@ private:
     QComboBox              *page9_stereoType;
     QPushButton            *page9_addOutputButton;
     QPushButton            *page9_removeOutputButton;
-    QListView              *page9_outputFormats;
+    QTreeWidget            *page9_outputFormats;
 
     // Choose movie length
-    QWidget                *page10;
+    QWizardPage            *page10;
     QLabel                 *page10_fpsLabel;
     QLineEdit              *page10_fpsLineEdit;
     QLabel                 *page10_startIndexLabel;
@@ -367,18 +405,18 @@ private:
     QLineEdit              *page10_endIndexLineEdit;
 
     // Choose filenames
-    QWidget                *page11;
+    QWizardPage            *page11;
     QLineEdit              *page11_outputDirectoryLineEdit;
     QLineEdit              *page11_filebaseLineEdit;
 
     // Email
-    QWidget                *page12;
+    QWizardPage            *page12;
     QButtonGroup           *page12_buttongroup;
     QLabel                 *page12_emailLabel;
     QLineEdit              *page12_emailLineEdit;
 
     // How to generate?
-    QWidget                *page13;
+    QWizardPage            *page13;
     QButtonGroup           *page13_buttongroup;
 };
 

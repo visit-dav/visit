@@ -37,9 +37,9 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qwidget.h>
-#include <qcanvas.h>
-#include <qmap.h>
+#include <QWidget>
+#include <QGraphicsView>
+#include <QMap>
 
 // ****************************************************************************
 // Class: QvisViewportWidget
@@ -53,82 +53,84 @@
 // Creation:   Thu Sep 28 13:27:10 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
-class QvisViewportWidget : public QWidget
+class QViewportItem;
+
+class QvisViewportWidget : public QGraphicsView
 {
     Q_OBJECT
 public:
-    QvisViewportWidget(double _aspect, int minw, int minh,
-                       QWidget *parent = 0, const char *name = 0);
-    QvisViewportWidget(QWidget *parent = 0, const char *name = 0);
-
+    QvisViewportWidget(double aspect, int minw, int minh, QWidget *parent = 0);
     virtual ~QvisViewportWidget();
 
-    virtual QSize sizeHint() const;
+    virtual QSize       sizeHint() const;
     virtual QSizePolicy sizePolicy() const;
 
-    int  getNumberOfViewports() const;
-    bool getViewport(const QString &, float &llx, float &lly, float &urx, float &ury) const;
+    int     getNumberOfViewports() const;
+    bool    getViewport(const QString &, float &llx, float &lly, 
+                                      float &urx, float &ury) const;
     QString getActiveViewportId() const;
-
-    void setContinuousUpdates(bool);
-    bool continuousUpdates() const;
-
+    void    viewportUpdated(QViewportItem *item);
+    
 public slots:
-    void clear();
-    QString addViewport(const QString &, float llx, float lly, float urx, float ury);
-    QString addViewport(float llx, float lly, float urx, float ury);
-    void removeViewport(const QString &);
-    void setActiveViewport(const QString &);
-    void setAspect(double);
-    void sendBackgroundToBack();
+    QString addViewport(const QString &, float llx, float lly,
+                                         float urx, float ury);
+    QString addViewport(float llx, float lly,float urx, float ury);
+    void    removeViewport(const QString &);
+    void    setActiveViewport(const QString &);
+    void    clear();
+
 signals:
-    void viewportAdded(const QString &, float llx, float lly, float urx, float ury);
-    void viewportChanged(const QString &, float llx, float lly, float urx, float ury);
+    void viewportAdded(const QString &, float left, float bottom,
+                                        float right, float top);
+    void viewportChanged(const QString &, float left, float bottom,
+                                          float right, float top);
     void viewportRemoved(const QString &);
     void viewportActivated(const QString &);
 protected:
-    void init();
-
-    QPoint canvasOrigin() const;
-
-    virtual void paintEvent(QPaintEvent *);
-
-    virtual void mouseMoveEvent(QMouseEvent* e);
+    void     init();
+    QSize    prevSize;
+    
     virtual void mousePressEvent(QMouseEvent* e);
+    virtual void mouseMoveEvent(QMouseEvent* e);
     virtual void mouseReleaseEvent(QMouseEvent* e);
-
     virtual void keyPressEvent(QKeyEvent *);
-    virtual void keyReleaseEvent(QKeyEvent *e);
+    
+    void    getRelativeSize(QViewportItem *item, 
+                            float &llx, float &lly, float &urx, float &ury);
 
+    void    getRelativeSize(const QPointF &pos, const QRectF &rect,
+                            float &llx, float &lly,float &urx, float &ury);
+    
+                                                 
+    void    resizeEvent(QResizeEvent *event);
+    
     QString getNextId() const;
-    QString findViewportId(QCanvasItem *) const;
-    void activateItem(QCanvasItem *);
-    void bringToFront(QCanvasItem *);
-    void sendToBack(QCanvasItem *);
-
-    struct ViewportInfo
-    {
-        QString id;
-        float   lower_left[2];
-        float   upper_right[2];
-    };
-    typedef QMap<QCanvasItem*, ViewportInfo> QCanvasItemViewportInfoMap;
-
-    QCanvasItemViewportInfoMap viewportMap;
+    
+                        
+    void    activateItem(QViewportItem *);
+    void    bringToFront(QViewportItem *);
+    void    sendToBack(QViewportItem *);
+    
+    QMap<QString,QViewportItem*> items;
+    
     int                     minW, minH;
     double                  aspect;
     double                  zValue;
-    QCanvas                *canvas;
-    QCanvasItem            *item;
-    QCanvasItem            *createitem;
-    bool                    mouseDown;
-    QPoint                  moving_start;
-    int                     cursorResizeMode;
-    bool                    doContinuousUpdates;
-    bool                    shiftApplied;
+    QGraphicsScene         *scene;
+    QString                 prevSelected;
+    
+    bool                    dragViewportOutline;
+    QPointF                 dragMouseStart;
+    QGraphicsRectItem      *viewportOutline;
+    
+private slots:
+    void onSceneSelectionChanged();
+    
 };
 
 #endif

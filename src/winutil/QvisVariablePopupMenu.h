@@ -39,7 +39,10 @@
 #ifndef QVIS_VARIABLE_POPUP_MENU_H
 #define QVIS_VARIABLE_POPUP_MENU_H
 #include <winutil_exports.h>
-#include <qpopupmenu.h>
+
+#include <QAction>
+#include <QActionGroup>
+#include <QMenu>
 
 // ****************************************************************************
 // Class: QvisVariablePopupMenu
@@ -58,24 +61,31 @@
 //   Brad Whitlock, Mon Mar 17 15:12:48 PST 2003
 //   I changed the API.
 //
+//   Brad Whitlock, Fri May  9 10:29:44 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class WINUTIL_API QvisVariablePopupMenu : public QPopupMenu
+class WINUTIL_API QvisVariablePopupMenu : public QMenu
 {
     Q_OBJECT
 public:
-    QvisVariablePopupMenu(int plotType_, QWidget *parent, const char *name);
+    QvisVariablePopupMenu(int plotType_, QWidget *parent);
     virtual ~QvisVariablePopupMenu();
     int getPlotType() const { return plotType; };
     void setPlotType(int p) { plotType = p; };
     void setVarPath(const QString &str) { varPath = str; };
+
+    QAction *addVar(const QString &, bool valid = true);
+    int count() const;
 signals:
     void activated(int plotType_, const QString &varName);
 private slots:
-    void activatedCaught(int index);
+    void caughtTriggered(QAction *);
 private:
-    QString varPath;
-    int     plotType;
+    QActionGroup *actions;
+    QString       varPath;
+    int           plotType;
 };
 
 #endif

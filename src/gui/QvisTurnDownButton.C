@@ -37,8 +37,9 @@
 *****************************************************************************/
 
 #include <QvisTurnDownButton.h>
-#include <qpainter.h>
-#include <qstyle.h>
+#include <QPainter>
+#include <QStyle>
+#include <QStyleOptionHeader>
 
 // ****************************************************************************
 // Method: QvisTurnDownButton::QvisTurnDownButton
@@ -54,11 +55,13 @@
 // Creation:   Tue Dec 2 13:57:16 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 16:13:20 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisTurnDownButton::QvisTurnDownButton(QWidget *parent, const char *name) : 
-    QPushButton(parent, name)
+QvisTurnDownButton::QvisTurnDownButton(QWidget *parent) : 
+    QPushButton(parent)
 {
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum));
 }
@@ -96,29 +99,21 @@ QvisTurnDownButton::~QvisTurnDownButton()
 //   Brad Whitlock, Mon Mar 6 14:52:07 PST 2006
 //   Added Qt 3 implementation.
 //
+//   Brad Whitlock, Tue Jun  3 16:24:44 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisTurnDownButton::drawButtonLabel(QPainter *painter)
+QvisTurnDownButton::paintEvent(QPaintEvent *e)
 {
-    int x = 0;
-    int y = 0;
-    int w = width();
-    int h = height();
+    QPushButton::paintEvent(e);
 
-    if(style().inherits("QMotifStyle"))
-    {
-        x = y = 2;
-        w -= 4;
-        h -= 4;
-    }
-
-#if QT_VERSION >= 300
-    QRect r(x,y,w,h);
-    style().drawPrimitive(QStyle::PE_ArrowDown, painter, r, colorGroup(), QStyle::Style_Enabled);    
-#else
-    style().drawArrow(painter, Qt::DownArrow, isDown(),
-         x, y, w, h,
-         colorGroup(), isEnabled());
-#endif
+    QPainter paint(this);
+    QPolygon tri(3);
+    tri.setPoint(0, width()/2, height()*2/3);
+    tri.setPoint(1, width()-4, height()*1/3);
+    tri.setPoint(2, 4, height()*1/3);
+    paint.setBrush(palette().text());
+    paint.drawConvexPolygon(tri);
 }

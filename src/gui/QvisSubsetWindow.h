@@ -47,33 +47,17 @@ class QComboBox;
 class QFrame;
 class QGridLayout;
 class QLabel;
-class QListView;
-class QListViewItem;
+class QTreeView;
+class QTreeViewItem;
 class QPushButton;
-class QPopupMenu;
-class QScrollView;
+class QMenu;
+class QScrollArea;
 class QSplitter;
-class QvisSubsetListView;
-class QvisSubsetListViewItem;
+class QvisSubsetPanelWidget;
+class QvisSubsetPanelItem;
 class FileServerList;
 class avtSIL;
 
-struct SubsetPanel
-{
-    QFrame             *frame;
-    QGridLayout        *layout;
-    QvisSubsetListView *lv;
-    QLabel             *allSetsLabel;
-    QPushButton        *allSetsButton;
-    QPushButton        *allSetsActionButton;
-    QPopupMenu         *allSetsPopupMenu;
-    QLabel             *selectedSetsLabel;
-    QPushButton        *selectedSetsButton;
-    QPushButton        *selectedSetsActionButton;
-    QPopupMenu         *selectedSetsPopupMenu;
-};
-
-typedef std::vector<SubsetPanel> SubsetPanelVector;
 
 // ****************************************************************************
 // Class: QvisSubsetWindow
@@ -108,6 +92,9 @@ typedef std::vector<SubsetPanel> SubsetPanelVector;
 //   Brad Whitlock, Wed Apr  9 11:04:31 PDT 2008
 //   QString for caption, shortName.
 //
+//   Cyrus Harrison, Fri Jul 18 09:02:29 PDT 2008
+//   Refactored for Qt4.
+//
 // ****************************************************************************
 
 class GUI_API QvisSubsetWindow : public QvisPostableWindowObserver
@@ -120,40 +107,25 @@ public:
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisSubsetWindow();
     virtual void CreateWindowContents();
-    virtual void show();
+
 protected:
-    virtual void resizeEvent( QResizeEvent *e );
     virtual void UpdateWindow(bool doAll);
+    
     void Apply(bool ignore = false);
-    int  AddListView(bool visible = true);
-    int  GetNextListViewIndex(QListView *lv);
-    int  GetListViewIndex(const QObject *) const;
-    void ItemClicked(QvisSubsetListViewItem *item, int nextIndex);
-    void ClearListViewsToTheRight(int index);
-    void UpdateColumnWidths();
-    void UpdateCheckMarks(int lvIndex);
-    void TurnOnOff(int, bool, bool);
-    void TurnReverse(int, bool);
-    void SetButtonEnabledState(int lvIndex, bool val);
-    void ChangeSetSelection(int lvIndex, bool checkSelection);
-protected slots:
-    virtual void post();
-    virtual void unpost();
+    int  AddPanel(bool visible = true);
+    void UpdatePanels(int index = -1, bool panels_after = false);
+    void ClearPanelsToTheRight(int index);
+        
 private slots:
     void apply();
-    void listviewClicked(QListViewItem *item);
-    void listviewChecked(QvisSubsetListViewItem *item);
-    void listviewSelectionChanged();
-    void specialResize();
-    void allSetsClicked();
-    void selectedSetsClicked();
-    void setAllSetsButtonAction(int);
-    void setSelectedSetsButtonAction(int);
+    void onPanelItemSelected(int id,bool parent);
+    void onPanelStateChanged();
+    
 private:
-    int                  activePane;
-    QScrollView         *scrollView;
-    SubsetPanelVector    listViews;
-    QSplitter           *lvSplitter;
+    int FindPanelIndex(QObject *obj);
+    QScrollArea                    *scrollView;
+    QSplitter                      *panelSplitter;
+    QList<QvisSubsetPanelWidget *>  panels;
 
     // A few attributes of the current SIL restriction that we use to
     // determine how the window must be redrawn.

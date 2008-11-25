@@ -204,6 +204,9 @@ class WindowInformation;
 //   Brad Whitlock, Thu Jan 31 10:36:22 PST 2008
 //   Added saveCrashRecoveryFile.
 //
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -303,8 +306,8 @@ protected:
     virtual void hideEvent(QHideEvent *);
     virtual void showEvent(QShowEvent *);
 private slots:
-    void reopenFile(int);
-    void closeFile(int);
+    void reopenFile(QAction *);
+    void closeFile(QAction *);
 
     void windowAdd();
     void windowClone();
@@ -317,11 +320,11 @@ private slots:
     void windowLayout2x4();
     void windowLayout3x3();
 
-    void copyView(int);
-    void copyLighting(int);
-    void copyAnnotations(int);
-    void copyPlots(int);
-    void copyAll(int);
+    void copyView(QAction *);
+    void copyLighting(QAction *);
+    void copyAnnotations(QAction *);
+    void copyPlots(QAction *);
+    void copyAll(QAction *);
     void clearPlots();
     void clearReferenceLines();
     void clearPickPoints();
@@ -334,7 +337,7 @@ private slots:
     void autoUpdateToggled(bool);
 
     void winset(int);
-    void winset2(int);
+    void winset2(QAction *);
 
     void toggleNavigateMode();
     void toggleSpinMode();
@@ -346,7 +349,7 @@ private slots:
     void unlockEverything();
 private:
     void CreateGlobalArea(QWidget *par);
-    void UpdateFileMenuPopup(QPopupMenu *, int);
+    void UpdateFileMenuPopup(QMenu *, QAction *);
     void UpdateGlobalArea(bool doAll);
     void UpdateWindowList(bool doList);
     void UpdateWindowMenu(bool updateWindowNums);
@@ -369,34 +372,38 @@ private:
     QCheckBox                 *replacePlotsCheckBox;
     QCheckBox                 *autoUpdateCheckBox;
 
-    QPopupMenu                *filePopup;
-    QPopupMenu                *fileAdvancedPopup;
-    int                        fileAdvancedPopupId;
-    QPopupMenu                *reopenPopup;
-    int                        reopenPopupId;
-    QPopupMenu                *closePopup;
-    int                        closePopupId;
+    QMenu                     *filePopup;
+    QAction                   *openFileAct;
+    QMenu                     *fileAdvancedPopup;
+    QAction                   *fileAdvancedPopupAct;
+    QMenu                     *reopenPopup;
+    QAction                   *reopenPopupAct;
+    QMenu                     *closePopup;
+    QAction                   *closePopupAct;
     bool                       advancedMenuShowing;
 
-    QPopupMenu                *winPopup;
-    QPopupMenu                *layoutPopup;
-    QPopupMenu                *activeWindowPopup;
-    int                       activeWindowPopupId;
-    QPopupMenu                *topCopyPopup;
-    int                       topCopyPopupId;
-    int                       copyPopupId[5];
-    QPopupMenu                *copyPopup[5];
-    int                       clearPopupId;
-    QPopupMenu                *lockPopup;
-    int                       lockPopupId;
-    int                       lockTimeId;
-    int                       lockToolsId;
-    int                       lockViewId;
-    int                       navigateModeId;
-    int                       spinModeId;
-    int                       fullFrameModeId;
-    QPopupMenu                *helpPopup;
-    int                       updateVisItId;
+    QMenu                    *winPopup;
+    QMenu                    *layoutPopup;
+    QAction                  *layoutActions[6];
+    QMenu                    *activeWindowPopup;
+    QAction                  *activeWindowPopupAct;
+    QMenu                    *topCopyPopup;
+    QAction                  *topCopyPopupAct;
+    QAction                  *copyPopupAct[5];
+    QMenu                    *copyPopup[5];
+    QMenu                    *clearPopup;
+    QAction                  *clearPopupAct;
+    QMenu                    *lockPopup;
+    
+    QAction                  *lockPopupAct;
+    QAction                  *lockTimeAct;
+    QAction                  *lockToolsAct;
+    QAction                  *lockViewAct;
+    QAction                  *navigateModeAct;
+    QAction                  *spinModeAct;
+    QAction                  *fullFrameModeAct;
+    QMenu                    *helpPopup;
+    QAction                  *updateVisItAct;
 
     QTimer                    *recoveryFileTimer;
     bool                       okayToSaveRecoveryFile;

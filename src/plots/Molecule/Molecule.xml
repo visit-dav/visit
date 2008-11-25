@@ -1,11 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="Molecule" type="plot" label="Molecule" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar" iconFile="Molecule.xpm">
+  <Plugin name="Molecule" type="plot" label="Molecule" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar" iconFile="Molecule.xpm">
     <CXXFLAGS>
       $(GLEW_INCLUDE)
     </CXXFLAGS>
-    <LIBS>
-      $(GLEW_LIBS) $(GL_LIBS)
-    </LIBS>
     <Files components="V">
       avtMoleculeRenderer.C
       avtOpenGLMoleculeRenderer.C
@@ -14,6 +11,10 @@
       avtMesaAtomTexturer.C
       avtMoleculeFilter.C
     </Files>
+    <LIBS components="V">
+      $(GLEW_LIBS)
+      $(GL_LIBS)
+    </LIBS>
     <Files components="E">
       avtMoleculeRenderer.C
       avtOpenGLMoleculeRenderer.C
@@ -22,7 +23,11 @@
       avtMesaAtomTexturer.C
       avtMoleculeFilter.C
     </Files>
-    <Attribute name="MoleculeAttributes" purpose="This class contains the plot attributes for the molecule plot." persistent="true" codefile="MoleculeAttributes.code">
+    <LIBS components="E">
+      $(GLEW_LIBS)
+      $(GL_LIBS)
+    </LIBS>
+    <Attribute name="MoleculeAttributes" purpose="This class contains the plot attributes for the molecule plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MoleculeAttributes.code">
       <Enum name="AtomRenderingMode">
         NoAtoms
         SphereAtoms
@@ -61,7 +66,7 @@
       <Field name="colorBonds" label="Color bonds by" type="enum" subtype="BondColoringMode" enabler="drawBondsAs:LineBonds,CylinderBonds">
         ColorByAtom
       </Field>
-      <Field name="bondSingleColor" label="Bond single color" type="color" enabler="colorBonds:SingleColor">
+      <Field name="bondSingleColor" label="Bond single color" type="color" length="4" enabler="colorBonds:SingleColor">
         128
         128
         128

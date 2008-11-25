@@ -43,7 +43,7 @@
 
 // Forward declarations.
 class QString;
-class QMultiLineEdit;
+class QTextEdit;
 class MessageAttributes;
 
 // ****************************************************************************
@@ -84,7 +84,7 @@ signals:
 protected:
     virtual void UpdateWindow(bool doAll);
 private:
-    QMultiLineEdit *outputText;
+    QTextEdit *outputText;
 };
 
 #endif

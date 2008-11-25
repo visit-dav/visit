@@ -37,9 +37,10 @@
 *****************************************************************************/
 
 #include <QvisPeriodicTableWidget.h>
-#include <qcursor.h>
-#include <qpainter.h>
-#include <qpixmap.h>
+#include <QCursor>
+#include <QKeyEvent>
+#include <QPainter>
+
 #include "AtomicProperties.h"
 
 static int periodic_table[10][18] = {
@@ -102,10 +103,13 @@ static int element_type_colors[9][3] = {
 //    Jeremy Meredith, Tue Feb 12 14:00:26 EST 2008
 //    Added support for hinting selectable elements.
 //
+//    Brad Whitlock, Tue Jun  3 14:22:03 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
-QvisPeriodicTableWidget::QvisPeriodicTableWidget(QWidget *parent, const char *name,
-    WFlags f) : QvisGridWidget(parent, name, f)
+QvisPeriodicTableWidget::QvisPeriodicTableWidget(QWidget *parent, 
+    Qt::WindowFlags f) : QvisGridWidget(parent, f)
 {
     numRows = 10;
     numColumns = 18;
@@ -182,6 +186,8 @@ QvisPeriodicTableWidget::setSelectedElement(int element)
 // Creation:   August 11, 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Jun  3 14:22:28 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -194,33 +200,33 @@ QvisPeriodicTableWidget::keyPressEvent(QKeyEvent *e)
     // Handle the key strokes.
     switch(e->key())
     {
-    case Key_Escape:
+    case Qt::Key_Escape:
         // emit an empty color.
         emit selectedElement(indexToElement(activeIndex()-1));
         break;
-    case Key_Return:
-    case Key_Enter:
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
         setSelectedIndex(activeIndex());
         break;
-    case Key_Left:
+    case Qt::Key_Left:
         if(column == 0)
             setActiveIndex(getIndex(row, numColumns - 1));
         else
             setActiveIndex(getIndex(row, column - 1));
         break;
-    case Key_Right:
+    case Qt::Key_Right:
         if(column == numColumns - 1)
             setActiveIndex(getIndex(row, 0));
         else
             setActiveIndex(getIndex(row, column + 1));
         break;
-    case Key_Up:
+    case Qt::Key_Up:
         if(row == 0)
             setActiveIndex(getIndex(numRows - 1, column));
         else
             setActiveIndex(getIndex(row - 1, column));
         break;
-    case Key_Down:
+    case Qt::Key_Down:
         if(row == numRows - 1)
             setActiveIndex(getIndex(0, column));
         else
@@ -233,7 +239,7 @@ QvisPeriodicTableWidget::keyPressEvent(QKeyEvent *e)
 // Method: QvisPeriodicTableWidget::drawItem
 //
 // Purpose: 
-//   Draws the specified color box into the drawing pixmap.
+//   Draws the specified color box into the widget.
 //
 // Arguments:
 //   paint : The painter to use.
@@ -247,6 +253,9 @@ QvisPeriodicTableWidget::keyPressEvent(QKeyEvent *e)
 //    Added support for hinting selectable elements.  The hinting method
 //    that appeared to be the best combination between noticeable and
 //    distracting, at least on my machine, was simply to boldface the font.
+//
+//    Brad Whitlock, Tue Jun  3 15:17:24 PDT 2008
+//    Make the highlight more obvious on the active item.
 //
 // ****************************************************************************
 
@@ -274,6 +283,8 @@ QvisPeriodicTableWidget::drawItem(QPainter &paint, int index)
     getItemRect(index, x, y, boxWidth, boxHeight);
 
     QColor color(colorvals[0], colorvals[1], colorvals[2]);
+    if(index == activeIndex())
+        color = palette().color(QPalette::Highlight);
     paint.fillRect(x + 1, y + 1, boxWidth - 2, boxHeight - 2, color);
     drawBox(paint, QRect(x+1,y+1,boxWidth-2,boxHeight-2),
             color.light(125),
@@ -282,12 +293,13 @@ QvisPeriodicTableWidget::drawItem(QPainter &paint, int index)
     if (hint)
     {
         QFont newfont(oldfont);
-        //newfont.setItalic(true);
-        //newfont.setUnderline(true);
         newfont.setBold(true);
         paint.setFont(newfont);
     }
-    paint.setPen(colorGroup().foreground());
+    if(index == activeIndex())
+        paint.setPen(palette().color(QPalette::HighlightedText));
+    else
+        paint.setPen(palette().color(QPalette::WindowText));
     paint.drawText(QRect(x,y,boxWidth,boxHeight),
                    Qt::AlignHCenter | Qt::AlignVCenter,
                    element_names[element-1]);
@@ -312,7 +324,7 @@ QvisPeriodicTableWidget::drawItem(QPainter &paint, int index)
 // ****************************************************************************
 
 bool
-QvisPeriodicTableWidget::isValidIndex(int index)
+QvisPeriodicTableWidget::isValidIndex(int index) const
 {
     return ((index >= 0) &&
             (index < numGridSquares) &&
@@ -350,7 +362,7 @@ QvisPeriodicTableWidget::emitSelection()
 //
 // ****************************************************************************
 int
-QvisPeriodicTableWidget::indexToElement(int index)
+QvisPeriodicTableWidget::indexToElement(int index) const
 {
     int r = index / numColumns;
     int c = index % numColumns;

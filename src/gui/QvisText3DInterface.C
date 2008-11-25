@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 #include <QvisText3DInterface.h>
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QRadioButton>
+#include <QSpinBox>
 #include <QvisColorButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisScreenPositionEdit.h>
@@ -83,48 +83,51 @@
 // Creation:   Wed Nov 7 11:46:42 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 21 11:33:44 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisText3DInterface::QvisText3DInterface(QWidget *parent,
-    const char *name) : QvisAnnotationObjectInterface(parent, name)
+QvisText3DInterface::QvisText3DInterface(QWidget *parent) : 
+    QvisAnnotationObjectInterface(parent)
 {
     // Set the title of the group box.
     this->setTitle(GetName());
 
-    QGridLayout *cLayout = new QGridLayout(topLayout, 11, 4);
+    QGridLayout *cLayout = new QGridLayout(0);
+    topLayout->addLayout(cLayout);
     cLayout->setSpacing(10);
 
     int row = 0;
 
     // Add controls for entering the text
-    textLineEdit = new QLineEdit(this, "textLineEdit");
+    textLineEdit = new QLineEdit(this);
     connect(textLineEdit, SIGNAL(returnPressed()),
             this, SLOT(textChanged()));
-    cLayout->addMultiCellWidget(textLineEdit, row, row, 1, 3);
-    cLayout->addWidget(new QLabel(textLineEdit, tr("Text"),
-        this), row, 0);
+    cLayout->addWidget(textLineEdit, row, 1, 1, 2);
+    cLayout->addWidget(new QLabel(tr("Text"), this), row, 0);
     ++row;
 
     // Add controls for the position
-    positionEdit = new QLineEdit(this, "positionEdit");
+    positionEdit = new QLineEdit(this);
     connect(positionEdit, SIGNAL(returnPressed()),
             this, SLOT(positionChanged()));
-    cLayout->addMultiCellWidget(positionEdit, row, row, 1, 3);
-    cLayout->addWidget(new QLabel(positionEdit, tr("Position"),
-        this), row, 0);
+    cLayout->addWidget(positionEdit, row, 1, 1, 2);
+    cLayout->addWidget(new QLabel(tr("Position"), this), row, 0);
     ++row;
 
     // Add controls for the height.
-    heightMode = new QButtonGroup(0, "heightMode");
-    connect(heightMode, SIGNAL(clicked(int)),
+    heightMode = new QButtonGroup(this);
+    connect(heightMode, SIGNAL(buttonClicked(int)),
             this, SLOT(heightModeChanged(int)));
     cLayout->addWidget(new QLabel(tr("Height"), this), row, 0);
-    QRadioButton *rb = new QRadioButton(tr("Relative"), this, "relative");
-    heightMode->insert(rb, 0);
+    QRadioButton *rb = new QRadioButton(tr("Relative"), this);
+    heightMode->addButton(rb, 0);
     cLayout->addWidget(rb, row, 1);
     // Add controls for relative height
-    relativeHeightSpinBox = new QSpinBox(1, 100, 1, this, "relativeHeightSpinBox");
+    relativeHeightSpinBox = new QSpinBox(this);
+    relativeHeightSpinBox->setMinimum(1);
+    relativeHeightSpinBox->setMaximum(100);
     relativeHeightSpinBox->setSuffix("%");
     relativeHeightSpinBox->setButtonSymbols(QSpinBox::PlusMinus);
     connect(relativeHeightSpinBox, SIGNAL(valueChanged(int)),
@@ -133,46 +136,54 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent,
     ++row;
 
     // Add controls for fixed height.
-    rb = new QRadioButton(tr("Fixed"), this, "Fixed");
-    heightMode->insert(rb, 1);
+    rb = new QRadioButton(tr("Fixed"), this);
+    heightMode->addButton(rb, 1);
     cLayout->addWidget(rb, row, 1);
-    fixedHeightEdit = new QLineEdit(this, "fixedHeightEdit");
+    fixedHeightEdit = new QLineEdit(this);
     connect(fixedHeightEdit, SIGNAL(returnPressed()),
             this, SLOT(fixedHeightChanged()));
     cLayout->addWidget(fixedHeightEdit, row, 2);
+    cLayout->setColumnStretch(2, 10);
     ++row;
 
-    QFrame *splitter1 = new QFrame(this, "splitter");
+    QFrame *splitter1 = new QFrame(this);
     splitter1->setFrameStyle(QFrame::HLine + QFrame::Raised);
-    cLayout->addMultiCellWidget(splitter1, row, row, 0, 3);  
+    cLayout->addWidget(splitter1, row, 0, 1, 3);
     ++row;
 
-    facesCameraCheckBox = new QCheckBox(tr("Preserve orientation when view changes"), this, "facesCameraCheckBox");
+    facesCameraCheckBox = new QCheckBox(tr("Preserve orientation when view changes"), this);
     connect(facesCameraCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(facesCameraToggled(bool)));
-    cLayout->addMultiCellWidget(facesCameraCheckBox, row, row, 0, 3);
+    cLayout->addWidget(facesCameraCheckBox, row, 0, 1, 3);
     ++row;
 
-    rotateZ = new QSpinBox(-360, 360, 1, this, "rotateZ");
+    rotateZ = new QSpinBox(this);
+    rotateZ->setMinimum(-360);
+    rotateZ->setMaximum(360);
     rotateZ->setButtonSymbols(QSpinBox::PlusMinus);
     rotateZ->setSuffix(" deg");
     connect(rotateZ, SIGNAL(valueChanged(int)),
             this, SLOT(rotateZChanged(int)));
-    QLabel *rotateZLabel = new QLabel(rotateZ, tr("Rotate Z"), this, "rotateZLabel");
-    rotateX = new QSpinBox(-360, 360, 1, this, "rotateX");
+    QLabel *rotateZLabel = new QLabel(tr("Rotate Z"), this);
+    rotateX = new QSpinBox(this);
+    rotateX->setMinimum(-360);
+    rotateX->setMaximum(360);
     rotateX->setButtonSymbols(QSpinBox::PlusMinus);
     rotateX->setSuffix(" deg");
     connect(rotateX, SIGNAL(valueChanged(int)),
             this, SLOT(rotateXChanged(int)));
-    QLabel *rotateXLabel = new QLabel(rotateX, tr("Rotate X"), this, "rotateXLabel");
-    rotateY = new QSpinBox(-360, 360, 1, this, "rotateY");
+    QLabel *rotateXLabel = new QLabel(tr("Rotate X"), this);
+    rotateY = new QSpinBox(this);
+    rotateY->setMinimum(-360);
+    rotateY->setMaximum(360);
     rotateY->setButtonSymbols(QSpinBox::PlusMinus);
     rotateY->setSuffix(" deg");
     connect(rotateY, SIGNAL(valueChanged(int)),
             this, SLOT(rotateYChanged(int)));
-    QLabel *rotateYLabel = new QLabel(rotateY, tr("Rotate Y"), this, "rotateYLabel");
-    QGridLayout *rLayout = new QGridLayout(2, 3, 5, "rLayout");
-    cLayout->addMultiCellLayout(rLayout, row, row, 0, 3);
+    QLabel *rotateYLabel = new QLabel(tr("Rotate Y"), this);
+    QGridLayout *rLayout = new QGridLayout(0);
+    rLayout->setMargin(0);
+    cLayout->addLayout(rLayout, row, 0, 1, 3);
     rLayout->addWidget(rotateYLabel, 0, 0);
     rLayout->addWidget(rotateXLabel, 0, 1);
     rLayout->addWidget(rotateZLabel, 0, 2);
@@ -181,35 +192,32 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent,
     rLayout->addWidget(rotateZ, 1, 2);
     ++row;
 
-    QFrame *splitter2 = new QFrame(this, "splitter2");
+    QFrame *splitter2 = new QFrame(this);
     splitter2->setFrameStyle(QFrame::HLine + QFrame::Raised);
-    cLayout->addMultiCellWidget(splitter2, row, row, 0, 3);  
+    cLayout->addWidget(splitter2, row, 0, 1, 4);
     ++row;
 
     // Add controls for the text color.
-    textColorButton = new QvisColorButton(this, "textColorButton");
+    textColorButton = new QvisColorButton(this);
     connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(textColorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(textColorButton, tr("Text color"), this),
-        row, 0, Qt::AlignLeft);
+    cLayout->addWidget(new QLabel(tr("Text color")), row, 0, Qt::AlignLeft);
     cLayout->addWidget(textColorButton, row, 1);
-    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this,
-        "textColorOpacity");
+    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this);
     connect(textColorOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(textOpacityChanged(int)));
-    cLayout->addMultiCellWidget(textColorOpacity, row, row, 2, 3);
+    cLayout->addWidget(textColorOpacity, row, 2, 1, 2);
     ++row;
 
     // Added a use foreground toggle
-    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this,
-        "useForegroundColorCheckBox");
+    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this);
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));
-    cLayout->addMultiCellWidget(useForegroundColorCheckBox, row, row, 0, 3);
+    cLayout->addWidget(useForegroundColorCheckBox, row, 0, 1, 3);
     ++row;
 
     // Added a visibility toggle
-    visibleCheckBox = new QCheckBox(tr("Visible"), this, "visibleCheckBox");
+    visibleCheckBox = new QCheckBox(tr("Visible"), this);
     connect(visibleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(visibilityToggled(bool)));
     cLayout->addWidget(visibleCheckBox, row, 0);
@@ -230,7 +238,6 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent,
 
 QvisText3DInterface::~QvisText3DInterface()
 {
-    delete heightMode;
 }
 
 // ****************************************************************************
@@ -248,7 +255,9 @@ QvisText3DInterface::~QvisText3DInterface()
 // Creation:   Wed Nov 7 16:06:47 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 21 11:37:41 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QString
@@ -256,7 +265,7 @@ QvisText3DInterface::GetMenuText(const AnnotationObject &annot) const
 {
     QString retval;
     if(annot.GetText().size() > 0)
-        retval.sprintf("%s - %s", GetName().latin1(), annot.GetText()[0].c_str());
+        retval = QString("%1 - %2").arg(GetName()).arg(annot.GetText()[0].c_str());
     else
         retval = GetName();
 
@@ -274,6 +283,8 @@ QvisText3DInterface::GetMenuText(const AnnotationObject &annot) const
 // Creation:   Wed Nov 7 11:48:15 PDT 2007
 //
 // Modifications:
+//   Brad Whitlock, Mon Jul 21 11:38:06 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -297,7 +308,7 @@ QvisText3DInterface::UpdateControls()
 
     // Set the height mode
     heightMode->blockSignals(true);
-    heightMode->setButton(annot->GetRelativeHeightMode()?0:1);
+    heightMode->button(annot->GetRelativeHeightMode()?0:1)->setChecked(true);
     heightMode->blockSignals(false);
     relativeHeightSpinBox->setEnabled(annot->GetRelativeHeightMode());
     fixedHeightEdit->setEnabled(!annot->GetRelativeHeightMode());
@@ -377,6 +388,9 @@ QvisText3DInterface::UpdateControls()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Mon Jul 21 11:41:26 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -387,32 +401,20 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 0 || doAll)
     {
         stringVector sv;
-        sv.push_back(textLineEdit->text().latin1());
+        sv.push_back(textLineEdit->text().toStdString());
         annot->SetText(sv);
     }
 
     if(which_widget == 1 || doAll)
     {
-        // Get the new position
-        QString temp = positionEdit->displayText().stripWhiteSpace();
-        bool okay = !temp.isEmpty();
-        if (okay)
+        double v[3];
+        if(LineEditGetDoubles(positionEdit, v, 3))
+            annot->SetPosition(v);
+        else
         {
-            double v[3];
-            if (sscanf(temp.latin1(), "%lg %lg %lg", &v[0], &v[1], &v[2]) == 3)
-            {
-                annot->SetPosition(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            QString num; num.sprintf("%lg %lg %lg",
-                annot->GetPosition()[0],annot->GetPosition()[1],annot->GetPosition()[2]);
             QString msg = tr("The position must be specified as a 3D coordinate. "
-                             "Resetting to the last good value of %1.").arg(num);
+                             "Resetting to the last good value of %1.").
+                arg(DoublesToQString(annot->GetPosition(), 3));
             Error(msg);
             annot->SetPosition(annot->GetPosition());
         }  
@@ -428,20 +430,13 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
 
     if(which_widget == 3 || doAll)
     {
-         // Get the new fixedHeightEdit
-        QString temp = fixedHeightEdit->displayText().stripWhiteSpace();
-        bool okay = !temp.isEmpty();
-        if (okay)
+        double v;
+        bool okay = false;
+        if(LineEditGetDouble(fixedHeightEdit, v))
         {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                okay = v > 0.;
-                if(okay)
-                    annot->SetFixedHeight(v);
-            }
-            else
-                okay = false;
+            okay = v > 0.;
+            if(okay)
+                annot->SetFixedHeight(v);
         }
 
         if (!okay)

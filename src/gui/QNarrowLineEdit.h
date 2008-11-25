@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#include <qlineedit.h>
+#include <QLineEdit>
 
 // ****************************************************************************
 //  Class:  QNarrowLineEdit
@@ -51,12 +51,12 @@
 class QNarrowLineEdit : public QLineEdit
 {
   public:
-    QNarrowLineEdit(QWidget *p, const char *n=0)
-        : QLineEdit(p, n)
+    QNarrowLineEdit(QWidget *p)
+        : QLineEdit(p)
     {
     }
-    QNarrowLineEdit(const QString &s, QWidget *p, const char *n=0)
-        : QLineEdit(s, p, n)
+    QNarrowLineEdit(const QString &s, QWidget *p)
+        : QLineEdit(s, p)
     {
     }
     QSize sizeHint() const

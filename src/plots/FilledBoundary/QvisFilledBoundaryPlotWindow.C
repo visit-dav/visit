@@ -38,22 +38,23 @@
 
 #include <QvisFilledBoundaryPlotWindow.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qhbox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlistbox.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qpixmapcache.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qslider.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QItemDelegate>
+#include <QLabel>
+#include <QLayout>
+#include <QListWidget>
+#include <QPainter>
+#include <QPixmap>
+#include <QPixmapCache>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSlider>
 
 #include <QvisColorButton.h>
+#include <QvisColorSwatchListWidget.h>
 #include <QvisColorTableButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
@@ -63,85 +64,13 @@
 #include <ViewerProxy.h>
 
 // ****************************************************************************
-// Class: QListBoxTextWithColor
-//
-// Purpose:
-//   This class is the type of item that we put into the listbox. It is 
-//   mostly just a stock QListBoxText except that the paint() method draws
-//   a square of color to the left of the name.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 1 09:46:11 PDT 2002
-//
-// Modifications:
-//   Brad Whitlock, Mon Dec 2 09:17:10 PDT 2002
-//   Made it look different when it is disabled.
-//
-// ****************************************************************************
-
-class QListBoxTextWithColor : public QListBoxText
-{
-public:
-    QListBoxTextWithColor(QListBox *listbox, const QString &text,
-        const QColor &c) : QListBoxText(listbox, text)
-    {
-        C = c;
-    }
-
-    virtual ~QListBoxTextWithColor() { };
-    void setText(const QString &str) { QListBoxItem::setText(str); };
-    void setColor(const QColor &c)   { C = c; };
-    const QColor &color() const      { return C; };
-
-    void paint(QPainter *painter)
-    {
-        QFontMetrics fm = painter->fontMetrics();
-        QRect r(fm.boundingRect("XX"));
-        QBrush brush(C);
-        QPen oldPen(painter->pen()), newPen(listBox()->colorGroup().text());
-
-        if(!listBox()->isEnabled())
-        {
-            brush.setStyle(QBrush::Dense5Pattern);
-            painter->fillRect(QRect(0, 0, listBox()->visibleWidth(), height(listBox())),
-                QBrush(listBox()->colorGroup().base()));
-        }
-        else
-        {
-            if(selected())
-            {
-                newPen = QPen(listBox()->colorGroup().highlightedText());
-                painter->fillRect(QRect(0, 0, listBox()->visibleWidth(), height(listBox())),
-                    QBrush(listBox()->colorGroup().highlight()));
-            }
-            else
-            {
-                painter->fillRect(QRect(0, 0, listBox()->visibleWidth(), height(listBox())),
-                    QBrush(listBox()->colorGroup().base()));
-            }
-        }
-        int fontY = fm.ascent() + fm.leading()/2;
-        painter->fillRect(QRect(4, fontY-1, r.width(), height(listBox()) - 2*fontY), brush);
-        painter->setPen(newPen);
-        painter->drawText(r.width()+8, fontY, text());
-        painter->setPen(oldPen);
-    }
-
-protected:
-    QColor C;
-};
-
-
-// ****************************************************************************
 // Method: QvisFilledBoundaryPlotWindow::QvisFilledBoundaryPlotWindow
 //
 // Purpose: 
 //   Constructor for the QvisFilledBoundaryPlotWindow class.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -162,6 +91,7 @@ QvisFilledBoundaryPlotWindow::QvisFilledBoundaryPlotWindow(const int type,
     // Initialize widgets that we'll have to delete manually. These are
     // parentless widgets.
     colorModeButtons = 0;
+    smoothingLevelButtons = 0;
 }
 
 // ****************************************************************************
@@ -171,7 +101,7 @@ QvisFilledBoundaryPlotWindow::QvisFilledBoundaryPlotWindow(const int type,
 //   Destructor for the QvisFilledBoundaryPlotWindow class.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -182,9 +112,6 @@ QvisFilledBoundaryPlotWindow::QvisFilledBoundaryPlotWindow(const int type,
 QvisFilledBoundaryPlotWindow::~QvisFilledBoundaryPlotWindow()
 {
     boundaryAtts = 0;
-
-    // no parents, delete them manually.
-    delete colorModeButtons;
 }
 
 // ****************************************************************************
@@ -195,78 +122,74 @@ QvisFilledBoundaryPlotWindow::~QvisFilledBoundaryPlotWindow()
 //   up their signals/slots.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+// Creation:   June 12, 2003
 //
 // Modifications:
-//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
-//    Added clean zones only.
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Added pointControl.
 //
-//    Jeremy Meredith, Wed Apr 14 16:43:06 PDT 2004
-//    Added mixed color.
+//   Brad Whitlock, Wed Jul 20 17:58:11 PST 2005
+//   Added a new slot
 //
-//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
-//    Added pointControl.
+//   Brad Whitlock, Tue Apr 22 16:24:27 PDT 2008
+//   Added tr()'s.
 //
-//    Brad Whitlock, Tue Apr 22 16:47:04 PDT 2008
-//    Added tr()'s
+//   Brad Whitlock, Thu Jul 17 11:35:40 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
 void
 QvisFilledBoundaryPlotWindow::CreateWindowContents()
 {
-    QGridLayout *checkBoxLayout = new QGridLayout(topLayout, 2, 4, 10);
+    QHBoxLayout *lineLayout = new QHBoxLayout(0);
+    lineLayout->setMargin(0);
+    topLayout->addLayout(lineLayout);
 
     // Create the lineSyle widget.
-    lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
-    checkBoxLayout->addWidget(lineStyle, 1, 1);
+    lineStyle = new QvisLineStyleWidget(0, central);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, tr("Line style"),
-                                central, "lineStyleLabel");
-    checkBoxLayout->addWidget(lineStyleLabel, 1, 0);
+    lineStyleLabel = new QLabel(tr("Line style"), central);
+    lineStyleLabel->setBuddy(lineStyle);
+    lineLayout->addWidget(lineStyleLabel);
+    lineLayout->addWidget(lineStyle);
 
     // Create the lineSyle widget.
-    lineWidth = new QvisLineWidthWidget(0, central, "lineWidth");
-    checkBoxLayout->addWidget(lineWidth, 1, 3);
+    lineWidth = new QvisLineWidthWidget(0, central);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, tr("Line width"),
-                                central, "lineWidthLabel");
-    checkBoxLayout->addWidget(lineWidthLabel, 1, 2);
+    lineWidthLabel = new QLabel(tr("Line width"), central);
+    lineWidthLabel->setBuddy(lineWidth);
+    lineLayout->addWidget(lineWidthLabel);
+    lineLayout->addWidget(lineWidth);
 
     // Create the boundary color group box.
-    boundaryColorGroup = new QGroupBox(central, "boundaryColorGroup");
+    boundaryColorGroup = new QGroupBox(central);
     boundaryColorGroup->setTitle(tr("FilledBoundary colors"));
     topLayout->addWidget(boundaryColorGroup);
-    QVBoxLayout *innerLayout = new QVBoxLayout(boundaryColorGroup);
-    innerLayout->setMargin(10);
-    innerLayout->addSpacing(15);
 
     // Create the mode buttons that determine if the window is in single
     // or multiple color mode.
-    colorModeButtons = new QButtonGroup(0, "colorModeButtons");
-    connect(colorModeButtons, SIGNAL(clicked(int)),
+    colorModeButtons = new QButtonGroup(boundaryColorGroup);
+    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
-    QGridLayout *colorLayout = new QGridLayout(innerLayout, 5, 3);
+    QGridLayout *colorLayout = new QGridLayout(boundaryColorGroup);
     colorLayout->setSpacing(10);
-    colorLayout->setColStretch(2, 1000);
-    QRadioButton *rb = new QRadioButton(tr("Color table"), boundaryColorGroup,
-        "colorTable");
-    colorModeButtons->insert(rb);
+    colorLayout->setMargin(5);
+    colorLayout->setColumnStretch(2, 1000);
+    QRadioButton *rb = new QRadioButton(tr("Color table"), boundaryColorGroup);
+    colorModeButtons->addButton(rb, 0);
     colorLayout->addWidget(rb, 1, 0);
-    rb = new QRadioButton(tr("Single"), boundaryColorGroup, "singleColor");
-    colorModeButtons->insert(rb);
+    rb = new QRadioButton(tr("Single"), boundaryColorGroup);
+    colorModeButtons->addButton(rb, 1);
     colorLayout->addWidget(rb, 2, 0);
-    rb = new QRadioButton(tr("Multiple"), boundaryColorGroup, "multipleColor");
-    colorModeButtons->insert(rb);
+    rb = new QRadioButton(tr("Multiple"), boundaryColorGroup);
+    colorModeButtons->addButton(rb, 2);
     colorLayout->addWidget(rb, 3, 0);
 
     // Create the single color button.
-    singleColor = new QvisColorButton(boundaryColorGroup,
-        "singleColorButton");
+    singleColor = new QvisColorButton(boundaryColorGroup);
     singleColor->setButtonColor(QColor(255, 0, 0));
     connect(singleColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(singleColorChanged(const QColor &)));
@@ -274,7 +197,7 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 
     // Create the single color opacity.
     singleColorOpacity = new QvisOpacitySlider(0, 255, 25, 255,
-        boundaryColorGroup, "singleColorOpacity", NULL);
+        boundaryColorGroup, NULL);
     singleColorOpacity->setTickInterval(64);
     singleColorOpacity->setGradientColor(QColor(0, 0, 0));
     connect(singleColorOpacity, SIGNAL(valueChanged(int)),
@@ -282,56 +205,57 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     colorLayout->addWidget(singleColorOpacity, 2, 2);
 
     // Try adding the multiple color button.
-    multipleColor = new QvisColorButton(boundaryColorGroup,
-        "multipleColor");
+    multipleColor = new QvisColorButton(boundaryColorGroup);
     connect(multipleColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(multipleColorChanged(const QColor &)));
     colorLayout->addWidget(multipleColor, 3, 1);
 
     // Create the multiple color opacity.
     multipleColorOpacity = new QvisOpacitySlider(0, 255, 25, 255,
-        boundaryColorGroup, "multipleColorOpacity", NULL);
+        boundaryColorGroup, NULL);
     multipleColorOpacity->setTickInterval(64);
     multipleColorOpacity->setGradientColor(QColor(0, 0, 0));
     connect(multipleColorOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(multipleColorOpacityChanged(int)));
     colorLayout->addWidget(multipleColorOpacity, 3, 2);
 
-    // Create the multiple color listbox.
-    multipleColorList = new QListBox(boundaryColorGroup, "multipleColorList");
+    // Create the multiple color list widget.
+    multipleColorList = new QvisColorSwatchListWidget(boundaryColorGroup);
     multipleColorList->setMinimumHeight(100);
-    multipleColorList->setSelectionMode(QListBox::Extended);
-    connect(multipleColorList, SIGNAL(selectionChanged()),
+    connect(multipleColorList, SIGNAL(itemSelectionChanged()),
             this, SLOT(boundarySelectionChanged()));
-    colorLayout->addMultiCellWidget(multipleColorList, 4, 4, 1, 2);
-    multipleColorLabel = new QLabel(multipleColorList, tr("Boundaries"),
-        boundaryColorGroup, "multipleColorLabel");
+    colorLayout->addWidget(multipleColorList, 4, 1, 1, 2);
+    multipleColorLabel = new QLabel(tr("Boundaries"), boundaryColorGroup);
+    multipleColorLabel->setBuddy(multipleColorList);
     colorLayout->addWidget(multipleColorLabel, 4, 0, Qt::AlignRight);
 
     // Create the color table widget
-    colorTableButton = new QvisColorTableButton(boundaryColorGroup, "colorTableButton");
+    colorTableButton = new QvisColorTableButton(boundaryColorGroup);
     connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    colorLayout->addMultiCellWidget(colorTableButton, 1, 1, 1, 2, AlignLeft | AlignVCenter);
+    colorLayout->addWidget(colorTableButton, 1, 1, 1, 2, Qt::AlignLeft | Qt::AlignVCenter);
 
     // Create the overall opacity.
-    QGridLayout *opLayout = new QGridLayout(topLayout, 7, 2);
+    QHBoxLayout *opLayout = new QHBoxLayout(0);
+    opLayout->setMargin(0);
     opLayout->setSpacing(5);
+    topLayout->addLayout(opLayout);
     overallOpacity = new QvisOpacitySlider(0, 255, 25, 255, central, 
-                    "overallOpacity", NULL);
+                     NULL);
     overallOpacity->setTickInterval(64);
     overallOpacity->setGradientColor(QColor(0, 0, 0));
     connect(overallOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(overallOpacityChanged(int)));
-    opLayout->addWidget(overallOpacity, 0, 1);
 
-    QLabel *overallOpacityLabel = new QLabel(overallOpacity, tr("Opacity"), 
-                                      central, "overallOpacityLabel"); 
-    overallOpacityLabel->setAlignment(AlignLeft | AlignVCenter);
-    opLayout->addWidget(overallOpacityLabel, 0, 0);
+    QLabel *overallOpacityLabel = new QLabel(tr("Opacity"), central);
+    overallOpacityLabel->setBuddy(overallOpacity);
+    overallOpacityLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    opLayout->addWidget(overallOpacityLabel);
+    opLayout->addWidget(overallOpacity);
+    opLayout->setStretchFactor(overallOpacity, 10);
 
     // Create the point control 
-    pointControl = new QvisPointControl(central, "pointControl");
+    pointControl = new QvisPointControl(central);
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
     connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
@@ -342,59 +266,63 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
             this, SLOT(pointTypeChanged(int)));
-    opLayout->addMultiCellWidget(pointControl, 1, 1, 0, 1);
-
+    topLayout->addWidget(pointControl);
+ 
     // Create the legend toggle
-    legendCheckBox = new QCheckBox(tr("Legend"), central, "legendToggle");
+    legendCheckBox = new QCheckBox(tr("Legend"), central);
     connect(legendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    opLayout->addWidget(legendCheckBox, 2, 0);
+    topLayout->addWidget(legendCheckBox);
 
     // Create the wireframe toggle
-    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central, "wireframeCheckBox");
+    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central);
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
-    opLayout->addWidget(wireframeCheckBox, 3, 0);
+    topLayout->addWidget(wireframeCheckBox);
 
     // Create the internal surfaces toggle
-    drawInternalCheckBox = new QCheckBox(tr("Draw internal surfaces"), central, "drawInternalCheckBox");
+    drawInternalCheckBox = new QCheckBox(tr("Draw internal surfaces"), central);
     connect(drawInternalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawInternalToggled(bool)));
-    opLayout->addMultiCellWidget(drawInternalCheckBox, 4,4, 0,1);
+    topLayout->addWidget(drawInternalCheckBox);
 
     // Create the clean zones only toggle
-    cleanZonesOnlyCheckBox = new QCheckBox(tr("Clean zones only"), central, "cleanZonesOnlyCheckBox");
+    QHBoxLayout *mixLayout = new QHBoxLayout(0);
+    topLayout->addLayout(mixLayout);
+    mixLayout->setMargin(0);
+    cleanZonesOnlyCheckBox = new QCheckBox(tr("Clean zones only"), central);
     connect(cleanZonesOnlyCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyToggled(bool)));
-    opLayout->addWidget(cleanZonesOnlyCheckBox, 5, 0);
+    mixLayout->addWidget(cleanZonesOnlyCheckBox);
 
     // Create the mixed color button.
-    QHBox *mixedColorBox = new QHBox(central);
-    mixedColorLabel = new QLabel(tr("--  mixed color: "), mixedColorBox);
-    mixedColor = new QvisColorButton(mixedColorBox, "mixedColor");
+    mixedColorLabel = new QLabel(tr("--  mixed color: "), central);
+    mixLayout->addWidget(mixedColorLabel);
+    mixedColor = new QvisColorButton(central);
     mixedColor->setButtonColor(QColor(255, 255, 255));
     connect(mixedColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(mixedColorChanged(const QColor &)));
-    opLayout->addWidget(mixedColorBox, 5, 1);
-
+    mixLayout->addWidget(mixedColor);
+    mixLayout->addStretch(5);
     // Create the smoothing level buttons
-    smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
-    connect(smoothingLevelButtons, SIGNAL(clicked(int)),
+    smoothingLevelButtons = new QButtonGroup(central);
+    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
-    QGridLayout *smoothingLayout = new QGridLayout(1, 5);
+    QGridLayout *smoothingLayout = new QGridLayout(0);
+    smoothingLayout->setMargin(0);
+    topLayout->addLayout(smoothingLayout);
     smoothingLayout->setSpacing(10);
-    smoothingLayout->setColStretch(4, 1000);
-    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
-    rb = new QRadioButton(tr("None"), central, "NoSmoothing");
-    smoothingLevelButtons->insert(rb);
+    smoothingLayout->setColumnStretch(4, 100);
+    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0, 0);
+    rb = new QRadioButton(tr("None"), central);
+    smoothingLevelButtons->addButton(rb, 0);
     smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("Fast"), central, "LowSmoothing");
-    smoothingLevelButtons->insert(rb);
+    rb = new QRadioButton(tr("Fast"), central);
+    smoothingLevelButtons->addButton(rb, 1);
     smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton(tr("High"), central, "HighSmoothing");
-    smoothingLevelButtons->insert(rb);
+    rb = new QRadioButton(tr("High"), central);
+    smoothingLevelButtons->addButton(rb, 2);
     smoothingLayout->addWidget(rb, 0, 3);
-    opLayout->addMultiCellLayout(smoothingLayout, 6,6 , 0,1);
 }
 
 // ****************************************************************************
@@ -414,28 +342,23 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 // Note:       
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+// Creation:   June 12, 2003
 //
 // Modifications:
-//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
-//    Added clean zones only.
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Added pointControl cases.
 //
-//    Jeremy Meredith, Wed Apr 14 16:43:06 PDT 2004
-//    Added mixed color.
+//   Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
+//   Fixed SGI compiler error with string conversion to QString
 //
-//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
-//    Added pointControl.
+//   Brad Whitlock, Wed Jul 20 17:58:45 PST 2005
+//   Added pointSizePixels.
 //
-//    Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
-//    Fixed SGI compiler error with string conversion to QString
+//   Hank Childs, Thu Jun  8 13:41:24 PDT 2006
+//   Fix compiler warning for casting.
 //
-//    Brad Whitlock, Wed Jul 20 17:42:45 PST 2005
-//    Added pointSizePixels.
-//
-//    Hank Childs, Thu Jun  8 13:41:24 PDT 2006
-//    Fix compiler warning for casting.
+//   Brad Whitlock, Thu Jul 17 11:43:27 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -458,36 +381,36 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // colorType
+        case FilledBoundaryAttributes::ID_colorType:
             if(boundaryAtts->GetColorType() == FilledBoundaryAttributes::ColorBySingleColor) 
-                colorModeButtons->setButton(1);
+                colorModeButtons->button(1)->setChecked(true);
             else if(boundaryAtts->GetColorType() == FilledBoundaryAttributes::ColorByMultipleColors) 
-                colorModeButtons->setButton(2);
+                colorModeButtons->button(2)->setChecked(true);
             else
-                colorModeButtons->setButton(0);
+                colorModeButtons->button(0)->setChecked(true);
             break;
-        case 1: // colorTableName
+        case FilledBoundaryAttributes::ID_colorTableName:
             colorTableButton->setColorTable(boundaryAtts->GetColorTableName().c_str());
             break;
-        case 2: // filledFlag
+        case FilledBoundaryAttributes::ID_filledFlag:
             // nothing anymore
             break;
-        case 3: // legendFlag
+        case FilledBoundaryAttributes::ID_legendFlag:
             legendCheckBox->blockSignals(true);
             legendCheckBox->setChecked(boundaryAtts->GetLegendFlag());
             legendCheckBox->blockSignals(false);
             break;
-        case 4: // lineStyle
+        case FilledBoundaryAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(boundaryAtts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
-        case 5: // lineWidth
+        case FilledBoundaryAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(boundaryAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-        case 6: // singleColor
+        case FilledBoundaryAttributes::ID_singleColor:
             { // new scope
             QColor temp(boundaryAtts->GetSingleColor().Red(),
                         boundaryAtts->GetSingleColor().Green(),
@@ -502,40 +425,40 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
             singleColorOpacity->blockSignals(false);
             }
             break;
-        case 7: // multiColor
+        case FilledBoundaryAttributes::ID_multiColor:
             updateMultiple = true;
             break;
-        case 8: // boundaryNames
+        case FilledBoundaryAttributes::ID_boundaryNames:
             updateMultiple = true;
             break;
-        case 9: // needDomainLabels
+        case FilledBoundaryAttributes::ID_boundaryType:
             break;
-        case 10: // opacity
+        case FilledBoundaryAttributes::ID_opacity:
             overallOpacity->blockSignals(true);
             overallOpacity->setValue((int)(boundaryAtts->GetOpacity() * 255.f));
             overallOpacity->blockSignals(false);
             break;
-        case 11: // wireframe
+        case FilledBoundaryAttributes::ID_wireframe:
             wireframeCheckBox->blockSignals(true);
             wireframeCheckBox->setChecked(boundaryAtts->GetWireframe());
             wireframeCheckBox->blockSignals(false);
             break;
-        case 12: // drawInternal
+        case FilledBoundaryAttributes::ID_drawInternal:
             drawInternalCheckBox->blockSignals(true);
             drawInternalCheckBox->setChecked(boundaryAtts->GetDrawInternal());
             drawInternalCheckBox->blockSignals(false);
             break;
-        case 13: // smoothingLevel
+        case FilledBoundaryAttributes::ID_smoothingLevel:
             smoothingLevelButtons->blockSignals(true);
-            smoothingLevelButtons->setButton(boundaryAtts->GetSmoothingLevel());
+            smoothingLevelButtons->button(boundaryAtts->GetSmoothingLevel())->setChecked(true);
             smoothingLevelButtons->blockSignals(false);
             break;
-        case 14: // cleanZonesOnlyToggled
+        case FilledBoundaryAttributes::ID_cleanZonesOnly:
             cleanZonesOnlyCheckBox->blockSignals(true);
             cleanZonesOnlyCheckBox->setChecked(boundaryAtts->GetCleanZonesOnly());
             cleanZonesOnlyCheckBox->blockSignals(false);
             break;
-        case 15: // mixedColor
+        case FilledBoundaryAttributes::ID_mixedColor:
             mixedColor->blockSignals(true);
             mixedColor->
                 setButtonColor(QColor(boundaryAtts->GetMixedColor().Red(),
@@ -543,28 +466,29 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
                                       boundaryAtts->GetMixedColor().Blue()));
             mixedColor->blockSignals(false);
             break;
-        case 16: // pointSize
+        case FilledBoundaryAttributes::ID_pointSize:
             pointControl->blockSignals(true);
             pointControl->SetPointSize(boundaryAtts->GetPointSize());
             pointControl->blockSignals(false);
             break;
-        case 17: // pointType
+        case FilledBoundaryAttributes::ID_pointType:
             pointControl->blockSignals(true);
             pointControl->SetPointType(boundaryAtts->GetPointType());
             pointControl->blockSignals(false);
             break;
-        case 18: // pointSizeVarEnabled
+        case FilledBoundaryAttributes::ID_pointSizeVarEnabled:
             pointControl->blockSignals(true);
-            pointControl->SetPointSizeVarChecked(boundaryAtts->GetPointSizeVarEnabled());
+            pointControl->SetPointSizeVarChecked(
+                          boundaryAtts->GetPointSizeVarEnabled());
             pointControl->blockSignals(false);
             break;
-        case 19: // pointSizeVar
+        case FilledBoundaryAttributes::ID_pointSizeVar:
             pointControl->blockSignals(true);
             temp = QString(boundaryAtts->GetPointSizeVar().c_str());
             pointControl->SetPointSizeVar(temp);
             pointControl->blockSignals(false);
             break;
-        case 20: // pointSizePixels
+        case FilledBoundaryAttributes::ID_pointSizePixels:
             pointControl->blockSignals(true);
             pointControl->SetPointSizePixels(boundaryAtts->GetPointSizePixels());
             pointControl->blockSignals(false);
@@ -603,11 +527,13 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
 //   names.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//   Brad Whitlock, Thu Jul 17 12:12:45 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -618,7 +544,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     intVector selectedBoundaries;
     bool update = true;
     int i;
-    QListBoxTextWithColor *item;
+    QListWidgetItem *item;
 
     multipleColorList->blockSignals(true);
 
@@ -627,7 +553,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     //
     for(i = 0; i < multipleColorList->count(); ++i)
     {
-        if(multipleColorList->isSelected(i))
+        if(multipleColorList->item(i)->isSelected())
             selectedBoundaries.push_back(i);
     }
 
@@ -640,30 +566,23 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
         bool same = true;
         for(i = 0; i < matNames.size() && same; ++i)
         {
-            item = (QListBoxTextWithColor *)multipleColorList->item(i);
             ColorAttribute c(boundaryAtts->GetMultiColor()[i]);
-            same &= (item->text() == QString(matNames[i].c_str()) &&
-                     item->color() == QColor(c.Red(), c.Green(), c.Blue()));
+            
+            same &= CompareItem(i, QString(matNames[i].c_str()),
+                                   QColor(c.Red(), c.Green(), c.Blue()));
         }
 
         // If the strings are not the same then modifiy the widgets.
         if(!same)
         {
-            int topItem = multipleColorList->topItem();
             for(i = 0; i < matNames.size(); ++i)
                 UpdateItem(i);
-
-            // Make sure the current item is still visible.
-            if(topItem > 0)
-                multipleColorList->setTopItem(topItem);
         }
         else
             update = false;
     }
     else if(matNames.size() > multipleColorList->count())
     {
-        int topItem = multipleColorList->topItem();
-
         // Set all of the existing names.
         for(i = 0; i < multipleColorList->count(); ++i)
             UpdateItem(i);
@@ -674,18 +593,11 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
             QString        itemText(matNames[i].c_str());
             ColorAttribute c(boundaryAtts->GetMultiColor()[i]);
             QColor         itemColor(c.Red(), c.Green(), c.Blue());
-
-            item = new QListBoxTextWithColor(multipleColorList, itemText,
-                                             itemColor);
+            multipleColorList->addItem(matNames[i].c_str(), itemColor);
         }
-        // Make sure the current item is still visible.
-        if(topItem > 0)
-            multipleColorList->setTopItem(topItem);
     }
     else // if(matNames.size() < multipleColorList->count())
     {
-        int topItem = multipleColorList->topItem();
-
         // Set all of the existing names.
         for(i = 0; i < matNames.size(); ++i)
             UpdateItem(i);
@@ -694,14 +606,9 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
         int numEntries = multipleColorList->count();
         for(i = matNames.size(); i < numEntries; ++i)
         {
-            multipleColorList->removeItem(multipleColorList->count() - 1);
-        }
-
-        if(multipleColorList->count() > 0)
-        {
-            if(topItem > multipleColorList->count())
-                topItem = 0;
-            multipleColorList->setTopItem(topItem);
+            QListWidgetItem *item = multipleColorList->takeItem(multipleColorList->count() - 1);
+            if(item != 0)
+                delete item;
         }
     }
 
@@ -716,11 +623,12 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
         {
             if(selectedBoundaries[i] < multipleColorList->count())
             {
-                multipleColorList->setSelected(selectedBoundaries[i], true);
+                item = multipleColorList->item(selectedBoundaries[i]);
+                item->setSelected(true);
                 if(first)
                 {
                     first = false;
-                    multipleColorList->setCurrentItem(selectedBoundaries[i]);
+                    multipleColorList->setCurrentItem(item);
                 }
                 noneSelected = false;
             }
@@ -730,23 +638,11 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
         // is more than one boundary selected then update the listbox to cover
         // the case where we have to update the color for more than one
         // listboxitem.
-        if(noneSelected)
+        if(noneSelected && multipleColorList->count() > 0)
         {
-            multipleColorList->setSelected(0, true);
-            multipleColorList->setCurrentItem(0);
-        }
-        else// if(selectedBoundaries.size() > 1) // remove check
-        {
-#define LISTBOX_UPDATE_KLUDGE
-#ifdef LISTBOX_UPDATE_KLUDGE
-            // Force the listbox to redraw itself and *all* of its listbox items.
-            multipleColorList->resize(multipleColorList->width(),
-                                      multipleColorList->height()+1);
-            multipleColorList->resize(multipleColorList->width(),
-                                      multipleColorList->height()-1);
-#else
-            multipleColorList->update();
-#endif
+            item = multipleColorList->item(0);
+            item->setSelected(true);
+            multipleColorList->setCurrentItem(item);
         }
     }
 
@@ -758,7 +654,7 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     {
         int selectedIndex = (selectedBoundaries.size() > 0) ?
             selectedBoundaries[0] : 0;
-        // Make sure that the selected index is in the range of visitble colors.
+        // Make sure that the selected index is in the range of visible colors.
         if(selectedIndex >= matNames.size())
             selectedIndex = 0;
 
@@ -766,6 +662,34 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
     }
 
     multipleColorList->blockSignals(false);
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::CompareItem
+//
+// Purpose: 
+//   Compares an item against a name and a color.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 17 11:54:42 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisFilledBoundaryPlotWindow::CompareItem(int i, const QString &name, 
+    const QColor &c) const
+{
+    QString itemName(multipleColorList->text(i));
+    QColor  itemColor(multipleColorList->color(i));
+    return  itemName == name && itemColor == c;
 }
 
 // ****************************************************************************
@@ -778,25 +702,22 @@ QvisFilledBoundaryPlotWindow::UpdateMultipleArea()
 //   i : The index of the item to be updated.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 17 12:10:40 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisFilledBoundaryPlotWindow::UpdateItem(int i)
 {
-    QListBoxTextWithColor *item;
-    item = (QListBoxTextWithColor *)multipleColorList->item(i);
-    if(item)
-    {
-        item->setText(boundaryAtts->GetBoundaryNames()[i].c_str());
-        ColorAttribute c(boundaryAtts->GetMultiColor()[i]);
-        item->setColor(QColor(c.Red(), c.Green(), c.Blue()));
-    }
+    multipleColorList->setText(i, boundaryAtts->GetBoundaryNames()[i].c_str());
+    ColorAttribute c(boundaryAtts->GetMultiColor()[i]);
+    multipleColorList->setColor(i, QColor(c.Red(), c.Green(), c.Blue()));
 }
 
 // ****************************************************************************
@@ -809,7 +730,7 @@ QvisFilledBoundaryPlotWindow::UpdateItem(int i)
 //   index : The index into the boundary list.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -845,13 +766,13 @@ QvisFilledBoundaryPlotWindow::SetMultipleColorWidgets(int index)
 //            boundary plot attributes.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
-//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
-//    Uncommented GetCurrentValues. 
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Uncommented GetCurrentValues.
 //   
 // ****************************************************************************
 
@@ -884,7 +805,7 @@ QvisFilledBoundaryPlotWindow::Apply(bool ignore)
 //   button is clicked.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -906,13 +827,13 @@ QvisFilledBoundaryPlotWindow::apply()
 //   "Make default" button is clicked.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
-//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
-//    Uncommented GetCurrentValues. 
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Uncommented GetCurrentValues.
 //   
 // ****************************************************************************
 
@@ -933,7 +854,7 @@ QvisFilledBoundaryPlotWindow::makeDefault()
 //   Reset button is clicked.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -960,7 +881,7 @@ QvisFilledBoundaryPlotWindow::reset()
 //   newStyle : The new line style.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -986,7 +907,7 @@ QvisFilledBoundaryPlotWindow::lineStyleChanged(int newStyle)
 //   newWidth : The new line width.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -1012,7 +933,7 @@ QvisFilledBoundaryPlotWindow::lineWidthChanged(int newWidth)
 //   val : The new toggle value.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -1038,7 +959,7 @@ QvisFilledBoundaryPlotWindow::legendToggled(bool val)
 //   val : The new toggle value.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
+// Creation:   May  7, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -1050,6 +971,449 @@ void
 QvisFilledBoundaryPlotWindow::wireframeToggled(bool val)
 {
     boundaryAtts->SetWireframe(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::colorModeChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the single/multiple color
+//   radio buttons are clicked.
+//
+// Arguments:
+//   index : The index of the button that called this method. If index is 0
+//           then the single color button was clicked, otherwise the multiple
+//           colors button was clicked.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::colorModeChanged(int index)
+{
+    if(index == 0)
+        boundaryAtts->SetColorType(FilledBoundaryAttributes::ColorByColorTable);
+    else if(index == 1)
+        boundaryAtts->SetColorType(FilledBoundaryAttributes::ColorBySingleColor);
+    else
+        boundaryAtts->SetColorType(FilledBoundaryAttributes::ColorByMultipleColors);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::singleColorChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the single color button's
+//   color changes.
+//
+// Arguments:
+//   color : The new single color.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::singleColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue(),
+                        boundaryAtts->GetSingleColor().Alpha());
+    boundaryAtts->SetSingleColor(temp);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::singleColorOpacityChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the single color opacity
+//   changes.
+//
+// Arguments:
+//   opacity : The new opacity.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::singleColorOpacityChanged(int opacity)
+{
+    ColorAttribute temp(boundaryAtts->GetSingleColor());
+    temp.SetAlpha(opacity);
+    boundaryAtts->SetSingleColor(temp);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::multipleColorChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when a new color is selected
+//   for one of the color buttons in the multiple colors area.
+//
+// Arguments:
+//   color : The new color for the button.
+//   index : The index of the color that changed.
+// 
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+// Modifications:
+//   Brad Whitlock, Thu Jul 17 13:50:59 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::multipleColorChanged(const QColor &color)
+{
+    // If any boundaries are selected, change their colors.
+    if(multipleColorList->currentItem() != 0)
+    {
+        for(int i = 0; i < multipleColorList->count(); ++i)
+        {
+            if(multipleColorList->item(i)->isSelected() &&
+               (i < boundaryAtts->GetMultiColor().GetNumColors()))
+            {
+                boundaryAtts->GetMultiColor()[i].SetRgb(color.red(),
+                                                      color.green(),
+                                                      color.blue());
+            }
+        }
+
+        boundaryAtts->SelectMultiColor();
+        Apply();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::opacityChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the opacity changes for one
+//   of the boundaries in the multiple colors area.
+//
+// Arguments:
+//   opacity : The new opacity.
+//   index   : The index of the boundary that changed.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+// Modifications:
+//   Brad Whitlock, Thu Jul 17 13:51:42 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::multipleColorOpacityChanged(int opacity)
+{
+    // If any boundaries are selected, change their opacities.
+    if(multipleColorList->currentItem() != 0)
+    {
+        for(int i = 0; i < multipleColorList->count(); ++i)
+        {
+            if(multipleColorList->item(i)->isSelected() &&
+               (i < boundaryAtts->GetMultiColor().GetNumColors()))
+            {
+                boundaryAtts->GetMultiColor()[i].SetAlpha(opacity);
+            }
+        }
+
+        boundaryAtts->SelectMultiColor();
+        Apply();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotwindow::boundarySelectionChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the boundary selection
+//   changes.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+// Modifications:
+//   Brad Whitlock, Thu Jul 17 13:52:02 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::boundarySelectionChanged()
+{
+    // Go through until we find the first selected item.
+    int index = -1;
+    for(int i = 0; i < multipleColorList->count(); ++i)
+    {
+        if(multipleColorList->item(i)->isSelected())
+        {
+            index = i;
+            break;
+        }
+    }
+
+    if(index != -1)
+    {
+        SetMultipleColorWidgets(index);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::overallOpacityChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the overall opacity slider
+//   is clicked.
+//
+// Arguments:
+//   opacity : The new opacity.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::overallOpacityChanged(int opacity)
+{
+    boundaryAtts->SetOpacity(double(opacity) / 255.);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisFilledBoundaryPlotWindow::smoothingLevelChanged
+//
+//  Purpose:
+//    Qt slot function that is called when one of the smoothing buttons
+//    is clicked.
+//
+//  Arguments:
+//    level  :   The new level.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:    May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::smoothingLevelChanged(int level)
+{
+    boundaryAtts->SetSmoothingLevel(level);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::colorTableClicked
+//
+// Purpose: 
+//   This is a Qt slot function that sets the desired color table into the
+//   boundary plot attributes.
+//
+// Arguments:
+//   useDefault : Whether or not to use the default color table.
+//   ctName     : The name of the color table to use.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Subset plot
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
+{
+    boundaryAtts->SetColorTableName(ctName.toStdString());
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::GetCurrentValues
+//
+// Purpose: 
+//   Gets the current values for one or all of the lineEdit widgets.
+//
+// Arguments:
+//   which_widget : The number of the widget to update. If -1 is passed,
+//                  the routine gets the current values for all widgets.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//   Brad Whitlock, Wed Jul 20 18:00:29 PST 2005
+//   Added SetPointSizePixels.
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::GetCurrentValues(int which_widget)
+{
+    bool doAll = (which_widget == -1);
+
+    // Do the point size and pointsize var
+    if(doAll)
+    {
+        boundaryAtts->SetPointSize(pointControl->GetPointSize());
+        boundaryAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
+        boundaryAtts->SetPointSizeVar(pointControl->GetPointSizeVar().toStdString());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  QvisFilledBoundaryPlotWindow::pointTypeChanged
+//
+//  Purpose:
+//    Qt slot function that is called when one of the point type buttons
+//    is clicked.
+//
+//  Arguments:
+//    type   :   The new type
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 10, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointTypeChanged(int type)
+{
+    boundaryAtts->SetPointType((FilledBoundaryAttributes::PointType) type);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::pointSizeVarToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the pointSizeVar toggle
+//   button is toggled.
+//
+// Arguments:
+//   val : The new state of the pointSizeVar toggle.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointSizeVarToggled(bool val)
+{
+    boundaryAtts->SetPointSizeVarEnabled(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::processPointSizeVarText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size variable text and pressed the Enter key.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointSizeVarChanged(const QString &var)
+{
+    boundaryAtts->SetPointSizeVar(var.toStdString()); 
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::pointSizeChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and pressed the Enter key.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointSizeChanged(double d)
+{
+    boundaryAtts->SetPointSize(d); 
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::pointSizePixelsChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and presses the Enter key.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:25:58 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointSizePixelsChanged(int size)
+{
+    boundaryAtts->SetPointSizePixels(size); 
     Apply();
 }
 
@@ -1108,296 +1472,6 @@ QvisFilledBoundaryPlotWindow::drawInternalToggled(bool val)
 }
 
 // ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::colorModeChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the single/multiple color
-//   radio buttons are clicked.
-//
-// Arguments:
-//   index : The index of the button that called this method. If index is 0
-//           then the single color button was clicked, otherwise the multiple
-//           colors button was clicked.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::colorModeChanged(int index)
-{
-    if(index == 0)
-        boundaryAtts->SetColorType(FilledBoundaryAttributes::ColorByColorTable);
-    else if(index == 1)
-        boundaryAtts->SetColorType(FilledBoundaryAttributes::ColorBySingleColor);
-    else
-        boundaryAtts->SetColorType(FilledBoundaryAttributes::ColorByMultipleColors);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::singleColorChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the single color button's
-//   color changes.
-//
-// Arguments:
-//   color : The new single color.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::singleColorChanged(const QColor &color)
-{
-    ColorAttribute temp(color.red(), color.green(), color.blue(),
-                        boundaryAtts->GetSingleColor().Alpha());
-    boundaryAtts->SetSingleColor(temp);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::singleColorOpacityChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the single color opacity
-//   changes.
-//
-// Arguments:
-//   opacity : The new opacity.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::singleColorOpacityChanged(int opacity)
-{
-    ColorAttribute temp(boundaryAtts->GetSingleColor());
-    temp.SetAlpha(opacity);
-    boundaryAtts->SetSingleColor(temp);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::multipleColorChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when a new color is selected
-//   for one of the color buttons in the multiple colors area.
-//
-// Arguments:
-//   color : The new color for the button.
-//   index : The index of the color that changed.
-// 
-// Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::multipleColorChanged(const QColor &color)
-{
-    // If any boundaries are selected, change their colors.
-    if(multipleColorList->currentItem() != -1)
-    {
-        for(int i = 0; i < multipleColorList->count(); ++i)
-        {
-            if(multipleColorList->isSelected(i) &&
-               (i < boundaryAtts->GetMultiColor().GetNumColors()))
-            {
-                boundaryAtts->GetMultiColor()[i].SetRgb(color.red(),
-                                                      color.green(),
-                                                      color.blue());
-            }
-        }
-
-        boundaryAtts->SelectMultiColor();
-        Apply();
-    }
-}
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::opacityChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the opacity changes for one
-//   of the boundaries in the multiple colors area.
-//
-// Arguments:
-//   opacity : The new opacity.
-//   index   : The index of the boundary that changed.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::multipleColorOpacityChanged(int opacity)
-{
-    // If any boundaries are selected, change their opacities.
-    if(multipleColorList->currentItem() != -1)
-    {
-        for(int i = 0; i < multipleColorList->count(); ++i)
-        {
-            if(multipleColorList->isSelected(i) &&
-               (i < boundaryAtts->GetMultiColor().GetNumColors()))
-            {
-                boundaryAtts->GetMultiColor()[i].SetAlpha(opacity);
-            }
-        }
-
-        boundaryAtts->SelectMultiColor();
-        Apply();
-    }
-}
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotwindow::boundarySelectionChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the boundary selection
-//   changes.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::boundarySelectionChanged()
-{
-    // Go through until we find the first selected item.
-    int index = -1;
-    for(int i = 0; i < multipleColorList->count(); ++i)
-    {
-        if(multipleColorList->isSelected(i))
-        {
-            index = i;
-            break;
-        }
-    }
-
-    if(index != -1)
-    {
-        SetMultipleColorWidgets(index);
-    }
-}
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::overallOpacityChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the overall opacity slider
-//   is clicked.
-//
-// Arguments:
-//   opacity : The new opacity.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::overallOpacityChanged(int opacity)
-{
-    boundaryAtts->SetOpacity(double(opacity) / 255.);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-//  Method:  QvisFilledBoundaryPlotWindow::smoothingLevelChanged
-//
-//  Purpose:
-//    Qt slot function that is called when one of the smoothing buttons
-//    is clicked.
-//
-//  Arguments:
-//    level  :   The new level.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:    May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::smoothingLevelChanged(int level)
-{
-    boundaryAtts->SetSmoothingLevel(level);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::colorTableClicked
-//
-// Purpose: 
-//   This is a Qt slot function that sets the desired color table into the
-//   boundary plot attributes.
-//
-// Arguments:
-//   useDefault : Whether or not to use the default color table.
-//   ctName     : The name of the color table to use.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
-{
-    boundaryAtts->SetColorTableName(ctName.latin1());
-    Apply();
-}
-
-
-// ****************************************************************************
 // Method: QvisFilledBoundaryPlotWindow::mixedColorChanged
 //
 // Purpose: 
@@ -1422,151 +1496,3 @@ QvisFilledBoundaryPlotWindow::mixedColorChanged(const QColor &color)
     boundaryAtts->SetMixedColor(temp);
     Apply();
 }
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::GetCurrentValues
-//
-// Purpose: 
-//   Gets the current values for one or all of the lineEdit widgets.
-//
-// Arguments:
-//   which_widget : The number of the widget to update. If -1 is passed,
-//                  the routine gets the current values for all widgets.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 10, 2004 
-//
-// Modifications:
-//   Brad Whitlock, Wed Jul 20 17:44:59 PST 2005
-//   Added SetPointSizePixels.
-//
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::GetCurrentValues(int which_widget)
-{
-    bool doAll = (which_widget == -1);
-
-    // Do the point size and pointSizeVar
-    if(doAll)
-    {
-        boundaryAtts->SetPointSize(pointControl->GetPointSize());
-        boundaryAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
-        boundaryAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  QvisFilledBoundaryPlotWindow::pointTypeChanged
-//
-//  Purpose:
-//    Qt slot function that is called when one of the point type buttons
-//    is clicked.
-//
-//  Arguments:
-//    type   :   The new type
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 10, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::pointTypeChanged(int type)
-{
-    boundaryAtts->SetPointType((FilledBoundaryAttributes::PointType) type);
-    SetUpdate(false);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::pointSizeVarToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the pointSizeVar toggle
-//   button is toggled.
-//
-// Arguments:
-//   val : The new state of the pointSizeVar toggle.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 10, 2004 
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::pointSizeVarToggled(bool val)
-{
-    boundaryAtts->SetPointSizeVarEnabled(val);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::pointSizeVarChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   point size variable text and presses the Enter key.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 10, 2004 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::pointSizeVarChanged(const QString &var)
-{
-    boundaryAtts->SetPointSizeVar(var.latin1());
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::pointSizeChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   point size text and presses the Enter key.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 10, 2004 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::pointSizeChanged(double d)
-{
-    boundaryAtts->SetPointSize(d);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::pointSizePixelsChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   point size text and presses the Enter key.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jul 20 14:25:58 PST 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::pointSizePixelsChanged(int size)
-{
-    boundaryAtts->SetPointSizePixels(size); 
-    Apply();
-}
-

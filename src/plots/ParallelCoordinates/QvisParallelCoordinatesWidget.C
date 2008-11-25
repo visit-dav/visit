@@ -38,10 +38,11 @@
 #include <QvisParallelCoordinatesWidget.h>
 #include <math.h>
 #include <qdrawutil.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qpen.h>
-
+#include <QPainter>
+#include <QPixmap>
+#include <QPen>
+#include <QPaintEvent>
+#include <vectortypes.h>
 #include <visitstream.h>
 
 static double sampleYs[8][3] = {
@@ -73,11 +74,13 @@ static double sampleYs[8][3] = {
 // Creation:   Wed Jun 14 18:54:00 PDT 2006
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 
-QvisParallelCoordinatesWidget::QvisParallelCoordinatesWidget(QWidget *parent, const char *name) : 
-    QWidget(parent, name)
+QvisParallelCoordinatesWidget::QvisParallelCoordinatesWidget(QWidget *parent) 
+: QWidget(parent)
 {
     axisCount = 2;
     namedRightAxis = false;
@@ -225,19 +228,15 @@ QvisParallelCoordinatesWidget::setNumberOfAxes(int axisCount_)
 // Creation:   Wed Jun 14 18:54:00 PDT 2006
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
-QvisParallelCoordinatesWidget::setAxisTitles(const std::string axisTitles_[])
+QvisParallelCoordinatesWidget::setAxisTitles(const stringVector &titles)
 {
-    axisTitles.clear();
-    
-    for (int axisNum = 0; axisNum < axisCount; axisNum++)
-    {
-        axisTitles.push_back(axisTitles_[axisNum]);
-    }
-    
+    axisTitles = titles;
     pixmapDirty = true;
 }
 
@@ -289,7 +288,9 @@ QvisParallelCoordinatesWidget::redrawAllAxes(bool rightAxisNamed)
 // Creation:   Wed Jun 14 18:54:00 PDT 2006
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -305,7 +306,7 @@ QvisParallelCoordinatesWidget::redrawScene(QPainter *painter)
     
     QBrush backgroundBrush(QColor(255,255,255));
     qDrawShadePanel(painter,
-        0, 0, width(), height(), colorGroup(), true, 2, &backgroundBrush);
+        0, 0, width(), height(), palette(), true, 2, &backgroundBrush);
         
     axisBottomY = (int)(sceneHeight*(1.0-AXIS_BOTTOM_MARGIN) + 0.5);
     axisTopY    = (int)(sceneHeight*AXIS_TOP_MARGIN + 0.5);
@@ -503,7 +504,9 @@ QvisParallelCoordinatesWidget::drawDataCurves(QPainter *painter)
 // Creation:   Wed Jun 14 18:54:00 PDT 2006
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -524,14 +527,13 @@ QvisParallelCoordinatesWidget::paintEvent(QPaintEvent *e)
     {
         QPainter pixpaint(pixmap);
         redrawScene(&pixpaint);
-        setBackgroundPixmap(*pixmap);
         clipByRegion = false;
         pixmapDirty = false;
     }
 
     // Blit the pixmap to the screen.
     QPainter paint(this);
-    if (clipByRegion && !e->region().isEmpty() && !e->region().isNull())
+    if (clipByRegion && !e->region().isEmpty())
         paint.setClipRegion(e->region());
     paint.drawPixmap(QPoint(0,0), *pixmap);
 }

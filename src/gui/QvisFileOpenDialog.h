@@ -73,6 +73,8 @@ public:
     int exec();
     void setFilename(const QString &);
     QString getFilename() const;
+signals:
+    void quitloop();
 private slots:
     void accept();
     void reject();

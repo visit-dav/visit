@@ -40,7 +40,7 @@
 #define QVIS_ANNOTATION_OBJECT_INTERFACE_H
 #include <gui_exports.h>
 #include <GUIBase.h>
-#include <qgroupbox.h>
+#include <QGroupBox>
 
 class AnnotationObject;
 class QLineEdit;
@@ -72,7 +72,7 @@ class GUI_API QvisAnnotationObjectInterface : public QGroupBox, public GUIBase
 {
     Q_OBJECT
 public:
-    QvisAnnotationObjectInterface(QWidget *parent, const char *name = 0);
+    QvisAnnotationObjectInterface(QWidget *parent);
     virtual ~QvisAnnotationObjectInterface();
 
     virtual QString GetName() const = 0;

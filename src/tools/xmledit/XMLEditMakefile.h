@@ -39,7 +39,7 @@
 #ifndef XMLEDITMAKEFILE_H
 #define XMLEDITMAKEFILE_H
 
-#include <qframe.h>
+#include <QFrame>
 
 class XMLDocument;
 class QLineEdit;
@@ -66,12 +66,18 @@ class QCheckBox;
 //    Cyrus Harrison, Wed Mar  7 09:17:11 PST 2007
 //    Allow for engine-specific code in a plugin's source files.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
+//    Cyrus Harrison, Fri Sep 19 13:58:39 PDT 2008
+//    Added support for custom libs for gui,engine,mdserver, and viewer libs.
+//
 // ****************************************************************************
 class XMLEditMakefile : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditMakefile(QWidget *p, const QString &n);
+    XMLEditMakefile(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:
@@ -81,17 +87,25 @@ class XMLEditMakefile : public QFrame
     void ldflagsTextChanged(const QString&);
     void libsTextChanged(const QString&);
     void gfilesTextChanged(const QString&);
+    void glibsTextChanged(const QString&);
     void sfilesTextChanged(const QString&);
     void vfilesTextChanged(const QString&);
+    void vlibsTextChanged(const QString&);
     void mfilesTextChanged(const QString&);
+    void mlibsTextChanged(const QString&);
     void efilesTextChanged(const QString&);
+    void elibsTextChanged(const QString&);
     void wfilesTextChanged(const QString&);
     void vwfilesTextChanged(const QString&);
     void customgfilesChanged();
+    void customglibsChanged();
     void customsfilesChanged();
     void customvfilesChanged();
+    void customvlibsChanged();
     void custommfilesChanged();
+    void custommlibsChanged();
     void customefilesChanged();
+    void customelibsChanged();
     void customwfilesChanged();
     void customvwfilesChanged();
     void mdSpecificCodeChanged();
@@ -116,6 +130,14 @@ class XMLEditMakefile : public QFrame
     QLineEdit       *WFiles;
     QCheckBox       *customVWFiles;
     QLineEdit       *VWFiles;
+    QCheckBox       *customGLibs;
+    QLineEdit       *GLibs;
+    QCheckBox       *customELibs;
+    QLineEdit       *ELibs;
+    QCheckBox       *customMLibs;
+    QLineEdit       *MLibs;
+    QCheckBox       *customVLibs;
+    QLineEdit       *VLibs;
     QCheckBox       *mdSpecificCode;
     QCheckBox       *engSpecificCode;
 };

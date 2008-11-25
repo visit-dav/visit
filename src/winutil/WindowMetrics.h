@@ -39,7 +39,7 @@
 #ifndef WINDOW_METRICS_H
 #define WINDOW_METRICS_H
 #include <winutil_exports.h>
-#include <qwidget.h>    // For the definition of the window system.
+#include <QWidget>    // For the definition of the window system.
 
 // ****************************************************************************
 //  Class:  WindowMetrics

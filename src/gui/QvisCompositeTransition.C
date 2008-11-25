@@ -37,11 +37,11 @@
 *****************************************************************************/
 #include <QvisCompositeTransition.h>
 #include <QvisColorButton.h>
-#include <qcheckbox.h>
-#include <qframe.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qspinbox.h>
+#include <QCheckBox>
+#include <QFrame>
+#include <QLabel>
+#include <QLayout>
+#include <QSpinBox>
 
 // ****************************************************************************
 // Method: QvisCompositeTransition::QvisCompositeTransition
@@ -60,38 +60,43 @@
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
+//   Brad Whitlock, Tue Oct  7 09:24:21 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisCompositeTransition::QvisCompositeTransition(const QPixmap &pix,
-    QWidget *parent, const char *name) : QGroupBox(parent, name)
+    QWidget *parent) : QGroupBox(parent)
 {
     QVBoxLayout *innerLayout = new QVBoxLayout(this);
     innerLayout->setMargin(10);
     innerLayout->addSpacing(15);
 
     // Add the pixmap here.
-    QLabel *pixLabel = new QLabel(this, "pixLabel");
+    QLabel *pixLabel = new QLabel(this);
     pixLabel->setPixmap(pix);
     innerLayout->addWidget(pixLabel);
     innerLayout->addSpacing(15);
 
-    QHBoxLayout *hLayout = new QHBoxLayout(innerLayout);
-    QGridLayout *gLayout = new QGridLayout(hLayout, 2, 2);
+    QHBoxLayout *hLayout = new QHBoxLayout(0);
+    innerLayout->addLayout(hLayout);
+    QGridLayout *gLayout = new QGridLayout(0);
+    hLayout->addLayout(gLayout);
     gLayout->setSpacing(15);
     hLayout->addStretch(10);
     innerLayout->addStretch(10);
 
     // Number of frames controls.
-    nFrames = new QSpinBox(this, "nFrames");
-    nFrames->setMinValue(1);
+    nFrames = new QSpinBox(this);
+    nFrames->setMinimum(1);
     nFrames->setValue(10);
     gLayout->addWidget(
-        new QLabel(tr("Number of transition frames"), this, "nFramesLabel"), 0, 0);
+        new QLabel(tr("Number of transition frames"), this), 0, 0);
     gLayout->addWidget(nFrames, 0, 1);
 
     // Reverse
-    reverseCheckbox = new QCheckBox(tr("Reverse"), this, "reverse");
+    reverseCheckbox = new QCheckBox(tr("Reverse"), this);
     gLayout->addWidget(reverseCheckbox, 1, 0);
 }
 

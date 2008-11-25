@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               ScatterPluginInfo.h                            //
+//                               ScatterPluginInfo.h                         //
 // ************************************************************************* //
 
 #ifndef SCATTER_PLUGIN_INFO_H
@@ -92,7 +92,7 @@ class ScatterGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual Sc
         QvisNotepadArea *notepad);
     virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr, QWidget *parent,
         const std::string &varName, const avtDatabaseMetaData *md,
-        const ExpressionList *expList, const char *name =0); 
+        const ExpressionList *expList); 
     virtual const char **XPMIconData() const;
 };
 

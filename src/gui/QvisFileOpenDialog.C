@@ -36,9 +36,9 @@
 *
 *****************************************************************************/
 #include <QvisFileOpenDialog.h>
-#include <qapplication.h>
-#include <qtimer.h>
-#include <qwidgetlist.h>
+#include <QApplication>
+#include <QPointer>
+#include <QTimer>
 
 #include <ViewerProxy.h>
 #include <FileServerList.h>
@@ -275,7 +275,7 @@ void
 QvisFileOpenDialog::changeThePath()
 {
     // Set the host and path to that of the initial file.
-    QualifiedFilename f(filename.latin1());
+    QualifiedFilename f(filename.toStdString());
     bool retry_loop = false;
     int nTries = 0;
     QString msg;
@@ -356,24 +356,29 @@ QvisFileOpenDialog::exec()
     return -1;
     }
 
-    bool destructiveClose = testWFlags( WDestructiveClose );
-    clearWFlags( WDestructiveClose );
+    bool deleteOnClose = testAttribute(Qt::WA_DeleteOnClose);
+    setAttribute(Qt::WA_DeleteOnClose, false);
 
-    bool wasShowModal = testWFlags( WShowModal );
-    setWFlags( WShowModal );
-    setResult( Rejected );
+    bool wasShowModal = testAttribute(Qt::WA_ShowModal);
+    setAttribute(Qt::WA_ShowModal, true);
+    setResult(0);
 
     show();
 
     in_loop = TRUE;
-    qApp->enter_loop();
+    QEventLoop eventLoop;
+    connect(this, SIGNAL(quitloop()),
+            &eventLoop, SLOT(quit()));
+    QPointer<QvisFileOpenDialog> guard = this;
+    (void) eventLoop.exec();
+    if (guard.isNull())
+        return Rejected;
 
-    if ( !wasShowModal )
-    clearWFlags( WShowModal );
+    setAttribute(Qt::WA_ShowModal, wasShowModal);
 
     int res = result();
 
-    if ( destructiveClose )
+    if ( deleteOnClose )
     delete this;
 
     return res;
@@ -396,23 +401,9 @@ QvisFileOpenDialog::exec()
 void
 QvisFileOpenDialog::done( int r )
 {
-    if(in_loop)
-    {
-        in_loop = false;
-        qApp->exit_loop();
-    }
-
     hide();
-    setResult( r );
-
-    // emulate QWidget::close()
-    bool isMain = qApp->mainWidget() == this;
-    if ( isMain )
-    qApp->quit();
-    else if ( testWFlags(WDestructiveClose) ) {
-    clearWFlags(WDestructiveClose);
-    deleteLater();
-    }
+    setResult(r);
+    emit quitloop();
 }
 
 void

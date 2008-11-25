@@ -48,9 +48,7 @@
 #include <string.h>
 #include <snprintf.h>
 
-using std::string;
 using std::vector;
-using std::map;
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -67,10 +65,6 @@ using std::map;
 // Static vars.
 //
 static bool isDevelopmentVersion = false;
-//
-// Static methods.
-//
-static int PointSorter(const void *p1, const void *p2);
 
 // ****************************************************************************
 //  Function: LongestCommonPrefixLength
@@ -80,7 +74,7 @@ static int PointSorter(const void *p1, const void *p2);
 //
 //  Arguments:
 //      list    A list of strings.
-//      listN   The number of string in list.
+//      listN   The number of std::string in list.
 //
 //  Returns:   The length of the longest common prefix (possibly 0).
 //
@@ -141,7 +135,7 @@ LongestCommonPrefixLength(const char * const *list, int listN)
 //
 //  Arguments:
 //      list    A list of strings.
-//      listN   The number of string in list.
+//      listN   The number of strings in list.
 //
 //  Returns:   The length of the longest common suffix (possibly 0).
 //
@@ -362,7 +356,7 @@ CreateMessageStrings(char **lists, int *count, int nl)
 // ****************************************************************************
 
 bool
-WildcardStringMatch(const string &p, const string &s)
+WildcardStringMatch(const std::string &p, const std::string &s)
 {
     // wrap around the c-style function
     return WildcardStringMatch(p.c_str(), s.c_str());
@@ -462,7 +456,7 @@ WildcardStringMatch(const char *p, const char *s)
 // ****************************************************************************
 
 bool
-ReadAndProcessDirectory(const string &directory,
+ReadAndProcessDirectory(const std::string &directory,
     ProcessDirectoryCallback *processOneFile, void *data,
     bool checkAccess)
 {
@@ -481,7 +475,7 @@ ReadAndProcessDirectory(const string &directory,
             char *ptr = buf;
             while(*ptr != 0)
             {
-                string drive(ptr);
+                std::string drive(ptr);
                 (*processOneFile)(data, drive, true, true, 0);
                 ptr += (drive.size() + 1);
                 retval = true;
@@ -491,7 +485,7 @@ ReadAndProcessDirectory(const string &directory,
     else
     {
         // Try and read the files in fullPath.
-        string searchPath(directory + string("\\*"));
+        std::string searchPath(directory + std::string("\\*"));
         WIN32_FIND_DATA fd;
         HANDLE dirHandle = FindFirstFile(searchPath.c_str(), &fd);
         if(dirHandle != INVALID_HANDLE_VALUE)
@@ -501,7 +495,7 @@ ReadAndProcessDirectory(const string &directory,
                 bool isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) ||
                              (strcmp(fd.cFileName, "..") == 0);
                 long sz = ((fd.nFileSizeHigh * MAXDWORD) + fd.nFileSizeLow);
-                string fileName(directory);
+                std::string fileName(directory);
                 if(directory.substr(directory.size() - 1) != "\\")
                     fileName += "\\";
                 fileName += fd.cFileName;
@@ -536,7 +530,7 @@ ReadAndProcessDirectory(const string &directory,
         {
             // Get information about the file.
             VisItStat_t s;
-            string fileName(directory);
+            std::string fileName(directory);
             if(directory.substr(directory.size() - 1, 1) != "/")
                 fileName += "/";
             fileName += ent->d_name;
@@ -621,7 +615,7 @@ ReadAndProcessDirectory(const string &directory,
 // ****************************************************************************
 
 bool
-NumericStringCompare(const string &str1, const string &str2)
+NumericStringCompare(const std::string &str1, const std::string &str2)
 {
     const char *p1 = str1.c_str();
     const char *p2 = str2.c_str();
@@ -706,12 +700,12 @@ NumericStringCompare(const string &str1, const string &str2)
 //  Creation:    March 23, 2004
 //
 // ****************************************************************************
-vector<string>
-SplitValues(const string &buff, char delim)
+vector<std::string>
+SplitValues(const std::string &buff, char delim)
 {
-    vector<string> output;
+    vector<std::string> output;
     
-    string tmp="";
+    std::string tmp="";
     for (size_t i=0; i<buff.length(); i++)
     {
         if (buff[i] == delim)
@@ -928,7 +922,7 @@ GetSystemConfigFile(const char *filename)
 //
 // ****************************************************************************
 
-string
+std::string
 GetUserVisItDirectory()
 {
 #if defined(_WIN32)
@@ -937,14 +931,14 @@ GetUserVisItDirectory()
     const char *home = getenv("HOME");
 #endif
 
-    string homedir;
+    std::string homedir;
 
     if(home != 0)
     {
 #if defined(_WIN32)
-        homedir = string(home);
+        homedir = std::string(home);
 #else
-        homedir = string(home) + "/.visit";
+        homedir = std::string(home) + "/.visit";
 #endif
 
         if(homedir[homedir.size() - 1] != SLASH_CHAR)
@@ -971,7 +965,7 @@ GetUserVisItDirectory()
 //   
 // ****************************************************************************
 
-string
+std::string
 GetUserVisItRCFile()
 {
     return GetUserVisItDirectory() + "visitrc";
@@ -997,11 +991,11 @@ GetUserVisItRCFile()
 //   
 // ****************************************************************************
 
-string
+std::string
 GetSystemVisItRCFile()
 {
     const char *defConfig = GetDefaultConfigFile("visitrc", "VISITHOME");
-    string retVal(defConfig);
+    std::string retVal(defConfig);
     delete [] defConfig;
     return retVal;
 }
@@ -1117,7 +1111,7 @@ int
 ConfigStateGetRunCount(ConfigStateEnum &code)
 {
     int nStartups = 1;
-    string rcFile(GetUserVisItDirectory());
+    std::string rcFile(GetUserVisItDirectory());
     rcFile += "state";
     rcFile += VERSION;
     rcFile += ".txt";
@@ -1174,7 +1168,7 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
 void
 ConfigStateIncrementRunCount(ConfigStateEnum &code)
 {
-    string rcFile(GetUserVisItDirectory());
+    std::string rcFile(GetUserVisItDirectory());
     rcFile += "state";
     rcFile += VERSION;
     rcFile += ".txt";
@@ -1227,10 +1221,10 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 //
 // ****************************************************************************
 
-string
-ExpandUserPath(const string &path)
+std::string
+ExpandUserPath(const std::string &path)
 {
-    string newPath(path);
+    std::string newPath(path);
 
     if(path[0] == '~')
     {
@@ -1255,12 +1249,12 @@ ExpandUserPath(const string &path)
         char *profDir = new char[MAX_PATH];
         DWORD size = 256;
         GetProfilesDirectory(profDir, &size);
-        string homeDir(profDir);
+        std::string homeDir(profDir);
         delete [] profDir;    
 
         // Append the rest of the path to the home directory.
-        string restOfPath(path.substr(i, path.length() - i + 1));
-        newPath = homeDir + "\\" + string(username) + restOfPath;
+        std::string restOfPath(path.substr(i, path.length() - i + 1));
+        newPath = homeDir + "\\" + std::string(username) + restOfPath;
 #else
         // Check if the user specified '~' or '~name'.
         struct passwd *users_passwd_entry = NULL;
@@ -1288,8 +1282,8 @@ ExpandUserPath(const string &path)
         }
 
         // Append the rest of the path to the home directory.
-        string restOfPath(path.substr(i, path.length() - i + 1));
-        newPath = string(users_passwd_entry->pw_dir) + restOfPath;
+        std::string restOfPath(path.substr(i, path.length() - i + 1));
+        newPath = std::string(users_passwd_entry->pw_dir) + restOfPath;
 #endif
     }
 
@@ -1373,7 +1367,7 @@ GetIsDevelopmentVersion()
 //
 // ****************************************************************************
 
-string
+std::string
 GetVisItInstallationDirectory()
 {
     return GetVisItInstallationDirectory(VERSION);
@@ -1387,13 +1381,13 @@ GetVisItInstallationDirectory()
 #define _VISIT_MSVC_VER ""
 #endif
 
-string
+std::string
 GetVisItInstallationDirectory(const char *version)
 {
 #if defined(_WIN32)
     // Get the installation dir for the specified from the registry.
     char *visitHome = 0;
-    string installDir("C:\\");
+    std::string installDir("C:\\");
     if(ReadKey(version, "VISITHOME", &visitHome) == 1)
     {
         installDir = visitHome;
@@ -1401,12 +1395,12 @@ GetVisItInstallationDirectory(const char *version)
     else
     {
         // Use the VISITDEVDIR environment var.
-        string visitdev;
+        std::string visitdev;
         char *devdir = getenv("VISITDEVDIR");
         if(devdir == 0)
-            visitdev = string("C:\\VisItDev") + string(version);
+            visitdev = std::string("C:\\VisItDev") + std::string(version);
         else
-            visitdev = string(devdir);
+            visitdev = std::string(devdir);
         installDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
     }
     if (visitHome != 0)
@@ -1415,12 +1409,12 @@ GetVisItInstallationDirectory(const char *version)
 #else
     // Get the installation dir for the version that's running. They all use
     // the same "visit" script so it's okay to do this.
-    string installDir("/usr/local/visit");
+    std::string installDir("/usr/local/visit");
     const char *idir = getenv("VISITHOME");
     if(idir != 0)
     {
         // The directory often has a "/bin" on the end. Strip it off.
-        string home(idir);
+        std::string home(idir);
         if(isDevelopmentVersion)
             installDir = idir;
         else
@@ -1468,19 +1462,19 @@ GetVisItInstallationDirectory(const char *version)
 //
 // ****************************************************************************
 
-string
+std::string
 GetVisItArchitectureDirectory()
 {
     return GetVisItArchitectureDirectory(VERSION);
 }
 
-string
+std::string
 GetVisItArchitectureDirectory(const char *version)
 {
 #if defined(_WIN32)
     // Get the installation dir for the specified from the registry.
     char *visitHome = 0;
-    string archDir("C:\\");
+    std::string archDir("C:\\");
     if(ReadKey(version, "VISITHOME", &visitHome) == 1)
     {
         archDir = visitHome;
@@ -1488,12 +1482,12 @@ GetVisItArchitectureDirectory(const char *version)
     else
     {
         // Use the VISITDEVDIR environment var.
-        string visitdev;
+        std::string visitdev;
         char *devdir = getenv("VISITDEVDIR");
         if(devdir == 0)
-            visitdev = string("C:\\VisItDev") + string(version);
+            visitdev = std::string("C:\\VisItDev") + std::string(version);
         else
-            visitdev = string(devdir);
+            visitdev = std::string(devdir);
         archDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
     }
     if (visitHome != 0)
@@ -1502,7 +1496,7 @@ GetVisItArchitectureDirectory(const char *version)
 #else
     // Get the installation dir for the version that's running. They all use
     // the same "visit" script so it's okay to do this.
-    string archDir(string("/usr/local/visit/") + string(VERSION));
+    std::string archDir(std::string("/usr/local/visit/") + std::string(VERSION));
     const char *adir = getenv("VISITARCHHOME");
     if(adir != 0)
         archDir = adir;
@@ -1525,13 +1519,13 @@ GetVisItArchitectureDirectory(const char *version)
 //   
 // ****************************************************************************
 
-string
+std::string
 GetVisItLauncher()
 {
 #if defined(_WIN32)
-    return string(GetVisItInstallationDirectory() + "\\visit.exe");
+    return std::string(GetVisItInstallationDirectory() + "\\visit.exe");
 #else
-    return string(GetVisItInstallationDirectory() + "/bin/visit");
+    return std::string(GetVisItInstallationDirectory() + "/bin/visit");
 #endif
 }
 
@@ -1624,8 +1618,8 @@ VisItFstat(int fd, VisItStat_t *buf)
 // Broken on Panther
 #else
 bool
-ConvertArgsToTunneledValues(const map<int,int> &portTunnelMap,
-                            vector<string> &args)
+ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
+                            std::vector<std::string> &args)
 {
     bool foundHost = false;
     // strip off -guesshost
@@ -1680,7 +1674,7 @@ ConvertArgsToTunneledValues(const map<int,int> &portTunnelMap,
 //    Parse out a numerical major.minor.patch version number.
 //
 //  Arguments:
-//    v0         the version string to parse
+//    v0         the version std::string to parse
 //    major      the first portion of the version string
 //    minor      the second portion of the version string
 //    patch      the third portion of the version string
@@ -1780,209 +1774,204 @@ VisItVersionsCompatible(const char *v0, const char *v1)
     return ret;
 }
 
-
 // ****************************************************************************
-//  Method: avtCurveComparisonQuery::PutOnSameXIntervals
+// Function: VersionGreaterThan
 //
-//  Purpose:
-//      Curves are defined by a series of line segments.  The endpoints of
-//      these line segments may not correspond on the two input curves.
-//      The output of this function will be a new series of x-intervals that
-//      will allow easier comparison between two curves.
+// Purpose: 
+//   Returns true when v1 > v2 compared as VisIt versions.
 //
-//  Programmer:   Hank Childs
-//  Creation:     October 4, 2003
+// Arguments:
+//   v1 : The first version
+//   v2 : The second version
 //
-//  Modifications:
-//    Kathleen Bonnell, Thu Oct 14 17:19:01 PDT 2004
-//    This method assumes that there are no duplicate x-values in the
-//    passed array -- so call AverageYValsForDuplicateX to ensure that is
-//    the case.
+// Returns:    True when v1>v2
 //
-// ****************************************************************************
-
-void 
-PutOnSameXIntervals(int on1, const float *ox1, const float *oy1, int on2, 
-        const float *ox2, const float *oy2, floatVector &usedX, 
-        floatVector &newCurve1Vals, floatVector &newCurve2Vals)
-{
-    int  i;
-    floatVector x1, y1, x2, y2;
-
-    AverageYValsForDuplicateX(on1, ox1, oy1, x1, y1);
-    AverageYValsForDuplicateX(on2, ox2, oy2, x2, y2);
-   
-    int n1 = x1.size();
-    int n2 = x2.size();
-    int  total_n_pts = n1 + n2;
-
-    //
-    // We want to put the line segments along the same x-intervals.  So we
-    // want to determine what those intervals are.  Start by identifying all
-    // of the unique x-points.
-    //
-    float *all_xs = new float[total_n_pts];
-    int index = 0;
-    for (i = 0 ; i < n1 ; i++)
-        all_xs[index++] = x1[i];
-    for (i = 0 ; i < n2 ; i++)
-        all_xs[index++] = x2[i];
-    qsort(all_xs, total_n_pts, sizeof(float), PointSorter);
-
-    //
-    // Repeats will through the algorithm off, so sort those out now.
-    //
-    floatVector unique_x;
-    for (i = 0 ; i < total_n_pts ; i++)
-    {
-         bool uniquePoint = true;
-         if ((i > 0) && (all_xs[i] == all_xs[i-1]))
-             uniquePoint = false;
-         if (uniquePoint)
-             unique_x.push_back(all_xs[i]);
-    }
-    delete [] all_xs;
-    total_n_pts = unique_x.size();
-
-    int nextIndForCurve1 = 0;
-    int nextIndForCurve2 = 0;
-    for (i = 0 ; i < total_n_pts ; i++)
-    {
-        // We don't want to consider points that are not valid for both curves.
-        if ((unique_x[i] < x1[0]) || (unique_x[i] > x1[n1-1]) ||
-            (unique_x[i] < x2[0]) || (unique_x[i] > x2[n2-1]))
-        {
-            if (unique_x[i] == x1[nextIndForCurve1])
-                nextIndForCurve1++;
-            if (unique_x[i] == x2[nextIndForCurve2])
-                nextIndForCurve2++;
-            continue;
-        }
-
-        if (unique_x[i] == x1[nextIndForCurve1])
-        {
-            // The point to consider is from curve 1.  Simply push back the
-            // Y-value and indicate that we are now focused on the next point.
-            newCurve1Vals.push_back(y1[nextIndForCurve1]);
-            nextIndForCurve1++;
-        }
-        else
-        {
-            // We haven't seen x1[nextIndForCurve] yet, so we know
-            // that unique_x[i] must be less than it.  In addition, we know
-            // that x1[nextIndForCurve-1] must be valid, since otherwise
-            // we would have skipped unique_x[i] as "out of range".
-            float x_begin = x1[nextIndForCurve1-1];
-            float x_end  = x1[nextIndForCurve1];
-            float percent = (unique_x[i] - x_begin) / (x_end - x_begin);
-            float slope = y1[nextIndForCurve1] - y1[nextIndForCurve1-1];
-            float y = percent * slope + y1[nextIndForCurve1-1];
-            newCurve1Vals.push_back(y);
-        }
-
-        if (unique_x[i] == x2[nextIndForCurve2])
-        {
-            // The point to consider is from curve 2.  Simply push back the
-            // Y-value and indicate that we are now focused on the next point.
-            newCurve2Vals.push_back(y2[nextIndForCurve2]);
-            nextIndForCurve2++;
-        }
-        else
-        {
-            // We haven't seen x2[nextIndForCurve] yet, so we know
-            // that unique_x[i] must be less than it.  In addition, we know
-            // that x2[nextIndForCurve-1] must be valid, since otherwise
-            // we would have skipped unique_x[i] as "out of range".
-            float x_begin = x2[nextIndForCurve2-1];
-            float x_end  = x2[nextIndForCurve2];
-            float percent = (unique_x[i] - x_begin) / (x_end - x_begin);
-            float slope = y2[nextIndForCurve2] - y2[nextIndForCurve2-1];
-            float y = percent * slope + y2[nextIndForCurve2-1];
-            newCurve2Vals.push_back(y);
-        }
-
-        usedX.push_back(unique_x[i]);
-    }
-}
-
-
-
-// ****************************************************************************
-//  Function: PointSorter
+// Note:       
 //
-//  Purpose:
-//      Used to sort points using the qsort routine.
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  2 11:12:39 PDT 2008
 //
-//  Programmer: Hank Childs
-//  Creation:   October 3, 2003
-//
+// Modifications:
+//   
 // ****************************************************************************
 
 static int
-PointSorter(const void *p1, const void *p2)
+VersionToInt(const std::string &version)
 {
-    const float *f1 = (const float *) p1;
-    const float *f2 = (const float *) p2;
-
-    if (*f1 > *f2)
-        return 1;
-    if (*f1 < *f2)
-        return -1;
-
-    return 0;
+    int v[3];
+    GetVisItVersionFromString(version.c_str(), v[0], v[1], v[2]);
+    return v[0]*10000 + v[1]*100 + v[2];
 }
 
-
-// ****************************************************************************
-//  Method: AverageYValsForDuplicateX
-//
-//  Purpose:
-//    If there are duplicate x-values, then average the y-values for all
-//    duplicates to create a unique x-values list with appropriate y-values.  
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 14, 2004
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-AverageYValsForDuplicateX(int n, const float *x, const float *y, 
-                          floatVector &X, floatVector &Y)
+bool
+VersionGreaterThan(const std::string &v1, const std::string &v2)
 {
-    int i, j, nDups = 1;
-    float sum;
-    for (i = 0; i < n ; i+= nDups) 
+    return VersionToInt(v1) > VersionToInt(v2);
+}
+
+// ****************************************************************************
+// Function: ReadInstallationInfo
+//
+// Purpose: 
+//   Reads VisIt's .visitinstall file, which is a file that visit-install creates
+//   that tells us the arguments used to install VisIt. Mostly, we want it so
+//   we know which distribution file was used during installation so we can
+//   download that same file.
+//
+// Arguments:
+//   distName   : Return argument for the distribution name.
+//   configName : Return argument for the config name.
+//   bankName   : Return argument for the bank that was used.
+//
+// Returns:    True if the distribution can be determined; False otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  2 11:16:08 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ReadInstallationInfo(std::string &distName, std::string &configName, std::string &bankName)
+{
+    // There is a 1:1 match between archNames and distNames.
+
+    //
+    // Architecture names that match VisIt's architecture directories. These are the
+    // directory names that you'd find in /usr/local/apps/visit/<ver>
+    //
+    static const char *archNames[] = {
+    "linux-intel",
+    "linux-intel",
+    "linux-x86_64",
+    "linux-x86_64",
+    "linux-ia64",
+    "linux-ia64",
+
+    "darwin-i386",
+    "darwin-ppc",
+
+    "sun4-sunos5-sparc",
+
+    "ibm-aix-pwr",
+    "ibm-aix-pwr64",
+
+    "sgi-irix6-mips2",
+
+    // Deprecated
+    "dec-osf1-alpha",
+    };
+
+#define NARCH (sizeof(archNames) / sizeof(const char *))
+
+    //
+    // Names that match VisIt's distribution names. These are used in the filenames
+    // that contain a VisIt distribution: e.g. visit1_10_1.darwin-i386.tar.gz
+    //
+    static const char *distNames[] = {
+    "linux_rhel3",
+    "linux-ellipse",
+    "linux-x86_64",
+    "linux-x86_64-fedora4",
+    "linux-ia64",
+    "linux-altix",
+
+    "darwin-i386",
+    "darwin-ppc",
+
+    "sunos5",
+
+    "aix",
+    "aix64",
+
+    "irix6",
+
+    // Deprecated
+    "osf1",
+    };
+
+    //
+    // Try and determine the platform that should be downloaded.
+    //
+    const char *archHome = getenv("VISITARCHHOME");
+    bool platformDetermined = false;
+    if(archHome != 0)
     {
-        if (i < n-1)
+        std::string arch(archHome);
+
+        // Try and read the .installinfo file that tells us just how VisIt
+        // was installed. That way we can be sure that we pick up the right
+        // Linux or AIX installation.
+        std::string installinfo(archHome);
+        if(installinfo[installinfo.length()-1] != '/')
+            installinfo += "/";
+        installinfo += ".installinfo";
+
+        FILE *fp = fopen(installinfo.c_str(), "rt");
+        if(fp != NULL)
         {
-            if (x[i] != x[i+1])
+            int fver = 0;
+            if(fscanf(fp, "%d;", &fver) == 1)
             {
-                X.push_back(x[i]);
-                Y.push_back(y[i]);
-                nDups = 1;
-            }
-            else 
-            {
-                sum = y[i];
-                nDups = 1;
-                for (j = i+1; j < n; j++)
+                char str[200];
+                for(int i = 0; i < 3; ++i)
                 {
-                    if (x[j] != x[i])
+                    int j = 0;
+                    for(; j < 200-1; ++j)
+                    {                        
+                        str[j] = (char)fgetc(fp);
+                        if(str[j] == ';' || str[j] < ' ')
+                            break;
+                    }
+                    str[j] = '\0';
+
+                    if(j >= 1)
+                    {
+                        if(i == 0)
+                            configName = str;
+                        else if(i == 1)
+                            bankName = str;
+                        else
+                        {
+                            distName = str;
+                            platformDetermined = true;
+                        }                          
+                    }
+                    else
+                    {
+                        // error
                         break;
-                    sum += y[j];
-                    nDups++;
+                    }
                 }
-                X.push_back(x[i]);
-                Y.push_back(sum/nDups);
             }
+
+            fclose(fp);
         }
-        else if (i == (n-1) && (x[i] != x[i-1]))
+
+        // We could not open the .installinfo file so let's try and
+        // determine the distName based on the archNames.
+        if(!platformDetermined)
         {
-            X.push_back(x[i]);
-            Y.push_back(y[i]);
-            nDups = 1;
+            int lastSlash = arch.rfind("/");
+            if(lastSlash != -1)
+            {
+                arch = arch.substr(lastSlash+1, arch.length() - lastSlash - 1);
+                for(int i = 0; i < NARCH; ++i)
+                {
+                    if(arch == archNames[i])
+                    {
+                        platformDetermined = true;
+                        distName = distNames[i];
+                        break;
+                    }
+                }
+            }
         }
     }
+
+    return platformDetermined;
 }
+

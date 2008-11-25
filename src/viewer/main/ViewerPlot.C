@@ -94,13 +94,6 @@ extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #define max(x,y) ((x) > (y) ? (x) : (y))
 
-#if 1
-// temp
-#include <qmainwindow.h>
-#include <qtable.h>
-#endif
-
-
 //
 // This is a static member of ViewerPlot.
 //
@@ -196,6 +189,9 @@ int ViewerPlot::numPlotsCreated = 0;
 //    Jeremy Meredith, Tue Feb 19 14:23:59 EST 2008
 //    Added explicit storage for meshname.
 //
+//    Brad Whitlock, Fri May  9 14:38:03 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
@@ -206,7 +202,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     const int nStates,      // The number of total database states
     const int cacheIndex_,  // The initial active cache index
     const int nCacheEntries // The number of cache entries.
-    ) : ViewerBase(0,"ViewerPlot"), 
+    ) : ViewerBase(0), 
         engineKey(ek_), hostName(hostName_), databaseName(databaseName_),
         variableName(variableName_)
 {

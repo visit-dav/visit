@@ -45,9 +45,9 @@ class QButtonGroup;
 class QCheckBox;
 class QGroupBox;
 class QLabel;
-class QListBox;
 class QSlider;
 class QvisColorButton;
+class QvisColorSwatchListWidget;
 class QvisColorTableButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
@@ -58,28 +58,15 @@ class QvisPointControl;
 // Class: QvisFilledBoundaryPlotWindow
 //
 // Purpose: 
-//   This class is an observer window that watches boundary plot attributes
+//   This class is an observer window that watches FilledBoundary plot attributes
 //   and always represents their current state.
 //
-// Notes:  Copied from QvisMaterialPlotWindow with minor changes.
+// Notes:  Copied from QvisBoundaryPlotWindow with minor changes.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  9, 2003
-//
-// Note:  taken almost verbatim from the Subset plot
+// Creation:   June 12, 2003
 //
 // Modifications:
-//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
-//    Added clean zones only.
-//
-//    Jeremy Meredith, Tue Apr 13 16:42:55 PDT 2004
-//    Added mixed color.
-//
-//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
-//    Added pointControl and associated slots, also added GetCurrentValues.
-//
-//    Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
-//    Added a new slot to handle a new signal from QvisPointControl.
 //
 // ****************************************************************************
 
@@ -87,11 +74,10 @@ class QvisFilledBoundaryPlotWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
 public:
-    QvisFilledBoundaryPlotWindow(const int type,
-                                 FilledBoundaryAttributes *boundaryAtts_,
-                                 const QString &caption = QString::null,
-                                 const QString &shortName = QString::null,
-                                 QvisNotepadArea *notepad = 0);
+    QvisFilledBoundaryPlotWindow(const int type, FilledBoundaryAttributes *FilledBoundaryAtts_,
+                           const QString &caption = QString::null,
+                           const QString &shortName = QString::null,
+                           QvisNotepadArea *notepad = 0);
     virtual ~QvisFilledBoundaryPlotWindow();
     virtual void CreateWindowContents();
 public slots:
@@ -104,14 +90,13 @@ protected:
     void SetMultipleColorWidgets(int index);
     void UpdateMultipleArea();
     void UpdateItem(int i);
+    bool CompareItem(int i, const QString &name, const QColor &c) const;
     void GetCurrentValues(int which_widget);
 private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
     void legendToggled(bool val);
     void wireframeToggled(bool val);
-    void drawInternalToggled(bool val);
-    void cleanZonesOnlyToggled(bool val);
     void singleColorChanged(const QColor &color);
     void singleColorOpacityChanged(int opacity);
     void multipleColorChanged(const QColor &color);
@@ -121,7 +106,6 @@ private slots:
     void boundarySelectionChanged();
     void overallOpacityChanged(int opacity);
     void smoothingLevelChanged(int index);
-    void mixedColorChanged(const QColor &color);
 
     void pointSizeChanged(double d);
     void pointSizePixelsChanged(int size);
@@ -129,31 +113,35 @@ private slots:
     void pointSizeVarToggled(bool on);
     void pointSizeVarChanged(const QString &);
 
+    void mixedColorChanged(const QColor &color);
+    void cleanZonesOnlyToggled(bool val);
+    void drawInternalToggled(bool);
 private:
     int                       plotType;
     FilledBoundaryAttributes *boundaryAtts;
-    QLabel                   *lineStyleLabel;
-    QvisLineStyleWidget      *lineStyle;
-    QLabel                   *lineWidthLabel;
-    QvisLineWidthWidget      *lineWidth;
-    QButtonGroup             *colorModeButtons;
-    QCheckBox                *legendCheckBox;
-    QCheckBox                *cleanZonesOnlyCheckBox;
-    QGroupBox                *boundaryColorGroup;
-    QvisColorButton          *singleColor;
-    QvisOpacitySlider        *singleColorOpacity;
-    QLabel                   *multipleColorLabel;
-    QListBox                 *multipleColorList;
-    QvisColorButton          *multipleColor;
-    QvisOpacitySlider        *multipleColorOpacity;
-    QvisColorTableButton     *colorTableButton;
-    QvisOpacitySlider        *overallOpacity;
-    QLabel                   *mixedColorLabel;
-    QvisColorButton          *mixedColor;
-    QCheckBox                *wireframeCheckBox;
-    QCheckBox                *drawInternalCheckBox;
-    QButtonGroup             *smoothingLevelButtons;
-    QvisPointControl         *pointControl;
+
+    QLabel                 *lineStyleLabel;
+    QvisLineStyleWidget    *lineStyle;
+    QLabel                 *lineWidthLabel;
+    QvisLineWidthWidget    *lineWidth;
+    QButtonGroup           *colorModeButtons;
+    QCheckBox              *legendCheckBox;
+    QGroupBox              *boundaryColorGroup;
+    QvisColorButton        *singleColor;
+    QvisOpacitySlider      *singleColorOpacity;
+    QLabel                 *multipleColorLabel;
+    QvisColorSwatchListWidget *multipleColorList;
+    QvisColorButton        *multipleColor;
+    QvisOpacitySlider      *multipleColorOpacity;
+    QvisColorTableButton   *colorTableButton;
+    QvisOpacitySlider      *overallOpacity;
+    QCheckBox              *wireframeCheckBox;
+    QButtonGroup           *smoothingLevelButtons;
+    QvisPointControl       *pointControl;
+    QCheckBox              *cleanZonesOnlyCheckBox;
+    QLabel                 *mixedColorLabel;
+    QvisColorButton        *mixedColor;
+    QCheckBox              *drawInternalCheckBox;
 };
 
 #endif

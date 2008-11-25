@@ -82,13 +82,14 @@ class QvisOpacitySlider;
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Moved StringToDoubleList to QvisWindowBase 
+//
 // ****************************************************************************
 
 class QvisContourPlotWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
 public:
-    QvisContourPlotWindow(const int type, ContourAttributes *materialAtts_,
+    QvisContourPlotWindow(const int type, ContourAttributes *atts,
                           const QString &caption = QString::null,
                           const QString &shortName = QString::null,
                           QvisNotepadArea *notepad = 0);

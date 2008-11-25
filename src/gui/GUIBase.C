@@ -50,9 +50,10 @@
 
 #include <SimpleObserver.h>
 
-#include <qobject.h>
-#include <qapplication.h>
-#include <qcursor.h>
+#include <QObject>
+#include <QApplication>
+#include <QCursor>
+#include <QLineEdit>
 
 // Static member attributes.
 MessageAttributes *GUIBase::msgAttr = 0;
@@ -232,7 +233,7 @@ GUIBase::Error(const QString &msg)
 
     if(writeToConsole)
     {
-        cerr << "Error: " << msg.latin1() << endl;
+        cerr << "Error: " << msg.toStdString() << endl;
     }
     else
     {
@@ -242,7 +243,7 @@ GUIBase::Error(const QString &msg)
     }
 
     // Write to the log as well.
-    debug1 << "Error: " << msg.latin1() << endl;
+    debug1 << "Error: " << msg.toStdString() << endl;
 }
 
 // ****************************************************************************
@@ -278,7 +279,7 @@ GUIBase::Warning(const QString &msg)
 
     if(writeToConsole)
     {
-        cerr << "Warning: " << msg.latin1() << endl;
+        cerr << "Warning: " << msg.toStdString() << endl;
     }
     else
     {
@@ -288,7 +289,7 @@ GUIBase::Warning(const QString &msg)
     }
 
     // Write to the log as well.
-    debug2 << "Warning: " << msg.latin1() << endl;
+    debug2 << "Warning: " << msg.toStdString() << endl;
 }
 
 // ****************************************************************************
@@ -324,7 +325,7 @@ GUIBase::Message(const QString &msg)
 
     if(writeToConsole)
     {
-        cerr << "Message: " << msg.latin1() << endl;
+        cerr << "Message: " << msg.toStdString() << endl;
     }
     else
     {
@@ -334,7 +335,7 @@ GUIBase::Message(const QString &msg)
     }
 
     // Write to the log as well.
-    debug3 << "Message: " << msg.latin1() << endl;
+    debug3 << "Message: " << msg.toStdString() << endl;
 }
 
 // ****************************************************************************
@@ -364,7 +365,7 @@ GUIBase::Information(const QString &msg)
 
     if(writeToConsole)
     {
-        cerr << "Message: " << msg.latin1() << endl;
+        cerr << "Message: " << msg.toStdString() << endl;
     }
     else
     {
@@ -374,7 +375,7 @@ GUIBase::Information(const QString &msg)
     }
 
     // Write to the log as well.
-    debug3 << "Message: " << msg.latin1() << endl;
+    debug3 << "Message: " << msg.toStdString() << endl;
 }
 
 // ****************************************************************************
@@ -637,7 +638,7 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
                                       "following message:\n\n%2", mName).
                           arg(QString(qf.FullName().c_str())).
                           arg(QString(gmde.Message().c_str()));
-            debug1 << msg.ascii() << endl;
+            debug1 << msg.toStdString().c_str() << endl;
             debug1 << "Not issuing an error message because the viewer will "
                    << "cover that." << endl;
             //Error(msg);
@@ -847,3 +848,735 @@ GUIBase::OpenActiveSourceInFileServer()
     }
 }
 
+// ****************************************************************************
+// Method: GUIBase::ResettingError
+//
+// Purpose: 
+//   Issues a very common error message used when input values are not valid.
+//
+// Arguments:
+//   name : The name of the invalid property.
+//   val  : The last good value.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:34:41 PDT 2008
+//
+// Modifications:
+//   Cyrus Harrison,   Tue Aug 19 08:12:20 PDT 2008
+//   Changed to value(s) to account for single value case.
+//
+// ****************************************************************************
+
+void
+GUIBase::ResettingError(const QString &name, const QString &val)
+{
+    Error(QObject::tr("The value(s) for '%1' were invalid. "
+             "Resetting to the last good value(s) of %2.", "ResettingError").
+             arg(name).arg(val));
+}
+
+// ****************************************************************************
+// Method: GUIBase::DoublesToQString
+//
+// Purpose: 
+//   Converts an array of doubles to a string wherein each double is space
+//   delimited.
+//
+// Arguments:
+//   vals : The values to convert to a string.
+//   nvals : The number of values to convert.
+//
+// Returns:    A QString representation of the doubles.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:35:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::DoublesToQString(const double *vals, int nvals)
+{
+    QString s;
+    for(int i = 0; i < nvals; ++i)
+    {
+        s += QString().setNum(vals[i]);
+        if(i < nvals-1)
+            s += " ";
+    }
+    return s;
+}
+
+// ****************************************************************************
+// Method: GUIBase::DoublesToQString
+//
+// Purpose: 
+//   Converts a vector of doubles to a string wherein each double is space
+//   delimited.
+//
+// Arguments:
+//   vals : The values to convert to a string.
+//   nvals : The number of values to convert.
+//
+// Returns:    A QString representation of the doubles.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:35:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::DoublesToQString(const doubleVector &vals)
+{
+    QString s;
+    for(size_t i = 0; i < vals.size(); ++i)
+    {
+        s += QString().setNum(vals[i]);
+        if(i < vals.size()-1)
+            s += " ";
+    }
+    return s;
+}
+
+// ****************************************************************************
+// Method: GUIBase::DoubleToQString
+//
+// Purpose: 
+//   Converts a double to a string.
+//
+// Arguments:
+//   val : The value to convert to a string.
+//
+// Returns:    A QString representation of the doubles.
+//
+// Note:       This method is provided to make the single value case look
+//             more like the array case for consistency.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:35:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::DoubleToQString(double val)
+{
+    return QString().setNum(val);
+}
+
+// ****************************************************************************
+// Method: GUIBase::FloatsToQString
+//
+// Purpose: 
+//   Converts an array of floats to a string wherein each double is space
+//   delimited.
+//
+// Arguments:
+//   vals : The values to convert to a string.
+//   nvals : The number of values to convert.
+//
+// Returns:    A QString representation of the floats.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:35:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::FloatsToQString(const float *vals, int nvals)
+{
+    QString s;
+    for(int i = 0; i < nvals; ++i)
+    {
+        s += QString().setNum(vals[i]);
+        if(i < nvals-1)
+            s += " ";
+    }
+    return s;
+}
+
+// ****************************************************************************
+// Method: GUIBase::FloatToQString
+//
+// Purpose: 
+//   Converts a float to a string.
+//
+// Arguments:
+//   val : The value to convert to a string.
+//
+// Returns:    A QString representation of the float.
+//
+// Note:       This method is provided to make the single value case look
+//             more like the array case for consistency.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:35:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::FloatToQString(float val)
+{
+    return QString().setNum(val);
+}
+
+// ****************************************************************************
+// Method: GUIBase::IntsToQString
+//
+// Purpose: 
+//   Converts an array of ints to a string wherein each double is space
+//   delimited.
+//
+// Arguments:
+//   vals : The values to convert to a string.
+//   nvals : The number of values to convert.
+//
+// Returns:    A QString representation of the ints.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:35:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::IntsToQString(const int *vals, int nvals)
+{
+    QString s;
+    for(int i = 0; i < nvals; ++i)
+    {
+        s += QString().setNum(vals[i]);
+        if(i < nvals-1)
+            s += " ";
+    }
+    return s;
+}
+
+// ****************************************************************************
+// Method: GUIBase::IntsToQString
+//
+// Purpose: 
+//   Converts a vector of ints to a string wherein each double is space
+//   delimited.
+//
+// Arguments:
+//   vals : The values to convert to a string.
+//
+// Returns:    A QString representation of the ints.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:35:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::IntsToQString(const intVector &vals)
+{
+    QString s;
+    for(size_t i = 0; i < vals.size(); ++i)
+    {
+        s += QString().setNum(vals[i]);
+        if(i < vals.size()-1)
+            s += " ";
+    }
+    return s;
+}
+
+// ****************************************************************************
+// Method: GUIBase::IntToQString
+//
+// Purpose: 
+//   Converts an int to a string.
+//
+// Arguments:
+//   val : The value to convert to a string.
+//
+// Returns:    A QString representation of the int.
+//
+// Note:       This method is provided to make the single value case look
+//             more like the array case for consistency.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:35:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::IntToQString(int val)
+{
+    return QString().setNum(val);
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetDoubles
+//
+// Purpose: 
+//   Converts a line edit's text into an array of doubles.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   vals     : The destination array for the doubles.
+//   maxVals  : The size of the destination array.
+//
+// Returns:    True if maxVals doubles were read; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:38:12 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetDoubles(QLineEdit *lineEdit, double *vals, int maxVals)
+{
+    return QStringToDoubles(lineEdit->displayText().trimmed(), vals, maxVals);
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetDoubles
+//
+// Purpose: 
+//   Converts a line edit's text into an array of doubles.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   vals     : The destination vector for the doubles.
+//   maxVals  : The size of the destination array.
+//
+// Returns:    True if maxVals doubles were read; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:38:12 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetDoubles(QLineEdit *lineEdit, doubleVector &vals, int maxVals)
+{
+    return QStringToDoubles(lineEdit->displayText().trimmed(), vals, maxVals);
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetDouble
+//
+// Purpose: 
+//   Converts a line edit's text into a double.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   val      : The value in which to store the double.
+//
+// Returns:    True if a double was read; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:38:12 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetDouble(QLineEdit *lineEdit, double &val)
+{
+    bool okay = false;
+    val = lineEdit->displayText().trimmed().toDouble(&okay);
+    return okay;
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetFloats
+//
+// Purpose: 
+//   Converts a line edit's text into an array of floats.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   vals     : The destination array for the floats.
+//   maxVals  : The size of the destination array.
+//
+// Returns:    True if maxVals floats were read; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:38:12 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetFloats(QLineEdit *lineEdit, float *vals, int maxVals)
+{
+    return QStringToFloats(lineEdit->displayText().trimmed(), vals, maxVals);
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetFloat
+//
+// Purpose: 
+//   Converts a line edit's text into a float.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   val      : The value in which to store the float.
+//
+// Returns:    True if a float was read; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:38:12 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetFloat(QLineEdit *lineEdit, float &val)
+{
+    bool okay = false;
+    val = lineEdit->displayText().trimmed().toFloat(&okay);
+    return okay;
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetInts
+//
+// Purpose: 
+//   Converts a line edit's text into an array of Ints.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   vals     : The destination array for the Ints.
+//   maxVals  : The size of the destination array.
+//
+// Returns:    True if maxVals Ints were read; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:38:12 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetInts(QLineEdit *lineEdit, int *vals, int maxVals)
+{
+    return QStringToInts(lineEdit->displayText().trimmed(), vals, maxVals);
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetInts
+//
+// Purpose: 
+//   Converts a line edit's text into an array of Ints.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   vals     : The destination vector for the Ints.
+//   maxVals  : The size of the destination array.
+//
+// Returns:    True if maxVals Ints were read; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:38:12 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetInts(QLineEdit *lineEdit, intVector &vals, int maxVals)
+{
+    return QStringToInts(lineEdit->displayText().trimmed(), vals, maxVals);
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetInt
+//
+// Purpose: 
+//   Converts a line edit's text into an int.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   val      : The value in which to store the int.
+//
+// Returns:    True if a int was read; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:38:12 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetInt(QLineEdit *lineEdit, int &val)
+{
+    bool okay = false;
+    val = lineEdit->displayText().trimmed().toInt(&okay);
+    return okay;
+}
+
+// ****************************************************************************
+// Method: GUIBase::QStringToDoubles
+//
+// Purpose: 
+//   Converts a QString into an array of doubles.
+//
+// Arguments:
+//   str     : The string from which to extract the doubles.
+//   vals    : The destination array for the doubles.
+//   maxVals : The number of values in the destination array.
+//
+// Returns:  True if maxVals doubles were created from the string. False otherwise.  
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:41:41 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::QStringToDoubles(const QString &str, double *vals, int maxVals)
+{
+    bool retval = false;
+
+    if(!str.isEmpty())
+    {
+        bool okay = true;
+        QStringList s = str.split(" ", QString::SkipEmptyParts);
+        for(int i = 0; i < maxVals && okay; ++i)
+        {
+            if(i < s.size())
+                vals[i] = s[i].toDouble(&okay);
+            else
+                vals[i] = 0.;
+        }
+        retval = okay;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GUIBase::QStringToDoubles
+//
+// Purpose: 
+//   Converts a QString into an array of doubles.
+//
+// Arguments:
+//   str     : The string from which to extract the doubles.
+//   vals    : The destination array for the doubles.
+//   maxVals : The number of values in the destination array.
+//
+// Returns:  True if maxVals doubles were created from the string. False otherwise.  
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:41:41 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::QStringToDoubles(const QString &str, doubleVector &vals, int maxVals)
+{
+    bool retval = false;
+
+    if(!str.isEmpty())
+    {
+        bool okay = true;
+        QStringList s = str.split(" ", QString::SkipEmptyParts);
+        for(int i = 0; i < s.size() && okay; ++i)
+        {
+            if(maxVals == -1 || i < maxVals)
+                vals.push_back(s[i].toDouble(&okay));
+            else
+                vals.push_back(0.);
+        }
+        retval = okay;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GUIBase::QStringToFloats
+//
+// Purpose: 
+//   Converts a QString into an array of floats.
+//
+// Arguments:
+//   str     : The string from which to extract the floats.
+//   vals    : The destination array for the floats.
+//   maxVals : The number of values in the destination array.
+//
+// Returns:  True if maxVals floats were created from the string. False otherwise.  
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:41:41 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::QStringToFloats(const QString &str, float *vals, int maxVals)
+{
+    bool retval = false;
+
+    if(!str.isEmpty())
+    {
+        bool okay = true;
+        QStringList s = str.split(" ", QString::SkipEmptyParts);
+        for(int i = 0; i < maxVals && okay; ++i)
+        {
+            if(i < s.size())
+                vals[i] = s[i].toFloat(&okay);
+            else
+                vals[i] = 0.;
+        }
+        retval = okay;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GUIBase::QStringToInts
+//
+// Purpose: 
+//   Converts a QString into an array of ints.
+//
+// Arguments:
+//   str     : The string from which to extract the ints.
+//   vals    : The destination array for the ints.
+//   maxVals : The number of values in the destination array.
+//
+// Returns:  True if maxVals ints were created from the string. False otherwise.  
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:41:41 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::QStringToInts(const QString &str, int *vals, int maxVals)
+{
+    bool retval = false;
+
+    if(!str.isEmpty())
+    {
+        bool okay = true;
+        QStringList s = str.split(" ", QString::SkipEmptyParts);
+        for(int i = 0; i < maxVals && okay; ++i)
+        {
+            if(i < s.size())
+                vals[i] = s[i].toInt(&okay);
+            else
+                vals[i] = 0;
+        }
+        retval = okay;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GUIBase::QStringToInts
+//
+// Purpose: 
+//   Converts a QString into a vector of ints.
+//
+// Arguments:
+//   str     : The string from which to extract the ints.
+//   vals    : The destination array for the ints.
+//   maxVals : The number of values in the destination array.
+//
+// Returns:  True if maxVals ints were created from the string. False otherwise.  
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 19 10:41:41 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GUIBase::QStringToInts(const QString &str, intVector &vals, int maxVals)
+{
+    bool retval = false;
+
+    if(!str.isEmpty())
+    {
+        bool okay = true;
+        QStringList s = str.split(" ", QString::SkipEmptyParts);
+        for(int i = 0; i < s.size() && okay; ++i)
+        {
+            if(maxVals == -1 || i < maxVals)
+                vals.push_back(s[i].toInt(&okay));
+            else
+                vals.push_back(0);
+        }
+        retval = okay;
+    }
+
+    return retval;
+}

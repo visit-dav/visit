@@ -41,14 +41,13 @@
 #include <TubeAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -125,37 +124,37 @@ QvisTubeWindow::~QvisTubeWindow()
 void
 QvisTubeWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(0);
+    topLayout->addLayout(mainLayout);
 
-
-    scaleByVarFlag = new QCheckBox(tr("Scale width by variable?  (Nodal)"), central, "scaleByVarFlag");
+    scaleByVarFlag = new QCheckBox(tr("Scale width by variable?  (Nodal)"), central);
     connect(scaleByVarFlag, SIGNAL(toggled(bool)),
             this, SLOT(scaleByVarFlagChanged(bool)));
     mainLayout->addWidget(scaleByVarFlag, 0,0);
 
-    widthLabel = new QLabel(tr("Tube width (fixed)"), central, "widthLabel");
+    widthLabel = new QLabel(tr("Tube width (fixed)"), central);
     mainLayout->addWidget(widthLabel,1,0);
-    width = new QLineEdit(central, "width");
+    width = new QLineEdit(central);
     connect(width, SIGNAL(returnPressed()),
             this, SLOT(widthProcessText()));
     mainLayout->addWidget(width, 1,1);
 
-    scaleVariableLabel = new QLabel(tr("Tube width scaling variable"), central, "scaleVariableLabel");
+    scaleVariableLabel = new QLabel(tr("Tube width scaling variable"), central);
     mainLayout->addWidget(scaleVariableLabel,2,0);
     int scaleVariableMask = QvisVariableButton::Scalars;
-    scaleVariable = new QvisVariableButton(true, true, true, scaleVariableMask, central, "scaleVariable");
+    scaleVariable = new QvisVariableButton(true, true, true, scaleVariableMask, central);
     connect(scaleVariable, SIGNAL(activated(const QString&)),
             this, SLOT(scaleVariableChanged(const QString&)));
     mainLayout->addWidget(scaleVariable, 2,1);
 
-    finenessLabel = new QLabel(tr("Fineness of tube"), central, "finenessLabel");
+    finenessLabel = new QLabel(tr("Fineness of tube"), central);
     mainLayout->addWidget(finenessLabel,3,0);
-    fineness = new QLineEdit(central, "fineness");
+    fineness = new QLineEdit(central);
     connect(fineness, SIGNAL(returnPressed()),
             this, SLOT(finenessProcessText()));
     mainLayout->addWidget(fineness, 3,1);
 
-    capping = new QCheckBox(tr("Cap Tubes?"), central, "capping");
+    capping = new QCheckBox(tr("Cap ends of the tubes"), central);
     connect(capping, SIGNAL(toggled(bool)),
             this, SLOT(cappingChanged(bool)));
     mainLayout->addWidget(capping, 4,0);
@@ -181,8 +180,6 @@ QvisTubeWindow::CreateWindowContents()
 void
 QvisTubeWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -194,13 +191,6 @@ QvisTubeWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case TubeAttributes::ID_scaleByVarFlag:
@@ -233,21 +223,15 @@ QvisTubeWindow::UpdateWindow(bool doAll)
             scaleByVarFlag->blockSignals(false);
             break;
           case TubeAttributes::ID_width:
-            width->blockSignals(true);
-            temp.setNum(atts->GetWidth());
-            width->setText(temp);
-            width->blockSignals(false);
+            width->setText(FloatToQString(atts->GetWidth()));
             break;
           case TubeAttributes::ID_scaleVariable:
             scaleVariable->blockSignals(true);
-            scaleVariable->setText(atts->GetScaleVariable().c_str());
+            scaleVariable->setText(QString(atts->GetScaleVariable().c_str()));
             scaleVariable->blockSignals(false);
             break;
           case TubeAttributes::ID_fineness:
-            fineness->blockSignals(true);
-            temp.sprintf("%d", atts->GetFineness());
-            fineness->setText(temp);
-            fineness->blockSignals(false);
+            fineness->setText(IntToQString(atts->GetFineness()));
             break;
           case TubeAttributes::ID_capping:
             capping->blockSignals(true);
@@ -277,27 +261,18 @@ QvisTubeWindow::UpdateWindow(bool doAll)
 void
 QvisTubeWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do width
     if(which_widget == TubeAttributes::ID_width || doAll)
     {
-        temp = width->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        float val;
+        if(LineEditGetFloat(width, val))
+            atts->SetWidth(val);
+        else
         {
-            float val = temp.toFloat(&okay);
-            if(okay)
-                atts->SetWidth(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of width was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetWidth());
-            Message(msg);
+            ResettingError(tr("Tube width (fixed)"),
+                FloatToQString(atts->GetWidth()));
             atts->SetWidth(atts->GetWidth());
         }
     }
@@ -305,21 +280,13 @@ QvisTubeWindow::GetCurrentValues(int which_widget)
     // Do fineness
     if(which_widget == TubeAttributes::ID_fineness || doAll)
     {
-        temp = fineness->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(fineness, val))
+            atts->SetFineness(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetFineness(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of fineness was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetFineness());
-            Message(msg);
+            ResettingError(tr("Fineness of tube"),
+                IntToQString(atts->GetFineness()));
             atts->SetFineness(atts->GetFineness());
         }
     }
@@ -351,7 +318,7 @@ QvisTubeWindow::widthProcessText()
 void
 QvisTubeWindow::scaleVariableChanged(const QString &varName)
 {
-    atts->SetScaleVariable(varName.latin1());
+    atts->SetScaleVariable(varName.toStdString());
     SetUpdate(false);
     Apply();
 }

@@ -39,7 +39,8 @@
 #include <QvisWindowBase.h>
 #include <DataNode.h>
 #include <vectortypes.h>
-#include <qapplication.h>
+#include <QApplication>
+#include <QDesktopWidget>
 
 #include <cstdlib>
 
@@ -78,12 +79,15 @@ int  QvisWindowBase::windowAnchor[2] = {0,0};
 //   Brad Whitlock, Wed Apr  9 10:32:23 PDT 2008
 //   Changed ctor args.
 //
+//   Brad Whitlock, Fri Jun  6 10:29:10 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisWindowBase::QvisWindowBase(const QString &captionString, WFlags f) :
-    QMainWindow(parentOfEveryWindow, captionString.ascii(),
+QvisWindowBase::QvisWindowBase(const QString &captionString, Qt::WindowFlags f) :
+    QMainWindow(parentOfEveryWindow, 
 #if defined(Q_WS_WIN) || defined(Q_WS_MACX)
-                WType_TopLevel | f)
+                Qt::Window | f)
 {
     // Make each window the child of the first window that is created
     // when we run on the Windows platform. This prevents the sub-windows
@@ -95,9 +99,9 @@ QvisWindowBase::QvisWindowBase(const QString &captionString, WFlags f) :
 {
 #endif
     if(!captionString.isEmpty())
-        setCaption(captionString);
+        setWindowTitle(captionString);
     else
-        setCaption("VisIt");
+        setWindowTitle("VisIt");
 
     saveWindowDefaults = false;
 }
@@ -175,7 +179,9 @@ QvisWindowBase::showNormal()
 // Creation:   Tue Oct 3 15:30:23 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jun  6 10:29:33 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -183,7 +189,7 @@ QvisWindowBase::CreateNode(DataNode *parentNode)
 {
     if(saveWindowDefaults)
     {
-        DataNode *node = new DataNode(std::string(caption().latin1()));
+        DataNode *node = new DataNode(windowTitle().toStdString());
         parentNode->AddNode(node);
 
         // Add generic window attributes
@@ -219,12 +225,15 @@ QvisWindowBase::CreateNode(DataNode *parentNode)
 //   Brad Whitlock, Wed Nov 22 09:56:26 PDT 2006
 //   Added code to override the window location if an anchor has been provided.
 //
+//   Brad Whitlock, Fri Jun  6 10:29:41 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisWindowBase::SetFromNode(DataNode *parentNode, const int *borders)
 {
-    DataNode *winNode = parentNode->GetNode(std::string(caption().latin1()));
+    DataNode *winNode = parentNode->GetNode(windowTitle().toStdString());
     if(winNode == 0)
         return;
 

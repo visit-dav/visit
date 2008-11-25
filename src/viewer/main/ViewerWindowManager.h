@@ -630,7 +630,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
                                  bool screenCapture, bool leftEye);
     avtImage_p CreateTiledImage(int width, int height, bool leftEye);
     avtDataset_p GetDataset(int windowIndex, bool&);
-    bool AskForCorrelationPermission(const char *, const char *,
+    bool AskForCorrelationPermission(const QString &, const QString &,
                                      const stringVector &dbs) const;
     DatabaseCorrelation *CreateMultiWindowCorrelationHelper(const stringVector &dbs);
     static void ToolCallback(const avtToolInterface &);

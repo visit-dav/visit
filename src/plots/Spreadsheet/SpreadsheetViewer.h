@@ -38,7 +38,7 @@
 #ifndef SPREADSHEET_VIEWER_H
 #define SPREADSHEET_VIEWER_H
 
-#include <qmainwindow.h>
+#include <QMainWindow>
 #include <Observer.h>
 #include <SpreadsheetAttributes.h>
 #include <VariableMenuPopulator.h>
@@ -51,9 +51,9 @@ class QGroupBox;
 class QHBox;
 class QLabel;
 class QLineEdit;
-class QListBox;
+class QListWidget;
 class QPushButton;
-class QPopupMenu;
+class QMenu;
 class QSlider;
 class QTable;
 class QTabWidget;
@@ -93,13 +93,16 @@ class vtkDataSet;
 //   Gunther H. Weber, Wed Nov 28 15:20:13 PST 2007
 //   Added toggle for current cell outline
 //
+//   Brad Whitlock, Thu Aug 28 14:41:18 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class SpreadsheetViewer : public QMainWindow, public Observer
 {
     Q_OBJECT
 public:
-    SpreadsheetViewer(ViewerPlot *p, QWidget *parent = 0, const char *name = 0);
+    SpreadsheetViewer(ViewerPlot *p, QWidget *parent = 0);
     virtual ~SpreadsheetViewer();
 
     void setAllowRender(bool);
@@ -116,7 +119,7 @@ private slots:
     void sliderChanged(int);
     void sliderPressed();
     void sliderReleased();
-    void tabChanged(QWidget *);
+    void tabChanged(int);
     void minClicked();
     void maxClicked();
     void colorTableCheckBoxToggled(bool);
@@ -151,7 +154,7 @@ private:
     void updateMinMaxButtons();
     void updateSliderLabel();
     void updateVariableMenus();
-    void updateMenuEnabledState(QTable *);
+    void updateMenuEnabledState(int);
     int  GetCell(double, double, double);
     bool PickPointsChanged() const;
 
@@ -195,7 +198,7 @@ private:
     QCheckBox            *currentCellOutlineCheckBox;
     QLabel               *normalLabel;
     QButtonGroup         *normalButtonGroup;
-    QHBox                *normalRadioButtons;
+    QWidget              *normalRadioButtons;
 
     // Widgets that we'll use all the time.
     SpreadsheetTabWidget *zTabs;
@@ -216,14 +219,14 @@ private:
     QPushButton          *maxButton;
 
     // Menu related members.
-    QPopupMenu           *filePopup;
-    QPopupMenu           *editPopup;
-    QPopupMenu           *operationsPopup;
-    int                   saveMenuId;
-    int                   saveMenu_SaveTextId;
-    int                   editMenuId;
-    int                   editMenu_CopyId;
-    int                   operationMenuId;
+    QMenu                *fileMenu;
+    QMenu                *editMenu;
+#ifdef Q_WS_MAC
+    QPushButton          *opButton;
+#endif
+    QMenu                *operationsMenu;
+    QAction              *fileMenu_SaveText;
+    QAction              *editMenu_Copy;
 
     // A cache for previous picks, to prevent cell lookups again.
     std::vector<double>   pickPt;

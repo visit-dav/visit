@@ -41,15 +41,15 @@
 #include <SpreadsheetAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QWidget>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -79,7 +79,9 @@ const char *QvisSpreadsheetPlotWindow::defaultItem = "Whole";
 // Creation:   Thu Feb 15 11:37:49 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 11 16:04:41 PDT 2008
+//   Initialize normal.
+//
 // ****************************************************************************
 
 QvisSpreadsheetPlotWindow::QvisSpreadsheetPlotWindow(const int type,
@@ -91,6 +93,8 @@ QvisSpreadsheetPlotWindow::QvisSpreadsheetPlotWindow(const int type,
 {
     plotType = type;
     atts = subj;
+
+    normal = 0;
 
     // We will observe the SILRestriction attributes too so we can display
     // the available subsets in the window.
@@ -111,12 +115,16 @@ QvisSpreadsheetPlotWindow::QvisSpreadsheetPlotWindow(const int type,
 // Creation:   Thu Feb 15 11:37:49 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 11 16:04:33 PDT 2008
+//   deleted normal.
+//
 // ****************************************************************************
 
 QvisSpreadsheetPlotWindow::~QvisSpreadsheetPlotWindow()
 {
     GetViewerState()->GetSILRestrictionAttributes()->Detach(this);
+
+    delete normal;
 }
 
 
@@ -142,91 +150,97 @@ QvisSpreadsheetPlotWindow::~QvisSpreadsheetPlotWindow()
 //   Brad Whitlock, Wed Apr 23 11:36:41 PDT 2008
 //   Added tr()'s
 //
+//   Brad Whitlock, Mon Aug 11 16:03:49 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisSpreadsheetPlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 8, 2, 10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(0);
+    topLayout->addLayout(mainLayout);
 
-    subsetNameLabel = new QLabel(tr("Subset name"), central, "subsetNameLabel");
+    subsetNameLabel = new QLabel(tr("Subset name"), central);
     mainLayout->addWidget(subsetNameLabel,0,0);
-    subsetName = new QComboBox(true, central, "subsetName");
+    subsetName = new QComboBox(central);
     subsetName->setEditable(false);
-    subsetName->insertItem(defaultItem, 0);
+    subsetName->addItem(defaultItem);
     connect(subsetName, SIGNAL(activated(const QString &)),
             this, SLOT(subsetNameChanged(const QString &)));
     mainLayout->addWidget(subsetName, 0,1);
 
-    QFrame *splitter = new QFrame(central, "splitter");
+    QFrame *splitter = new QFrame(central);
     splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
-    mainLayout->addMultiCellWidget(splitter, 1, 1, 0, 1);   
+    mainLayout->addWidget(splitter, 1, 0, 1, 2);
 
-    normalLabel = new QLabel(tr("Normal"), central, "normalLabel");
+    normalLabel = new QLabel(tr("Normal"), central);
     mainLayout->addWidget(normalLabel,2,0);
-    normal = new QButtonGroup(central, "normal");
-    normal->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *normalLayout = new QHBoxLayout(normal);
+    normal = new QButtonGroup(0);
+    QWidget *normalWidget = new QWidget(central);
+    QHBoxLayout *normalLayout = new QHBoxLayout(normalWidget);
+    normalLayout->setMargin(0);
     normalLayout->setSpacing(10);
-    QRadioButton *normalNormalAxisX = new QRadioButton(tr("X"), normal);
+    QRadioButton *normalNormalAxisX = new QRadioButton(tr("X"), normalWidget);
+    normal->addButton(normalNormalAxisX, 0);
     normalLayout->addWidget(normalNormalAxisX);
-    QRadioButton *normalNormalAxisY = new QRadioButton(tr("Y"), normal);
+    QRadioButton *normalNormalAxisY = new QRadioButton(tr("Y"), normalWidget);
+    normal->addButton(normalNormalAxisY, 1);
     normalLayout->addWidget(normalNormalAxisY);
-    QRadioButton *normalNormalAxisZ = new QRadioButton(tr("Z"), normal);
+    QRadioButton *normalNormalAxisZ = new QRadioButton(tr("Z"), normalWidget);
+    normal->addButton(normalNormalAxisZ, 2);
     normalLayout->addWidget(normalNormalAxisZ);
-    connect(normal, SIGNAL(clicked(int)),
+    connect(normal, SIGNAL(buttonClicked(int)),
             this, SLOT(normalChanged(int)));
-    mainLayout->addWidget(normal, 2,1);
+    mainLayout->addWidget(normalWidget, 2,1);
 
-    formatStringLabel = new QLabel(tr("Format string"), central, "formatStringLabel");
+    formatStringLabel = new QLabel(tr("Format string"), central);
     mainLayout->addWidget(formatStringLabel,3,0);
-    formatString = new QLineEdit(central, "formatString");
+    formatString = new QLineEdit(central);
     connect(formatString, SIGNAL(returnPressed()),
             this, SLOT(formatStringProcessText()));
     mainLayout->addWidget(formatString, 3,1);
 
-    fontName = new QvisDialogLineEdit(central, "fontName");
+    fontName = new QvisDialogLineEdit(central);
     fontName->setDialogMode(QvisDialogLineEdit::ChooseFont);
     connect(fontName, SIGNAL(textChanged(const QString &)),
             this, SLOT(fontNameChanged(const QString &)));
     mainLayout->addWidget(fontName, 4, 1);
-    mainLayout->addWidget(new QLabel(fontName,tr("Spreadsheet font"), central), 4, 0);
+    mainLayout->addWidget(new QLabel(tr("Spreadsheet font"), central), 4, 0);
 
-    useColorTable = new QCheckBox(tr("Use color table"), central, "useColorTable");
+    useColorTable = new QCheckBox(tr("Use color table"), central);
     connect(useColorTable, SIGNAL(toggled(bool)),
             this, SLOT(useColorTableChanged(bool)));
     mainLayout->addWidget(useColorTable, 5,0);
 
-    colorTableName = new QvisColorTableButton(central, "colorTableName");
+    colorTableName = new QvisColorTableButton(central);
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     mainLayout->addWidget(colorTableName, 5,1);
 
-    showPatchOutline = new QCheckBox(tr("Show patch outline"), central, "showPatchOutline");
+    showPatchOutline = new QCheckBox(tr("Show patch outline"), central);
     connect(showPatchOutline, SIGNAL(toggled(bool)),
             this, SLOT(showPatchOutlineChanged(bool)));
     mainLayout->addWidget(showPatchOutline, 6,0);
 
-    showCurrentCellOutline = new QCheckBox(tr("Show current cell outline"), central, "showCurrentCellOutline");
+    showCurrentCellOutline = new QCheckBox(tr("Show current cell outline"), central);
     connect(showCurrentCellOutline, SIGNAL(toggled(bool)),
             this, SLOT(showCurrentCellOutlineChanged(bool)));
     mainLayout->addWidget(showCurrentCellOutline, 7,0);
  
-    showTracerPlane = new QCheckBox(tr("Show tracer plane"), central, "showTracerPlane");
+    showTracerPlane = new QCheckBox(tr("Show tracer plane"), central);
     connect(showTracerPlane, SIGNAL(toggled(bool)),
             this, SLOT(showTracerPlaneChanged(bool)));
     mainLayout->addWidget(showTracerPlane, 8,0);
 
-    tracerColorLabel = new QLabel(tr("Tracer color"), central, "tracerColorLabel");
+    tracerColorLabel = new QLabel(tr("Tracer color"), central);
     mainLayout->addWidget(tracerColorLabel,9,0);
-    tracerColor = new QvisColorButton(central, "tracerColor");
+    tracerColor = new QvisColorButton(central);
     connect(tracerColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(tracerColorChanged(const QColor&)));
     mainLayout->addWidget(tracerColor, 9,1);
 
-    tracerOpacity = new QvisOpacitySlider(central, "tracerOpacity");
-    tracerOpacity->setMinValue(0);
-    tracerOpacity->setMaxValue(255);
+    tracerOpacity = new QvisOpacitySlider(0, 255, 10, 0, central);
     connect(tracerOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(tracerOpacityChanged(int)));
     mainLayout->addWidget(tracerOpacity, 10,1);
@@ -249,6 +263,9 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
 //   Gunther H. Weber, Thu Sep 27 12:05:14 PDT 2007
 //   Added font selection for spreadsheet
 //
+//   Brad Whitlock, Mon Aug 11 16:09:59 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -261,7 +278,7 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
     {
         UpdateSubsetNames();
         subsetName->blockSignals(true);
-        subsetName->setCurrentText(atts->GetSubsetName().c_str());
+        subsetName->setCurrentIndex(subsetName->findText(atts->GetSubsetName().c_str()));
         subsetName->blockSignals(false);
         subsetName->setEnabled(atts->GetSubsetName() != defaultItem);
         return;
@@ -277,20 +294,20 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: //subsetName
+        case SpreadsheetAttributes::ID_subsetName:
             UpdateSubsetNames();
             subsetName->blockSignals(true);
-            subsetName->setCurrentText(atts->GetSubsetName().c_str());
+            subsetName->setCurrentIndex(subsetName->findText(atts->GetSubsetName().c_str()));
             subsetName->blockSignals(false);
             subsetName->setEnabled(atts->GetSubsetName() != defaultItem);
             break;
-        case 1: //formatString
+        case SpreadsheetAttributes::ID_formatString:
             temp = atts->GetFormatString().c_str();
             formatString->blockSignals(true);
             formatString->setText(temp);
             formatString->blockSignals(false);
             break;
-        case 2: //useColorTable
+        case SpreadsheetAttributes::ID_useColorTable:
             if (atts->GetUseColorTable())
                 colorTableName->setEnabled(true);
             else
@@ -299,12 +316,12 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
             useColorTable->setChecked(atts->GetUseColorTable());
             useColorTable->blockSignals(false);
             break;
-        case 3: //colorTableName
+        case SpreadsheetAttributes::ID_colorTableName:
             colorTableName->blockSignals(true);
             colorTableName->setColorTable(atts->GetColorTableName().c_str());
             colorTableName->blockSignals(false);
             break;
-        case 4: //showTracerPlane
+        case SpreadsheetAttributes::ID_showTracerPlane:
             if (atts->GetShowTracerPlane())
             {
                 tracerColor->setEnabled(true);
@@ -321,7 +338,7 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
             showTracerPlane->setChecked(atts->GetShowTracerPlane());
             showTracerPlane->blockSignals(false);
             break;
-        case 5: //tracerColor
+        case SpreadsheetAttributes::ID_tracerColor:
             tempcolor = QColor(atts->GetTracerColor().Red(),
                                atts->GetTracerColor().Green(),
                                atts->GetTracerColor().Blue());
@@ -333,24 +350,24 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
             tracerOpacity->setGradientColor(tempcolor);
             tracerOpacity->blockSignals(false);
             break;
-        case 6: //normal
+        case SpreadsheetAttributes::ID_normal:
             normal->blockSignals(true);
-            normal->setButton(atts->GetNormal());
+            normal->button(atts->GetNormal())->setChecked(true);
             normal->blockSignals(false);
             break;
-        case 7: //sliceIndex
+        case SpreadsheetAttributes::ID_sliceIndex:
             break;
-        case 13: // fontName
+        case SpreadsheetAttributes::ID_spreadsheetFont:
             fontName->blockSignals(true);
             fontName->setText(atts->GetSpreadsheetFont().c_str());
             fontName->blockSignals(false);
             break;
-        case 14: // showPatchOutline
+        case SpreadsheetAttributes::ID_showPatchOutline:
             showPatchOutline->blockSignals(true);
             showPatchOutline->setChecked(atts->GetShowPatchOutline());
             showPatchOutline->blockSignals(false);
             break;
-        case 15: // showCurrentCellOutline
+        case SpreadsheetAttributes::ID_showCurrentCellOutline:
             showCurrentCellOutline->blockSignals(true);
             showCurrentCellOutline->setChecked(atts->GetShowCurrentCellOutline());
             showCurrentCellOutline->blockSignals(false);
@@ -380,6 +397,9 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
 //   same name as the subset name in the Spreadsheet attributes, add it 
 //   temporarily regardless of whether the subset is selected in the SIL
 //   restriction.
+//
+//   Brad Whitlock, Mon Aug 11 16:19:39 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -418,7 +438,7 @@ QvisSpreadsheetPlotWindow::UpdateSubsetNames()
                         if(trav.UsesData(setIds[si]) ||
                            restriction->GetSILSet(setIds[si])->GetName() == atts->GetSubsetName())
                         {
-                            subsetName->insertItem(restriction->
+                            subsetName->addItem(restriction->
                                 GetSILSet(setIds[si])->GetName().c_str()); 
                         }
                     }
@@ -442,7 +462,7 @@ QvisSpreadsheetPlotWindow::UpdateSubsetNames()
         // Set the enabled state.
         if(subsetName->count() == 0)
         {
-            subsetName->insertItem(defaultItem);
+            subsetName->addItem(defaultItem);
             subsetName->setEnabled(false);
         }
         else if(subsetName->count() == 0)
@@ -474,12 +494,6 @@ QvisSpreadsheetPlotWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do subsetName
-    if(which_widget == 0 || doAll)
-    {
-        // Nothing for subsetName
-    }
-
     // Do formatString
     if(which_widget == 1 || doAll)
     {
@@ -487,7 +501,7 @@ QvisSpreadsheetPlotWindow::GetCurrentValues(int which_widget)
         okay = !temp.isEmpty();
         if(okay)
         {
-            atts->SetFormatString(temp.latin1());
+            atts->SetFormatString(temp.toStdString());
         }
 
         if(!okay)
@@ -498,42 +512,6 @@ QvisSpreadsheetPlotWindow::GetCurrentValues(int which_widget)
             Message(msg);
             atts->SetFormatString(atts->GetFormatString());
         }
-    }
-
-    // Do useColorTable
-    if(which_widget == 2 || doAll)
-    {
-        // Nothing for useColorTable
-    }
-
-    // Do colorTableName
-    if(which_widget == 3 || doAll)
-    {
-        // Nothing for colorTableName
-    }
-
-    // Do showTracerPlane
-    if(which_widget == 4 || doAll)
-    {
-        // Nothing for showTracerPlane
-    }
-
-    // Do tracerColor
-    if(which_widget == 5 || doAll)
-    {
-        // Nothing for tracerColor
-    }
-
-    // Do normal
-    if(which_widget == 6 || doAll)
-    {
-        // Nothing for normal
-    }
-
-    // Do sliceIndex
-    if(which_widget == 7 || doAll)
-    {
-        // Nothing for sliceIndex
     }
 }
 
@@ -636,7 +614,7 @@ QvisSpreadsheetPlotWindow::reset()
 void
 QvisSpreadsheetPlotWindow::subsetNameChanged(const QString &name)
 {
-    atts->SetSubsetName(name.latin1());
+    atts->SetSubsetName(name.toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -660,7 +638,7 @@ QvisSpreadsheetPlotWindow::useColorTableChanged(bool val)
 void
 QvisSpreadsheetPlotWindow::colorTableNameChanged(bool useDefault, const QString &ctName)
 {
-    atts->SetColorTableName(ctName.latin1());
+    atts->SetColorTableName(ctName.toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -731,7 +709,7 @@ QvisSpreadsheetPlotWindow::normalChanged(int val)
 void
 QvisSpreadsheetPlotWindow::fontNameChanged(const QString &newFont)
 {
-    atts->SetSpreadsheetFont(newFont.latin1());
+    atts->SetSpreadsheetFont(newFont.toStdString());
     SetUpdate(false);
     Apply();
 }

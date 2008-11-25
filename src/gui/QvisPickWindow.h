@@ -47,10 +47,11 @@
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
-class QMultiLineEdit;
+class QTextEdit;
 class QSpinBox;
 class QTabWidget;
-class QVBox;
+class QTextEdit;
+
 class QvisVariableButton;
 class PickAttributes;
 
@@ -85,7 +86,7 @@ class PickAttributes;
 //   Added the autoShow flag and CreateNode and SetFromNode methods.
 //
 //   Brad Whitlock, Tue Sep 9 09:02:03 PDT 2003
-//   I made it use QMultiLineEdit instead of QListBox.
+//   I made it use QTextEdit instead of QListWidget.
 //
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
 //   Added the savePicks checkbox. Remove AddInformation, no longer necessary.
@@ -207,8 +208,8 @@ private:
     QString             lastLetter;
 
     QTabWidget         *tabWidget;
-    QVBox              *pages[MAX_PICK_TABS];
-    QMultiLineEdit     *infoLists[MAX_PICK_TABS];
+    QWidget            *pages[MAX_PICK_TABS];
+    QTextEdit          *infoLists[MAX_PICK_TABS];
     QCheckBox          *displayIncEls;
     QCheckBox          *nodeId;
     QCheckBox          *nodeDomLog;

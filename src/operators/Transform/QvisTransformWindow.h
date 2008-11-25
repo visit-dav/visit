@@ -41,19 +41,12 @@
 
 #include <QvisOperatorWindow.h>
 #include <AttributeSubject.h>
-#include <qlineedit.h>
+#include <QLineEdit>
 
 class TransformAttributes;
-class QLabel;
-class QCheckBox;
-class QSpinBox;
-class QVBox;
 class QButtonGroup;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
+class QCheckBox;
+class QLabel;
 class QTabWidget;
 
 // ****************************************************************************
@@ -65,16 +58,15 @@ class QTabWidget;
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 25, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Aug 13 20:10:25 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 class QNarrowLineEdit : public QLineEdit
 {
   public:
-    QNarrowLineEdit(QWidget *p, const char *n=0)
-        : QLineEdit(p, n)
-    {
-    }
-    QNarrowLineEdit(const QString &s, QWidget *p, const char *n=0)
-        : QLineEdit(s, p, n)
+    QNarrowLineEdit(QWidget *p) : QLineEdit(p)
     {
     }
     QSize sizeHint() const
@@ -143,7 +135,7 @@ class QvisTransformWindow : public QvisOperatorWindow
     void translateXProcessText();
     void translateYProcessText();
     void translateZProcessText();
-    void pageTurned(QWidget*);
+    void pageTurned(int);
     void inputCoordChanged(int);
     void outputCoordChanged(int);
     void ltElementtChanged();
@@ -159,6 +151,7 @@ class QvisTransformWindow : public QvisOperatorWindow
     QNarrowLineEdit *rotateAmount;
     QLabel          *rotateAmountLabel;
     QButtonGroup    *rotateType;
+    QWidget         *rotateTypeWidget;
 
     QCheckBox       *doScale;
     QLineEdit       *scaleOrigin;
@@ -193,9 +186,9 @@ class QvisTransformWindow : public QvisOperatorWindow
     QButtonGroup    *outputCoord;
 
     TransformAttributes *atts;
-    QFrame *firstPage;
-    QFrame *secondPage;
-    QFrame *thirdPage;
+    QWidget *firstPage;
+    QWidget *secondPage;
+    QWidget *thirdPage;
 };
 
 

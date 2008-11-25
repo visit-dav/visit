@@ -22,6 +22,7 @@
     <Files components="VW">
       SpreadsheetViewer.h
       SpreadsheetTable.h
+      SpreadsheetTabWidget.h
     </Files>
     <Attribute name="SpreadsheetAttributes" purpose="Contains the attributes for the visual spreadsheet." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Spreadsheet.code">
       <Enum name="NormalAxis">

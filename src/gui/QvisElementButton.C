@@ -39,11 +39,12 @@
 #include <QvisElementButton.h>
 #include <QvisPeriodicTableWidget.h>
 #include <QvisElementSelectionWidget.h>
-#include <qapplication.h>
-#include <qbrush.h>
-#include <qpainter.h>
-#include <qpopupmenu.h>
-#include <qstyle.h>
+#include <QApplication>
+#include <QBrush>
+#include <QDesktopWidget>
+#include <QPainter>
+#include <QMenu>
+#include <QStyle>
 #include "AtomicProperties.h"
 
 // Static members.
@@ -72,16 +73,19 @@ QvisElementButton::ElementButtonVector QvisElementButton::buttons;
 //    both a periodic table widget and a "match any element" button
 //    to allow wildcards.
 //
+//    Brad Whitlock, Tue Jun  3 14:43:47 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
-QvisElementButton::QvisElementButton(QWidget *parent, const char *name,
-    const void *data) : QPushButton(parent, name), number(-1)
+QvisElementButton::QvisElementButton(QWidget *parent, const void *data) : 
+    QPushButton(parent), number(-1)
 {
     setText("*");
 
     // Create the button's color selection popup menu.
     if (sharedpopup == 0)
-        sharedpopup = new QvisElementSelectionWidget(0,"sharedpopup",WType_Popup);
+        sharedpopup = new QvisElementSelectionWidget(0, Qt::Popup);
     buttons.push_back(this);
 
     // Make the popup active when this button is clicked.

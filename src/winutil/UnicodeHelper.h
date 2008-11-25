@@ -1,7 +1,7 @@
 #ifndef UNICODE_HELPER_H
 #define UNICODE_HELPER_H
 #include <winutil_exports.h>
-#include <qstring.h>
+#include <QString>
 #include <MessageAttributes.h>
 #include <StatusAttributes.h>
 

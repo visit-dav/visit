@@ -38,9 +38,11 @@
 
 #include <QvisLightingWidget.h>
 #include <math.h>
-#include <qdrawutil.h>
-#include <qpainter.h>
-#include <qpixmap.h>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QPixmap>
+#include <QResizeEvent>
 
 #include <mini3D.h>
 
@@ -102,10 +104,13 @@ m3d_complex_element QvisLightingWidget::cube;
 //   Brad Whitlock, Mon Mar 3 13:22:08 PST 2003
 //   I initialized the renderer.
 //
+//   Brad Whitlock, Thu Jun  5 16:20:07 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisLightingWidget::QvisLightingWidget(QWidget *parent, const char *name) : 
-    QWidget(parent, name), renderer(150,150)
+QvisLightingWidget::QvisLightingWidget(QWidget *parent) : 
+    QWidget(parent), renderer(150,150)
 {
     pixmap = 0;
     previewMode = false;
@@ -388,13 +393,13 @@ QvisLightingWidget::setLightType(int type)
 void
 QvisLightingWidget::mousePressEvent(QMouseEvent *e)
 {
-    if (e->button() == LeftButton)
+    if (e->button() == Qt::LeftButton)
     {
         lastX = ( (float)(e->x()*2)/(float)width() - 1.);
         lastY =-( (float)(e->y()*2)/(float)height() - 1.);
         mouseDown = true;
     }
-    else if (e->button() == MidButton)
+    else if (e->button() == Qt::MidButton)
     {
         view2=m3du_create_identity_matrix();
         renderer.set_view_matrix(mtx_mult(view,view2));
@@ -506,7 +511,9 @@ QvisLightingWidget::mouseReleaseEvent(QMouseEvent *)
 // Creation:   Fri Oct 19 16:37:34 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 16:21:22 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -526,17 +533,16 @@ QvisLightingWidget::paintEvent(QPaintEvent *e)
 
         // Draw the scene into the backing pixmap.
         QBrush b(QColor(16,16,16));
-        qDrawShadePanel(&pixpaint, 0, 0, width(), height(), colorGroup(), true,
+        qDrawShadePanel(&pixpaint, 0, 0, width(), height(), palette(), true,
                         2, &b);
         redrawScene(&pixpaint);
-        setBackgroundPixmap(*pixmap);
         needsRedrawPixmap = false;
         clipByRegion = false;
     }
 
     // Blit the pixmap to the screen.
     QPainter paint(this);
-    if(clipByRegion && !e->region().isEmpty() && !e->region().isNull())
+    if(clipByRegion && !e->region().isEmpty())
         paint.setClipRegion(e->region());
     paint.drawPixmap(QPoint(0,0), *pixmap);
 }

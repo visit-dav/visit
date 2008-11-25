@@ -38,10 +38,8 @@
 
 #ifndef PLUGIN_H
 #define PLUGIN_H
+#include <QTextStream>
 #include <PluginBase.h>
-
-#include <qstring.h>
-#include <visitstream.h>
 #include "Attribute.h"
 
 // ****************************************************************************
@@ -105,6 +103,12 @@
 //    basic attributes to be shared between Plugin and the various
 //    AttsGeneratorPlugin classes.
 //
+//    Brad Whitlock, Thu May  8 11:49:00 PDT 2008
+//    Qt 4. Use QTextStream.
+//
+//    Cyrus Harrison, Fri Sep 19 13:56:30 PDT 2008
+//    Added support for custom libs for gui,engine,mdserver,and viewer targets.
+//
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -154,13 +158,13 @@ class Plugin : public PluginBase
         }
     }
 
-    void Print(ostream &out)
+    void Print(QTextStream &out)
     {
-        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
+        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< "\n";
         if (atts)
-            atts->Print(cout);
+            atts->Print(cOut);
     }
-    void SaveXML(ostream &out, QString indent)
+    void SaveXML(QTextStream &out, QString indent)
     {
         StartOpenTag(out, "Plugin", indent);
         WriteTagAttr(out, "name", name);
@@ -236,6 +240,14 @@ class Plugin : public PluginBase
             WriteValues(out, gfiles, indent);
             WriteCloseTag(out, "Files", indent);
         }
+        if (customglibs)
+        {
+            StartOpenTag(out, "LIBS", indent);
+            WriteTagAttr(out, "components", "G");
+            FinishOpenTag(out);
+            WriteValues(out, glibs, indent);
+            WriteCloseTag(out, "LIBS", indent);
+        }
         if (customsfiles)
         {
             StartOpenTag(out, "Files", indent);
@@ -252,6 +264,14 @@ class Plugin : public PluginBase
             WriteValues(out, vfiles, indent);
             WriteCloseTag(out, "Files", indent);
         }
+        if (customvlibs)
+        {
+            StartOpenTag(out, "LIBS", indent);
+            WriteTagAttr(out, "components", "V");
+            FinishOpenTag(out);
+            WriteValues(out, vlibs, indent);
+            WriteCloseTag(out, "LIBS", indent);
+        }
         if (custommfiles)
         {
             StartOpenTag(out, "Files", indent);
@@ -260,6 +280,14 @@ class Plugin : public PluginBase
             WriteValues(out, mfiles, indent);
             WriteCloseTag(out, "Files", indent);
         }
+        if (custommlibs)
+        {
+            StartOpenTag(out, "LIBS", indent);
+            WriteTagAttr(out, "components", "M");
+            FinishOpenTag(out);
+            WriteValues(out, mlibs, indent);
+            WriteCloseTag(out, "LIBS", indent);
+        }
         if (customefiles)
         {
             StartOpenTag(out, "Files", indent);
@@ -267,6 +295,14 @@ class Plugin : public PluginBase
             FinishOpenTag(out);
             WriteValues(out, efiles, indent);
             WriteCloseTag(out, "Files", indent);
+        }
+        if (customelibs)
+        {
+            StartOpenTag(out, "LIBS", indent);
+            WriteTagAttr(out, "components", "E");
+            FinishOpenTag(out);
+            WriteValues(out, elibs, indent);
+            WriteCloseTag(out, "LIBS", indent);
         }
         if (customwfiles)
         {

@@ -223,7 +223,7 @@ CreateExtentsString(const double * extents,
 //
 // ****************************************************************************
 
-ViewerQueryManager::ViewerQueryManager() : ViewerBase(0, "ViewerQueryManager")
+ViewerQueryManager::ViewerQueryManager() : ViewerBase(0)
 {
     lineoutList    = 0;
     nLineouts      = 0;

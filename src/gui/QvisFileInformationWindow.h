@@ -42,7 +42,7 @@
 #include <QvisPostableWindowObserver.h>
 
 class FileServerList;
-class QMultiLineEdit;
+class QTextEdit;
 
 // ****************************************************************************
 // Class: QvisFileInformationWindow
@@ -74,7 +74,7 @@ protected:
     virtual void UpdateWindow(bool doAll);
 private:
     static const char *titleSeparator;
-    QMultiLineEdit    *outputText;
+    QTextEdit    *outputText;
 };
 
 #endif

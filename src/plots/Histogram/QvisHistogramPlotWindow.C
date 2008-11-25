@@ -41,15 +41,15 @@
 #include <HistogramAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QVBoxLayout>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -125,8 +125,11 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 //    Brad Whitlock, Tue Apr 22 16:48:22 PDT 2008
 //    Added tr()'s
 //
-//   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
-//   Swap the min/max in the gui.
+//    Cyrus Harrison, Fri Jul 18 14:38:14 PDT 2008
+//    Initial Qt4 Port.
+//
+//    Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
+//    Swap the min/max in the gui.
 //
 // ****************************************************************************
 
@@ -137,159 +140,203 @@ QvisHistogramPlotWindow::CreateWindowContents()
     // line edit widgets.
     int maxWidth = fontMetrics().width("1.0000000000");
     
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout();
+    topLayout->addLayout(mainLayout);
 
-
-    basedOnLabel = new QLabel(tr("Histogram based on"), central, "basedOnLabel");
+    basedOnLabel = new QLabel(tr("Histogram based on"), central);
     mainLayout->addWidget(basedOnLabel,0,0);
-    basedOn = new QButtonGroup(central, "basedOn");
-    basedOn->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *basedOnLayout = new QHBoxLayout(basedOn);
-    basedOnLayout->setSpacing(10);
-    QRadioButton *basedOnBasedOnManyVarsForSingleZone = new QRadioButton(tr("Array of variables (one zone)"), basedOn);
+
+    QWidget *basedOnWidget = new QWidget(central);
+    QHBoxLayout *basedOnLayout = new QHBoxLayout(basedOnWidget);
+    
+    QRadioButton *basedOnBasedOnManyVarsForSingleZone = new QRadioButton(tr("Array of variables (one zone)"), 
+                                                                         basedOnWidget);
+    QRadioButton *basedOnBasedOnManyZonesForSingleVar = new QRadioButton(tr("Many zones"),
+                                                                         basedOnWidget);
     basedOnLayout->addWidget(basedOnBasedOnManyVarsForSingleZone);
-    QRadioButton *basedOnBasedOnManyZonesForSingleVar = new QRadioButton(tr("Many zones"), basedOn);
     basedOnLayout->addWidget(basedOnBasedOnManyZonesForSingleVar);
-    connect(basedOn, SIGNAL(clicked(int)),
+    
+    basedOnGroup = new QButtonGroup(basedOnWidget);
+    basedOnGroup->addButton(basedOnBasedOnManyVarsForSingleZone,0);
+    basedOnGroup->addButton(basedOnBasedOnManyZonesForSingleVar,1);
+    
+    
+    connect(basedOnGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(basedOnChanged(int)));
-    mainLayout->addWidget(basedOn, 0,1);
+    mainLayout->addWidget(basedOnWidget, 0,1);
     basedOnLabel->setEnabled(false);
-    basedOn->setEnabled(false);
-
+    basedOnWidget->setEnabled(false);
+    
     // Histogram Style Group Box
-    histGroupBox =new QGroupBox(central, "histGroupBox"); 
+    histGroupBox =new QGroupBox(central); 
     histGroupBox->setTitle(tr("Histogram Options"));
-    mainLayout->addMultiCellWidget(histGroupBox, 1, 1, 0, 1);
+    mainLayout->addWidget(histGroupBox, 1, 0, 1, 2);
     QVBoxLayout *hgTopLayout = new QVBoxLayout(histGroupBox);
-    hgTopLayout->setMargin(10);
-    hgTopLayout->addSpacing(15);
-    QGridLayout *hgLayout = new QGridLayout(hgTopLayout, 9, 2);
-    hgLayout->setSpacing(10);
-    hgLayout->setColStretch(1,10);
+    QGridLayout *hgLayout = new QGridLayout();
+    hgTopLayout->addLayout(hgLayout);
+    hgLayout->setColumnStretch(1,10);
 
-    histogramTypeLabel = new QLabel(tr("Bin contribution"), histGroupBox, "histogramTypeLabel");
+    histogramTypeLabel = new QLabel(tr("Bin contribution"), histGroupBox);
     hgLayout->addWidget(histogramTypeLabel,0,0);
 
-    histogramType = new QButtonGroup(histGroupBox, "histogramType");
-    histogramType->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *histogramTypeLayout = new QHBoxLayout(histogramType);
-    histogramTypeLayout->setSpacing(10);
-    QRadioButton *histogramTypeBinContributionFrequency = new QRadioButton(tr("Frequency"), histogramType);
+    
+    histogramTypeWidget = new QWidget(central);
+    QHBoxLayout *histogramTypeLayout = new QHBoxLayout(histogramTypeWidget);
+    histogramTypeLayout->setMargin(0);
+    
+    QRadioButton *histogramTypeBinContributionFrequency = new QRadioButton(tr("Frequency"),
+                                                                           histogramTypeWidget);
+    QRadioButton *histogramTypeBinContributionWeighted = new QRadioButton(tr("Weighted"),
+                                                                          histogramTypeWidget);
+    histogramTypeGroup = new QButtonGroup(histogramTypeWidget);
+    histogramTypeGroup->addButton(histogramTypeBinContributionFrequency,0);
+    histogramTypeGroup->addButton(histogramTypeBinContributionWeighted,1);
+    
     histogramTypeLayout->addWidget(histogramTypeBinContributionFrequency);
-    QRadioButton *histogramTypeBinContributionWeighted = new QRadioButton(tr("Weighted"), histogramType);
     histogramTypeLayout->addWidget(histogramTypeBinContributionWeighted);
-    connect(histogramType, SIGNAL(clicked(int)),
+    
+    connect(histogramTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(histogramTypeChanged(int)));
-    hgLayout->addWidget(histogramType, 0,1);
+    hgLayout->addWidget(histogramTypeWidget, 0,1);
 
-    weightTypeLabel = new QLabel(tr("Weighted by"), histGroupBox, "weightTypeLabel");
+
+    weightTypeLabel = new QLabel(tr("Weighted by"), histGroupBox);
     hgLayout->addWidget(weightTypeLabel,1,0);
-
-    weightType = new QButtonGroup(histGroupBox, "weightType");
-    weightType->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *weightTypeLayout = new QHBoxLayout(weightType);
-    weightTypeLayout->setSpacing(10);
+    
+    weightTypeWidget = new QWidget(histGroupBox);
+    QHBoxLayout *weightTypeLayout = new QHBoxLayout(weightTypeWidget);
+    weightTypeLayout->setMargin(0);
+    
     QRadioButton *weightTypeVolumeArea = new QRadioButton(tr("Area (2D) / Volume (3D)"), 
-                                                          weightType);
+                                                          weightTypeWidget);
+    QRadioButton *weightTypeVariable = new QRadioButton(tr("Variable"),
+                                                        weightTypeWidget);
+    
+    weightTypeGroup = new QButtonGroup(weightTypeWidget);
+    weightTypeGroup->addButton(weightTypeVolumeArea,0);
+    weightTypeGroup->addButton(weightTypeVariable,1);
+    
     weightTypeLayout->addWidget(weightTypeVolumeArea);
-    QRadioButton *weightTypeVariable = new QRadioButton(tr("Variable"), weightType);
     weightTypeLayout->addWidget(weightTypeVariable);
-    connect(weightType, SIGNAL(clicked(int)),
+    
+    connect(weightTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(weightTypeChanged(int)));
-    hgLayout->addWidget(weightType, 1,1);
+    hgLayout->addWidget(weightTypeWidget, 1,1);
 
-    weightVariableLabel = new QLabel(tr("Variable to Weight By"), histGroupBox, "weightVariableLabel");
+    weightVariableLabel = new QLabel(tr("Variable to Weight By"), histGroupBox);
     hgLayout->addWidget(weightVariableLabel,2,0);
     int weightVariableMask = QvisVariableButton::Scalars;
-    weightVariable = new QvisVariableButton(true, true, true, weightVariableMask, histGroupBox, "weightVariable");
+    weightVariable = new QvisVariableButton(true, true, true, weightVariableMask, histGroupBox);
     weightVariable->setDefaultVariable("default");
     connect(weightVariable, SIGNAL(activated(const QString&)),
             this, SLOT(weightVariableChanged(const QString&)));
     hgLayout->addWidget(weightVariable, 2,1);
 
     // Add data scale
-    QLabel *dataScaleLabel = new QLabel(tr("Data Scale"), histGroupBox, "dataScaleLabel");
+    QLabel *dataScaleLabel = new QLabel(tr("Data Scale"), histGroupBox);
     hgLayout->addWidget(dataScaleLabel,3,0);
 
-    dataScale = new QButtonGroup(histGroupBox, "dataScale");
-    connect(dataScale, SIGNAL(clicked(int)),this, SLOT(dataScaleChanged(int)));    
-    QHBoxLayout *dataScaleLayout = new QHBoxLayout(dataScale);
-    QRadioButton *linearScale = new QRadioButton(tr("Linear"), dataScale);
+    
+    QWidget     *dataScaleWidget =new QWidget(histGroupBox);
+    QHBoxLayout *dataScaleLayout = new QHBoxLayout(dataScaleWidget);
+    
+    dataScaleLayout->setMargin(0);
+    QRadioButton *linearScale = new QRadioButton(tr("Linear"), dataScaleWidget);
+    QRadioButton *logScale = new QRadioButton(tr("Log10"), dataScaleWidget);
+    QRadioButton *sqrtScale = new QRadioButton(tr("Square root"), dataScaleWidget);
+    
+    dataScaleGroup = new QButtonGroup(dataScaleWidget);
+    dataScaleGroup->addButton(linearScale,0);
+    dataScaleGroup->addButton(logScale,1);
+    dataScaleGroup->addButton(sqrtScale,2);
+    
     dataScaleLayout->addWidget(linearScale);
-    QRadioButton *logScale = new QRadioButton(tr("Log10"), dataScale);
     dataScaleLayout->addWidget(logScale);
-    QRadioButton *sqrtScale = new QRadioButton(tr("Square root"), dataScale);
     dataScaleLayout->addWidget(sqrtScale);
-    hgLayout->addWidget(dataScale, 3,1);
+    
+    connect(dataScaleGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(dataScaleChanged(int)));    
+    hgLayout->addWidget(dataScaleWidget, 3,1);
 
-    specifyRange = new QCheckBox(tr("Specify Range?"), histGroupBox, "specifyRange");
+    specifyRange = new QCheckBox(tr("Specify Range?"), histGroupBox);
     connect(specifyRange, SIGNAL(toggled(bool)),
             this, SLOT(specifyRangeChanged(bool)));
     hgLayout->addWidget(specifyRange, 4,0);
 
-    maxLabel = new QLabel(tr("Maximum"), histGroupBox, "maxLabel");
+    maxLabel = new QLabel(tr("Maximum"), histGroupBox);
     hgLayout->addWidget(maxLabel,5,0);
-    max = new QLineEdit(histGroupBox, "max");
+    max = new QLineEdit(histGroupBox);
     connect(max, SIGNAL(returnPressed()),
             this, SLOT(maxProcessText()));
     hgLayout->addWidget(max, 5,1);
 
-    minLabel = new QLabel(tr("Minimum"), histGroupBox, "minLabel");
+    minLabel = new QLabel(tr("Minimum"), histGroupBox);
     hgLayout->addWidget(minLabel,6,0);
-    min = new QLineEdit(histGroupBox, "min");
+    min = new QLineEdit(histGroupBox);
     connect(min, SIGNAL(returnPressed()),
             this, SLOT(minProcessText()));
     hgLayout->addWidget(min,6,1);
 
-    numBinsLabel = new QLabel(tr("Number of Bins"), histGroupBox, "numBinsLabel");
+    numBinsLabel = new QLabel(tr("Number of Bins"), histGroupBox);
     hgLayout->addWidget(numBinsLabel,7,0);
 
-    numBins = new QLineEdit(histGroupBox, "numBins");
+    numBins = new QLineEdit(histGroupBox);
     connect(numBins, SIGNAL(returnPressed()),
             this, SLOT(numBinsProcessText()));
     hgLayout->addWidget(numBins, 7,1);
 
-    QLabel *binScaleLabel = new QLabel(tr("Bin Scale"), histGroupBox, "binScaleLabel");
+    QLabel *binScaleLabel = new QLabel(tr("Bin Scale"), histGroupBox);
     hgLayout->addWidget(binScaleLabel,8,0);
-    binsScale = new QButtonGroup(histGroupBox, "binsScale");
-    connect(binsScale, SIGNAL(clicked(int)),this, SLOT(binsScaleChanged(int)));    
-    QHBoxLayout *binsScaleLayout = new QHBoxLayout(binsScale);
-    QRadioButton *binLinearScale = new QRadioButton(tr("Linear"), binsScale);
+    
+    QWidget     *binsScaleWidget = new QWidget(histGroupBox);
+    QHBoxLayout *binsScaleLayout = new QHBoxLayout(binsScaleWidget);
+    
+    binsScaleLayout->setMargin(0);
+    QRadioButton *binLinearScale = new QRadioButton(tr("Linear"), binsScaleWidget);
+    QRadioButton *binLogScale = new QRadioButton(tr("Log10"), binsScaleWidget);
+    QRadioButton *binSqrtScale = new QRadioButton(tr("Square root"), binsScaleWidget);
+    
+    binsScaleGroup = new QButtonGroup(binsScaleWidget);
+    binsScaleGroup->addButton(binLinearScale,0);
+    binsScaleGroup->addButton(binLogScale,1);
+    binsScaleGroup->addButton(binSqrtScale,2);
+    
     binsScaleLayout->addWidget(binLinearScale);
-    QRadioButton *binLogScale = new QRadioButton(tr("Log10"), binsScale);
     binsScaleLayout->addWidget(binLogScale);
-    QRadioButton *binSqrtScale = new QRadioButton(tr("Square root"), binsScale);
     binsScaleLayout->addWidget(binSqrtScale);
-    hgLayout->addWidget(binsScale, 8,1);    
+    
+    hgLayout->addWidget(binsScaleWidget, 8,1);    
+    
+    connect(binsScaleGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(binsScaleChanged(int)));    
 
     // Bar Plot Group Box
-    barGroupBox =new QGroupBox(central, "barGroupBox"); 
+    barGroupBox =new QGroupBox(central); 
     barGroupBox->setTitle(tr("Single Zone Plot Options"));
-    mainLayout->addMultiCellWidget(barGroupBox, 2, 2, 0, 1);
+    mainLayout->addWidget(barGroupBox, 2, 0, 1, 2);
     QVBoxLayout *bgTopLayout = new QVBoxLayout(barGroupBox);
-    bgTopLayout->setMargin(10);
-    bgTopLayout->addSpacing(15);
-    QGridLayout *bgLayout = new QGridLayout(bgTopLayout, 3, 2);
-    bgLayout->setSpacing(10);
-    bgLayout->setColStretch(1,10);
 
-    domainLabel = new QLabel(tr("domain"), barGroupBox, "domainLabel");
+    QGridLayout *bgLayout = new QGridLayout();
+    bgTopLayout->addLayout(bgLayout);
+    bgLayout->setColumnStretch(1,10);
+
+    domainLabel = new QLabel(tr("domain"), barGroupBox);
     bgLayout->addWidget(domainLabel,0,0);
 
-    domain = new QLineEdit(barGroupBox, "domain");
+    domain = new QLineEdit(barGroupBox);
     connect(domain, SIGNAL(returnPressed()),
             this, SLOT(domainProcessText()));
     bgLayout->addWidget(domain, 0,1);
 
-    zoneLabel = new QLabel(tr("zone"), barGroupBox, "zoneLabel");
+    zoneLabel = new QLabel(tr("zone"), barGroupBox);
     bgLayout->addWidget(zoneLabel,1,0);
 
-    zone = new QLineEdit(barGroupBox, "zone");
+    zone = new QLineEdit(barGroupBox);
     connect(zone, SIGNAL(returnPressed()),
             this, SLOT(zoneProcessText()));
     bgLayout->addWidget(zone, 1,1);
 
-    useBinWidths = new QCheckBox(tr("Use bin widths?"), barGroupBox, "useBinWidths");
+    useBinWidths = new QCheckBox(tr("Use bin widths?"), barGroupBox);
     connect(useBinWidths, SIGNAL(toggled(bool)),
             this, SLOT(useBinWidthsChanged(bool)));
     bgLayout->addWidget(useBinWidths, 2,0);
@@ -298,57 +345,61 @@ QvisHistogramPlotWindow::CreateWindowContents()
     // Plot Syle Group Box
 
     // Bar Plot Group Box
-    styleGroupBox =new QGroupBox(central, "styleGroupBox"); 
+    styleGroupBox =new QGroupBox(central); 
     styleGroupBox->setTitle(tr("Plot Style"));
-    mainLayout->addMultiCellWidget(styleGroupBox, 3, 3, 0, 1);
+    mainLayout->addWidget(styleGroupBox, 3, 0, 1, 2);
     QVBoxLayout *sgTopLayout = new QVBoxLayout(styleGroupBox);
-    sgTopLayout->setMargin(10);
-    sgTopLayout->addSpacing(15);
-    QGridLayout *sgLayout = new QGridLayout(sgTopLayout, 3, 2);
-    sgLayout->setSpacing(10);
-    sgLayout->setColStretch(1,10);
+    QGridLayout *sgLayout= new QGridLayout();
+    sgTopLayout->addLayout(sgLayout);
+    sgLayout->setColumnStretch(2,10);
     
     // Add output type
 
-    outputType = new QButtonGroup(styleGroupBox, "outputType");
-    outputType->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *outputTypeLayout = new QHBoxLayout(outputType);
-    outputTypeLayout->setSpacing(10);
-    QRadioButton *outputTypeOutputTypeCurve = new QRadioButton(tr("Curve"), outputType);
+    QWidget     *outputTypeWidget = new QWidget(styleGroupBox);
+    QHBoxLayout *outputTypeLayout = new QHBoxLayout(outputTypeWidget);
+    outputTypeLayout->setMargin(0);
+    
+    QRadioButton *outputTypeOutputTypeCurve = new QRadioButton(tr("Curve"), outputTypeWidget);
+    QRadioButton *outputTypeOutputTypeBlock = new QRadioButton(tr("Block"), outputTypeWidget);
+    
+    outputTypeGroup = new QButtonGroup(outputTypeWidget);
+    outputTypeGroup->addButton(outputTypeOutputTypeCurve,0);
+    outputTypeGroup->addButton(outputTypeOutputTypeBlock,1);
+    
     outputTypeLayout->addWidget(outputTypeOutputTypeCurve);
-    QRadioButton *outputTypeOutputTypeBlock = new QRadioButton(tr("Block"), outputType);
     outputTypeLayout->addWidget(outputTypeOutputTypeBlock,1);
-    connect(outputType, SIGNAL(clicked(int)),
+    
+    connect(outputTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(outputTypeChanged(int)));
-    sgLayout->addWidget(outputType, 0,1);
 
-    outputTypeLabel = new QLabel(tr("Type of Output"), styleGroupBox, "outputTypeLabel");
-    sgLayout->addWidget(outputTypeLabel,0,0,AlignRight | AlignVCenter);
+    sgLayout->addWidget(outputTypeWidget, 0,1,1,2);
 
+    outputTypeLabel = new QLabel(tr("Type of Output"), styleGroupBox);
+    sgLayout->addWidget(outputTypeLabel,0,0, Qt::AlignRight | Qt::AlignVCenter);
 
     // Add Line Style
-    lineStyleLabel = new QLabel(tr("Line Style"), styleGroupBox, "lineStyleLabel");
-    sgLayout->addWidget(lineStyleLabel,1,0,AlignRight | AlignVCenter);
+    lineStyleLabel = new QLabel(tr("Line Style"), styleGroupBox);
+    sgLayout->addWidget(lineStyleLabel,1,0,Qt::AlignRight | Qt::AlignVCenter);
 
-    lineStyle = new QvisLineStyleWidget(0, styleGroupBox, "lineStyle");
+    lineStyle = new QvisLineStyleWidget(0, styleGroupBox);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    sgLayout->addWidget(lineStyle, 1,1);
+    sgLayout->addWidget(lineStyle, 1,1,1,2);
 
     // Add Line Width
-    lineWidthLabel = new QLabel(tr("Line Width"), styleGroupBox, "lineWidthLabel");
-    sgLayout->addWidget(lineWidthLabel,2,0,AlignRight | AlignVCenter);
+    lineWidthLabel = new QLabel(tr("Line Width"), styleGroupBox);
+    sgLayout->addWidget(lineWidthLabel,2,0,Qt::AlignRight | Qt::AlignVCenter);
 
-    lineWidth = new QvisLineWidthWidget(0, styleGroupBox, "lineWidth");
+    lineWidth = new QvisLineWidthWidget(0, styleGroupBox);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    sgLayout->addWidget(lineWidth, 2,1);
+    sgLayout->addWidget(lineWidth, 2,1,1,2);
 
     // Add Color Selector
-    colorLabel = new QLabel(tr("Color"), styleGroupBox, "colorLabel");
-    sgLayout->addWidget(colorLabel,3,0,AlignRight | AlignVCenter);
+    colorLabel = new QLabel(tr("Color"), styleGroupBox);
+    sgLayout->addWidget(colorLabel,3,0,Qt::AlignRight | Qt::AlignVCenter);
 
-    color = new QvisColorButton(styleGroupBox, "color");
+    color = new QvisColorButton(styleGroupBox);
     connect(color, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(colorChanged(const QColor&)));
     sgLayout->addWidget(color, 3,1);
@@ -376,6 +427,9 @@ QvisHistogramPlotWindow::CreateWindowContents()
 //    Kathleen Bonnell, Wed Jun 4 07:58:17 PDT 2008
 //    Removed unreferenced variables.
 //
+//    Cyrus Harrison, Fri Jul 18 14:38:14 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -396,22 +450,22 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
         QColor                tempcolor;
         switch(i)
         {
-          case 0: //basedOn
+          case HistogramAttributes::ID_basedOn:
             if (atts->GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
             {
                 histGroupBox->setEnabled(true);
                 barGroupBox->setEnabled(false);
-                histogramType->setEnabled(true);
+                histogramTypeWidget->setEnabled(true);
                 histogramTypeLabel->setEnabled(true);
 
                 if(atts->GetHistogramType() == HistogramAttributes::Weighted)
                 {
-                    weightType->setEnabled(true);
+                    weightTypeWidget->setEnabled(true);
                     weightTypeLabel->setEnabled(true);
                 }
                 else
                 {
-                    weightType->setEnabled(false);
+                    weightTypeWidget->setEnabled(false);
                     weightTypeLabel->setEnabled(false);
                 }
             }
@@ -419,9 +473,9 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             {
                 histGroupBox->setEnabled(false);
                 barGroupBox->setEnabled(true);
-                histogramType->setEnabled(false);
+                histogramTypeWidget->setEnabled(false);
                 histogramTypeLabel->setEnabled(false);
-                weightType->setEnabled(false);
+                weightTypeWidget->setEnabled(false);
                 weightTypeLabel->setEnabled(false);
             }
             if (atts->GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
@@ -470,20 +524,20 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             {
                 useBinWidths->setEnabled(false);
             }
-            basedOn->blockSignals(true);
-            basedOn->setButton(atts->GetBasedOn());
-            basedOn->blockSignals(false);
+            basedOnGroup->blockSignals(true);
+            basedOnGroup->button(atts->GetBasedOn())->setChecked(true);
+            basedOnGroup->blockSignals(false);
             break;
-          case 1: //histogramType
+          case HistogramAttributes::ID_histogramType:
             if (atts->GetHistogramType() == HistogramAttributes::Weighted ||
                 atts->GetHistogramType() == HistogramAttributes::Variable)
             {
-                weightType->setEnabled(true);
+                weightTypeWidget->setEnabled(true);
                 weightTypeLabel->setEnabled(true);
             }
             else
             {
-                weightType->setEnabled(false);
+                weightTypeWidget->setEnabled(false);
                 weightTypeLabel->setEnabled(false);
             }
             if (atts->GetHistogramType() == HistogramAttributes::Variable)
@@ -498,30 +552,30 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
                 if(weightVariableLabel)
                     weightVariableLabel->setEnabled(false);
             }
-            histogramType->blockSignals(true);
+            histogramTypeGroup->blockSignals(true);
             if (atts->GetHistogramType() == HistogramAttributes::Frequency)
-                histogramType->setButton(0);
+                histogramTypeGroup->button(0)->setChecked(true);
             else if (atts->GetHistogramType() == HistogramAttributes::Weighted ||
                      atts->GetHistogramType() == HistogramAttributes::Variable)
-                histogramType->setButton(1);
-            histogramType->blockSignals(false);
+                histogramTypeGroup->button(1)->setChecked(true);
+            histogramTypeGroup->blockSignals(false);
             if (atts->GetHistogramType() == HistogramAttributes::Weighted ||
                 atts->GetHistogramType() == HistogramAttributes::Variable)
             {
-                weightType->blockSignals(true);
+                weightTypeGroup->blockSignals(true);
                 if (atts->GetHistogramType() == HistogramAttributes::Weighted)
-                    weightType->setButton(0);
+                    weightTypeGroup->button(0)->setChecked(true);
                 else
-                    weightType->setButton(1);
-                weightType->blockSignals(false);
+                    weightTypeGroup->button(1)->setChecked(true);
+                weightTypeGroup->blockSignals(false);
             }
             break;
-          case 2: //weightVariable
+          case HistogramAttributes::ID_weightVariable:
             weightVariable->blockSignals(true);
             weightVariable->setText(atts->GetWeightVariable().c_str());
             weightVariable->blockSignals(false);
             break;
-          case 3: //specifyRange
+          case HistogramAttributes::ID_specifyRange:
             if (atts->GetSpecifyRange() == true)
             {
                 min->setEnabled(true);
@@ -546,57 +600,57 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             specifyRange->setChecked(atts->GetSpecifyRange());
             specifyRange->blockSignals(false);
             break;
-          case 4: //min
+          case HistogramAttributes::ID_min:
             min->blockSignals(true);
             temp.setNum(atts->GetMin());
             min->setText(temp);
             min->blockSignals(false);
             break;
-          case 5: //max
+          case HistogramAttributes::ID_max:
             max->blockSignals(true);
             temp.setNum(atts->GetMax());
             max->setText(temp);
             max->blockSignals(false);
             break;
-          case 6: //numBins
+          case HistogramAttributes::ID_numBins:
             numBins->blockSignals(true);
-            temp.sprintf("%d", atts->GetNumBins());
+            temp.setNum(atts->GetNumBins());
             numBins->setText(temp);
             numBins->blockSignals(false);
             break;
-          case 7: //domain
+          case HistogramAttributes::ID_domain:
             domain->blockSignals(true);
-            temp.sprintf("%d", atts->GetDomain());
+            temp.setNum(atts->GetDomain());
             domain->setText(temp);
             domain->blockSignals(false);
             break;
-          case 8: //zone
+          case HistogramAttributes::ID_zone:
             zone->blockSignals(true);
-            temp.sprintf("%d", atts->GetZone());
+            temp.setNum(atts->GetZone());
             zone->setText(temp);
             zone->blockSignals(false);
             break;
-          case 9: //useBinWidths
+          case HistogramAttributes::ID_useBinWidths:
             useBinWidths->blockSignals(true);
             useBinWidths->setChecked(atts->GetUseBinWidths());
             useBinWidths->blockSignals(false);
             break;
-          case 10: //outputType
-            outputType->blockSignals(true);
-            outputType->setButton(atts->GetOutputType());
-            outputType->blockSignals(false);
+          case HistogramAttributes::ID_outputType:
+            outputTypeGroup->blockSignals(true);
+            outputTypeGroup->button(atts->GetOutputType())->setChecked(true);
+            outputTypeGroup->blockSignals(false);
             break;
-          case 11: //lineStyle
+          case HistogramAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(atts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
-          case 12: //lineWidth
+          case HistogramAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(atts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-          case 13: //color
+          case HistogramAttributes::ID_color:
             tempcolor = QColor(atts->GetColor().Red(),
                                atts->GetColor().Green(),
                                atts->GetColor().Blue());
@@ -604,16 +658,16 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             color->setButtonColor(tempcolor);
             color->blockSignals(false);
             break;
-	case 14: //data scale
-	    dataScale->blockSignals(true);
-            dataScale->setButton(atts->GetDataScale() );
-	    dataScale->blockSignals(false);
-	    break;
-	case 15: //bin scale
-	    binsScale->blockSignals(true);
-            binsScale->setButton(atts->GetBinScale() );
-	    binsScale->blockSignals(false);
-	    break;	    
+        case HistogramAttributes::ID_dataScale:
+            dataScaleGroup->blockSignals(true);
+            dataScaleGroup->button(atts->GetDataScale())->setChecked(true);
+            dataScaleGroup->blockSignals(false);
+            break;
+        case HistogramAttributes::ID_binScale:
+            binsScaleGroup->blockSignals(true);
+            binsScaleGroup->button(atts->GetBinScale())->setChecked(true);
+            binsScaleGroup->blockSignals(false);
+            break;        
         }
     }
 }
@@ -639,186 +693,87 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Tue Apr 22 16:52:56 PDT 2008
 //    Support for internationalization.
 //
+//    Cyrus Harrison, Fri Jul 18 14:38:14 PDT 2008
+//    Initial Qt4 Port.
+//
+//    Brad Whitlock, Mon Aug 11 11:56:58 PDT 2008
+//    Changed to new style.
+//
 // ****************************************************************************
 
 void
 QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
-
-    // Do basedOn
-    if(which_widget == 0 || doAll)
-    {
-        // Nothing for basedOn
-    }
-
-    // Do histogramType
-    if(which_widget == 1 || doAll)
-    {
-        // Nothing for histogramType
-    }
-
-    // Do weightVariable
-    if(which_widget == 2 || doAll)
-    {
-        // Nothing for weightVariable
-    }
-
-    // Do specifyRange
-    if(which_widget == 3 || doAll)
-    {
-        // Nothing for specifyRange
-    }
+    bool doAll = (which_widget == -1);
 
     // Do min
-    if(which_widget == 4 || doAll)
+    if(which_widget == HistogramAttributes::ID_min || doAll)
     {
-        temp = min->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(min, val))
+            atts->SetMin(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetMin(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of min was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetMin());
-            Message(msg);
+            ResettingError(tr("minimum"),
+                DoubleToQString(atts->GetMin()));
             atts->SetMin(atts->GetMin());
         }
     }
 
     // Do max
-    if(which_widget == 5 || doAll)
+    if(which_widget == HistogramAttributes::ID_max || doAll)
     {
-        temp = max->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(max, val))
+            atts->SetMax(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetMax(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of max was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetMax());
-            Message(msg);
+            ResettingError(tr("maximum"),
+                DoubleToQString(atts->GetMax()));
             atts->SetMax(atts->GetMax());
         }
     }
 
     // Do numBins
-    if(which_widget == 6 || doAll)
+    if(which_widget == HistogramAttributes::ID_numBins || doAll)
     {
-        temp = numBins->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(numBins, val))
+            atts->SetNumBins(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetNumBins(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of numBins was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetNumBins());
-            Message(msg);
+            ResettingError(tr("number of bins"),
+                  IntToQString(atts->GetNumBins()));
             atts->SetNumBins(atts->GetNumBins());
         }
     }
 
     // Do domain
-    if(which_widget == 7 || doAll)
+    if(which_widget == HistogramAttributes::ID_domain || doAll)
     {
-        temp = domain->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(domain, val))
+            atts->SetDomain(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetDomain(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of domain was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetDomain());
-            Message(msg);
+            ResettingError(tr("domain"),
+                IntToQString(atts->GetDomain()));
             atts->SetDomain(atts->GetDomain());
         }
     }
 
     // Do zone
-    if(which_widget == 8 || doAll)
+    if(which_widget == HistogramAttributes::ID_zone || doAll)
     {
-        temp = zone->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(zone, val))
+            atts->SetZone(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetZone(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of zone was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetZone());
-            Message(msg);
+            ResettingError(tr("zone"),
+                IntToQString(atts->GetZone()));
             atts->SetZone(atts->GetZone());
         }
-    }
-
-    // Do useBinWidths
-    if(which_widget == 9 || doAll)
-    {
-        // Nothing for useBinWidths
-    }
-
-    // Do outputType
-    if(which_widget == 10 || doAll)
-    {
-        // Nothing for outputType
-    }
-
-    // Do lineStyle
-    if(which_widget == 11 || doAll)
-    {
-        // Nothing for lineStyle
-    }
-
-    // Do lineWidth
-    if(which_widget == 12 || doAll)
-    {
-        // Nothing for lineWidth
-    }
-
-    // Do color
-    if(which_widget == 13 || doAll)
-    {
-        // Nothing for color
-    }
-
-    // Do dataScale
-    if (which_widget == 14 || doAll)
-    {
-    }
-    
-    // Do dataScale
-    if (which_widget == 15 || doAll)
-    {
     }
 }
 
@@ -938,7 +893,7 @@ QvisHistogramPlotWindow::histogramTypeChanged(int val)
             atts->SetHistogramType(HistogramAttributes::Frequency);
         else
         {
-            if (weightType->selectedId() == 0)
+            if (weightTypeGroup->checkedId() == 0)
                 atts->SetHistogramType(HistogramAttributes::Weighted);
             else
                 atts->SetHistogramType(HistogramAttributes::Variable);
@@ -969,7 +924,7 @@ QvisHistogramPlotWindow::weightTypeChanged(int val)
 void
 QvisHistogramPlotWindow::weightVariableChanged(const QString &varName)
 {
-    atts->SetWeightVariable(varName.latin1());
+    atts->SetWeightVariable(varName.toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -980,8 +935,8 @@ QvisHistogramPlotWindow::dataScaleChanged(int val)
 {
     if ( val != atts->GetDataScale() )
     {
-	atts->SetDataScale(HistogramAttributes::DataScale(val));
-	Apply();
+    atts->SetDataScale(HistogramAttributes::DataScale(val));
+    Apply();
     }
 }
 
@@ -990,8 +945,8 @@ QvisHistogramPlotWindow::binsScaleChanged(int val)
 {
     if ( val != atts->GetBinScale() )
     {
-	atts->SetBinScale(HistogramAttributes::DataScale(val));
-	Apply();
+    atts->SetBinScale(HistogramAttributes::DataScale(val));
+    Apply();
     }
 }
 
@@ -1005,7 +960,7 @@ QvisHistogramPlotWindow::specifyRangeChanged(bool val)
 void
 QvisHistogramPlotWindow::minProcessText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(HistogramAttributes::ID_min);
     Apply();
 }
 
@@ -1013,7 +968,7 @@ QvisHistogramPlotWindow::minProcessText()
 void
 QvisHistogramPlotWindow::maxProcessText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(HistogramAttributes::ID_max);
     Apply();
 }
 
@@ -1021,7 +976,7 @@ QvisHistogramPlotWindow::maxProcessText()
 void
 QvisHistogramPlotWindow::numBinsProcessText()
 {
-    GetCurrentValues(6);
+    GetCurrentValues(HistogramAttributes::ID_numBins);
     Apply();
 }
 
@@ -1029,7 +984,7 @@ QvisHistogramPlotWindow::numBinsProcessText()
 void
 QvisHistogramPlotWindow::domainProcessText()
 {
-    GetCurrentValues(7);
+    GetCurrentValues(HistogramAttributes::ID_domain);
     Apply();
 }
 
@@ -1037,7 +992,7 @@ QvisHistogramPlotWindow::domainProcessText()
 void
 QvisHistogramPlotWindow::zoneProcessText()
 {
-    GetCurrentValues(8);
+    GetCurrentValues(HistogramAttributes::ID_zone);
     Apply();
 }
 

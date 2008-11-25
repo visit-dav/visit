@@ -38,7 +38,7 @@
 
 #include <ViewerWindow.h>
 #include <ViewerToggleAction.h>
-#include <qaction.h>
+#include <QAction>
 
 // ****************************************************************************
 // Method: ViewerToggleAction::ViewerToggleAction
@@ -62,8 +62,8 @@
 //   
 // ****************************************************************************
 
-ViewerToggleAction::ViewerToggleAction(ViewerWindow *win, const char *name) : 
-    ViewerAction(win, name)
+ViewerToggleAction::ViewerToggleAction(ViewerWindow *win) : 
+    ViewerAction(win)
 {
     toggled = false;
     regularIcon = 0;
@@ -126,7 +126,7 @@ ViewerToggleAction::SetIcons(const QPixmap &p1, const QPixmap &p2)
     {
         toggledIcon = new QPixmap(p1);
         regularIcon = new QPixmap(p2);
-        SetIconSet(QIconSet(*regularIcon));
+        SetIcon(QIcon(*regularIcon));
     }
 }
 
@@ -152,7 +152,7 @@ ViewerToggleAction::SetIcons(const QPixmap &p1, const QPixmap &p2)
 void
 ViewerToggleAction::PreExecute()
 {
-    toggled = Toggled();
+    toggled = Checked();
 }
 
 // ****************************************************************************
@@ -168,6 +168,9 @@ ViewerToggleAction::PreExecute()
 //   Kathleen Bonnell, Thu May 15 11:52:56 PDT 2003
 //   Check for valid icons before attempting to set them.
 // 
+//   Brad Whitlock, Tue May 27 14:19:15 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -179,22 +182,22 @@ ViewerToggleAction::Update()
         action->setEnabled(actionShouldBeEnabled);
 
     // Update the action's toggled state if it is a toggle action.
-    if(action->isToggleAction())
+    if(action->isCheckable())
     {
-        bool actionShouldBeToggled = Toggled();
+        bool actionShouldBeToggled = Checked();
         if(toggled != actionShouldBeToggled)
         {
             // Set the appropriate icon into the action.
             if (!window->GetNoWinMode() &&
-                !action->iconSet().pixmap().isNull())
+                !action->icon().isNull())
             {
                 if(actionShouldBeToggled)
-                    SetIconSet(QIconSet(*toggledIcon));
+                    SetIcon(QIcon(*toggledIcon));
                 else
-                    SetIconSet(QIconSet(*regularIcon));
+                    SetIcon(QIcon(*regularIcon));
             }
             action->blockSignals(true);
-            action->setOn(actionShouldBeToggled);
+            action->setChecked(actionShouldBeToggled);
             action->blockSignals(false);
         }
         toggled = actionShouldBeToggled;

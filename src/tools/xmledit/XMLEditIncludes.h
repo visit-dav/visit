@@ -39,15 +39,15 @@
 #ifndef XMLEDITINCLUDES_H
 #define XMLEDITINCLUDES_H
 
-#include <qframe.h>
+#include <QFrame>
 
 class XMLDocument;
 class QLineEdit;
 class QButtonGroup;
 class QComboBox;
 class QCheckBox;
-class QListBox;
-class QMultiLineEdit;
+class QListWidget;
+class QTextEdit;
 class QRadioButton;
 class QPushButton;
 
@@ -64,12 +64,15 @@ class QPushButton;
 //    Brad Whitlock, Thu Mar 6 16:20:35 PST 2008
 //    Added target.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 class XMLEditIncludes : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditIncludes(QWidget *p, const QString &n);
+    XMLEditIncludes(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:
@@ -90,7 +93,7 @@ class XMLEditIncludes : public QFrame
     QPushButton    *newButton;
     QPushButton    *delButton;
 
-    QListBox       *includelist;
+    QListWidget       *includelist;
     QRadioButton   *CButton;
     QRadioButton   *HButton;
     QRadioButton   *quotesButton;

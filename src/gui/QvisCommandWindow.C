@@ -37,20 +37,21 @@
 *****************************************************************************/
 
 #include <QvisCommandWindow.h>
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qfile.h>
-#include <qfont.h>
-#include <qinputdialog.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qtabwidget.h>
-#include <qtextedit.h>
-#include <qtextstream.h>
-#include <qtooltip.h>
-#include <qvbox.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QFile>
+#include <QFont>
+#include <QInputDialog>
+#include <QLabel>
+#include <QLayout>
+#include <QPushButton>
+#include <QTabWidget>
+#include <QTextEdit>
+#include <QTextStream>
+#include <QToolTip>
+#include <QWidget>
 
 #include <Utility.h>
 #include <DataNode.h>
@@ -119,15 +120,16 @@ QvisCommandWindow::QvisCommandWindow(const QString &captionString,
 //   Brad Whitlock, Fri Jun 15 13:37:31 PST 2007
 //   Delete new widgets.
 //
+//   Cyrus Harrison, Wed Aug 27 08:31:25 PDT 2008
+//   Ensured all of button groups have parents, so we don't need to 
+//   explicitly delete them.
+//
 // ****************************************************************************
 
 QvisCommandWindow::~QvisCommandWindow()
 {
-    delete executeButtonsGroup;
     delete [] executeButtons;
-    delete clearButtonsGroup;
     delete [] clearButtons;
-    delete addMacroButtonsGroup;
     delete [] addMacroButtons;
     delete [] lineEdits;
 }
@@ -154,6 +156,9 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Brad Whitlock, Fri Jun 15 13:37:48 PST 2007
 //   Added Macros tab and buttons to convert "code" to "macros".
 //
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 //   Hank Childs, Tue Jul 22 12:22:38 PDT 2008
 //   Always have the Execute button enabled.
 //
@@ -162,33 +167,35 @@ QvisCommandWindow::~QvisCommandWindow()
 void
 QvisCommandWindow::CreateWindowContents()
 {
-    QGroupBox *macroBox = new QGroupBox(central, "macroBox");
+    QGroupBox *macroBox = new QGroupBox(central);
     macroBox->setTitle(tr("Commands"));
     topLayout->addWidget(macroBox);
 
     QVBoxLayout *innerMacroLayout = new QVBoxLayout(macroBox);
     innerMacroLayout->setMargin(10);
     innerMacroLayout->addSpacing(15);
-    QHBoxLayout *macroLayout = new QHBoxLayout(innerMacroLayout);
+    QHBoxLayout *macroLayout = new QHBoxLayout();
+    innerMacroLayout->addLayout(macroLayout);
     macroLayout->setSpacing(5);
 
-    macroRecord = new QPushButton(QIconSet(QPixmap(macrorecord_xpm)),
-        tr("Record"), macroBox, "macroRecord");
+    macroRecord = new QPushButton(QIcon(QPixmap(macrorecord_xpm)),
+                                  tr("Record"), macroBox);
     connect(macroRecord, SIGNAL(clicked()), this, SLOT(macroRecordClicked()));
-    QToolTip::add(macroRecord, tr("Start recording commands"));
+    
+    macroRecord->setToolTip(tr("Start recording commands"));
     macroLayout->addWidget(macroRecord);
 
-    macroPause = new QPushButton(QIconSet(QPixmap(macropause_xpm)),
-        tr("Pause"), macroBox, "macroPause");
-    macroPause->setToggleButton(true);
+    macroPause = new QPushButton(QIcon(QPixmap(macropause_xpm)),
+                                 tr("Pause"), macroBox);
+    macroPause->setCheckable(true);
     connect(macroPause, SIGNAL(clicked()), this, SLOT(macroPauseClicked()));
-    QToolTip::add(macroPause, tr("Pause recording commands"));
+    macroPause->setToolTip(tr("Pause recording commands"));
     macroLayout->addWidget(macroPause);
 
-    macroEnd = new QPushButton(QIconSet(QPixmap(macrostop_xpm)),
-        tr("Stop"), macroBox, "macroEnd");
+    macroEnd = new QPushButton(QIcon(QPixmap(macrostop_xpm)),
+                               tr("Stop"), macroBox);
     connect(macroEnd, SIGNAL(clicked()), this, SLOT(macroEndClicked()));
-    QToolTip::add(macroEnd, tr("Stop recording commands"));
+    macroEnd->setToolTip(tr("Stop recording commands"));
     macroLayout->addWidget(macroEnd);
     macroRecord->setEnabled(true);
     macroPause->setEnabled(false);
@@ -196,104 +203,108 @@ QvisCommandWindow::CreateWindowContents()
 
     // Create macro append and storage controls.
     innerMacroLayout->addSpacing(5);
-    QGridLayout *mLayout = new QGridLayout(innerMacroLayout, 2, 2);
+    QGridLayout *mLayout = new QGridLayout();
+    innerMacroLayout->addLayout(mLayout);
     mLayout->setSpacing(5);
-    mLayout->setColStretch(1, 10);
+    mLayout->setColumnMinimumWidth(1, 10);
 
-    macroStorageComboBox = new QComboBox(macroBox, "macroAppendCheckBox");
-    macroStorageComboBox->insertItem(tr("Active tab"));
-    macroStorageComboBox->insertItem(tr("First empty tab"));
-    macroStorageComboBox->insertItem(tr("Macros"));
+    macroStorageComboBox = new QComboBox(macroBox);
+    macroStorageComboBox->addItem(tr("Active tab"));
+    macroStorageComboBox->addItem(tr("First empty tab"));
+    macroStorageComboBox->addItem(tr("Macros"));
     connect(macroStorageComboBox, SIGNAL(activated(int)),
             this, SLOT(macroStorageActivated(int)));
     mLayout->addWidget(macroStorageComboBox, 0, 1);
-    mLayout->addWidget(new QLabel(macroStorageComboBox, tr("Store commands in"),
-        macroBox), 0, 0);
+    mLayout->addWidget(new QLabel(tr("Store commands in"),macroBox), 0, 0);
 
-    macroAppendCheckBox = new QCheckBox(tr("Append commands to existing text"), macroBox,
-        "macroAppendCheckBox");
+    macroAppendCheckBox = new QCheckBox(tr("Append commands to existing text"), 
+                                        macroBox);
     connect(macroAppendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(macroAppendClicked(bool)));
-    mLayout->addMultiCellWidget(macroAppendCheckBox, 1, 1, 0, 1);
+    mLayout->addWidget(macroAppendCheckBox, 1, 0, 1, 2);
 
-    tabWidget = new QTabWidget(central, "tabWidget");
+    tabWidget = new QTabWidget(central);
     tabWidget->setMinimumHeight(200);
     topLayout->addWidget(tabWidget, 1000);
 
-    executeButtonsGroup = new QButtonGroup(0, "executeButtonsGroup");
-    connect(executeButtonsGroup, SIGNAL(clicked(int)),
+    executeButtonsGroup = new QButtonGroup(central);
+    connect(executeButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(executeClicked(int)));
 
-    clearButtonsGroup = new QButtonGroup(0, "clearButtonsGroup");
-    connect(clearButtonsGroup, SIGNAL(clicked(int)),
+    clearButtonsGroup = new QButtonGroup(central);
+    connect(clearButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(clearClicked(int)));
 
-    addMacroButtonsGroup = new QButtonGroup(0, "addMacroButtonsGroup");
-    connect(addMacroButtonsGroup, SIGNAL(clicked(int)),
+    addMacroButtonsGroup = new QButtonGroup(central);
+    connect(addMacroButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(macroCreate(int)));
 
     // Create the tabs that let us edit command scripts.
-    lineEdits = new QTextEdit*[MAXTABS];
-    executeButtons = new QPushButton*[MAXTABS];
-    clearButtons = new QPushButton*[MAXTABS];
+    lineEdits       = new QTextEdit*[MAXTABS];
+    executeButtons  = new QPushButton*[MAXTABS];
+    clearButtons    = new QPushButton*[MAXTABS];
     addMacroButtons = new QPushButton*[MAXTABS];
+    
     QFont monospaced("Courier");
     for (int i = 0; i < MAXTABS; i++)
     {
-        QVBox *vb = new QVBox(central, "page");
-        vb->setMargin(10);
-        vb->setSpacing(5);
-        lineEdits[i]  = new QTextEdit(vb, "lineEdits");
-        lineEdits[i]->setWordWrap(QTextEdit::WidgetWidth);
+        QWidget *widget = new QWidget(central);
+        QVBoxLayout *vlayout = new QVBoxLayout(widget);
+        vlayout->setMargin(10);
+        vlayout->setSpacing(5);
+        lineEdits[i]  = new QTextEdit(widget);
         lineEdits[i]->setReadOnly(false);
         lineEdits[i]->setFont(monospaced);
-        lineEdits[i]->setTextFormat(Qt::PlainText);
-        lineEdits[i]->setWordWrap(QTextEdit::NoWrap);
+        lineEdits[i]->setWordWrapMode(QTextOption::NoWrap);
         QString slotName(SLOT(textChanged#()));
-        QString n; n.sprintf("%d", i);
-        slotName.replace(slotName.find("#"), 1, n);
+        QString n = QString("%1").arg(i);
+        slotName.replace(slotName.indexOf("#"), 1, n);
+        vlayout->addWidget(lineEdits[i]);
         connect(lineEdits[i], SIGNAL(textChanged()),
-                this, slotName.latin1());
+                this, slotName.toStdString().c_str());
 
-        QHBox *hb = new QHBox(vb, "hb");
-        hb->setSpacing(5);
-        executeButtons[i] = new QPushButton(QIconSet(QPixmap(macroexec_xpm)),
-            tr("Execute"), hb, "executeButton");
-        executeButtonsGroup->insert(executeButtons[i], i);
+        QHBoxLayout *hlayout = new QHBoxLayout();
+        vlayout->addLayout(hlayout);
+        hlayout->setSpacing(5);
+        executeButtons[i] = new QPushButton(QIcon(QPixmap(macroexec_xpm)),
+                                            tr("Execute"), widget);
+        hlayout->addWidget(executeButtons[i]);
+        executeButtonsGroup->addButton(executeButtons[i], i);
 
-        clearButtons[i] = new QPushButton(tr("Clear"), hb,
-            "clearButton");
+        clearButtons[i] = new QPushButton(tr("Clear"), widget);
         clearButtons[i]->setEnabled(false);
-        clearButtonsGroup->insert(clearButtons[i], i);
+        hlayout->addWidget(clearButtons[i]);
+        clearButtonsGroup->addButton(clearButtons[i], i);
 
-        addMacroButtons[i] = new QPushButton(tr("Make macro"), hb,
-            "addMacroButton");
+        addMacroButtons[i] = new QPushButton(tr("Make macro"), widget);
         addMacroButtons[i]->setEnabled(false);
-        addMacroButtonsGroup->insert(addMacroButtons[i], i);
-
+        hlayout->addWidget(addMacroButtons[i]);
+        addMacroButtonsGroup->addButton(addMacroButtons[i], i);
+     
         // Add the top vbox as a new tab.
         n.sprintf("%d", i+1);
-        tabWidget->addTab(vb, n);
+        tabWidget->addTab(widget, n);
     }
 
     // Create the Macros tab.
-    macroTab = new QVBox(central, "page");
-    macroTab->setMargin(10);
-    macroTab->setSpacing(5);
-    macroLineEdit = new QTextEdit(macroTab, "macroLineEdit");
-    macroLineEdit->setWordWrap(QTextEdit::WidgetWidth);
+    macroTab = new QWidget(central);
+    QVBoxLayout *macro_tab_vlayout = new QVBoxLayout(macroTab);
+    macro_tab_vlayout->setMargin(10);
+    macro_tab_vlayout->setSpacing(5);
+    macroLineEdit = new QTextEdit(macroTab);
+    macroLineEdit->setWordWrapMode(QTextOption::NoWrap);
     macroLineEdit->setReadOnly(false);
     macroLineEdit->setFont(monospaced);
-    macroLineEdit->setTextFormat(Qt::PlainText);
-    macroLineEdit->setWordWrap(QTextEdit::NoWrap);
-    QHBox *hb = new QHBox(macroTab, "hb");
-    hb->setSpacing(5);
-    macroUpdateButton = new QPushButton(tr("Update macros"), hb,
-        "macroUpdateButton");
+    macro_tab_vlayout->addWidget(macroLineEdit);
+    QHBoxLayout *macro_tab_hlayout = new QHBoxLayout();
+    macro_tab_vlayout->addLayout(macro_tab_hlayout);
+    macro_tab_hlayout->setSpacing(5);
+    macroUpdateButton = new QPushButton(tr("Update macros"),macroTab);
+    macro_tab_hlayout->addWidget(macroUpdateButton);
     connect(macroUpdateButton, SIGNAL(clicked()),
             this, SLOT(macroUpdateClicked()));
-    macroClearButton = new QPushButton(tr("Clear"), hb,
-        "macroClearButton");
+    macroClearButton = new QPushButton(tr("Clear"), macroTab);
+    macro_tab_hlayout->addWidget(macroClearButton );
     connect(macroClearButton, SIGNAL(clicked()),
             this, SLOT(macroClearClicked()));
     tabWidget->addTab(macroTab, tr("Macros"));
@@ -322,6 +333,9 @@ QvisCommandWindow::CreateWindowContents()
 //   Brad Whitlock, Fri Jan 6 16:58:03 PST 2006
 //   Added new macro-related things.
 //
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -333,7 +347,7 @@ QvisCommandWindow::CreateNode(DataNode *node)
     {
         SaveScripts();
 
-        DataNode *winNode = node->GetNode(std::string(caption().latin1()));
+        DataNode *winNode = node->GetNode(windowTitle().toStdString());
         if(winNode != 0)
         {
             winNode->AddNode(new DataNode("macroStorageMode", macroStorageMode));
@@ -358,6 +372,9 @@ QvisCommandWindow::CreateNode(DataNode *node)
 //   Brad Whitlock, Fri Jun 15 13:02:38 PST 2007
 //   Added 1 to macroStorageMode.
 //
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -365,7 +382,7 @@ QvisCommandWindow::SetFromNode(DataNode *parentNode, const int *borders)
 {
     QvisPostableWindow::SetFromNode(parentNode, borders);
 
-    DataNode *winNode = parentNode->GetNode(std::string(caption().latin1()));
+    DataNode *winNode = parentNode->GetNode(windowTitle().toStdString());
     if(winNode == 0)
         return;
 
@@ -396,7 +413,9 @@ QvisCommandWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // Creation:   Fri Mar 17 09:43:39 PDT 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -405,7 +424,7 @@ QvisCommandWindow::UpdateMacroCheckBoxes()
     if(macroStorageComboBox != 0)
     {
         macroStorageComboBox->blockSignals(true);
-        macroStorageComboBox->setCurrentItem(macroStorageMode);
+        macroStorageComboBox->setCurrentIndex(macroStorageMode);
         macroStorageComboBox->blockSignals(false);
     }
 
@@ -475,6 +494,9 @@ QvisCommandWindow::RCFileName() const
 //   Brad Whitlock, Fri Jun 15 14:13:17 PST 2007
 //   Added code to load the visitrc file.
 //
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -484,12 +506,12 @@ QvisCommandWindow::LoadScripts()
     for(int i = 0; i < MAXTABS; ++i)
     {
         QFile file(fileName(i+1));
-        if(file.open(IO_ReadOnly))
+        if(file.open(QIODevice::ReadOnly))
         {
             QTextStream stream(&file);
 
             QString lines;
-            while(!stream.eof())
+            while(!stream.atEnd())
             {
                 lines += stream.readLine();
                 lines += "\n";
@@ -502,11 +524,11 @@ QvisCommandWindow::LoadScripts()
 
     // Try and load the visitrc file.
     QFile file(RCFileName());
-    if(file.open(IO_ReadOnly))
+    if(file.open(QIODevice::ReadOnly))
     {
         QTextStream stream(&file);
         QString lines;
-        while(!stream.eof())
+        while(!stream.atEnd())
         {
             lines += stream.readLine();
             lines += "\n";
@@ -527,7 +549,9 @@ QvisCommandWindow::LoadScripts()
 // Creation:   Wed Jun 22 16:38:48 PST 2005
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -536,10 +560,10 @@ QvisCommandWindow::SaveScripts()
     for(int i = 0; i < MAXTABS; ++i)
     {
         QFile file(fileName(i+1));
-        QString txt(lineEdits[i]->text());
+        QString txt(lineEdits[i]->toPlainText());
         if(txt.length() > 0)
         {
-            if(file.open(IO_WriteOnly))
+            if(file.open(QIODevice::WriteOnly))
             {
                 QTextStream stream(&file);
                 stream << txt;
@@ -565,9 +589,14 @@ QvisCommandWindow::SaveScripts()
 // Creation:   Fri Jun 15 16:08:59 PST 2007
 //
 // Modifications:
-//   
-//    Hank Childs, Wed May  7 11:47:25 PDT 2008
-//    Add checking for bad function names.
+//   Hank Childs, Wed May  7 11:47:25 PDT 2008
+//   Add checking for bad function names.
+//
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Hank Childs, Wed May  7 11:47:25 PDT 2008
+//   Add checking for bad function names.
 //
 // ****************************************************************************
 
@@ -578,13 +607,13 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
     bool ok = true;
 
     // Get the name of the function to create from the user.
-    funcName = QInputDialog::getText("VisIt",
+    funcName = QInputDialog::getText(this,"VisIt",
         tr("Please enter the name of the Python function to be defined for the macro."),
-        QLineEdit::Normal, QString::null, &ok, this);
+        QLineEdit::Normal, QString::null, &ok);
     if(!ok || funcName.isEmpty())
         return;
-    std::string str = funcName.latin1();
-    if(! isalpha(str[0]))
+    std::string str = funcName.toStdString();
+    if(str.size() < 1 || !isalpha(str[0]))
     {
         Error(tr("Function names must start with a letter. Please try to create "
               "the macro again with a function name that starts with a letter."));
@@ -601,9 +630,9 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
     }
 
     // Get the name of the macro from the user.
-    macroName = QInputDialog::getText("VisIt",
+    macroName = QInputDialog::getText(this,"VisIt",
         tr("Please enter the name of the macro to be defined (as you want it to appear in a button)."),
-        QLineEdit::Normal, QString::null, &ok, this);
+        QLineEdit::Normal, QString::null, &ok);
     if(!ok || macroName.isEmpty())
         return;
 
@@ -613,17 +642,17 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
     // Now, iterate over the lines of text and indent appropriately to
     // make a Python function.
     func = QString("def ") + funcName + QString("():\n");
-    QStringList lines(QStringList::split("\n", s, true));
+    QStringList lines = s.split("\n");
     for(int i = 0; i < lines.count(); ++i)
         func += QString("    ") + lines[i] + QString("\n");
     func += QString("RegisterMacro(\"") + macroName + QString("\", ") +
             funcName + QString(")\n");
 
     // Add the function definition to the Macros tab.
-    macroLineEdit->setText(macroLineEdit->text() + func);
+    macroLineEdit->setPlainText(macroLineEdit->toPlainText() + func);
 
     // Make the Macros tab active.
-    tabWidget->showPage((QWidget *)macroTab);
+    tabWidget->setCurrentWidget((QWidget *)macroTab);
 #endif
 }
 
@@ -645,13 +674,15 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
 // Creation:   Mon May 9 10:52:02 PDT 2005
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::executeClicked(int index)
 {
-    emit runCommand(lineEdits[index]->text());
+    emit runCommand(lineEdits[index]->toPlainText());
 }
 
 // ****************************************************************************
@@ -668,7 +699,7 @@ QvisCommandWindow::executeClicked(int index)
 // Creation:   Wed Jun 22 16:44:58 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -691,13 +722,16 @@ QvisCommandWindow::clearClicked(int index)
 //   Brad Whitlock, Fri Jun 15 14:21:22 PST 2007
 //   Set addMacroButton enabled.
 //
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 //   Hank Childs, Tue Jul 22 12:22:38 PDT 2008
 //   Always have the Execute button enabled.
 //
 // ****************************************************************************
 
 #define TEXT_CHANGED(I) void QvisCommandWindow::textChanged##I() { \
-    bool e = lineEdits[I]->length() > 0; \
+    bool e = !lineEdits[I]->toPlainText().isEmpty(); \
     addMacroButtons[I]->setEnabled(e); \
     clearButtons[I]->setEnabled(e); \
 }
@@ -810,6 +844,9 @@ QvisCommandWindow::macroStorageActivated(int val)
 //   Brad Whitlock, Fri Jun 15 16:10:33 PST 2007
 //   Added ability to record to the Macros tab.
 //
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -825,7 +862,7 @@ QvisCommandWindow::acceptRecordedMacro(const QString &s)
         int index = 0;
         if(macroStorageMode == 0)
         {
-            index = tabWidget->currentPageIndex();
+            index = tabWidget->currentIndex();
 
             // If the active tab is the macros tab, record there.
             if(index == MAXTABS)
@@ -840,7 +877,7 @@ QvisCommandWindow::acceptRecordedMacro(const QString &s)
             bool found = false;
             for(int i = 0; i < MAXTABS; ++i)
             {
-                if(lineEdits[i]->text().isEmpty())
+                if(lineEdits[i]->toPlainText().isEmpty())
                 {
                     index = i;
                     found = true;
@@ -850,13 +887,13 @@ QvisCommandWindow::acceptRecordedMacro(const QString &s)
 
             index = found ? index : 0;
             tabWidget->blockSignals(true);
-            tabWidget->setCurrentPage(index);
+            tabWidget->setCurrentIndex(index);
             tabWidget->blockSignals(false);
         }
 
         if(macroAppend)
         {
-            QString macro(lineEdits[index]->text());
+            QString macro(lineEdits[index]->toPlainText());
             macro += s;
             lineEdits[index]->setText(macro);
         }
@@ -904,6 +941,9 @@ QvisCommandWindow::macroClearClicked()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 // 
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -911,21 +951,21 @@ QvisCommandWindow::macroUpdateClicked()
 {
     // Save the updated visitrc file based on the contents in the Macros tab.
     QFile file(RCFileName());
-    QString txt(macroLineEdit->text());
+    QString txt(macroLineEdit->toPlainText());
     if(txt.length() > 0)
     {
-        if(file.open(IO_WriteOnly))
+        if(file.open(QIODevice::WriteOnly))
         {
             QTextStream stream(&file);
             stream << txt;
             file.close();
-            debug1 << "Saved updated " << RCFileName().latin1()
+            debug1 << "Saved updated " << RCFileName().toStdString()
                    << " file." << endl;
 
            // Tell the CLI to source the file so we get our macros back with
            // the changes that have been put into place.
-           QString command;
-           command.sprintf("ClearMacros()\nSource(\"%s\")\n", RCFileName().latin1());
+           QString command("ClearMacros()\nSource(\"%1\")\n");
+           command = command.arg(RCFileName());
            emit runCommand(command);
         }
         else
@@ -937,7 +977,7 @@ QvisCommandWindow::macroUpdateClicked()
     }
     else
     {
-        debug1 << "Removing empty " << RCFileName().latin1()
+        debug1 << "Removing empty " << RCFileName().toStdString()
                << " file. " << endl;
         file.remove();
         emit runCommand("ClearMacros()");
@@ -961,12 +1001,14 @@ QvisCommandWindow::macroUpdateClicked()
 // Creation:   Fri Jun 15 14:19:28 PST 2007
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::macroCreate(int tab)
 {
     // Add to the macro tab.
-    CreateMacroFromText(lineEdits[tab]->text());
+    CreateMacroFromText(lineEdits[tab]->toPlainText());
 }

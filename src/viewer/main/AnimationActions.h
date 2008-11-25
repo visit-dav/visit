@@ -92,7 +92,7 @@ public:
 
     virtual void Execute();
     virtual bool Enabled() const;
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************
@@ -118,7 +118,7 @@ public:
 
     virtual void Execute();
     virtual bool Enabled() const;
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************
@@ -144,7 +144,7 @@ public:
 
     virtual void Execute();
     virtual bool Enabled() const;
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************

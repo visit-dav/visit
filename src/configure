@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE GUI GUILIB GUIOBJ GUIFRAMEWORKS VIEWER VISWINDOW VIEWERLIB VIEWEROBJ ENGINEPROXYDIR ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS SLIVR_GUI_IMPL SLIVR_GUI_HDR HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_ZLIB ZLIB_LIB HDF5_INCLUDE HDF5_LIB HDF5_TARGET SILO_INCLUDE SILO_LIB SILO_TARGET EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB_INCLUDE PDB_LIB PDB_TARGET MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB LIBQT QT_LIBS QUI_LIBS QT_LDFLAGS QT_STATICLDFLAGS QT_CXXFLAGS QT_MOC X_LIBS VTKQT_CPPFLAGS VTKQT VTKQT_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS DATA_EXE_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_MILI_LINK CREATE_HDF4_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK VAC_CV_LIBDIR_CREATE_LINKS VAC_CV_LIBDIR_DESTROY_LINKS MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE VIEWER VISWINDOW VIEWERLIB VIEWEROBJ VIEWERLIB_SRC VIEWEREXE_SRC GUI GUILIB GUIOBJ GUIFRAMEWORKS ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS SLIVR_GUI_IMPL SLIVR_GUI_HDR HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_ZLIB ZLIB_LIB HDF5_INCLUDE HDF5_LIB HDF5_TARGET SILO_INCLUDE SILO_LIB SILO_TARGET EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB_INCLUDE PDB_LIB PDB_TARGET MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB QT_LDFLAGS QT_LIBS QT_CORE QT_CORE_LIB QT_DESIGNER QT_DESIGNER_LIB QT_GUI QT_GUI_LIB QT_HELP QT_HELP_LIB QT_CLUCENE QT_CLUCENE_LIB QT_NETWORK QT_NETWORK_LIB QT_OPENGL QT_OPENGL_LIB QT_SCRIPT QT_SCRIPT_LIB QT_SQL QT_SQL_LIB QT_SVG QT_SVG_LIB QT_TEST QT_TEST_LIB QT_XML QT_XML_LIB QT_QUI QT_QUI_LIB QT_CXXFLAGS QT_MOC VTKQT_CPPFLAGS VTKQT VTKQT_LIBS X_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS DATA_EXE_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_MILI_LINK CREATE_HDF4_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK VAC_CV_LIBDIR_CREATE_LINKS VAC_CV_LIBDIR_DESTROY_LINKS MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
 ac_subst_files='VARIABLES TARGETS DIRTARGETS LIBTARGETS PARLIBTARGETS SOURCE_DEPENDENCIES'
 
 # Initialize some variables set by options.
@@ -875,7 +875,6 @@ Optional Features:
   --disable-mdserver      build without mdserver
   --disable-scripting     build without CLI Python scripting capability
   --enable-visitmodule    build a VisIt Python module
-  --disable-gui           build without gui
   --disable-annotations   build without annotations
   --enable-java           build the Java client library
   --enable-slivr           build with the SLIVR volume rendering library
@@ -3939,94 +3938,60 @@ fi
 
 
 
-# Check to see if the --disable-gui configure flag was given. If
-# if was then we will use the enable_gui variable later on to see
-# if we should test for X. We will also not build the Gui or the
-# viewer.
-#
-echo "$as_me:$LINENO: checking if GUI features are enabled" >&5
-echo $ECHO_N "checking if GUI features are enabled... $ECHO_C" >&6
-# Check whether --enable-gui or --disable-gui was given.
-if test "${enable_gui+set}" = set; then
-  enableval="$enable_gui"
-  UseGUI="$enable_gui"
-else
-  UseGUI=yes
-fi;
-if test "$UseGUI" = "yes"; then
-    echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-    enable_gui=yes
-
-                echo "$as_me:$LINENO: checking for viewer" >&5
+echo "$as_me:$LINENO: checking for viewer" >&5
 echo $ECHO_N "checking for viewer... $ECHO_C" >&6
-    if test -d viewer; then
-        echo "$as_me:$LINENO: result: found" >&5
+if test -d viewer; then
+    echo "$as_me:$LINENO: result: found" >&5
 echo "${ECHO_T}found" >&6
-        VIEWER="viewer"
-        VISWINDOW="VisWindow"
-        VIEWERLIB="$""(VDSO)"
-        VIEWEROBJ="$""(VOBJ)"
-
-        if test -z "$VTK"; then
-            { { echo "$as_me:$LINENO: error: viewer is here, but no VTK library was specified.
-The viewer cannot be built without VTK.  Make sure the VTK environment variable
-is set and rerun 'configure'." >&5
-echo "$as_me: error: viewer is here, but no VTK library was specified.
-The viewer cannot be built without VTK.  Make sure the VTK environment variable
-is set and rerun 'configure'." >&2;}
-   { (exit 1); exit 1; }; }
-        fi
+    VIEWER="viewer"
+    VISWINDOW="VisWindow"
+    VIEWERLIB="$""(VDSO)"
+    VIEWEROBJ="$""(VOBJ)"
+    # The private source can go into the executable on all UNIX versions
+    # except for MacOS X.
+    if test "$UNAME" = "Darwin" ; then
+        VIEWERLIB_SRC="$""(PUBLIC_SRC) $""(PRIVATE_SRC) $""(SRCMOC)"
+        VIEWEREXE_SRC="$""(MAINSRC)"
     else
-        echo "$as_me:$LINENO: result: not found" >&5
-echo "${ECHO_T}not found" >&6
-        VIEWER=""
-        VISWINDOW=""
+        VIEWERLIB_SRC="$""(PUBLIC_SRC)"
+        VIEWEREXE_SRC="$""(MAINSRC) $""(PRIVATE_SRC) $""(SRCMOC)"
     fi
-
-                echo "$as_me:$LINENO: checking for gui" >&5
-echo $ECHO_N "checking for gui... $ECHO_C" >&6
-    if test -d gui; then
-        echo "$as_me:$LINENO: result: found" >&5
-echo "${ECHO_T}found" >&6
-        GUI="gui"
-        GUILIB="$""(GDSO)"
-        GUIOBJ="$""(GOBJ)"
-        if test "$UNAME" = "Darwin"; then
-            GUIFRAMEWORKS="-framework Carbon"
-        else
-            GUIFRAMEWORKS=""
-        fi
-        if test -z "$METADATA_SERVER"; then
-            { { echo "$as_me:$LINENO: error: gui is here, but the metadata server is not.
-The gui will not run without the metadata server. Check to see that the
-mdserver directory exists and rerun 'configure'." >&5
-echo "$as_me: error: gui is here, but the metadata server is not.
-The gui will not run without the metadata server. Check to see that the
-mdserver directory exists and rerun 'configure'." >&2;}
-   { (exit 1); exit 1; }; }
-        fi
-    else
-        echo "$as_me:$LINENO: result: not found" >&5
-echo "${ECHO_T}not found" >&6
-        GUI=""
-        GUIOBJ=""
-        GUIFRAMEWORKS=""
-    fi
-
-    ENGINEPROXYDIR="proxy"
 else
-    echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-    enable_gui=no
-    ENGINEPROXYDIR=""
-    GUI_CXXFLAGS=""
+    VIEWER=""
+    VISWINDOW=""
+    VIEWERLIB=""
+    VIEWEROBJ=""
+    VIEWERLIB_SRC=""
+    VIEWEREXE_SRC=""
 fi
 
 
 
 
 
+
+
+echo "$as_me:$LINENO: checking for gui" >&5
+echo $ECHO_N "checking for gui... $ECHO_C" >&6
+if test -d gui; then
+    echo "$as_me:$LINENO: result: found" >&5
+echo "${ECHO_T}found" >&6
+    GUI="gui"
+    GUILIB="$""(GDSO)"
+    GUIOBJ="$""(GOBJ)"
+    if test "$UNAME" = "Darwin"; then
+        GUIFRAMEWORKS="-framework Carbon"
+    else
+        GUIFRAMEWORKS=""
+    fi
+else
+    echo "$as_me:$LINENO: result: not found" >&5
+echo "${ECHO_T}not found" >&6
+    GUI=""
+    GUILIB=""
+    GUIOBJ=""
+    GUIFRAMEWORKS=""
+fi
 
 
 
@@ -5975,7 +5940,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5978:" \
+echo "$as_me:5943:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6265,14 +6230,13 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
-
-        echo "$as_me:$LINENO: checking for strerror in -lcposix" >&5
-echo $ECHO_N "checking for strerror in -lcposix... $ECHO_C" >&6
-if test "${ac_cv_lib_cposix_strerror+set}" = set; then
+echo "$as_me:$LINENO: checking for library containing strerror" >&5
+echo $ECHO_N "checking for library containing strerror... $ECHO_C" >&6
+if test "${ac_cv_search_strerror+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcposix  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
+ac_cv_search_strerror=no
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -6317,24 +6281,80 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_lib_cposix_strerror=yes
+  ac_cv_search_strerror="none required"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_lib_cposix_strerror=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_cposix_strerror" >&5
-echo "${ECHO_T}$ac_cv_lib_cposix_strerror" >&6
-if test $ac_cv_lib_cposix_strerror = yes; then
-  LIBS="$LIBS -lcposix"
-fi
+if test "$ac_cv_search_strerror" = no; then
+  for ac_lib in cposix; do
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
 
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char strerror ();
+int
+main ()
+{
+strerror ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_search_strerror="-l$ac_lib"
+break
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
 
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+  done
+fi
+LIBS=$ac_func_search_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_search_strerror" >&5
+echo "${ECHO_T}$ac_cv_search_strerror" >&6
+if test "$ac_cv_search_strerror" != no; then
+  test "$ac_cv_search_strerror" = "none required" || LIBS="$ac_cv_search_strerror $LIBS"
+
+fi
 
 
 BUILD_FORTRAN=""
@@ -8110,8 +8130,8 @@ _ACEOF
         #
         # Adjust these strings so they format better in the result message.
         #
-        lib_links=`echo $lib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
-        deplib_links=`echo $deplib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
+        lib_links=`echo $lib_links | tr -s ' ' | sed -e s'@ @\n    @'`
+        deplib_links=`echo $deplib_links | tr -s ' ' | sed -e s'@ @\n    @'`
         if test -z "$deplib_links"; then
             echo "$as_me:$LINENO: result:
     HDF5_INCLUDE=$HDF5_INCLUDE
@@ -8556,8 +8576,8 @@ _ACEOF
         #
         # Adjust these strings so they format better in the result message.
         #
-        lib_links=`echo $lib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
-        deplib_links=`echo $deplib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
+        lib_links=`echo $lib_links | tr -s ' ' | sed -e s'@ @\n    @'`
+        deplib_links=`echo $deplib_links | tr -s ' ' | sed -e s'@ @\n    @'`
         if test -z "$deplib_links"; then
             echo "$as_me:$LINENO: result:
     SILO_INCLUDE=$SILO_INCLUDE
@@ -9064,8 +9084,8 @@ _ACEOF
         #
         # Adjust these strings so they format better in the result message.
         #
-        lib_links=`echo $lib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
-        deplib_links=`echo $deplib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
+        lib_links=`echo $lib_links | tr -s ' ' | sed -e s'@ @\n    @'`
+        deplib_links=`echo $deplib_links | tr -s ' ' | sed -e s'@ @\n    @'`
         if test -z "$deplib_links"; then
             echo "$as_me:$LINENO: result:
     PDB_INCLUDE=$PDB_INCLUDE
@@ -10064,99 +10084,180 @@ VISIT_VTK_CPPFLAGS="$VISIT_VTK_CPPFLAGS $VTK_INCLUDES -I$""(TOPDIR)/include/visi
 
 
 
-#
-# Check to see if we can compile with Gui support. If we can't then
-# make sure no windowing system stuff gets in.
-#
-if test "$enable_gui" = "yes"; then
-                VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $VTK_INCLUDES"
-    VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $SILO_INCLUDE"
+VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $VTK_INCLUDES"
+VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $SILO_INCLUDE"
 
 
-                if test -z "$QT_BIN" || test -z "$QT_INCLUDE" || test -z "$QT_LIB"; then
-       { { echo "$as_me:$LINENO: error: The QT_BIN, QT_INCLUDE and QT_LIB environment variables must be set in order to find Qt" >&5
+if test -z "$QT_BIN" || test -z "$QT_INCLUDE" || test -z "$QT_LIB"; then
+   { { echo "$as_me:$LINENO: error: The QT_BIN, QT_INCLUDE and QT_LIB environment variables must be set in order to find Qt" >&5
 echo "$as_me: error: The QT_BIN, QT_INCLUDE and QT_LIB environment variables must be set in order to find Qt" >&2;}
    { (exit 1); exit 1; }; }
-    fi
-    echo "$as_me:$LINENO: checking for supported Qt version" >&5
+fi
+echo "$as_me:$LINENO: checking for supported Qt version" >&5
 echo $ECHO_N "checking for supported Qt version... $ECHO_C" >&6
-    QtVersion=""
-    QtGlobalInc="$QT_INCLUDE/qglobal.h"
-
-    if test -f $QtGlobalInc; then
-        ## Check for supported versions of Qt.
-	for ver in  3.3.0  3.3.1  3.3.2  3.3.3  3.3.4 3.3.7 3.3.8 \
-                    3.2.0  3.2.1  3.2.2  3.2.3 \
-                    3.1.2  3.1.1  3.1.0 \
-                    3.0.4  3.0.3  3.0.2  3.0.1  3.0.0 \
-                    ; do
-            QtVer=`grep \"$ver\" $QtGlobalInc`
-            if test -n "$QtVer"; then
-                QtVersion=$ver
-                break
-            fi
-        done
+QtVersion=""
+QtVersion2=""
+consumeCount=-1
+toks=`$QT_BIN/qmake --version`
+for tok in $toks; do
+    if test "$tok" == "Qt"; then
+        consumeCount=2
     fi
+    if test $consumeCount == 0; then
+        QtVersion2=$tok
+        break
+    else
+        consumeCount=$((consumeCount-1))
+    fi
+done
 
-    if test -z "$QtVersion"; then
-        { { echo "$as_me:$LINENO: error:   Sorry, but you need Qt version 3.0 or higher to compile VisIt. " >&5
-echo "$as_me: error:   Sorry, but you need Qt version 3.0 or higher to compile VisIt. " >&2;}
+## Check for supported versions of Qt.
+for ver in  4.4.0 4.4.1 4.4.2 4.4.3 4.4.4 4.4.5 \
+            4.5.0 4.5.1 4.5.2 4.5.3 4.5.4 4.5.5 \
+            4.6.0 4.6.1 4.6.2 4.6.3 4.6.4 4.6.5 ; do
+   if test "$QtVersion2" == "$ver"; then
+       QtVersion=$ver
+       break
+   fi
+done
+
+if test -z "$QtVersion"; then
+    { { echo "$as_me:$LINENO: error:   Sorry, but you need Qt version 4.4.0 or higher to compile VisIt. " >&5
+echo "$as_me: error:   Sorry, but you need Qt version 4.4.0 or higher to compile VisIt. " >&2;}
    { (exit 1); exit 1; }; }
-    else
-        echo "$as_me:$LINENO: result: Qt $QtVersion in $QT_INCLUDE" >&5
+else
+    echo "$as_me:$LINENO: result: Qt $QtVersion in $QT_INCLUDE" >&5
 echo "${ECHO_T}Qt $QtVersion in $QT_INCLUDE" >&6
-    fi
+fi
 
-    if test -f $QT_LIB/libqt-mt.so -o -f $QT_LIB/libqt-mt.dylib; then
-	echo "$as_me:$LINENO: result: Linking to libqt-mt" >&5
-echo "${ECHO_T}Linking to libqt-mt" >&6
-	LIBQT=libqt-mt
-    	QT_LIBS=-lqt-mt
-    else
-	echo "$as_me:$LINENO: result: Linking to libqt" >&5
-echo "${ECHO_T}Linking to libqt" >&6
-	LIBQT=libqt
-    	QT_LIBS=-lqt
-    fi
+# Set the Qt bin,include,lib directories
 
 
 
 
+# Set platform-specific options
+if test "$UNAME" = "Darwin"; then
+    QT_LDFLAGS="-F$""(TOPDIR)/lib -L$""(TOPDIR)/lib"
 
+    QT_CORE=QtCore.framework
+    QT_CORE_LIB="-framework QtCore"
 
-    QUI_LIBS=-lqui
+    QT_GUI=QtGui.framework
+    QT_GUI_LIB="-framework QtGui"
 
-    QT_LDFLAGS=""
+    QT_DESIGNER=QtDesigner.framework
+    QT_DESIGNER_LIB="-framework QtDesigner"
 
-    QT_STATICLDFLAGS=-L$QT_LIB
+    QT_HELP=QtHelp.framework
+    QT_HELP_LIB="-framework QtHelp"
 
-    if test "$UNAME" = "Darwin"; then
-        QTMAC_FLAGS="-DMACOSX_102"
-    fi
-    QT_CXXFLAGS="-I$""(TOPDIR)/include/qt $QT_CXXFLAGS $QTMAC_FLAGS"
+    QT_CLUCENE=libQtCLucene.
+    QT_CLUCENE_LIB="-lQtCLucene"
 
-    QT_MOC="$""(TOPDIR)/bin/moc"
+    QT_NETWORK=QtNetwork.framework
+    QT_NETWORK_LIB="-framework QtNetwork"
+
+    QT_OPENGL=QtOpenGL.framework
+    QT_OPENGL_LIB="-framework QtOpenGL"
+
+    QT_SCRIPT=QtScript.framework
+    QT_SCRIPT_LIB="-framework QtScript"
+
+    QT_SQL=QtSql.framework
+    QT_SQL_LIB="-framework QtSql"
+
+    QT_SVG=QtSvg.framework
+    QT_SVG_LIB="-framework QtSvg"
+
+    QT_TEST=QtTest.framework
+    QT_TEST_LIB="-framework QtTest"
+
+    QT_XML=QtXml.framework
+    QT_XML_LIB="-framework QtXml"
 
 else
-            X_LIBS=""
+    QT_LDFLAGS="-L$""(TOPDIR)/lib"
 
-    QT_BIN=""
+    QT_CORE=libQtCore.so
+    QT_CORE_LIB=-lQtCore
 
-    QT_INCLUDE=""
+    QT_GUI=libQtGui.so
+    QT_GUI_LIB=-lQtGui
 
-    QT_LIB=""
+    QT_DESIGNER=libQtDesigner.so
+    QT_DESIGNER_LIB=-lQtDesigner
 
-    QT_LIBS=""
+    QT_HELP=libQtHelp.so
+    QT_HELP_LIB=-lQtHelp
 
-    QUI_LIBS=""
+    QT_CLUCENE=libQtCLucene.so
+    QT_CLUCENE_LIB=-lQtCLucene
 
-    QT_LDFLAGS=""
+    QT_NETWORK=libQtNetwork.so
+    QT_NETWORK_LIB=-lQtNetwork
 
-    QT_CXXFLAGS=""
+    QT_OPENGL=libQtOpenGL.so
+    QT_OPENGL_LIB=-lQtOpenGL
 
-    QT_MOC=""
+    QT_SCRIPT=libQtScript.so
+    QT_SCRIPT_LIB=-lQtScript
+
+    QT_SQL=libQtSql.so
+    QT_SQL_LIB=-lQtSql
+
+    QT_SVG=libQtSvg.so
+    QT_SVG_LIB=-lQtSvg
+
+    QT_TEST=libQtTest.so
+    QT_TEST_LIB=-lQtTest
+
+    QT_XML=libQtXml.so
+    QT_XML_LIB=-lQtXml
 
 fi
+
+
+# Qt libraries
+QT_LIBS="$""(QT_CORE_LIB) $""(QT_GUI_LIB) $""(QT_DESIGNER_LIB) $""(QT_HELP_LIB) $""(QT_CLUCENE_LIB) $""(QT_NETWORK_LIB) $""(QT_OPENGL_LIB) $""(QT_SCRIPT_LIB) $""(QT_SQL_LIB) $""(QT_SVG_LIB) $""(QT_TEST_LIB) $""(QT_XML_LIB)"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# UI library
+QT_QUI=libQtUiTools.a
+QT_QUI_LIB=-lQtUiTools
+
+
+
+# Include path
+QT_CXXFLAGS="-I$""(TOPDIR)/include/qt -I$""(TOPDIR)/include/qt/Qt -I$""(TOPDIR)/include/qt/QtCore -I$""(TOPDIR)/include/qt/QtGui -I$""(TOPDIR)/include/qt/QtDesigner -I$""(TOPDIR)/include/qt/QtHelp -I$""(TOPDIR)/include/qt/QtNetwork -I$""(TOPDIR)/include/qt/QtOpenGL -I$""(TOPDIR)/include/qt/QtScript -I$""(TOPDIR)/include/qt/QtSvg -I$""(TOPDIR)/include/qt/QtUiTools -I$""(TOPDIR)/include/qt/QtXml"
+
+
+# Path to moc
+QT_MOC="$""(TOPDIR)/bin/moc"
+
 
 #
 # Only enable VTKQT if we're building the viewer.
@@ -10168,7 +10269,7 @@ if test -n "$VIEWER"; then
    # TEMP HACK FOR BUILDING ON MacOS X.
    #
    if test "$UNAME" = "Darwin"; then
-      VTKQT_LIBS="-lvtkqt $QT_LIBS"
+      VTKQT_LIBS="-lvtkqt $""(QT_LDFLAGS) $""(QT_CORE_LIB) $""(QT_GUI_LIB) $""(QT_OPENGL_LIB)"
    else
       VTKQT_LIBS=""
    fi
@@ -19477,7 +19578,7 @@ else
     MDSERVER_FILES=""
 fi
 
-if test -n "$GUI" && test "$enable_gui" = "yes" ; then
+if test -n "$GUI"; then
     GUI_FILES="gui/Makefile"
 else
     GUI_FILES=""
@@ -20319,15 +20420,16 @@ s,@VISITPY@,$VISITPY,;t t
 s,@SCRIPTINGLIB@,$SCRIPTINGLIB,;t t
 s,@SCRIPTINGOBJ@,$SCRIPTINGOBJ,;t t
 s,@PY_BUILD_VISITMODULE@,$PY_BUILD_VISITMODULE,;t t
-s,@GUI@,$GUI,;t t
-s,@GUILIB@,$GUILIB,;t t
-s,@GUIOBJ@,$GUIOBJ,;t t
-s,@GUIFRAMEWORKS@,$GUIFRAMEWORKS,;t t
 s,@VIEWER@,$VIEWER,;t t
 s,@VISWINDOW@,$VISWINDOW,;t t
 s,@VIEWERLIB@,$VIEWERLIB,;t t
 s,@VIEWEROBJ@,$VIEWEROBJ,;t t
-s,@ENGINEPROXYDIR@,$ENGINEPROXYDIR,;t t
+s,@VIEWERLIB_SRC@,$VIEWERLIB_SRC,;t t
+s,@VIEWEREXE_SRC@,$VIEWEREXE_SRC,;t t
+s,@GUI@,$GUI,;t t
+s,@GUILIB@,$GUILIB,;t t
+s,@GUIOBJ@,$GUIOBJ,;t t
+s,@GUIFRAMEWORKS@,$GUIFRAMEWORKS,;t t
 s,@ANNOTATION_FLAGS@,$ANNOTATION_FLAGS,;t t
 s,@JAVAC@,$JAVAC,;t t
 s,@JAVA_TARGET@,$JAVA_TARGET,;t t
@@ -20445,17 +20547,40 @@ s,@VIEWER_CPPFLAGS@,$VIEWER_CPPFLAGS,;t t
 s,@QT_BIN@,$QT_BIN,;t t
 s,@QT_INCLUDE@,$QT_INCLUDE,;t t
 s,@QT_LIB@,$QT_LIB,;t t
-s,@LIBQT@,$LIBQT,;t t
-s,@QT_LIBS@,$QT_LIBS,;t t
-s,@QUI_LIBS@,$QUI_LIBS,;t t
 s,@QT_LDFLAGS@,$QT_LDFLAGS,;t t
-s,@QT_STATICLDFLAGS@,$QT_STATICLDFLAGS,;t t
+s,@QT_LIBS@,$QT_LIBS,;t t
+s,@QT_CORE@,$QT_CORE,;t t
+s,@QT_CORE_LIB@,$QT_CORE_LIB,;t t
+s,@QT_DESIGNER@,$QT_DESIGNER,;t t
+s,@QT_DESIGNER_LIB@,$QT_DESIGNER_LIB,;t t
+s,@QT_GUI@,$QT_GUI,;t t
+s,@QT_GUI_LIB@,$QT_GUI_LIB,;t t
+s,@QT_HELP@,$QT_HELP,;t t
+s,@QT_HELP_LIB@,$QT_HELP_LIB,;t t
+s,@QT_CLUCENE@,$QT_CLUCENE,;t t
+s,@QT_CLUCENE_LIB@,$QT_CLUCENE_LIB,;t t
+s,@QT_NETWORK@,$QT_NETWORK,;t t
+s,@QT_NETWORK_LIB@,$QT_NETWORK_LIB,;t t
+s,@QT_OPENGL@,$QT_OPENGL,;t t
+s,@QT_OPENGL_LIB@,$QT_OPENGL_LIB,;t t
+s,@QT_SCRIPT@,$QT_SCRIPT,;t t
+s,@QT_SCRIPT_LIB@,$QT_SCRIPT_LIB,;t t
+s,@QT_SQL@,$QT_SQL,;t t
+s,@QT_SQL_LIB@,$QT_SQL_LIB,;t t
+s,@QT_SVG@,$QT_SVG,;t t
+s,@QT_SVG_LIB@,$QT_SVG_LIB,;t t
+s,@QT_TEST@,$QT_TEST,;t t
+s,@QT_TEST_LIB@,$QT_TEST_LIB,;t t
+s,@QT_XML@,$QT_XML,;t t
+s,@QT_XML_LIB@,$QT_XML_LIB,;t t
+s,@QT_QUI@,$QT_QUI,;t t
+s,@QT_QUI_LIB@,$QT_QUI_LIB,;t t
 s,@QT_CXXFLAGS@,$QT_CXXFLAGS,;t t
 s,@QT_MOC@,$QT_MOC,;t t
-s,@X_LIBS@,$X_LIBS,;t t
 s,@VTKQT_CPPFLAGS@,$VTKQT_CPPFLAGS,;t t
 s,@VTKQT@,$VTKQT,;t t
 s,@VTKQT_LIBS@,$VTKQT_LIBS,;t t
+s,@X_LIBS@,$X_LIBS,;t t
 s,@PTHREAD_LIB@,$PTHREAD_LIB,;t t
 s,@PTHREAD_CXXFLAGS@,$PTHREAD_CXXFLAGS,;t t
 s,@PYDIR@,$PYDIR,;t t

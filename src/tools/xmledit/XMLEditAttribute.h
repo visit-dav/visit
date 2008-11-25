@@ -39,7 +39,7 @@
 #ifndef XMLEDITATTRIBUTE_H
 #define XMLEDITATTRIBUTE_H
 
-#include <qframe.h>
+#include <QFrame>
 
 class XMLDocument;
 class QLineEdit;
@@ -60,12 +60,15 @@ class QCheckBox;
 //    Brad Whitlock, Wed Mar 7 16:04:45 PST 2007
 //    Added control to turn off keyframe.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 class XMLEditAttribute : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditAttribute(QWidget *p, const QString &n);
+    XMLEditAttribute(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:

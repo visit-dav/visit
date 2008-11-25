@@ -50,9 +50,9 @@ class QPushButton;
 class QCheckBox;
 class QGroupBox;
 class QLineEdit;
-class QMultiLineEdit;
+class QTextEdit;
 class QLabel;
-class QListBox;
+class QListWidget;
 class QComboBox;
 class QvisVariableButton;
 
@@ -78,6 +78,9 @@ class QvisVariableButton;
 //
 //    Brad Whitlock, Wed Apr  9 10:55:20 PDT 2008
 //    QString for caption, shortName.
+//
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -107,7 +110,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     void    typeChanged(int);
     void    notHiddenChanged();
     void    displayAllVarsChanged();
-    void    insertFunction(int);
+    void    insertFunction(QAction *);
     void    insertVariable(const QString &);
 
     void    UpdateWindowSingleItem();
@@ -115,7 +118,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
 
   private:
     // Widgets and layouts.
-    QListBox           *exprListBox;
+    QListWidget        *exprListBox;
 
     QLabel             *nameEditLabel;
     QLabel             *definitionEditLabel;
@@ -124,20 +127,20 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     QLineEdit          *nameEdit;
     QComboBox          *typeList;
     QCheckBox          *notHidden;
-    QMultiLineEdit     *definitionEdit;
+    QTextEdit          *definitionEdit;
 
     QPushButton        *newButton;
     QPushButton        *delButton;
 
     QPushButton        *insertFunctionButton;
-    QPopupMenu         *insertFunctionMenu;
+    QMenu              *insertFunctionMenu;
     QvisVariableButton *insertVariableButton;
 
     QCheckBox          *displayAllVars;
 
     // State information
-    ExpressionList *exprList;
-    std::map<int,int> indexMap;
+    ExpressionList     *exprList;
+    std::map<int,int>  indexMap;
 };
 
 #endif

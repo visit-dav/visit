@@ -9,7 +9,7 @@
 #   include <slivr/CM2Widget.h>
 #endif
 #include <qgl.h>
-#include <qmap.h>
+#include <QMap>
 
 class WidgetRenderer;
 
@@ -28,10 +28,12 @@ typedef int WidgetID;
 // Creation:   Fri Sep 7 14:50:58 PST 2007
 //
 // Modifications:
-//
 //   Tom Fogal, Thu Sep 18 16:54:34 MDT 2008
 //   Use forward declarations where possible, and an ifdef where not, to remove
 //   a hard SLIVR dependency.
+//
+//   Brad Whitlock, Tue Sep 30 09:47:39 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -41,7 +43,7 @@ class QvisCMap2Display : public QGLWidget
 public:
     typedef QMap<WidgetID, SLIVR::CM2Widget *> IdToWidgetMap;
 
-    QvisCMap2Display(QWidget *parent, const char *name = 0);
+    QvisCMap2Display(QWidget *parent);
     virtual ~QvisCMap2Display();
 
     virtual void paintGL();

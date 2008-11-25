@@ -61,7 +61,7 @@ KeyframeAttributes::KeyframeAttributes() :
     AttributeSubject(KeyframeAttributes::TypeMapFormatString)
 {
     enabled = false;
-    nFrames = 0;
+    nFrames = 20;
     nFramesWasUserSet = false;
 }
 

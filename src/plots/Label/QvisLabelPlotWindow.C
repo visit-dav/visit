@@ -42,16 +42,16 @@
 #include <ViewerProxy.h>
 #include <StringHelpers.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qhbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QWidget>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QRadioButton>
+#include <QSpinBox>
 #include <QvisColorButton.h>
 #include <snprintf.h>
 
@@ -103,11 +103,13 @@ QvisLabelPlotWindow::QvisLabelPlotWindow(const int type,
 //   Brad Whitlock, Tue Aug 9 14:05:27 PST 2005
 //   Added depthTestButtonGroup.
 //
+//   Cyrus Harrison, Wed Aug 27 08:54:49 PDT 2008
+//   Set parent for depthTestButtonGroup, we can avoid explicit delete. 
+//
 // ****************************************************************************
 
 QvisLabelPlotWindow::~QvisLabelPlotWindow()
 {
-    delete depthTestButtonGroup;
 }
 
 // ****************************************************************************
@@ -131,6 +133,9 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 //   Brad Whitlock, Tue Apr 22 16:54:16 PDT 2008
 //   Added tr()'s
 //
+//   Cyrus Harrison, Fri Jul 18 14:44:51 PDT 2008
+//   Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -139,168 +144,161 @@ QvisLabelPlotWindow::CreateWindowContents()
     //
     // Create label selection-related widgets.
     //
-    selectionGroupBox = new QGroupBox(central, "selectionGroupBox");
+    selectionGroupBox = new QGroupBox(central);
     selectionGroupBox->setTitle(tr("Selection"));
     topLayout->addWidget(selectionGroupBox);
     QVBoxLayout *selTopLayout = new QVBoxLayout(selectionGroupBox);
-    selTopLayout->setMargin(10);
-    selTopLayout->addSpacing(15);
-    QGridLayout *selLayout = new QGridLayout(selTopLayout, 4, 3);
-    selLayout->setSpacing(5);
 
-    showNodesToggle = new QCheckBox(tr("Show nodes"), selectionGroupBox,
-        "showNodesToggle");
+    QGridLayout *selLayout = new QGridLayout();
+    selTopLayout->addLayout(selLayout);
+
+    showNodesToggle = new QCheckBox(tr("Show nodes"), selectionGroupBox);
     connect(showNodesToggle, SIGNAL(toggled(bool)),
             this, SLOT(showNodesToggled(bool)));
     selLayout->addWidget(showNodesToggle, 0,0);
 
-    showCellsToggle = new QCheckBox(tr("Show cells"), selectionGroupBox,
-        "showCellsToggle");
+    showCellsToggle = new QCheckBox(tr("Show cells"), selectionGroupBox);
     connect(showCellsToggle, SIGNAL(toggled(bool)),
             this, SLOT(showCellsToggled(bool)));
     selLayout->addWidget(showCellsToggle, 0,1);
 
-    restrictNumberOfLabelsToggle = new QCheckBox(tr("Restrict number of labels to"),
-        selectionGroupBox, "restrictNumberOfLabelsToggle");
+    restrictNumberOfLabelsToggle = new QCheckBox(tr("Restrict number of labels to"));
     connect(restrictNumberOfLabelsToggle, SIGNAL(toggled(bool)),
             this, SLOT(restrictNumberOfLabelsToggled(bool)));
-    selLayout->addMultiCellWidget(restrictNumberOfLabelsToggle, 1,1,0,1);
+    selLayout->addWidget(restrictNumberOfLabelsToggle, 1,0,1,2);
 
-    numberOfLabelsSpinBox = new QSpinBox(1, 200000, 200, selectionGroupBox,
-        "numberOfLabelsSpinBox");
-    //numberOfLabelsSpinBox->setSuffix(" labels");
+    numberOfLabelsSpinBox = new QSpinBox(selectionGroupBox);
+    numberOfLabelsSpinBox->setRange(1, 200000);
+    numberOfLabelsSpinBox->setSingleStep(200);
     connect(numberOfLabelsSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(numberOfLabelsChanged(int)));
     selLayout->addWidget(numberOfLabelsSpinBox, 1, 2);
 
-    drawLabelsFacingComboBox = new QComboBox(selectionGroupBox,
-        "drawLabelsFacingComboBox");
-    drawLabelsFacingComboBox->insertItem(tr("Front"));
-    drawLabelsFacingComboBox->insertItem(tr("Back"));
-    drawLabelsFacingComboBox->insertItem(tr("Front or Back"));
+    drawLabelsFacingComboBox = new QComboBox(selectionGroupBox);
+    drawLabelsFacingComboBox->addItem(tr("Front"));
+    drawLabelsFacingComboBox->addItem(tr("Back"));
+    drawLabelsFacingComboBox->addItem(tr("Front or Back"));
     connect(drawLabelsFacingComboBox, SIGNAL(activated(int)),
             this, SLOT(drawLabelsFacingChanged(int)));
     selLayout->addWidget(drawLabelsFacingComboBox, 2, 2);
-    selLayout->addMultiCellWidget(new QLabel(tr("Draw labels that face"),
-        selectionGroupBox, "drawLabelsLabel"), 2, 2, 0, 1);
+    selLayout->addWidget(new QLabel(tr("Draw labels that face"),selectionGroupBox)
+                         , 2, 0, 1, 2);
 
-    depthTestButtonGroup = new QButtonGroup(0, "depthTestButtonGroup");
-    QHBox *dtHBox = new QHBox(selectionGroupBox, "dtHBox");
-    dtHBox->setSpacing(5);
-    dtHBox->setMargin(0);
-    QRadioButton *rb = new QRadioButton(tr("Auto"), dtHBox);
-    depthTestButtonGroup->insert(rb, 0);
-    rb = new QRadioButton(tr("Always"), dtHBox);
-    depthTestButtonGroup->insert(rb, 1);
-    rb = new QRadioButton(tr("Never"), dtHBox);
-    depthTestButtonGroup->insert(rb, 2);
-    connect(depthTestButtonGroup, SIGNAL(clicked(int)),
+    depthTestButtonGroup = new QButtonGroup(selectionGroupBox);
+    
+    QHBoxLayout *dtLayout = new QHBoxLayout();
+    
+    QRadioButton *rb = new QRadioButton(tr("Auto"), selectionGroupBox);
+    depthTestButtonGroup->addButton(rb, 0);
+    dtLayout->addWidget(rb);
+    
+    rb = new QRadioButton(tr("Always"), selectionGroupBox);
+    depthTestButtonGroup->addButton(rb, 1);
+    dtLayout->addWidget(rb);
+    
+    rb = new QRadioButton(tr("Never"), selectionGroupBox);
+    depthTestButtonGroup->addButton(rb, 2);
+    dtLayout->addWidget(rb);
+    
+    connect(depthTestButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(depthTestButtonGroupChanged(int)));
-    selLayout->addWidget(new QLabel(tr("Depth test mode"), selectionGroupBox,
-        "dtLabel"), 3, 0);
-    selLayout->addMultiCellWidget(dtHBox, 3, 3, 1, 2);
+    selLayout->addWidget(new QLabel(tr("Depth test mode"), selectionGroupBox), 3, 0);
+    selLayout->addLayout(dtLayout, 3, 1, 1, 2);
 
     //
     // Create formatting widgets
     //
-    formattingGroupBox = new QGroupBox(central, "formattingGroupBox");
+    formattingGroupBox = new QGroupBox(central);
     formattingGroupBox->setTitle(tr("Formatting"));
     topLayout->addWidget(formattingGroupBox);
     QVBoxLayout *fmtTopLayout = new QVBoxLayout(formattingGroupBox);
-    fmtTopLayout->setMargin(10);
-    fmtTopLayout->addSpacing(15);
-    QGridLayout *fmtLayout = new QGridLayout(fmtTopLayout, 7, 2);
-    fmtLayout->setSpacing(5);
+    QGridLayout *fmtLayout = new QGridLayout();
+    fmtTopLayout->addLayout(fmtLayout);
 
-    labelDisplayFormatComboBox = new QComboBox(formattingGroupBox,
-        "labelDisplayFormatComboBox");
-    labelDisplayFormatComboBox->insertItem(tr("Natural"));
-    labelDisplayFormatComboBox->insertItem(tr("Logical index"));
-    labelDisplayFormatComboBox->insertItem(tr("Index"));
+    labelDisplayFormatComboBox = new QComboBox(formattingGroupBox);
+    labelDisplayFormatComboBox->addItem(tr("Natural"));
+    labelDisplayFormatComboBox->addItem(tr("Logical index"));
+    labelDisplayFormatComboBox->addItem(tr("Index"));
     connect(labelDisplayFormatComboBox, SIGNAL(activated(int)),
             this, SLOT(labelDisplayFormatChanged(int)));
     fmtLayout->addWidget(labelDisplayFormatComboBox, 0, 1);
-    fmtLayout->addWidget(new QLabel(labelDisplayFormatComboBox,
-        tr("Label display format"), formattingGroupBox, "labelDisplayLabel"), 0, 0);
+    fmtLayout->addWidget(new QLabel(tr("Label display format"), 
+                                    formattingGroupBox), 0, 0);
 
 
     specifyTextColor1Toggle = new QCheckBox(tr("Specify label color"),
-        formattingGroupBox, "specifyTextColor1Toggle");
+                                            formattingGroupBox);
     connect(specifyTextColor1Toggle, SIGNAL(toggled(bool)),
             this, SLOT(specifyTextColor1Toggled(bool)));
     fmtLayout->addWidget(specifyTextColor1Toggle, 1, 0);
 
-    textColor1Button = new QvisColorButton(formattingGroupBox, "textColor1Button");
+    textColor1Button = new QvisColorButton(formattingGroupBox);
     connect(textColor1Button, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(textColor1Changed(const QColor&)));
     fmtLayout->addWidget(textColor1Button, 1, 1, Qt::AlignLeft);
 
     specifyTextColor2Toggle = new QCheckBox(tr("Specify node label color"),
-        formattingGroupBox, "specifyTextColor2Toggle");
+                                            formattingGroupBox);
     connect(specifyTextColor2Toggle, SIGNAL(toggled(bool)),
             this, SLOT(specifyTextColor2Toggled(bool)));
     fmtLayout->addWidget(specifyTextColor2Toggle, 2, 0);
 
-    textColor2Button = new QvisColorButton(formattingGroupBox, "textColor2Button");
+    textColor2Button = new QvisColorButton(formattingGroupBox);
     connect(textColor2Button, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(textColor2Changed(const QColor&)));
     fmtLayout->addWidget(textColor2Button, 2, 1, Qt::AlignLeft);
 
-    textHeight1SpinBox = new QSpinBox(1, 100, 1, formattingGroupBox,
-        "textHeight1SpinBox");
+    textHeight1SpinBox = new QSpinBox(formattingGroupBox);
+    textHeight1SpinBox->setRange(1,100);
+    textHeight1SpinBox->setSingleStep(1);
     textHeight1SpinBox->setSuffix("%");
     connect(textHeight1SpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(textHeight1Changed(int)));
-    textHeight1Label = new QLabel(tr("Label height"),
-        formattingGroupBox, "labelDisplayLabel");
+    textHeight1Label = new QLabel(tr("Label height"),formattingGroupBox);
     fmtLayout->addWidget(textHeight1Label, 3, 0);
     fmtLayout->addWidget(textHeight1SpinBox, 3, 1);
 
-    textHeight2SpinBox = new QSpinBox(1, 100, 1, formattingGroupBox,
-        "textHeight2SpinBox");
+    textHeight2SpinBox = new QSpinBox(formattingGroupBox);
+    textHeight2SpinBox->setRange(1,100);
+    textHeight2SpinBox->setSingleStep(1);
     textHeight2SpinBox->setSuffix("%");
     connect(textHeight2SpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(textHeight2Changed(int)));
-    textHeight2Label = new QLabel(tr("Node label height"),
-        formattingGroupBox, "labelDisplayLabel");
+    textHeight2Label = new QLabel(tr("Node label height"),formattingGroupBox);
     fmtLayout->addWidget(textHeight2Label, 4, 0);
     fmtLayout->addWidget(textHeight2SpinBox, 4, 1);
 
-    horizontalJustificationComboBox = new QComboBox(formattingGroupBox,
-        "horizontalJustificationComboBox");
-    horizontalJustificationComboBox->insertItem(tr("Center"));
-    horizontalJustificationComboBox->insertItem(tr("Left"));
-    horizontalJustificationComboBox->insertItem(tr("Right"));
+    horizontalJustificationComboBox = new QComboBox(formattingGroupBox);
+    horizontalJustificationComboBox->addItem(tr("Center"));
+    horizontalJustificationComboBox->addItem(tr("Left"));
+    horizontalJustificationComboBox->addItem(tr("Right"));
     connect(horizontalJustificationComboBox, SIGNAL(activated(int)),
             this, SLOT(horizontalJustificationChanged(int)));
     fmtLayout->addWidget(horizontalJustificationComboBox, 5, 1);
-    fmtLayout->addWidget(new QLabel(horizontalJustificationComboBox,
-        tr("Horizontal justification"), formattingGroupBox, "hjustLabel"), 5, 0);
+    fmtLayout->addWidget(new QLabel(tr("Horizontal justification"), 
+                                    formattingGroupBox), 5, 0);
 
-    verticalJustificationComboBox = new QComboBox(formattingGroupBox,
-        "verticalJustificationComboBox");
-    verticalJustificationComboBox->insertItem(tr("Center"));
-    verticalJustificationComboBox->insertItem(tr("Top"));
-    verticalJustificationComboBox->insertItem(tr("Bottom"));
+    verticalJustificationComboBox = new QComboBox(formattingGroupBox);
+    verticalJustificationComboBox->addItem(tr("Center"));
+    verticalJustificationComboBox->addItem(tr("Top"));
+    verticalJustificationComboBox->addItem(tr("Bottom"));
     connect(verticalJustificationComboBox, SIGNAL(activated(int)),
             this, SLOT(verticalJustificationChanged(int)));
     fmtLayout->addWidget(verticalJustificationComboBox, 6, 1);
-    fmtLayout->addWidget(new QLabel(verticalJustificationComboBox,
-        tr("Vertical justification"), formattingGroupBox, "vjustLabel"), 6, 0);
+    fmtLayout->addWidget(new QLabel(tr("Vertical justification"), 
+                                    formattingGroupBox), 6, 0);
 
     
-    formatTemplate = new QLineEdit(
-        QString(labelAtts->GetFormatTemplate().c_str()), 
-        formattingGroupBox, "formatTemplate");
+    formatTemplate = new QLineEdit(QString(labelAtts->GetFormatTemplate().c_str()), 
+                                   formattingGroupBox);
     connect(formatTemplate, SIGNAL(returnPressed()), 
             this, SLOT(formatTemplateChanged()));
 
     fmtLayout->addWidget(formatTemplate, 7, 1);
-    fmtLayout->addWidget(new QLabel(formatTemplate,
-        tr("Format template"), formattingGroupBox, "formatTemplateLabel"), 7, 0);
+    fmtLayout->addWidget(new QLabel(tr("Format template"), formattingGroupBox), 7, 0);
 
     // Legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central, "legendFlag");
+    legendToggle = new QCheckBox(tr("Legend"), central);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     topLayout->addWidget(legendToggle, 0,0);
@@ -327,6 +325,9 @@ QvisLabelPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Apr 22 16:56:14 PDT 2008
 //   Added tr()'s
 //
+//   Cyrus Harrison, Fri Jul 18 14:44:51 PDT 2008
+//   Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -347,7 +348,7 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: //varType
+        case LabelAttributes::ID_varType:
             {// new scope
             bool varIsMesh = labelAtts->GetVarType() == LabelAttributes::LABEL_VT_MESH;
             showNodesToggle->setEnabled(varIsMesh);
@@ -372,97 +373,97 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             }
             }
             break;
-        case 1: //legendFlag
+        case LabelAttributes::ID_legendFlag:
             legendToggle->blockSignals(true);
             legendToggle->setChecked(labelAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
             break;
-        case 2: //showNodes
+        case LabelAttributes::ID_showNodes:
             showNodesToggle->blockSignals(true);
             showNodesToggle->setChecked(labelAtts->GetShowNodes());
             showNodesToggle->blockSignals(false);
             break;
-        case 3: //showCells
+        case LabelAttributes::ID_showCells:
             showCellsToggle->blockSignals(true);
             showCellsToggle->setChecked(labelAtts->GetShowCells());
             showCellsToggle->blockSignals(false);
             break;
-        case 4: //restrictNumberOfLabels
+        case LabelAttributes::ID_restrictNumberOfLabels:
             restrictNumberOfLabelsToggle->blockSignals(true);
             restrictNumberOfLabelsToggle->setChecked(labelAtts->GetRestrictNumberOfLabels());
             restrictNumberOfLabelsToggle->blockSignals(false);
             numberOfLabelsSpinBox->setEnabled(labelAtts->GetRestrictNumberOfLabels());
             break;
-        case 5: //drawLabelsFacing
+        case LabelAttributes::ID_drawLabelsFacing:
             drawLabelsFacingComboBox->blockSignals(true);
-            drawLabelsFacingComboBox->setCurrentItem(int(labelAtts->GetDrawLabelsFacing()));
+            drawLabelsFacingComboBox->setCurrentIndex(int(labelAtts->GetDrawLabelsFacing()));
             drawLabelsFacingComboBox->blockSignals(false);
             break;
-        case 6: //labelDisplayFormat
+        case LabelAttributes::ID_labelDisplayFormat:
             labelDisplayFormatComboBox->blockSignals(true);
-            labelDisplayFormatComboBox->setCurrentItem(int(labelAtts->GetLabelDisplayFormat()));
+            labelDisplayFormatComboBox->setCurrentIndex(int(labelAtts->GetLabelDisplayFormat()));
             labelDisplayFormatComboBox->blockSignals(false);
             break;
-        case 7: //numberOfLabels
+        case LabelAttributes::ID_numberOfLabels:
             numberOfLabelsSpinBox->blockSignals(true);
             numberOfLabelsSpinBox->setValue(labelAtts->GetNumberOfLabels());
             numberOfLabelsSpinBox->blockSignals(false);
             break;
-        case 8: //specifyTextColor1
+        case LabelAttributes::ID_specifyTextColor1:
             specifyTextColor1Toggle->blockSignals(true);
             specifyTextColor1Toggle->setChecked(labelAtts->GetSpecifyTextColor1());
             specifyTextColor1Toggle->blockSignals(false);
 
             textColor1Button->setEnabled(labelAtts->GetSpecifyTextColor1());
             break;
-        case 9: //textColor1
+        case LabelAttributes::ID_textColor1:
             tempcolor = QColor(labelAtts->GetTextColor1().Red(),
                                labelAtts->GetTextColor1().Green(),
                                labelAtts->GetTextColor1().Blue());
             textColor1Button->setButtonColor(tempcolor);
             break;
-        case 10: //textHeight1
+        case LabelAttributes::ID_textHeight1:
             textHeight1SpinBox->blockSignals(true);
             textHeight1SpinBox->setValue(int(labelAtts->GetTextHeight1() * 100.f + 0.5f));
             textHeight1SpinBox->blockSignals(false);
             break;
 
-        case 11: //specifyTextColor2
+        case LabelAttributes::ID_specifyTextColor2:
             specifyTextColor2Toggle->blockSignals(true);
             specifyTextColor2Toggle->setChecked(labelAtts->GetSpecifyTextColor2());
             specifyTextColor2Toggle->blockSignals(false);
 
             textColor2Button->setEnabled(labelAtts->GetSpecifyTextColor2());
             break;
-        case 12: //textColor2
+        case LabelAttributes::ID_textColor2:
             tempcolor = QColor(labelAtts->GetTextColor2().Red(),
                                labelAtts->GetTextColor2().Green(),
                                labelAtts->GetTextColor2().Blue());
             textColor2Button->setButtonColor(tempcolor);
             break;
-        case 13: //textHeight2
+        case LabelAttributes::ID_textHeight2:
             textHeight2SpinBox->blockSignals(true);
             textHeight2SpinBox->setValue(int(labelAtts->GetTextHeight2() * 100.f + 0.5f));
             textHeight2SpinBox->blockSignals(false);
             break;
-        case 14: //horizontalJustification
+        case LabelAttributes::ID_horizontalJustification:
             horizontalJustificationComboBox->blockSignals(true);
-            horizontalJustificationComboBox->setCurrentItem(int(labelAtts->
+            horizontalJustificationComboBox->setCurrentIndex(int(labelAtts->
                 GetHorizontalJustification()));
             horizontalJustificationComboBox->blockSignals(false);
             break;
-        case 15: //verticalJustification
+        case LabelAttributes::ID_verticalJustification:
             verticalJustificationComboBox->blockSignals(true);
-            verticalJustificationComboBox->setCurrentItem(int(labelAtts->
+            verticalJustificationComboBox->setCurrentIndex(int(labelAtts->
                 GetVerticalJustification()));
             verticalJustificationComboBox->blockSignals(false);
             break;
-        case 16: //depthTestMode
+        case LabelAttributes::ID_depthTestMode:
             depthTestButtonGroup->blockSignals(true);
-            depthTestButtonGroup->setButton(int(labelAtts->GetDepthTestMode()));
+            depthTestButtonGroup->button(int(labelAtts->GetDepthTestMode()))->setChecked(true);
             depthTestButtonGroup->blockSignals(false);
             break;
-        case 17: //formatTemplate
+        case LabelAttributes::ID_formatTemplate:
             formatTemplate->blockSignals(true);
             formatTemplate->setText(QString(labelAtts->GetFormatTemplate().c_str()));
             formatTemplate->blockSignals(false);
@@ -492,6 +493,9 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Tue Apr 22 16:58:45 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Fri Jul 18 14:44:51 PDT 2008
+//   Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -500,10 +504,10 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do numberOfLabelsSpinBox
-    if(which_widget == 0 || doAll)
+    // Do numberOfLabels
+    if(which_widget == LabelAttributes::ID_numberOfLabels || doAll)
     {
-        temp = numberOfLabelsSpinBox->text().simplifyWhiteSpace();
+        temp = numberOfLabelsSpinBox->text().trimmed();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -514,24 +518,22 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg = tr("The value entered for the number of labels was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(labelAtts->GetNumberOfLabels());
-            Message(msg);
+            ResettingError(tr("number of labels"),
+                IntToQString(labelAtts->GetNumberOfLabels()));
             labelAtts->SetNumberOfLabels(labelAtts->GetNumberOfLabels());
         }
     }
 
-    // Do textHeight1SpinBox
-    if(which_widget == 1 || doAll)
+    // Do textHeight1
+    if(which_widget == LabelAttributes::ID_textHeight1  || doAll)
     {
         temp = textHeight1SpinBox->text();
-        int plen = (temp.find(textHeight1SpinBox->prefix()) != -1) ? 
+        int plen = (temp.indexOf(textHeight1SpinBox->prefix()) != -1) ? 
             textHeight1SpinBox->prefix().length() : 0;
-        int slen = (temp.find(textHeight1SpinBox->suffix()) != -1) ? 
+        int slen = (temp.indexOf(textHeight1SpinBox->suffix()) != -1) ? 
             textHeight1SpinBox->suffix().length() : 0;
         temp = temp.mid(plen, temp.length() - plen - slen);
-        temp.simplifyWhiteSpace();
+        temp.simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -543,24 +545,22 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg = tr("The value entered for the text height was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(int(labelAtts->GetTextHeight1() * 100.));
-            Message(msg);
+            ResettingError(tr("text height"),
+                IntToQString(int(labelAtts->GetTextHeight1() * 100.)));
             labelAtts->SetTextHeight1(labelAtts->GetTextHeight1());
         }
     }
 
-    // Do textHeight2SpinBox
-    if(which_widget == 2 || doAll)
+    // Do textHeight2
+    if(which_widget == LabelAttributes::ID_textHeight2 || doAll)
     {
         temp = textHeight2SpinBox->text();
-        int plen = (temp.find(textHeight2SpinBox->prefix()) != -1) ? 
+        int plen = (temp.indexOf(textHeight2SpinBox->prefix()) != -1) ? 
             textHeight2SpinBox->prefix().length() : 0;
-        int slen = (temp.find(textHeight2SpinBox->suffix()) != -1) ? 
+        int slen = (temp.indexOf(textHeight2SpinBox->suffix()) != -1) ? 
             textHeight2SpinBox->suffix().length() : 0;
         temp = temp.mid(plen, temp.length() - plen - slen);
-        temp.simplifyWhiteSpace();
+        temp.simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -572,10 +572,8 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg = tr("The value entered for the text height was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(int(labelAtts->GetTextHeight2() * 100.));
-            Message(msg);
+            ResettingError(tr("text height"),
+                IntToQString(int(labelAtts->GetTextHeight2() * 100.)));
             labelAtts->SetTextHeight2(labelAtts->GetTextHeight2());
         }
     }
@@ -823,7 +821,7 @@ QvisLabelPlotWindow::depthTestButtonGroupChanged(int val)
 void 
 QvisLabelPlotWindow::formatTemplateChanged()
 {
-    std::string newval = formatTemplate->displayText().stripWhiteSpace().latin1();
+    std::string newval = formatTemplate->displayText().trimmed().toStdString();
 
     //Test the new value and don't apply it if it's an invalid printf string.
     //In practice snprintf never throws an error for wrong type or number

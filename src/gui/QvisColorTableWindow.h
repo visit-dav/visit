@@ -55,7 +55,7 @@ class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QListBox;
+class QListWidget;
 class QSlider;
 class QSpinBox;
 class QvisSpectrumBar;
@@ -170,7 +170,7 @@ private:
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
     QLineEdit                *nameLineEdit;
-    QListBox                 *nameListBox;
+    QListWidget                 *nameListBox;
 
     QGroupBox                *colorWidgetGroup;
 

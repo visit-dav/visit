@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="SubdivideQuads" type="operator" label="SubdivideQuads" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false">
-    <Attribute name="SubdivideQuadsAttributes" purpose="Attributes for SubdivideQuads operator" persistent="true" exportAPI="" exportInclude="">
+  <Plugin name="SubdivideQuads" type="operator" label="SubdivideQuads" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false">
+    <Attribute name="SubdivideQuadsAttributes" purpose="Attributes for SubdivideQuads operator" persistent="true">
       <Field name="threshold" label="Biggest change allowed in a zone?" type="double">
         0.500002
       </Field>
@@ -13,8 +13,8 @@
       <Field name="doTriangles" label="Subdivide triangles" type="bool">
         false
       </Field>
-      <Field name="variable" label="Variable to base subdivision on" type="string">
-        "default"
+      <Field name="variable" label="Variable to base subdivision on" type="variablename" vartypes="01000000000">
+        default
       </Field>
     </Attribute>
   </Plugin>

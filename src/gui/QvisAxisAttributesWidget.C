@@ -37,13 +37,13 @@
 *****************************************************************************/
 #include <QvisAxisAttributesWidget.h>
 
-#include <qcheckbox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qtimer.h>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QTimer>
 
 #include <QNarrowLineEdit.h>
 #include <QvisFontAttributesWidget.h>
@@ -72,117 +72,116 @@
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Jun 26 13:33:59 PDT 2008
+//   Qt 4.
+//
 //   Kathleen Bonnell, Mon Sep 22 18:37:29 PDT 2008 
 //   Allow labelScaling values to be negative. 
 //
 // ****************************************************************************
 
 QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent, 
-    const char *name, bool tickEnabled, bool titleEnabled) :
-    QVBox(parent, name), GUIBase(), atts()
+    bool tickEnabled, bool titleEnabled) :
+    QWidget(parent), GUIBase(), atts()
 {
     autoScaling = true;
     autoTickMarks = true;
-    setMargin(5);
-    setSpacing(5);
+    QVBoxLayout *vbLayout = new QVBoxLayout(this);
+    vbLayout->setMargin(5);
+    vbLayout->setSpacing(10);
 
     //
     // Create the title group
     //
-    titleGroup = new QGroupBox(this, "titleGroup");
+    titleGroup = new QGroupBox(this);
     titleGroup->setTitle(tr("Title"));
+    vbLayout->addWidget(titleGroup);
     if(titleEnabled)
     {
         titleGroup->setCheckable(true);
         connect(titleGroup, SIGNAL(toggled(bool)),
                 this, SLOT(titleToggled(bool)));
     }
-    QVBoxLayout *tInnerLayout = new QVBoxLayout(titleGroup);
-    tInnerLayout->setMargin(10);
-    tInnerLayout->addSpacing(15);
-    tInnerLayout->setSpacing(10);
     int row = 0;
-    QGridLayout *tLayout = new QGridLayout(tInnerLayout, 4, 2);
+    QGridLayout *tLayout = new QGridLayout(titleGroup);
     tLayout->setSpacing(5);
-    customTitleToggle = new QCheckBox(tr("Custom title"), titleGroup,
-        "customTitleToggle");
+    customTitleToggle = new QCheckBox(tr("Custom title"), titleGroup);
     connect(customTitleToggle, SIGNAL(toggled(bool)),
             this, SLOT(customTitleToggled(bool)));
     tLayout->addWidget(customTitleToggle, row, 0);
-    customTitle = new QLineEdit(titleGroup, "customTitle");
+    customTitle = new QLineEdit(titleGroup);
     connect(customTitle, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tLayout->addWidget(customTitle, row, 1);
     ++row;
 
-    customUnitsToggle = new QCheckBox(tr("Custom Units"), titleGroup,
-        "customUnitsToggle");
+    customUnitsToggle = new QCheckBox(tr("Custom Units"), titleGroup);
     connect(customUnitsToggle, SIGNAL(toggled(bool)),
             this, SLOT(customUnitsToggled(bool)));
     tLayout->addWidget(customUnitsToggle, row, 0);
-    customUnits = new QLineEdit(titleGroup, "customUnits");
+    customUnits = new QLineEdit(titleGroup);
     connect(customUnits, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tLayout->addWidget(customUnits, row, 1);
     ++row;
 
-    QFrame *titleSep = new QFrame(titleGroup, "labelSep");
+    QFrame *titleSep = new QFrame(titleGroup);
     titleSep->setFrameStyle(QFrame::HLine + QFrame::Sunken);
-    tLayout->addMultiCellWidget(titleSep, row, row, 0, 1);
+    tLayout->addWidget(titleSep, row, 0, 1, 2);
     ++row;
 
-    titleFont = new QvisFontAttributesWidget(titleGroup, "titleFont");
+    titleFont = new QvisFontAttributesWidget(titleGroup);
 #ifdef DISABLE_TEXT_OPACITY
     titleFont->disableOpacity();
 #endif
     connect(titleFont, SIGNAL(fontChanged(const FontAttributes &)),
             this, SLOT(titleFontChanged(const FontAttributes &)));
-    tLayout->addMultiCellWidget(titleFont, row, row, 0, 1);
+    tLayout->addWidget(titleFont, row, 0, 1, 2);
 
     //
     // Create the label group
     //
     row = 0;
-    labelGroup = new QGroupBox(this, "labelGroup");
+    labelGroup = new QGroupBox(this);
+    vbLayout->addWidget(labelGroup);
     labelGroup->setTitle(tr("Labels"));
     labelGroup->setCheckable(true);
     connect(labelGroup, SIGNAL(toggled(bool)),
             this, SLOT(labelToggled(bool)));
-    QVBoxLayout *lInnerLayout = new QVBoxLayout(labelGroup);
-    lInnerLayout->setMargin(10);
-    lInnerLayout->addSpacing(15);
-    lInnerLayout->setSpacing(10);
-    QGridLayout *lLayout = new QGridLayout(lInnerLayout, 3, 2);
+    QGridLayout *lLayout = new QGridLayout(labelGroup);
     lLayout->setSpacing(5);
-    lLayout->setColStretch(1, 10);
+    lLayout->setColumnStretch(1, 10);
 
-    labelScaling = new QSpinBox(-300, 300, 1, labelGroup, "labelScaling");
+    labelScaling = new QSpinBox(labelGroup);
+    labelScaling->setMinimum(-300);
+    labelScaling->setMaximum(300);
     connect(labelScaling, SIGNAL(valueChanged(int)),
             this, SLOT(labelScalingChanged(int)));
-    labelScalingLabel = new QLabel(labelScaling, tr("Scaling (x10^?)"), 
-        labelGroup, "labelScalingLabel");
+    labelScalingLabel = new QLabel(tr("Scaling (x10^?)"), labelGroup);
+    labelScalingLabel->setBuddy(labelScaling);
     lLayout->addWidget(labelScalingLabel, row, 0);
     lLayout->addWidget(labelScaling, row, 1);
     ++row;
 
-    QFrame *labelSep = new QFrame(labelGroup, "labelSep");
+    QFrame *labelSep = new QFrame(labelGroup);
     labelSep->setFrameStyle(QFrame::HLine + QFrame::Sunken);
-    lLayout->addMultiCellWidget(labelSep, row, row, 0, 1);
+    lLayout->addWidget(labelSep, row, 0, 1, 2);
     ++row;
 
-    labelFont = new QvisFontAttributesWidget(labelGroup, "labelFont");
+    labelFont = new QvisFontAttributesWidget(labelGroup);
 #ifdef DISABLE_TEXT_OPACITY
     labelFont->disableOpacity();
 #endif
     connect(labelFont, SIGNAL(fontChanged(const FontAttributes &)),
             this, SLOT(labelFontChanged(const FontAttributes &)));
-    lLayout->addMultiCellWidget(labelFont, row, row, 0, 1);
+    lLayout->addWidget(labelFont, row, 0, 1, 2);
 
     //
     // Create the tick group
     //
     row = 0;
-    tickGroup = new QGroupBox(this, "tickGroup");
+    tickGroup = new QGroupBox(this);
+    vbLayout->addWidget(tickGroup);
     tickGroup->setTitle(tr("Tick marks"));
     if(tickEnabled)
     {
@@ -190,53 +189,51 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
         connect(tickGroup, SIGNAL(toggled(bool)),
                 this, SLOT(tickToggled(bool)));
     }
-    QVBoxLayout *tgInnerLayout = new QVBoxLayout(tickGroup);
-    tgInnerLayout->setMargin(10);
-    tgInnerLayout->addSpacing(15);
-    tgInnerLayout->setSpacing(10);
-    QGridLayout *tgLayout = new QGridLayout(tgInnerLayout, 4, 2);
+    QGridLayout *tgLayout = new QGridLayout(tickGroup);
     tgLayout->setSpacing(5);
 
-    majorMinimum = new QNarrowLineEdit(tickGroup, "majorMinimum");
+    majorMinimum = new QNarrowLineEdit(tickGroup);
     connect(majorMinimum, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tgLayout->addWidget(majorMinimum, row, 1);
-    majorMinimumLabel = new QLabel(majorMinimum, tr("Major minimum"), 
-        tickGroup, "majorMinimumLabel");
+    majorMinimumLabel = new QLabel(tr("Major minimum"), tickGroup);
+    majorMinimumLabel->setBuddy(majorMinimum);
     tgLayout->addWidget(majorMinimumLabel, row, 0);
     ++row;
 
-    majorMaximum = new QNarrowLineEdit(tickGroup, "majorMaximum");
+    majorMaximum = new QNarrowLineEdit(tickGroup);
     connect(majorMaximum, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tgLayout->addWidget(majorMaximum, row, 1);
-    majorMaximumLabel = new QLabel(majorMaximum, tr("Major maximum"), 
-        tickGroup, "majorMaximumLabel");
+    majorMaximumLabel = new QLabel(tr("Major maximum"), tickGroup);
+    majorMaximumLabel->setBuddy(majorMaximum);
     tgLayout->addWidget(majorMaximumLabel, row, 0);
     ++row;
 
-    minorSpacing = new QNarrowLineEdit(tickGroup, "minorSpacing");
+    minorSpacing = new QNarrowLineEdit(tickGroup);
     connect(minorSpacing, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tgLayout->addWidget(minorSpacing, row, 1);
-    minorSpacingLabel = new QLabel(minorSpacing, tr("Minor spacing"), 
-        tickGroup, "minorSpacingLabel");
+    minorSpacingLabel = new QLabel(tr("Minor spacing"), tickGroup);
+    minorSpacingLabel->setBuddy(minorSpacing);
     tgLayout->addWidget(minorSpacingLabel, row, 0);
     ++row;
 
-    majorSpacing = new QNarrowLineEdit(tickGroup, "majorSpacing");
+    majorSpacing = new QNarrowLineEdit(tickGroup);
     connect(majorSpacing, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tgLayout->addWidget(majorSpacing, row, 1);
-    majorSpacingLabel = new QLabel(majorSpacing, tr("Major spacing"), 
-        tickGroup, "majorSpacingLabel");
+    majorSpacingLabel = new QLabel(tr("Major spacing"), tickGroup);
+    majorSpacingLabel->setBuddy(majorSpacing);
     tgLayout->addWidget(majorSpacingLabel, row, 0);
     ++row;
 
     // Add the grid check box.
-    grid = new QCheckBox(tr("Show grid"), this, "grid");
+    grid = new QCheckBox(tr("Show grid"), this);
     connect(grid, SIGNAL(toggled(bool)),
             this, SLOT(gridToggled(bool)));
+    vbLayout->addWidget(grid);
+    vbLayout->addStretch(100);
 }
 
 // ****************************************************************************
@@ -499,9 +496,9 @@ QvisAxisAttributesWidget::GetCurrentValues(AxisAttributes &aa,
         if(doAll || which_widget == AxisTitles::ID_font)
             atts.GetTitle().SetFont(titleFont->getFontAttributes());
         if(doAll || which_widget == AxisTitles::ID_title)
-            atts.GetTitle().SetTitle(customTitle->displayText().latin1());
+            atts.GetTitle().SetTitle(customTitle->displayText().toStdString());
         if(doAll || which_widget == AxisTitles::ID_units)
-            atts.GetTitle().SetUnits(customUnits->displayText().latin1());
+            atts.GetTitle().SetUnits(customUnits->displayText().toStdString());
     }
 
     // Do the label group
@@ -570,7 +567,7 @@ QvisAxisAttributesWidget::GetCurrentValues(AxisAttributes &aa,
 bool
 QvisAxisAttributesWidget::GetDouble(double &val, QLineEdit *le, const QString &name)
 {
-    QString temp(le->displayText().simplifyWhiteSpace());
+    QString temp(le->displayText().simplified());
     bool okay = !temp.isEmpty();
     if(okay)
     {
@@ -609,6 +606,8 @@ QvisAxisAttributesWidget::GetDouble(double &val, QLineEdit *le, const QString &n
 void
 QvisAxisAttributesWidget::ForceSpinBoxUpdate(QSpinBox *sb)
 {
+// No longer needed...
+#if 0
     // Block signals.
     sb->blockSignals(true);
 
@@ -623,6 +622,7 @@ QvisAxisAttributesWidget::ForceSpinBoxUpdate(QSpinBox *sb)
 
     // Let the spinbox emit signals again.
     sb->blockSignals(false);
+#endif
 }
 
 //

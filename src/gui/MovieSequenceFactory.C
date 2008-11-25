@@ -37,8 +37,8 @@
 *****************************************************************************/
 #include <MovieSequenceFactory.h>
 #include <MovieSequence.h>
-#include <qpixmap.h>
-#include <qpixmapcache.h>
+#include <QPixmap>
+#include <QPixmapCache>
 
 // Include movie sequence types here.
 #include <MovieSequenceCurrentPlots.h>

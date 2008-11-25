@@ -83,7 +83,7 @@ main(int argc, char *argv[])
         // Set up VISITHOME so it finds our development version of VisIt when 
         // run from this directory.
         QDir d("../../");
-        std::string visithome(d.absPath().latin1());
+        std::string visithome(d.absolutePath().toStdString());
         viewer.SetVISITHOME(visithome);
 
         //
@@ -113,6 +113,7 @@ main(int argc, char *argv[])
         // Show our app's main window
         //
         visapp->show();
+        visapp->raise();
 
         //
         // Execute the viewer.

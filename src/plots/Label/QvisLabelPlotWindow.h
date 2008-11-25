@@ -67,6 +67,9 @@ class QvisColorButton;
 //   colors and heights for node labels and cell labels independently, also
 //   for z-buffering.
 //
+//   Cyrus Harrison, Fri Jul 18 14:38:14 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisLabelPlotWindow : public QvisPostableWindowObserver

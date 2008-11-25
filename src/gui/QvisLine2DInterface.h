@@ -68,7 +68,7 @@ class GUI_API QvisLine2DInterface : public QvisAnnotationObjectInterface
     Q_OBJECT
 
 public:
-    QvisLine2DInterface(QWidget *parent, const char *name = 0);
+    QvisLine2DInterface(QWidget *parent);
     virtual ~QvisLine2DInterface();
 
     virtual QString GetName() const { return "2D Line"; }

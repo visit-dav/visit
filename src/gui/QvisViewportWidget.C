@@ -36,96 +36,450 @@
 *
 *****************************************************************************/
 #include <QvisViewportWidget.h>
-#include <qcursor.h>
-#include <qpen.h>
-#include <qcolor.h>
-#include <qwmatrix.h>
-#include <qpainter.h>
+#include <QCursor>
+#include <QGraphicsItem>
+#include <QGraphicsSceneHoverEvent>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPen>
+#include <QColor>
+#include <QMatrix>
+#include <QPainter>
 
 // ****************************************************************************
-// Class: QCanvasViewport
+// Class: QViewportItem
 //
 // Purpose:
-//   This class represents viewport objects that are drawn to the canvas.
+//   This class represents viewport objects that are drawn to the Graphics
+//   scene.
 //
-// Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 14:15:42 PST 2006
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-class QCanvasViewport : public QCanvasRectangle
+#include <iostream>
+using namespace std;
+
+class QViewportItem : public QGraphicsRectItem
 {
 public:
-    QCanvasViewport(QvisViewportWidget *W, const QString &_id, int x, int y,
-        int w, int h, QCanvas *canvas) : QCanvasRectangle(x, y, w, h, canvas)
-    {
-        id = _id;
-        viewportWidget = W;
-    }
+    QViewportItem (const QString &id, 
+                   float llx, float lly,
+                   float urx, float ury,
+                   QvisViewportWidget *view);
+    virtual ~QViewportItem();
+    
+    QString getId() const 
+    { return id; }
 
-    virtual ~QCanvasViewport()
-    {
-    }
+    bool isBackground() const 
+    { return background; }
+    
+    void mapRelativeToSize(const QSize &size,
+                           float &llx,float &lly,float &urx,float &ury);
 
-    int rtti () const { return RTTI; }
-    static const int RTTI;
+    void setRelativeToSize(const QSize &size,
+                           float llx,float lly,float urx,float ury);
+
 protected:
-    QString id;
-    QvisViewportWidget *viewportWidget;
+    
+    void updateText(); 
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
-    // Override shape drawing so we can draw text in the viewport.
-    void drawShape(QPainter &painter)
-    {
-        QString name(id);
+    QString                  id;
+    bool                     background;
+    QvisViewportWidget      *view;
+    QGraphicsSimpleTextItem *textItem;
+    int                      resizeMode;
+    QPointF                  prevPos;
+    QRectF                   prevRect;
 
-        // If the string is too wide for the box then use just the number.
-        int W = rect().width();
-        W = (W < 0) ? -W : W;
-        if(viewportWidget->fontMetrics().boundingRect(name).width() > W)
-        {
-            // See if we can shorten the name.
-            QString number;
-            QString numbers("0123456789");
-            int i = name.length()-1;
-            while(i >= 0 && numbers.contains(name[i]))
-            {
-                number = name.mid(i,1) + number;
-                --i;
-            }
-            if(!number.isNull())
-                name = number;
-        }
-
-        if(isActive())
-        {
-            QBrush newBrush(Qt::SolidPattern);
-            newBrush.setColor(viewportWidget->colorGroup().highlight());
-            painter.setBrush(newBrush);
-            QCanvasRectangle::drawShape(painter);
-
-            painter.setPen(viewportWidget->colorGroup().highlightedText());
-            painter.drawText(rect(),
-                             Qt::AlignHCenter | Qt::AlignVCenter,
-                             name);
-            painter.setPen(pen());
-        }
-        else
-        {
-            QCanvasRectangle::drawShape(painter);
-
-            painter.drawText(rect(),
-                             Qt::AlignHCenter | Qt::AlignVCenter,
-                             name);
-        }
-    }
 };
 
-const int QCanvasViewport::RTTI = 123456789;
 
+// ****************************************************************************
+// Method: QViewportItem::QViewportItem
+//
+// Purpose:
+//    Constructs a Viewport Graphics Item.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+QViewportItem ::QViewportItem(const QString &id, 
+                              float llx, float lly,
+                              float urx, float ury,
+                              QvisViewportWidget *view) 
+: QGraphicsRectItem(), id(id), background(false), view(view), resizeMode(0)
+{
+    QBrush brush(Qt::SolidPattern);
+    brush.setColor(QColor(0,255,255));
+    setBrush(brush);
+    textItem = new QGraphicsSimpleTextItem(id,this);
+    setFlag(QGraphicsItem::ItemIsMovable, true);
+    setFlag(QGraphicsItem::ItemIsSelectable,true);
+    setAcceptHoverEvents(true);
+    if(llx == 0.0 && lly == 0.0 && urx == 1.0 && ury == 1.0)
+    {
+        background = true;
+        setZValue(-1e32);
+    }
+    setRelativeToSize(view->size(),llx,lly,urx,ury);
+}
+
+// ****************************************************************************
+// Method: QViewportItem::~QViewportItem
+//
+// Purpose:
+//    Destructs a Viewport Graphics Item.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QViewportItem::~QViewportItem()
+{}
+
+// ****************************************************************************
+// Method: QViewportItem::mapRelativeToSize
+//
+// Purpose:
+//    Gets the viewport item's size relative to input size.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************        
+
+void 
+QViewportItem::mapRelativeToSize(const QSize &size,
+                                 float &llx,float &lly,float &urx,float &ury)
+{
+    // get relative size to input
+    float w = size.width();
+    float h = size.height();
+
+    llx = pos().x() / w;
+    urx = llx + rect().width() / w;
+    ury = (h - pos().y()) / h;
+    lly = ury - rect().height() / h;
+}
+
+// ****************************************************************************
+// Method: QViewportItem::setRelativeToSize
+//
+// Purpose:
+//    Sets the viewport item's size with relative values to a given size.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************        
+
+void 
+QViewportItem::setRelativeToSize(const QSize &size,
+                                 float llx,float lly,float urx,float ury)
+{
+    // set relative to input
+    float w = size.width();
+    float h = size.height();
+        
+    float rel_w = urx - llx;
+    float rel_h = ury - lly;
+
+    setRect(0.0,0.0,rel_w * w,rel_h * h);
+    setPos(llx* w, (1- ury) * h);
+    updateText();
+}
+
+// ****************************************************************************
+// Method: QViewportItem::setRelativeToSize
+//
+// Purpose:
+//    Updates the viewport's name text based on the viewport item's size.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************        
+
+void
+QViewportItem::updateText()
+{
+    QFontMetricsF fmet(textItem->font());
+    float txt_w = fmet.width(id);
+    float txt_h = fmet.height();
+    if(txt_w > rect().width())
+    {
+        // See if we can shorten the name.
+        QString name(id);
+        QString number;
+        QString numbers("0123456789");
+        int i = name.length()-1;
+        while(i >= 0 && numbers.contains(name[i]))
+        {
+            number = name.mid(i,1) + number;
+            --i;
+        }
+        
+        if(!number.isNull())
+            name = number;
+
+        textItem->setText(name);
+        txt_w = fmet.width(name);
+    }
+    else
+    {
+        textItem->setText(id);
+    }
+
+    textItem->setPos(rect().width()/2.0- txt_w/2,
+                     rect().height()/2.0- txt_h/2);
+}    
+
+// ****************************************************************************
+// Method: QViewportItem::hoverLeaveEvent
+//
+// Purpose:
+//    Called when the mouse leaves this item, resets the resize mode
+//    and cursor.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************        
+
+void 
+QViewportItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    view->setCursor(QCursor(Qt::ArrowCursor));
+    resizeMode = 0;
+}
+   
+// ****************************************************************************
+// Method: QViewportItem::hoverMoveEvent
+//
+// Purpose:
+//    Called when the mouse hovers over this item, sets the resize mode
+//    and cursor.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************        
+ 
+void
+QViewportItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+{
+    float x = event->pos().x();
+    float y = event->pos().y();
+    float w = rect().width();
+    float h = rect().height();
+       
+    float dx = 3;
+        
+    resizeMode = 0;
+    
+    if( x - dx <= 0)
+    {
+        if( y - dx <=0)      // upper left corner
+            resizeMode = 8;
+        else if(y + dx >= h) // lower left corner
+            resizeMode = 2;
+        else                 // move left
+            resizeMode = 1;
+    }
+    else if( x + dx >=w )
+    {
+        if( y - dx <=0)      // upper right corner
+            resizeMode = 6;
+        else if(y + dx >= h) // lower right corner
+            resizeMode = 4;
+        else                 // move right
+            resizeMode = 5;
+    }
+    else if( y + dx >=h)     // move bottom
+        resizeMode = 3;
+    else if( y - dx <=0)     // move top
+        resizeMode = 7;
+      
+    if(resizeMode == 1 or resizeMode == 5)       // left & right
+        view->setCursor(QCursor(Qt::SizeHorCursor));
+    else if(resizeMode == 2 or resizeMode == 6)  // bottom left & upper right
+        view->setCursor(QCursor(Qt::SizeBDiagCursor));
+    else if(resizeMode == 3 or resizeMode == 7) // top & bottom
+        view->setCursor(QCursor(Qt::SizeVerCursor));
+    else if(resizeMode == 4 or resizeMode == 8) // bottom right & upper left
+        view->setCursor(QCursor(Qt::SizeFDiagCursor));
+    else // no resize
+        view->setCursor(QCursor(Qt::ArrowCursor));
+ }
+
+// ****************************************************************************
+// Method: QViewportItem::mousePressEvent
+//
+// Purpose:
+//    Handles selection (left button) and deletion (right button) mouse actions.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************        
+
+void
+QViewportItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    // select this viewport if left button is clicked
+    // and it is not a background viewport
+    if(event->button() == Qt::LeftButton && !isBackground())
+    {
+        prevPos  = pos();
+        prevRect = rect();
+        setSelected(true);
+    }
+    else if(event->button() == Qt::RightButton)
+    {   
+        // delete this viewport if the right button is cliced
+        view->removeViewport(id);
+    }
+    else
+    {
+        resizeMode =0;
+        QGraphicsRectItem::mousePressEvent(event);
+    }
+}
+
+// ****************************************************************************
+// Method: QViewportItem::mousePressEvent
+//
+// Purpose:
+//    Handles moving and resizing of a viewport item.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 08:22:57 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************        
+
+void
+QViewportItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    // only move if the viewport is selected
+    if(!isSelected())
+        return;
+
+    // if we are simply moving the viewport, use
+    // the base class mouse move event
+    if(resizeMode == 0)
+    {
+        QGraphicsRectItem::mouseMoveEvent(event);
+        view->viewportUpdated(this);
+        return;
+    }
+        
+    // move according to resize mode
+    QPointF down = event->buttonDownScenePos(Qt::LeftButton);
+    QPointF last = event->lastScenePos();
+        
+    float dx = down.x() - last.x();
+    float dy = down.y() - last.y();
+        
+    float nx = prevPos.x();
+    float ny = prevPos.y();
+    float nw = prevRect.width();
+    float nh = prevRect.height();
+        
+    switch(resizeMode)
+    {
+        case 1:
+            // move left -dx
+            nx -= dx;
+            nw += dx;
+            break;
+        case 2:
+            // move bottom left
+            nx -= dx;
+            nw += dx;
+            nh -= dy;
+            break;
+        case 3:
+            // move bottom -dy
+            nh -=dy;
+            break;
+        case 4:
+            // move bottom right
+            nw -= dx;
+            nh -= dy;
+            break;
+         case 5:
+            // move right dx
+            nw -= dx;
+            break;
+        case 6:
+            // move top right
+            ny -= dy;
+            nw -= dx;
+            nh += dy;
+            break;
+        case 7:
+            // move top dy
+            ny -= dy;
+            nh += dy;
+            break;
+        case 8:
+            // move top left
+            nx -= dx;
+            ny -= dy;
+            nw += dx;
+            nh += dy;
+            break;
+    };
+        
+    if(nw < 0)
+    {
+        nx += nw;
+        nw = -1 * nw;
+    }
+    
+    if(nh < 0)
+    {
+        ny += nh;
+        nh = -1 * nh;
+    }
+        
+    setPos(nx,ny);
+    setRect(0,0,nw,nh);
+    updateText();
+        
+    // signal change
+    view->viewportUpdated(this);
+}
 
 // ****************************************************************************
 // Method: QvisViewportWidget::QvisViewportWidget
@@ -134,39 +488,28 @@ const int QCanvasViewport::RTTI = 123456789;
 //   Constructor
 //
 // Arguments:
-//   _aspect : A floating point number (height/width) that describes the shape
-//             of the viewport.
 //   minw    : The minimum widget width.
 //   minh    : The minimum widget height.
 //   parent  : The parent for the widget.
-//   name    : The name of the widget.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 14:16:21 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
-QvisViewportWidget::QvisViewportWidget(double _aspect, int minw, int minh, 
-    QWidget *parent, const char *name) : QWidget(parent,name, 
-    Qt::WRepaintNoErase|Qt::WResizeNoErase), viewportMap(), moving_start()
+QvisViewportWidget::QvisViewportWidget(double aspect,
+                                       int minw, int minh,
+                                       QWidget *parent)
+: QGraphicsView(parent), aspect(aspect), minW(minw), minH(minh), 
+  prevSelected(""), 
+  dragViewportOutline(false), 
+  viewportOutline(0), 
+  dragMouseStart(QPointF(0.0,0.0))
 {
-    minW = minw;
-    minH = minh;
-    aspect = _aspect; // height / width
-
-    init();
-}
-
-QvisViewportWidget::QvisViewportWidget(QWidget *parent, const char *name) :
-    QWidget(parent,name, Qt::WRepaintNoErase|Qt::WResizeNoErase), 
-    viewportMap(), moving_start()
-{
-    minW = 200;
-    minH = 200;
-    aspect = 1.; // height / width
-
     init();
 }
 
@@ -180,24 +523,20 @@ QvisViewportWidget::QvisViewportWidget(QWidget *parent, const char *name) :
 // Creation:   Fri Sep 29 14:18:03 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
 void
 QvisViewportWidget::init()
 {
-    item = 0;
-    createitem = 0;
-    mouseDown = false;
-    canvas = 0;
-    doContinuousUpdates = false;
-    shiftApplied = false;
-    zValue = 0.;
-
+    zValue = 0.0;
     // Set a min size.
     setMinimumSize(minW, minH);
+    prevSize = size();
 
-    // Create a canvas with the right aspect ratio that will fit in the widget.
+    // Create a scene with the right aspect ratio that will fit in the widget.
     int w = minW - 20;
     int h = int(aspect * w);
     if(h > minH)
@@ -205,16 +544,19 @@ QvisViewportWidget::init()
         h = minH - 20;
         w  = int(h / aspect);
     }
-    canvas = new QCanvas(w, h);
-    canvas->setBackgroundColor(QColor(255,255,255));
-
-    // Turn on mouse tracking.
-    cursorResizeMode = -1;
+    
+    scene = new QGraphicsScene(this);
+    scene->setBackgroundBrush(Qt::white);
+    setScene(scene);
+    scene->setSceneRect(0.0,0.0,size().width()-1,size().height()-1);
     setMouseTracking(true);
 
     // Set the focus policy to StrongFocus. This means that the widget will
     // accept focus by tabbing and clicking.
-    setFocusPolicy(StrongFocus);
+    setFocusPolicy(Qt::StrongFocus);
+    
+    connect(scene,SIGNAL(selectionChanged()),
+            this,SLOT(onSceneSelectionChanged()));
 }
 
 // ****************************************************************************
@@ -227,12 +569,17 @@ QvisViewportWidget::init()
 // Creation:   Fri Sep 29 14:18:25 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
 QvisViewportWidget::~QvisViewportWidget()
 {
-    delete canvas;
+    disconnect(scene,SIGNAL(selectionChanged()),
+            this,SLOT(onSceneSelectionChanged()));
+
+    delete scene;
 }
 
 // ****************************************************************************
@@ -273,32 +620,35 @@ QvisViewportWidget::sizePolicy() const
     return QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
+
 // ****************************************************************************
-// Method: QvisViewportWidget::setContinuousUpdates
+// Method: QvisViewportWidget::resizeEvent
 //
 // Purpose: 
-//   Sets whether signals will be emitted when moving or resizing viewports.
+//   Handle resize and make sure proper viewport aspects are retained.
 //
-// Arguments:
-//   val : The new update flag.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 14:19:33 PST 2006
+// Programmer: Cyrus Harrison
+// Creation:   Fri Nov  7 15:42:13 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
-
-void
-QvisViewportWidget::setContinuousUpdates(bool val)
+void 
+QvisViewportWidget::resizeEvent(QResizeEvent *event)
 {
-    doContinuousUpdates = val;
-}
-
-bool
-QvisViewportWidget::continuousUpdates() const
-{
-    return doContinuousUpdates;
+    float llx,lly,urx,ury;
+    scene->setSceneRect(0,0,event->size().width()-1,event->size().height()-1);
+    QGraphicsView::resizeEvent(event);
+    QMapIterator<QString,QViewportItem*> itr(items);
+    while(itr.hasNext())
+    {
+        itr.next();
+        // get old relative rect
+        itr.value()->mapRelativeToSize(prevSize,llx,lly,urx,ury);
+        // set to new size
+        itr.value()->setRelativeToSize(event->size(),llx,lly,urx,ury);
+    }
+    prevSize = event->size();
 }
 
 // ****************************************************************************
@@ -307,36 +657,41 @@ QvisViewportWidget::continuousUpdates() const
 // Purpose: 
 //   Removes all of the viewports.
 //
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 14:20:07 PST 2006
 //
 // Modifications:
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
 //   
 // ****************************************************************************
 
 void
 QvisViewportWidget::clear()
 {
-    QCanvasItemViewportInfoMap::Iterator it = viewportMap.begin();
-    for(; it != viewportMap.end(); ++it)
+    disconnect(scene,SIGNAL(selectionChanged()),
+            this,SLOT(onSceneSelectionChanged()));
+
+    QStringList ids;
+    QMapIterator<QString, QViewportItem*> itr(items);
+    while(itr.hasNext())
     {
-        //qDebug("viewportRemoved(%d);", it.data().id);
-        QString id = it.data().id;
-
-        //qDebug("deleting 0x%08p\n", it.key());
-        delete it.key();
-
-        emit viewportRemoved(id);
+        itr.next();
+        QString id = itr.key();
+        ids.append(itr.key());
+        delete itr.value();
     }
-    viewportMap.clear();
-    zValue = 0.;
-    update();
+    items.clear();
+    zValue = 0.0;
+
+    connect(scene,SIGNAL(selectionChanged()),
+            this,SLOT(onSceneSelectionChanged()));
+    
+    for(int i = 0; i < ids.size(); ++i)
+    {
+        emit viewportRemoved(ids[i]);
+    }
 }
 
 // ****************************************************************************
@@ -351,36 +706,41 @@ QvisViewportWidget::clear()
 // Creation:   Fri Sep 29 14:20:35 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
 int
 QvisViewportWidget::getNumberOfViewports() const
 {
-    return viewportMap.count();
+    return items.count();
 }
 
 // ****************************************************************************
 // Method: QvisViewportWidget::getActiveViewportId
 //
 // Purpose: 
-//   Returns the id of the active viewport or -1.
+//   Returns the id of the active viewport or empty string.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 15:11:57 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
 QString
 QvisViewportWidget::getActiveViewportId() const
 {
-    QCanvasItemViewportInfoMap::ConstIterator it = viewportMap.begin();
-    for(; it != viewportMap.end(); ++it)
+    QMapIterator<QString, QViewportItem*> itr(items);
+    while(itr.hasNext())
     {
-        if(it.key()->isActive())
-            return it.data().id;
+        itr.next();
+        if(itr.value()->isSelected())
+            return itr.key();
     }
     return QString();
 }
@@ -398,7 +758,9 @@ QvisViewportWidget::getActiveViewportId() const
 // Creation:   Fri Sep 29 15:10:21 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
 void
@@ -406,16 +768,13 @@ QvisViewportWidget::setActiveViewport(const QString &id)
 {
     if(id != getActiveViewportId())
     {
-        QCanvasItemViewportInfoMap::ConstIterator it = viewportMap.begin();
-        for(; it != viewportMap.end(); ++it)
+        QMapIterator<QString, QViewportItem*> itr(items);
+        while(itr.hasNext())
         {
-            if(it.data().id == id)
+            itr.next();
+            if(itr.key() == id)
             {
-                activateItem(it.key());
-                update();
-
-                //qDebug("activateViewport(%d);", id);
-                emit viewportActivated(id);
+                activateItem(itr.value());
                 break;
             }
         }
@@ -440,31 +799,60 @@ QvisViewportWidget::setActiveViewport(const QString &id)
 // Creation:   Fri Sep 29 14:23:16 PST 2006
 //
 // Modifications:
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
 //   
 // ****************************************************************************
 
 bool
 QvisViewportWidget::getViewport(const QString &id, 
-    float &llx, float &lly, float &urx, float &ury) const
+                                float &llx, float &lly,
+                                float &urx, float &ury) const
 {
     bool retval = false;
-    QCanvasItemViewportInfoMap::ConstIterator it = viewportMap.begin();
-    for(; it != viewportMap.end(); ++it)
+    
+    QMapIterator<QString, QViewportItem*> itr(items);
+    while(itr.hasNext())
     {
-        if(it.data().id == id)
+        itr.next();
+        if(itr.key() == id)
         {
-            llx = it.data().lower_left[0];
-            lly = it.data().lower_left[1];
-            urx = it.data().upper_right[0];
-            ury = it.data().upper_right[1];
-
+            itr.value()->mapRelativeToSize(size(),llx,lly,urx,ury);
             retval = true;
             break;
         }
     }
-
     return retval;
 }
+
+
+// ****************************************************************************
+// Method: QvisViewportWidget::viewportUpdated
+//
+// Purpose: 
+//   Used by Viewport Items to signal an update.
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Nov  5 13:51:03 PST 2008
+//
+// Modifications:
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
+// ****************************************************************************
+
+void
+QvisViewportWidget::viewportUpdated(QViewportItem *item)
+{
+    // get values for selected viewport and emit viewportChanged signal
+    float llx,lly,urx,ury;
+    
+    getRelativeSize(item,llx,lly,urx,ury);
+    
+    emit viewportChanged(item->getId(),llx,lly,urx,ury);
+}
+
 
 // ****************************************************************************
 // Method: QvisViewportWidget::getNextId
@@ -481,6 +869,9 @@ QvisViewportWidget::getViewport(const QString &id,
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
 QString
@@ -496,10 +887,11 @@ QvisViewportWidget::getNextId() const
         id = tr("Viewport") + id;
 
         found = false;
-        QCanvasItemViewportInfoMap::ConstIterator it = viewportMap.begin();
-        for(; it != viewportMap.end(); ++it)
+        QMapIterator<QString, QViewportItem*> itr(items);
+        while(itr.hasNext())
         {
-            if(it.data().id == id)
+            itr.next();
+            if(itr.key() == id)
             {
                 ++index;
                 found = true;
@@ -517,78 +909,59 @@ QvisViewportWidget::getNextId() const
 // Purpose: 
 //   Adds a new viewport and returns its id.
 //
-// Arguments:
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 29 14:24:23 PST 2006
 //
-// Returns:    
+// Modifications:
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
 //
-// Note:       
+// ****************************************************************************
+
+QString
+QvisViewportWidget::addViewport(float llx, float lly, 
+                                float urx, float ury)
+{
+    return addViewport(getNextId(), llx, lly, urx, ury);
+}
+
+// ****************************************************************************
+// Method: QvisViewportWidget::addViewport
+//
+// Purpose: 
+//   Adds named viewport and returns its name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 14:24:23 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
-
-QString
-QvisViewportWidget::addViewport(float llx, float lly, float urx, float ury)
-{
-    return addViewport(getNextId(), llx, lly, urx, ury);
-}
-
 QString
 QvisViewportWidget::addViewport(const QString &id, 
     float llx, float lly, float urx, float ury)
 {
-    int rx = int(llx * canvas->width());
-    int ry = int((1. - ury) * canvas->height());
-    int w = int((urx - llx) * canvas->width());
-    int h = int((ury - lly) * canvas->height());
-
     // See if the id is already in use. If it is then get a new id.
-    QString newid(id);
-    QCanvasItemViewportInfoMap::ConstIterator it = viewportMap.begin();
-    for(; it != viewportMap.end(); ++it)
-    {
-        if(it.data().id == newid)
-        {
-            newid = getNextId();
-            break;
-        }
-    }
+    QString the_id = id;
 
-    // Create a new canvas object for the new viewport.
-    QCanvasViewport *v = new QCanvasViewport(this, id, rx, ry, w, h, canvas);
-    QBrush brush(Qt::SolidPattern);
-    brush.setColor(QColor(0,255,255));
-    v->setBrush(brush);
-    v->setZ(zValue);
-    v->show();
+    if(items.contains(the_id))
+        the_id = getNextId();
+    
+    // create new viewport
+    QViewportItem *item = new QViewportItem(the_id,llx,lly,urx,ury,this);
+    item->setZValue(zValue);
+    scene->addItem(item);
+    zValue +=1.0;
+    
+    items[the_id] = item;
 
-    zValue = zValue + 1.;
-
-    // Add a new item to the viewport map.
-    ViewportInfo info;
-    info.lower_left[0] = llx;
-    info.lower_left[1] = lly;
-    info.upper_right[0] = urx;
-    info.upper_right[1] = ury;
-    info.id = id;
-    viewportMap[v] = info;
-
+    emit viewportAdded(the_id, llx, lly, urx, ury);
     // Make sure that the new item gets activated.
-    activateItem(v);
+    activateItem(item);
 
-    // update the widget.
-    update();
-
-    //qDebug("viewportAdded(%d, %g, %g, %g, %g);", info.id, llx, lly, urx, ury);
-    emit viewportAdded(info.id, llx, lly, urx, ury);
-
-    //qDebug("activateViewport(%d);", info.id);
-    emit viewportActivated(info.id);
-
-    return info.id;
+    return the_id;
 }
 
 // ****************************************************************************
@@ -597,56 +970,38 @@ QvisViewportWidget::addViewport(const QString &id,
 // Purpose: 
 //   Removes the id'th viewport.
 //
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 14:24:43 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
 void
 QvisViewportWidget::removeViewport(const QString &id)
 {
-    QCanvasItemViewportInfoMap::Iterator it = viewportMap.begin();
-    for(; it != viewportMap.end(); ++it)
+    QMapIterator<QString, QViewportItem*> itr(items);
+    
+    if(items.contains(id))
     {
-        if(it.data().id == id)
-        {
-            delete it.key();
-            viewportMap.erase(it);
-
-            // Make the first item active.
-            QString newId;
-            it = viewportMap.begin();
-            if(it != viewportMap.end())
-            {
-                activateItem(it.key());
-                newId = it.data().id;
-            }
-
-            // update the widget.
-            update();
-
-            //qDebug("viewportRemoved(%d);", id);
-            emit viewportRemoved(id);
-
-            // Tell clients that a new viewport is active.
-            if(!newId.isNull())
-                emit viewportActivated(newId);
-
-            break;
-        }
+        QViewportItem *item = items[id];
+        items.remove(id);
+        // note the id could actually be a const ref to the name inside
+        // the item, so make sure to use it BEFORE deleting the item.
+        emit viewportRemoved(id);
+        delete item;
+       
+        //if we still have viewports left, activate the first one
+        if(!items.isEmpty())
+            activateItem(items.values()[0]);
     }
 }
 
 // ****************************************************************************
-// Method: QvisViewportWidget::sendBackgroundToBack
+// Method: QvisViewportWidget::getRelativeSize
 //
 // Purpose: 
 //   Sends any viewports shaped like the background to the back so we can
@@ -659,115 +1014,12 @@ QvisViewportWidget::removeViewport(const QString &id)
 //   
 // ****************************************************************************
 
-void
-QvisViewportWidget::sendBackgroundToBack()
+void QvisViewportWidget::getRelativeSize(QViewportItem *item,
+                                         float &llx, float &lly,
+                                         float &urx, float &ury)
 {
-    bool needUpdate = false;
-    QCanvasItemViewportInfoMap::Iterator it = viewportMap.begin();
-    for(; it != viewportMap.end(); ++it)
-    {
-        if(it.data().lower_left[0] == 0. &&
-           it.data().lower_left[1] == 0. &&
-           it.data().upper_right[0] == 1. &&
-           it.data().upper_right[1] == 1.)
-        {
-            sendToBack(it.key());
-            needUpdate = true;
-        }
-    }
-
-    if(needUpdate)
-        update();
-}
-
-// ****************************************************************************
-// Method: QvisViewportWidget::paintEvent
-//
-// Purpose: 
-//   Handles paint events.
-//
-// Arguments:
-//   pe : The paint event.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 14:25:05 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisViewportWidget::paintEvent(QPaintEvent *e)
-{
-    // Iterate through the objects and move and scale them.
-    QPainter paint(this);
-
-    // Figure out the matrix needed to make the canvas draw in the center
-    // of the widget.
-    QWMatrix m;
-    QPoint co(canvasOrigin());
-    m.translate(co.x(), co.y());
-    paint.setWorldMatrix(m, false);
-
-    // Draw the canvas.
-    canvas->drawArea(canvas->rect(), &paint, true);
-}
-
-// ****************************************************************************
-// Method: QvisViewportWidget::canvasOrigin
-//
-// Purpose: 
-//   Returns the origin of the canvas within the widget.
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 14:25:25 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-QPoint
-QvisViewportWidget::canvasOrigin() const
-{
-    int tx = int((width() - canvas->width()) / 2);
-    int ty = int((height() - canvas->height()) / 2);
-    return QPoint(tx, ty);
-}
-
-// ****************************************************************************
-// Method: QvisViewportWidget::findViewportId
-//
-// Purpose: 
-//   Finds the viewport
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 14:25:45 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-QString
-QvisViewportWidget::findViewportId(QCanvasItem *val) const
-{
-    QString ret;
-    QCanvasItemViewportInfoMap::ConstIterator it = viewportMap.find(val);
-    if(it != viewportMap.end())
-        ret = it.data().id;
- 
-    return ret;
+    QSize curr_size = QSize((int)scene->width(),(int)scene->height());
+    item->mapRelativeToSize(curr_size,llx,lly,urx,ury);
 }
 
 // ****************************************************************************
@@ -776,189 +1028,32 @@ QvisViewportWidget::findViewportId(QCanvasItem *val) const
 // Purpose: 
 //   Activates the specified viewport.
 //
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
-//
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 14:26:51 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Fri Nov  7 15:42:13 PST 2008
+//   Qt4 Refactor.
+//
 // ****************************************************************************
 
 void
-QvisViewportWidget::activateItem(QCanvasItem *obj)
+QvisViewportWidget::activateItem(QViewportItem *obj)
 {
-    if(obj != 0)
-    {
-        // Turn off all other items.
-        QCanvasItemList l=canvas->allItems();
-        for (QCanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it)
-            (*it)->setActive(false);
-
-        obj->setActive(true);
-    }
-}
-
-// ****************************************************************************
-// Method: QvisViewportWidget::setAspect
-//
-// Purpose: 
-//   Sets the aspect of the canvas used to show the viewports.
-//
-// Arguments:
-//   newAspect : The aspect ratio used to show the canvas.
-//
-// Returns:    
-//
-// Note:       Aspect is height / width.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 2 11:26:20 PDT 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisViewportWidget::setAspect(double newAspect)
-{
-    if(aspect == newAspect)
+    if(obj == NULL)
         return;
-
-    aspect = newAspect;
-
-    // Save the values from the old map and clear it out, deleting its
-    // viewport objects.
-    QCanvasItemViewportInfoMap oldMap(viewportMap);
-    QCanvasItemViewportInfoMap::Iterator it = viewportMap.begin();
-    QString activeId;
-    for(; it != viewportMap.end(); ++it)
+        
+    QMapIterator<QString, QViewportItem*> itr(items);
+    while(itr.hasNext())
     {
-        if(it.key()->isActive())
-            activeId = it.data().id;
-        delete it.key();
+        itr.next();
+        itr.value()->setSelected(false);
     }
-    viewportMap.clear();
-
-    // Create a new canvas
-    delete canvas;
-    int w = width() - 20;
-    int h = int(aspect * w);
-    if(h > height())
-    {
-        h = height() - 20;
-        w  = int(h / aspect);
-    }
-    canvas = new QCanvas(w, h);
-    canvas->setBackgroundColor(QColor(255,255,255));
-
-    // Now, add new viewports to the canvas.
-    setUpdatesEnabled(false);
-    blockSignals(true);
-    for(it = oldMap.begin(); it != oldMap.end(); ++it)
-    {
-        addViewport(it.data().id,
-            it.data().lower_left[0],
-            it.data().lower_left[1],
-            it.data().upper_right[0],
-            it.data().upper_right[1]);
-    }
-    for(it = viewportMap.begin(); it != viewportMap.end(); ++it)
-    {
-        if(it.data().id == activeId)
-        {
-            activateItem(it.key());
-            break;
-        }
-    }
-    blockSignals(false);
-    setUpdatesEnabled(true);
-
-    update();    
+    if(!obj->isBackground())
+        obj->setSelected(true);
+    emit viewportActivated(obj->getId());
 }
 
-// ****************************************************************************
-// Method: QvisViewportWidget::sendToBack
-//
-// Purpose: 
-//   Sends the specified viewport to the back
-//
-// Arguments:
-//   obj : The viewport canvas item.
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 2 11:53:31 PDT 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisViewportWidget::sendToBack(QCanvasItem *obj)
-{
-    double minZ = 1.e10;
-    QCanvasItemViewportInfoMap::ConstIterator q = viewportMap.begin();
-    for(; q != viewportMap.end(); ++q)
-    {
-        if(q.key()->z() < minZ)
-            minZ = q.key()->z();
-    }
-    if(obj->z() > minZ)
-    {
-        for(q = viewportMap.begin(); q != viewportMap.end(); ++q)
-        {
-            q.key()->setZ(q.key()->z() + 1.);
-        }
-        obj->setZ(minZ);
-        //qDebug("Lowering");
-    }
-}
-
-// ****************************************************************************
-// Method: QvisViewportWidget::bringToFront
-//
-// Purpose: 
-//   Brings the specified viewport to the front.
-//
-// Arguments:
-//   obj : The viewport canvas item.
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 2 11:53:00 PDT 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisViewportWidget::bringToFront(QCanvasItem *obj)
-{
-    // Raise the item. We have to give it the
-    // highest z value to do so. That means we need to search
-    // canvas items and give this item the highest z value.
-    double maxZ = -1.e10;
-    QCanvasItemViewportInfoMap::ConstIterator q = viewportMap.begin();
-    for(; q != viewportMap.end(); ++q)
-    {
-        if(q.key()->z() > maxZ)
-            maxZ = q.key()->z();
-    }
-    // Set the new max Z.
-    maxZ = maxZ + 1.;
-    obj->setZ(maxZ);
-}
 
 // ****************************************************************************
 // Method: QvisViewportWidget::mousePressEvent
@@ -973,263 +1068,51 @@ QvisViewportWidget::bringToFront(QCanvasItem *obj)
 // Creation:   Fri Sep 29 14:27:11 PST 2006
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Fri Nov  7 10:36:14 PST 2008
+//    Qt4 Refactor.
+//
 // ****************************************************************************
 
 void
 QvisViewportWidget::mousePressEvent(QMouseEvent* e)
 {
-    if((e->button() & QMouseEvent::LeftButton) != 0)
+    // deselect all viewports!
+    QMapIterator<QString,QViewportItem*> itr(items);
+    while(itr.hasNext())
     {
-        //qDebug("press left button");
-        mouseDown = true;
+        itr.next();
+        itr.value()->setSelected(false);
     }
-    else if((e->button() & QMouseEvent::MidButton) != 0)
+    
+    // w/ right click delete, this could actually 
+    // remove an item, so make sure not to use "itr"
+    // after this
+    QGraphicsView::mousePressEvent(e);
+    
+    // if no viewports or the "background viewport" is selected, start 
+    // drawing of rubber band region for new viewport
+    
+    bool selected = false;
+    
+    QMapIterator<QString,QViewportItem*> itr2(items);
+    while(itr2.hasNext() && ! selected)
     {
-        //qDebug("press middle button");
-    }
-    else if((e->button() & QMouseEvent::RightButton) != 0)
-    {
-        //qDebug("press right button");
-    }
-    else
-    {
-        //qDebug("no button");
-        item = 0;
-        mouseDown = false;
-        return;
-    }
-
-    // Get the coordinate of the point in the canvas.
-    QPoint p(e->pos() - canvasOrigin());
-    //QPoint p(e->pos());
-
-    // If we have no cursor resize mode then look for the item under
-    // the cursor.
-    if(cursorResizeMode == -1)
-    {
-        QCanvasItemList l=canvas->collisions(p);
-        for (QCanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it)
+        itr2.next();
+        QViewportItem *item = itr2.value();
+        if(item->isSelected())
         {
-            bool returnOkay = true;
-
-            if((e->button() & Qt::LeftButton) != 0)
-            {
-                // See if the viewport that we clicked on is the background.
-                bool backgroundViewport = false;
-                QCanvasItemViewportInfoMap::ConstIterator obj;
-                if((obj = viewportMap.find(*it)) != viewportMap.end())
-                {
-                    backgroundViewport = obj.data().lower_left[0] == 0. &&
-                        obj.data().lower_left[1] == 0. &&
-                        obj.data().upper_right[0] == 1. &&
-                        obj.data().upper_right[1] == 1.;
-                }
-              
-                // If it is not the background viewport then remember it
-                // so we can move it.
-                if(!backgroundViewport)
-                {
-                    item = *it;
-                    moving_start = p;
-                }
-                else
-                {
-                    // Send the viewport to the back since it's the 
-                    // background.
-                    sendToBack(*it);
-                    item = 0;
-
-                    // This lets us draw new viewports on top of the
-                    // background viewport.
-                    returnOkay = false;
-                }
-
-                // Make sure that the item gets activated.
-                activateItem(*it);
-
-                // Redraw the widget
-                update();
-
-                QString id = findViewportId(*it);
-                if(!id.isNull())
-                {
-                    //qDebug("activateViewport(%d);", id);
-                    emit viewportActivated(id);
-                }
-            }
-            else if((e->button() & Qt::MidButton) != 0)
-            {
-                item = 0;
-
-                if((e->state() & Qt::ShiftButton) != 0)
-                {
-                    // Send to back.
-                    sendToBack(*it);
-                }
-                else
-                {
-                    // Raise the item that we clicked on.
-                    bringToFront(*it);
-                }
-
-                // Make sure that the item gets activated.
-                activateItem(*it);
-
-                // Redraw the widget
-                update();
-
-                QString id = findViewportId(*it);
-                if(!id.isNull())
-                {
-                    //qDebug("activateViewport(%d);", id);
-                    emit viewportActivated(id);
-                }
-            }
-            else if((e->button() & Qt::RightButton) != 0)
-            {
-                removeViewport(findViewportId(*it));
-                item = 0;
-            }
-
-            if(returnOkay)
-                return;
-        }
-
-        // We did not click on any existing viewport so create a new one.
-        item = 0;
-        if((e->button() & QMouseEvent::LeftButton) != 0)
-        {
-            createitem = new QCanvasRectangle(p.x(), p.y(), 2, 2, canvas);
-            createitem->setZ(zValue);
-            zValue = zValue + 1;
-            createitem->show();
-            bringToFront(createitem);
-
-            setCursor(QCursor(Qt::ArrowCursor));
-
-            moving_start = p;
-            cursorResizeMode = 2;
-
-            // Show the new viewport.
-            update();
+            if(item->isBackground())
+                item->setSelected(false);
+            else
+                selected = true;
         }
     }
-    else
+    
+    if(e->button() == Qt::LeftButton && !selected)
     {
-        moving_start = p;
-
-        // We're doing the initial button press for a resize operation.
-        // Make sure that we make the viewport active.
-        QString id = findViewportId(item);
-        if(!id.isNull())
-        {
-            activateItem(item); 
-
-            // Redraw the widget
-            update();
-
-            //qDebug("activateViewport(%d);", id);
-            emit viewportActivated(id);
-        }
+        dragViewportOutline = true;
+        dragMouseStart = e->posF();
     }
-}
-
-#define MIN_VAL(A, B) ((A < B) ? A : B)
-#define MAX_VAL(A, B) ((A > B) ? A : B)
-
-void
-QRectToViewportCoords(QCanvas *canvas, const QRect &r,
-    float &llx, float &lly, float &urx, float &ury)
-{
-    int x0 = r.x();
-    int y0 = r.y();
-    int x1 = x0 + r.width();
-    int y1 = y0 + r.height();
-
-    float fx0 = float(x0) / float(canvas->width());
-    float fy0 = float(y0) / float(canvas->height());
-
-    float fx1 = float(x1) / float(canvas->width());
-    float fy1 = float(y1) / float(canvas->height());
-
-    float miny  = MIN_VAL(fy0, fy1);
-    float maxy = MAX_VAL(fy0, fy1);
-
-    llx = MIN_VAL(fx0, fx1);
-    lly = 1. - maxy;
-    urx = MAX_VAL(fx0, fx1);
-    ury = 1. - miny;
-}
-
-// ****************************************************************************
-// Method: QvisViewportWidget::mouseReleaseEvent
-//
-// Purpose: 
-//   Handles mouse release events.
-//
-// Arguments:
-//   e : The mouse event.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 14:27:11 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisViewportWidget::mouseReleaseEvent(QMouseEvent* e)
-{
-    //qDebug("mouse release");
-    mouseDown = false;
-    setCursor(QCursor(Qt::ArrowCursor));
-    cursorResizeMode = -1;
-
-    // Get the coordinate of the point in the canvas.
-    //QPoint p(worldMatrixInverse().map(e->pos()));
-
-    if(createitem != 0)
-    {
-        QCanvasRectangle *cr = (QCanvasRectangle *)createitem;
-        float llx, lly, urx, ury;
-        QRectToViewportCoords(canvas, cr->rect(), llx, lly, urx, ury);
-
-        // Remove the current item.
-        delete createitem;
-        createitem = 0;
-
-        // Only create the viewport if it is large enough. This size 
-        // criterion lets us click on the background viewport without
-        // creating a new viewport if we happen to move the mouse a little.
-        if(urx - llx > 0.02 &&
-           ury - lly > 0.02)
-        {
-            // Add a new viewport.
-            addViewport(llx, lly, urx, ury);
-        }
-        else
-            update();
-    }
-    else if(item != 0)
-    {
-        // Look for the item in the viewportMap and update it
-        QCanvasItemViewportInfoMap::Iterator it;
-        it = viewportMap.find(item);
-        if(it != viewportMap.end())
-        {
-            //qDebug("viewportChanged(%d, %g, %g, %g, %g);", 
-                   //it.data().id, 
-                   //it.data().lower_left[0], it.data().lower_left[1],
-                   //it.data().upper_right[0], it.data().upper_right[1]);
-
-            emit viewportChanged(it.data().id, 
-                   it.data().lower_left[0], it.data().lower_left[1],
-                   it.data().upper_right[0], it.data().upper_right[1]);
-        }
-    }
-
-    item = 0;
 }
 
 // ****************************************************************************
@@ -1245,215 +1128,108 @@ QvisViewportWidget::mouseReleaseEvent(QMouseEvent* e)
 // Creation:   Fri Sep 29 14:27:11 PST 2006
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Fri Nov  7 10:36:14 PST 2008
+//    Qt4 Refactor.
+//
 // ****************************************************************************
 
 void
 QvisViewportWidget::mouseMoveEvent(QMouseEvent* e)
 {
-    // Get the coordinate of the point in the canvas.
-    QPoint p(e->pos() - canvasOrigin());
-    //QPoint p(e->pos());
-
-    if(mouseDown)
+    QGraphicsView::mouseMoveEvent(e);
+    if(dragViewportOutline)
     {
-        QCanvasItem *itemOfInterest = (createitem != 0) ? createitem : item;
-        if (itemOfInterest != 0)
+        // create the outline object when first drag occurs
+        if(!viewportOutline)
         {
-            if(cursorResizeMode == -1)
-            {
-                itemOfInterest->moveBy(p.x() - moving_start.x(),
-                                       p.y() - moving_start.y());
-            }
-            else if(cursorResizeMode == 0)
-            {
-                //qDebug("resize BL");
-                QCanvasRectangle *cr = (QCanvasRectangle *)itemOfInterest;
-                int W = cr->width() + moving_start.x() - p.x();
-                int H = p.y() - cr->rect().y();
-                cr->move(p.x(), cr->rect().y());
-                cr->setSize(W, H);
-            }
-            else if(cursorResizeMode == 1)
-            {
-                //qDebug("resize B");
-                QCanvasRectangle *cr = (QCanvasRectangle *)itemOfInterest;
-                int H = p.y() - cr->rect().y();
-                cr->setSize(cr->width(), H);
-            }
-            else if(cursorResizeMode == 2)
-            {
-                //qDebug("resize BR");
-                QCanvasRectangle *cr = (QCanvasRectangle *)itemOfInterest;
-                int W = p.x() - cr->rect().x();
-                int H = p.y() - cr->rect().y();
-                cr->setSize(W, H);
-            }
-            else if(cursorResizeMode == 3)
-            {
-                //qDebug("resize R");
-                QCanvasRectangle *cr = (QCanvasRectangle *)itemOfInterest;
-                int W = p.x() - cr->rect().x();
-                cr->setSize(W, cr->height());
-            }
-            else if(cursorResizeMode == 4)
-            {
-                //qDebug("resize TR");
-                QCanvasRectangle *cr = (QCanvasRectangle *)itemOfInterest;
-                int W = p.x() - cr->rect().x();
-                int H = cr->height() + moving_start.y() - p.y();
-                cr->move(cr->rect().x(), p.y());
-                cr->setSize(W, H);
-            }
-            else if(cursorResizeMode == 5)
-            {
-                //qDebug("resize T");
-                QCanvasRectangle *cr = (QCanvasRectangle *)itemOfInterest;
-                cr->move(cr->rect().x(), p.y());
-                int H = cr->height() + moving_start.y() - p.y();
-                cr->setSize(cr->width(), H);
-            }
-            else if(cursorResizeMode == 6)
-            {
-                //qDebug("resize TL");
-                QCanvasRectangle *cr = (QCanvasRectangle *)itemOfInterest;
-                int W = cr->width() + moving_start.x() - p.x();
-                int H = cr->height() + moving_start.y() - p.y();
-                cr->move(p.x(), p.y());
-                cr->setSize(W, H);
-            }
-            else if(cursorResizeMode == 7)
-            {
-                //qDebug("resize L");
-                QCanvasRectangle *cr = (QCanvasRectangle *)itemOfInterest;
-                cr->move(p.x(), cr->rect().y());
-                int W = cr->width() + moving_start.x() - p.x();
-                cr->setSize(W, cr->height());
-            }
-
-            // Look for the item in the viewportMap and update it
-            QCanvasItemViewportInfoMap::Iterator it;
-            it = viewportMap.find(item);
-            if(it != viewportMap.end())
-            {
-                QCanvasRectangle *cr = (QCanvasRectangle *)item;
-                float llx, lly, urx, ury;
-                QRectToViewportCoords(canvas, cr->rect(), llx, lly, urx, ury);
-
-                it.data().lower_left[0] = llx;
-                it.data().lower_left[1] = lly;
-                it.data().upper_right[0] = urx;
-                it.data().upper_right[1] = ury;
-
-                if(doContinuousUpdates)
-                {
-                    //qDebug("viewportChanged(%d, %g, %g, %g, %g);", 
-                           //it.data().id, llx, lly, urx, ury);
-                    emit viewportChanged(it.data().id, llx, lly, urx, ury);
-                }
-            }
-
-            moving_start = p;
-            update();
+            viewportOutline = new QGraphicsRectItem();
+            viewportOutline->setBrush(Qt::NoBrush);
+            viewportOutline->setPen(QPen(Qt::black));
+            viewportOutline->setPos(dragMouseStart);
+            // make sure the outline is drawn on top of all other items
+            viewportOutline->setZValue(1e32);
+            scene->addItem(viewportOutline);
         }
-    }
-    else if(canvas->rect().contains(p))
-    {
-        // Compare the point against all of the rectangle canvas items
-        // so we can adjust the cursor to resize if necessary.
-        bool cursorSet = false;
-        QCanvasItemList l = canvas->collisions(p);
-        for (QCanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it)
+        
+        // set rect
+        float x = dragMouseStart.x();
+        float y = dragMouseStart.y();
+        float dx = e->posF().x() - x;
+        float dy = e->posF().y() - y;
+        
+        float w = dx;
+        float h = dy;
+        
+        // make sure to keep w/h positive
+        
+        if(dx < 0) 
         {
-            if((*it)->rtti() == QCanvasRectangle::RTTI ||
-               (*it)->rtti() == QCanvasViewport::RTTI)
-            {
-                QCanvasRectangle *cr = (QCanvasRectangle *)*it;
-                QRect r(cr->rect());
-                int lp = 2;
-                int W = r.width();
-                int H = r.height();
-                QRect left(r.x() - lp, r.y() - lp,
-                           2*lp+1, H+2*lp);
-                QRect right(r.x() + W - lp, r.y() - lp,
-                            2*lp+1, H+2*lp);
-                // Reverse top,bottom so the cursor resize will think we have 
-                // 0,0 in the lower left.
-                QRect top(r.x() - lp, r.y() - lp, W+2*lp, 1+2*lp);
-                QRect bottom(r.x() - lp, r.y() + H - lp, W+2*lp, 1+2*lp);
-
-                int L = left.contains(p)?1:0;
-                int R = right.contains(p)?1:0;
-                int B = bottom.contains(p)?1:0;
-                int T = top.contains(p)?1:0;
-                int index = (L<<3) | (R<<2) | (B<<1) | T;
-                const int cursor_lookup[] = {-1,5,1,-1,3,4,2,-1,7,6,0,-1,-1,-1,-1,-1};
-
-                if(cursor_lookup[index] == 0 || cursor_lookup[index] == 4)
-                {
-                    setCursor(QCursor(Qt::SizeBDiagCursor));
-                    cursorSet = true;
-                    cursorResizeMode = cursor_lookup[index];
-                    item = *it;
-                    break;
-                }
-                else if(cursor_lookup[index] == 1 || cursor_lookup[index] == 5)
-                {
-                    setCursor(QCursor(Qt::SizeVerCursor));
-                    cursorSet = true;
-                    cursorResizeMode = cursor_lookup[index];
-                    item = *it;
-                    break;
-                }
-                else if(cursor_lookup[index] == 2 || cursor_lookup[index] == 6)
-                {
-                    setCursor(QCursor(Qt::SizeFDiagCursor));
-                    cursorSet = true;
-                    cursorResizeMode = cursor_lookup[index];
-                    item = *it;
-                    break;
-                }
-                else if(cursor_lookup[index] == 3 || cursor_lookup[index] == 7)
-                {
-                    setCursor(QCursor(Qt::SizeHorCursor));
-                    cursorSet = true;
-                    cursorResizeMode = cursor_lookup[index];
-                    item = *it;
-                    break;
-                }
-            }
+            x = x + w;
+            w = -dx;
         }
 
-        if(!cursorSet)
+        if(dy < 0)
         {
-            // We're not resizing but we could still be over something
-            // that we want to move.
-            if(cursorResizeMode == -1)
-            {
-                for (QCanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it)
-                {
-                    if((*it)->rtti() == QCanvasRectangle::RTTI ||
-                       (*it)->rtti() == QCanvasViewport::RTTI)
-                    {
-                        QCanvasRectangle *cr = (QCanvasRectangle *)*it;
-                        QRect r(cr->rect());
-                        if(r.contains(p))
-                        {
-                            setCursor(QCursor(Qt::PointingHandCursor));
-                            cursorSet = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if(!cursorSet)
-                setCursor(QCursor(Qt::ArrowCursor));
-
-            cursorResizeMode = -1;
+            y = y + h;
+            h = -dy;
         }
+        
+        viewportOutline->setPos(x,y);
+        viewportOutline->setRect(0.0,0.0,w,h);
     }
 }
+
+// ****************************************************************************
+// Method: QvisViewportWidget::mouseReleaseEvent
+//
+// Purpose: 
+//   Handles mouse release events.
+//
+// Arguments:
+//   e : The mouse event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 29 14:27:11 PST 2006
+//
+// Modifications:
+//    Cyrus Harrison, Fri Nov  7 10:36:14 PST 2008
+//    Qt4 Refactor.
+//
+// ****************************************************************************
+void
+QvisViewportWidget::mouseReleaseEvent(QMouseEvent* e)
+{
+    QGraphicsView::mouseReleaseEvent(e);
+    
+    if(dragViewportOutline)
+    {
+        if(viewportOutline)
+        {
+            // set a min size for creating a new viewport
+            float min_dx = 4;
+            if(viewportOutline->rect().width()  > min_dx && 
+               viewportOutline->rect().height() > min_dx )
+            {
+                float w = scene->width();
+                float h = scene->height();
+        
+                float llx = viewportOutline->pos().x() / w;
+                float urx = llx + viewportOutline->rect().width() / w;
+                float ury = (h - viewportOutline->pos().y()) / h;
+                float lly = ury - viewportOutline->rect().height() / h;
+                addViewport(llx,lly,urx,ury);
+            }
+            
+            delete viewportOutline;
+            viewportOutline = 0;
+        }
+        
+        dragViewportOutline = false;
+    }
+    
+}
+
+
 
 // ****************************************************************************
 // Method: QvisViewportWidget::keyPressEvent
@@ -1468,125 +1244,122 @@ QvisViewportWidget::mouseMoveEvent(QMouseEvent* e)
 // Creation:   Fri Sep 29 14:44:37 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun  4 11:06:34 PDT 2008
+//   Qt 4.
+//
+//    Cyrus Harrison, Fri Nov  7 10:36:14 PST 2008
+//    Qt4 Refactor.
+//
 // ****************************************************************************
 
 void
 QvisViewportWidget::keyPressEvent(QKeyEvent *e)
 {
-    // Figure the currently selected viewport.
-    QCanvasItem *viewport = 0;
-    QCanvasItemList l=canvas->allItems();
-    for (QCanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it)
+    QViewportItem *item = 0;
+    QViewportItem *next = 0;
+    
+    QMapIterator<QString,QViewportItem*> itr(items);
+    while(itr.hasNext())
     {
-        if((*it)->isActive())
+        itr.next();
+        if(next == 0)
+            next = itr.value();
+        
+        if(itr.value()->isSelected())
         {
-            viewport = *it;
+            item = itr.value();
+            if(itr.hasNext())
+            {
+                itr.next();
+                next = itr.value();
+            }
             break;
         }
     }
-
-    if(viewport != 0)
+    
+    if(item)
     {
-        QPoint vec;
-        bool move = false;
+        float dx = 0;
+        float dy = 0;
+        
+        bool shiftApplied = false;
+        if((e->modifiers() & Qt::ShiftModifier) > 0)
+            shiftApplied = true;
 
         switch(e->key())
         {
-        case Key_Shift:
-            //qDebug("key shift");
-            shiftApplied = true;
-            break;
-        case Key_Left:
-            //qDebug("key left");
-            move = true;
-            vec = QPoint(shiftApplied?-1:-10,0);
-            break;
-        case Key_Right:
-            //qDebug("key right");
-            move = true;
-            vec = QPoint(shiftApplied?1:10,0);
-            break;
-        case Key_Up:
-            //qDebug("key up");
-            move = true;
-            vec = QPoint(0, shiftApplied?-1:-10);
-            break;
-        case Key_Down:
-            //qDebug("key down");
-            move = true;
-            vec = QPoint(0,shiftApplied?1:10);
-            break;
-        case Key_Space:
-            //qDebug("key space");
-            // Find the next item in the list and make it active
-            if(viewportMap.begin() != viewportMap.end())
-            {
-                QCanvasItemViewportInfoMap::Iterator it = viewportMap.find(viewport);
-                if(it != viewportMap.end())
-                {
-                    // Go to the next one.
-                    QString currentId = it.data().id;
-                    ++it;
-                    if(it == viewportMap.end())
-                        it = viewportMap.begin();
-                    QString nextId = it.data().id;
-                    if(currentId != nextId)
-                    {
-                        activateItem(it.key());
-                        update();
-                        //qDebug("activateViewport(%d);", nextId);
-                        emit viewportActivated(nextId);
-                    }
-                }
-            }
+            case Qt::Key_Left:
+                dx = shiftApplied?-1:-10;
+                dy = 0;
+                break;
+            case Qt::Key_Right:
+                dx = shiftApplied?1:10;
+                dy = 0;
+                break;
+            case Qt::Key_Up:
+                dx = 0;
+                dy = shiftApplied?-1:-10;
+                break;
+            case Qt::Key_Down:
+                dx = 0;
+                dy = shiftApplied?1:10;
+                break;
+            case Qt::Key_Space:
+                if(next)
+                    setActiveViewport(next->getId());
+                break;
         }
-
-        if(move)
+        
+        if(dx != 0 || dy != 0)
         {
-            QCanvasItemViewportInfoMap::Iterator it = viewportMap.find(viewport);
-            if(it != viewportMap.end())
-            {
-                QCanvasRectangle *cr = (QCanvasRectangle *)viewport;
-                cr->moveBy(vec.x(), vec.y());
-
-                float llx, lly, urx, ury;
-                QRectToViewportCoords(canvas, cr->rect(), llx, lly, urx, ury);
-
-                it.data().lower_left[0] = llx;
-                it.data().lower_left[1] = lly;
-                it.data().upper_right[0] = urx;
-                it.data().upper_right[1] = ury;
-
-                update();
-
-                //qDebug("viewportChanged(%d, %g, %g, %g, %g);", 
-                       //it.data().id, llx, lly, urx, ury);
-                emit viewportChanged(it.data().id, llx, lly, urx, ury);
-            }
+            item->moveBy(dx,dy);
+            viewportUpdated(item);
         }
+    }
+    else
+    {
+        QGraphicsView::keyPressEvent(e);
     }
 }
 
 // ****************************************************************************
-// Method: QvisViewportWidget::keyReleaseEvent
+// Method: QvisViewportWidget::onSceneSelectionChanged
 //
 // Purpose: 
-//   Handles key releases.
+//   Translates scene selection event to viewportActivated signal.
 //
-// Arguments:
-//   e : The key event.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 15:03:52 PST 2006
+// Programmer: Cyrus Harrison
+// Creation:   Fri Sep 29 14:44:37 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void
-QvisViewportWidget::keyReleaseEvent(QKeyEvent *e)
+void QvisViewportWidget::onSceneSelectionChanged()
 {
-    if(e->key() == Key_Shift)
-        shiftApplied = false;
+    bool found = false;
+    QMapIterator<QString,QViewportItem*> itr(items);
+    QString viewport_name = "";
+    
+    while(!found && itr.hasNext())
+    {
+        itr.next();
+        bool sel = itr.value()->isSelected();
+        if(sel)
+        {
+            viewport_name = itr.key();
+            found = true;
+        }
+    }
+    
+    if(!found)
+    {
+        prevSelected = "";
+    }
+    else if(viewport_name != prevSelected)
+    {
+        emit viewportActivated(viewport_name);
+        prevSelected = viewport_name;
+    }
 }

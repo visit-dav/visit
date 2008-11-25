@@ -38,7 +38,7 @@
 
 #ifndef VIEWER_CONNECTION_PROGRESS_DIALOG_H
 #define VIEWER_CONNECTION_PROGRESS_DIALOG_H
-#include <qwidget.h>
+#include <QWidget>
 
 // Forward declarations.
 class QLabel;

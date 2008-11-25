@@ -39,7 +39,7 @@
 #ifndef VIEWER_HOSTPROFILESELECTOR_WITHWIN_H
 #define VIEWER_HOSTPROFILESELECTOR_WITHWIN_H
 #include <viewer_exports.h>
-#include <qdialog.h>
+#include <QDialog>
 #include <ViewerHostProfileSelector.h>
 
 #include <string>
@@ -49,7 +49,7 @@
 class QLineEdit;
 class QLabel;
 class QSpinBox;
-class QListBox;
+class QListWidget;
 class QPushButton;
 class HostProfileList;
 
@@ -72,13 +72,17 @@ class HostProfileList;
 //    Jeremy Meredith, Thu Sep 15 16:42:48 PDT 2005
 //    Added machine file for some mpich implementations.
 //
+//    Brad Whitlock, Fri May 23 11:34:00 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
+
 class VIEWER_API ViewerHostProfileSelectorWithWin : public QDialog, 
                                                     public ViewerHostProfileSelector
 {
     Q_OBJECT
   public:
-             ViewerHostProfileSelectorWithWin(QWidget *parent=NULL, const char *name=NULL);
+             ViewerHostProfileSelectorWithWin(QWidget *parent = 0);
     virtual ~ViewerHostProfileSelectorWithWin();
 
     virtual bool SelectProfile(HostProfileList*, const std::string&, 
@@ -90,7 +94,7 @@ class VIEWER_API ViewerHostProfileSelectorWithWin : public QDialog,
   private:
     bool       waitingOnUser;
 
-    QListBox  *profiles;
+    QListWidget  *profiles;
     QLabel    *numProcsLabel;
     QSpinBox  *numProcs;
     QLabel    *numNodesLabel;

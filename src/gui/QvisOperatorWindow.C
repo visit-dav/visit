@@ -38,7 +38,7 @@
 
 #include <QvisOperatorWindow.h>
 #include <QvisNotepadArea.h>
-#include <qmessagebox.h>
+#include <QMessageBox>
 
 #include <GlobalAttributes.h>
 #include <OperatorPluginInfo.h>
@@ -188,6 +188,9 @@ QvisOperatorWindow::GetCurrentValues(int)
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Tue Jul  8 14:34:17 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -248,10 +251,29 @@ QvisOperatorWindow::SetOperatorOptions()
                 if(s != 0)
                     delete s;
 
-                // Ask the user if he really wants to close the engine.
-                button = QMessageBox::warning(this, "VisIt",
-                    msg.latin1(), tr("Yes"), tr("No"), tr("Yes, Do not prompt again"),
-                    0, 1 );
+                QMessageBox msgBox;
+                msgBox.setWindowTitle("VisIt");
+                msgBox.setText(msg);
+                QPushButton *yesButton    = msgBox.addButton(QMessageBox::Yes);
+                QPushButton *noButton     = msgBox.addButton(QMessageBox::No);
+                QPushButton *yesAllButton = msgBox.addButton(tr("Yes, Do not prompt again"),
+                                                             QMessageBox::ActionRole);
+                
+                msgBox.exec();
+                QPushButton *clicked = (QPushButton*)msgBox.clickedButton();
+                if ( clicked == yesButton) 
+                {
+                    // connect
+                    button = 0;
+                }
+                else if (clicked == noButton) 
+                {
+                    button = 1;
+                }
+                else if (clicked == yesAllButton) 
+                {
+                    button = 2;
+                }
             }
 
             if(button == 0)

@@ -37,7 +37,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qgroupbox.h>
+#include <QGroupBox>
 
 class QSpinBox;
 
@@ -53,13 +53,15 @@ class QSpinBox;
 // Creation:   Wed Nov 8 08:51:03 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 09:37:17 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisRotationTransition : public QGroupBox
 {
 public:
-    QvisRotationTransition(const QPixmap &, QWidget *parent, const char *name);
+    QvisRotationTransition(const QPixmap &, QWidget *parent);
     virtual ~QvisRotationTransition();
 
     void setStartAngle(float sa);

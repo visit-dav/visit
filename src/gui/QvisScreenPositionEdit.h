@@ -39,8 +39,9 @@
 #ifndef QVIS_SCREEN_POSITION_EDIT_H
 #define QVIS_SCREEN_POSITION_EDIT_H
 #include <gui_exports.h>
-#include <qlineedit.h>
+#include <QWidget>
 
+class QLineEdit;
 class QTimer;
 class QvisScreenPositioner;
 class QvisTurnDownButton;
@@ -58,14 +59,16 @@ class QvisTurnDownButton;
 // Creation:   Tue Dec 2 13:17:32 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 16:10:00 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisScreenPositionEdit : public QWidget
 {
     Q_OBJECT
 public:
-    QvisScreenPositionEdit(QWidget *parent = 0, const char *name = 0);
+    QvisScreenPositionEdit(QWidget *parent = 0);
     virtual ~QvisScreenPositionEdit();
 
     void setPosition(double, double);

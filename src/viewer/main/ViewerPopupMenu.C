@@ -40,10 +40,10 @@
 #include <ViewerActionBase.h>
 #include <ViewerWindow.h>
 
-#include <qpopupmenu.h>
-#include <qbuttongroup.h>
-#include <qcursor.h>
-#include <qradiobutton.h>
+#include <QMenu>
+#include <QButtonGroup>
+#include <QCursor>
+#include <QRadioButton>
 #include <visitstream.h>
 
 // ****************************************************************************
@@ -59,6 +59,8 @@
 //  Creation:   Tue Nov 7 12:02:49 PDT 2000
 //
 //  Modifications:
+//    Brad Whitlock, Tue May 27 13:46:56 PDT 2008
+//    Qt 4.
 //
 // ****************************************************************************
 
@@ -75,11 +77,7 @@ ViewerPopupMenu::ViewerPopupMenu(ViewerWindow *win) : menus()
     if(win->GetNoWinMode())
         popup = 0;
     else
-    {
-        QString name;
-        name.sprintf("ViewerPopupMenu%d", win->GetWindowId());
-        popup = new QPopupMenu(0, name);
-    }
+        popup = new QMenu(0);
 }
 
 // ****************************************************************************
@@ -218,7 +216,7 @@ ViewerPopupMenu::AddAction(const std::string &menuName, ViewerActionBase *action
 {
     if(popup)
     {
-        QPopupMenu *menu = CreateMenu(menuName);
+        QMenu *menu = CreateMenu(menuName);
         if(menu)
             action->ConstructMenu(menu);
     }
@@ -265,7 +263,9 @@ ViewerPopupMenu::RemoveAction(ViewerActionBase *action)
 // Creation:   Fri Jan 31 14:13:25 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May 27 14:08:06 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -273,9 +273,9 @@ ViewerPopupMenu::EnableMenu(const std::string &menuName)
 {
     if(popup)
     {
-        MenuMap::iterator pos;
-        if((pos = menus.find(menuName)) != menus.end())
-            popup->setItemEnabled(pos->second.menuId, true);
+        MenuMap::iterator pos = menus.find(menuName);
+        if(pos != menus.end())
+            pos->second.action->setEnabled(true);
     }
 }
 
@@ -292,6 +292,8 @@ ViewerPopupMenu::EnableMenu(const std::string &menuName)
 // Creation:   Fri Jan 31 14:13:25 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue May 27 14:08:06 PDT 2008
+//   Qt 4.
 //   
 // ****************************************************************************
 
@@ -300,9 +302,9 @@ ViewerPopupMenu::DisableMenu(const std::string &menuName)
 {
     if(popup)
     {
-        MenuMap::iterator pos;
-        if((pos = menus.find(menuName)) != menus.end())
-            popup->setItemEnabled(pos->second.menuId, false);
+        MenuMap::iterator pos = menus.find(menuName);
+        if(pos != menus.end())
+            pos->second.action->setEnabled(false);
     }
 }
 
@@ -322,7 +324,7 @@ ViewerPopupMenu::DisableMenu(const std::string &menuName)
 //   
 // ****************************************************************************
 
-QPopupMenu *
+QMenu *
 ViewerPopupMenu::CreateMenu(const std::string &menuName)
 {
     if(popup)
@@ -333,15 +335,13 @@ ViewerPopupMenu::CreateMenu(const std::string &menuName)
         else
         {
             // Create a new popup menu and store it in the map.
-            QString name;
-            name.sprintf("Menu_%s_%d", menuName.c_str(), window->GetWindowId());
-            QPopupMenu *menu = new QPopupMenu(popup, name);
+            QMenu *menu = new QMenu(menuName.c_str(), popup);
 
             // Insert the new popup menu into the parent popup menu.
-            int id = popup->insertItem(menuName.c_str(), menu);
+            QAction *action = popup->addMenu(menu);
 
             // Store the menu pointer and id for later.
-            menus[menuName] = SubMenuInfo(menu, id);
+            menus[menuName] = SubMenuInfo(menu, action);
 
             return menu;
         }
@@ -357,19 +357,19 @@ ViewerPopupMenu::CreateMenu(const std::string &menuName)
 ViewerPopupMenu::SubMenuInfo::SubMenuInfo()
 {
     menu = 0;
-    menuId = 0;
+    action = 0;
 }
 
 ViewerPopupMenu::SubMenuInfo::SubMenuInfo(const ViewerPopupMenu::SubMenuInfo &obj)
 {
     menu = obj.menu;
-    menuId = obj.menuId;
+    action = obj.action;
 }
 
-ViewerPopupMenu::SubMenuInfo::SubMenuInfo(QPopupMenu *m, int id)
+ViewerPopupMenu::SubMenuInfo::SubMenuInfo(QMenu *m, QAction *a)
 {
     menu = m;
-    menuId = id;
+    action = a;
 }
 
 ViewerPopupMenu::SubMenuInfo::~SubMenuInfo()
@@ -380,5 +380,5 @@ void
 ViewerPopupMenu::SubMenuInfo::operator =(const ViewerPopupMenu::SubMenuInfo &obj)
 {
     menu = obj.menu;
-    menuId = obj.menuId;
+    action = obj.action;
 }

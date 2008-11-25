@@ -38,11 +38,15 @@
 
 #include <stdlib.h> // for qsort
 #include <QvisSpectrumBar.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qpainter.h>
-#include <qstyle.h>
-#include <qtimer.h>
+
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
+#include <QPainter>
+#include <QStyle>
+#include <QStyleOption>
+#include <QTimer>
 
 // Some constants for paging modes.
 #define NO_PAGING      -1
@@ -146,13 +150,13 @@ private:
 //   Brad Whitlock, Wed Mar 13 10:09:38 PDT 2002
 //   Made it use a single pixmap.
 //
+//   Brad Whitlock, Mon Jun  2 10:55:56 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisSpectrumBar::QvisSpectrumBar(QWidget *parent, const char *name) :
-    QWidget(parent, name)
+QvisSpectrumBar::QvisSpectrumBar(QWidget *parent) : QWidget(parent)
 {
-    pixmap = 0;
-
     orientation = HorizontalTop;
     b_smoothing = true;
     b_equalSpacing = false;
@@ -161,7 +165,6 @@ QvisSpectrumBar::QvisSpectrumBar(QWidget *parent, const char *name) :
     b_suppressUpdates = false;
     margin = 4;
     paging_mode = NO_PAGING;
-    shiftApplied = false;
 
     controlPoints = new ControlPointList;
 
@@ -171,7 +174,7 @@ QvisSpectrumBar::QvisSpectrumBar(QWidget *parent, const char *name) :
 
     // Set the focus policy to StrongFocus. This means that the widget will
     // accept focus by tabbing and clicking.
-    setFocusPolicy(StrongFocus);
+    setFocusPolicy(Qt::StrongFocus);
 
     // Set the widget's minimum width and height.
     setMinimumWidth(50);
@@ -190,13 +193,13 @@ QvisSpectrumBar::QvisSpectrumBar(QWidget *parent, const char *name) :
 // Modifications:
 //   Brad Whitlock, Wed Mar 13 10:09:38 PDT 2002
 //   Made it use a single pixmap.
-//   
+//
+//   Brad Whitlock, Mon Jun  2 11:06:24 PDT 2008
+//   Qt 4.
 // ****************************************************************************
 
 QvisSpectrumBar::~QvisSpectrumBar()
 {
-    deletePixmap();
-
     delete controlPoints;
 }
 
@@ -426,7 +429,7 @@ QvisSpectrumBar::setEqualSpacing(bool val)
     if(val != b_equalSpacing)
     {
         b_equalSpacing = val;
-        updateEntireWidget();
+        update();
     }
 }
 
@@ -446,6 +449,9 @@ QvisSpectrumBar::setEqualSpacing(bool val)
 //   Brad Whitlock, Wed Mar 28 10:14:52 PDT 2001
 //   Added code to allow updates to be suppressed.
 //
+//   Brad Whitlock, Mon Jun  2 11:20:48 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -457,12 +463,9 @@ QvisSpectrumBar::setSmoothing(bool val)
 
         if(isVisible() && !b_suppressUpdates)
         {
-            drawSpectrum();
             update(spectrumArea.x(), spectrumArea.y(), spectrumArea.width(),
                    spectrumArea.height());
         }
-        else
-            deletePixmap();
     }
 }
 
@@ -621,7 +624,7 @@ QvisSpectrumBar::addControlPoint(const QColor &color, float position)
     controlPoints->Add(&temp);
 
     // Redraw the widget.
-    updateEntireWidget();
+    update();
 
     // Get the index of the new point and emit signals.
     index = controlPoints->Rank(controlPoints->NumControlPoints() - 1);
@@ -664,7 +667,7 @@ QvisSpectrumBar::alignControlPoints()
     }
 
     // Redraw the entire widget
-    updateEntireWidget();
+    update();
 
     // Emit a signal for each of the control points that changed.
     for(i = 0; i < controlPoints->NumControlPoints(); ++i)
@@ -708,7 +711,7 @@ QvisSpectrumBar::removeControlPoint()
         controlPoints->DeleteHighestRank();
 
         // Redraw the widget.
-        updateEntireWidget();
+        update();
 
         // Emit information about the control point that was removed.
         QColor temp((int)(removedPoint.color[0] * 255.),
@@ -756,7 +759,7 @@ QvisSpectrumBar::setRawColors(unsigned char *colors, int ncolors)
     controlPoints->SetEditMode(false);
 
     // Redraw the widget.
-    updateEntireWidget();
+    update();
 }
 
 // ****************************************************************************
@@ -800,59 +803,7 @@ QvisSpectrumBar::setEditMode(bool val)
     }
     
     controlPoints->SetEditMode(val);
-    updateEntireWidget();
-}
-
-// ****************************************************************************
-// Method: QvisSpectrumBar::updateEntireWidget
-//
-// Purpose: 
-//   Redraws the entire widget or deletes the internal pixmaps so the entire
-//   widget is drawn the next time it is shown.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jan 3 10:59:05 PDT 2001
-//
-// Modifications:
-//   Brad Whitlock, Wed Mar 28 10:13:51 PDT 2001
-//   Added code to allow updates to be suppressed.
-//
-//   Brad Whitlock, Wed Mar 13 10:09:38 PDT 2002
-//   Made it use a single pixmap.
-//
-// ****************************************************************************
-
-void
-QvisSpectrumBar::updateEntireWidget()
-{
-    if(isVisible() && !b_suppressUpdates)
-    {
-        drawControls();
-        drawSpectrum();
-        update();
-    }
-    else
-        deletePixmap();
-}
-
-// ****************************************************************************
-// Method: QvisSpectrumBar::deletePixmap
-//
-// Purpose: 
-//   Deletes the internal pixmap.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jan 3 10:59:49 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisSpectrumBar::deletePixmap()
-{
-    delete pixmap;
-    pixmap = 0;
+    update();
 }
 
 // ****************************************************************************
@@ -887,7 +838,7 @@ QvisSpectrumBar::setControlPointColor(int index, const QColor &color)
          // Set the color and update the widget.
          controlPoints->SetEditMode(true);
          controlPoints->SetColor(index, r, g, b);
-         updateEntireWidget();
+         update();
 
          // Emit a signal indicating that a control point changed colors.
          emit controlPointColorChanged(index, color);
@@ -966,33 +917,28 @@ QvisSpectrumBar::setOrientation(QvisSpectrumBar::ControlOrientation)
 //   Brad Whitlock, Thu Aug 21 15:41:42 PST 2003
 //   I changed how the brush is created so the widget looks better on MacOS X.
 //
+//   Brad Whitlock, Mon Jun  2 10:57:14 PDT 2008
+//   Qt 4.
+//
+//   Brad Whitlock, Mon Jun  2 10:58:21 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisSpectrumBar::drawControls()
+QvisSpectrumBar::drawControls(QPainter &paint)
 {
-    // If the pixmap is not allocated, allocate it.
-    bool totalFill = false;
-    if(pixmap == 0)
-    {
-        pixmap = new QPixmap(width(), height());
-        totalFill = true;
-    }
 
 #ifdef Q_WS_MACX
-    QBrush brush(colorGroup().brush(QColorGroup::Background));
+    QBrush brush(palette().brush(QPalette::Background));
 #else
-    QBrush brush(colorGroup().brush(QColorGroup::Button));
+    QBrush brush(palette().brush(QPalette::Button));
 #endif
 
     // Create a painter and fill in the entire area with the background color.
-    QPainter paint(pixmap);
-    if(totalFill)
-        paint.fillRect(0, 0, width(), height(), brush);
-    else
-        paint.fillRect(controlsArea.x(), controlsArea.y(),
-                       controlsArea.width(), controlsArea.height(),
-                       brush);
+    paint.fillRect(controlsArea.x(), controlsArea.y(),
+                   controlsArea.width(), controlsArea.height(),
+                   brush);
 
     // If we're not in editable mode, then we don't need to draw any
     // control points.
@@ -1019,14 +965,10 @@ QvisSpectrumBar::drawControls()
         QColor selectColor(255, 255, 0);
 
         // Draw the control point.
-        drawControlPoint(&paint,
-                         colorGroup().light(),
-                         colorGroup().dark(),
-#ifdef Q_WS_MACX
-                         colorGroup().brush(QColorGroup::Background),
-#else
-                         colorGroup().button(),
-#endif
+        drawControlPoint(paint,
+                         palette().light(),
+                         palette().dark(),
+                         brush,
                          selectColor,
                          controlPointColor,
                          cpLocation.x(), cpLocation.y(),
@@ -1034,9 +976,6 @@ QvisSpectrumBar::drawControls()
                          2,
                          orientation, index == sel_index);
     }
-
-    // Make pixmap the background pixmap.
-    setBackgroundPixmap(*pixmap);
 }
 
 // ****************************************************************************
@@ -1125,10 +1064,13 @@ QvisSpectrumBar::controlPointLocation(int index) const
 //   Brad Whitlock, Tue Mar 12 13:38:59 PST 2002
 //   Removed all dependencies on style objects.
 //
+//   Brad Whitlock, Mon Jun  2 11:20:07 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisSpectrumBar::drawControlPoint(QPainter *paint, const QBrush &top,
+QvisSpectrumBar::drawControlPoint(QPainter &paint, const QBrush &top,
     const QBrush &bottom, const QBrush &fore, const QColor &sel,
     const QColor &cpt, int x, int y, int w, int h, int shadow_thick,
     ControlOrientation orient, bool selected)
@@ -1141,9 +1083,8 @@ QvisSpectrumBar::drawControlPoint(QPainter *paint, const QBrush &top,
     int w2 = (int)((float)(7 * h3 / 30) * 1.7320);
 
     int X[17], Y[17];
-    QPointArray poly(5);
 
-#define COPY_POINT(DI,SI) poly.setPoint((DI), X[SI], Y[SI])
+#define COPY_POINT(poly, DI,SI) poly.setPoint((DI), X[SI], Y[SI])
 
     // Fill the vertices.
     X[0] = x + wd2;              Y[0] = y + h;
@@ -1164,65 +1105,72 @@ QvisSpectrumBar::drawControlPoint(QPainter *paint, const QBrush &top,
     X[15] = x + wd2 + w2;        Y[15] = y + h - h2 - int(0.85 * h3);
     X[16] = x + wd2 - w2;        Y[16] = y + h - h2 - int(0.85 * h3);
 
-    paint->setPen(NoPen);            // do not draw outline
+    paint.setPen(Qt::NoPen);            // do not draw outline
+
+    // Create a polygon
+    QPolygon p1(4);
+    COPY_POINT(p1, 0, 0);
+    COPY_POINT(p1, 1, 1);
+    COPY_POINT(p1, 2, 6);
+    COPY_POINT(p1, 3, 5);
+    paint.setBrush(bottom);
+    paint.drawConvexPolygon(p1);
 
     // Create a polygon.
-    COPY_POINT(0, 0);
-    COPY_POINT(1, 1);
-    COPY_POINT(2, 6);
-    COPY_POINT(3, 5);
-    paint->setBrush(bottom);
-    paint->drawPolygon(poly, false, 0, 4);
+    QPolygon p2(4);
+    COPY_POINT(p2, 0, 1);
+    COPY_POINT(p2, 1, 2);
+    COPY_POINT(p2, 2, 7);
+    COPY_POINT(p2, 3, 6);
+    paint.drawConvexPolygon(p2);
 
     // Create a polygon.
-    COPY_POINT(0, 1);
-    COPY_POINT(1, 2);
-    COPY_POINT(2, 7);
-    COPY_POINT(3, 6);
-    paint->drawPolygon(poly, false, 0, 4);
+    QPolygon p3(4);
+    COPY_POINT(p3, 0, 2);
+    COPY_POINT(p3, 1, 3);
+    COPY_POINT(p3, 2, 8);
+    COPY_POINT(p3, 3, 7);
+    paint.setBrush(top);
+    paint.drawConvexPolygon(p3);
 
     // Create a polygon.
-    COPY_POINT(0, 2);
-    COPY_POINT(1, 3);
-    COPY_POINT(2, 8);
-    COPY_POINT(3, 7);
-    paint->setBrush(top);
-    paint->drawPolygon(poly, false, 0, 4);
+    QPolygon p4(4);
+    COPY_POINT(p4, 0, 3);
+    COPY_POINT(p4, 1, 4);
+    COPY_POINT(p4, 2, 9);
+    COPY_POINT(p4, 3, 8);
+    paint.drawConvexPolygon(p4);
 
     // Create a polygon.
-    COPY_POINT(0, 3);
-    COPY_POINT(1, 4);
-    COPY_POINT(2, 9);
-    COPY_POINT(3, 8);
-    paint->drawPolygon(poly, false, 0, 4);
+    QPolygon p5(4);
+    COPY_POINT(p5, 0, 4);
+    COPY_POINT(p5, 1, 0);
+    COPY_POINT(p5, 2, 5);
+    COPY_POINT(p5, 3, 9);
+    paint.drawConvexPolygon(p5);
 
     // Create a polygon.
-    COPY_POINT(0, 4);
-    COPY_POINT(1, 0);
-    COPY_POINT(2, 5);
-    COPY_POINT(3, 9);
-    paint->drawPolygon(poly, false, 0, 4);
-
-    // Create a polygon.
-    COPY_POINT(0, 5);
-    COPY_POINT(1, 6);
-    COPY_POINT(2, 7);
-    COPY_POINT(3, 8);
-    COPY_POINT(4, 9);
-    paint->setBrush(fore);
-    paint->drawPolygon(poly, false, 0, 5);
+    QPolygon p6(5);
+    COPY_POINT(p6, 0, 5);
+    COPY_POINT(p6, 1, 6);
+    COPY_POINT(p6, 2, 7);
+    COPY_POINT(p6, 3, 8);
+    COPY_POINT(p6, 4, 9);
+    paint.setBrush(fore);
+    paint.drawConvexPolygon(p6);
 
     // If the width is > 2 times the shadow thickness then we have
     // room to draw the interior color rectangle.
     if(w >(shadow_thick << 1))
     {
         // Create a polygon.
-        COPY_POINT(0, 10);
-        COPY_POINT(1, 11);
-        COPY_POINT(2, 12);
-        COPY_POINT(3, 13);
-        paint->setBrush(cpt);
-        paint->drawPolygon(poly, false, 0, 4);
+        QPolygon p7(4);
+        COPY_POINT(p7, 0, 10);
+        COPY_POINT(p7, 1, 11);
+        COPY_POINT(p7, 2, 12);
+        COPY_POINT(p7, 3, 13);
+        paint.setBrush(cpt);
+        paint.drawPolygon(p7);
 
         int boxX, boxY, boxWidth, boxHeight;
 
@@ -1240,14 +1188,15 @@ QvisSpectrumBar::drawControlPoint(QPainter *paint, const QBrush &top,
 
         // Draw the sunken bevel around the spectrum.
         drawBox(paint, QRect(boxX, boxY, boxWidth, boxHeight),
-                colorGroup().dark(), colorGroup().light());
+                palette().color(QPalette::Dark),
+                palette().color(QPalette::Light));
 
         // Create the select polygon.
         if(selected)
         {
-            QColorGroup g(colorGroup());
-            g.setColor(QColorGroup::Button, sel);
-            drawArrow(paint, true, X[16], Y[16], w2 << 1,(int)(h3 * 0.65), g);
+            QPalette pal(palette());
+            pal.setColor(QPalette::Base, sel);
+            drawArrow(paint, true, X[16], Y[16], w2 << 1,(int)(h3 * 0.65), pal);
         }
     }
 }
@@ -1269,11 +1218,13 @@ QvisSpectrumBar::drawControlPoint(QPainter *paint, const QBrush &top,
 // Creation:   Tue Mar 12 18:45:56 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun  2 11:18:07 PDT 2008
+//   Changed to QPainter reference.
+//
 // ****************************************************************************
 
 void
-QvisSpectrumBar::drawBox(QPainter *paint, const QRect &r,
+QvisSpectrumBar::drawBox(QPainter &paint, const QRect &r,
     const QColor &light, const QColor &dark, int lw)
 {
     int i;
@@ -1283,19 +1234,19 @@ QvisSpectrumBar::drawBox(QPainter *paint, const QRect &r,
     int Y2 = r.y() + r.height() - 1;
 
     // Draw the highlight
-    paint->setPen(QPen(light));
+    paint.setPen(QPen(light));
     for(i = 0; i < lw; ++i)
     {
-        paint->drawLine(QPoint(X + i, Y + i), QPoint(X + i, Y2 - i));
-        paint->drawLine(QPoint(X + i, Y + i), QPoint(X2 - i, Y + i));
+        paint.drawLine(QPoint(X + i, Y + i), QPoint(X + i, Y2 - i));
+        paint.drawLine(QPoint(X + i, Y + i), QPoint(X2 - i, Y + i));
     }
 
     // Draw the shadow
-    paint->setPen(QPen(dark));
+    paint.setPen(QPen(dark));
     for(i = 0; i < lw; ++i)
     {
-        paint->drawLine(QPoint(X + i + 1, Y2 - i), QPoint(X2, Y2 - i));
-        paint->drawLine(QPoint(X2 - i, Y + i + 1), QPoint(X2 - i, Y2));
+        paint.drawLine(QPoint(X + i + 1, Y2 - i), QPoint(X2, Y2 - i));
+        paint.drawLine(QPoint(X2 - i, Y + i + 1), QPoint(X2 - i, Y2));
     }
 }
 
@@ -1315,17 +1266,27 @@ QvisSpectrumBar::drawBox(QPainter *paint, const QRect &r,
 //   Brad Whitlock, Thu Aug 21 15:50:13 PST 2003
 //   I changed how the brush is created so the arrows look better on MacOS X.
 //
+//   Brad Whitlock, Mon Jun  2 10:48:24 PDT 2008
+//   Qt 4. QPainter reference.
+//
 // ****************************************************************************
 
-void
-QvisSpectrumBar::drawArrow(QPainter *p, bool down, int x, int y, int w, int h,
-    const QColorGroup &g)
+inline void
+putPoints(QVector<QPoint> &vec, int x0, int y0, int x1, int y1)
 {
-    QPointArray bFill;            // fill polygon
-    QPointArray bTop;             // top shadow.
-    QPointArray bBot;             // bottom shadow.
-    QPointArray bLeft;            // left shadow.
-    QWMatrix    matrix;           // xform matrix
+    vec.push_back(QPoint(x0, y0));
+    vec.push_back(QPoint(x1, y1));
+}
+
+void
+QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
+    const QPalette &pal)
+{
+    QVector<QPoint> bFill;      // fill polygon
+    QVector<QPoint> bTop;       // top shadow.
+    QVector<QPoint> bBot;       // bottom shadow.
+    QVector<QPoint> bLeft;      // left shadow.
+    QMatrix  matrix;           // xform matrix
     bool vertical = orientation == HorizontalTop ||
                     orientation == HorizontalBottom;
     bool horizontal = !vertical;
@@ -1354,43 +1315,46 @@ QvisSpectrumBar::drawArrow(QPainter *p, bool down, int x, int y, int w, int h,
         bTop.resize((dim/2)*2);
         bBot.resize(dim & 1 ? dim + 1 : dim);
         bLeft.resize(dim > 4 ? 4 : 2);
-        bLeft.putPoints(0, 2, 0,0, 0,dim-1);
+        putPoints(bLeft, 0,0, 0,dim-1);
 
         if(dim > 4)
-            bLeft.putPoints(2, 2, 1,2, 1,dim-3);
-        bTop.putPoints(0, 4, 1,0, 1,1, 2,1, 3,1);
-        bBot.putPoints(0, 4, 1,dim-1, 1,dim-2, 2,dim-2, 3,dim-2);
+            putPoints(bLeft, 1,2, 1,dim-3);
+        putPoints(bTop, 1,0, 1,1);
+        putPoints(bTop, 2,1, 3,1);
+        putPoints(bBot, 1,dim-1, 1,dim-2);
+        putPoints(bBot, 2,dim-2, 3,dim-2);
 
         for(int i=0; i<dim/2-2 ; i++)
         {
-            bTop.putPoints(i*2+4, 2, 2+i*2,2+i, 5+i*2, 2+i);
-            bBot.putPoints(i*2+4, 2, 2+i*2,dim-3-i, 5+i*2,dim-3-i);
+            putPoints(bTop, 2+i*2,2+i, 5+i*2, 2+i);
+            putPoints(bBot, 2+i*2,dim-3-i, 5+i*2,dim-3-i);
         }
 
         if(dim & 1)                // odd number size: extra line
-            bBot.putPoints(dim-1, 2, dim-3,dim/2, dim-1,dim/2);
+            putPoints(bBot, dim-3,dim/2, dim-1,dim/2);
         if(dim > 6)
         {            // dim>6: must fill interior
-            bFill.putPoints(0, 2, 1,dim-3, 1,2);
+            putPoints(bFill, 1,dim-3, 1,2);
             if(dim & 1)            // if size is an odd number
-                bFill.setPoint(2, dim - 3, dim / 2);
+                bFill[2] = QPoint(dim - 3, dim / 2);
             else
-                bFill.putPoints(2, 2, dim-4,dim/2-1, dim-4,dim/2);
+                putPoints(bFill, dim-4,dim/2-1, dim-4,dim/2);
         }
     }
     else
     {
         if(dim == 3)
         {            // 3x3 arrow pattern
-            bLeft.setPoints(4, 0,0, 0,2, 1,1, 1,1);
-            bTop .setPoints(2, 1,0, 1,0);
-            bBot .setPoints(2, 1,2, 2,1);
+            putPoints(bLeft, 0,0, 0,2);
+            putPoints(bLeft, 1,1, 1,1);
+            putPoints(bTop, 1,0, 1,0);
+            putPoints(bBot, 1,2, 2,1);
         }
         else
         {                    // 2x2 arrow pattern
-            bLeft.setPoints(2, 0,0, 0,1);
-            bTop .setPoints(2, 1,0, 1,0);
-            bBot .setPoints(2, 1,1, 1,1);
+            putPoints(bLeft, 0,0, 0,1);
+            putPoints(bTop, 1,0, 1,0);
+            putPoints(bBot, 1,1, 1,1);
         }
     }
 
@@ -1429,42 +1393,38 @@ QvisSpectrumBar::drawArrow(QPainter *p, bool down, int x, int y, int w, int h,
 
     QColor *cols[5];
     cols[0] = 0;
-    cols[1] = (QColor *)&g.button();
-    cols[2] = (QColor *)&g.mid();
-    cols[3] = (QColor *)&g.light();
-    cols[4] = (QColor *)&g.dark();
+    cols[1] = (QColor *)&pal.color(QPalette::Button);
+    cols[2] = (QColor *)&pal.color(QPalette::Mid);
+    cols[3] = (QColor *)&pal.color(QPalette::Light);
+    cols[4] = (QColor *)&pal.color(QPalette::Dark);
 
 #define CMID    *cols[(colspec>>12) & 0xf ]
 #define CLEFT   *cols[(colspec>>8) & 0xf ]
 #define CTOP    *cols[(colspec>>4) & 0xf ]
 #define CBOT    *cols[ colspec & 0xf ]
 
-    QPen     savePen   = p->pen();     // save current pen
-    QBrush   saveBrush = p->brush();   // save current brush
-    QWMatrix wxm = p->worldMatrix();
-    QPen     pen(NoPen);
-#ifdef Q_WS_MACX
-    QBrush   brush(g.brush(QColorGroup::Background));
-#else
-    QBrush   brush(g.brush(QColorGroup::Button));
-#endif
+    QPen     savePen   = p.pen();     // save current pen
+    QBrush   saveBrush = p.brush();   // save current brush
+    QMatrix wxm = p.worldMatrix();
+    QPen     pen(Qt::NoPen);
+    QBrush   brush(pal.base());
 
-    p->setPen(pen);
-    p->setBrush(brush);
-    p->setWorldMatrix(matrix, TRUE);   // set transformation matrix
-    p->drawPolygon(bFill);             // fill arrow
-    p->setBrush(NoBrush);              // don't fill
+    p.setPen(pen);
+    p.setBrush(brush);
+    p.setWorldMatrix(matrix, TRUE);   // set transformation matrix
+    p.drawPolygon(bFill);             // fill arrow
+    p.setBrush(Qt::NoBrush);          // don't fill
 
-    p->setPen(CLEFT);
-    p->drawLineSegments(bLeft);
-    p->setPen(CTOP);
-    p->drawLineSegments(bTop);
-    p->setPen(CBOT);
-    p->drawLineSegments(bBot);
+    p.setPen(CLEFT);
+    p.drawLines(bLeft);
+    p.setPen(CTOP);
+    p.drawLines(bTop);
+    p.setPen(CBOT);
+    p.drawLines(bBot);
 
-    p->setWorldMatrix(wxm);
-    p->setBrush(saveBrush);            // restore brush
-    p->setPen(savePen);                // restore pen
+    p.setWorldMatrix(wxm);
+    p.setBrush(saveBrush);            // restore brush
+    p.setPen(savePen);                // restore pen
 
 #undef CMID
 #undef CLEFT
@@ -1489,30 +1449,14 @@ QvisSpectrumBar::drawArrow(QPainter *p, bool down, int x, int y, int w, int h,
 //   Brad Whitlock, Thu Aug 21 15:42:50 PST 2003
 //   I changed how the brush is selected so the widget looks better on MacOS X.
 //
+//   Brad Whitlock, Mon Jun  2 11:05:39 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisSpectrumBar::drawSpectrum()
+QvisSpectrumBar::drawSpectrum(QPainter &paint)
 {
-    // If the pixmap is not allocated, allocate it. 
-    bool totalFill = false;
-    if(pixmap == 0)
-    {
-        pixmap = new QPixmap(width(), height());
-        totalFill = true;
-    }
-
-#ifdef Q_WS_MACX
-    QBrush brush(colorGroup().brush(QColorGroup::Background));
-#else
-    QBrush brush(colorGroup().brush(QColorGroup::Button));
-#endif
-
-    // Create a painter and fill in the entire area with the background color.
-    QPainter paint(pixmap);
-    if(totalFill)
-        paint.fillRect(0, 0, width(), height(), brush);
-
     // Get the area that we can draw the spectrum in.
     QRect area(spectrumArea.x() + 2, spectrumArea.y() + 2,
                spectrumArea.width() - 4, spectrumArea.height() - 4);
@@ -1555,14 +1499,13 @@ QvisSpectrumBar::drawSpectrum()
         }
 
         // Draw the sunken bevel around the spectrum.
-        drawBox(&paint, spectrumArea, colorGroup().dark(), colorGroup().light());
+        drawBox(paint, spectrumArea, 
+                palette().color(QPalette::Dark), 
+                palette().color(QPalette::Light));
 
         // Delete the color array.
         delete [] interpolatedColors;
     }
-
-    // Make pixmap the background pixmap.
-    setBackgroundPixmap(*pixmap);
 }
 
 // ****************************************************************************
@@ -1818,41 +1761,33 @@ QvisSpectrumBar::getRawColors(int range)
 //   Brad Whitlock, Wed Mar 13 10:22:05 PDT 2002
 //   Made it use a single pixmap and added a focus rectangle.
 //
+//   Brad Whitlock, Mon Jun  2 11:16:45 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisSpectrumBar::paintEvent(QPaintEvent *e)
 {
-    bool clipByRegion = true;
-
-    // If the spectrum pixmap does not exist, generate it.
-    if(pixmap == 0)
-    {
-        drawControls();
-        drawSpectrum();
-        clipByRegion = false;
-    }
-
-    // Create a painter to draw on this widget. If the pixmaps that we're
-    // blitting did not have to be created, pay attention to the clipping
-    // region stored in the paint event.
+    // Create a painter to draw on this widget.
     QPainter paint(this);
-    if(clipByRegion && !e->region().isEmpty() && !e->region().isNull())
+
+    // Set up clipping.
+    if(!e->region().isEmpty())
         paint.setClipRegion(e->region());
 
-    // Blit the pixmaps to the screen.
-    paint.drawPixmap(QPoint(0,0), *pixmap);
+    // Draw the controls.
+    drawControls(paint);
+    drawSpectrum(paint);
 
     // If this widget has the focus then draw the focus rectangle.
     if(hasFocus())
     {
-        QRect r(0, 0, width(), height());
-#if QT_VERSION >= 300
-        style().drawPrimitive(QStyle::PE_FocusRect, &paint, r, colorGroup(),
-                              QStyle::Style_HasFocus);
-#else
-        style().drawFocusRect(&paint, r, colorGroup());
-#endif
+        QStyleOption so;
+        so.initFrom(this);
+        style()->drawPrimitive(QStyle::PE_FrameFocusRect, 
+                               &so,
+                               &paint);
     }
 }
 
@@ -1871,6 +1806,9 @@ QvisSpectrumBar::paintEvent(QPaintEvent *e)
 //   
 //   Hank Childs, Thu Jun  8 13:52:35 PDT 2006
 //   Fix compiler warning for casting.
+//
+//   Brad Whitlock, Mon Jun  2 11:34:26 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -1906,7 +1844,6 @@ QvisSpectrumBar::resizeEvent(QResizeEvent *)
         qDebug("This orientation is not supported yet!");
 
     // Update the whole widget.
-    deletePixmap();
     update();
 }
 
@@ -1923,13 +1860,15 @@ QvisSpectrumBar::resizeEvent(QResizeEvent *)
 //   Brad Whitlock, Wed Mar 13 10:09:38 PDT 2002
 //   Made it use a single pixmap.
 //
+//   Brad Whitlock, Mon Jun  2 11:34:39 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisSpectrumBar::paletteChange(const QPalette &)
 {
     // Update the whole widget.
-    deletePixmap();
     update();
 }
 
@@ -1949,6 +1888,9 @@ QvisSpectrumBar::paletteChange(const QPalette &)
 //   Brad Whitlock, Wed Mar 13 12:05:25 PDT 2002
 //   Made key support better.
 //
+//   Brad Whitlock, Mon Jun  2 11:34:52 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1957,12 +1899,13 @@ QvisSpectrumBar::keyPressEvent(QKeyEvent *e)
     // Figure the currently selected point.
     int current_sel = controlPoints->Rank(controlPoints->NumControlPoints() - 1);
     int new_sel;
+    bool handled = true;
 
     if(equalSpacing())
     {
         switch(e->key())
         {
-        case Key_Left:
+        case Qt::Key_Left:
             if(current_sel > 0)
                 new_sel = current_sel - 1;
             else
@@ -1970,7 +1913,7 @@ QvisSpectrumBar::keyPressEvent(QKeyEvent *e)
             controlPoints->GiveHighestRank(new_sel);
             updateControlPoints();
             break;
-        case Key_Right:
+        case Qt::Key_Right:
             if(current_sel < controlPoints->NumControlPoints() - 1)
                 new_sel = current_sel + 1;
             else
@@ -1978,56 +1921,63 @@ QvisSpectrumBar::keyPressEvent(QKeyEvent *e)
             controlPoints->GiveHighestRank(new_sel);
             updateControlPoints();
             break;
-        case Key_Up:
-        case Key_Return:
+        case Qt::Key_Up:
+        case Qt::Key_Return:
             colorSelected(current_sel);
+            break;
+        default:
+            handled = false;
         }
     }
     else
     {
         switch(e->key())
         {
-        case Key_Shift:
-            shiftApplied = true;
-            break;
-        case Key_Left:
-            if(shiftApplied)
+        case Qt::Key_Left:
+            if((e->modifiers() & Qt::ShiftModifier) > 0)
                 moveControlPoint(PAGE_DECREMENT);
             else
                 moveControlPoint(DECREMENT);
             break;
-        case Key_Up:
-        case Key_Return:
+        case Qt::Key_Up:
+        case Qt::Key_Return:
             colorSelected(current_sel);
             break;
-        case Key_Right:
-            if(shiftApplied)
+        case Qt::Key_Right:
+            if((e->modifiers() & Qt::ShiftModifier) > 0)
                 moveControlPoint(PAGE_INCREMENT);
             else
                 moveControlPoint(INCREMENT);
             break;
-        case Key_PageUp:
+        case Qt::Key_PageUp:
             moveControlPoint(PAGE_INCREMENT);
             break;
-        case Key_PageDown:
+        case Qt::Key_PageDown:
             moveControlPoint(PAGE_DECREMENT);
             break;
-        case Key_Home:
+        case Qt::Key_Home:
             moveControlPoint(PAGE_HOME);
             break;
-        case Key_End:
+        case Qt::Key_End:
             moveControlPoint(PAGE_END);
             break;
-        case Key_BackSpace:
-        case Key_Space:
+        case Qt::Key_Backspace:
+        case Qt::Key_Space:
             // Find the index of the control point with the lowest rank.
             new_sel = controlPoints->Rank(0);
             // Give the control point the highest rank and redraw the controls.
             controlPoints->GiveHighestRank(new_sel);
             updateControlPoints();
             break;
+        default:
+            handled = false;
         }
     }
+
+    if(handled)
+        e->accept();
+    else
+        e->ignore();
 }
 
 // ****************************************************************************
@@ -2060,30 +2010,6 @@ QvisSpectrumBar::colorSelected(int index)
 }
 
 // ****************************************************************************
-// Method: QvisSpectrumBar::keyReleaseEvent
-//
-// Purpose: 
-//   Handles key release events for the widget. This is mainly to determine
-//   when the shift key has been released.
-//
-// Arguments:
-//   e : The key event.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jan 3 11:22:28 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisSpectrumBar::keyReleaseEvent(QKeyEvent *e)
-{
-    if(e->key() == Key_Shift)
-        shiftApplied = false;
-}
-
-// ****************************************************************************
 // Method: QvisSpectrumBar::mousePressEvent
 //
 // Purpose: 
@@ -2100,6 +2026,9 @@ QvisSpectrumBar::keyReleaseEvent(QKeyEvent *e)
 // Modifications:
 //   Brad Whitlock, Wed Mar 13 11:01:03 PDT 2002
 //   Modified the clip region.
+//
+//   Brad Whitlock, Mon Jun  2 11:43:33 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -2142,11 +2071,8 @@ QvisSpectrumBar::mousePressEvent(QMouseEvent *e)
         controlPoints->Sort();
         new_sel = controlPoints->Rank(controlPoints->NumControlPoints() - 1);
 
-        // Redraw the controls.
-        drawControls();
-
         // Figure out the regions covered by the old and new control points
-        // and only repaint those regions.
+        // and only update those regions.
         QPoint newLocation(controlPointLocation(new_sel));
         QPoint oldLocation(controlPointLocation(current_sel));
 
@@ -2156,7 +2082,7 @@ QvisSpectrumBar::mousePressEvent(QMouseEvent *e)
                    slider.width(), slider.height());
 
         // Update the region covered by the new and old control points.
-        repaint(r + r2, false);
+        update(r + r2);
 
         // Emit a signal containing the index of the new control point.
         emit activeControlPointChanged(new_sel);
@@ -2186,7 +2112,7 @@ QvisSpectrumBar::mousePressEvent(QMouseEvent *e)
     // If a control point was clicked with the right mouse button, emit
     // a signal that will tell external customers that the control point
     // wants a new color.
-    if(new_sel != -1 && e->button() == RightButton)
+    if(new_sel != -1 && e->button() == Qt::RightButton)
         colorSelected(new_sel);
 }
 
@@ -2276,7 +2202,9 @@ QvisSpectrumBar::mouseMoveEvent(QMouseEvent *e)
 // Creation:   Wed Jan 3 11:24:28 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun  2 11:40:20 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void 
@@ -2295,10 +2223,9 @@ QvisSpectrumBar::mouseReleaseEvent(QMouseEvent *)
 
         if(!continuousUpdate())
         {
-            drawSpectrum();
             QRegion r(spectrumArea.x(), spectrumArea.y(), spectrumArea.width(),
                       spectrumArea.height());
-            repaint(r);
+            update(r);
 
             // Emit a signal containing the index and position of the control
             // point with the highest rank.
@@ -2324,6 +2251,9 @@ QvisSpectrumBar::mouseReleaseEvent(QMouseEvent *)
 //   Brad Whitlock, Thu Mar 14 08:30:06 PDT 2002
 //   Added code to sort the control points.
 //
+//   Brad Whitlock, Mon Jun  2 11:44:50 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -2334,12 +2264,9 @@ QvisSpectrumBar::updateControlPoints()
 
     if(isVisible())
     {
-        drawControls();
         update(controlsArea.x(), controlsArea.y(), controlsArea.width(),
                controlsArea.height());
     }
-    else
-        deletePixmap();
 
     // Emit a signal containing the index of the new control point.
     emit activeControlPointChanged(index);
@@ -2366,6 +2293,9 @@ QvisSpectrumBar::updateControlPoints()
 //   Brad Whitlock, Wed Mar 13 10:09:38 PDT 2002
 //   Made it use a single pixmap.
 //
+//   Brad Whitlock, Mon Jun  2 11:43:01 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -2380,14 +2310,11 @@ QvisSpectrumBar::moveControlPointRedraw(int index, float pos, bool redrawSpectru
     // If we're suppressing updates, delete the pixmaps and return.
     if(b_suppressUpdates)
     {
-        deletePixmap();
         return;
     }
 
     if(isVisible())
     {
-        drawControls();
-
         // Construct a region that covers the old and new locations of the control point.
         QPoint newLocation(controlPointLocation(index));
         QRegion r(newLocation.x(), newLocation.y(),
@@ -2399,19 +2326,15 @@ QvisSpectrumBar::moveControlPointRedraw(int index, float pos, bool redrawSpectru
         // Update the spectrum
         if(redrawSpectrum)
         {
-            drawSpectrum();
             QRegion r3(spectrumArea.x(), spectrumArea.y(), spectrumArea.width(),
                        spectrumArea.height());
             final = final + r3;
         }
 
         // Update the region covered by the new and old control points and
-        // maybe the spectrum area. By only repainting those relatively small
-        // rectangles, flicker due to repainting is much reduced.
-        repaint(final, false);
+        // maybe the spectrum area.
+        update(final);
     }
-    else
-        deletePixmap();
 }
 
 // ****************************************************************************

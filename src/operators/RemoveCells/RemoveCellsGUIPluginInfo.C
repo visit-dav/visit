@@ -42,7 +42,7 @@
 
 #include <RemoveCellsPluginInfo.h>
 #include <RemoveCellsAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisRemoveCellsWindow.h>
 
 #if defined(__APPLE__)

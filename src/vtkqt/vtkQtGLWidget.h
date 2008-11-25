@@ -39,7 +39,7 @@
 #ifndef VTKQT_GL_WIDGET_H
 #define VTKQT_GL_WIDGET_H
 #include <vtkqt_exports.h>
-#include <qgl.h>
+#include <QtOpenGL>
 
 class vtkQtRenderWindowInteractor;
 
@@ -64,13 +64,16 @@ class vtkQtRenderWindowInteractor;
 //   Gunther Weber, Fri Aug  3 17:56:01 PDT 2007
 //   Added wheelEvent method.
 //
+//   Brad Whitlock, Thu May  8 16:25:44 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class VTKQT_API vtkQtGLWidget : public QGLWidget
 {
     Q_OBJECT
 public:
-    vtkQtGLWidget(QWidget *parent, const char *name);
+    vtkQtGLWidget(QWidget *parent);
     virtual ~vtkQtGLWidget()        { }
     void setLineSmoothing(bool val) { lineSmoothing = val; }
     bool getLineSmoothing() const   { return lineSmoothing; }

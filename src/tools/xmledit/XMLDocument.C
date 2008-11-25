@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 
+#include "XMLEditStd.h"
 #include "XMLDocument.h"
 
 #include <Plugin.h>
@@ -52,32 +53,37 @@
 #include <sys/stat.h>
 #endif
 
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
 vector<EnumType*> EnumType::enums;
 
 class ErrorHandler : public QXmlErrorHandler
 {
     bool error(const QXmlParseException & exception)
     {
-        cerr << "Error (line "<< exception.lineNumber()
+        cErr << "Error (line "<< exception.lineNumber()
              << " column " << exception.columnNumber()
-             << "): " << exception.message() << endl;
+             << "): " << exception.message() << Endl;
         return false;
     }
     bool warning(const QXmlParseException & exception)
     {
-        cerr << "Warning (line "<< exception.lineNumber()
+        cErr << "Warning (line "<< exception.lineNumber()
              << " column " << exception.columnNumber()
-             << "): " << exception.message() << endl;
+             << "): " << exception.message() << Endl;
         return false;
     }
     bool fatalError(const QXmlParseException & exception)
     {
-        cerr << "Fatal error (line "<< exception.lineNumber()
+        cErr << "Fatal error (line "<< exception.lineNumber()
              << " column " << exception.columnNumber()
-             << "): " << exception.message() << endl;
+             << "): " << exception.message() << Endl;
         return false;
     }
-    QString errorString()
+    QString errorString() const
     {
         return "No error string defined....";
     }
@@ -123,6 +129,9 @@ class ErrorHandler : public QXmlErrorHandler
 //    Brad Whitlock, Thu Mar 6 14:48:36 PST 2008
 //    Adapted to updated CodeFile implementation.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
 void
@@ -133,7 +142,7 @@ XMLDocument::open(const QString &file)
     FieldFactory  *fieldFactory = new FieldFactory;
     XMLParser     parser(fieldFactory, file);
 
-    ifstream test(file.latin1(),ios::in);
+    ifstream test(file.toStdString().c_str(),ios::in);
     if (!test)
     {
         docType = "Plugin";
@@ -151,7 +160,7 @@ XMLDocument::open(const QString &file)
     try
     {
         QFile             xmlFile(file);
-        QXmlInputSource   source(xmlFile);
+        QXmlInputSource   source(&xmlFile);
         QXmlSimpleReader  reader;
         ErrorHandler      errorhandler;
         
@@ -162,7 +171,7 @@ XMLDocument::open(const QString &file)
 
         if (!success)
         {
-            cerr << "Error parsing input file " << file << endl;
+            cerr << "Error parsing input file " << file.toStdString() << endl;
             exit(-1);
         }
 
@@ -181,14 +190,14 @@ XMLDocument::open(const QString &file)
 
 #if !defined(_WIN32)
         struct stat s;
-        stat(file.latin1(), &s);
+        stat(file.toStdString().c_str(), &s);
         if (!(s.st_mode & S_IWUSR))
         {
             QMessageBox::warning(0,"Warning","File is not writable.");
         }
         if (attribute && attribute->codeFile)
         {
-            stat(attribute->codeFile->FileName().latin1(), &s);
+            stat(attribute->codeFile->FileName().toStdString().c_str(), &s);
             if (!(s.st_mode & S_IWUSR))
             {
                 QMessageBox::warning(0,"Warning","Code file is not writable.");
@@ -204,7 +213,7 @@ XMLDocument::open(const QString &file)
     }
     catch (const QString &s)
     {
-        cerr << "ERROR: " << s << endl;
+        cerr << "ERROR: " << s.toStdString() << endl;
         exit(-1);
     }
 }
@@ -224,6 +233,9 @@ XMLDocument::open(const QString &file)
 //  Modifications:
 //    Brad Whitlock, Thu Mar 6 14:50:21 PST 2008
 //    Adapted to newer CodeFile implementation.
+//
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
 //
 // ****************************************************************************
 void
@@ -268,8 +280,7 @@ XMLDocument::save(const QString &file)
             {
                 
                 QMessageBox::warning(0,"Error",
-                    QString().sprintf("The enabler for field %s must have at least one value.",
-                                      attribute->fields[i]->name.latin1()));
+                    QString("The enabler for field %1 must have at least one value.").arg(attribute->fields[i]->name));
                 return;
             }
         }
@@ -303,12 +314,16 @@ XMLDocument::save(const QString &file)
         }
     }
 
-    ofstream out(file, ios::out);
-    if (!out)
+    
+    QFile outfile(file);
+
+    if (!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QMessageBox::warning(0,"Error","Could not open xml file for saving!");
         return;
     }
+    
+    QTextStream out(&outfile);
 
     out << "<?xml version=\"1.0\"?>\n";
     if (docType == "Attribute")
@@ -316,7 +331,7 @@ XMLDocument::save(const QString &file)
     else
         plugin->SaveXML(out, "");
 
-    out.close();
+    outfile.close();
 
     if (attribute->codeFile)
     {

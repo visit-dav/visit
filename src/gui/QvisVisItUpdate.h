@@ -39,12 +39,13 @@
 #ifndef QVIS_VISIT_UPDATE_H
 #define QVIS_VISIT_UPDATE_H
 #include <GUIBase.h>
-#include <qobject.h>
-#include <qstringlist.h>
-#include <QvisFtp.h>
+#include <QObject>
+#include <QStringList>
+#include <QByteArray>
+#include <QProcess>
 
-class QProcess;
 class QUrlInfo;
+class QvisDownloader;
 
 // ****************************************************************************
 // Class: QvisVisItUpdate
@@ -69,13 +70,16 @@ class QUrlInfo;
 //   Added keyword `public' for inheritance of GUIBase.  This addresses
 //   compiler warning on xlC.
 //
+//   Brad Whitlock, Thu Oct  2 10:45:14 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisVisItUpdate : public QObject, public GUIBase
 {
     Q_OBJECT
 public:
-    QvisVisItUpdate(QObject *parent = 0, const char *name = 0);
+    QvisVisItUpdate(QObject *parent = 0);
     virtual ~QvisVisItUpdate();
 
 public slots:
@@ -85,36 +89,33 @@ signals:
     void installationComplete(const QString &);
 private slots:
     void initiateStage();
-    void initiateDownload();
-    void ftp_commandStarted();
-    void ftp_commandFinished();
-    void ftp_done(bool);
-    void ftp_stateChanged(int);
-    void ftp_listInfo(const QUrlInfo &);
-    void ftp_reportDownloadProgress(int,int);
-
+    void doneSubmittingRunInfo(bool);
+    void determineNewVersion(bool error);
+    void downloadDone(bool error);
+    void getRequiredFiles();
+    void reportDownloadProgress(int done, int total);
     void readInstallerStdout();
     void readInstallerStderr();
-    void emitInstallationComplete();
+    void emitInstallationComplete(int);
 private:
-    void    provideLogin();
+    QString runInformationString() const;
     void    nextStage();
-    QString latestDirectory() const;
     QString localTempDirectory() const;
     QString getInstallationDir() const;
-    void    getRequiredFiles();
     void    installVisIt();
     void    cleanUp();
+    QString remoteToLocalName(const QString &remote) const;
 
-    QvisFtp     *ftp;
-    QProcess    *installProcess;
-    int          stage;
-    QString      distName;
-    QString      configName;
-    QString      bankName;
-    QString      latestVersion;
-    QStringList  files;
-    QStringList  downloads;
+    QvisDownloader *downloader;
+    QProcess       *installProcess;
+    int             stage;
+    QString         distName;
+    QString         configName;
+    QString         bankName;
+    QString         latestVersion;
+    QStringList     files;
+    QStringList     downloads;
+    QByteArray      bytes;
 };
 
 #endif

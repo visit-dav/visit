@@ -39,19 +39,19 @@
 #include <QvisLightingWindow.h>
 #include <stdio.h>
 
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qpixmap.h>
-#include <qradiobutton.h>
+#include <QLabel>
+#include <QLayout>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QPixmap>
+#include <QRadioButton>
 #include <QvisColorButton.h>
 #include <QvisLightingWidget.h>
 #include <QvisOpacitySlider.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
+#include <QLineEdit>
+#include <QSpinBox>
 
 #include <ColorAttribute.h>
 #include <LightAttributes.h>
@@ -115,12 +115,13 @@ QvisLightingWindow::QvisLightingWindow(LightList *subj, const QString &caption,
 //   Brad Whitlock, Fri Feb 15 15:34:19 PST 2002
 //   Deleted parentless widgets.
 //
+//   Cyrus Harrison, Wed Aug 27 08:28:22 PDT 2008
+//   Set parent for button groups so we dont have to explicitly clean them up.
+//
 // ****************************************************************************
 
 QvisLightingWindow::~QvisLightingWindow()
 {
-    // Delete parentless widgets.
-    delete modeButtons;
 }
 
 // ****************************************************************************
@@ -145,12 +146,16 @@ QvisLightingWindow::~QvisLightingWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisLightingWindow::CreateWindowContents()
 {
-    QGridLayout *gLayout = new QGridLayout(topLayout, 2, 5);
+    QGridLayout *gLayout = new QGridLayout();
+    topLayout->addLayout(gLayout);
 
     //
     // Create light icons.
@@ -161,113 +166,109 @@ QvisLightingWindow::CreateWindowContents()
     //
     // Create the mode setting radio buttons.
     //
-    QLabel *modeLabel = new QLabel(tr("Mode"), central, "modeLabel");
+    QLabel *modeLabel = new QLabel(tr("Mode"), central);
     gLayout->addWidget(modeLabel, 0, 0);
 
-    modeButtons = new QButtonGroup();
-    connect(modeButtons, SIGNAL(clicked(int)),
+    modeButtons = new QButtonGroup(central);
+    connect(modeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(modeClicked(int)));
-    QRadioButton *rb = new QRadioButton(tr("Edit"), central, "rb1");
-    modeButtons->insert(rb, 0);
-    gLayout->addWidget(rb, 0, 1, AlignLeft);
-    rb = new QRadioButton(tr("Preview"), central, "rb2");
-    modeButtons->insert(rb, 1);
-    gLayout->addWidget(rb, 0, 2, AlignLeft);
+    QRadioButton *rb = new QRadioButton(tr("Edit"), central);
+    modeButtons->addButton(rb, 0);
+    gLayout->addWidget(rb, 0, 1, Qt::AlignLeft);
+    rb = new QRadioButton(tr("Preview"), central);
+    modeButtons->addButton(rb, 1);
+    gLayout->addWidget(rb, 0, 2, Qt::AlignLeft);
 
     //
     // Create the active light combo box.
     //
-    activeLightComboBox = new QComboBox(central, "activeLightComboBox");
-    activeLightComboBox->insertItem("1");
-    activeLightComboBox->insertItem("2");
-    activeLightComboBox->insertItem("3");
-    activeLightComboBox->insertItem("4");
-    activeLightComboBox->insertItem("5");
-    activeLightComboBox->insertItem("6");
-    activeLightComboBox->insertItem("7");
-    activeLightComboBox->insertItem("8");
+    activeLightComboBox = new QComboBox(central);
+    activeLightComboBox->addItem("1");
+    activeLightComboBox->addItem("2");
+    activeLightComboBox->addItem("3");
+    activeLightComboBox->addItem("4");
+    activeLightComboBox->addItem("5");
+    activeLightComboBox->addItem("6");
+    activeLightComboBox->addItem("7");
+    activeLightComboBox->addItem("8");
     connect(activeLightComboBox, SIGNAL(activated(int)),
             this, SLOT(activeLightComboBoxChanged(int)));
-    activeLightLabel = new QLabel(activeLightComboBox, tr("Active light"),
-                                  central, "activeLightLabel");
-    gLayout->addWidget(activeLightLabel, 0, 3, AlignRight);
-    gLayout->addWidget(activeLightComboBox, 0, 4, AlignLeft);
+    activeLightLabel = new QLabel(tr("Active light"),central);
+    gLayout->addWidget(activeLightLabel, 0, 3, Qt::AlignRight);
+    gLayout->addWidget(activeLightComboBox, 0, 4, Qt::AlignLeft);
 
     //
     // Create the 3D area that lets users move the light sources.
     //
-    lightWidget = new QvisLightingWidget(central, "lightWidget");
+    lightWidget = new QvisLightingWidget(central);
     connect(lightWidget, SIGNAL(lightMoved(double,double,double)),
             this, SLOT(lightMoved(double,double,double)));
-    gLayout->addMultiCellWidget(lightWidget, 1, 1, 0, 2);
+    gLayout->addWidget(lightWidget, 1, 0, 1, 3);
 
     //
     // Create the light properties group box.
     //
-    lightGroupBox = new QGroupBox(central, "lightGroupBox");
+    lightGroupBox = new QGroupBox(central);
     lightGroupBox->setTitle(tr("Properties"));
-    lightGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(lightGroupBox, 1, 1, 3, 4);
-    QGridLayout *sLayout = new QGridLayout(lightGroupBox, 8, 2);
+    gLayout->addWidget(lightGroupBox, 1, 3, 1, 2);
+    gLayout->setMargin(10);
+    QGridLayout *sLayout = new QGridLayout(lightGroupBox);
     sLayout->setMargin(10);
     sLayout->setSpacing(10);
-    sLayout->addRowSpacing(0, 15);
+    sLayout->setRowMinimumHeight(0, 15);
 
-    lightTypeComboBox = new QComboBox(lightGroupBox, "lightTypeComboBox");
-    lightTypeComboBox->insertItem(tr("Ambient"));
-    lightTypeComboBox->insertItem(tr("Object"));
-    lightTypeComboBox->insertItem(tr("Camera"));
+    lightTypeComboBox = new QComboBox(lightGroupBox);
+    lightTypeComboBox->addItem(tr("Ambient"));
+    lightTypeComboBox->addItem(tr("Object"));
+    lightTypeComboBox->addItem(tr("Camera"));
     connect(lightTypeComboBox, SIGNAL(activated(int)),
             this, SLOT(lightTypeComboBoxChanged(int)));
     sLayout->addWidget(lightTypeComboBox, 1, 1);
-    QLabel *typeLabel = new QLabel(lightTypeComboBox, tr("Light type"),
-                                   lightGroupBox, "typeLabel");
+    QLabel *typeLabel = new QLabel(tr("Light type"),lightGroupBox);
     sLayout->addWidget(typeLabel, 1, 0);
 
-    lightDirectionLineEdit = new QLineEdit(lightGroupBox, "lightDirectionLineEdit");
+    lightDirectionLineEdit = new QLineEdit(lightGroupBox);
     connect(lightDirectionLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processLineDirectionText()));
     sLayout->addWidget(lightDirectionLineEdit, 2, 1);
-    lightDirectionLabel = new QLabel(lightDirectionLineEdit,
-                                     tr("Direction"), lightGroupBox, "dirLabel");
+    lightDirectionLabel = new QLabel(tr("Direction"), lightGroupBox);
     sLayout->addWidget(lightDirectionLabel, 2, 0);
 
-    lightColorButton = new QvisColorButton(lightGroupBox, "lightColorButton");
+    lightColorButton = new QvisColorButton(lightGroupBox);
     connect(lightColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(selectedLightColor(const QColor &)));
-    sLayout->addWidget(lightColorButton, 3, 1, AlignLeft);
-    QLabel *colorLabel = new QLabel(lightColorButton, tr("Color"),
-                                  lightGroupBox, "colorLabel");
+    sLayout->addWidget(lightColorButton, 3, 1, Qt::AlignLeft);
+    QLabel *colorLabel = new QLabel(tr("Color"),lightGroupBox);
     sLayout->addWidget(colorLabel, 3, 0);
 
-    lightBrightness = new QvisOpacitySlider(lightGroupBox, "lightBrightness");
-    lightBrightness->setMinValue(0);
-    lightBrightness->setMaxValue(100);
+    lightBrightness = new QvisOpacitySlider(lightGroupBox);
+    lightBrightness->setMinimum(0);
+    lightBrightness->setMaximum(100);
     connect(lightBrightness, SIGNAL(valueChanged(int)),
             this, SLOT(brightnessChanged(int)));
-    QLabel *brightnessLabel = new QLabel(lightBrightness, tr("Brightness"),
-                                  lightGroupBox, "brightnessLabel");
+    QLabel *brightnessLabel = new QLabel(tr("Brightness"),lightGroupBox);
     sLayout->addWidget(brightnessLabel, 4, 0);
     sLayout->addWidget(lightBrightness, 4, 1);
 
-    lightBrightnessSpinBox = new QSpinBox(0, 100, 1, lightGroupBox,
-        "lightBrightnessSpinBox");
+    lightBrightnessSpinBox = new QSpinBox(lightGroupBox);
+    lightBrightnessSpinBox->setRange(0,100);
+    lightBrightnessSpinBox->setSingleStep(1);
     lightBrightnessSpinBox->setSuffix("%");
     connect(lightBrightnessSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(brightnessChanged2(int)));
     sLayout->addWidget(lightBrightnessSpinBox, 5, 1);
 
-    lightEnabledCheckBox = new QCheckBox(tr("Enabled"), lightGroupBox, "lightEnabledCheckBox");
+    lightEnabledCheckBox = new QCheckBox(tr("Enabled"), lightGroupBox);
     connect(lightEnabledCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(enableToggled(bool)));
-    sLayout->addWidget(lightEnabledCheckBox, 6, 1, AlignLeft);
+    sLayout->addWidget(lightEnabledCheckBox, 6, 1, Qt::AlignLeft);
 
     sLayout->setRowStretch(7, 5);
 
     // Set the enabled state of certain widgets based on state that is not
     // kept in the state object.
     modeButtons->blockSignals(true);
-    modeButtons->setButton(0);
+    modeButtons->button(0)->setChecked(true);
     modeButtons->blockSignals(false);
 }
 
@@ -287,6 +288,9 @@ QvisLightingWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Wed Mar 26 09:22:15 PDT 2003
 //   I added a spinbox for light brightness.
+//
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -310,11 +314,13 @@ QvisLightingWindow::UpdateWindow(bool)
         num.sprintf("%d", i + 1);
         if(enabled)
         {
-            activeLightComboBox->changeItem(*onLightIcon, num, i);
+            activeLightComboBox->setItemText(i,num);
+            activeLightComboBox->setItemIcon(i,*onLightIcon);
         }
         else
         {
-            activeLightComboBox->changeItem(*offLightIcon, num, i);
+            activeLightComboBox->setItemText(i,num);
+            activeLightComboBox->setItemIcon(i,*offLightIcon);
         }
     }
     activeLightComboBox->blockSignals(false);
@@ -323,7 +329,7 @@ QvisLightingWindow::UpdateWindow(bool)
 
     // Update the light type combobox.
     lightTypeComboBox->blockSignals(true);
-    lightTypeComboBox->setCurrentItem(light.GetType());
+    lightTypeComboBox->setCurrentIndex(light.GetType());
     lightTypeComboBox->blockSignals(false);
 
     // Update the enabled toggle.
@@ -442,6 +448,9 @@ QvisLightingWindow::UpdateLightWidget()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -455,11 +464,11 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
     if(which_widget == 0 || doAll)
     {
         LightAttributes &light = lights->GetLight(activeLight);
-        temp = lightDirectionLineEdit->displayText().simplifyWhiteSpace();
+        temp = lightDirectionLineEdit->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg",
+            okay = (sscanf(temp.toStdString().c_str(), "%lg %lg %lg",
                            &vals[0], &vals[1], &vals[2]) == 3);
             if(okay)
             {

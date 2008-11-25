@@ -40,16 +40,15 @@
 
 #include <math.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qvgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
 
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
@@ -84,6 +83,8 @@ QvisSurfacePlotWindow::QvisSurfacePlotWindow(const int type,
 {
     plotType    = type;
     surfaceAtts = surfaceAtts_;
+    colorModeButtons = 0;
+    scalingButtons = 0;
 }
 
 // ****************************************************************************
@@ -140,6 +141,9 @@ QvisSurfacePlotWindow::~QvisSurfacePlotWindow()
 //   Brad Whitlock, Wed Apr 23 12:01:18 PDT 2008
 //   Added tr()'s
 //
+//   Brad Whitlock, Fri Jul 18 11:17:41 PDT 2008
+//   Qt 4.
+//
 //   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
 //   Swap the min/max in the gui.
 //
@@ -148,235 +152,177 @@ QvisSurfacePlotWindow::~QvisSurfacePlotWindow()
 void
 QvisSurfacePlotWindow::CreateWindowContents()
 {
-    //
-    //  Create the rendering mode layout
-    //
-    QGridLayout *renderLayout = new QGridLayout(topLayout, 4, 2);
-    renderLayout->addColSpacing(0, 2);
-   
-    //
-    // Create the surface toggle
-    //
-    surfaceToggle = new QCheckBox(tr("Surface"), central, "surfaceToggle");
-    connect(surfaceToggle, SIGNAL(toggled(bool)),
-            this, SLOT(surfaceToggled(bool)));
-    renderLayout->addMultiCellWidget(surfaceToggle, 0, 0, 0, 1);
-
-
-    //
-    // Create the wireframe toggle
-    //
-    wireframeToggle = new QCheckBox(tr("Wireframe"), central,"wireframeToggle");
-    connect(wireframeToggle, SIGNAL(toggled(bool)),
-            this, SLOT(wireframeToggled(bool)));
-    renderLayout->addMultiCellWidget(wireframeToggle, 2, 2, 0, 1); 
-
-
-    //
-    // Create the mode buttons that determine if the surface is 
-    // colored by z-value or single-color.
-    //
-    colorModeGroup = new QGroupBox(central, "colorModeGroup");
-    QVBoxLayout *modeLayout = new QVBoxLayout(colorModeGroup);
-    modeLayout->setMargin(10);
-    modeLayout->addSpacing(5);
-
-    colorModeButtons = new QButtonGroup(colorModeGroup, "colorModeButtons");
-    colorModeButtons->setFrameStyle(QFrame::NoFrame);
-    connect(colorModeButtons, SIGNAL(clicked(int)),
-            this, SLOT(colorModeChanged(int)));
-    QGridLayout *colorModeButtonLayout = 
-            new QGridLayout(colorModeButtons, 3, 2);
-    colorModeButtonLayout->setSpacing(5);
-    QLabel *colorModeLabel = 
-           new QLabel(tr("Surface color"), colorModeButtons, "colorModeLabel");
-    colorModeButtonLayout->addWidget(colorModeLabel, 0, 0);
-
-
-    QRadioButton *rb = new QRadioButton(tr("Z Value"),colorModeButtons,"colorByZ");
-    colorModeButtonLayout->addWidget(rb, 2, 0);
-    rb = new QRadioButton(tr("Constant"), colorModeButtons, "colorBySurface");
-    colorModeButtonLayout->addWidget(rb, 1, 0);
-
-    // Create the surface color button.
-    surfaceColor = new QvisColorButton(colorModeButtons, "surfaceColor");
-    surfaceColor->setButtonColor(QColor(255, 0, 0));
-    connect(surfaceColor, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(surfaceColorChanged(const QColor &)));
-    colorModeButtonLayout->addWidget(surfaceColor, 1, 1, 
-                                     AlignLeft | AlignVCenter);
-
-    // Create the surface color-by-z button.
-    colorTableButton = new QvisColorTableButton(colorModeButtons, 
-                                                "colorTableButton");
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
-            this, SLOT(colorTableClicked(bool, const QString &)));
-    colorModeButtonLayout->addWidget(colorTableButton, 2, 1, 
-                                     AlignLeft | AlignVCenter);
-
-    modeLayout->addWidget(colorModeButtons);
-
-    renderLayout->addWidget(colorModeGroup, 1, 1);
-
-
-
-    // Create the wireframe color button
-    QGroupBox *wireModeGroup = new QGroupBox(central, "wireModeGroup");
-
-    QVBoxLayout *wireModeLayout = new QVBoxLayout(wireModeGroup);
-    wireModeLayout->setMargin(10);
-
-    QButtonGroup * wireModeButtons = 
-                   new QButtonGroup(wireModeGroup, "wireModeButtons");
-    wireModeButtons->setFrameStyle(QFrame::NoFrame);
-    QGridLayout *wireModeButtonLayout =
-                   new QGridLayout(wireModeButtons, 2, 4);
-    wireModeButtonLayout->setSpacing(10);
-
-    wireframeColor = new QvisColorButton(wireModeButtons, "wireframeColor");
-    wireframeColor->setButtonColor(QColor(0, 0, 0));
-    connect(wireframeColor, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(wireframeColorChanged(const QColor &)));
-    wireModeButtonLayout->addWidget(wireframeColor, 1, 1);
-
-    wireframeLabel = new QLabel(wireframeColor, tr("Wire Color"),
-                                wireModeButtons, "wireframeLabel");
-    wireModeButtonLayout->addWidget(wireframeLabel, 1, 0);
-
-    //
-    // Create the lineWidth widget.
-    //
-    lineWidth = new QvisLineWidthWidget(0, wireModeButtons, "lineWidth");
-    wireModeButtonLayout->addWidget(lineWidth, 0, 3);
-    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
-            this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, tr("Line width"),
-                                wireModeButtons, "lineWidthLabel");
-    wireModeButtonLayout->addWidget(lineWidthLabel, 0, 2);
-
-    //
-    // Create the lineStyle widget.
-    //
-    lineStyle = new QvisLineStyleWidget(0, wireModeButtons, "lineStyle");
-    wireModeButtonLayout->addWidget(lineStyle, 0, 1);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, tr("Line style"),
-                                wireModeButtons, "lineStyleLabel");
-    wireModeButtonLayout->addWidget(lineStyleLabel, 0, 0);
-
-    wireModeLayout->addWidget(wireModeButtons);
-    renderLayout->addWidget(wireModeGroup, 3, 1);
-
     topLayout->addSpacing(5);
 
     //
-    // Create the scale radio buttons
+    // Create the surface color controls
     //
-    QHBoxLayout *scaleLayout = new QHBoxLayout(topLayout);
-    // Create a group of radio buttons
-    scalingButtons = new QButtonGroup( central, "scaleRadioGroup" );
-    scalingButtons->setFrameStyle(QFrame::NoFrame);
-    QLabel *scaleLabel = new QLabel(scalingButtons, tr("Scale  "), central,
-        "scaleLabel");
-    scaleLayout->addWidget(scaleLabel);
+    surfaceGroup = new QGroupBox(tr("Surface"), central);
+    surfaceGroup->setCheckable(true);
+    connect(surfaceGroup, SIGNAL(toggled(bool)),
+            this, SLOT(surfaceToggled(bool)));
+    topLayout->addWidget(surfaceGroup);
+ 
+    QHBoxLayout *surfaceInnerLayout = new QHBoxLayout(surfaceGroup);
+    surfaceInnerLayout->setMargin(8);
+    QGridLayout *surfaceLayout = new QGridLayout(0);
+    surfaceLayout->setMargin(0);
+    surfaceLayout->setSpacing(5);
+    surfaceInnerLayout->addLayout(surfaceLayout);
+    surfaceInnerLayout->addStretch(10);
 
-    QHBoxLayout *scaleButtonsLayout = new QHBoxLayout(scalingButtons);
-    scaleButtonsLayout->setSpacing(10);
-    rb = new QRadioButton(tr("Linear"), scalingButtons );
-    rb->setChecked( TRUE );
-    scaleButtonsLayout->addWidget(rb);
-    rb = new QRadioButton( scalingButtons );
-    rb->setText( tr("Log") );
-    scaleButtonsLayout->addWidget(rb);
-    rb = new QRadioButton( scalingButtons );
-    rb->setText( tr("Skew") );
-    scaleButtonsLayout->addWidget(rb);
-    scaleLayout->addWidget( scalingButtons );
-    scaleLayout->addStretch(0);
-    // Each time a radio button is clicked, call the scaleClicked slot.
-    connect(scalingButtons, SIGNAL(clicked(int)),
+    colorModeButtons = new QButtonGroup(surfaceGroup);
+    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+
+    QRadioButton *rb;
+    rb = new QRadioButton(tr("Color by Z value"), surfaceGroup);
+    colorModeButtons->addButton(rb, 0);
+    surfaceLayout->addWidget(rb, 1, 0);
+    rb = new QRadioButton(tr("Constant color"), surfaceGroup);
+    colorModeButtons->addButton(rb, 1);
+    surfaceLayout->addWidget(rb, 0, 0);
+
+    // Create the surface color button.
+    surfaceColor = new QvisColorButton(surfaceGroup);
+    surfaceColor->setButtonColor(QColor(255, 0, 0));
+    connect(surfaceColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(surfaceColorChanged(const QColor &)));
+    surfaceLayout->addWidget(surfaceColor, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+    // Create the surface color-by-z button.
+    colorTableButton = new QvisColorTableButton(surfaceGroup);
+    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    surfaceLayout->addWidget(colorTableButton, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+    //
+    // Create the wireframe controls
+    //
+    wireframeGroup = new QGroupBox(tr("Wireframe"), central);
+    wireframeGroup->setCheckable(true);
+    connect(wireframeGroup, SIGNAL(toggled(bool)),
+            this, SLOT(wireframeToggled(bool)));
+    topLayout->addWidget(wireframeGroup);
+ 
+    QGridLayout *wireframeLayout = new QGridLayout(wireframeGroup);
+
+    // Create the lineStyle widget.
+    lineStyle = new QvisLineStyleWidget(0, wireframeGroup);
+    wireframeLayout->addWidget(lineStyle, 0, 1, 1, 2);
+    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
+            this, SLOT(lineStyleChanged(int)));
+    QLabel *lineStyleLabel = new QLabel(tr("Line style"), wireframeGroup);
+    lineStyleLabel->setBuddy(lineStyle);
+    wireframeLayout->addWidget(lineStyleLabel, 0, 0);
+
+    // Create the lineWidth widget.
+    lineWidth = new QvisLineWidthWidget(0, wireframeGroup);
+    wireframeLayout->addWidget(lineWidth, 0, 4);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    QLabel *lineWidthLabel = new QLabel(tr("Line width"), wireframeGroup);
+    lineWidthLabel->setBuddy(lineWidth);
+    wireframeLayout->addWidget(lineWidthLabel, 0, 3);
+
+    wireframeColor = new QvisColorButton(wireframeGroup);
+    wireframeColor->setButtonColor(QColor(0, 0, 0));
+    connect(wireframeColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(wireframeColorChanged(const QColor &)));
+    wireframeLayout->addWidget(wireframeColor, 1, 1);
+    QLabel *wireframeLabel = new QLabel(tr("Wire color"), wireframeGroup);
+    wireframeLabel->setBuddy(wireframeColor);
+    wireframeLayout->addWidget(wireframeLabel, 1, 0);
+
+    //
+    // Scale controls
+    //
+    QGridLayout *scaleLayout = new QGridLayout(0);
+    scaleLayout->setMargin(0);
+    topLayout->addLayout(scaleLayout);
+
+    QLabel *scaleLabel = new QLabel(tr("Scale"), central);
+    scaleLayout->addWidget(scaleLabel, 0, 0);
+
+    scalingButtons = new QButtonGroup(central);
+    connect(scalingButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(scaleClicked(int)));
+    rb = new QRadioButton(tr("Linear"), central);
+    scalingButtons->addButton(rb, 0);
+    scaleLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Log"), central);
+    scalingButtons->addButton(rb, 1);
+    scaleLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton(tr("Skew"), central);
+    scalingButtons->addButton(rb, 2);
+    scaleLayout->addWidget(rb, 0, 3);
 
-    //
-    // Create the layout for skew information.
-    //
-  
-    QGridLayout *skewLayout = new QGridLayout(topLayout, 1, 2);
-    // Create the skew factor line edit
-    skewLineEdit = new QLineEdit(central, "skewLineEdit");
+    skewLineEdit = new QLineEdit(central);
     connect(skewLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSkewText()));
-    skewLayout->addColSpacing(0, 50);
-    skewLayout->addWidget(skewLineEdit, 0, 2);
-    skewLabel = new QLabel(skewLineEdit, tr("Skew factor"), central, "skewFactor");
-    skewLabel->setAlignment(AlignRight | AlignVCenter);
-    skewLayout->addWidget(skewLabel, 0, 1);
-
+    scaleLayout->addWidget(skewLineEdit, 1, 2, 1, 3);
+    skewLabel = new QLabel(tr("Skew factor"), central);
+    skewLabel->setBuddy(skewLineEdit);
+    scaleLayout->addWidget(skewLabel, 1, 0, 1, 2, Qt::AlignRight | Qt::AlignVCenter);
     topLayout->addSpacing(5);
 
     //
     // Create Limits stuff .
     //
-    //QGroupBox *limitsGroup = new QGroupBox(central, "limitsGroup");
-    //limitsGroup->setFrameStyle(QFrame::NoFrame);
-
-    QGridLayout *limitsLayout = new QGridLayout(topLayout, 3, 4);
-    limitsLayout->setMargin(10);
-    limitsLayout->setSpacing(5);
+    QGridLayout *limitsLayout = new QGridLayout(0);
+    topLayout->addLayout(limitsLayout);
+    limitsLayout->setMargin(0);
                                                      
-    limitsSelect = new QComboBox(false, central, "limitsSelect");
-    limitsSelect->insertItem(tr("Use Original Data"));
-    limitsSelect->insertItem(tr("Use Current Plot"));
+    limitsSelect = new QComboBox(central);
+    limitsSelect->addItem(tr("Use Original Data"));
+    limitsSelect->addItem(tr("Use Current Plot"));
     connect(limitsSelect, SIGNAL(activated(int)),
             this, SLOT(limitsSelectChanged(int)));
-    QLabel *limitsLabel = new QLabel(limitsSelect, "Limits",
-                                     central, "limitsLabel");
+    QLabel *limitsLabel = new QLabel(tr("Limits"), central);
+    limitsLabel->setBuddy(limitsLabel);
     limitsLayout->addWidget(limitsLabel, 0, 0);
-    limitsLayout->addColSpacing(1, 20);
-    limitsLayout->addMultiCellWidget(limitsSelect, 0, 0, 2, 3, AlignLeft);
+    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
 
     // Create the max toggle and line edit
-    maxToggle = new QCheckBox(tr("Max"), central, "maxToggle");
+    maxToggle = new QCheckBox(tr("Maximum"), central);
     limitsLayout->addWidget(maxToggle, 1, 2);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
-    maxLineEdit = new QLineEdit(central, "maxLineEdit");
+    maxLineEdit = new QLineEdit(central);
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText())); 
     limitsLayout->addWidget(maxLineEdit, 1, 3);
 
-
     // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Min"), central, "minToggle");
-    limitsLayout->addWidget(minToggle, 2, 2);
+    minToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minToggle, 2, 1);
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(central, "minLineEdit");
+    minLineEdit = new QLineEdit(central);
     connect(minLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 2, 3);
-    //limitsLayout->addColSpacing(4, 75);
-    //renderLayout->addWidget(limitsGroup, 2, 0);
+    limitsLayout->addWidget(minLineEdit, 2, 2, 1, 3);
 
     topLayout->addSpacing(5);
-    // Create toggle buttons for various flags
 
-    QGridLayout *toggleLayout = new QGridLayout(topLayout, 2, 2);
+    // Create toggle buttons for various flags
+    QHBoxLayout *toggleLayout = new QHBoxLayout(0);
+    toggleLayout->setMargin(0);
+    topLayout->addLayout(toggleLayout);
     toggleLayout->setSpacing(10);
 
     // Create the legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central, "legendToggle");
+    legendToggle = new QCheckBox(tr("Legend"), central);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    toggleLayout->addWidget(legendToggle, 0, 0, Qt::AlignHCenter);
+    toggleLayout->addWidget(legendToggle);
 
     // Create the lighting toggle
-    lightingToggle = new QCheckBox(tr("Lighting"), central, "lightingToggle");
+    lightingToggle = new QCheckBox(tr("Lighting"), central);
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
-    toggleLayout->addWidget(lightingToggle, 0, 1, Qt::AlignHCenter);
-
+    toggleLayout->addWidget(lightingToggle);
+    toggleLayout->addStretch(10);
 }
 
 // ****************************************************************************
@@ -430,6 +376,9 @@ QvisSurfacePlotWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Brad Whitlock, Fri Jul 18 11:58:52 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -450,90 +399,78 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // legendFlag
+        case SurfaceAttributes::ID_legendFlag:
             legendToggle->blockSignals(true);
             legendToggle->setChecked(surfaceAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
             break;
 
-        case 1: // lightingFlag
+        case SurfaceAttributes::ID_lightingFlag:
             lightingToggle->blockSignals(true);
             lightingToggle->setChecked(surfaceAtts->GetLightingFlag());
             lightingToggle->blockSignals(false);
             break;
 
-        case 2: // surfaceFlag
-            surfaceToggle->blockSignals(true);
-            surfaceToggle->setChecked(surfaceAtts->GetSurfaceFlag());
-            surfaceToggle->blockSignals(false);
-
-            // set sensitivity of other widgets.
-            surfaceColor->setEnabled(surfaceAtts->GetSurfaceFlag());
-            colorModeGroup->setEnabled(surfaceAtts->GetSurfaceFlag()); 
-            colorModeButtons->setEnabled(surfaceAtts->GetSurfaceFlag()); 
+        case SurfaceAttributes::ID_surfaceFlag:
+            surfaceGroup->blockSignals(true);
+            surfaceGroup->setChecked(surfaceAtts->GetSurfaceFlag());
+            surfaceGroup->blockSignals(false);
             break;
 
-        case 3: // wireframeFlag
-            wireframeToggle->blockSignals(true);
-            wireframeToggle->setChecked(surfaceAtts->GetWireframeFlag());
-            wireframeToggle->blockSignals(false);
-
-            // set sensitivity of other widgets.
-            wireframeColor->setEnabled(surfaceAtts->GetWireframeFlag());
-            wireframeLabel->setEnabled(surfaceAtts->GetWireframeFlag());
-
-            lineStyleLabel->setEnabled(surfaceAtts->GetWireframeFlag());
-            lineStyle->setEnabled(surfaceAtts->GetWireframeFlag());
-            lineWidthLabel->setEnabled(surfaceAtts->GetWireframeFlag());
-            lineWidth->setEnabled(surfaceAtts->GetWireframeFlag());
+        case SurfaceAttributes::ID_wireframeFlag:
+            wireframeGroup->blockSignals(true);
+            wireframeGroup->setChecked(surfaceAtts->GetWireframeFlag());
+            wireframeGroup->blockSignals(false);
             break;
 
-
-        case 4: // limitsMode
+        case SurfaceAttributes::ID_limitsMode:
             limitsSelect->blockSignals(true);
-            limitsSelect->setCurrentItem(surfaceAtts->GetLimitsMode());
+            limitsSelect->setCurrentIndex(surfaceAtts->GetLimitsMode());
             limitsSelect->blockSignals(false);
             break;
 
-        case 5: // minFlag
+        case SurfaceAttributes::ID_minFlag:
             minToggle->blockSignals(true);
             minToggle->setChecked(surfaceAtts->GetMinFlag());
             minLineEdit->setEnabled(surfaceAtts->GetMinFlag());
             minToggle->blockSignals(false);
             break;
 
-        case 6: // maxFlag
+        case SurfaceAttributes::ID_maxFlag:
             maxToggle->blockSignals(true);
             maxToggle->setChecked(surfaceAtts->GetMaxFlag());
             maxLineEdit->setEnabled(surfaceAtts->GetMaxFlag());
             maxToggle->blockSignals(false);
             break;
 
-        case 7: // colorByZFlag 
-            colorModeButtons->setButton(surfaceAtts->GetColorByZFlag() ? 0:1);
+        case SurfaceAttributes::ID_colorByZFlag :
+            colorModeButtons->button(surfaceAtts->GetColorByZFlag() ? 0:1)->setChecked(true);
+
+            surfaceColor->setEnabled(!surfaceAtts->GetColorByZFlag());
+            colorTableButton->setEnabled(surfaceAtts->GetColorByZFlag());
             break;
 
-        case 8: // scaling
-            scalingButtons->setButton(surfaceAtts->GetScaling());
+        case SurfaceAttributes::ID_scaling:
+            scalingButtons->button(surfaceAtts->GetScaling())->setChecked(true);
             skewLineEdit->setEnabled(surfaceAtts->GetScaling() ==
                 SurfaceAttributes::Skew);
             skewLabel->setEnabled(surfaceAtts->GetScaling() ==
                 SurfaceAttributes::Skew);
             break;
 
-        case  9: // lineStyle
+        case SurfaceAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(surfaceAtts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
 
-        case 10: // lineWidth
+        case SurfaceAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(surfaceAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
 
-        case 11: // surfaceColor
+        case SurfaceAttributes::ID_surfaceColor:
             { // new scope
             QColor temp(surfaceAtts->GetSurfaceColor().Red(),
                         surfaceAtts->GetSurfaceColor().Green(),
@@ -544,7 +481,7 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
             }
             break;
 
-        case 12: // wireframeColor
+        case SurfaceAttributes::ID_wireframeColor:
             { // new scope
             QColor temp(surfaceAtts->GetWireframeColor().Red(),
                         surfaceAtts->GetWireframeColor().Green(),
@@ -555,22 +492,22 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
             }
             break;
 
-        case 13: // skewFactor
+        case SurfaceAttributes::ID_skewFactor:
             temp.setNum(surfaceAtts->GetSkewFactor());
             skewLineEdit->setText(temp);
             break;
 
-        case 14: // min
+        case SurfaceAttributes::ID_min:
             temp.setNum(surfaceAtts->GetMin());
             minLineEdit->setText(temp);
             break;
 
-        case 15: // max
+        case SurfaceAttributes::ID_max:
             temp.setNum(surfaceAtts->GetMax());
             maxLineEdit->setText(temp);
             break;
 
-        case 16: // colorTableName
+        case SurfaceAttributes::ID_colorTableName:
             colorTableButton->setColorTable(
                               surfaceAtts->GetColorTableName().c_str());
             break;
@@ -607,78 +544,55 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Wed Apr 23 12:03:20 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri Jul 18 12:05:14 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisSurfacePlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
+    double val;
 
     // Do the skew factor.
-    if(which_widget == 0 || doAll)
+    if(which_widget == SurfaceAttributes::ID_skewFactor || doAll)
     {
-        temp = skewLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if(LineEditGetDouble(skewLineEdit, val))
+            surfaceAtts->SetSkewFactor(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                surfaceAtts->SetSkewFactor(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The skew factor was invalid. "
-                    "Resetting to the last good value of %1.").
-                  arg(surfaceAtts->GetSkewFactor());
-            Message(msg);
+            ResettingError("skew factor", 
+                DoubleToQString(surfaceAtts->GetSkewFactor()));
             surfaceAtts->SetSkewFactor(surfaceAtts->GetSkewFactor());
         }
     }
 
     // Do the coloring minimum value.
-    if(which_widget == 1 || doAll)
+    if(which_widget == SurfaceAttributes::ID_min || doAll)
     {
-        temp = minLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double val = temp.toDouble(&okay);
+        if(LineEditGetDouble(minLineEdit, val))
             surfaceAtts->SetMin(val);
-        }
-
-        if(!okay)
+        else
         {
-            msg = tr("The minimum value was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(surfaceAtts->GetMin());
-            Message(msg);
+            ResettingError("minimum", 
+                DoubleToQString(surfaceAtts->GetMin()));
             surfaceAtts->SetMin(surfaceAtts->GetMin());
         }
     }
 
-    // Do the coloring maximum value
-    if(which_widget == 2 || doAll)
+    // Do the coloring maximum value.
+    if(which_widget == SurfaceAttributes::ID_max || doAll)
     {
-        temp = maxLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double val = temp.toDouble(&okay);
+        if(LineEditGetDouble(maxLineEdit, val))
             surfaceAtts->SetMax(val);
-        }
-
-        if(!okay)
+        else
         {
-            msg = tr("The maximum value was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(surfaceAtts->GetMax());
-            Message(msg);
+            ResettingError("maximum", 
+                DoubleToQString(surfaceAtts->GetMax()));
             surfaceAtts->SetMax(surfaceAtts->GetMax());
         }
     }
-
 }
 
 // ****************************************************************************
@@ -1087,7 +1001,7 @@ QvisSurfacePlotWindow::colorModeChanged(int button)
 void
 QvisSurfacePlotWindow::processSkewText()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(SurfaceAttributes::ID_skewFactor);
     Apply();
 }
 
@@ -1131,7 +1045,7 @@ QvisSurfacePlotWindow::minToggled(bool val)
 void
 QvisSurfacePlotWindow::processMinLimitText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(SurfaceAttributes::ID_min);
     Apply();
 }
 
@@ -1176,7 +1090,7 @@ QvisSurfacePlotWindow::maxToggled(bool val)
 void
 QvisSurfacePlotWindow::processMaxLimitText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(SurfaceAttributes::ID_max);
     Apply();
 }
 
@@ -1204,7 +1118,7 @@ void
 QvisSurfacePlotWindow::colorTableClicked(bool , const QString &ctName)
 {
     surfaceAtts->SetColorByZFlag(true);
-    surfaceAtts->SetColorTableName(ctName.latin1());
+    surfaceAtts->SetColorTableName(ctName.toStdString());
     Apply();
 }
 

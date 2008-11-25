@@ -37,15 +37,15 @@
 *****************************************************************************/
 #include <vector>
 
-#include <qbuttongroup.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qcheckbox.h>
-#include <qgroupbox.h>
-#include <qlineedit.h>
-#include <qradiobutton.h>
-#include <qtabwidget.h>
-#include <qvbox.h>
+#include <QButtonGroup>
+#include <QLabel>
+#include <QLayout>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QLineEdit>
+#include <QRadioButton>
+#include <QTabWidget>
+#include <QWidget>
 
 #include <snprintf.h>
 #include <visit-config.h>
@@ -131,79 +131,77 @@ QvisMeshManagementWindow::~QvisMeshManagementWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Wed Jul  2 11:16:25 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisMeshManagementWindow::CreateWindowContents()
 {
 
-    tabs = new QTabWidget(central, "tabs");
+    tabs = new QTabWidget(central);
     connect(tabs, SIGNAL(selected(const QString &)),
             this, SLOT(tabSelected(const QString &)));
     topLayout->setSpacing(5);
     topLayout->addWidget(tabs);
 
-    pageCSG = new QVBox(central, "pageCSG");
-    pageCSG->setSpacing(5);
-    pageCSG->setMargin(10);
-    tabs->addTab(pageCSG, tr("CSG Meshing"));
-
-    pageCSGGroup = new QGroupBox(pageCSG, "pageCSGGroup");
-    pageCSGGroup->setFrameStyle(QFrame::NoFrame);
+    pageCSGGroup = new QWidget(central);
+    
+    tabs->addTab(pageCSGGroup, tr("CSG Meshing"));
 
     QVBoxLayout *internalLayoutCSGGroup = new QVBoxLayout(pageCSGGroup);
     internalLayoutCSGGroup->addSpacing(10);
-    QGridLayout *layoutCSGGroup = new QGridLayout(internalLayoutCSGGroup, 5, 3);
+    QGridLayout *layoutCSGGroup = new QGridLayout();
+    internalLayoutCSGGroup->addLayout(layoutCSGGroup);
     layoutCSGGroup->setSpacing(5);
 
     renderCSGDirect = new QCheckBox(tr("Don't discretize. Pass native CSG down pipeline"),
-                                    pageCSGGroup, "renderCSGDirect");
+                                    pageCSGGroup);
     connect(renderCSGDirect, SIGNAL(toggled(bool)),
             this, SLOT(renderCSGDirectChanged(bool)));
-    layoutCSGGroup->addMultiCellWidget(renderCSGDirect, 0, 0, 0, 3);
+    layoutCSGGroup->addWidget(renderCSGDirect, 0, 0, 1, 4);
     renderCSGDirect->setEnabled(false);
 
     discretizeBoundaryOnly = new QCheckBox(tr("Discretize boundary only"),
-                                    pageCSGGroup, "discretizeBoundaryOnly");
+                                           pageCSGGroup);
     connect(discretizeBoundaryOnly, SIGNAL(toggled(bool)),
             this, SLOT(discretizeBoundaryOnlyChanged(bool)));
-    layoutCSGGroup->addMultiCellWidget(discretizeBoundaryOnly, 1, 1, 0, 3);
+    layoutCSGGroup->addWidget(discretizeBoundaryOnly, 1, 0, 1, 4);
 
-    discretizeModeLabel = new QLabel(tr("Discretization Mode"), pageCSGGroup,
-                                             "discretizeModeLabel");
+    discretizeModeLabel = new QLabel(tr("Discretization Mode"), pageCSGGroup);
     layoutCSGGroup->addWidget(discretizeModeLabel, 2, 0);
-    discretizationMode = new QButtonGroup(0, "discretizationMode");
-    connect(discretizationMode, SIGNAL(clicked(int)),
+    discretizationMode = new QButtonGroup(pageCSGGroup);
+    connect(discretizationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(discretizationModeChanged(int)));
-    QRadioButton *discretizeUniform = new QRadioButton(tr("Uniform"), pageCSGGroup, "Uniform");
-    discretizationMode->insert(discretizeUniform);
+            
+    discretizeUniform = new QRadioButton(tr("Uniform"), pageCSGGroup);
+    discretizationMode->addButton(discretizeUniform,0);
     layoutCSGGroup->addWidget(discretizeUniform, 2, 1);
-    QRadioButton *discretizeAdaptive = new QRadioButton(tr("Adaptive"), pageCSGGroup, "Adaptive");
-    discretizationMode->insert(discretizeAdaptive);
+    discretizeAdaptive = new QRadioButton(tr("Adaptive"), pageCSGGroup);
+    discretizationMode->addButton(discretizeAdaptive,1);
 #if !HAVE_BILIB
     discretizeAdaptive->setEnabled(false);
 #endif
     layoutCSGGroup->addWidget(discretizeAdaptive, 2, 2);
 
-    smallestZoneLabel = new QLabel(tr("Smallest Zone (% bbox diag)"), pageCSGGroup,
-                                       "smallestZone");
+    smallestZoneLabel = new QLabel(tr("Smallest Zone (% bbox diag)"), pageCSGGroup);
     layoutCSGGroup->addWidget(smallestZoneLabel, 3, 0);
-    smallestZoneLineEdit = new QLineEdit(pageCSGGroup, "smallestZoneLineEdit");
+    smallestZoneLineEdit = new QLineEdit(pageCSGGroup);
     connect(smallestZoneLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSmallestZoneText()));
     connect(smallestZoneLineEdit, SIGNAL(textChanged(const QString &)),
             this, SLOT(processSmallestZoneText(const QString &)));
-    layoutCSGGroup->addMultiCellWidget(smallestZoneLineEdit, 3, 3, 1, 3);
+    layoutCSGGroup->addWidget(smallestZoneLineEdit, 3, 1, 1, 3);
 
-    flatEnoughLabel = new QLabel(tr("Flat Enough (recip. curvature)"), pageCSGGroup,
-                                       "flatEnough");
+    flatEnoughLabel = new QLabel(tr("Flat Enough (recip. curvature)"), pageCSGGroup);
     layoutCSGGroup->addWidget(flatEnoughLabel, 4, 0);
-    flatEnoughLineEdit = new QLineEdit(pageCSGGroup, "flatEnoughLineEdit");
+    flatEnoughLineEdit = new QLineEdit(pageCSGGroup);
     connect(flatEnoughLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processFlatEnoughText()));
     connect(flatEnoughLineEdit, SIGNAL(textChanged(const QString &)),
             this, SLOT(processFlatEnoughText(const QString &)));
-    layoutCSGGroup->addMultiCellWidget(flatEnoughLineEdit, 4, 4, 1, 3);
+    layoutCSGGroup->addWidget(flatEnoughLineEdit, 4, 1, 1, 3);
 }
 
 // ****************************************************************************
@@ -236,6 +234,9 @@ QvisMeshManagementWindow::CreateWindowContents()
 //   Brad Whitlock, Wed Dec 19 15:01:30 PST 2007
 //   Made it use ids.
 //
+//   Cyrus Harrison, Wed Jul  2 11:16:25 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -258,7 +259,7 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                 SNPRINTF(tmp, sizeof(tmp), "%g ", tols[0]);
                 temp += tmp;
                 smallestZoneLineEdit->setText(temp);
-		temp = "";
+                temp = "";
                 SNPRINTF(tmp, sizeof(tmp), "%g ", tols[1]);
                 temp += tmp;
                 flatEnoughLineEdit->setText(temp);
@@ -276,16 +277,16 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                 dMode = atts->GetDiscretizationMode();
                 discretizationMode->blockSignals(true);
                 if (dMode == MeshManagementAttributes::Uniform)
-                    discretizationMode->setButton(0);
+                    discretizationMode->button(0)->setChecked(true);
                 else if (dMode == MeshManagementAttributes::Adaptive)
                 {
 #if HAVE_BILIB
-                    discretizationMode->setButton(1);
+                    discretizationMode->button(1)->setChecked(true);
 #else
                     GUIBase::Warning(tr("Adaptive not available. "
                                      "Missing boost interval template library. "
                                      "Overriding to Uniform."));
-                    discretizationMode->setButton(0);
+                    discretizationMode->button(0)->setChecked(true);
 #endif
                 }
                 discretizationMode->blockSignals(false);
@@ -318,6 +319,9 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Wed Nov 23 11:42:26 PDT 2005
 //    Fixed for Qt 3.0.2.
 //
+//    Cyrus Harrison, Wed Jul  2 11:16:25 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisMeshManagementWindow::GetCurrentValues(const QWidget *widget)
@@ -327,18 +331,20 @@ QvisMeshManagementWindow::GetCurrentValues(const QWidget *widget)
     double temp;
     if (doAll || widget == smallestZoneLineEdit)
     {
-        bool okay = sscanf(smallestZoneLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+        bool okay = sscanf(smallestZoneLineEdit->displayText().toStdString().c_str(), 
+                           "%lg", &temp) == 1;
         if (okay && mmAtts->GetDiscretizationTolerance()[0] != temp)
-	{
-	    vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
-	    temp1[0] = temp;
+        {
+            vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
+            temp1[0] = temp;
             mmAtts->SetDiscretizationTolerance(temp1);
         }
     }
 
-    if (doAll || widget == discretizationMode)
+    if (doAll || widget == discretizeUniform || widget == discretizeAdaptive)
     {
-        int selectedId = discretizationMode->id(discretizationMode->selected());
+        
+        int selectedId = discretizationMode->id(discretizationMode->checkedButton());
         if (selectedId == 0 &&
             mmAtts->GetDiscretizationMode() != MeshManagementAttributes::Uniform)
             mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
@@ -491,12 +497,13 @@ void
 QvisMeshManagementWindow::processSmallestZoneText()
 {
     double temp = -1.0;
-    bool okay = sscanf(smallestZoneLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+    bool okay = sscanf(smallestZoneLineEdit->displayText().toStdString().c_str(),
+                       "%lg", &temp) == 1;
 
     if (okay && temp >= 0.0)
     {
         vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
-	temp1[0] = temp;
+        temp1[0] = temp;
         mmAtts->SetDiscretizationTolerance(temp1);
     }
 }
@@ -505,12 +512,13 @@ void
 QvisMeshManagementWindow::processSmallestZoneText(const QString &tols)
 {
     double temp = -1.0;
-    bool okay = sscanf(smallestZoneLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+    bool okay = sscanf(smallestZoneLineEdit->displayText().toStdString().c_str(),
+                       "%lg", &temp) == 1;
 
     if (okay && temp >= 0.0)
     {
         vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
-	temp1[0] = temp;
+        temp1[0] = temp;
         mmAtts->SetDiscretizationTolerance(temp1);
     }
 }
@@ -519,12 +527,13 @@ void
 QvisMeshManagementWindow::processFlatEnoughText()
 {
     double temp = -1.0;
-    bool okay = sscanf(flatEnoughLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+    bool okay = sscanf(flatEnoughLineEdit->displayText().toStdString().c_str(),
+                       "%lg", &temp) == 1;
 
     if (okay && temp >= 0.0)
     {
         vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
-	temp1[1] = temp;
+        temp1[1] = temp;
         mmAtts->SetDiscretizationTolerance(temp1);
     }
 }
@@ -533,12 +542,13 @@ void
 QvisMeshManagementWindow::processFlatEnoughText(const QString &tols)
 {
     double temp = -1.0;
-    bool okay = sscanf(flatEnoughLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+    bool okay = sscanf(flatEnoughLineEdit->displayText().toStdString().c_str(),
+                       "%lg", &temp) == 1;
 
     if (okay && temp >= 0.0)
     {
         vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
-	temp1[1] = temp;
+        temp1[1] = temp;
         mmAtts->SetDiscretizationTolerance(temp1);
     }
 }

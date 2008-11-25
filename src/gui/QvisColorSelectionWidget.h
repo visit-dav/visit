@@ -39,7 +39,7 @@
 #ifndef QVIS_COLOR_SELECTION_WIDGET_H
 #define QVIS_COLOR_SELECTION_WIDGET_H
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 
 // Forward declarations.
 class QPushButton;
@@ -62,14 +62,16 @@ class QvisColorGridWidget;
 //   Brad Whitlock, Fri Oct 26 14:07:58 PST 2001
 //   Added a timer to hide the widget after a little while.
 //
+//   Brad Whitlock, Tue Jun  3 15:30:09 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisColorSelectionWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisColorSelectionWidget(QWidget *parent = 0, const char *name = 0,
-                             WFlags f = 0);
+    QvisColorSelectionWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~QvisColorSelectionWidget();
     virtual QSize sizeHint() const;
 

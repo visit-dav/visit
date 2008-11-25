@@ -36,12 +36,13 @@
 *
 *****************************************************************************/
 #include <QvisSessionSourceChangerDialog.h>
-#include <qapplication.h>
-#include <qframe.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qvbox.h>
+#include <QApplication>
+#include <QFrame>
+#include <QLabel>
+#include <QLayout>
+#include <QPushButton>
+#include <QWidget>
+#include <QKeyEvent>
 
 #include <Utility.h>
 
@@ -62,37 +63,41 @@
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
-QvisSessionSourceChangerDialog::QvisSessionSourceChangerDialog(
-    QWidget *parent, const char *name) : QDialog(parent, name)
+QvisSessionSourceChangerDialog::QvisSessionSourceChangerDialog(QWidget *parent) 
+: QDialog(parent)
 {
     QString title = tr("Update sources");
     QString description = tr("Make sure that the sources used in "
         "this session are up to date. You can change the sources here to "
         "restore your session using different sources, making your session "
         "file a helpful visualization template.");
-    setCaption(title);
+    setWindowTitle(title);
 
     QVBoxLayout *pageLayout = new QVBoxLayout(this);
     pageLayout->setMargin(10);
     pageLayout->setSpacing(10);
-    QLabel *prompt = new QLabel(SplitPrompt(description), this, "prompt");
+    QLabel *prompt = new QLabel(SplitPrompt(description), this);
     pageLayout->addWidget(prompt);
     pageLayout->addSpacing(10);
 
-    body = new QvisSessionSourceChanger(this, "body");
+    body = new QvisSessionSourceChanger(this);
     body->setMinimumHeight(300);
     body->setMinimumWidth(500);
     pageLayout->addWidget(body);
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout(pageLayout);
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    pageLayout->addLayout(buttonLayout);
     buttonLayout->setSpacing(10);
     buttonLayout->addStretch(10);
-    QPushButton *ok = new QPushButton( tr( "&OK" ), this, "ok" );
+    QPushButton *ok = new QPushButton( tr( "&OK" ), this);
     connect(ok, SIGNAL(clicked()), this, SLOT(accept()));
     buttonLayout->addWidget(ok);
-    QPushButton *cancel = new QPushButton( tr( "&Cancel" ), this, "cancel" );
+    QPushButton *cancel = new QPushButton( tr( "&Cancel" ), this);
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
     buttonLayout->addWidget(cancel);
 }
@@ -130,15 +135,18 @@ QvisSessionSourceChangerDialog::~QvisSessionSourceChangerDialog()
 // Creation:   Tue Nov 14 16:35:28 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisSessionSourceChangerDialog::keyPressEvent(QKeyEvent *e)
 {
-    if(e->state() == 0 || (e->state() & Keypad && e->key() == Key_Enter))
+    if(e->modifiers() == Qt::NoModifier || 
+       (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter))
     {
-        if(e->key() == Key_Enter || e->key() == Key_Return)
+        if(e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return)
         {
             if(qApp->focusWidget() != 0 &&
                qApp->focusWidget()->inherits("QButton"))
@@ -201,7 +209,7 @@ QvisSessionSourceChangerDialog::SplitPrompt(const QString &s) const
         return s;
     else
     {
-        stringVector words(SplitValues(std::string(s.latin1()), ' '));
+        stringVector words(SplitValues(std::string(s.toStdString()), ' '));
         QString r;
         int len = 0;
         for(size_t i = 0; i < words.size(); ++i)

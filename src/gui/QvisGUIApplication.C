@@ -41,41 +41,30 @@
 #include <map>
 
 #include <visit-config.h> // To get the version number
-#include <qcolor.h>
-#include <qcursor.h>
-#include <qdir.h>
-#include <qfiledialog.h>
-#include <qlabel.h>
-#include <qlocale.h>
-#include <qmessagebox.h>
-#include <qprintdialog.h>
-#include <qprinter.h>
-#include <qprocess.h>
-#include <qsocketnotifier.h>
-#include <qstatusbar.h>
-#include <qtranslator.h>
-#include <qwidgetlist.h>
-
-#if QT_VERSION < 300
-// If we're not using Qt 3.0, then include style headers.
-#include <qmotifstyle.h>
-#include <qcdestyle.h>
-#include <qwindowsstyle.h>
-#include <qplatinumstyle.h>
-#if QT_VERSION >= 230
-#include <qsgistyle.h>
-#endif
-#endif
+#include <QColor>
+#include <QCursor>
+#include <QDir>
+#include <QFileDialog>
+#include <QLabel>
+#include <QLocale>
+#include <QMessageBox>
+#include <QPrintDialog>
+#include <QPrinter>
+#include <QProcess>
+#include <QSocketNotifier>
+#include <QStatusBar>
+#include <QStyle>
+#include <QTranslator>
 
 #if defined(Q_WS_MACX)
 // On MacOS X, we manage the printer options window instead of letting
 // Qt do it when we use the Mac or Aqua style.
 #include <Carbon/Carbon.h>
-#include <qstyle.h>
+#include <QStyle>
 #endif
 
-#include <qmenubar.h>
-#include <qtimer.h>
+#include <QMenuBar>
+#include <QTimer>
 #include <QvisGUIApplication.h>
 
 #include <PlotPluginInfo.h>
@@ -155,9 +144,10 @@
 #include <QvisQueryOverTimeWindow.h>
 #include <QvisVariableButton.h>
 #include <QvisViewWindow.h>
-#include <QvisVisItUpdate.h>
-#include <QvisWidgetFactory.h>
+
 #include <QvisWizard.h>
+
+#include <QvisVisItUpdate.h>
 
 #include <SplashScreen.h>
 #include <WindowMetrics.h>
@@ -698,13 +688,13 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     // the config files.
     AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
     if(foregroundColor.length() > 0)
-        aa->SetForeground(foregroundColor.latin1());
+        aa->SetForeground(foregroundColor.toStdString());
     if(backgroundColor.length() > 0)
-        aa->SetBackground(backgroundColor.latin1());
+        aa->SetBackground(backgroundColor.toStdString());
     if(applicationStyle.length() > 0)
-        aa->SetStyle(applicationStyle.latin1());
+        aa->SetStyle(applicationStyle.toStdString());
     if(applicationFont.length() > 0)
-        aa->SetFontName(applicationFont.latin1());
+        aa->SetFontName(applicationFont.toStdString());
 
     //
     // Create the application and customize its appearance. Note that we
@@ -741,11 +731,11 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     if(applicationLocale == "default")
         applicationLocale = QLocale::system().name();
     QString transFile(QString("visit_") + applicationLocale);
-    debug1 << "Trying to load translator file: " << (transPath + transFile).ascii() << endl;
+    debug1 << "Trying to load translator file: " << (transPath + transFile).toStdString() << endl;
     if(translator->load(transFile, transPath))
     {
         mainApp->installTranslator(translator);
-        debug1 << "Loaded translation " << (transPath + transFile).ascii() << endl;
+        debug1 << "Loaded translation " << (transPath + transFile).toStdString() << endl;
     }
     else
     {
@@ -753,6 +743,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
         delete translator;
     }
 
+    ExtractSystemDefaultAppearance();
     // Customize the colors and fonts.
     CustomizeAppearance(false);
 
@@ -848,7 +839,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
         timeid = visitTimer->StartTimer();
 
         // Create the splash screen.
-        splash = new SplashScreen(false, "splashScreen");
+        splash = new SplashScreen(false);
         splash->show();
         visitTimer->StopTimer(timeid, "Creating splashscreen");
     }
@@ -876,12 +867,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     clientMethodObserver = new ObserverToCallback(
          GetViewerState()->GetClientMethod(),
          QvisGUIApplication::ClientMethodCallback, this);
-
-    //
-    // Install a widget factory so Qt's widget factory can use it to
-    // dynamically instantiate some of VisIt's unique widgets.
-    //
-    QWidgetFactory::addWidgetFactory(new QvisWidgetFactory);
 
     //
     // Start the heavy duty initialization from within the event loop.
@@ -1345,7 +1330,7 @@ QvisGUIApplication::HandleSynchronize(int val)
             sessionDir = GetUserVisItDirectory();
         else
 #ifndef WIN32
-            sessionDir = std::string(QString(QDir(".").absPath() + SLASH_STRING).latin1());
+            sessionDir = QString(QDir(".").absolutePath() + SLASH_STRING).toStdString();
 #else
             sessionDir = fileServer->GetPath();
 #endif
@@ -1601,7 +1586,7 @@ QvisGUIApplication::FinalInitialization()
     case 8:
         // Create a timer that will send keep alive signals to the mdservers
         // every 5 minutes.
-        keepAliveTimer = new QTimer(this, "keepAliveTimer");
+        keepAliveTimer = new QTimer(this);
         connect(keepAliveTimer, SIGNAL(timeout()),
                 this, SLOT(SendKeepAlives()));
         keepAliveTimer->start(5 * 60 * 1000);
@@ -2151,16 +2136,19 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 continue;
             }
             std::string style(argv[i + 1]);
-            if(style == "motif" || style == "cde" || style == "windows" ||
-               style == "platinum"
-#if QT_VERSION >= 230
-               || style == "sgi"
-#endif
-#if QT_VERSION >= 300
+            if(
 #ifdef Q_WS_MACX
-               || style == "aqua" || style == "macintosh"
+               style == "macintosh" ||
 #endif
+#ifdef Q_WS_WIN
+               style == "windowsxp" ||
+               style == "windowsvista" ||
 #endif
+               style == "windows" || 
+               style == "motif" || 
+               style == "cde" ||
+               style == "plastique" || 
+               style == "cleanlooks"
                )
             {
                 applicationStyle = argv[i + 1];
@@ -2250,6 +2238,12 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 //    Brad Whitlock, Thu Mar 15 15:55:14 PST 2007
 //    Change the font.
 //
+//    Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//    Initial Qt4 Port.
+//
+//    Cyrus Harrison, Mon Nov 24 11:57:42 PST 2008
+//    Support for default system appearance.
+//
 // ****************************************************************************
 
 void
@@ -2265,31 +2259,24 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 
     debug1 << mName << "Called with notify=" << (notify?"true":"false") << endl;
 
+    bool use_sys_def = aa->GetUseSystemDefault();
     //
     // Set the style
     //
     if(styleSelected)
     {
-        debug1 << mName << "Setting style to: " << aa->GetStyle().c_str() << endl;
-#if QT_VERSION < 300
-        if(aa->GetStyle() == "cde")
-            mainApp->setStyle(new QCDEStyle);
-        else if(aa->GetStyle() == "windows")
-            mainApp->setStyle(new QWindowsStyle);
-        else if(aa->GetStyle() == "platinum")
-            mainApp->setStyle(new QPlatinumStyle);
-#if QT_VERSION >= 230
-        else if(aa->GetStyle() == "sgi")
-            mainApp->setStyle(new QSGIStyle);
-#endif
-        else
-            mainApp->setStyle(new QMotifStyle);
-#else
+        string style = aa->GetStyle();
+        if(use_sys_def)
+        {
+            style = aa->GetDefaultStyle();
+            aa->SetStyle(style);
+        }
+        debug1 << mName << "Setting style to: " << style << endl;
         // Set the style via the style name.
-        mainApp->setStyle(aa->GetStyle().c_str());
-#endif
+        mainApp->setStyle(style.c_str());
+        
     }
-
+     
     //
     // Set the font.
     //
@@ -2297,49 +2284,58 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
     {
         QFont font;
         bool okay = true;
-        if(aa->GetFontName().size() > 0 &&
-           aa->GetFontName()[0] == '-')
+        string font_name = aa->GetFontName();
+        if(use_sys_def)
+        {
+            font_name = aa->GetDefaultFontName();
+            aa->SetFontName(font_name);
+        }
+
+        if(font_name.size() > 0 &&
+            font_name[0] == '-')
         {
             // It's probably an XLFD
-            font = QFont(aa->GetFontName().c_str());
+            font = QFont(font_name.c_str());
             debug1 << mName << "The font looks like XLFD: "
-                   << aa->GetFontName().c_str() << endl;
+                   << font_name << endl;
         }
         else
-            okay = font.fromString(aa->GetFontName().c_str());
+            okay = font.fromString(font_name.c_str());
         
         if(okay)
         {
-            debug1 << mName << "Font okay. name=" << font.toString().latin1() << endl;
+            
+            debug1 << mName << "Font okay. name=" << font.toString().toStdString() << endl;
             mainApp->setFont(font);
 
-            // Force the font change on all top level widgets.
-            QWidgetList *list = QApplication::topLevelWidgets();
-            QWidgetListIt it(*list);
-            QWidget * w;
-            while ( (w=it.current()) != 0 )
-            {   // for each top level widget...
-                ++it;
-                w->setFont(font);
-            }
-            delete list;
+            //Force the font change on all top level widgets.
+            // for each top level widget...
+            foreach(QWidget *w,QApplication::topLevelWidgets())
+            w->setFont(font);
         }
         else
-        {
-            debug1 << mName << "Font NOT okay. name=" << font.toString().latin1() << endl;
-        }
+            debug1 << mName << "Font NOT okay. name=" << font.toString().toStdString() << endl;
+        
     }
-
     //
     // Set the application colors
     //
-    bool needToSetColors = backgroundSelected || foregroundSelected ||
-                           styleSelected;
-    bool colorStyle = aa->GetStyle() != "aqua" && aa->GetStyle() != "macintosh";
+    bool needToSetColors = backgroundSelected || foregroundSelected || styleSelected;
+    bool colorStyle = aa->GetStyle() != "macintosh";
     if(needToSetColors && colorStyle)
     {
-        QColor bg(aa->GetBackground().c_str());
-        QColor fg(aa->GetForeground().c_str());
+        string bg_str = aa->GetBackground();
+        string fg_str = aa->GetForeground();
+        
+        if(use_sys_def)
+        {
+            bg_str  = aa->GetDefaultBackground();
+            fg_str  = aa->GetDefaultForeground();
+        }
+        
+        QColor bg(bg_str.c_str());
+        QColor fg(fg_str.c_str());
+        
         QColor btn(bg);
 
         // Put the converted RGB format color into the appearance attributes.
@@ -2349,8 +2345,9 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
         sprintf(tmp, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
         aa->SetForeground(tmp);
 
+        
         int h,s,v;
-        fg.hsv(&h,&s,&v);
+        fg.getHsv(&h,&s,&v);
         QColor base = Qt::white;
         bool bright_mode = false;
         if(v >= 255 - 50)
@@ -2359,35 +2356,65 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
             bright_mode = TRUE;
         }
 
-        QColorGroup cg(fg, btn, btn.light(),
-                       btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
+        QPalette pal(fg, btn, btn.light(),
+                     btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
+        pal.setCurrentColorGroup(QPalette::Normal);
+        
         if (bright_mode)
         {
-            cg.setColor(QColorGroup::HighlightedText, base );
-            cg.setColor(QColorGroup::Highlight, Qt::white );
+            pal.setColor(QPalette::Text, fg);
+            pal.setColor(QPalette::WindowText, fg);
+            pal.setColor(QPalette::HighlightedText, base );
+            pal.setColor(QPalette::Highlight, Qt::white );
         }
         else
         {
-            cg.setColor(QColorGroup::HighlightedText, Qt::white );
-            cg.setColor(QColorGroup::Highlight, Qt::darkBlue );
+            pal.setColor(QPalette::Text, fg);
+            pal.setColor(QPalette::WindowText, fg);
+            pal.setColor(QPalette::HighlightedText, Qt::white );
+            pal.setColor(QPalette::Highlight, Qt::darkBlue );
         }
+        
+        pal.setCurrentColorGroup(QPalette::Inactive);
+        if (bright_mode)
+        {
+            pal.setColor(QPalette::Text, fg);
+            pal.setColor(QPalette::WindowText, fg);
+            pal.setColor(QPalette::HighlightedText, base );
+            pal.setColor(QPalette::Highlight, Qt::white );
+        }
+        else
+        {
+            pal.setColor(QPalette::Text, fg);
+            pal.setColor(QPalette::WindowText, fg);
+            pal.setColor(QPalette::HighlightedText, Qt::white );
+            pal.setColor(QPalette::Highlight, Qt::darkBlue );
+        }
+
+                
         QColor disabled((fg.red()+btn.red())/2,
                         (fg.green()+btn.green())/2,
                         (fg.blue()+btn.blue())/2);
-        QColorGroup dcg(disabled, btn, btn.light( 125 ), btn.dark(), btn.dark(150),
-                        disabled, Qt::white, Qt::white, bg );
-        if(bright_mode)
+        
+        pal.setCurrentColorGroup(QPalette::Disabled);
+        pal.setColor(QPalette::WindowText, disabled);
+        pal.setColor(QPalette::Light, btn.light( 125 ));
+        pal.setColor(QPalette::Text, disabled);
+        pal.setColor(QPalette::Base, Qt::white);
+        if (bright_mode)
         {
-            dcg.setColor(QColorGroup::HighlightedText, base);
-            dcg.setColor(QColorGroup::Highlight, Qt::white);
+            pal.setColor(QPalette::HighlightedText, base);
+            pal.setColor(QPalette::Highlight, Qt::white);
         }
         else
         {
-            dcg.setColor(QColorGroup::HighlightedText, Qt::white);
-            dcg.setColor(QColorGroup::Highlight, Qt::darkBlue);
+            pal.setColor(QPalette::HighlightedText, Qt::white);
+            pal.setColor(QPalette::Highlight, Qt::darkBlue);
         }
-        QPalette pal(cg, dcg, cg);
-        mainApp->setPalette(pal, true);
+
+        
+        
+        mainApp->setPalette(pal);
     }
 
     //
@@ -2402,6 +2429,7 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
         //
         if(orientationSelected)
         {
+
             SetOrientation(aa->GetOrientation());
         }
 
@@ -2904,6 +2932,7 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(saveMovie()), this, SLOT(SaveMovie()));
     connect(mainWin, SIGNAL(printWindow()), this, SLOT(PrintWindow()));
     connect(mainWin, SIGNAL(activatePrintWindow()), this, SLOT(SetPrinterOptions()));
+    
     connect(mainWin->GetPlotManager(), SIGNAL(activatePlotWindow(int)),
             this, SLOT(ActivatePlotWindow(int)));
     connect(mainWin->GetPlotManager(), SIGNAL(addPlot(int, const QString &)),
@@ -2912,6 +2941,7 @@ QvisGUIApplication::CreateMainWindow()
             this, SLOT(ActivateOperatorWindow(int)));
     connect(mainWin->GetPlotManager(), SIGNAL(addOperator(int)),
             this, SLOT(AddOperator(int)));
+
     connect(mainWin, SIGNAL(refreshFileList()), this, SLOT(RefreshFileList()));
     connect(mainWin, SIGNAL(reopenOnNextFrame()),
             this, SLOT(RefreshFileListAndNextFrame()));
@@ -2920,11 +2950,8 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
     connect(mainWin, SIGNAL(saveCrashRecoveryFile()), 
            this, SLOT(SaveCrashRecoveryFile()));
-#if QT_VERSION < 0x030100
-    mainWin->updateNotAllowed();
-#else
     connect(mainWin, SIGNAL(updateVisIt()), this, SLOT(updateVisIt()));
-#endif
+
     mainWin->ConnectMessageAttr(&message);
     mainWin->ConnectGUIMessageAttributes();
     mainWin->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
@@ -3389,7 +3416,7 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_COMMAND:
         // Create the command window.
-        win = new QvisCommandWindow(windowNames[i], tr("Command"), mainWin->GetNotepad());
+        win = new QvisCommandWindow(windowNames[i], tr("Command"));
         connect(win, SIGNAL(runCommand(const QString &)),
                 this, SLOT(Interpret(const QString &)));
         break;
@@ -3397,7 +3424,7 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the mesh management window.
         win = new QvisMeshManagementWindow(GetViewerState()->GetMeshManagementAttributes(),
             windowNames[i], tr("MeshManagement"), mainWin->GetNotepad());
-        break;
+        break;       
     case WINDOW_FILE_OPEN:
         // Create a file open window.
         { QvisFileOpenWindow *foWin = new QvisFileOpenWindow(windowNames[i]);
@@ -3408,7 +3435,7 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_MACRO:
         // Create the macro window.
-        win = new QvisMacroWindow(windowNames[i], tr("Macros"), mainWin->GetNotepad());
+        win = new QvisMacroWindow(windowNames[i], tr("Macros"));
         connect(win, SIGNAL(runCommand(const QString &)),
                 this, SLOT(Interpret(const QString &)));
         break;
@@ -3451,7 +3478,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
 
     for(int i = 0; i < windowNames.size(); ++i)
     {
-        DataNode *wNode = guiNode->GetNode(windowNames[i].latin1());
+        DataNode *wNode = guiNode->GetNode(windowNames[i].toStdString());
         if(wNode != 0)
         {
             bool windowVisible = false;
@@ -3478,7 +3505,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
             if(windowVisible || windowExists)
             {
                 debug1 << (windowExists ? "Initializing" : "Creating")
-                       << " the \"" << windowNames[i].ascii()
+                       << " the \"" << windowNames[i].toStdString()
                        << "\" window because it was in the config file."
                        << endl;
 
@@ -3495,7 +3522,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
                     {
                         if(windowExists)
                         {
-                            debug1 << "Hiding \"" << windowNames[i].ascii()
+                            debug1 << "Hiding \"" << windowNames[i].toStdString()
                                    << "\" window" << endl;
                             win->hide();
                         }
@@ -3763,7 +3790,7 @@ QvisGUIApplication::CreatePluginWindows()
         */
 
         // Add an option to the main window's plot manager widget's plot list.
-        QString *menuName = GUIInfo->GetMenuName();
+        QString *menuName = GUIInfo->GetMenuName();       
         mainWin->GetPlotManager()->AddPlotType(*menuName,
                                                GUIInfo->GetVariableTypes(),
                                                GUIInfo->XPMIconData());
@@ -3792,6 +3819,7 @@ QvisGUIApplication::CreatePluginWindows()
             GUIInfo->GetUserSelectable(), GUIInfo->XPMIconData());
         delete menuName;
     }
+    mainWin->GetPlotManager()->FinishAddingOperators();
 }
 
 // ****************************************************************************
@@ -4134,7 +4162,7 @@ QvisGUIApplication::SaveSession()
 
     // Get the name of the file that the user saved.
     QString sFilter(tr("VisIt session") + QString(" (*") + sessionExtension + ")");
-    QString fileName = QFileDialog::getSaveFileName(defaultFile, sFilter);
+    QString fileName = QFileDialog::getSaveFileName(mainWin,tr("Save Session File"),".", sFilter);
 
     // If the user chose to save a file, tell the viewer to write its state
     // to that file.
@@ -4142,7 +4170,7 @@ QvisGUIApplication::SaveSession()
     {
         ++sessionCount;
         SaveSessionFile(fileName);
-        UpdateSessionDir(fileName.latin1());
+        UpdateSessionDir(fileName.toStdString());
     }
 }
 
@@ -4177,12 +4205,12 @@ QvisGUIApplication::SaveSessionFile(const QString &fileName)
         sessionName += sessionExtension;
 
     // Tell the viewer to save a session file.
-    GetViewerMethods()->ExportEntireState(sessionName.latin1());
+    GetViewerMethods()->ExportEntireState(sessionName.toStdString());
 
     // Write the gui part of the session with a ".gui" extension.
     QString retval(sessionName);
     sessionName += ".gui";
-    WriteConfigFile(sessionName.latin1());
+    WriteConfigFile(sessionName.toStdString().c_str());
 
     return retval;
 }
@@ -4395,7 +4423,8 @@ void
 QvisGUIApplication::RestoreSession()
 {
     // Get the name of the session to load.
-    QString s(QFileDialog::getOpenFileName(sessionDir.c_str(),
+    QString s(QFileDialog::getOpenFileName(mainWin,tr("Open VisIt Session File"),
+                                           sessionDir.c_str(),
 #if defined(_WIN32)
               "VisIt session (*.vses)"));
 #else
@@ -4407,7 +4436,7 @@ QvisGUIApplication::RestoreSession()
     RestoreSessionFile(s, noSources);
     if ( !s.isNull() )
     {
-        UpdateSessionDir(s.latin1());
+        UpdateSessionDir(s.toStdString());
     }
 }
 
@@ -4432,6 +4461,9 @@ QvisGUIApplication::RestoreSession()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 //   Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
 //   Removed unused var.
 //
@@ -4441,7 +4473,8 @@ void
 QvisGUIApplication::RestoreSessionWithDifferentSources()
 {
     // Get the name of the session to load.
-    QString s(QFileDialog::getOpenFileName(sessionDir.c_str(),
+    QString s(QFileDialog::getOpenFileName(mainWin,tr("Open VisIt Session File"),
+                                           sessionDir.c_str(),
 #if defined(_WIN32)
               "VisIt session (*.vses)"));
 #else
@@ -4455,14 +4488,14 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
         // so we can get the list of source ids and sources as well as
         // how they are used so we can populate the source control.
         AccessViewerSession sessionAccess;
-        if(sessionAccess.ReadConfigFile(s.latin1()))
+        if(sessionAccess.ReadConfigFile(s.toStdString().c_str()))
         {
             stringVector keys, values;
             std::map<std::string, stringVector> uses;
             if(sessionAccess.GetSourceMap(keys, values, uses))
             {
                 QvisSessionSourceChangerDialog *srcChanger = new 
-                    QvisSessionSourceChangerDialog(0, "srcChanger");
+                    QvisSessionSourceChangerDialog(0);
                 srcChanger->setSources(keys, values, uses);
 
                 // Let the user change the sources that are used to 
@@ -4495,7 +4528,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
             RestoreSessionFile(s, noSources);
         }
         
-        UpdateSessionDir(s.latin1());
+        UpdateSessionDir(s.toStdString());
     }
 }
 
@@ -4557,7 +4590,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
     if(!s.isEmpty())
     {
         restoringSession = true;
-        std::string filename(s.latin1());
+        std::string filename(s.toStdString());
           
         // Make the gui read in its part of the config.
         std::string guifilename(filename);
@@ -4572,7 +4605,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
             {
                 filename = GetUserVisItDirectory() + filename;
                 guifilename = GetUserVisItDirectory() + guifilename;
-                debug1 << "The desired session file " << s.latin1()
+                debug1 << "The desired session file " << s.toStdString()
                        << ".gui could not be opened. VisIt will try and open "
                        << guifilename.c_str() << endl;
                 node = ReadConfigFile(guifilename.c_str());
@@ -4606,8 +4639,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
                     //
                     if(sessionFileHelper == 0)
                     {
-                        sessionFileHelper = new QvisSessionFileDatabaseLoader(
-                            this, "sessionFileHelper");
+                        sessionFileHelper = new QvisSessionFileDatabaseLoader(this);
                         connect(sessionFileHelper, SIGNAL(loadFile(const QString &)),
                                 this, SLOT(sessionFileHelper_LoadFile(const QString &)));
                     }
@@ -4704,7 +4736,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
 void
 QvisGUIApplication::sessionFileHelper_LoadFile(const QString &db)
 {
-    QualifiedFilename f(db.latin1());
+    QualifiedFilename f(db.toStdString());
     if(!fileServer->HaveOpenedFile(f))
         LoadFile(f, false);
 }
@@ -4735,7 +4767,7 @@ QvisGUIApplication::sessionFileHelper_LoadSession(const QString &filename)
     // pass the inVisItDir flag as false because we don't want to have
     // the viewer prepend the .visit directory to the file since it's
     // already part of the filename.
-    GetViewerMethods()->ImportEntireState(filename.latin1(), false);
+    GetViewerMethods()->ImportEntireState(filename.toStdString(), false);
 }
 
 // ****************************************************************************
@@ -4766,7 +4798,7 @@ QvisGUIApplication::sessionFileHelper_LoadSessionWithDifferentSources(
     // pass the inVisItDir flag as false because we don't want to have
     // the viewer prepend the .visit directory to the file since it's
     // already part of the filename.
-    GetViewerMethods()->ImportEntireStateWithDifferentSources(filename.latin1(),
+    GetViewerMethods()->ImportEntireStateWithDifferentSources(filename.toStdString(),
         false, sources);
 }
 
@@ -6143,13 +6175,16 @@ QvisGUIApplication::DeIconifyWindows()
 //   Brad Whitlock, Tue Jan  8 14:36:23 PST 2008
 //   I hooked up the splashscreen's buttons to the Help window.
 //
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::AboutVisIt()
 {
     if(splash == 0)
-        splash = new SplashScreen(true, "splash");
+        splash = new SplashScreen(true);
 
     // Hook up the splashscreen's buttons to the help window.
     QvisHelpWindow *hw = (QvisHelpWindow *)GetInitializedWindowPointer(WINDOW_HELP);
@@ -6203,7 +6238,7 @@ QvisGUIApplication::SplashScreenProgress(const QString &msg, int prog)
     if(splash)
     {
 #if defined(Q_WS_MACX)
-        splash->setActiveWindow();
+        splash->activateWindow();
 #endif
         splash->Progress(msg, prog);
     }
@@ -6275,7 +6310,7 @@ QvisGUIApplication::SetPrinterOptions()
     // we use the native MacOS X printer dialog but we get what we need out
     // of it.
     //
-    if(qApp->style().inherits("QMacStyle"))
+    if(qApp->style()->inherits("QMacStyle"))
     {
         PMPageFormat pformat;
         PMPrintSettings psettings;
@@ -6433,7 +6468,8 @@ QvisGUIApplication::SetPrinterOptions()
             visitTimer->StopTimer(timeid, "Setting up printer");
         }
 
-        if(printer->setup(mainWin))
+        QPrintDialog printDialog(printer, mainWin);
+        if(printDialog.exec() == QDialog::Accepted)
         {
             //
             // Send all of the Qt printer options to the viewer
@@ -6491,21 +6527,23 @@ QvisGUIApplication::PrintWindow()
 // Creation:   Wed Feb 20 13:49:27 PST 2002
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 static void
 QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
 {
     if(!printer->printerName().isNull())
-        p->SetPrinterName(printer->printerName().latin1());
+        p->SetPrinterName(printer->printerName().toStdString());
     if(!printer->outputFileName().isNull())
-        p->SetOutputToFileName(printer->outputFileName().latin1());
+        p->SetOutputToFileName(printer->outputFileName().toStdString());
     if(!printer->printProgram().isNull())
-        p->SetPrintProgram(printer->printProgram().latin1());
+        p->SetPrintProgram(printer->printProgram().toStdString());
     if(!printer->docName().isNull())
-        p->SetDocumentName(printer->docName().latin1());
-    p->SetOutputToFile(printer->outputToFile());
+        p->SetDocumentName(printer->docName().toStdString());
+    p->SetOutputToFile(!printer->outputFileName().isNull());
     p->SetNumCopies(printer->numCopies());
     p->SetPortrait(printer->orientation() == QPrinter::Portrait);
     p->SetPrintColor(printer->colorMode() == QPrinter::Color);
@@ -6526,7 +6564,9 @@ QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
 // Creation:   Wed Feb 20 13:49:27 PST 2002
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 static void
@@ -6543,7 +6583,7 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
     printer->setColorMode(p->GetPrintColor() ? QPrinter::Color :
         QPrinter::GrayScale);
     printer->setOutputFileName(p->GetOutputToFileName().c_str());
-    printer->setOutputToFile(p->GetOutputToFile());
+    //printer->setOutputToFile(p->GetOutputToFile());
     printer->setPageSize((QPrinter::PageSize)p->GetPageSize());
 }
 
@@ -6718,8 +6758,8 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
         !FileServerList::ANY_STATE, !FileServerList::GET_NEW_MD);
     QString wName; wName.sprintf("plot_wizard_%d", plotType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
-        GetViewerState()->GetPlotAttributes(plotType), mainWin, varName.latin1(),
-        md, GetViewerState()->GetExpressionList(), wName.latin1());
+        GetViewerState()->GetPlotAttributes(plotType), mainWin, varName.toStdString(),
+        md, GetViewerState()->GetExpressionList());
 
     if(wiz == 0)
     {
@@ -6727,7 +6767,7 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
         SetWaitCursor();
 
         // Tell the viewer to add a plot.
-        GetViewerMethods()->AddPlot(plotType, varName.latin1());
+        GetViewerMethods()->AddPlot(plotType, varName.toStdString());
 
         // If we're in auto update mode, tell the viewer to draw the plot.
         if(AutoUpdate())
@@ -6751,7 +6791,7 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
             GetViewerMethods()->SetDefaultPlotOptions(plotType);
 
             // Tell the viewer to add a plot.
-            GetViewerMethods()->AddPlot(plotType, varName.latin1());
+            GetViewerMethods()->AddPlot(plotType, varName.toStdString());
 
             // If we're in auto update mode, tell the viewer to draw the plot.
             if(AutoUpdate())
@@ -6782,6 +6822,9 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
 //   Brad Whitlock, Tue Jun 24 11:53:56 PDT 2008
 //   Get the plugin manager from the viewer proxy.
 //   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -6795,7 +6838,7 @@ QvisGUIApplication::AddOperator(int operatorType)
     // Try and create a wizard for the desired operator type.
     QString wName; wName.sprintf("operator_wizard_%d", operatorType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
-        GetViewerState()->GetOperatorAttributes(operatorType), mainWin, wName.latin1());
+        GetViewerState()->GetOperatorAttributes(operatorType), mainWin);
 
     if(wiz == 0)
     {
@@ -6832,7 +6875,9 @@ QvisGUIApplication::AddOperator(int operatorType)
 // Creation:   Thu Dec 9 09:58:59 PDT 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -6843,7 +6888,7 @@ QvisGUIApplication::newExpression()
     if(exprWin)
     {
         exprWin->show();
-        exprWin->setActiveWindow();
+        exprWin->activateWindow();
         exprWin->raise();
         exprWin->newExpression();
     }
@@ -6868,11 +6913,13 @@ QvisGUIApplication::updateVisIt()
 {
     if(visitUpdate == 0)
     {
-        visitUpdate = new QvisVisItUpdate(mainWin, "VisIt Update");
+        
+        visitUpdate = new QvisVisItUpdate(mainWin);
         connect(visitUpdate, SIGNAL(updateNotAllowed()),
                 mainWin, SLOT(updateNotAllowed()));
         connect(visitUpdate, SIGNAL(installationComplete(const QString &)),
                 this, SLOT(updateVisItCompleted(const QString &)));
+                
     }
 
     visitUpdate->startUpdate();
@@ -6902,6 +6949,9 @@ QvisGUIApplication::updateVisIt()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Oct  2 14:41:25 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -6910,7 +6960,7 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
     QString msg(tr("VisIt has been updated. Would you like VisIt to save \n"
                 "its session, quit, and restart the session using the new \n"
                 "version of VisIt?"));
-    if(QMessageBox::information(mainWin, "VisIt", msg,
+    if(QMessageBox::information(mainWin, tr("VisIt"), msg,
        QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
     {
         debug1 << "User chose save session and start up again in the new VisIt."
@@ -6925,24 +6975,26 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
 #endif
 
         // Tell the viewer to save a session file.
-        GetViewerMethods()->ExportEntireState(fileName.latin1());
+        GetViewerMethods()->ExportEntireState(fileName.toStdString());
 
         // Write the gui part of the session with a ".gui" extension.
         QString gfileName(fileName + ".gui");
-        WriteConfigFile(gfileName.latin1());
+        WriteConfigFile(gfileName.toStdString().c_str());
 
 #if defined(_WIN32)
         // Start the new version of VisIt.
-        QProcess *newVisIt = new QProcess(program, this, "start new visit");
-        newVisIt->addArgument("-sessionfile");
-        newVisIt->addArgument(fileName);
+        QProcess *newVisIt = new QProcess(this);
+
+        QStringList args;
+        args.append("-sessionfile");
+        args.append(fileName);
         if(localOnly)
-            newVisIt->addArgument("-localonly");
+            args.append("-localonly");
         if(!showSplash)
-            newVisIt->addArgument("-nosplash");
+            args.append("-nosplash");
         if(!readConfig)
-            newVisIt->addArgument("-noconfig");
-        newVisIt->start();
+            args.append("-noconfig");
+        newVisIt->start(program, args);
 
         // quit this version.
         Quit();
@@ -6985,17 +7037,18 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
                 commandLine += " -nosplash";
             if(!readConfig)
                 commandLine += " -noconfig";
-            fprintf(f, "%s\n", commandLine.latin1());
+            fprintf(f, "%s\n", commandLine.toStdString().c_str());
             fprintf(f, "sleep 2\n");
             fprintf(f, "rm -f exec_new_visit\n");
             fprintf(f, "exit 0\n");
             fclose(f);
 
             // Start the script to launch the new version of VisIt.
-            QProcess *newVisIt = new QProcess(QString("csh"), this, "start new visit");
-            newVisIt->addArgument("-f");
-            newVisIt->addArgument("exec_new_visit");
-            newVisIt->start();
+            QProcess *newVisIt = new QProcess(this);
+            QStringList args;
+            args.append("-f");
+            args.append("exec_new_visit");
+            newVisIt->start("csh",args);
 
             // quit this version.
             Quit();
@@ -7218,9 +7271,8 @@ QvisGUIApplication::HandleClientMethod()
                 // Set the movie progress dialog's properties.
                 if(movieProgress == 0)
                 {
-                    movieProgress = new QvisMovieProgressDialog(mainWin,
-                        "movieProgress");
-                    movieProgress->setCaption(tr("VisIt movie progress"));
+                    movieProgress = new QvisMovieProgressDialog(mainWin);
+                    movieProgress->setWindowTitle(tr("VisIt movie progress"));
                     movieProgress->setLabelText(tr("Making movie"));
                     movieProgress->setProgress(0);
                     connect(movieProgress, SIGNAL(cancelled()),
@@ -7687,6 +7739,9 @@ QvisGUIApplication::SaveMovie()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri Oct 17 09:34:38 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -7718,8 +7773,7 @@ QvisGUIApplication::SaveMovieMain()
 
     if(saveMovieWizard == 0)
     {
-        saveMovieWizard = new QvisSaveMovieWizard(movieAtts,
-            mainWin, "Save movie wizard");
+        saveMovieWizard = new QvisSaveMovieWizard(movieAtts, mainWin);
         saveMovieWizard->SetDefaultMovieSize(cw, ch);
         saveMovieWizard->SetDefaultNumFrames(nMovieFrames);
     }
@@ -7755,7 +7809,7 @@ QvisGUIApplication::SaveMovieMain()
             QString makemovie2(MakeCodeSlashes(makemovie.c_str()));
 
             // Assemble a string of code to execute.
-            QString code; code.sprintf("try:\n    Source('%s')\n", makemovie2.latin1());
+            QString code(QString("try:\n    Source('%1')\n").arg(makemovie2));
             code += "    movie = MakeMovie()\n";
             code += "    movie.sendClientFeedback = 1\n";
             const stringVector &formats = movieAtts->GetFileFormats();
@@ -7859,7 +7913,7 @@ QvisGUIApplication::SaveMovieMain()
             if(movieAtts->GetMovieType() == MovieAttributes::Simple)
             {
                 args.push_back("-sessionfile");
-                args.push_back(QuoteSpaces(std::string(sessionFile.latin1())));
+                args.push_back(QuoteSpaces(std::string(sessionFile.toStdString())));
             }
             else
             {
@@ -7884,11 +7938,14 @@ QvisGUIApplication::SaveMovieMain()
                 // Fire off "visit -movie" under the covers. Perhaps have some
                 // stuff to send back progress to this process.
                 QString program(args[0].c_str());
-                QProcess *movieMaker = new QProcess(program, this, "movieMaker");
+                QProcess *movieMaker = new QProcess(this);
+                QStringList sargs;
                 for(int i = 1; i < args.size(); ++i)
-                    movieMaker->addArgument(args[i].c_str());
-                movieMaker->setCommunication(0);
-                if(!movieMaker->start())
+                    sargs.append(args[i].c_str());
+                
+                movieMaker->start(program,sargs);
+                
+                if(movieMaker->state() == QProcess::NotRunning)
                 {
                     errFlag = true;
                     QString noRun(tr("VisIt could not run %1.").arg(program));
@@ -7968,7 +8025,7 @@ QvisGUIApplication::Interpret(const QString &s)
 {
     if(interpreter == 0)
     {
-        interpreter = new QvisInterpreter(this, "Interpreter");
+        interpreter = new QvisInterpreter(this);
         connect(interpreter, SIGNAL(Synchronize()),
                 this, SLOT(InterpreterSync()));
     }
@@ -7992,11 +8049,76 @@ QvisGUIApplication::Interpret(const QString &s)
 // Modifications:
 //   
 // ****************************************************************************
-
 void
 QvisGUIApplication::InterpreterSync()
 {
     Synchronize(INTERPRETER_SYNC_TAG);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::ExtractSystemDefaultAppearance
+//
+// Purpose: 
+//   Called when the GUI is created to obtain the Qt's default appearance 
+//   values.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 24 13:49:38 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::ExtractSystemDefaultAppearance()
+{
+    const char *mName = "QvisGUIApplication::ExtractSystemDefaultAppearance ";
+    AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
+    
+    // get system default style
+    QStyle *style = mainApp->style();
+    QString style_class(style->metaObject()->className());
+    string style_name = "windows";
+    if(style_class == "QWindowsStyle")
+        style_name = "windows";
+    else if(style_class == "QWindowsVistaStyle")
+        style_name = "windowsvista";
+    else if(style_class == "QWindowsXPStyle")
+        style_name = "windowsxp";
+    else if(style_class == "QMotifStyle")
+        style_name = "motif";
+    else if(style_class == "QCleanlooksStyle")
+        style_name = "cleanlooks";
+    else if(style_class == "QPlastiqueStyle")
+        style_name = "plastique";
+    else if(style_class == "QCDEStyle")
+        style_name = "cde";
+    else if(style_class == "QMacStyle")
+        style_name = "macintosh";
+    
+    debug1 << mName << "Default System Style is: " << style_name << endl;
+    aa->SetDefaultStyle(style_name);
+    
+    // get system default font
+    QFont font = mainApp->font();
+    string font_name = font.key().toStdString();
+    debug1 << mName << "Default system font is:" << font_name << endl;
+    aa->SetDefaultFontName(font_name);
+        
+    //set aa colors from defaults
+    QColor bg = mainApp->palette().window().color();
+    QColor fg = mainApp->palette().windowText().color();
+        
+    char tmp[20];
+    sprintf(tmp, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
+    debug1 << mName << "Default background color is:" << tmp << endl;
+    aa->SetDefaultBackground(tmp);
+    sprintf(tmp, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
+    debug1 << mName << "Default foreground color is:" << tmp << endl;
+    aa->SetDefaultForeground(tmp);
+    
+    debug1 << mName << "Default orientation:" << 0 << endl;
+    aa->SetDefaultOrientation(0);
 }
 
 // ****************************************************************************
@@ -8057,7 +8179,7 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
         {
             stringVector files;
             debug1 << "Restoring a crash recovery file: "
-                   << filename.latin1() << endl;
+                   << filename.toStdString() << endl;
             RestoreSessionFile(filename, files);
         }
 
@@ -8082,7 +8204,9 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
 // Creation:   Thu Jan 31 11:06:26 PST 2008
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -8094,7 +8218,7 @@ QvisGUIApplication::RemoveCrashRecoveryFile(bool removeViewerFile) const
         if(cr.exists())
         {
             debug1 << "Removing crash recovery file: "
-                   << cr.name().latin1() << endl;
+                   << cr.fileName().toStdString() << endl;
             cr.remove();
         }
     }
@@ -8103,7 +8227,7 @@ QvisGUIApplication::RemoveCrashRecoveryFile(bool removeViewerFile) const
     if(gcr.exists())
     {
         debug1 << "Removing crash recovery gui file: "
-               << gcr.name().latin1() << endl;
+               << gcr.fileName().toStdString() << endl;
         gcr.remove();
     }
 }
@@ -8127,7 +8251,7 @@ void
 QvisGUIApplication::SaveCrashRecoveryFile()
 {
     debug1 << "Saving crash recovery file: "
-          << CrashRecoveryFile().latin1() << endl;
+          << CrashRecoveryFile().toStdString() << endl;
     // we dont want to bug the user with info about the crash recovery
     // session being created, so suppress viewer messages.
     GetViewerMethods()->SetSuppressMessages(true);

@@ -37,9 +37,9 @@
 *****************************************************************************/
 #ifndef PLUGIN_BASE_H
 #define PLUGIN_BASE_H
-#include <qstring.h>
+#include <QTextStream>
+
 #include <vector>
-#include <visitstream.h>
 
 #include <stdlib.h>
 #include <sys/types.h>
@@ -71,6 +71,9 @@
 //    Brad Whitlock, Wed Oct 15 14:20:36 PDT 2008
 //    Added support for custom Java files.
 //
+//    Cyrus Harrison, Fri Sep 19 13:46:16 PDT 2008
+//    Added support for custom libs for gui,engine, mdserver, viewer
+//
 // ****************************************************************************
 
 class PluginBase
@@ -99,15 +102,23 @@ public:
     std::vector<QString> extensions; // for DB plugins
     std::vector<QString> filenames;  // for DB plugins
     bool customgfiles;
-    std::vector<QString> gfiles;     // gui
+    std::vector<QString> gfiles;     // gui files
+    bool customglibs;
+    std::vector<QString> glibs;      // gui libs
     bool customsfiles;
     std::vector<QString> sfiles;     // scripting
     bool customvfiles;
-    std::vector<QString> vfiles;     // viewer
+    std::vector<QString> vfiles;     // viewer files
+    bool customvlibs;
+    std::vector<QString> vlibs;      // viewer libs
     bool custommfiles;
-    std::vector<QString> mfiles;     // mdserver
+    std::vector<QString> mfiles;     // mdserver files
+    bool custommlibs;
+    std::vector<QString> mlibs;      // mdserver libs
     bool customefiles;
-    std::vector<QString> efiles;     // engine
+    std::vector<QString> efiles;     // engine files
+    bool customelibs;
+    std::vector<QString> elibs;      // engine libs
     bool customwfiles;
     std::vector<QString> wfiles;     // widgets
     bool customvwfiles;
@@ -137,14 +148,22 @@ public:
           filenames(),
           customgfiles(false),
           gfiles(),
+          customglibs(false),
+          glibs(),
           customsfiles(false),
           sfiles(),
           customvfiles(false),
           vfiles(),
+          customvlibs(false),
+          vlibs(),
           custommfiles(false),
           mfiles(),
+          custommlibs(false),
+          mlibs(),
           customefiles(false),
           efiles(),
+          customelibs(false),
+          elibs(),
           customwfiles(false),
           wfiles(),
           customvwfiles(false),

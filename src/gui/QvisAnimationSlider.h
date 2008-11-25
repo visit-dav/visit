@@ -38,7 +38,7 @@
 
 #ifndef QVIS_ANIMATION_SLIDER_H
 #define QVIS_ANIMATION_SLIDER_H
-#include <qslider.h>
+#include <QSlider>
 
 // ****************************************************************************
 // Class: QvisAnimationSlider
@@ -53,15 +53,17 @@
 // Creation:   Tue Dec 30 14:26:22 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May 30 09:48:45 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisAnimationSlider : public QSlider
 {
     Q_OBJECT
 public:
-    QvisAnimationSlider(Orientation, QWidget *parent = 0, const char *name = 0);
-    QvisAnimationSlider(QWidget *parent = 0, const char *name = 0);
+    QvisAnimationSlider(Qt::Orientation, QWidget *parent = 0);
+    QvisAnimationSlider(QWidget *parent = 0);
     virtual ~QvisAnimationSlider();
 
     bool sliderIsDown() const { return the_sliderIsDown; };

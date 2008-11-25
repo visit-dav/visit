@@ -38,9 +38,8 @@
 #ifndef ATTRIBUTE_BASE_H
 #define ATTRIBUTE_BASE_H
 #include <vector>
-#include <qstring.h>
-#include <visitstream.h>
 
+#include <QTextStream>
 #include "Function.h"
 #include "Code.h"
 #include "Constant.h"
@@ -131,7 +130,7 @@ public:
             }
         return false;
     }
-    void PrintFunction(ostream &out, const QString &f, const QString &target = QString::null) const
+    void PrintFunction(QTextStream &out, const QString &f, const QString &target = QString::null) const
     {
         for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
@@ -145,7 +144,7 @@ public:
             }
     }
 
-    void DeleteFunction(ostream &out, const QString &f, const QString &target = QString::null)
+    void DeleteFunction(QTextStream &out, const QString &f, const QString &target = QString::null)
     {
         for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
@@ -176,7 +175,7 @@ public:
             }
         return false;
     }
-    void PrintCode(ostream &out, const QString &cName, int part, const QString &target = QString::null) const
+    void PrintCode(QTextStream &out, const QString &cName, int part, const QString &target = QString::null) const
     {
         for (size_t i=0; i<codes.size(); i++)
             if (codes[i]->name == cName)
@@ -192,7 +191,7 @@ public:
             }
     }
 
-    virtual void Print(ostream &) const
+    virtual void Print(QTextStream &) const
     {
     }
 };

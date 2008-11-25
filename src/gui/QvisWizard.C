@@ -55,11 +55,13 @@
 // Creation:   Tue Dec 14 09:32:56 PDT 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 09:20:47 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
-QvisWizard::QvisWizard(AttributeSubject *subj,
-    QWidget *parent, const char *name) : QWizard(parent, name)
+QvisWizard::QvisWizard(AttributeSubject *subj, QWidget *parent) 
+: QWizard(parent)
 {
     atts = subj;
     localCopy = atts->NewInstance(true);

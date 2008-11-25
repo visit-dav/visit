@@ -40,8 +40,9 @@
 
 #include <visit-config.h>
 
-#include <qwidget.h>
-#include <qwidgetfactory.h>
+#include <QFile>
+#include <QWidget>
+#include <QvisUiLoader.h>
 
 #include <WidgetDataNode.h>
 
@@ -59,9 +60,12 @@
 //   Brad Whitlock, Tue Apr  8 08:53:15 PDT 2008
 //   Added QObject inheritance.
 //
+//   Brad Whitlock, Tue Oct  7 09:53:13 PDT 2008
+//   Added name.
+//
 // ****************************************************************************
 
-MovieSequence::MovieSequence() : QObject(), uiFile()
+MovieSequence::MovieSequence() : QObject(), uiFile(), name()
 {
 }
 
@@ -340,7 +344,9 @@ MovieSequence::InitializeFromValues(const std::string &xmlFile, DataNode *node)
 // Creation:   Tue Nov 14 11:05:26 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 09:50:55 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QWidget *
@@ -350,8 +356,16 @@ MovieSequence::CreateUI()
     if(SupportsCustomUI())
     {
         // If we have what could be a valid UI file then try and use it.
-        if(uiFile.size() > 0) 
-            ui = QWidgetFactory::create(uiFile.c_str());
+        if(uiFile.size() > 0)
+        {
+            QFile f(uiFile.c_str());
+            if(f.open(QIODevice::ReadOnly))
+            {
+                QvisUiLoader *loader = new QvisUiLoader;
+                ui = loader->load(&f);
+                delete loader;
+            }
+        }
     }
 
     return ui;

@@ -45,6 +45,7 @@
 // Forward declarations.
 class MeshManagementAttributes;
 class QButtonGroup;
+class QRadioButton;
 class QCheckBox;
 class QGroupBox;
 class QLabel;
@@ -71,6 +72,9 @@ class QVBox;
 //
 //    Brad Whitlock, Wed Apr  9 11:34:22 PDT 2008
 //    QString for caption, shortName.
+//
+//   Cyrus Harrison, Wed Jul  2 11:16:25 PDT 2008
+//   Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -104,12 +108,13 @@ private slots:
 private:
     MeshManagementAttributes *mmAtts;
 
-    QVBox            *pageCSG;
-    QGroupBox        *pageCSGGroup;
+    QWidget          *pageCSGGroup;
     QCheckBox        *renderCSGDirect;
     QCheckBox        *discretizeBoundaryOnly;
     QLabel           *discretizeModeLabel;
     QButtonGroup     *discretizationMode;
+    QRadioButton     *discretizeUniform;
+    QRadioButton     *discretizeAdaptive;
     QLabel           *smallestZoneLabel;
     QLineEdit        *smallestZoneLineEdit;
     QLabel           *flatEnoughLabel;

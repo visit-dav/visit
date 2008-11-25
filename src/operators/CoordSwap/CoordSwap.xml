@@ -6,10 +6,10 @@
         Coord2
         Coord3
       </Enum>
-      <Field name="newCoord1" label="New Coordinate 1?" type="enum" subtype="Coord">
+      <Field name="newCoord1" label="New Coordinate 1" type="enum" subtype="Coord">
         Coord1
       </Field>
-      <Field name="newCoord2" label="New Coordinate 2?" type="enum" subtype="Coord">
+      <Field name="newCoord2" label="New Coordinate 2" type="enum" subtype="Coord">
         Coord2
       </Field>
       <Field name="newCoord3" label="New Coordinate 3" type="enum" subtype="Coord">

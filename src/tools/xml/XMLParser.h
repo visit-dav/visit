@@ -38,9 +38,9 @@
 
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
+#include <QTextStream>
 
 #include <qxml.h>
-#include <visitstream.h>
 #include "Field.h"
 #include "XMLParserUtil.h"
 #include "Attribute.h"
@@ -55,15 +55,16 @@ using std::vector;
 
 enum ComponentTypes
 {
-    COMP_NONE            = 0x00,
-    COMP_GUI             = 0x01,
-    COMP_SCRIPTING       = 0x02,
-    COMP_VIEWER          = 0x04,
-    COMP_MDSERVER        = 0x08,
-    COMP_ENGINE          = 0x10,
-    COMP_WIDGETS         = 0x20,
-    COMP_VIEWER_WIDGETS  = 0x40,
-    COMP_JAVA            = 0x80
+    COMP_NONE            = 0x000,
+    COMP_GUI             = 0x001,
+    COMP_SCRIPTING       = 0x002,
+    COMP_VIEWER          = 0x004,
+    COMP_MDSERVER        = 0x008,
+    COMP_ENGINE          = 0x010,
+    COMP_WIDGETS         = 0x020,
+    COMP_VIEWER_WIDGETS  = 0x040,
+    COMP_JAVA            = 0x080,
+    COMP_ALL             = 0x100
 };
 
 inline vector<QString>
@@ -73,7 +74,7 @@ ParseCharacters(const QString &buff)
 
     // split one string into a list of strings when delimited by whitespace
     // or quotation marks, e.g.   <string1  "string two"  ""  string4>
-    buff.stripWhiteSpace();
+    buff.trimmed();
     bool quote=false;
     QString tmp="";
     for (int i=0; i<(int)buff.length(); i++)
@@ -190,6 +191,9 @@ ParseCharacters(const QString &buff)
 //    Brad Whitlock, Fri Apr 25 11:23:20 PDT 2008
 //    Added support for setting access type on functions.
 //
+//    Cyrus Harrison, Fri Sep 19 13:56:30 PDT 2008
+//    Added support for custom libs for gui,engine,mdserver,and viewer targets.
+//
 //    Brad Whitlock, Wed Oct 15 14:23:40 PDT 2008
 //    Added support for additional Java files.
 //
@@ -250,6 +254,20 @@ class XMLParser : public QXmlDefaultHandler
                 if (currentFileComponents & COMP_JAVA)
                     currentPlugin->jfiles.push_back(strings[i]);
             }
+            else if (currentTag == "LIBS")
+            {
+                if (currentLibComponents & COMP_GUI)
+                    currentPlugin->glibs.push_back(strings[i]);
+                if (currentLibComponents & COMP_VIEWER)
+                    currentPlugin->vlibs.push_back(strings[i]);
+                if (currentLibComponents & COMP_MDSERVER)
+                    currentPlugin->mlibs.push_back(strings[i]);
+                if (currentLibComponents & COMP_ENGINE)
+                    currentPlugin->elibs.push_back(strings[i]);
+                // case with no flags (libs for all components)
+                if (currentLibComponents & COMP_ALL)
+                    currentPlugin->libs.push_back(strings[i]);
+            }
             else if (currentTag == "CXXFLAGS")
             {
                 currentPlugin->cxxflags.push_back(strings[i]);
@@ -257,10 +275,6 @@ class XMLParser : public QXmlDefaultHandler
             else if (currentTag == "LDFLAGS")
             {
                 currentPlugin->ldflags.push_back(strings[i]);
-            }
-            else if (currentTag == "LIBS")
-            {
-                currentPlugin->libs.push_back(strings[i]);
             }
             else if (currentTag == "Extensions")
             {
@@ -382,12 +396,12 @@ class XMLParser : public QXmlDefaultHandler
             QString member = atts.value("member");
 
             if (!currentAttribute)
-                throw QString().sprintf("No current attribute when specifying constant %s",name.latin1());
+                throw QString("No current attribute when specifying constant %1").arg(name);
             CodeFile *codeFile = currentAttribute->codeFile;
             if (!codeFile)
-                throw QString().sprintf("No codefile found for constant %s.",name.latin1());
+                throw QString("No codefile found for constant %1.").arg(name);
             if (!codeFile->HasConstant(name))
-                throw QString().sprintf("no constant %s in codefile.", name.latin1());
+                throw QString("no constant %1 in codefile.").arg(name);
 
             // Get the constant definitions
             QStringList targets, first, second;
@@ -419,12 +433,12 @@ class XMLParser : public QXmlDefaultHandler
                 a = Function::AccessPublic;
 
             if (!currentAttribute)
-                throw QString().sprintf("No current attribute when specifying function %s",name.latin1());
+                throw QString("No current attribute when specifying function %1").arg(name);
             CodeFile *codeFile = currentAttribute->codeFile;
             if (!codeFile)
-                throw QString().sprintf("No codefile found for function %s.",name.latin1());
+                throw QString("No codefile found for function %1.").arg(name);
             if (!codeFile->HasFunction(name))
-                throw QString().sprintf("no function %s in codefile.",name.latin1());
+                throw QString("no function %1 in codefile.").arg(name);
 
             // Get the function definitions
             QStringList targets, first, second;
@@ -445,9 +459,6 @@ class XMLParser : public QXmlDefaultHandler
         {
         }
         else if (tag == "LDFLAGS")
-        {
-        }
-        else if (tag == "LIBS")
         {
         }
         else if (tag == "Extensions")
@@ -513,14 +524,62 @@ class XMLParser : public QXmlDefaultHandler
                     currentPlugin->customjfiles = true;
                 }
                 else
-                    throw QString().sprintf("invalid file '%s' for components attribute of Files tag", comps2[i].latin1());
+                    throw QString("invalid file '%1' for components attribute of Files tag").arg(comps2[i]);
             }
             currentFileComponents = comps3;
+        }
+        else if (tag == "LIBS")
+        {
+            currentLibComponents = COMP_NONE;
+            // if we have a "components" attribute, we need to find out 
+            // which component the libs are for.        
+            // if not, we have libs for all comps
+            if(atts.index("components") == -1)
+            {
+                currentLibComponents = COMP_ALL;
+            }
+            else
+            {
+                QString         comps         = atts.value("components");
+                vector<QString> comps_split   = SplitValues(comps);
+                int             comps_current = COMP_NONE;
+
+                for (size_t i=0; i<comps_split.size(); i++)
+                {
+                    if (comps_split[i] == "G")
+                    {
+                        currentPlugin->glibs.clear();
+                        comps_current |= COMP_GUI;
+                        currentPlugin->customglibs = true;
+                    }
+                    else if (comps_split[i] == "V")
+                    {
+                        currentPlugin->vlibs.clear();
+                        comps_current |= COMP_VIEWER;
+                        currentPlugin->customvlibs = true;
+                    }
+                    else if (comps_split[i] == "M")
+                    {
+                        currentPlugin->mlibs.clear();
+                        comps_current |= COMP_MDSERVER;
+                        currentPlugin->custommlibs = true;
+                    }
+                    else if (comps_split[i] == "E")
+                    {
+                        currentPlugin->elibs.clear();
+                        comps_current |= COMP_ENGINE;
+                        currentPlugin->customelibs = true;
+                    }
+                    else    
+                        throw QString("invalid file '%1' for components attribute of LIBS tag").arg(comps_split[i]);
+                }
+                currentLibComponents = comps_current;
+            }
         }
         else if (tag == "Field")
         {
             if (!currentAttribute)
-                throw QString().sprintf("No current attribute when specifying field %s",name.latin1());
+                throw QString("No current attribute when specifying field %1").arg(name);
 
             QString type      = atts.value("type");
             QString subtype   = atts.value("subtype");
@@ -556,9 +615,9 @@ class XMLParser : public QXmlDefaultHandler
             if (!init.isNull())
             {
                 if (!currentAttribute->codeFile)
-                    throw QString().sprintf("No codefile found for initializer for %s.",name.latin1());
+                    throw QString("No codefile found for initializer for %1.").arg(name);
                 if (!currentAttribute->codeFile->HasInit(name))
-                    throw QString().sprintf("no initializer for %s in codefile.",name.latin1());
+                    throw QString("no initializer for %1 in codefile.").arg(name);
 
                 QStringList targets, defs;
                 currentAttribute->codeFile->GetInit(name, targets, defs);
@@ -570,7 +629,7 @@ class XMLParser : public QXmlDefaultHandler
             {
                 vector<QString> vals = SplitValues(enabler);
                 if (vals.size() < 2)
-                    throw QString().sprintf("enabler for field %s requires a value",name.latin1());
+                    throw QString("enabler for field %1 requires a value").arg(name);
 
                 Field *enablerField = NULL;
                 for (size_t i=0; i<currentAttribute->fields.size(); i++)
@@ -580,7 +639,7 @@ class XMLParser : public QXmlDefaultHandler
                 }
 
                 if (!enablerField)
-                    throw QString().sprintf("enabler field %s was not defined before current field %s",vals[0].latin1(),name.latin1());
+                    throw QString("enabler field %1 was not defined before current field %2").arg(vals[0]).arg(name);
 
                 currentField->SetEnabler(enablerField);
                 for (size_t i=1; i<vals.size(); i++)
@@ -611,17 +670,19 @@ class XMLParser : public QXmlDefaultHandler
         }
         else
         {
-            throw QString().sprintf("unknown tag for startElement: %s",tag.latin1());
+            throw QString("unknown tag for startElement: %1").arg(tag);
         }
         currentTag = tag;
         tagStack.push_back(currentTag);
-
-        return true;
+        return true;        
     }
     bool endElement( const QString&, const QString&, const QString &tag)
     {
+        // NOTE: If you need to add a new tag, make sure you add a case here (even if empty)
+        // so the parser will except it. Default behavior is to throw an exception.
+    
         if (tagStack.back() != tag)
-            throw QString().sprintf("ending tag (%s) does not match latest tag started (%s)", tagStack.back().latin1(), tag.latin1());
+            throw QString("ending tag (%1) does not match latest tag started (%2)").arg(tagStack.back()).arg(tag);
         tagStack.pop_back();
 
         if (tag == "Attribute")
@@ -668,6 +729,7 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "LIBS")
         {
+            currentLibComponents = COMP_NONE;
         }
         else if (tag == "Extensions")
         {
@@ -688,7 +750,7 @@ class XMLParser : public QXmlDefaultHandler
         }
         else
         {
-            throw QString().sprintf("unknown tag for endElement: %s",tag.latin1());
+            throw QString("unknown tag for endElement: %1").arg(tag);
         }
 
         currentTag = tagStack.back();
@@ -696,6 +758,7 @@ class XMLParser : public QXmlDefaultHandler
     }
   private:
     int             currentFileComponents;
+    int             currentLibComponents;
     Include        *currentInclude;
     Constant      **currentConstants;
     Function      **currentFunctions;

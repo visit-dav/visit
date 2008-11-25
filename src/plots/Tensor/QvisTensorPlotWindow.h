@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_VECTOR_WINDOW_H
-#define QVIS_VECTOR_WINDOW_H
+#ifndef QVIS_TENSOR_WINDOW_H
+#define QVIS_TENSOR_WINDOW_H
 #include <QvisPostableWindowObserver.h>
 
 // Forward declarations

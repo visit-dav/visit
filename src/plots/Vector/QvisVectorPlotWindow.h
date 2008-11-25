@@ -44,7 +44,6 @@
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
-class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QvisColorButton;
@@ -89,6 +88,9 @@ class VectorAttributes;
 //   Jeremy Meredith, Tue Jul  8 15:11:19 EDT 2008
 //   Added ability to limit vectors to come from original cell only
 //   (useful for material-selected vector plots).
+//
+//   Brad Whitlock, Tue Jul 29 11:07:34 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -143,26 +145,28 @@ private:
     int                  plotType;
     VectorAttributes     *vectorAtts;
 
+    QWidget              *styleGroup;
     QButtonGroup         *lineStemButtonGroup; 
-    QGroupBox            *styleGroupBox;
     QCheckBox            *highQualityToggle;
-
     QvisLineStyleWidget  *lineStyle;
     QvisLineWidthWidget  *lineWidth;
     QLabel               *lineStyleLabel;
     QLabel               *lineWidthLabel;
     QLineEdit            *stemWidthEdit;
     QLabel               *stemWidthLabel;
-    QGroupBox            *colorGroupBox;
+
+    QWidget              *colorGroup;
     QvisColorButton      *vectorColor;
     QButtonGroup         *colorButtonGroup; 
     QvisColorTableButton *colorTableButton;
-    QGroupBox            *scaleGroupBox;    
+
+    QWidget              *scaleGroup;    
     QLineEdit            *scaleLineEdit;
     QCheckBox            *scaleByMagnitudeToggle;
     QCheckBox            *autoScaleToggle;
     QLineEdit            *headSizeLineEdit;
-    QGroupBox            *reduceGroupBox;
+
+    QWidget              *reduceGroup;
     QButtonGroup         *reduceButtonGroup;
     QLineEdit            *nVectorsLineEdit;
     QLineEdit            *strideLineEdit;
@@ -170,13 +174,13 @@ private:
     QCheckBox            *drawHeadToggle;
     QButtonGroup         *originButtonGroup;
 
-    QGroupBox             *limitsGroupBox;
-    QCheckBox             *minToggle;
-    QCheckBox             *maxToggle;
-    QComboBox             *limitsSelect;
-    QLineEdit             *maxLineEdit;
-    QLineEdit             *minLineEdit;
-    QCheckBox             *limitToOrigToggle;
+    QWidget              *limitsGroup;
+    QCheckBox            *minToggle;
+    QCheckBox            *maxToggle;
+    QComboBox            *limitsSelect;
+    QLineEdit            *maxLineEdit;
+    QLineEdit            *minLineEdit;
+    QCheckBox            *limitToOrigToggle;
 };
 
 #endif

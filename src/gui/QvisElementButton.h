@@ -39,12 +39,12 @@
 #ifndef QVIS_ELEMENT_BUTTON_H
 #define QVIS_ELEMENT_BUTTON_H
 #include <gui_exports.h>
-#include <qcolor.h>
-#include <qpushbutton.h>
+#include <QColor>
+#include <QPushButton>
 #include <vector>
 
 class QPainter;
-class QPopupMenu;
+class QMenu;
 class QvisPeriodicTableWidget;
 class QvisElementSelectionWidget;
 
@@ -73,6 +73,9 @@ class QvisElementSelectionWidget;
 //    Added support for hinting some elements to the user, e.g. to highlight
 //    the elements that are actually in the database.
 //
+//    Brad Whitlock, Tue Jun  3 14:43:22 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisElementButton : public QPushButton
@@ -81,8 +84,7 @@ class GUI_API QvisElementButton : public QPushButton
 
     typedef std::vector<QvisElementButton *> ElementButtonVector;
 public:
-    QvisElementButton(QWidget *parent = 0, const char *name = 0,
-                    const void *userData = 0);
+    QvisElementButton(QWidget *parent = 0, const void *userData = 0);
     virtual ~QvisElementButton();
     virtual QSize sizeHint() const;
     virtual QSizePolicy sizePolicy () const;

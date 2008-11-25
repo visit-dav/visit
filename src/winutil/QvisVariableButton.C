@@ -38,23 +38,20 @@
 
 #include <QvisVariableButton.h>
 
+#ifndef DESIGNER_PLUGIN
 #include <QvisVariableButtonHelper.h>
 #include <QvisVariablePopupMenu.h>
 #include <VariableMenuPopulator.h>
-#include <qtimer.h>
-#include <qtooltip.h>
+#else
+#include <QMenu>
+#endif
+
 #include <PlotPluginInfo.h>
+#include <QTimer>
 
 #define DELETE_MENU_TO_FREE_POPUPS
 
-//
-// String representation of the types of variables and they are in
-// the order that we want them to appear in the menu; not their
-// real order. See the constructor...
-//
 #define N_VAR_CATEGORIES 11
-static QString categoryMenuNames[N_VAR_CATEGORIES];
-static bool categoryMenuNamesInitialized = false;
 
 //
 // Masks of the types of variables in the order that we want them
@@ -74,6 +71,7 @@ static int categoryMasks[] = {
     VAR_CATEGORY_ARRAY
 };
 
+#ifndef DESIGNER_PLUGIN
 // ****************************************************************************
 // Method: QvisVariableButton::VariablePopupInfo::VariablePopupInfo
 //
@@ -91,23 +89,6 @@ static int categoryMasks[] = {
 
 QvisVariableButton::VariablePopupInfo::VariablePopupInfo()
 {
-    if(!categoryMenuNamesInitialized)
-    {
-        categoryMenuNames[0] = tr("Scalars");
-        categoryMenuNames[1] = tr("Vectors");
-        categoryMenuNames[2] = tr("Meshes");
-        categoryMenuNames[3] = tr("Materials");
-        categoryMenuNames[4] = tr("Subsets");
-        categoryMenuNames[5] = tr("Species");
-        categoryMenuNames[6] = tr("Curves");
-        categoryMenuNames[7] = tr("Tensors");
-        categoryMenuNames[8] = tr("Symmetric Tensors");
-        categoryMenuNames[9] = tr("Labels");
-        categoryMenuNames[10] = tr("Arrays");
-
-        categoryMenuNamesInitialized = true;
-    }
-
     varMenus = 0;
     helper = 0;
 }
@@ -149,7 +130,9 @@ QvisVariableButton::VariablePopupInfo::~VariablePopupInfo()
 // Creation:   Thu Dec 9 16:42:11 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 22 11:36:40 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -157,7 +140,7 @@ QvisVariableButton::VariablePopupInfo::Initialize()
 {
     if(varMenus == 0)
     {
-        helper = new QvisVariableButtonHelper(0, "helper");
+        helper = new QvisVariableButtonHelper(0);
 
         varMenus = new QvisVariablePopupMenu*[N_VAR_CATEGORIES];        
         for(int i = 0; i < N_VAR_CATEGORIES; ++i)
@@ -182,13 +165,16 @@ QvisVariableButton::VariablePopupInfo::Initialize()
 // Creation:   Thu Dec 20 12:39:47 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May  9 12:14:35 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisVariableButton::VariablePopupInfo::CreateMenu(int i)
 {
-    varMenus[i] = new QvisVariablePopupMenu(0, 0, categoryMenuNames[i]);
+    varMenus[i] = new QvisVariablePopupMenu(0, 0);
+    varMenus[i]->setTitle(categoryMenuNames->operator[](i));
     QObject::connect(varMenus[i], SIGNAL(activated(int, const QString &)),
                      helper, SLOT(activated(int, const QString &)));
 }
@@ -312,11 +298,13 @@ QvisVariableButton::VariablePopupInfo::disconnect()
 //
 // Static
 //
-QObjectList QvisVariableButton::instances;
-QvisVariableButton::VariablePopupInfo QvisVariableButton::activeSourceInfo;
-QvisVariableButton::VariablePopupInfo QvisVariableButton::plotSourceInfo;
+QList<QObject*> QvisVariableButton::instances;
+QvisVariableButton::VariablePopupInfo *QvisVariableButton::activeSourceInfo = 0;
+QvisVariableButton::VariablePopupInfo *QvisVariableButton::plotSourceInfo = 0;
 QObject *QvisVariableButton::expressionCreator = 0;
 const char *QvisVariableButton::expressionSlot = 0;
+#endif
+QStringList *QvisVariableButton::categoryMenuNames = 0;
 
 //
 // The VAR_CATEGORY_... macros come from PlotPluginInfo.h
@@ -352,13 +340,16 @@ const int QvisVariableButton::Arrays           = VAR_CATEGORY_ARRAY;
 // Creation:   Thu Dec 9 16:45:44 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May  9 12:05:04 PDT 2008
+//   Qt 4. Moved some initialization code to here. Added support for a
+//   stripped down version that can stand in for the real thing in designer.
+//
 // ****************************************************************************
 
-QvisVariableButton::QvisVariableButton(QWidget *parent, const char *name) :
-    QPushButton(parent, name), defaultVariable("default")
+QvisVariableButton::QvisVariableButton(QWidget *parent) :
+    QPushButton(parent), defaultVariable("default")
 {
-    instances.append(this);
+    InitializeCategoryNames();
 
     addDefault = true;
     addExpr = true;
@@ -367,20 +358,28 @@ QvisVariableButton::QvisVariableButton(QWidget *parent, const char *name) :
     varTypes = -1;
     setText(defaultVariable);
 
+#ifndef DESIGNER_PLUGIN
+    if(activeSourceInfo == 0)
+        activeSourceInfo = new VariablePopupInfo;
+    if(plotSourceInfo == 0)
+        plotSourceInfo = new VariablePopupInfo;
+    instances.append(this);
+
     //
     // Create this button's menu and add the menus for the
     // variable types in which this variable button is interested.
     //
-    menu = new QvisVariablePopupMenu(0, this, "varMenu");
+    menu = new QvisVariablePopupMenu(0, this);
     connect(menu, SIGNAL(activated(int, const QString &)),
             this, SLOT(changeVariable(int, const QString &)));
     connect(menu, SIGNAL(aboutToShow()),
             this, SLOT(connectMenu()));
-    connect(menu, SIGNAL(aboutToHide()),
-            this, SLOT(deferredDisconnectMenu()));
+#else
+    menu = new QMenu(this);
+#endif
     // Insert some standard menu options.
     UpdateMenu();
-    setPopup(menu);
+    setMenu(menu);
 }
 
 // ****************************************************************************
@@ -405,14 +404,16 @@ QvisVariableButton::QvisVariableButton(QWidget *parent, const char *name) :
 //   Brad Whitlock, Thu Nov 16 16:56:03 PST 2006
 //   Added variable.
 //
+//   Brad Whitlock, Fri May  9 12:05:42 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisVariableButton::QvisVariableButton(bool addDefault_, bool addExpr_,
-    bool usePlot, int mask, QWidget *parent, const char *name) :
-    QPushButton(parent, name),
-    variable("default"), defaultVariable("default")
+    bool usePlot, int mask, QWidget *parent) :
+    QPushButton(parent), variable("default"), defaultVariable("default")
 {
-    instances.append(this);
+    InitializeCategoryNames();
 
     addDefault = addDefault_;
     addExpr = addExpr_;
@@ -421,20 +422,28 @@ QvisVariableButton::QvisVariableButton(bool addDefault_, bool addExpr_,
     varTypes = mask;
     setText(defaultVariable);
 
+#ifndef DESIGNER_PLUGIN
+    if(activeSourceInfo == 0)
+        activeSourceInfo = new VariablePopupInfo;
+    if(plotSourceInfo == 0)
+        plotSourceInfo = new VariablePopupInfo;
+    instances.append(this);
+
     //
     // Create this button's menu and add the menus for the
     // variable types in which this variable button is interested.
     //
-    menu = new QvisVariablePopupMenu(0, this, "varMenu");
+    menu = new QvisVariablePopupMenu(0, this);
     connect(menu, SIGNAL(activated(int, const QString &)),
             this, SLOT(changeVariable(int, const QString &)));
     connect(menu, SIGNAL(aboutToShow()),
             this, SLOT(connectMenu()));
-    connect(menu, SIGNAL(aboutToHide()),
-            this, SLOT(deferredDisconnectMenu()));
+#else
+    menu = new QMenu(this);
+#endif 
     // Insert some standard menu options.
     UpdateMenu();
-    setPopup(menu);
+    setMenu(menu);
 }
 
 // ****************************************************************************
@@ -447,12 +456,60 @@ QvisVariableButton::QvisVariableButton(bool addDefault_, bool addExpr_,
 // Creation:   Thu Dec 9 16:47:56 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May  9 12:15:47 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisVariableButton::~QvisVariableButton()
 {
-    instances.remove(this);
+#ifndef DESIGNER_PLUGIN
+    instances.removeAll(this);
+
+    if(instances.size() == 0)
+    {
+        delete activeSourceInfo;
+        activeSourceInfo = 0;
+
+        delete plotSourceInfo;
+        plotSourceInfo = 0;
+
+        delete categoryMenuNames;
+        categoryMenuNames = 0;
+    }
+#endif
+}
+
+// ****************************************************************************
+// Method: QvisVariableButton::InitializeCategoryNames
+//
+// Purpose: 
+//   Initializes the category menu names.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 16 15:07:54 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVariableButton::InitializeCategoryNames()
+{
+    if(categoryMenuNames == 0)
+        categoryMenuNames = new QStringList;
+    categoryMenuNames->clear();
+    (*categoryMenuNames) << tr("Scalars")
+                      << tr("Vectors")
+                      << tr("Meshes")
+                      << tr("Materials")
+                      << tr("Subsets")
+                      << tr("Species")
+                      << tr("Curves")
+                      << tr("Tensors")
+                      << tr("Symmetric Tensors")
+                      << tr("Labels")
+                      << tr("Arrays");
 }
 
 // ****************************************************************************
@@ -468,19 +525,21 @@ QvisVariableButton::~QvisVariableButton()
 //   Brad Whitlock, Wed Apr  9 12:11:08 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri May  9 12:18:55 PDT 2008
+//   Qt 4. Designer support.
+//
 // ****************************************************************************
 
 void
 QvisVariableButton::UpdateMenu()
-{
-//qDebug("update variable button %p", this);
+{ 
     menu->clear();
 
     // Insert some extra menu options.
     if(addDefault)
-        menu->insertItem(defaultVariable);
+        menu->addAction(defaultVariable);
     if(addExpr)
-        menu->insertItem(tr("Create new expression ..."));
+        menu->addAction(tr("Create new expression ..."));
 
     if(addDefault || addExpr)
     {
@@ -494,31 +553,31 @@ QvisVariableButton::UpdateMenu()
 
         // If we're going to insert menus then add a separator.
         if(menuCount > 0)
-            menu->insertSeparator();
+            menu->addSeparator();
     }
 
-    QvisVariablePopupMenu **vm = usePlotSource ? 
-        plotSourceInfo.varMenus :
-        activeSourceInfo.varMenus;
     for(int i = 0; i < N_VAR_CATEGORIES; ++i)
     {
         if(varTypes & categoryMasks[i])
         {
+#ifndef DESIGNER_PLUGIN
+            QvisVariablePopupMenu **vm = usePlotSource ? 
+                plotSourceInfo->varMenus :
+                activeSourceInfo->varMenus;
             if(vm != 0 && vm[i]->count() > 0)
             {
-//                qDebug("\tinserting menu for %s", categoryMenuNames[i]);
-                menu->insertItem(categoryMenuNames[i],
-                                 vm[i]);
+                menu->addMenu(vm[i]);
             }
             else
             {
-//                qDebug("\tinserting disabled option for %s",
-//                       categoryMenuNames[i]);
+#endif
                 // The menu has no items in it. Insert a regular
                 // menu entry and disable it.
-                int id = menu->insertItem(categoryMenuNames[i]);
-                menu->setItemEnabled(id, false);
+                QAction *a = menu->addAction(categoryMenuNames->operator[](i));
+                a->setEnabled(false);
+#ifndef DESIGNER_PLUGIN
             }
+#endif
         }
     }
 }
@@ -602,7 +661,9 @@ QvisVariableButton::setChangeTextOnVariableChange(bool val)
 // Creation:   Thu Dec 9 16:49:39 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May  9 12:09:15 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -616,7 +677,7 @@ QvisVariableButton::setText(const QString &var)
 
         // If the variable contains a slash then display everything to the
         // right of the slash.
-        int index = var.findRev("/");
+        int index = var.lastIndexOf("/");
         if(index != -1)
         {
             displayVar = var.right(var.length() - index - 1);
@@ -641,9 +702,9 @@ QvisVariableButton::setText(const QString &var)
         // Put a tool tip on the pushbutton so the user can see
         // the whole variable name.
         if(tip)
-            QToolTip::add(this, var);
+            setToolTip(var);
         else
-            QToolTip::remove(this);
+            setToolTip("");
     }
 
     // Set the text to display into the button.
@@ -704,6 +765,39 @@ QvisVariableButton::setVarTypes(int t)
     }
 }
 
+bool
+QvisVariableButton::getAddExpr() const
+{
+    return addExpr;
+}
+
+void
+QvisVariableButton::setAddExpr(bool val)
+{
+    if(val != addExpr)
+    {
+        addExpr = val;
+        UpdateMenu();
+    }
+}
+
+bool
+QvisVariableButton::getAddDefault() const
+{
+    return addDefault;
+}
+
+void
+QvisVariableButton::setAddDefault(bool val)
+{
+    if(val != addDefault)
+    {
+        addDefault = val;
+        UpdateMenu();
+    }
+}
+
+#ifndef DESIGNER_PLUGIN
 // ****************************************************************************
 // Method: QvisVariableButton::UpdateActiveSourceButtons
 //
@@ -717,28 +811,28 @@ QvisVariableButton::setVarTypes(int t)
 // Creation:   Thu Dec 9 16:51:10 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May  9 12:07:54 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisVariableButton::UpdateActiveSourceButtons(VariableMenuPopulator *pop)
 {
     // Create the menus if they have not been created yet.
-    activeSourceInfo.Initialize();
+    activeSourceInfo->Initialize();
 
     // Update the menus.
     if(pop)
-        activeSourceInfo.UpdateMenus(pop);
+        activeSourceInfo->UpdateMenus(pop);
  
     //
     // Iterate over the variable buttons and create any missing populators.
     //
-    QObjectListIt it(instances);
-    QObject *obj;
-    while((obj = it.current()) != 0)
+    for(QList<QObject*>::const_iterator it = instances.constBegin();
+        it != instances.end(); ++it)
     {
-        ++it;
-        QvisVariableButton *button = (QvisVariableButton *)obj;
+        QvisVariableButton *button = (QvisVariableButton *)*it;
         if(!button->usePlotSource)
             button->UpdateMenu();
     }
@@ -757,28 +851,27 @@ QvisVariableButton::UpdateActiveSourceButtons(VariableMenuPopulator *pop)
 // Creation:   Thu Dec 9 16:51:10 PST 2004
 //
 // Modifications:
-//   
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisVariableButton::UpdatePlotSourceButtons(VariableMenuPopulator *pop)
 {
     // Create the menus if they have not been created yet.
-    plotSourceInfo.Initialize();
+    plotSourceInfo->Initialize();
 
     // Update the menus.
     if(pop)
-        plotSourceInfo.UpdateMenus(pop);
+        plotSourceInfo->UpdateMenus(pop);
  
     //
     // Iterate over the variable buttons and create any missing populators.
     //
-    QObjectListIt it(instances);
-    QObject *obj;
-    while((obj = it.current()) != 0)
+    for(QList<QObject*>::const_iterator it = instances.constBegin();
+        it != instances.end(); ++it)
     {
-        ++it;
-        QvisVariableButton *button = (QvisVariableButton *)obj;
+        QvisVariableButton *button = (QvisVariableButton *)*it;
         if(button->usePlotSource)
             button->UpdateMenu();
     }
@@ -809,6 +902,7 @@ QvisVariableButton::ConnectExpressionCreation(QObject *receiver,
     expressionCreator = receiver;
     expressionSlot = slot;
 }
+#endif
 
 //
 // Qt slot functions.
@@ -834,19 +928,24 @@ QvisVariableButton::ConnectExpressionCreation(QObject *receiver,
 //   Brad Whitlock, Wed Apr  9 12:11:33 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri Aug  8 15:19:54 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisVariableButton::changeVariable(int, const QString &var)
+QvisVariableButton::changeVariable(int i, const QString &var)
 {
-    // We chose a menu option so it's safe to disconnect the menu.
-    disconnectMenu();
+    // We chose a menu option so it's safe to schedule the disconnect of the menu.
+    deferredDisconnectMenu();
 
     if(var == tr("Create new expression ..."))
     {
+#ifndef DESIGNER_PLUGIN
         // Call the expression creator object's slot.
         if(expressionCreator != 0 && expressionSlot)
             QTimer::singleShot(0, expressionCreator, expressionSlot);
+#endif
     }
     else
     {
@@ -872,20 +971,24 @@ QvisVariableButton::changeVariable(int, const QString &var)
 // Creation:   Thu Dec 9 16:54:44 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Oct 16 15:00:53 PDT 2008
+//   Designer support.
+//
 // ****************************************************************************
 
 void
 QvisVariableButton::connectMenu()
 {
+#ifndef DESIGNER_PLUGIN
     //
     // Connect all of the relevant variable menus so we don't
     // ever accidentally select variables for a different variable button.
     //
     if(usePlotSource)
-        plotSourceInfo.connect(this);
+        plotSourceInfo->connect(this);
     else
-        activeSourceInfo.connect(this);
+        activeSourceInfo->connect(this);
+#endif
 }
 
 // ****************************************************************************
@@ -919,14 +1022,18 @@ QvisVariableButton::deferredDisconnectMenu()
 // Creation:   Thu Dec 9 16:56:04 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Oct 16 15:00:44 PDT 2008
+//   Designer support.
+//
 // ****************************************************************************
 
 void
 QvisVariableButton::disconnectMenu()
 {
+#ifndef DESIGNER_PLUGIN
     if(usePlotSource)
-        plotSourceInfo.disconnect();
+        plotSourceInfo->disconnect();
     else
-        activeSourceInfo.disconnect();
+        activeSourceInfo->disconnect();
+#endif
 }

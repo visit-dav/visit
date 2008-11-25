@@ -39,8 +39,9 @@
 #ifndef __vtkQtImagePrinter_h
 #define __vtkQtImagePrinter_h
 #include <vtkqt_exports.h>
+#include <QtCore>
+#include <QPrinter>
 #include <vtkImageWriter.h>
-#include <qprinter.h>
 
 // ****************************************************************************
 // Class: vtkQtImagePrinter

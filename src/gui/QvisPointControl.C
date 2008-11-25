@@ -38,12 +38,12 @@
 
 #include <QvisPointControl.h>
 
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QRadioButton>
 #include <QvisVariableButton.h>
 
 #define POINT_TYPE_POINTS 3
@@ -70,10 +70,13 @@
 //    Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //    Support for internationalization.
 //
+//   Cyrus Harrison, Tue Jul  8 09:58:45 PDT 2008
+//   Initial Qt4 Port
+//
 // ****************************************************************************
 
-QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
-    QWidget(parent, name)
+QvisPointControl::QvisPointControl(QWidget *parent) :
+    QWidget(parent)
 {
     // Set some default values.
 
@@ -83,43 +86,43 @@ QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
     lastGoodVar = "default";
 
     // Create the top layout.
-    QGridLayout *topLayout = new QGridLayout(this, 3, 4);
+    QGridLayout *topLayout = new QGridLayout(this);
+    topLayout->setMargin(0);
     topLayout->setSpacing(10);
 
     QString temp;
     // Create the size label and line edit.
-    sizeLineEdit = new QLineEdit(this, "sizeLineEdit");
+    sizeLineEdit = new QLineEdit(this);
     connect(sizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSizeText()));
-    topLayout->addMultiCellWidget(sizeLineEdit, 0, 0, 1, 3);
-    sizeLabel = new QLabel(sizeLineEdit, tr("Point size"), this, 
-                                "sizeLabel");
+    topLayout->addWidget(sizeLineEdit, 0, 1, 1, 2);
+    sizeLabel = new QLabel(tr("Point size"), this);
+    sizeLabel->setBuddy(sizeLabel);
     topLayout->addWidget(sizeLabel, 0, 0);
 
     // Create the size variable check box and variable button.
+    sizeVarToggle = new QCheckBox(tr("Scale point size by variable"), this);
+    connect(sizeVarToggle, SIGNAL(toggled(bool)),
+            this, SLOT(sizeVarToggled(bool)));
+    topLayout->addWidget(sizeVarToggle, 1, 0, 1, 2);
     sizeVarButton = new QvisVariableButton(true, true, true,
-        QvisVariableButton::Scalars, this, "sizeVarButton");
+        QvisVariableButton::Scalars, this);
     sizeVarButton->setEnabled(false);
     connect(sizeVarButton, SIGNAL(activated(const QString &)),
             this, SLOT(sizeVarChanged(const QString &)));
-    topLayout->addMultiCellWidget(sizeVarButton, 1, 1, 2, 3);
-    sizeVarToggle = new QCheckBox(tr("Scale point size by variable"), this, 
-                                       "sizeVarToggle");
-    connect(sizeVarToggle, SIGNAL(toggled(bool)),
-            this, SLOT(sizeVarToggled(bool)));
-    topLayout->addMultiCellWidget(sizeVarToggle, 1,1, 0,1);
+    topLayout->addWidget(sizeVarButton, 1, 2);
 
     // Create the type combo box
-    typeComboBox = new QComboBox(this, "typeComboBox");
-    typeComboBox->insertItem(tr("Box"));
-    typeComboBox->insertItem(tr("Axis"));
-    typeComboBox->insertItem(tr("Icosahedron"));
-    typeComboBox->insertItem(tr("Point"));
-    typeComboBox->insertItem(tr("Sphere"));
+    typeComboBox = new QComboBox(this);
+    typeComboBox->addItem(tr("Box"));
+    typeComboBox->addItem(tr("Axis"));
+    typeComboBox->addItem(tr("Icosahedron"));
+    typeComboBox->addItem(tr("Point"));
+    typeComboBox->addItem(tr("Sphere"));
     connect(typeComboBox, SIGNAL(activated(int)),
             this, SLOT(typeComboBoxChanged(int)));
     topLayout->addWidget(new QLabel(tr("Point Type"), this), 2, 0);
-    topLayout->addMultiCellWidget(typeComboBox, 2,2 , 1,3);
+    topLayout->addWidget(typeComboBox, 2, 1, 1, 2);
 
     SetPointSize(lastGoodSize);
     SetPointSizeVar(lastGoodVar);
@@ -206,7 +209,7 @@ QvisPointControl::processSizeText()
 bool
 QvisPointControl::ProcessSizeText(int pointType)
 {
-    QString temp = sizeLineEdit->displayText().stripWhiteSpace();
+    QString temp = sizeLineEdit->displayText().trimmed();
     bool okay = !temp.isEmpty();
 
     if(pointType == POINT_TYPE_POINTS ||
@@ -573,6 +576,9 @@ void QvisPointControl::SetPointSizeVar(QString &var)
 //   Brad Whitlock, Thu Aug 25 09:57:49 PDT 2005
 //   Changed to a combobox.
 //
+//   Cyrus Harrison, Tue Jul  8 09:58:45 PDT 2008
+//   Initial Qt4 Port
+//
 // ****************************************************************************
 
 void QvisPointControl::SetPointType(int type)
@@ -581,7 +587,7 @@ void QvisPointControl::SetPointType(int type)
         return;
 
     typeComboBox->blockSignals(true);
-    typeComboBox->setCurrentItem(type);
+    typeComboBox->setCurrentIndex(type);
     typeComboBox->blockSignals(false);
 
     lastGoodPointType = type;
@@ -647,11 +653,14 @@ QvisPointControl::UpdatePointType()
 //   Brad Whitlock, Thu Aug 25 10:03:41 PDT 2005
 //   Changed to a combobox.
 //
+//   Cyrus Harrison, Tue Jul  8 09:58:45 PDT 2008
+//   Initial Qt4 Port
+//
 // ****************************************************************************
 
 int
 QvisPointControl::GetPointType() const
 {
-    return typeComboBox->currentItem();
+    return typeComboBox->currentIndex();
 }
 

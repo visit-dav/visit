@@ -101,12 +101,16 @@ MovieSequenceCompositeTransition::~MovieSequenceCompositeTransition()
 //   Brad Whitlock, Tue Apr  8 10:33:54 PDT 2008
 //   SequenceMenuName now returns QString.
 //
+//   Brad Whitlock, Tue Oct  7 11:21:26 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QWidget *
 MovieSequenceCompositeTransition::CreateUI()
 {
-    QvisCompositeTransition *ui = new QvisCompositeTransition(Pixmap(), 0, GetName().c_str());
+    QvisCompositeTransition *ui = new QvisCompositeTransition(Pixmap(), 0);
+    ui->setObjectName(GetName().c_str());
     ui->setTitle(SequenceMenuName());
 
     return ui;

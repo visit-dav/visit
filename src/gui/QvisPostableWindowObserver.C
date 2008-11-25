@@ -37,8 +37,8 @@
 *****************************************************************************/
 
 #include <QvisPostableWindowObserver.h>
-#include <qpushbutton.h>
-#include <qlayout.h>
+#include <QPushButton>
+#include <QLayout>
 
 #include <AttributeSubject.h>
 

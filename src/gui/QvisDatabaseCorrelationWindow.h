@@ -43,7 +43,7 @@
 class DatabaseCorrelation;
 class QComboBox;
 class QLineEdit;
-class QListBox;
+class QListWidget;
 class QPushButton;
 
 // ****************************************************************************
@@ -85,16 +85,16 @@ protected slots:
 protected:
     void CreateWidgets(const DatabaseCorrelation &correlation);
     void UpdateAddRemoveButtonsEnabledState();
-    int  SelectedCount(const QListBox *) const;
-    void TransferItems(QListBox *srcLB, QListBox *destLB);
+    int  SelectedCount(const QListWidget *) const;
+    void TransferItems(QListWidget *srcLB, QListWidget *destLB);
 
     static int   instanceCount;
     bool         createMode;
 
     // Widgets and layout
     QLineEdit    *correlationNameLineEdit;
-    QListBox     *sourcesListBox;
-    QListBox     *correlatedSourcesListBox;
+    QListWidget     *sourcesListBox;
+    QListWidget     *correlatedSourcesListBox;
     QPushButton  *addButton;
     QPushButton  *removeButton;
     QComboBox    *correlationMethodComboBox;

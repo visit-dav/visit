@@ -75,10 +75,13 @@
 //    Brad Whitlock, Mon Feb 12 18:02:12 PST 2007
 //    Made it use ViewerBase.
 //
+//    Brad Whitlock, Fri May 23 11:09:47 PDT 2008
+//    Removed name on ViewerBase.
+//
 // ****************************************************************************
 
-ViewerConfigManager::ViewerConfigManager(ViewerSubject *vs) : 
-    ViewerBase(0, "ViewerConfigManager"), ConfigManager()
+ViewerConfigManager::ViewerConfigManager(ViewerSubject *vs) : ViewerBase(0),
+    ConfigManager()
 {
     parent = vs;
     writeDetail = false;

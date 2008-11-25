@@ -44,11 +44,11 @@
 #include <CouldNotConnectException.h>
 #include <CancelledConnectException.h>
 
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
-#include <qtimer.h>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
+#include <QTimer>
 
 #if !defined(_WIN32)
 #include <unistd.h>
@@ -89,15 +89,21 @@ std::set<int> ViewerPasswordWindow::failedPortForwards;
 //    Brad Whitlock, Tue Apr 29 15:09:31 PDT 2008
 //    Added tr()'s
 //
+//    Brad Whitlock, Tue May 27 13:41:28 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
-ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
-    : QDialog(parent, name, true)
+ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent)
+    : QDialog(parent)
 {
+    setModal(true);
+
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(10);
 
-    QHBoxLayout *l2 = new QHBoxLayout(layout);
+    QHBoxLayout *l2 = new QHBoxLayout;
+    layout->addLayout(l2);
     l2->setSpacing(5);
     label = new QLabel(tr("Password for localhost: "), this);
     l2->addWidget(label);
@@ -108,23 +114,23 @@ ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
     connect(passedit, SIGNAL(returnPressed()), this, SLOT(accept()));
     layout->addSpacing(20);
 
-    QHBoxLayout *l3 = new QHBoxLayout(layout);
-    QPushButton *okay = new QPushButton(tr("OK"), this, "OK");
+    QHBoxLayout *l3 = new QHBoxLayout;
+    layout->addLayout(l3);
+    QPushButton *okay = new QPushButton(tr("OK"), this);
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     l3->addWidget(okay);
     l3->addStretch(10);
 
-    QPushButton *cub = new QPushButton(tr("Change username"), this, 
-                                                  "changeUsernameButton");
+    QPushButton *cub = new QPushButton(tr("Change username"), this);
     connect(cub, SIGNAL(clicked()), this, SLOT(changeUsername()));
     l3->addWidget(cub);
     l3->addStretch(10);
 
-    QPushButton *cancel = new QPushButton(tr("Cancel"), this, "Cancel");
+    QPushButton *cancel = new QPushButton(tr("Cancel"), this);
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
     l3->addWidget(cancel);
 
-    setCaption(tr("Enter password"));
+    setWindowTitle(tr("Enter password"));
 }
 
 // ****************************************************************************
@@ -388,6 +394,9 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
 //   Hank Childs, Sun Nov 11 22:21:55 PST 2007
 //   Make the username be red.
 //
+//   Brad Whitlock, Tue May 27 13:44:45 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 const char *
@@ -399,9 +408,9 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
 
     const char *queryType = passphrase ? "Passphrase" : "Password";
     if (passphrase)
-        instance->setCaption(tr("Enter passphrase"));
+        instance->setWindowTitle(tr("Enter passphrase"));
     else
-        instance->setCaption(tr("Enter password"));
+        instance->setWindowTitle(tr("Enter password"));
 
     // Set the password prompt.
     QString labelText;
@@ -416,7 +425,7 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
     instance->label->setText(labelText);
 
     // Make the password window be the active window.
-    instance->topLevelWidget()->setActiveWindow();
+    instance->topLevelWidget()->activateWindow();
     instance->topLevelWidget()->raise();
 
     // Clear the password.
@@ -438,7 +447,7 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
     if (status == Accepted)
     {
         // Accepted; hit return or Okay.
-        return instance->passedit->text().latin1();
+        return instance->passedit->text().toStdString().c_str();
     }
     else
     {
@@ -465,3 +474,8 @@ ViewerPasswordWindow::changeUsername(void)
     reject();
 }
 
+std::set<int>
+ViewerPasswordWindow::GetFailedPortForwards()
+{
+    return failedPortForwards;
+}

@@ -41,14 +41,13 @@
 #include <SurfCompPrepAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -125,163 +124,172 @@ QvisSurfCompPrepWindow::~QvisSurfCompPrepWindow()
 void
 QvisSurfCompPrepWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 20,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(0);
+    topLayout->addLayout(mainLayout);
 
-
-    surfaceTypeLabel = new QLabel(tr("Method for inferring surface"), central, "surfaceTypeLabel");
+    surfaceTypeLabel = new QLabel(tr("Method for inferring surface"), central);
     mainLayout->addWidget(surfaceTypeLabel,0,0);
-    surfaceType = new QButtonGroup(central, "surfaceType");
-    surfaceType->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *surfaceTypeLayout = new QHBoxLayout(surfaceType);
+    QWidget *surfaceTypeWidget = new QWidget(central);
+    surfaceType = new QButtonGroup(surfaceTypeWidget);
+    QHBoxLayout *surfaceTypeLayout = new QHBoxLayout(surfaceTypeWidget);
+    surfaceTypeLayout->setMargin(0);
     surfaceTypeLayout->setSpacing(10);
-    QRadioButton *surfaceTypeSurfaceTypeClosest = new QRadioButton(tr("Closest"), surfaceType);
+    QRadioButton *surfaceTypeSurfaceTypeClosest = new QRadioButton(tr("Closest"), surfaceTypeWidget);
+    surfaceType->addButton(surfaceTypeSurfaceTypeClosest,0);
     surfaceTypeLayout->addWidget(surfaceTypeSurfaceTypeClosest);
-    QRadioButton *surfaceTypeSurfaceTypeFarthest = new QRadioButton(tr("Farthest"), surfaceType);
+    QRadioButton *surfaceTypeSurfaceTypeFarthest = new QRadioButton(tr("Farthest"), surfaceTypeWidget);
+    surfaceType->addButton(surfaceTypeSurfaceTypeFarthest,1);
     surfaceTypeLayout->addWidget(surfaceTypeSurfaceTypeFarthest);
-    QRadioButton *surfaceTypeSurfaceTypeAverage = new QRadioButton(tr("Average"), surfaceType);
+    QRadioButton *surfaceTypeSurfaceTypeAverage = new QRadioButton(tr("Average"), surfaceTypeWidget);
+    surfaceType->addButton(surfaceTypeSurfaceTypeAverage,2);
     surfaceTypeLayout->addWidget(surfaceTypeSurfaceTypeAverage);
-    connect(surfaceType, SIGNAL(clicked(int)),
+    connect(surfaceType, SIGNAL(buttonClicked(int)),
             this, SLOT(surfaceTypeChanged(int)));
-    mainLayout->addWidget(surfaceType, 0,1);
+    mainLayout->addWidget(surfaceTypeWidget, 0,1);
 
-    coordSystemLabel = new QLabel(tr("Coordinate System"), central, "coordSystemLabel");
+    coordSystemLabel = new QLabel(tr("Coordinate System"), central);
     mainLayout->addWidget(coordSystemLabel,1,0);
-    coordSystem = new QButtonGroup(central, "coordSystem");
-    coordSystem->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *coordSystemLayout = new QHBoxLayout(coordSystem);
+    
+    QWidget *coordSystemWidget = new QWidget(central);
+    coordSystem = new QButtonGroup(coordSystemWidget);
+    QHBoxLayout *coordSystemLayout = new QHBoxLayout(coordSystemWidget);
+    coordSystemLayout->setMargin(0);
     coordSystemLayout->setSpacing(10);
-    QRadioButton *coordSystemCoordinateSystemCartesian = new QRadioButton(tr("Cartesian"), coordSystem);
+    QRadioButton *coordSystemCoordinateSystemCartesian = new QRadioButton(tr("Cartesian"), coordSystemWidget);
+    coordSystem->addButton(coordSystemCoordinateSystemCartesian,0);
     coordSystemLayout->addWidget(coordSystemCoordinateSystemCartesian);
-    QRadioButton *coordSystemCoordinateSystemCylindrical = new QRadioButton(tr("Cylindrical"), coordSystem);
+    QRadioButton *coordSystemCoordinateSystemCylindrical = new QRadioButton(tr("Cylindrical"), coordSystemWidget);
+    coordSystem->addButton(coordSystemCoordinateSystemCylindrical,1);
     coordSystemLayout->addWidget(coordSystemCoordinateSystemCylindrical);
-    QRadioButton *coordSystemCoordinateSystemSpherical = new QRadioButton(tr("Spherical"), coordSystem);
+    QRadioButton *coordSystemCoordinateSystemSpherical = new QRadioButton(tr("Spherical"), coordSystemWidget);
+    coordSystem->addButton(coordSystemCoordinateSystemSpherical,2);
     coordSystemLayout->addWidget(coordSystemCoordinateSystemSpherical);
-    connect(coordSystem, SIGNAL(clicked(int)),
+    connect(coordSystem, SIGNAL(buttonClicked(int)),
             this, SLOT(coordSystemChanged(int)));
-    mainLayout->addWidget(coordSystem, 1,1);
+    mainLayout->addWidget(coordSystemWidget, 1,1);
 
-    thetaStartLabel = new QLabel(tr("Start for Theta (degrees)"), central, "thetaStartLabel");
+    thetaStartLabel = new QLabel(tr("Start for Theta (degrees)"), central);
     mainLayout->addWidget(thetaStartLabel,2,0);
-    thetaStart = new QLineEdit(central, "thetaStart");
+    thetaStart = new QLineEdit(central);
     connect(thetaStart, SIGNAL(returnPressed()),
             this, SLOT(thetaStartProcessText()));
     mainLayout->addWidget(thetaStart, 2,1);
 
-    thetaStopLabel = new QLabel(tr("Stop for Theta (degrees)"), central, "thetaStopLabel");
+    thetaStopLabel = new QLabel(tr("Stop for Theta (degrees)"), central);
     mainLayout->addWidget(thetaStopLabel,3,0);
-    thetaStop = new QLineEdit(central, "thetaStop");
+    thetaStop = new QLineEdit(central);
     connect(thetaStop, SIGNAL(returnPressed()),
             this, SLOT(thetaStopProcessText()));
     mainLayout->addWidget(thetaStop, 3,1);
 
-    thetaStepsLabel = new QLabel(tr("Number of samples in Theta"), central, "thetaStepsLabel");
+    thetaStepsLabel = new QLabel(tr("Number of samples in Theta"), central);
     mainLayout->addWidget(thetaStepsLabel,4,0);
-    thetaSteps = new QLineEdit(central, "thetaSteps");
+    thetaSteps = new QLineEdit(central);
     connect(thetaSteps, SIGNAL(returnPressed()),
             this, SLOT(thetaStepsProcessText()));
     mainLayout->addWidget(thetaSteps, 4,1);
 
-    phiStartLabel = new QLabel(tr("Start for Phi (degrees)"), central, "phiStartLabel");
+    phiStartLabel = new QLabel(tr("Start for Phi (degrees)"), central);
     mainLayout->addWidget(phiStartLabel,5,0);
-    phiStart = new QLineEdit(central, "phiStart");
+    phiStart = new QLineEdit(central);
     connect(phiStart, SIGNAL(returnPressed()),
             this, SLOT(phiStartProcessText()));
     mainLayout->addWidget(phiStart, 5,1);
 
-    phiStopLabel = new QLabel(tr("Stop for Phi (degrees)"), central, "phiStopLabel");
+    phiStopLabel = new QLabel(tr("Stop for Phi (degrees)"), central);
     mainLayout->addWidget(phiStopLabel,6,0);
-    phiStop = new QLineEdit(central, "phiStop");
+    phiStop = new QLineEdit(central);
     connect(phiStop, SIGNAL(returnPressed()),
             this, SLOT(phiStopProcessText()));
     mainLayout->addWidget(phiStop, 6,1);
 
-    phiStepsLabel = new QLabel(tr("Number of samples in Phi"), central, "phiStepsLabel");
+    phiStepsLabel = new QLabel(tr("Number of samples in Phi"), central);
     mainLayout->addWidget(phiStepsLabel,7,0);
-    phiSteps = new QLineEdit(central, "phiSteps");
+    phiSteps = new QLineEdit(central);
     connect(phiSteps, SIGNAL(returnPressed()),
             this, SLOT(phiStepsProcessText()));
     mainLayout->addWidget(phiSteps, 7,1);
 
-    startRadiusLabel = new QLabel(tr("First radius to sample"), central, "startRadiusLabel");
+    startRadiusLabel = new QLabel(tr("First radius to sample"), central);
     mainLayout->addWidget(startRadiusLabel,8,0);
-    startRadius = new QLineEdit(central, "startRadius");
+    startRadius = new QLineEdit(central);
     connect(startRadius, SIGNAL(returnPressed()),
             this, SLOT(startRadiusProcessText()));
     mainLayout->addWidget(startRadius, 8,1);
 
-    endRadiusLabel = new QLabel(tr("Last radius to sample"), central, "endRadiusLabel");
+    endRadiusLabel = new QLabel(tr("Last radius to sample"), central);
     mainLayout->addWidget(endRadiusLabel,9,0);
-    endRadius = new QLineEdit(central, "endRadius");
+    endRadius = new QLineEdit(central);
     connect(endRadius, SIGNAL(returnPressed()),
             this, SLOT(endRadiusProcessText()));
     mainLayout->addWidget(endRadius, 9,1);
 
-    radiusStepsLabel = new QLabel(tr("Number of samples in radius"), central, "radiusStepsLabel");
+    radiusStepsLabel = new QLabel(tr("Number of samples in radius"), central);
     mainLayout->addWidget(radiusStepsLabel,10,0);
-    radiusSteps = new QLineEdit(central, "radiusSteps");
+    radiusSteps = new QLineEdit(central);
     connect(radiusSteps, SIGNAL(returnPressed()),
             this, SLOT(radiusStepsProcessText()));
     mainLayout->addWidget(radiusSteps, 10,1);
 
-    xStartLabel = new QLabel(tr("Starting point for X"), central, "xStartLabel");
+    xStartLabel = new QLabel(tr("Starting point for X"), central);
     mainLayout->addWidget(xStartLabel,11,0);
-    xStart = new QLineEdit(central, "xStart");
+    xStart = new QLineEdit(central);
     connect(xStart, SIGNAL(returnPressed()),
             this, SLOT(xStartProcessText()));
     mainLayout->addWidget(xStart, 11,1);
 
-    xStopLabel = new QLabel(tr("Ending point for X"), central, "xStopLabel");
+    xStopLabel = new QLabel(tr("Ending point for X"), central);
     mainLayout->addWidget(xStopLabel,12,0);
-    xStop = new QLineEdit(central, "xStop");
+    xStop = new QLineEdit(central);
     connect(xStop, SIGNAL(returnPressed()),
             this, SLOT(xStopProcessText()));
     mainLayout->addWidget(xStop, 12,1);
 
-    xStepsLabel = new QLabel(tr("Number of steps in X"), central, "xStepsLabel");
+    xStepsLabel = new QLabel(tr("Number of steps in X"), central);
     mainLayout->addWidget(xStepsLabel,13,0);
-    xSteps = new QLineEdit(central, "xSteps");
+    xSteps = new QLineEdit(central);
     connect(xSteps, SIGNAL(returnPressed()),
             this, SLOT(xStepsProcessText()));
     mainLayout->addWidget(xSteps, 13,1);
 
-    yStartLabel = new QLabel(tr("Starting point for Y"), central, "yStartLabel");
+    yStartLabel = new QLabel(tr("Starting point for Y"), central);
     mainLayout->addWidget(yStartLabel,14,0);
-    yStart = new QLineEdit(central, "yStart");
+    yStart = new QLineEdit(central);
     connect(yStart, SIGNAL(returnPressed()),
             this, SLOT(yStartProcessText()));
     mainLayout->addWidget(yStart, 14,1);
 
-    yStopLabel = new QLabel(tr("Ending point for Y"), central, "yStopLabel");
+    yStopLabel = new QLabel(tr("Ending point for Y"), central);
     mainLayout->addWidget(yStopLabel,15,0);
-    yStop = new QLineEdit(central, "yStop");
+    yStop = new QLineEdit(central);
     connect(yStop, SIGNAL(returnPressed()),
             this, SLOT(yStopProcessText()));
     mainLayout->addWidget(yStop, 15,1);
 
-    yStepsLabel = new QLabel(tr("Number of steps in Y"), central, "yStepsLabel");
+    yStepsLabel = new QLabel(tr("Number of steps in Y"), central);
     mainLayout->addWidget(yStepsLabel,16,0);
-    ySteps = new QLineEdit(central, "ySteps");
+    ySteps = new QLineEdit(central);
     connect(ySteps, SIGNAL(returnPressed()),
             this, SLOT(yStepsProcessText()));
     mainLayout->addWidget(ySteps, 16,1);
 
-    zStartLabel = new QLabel(tr("Starting point for Z"), central, "zStartLabel");
+    zStartLabel = new QLabel(tr("Starting point for Z"), central);
     mainLayout->addWidget(zStartLabel,17,0);
-    zStart = new QLineEdit(central, "zStart");
+    zStart = new QLineEdit(central);
     connect(zStart, SIGNAL(returnPressed()),
             this, SLOT(zStartProcessText()));
     mainLayout->addWidget(zStart, 17,1);
 
-    zStopLabel = new QLabel(tr("Ending point for Z"), central, "zStopLabel");
+    zStopLabel = new QLabel(tr("Ending point for Z"), central);
     mainLayout->addWidget(zStopLabel,18,0);
-    zStop = new QLineEdit(central, "zStop");
+    zStop = new QLineEdit(central);
     connect(zStop, SIGNAL(returnPressed()),
             this, SLOT(zStopProcessText()));
     mainLayout->addWidget(zStop, 18,1);
 
-    zStepsLabel = new QLabel(tr("Number of steps in Z"), central, "zStepsLabel");
+    zStepsLabel = new QLabel(tr("Number of steps in Z"), central);
     mainLayout->addWidget(zStepsLabel,19,0);
-    zSteps = new QLineEdit(central, "zSteps");
+    zSteps = new QLineEdit(central);
     connect(zSteps, SIGNAL(returnPressed()),
             this, SLOT(zStepsProcessText()));
     mainLayout->addWidget(zSteps, 19,1);
@@ -301,15 +309,12 @@ QvisSurfCompPrepWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Jun 30 15:12:27 PDT 2008
-//   Removed unreferenced variables.
 //   
 // ****************************************************************************
 
 void
 QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -325,12 +330,12 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
         {
           case SurfCompPrepAttributes::ID_surfaceType:
             surfaceType->blockSignals(true);
-            surfaceType->setButton(atts->GetSurfaceType());
+            if(surfaceType->button((int)atts->GetSurfaceType()) != 0)
+                surfaceType->button((int)atts->GetSurfaceType())->setChecked(true);
             surfaceType->blockSignals(false);
             break;
           case SurfCompPrepAttributes::ID_coordSystem:
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || 
-                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 thetaStart->setEnabled(true);
                 if(thetaStartLabel)
@@ -342,8 +347,7 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(thetaStartLabel)
                     thetaStartLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || 
-                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 thetaStop->setEnabled(true);
                 if(thetaStopLabel)
@@ -355,8 +359,7 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(thetaStopLabel)
                     thetaStopLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || 
-                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 thetaSteps->setEnabled(true);
                 if(thetaStepsLabel)
@@ -404,8 +407,7 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(phiStepsLabel)
                     phiStepsLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical 
-                || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
             {
                 startRadius->setEnabled(true);
                 if(startRadiusLabel)
@@ -417,8 +419,7 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(startRadiusLabel)
                     startRadiusLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical 
-                || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
             {
                 endRadius->setEnabled(true);
                 if(endRadiusLabel)
@@ -430,8 +431,7 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(endRadiusLabel)
                     endRadiusLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical 
-               || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
             {
                 radiusSteps->setEnabled(true);
                 if(radiusStepsLabel)
@@ -515,8 +515,7 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(yStepsLabel)
                     yStepsLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || 
-                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 zStart->setEnabled(true);
                 if(zStartLabel)
@@ -528,8 +527,7 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(zStartLabel)
                     zStartLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || 
-                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 zStop->setEnabled(true);
                 if(zStopLabel)
@@ -541,8 +539,7 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(zStopLabel)
                     zStopLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || 
-                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 zSteps->setEnabled(true);
                 if(zStepsLabel)
@@ -555,116 +552,63 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                     zStepsLabel->setEnabled(false);
             }
             coordSystem->blockSignals(true);
-            coordSystem->setButton(atts->GetCoordSystem());
+            if(coordSystem->button((int)atts->GetCoordSystem()) != 0)
+                coordSystem->button((int)atts->GetCoordSystem())->setChecked(true);
             coordSystem->blockSignals(false);
             break;
           case SurfCompPrepAttributes::ID_thetaStart:
-            thetaStart->blockSignals(true);
-            temp.setNum(atts->GetThetaStart());
-            thetaStart->setText(temp);
-            thetaStart->blockSignals(false);
+            thetaStart->setText(DoubleToQString(atts->GetThetaStart()));
             break;
           case SurfCompPrepAttributes::ID_thetaStop:
-            thetaStop->blockSignals(true);
-            temp.setNum(atts->GetThetaStop());
-            thetaStop->setText(temp);
-            thetaStop->blockSignals(false);
+            thetaStop->setText(DoubleToQString(atts->GetThetaStop()));
             break;
           case SurfCompPrepAttributes::ID_thetaSteps:
-            thetaSteps->blockSignals(true);
-            temp.sprintf("%d", atts->GetThetaSteps());
-            thetaSteps->setText(temp);
-            thetaSteps->blockSignals(false);
+            thetaSteps->setText(IntToQString(atts->GetThetaSteps()));
             break;
           case SurfCompPrepAttributes::ID_phiStart:
-            phiStart->blockSignals(true);
-            temp.setNum(atts->GetPhiStart());
-            phiStart->setText(temp);
-            phiStart->blockSignals(false);
+            phiStart->setText(DoubleToQString(atts->GetPhiStart()));
             break;
           case SurfCompPrepAttributes::ID_phiStop:
-            phiStop->blockSignals(true);
-            temp.setNum(atts->GetPhiStop());
-            phiStop->setText(temp);
-            phiStop->blockSignals(false);
+            phiStop->setText(DoubleToQString(atts->GetPhiStop()));
             break;
           case SurfCompPrepAttributes::ID_phiSteps:
-            phiSteps->blockSignals(true);
-            temp.sprintf("%d", atts->GetPhiSteps());
-            phiSteps->setText(temp);
-            phiSteps->blockSignals(false);
+            phiSteps->setText(IntToQString(atts->GetPhiSteps()));
             break;
           case SurfCompPrepAttributes::ID_startRadius:
-            startRadius->blockSignals(true);
-            temp.setNum(atts->GetStartRadius());
-            startRadius->setText(temp);
-            startRadius->blockSignals(false);
+            startRadius->setText(DoubleToQString(atts->GetStartRadius()));
             break;
           case SurfCompPrepAttributes::ID_endRadius:
-            endRadius->blockSignals(true);
-            temp.setNum(atts->GetEndRadius());
-            endRadius->setText(temp);
-            endRadius->blockSignals(false);
+            endRadius->setText(DoubleToQString(atts->GetEndRadius()));
             break;
           case SurfCompPrepAttributes::ID_radiusSteps:
-            radiusSteps->blockSignals(true);
-            temp.sprintf("%d", atts->GetRadiusSteps());
-            radiusSteps->setText(temp);
-            radiusSteps->blockSignals(false);
+            radiusSteps->setText(IntToQString(atts->GetRadiusSteps()));
             break;
           case SurfCompPrepAttributes::ID_xStart:
-            xStart->blockSignals(true);
-            temp.setNum(atts->GetXStart());
-            xStart->setText(temp);
-            xStart->blockSignals(false);
+            xStart->setText(DoubleToQString(atts->GetXStart()));
             break;
           case SurfCompPrepAttributes::ID_xStop:
-            xStop->blockSignals(true);
-            temp.setNum(atts->GetXStop());
-            xStop->setText(temp);
-            xStop->blockSignals(false);
+            xStop->setText(DoubleToQString(atts->GetXStop()));
             break;
           case SurfCompPrepAttributes::ID_xSteps:
-            xSteps->blockSignals(true);
-            temp.sprintf("%d", atts->GetXSteps());
-            xSteps->setText(temp);
-            xSteps->blockSignals(false);
+            xSteps->setText(IntToQString(atts->GetXSteps()));
             break;
           case SurfCompPrepAttributes::ID_yStart:
-            yStart->blockSignals(true);
-            temp.setNum(atts->GetYStart());
-            yStart->setText(temp);
-            yStart->blockSignals(false);
+            yStart->setText(DoubleToQString(atts->GetYStart()));
             break;
           case SurfCompPrepAttributes::ID_yStop:
-            yStop->blockSignals(true);
-            temp.setNum(atts->GetYStop());
-            yStop->setText(temp);
-            yStop->blockSignals(false);
+            yStop->setText(DoubleToQString(atts->GetYStop()));
             break;
           case SurfCompPrepAttributes::ID_ySteps:
-            ySteps->blockSignals(true);
-            temp.sprintf("%d", atts->GetYSteps());
-            ySteps->setText(temp);
-            ySteps->blockSignals(false);
+            ySteps->setText(IntToQString(atts->GetYSteps()));
             break;
           case SurfCompPrepAttributes::ID_zStart:
-            zStart->blockSignals(true);
-            temp.setNum(atts->GetZStart());
-            zStart->setText(temp);
-            zStart->blockSignals(false);
+            zStart->setText(DoubleToQString(atts->GetZStart()));
             break;
           case SurfCompPrepAttributes::ID_zStop:
-            zStop->blockSignals(true);
-            temp.setNum(atts->GetZStop());
-            zStop->setText(temp);
-            zStop->blockSignals(false);
+            zStop->setText(DoubleToQString(atts->GetZStop()));
             break;
           case SurfCompPrepAttributes::ID_zSteps:
-            zSteps->blockSignals(true);
-            temp.sprintf("%d", atts->GetZSteps());
-            zSteps->setText(temp);
-            zSteps->blockSignals(false);
+            zSteps->setText(IntToQString(atts->GetZSteps()));
             break;
         }
     }
@@ -689,27 +633,18 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
 void
 QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do thetaStart
     if(which_widget == SurfCompPrepAttributes::ID_thetaStart || doAll)
     {
-        temp = thetaStart->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(thetaStart, val))
+            atts->SetThetaStart(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetThetaStart(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of thetaStart was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetThetaStart());
-            Message(msg);
+            ResettingError(tr("Start for Theta (degrees)"),
+                DoubleToQString(atts->GetThetaStart()));
             atts->SetThetaStart(atts->GetThetaStart());
         }
     }
@@ -717,21 +652,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do thetaStop
     if(which_widget == SurfCompPrepAttributes::ID_thetaStop || doAll)
     {
-        temp = thetaStop->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(thetaStop, val))
+            atts->SetThetaStop(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetThetaStop(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of thetaStop was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetThetaStop());
-            Message(msg);
+            ResettingError(tr("Stop for Theta (degrees)"),
+                DoubleToQString(atts->GetThetaStop()));
             atts->SetThetaStop(atts->GetThetaStop());
         }
     }
@@ -739,21 +666,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do thetaSteps
     if(which_widget == SurfCompPrepAttributes::ID_thetaSteps || doAll)
     {
-        temp = thetaSteps->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(thetaSteps, val))
+            atts->SetThetaSteps(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetThetaSteps(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of thetaSteps was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetThetaSteps());
-            Message(msg);
+            ResettingError(tr("Number of samples in Theta"),
+                IntToQString(atts->GetThetaSteps()));
             atts->SetThetaSteps(atts->GetThetaSteps());
         }
     }
@@ -761,21 +680,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do phiStart
     if(which_widget == SurfCompPrepAttributes::ID_phiStart || doAll)
     {
-        temp = phiStart->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(phiStart, val))
+            atts->SetPhiStart(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetPhiStart(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of phiStart was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetPhiStart());
-            Message(msg);
+            ResettingError(tr("Start for Phi (degrees)"),
+                DoubleToQString(atts->GetPhiStart()));
             atts->SetPhiStart(atts->GetPhiStart());
         }
     }
@@ -783,21 +694,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do phiStop
     if(which_widget == SurfCompPrepAttributes::ID_phiStop || doAll)
     {
-        temp = phiStop->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(phiStop, val))
+            atts->SetPhiStop(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetPhiStop(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of phiStop was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetPhiStop());
-            Message(msg);
+            ResettingError(tr("Stop for Phi (degrees)"),
+                DoubleToQString(atts->GetPhiStop()));
             atts->SetPhiStop(atts->GetPhiStop());
         }
     }
@@ -805,21 +708,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do phiSteps
     if(which_widget == SurfCompPrepAttributes::ID_phiSteps || doAll)
     {
-        temp = phiSteps->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(phiSteps, val))
+            atts->SetPhiSteps(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetPhiSteps(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of phiSteps was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetPhiSteps());
-            Message(msg);
+            ResettingError(tr("Number of samples in Phi"),
+                IntToQString(atts->GetPhiSteps()));
             atts->SetPhiSteps(atts->GetPhiSteps());
         }
     }
@@ -827,21 +722,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do startRadius
     if(which_widget == SurfCompPrepAttributes::ID_startRadius || doAll)
     {
-        temp = startRadius->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(startRadius, val))
+            atts->SetStartRadius(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetStartRadius(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of startRadius was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetStartRadius());
-            Message(msg);
+            ResettingError(tr("First radius to sample"),
+                DoubleToQString(atts->GetStartRadius()));
             atts->SetStartRadius(atts->GetStartRadius());
         }
     }
@@ -849,21 +736,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do endRadius
     if(which_widget == SurfCompPrepAttributes::ID_endRadius || doAll)
     {
-        temp = endRadius->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(endRadius, val))
+            atts->SetEndRadius(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetEndRadius(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of endRadius was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetEndRadius());
-            Message(msg);
+            ResettingError(tr("Last radius to sample"),
+                DoubleToQString(atts->GetEndRadius()));
             atts->SetEndRadius(atts->GetEndRadius());
         }
     }
@@ -871,21 +750,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do radiusSteps
     if(which_widget == SurfCompPrepAttributes::ID_radiusSteps || doAll)
     {
-        temp = radiusSteps->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(radiusSteps, val))
+            atts->SetRadiusSteps(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetRadiusSteps(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of radiusSteps was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetRadiusSteps());
-            Message(msg);
+            ResettingError(tr("Number of samples in radius"),
+                IntToQString(atts->GetRadiusSteps()));
             atts->SetRadiusSteps(atts->GetRadiusSteps());
         }
     }
@@ -893,21 +764,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do xStart
     if(which_widget == SurfCompPrepAttributes::ID_xStart || doAll)
     {
-        temp = xStart->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(xStart, val))
+            atts->SetXStart(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetXStart(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of xStart was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetXStart());
-            Message(msg);
+            ResettingError(tr("Starting point for X"),
+                DoubleToQString(atts->GetXStart()));
             atts->SetXStart(atts->GetXStart());
         }
     }
@@ -915,21 +778,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do xStop
     if(which_widget == SurfCompPrepAttributes::ID_xStop || doAll)
     {
-        temp = xStop->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(xStop, val))
+            atts->SetXStop(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetXStop(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of xStop was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetXStop());
-            Message(msg);
+            ResettingError(tr("Ending point for X"),
+                DoubleToQString(atts->GetXStop()));
             atts->SetXStop(atts->GetXStop());
         }
     }
@@ -937,21 +792,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do xSteps
     if(which_widget == SurfCompPrepAttributes::ID_xSteps || doAll)
     {
-        temp = xSteps->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(xSteps, val))
+            atts->SetXSteps(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetXSteps(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of xSteps was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetXSteps());
-            Message(msg);
+            ResettingError(tr("Number of steps in X"),
+                IntToQString(atts->GetXSteps()));
             atts->SetXSteps(atts->GetXSteps());
         }
     }
@@ -959,21 +806,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do yStart
     if(which_widget == SurfCompPrepAttributes::ID_yStart || doAll)
     {
-        temp = yStart->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(yStart, val))
+            atts->SetYStart(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetYStart(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of yStart was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetYStart());
-            Message(msg);
+            ResettingError(tr("Starting point for Y"),
+                DoubleToQString(atts->GetYStart()));
             atts->SetYStart(atts->GetYStart());
         }
     }
@@ -981,21 +820,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do yStop
     if(which_widget == SurfCompPrepAttributes::ID_yStop || doAll)
     {
-        temp = yStop->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(yStop, val))
+            atts->SetYStop(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetYStop(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of yStop was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetYStop());
-            Message(msg);
+            ResettingError(tr("Ending point for Y"),
+                DoubleToQString(atts->GetYStop()));
             atts->SetYStop(atts->GetYStop());
         }
     }
@@ -1003,21 +834,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do ySteps
     if(which_widget == SurfCompPrepAttributes::ID_ySteps || doAll)
     {
-        temp = ySteps->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(ySteps, val))
+            atts->SetYSteps(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetYSteps(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of ySteps was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetYSteps());
-            Message(msg);
+            ResettingError(tr("Number of steps in Y"),
+                IntToQString(atts->GetYSteps()));
             atts->SetYSteps(atts->GetYSteps());
         }
     }
@@ -1025,21 +848,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do zStart
     if(which_widget == SurfCompPrepAttributes::ID_zStart || doAll)
     {
-        temp = zStart->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(zStart, val))
+            atts->SetZStart(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetZStart(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of zStart was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetZStart());
-            Message(msg);
+            ResettingError(tr("Starting point for Z"),
+                DoubleToQString(atts->GetZStart()));
             atts->SetZStart(atts->GetZStart());
         }
     }
@@ -1047,21 +862,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do zStop
     if(which_widget == SurfCompPrepAttributes::ID_zStop || doAll)
     {
-        temp = zStop->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(zStop, val))
+            atts->SetZStop(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetZStop(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of zStop was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetZStop());
-            Message(msg);
+            ResettingError(tr("Ending point for Z"),
+                DoubleToQString(atts->GetZStop()));
             atts->SetZStop(atts->GetZStop());
         }
     }
@@ -1069,21 +876,13 @@ QvisSurfCompPrepWindow::GetCurrentValues(int which_widget)
     // Do zSteps
     if(which_widget == SurfCompPrepAttributes::ID_zSteps || doAll)
     {
-        temp = zSteps->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(zSteps, val))
+            atts->SetZSteps(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetZSteps(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of zSteps was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetZSteps());
-            Message(msg);
+            ResettingError(tr("Number of steps in Z"),
+                IntToQString(atts->GetZSteps()));
             atts->SetZSteps(atts->GetZSteps());
         }
     }

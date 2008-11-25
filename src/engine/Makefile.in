@@ -52,7 +52,7 @@
 @MPI_CXX@
 
 # subdirectory `main' must be last.
-SUBDIRS=rpc parstate @ENGINEPROXYDIR@ main
+SUBDIRS=rpc parstate proxy main
 
 message:
 	@echo

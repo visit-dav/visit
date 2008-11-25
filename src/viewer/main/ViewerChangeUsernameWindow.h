@@ -40,7 +40,9 @@
 #define VIEWERCHANGEUSERNAMEWINDOW_H
 
 #include <visit-config.h>
-#include <qdialog.h>
+#include <QDialog>
+
+#include <string>
 
 // Forward declarations
 class QLineEdit;
@@ -59,17 +61,20 @@ class QLabel;
 //    Kathleen Bonnell, Wed Feb 13 14:05:03 PST 2008
 //    Added static getUsername method.
 //
+//    Brad Whitlock, Fri May 23 10:36:48 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 class ViewerChangeUsernameWindow : public QDialog
 {
     Q_OBJECT
   public:
-    ViewerChangeUsernameWindow(QWidget *parent=NULL, const char *name=NULL);
+    ViewerChangeUsernameWindow(QWidget *parent = 0);
     ~ViewerChangeUsernameWindow();
 
-    static bool changeUsername(const char *hostname);
-    static const char* getUsername(void);
+    static bool changeUsername(const std::string &hostname);
+    static std::string getUsername(void);
 
   private:
     QLineEdit *usernameedit;

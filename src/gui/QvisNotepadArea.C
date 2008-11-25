@@ -36,16 +36,16 @@
 *
 *****************************************************************************/
 
-#include <qwidgetstack.h>
-#include <qtabbar.h>
+#include <QStackedWidget>
+#include <QTabBar>
 #include <QvisNotepadArea.h>
 #include <QvisPostableWindow.h>
 
-#include <qscrollview.h>
-#include <qpushbutton.h>
-#include <qlayout.h>
-#include <qtabwidget.h>
-#include <qwidget.h>
+#include <QScrollArea>
+#include <QPushButton>
+#include <QLayout>
+#include <QTabWidget>
+#include <QWidget>
 
 // ****************************************************************************
 // Method: QvisNotepadArea::QvisNotepadArea
@@ -70,15 +70,17 @@
 //   Brad Whitlock, Tue Sep 25 15:19:10 PST 2001
 //   Renamed an initializer.
 //
+//   Brad Whitlock, Fri Jun  6 09:36:46 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisNotepadArea::QvisNotepadArea(QWidget *parent, const char *name) :
-    QVBox(parent, name), postedLookup()
+QvisNotepadArea::QvisNotepadArea(QWidget *parent) : QWidget(parent), 
+    postedLookup()
 {
-    QWidget *central = new QWidget( this, "central" );
-    QVBoxLayout *topLayout = new QVBoxLayout(central);
+    QVBoxLayout *topLayout = new QVBoxLayout(this);
 
-    tabs = new QTabWidget(central, "tabWidget");
+    tabs = new QTabWidget(this);
     topLayout->addWidget(tabs);
 
     // Since no window is posted, add an empty tab.
@@ -131,6 +133,9 @@ QvisNotepadArea::~QvisNotepadArea()
 //   I changed the code to reflect that all posted windows have parent widgets
 //   that are not their top-level window when they are posted in this notepad.
 //
+//   Brad Whitlock, Fri Jun  6 09:48:10 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -143,7 +148,7 @@ QvisNotepadArea::showPage(QvisPostableWindow *pw)
     // the window's posted parent widget.
     PostedInfoLookup::ConstIterator pos;
     if((pos = postedLookup.find(pw)) != postedLookup.end())
-        tabs->showPage(pos.data().parent);
+        tabs->setCurrentIndex(tabs->indexOf(pos.value().parent));
 }
 
 // ****************************************************************************
@@ -178,6 +183,9 @@ QvisNotepadArea::showPage(QvisPostableWindow *pw)
 //   I changed the code to reflect the fact that all windows now have new
 //   parent widgets when they are posted into the notepad.
 //
+//   Brad Whitlock, Fri Jun  6 09:40:11 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -195,27 +203,32 @@ QvisNotepadArea::postWindow(QvisPostableWindow *pw)
         {
             // If the parent is a scrollview, restore the minimum size that
             // the widget had before it is was posted.
-            if(pos.data().parentIsScrollView)
+            if(pos.value().parentIsScrollView)
             {
-                int w = pos.data().minWidth;
-                int h = pos.data().minHeight;
+                int w = pos.value().minWidth;
+                int h = pos.value().minHeight;
                 pw->GetCentralWidget()->setMinimumSize(w, h);
             }
 
             // Reparent the window's central widget back to the window
             // before we delete its posted parent. That keeps the window's
-            // central widget from getting deleted. 
-            pw->GetCentralWidget()->reparent(pw, 0, QPoint(0,0), true);
+            // central widget from getting deleted.
+            if(pos.value().parentIsScrollView)
+                 ((QScrollArea *)pos.value().parent)->takeWidget();
+            else if(pos.value().parentLayout != 0)
+                 pos.value().parentLayout->removeWidget(pw->GetCentralWidget());
+            pw->GetCentralWidget()->setParent(pw);
+            pw->GetCentralWidget()->show();
 
             // Delete the dead parent widget and remove its tab from the
             // notepad. Make explicit casts since the Qt destructors being
             // did not appear to be virtual.
-            tabs->removePage(pos.data().parent);
-            if(pos.data().parentIsScrollView)
-                delete ((QScrollView *)pos.data().parent);
+            tabs->removeTab(tabs->indexOf(pos.value().parent));
+            if(pos.value().parentIsScrollView)
+                delete ((QScrollArea *)pos.value().parent);
             else
-                delete ((QVBox *)pos.data().parent);
-            postedLookup.remove(pos);
+                delete pos.value().parent;
+            postedLookup.erase(pos);
         }
 
         // If all the tabs were removed, add the empty tab.
@@ -231,7 +244,7 @@ QvisNotepadArea::postWindow(QvisPostableWindow *pw)
         // windows posted.
         if(numPosted == 0)
         {
-            tabs->removePage(empty);
+            tabs->removeTab(tabs->indexOf(empty));
             delete empty;
             empty = 0;
         }
@@ -253,46 +266,44 @@ QvisNotepadArea::postWindow(QvisPostableWindow *pw)
         {
             // The widget is too big to fit without a scrolled window.
             // Create a scrollview.
-            QScrollView *scroll = new QScrollView(tabs);
-            scroll->setHScrollBarMode(QScrollView::Auto);
-            scroll->setVScrollBarMode(QScrollView::Auto);
-            scroll->viewport()->setBackgroundMode(PaletteBackground);
+            QScrollArea *scroll = new QScrollArea(tabs);
+            scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             // Record that the widget was stuck into a scrollview.
             PostedInfo info;
             info.parent = scroll;
+            info.parentLayout = 0;
             info.parentIsScrollView = true;
             info.minWidth = pw->GetCentralWidget()->minimumWidth();
             info.minHeight = pw->GetCentralWidget()->minimumHeight();
             postedLookup.insert(pw, info);
 
             // Add the window's central widget to the scrollview.
-            scroll->addChild(pw->GetCentralWidget());
+            scroll->setWidget(pw->GetCentralWidget());
 
             // Add the scrollview to the tab. Show the page so the extents
             // of the scrollview's viewport get set and we have a valid size
             // to use for stretching the widget.
             tabs->addTab(scroll, pw->GetShortCaption());
-            tabs->showPage(scroll);
-
-            // Stretch the widget in the appropriate direction.
-            if(!need_hscroll)
-                pw->GetCentralWidget()->setMinimumWidth(scroll->visibleWidth());
-            else if(!need_vscroll)
-                pw->GetCentralWidget()->setMinimumHeight(scroll->visibleHeight());
+            tabs->setCurrentIndex(tabs->indexOf(scroll));
         }
         else
         {
-            // Create a VBox to put into the window. Reparent the window's
-            // central widget to the VBox so it gets better geometry
+            // Create a QWidget to put into the window. Reparent the window's
+            // central widget to the QWidget so it gets better geometry
             // management. This ensures that it looks correct if it is
             // posted before it is ever shown.
-            QVBox *intermediate = new QVBox(tabs, "intermediate");
-            pw->GetCentralWidget()->reparent(intermediate, 0, QPoint(0,0), false);
+            QWidget *intermediate = new QWidget(tabs);
+            QVBoxLayout *intermediateLayout = new QVBoxLayout(intermediate);
+            intermediateLayout->setMargin(0);
+            pw->GetCentralWidget()->setParent(intermediate);
+            intermediateLayout->addWidget(pw->GetCentralWidget());
 
             // Record that the widget was stuck into a scrollview.
             PostedInfo info;
             info.parent = intermediate;
+            info.parentLayout = intermediateLayout;
             info.parentIsScrollView = false;
             info.minWidth = 0;
             info.minHeight = 0;
@@ -300,7 +311,7 @@ QvisNotepadArea::postWindow(QvisPostableWindow *pw)
 
             // No scrollview was needed, post the window.
             tabs->addTab(intermediate, pw->GetShortCaption());
-            tabs->showPage(intermediate);
+            tabs->setCurrentIndex(tabs->indexOf(intermediate));
         }
 
         // Update the count of posted windows.

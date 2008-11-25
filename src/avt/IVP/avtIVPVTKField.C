@@ -47,7 +47,6 @@
 #include <vtkInterpolatedVelocityField.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
-#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -89,12 +88,6 @@ avtIVPVTKField::~avtIVPVTKField()
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
-//  Modifications:
-//
-//    Dave Pugmire, Mon Nov 24 14:39:29 EST 2008
-//    Added debug information for printing out evaluations and showing the
-//    node values.
-//
 // ****************************************************************************
 
 avtVec
@@ -102,35 +95,11 @@ avtIVPVTKField::operator()(const double& t, const avtVecRef& x) const
 {
     avtVec y( x.dim() ), param( pad(x,t));
     
-    //debug1<<"Field( "<<x<<" ) = ";
     int result = iv->FunctionValues( param.values(), y.values() );
     
     if( !result )
-    {
-        //debug1<<"NOT IN DOMAIN\n";
         throw Undefined();
-    }
-    //debug1<<y<<endl;
     
-    // Print out cell info for debugging purposes....
-    /*
-    vtkIdType cellID = iv->GetLastCellId();
-    vtkDataSet *ds = iv->GetLastDataSet();
-    vtkCell *cell = ds->GetCell(iv->GetLastCellId());
-
-    debug1<<"Cell: nPts= "<<cell->GetPointIds()->GetNumberOfIds()<<endl;
-    vtkDataArray *vectors = ds->GetPointData()->GetVectors();
-    int numPts = cell->GetPointIds()->GetNumberOfIds();
-    for (int i=0; i < numPts; i++)
-    {
-        double vec[3], len;
-        vectors->GetTuple(cell->PointIds->GetId(i), vec);
-        len = sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
-        debug1<<"    "<<i<<": ["<<vec[0]<<" "<<vec[1]<<" "<<vec[2]<<" ] len= "<<len<<endl;
-    }
-    debug1<<endl;
-    */
-
     if ( normalized )
     {
         double len = y.length();

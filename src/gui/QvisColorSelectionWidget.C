@@ -38,11 +38,12 @@
 
 #include <QvisColorSelectionWidget.h>
 #include <QvisColorGridWidget.h>
-#include <qapplication.h>
-#include <qcolordialog.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qtimer.h>
+#include <QApplication>
+#include <QColorDialog>
+#include <QLayout>
+#include <QMouseEvent>
+#include <QPushButton>
+#include <QTimer>
 
 #define COLOR_COLUMNS 8
 
@@ -92,10 +93,13 @@ const unsigned char QvisColorSelectionWidget::colorComponents[] = {
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Jun  3 15:30:52 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisColorSelectionWidget::QvisColorSelectionWidget(QWidget *parent,
-    const char *name, WFlags f) : QWidget(parent, name, f)
+    Qt::WindowFlags f) : QWidget(parent, f)
 {
     // Initialize the standard colors
     QColor c[40];
@@ -115,7 +119,7 @@ QvisColorSelectionWidget::QvisColorSelectionWidget(QWidget *parent,
     connect(timer, SIGNAL(timeout()), this, SLOT(hide()));
 
     // Create the standard colors.
-    standardColorGrid = new QvisColorGridWidget(this, "standardColors");
+    standardColorGrid = new QvisColorGridWidget(this);
     standardColorGrid->setPaletteColors(c, 40, COLOR_COLUMNS);
     standardColorGrid->setFrame(true);
     standardColorGrid->move(0, 0);
@@ -124,7 +128,7 @@ QvisColorSelectionWidget::QvisColorSelectionWidget(QWidget *parent,
             this, SLOT(handleSelectedColor(const QColor &)));
 
     // Create the custom colors.
-    customColorGrid = new QvisColorGridWidget(this, "customColors");
+    customColorGrid = new QvisColorGridWidget(this);
     customColorGrid->setPaletteColors(customColors, MAX_CUSTOM_COLORS,
          COLOR_COLUMNS);
     customColorGrid->setFrame(true);
@@ -134,8 +138,7 @@ QvisColorSelectionWidget::QvisColorSelectionWidget(QWidget *parent,
             this, SLOT(handleSelectedColor(const QColor &)));
 
     // Create the "More colors..." button
-    moreColorsButton = new QPushButton(tr("More colors ..."), this, 
-        "moreColorsButton");
+    moreColorsButton = new QPushButton(tr("More colors ..."), this);
     moreColorsButton->move(0, standardColorGrid->sizeHint().height() + 
         customColorGrid->sizeHint().height());
     moreColorsButton->resize(200, moreColorsButton->sizeHint().height());
@@ -238,7 +241,9 @@ QvisColorSelectionWidget::setSelectedColor(const QColor &color)
 // Creation:   Tue Dec 5 16:57:13 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 15:49:30 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -261,7 +266,7 @@ QvisColorSelectionWidget::mouseMoveEvent(QMouseEvent *e)
         // the custom color grid widget.
         QPoint newPoint(e->x(), e->y() - standardColorGrid->height());
         QMouseEvent me(QMouseEvent::MouseMove, newPoint, e->button(),
-                       e->state());
+                       e->buttons(), e->modifiers());
         QApplication::sendEvent(customColorGrid, &me);
     }
 }
@@ -281,7 +286,9 @@ QvisColorSelectionWidget::mouseMoveEvent(QMouseEvent *e)
 // Creation:   Tue Dec 5 16:57:13 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 15:49:58 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -305,7 +312,7 @@ QvisColorSelectionWidget::mouseReleaseEvent(QMouseEvent *e)
         // the custom color grid widget.
         QPoint newPoint(e->x(), e->y() - standardColorGrid->height());
         QMouseEvent me(QMouseEvent::MouseButtonRelease, newPoint, e->button(),
-                       e->state());
+                       e->buttons(), e->modifiers());
 
         QApplication::sendEvent(customColorGrid, &me);
     }
@@ -391,14 +398,17 @@ QvisColorSelectionWidget::getCustomColor()
 // Creation:   Fri Oct 26 14:29:39 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 15:31:35 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisColorSelectionWidget::show()
 {
     QWidget::show();
-    timer->start(15000, true);
+    timer->setSingleShot(true);
+    timer->start(15000);
 }
 
 // ****************************************************************************

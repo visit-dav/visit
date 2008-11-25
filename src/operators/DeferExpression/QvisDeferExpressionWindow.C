@@ -41,15 +41,15 @@
 #include <DeferExpressionAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qstringlist.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QStringList>
+#include <QWidget>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -121,22 +121,25 @@ QvisDeferExpressionWindow::~QvisDeferExpressionWindow()
 //   Brad Whitlock, Fri Apr 25 09:17:09 PDT 2008
 //   Added tr().
 //
+//   Cyrus Harrison, Mon Aug 18 10:12:21 PDT 2008
+//   Initial Qt4 Port.  
+//
 // ****************************************************************************
 
 void
 QvisDeferExpressionWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout();
+    topLayout->addLayout(mainLayout);
 
-    varsButton = new QvisVariableButton(true, false, true, -1,
-        central, "varsButton");
+    varsButton = new QvisVariableButton(true, false, true, -1,central);
     varsButton->setText(tr("Variables"));
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addVariable(const QString &)));
     mainLayout->addWidget(varsButton, 0, 0);
 
-    varsLineEdit = new QLineEdit(central, "varsLineEdit");
+    varsLineEdit = new QLineEdit(central);
     varsLineEdit->setText("");
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(variableProcessText()));
@@ -159,14 +162,14 @@ QvisDeferExpressionWindow::CreateWindowContents()
 //   Kathleen Bonnell, Tue Jul 1 11:41:00 PDT 2008
 //   Removed unreferenced variable.
 //
+//   Cyrus Harrison, Mon Aug 18 10:12:21 PDT 2008
+//   Initial Qt4 Port.  
+//
 // ****************************************************************************
 
 void
 QvisDeferExpressionWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    char str[1024];
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -179,14 +182,16 @@ QvisDeferExpressionWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case 0: //exprs
+          case DeferExpressionAttributes::ID_exprs:
             {
-               str[0] = '\0';
-               for (int j = 0 ; j < atts->GetExprs().size() ; j++)
-                   sprintf(str + strlen(str), "%s%s", (j == 0 ? "" : " "),
-                           atts->GetExprs()[j].c_str());
-               temp = str;
-               varsLineEdit->setText(temp);
+                QString res;
+                for (int j = 0 ; j < atts->GetExprs().size() ; j++)
+                {
+                    if(j !=0)
+                        res += " ";
+                    res += atts->GetExprs()[j].c_str();
+                }
+                varsLineEdit->setText(res);
             }
             break;
         }
@@ -207,6 +212,9 @@ QvisDeferExpressionWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Tue Jul 1 11:42:31 PDT 2008
 //   Removed unreferenced variables.
 //
+//   Cyrus Harrison, Mon Aug 18 10:12:21 PDT 2008
+//   Initial Qt4 Port.  
+//
 // ****************************************************************************
 
 void
@@ -219,15 +227,11 @@ QvisDeferExpressionWindow::GetCurrentValues(int which_widget)
     if(which_widget == 0 || doAll)
     {
         stringVector userVars;
-        temp = varsLineEdit->displayText().simplifyWhiteSpace();
-        QStringList lst(QStringList::split(" ", temp));
+        temp = varsLineEdit->displayText().simplified();
+        QStringList lst = temp.split(" ");
 
-        QStringList::Iterator it;
-
-        for (it = lst.begin(); it != lst.end(); ++it)
-        {
-            userVars.push_back((*it).latin1());
-        }
+        foreach(QString s,lst)
+            userVars.push_back(s.toStdString());
 
         atts->SetExprs(userVars);
     }

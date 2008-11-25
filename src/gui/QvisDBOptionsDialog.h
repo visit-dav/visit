@@ -38,8 +38,8 @@
 
 #ifndef QVIS_DB_OPTIONS_DIALOG_H
 #define QVIS_DB_OPTIONS_DIALOG_H
-#include <qdialog.h>
-#include <qlabel.h>
+#include <QDialog>
+#include <QLabel>
 
 class QPushButton;
 class QCheckBox;
@@ -59,27 +59,29 @@ class DBOptionsAttributes;
 // Creation:   July 19, 2007
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisDBOptionsDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QvisDBOptionsDialog(DBOptionsAttributes *opts,
-                        QWidget *parent = 0, const char *name = 0);
+    QvisDBOptionsDialog(DBOptionsAttributes *opts, QWidget *parent = 0);
     virtual ~QvisDBOptionsDialog();
 public slots:
     void okayClicked();
 
 private:
-    QCheckBox **checkboxes;
-    QLineEdit **lineedits;
-    QComboBox **comboboxes;
-
     DBOptionsAttributes *atts;
-    QPushButton  *okButton;
-    QPushButton  *cancelButton;
+    
+    QList<QCheckBox*>    checkboxes;
+    QList<QLineEdit*>    lineedits;
+    QList<QComboBox*>    comboboxes;
+
+    QPushButton         *okButton;
+    QPushButton         *cancelButton;
 };
 
 #endif

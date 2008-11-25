@@ -104,9 +104,9 @@
 
 #include <vtkQtImagePrinter.h>
 
-#include <qtimer.h>
-#include <qmessagebox.h>
-#include <qprinter.h>
+#include <QTimer>
+#include <QMessageBox>
+#include <QPrinter>
 #include <DebugStream.h>
 #include <ViewerOperatorFactory.h>
 
@@ -206,7 +206,7 @@ extern ViewerSubject  *viewerSubject;
 //
 // ****************************************************************************
 
-ViewerWindowManager::ViewerWindowManager() : ViewerBase(0, "ViewerWindowManager")
+ViewerWindowManager::ViewerWindowManager() : ViewerBase(0)
 {
     layout       = 1;
     layoutIndex  = 0;
@@ -270,7 +270,7 @@ ViewerWindowManager::ViewerWindowManager() : ViewerBase(0, "ViewerWindowManager"
     //
     animationTimeout = 1;
     lastAnimation = 0;
-    timer = new QTimer(this, "viewerTimer");
+    timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(AnimationCallback()));
 
     viewStacking = true;
@@ -2264,6 +2264,9 @@ ViewerWindowManager::GetDataset(int windowIndex,
 //   Brad Whitlock, Wed Apr 30 09:52:21 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue May 27 14:26:18 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -2326,7 +2329,8 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     printer.setColorMode(printerAtts->GetPrintColor() ? QPrinter::Color :
         QPrinter::GrayScale);
     printer.setOutputFileName(printerAtts->GetOutputToFileName().c_str());
-    printer.setOutputToFile(printerAtts->GetOutputToFile());
+    if(printerAtts->GetOutputToFile())
+        printer.setOutputFormat(QPrinter::PdfFormat);
     printer.setPageSize((QPrinter::PageSize)printerAtts->GetPageSize());
 
     //
@@ -3322,12 +3326,14 @@ ViewerWindowManager::ToggleCameraViewMode(int windowIndex)
 // Creation:   Mon Mar 29 09:53:14 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May 27 14:22:05 PDT 2008
+//   Changed to QString.
+//
 // ****************************************************************************
 
 bool
-ViewerWindowManager::AskForCorrelationPermission(const char *msg,
-    const char *title, const stringVector &dbs) const
+ViewerWindowManager::AskForCorrelationPermission(const QString &msg,
+    const QString &title, const stringVector &dbs) const
 {
     bool permission;
 
@@ -7827,7 +7833,7 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
     windows[windowIndex]->SetSize(width, height);
 
     QString title = tr("Window %1").arg(windowIndex+1);
-    windows[windowIndex]->SetTitle(title.latin1()); // Because Viswin can't take QString.
+    windows[windowIndex]->SetTitle(title.toStdString().c_str()); // Because Viswin can't take QString.
     if (windowsHidden == false)
     {
         windows[windowIndex]->SetLocation(x - preshiftX, y - preshiftY);
@@ -8268,7 +8274,7 @@ ViewerWindowManager::UpdateAnimationTimer()
         else if(timeout != animationTimeout)
         {
             // Change the playback speed.
-            timer->changeInterval(timeout);
+            timer->setInterval(timeout);
         }
         animationTimeout = timeout;
     }

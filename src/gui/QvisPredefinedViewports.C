@@ -37,8 +37,8 @@
 *****************************************************************************/
     
 #include <QvisPredefinedViewports.h>
-#include <qpixmap.h>
-#include <qpopupmenu.h>
+#include <QPixmap>
+#include <QMenu>
 
 /* XPM */
 static const char * vicon_00_xpm[] = {
@@ -316,13 +316,6 @@ static const char * vicon_05_xpm[] = {
 "............................................................",
 "............................................................"};
 
-static QIconSet
-MakeIconSet(const char **xpm)
-{
-    QIconSet retval;
-    retval.setPixmap(QPixmap(xpm), QIconSet::Small);
-    return retval;
-}
 
 // ****************************************************************************
 // Method: QvisPredefinedViewports::QvisPredefinedViewports
@@ -337,24 +330,26 @@ MakeIconSet(const char **xpm)
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Oct  7 10:28:20 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisPredefinedViewports::QvisPredefinedViewports(QWidget *parent, 
-    const char *name) : QPushButton(parent, name)
+QvisPredefinedViewports::QvisPredefinedViewports(QWidget *parent) : QPushButton(parent)
 {
     setText("Layouts");
 
     // Insert items.
-    menu = new QPopupMenu(0, "menu");
-    menu->insertItem(MakeIconSet(vicon_00_xpm), tr("Single"), 0);
-    menu->insertItem(MakeIconSet(vicon_01_xpm), tr("Side by side"), 1);
-    menu->insertItem(MakeIconSet(vicon_02_xpm), tr("Two by Two"), 2);
-    menu->insertItem(MakeIconSet(vicon_03_xpm), tr("Picture in picture 1"), 3);
-    menu->insertItem(MakeIconSet(vicon_04_xpm), tr("Picture in picture 2"), 4);
-    menu->insertItem(MakeIconSet(vicon_05_xpm), tr("2x Picture in picture"), 5);
-    setPopup(menu);
-    connect(menu, SIGNAL(activated(int)),
-            this, SIGNAL(activated(int)));
+    menu = new QMenu(0);
+    menu->addAction(QIcon(QPixmap(vicon_00_xpm)), tr("Single"));
+    menu->addAction(QIcon(QPixmap(vicon_01_xpm)), tr("Side by side"));
+    menu->addAction(QIcon(QPixmap(vicon_02_xpm)), tr("Two by Two"));
+    menu->addAction(QIcon(QPixmap(vicon_03_xpm)), tr("Picture in picture 1"));
+    menu->addAction(QIcon(QPixmap(vicon_04_xpm)), tr("Picture in picture 2"));
+    menu->addAction(QIcon(QPixmap(vicon_05_xpm)), tr("2x Picture in picture"));
+    setMenu(menu);
+    connect(menu, SIGNAL(triggered(QAction*)),
+            this, SLOT(emitActivated(QAction*)));
 }
 
 // ****************************************************************************
@@ -373,4 +368,26 @@ QvisPredefinedViewports::QvisPredefinedViewports(QWidget *parent,
 QvisPredefinedViewports::~QvisPredefinedViewports()
 {
     delete menu;
+}
+
+// ****************************************************************************
+// Method: QvisPredefinedViewports::emitActivated
+//
+// Purpose: 
+//   Emits the activated signal with the index of the activated action.
+//
+// Arguments:
+//   a : The action that was triggered.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct  7 10:26:10 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPredefinedViewports::emitActivated(QAction *a)
+{
+    emit activated(menu->actions().indexOf(a));
 }

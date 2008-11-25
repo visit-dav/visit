@@ -37,11 +37,11 @@
 *****************************************************************************/
 #include <XMLEditCodeSelectionDialog.h>
 
-#include <qcheckbox.h>
-#include <qgroupbox.h>
-#include <qhbox.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QBoxLayout>
+#include <QLayout>
+#include <QPushButton>
 
 // ****************************************************************************
 // Method: XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog
@@ -59,29 +59,26 @@
 // Creation:   Fri Mar 7 16:24:29 PST 2008
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
+//   Ported to Qt 4.4
+//
 // ****************************************************************************
 
-XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent, const char *name) :
-    QDialog(parent, name)
+XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
+    QDialog(parent)
 {
-    QVBoxLayout *pageLayout = new QVBoxLayout(this);
-    pageLayout->setMargin(10);
-    pageLayout->setSpacing(10);
-
-    QWidget *top = this;
-    QHBoxLayout *hLayout = new QHBoxLayout(pageLayout);
+    QVBoxLayout *topLayout = new QVBoxLayout(this);
+    
+    QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->setSpacing(10);
 
     //
     // Attributes
     //
-    QGroupBox *attGroup = new QGroupBox(top, "attGroup");
+    QGroupBox *attGroup = new QGroupBox(this);
     attGroup->setTitle(tr("Attributes"));
-    hLayout->addWidget(attGroup);
     QVBoxLayout *attLayout = new QVBoxLayout(attGroup);
     attLayout->setMargin(10);
-    attLayout->addSpacing(15);
     attLayout->setSpacing(5);
     buttons[ID_XML2ATTS] = new QCheckBox(tr("C++"), attGroup);
     attLayout->addWidget(buttons[ID_XML2ATTS]);
@@ -89,16 +86,15 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent, const ch
     attLayout->addWidget(buttons[ID_XML2JAVA]);
     buttons[ID_XML2PYTHON] = new QCheckBox(tr("Python"), attGroup);
     attLayout->addWidget(buttons[ID_XML2PYTHON]);
+    hLayout->addWidget(attGroup);
 
     //
     // Plugin
     //
-    QGroupBox *pluginGroup = new QGroupBox(top, "pluginGroup");
+    QGroupBox *pluginGroup = new QGroupBox(this);
     pluginGroup->setTitle(tr("Plugin"));
-    hLayout->addWidget(pluginGroup);
     QVBoxLayout *pluginLayout = new QVBoxLayout(pluginGroup);
     pluginLayout->setMargin(10);
-    pluginLayout->addSpacing(15);
     pluginLayout->setSpacing(5);
     buttons[ID_XML2WINDOW] = new QCheckBox(tr("Window"), pluginGroup);
     pluginLayout->addWidget(buttons[ID_XML2WINDOW]);
@@ -112,15 +108,21 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent, const ch
     pluginLayout->addWidget(buttons[ID_XML2INFO]);
     buttons[ID_XML2AVT] = new QCheckBox(tr("AVT code skeleton"), pluginGroup);
     pluginLayout->addWidget(buttons[ID_XML2AVT]);
+    hLayout->addWidget(pluginGroup);
 
+    topLayout->addLayout(hLayout);
+    
     // Add some buttons
-    QHBoxLayout *bLayout = new QHBoxLayout(pageLayout);
+    QHBoxLayout *bLayout = new QHBoxLayout();
     bLayout->setSpacing(5);
     bLayout->addStretch(10);
-    QPushButton *okay = new QPushButton(tr("Ok"), top, "okay");
-    QPushButton *cancel = new QPushButton(tr("Cancel"), top, "cancel");
+    QPushButton *okay = new QPushButton(tr("Ok"), this);
+    QPushButton *cancel = new QPushButton(tr("Cancel"), this);
     bLayout->addWidget(cancel);
     bLayout->addWidget(okay);
+// 
+    topLayout->addLayout(bLayout);
+    
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
 }
@@ -174,8 +176,8 @@ bool
 XMLEditCodeSelectionDialog::selectTools(const QString &caption, 
     bool *_useTools, const bool *_toolEnabled)
 {
-    XMLEditCodeSelectionDialog *inst = new XMLEditCodeSelectionDialog(0, "codesel");
-    inst->setCaption(caption);
+    XMLEditCodeSelectionDialog *inst = new XMLEditCodeSelectionDialog(0);
+    inst->setWindowTitle(caption);
 
     for(int i = 0; i < ID_XML_MAX; ++i)
     {

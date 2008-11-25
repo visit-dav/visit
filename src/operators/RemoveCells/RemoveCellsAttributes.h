@@ -77,14 +77,10 @@ public:
     void SelectDomainList();
 
     // Property setting methods
-    void SetCell(int cell_);
-    void SetDomain(int domain_);
     void SetCellList(const intVector &cellList_);
     void SetDomainList(const intVector &domainList_);
 
     // Property getting methods
-    int             GetCell() const;
-    int             GetDomain() const;
     const intVector &GetCellList() const;
           intVector &GetCellList();
     const intVector &GetDomainList() const;
@@ -104,15 +100,11 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_cell = 0,
-        ID_domain,
-        ID_cellList,
+        ID_cellList = 0,
         ID_domainList
     };
 
 private:
-    int       cell;
-    int       domain;
     intVector cellList;
     intVector domainList;
 

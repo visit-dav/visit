@@ -37,7 +37,7 @@
 *****************************************************************************/
 #ifndef XMLEDIT_CODESELECTION_DIALOG_H
 #define XMLEDIT_CODESELECTION_DIALOG_H
-#include <qdialog.h>
+#include <QDialog>
 #include <XMLToolIds.h>
 
 class QCheckBox;
@@ -59,7 +59,7 @@ class XMLEditCodeSelectionDialog : public QDialog
 {
     Q_OBJECT
 public:
-    XMLEditCodeSelectionDialog(QWidget *parent, const char *name = 0);
+    XMLEditCodeSelectionDialog(QWidget *parent);
     virtual ~XMLEditCodeSelectionDialog();
 
     static bool selectTools(const QString &caption, bool *useTools, 

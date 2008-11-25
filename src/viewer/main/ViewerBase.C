@@ -63,17 +63,17 @@ bool                   ViewerBase::suppressMessages = false;
 //
 // Arguments:
 //   parent : The parent object.
-//   name   : The name of the object.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 22 14:36:43 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May  9 14:35:17 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-ViewerBase::ViewerBase(QObject *parent, const char *name) : 
-    QObject(parent, name)
+ViewerBase::ViewerBase(QObject *parent) : QObject(parent)
 {
 }
 
@@ -236,7 +236,7 @@ ViewerBase::Error(const QString &message, bool hasUnicode)
     GetViewerState()->GetMessageAttributes()->SetSeverity(MessageAttributes::Error);
     GetViewerState()->GetMessageAttributes()->Notify();
 
-    debug1 << "Error - " << message << endl;
+    debug1 << "Error - " << message.toStdString() << endl;
 }
 
 // ****************************************************************************
@@ -278,7 +278,7 @@ ViewerBase::Warning(const QString &message, bool hasUnicode)
     GetViewerState()->GetMessageAttributes()->SetSeverity(MessageAttributes::Warning);
     GetViewerState()->GetMessageAttributes()->Notify();
 
-    debug1 << "Warning - " << message << endl;
+    debug1 << "Warning - " << message.toStdString() << endl;
 }
 
 // ****************************************************************************
@@ -320,7 +320,7 @@ ViewerBase::Message(const QString &message, bool hasUnicode)
     GetViewerState()->GetMessageAttributes()->SetSeverity(MessageAttributes::Message);
     GetViewerState()->GetMessageAttributes()->Notify();
 
-    debug1 << "Message - " << message << endl;
+    debug1 << "Message - " << message.toStdString() << endl;
 }
 
 // ****************************************************************************

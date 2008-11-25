@@ -41,14 +41,14 @@
 #include <BoundaryOpAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QWidget>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -116,27 +116,31 @@ QvisBoundaryOpWindow::~QvisBoundaryOpWindow()
 //   Brad Whitlock, Fri Apr 25 09:47:48 PDT 2008
 //   Added tr()'s
 //
+//   Cyrus Harrison, Mon Aug 18 21:11:25 PDT 2008
+//   Qt4 Port.  
+//
 // ****************************************************************************
 
 void
 QvisBoundaryOpWindow::CreateWindowContents()
 {
     // Create the smoothing level buttons
-    smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
-    connect(smoothingLevelButtons, SIGNAL(clicked(int)),
-	    this, SLOT(smoothingLevelChanged(int)));
-    QGridLayout *smoothingLayout = new QGridLayout(topLayout, 1, 5);
+    smoothingLevelButtons = new QButtonGroup(central);
+    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+    QGridLayout *smoothingLayout = new QGridLayout();
+    topLayout->addLayout(smoothingLayout);
     smoothingLayout->setSpacing(10);
-    smoothingLayout->setColStretch(4, 1000);
+    smoothingLayout->setColumnStretch(4, 1000);
     smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
-    QRadioButton *rb = new QRadioButton(tr("None"), central, "NoSmoothing");
-    smoothingLevelButtons->insert(rb);
+    QRadioButton *rb = new QRadioButton(tr("None"), central);
+    smoothingLevelButtons->addButton(rb,0);
     smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("Fast"), central, "LowSmoothing");
-    smoothingLevelButtons->insert(rb);
+    rb = new QRadioButton(tr("Fast"), central);
+    smoothingLevelButtons->addButton(rb,1);
     smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton(tr("High"), central, "HighSmoothing");
-    smoothingLevelButtons->insert(rb);
+    rb = new QRadioButton(tr("High"), central);
+    smoothingLevelButtons->addButton(rb,2);
     smoothingLayout->addWidget(rb, 0, 3);
 }
 
@@ -153,6 +157,9 @@ QvisBoundaryOpWindow::CreateWindowContents()
 // Modifications:
 //   Kathleen Bonnell, Tue Jul 1 15:11:27 PDT 2008
 //   Removed unreferenced variables.
+//
+//   Cyrus Harrison, Mon Aug 18 21:11:25 PDT 2008
+//   Qt4 Port.  
 //
 // ****************************************************************************
 
@@ -173,7 +180,8 @@ QvisBoundaryOpWindow::UpdateWindow(bool doAll)
 	{
 	    case BoundaryOpAttributes::ID_smoothingLevel:
 		smoothingLevelButtons->blockSignals(true);
-		smoothingLevelButtons->setButton(atts->GetSmoothingLevel());
+        smoothingLevelButtons->button(atts->GetSmoothingLevel())
+                                                            ->setChecked(true);
 		smoothingLevelButtons->blockSignals(false);
 		break;
 	}

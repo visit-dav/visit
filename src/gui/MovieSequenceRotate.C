@@ -101,12 +101,16 @@ MovieSequenceRotate::~MovieSequenceRotate()
 //   Brad Whitlock, Tue Apr  8 10:34:24 PDT 2008
 //   SequenceMenuName now returns QString.
 //
+//   Brad Whitlock, Tue Oct  7 11:21:26 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QWidget *
 MovieSequenceRotate::CreateUI()
 {
-    QvisRotationTransition *ui = new QvisRotationTransition(Pixmap(), 0, GetName().c_str());
+    QvisRotationTransition *ui = new QvisRotationTransition(Pixmap(), 0);
+    ui->setObjectName(GetName().c_str());
     ui->setTitle(SequenceMenuName());
 
     return ui;

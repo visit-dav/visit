@@ -264,7 +264,7 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //
 // ****************************************************************************
 
-ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
+ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     undoViewStack(true), redoViewStack()
 {
     if (doNoWinMode)

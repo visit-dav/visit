@@ -38,6 +38,7 @@
 
 #ifndef GENERATE_ATTS_H
 #define GENERATE_ATTS_H
+#include <QTextStream>
 
 #include <vector>
 #include <map>
@@ -228,16 +229,16 @@ class AttsGeneratorField : public virtual Field
     virtual void AddAttributeIncludes(UniqueStringList &sl) const
     {
     }
-    virtual void WriteHeaderForwardDeclarations(ostream &h) { }
+    virtual void WriteHeaderForwardDeclarations(QTextStream &h) { }
     virtual void AddSystemIncludes(UniqueStringList &sl) { }
-    virtual void WriteHeaderSelectFunction(ostream &h)
+    virtual void WriteHeaderSelectFunction(QTextStream &h)
     {
         if (CanHaveConst())
         {
-            h << "    void Select" << Name << "();" << endl;
+            h << "    void Select" << Name << "();" << Endl;
         }
     }
-    virtual void WriteHeaderSetFunction(ostream &h)
+    virtual void WriteHeaderSetFunction(QTextStream &h)
     {
         h << "    void Set"<<Name<<"(";
         if (CanHaveConst())
@@ -247,47 +248,47 @@ class AttsGeneratorField : public virtual Field
             h << "*";
         else if (CanHaveConst())
             h << "&";
-        h << name << "_);" << endl;
+        h << name << "_);" << Endl;
     }
-    virtual void WriteHeaderGetFunction(ostream &h, int w)
+    virtual void WriteHeaderGetFunction(QTextStream &h, int w)
     {
         if (isArray)
         {
-            h << "    const " << GetCPPNameW(w) << " *Get" << Name << "() const;" << endl;
-            h << "          " << GetCPPNameW(w) << " *Get" << Name << "();" << endl;
+            h << "    const " << GetCPPNameW(w) << " *Get" << Name << "() const;" << Endl;
+            h << "          " << GetCPPNameW(w) << " *Get" << Name << "();" << Endl;
         }
         else if (CanHaveConst())
         {
-            h << "    const " << GetCPPNameW(w) << " &Get" << Name << "() const;" << endl;
-            h << "          " << GetCPPNameW(w) << " &Get" << Name << "();" << endl;
+            h << "    const " << GetCPPNameW(w) << " &Get" << Name << "() const;" << Endl;
+            h << "          " << GetCPPNameW(w) << " &Get" << Name << "();" << Endl;
         }
         else
-            h << "    " << GetCPPNameW(w,true) << " Get" << Name << "() const;" << endl;
+            h << "    " << GetCPPNameW(w,true) << " Get" << Name << "() const;" << Endl;
     }
-    virtual void WriteHeaderAGVectorProto(ostream &h) { }
-    virtual void WriteHeaderSoloAGVectorProto(ostream &h) { }
-    virtual void WriteHeaderAttribute(ostream &h, int w)
+    virtual void WriteHeaderAGVectorProto(QTextStream &h) { }
+    virtual void WriteHeaderSoloAGVectorProto(QTextStream &h) { }
+    virtual void WriteHeaderAttribute(QTextStream &h, int w)
     {
         h << "    " << GetCPPNameW(w) << " " << name;
         if (isArray)
             h << "[" << length << "]";
-        h << ";" << endl;
+        h << ";" << Endl;
     }
     // ------------------------------------------------------------------------
-    virtual void WriteSourceIncludes(ostream &c)
+    virtual void WriteSourceIncludes(QTextStream &c)
     {
     }
-    virtual void WriteSourceInitializer(ostream &c)
+    virtual void WriteSourceInitializer(QTextStream &c)
     {
     }
     virtual bool RequiresSourceInitializer() const
     {
         return false;
     }
-    virtual void WriteSourceSetFunction(ostream &c, const QString &classname)
+    virtual void WriteSourceSetFunction(QTextStream &c, const QString &classname)
     {
         // Write prototype.
-        c << "void" << endl;
+        c << "void" << Endl;
         c << classname << "::Set" << Name << "(";
         if (CanHaveConst())
             c << "const ";
@@ -296,105 +297,105 @@ class AttsGeneratorField : public virtual Field
             c << "*";
         else if (CanHaveConst())
             c << "&";
-        c << name << "_)" << endl;
+        c << name << "_)" << Endl;
 
         // Write function body
-        c << "{" << endl;
+        c << "{" << Endl;
 
         QString codeName(QString("Set")+Name);
         if(HasCode(codeName, 0, generatorName))
         {
             PrintCode(c, codeName, 0, generatorName);
-            c << endl;
+            c << Endl;
         }
 
         if (!isArray)
         {
-            c << "    " << name << " = " << name << "_;" << endl;
+            c << "    " << name << " = " << name << "_;" << Endl;
             c << "    Select(" << FieldID() << ", "
-              << "(void *)&" << name << ");" << endl;
+              << "(void *)&" << name << ");" << Endl;
         }
         else
         {
             if (length < 5)
             {
                 for(int i = 0; i < length; ++i)
-                    c << "    " << name << "[" << i << "] = " << name << "_[" << i << "];"<< endl;
+                    c << "    " << name << "[" << i << "] = " << name << "_[" << i << "];"<< Endl;
             }
             else
             {
-                c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
-                c << "        " << name << "[i] = " << name << "_[i];"<< endl;
+                c << "    for(int i = 0; i < " << length << "; ++i)" << Endl;
+                c << "        " << name << "[i] = " << name << "_[i];"<< Endl;
             }
-            c << "    Select(" << FieldID() << ", (void *)" << name << ", " << length << ");" << endl;
+            c << "    Select(" << FieldID() << ", (void *)" << name << ", " << length << ");" << Endl;
         }
 
         if(HasCode(codeName, 1, generatorName))
         {
             PrintCode(c, codeName, 1, generatorName);
-            c << endl;
+            c << Endl;
         }
 
-        c << "}" << endl;
-        c << endl;
+        c << "}" << Endl;
+        c << Endl;
     }
-    virtual void WriteSourceGetFunction(ostream &c, const QString &classname, bool doConst)
+    virtual void WriteSourceGetFunction(QTextStream &c, const QString &classname, bool doConst)
     {
         if (isArray)
         {
             if (doConst)
             {
-                c << "const " << GetCPPName() << " *" << endl << classname << "::Get"
-                  << Name << "() const" << endl;
+                c << "const " << GetCPPName() << " *" << Endl << classname << "::Get"
+                  << Name << "() const" << Endl;
             }
             else
             {
-                c << GetCPPName() << " *" << endl << classname << "::Get"
-                  << Name << "()" << endl;
+                c << GetCPPName() << " *" << Endl << classname << "::Get"
+                  << Name << "()" << Endl;
             }
         }
         else if (CanHaveConst())
         {
             if (doConst)
             {
-                c << "const " << GetCPPName() << " &" << endl << classname
-                  << "::Get" << Name << "() const" << endl;
+                c << "const " << GetCPPName() << " &" << Endl << classname
+                  << "::Get" << Name << "() const" << Endl;
             }
             else
             {
-                c << GetCPPName() << " &" << endl << classname << "::Get"
-                  << Name << "()" << endl;
+                c << GetCPPName() << " &" << Endl << classname << "::Get"
+                  << Name << "()" << Endl;
             }
         }
         else
         {
-            c << GetCPPName(true,classname) << endl << classname << "::Get"
-              << Name << "() const" << endl;
+            c << GetCPPName(true,classname) << Endl << classname << "::Get"
+              << Name << "() const" << Endl;
         }
 
         // Function body
-        c << "{" << endl;
+        c << "{" << Endl;
         if (type == "attArray")
         {
-            cerr << "EEEEEERRRRRRRRROOOOOOORRRRRRR" << endl;
+            cErr << "EEEEEERRRRRRRRROOOOOOORRRRRRR" << Endl;
         }
         else
         {
             if (type == "enum")
-                c << "    return " << GetCPPName(true) << "(" << name << ");" << endl;
+                c << "    return " << GetCPPName(true) << "(" << name << ");" << Endl;
             else
-                c << "    return " << name << ";" << endl;
+                c << "    return " << name << ";" << Endl;
         }
-        c << "}" << endl;
-        c << endl;
+        c << "}" << Endl;
+        c << Endl;
     }
-    virtual void WriteSourceSelectFunction(ostream &c, const QString &classname)
+    virtual void WriteSourceSelectFunction(QTextStream &c, const QString &classname)
     {
         if (! CanHaveConst())
             return;
 
-        c << "void" << endl << classname << "::Select" << Name << "()" << endl;
-        c << "{" << endl;
+        c << "void" << Endl << classname << "::Select" << Name << "()" << Endl;
+        c << "{" << Endl;
         if (isArray)
         {
             c << "    Select(" << FieldID() << ", (void *)"
@@ -405,16 +406,16 @@ class AttsGeneratorField : public virtual Field
             c << "    Select(" << FieldID() << ", (void *)&"
               << name << ");";
         }
-        c << endl << "}" << endl << endl;
+        c << Endl << "}" << Endl << Endl;
     }
-    virtual void WriteSourceAGVectorFunctions(ostream &c, const QString &classname, const QString &purpose)
+    virtual void WriteSourceAGVectorFunctions(QTextStream &c, const QString &classname, const QString &purpose)
     {
     }
-    virtual void WriteSourceSoloAGVectorFunctions(ostream &c, const QString &classname, const QString &purpose)
+    virtual void WriteSourceSoloAGVectorFunctions(QTextStream &c, const QString &classname, const QString &purpose)
     {
     }
-    virtual void WriteSourceSetDefault(ostream &c) = 0;
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c) = 0;
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         if (isArray)
         {
@@ -423,52 +424,52 @@ class AttsGeneratorField : public virtual Field
                 for(int i = 0; i < length; ++i)
                 {
                     c << "    " << name << "[" << i << "] = "
-                      << "obj." << name << "[" << i << "];" << endl;
+                      << "obj." << name << "[" << i << "];" << Endl;
                 }
             }
             else
             {
-                c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
+                c << "    for(int i = 0; i < " << length << "; ++i)" << Endl;
                 c << "        " << name << "[i] = " 
-                  <<     "obj." << name << "[i];" << endl;
+                  <<     "obj." << name << "[i];" << Endl;
             }
-            c << endl;
+            c << Endl;
         }
         else
         {
-            c << "    " << name << " = obj." << name << ";" << endl;
+            c << "    " << name << " = obj." << name << ";" << Endl;
         }
     }
-    virtual void WriteSourceDestructor(ostream &c)
+    virtual void WriteSourceDestructor(QTextStream &c)
     {
     }
-    virtual void WriteSourceSetFromNode(ostream &c)
+    virtual void WriteSourceSetFromNode(QTextStream &c)
     {
         c << "    if((node = searchNode->GetNode(\"" << name
-          << "\")) != 0)" << endl;
+          << "\")) != 0)" << Endl;
         c << "        Set" << Name << "(";
-        c << "node->" << DataNodeConversion() << "());" << endl;
+        c << "node->" << DataNodeConversion() << "());" << Endl;
     }
-    virtual void WriteSourceSubAttributeGroupSingle(ostream &c)
+    virtual void WriteSourceSubAttributeGroupSingle(QTextStream &c)
     {
     }
-    virtual void WriteSourceSubAttributeGroup(ostream &c)
+    virtual void WriteSourceSubAttributeGroup(QTextStream &c)
     {
     }
-    virtual void WriteSourceComparisonPrecalc(ostream &c, const QString &indent)
+    virtual void WriteSourceComparisonPrecalc(QTextStream &c, const QString &indent)
     {
         if (isArray)
         {
-            c << indent << "// Compare the " << name << " arrays." << endl;
-            c << indent << "bool " << name << "_equal = true;" << endl; 
+            c << indent << "// Compare the " << name << " arrays." << Endl;
+            c << indent << "bool " << name << "_equal = true;" << Endl; 
             c << indent << "for(int i = 0; i < " << length << " && "
-              << name << "_equal; ++i)" << endl;
+              << name << "_equal; ++i)" << Endl;
             c << indent << "    " << name << "_equal = ("
               << name << "[i] == obj." << name
-              << "[i]);" << endl << endl;
+              << "[i]);" << Endl << Endl;
         }
     }
-    virtual void WriteSourceComparison(ostream &c)
+    virtual void WriteSourceComparison(QTextStream &c)
     {
         if (isArray)
             c << name << "_equal";
@@ -496,9 +497,9 @@ class AttsGeneratorInt : public virtual Int , public virtual AttsGeneratorField
     {
         return "AsInt";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << val << ";" << endl;
+        c << "    " << name << " = " << val << ";" << Endl;
     }
 };
 
@@ -519,10 +520,10 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual AttsGener
     {
         return "AsIntArray";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         for (int i=0; i<length; i++)
-            c << "    " << name << "["<<i<<"] = " << val[i] << ";" << endl;
+            c << "    " << name << "["<<i<<"] = " << val[i] << ";" << Endl;
     }
 };
 
@@ -544,10 +545,10 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
     {
         return "AsIntVector";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         for (size_t i=0; i < val.size(); i++)
-            c << "    " << name << ".push_back(" << val[i] << ");" << endl;
+            c << "    " << name << ".push_back(" << val[i] << ");" << Endl;
     }
 };
 
@@ -568,9 +569,9 @@ class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorFiel
     {
         return "AsBool";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << (val ? "true" : "false") << ";" << endl;
+        c << "    " << name << " = " << (val ? "true" : "false") << ";" << Endl;
     }
 };
 
@@ -591,9 +592,9 @@ class AttsGeneratorFloat : public virtual Float , public virtual AttsGeneratorFi
     {
         return "AsFloat";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << val << ";" << endl;
+        c << "    " << name << " = " << val << ";" << Endl;
     }
 };
 
@@ -615,10 +616,10 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual AttsG
     {
         return "AsFloatArray";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         for (int i=0; i<length; i++)
-            c << "    " << name << "["<<i<<"] = " << val[i] << ";" << endl;
+            c << "    " << name << "["<<i<<"] = " << val[i] << ";" << Endl;
     }
 };
 
@@ -639,9 +640,9 @@ class AttsGeneratorDouble : public virtual Double , public virtual AttsGenerator
     {
         return "AsDouble";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << val << ";" << endl;
+        c << "    " << name << " = " << val << ";" << Endl;
     }
 };
 
@@ -663,10 +664,10 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Att
     {
         return "AsDoubleArray";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         for (int i=0; i<length; i++)
-            c << "    " << name << "["<<i<<"] = " << val[i] << ";" << endl;
+            c << "    " << name << "["<<i<<"] = " << val[i] << ";" << Endl;
     }
 };
 
@@ -688,10 +689,10 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual A
     {
         return "AsDoubleVector";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         for (size_t i=0; i < val.size(); i++)
-            c << "    " << name << ".push_back(" << val[i] << ");" << endl;
+            c << "    " << name << ".push_back(" << val[i] << ");" << Endl;
     }
 };
 
@@ -712,9 +713,9 @@ class AttsGeneratorUChar : public virtual UChar , public virtual AttsGeneratorFi
     {
         return "AsUnsignedChar";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << int(val) << ";" << endl;
+        c << "    " << name << " = " << int(val) << ";" << Endl;
     }
 };
 
@@ -736,10 +737,10 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual AttsG
     {
         return "AsUnsignedCharArray";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         for (int i=0; i<length; i++)
-            c << "    " << name << "["<<i<<"] = " << int(val[i]) << ";" << endl;
+            c << "    " << name << "["<<i<<"] = " << int(val[i]) << ";" << Endl;
     }
 };
 
@@ -761,10 +762,10 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Att
     {
         return "AsUnsignedCharVector";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         for (size_t i=0; i < val.size(); i++)
-            c << "    " << name << ".push_back(" << val[i] << ");" << endl;
+            c << "    " << name << ".push_back(" << val[i] << ");" << Endl;
     }
 };
 
@@ -790,9 +791,9 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
     {
         return "AsString";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = \"" << val << "\";" << endl;
+        c << "    " << name << " = \"" << val << "\";" << Endl;
     }
 };
 
@@ -818,10 +819,10 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
     {
         return "AsStringVector";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         for (size_t i=0; i < val.size(); i++)
-        c << "    " << name << ".push_back(" << "\"" << val[i].latin1() << "\");" << endl;
+        c << "    " << name << ".push_back(" << "\"" << val[i] << "\");" << Endl;
     }
 };
 
@@ -851,14 +852,14 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual AttsG
     {
         return true;
     }
-    virtual void WriteSourceInitializer(ostream &c)
+    virtual void WriteSourceInitializer(QTextStream &c)
     {
         if(valueSet)
             c << name << "(\""<<val<<"\")";
         else
             c << name << "(\"hot\")";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
     }
 };
@@ -885,7 +886,7 @@ class AttsGeneratorColor : public virtual Color , public virtual AttsGeneratorFi
     {
         return true;
     }
-    virtual void WriteSourceInitializer(ostream &c)
+    virtual void WriteSourceInitializer(QTextStream &c)
     {
         if(valueSet)
         {
@@ -899,14 +900,14 @@ class AttsGeneratorColor : public virtual Color , public virtual AttsGeneratorFi
         else
             c << name << "()";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
     }
-    virtual void WriteSourceSetFromNode(ostream &c)
+    virtual void WriteSourceSetFromNode(QTextStream &c)
     {
         c << "    if((node = searchNode->GetNode(\"" << name
-          << "\")) != 0)" << endl;
-        c << "        " << name << ".SetFromNode(node);" << endl;
+          << "\")) != 0)" << Endl;
+        c << "        " << name << ".SetFromNode(node);" << Endl;
     }
 };
 
@@ -927,9 +928,9 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual AttsGen
     {
         return "AsInt";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << val << ";" << endl;
+        c << "    " << name << " = " << val << ";" << Endl;
     }
 };
 
@@ -950,9 +951,9 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual AttsGen
     {
         return "AsInt";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << val << ";" << endl;
+        c << "    " << name << " = " << val << ";" << Endl;
     }
 };
 
@@ -973,9 +974,9 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual AttsGenerat
     {
         return "AsDouble";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << val << ";" << endl;
+        c << "    " << name << " = " << val << ";" << Endl;
     }
 };
 
@@ -1007,14 +1008,14 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual A
     {
         return true;
     }
-    virtual void WriteSourceInitializer(ostream &c)
+    virtual void WriteSourceInitializer(QTextStream &c)
     {
         if(valueSet)
             c << name << "(\""<<val<<"\")";
         else
             c << name << "(\"default\")";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
     }
 };
@@ -1031,22 +1032,21 @@ class AttsGeneratorAtt : public virtual Att , public virtual AttsGeneratorField
     virtual bool CanHaveConst() { return true; }
     virtual void AddAttributeIncludes(UniqueStringList &sl) const
     {
-        QString tmp;
-        tmp.sprintf("#include <%s.h>\n", attType.latin1());
-        sl.AddString(tmp.latin1());
+        QString tmp(QString("#include <%1.h>\n").arg(attType));
+        sl.AddString(tmp);
     }
     virtual QString GetAttributeGroupID()
     {
         return "a";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
     }
-    virtual void WriteSourceSetFromNode(ostream &c)
+    virtual void WriteSourceSetFromNode(QTextStream &c)
     {
         c << "    if((node = searchNode->GetNode(\"" << name
-          << "\")) != 0)" << endl;
-        c << "        " << name << ".SetFromNode(node);" << endl;
+          << "\")) != 0)" << Endl;
+        c << "        " << name << ".SetFromNode(node);" << Endl;
     }
 };
 
@@ -1060,47 +1060,47 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     AttsGeneratorAttVector(const QString &t, const QString &n, const QString &l)
         : Field("attVector",n,l), AttVector(t,n,l), AttsGeneratorField("attVector",n,l) { }
     virtual bool CanHaveConst() { return true; }
-    virtual void WriteHeaderForwardDeclarations(ostream &h)
+    virtual void WriteHeaderForwardDeclarations(QTextStream &h)
     {
-        h << "class " << attType << ";" << endl;
+        h << "class " << attType << ";" << Endl;
     }
-    virtual void WriteHeaderAGVectorProto(ostream &h)
+    virtual void WriteHeaderAGVectorProto(QTextStream &h)
     {
         QString plural("");
         if(Name.right(1) != "s")
             plural = "s";
 
-        h << "    void Add" << Name << "(const " << attType << " &);" << endl;
-        h << "    void Clear" << Name << plural << "();" << endl;
-        h << "    void Remove" << Name << "(int i);" << endl;
-        h << "    int  GetNum" << Name << plural << "() const;" << endl;
-        h << "    " << attType << " &Get" << Name << "(int i);" << endl;
-        h << "    const " << attType << " &Get" << Name << "(int i) const;" << endl;
-        h << endl;
+        h << "    void Add" << Name << "(const " << attType << " &);" << Endl;
+        h << "    void Clear" << Name << plural << "();" << Endl;
+        h << "    void Remove" << Name << "(int i);" << Endl;
+        h << "    int  GetNum" << Name << plural << "() const;" << Endl;
+        h << "    " << attType << " &Get" << Name << "(int i);" << Endl;
+        h << "    const " << attType << " &Get" << Name << "(int i) const;" << Endl;
+        h << Endl;
     }
-    virtual void WriteHeaderSoloAGVectorProto(ostream &h)
+    virtual void WriteHeaderSoloAGVectorProto(QTextStream &h)
     {
-        h << "    " << attType << " &operator [] (int i);" << endl;
-        h << "    const " << attType << " &operator [] (int i) const;" << endl;
-        h << endl;
+        h << "    " << attType << " &operator [] (int i);" << Endl;
+        h << "    const " << attType << " &operator [] (int i) const;" << Endl;
+        h << Endl;
     }
-    virtual void WriteSourceIncludes(ostream &c)
+    virtual void WriteSourceIncludes(QTextStream &c)
     {
-        c << "#include <"<<attType<<".h>" << endl;
+        c << "#include <"<<attType<<".h>" << Endl;
     }
     virtual QString GetAttributeGroupID()
     {
         return "a*";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
     }
-    virtual void WriteHeaderSetFunction(ostream &h)
+    virtual void WriteHeaderSetFunction(QTextStream &h)
     {
         // Disabled the header method because the .C implementation (below)
         // does not output anything.
     }
-    virtual void WriteSourceSetFunction(ostream &c, const QString &classname)
+    virtual void WriteSourceSetFunction(QTextStream &c, const QString &classname)
     {
         /*
         if (codeFile && codeFile->code.count(QString("Set")+Name) && !codeFile->code[QString("Set")+Name].first.isNull())
@@ -1110,58 +1110,58 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
             c << codeFile->code[QString("Set")+Name].second;
         */
     }
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
-        c << "    // *** Copy the " << name << " field ***" << endl;
-        c << "    // Delete the AttributeGroup objects and clear the vector." << endl;
+        c << "    // *** Copy the " << name << " field ***" << Endl;
+        c << "    // Delete the AttributeGroup objects and clear the vector." << Endl;
         c << "    for(pos = " << name << ".begin(); pos != "
-          << name << ".end(); ++pos)" << endl;
-        c << "        delete *pos;" << endl;
-        c << "    " << name << ".clear();" << endl;
-        c << "    if(obj." << name << ".size() > 0)" << endl;
-        c << "        " << name << ".reserve(obj." << name << ".size());" << endl;
-        c << "    // Duplicate the " << name << " from obj." << endl;
-        c << "    for(pos = obj." << name << ".begin(); pos != obj." << name << ".end(); ++pos)" << endl;
-        c << "    {" << endl;
-        c << "        " << attType << " *old" << attType << " = (" << attType << " *)(*pos);" << endl;
-        c << "        " << attType << " *new" << attType << " = new " << attType << "(*old" << attType << ");" << endl;
-        c << "        " << name << ".push_back(new" << attType << ");" << endl;
-        c << "    }" << endl << endl;
+          << name << ".end(); ++pos)" << Endl;
+        c << "        delete *pos;" << Endl;
+        c << "    " << name << ".clear();" << Endl;
+        c << "    if(obj." << name << ".size() > 0)" << Endl;
+        c << "        " << name << ".reserve(obj." << name << ".size());" << Endl;
+        c << "    // Duplicate the " << name << " from obj." << Endl;
+        c << "    for(pos = obj." << name << ".begin(); pos != obj." << name << ".end(); ++pos)" << Endl;
+        c << "    {" << Endl;
+        c << "        " << attType << " *old" << attType << " = (" << attType << " *)(*pos);" << Endl;
+        c << "        " << attType << " *new" << attType << " = new " << attType << "(*old" << attType << ");" << Endl;
+        c << "        " << name << ".push_back(new" << attType << ");" << Endl;
+        c << "    }" << Endl << Endl;
     }
-    virtual void WriteSourceDestructor(ostream &c)
+    virtual void WriteSourceDestructor(QTextStream &c)
     {
-        c << "    // Destroy the " << name << " field." << endl;
+        c << "    // Destroy the " << name << " field." << Endl;
         c << "    for(pos = " << name << ".begin();"
-          << " pos != " << name << ".end(); ++pos)" << endl;
-        c << "        delete *pos;" << endl;
+          << " pos != " << name << ".end(); ++pos)" << Endl;
+        c << "        delete *pos;" << Endl;
     }
-    virtual void WriteSourceSetFromNode(ostream &c)
+    virtual void WriteSourceSetFromNode(QTextStream &c)
     {
         QString plural("");
         if(Name.right(1) != "s")
             plural = "s";
 
-        c << "    // Clear all the " << attType << "s." << endl;
-        c << "    Clear" << Name << plural << "();" << endl;
-        c << endl;
-        c << "    // Go through all of the children and construct a new" << endl;
-        c << "    // " << attType << " for each one of them." << endl;
+        c << "    // Clear all the " << attType << "s." << Endl;
+        c << "    Clear" << Name << plural << "();" << Endl;
+        c << Endl;
+        c << "    // Go through all of the children and construct a new" << Endl;
+        c << "    // " << attType << " for each one of them." << Endl;
                   
-        c << "    children = searchNode->GetChildren();" << endl;
-        c << "    if(children != 0)" << endl;
-        c << "    {" << endl;
-        c << "        for(int i = 0; i < searchNode->GetNumChildren(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            if(children[i]->GetKey() == std::string(\"" << attType << "\"))" << endl;
-        c << "            {" << endl;
-        c << "                " << attType << " temp;" << endl;
-        c << "                temp.SetFromNode(children[i]);" << endl;
-        c << "                Add" << Name << "(temp);" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "    }" << endl << endl;
+        c << "    children = searchNode->GetChildren();" << Endl;
+        c << "    if(children != 0)" << Endl;
+        c << "    {" << Endl;
+        c << "        for(int i = 0; i < searchNode->GetNumChildren(); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            if(children[i]->GetKey() == std::string(\"" << attType << "\"))" << Endl;
+        c << "            {" << Endl;
+        c << "                " << attType << " temp;" << Endl;
+        c << "                temp.SetFromNode(children[i]);" << Endl;
+        c << "                Add" << Name << "(temp);" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl << Endl;
     }
-    virtual void WriteSourceAGVectorFunctions(ostream &c, const QString &classname, const QString &purpose)
+    virtual void WriteSourceAGVectorFunctions(QTextStream &c, const QString &classname, const QString &purpose)
     {
         QString methodName;
         QString s = attType;
@@ -1173,88 +1173,88 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         methodName = "Add";
         methodName += Name;
         WriteMethodComment(c, classname, methodName, purpose, generatorName);
-        c << "void" << endl;
-        c << classname << "::" << methodName << "(const " << s << " &obj)" << endl;
-        c << "{" << endl;
-        c << "    " << s << " *new" << s << " = new " << s << "(obj);" << endl;
-        c << "    " << name << ".push_back(new" << s << ");" << endl;
-        c << endl;
-        c << "    // Indicate that things have changed by selecting it." << endl;
-        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << endl;
-        c << "}" << endl << endl;
+        c << "void" << Endl;
+        c << classname << "::" << methodName << "(const " << s << " &obj)" << Endl;
+        c << "{" << Endl;
+        c << "    " << s << " *new" << s << " = new " << s << "(obj);" << Endl;
+        c << "    " << name << ".push_back(new" << s << ");" << Endl;
+        c << Endl;
+        c << "    // Indicate that things have changed by selecting it." << Endl;
+        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << Endl;
+        c << "}" << Endl << Endl;
 
         // Write the Clear method
         methodName = "Clear";
         methodName += Name + plural;
         WriteMethodComment(c, classname, methodName, purpose, generatorName);
-        c << "void" << endl;
-        c << classname << "::" << methodName << "()" << endl;
-        c << "{" << endl;
-        c << "    AttributeGroupVector::iterator pos;" << endl;
-        c << endl;
-        c << "    for(pos = " << name << ".begin(); pos != " << name << ".end(); ++pos)" << endl;
-        c << "        delete *pos;" << endl;
-        c << "    " << name << ".clear();" << endl;
-        c << endl;
-        c << "    // Indicate that things have changed by selecting the list." << endl;
-        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << endl;
-        c << "}" << endl << endl;
+        c << "void" << Endl;
+        c << classname << "::" << methodName << "()" << Endl;
+        c << "{" << Endl;
+        c << "    AttributeGroupVector::iterator pos;" << Endl;
+        c << Endl;
+        c << "    for(pos = " << name << ".begin(); pos != " << name << ".end(); ++pos)" << Endl;
+        c << "        delete *pos;" << Endl;
+        c << "    " << name << ".clear();" << Endl;
+        c << Endl;
+        c << "    // Indicate that things have changed by selecting the list." << Endl;
+        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << Endl;
+        c << "}" << Endl << Endl;
 
         // Write the Remove method
         methodName = "Remove";
         methodName += Name;
         WriteMethodComment(c, classname, methodName, purpose, generatorName);
-        c << "void" << endl;
-        c << classname << "::" << methodName << "(int index)" << endl;
-        c << "{" << endl;
-        c << "    AttributeGroupVector::iterator pos = " << name << ".begin();" << endl;
-        c << endl;
-        c << "    // Iterate through the vector \"index\" times. " << endl;
-        c << "    for(int i = 0; i < index; ++i)" << endl;
-        c << "        if(pos != " << name << ".end()) ++pos;" << endl;
-        c << endl;
-        c << "    // If pos is still a valid iterator, remove that element." << endl;
-        c << "    if(pos != " << name << ".end())" << endl;
-        c << "    {" << endl;
-        c << "        delete *pos;" << endl;
-        c << "        " << name << ".erase(pos);" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "    // Indicate that things have changed by selecting the list." << endl;
-        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << endl;
-        c << "}" << endl << endl;
+        c << "void" << Endl;
+        c << classname << "::" << methodName << "(int index)" << Endl;
+        c << "{" << Endl;
+        c << "    AttributeGroupVector::iterator pos = " << name << ".begin();" << Endl;
+        c << Endl;
+        c << "    // Iterate through the vector \"index\" times. " << Endl;
+        c << "    for(int i = 0; i < index; ++i)" << Endl;
+        c << "        if(pos != " << name << ".end()) ++pos;" << Endl;
+        c << Endl;
+        c << "    // If pos is still a valid iterator, remove that element." << Endl;
+        c << "    if(pos != " << name << ".end())" << Endl;
+        c << "    {" << Endl;
+        c << "        delete *pos;" << Endl;
+        c << "        " << name << ".erase(pos);" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Indicate that things have changed by selecting the list." << Endl;
+        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << Endl;
+        c << "}" << Endl << Endl;
 
         // Write the GetNum method
         methodName = "GetNum";
         methodName += Name + plural;
         WriteMethodComment(c, classname, methodName, purpose, generatorName);
-        c << "int" << endl;
-        c << classname << "::" << methodName << "() const" << endl;
-        c << "{" << endl;
-        c << "    return " << name << ".size();" << endl;
-        c << "}" << endl << endl;
+        c << "int" << Endl;
+        c << classname << "::" << methodName << "() const" << Endl;
+        c << "{" << Endl;
+        c << "    return " << name << ".size();" << Endl;
+        c << "}" << Endl << Endl;
 
         // Write the Get method
         methodName = "Get";
         methodName += Name;
         WriteMethodComment(c, classname, methodName, purpose, generatorName);
-        c << s << " &" << endl;
-        c << classname << "::" << methodName << "(int i)" << endl;
-        c << "{" << endl;
-        c << "    return *((" << s << " *)" << name << "[i]);" << endl;
-        c << "}" << endl << endl;
+        c << s << " &" << Endl;
+        c << classname << "::" << methodName << "(int i)" << Endl;
+        c << "{" << Endl;
+        c << "    return *((" << s << " *)" << name << "[i]);" << Endl;
+        c << "}" << Endl << Endl;
 
         // Write the const Get method
         methodName = "Get";
         methodName += Name;
         WriteMethodComment(c, classname, methodName, purpose, generatorName);
-        c << "const " << s << " &" << endl;
-        c << classname << "::" << methodName << "(int i) const" << endl;
-        c << "{" << endl;
-        c << "    return *((" << s << " *)" << name << "[i]);" << endl;
-        c << "}" << endl << endl;
+        c << "const " << s << " &" << Endl;
+        c << classname << "::" << methodName << "(int i) const" << Endl;
+        c << "{" << Endl;
+        c << "    return *((" << s << " *)" << name << "[i]);" << Endl;
+        c << "}" << Endl << Endl;
     }
-    virtual void WriteSourceSoloAGVectorFunctions(ostream &c, const QString &classname, const QString &purpose)
+    virtual void WriteSourceSoloAGVectorFunctions(QTextStream &c, const QString &classname, const QString &purpose)
     {
         QString methodName;
         QString s = attType;
@@ -1262,49 +1262,49 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         // Write the non-const [] operator
         methodName = "operator []";
         WriteMethodComment(c, classname, methodName, purpose, generatorName);
-        c << s << " &" << endl;
-        c << classname << "::" << methodName << " (int i)" << endl;
-        c << "{" << endl;
-        c << "    return *((" << s << " *)" << name << "[i]);" << endl;
-        c << "}" << endl << endl;
+        c << s << " &" << Endl;
+        c << classname << "::" << methodName << " (int i)" << Endl;
+        c << "{" << Endl;
+        c << "    return *((" << s << " *)" << name << "[i]);" << Endl;
+        c << "}" << Endl << Endl;
 
         // Write the const [] operator
         WriteMethodComment(c, classname, methodName, purpose, generatorName);
-        c << "const " << s << " &" << endl;
-        c << classname << "::" << methodName << " (int i) const" << endl;
-        c << "{" << endl;
-        c << "    return *((" << s << " *)" << name << "[i]);" << endl;
-        c << "}" << endl << endl;
+        c << "const " << s << " &" << Endl;
+        c << classname << "::" << methodName << " (int i) const" << Endl;
+        c << "{" << Endl;
+        c << "    return *((" << s << " *)" << name << "[i]);" << Endl;
+        c << "}" << Endl << Endl;
     }
-    virtual void WriteSourceSubAttributeGroupSingle(ostream &c)
+    virtual void WriteSourceSubAttributeGroupSingle(QTextStream &c)
     {
-        c << "    return new " << attType << ";" << endl;
+        c << "    return new " << attType << ";" << Endl;
     }
-    virtual void WriteSourceSubAttributeGroup(ostream &c)
+    virtual void WriteSourceSubAttributeGroup(QTextStream &c)
     {
-        c << "    case " << FieldID() << ":" << endl;
-        c << "        retval = new " << attType << ";" << endl;
-        c << "        break;" << endl;
+        c << "    case " << FieldID() << ":" << Endl;
+        c << "        retval = new " << attType << ";" << Endl;
+        c << "        break;" << Endl;
     }
-    virtual void WriteSourceComparisonPrecalc(ostream &c, const QString &indent)
+    virtual void WriteSourceComparisonPrecalc(QTextStream &c, const QString &indent)
     {
         QString s = attType;
         c << indent << "bool " << name << "_equal = (obj." << name 
-          << ".size() == " << name << ".size());" << endl;
+          << ".size() == " << name << ".size());" << Endl;
         c << indent << "for(size_t i = 0; (i < " << name
-          << ".size()) && " << name << "_equal; ++i)" << endl;
-        c << indent << "{" << endl;
+          << ".size()) && " << name << "_equal; ++i)" << Endl;
+        c << indent << "{" << Endl;
         c << indent << "    // Make references to " << s
-          << " from AttributeGroup *." << endl;
+          << " from AttributeGroup *." << Endl;
         c << indent << "    const " << s << " &" << name
-          << "1 = *((const " << s << " *)(" << name << "[i]));" << endl;
+          << "1 = *((const " << s << " *)(" << name << "[i]));" << Endl;
         c << indent << "    const " << s << " &" << name
-          << "2 = *((const " << s << " *)(obj." << name << "[i]));" << endl;
+          << "2 = *((const " << s << " *)(obj." << name << "[i]));" << Endl;
         c << indent << "    " << name << "_equal = ("
-          << name << "1 == " << name << "2);" << endl;
-        c << indent << "}" << endl << endl;
+          << name << "1 == " << name << "2);" << Endl;
+        c << indent << "}" << Endl << Endl;
     }
-    virtual void WriteSourceComparison(ostream &c)
+    virtual void WriteSourceComparison(QTextStream &c)
     {
         c << name << "_equal";
     }
@@ -1333,29 +1333,29 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
         sl.AddString("#include <string>\n");
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " <<enumType->values[val] << ";" << endl;
+        c << "    " << name << " = " <<enumType->values[val] << ";" << Endl;
     }
-    virtual void WriteSourceSetFromNode(ostream &c)
+    virtual void WriteSourceSetFromNode(QTextStream &c)
     {
         c << "    if((node = searchNode->GetNode(\"" << name
-          << "\")) != 0)" << endl;
-        c << "    {" << endl;
-        c << "        // Allow enums to be int or string in the config file" << endl;
-        c << "        if(node->GetNodeType() == INT_NODE)" << endl;
-        c << "        {" << endl;
-        c << "            int ival = node->AsInt();" << endl;
-        c << "            if(ival >= 0 && ival < " << enumType->values.size() << ")" << endl;
-        c << "                Set" << Name << "(" << GetCPPName(true) << "(ival));" << endl;
-        c << "        }" << endl;
-        c << "        else if(node->GetNodeType() == STRING_NODE)" << endl;
-        c << "        {" << endl;
-        c << "            " << GetCPPName(true) << " value;" << endl;
-        c << "            if(" << GetCPPName(true) << "_FromString(node->AsString(), value))" << endl;
-        c << "                Set" << Name << "(value);" << endl;
-        c << "        }" << endl;
-        c << "    }" << endl;
+          << "\")) != 0)" << Endl;
+        c << "    {" << Endl;
+        c << "        // Allow enums to be int or string in the config file" << Endl;
+        c << "        if(node->GetNodeType() == INT_NODE)" << Endl;
+        c << "        {" << Endl;
+        c << "            int ival = node->AsInt();" << Endl;
+        c << "            if(ival >= 0 && ival < " << enumType->values.size() << ")" << Endl;
+        c << "                Set" << Name << "(" << GetCPPName(true) << "(ival));" << Endl;
+        c << "        }" << Endl;
+        c << "        else if(node->GetNodeType() == STRING_NODE)" << Endl;
+        c << "        {" << Endl;
+        c << "            " << GetCPPName(true) << " value;" << Endl;
+        c << "            if(" << GetCPPName(true) << "_FromString(node->AsString(), value))" << Endl;
+        c << "                Set" << Name << "(value);" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -1376,9 +1376,9 @@ class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGen
     {
         return "AsInt";
     }
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
-        c << "    " << name << " = " << val << ";" << endl;
+        c << "    " << name << " = " << val << ";" << Endl;
     }
 };
 
@@ -1396,7 +1396,7 @@ class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGen
     {\
         return "AsInt";\
     }\
-    virtual void WriteSourceSetDefault(ostream &c)\
+    virtual void WriteSourceSetDefault(QTextStream &c)\
     {\
         c << "    " << name << " = ";\
         int nsym = 0;\
@@ -1405,7 +1405,7 @@ class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGen
             c << sym[val];\
         else\
             c << val;\
-        c << ";" << endl;\
+        c << ";" << Endl;\
     }\
     virtual QString GetFieldType() const { return "int"; }
 
@@ -1527,7 +1527,7 @@ class AttsFieldFactory
                                            const QString &label)
     {
         AttsGeneratorField *f = NULL;
-        if      (type.isNull())          throw QString().sprintf("Field %s was specified with no type.",name.latin1());
+        if      (type.isNull())          throw QString("Field %1 was specified with no type.").arg(name);
         else if (type == "int")          f = new AttsGeneratorInt(name,label);
         else if (type == "intArray")     f = new AttsGeneratorIntArray(length,name,label);
         else if (type == "intVector")    f = new AttsGeneratorIntVector(name,label);
@@ -1564,7 +1564,7 @@ class AttsFieldFactory
         else if (type == "LoadBalanceScheme") f = new AttsGeneratorLoadBalanceScheme(name, label);
 
         if (!f)
-            throw QString().sprintf("AttsFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
+            throw QString("AttsFieldFactory: unknown type for field %1: %2").arg(name).arg(type);
 
         return f;
     }
@@ -1614,11 +1614,11 @@ class AttsGeneratorAttribute : public GeneratorBase
         fields.clear();
     }
 
-    virtual void Print(ostream &out)
+    virtual void Print(QTextStream &out)
     {
-        out << "    Attribute: " << name << " (" << purpose << ")" << endl;
-        out << "        exportAPI=" << exportAPI << endl;
-        out << "        exportInclude=" << exportInclude << endl;
+        out << "    Attribute: " << name << " (" << purpose << ")" << Endl;
+        out << "        exportAPI=" << exportAPI << Endl;
+        out << "        exportInclude=" << exportInclude << Endl;
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->Print(out);
         for (size_t i=0; i<includes.size(); i++)
@@ -1631,15 +1631,15 @@ class AttsGeneratorAttribute : public GeneratorBase
 
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
-    void WriteHeader(ostream &h)
+    void WriteHeader(QTextStream &h)
     {
-        h << copyright_str.c_str() << endl;
-        h << "#ifndef " << name.upper() << "_H" << endl;
-        h << "#define " << name.upper() << "_H" << endl;
+        h << copyright_str << Endl;
+        h << "#ifndef " << name.toUpper() << "_H" << Endl;
+        h << "#define " << name.toUpper() << "_H" << Endl;
         if(!exportInclude.isEmpty())
-            h << "#include <" << exportInclude << ">" << endl;
+            h << "#include <" << exportInclude << ">" << Endl;
         WriteHeaderSystemIncludes(h);
-        h << "#include <AttributeSubject.h>" << endl;
+        h << "#include <AttributeSubject.h>" << Endl;
         WriteHeaderForwardDeclarations(h);
         WriteHeaderAttributeIncludes(h);
         // write user header includes
@@ -1649,64 +1649,64 @@ class AttsGeneratorAttribute : public GeneratorBase
                 includes[i]->target == generatorName)
             {
                 if (includes[i]->quoted == true)
-                    h << "#include \"" << includes[i]->include << "\"" << endl;
+                    h << "#include \"" << includes[i]->include << "\"" << Endl;
                 else
-                    h << "#include <"  << includes[i]->include << ">"  << endl;
+                    h << "#include <"  << includes[i]->include << ">"  << Endl;
             }
         }
 
-        h << endl;
+        h << Endl;
 
         // write non-member constants
         for (size_t i=0; i<constants.size(); i++)
         {
             if (! constants[i]->member && constants[i]->target == generatorName)
-                h << constants[i]->decl << endl;
+                h << constants[i]->decl << Endl;
         }
 
         WriteClassComment(h, purpose);
         if(exportAPI.isEmpty())
-            h << "class " << name << " : public AttributeSubject" << endl;
+            h << "class " << name << " : public AttributeSubject" << Endl;
         else
-            h << "class " << exportAPI << " " << name << " : public AttributeSubject" << endl;
-        h << "{" << endl;
-        h << "public:" << endl;
+            h << "class " << exportAPI << " " << name << " : public AttributeSubject" << Endl;
+        h << "{" << Endl;
+        h << "public:" << Endl;
         for (size_t i=0; i<EnumType::enums.size(); i++)
         {
-            h << "    enum " << EnumType::enums[i]->type << endl;
-            h << "    {" << endl;
+            h << "    enum " << EnumType::enums[i]->type << Endl;
+            h << "    {" << Endl;
             for (size_t j=0; j<EnumType::enums[i]->values.size(); j++)
             {
                 h << "        " << EnumType::enums[i]->values[j];
                 if (j < EnumType::enums[i]->values.size()-1)
                     h << ",";
-                h << endl;
+                h << Endl;
             }
-            h << "    };" << endl;
+            h << "    };" << Endl;
         }
         // write member constants
         for (size_t i=0; i<constants.size(); i++)
         {
             if (constants[i]->member && constants[i]->target == generatorName)
-                h << "    " << constants[i]->decl << endl;
+                h << "    " << constants[i]->decl << Endl;
         }
         if (EnumType::enums.size() || constants.size())
-            h << endl;
-        h << "    " << name << "();" << endl;
-        h << "    " << name << "(const " << name << " &obj);" << endl;
-        h << "    virtual ~" << name << "();" << endl;
-        h << endl;
-        h << "    virtual " << name << "& operator = (const " << name << " &obj);" << endl;
-        h << "    virtual bool operator == (const " << name << " &obj) const;" << endl;
-        h << "    virtual bool operator != (const " << name << " &obj) const;" << endl;
-        h << endl;
-        h << "    virtual const std::string TypeName() const;" << endl;
-        h << "    virtual bool CopyAttributes(const AttributeGroup *);" << endl;
-        h << "    virtual AttributeSubject *CreateCompatible(const std::string &) const;" << endl;
-        h << "    virtual AttributeSubject *NewInstance(bool) const;" << endl;
-        h << endl;
-        h << "    // Property selection methods" << endl;
-        h << "    virtual void SelectAll();" << endl;
+            h << Endl;
+        h << "    " << name << "();" << Endl;
+        h << "    " << name << "(const " << name << " &obj);" << Endl;
+        h << "    virtual ~" << name << "();" << Endl;
+        h << Endl;
+        h << "    virtual " << name << "& operator = (const " << name << " &obj);" << Endl;
+        h << "    virtual bool operator == (const " << name << " &obj) const;" << Endl;
+        h << "    virtual bool operator != (const " << name << " &obj) const;" << Endl;
+        h << Endl;
+        h << "    virtual const std::string TypeName() const;" << Endl;
+        h << "    virtual bool CopyAttributes(const AttributeGroup *);" << Endl;
+        h << "    virtual AttributeSubject *CreateCompatible(const std::string &) const;" << Endl;
+        h << "    virtual AttributeSubject *NewInstance(bool) const;" << Endl;
+        h << Endl;
+        h << "    // Property selection methods" << Endl;
+        h << "    virtual void SelectAll();" << Endl;
         WriteHeaderSelectFunctions(h);
 
         // Determine whether there are public and private fields.
@@ -1729,8 +1729,8 @@ class AttsGeneratorAttribute : public GeneratorBase
 
         if(hasPrivateFields)
         {
-            h << endl;
-            h << "    // Property setting methods" << endl;
+            h << Endl;
+            h << "    // Property setting methods" << Endl;
         }
         // Write out all the set prototypes
         for (size_t i=0; i<fields.size(); i++)
@@ -1743,8 +1743,8 @@ class AttsGeneratorAttribute : public GeneratorBase
         int totalWidth = CalculateTotalWidth(true);
         if(hasPrivateFields)
         {
-            h << endl;
-            h << "    // Property getting methods" << endl;
+            h << Endl;
+            h << "    // Property getting methods" << Endl;
         }
         // Write out all the get prototypes
         for (size_t i=0; i<fields.size(); i++)
@@ -1761,19 +1761,19 @@ class AttsGeneratorAttribute : public GeneratorBase
         if (persistent)
         {
             // Persistence methods
-            h << endl;
-            h << "    // Persistence methods" << endl;
-            h << "    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);" << endl;
-            h << "    virtual void SetFromNode(DataNode *node);" << endl;
+            h << Endl;
+            h << "    // Persistence methods" << Endl;
+            h << "    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);" << Endl;
+            h << "    virtual void SetFromNode(DataNode *node);" << Endl;
         }
-        h << endl;
+        h << Endl;
 
         // If there are AttributeGroupVectors in the list, write out
         // the convenience methods.
         if (HaveAGVectors())
         {
-            h << endl;
-            h << "    // Attributegroup convenience methods" << endl;
+            h << Endl;
+            h << "    // Attributegroup convenience methods" << Endl;
             for (size_t i=0; i<fields.size(); i++)
             {
                 fields[i]->WriteHeaderAGVectorProto(h);
@@ -1792,13 +1792,13 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Methods for keyframing
         if(keyframe)
         {
-        h << endl;
-        h << "    // Keyframing methods" << endl;
-        h << "    virtual std::string               GetFieldName(int index) const;" << endl;
-        h << "    virtual AttributeGroup::FieldType GetFieldType(int index) const;" << endl;
-        h << "    virtual std::string               GetFieldTypeName(int index) const;" << endl;
-        h << "    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;" << endl;
-        h << endl;
+        h << Endl;
+        h << "    // Keyframing methods" << Endl;
+        h << "    virtual std::string               GetFieldName(int index) const;" << Endl;
+        h << "    virtual AttributeGroup::FieldType GetFieldType(int index) const;" << Endl;
+        h << "    virtual std::string               GetFieldTypeName(int index) const;" << Endl;
+        h << "    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;" << Endl;
+        h << Endl;
         }
 
         // Write user-defined methods
@@ -1811,13 +1811,13 @@ class AttsGeneratorAttribute : public GeneratorBase
             {
                 if (! wroteUserDefinedHeading)
                 {
-                    h << "    // User-defined methods" << endl;
+                    h << "    // User-defined methods" << Endl;
                     wroteUserDefinedHeading = true;
                 }
-                h << "    " << functions[i]->decl << endl;
+                h << "    " << functions[i]->decl << Endl;
             }
         }
-        h << endl;
+        h << Endl;
 
         // Write field IDs
         WriteHeaderFieldIDs(h);
@@ -1825,8 +1825,8 @@ class AttsGeneratorAttribute : public GeneratorBase
         // If there are any AttributeGroupVectors, we'll need this method.
         if (HaveAGVectors())
         {
-            h << "protected:" << endl;
-            h << "    AttributeGroup *CreateSubAttributeGroup(int index);" << endl;
+            h << "protected:" << Endl;
+            h << "    AttributeGroup *CreateSubAttributeGroup(int index);" << Endl;
         }
 
         totalWidth = CalculateTotalWidth(false);
@@ -1834,7 +1834,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write out all the public attributes.
         if(hasPublicFields)
         {
-            h << "public:" << endl;
+            h << "public:" << Endl;
             for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType != Field::AccessPublic)
@@ -1845,7 +1845,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write out all the protected attributes
         if(hasProtectedFields)
         {
-            h << "protected:" << endl;
+            h << "protected:" << Endl;
             for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType != Field::AccessProtected)
@@ -1856,7 +1856,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write out all the private attributes
         if(hasPrivateFields)
         {
-            h << "private:" << endl;
+            h << "private:" << Endl;
             for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType != Field::AccessPrivate)
@@ -1864,13 +1864,13 @@ class AttsGeneratorAttribute : public GeneratorBase
                 fields[i]->WriteHeaderAttribute(h, totalWidth);
             }
         }
-        h << endl;
+        h << Endl;
         if(!hasPrivateFields)
-            h << "private:" << endl;
-        h << "    // Static class format string for type map." << endl;
-        h << "    static const char *TypeMapFormatString;" << endl;
-        h << "};" << endl;
-        h << endl;
+            h << "private:" << Endl;
+        h << "    // Static class format string for type map." << Endl;
+        h << "    static const char *TypeMapFormatString;" << Endl;
+        h << "};" << Endl;
+        h << Endl;
 
         bool wroteUserDefinedFunctionsHeading = false;
         for (size_t i=0; i<functions.size(); i++)
@@ -1881,22 +1881,22 @@ class AttsGeneratorAttribute : public GeneratorBase
             {
                 if (! wroteUserDefinedFunctionsHeading)
                 {
-                    h << "// User-defined functions" << endl;
+                    h << "// User-defined functions" << Endl;
                     wroteUserDefinedFunctionsHeading = true;
                 }
-                h << functions[i]->decl << endl;
+                h << functions[i]->decl << Endl;
             }
         }
 
-        h << "#endif" << endl;
+        h << "#endif" << Endl;
     }
 
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
-    void WriteSource(ostream &c)
+    void WriteSource(QTextStream &c)
     {
-        c << copyright_str.c_str() << endl;
-        c << "#include <" << name << ".h>" << endl;
+        c << copyright_str << Endl;
+        c << "#include <" << name << ".h>" << Endl;
         WriteSourceIncludes(c);
 
         if (!constants.empty())
@@ -1904,10 +1904,10 @@ class AttsGeneratorAttribute : public GeneratorBase
             for (size_t i=0; i<constants.size(); i++)
             {
                 if (constants[i]->target == generatorName &&
-                    !constants[i]->def.simplifyWhiteSpace().isEmpty())
+                    !constants[i]->def.simplified().isEmpty())
                 {
                     c << constants[i]->def;
-                    c << endl;
+                    c << Endl;
                 }
             }
         }
@@ -1930,18 +1930,18 @@ class AttsGeneratorAttribute : public GeneratorBase
 
         if (persistent)
         {
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-            c << "// Persistence methods" << endl;
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-            c << endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+            c << "// Persistence methods" << Endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+            c << Endl;
             WriteSourceCreateNode(c);
             WriteSourceSetFromNode(c);
         }
 
         // Write out all the set methods
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-        c << "// Set property methods" << endl;
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+        c << "// Set property methods" << Endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << Endl << Endl;
         for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPublic)
@@ -1954,14 +1954,14 @@ class AttsGeneratorAttribute : public GeneratorBase
             else
             {
                 PrintFunction(c, "Set"+fields[i]->Name);
-                c << endl;
+                c << Endl;
             }
         }
 
         // Write out all the get methods
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-        c << "// Get property methods" << endl;
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+        c << "// Get property methods" << Endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << Endl << Endl;
         for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPublic)
@@ -1974,9 +1974,9 @@ class AttsGeneratorAttribute : public GeneratorBase
         if (SelectFunctionsNeeded())
         {
             // Write out all the select methods
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-            c << "// Select property methods" << endl;
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+            c << "// Select property methods" << Endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << Endl << Endl;
             for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType == Field::AccessPublic)
@@ -1987,9 +1987,9 @@ class AttsGeneratorAttribute : public GeneratorBase
 
         if (HaveAGVectors())
         {
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-            c << "// AttributeGroupVector convenience methods." << endl;
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+            c << "// AttributeGroupVector convenience methods." << Endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << Endl << Endl;
             for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType != Field::AccessPrivate)
@@ -2007,22 +2007,22 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write out all the keyframe methods
         if(keyframe)
         {
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-            c << "// Keyframing methods" << endl;
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+            c << "// Keyframing methods" << Endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << Endl << Endl;
             WriteSourceKeyframeFunctions(c);
         }
 
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-        c << "// User-defined methods." << endl;
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+        c << "// User-defined methods." << Endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << Endl << Endl;
         for (size_t i=0; i<functions.size(); i++)
         {
             if (functions[i]->user &&
                 functions[i]->target == generatorName)
             {
                 c << functions[i]->def;
-                c << endl;
+                c << Endl;
             }
         }
 
@@ -2033,38 +2033,38 @@ class AttsGeneratorAttribute : public GeneratorBase
             {
                 if (!functions[i]->usedThisFunction)
                 {
-                    cerr << "\n\n!!! WARNING !!!\n\n";
-                    cerr << "You declared the function \"" << functions[i]->name
+                    cErr << "\n\n!!! WARNING !!!\n\n";
+                    cErr << "You declared the function \"" << functions[i]->name
                          << "\" as replacing a builtin.  But the xml2atts\n"
                          << "program could not find a builtin to replace it "
                          << "with.  It is being ignored.\n\n"
                          << "You might want to declare it as a \"New Function"
-                         << "\" instead.\n\n" << endl;
+                         << "\" instead.\n\n" << Endl;
                 }
             }
         }
     }
 private:
-    void WriteHeaderSystemIncludes(ostream &h)
+    void WriteHeaderSystemIncludes(QTextStream &h)
     {
         UniqueStringList sysincludes;
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->AddSystemIncludes(sysincludes);
         sysincludes.Write(h);
     }
-    void WriteHeaderAttributeIncludes(ostream &h)
+    void WriteHeaderAttributeIncludes(QTextStream &h)
     {
         UniqueStringList attsincludes;
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->AddAttributeIncludes(attsincludes);
         attsincludes.Write(h);
     }
-    void WriteHeaderForwardDeclarations(ostream &h)
+    void WriteHeaderForwardDeclarations(QTextStream &h)
     {
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->WriteHeaderForwardDeclarations(h);
     }
-    void WriteHeaderSelectFunctions(ostream &h)
+    void WriteHeaderSelectFunctions(QTextStream &h)
     {
         for (size_t i=0; i<fields.size(); i++)
         {
@@ -2072,12 +2072,12 @@ private:
             fields[i]->WriteHeaderSelectFunction(h);
         }
     }
-    void WriteHeaderFieldIDs(ostream &h)
+    void WriteHeaderFieldIDs(QTextStream &h)
     {
         if(fields.size() > 0)
         {
-            h << "    // IDs that can be used to identify fields in case statements" << endl;
-            h << "    enum {" << endl;
+            h << "    // IDs that can be used to identify fields in case statements" << Endl;
+            h << "    enum {" << Endl;
         }
         for (size_t i=0; i<fields.size(); i++)
         {
@@ -2086,27 +2086,27 @@ private:
                 h << " = 0";
             if(i < fields.size()-1)
                 h << ",";
-            h << endl;
+            h << Endl;
         }
         if(fields.size() > 0)
         {
-            h << "    };" << endl;
-            h << endl;
+            h << "    };" << Endl;
+            h << Endl;
         }
     }
-    void WriteHeaderEnumConversions(ostream &h)
+    void WriteHeaderEnumConversions(QTextStream &h)
     {
         // Write the enums functions
         if(EnumType::enums.size() > 0)
         {
-            h << "    // Enum conversion functions" << endl;
+            h << "    // Enum conversion functions" << Endl;
             for (size_t i = 0; i < EnumType::enums.size(); ++i)
             {
-                h << "    static std::string "<<EnumType::enums[i]->type<<"_ToString("<<EnumType::enums[i]->type<<");" << endl;
-                h << "    static bool "<<EnumType::enums[i]->type<<"_FromString(const std::string &, " << EnumType::enums[i]->type<<" &);" << endl;
-                h << "protected:" << endl;
-                h << "    static std::string "<<EnumType::enums[i]->type<<"_ToString(int);" << endl;
-                h << "public:" << endl;
+                h << "    static std::string "<<EnumType::enums[i]->type<<"_ToString("<<EnumType::enums[i]->type<<");" << Endl;
+                h << "    static bool "<<EnumType::enums[i]->type<<"_FromString(const std::string &, " << EnumType::enums[i]->type<<" &);" << Endl;
+                h << "protected:" << Endl;
+                h << "    static std::string "<<EnumType::enums[i]->type<<"_ToString(int);" << Endl;
+                h << "public:" << Endl;
             }
         }
     }
@@ -2194,9 +2194,9 @@ private:
         return false;
     }
 
-    void WriteSourceIncludes(ostream &c)
+    void WriteSourceIncludes(QTextStream &c)
     {
-        c << "#include <DataNode.h>" << endl;
+        c << "#include <DataNode.h>" << Endl;
 
         // write user source includes
         for (size_t i=0; i<includes.size(); i++)
@@ -2205,9 +2205,9 @@ private:
                 includes[i]->target == generatorName)
             {
                 if (includes[i]->quoted == true)
-                    c << "#include \"" << includes[i]->include << "\"" << endl;
+                    c << "#include \"" << includes[i]->include << "\"" << Endl;
                 else
-                    c << "#include <"  << includes[i]->include << ">"  << endl;
+                    c << "#include <"  << includes[i]->include << ">"  << Endl;
             }
         }
 
@@ -2216,18 +2216,18 @@ private:
             fields[i]->WriteSourceIncludes(c);
         }
 
-        c << endl;
+        c << Endl;
     }
 
-    void WriteSourceConstructor(ostream &c)
+    void WriteSourceConstructor(QTextStream &c)
     {
         // Write the typemap format string.
         QString formatString;
         for (size_t i=0; i<fields.size(); i++)
             formatString += fields[i]->GetAttributeGroupID();
-        c << "// Type map format string" << endl;
+        c << "// Type map format string" << Endl;
         c << "const char *" << name << "::TypeMapFormatString = \"" << formatString << "\";";
-        c << endl << endl;
+        c << Endl << Endl;
 
         // Write the method comment.
         QString purposeString("Constructor for the ");
@@ -2246,33 +2246,33 @@ private:
         // Write the initializers.
         if(nInitializers > 0)
         {
-            bool endLine;
-            c << "," << endl << "    ";
+            bool Endline;
+            c << "," << Endl << "    ";
             for(size_t i = 0, j = 0; i < fields.size(); ++i)
             {
                 if(fields[i]->RequiresSourceInitializer())
                 {
-                    endLine = false;
+                    Endline = false;
                     fields[i]->WriteSourceInitializer(c);
                     if(j < nInitializers - 1)
                         c << ", ";
                     if(((j + 1) % 2) == 0)
                     {
-                        c << endl;
-                        endLine = true;
+                        c << Endl;
+                        Endline = true;
                     }
-                    if(endLine && (j < nInitializers - 1))
+                    if(Endline && (j < nInitializers - 1))
                         c << "    ";
                     ++j;
                 }
             }
-            if(!endLine)
-                c << endl;
+            if(!Endline)
+                c << Endl;
         }
         else
-            c << endl;
+            c << Endl;
 
-        c << "{" << endl;
+        c << "{" << Endl;
         for (size_t i=0; i<fields.size(); i++)
         {
             if (!fields[i]->PrintInit(c, generatorName) &&
@@ -2281,15 +2281,15 @@ private:
                 fields[i]->WriteSourceSetDefault(c);
             }
         }
-        c << "}" << endl << endl;
+        c << "}" << Endl << Endl;
     }
 
-    void WriteSourceCopyCode(ostream &c)
+    void WriteSourceCopyCode(QTextStream &c)
     {
         bool skipLine = false;
         if (HaveAGVectors())
         {
-            c << "    AttributeGroupVector::const_iterator pos;" << endl;
+            c << "    AttributeGroupVector::const_iterator pos;" << Endl;
             skipLine = true;
         }
         if (HaveArraysThatNeedIndexVar())
@@ -2297,15 +2297,15 @@ private:
             skipLine = true;
         }
         if(skipLine)
-            c << endl;
+            c << Endl;
         for (size_t i=0; i<fields.size(); i++)
         {
             fields[i]->WriteSourceCopyCode(c);
         }
-        c << endl << "    SelectAll();" << endl;
+        c << Endl << "    SelectAll();" << Endl;
     }
 
-    void WriteSourceCopyConstructor(ostream &c)
+    void WriteSourceCopyConstructor(QTextStream &c)
     {
         QString purposeString("Copy constructor for the ");
         purposeString += (name + " class.");
@@ -2313,13 +2313,13 @@ private:
 
         c << name << "::" << name << "(const "
           << name << " &obj) : \n    AttributeSubject(" << name
-          << "::TypeMapFormatString)" << endl;
+          << "::TypeMapFormatString)" << Endl;
 
-        c << "{" << endl;
+        c << "{" << Endl;
         WriteSourceCopyCode(c);
-        c << "}" << endl << endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceDestructor(ostream &c)
+    void WriteSourceDestructor(QTextStream &c)
     {
         // Write the method comment.
         QString purposeString("Destructor for the ");
@@ -2329,27 +2329,27 @@ private:
         WriteMethodComment(c, name, methodName, purposeString);
 
         // See if there are any AG vectors.
-        c << name << "::~" << name << "()" << endl;
-        c << "{" << endl;
+        c << name << "::~" << name << "()" << Endl;
+        c << "{" << Endl;
         if (/*!HaveAGArrays() && */!HaveAGVectors())
-            c << "    // nothing here" << endl;
+            c << "    // nothing here" << Endl;
         else 
         {
             if (HaveAGVectors())
-                c << "    AttributeGroupVector::iterator pos;" << endl;
-            c << endl;
+                c << "    AttributeGroupVector::iterator pos;" << Endl;
+            c << Endl;
 
             for (size_t i=0; i<fields.size(); i++)
                 fields[i]->WriteSourceDestructor(c);
         }
-        c << "}" << endl << endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceAssignmentOperator(ostream &c)
+    void WriteSourceAssignmentOperator(QTextStream &c)
     {
         if (HasFunction("operator ="))
         {
             PrintFunction(c, "operator =");
-            c << endl;
+            c << Endl;
             return;
         }
         // Write the method comment.
@@ -2358,16 +2358,16 @@ private:
         QString methodName("operator = ");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << name << "& " << endl;
+        c << name << "& " << Endl;
         c << name << "::operator = (const "
-          << name << " &obj)" << endl;
-        c << "{" << endl;
-        c << "    if (this == &obj) return *this;" << endl;
+          << name << " &obj)" << Endl;
+        c << "{" << Endl;
+        c << "    if (this == &obj) return *this;" << Endl;
         WriteSourceCopyCode(c);
-        c << "    return *this;" << endl;
-        c << "}" << endl << endl;
+        c << "    return *this;" << Endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceTypeName(ostream &c)
+    void WriteSourceTypeName(QTextStream &c)
     {
         // Write the method comment.
         QString purposeString("Type name method for the ");
@@ -2375,18 +2375,18 @@ private:
         QString methodName("TypeName");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << "const std::string" << endl;
-        c << name << "::TypeName() const" << endl;
-        c << "{" << endl;
-        c << "    return \"" << name << "\";" << endl;
-        c << "}" << endl << endl;
+        c << "const std::string" << Endl;
+        c << name << "::TypeName() const" << Endl;
+        c << "{" << Endl;
+        c << "    return \"" << name << "\";" << Endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceCopyAttributes(ostream &c)
+    void WriteSourceCopyAttributes(QTextStream &c)
     {
         if (HasFunction("CopyAttributes"))
         {
             PrintFunction(c, "CopyAttributes");
-            c << endl;
+            c << Endl;
             return;
         }
 
@@ -2396,25 +2396,25 @@ private:
         QString methodName("CopyAttributes");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << "bool" << endl;
-        c << name << "::CopyAttributes(const AttributeGroup *atts)" << endl;
-        c << "{" << endl;
-        c << "    if(TypeName() != atts->TypeName())" << endl;
-        c << "        return false;" << endl;
-        c << endl;
-        c << "    // Call assignment operator." << endl;
-        c << "    const " << name << " *tmp = (const " << name << " *)atts;" << endl;
-        c << "    *this = *tmp;" << endl;
-        c << endl;
-        c << "    return true;" << endl;
-        c << "}" << endl << endl;
+        c << "bool" << Endl;
+        c << name << "::CopyAttributes(const AttributeGroup *atts)" << Endl;
+        c << "{" << Endl;
+        c << "    if(TypeName() != atts->TypeName())" << Endl;
+        c << "        return false;" << Endl;
+        c << Endl;
+        c << "    // Call assignment operator." << Endl;
+        c << "    const " << name << " *tmp = (const " << name << " *)atts;" << Endl;
+        c << "    *this = *tmp;" << Endl;
+        c << Endl;
+        c << "    return true;" << Endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceNewInstance(ostream &c)
+    void WriteSourceNewInstance(QTextStream &c)
     {
         if (HasFunction("NewInstance"))
         {
             PrintFunction(c, "NewInstance");
-            c << endl;
+            c << Endl;
             return;
         }
 
@@ -2424,24 +2424,24 @@ private:
         QString methodName("NewInstance");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << "AttributeSubject *" << endl;
-        c << name << "::NewInstance(bool copy) const" << endl;
-        c << "{" << endl;
-        c << "    AttributeSubject *retval = 0;" << endl;
-        c << "    if(copy)" << endl;
-        c << "        retval = new " << name << "(*this);" << endl;
-        c << "    else" << endl;
-        c << "        retval = new " << name << ";" << endl;
-        c << endl;
-        c << "    return retval;" << endl;
-        c << "}" << endl << endl;
+        c << "AttributeSubject *" << Endl;
+        c << name << "::NewInstance(bool copy) const" << Endl;
+        c << "{" << Endl;
+        c << "    AttributeSubject *retval = 0;" << Endl;
+        c << "    if(copy)" << Endl;
+        c << "        retval = new " << name << "(*this);" << Endl;
+        c << "    else" << Endl;
+        c << "        retval = new " << name << ";" << Endl;
+        c << Endl;
+        c << "    return retval;" << Endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceCreateCompatible(ostream &c)
+    void WriteSourceCreateCompatible(QTextStream &c)
     {
         if (HasFunction("CreateCompatible"))
         {
             PrintFunction(c, "CreateCompatible");
-            c << endl;
+            c << Endl;
             return;
         }
 
@@ -2451,28 +2451,28 @@ private:
         QString methodName("CreateCompatible");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << "AttributeSubject *" << endl;
-        c << name << "::CreateCompatible(const std::string &tname) const" << endl;
-        c << "{" << endl;
-        c << "    AttributeSubject *retval = 0;" << endl;
-        c << "    if(TypeName() == tname)" << endl;
-        c << "        retval = new " << name << "(*this);" << endl;
-        c << "    // Other cases could go here too. " << endl;
-        c << endl;
-        c << "    return retval;" << endl;
-        c << "}" << endl << endl;
+        c << "AttributeSubject *" << Endl;
+        c << name << "::CreateCompatible(const std::string &tname) const" << Endl;
+        c << "{" << Endl;
+        c << "    AttributeSubject *retval = 0;" << Endl;
+        c << "    if(TypeName() == tname)" << Endl;
+        c << "        retval = new " << name << "(*this);" << Endl;
+        c << "    // Other cases could go here too. " << Endl;
+        c << Endl;
+        c << "    return retval;" << Endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceComparisonOperators(ostream &c)
+    void WriteSourceComparisonOperators(QTextStream &c)
     {
         QString purposeString("Comparison operator == for the ");
         purposeString += (name + " class.");
         QString methodName("operator == ");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << "bool" << endl;
+        c << "bool" << Endl;
         c << name << "::operator == (const "
-          << name << " &obj) const" << endl;
-        c << "{" << endl;
+          << name << " &obj) const" << Endl;
+        c << "{" << Endl;
 
         // Create bool values to evaluate the arrays.
         QString prevValue("true");
@@ -2482,7 +2482,7 @@ private:
                 fields[i]->WriteSourceComparisonPrecalc(c, "    ");
         }
 
-        c << "    // Create the return value" << endl;
+        c << "    // Create the return value" << Endl;
         c << "    return (";
 
         // Create a big boolean return statement.
@@ -2503,12 +2503,12 @@ private:
                     c << "true /* can ignore " << fields[i]->name << " */";
 
                 if (i < fields.size() - 1)
-                    c << " &&" << endl;
+                    c << " &&" << Endl;
             }
         }
-        c << ");" << endl;
+        c << ");" << Endl;
 
-        c << "}" << endl << endl;
+        c << "}" << Endl << Endl;
 
         // Write the != operator
         purposeString = "Comparison operator != for the ";
@@ -2516,12 +2516,12 @@ private:
         methodName = "operator != ";
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << "bool" << endl;
+        c << "bool" << Endl;
         c << name << "::operator != (const "
-          << name << " &obj) const" << endl;
-        c << "{" << endl;
-        c << "    return !(this->operator == (obj));" << endl;
-        c << "}" << endl << endl;
+          << name << " &obj) const" << Endl;
+        c << "{" << Endl;
+        c << "    return !(this->operator == (obj));" << Endl;
+        c << "}" << Endl << Endl;
     }
     int MaxFieldLength() const
     {
@@ -2540,16 +2540,16 @@ private:
             ret += QString(" ");
         return ret;
     }
-    void WriteSourceSelectAll(ostream &c)
+    void WriteSourceSelectAll(QTextStream &c)
     {
         // Write the method comment.
         QString purposeString("Selects all attributes.");
         QString methodName("SelectAll");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << "void" << endl;
-        c << name << "::SelectAll()" << endl;
-        c << "{" << endl;
+        c << "void" << Endl;
+        c << name << "::SelectAll()" << Endl;
+        c << "{" << Endl;
         int maxlen = MaxFieldLength() + 2;
         for (size_t i=0; i<fields.size(); i++)
         {
@@ -2564,12 +2564,12 @@ private:
                 c << "    Select(" << fieldID << "(void *)&"
                   << fields[i]->name << ");";
             }
-            c << endl;
+            c << Endl;
         }
 
-        c << "}" << endl << endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceSubAttributeGroup(ostream &c)
+    void WriteSourceSubAttributeGroup(QTextStream &c)
     {
         // See if there are any AG vectors.
         int AG_dynamic_count = 0;
@@ -2582,13 +2582,13 @@ private:
             return;
 
         WriteMethodComment(c, name, "CreateSubAttributeGroup", purpose);
-        c << "AttributeGroup *" << endl;
+        c << "AttributeGroup *" << Endl;
         c << name << "::CreateSubAttributeGroup(int";
 
         if(AG_dynamic_count == 1)
         {
-            c << ")" << endl;
-            c << "{" << endl;
+            c << ")" << Endl;
+            c << "{" << Endl;
 
             for (size_t i=0; i<fields.size(); i++)
             {
@@ -2597,22 +2597,22 @@ private:
         }
         else
         {
-            c << " attr_id)" << endl;
-            c << "{" << endl;
+            c << " attr_id)" << Endl;
+            c << "{" << Endl;
 
-            c << "    AttributeGroup *retval = 0;" << endl;
-            c << "    switch(attr_id)" << endl;
-            c << "    {" << endl;
+            c << "    AttributeGroup *retval = 0;" << Endl;
+            c << "    switch(attr_id)" << Endl;
+            c << "    {" << Endl;
             for (size_t i=0; i<fields.size(); i++)
             {
                 fields[i]->WriteSourceSubAttributeGroup(c);
             }
-            c << "    }" << endl;
-            c << endl << "    return retval;" << endl;
+            c << "    }" << Endl;
+            c << Endl << "    return retval;" << Endl;
         }
-        c << "}" << endl << endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceCreateNode(ostream &c)
+    void WriteSourceCreateNode(QTextStream &c)
     {
         if (HasFunction("CreateNode"))
         {
@@ -2622,30 +2622,30 @@ private:
         WriteMethodComment(c, name, "CreateNode",
                            "This method creates a DataNode representation of the object so it can be saved to a config file.");
 
-        c << "bool" << endl;
-        c << name << "::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)" << endl;
-        c << "{" << endl;
-        c << "    if(parentNode == 0)" << endl;
-        c << "        return false;" << endl << endl;
-        c << "    " << name << " defaultObject;" << endl;
-        c << "    bool addToParent = false;" << endl;
-        c << "    // Create a node for " << name << "." << endl;
-        c << "    DataNode *node = new DataNode(\"" << name << "\");" << endl << endl;
+        c << "bool" << Endl;
+        c << name << "::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)" << Endl;
+        c << "{" << Endl;
+        c << "    if(parentNode == 0)" << Endl;
+        c << "        return false;" << Endl << Endl;
+        c << "    " << name << " defaultObject;" << Endl;
+        c << "    bool addToParent = false;" << Endl;
+        c << "    // Create a node for " << name << "." << Endl;
+        c << "    DataNode *node = new DataNode(\"" << name << "\");" << Endl << Endl;
 
         // Write out the DataNode creation for all attributes.
         for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPublic)
             {
-                c << "    // " << fields[i]->name << " is public and should not be saved." << endl;
+                c << "    // " << fields[i]->name << " is public and should not be saved." << Endl;
                 continue;
             }
 
             QString forceAdd("false"); 
             if(fields[i]->type != "color")
             {
-                c << "    if(completeSave || !FieldsEqual(" << fields[i]->FieldID() << ", &defaultObject))" << endl;
-                c << "    {" << endl;
+                c << "    if(completeSave || !FieldsEqual(" << fields[i]->FieldID() << ", &defaultObject))" << Endl;
+                c << "    {" << Endl;
             }
             else
                 forceAdd = "true";
@@ -2654,63 +2654,63 @@ private:
             {
                 QString nodeName = fields[i]->name + "Node";
                 c << "        DataNode *" << nodeName << " = new DataNode(\""
-                  << fields[i]->name << "\");" << endl;
+                  << fields[i]->name << "\");" << Endl;
                 c << "        if(" << fields[i]->name << ".CreateNode("
-                  << nodeName << ", completeSave, " << forceAdd << "))" << endl;
-                c << "        {" << endl;
-                c << "            addToParent = true;" << endl;
-                c << "            node->AddNode(" << nodeName << ");" << endl;
-                c << "        }" << endl;
-                c << "        else" << endl;
-                c << "            delete " << nodeName << ";" << endl;
+                  << nodeName << ", completeSave, " << forceAdd << "))" << Endl;
+                c << "        {" << Endl;
+                c << "            addToParent = true;" << Endl;
+                c << "            node->AddNode(" << nodeName << ");" << Endl;
+                c << "        }" << Endl;
+                c << "        else" << Endl;
+                c << "            delete " << nodeName << ";" << Endl;
             }
             else if(fields[i]->type == "attArray")
             {
-                c << "        addToParent = true;" << endl;
-                c << "        for(int i = 0; i < " << fields[i]->length << "; ++i)" << endl;
-                c << "            " << fields[i]->name << "[i]->CreateNode(node, completeSave. true);" << endl;
+                c << "        addToParent = true;" << Endl;
+                c << "        for(int i = 0; i < " << fields[i]->length << "; ++i)" << Endl;
+                c << "            " << fields[i]->name << "[i]->CreateNode(node, completeSave. true);" << Endl;
             }
             else if(fields[i]->type == "attVector")
             {
-                c << "        addToParent = true;" << endl;
-                c << "        for(size_t i = 0; i < " << fields[i]->name << ".size(); ++i)" << endl;
-                c << "            " << fields[i]->name << "[i]->CreateNode(node, completeSave, true);" << endl;
+                c << "        addToParent = true;" << Endl;
+                c << "        for(size_t i = 0; i < " << fields[i]->name << ".size(); ++i)" << Endl;
+                c << "            " << fields[i]->name << "[i]->CreateNode(node, completeSave, true);" << Endl;
             }
             else if (fields[i]->isArray)
             {
-                c << "        addToParent = true;" << endl;
+                c << "        addToParent = true;" << Endl;
                 c << "        node->AddNode(new DataNode(\"" << fields[i]->name
-                  << "\", " << fields[i]->name << ", " << fields[i]->length << "));" << endl;
+                  << "\", " << fields[i]->name << ", " << fields[i]->length << "));" << Endl;
             }
             else if (fields[i]->type == "enum")
             {
-                c << "        addToParent = true;" << endl;
+                c << "        addToParent = true;" << Endl;
                 c << "        node->AddNode(new DataNode(\"" << fields[i]->name
                   << "\", " << fields[i]->GetCPPName(true) << "_ToString("
-                  << fields[i]->name << ")));" << endl;
+                  << fields[i]->name << ")));" << Endl;
             }
             else
             {
-                c << "        addToParent = true;" << endl;
+                c << "        addToParent = true;" << Endl;
                 c << "        node->AddNode(new DataNode(\"" << fields[i]->name
-                  << "\", " << fields[i]->name << "));" << endl;
+                  << "\", " << fields[i]->name << "));" << Endl;
             }
 
             if(fields[i]->type != "color")
-                c << "    }" << endl << endl;
+                c << "    }" << Endl << Endl;
         }
 
-        c << endl;
-        c << "    // Add the node to the parent node." << endl;
-        c << "    if(addToParent || forceAdd)" << endl;
-        c << "        parentNode->AddNode(node);" << endl;
-        c << "    else" << endl;
-        c << "        delete node;" << endl << endl;
-        c << "    return (addToParent || forceAdd);" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << Endl;
+        c << "    // Add the node to the parent node." << Endl;
+        c << "    if(addToParent || forceAdd)" << Endl;
+        c << "        parentNode->AddNode(node);" << Endl;
+        c << "    else" << Endl;
+        c << "        delete node;" << Endl << Endl;
+        c << "    return (addToParent || forceAdd);" << Endl;
+        c << "}" << Endl;
+        c << Endl;
     }
-    void WriteSourceSetFromNode(ostream &c)
+    void WriteSourceSetFromNode(QTextStream &c)
     {
         QString mName("SetFromNode");
 
@@ -2722,30 +2722,30 @@ private:
         WriteMethodComment(c, name, mName,
             "This method sets attributes in this object from values in a DataNode representation of the object.");
 
-        c << "void" << endl;
-        c << name << "::SetFromNode(DataNode *parentNode)" << endl;
-        c << "{" << endl;
-        c << "    if(parentNode == 0)" << endl;
-        c << "        return;" << endl << endl;
-        c << "    DataNode *searchNode = parentNode->GetNode(\"" << name << "\");" << endl;
-        c << "    if(searchNode == 0)" << endl;
-        c << "        return;" << endl;
-        c << endl;
-        c << "    DataNode *node;" << endl;
+        c << "void" << Endl;
+        c << name << "::SetFromNode(DataNode *parentNode)" << Endl;
+        c << "{" << Endl;
+        c << "    if(parentNode == 0)" << Endl;
+        c << "        return;" << Endl << Endl;
+        c << "    DataNode *searchNode = parentNode->GetNode(\"" << name << "\");" << Endl;
+        c << "    if(searchNode == 0)" << Endl;
+        c << "        return;" << Endl;
+        c << Endl;
+        c << "    DataNode *node;" << Endl;
         if (HaveAGVectors())
-            c << "    DataNode **children;" << endl;
+            c << "    DataNode **children;" << Endl;
         
         if(HasCode(mName, 0))
         {
             PrintCode(c, mName, 0);
-            c << endl;
+            c << Endl;
         }
 
         for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPublic)
             {
-                c << "    // " << fields[i]->name << " is public and was not saved." << endl;
+                c << "    // " << fields[i]->name << " is public and was not saved." << Endl;
                 continue;
             }
 
@@ -2755,149 +2755,149 @@ private:
         if(HasCode(mName, 1))
         {
             PrintCode(c, mName, 1);
-            c << endl;
+            c << Endl;
         }
 
-        c << "}" << endl << endl;
+        c << "}" << Endl << Endl;
     }
-    void WriteSourceKeyframeFunctions(ostream &c)
+    void WriteSourceKeyframeFunctions(QTextStream &c)
     {
         WriteMethodComment(c, name, "GetFieldName",
             "This method returns the name of a field given its index.");
 
         int maxlen = MaxFieldLength() + 1;
 
-        c << "std::string" << endl;
-        c << name << "::GetFieldName(int index) const" << endl;
-        c << "{" << endl;
-        c << "    switch (index)" << endl;
-        c << "    {" << endl;
+        c << "std::string" << Endl;
+        c << name << "::GetFieldName(int index) const" << Endl;
+        c << "{" << Endl;
+        c << "    switch (index)" << Endl;
+        c << "    {" << Endl;
         for (size_t i=0; i<fields.size(); i++)
         {
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
-            c << "    case "<<fieldID<<" return \""<<fields[i]->name<<"\";" << endl;
+            c << "    case "<<fieldID<<" return \""<<fields[i]->name<<"\";" << Endl;
         }
-        c << "    default:  return \"invalid index\";" << endl;
-        c << "    }" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "    default:  return \"invalid index\";" << Endl;
+        c << "    }" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
         WriteMethodComment(c, name, "GetFieldType",
             "This method returns the type of a field given its index.");
 
-        c << "AttributeGroup::FieldType" << endl;
-        c << name << "::GetFieldType(int index) const" << endl;
-        c << "{" << endl;
-        c << "    switch (index)" << endl;
-        c << "    {" << endl;
+        c << "AttributeGroup::FieldType" << Endl;
+        c << name << "::GetFieldType(int index) const" << Endl;
+        c << "{" << Endl;
+        c << "    switch (index)" << Endl;
+        c << "    {" << Endl;
         for (size_t i=0; i<fields.size(); i++)
         {
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
-            c << "    case "<<fieldID<<" return FieldType_"<<fields[i]->GetFieldType()<<";" << endl;
+            c << "    case "<<fieldID<<" return FieldType_"<<fields[i]->GetFieldType()<<";" << Endl;
         }
-        c << "    default:  return FieldType_unknown;" << endl;
-        c << "    }" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "    default:  return FieldType_unknown;" << Endl;
+        c << "    }" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
         WriteMethodComment(c, name, "GetFieldTypeName",
             "This method returns the name of a field type given its index.");
 
-        c << "std::string" << endl;
-        c << name << "::GetFieldTypeName(int index) const" << endl;
-        c << "{" << endl;
-        c << "    switch (index)" << endl;
-        c << "    {" << endl;
+        c << "std::string" << Endl;
+        c << name << "::GetFieldTypeName(int index) const" << Endl;
+        c << "{" << Endl;
+        c << "    switch (index)" << Endl;
+        c << "    {" << Endl;
         for (size_t i=0; i<fields.size(); i++)
         {
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
-            c << "    case "<<fieldID<<" return \""<<fields[i]->type<<"\";" << endl;
+            c << "    case "<<fieldID<<" return \""<<fields[i]->type<<"\";" << Endl;
         }
-        c << "    default:  return \"invalid index\";" << endl;
-        c << "    }" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "    default:  return \"invalid index\";" << Endl;
+        c << "    }" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
         WriteMethodComment(c, name, "FieldsEqual",
             "This method compares two fields and return true if they are equal.");
 
-        c << "bool" << endl;
-        c << name << "::FieldsEqual(int index_, const AttributeGroup *rhs) const" << endl;
-        c << "{" << endl;
+        c << "bool" << Endl;
+        c << name << "::FieldsEqual(int index_, const AttributeGroup *rhs) const" << Endl;
+        c << "{" << Endl;
 
-        c << "    const "<<name<<" &obj = *((const "<<name<<"*)rhs);" << endl;
+        c << "    const "<<name<<" &obj = *((const "<<name<<"*)rhs);" << Endl;
 
         // Create bool values to evaluate the arrays.
-        c << "    bool retval = false;" << endl;
-        c << "    switch (index_)" << endl;
-        c << "    {" << endl;
+        c << "    bool retval = false;" << Endl;
+        c << "    switch (index_)" << Endl;
+        c << "    {" << Endl;
 
         // Create a big boolean return statement.
         for (size_t i=0; i<fields.size(); i++)
         {
-            c << "    case "<<fields[i]->FieldID()<<":" << endl;
-            c << "        {  // new scope" << endl;
+            c << "    case "<<fields[i]->FieldID()<<":" << Endl;
+            c << "        {  // new scope" << Endl;
             fields[i]->WriteSourceComparisonPrecalc(c, "        ");
             c << "        retval = ";
             fields[i]->WriteSourceComparison(c);
-            c << ";" << endl << "        }" << endl;
-            c << "        break;" << endl;
+            c << ";" << Endl << "        }" << Endl;
+            c << "        break;" << Endl;
         }
-        c << "    default: retval = false;" << endl;
-        c << "    }" << endl << endl;
-        c << "    return retval;" << endl;
-        c << "}" << endl << endl;
+        c << "    default: retval = false;" << Endl;
+        c << "    }" << Endl << Endl;
+        c << "    return retval;" << Endl;
+        c << "}" << Endl << Endl;
     }
 
-    void WriteSourceEnumConversions(ostream &c)
+    void WriteSourceEnumConversions(QTextStream &c)
     {
         for(size_t i = 0; i < EnumType::enums.size(); ++i)
         {
-            c << "//" << endl;
-            c << "// Enum conversion methods for "<<name << "::" << EnumType::enums[i]->type << endl;
-            c << "//" << endl;
-            c << endl;
-            c << "static const char *" << EnumType::enums[i]->type << "_strings[] = {" << endl;
+            c << "//" << Endl;
+            c << "// Enum conversion methods for "<<name << "::" << EnumType::enums[i]->type << Endl;
+            c << "//" << Endl;
+            c << Endl;
+            c << "static const char *" << EnumType::enums[i]->type << "_strings[] = {" << Endl;
             for(size_t j = 0; j < EnumType::enums[i]->values.size(); ++j)
             {
                 c << "\"" << EnumType::enums[i]->values[j] << "\"";
                 if(j < EnumType::enums[i]->values.size() - 1)
                     c << ", ";
                 if(((j+1) % 3) == 0)
-                    c << endl;
+                    c << Endl;
             }
-            c << "};" << endl << endl;
+            c << "};" << Endl << Endl;
 
-            c << "std::string"<< endl;
-            c << name << "::" << EnumType::enums[i]->type<<"_ToString("<<name<<"::"<<EnumType::enums[i]->type<<" t)" << endl;
-            c << "{" << endl;
-            c << "    int index = int(t);" << endl;
-            c << "    if(index < 0 || index >= " << EnumType::enums[i]->values.size() << ") index = 0;" << endl;
-            c << "    return " << EnumType::enums[i]->type << "_strings[index];" << endl;
-            c << "}" << endl << endl;
+            c << "std::string"<< Endl;
+            c << name << "::" << EnumType::enums[i]->type<<"_ToString("<<name<<"::"<<EnumType::enums[i]->type<<" t)" << Endl;
+            c << "{" << Endl;
+            c << "    int index = int(t);" << Endl;
+            c << "    if(index < 0 || index >= " << EnumType::enums[i]->values.size() << ") index = 0;" << Endl;
+            c << "    return " << EnumType::enums[i]->type << "_strings[index];" << Endl;
+            c << "}" << Endl << Endl;
 
-            c << "std::string"<< endl;
-            c << name << "::" << EnumType::enums[i]->type<<"_ToString(int t)" << endl;
-            c << "{" << endl;
-            c << "    int index = (t < 0 || t >= " << EnumType::enums[i]->values.size() << ") ? 0 : t;" << endl;
-            c << "    return " << EnumType::enums[i]->type << "_strings[index];" << endl;
-            c << "}" << endl << endl;
+            c << "std::string"<< Endl;
+            c << name << "::" << EnumType::enums[i]->type<<"_ToString(int t)" << Endl;
+            c << "{" << Endl;
+            c << "    int index = (t < 0 || t >= " << EnumType::enums[i]->values.size() << ") ? 0 : t;" << Endl;
+            c << "    return " << EnumType::enums[i]->type << "_strings[index];" << Endl;
+            c << "}" << Endl << Endl;
 
-            c << "bool" << endl;
-            c << name << "::"<< EnumType::enums[i]->type<<"_FromString(const std::string &s, "<<name<<"::"<<EnumType::enums[i]->type<<" &val)" << endl;
-            c << "{" << endl;
+            c << "bool" << Endl;
+            c << name << "::"<< EnumType::enums[i]->type<<"_FromString(const std::string &s, "<<name<<"::"<<EnumType::enums[i]->type<<" &val)" << Endl;
+            c << "{" << Endl;
             if(EnumType::enums[i]->values.size() > 0)
-                c << "    val = " << name << "::" << EnumType::enums[i]->values[0] << ";" << endl;
-            c << "    for(int i = 0; i < "<<EnumType::enums[i]->values.size()<<"; ++i)" << endl;
-            c << "    {" << endl;
-            c << "        if(s == "<< EnumType::enums[i]->type<<"_strings[i])" << endl;
-            c << "        {" << endl;
-            c << "            val = ("<< EnumType::enums[i]->type<<")i;" << endl;
-            c << "            return true;" << endl;
-            c << "        }" << endl;
-            c << "    }" << endl;
-            c << "    return false;" << endl;
-            c << "}" << endl << endl;
+                c << "    val = " << name << "::" << EnumType::enums[i]->values[0] << ";" << Endl;
+            c << "    for(int i = 0; i < "<<EnumType::enums[i]->values.size()<<"; ++i)" << Endl;
+            c << "    {" << Endl;
+            c << "        if(s == "<< EnumType::enums[i]->type<<"_strings[i])" << Endl;
+            c << "        {" << Endl;
+            c << "            val = ("<< EnumType::enums[i]->type<<")i;" << Endl;
+            c << "            return true;" << Endl;
+            c << "        }" << Endl;
+            c << "    }" << Endl;
+            c << "    return false;" << Endl;
+            c << "}" << Endl << Endl;
         }
     }
 };
@@ -2922,9 +2922,9 @@ class AttsGeneratorPlugin : public PluginBase
     {
     }
 
-    void Print(ostream &out)
+    void Print(QTextStream &out)
     {
-        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
+        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< Endl;
         if (atts)
             atts->Print(out);
     }

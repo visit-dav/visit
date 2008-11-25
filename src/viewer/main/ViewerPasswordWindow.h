@@ -39,7 +39,7 @@
 #ifndef VIEWERPASSWORDWINDOW_H
 #define VIEWERPASSWORDWINDOW_H
 #include <visit-config.h>
-#include <qdialog.h>
+#include <QDialog>
 #include <set>
 
 // Forward declarations
@@ -77,13 +77,16 @@ class ViewerConnectionProgressDialog;
 //    Added static methods to retrieve and reset the value of 
 //    'needToChangeUsername'. 
 //
+//    Brad Whitlock, Tue May 27 13:44:12 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 class ViewerPasswordWindow : public QDialog
 {
     Q_OBJECT
   public:
-    ViewerPasswordWindow(QWidget *parent=NULL, const char *name=NULL);
+    ViewerPasswordWindow(QWidget *parent=NULL);
     ~ViewerPasswordWindow();
 
     static const char *getPassword(const char *, const char *, bool = false);

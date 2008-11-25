@@ -41,14 +41,13 @@
 #include <LineSurfaceAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -125,40 +124,40 @@ QvisLineSurfaceWindow::~QvisLineSurfaceWindow()
 void
 QvisLineSurfaceWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(0);
+    topLayout->addLayout(mainLayout);
 
-
-    startTimeLabel = new QLabel(tr("Index of first time slice"), central, "startTimeLabel");
+    startTimeLabel = new QLabel(tr("Index of first time slice"), central);
     mainLayout->addWidget(startTimeLabel,0,0);
-    startTime = new QLineEdit(central, "startTime");
+    startTime = new QLineEdit(central);
     connect(startTime, SIGNAL(returnPressed()),
             this, SLOT(startTimeProcessText()));
     mainLayout->addWidget(startTime, 0,1);
 
-    endTimeLabel = new QLabel(tr("Index of last time slice"), central, "endTimeLabel");
+    endTimeLabel = new QLabel(tr("Index of last time slice"), central);
     mainLayout->addWidget(endTimeLabel,1,0);
-    endTime = new QLineEdit(central, "endTime");
+    endTime = new QLineEdit(central);
     connect(endTime, SIGNAL(returnPressed()),
             this, SLOT(endTimeProcessText()));
     mainLayout->addWidget(endTime, 1,1);
 
-    strideLabel = new QLabel(tr("Stride through time slices"), central, "strideLabel");
+    strideLabel = new QLabel(tr("Stride through time slices"), central);
     mainLayout->addWidget(strideLabel,2,0);
-    stride = new QLineEdit(central, "stride");
+    stride = new QLineEdit(central);
     connect(stride, SIGNAL(returnPressed()),
             this, SLOT(strideProcessText()));
     mainLayout->addWidget(stride, 2,1);
 
-    point1Label = new QLabel(tr("Point 1"), central, "point1Label");
+    point1Label = new QLabel(tr("Point 1"), central);
     mainLayout->addWidget(point1Label,3,0);
-    point1 = new QLineEdit(central, "point1");
+    point1 = new QLineEdit(central);
     connect(point1, SIGNAL(returnPressed()),
             this, SLOT(point1ProcessText()));
     mainLayout->addWidget(point1, 3,1);
 
-    point2Label = new QLabel(tr("Point 2"), central, "point2Label");
+    point2Label = new QLabel(tr("Point 2"), central);
     mainLayout->addWidget(point2Label,4,0);
-    point2 = new QLineEdit(central, "point2");
+    point2 = new QLineEdit(central);
     connect(point2, SIGNAL(returnPressed()),
             this, SLOT(point2ProcessText()));
     mainLayout->addWidget(point2, 4,1);
@@ -184,8 +183,6 @@ QvisLineSurfaceWindow::CreateWindowContents()
 void
 QvisLineSurfaceWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -197,46 +194,22 @@ QvisLineSurfaceWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case LineSurfaceAttributes::ID_startTime:
-            startTime->blockSignals(true);
-            temp.sprintf("%d", atts->GetStartTime());
-            startTime->setText(temp);
-            startTime->blockSignals(false);
+            startTime->setText(IntToQString(atts->GetStartTime()));
             break;
           case LineSurfaceAttributes::ID_endTime:
-            endTime->blockSignals(true);
-            temp.sprintf("%d", atts->GetEndTime());
-            endTime->setText(temp);
-            endTime->blockSignals(false);
+            endTime->setText(IntToQString(atts->GetEndTime()));
             break;
           case LineSurfaceAttributes::ID_stride:
-            stride->blockSignals(true);
-            temp.sprintf("%d", atts->GetStride());
-            stride->setText(temp);
-            stride->blockSignals(false);
+            stride->setText(IntToQString(atts->GetStride()));
             break;
           case LineSurfaceAttributes::ID_point1:
-            dptr = atts->GetPoint1();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            point1->blockSignals(true);
-            point1->setText(temp);
-            point1->blockSignals(false);
+            point1->setText(DoublesToQString(atts->GetPoint1(), 3));
             break;
           case LineSurfaceAttributes::ID_point2:
-            dptr = atts->GetPoint2();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            point2->blockSignals(true);
-            point2->setText(temp);
-            point2->blockSignals(false);
+            point2->setText(DoublesToQString(atts->GetPoint2(), 3));
             break;
         }
     }
@@ -261,27 +234,18 @@ QvisLineSurfaceWindow::UpdateWindow(bool doAll)
 void
 QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do startTime
     if(which_widget == LineSurfaceAttributes::ID_startTime || doAll)
     {
-        temp = startTime->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(startTime, val))
+            atts->SetStartTime(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetStartTime(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of startTime was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetStartTime());
-            Message(msg);
+            ResettingError(tr("Index of first time slice"),
+                IntToQString(atts->GetStartTime()));
             atts->SetStartTime(atts->GetStartTime());
         }
     }
@@ -289,21 +253,13 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
     // Do endTime
     if(which_widget == LineSurfaceAttributes::ID_endTime || doAll)
     {
-        temp = endTime->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(endTime, val))
+            atts->SetEndTime(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetEndTime(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of endTime was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetEndTime());
-            Message(msg);
+            ResettingError(tr("Index of last time slice"),
+                IntToQString(atts->GetEndTime()));
             atts->SetEndTime(atts->GetEndTime());
         }
     }
@@ -311,21 +267,13 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
     // Do stride
     if(which_widget == LineSurfaceAttributes::ID_stride || doAll)
     {
-        temp = stride->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(stride, val))
+            atts->SetStride(val);
+        else
         {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetStride(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of stride was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetStride());
-            Message(msg);
+            ResettingError(tr("Stride through time slices"),
+                IntToQString(atts->GetStride()));
             atts->SetStride(atts->GetStride());
         }
     }
@@ -333,24 +281,13 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
     // Do point1
     if(which_widget == LineSurfaceAttributes::ID_point1 || doAll)
     {
-        temp = point1->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val[3];
+        if(LineEditGetDoubles(point1, val, 3))
+            atts->SetPoint1(val);
+        else
         {
-            double val[3];
-            if((okay = (sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]) == 3)) == true)
-                atts->SetPoint1(val);
-        }
-
-        if(!okay)
-        {
-            const double *val = atts->GetPoint1();
-            QString num; num.sprintf("<%g %g %g>", 
-                val[0], val[1], val[2]);
-            msg = tr("The value of point1 was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(num);
-            Message(msg);
+            ResettingError(tr("Point 1"),
+                DoublesToQString(atts->GetPoint1(),3));
             atts->SetPoint1(atts->GetPoint1());
         }
     }
@@ -358,24 +295,13 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
     // Do point2
     if(which_widget == LineSurfaceAttributes::ID_point2 || doAll)
     {
-        temp = point2->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val[3];
+        if(LineEditGetDoubles(point2, val, 3))
+            atts->SetPoint2(val);
+        else
         {
-            double val[3];
-            if((okay = (sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]) == 3)) == true)
-                atts->SetPoint2(val);
-        }
-
-        if(!okay)
-        {
-            const double *val = atts->GetPoint2();
-            QString num; num.sprintf("<%g %g %g>", 
-                val[0], val[1], val[2]);
-            msg = tr("The value of point2 was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(num);
-            Message(msg);
+            ResettingError(tr("Point 2"),
+                DoublesToQString(atts->GetPoint2(),3));
             atts->SetPoint2(atts->GetPoint2());
         }
     }

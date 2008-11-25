@@ -35,18 +35,18 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
+#include "XMLEditStd.h"
 #include "XMLEditAttribute.h"
 
 #include <XMLDocument.h>
 #include <Attribute.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qradiobutton.h>
-#include <qbuttongroup.h>
-#include <qlabel.h>
-#include <qcombobox.h>
-#include <qcheckbox.h>
+#include <QLayout>
+#include <QLineEdit>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include <QLabel>
+#include <QComboBox>
+#include <QCheckBox>
 
 // ****************************************************************************
 //  Constructor:  XMLEditAttribute::XMLEditAttribute
@@ -61,12 +61,15 @@
 //   Brad Whitlock, Fri Mar 7 11:20:58 PDT 2008
 //   Changed layout.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
-XMLEditAttribute::XMLEditAttribute(QWidget *p, const QString &n)
-    : QFrame(p, n)
+XMLEditAttribute::XMLEditAttribute(QWidget *p)
+    : QFrame(p)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 8,2, 5);
+    QGridLayout *topLayout = new QGridLayout(this);
     int row = 0;
 
     name = new QLineEdit(this);
@@ -99,7 +102,7 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p, const QString &n)
     row++;
 
     keyframe = new QCheckBox("Generate keyframing methods", this);
-    topLayout->addMultiCellWidget(keyframe, row,row, 0,1);
+    topLayout->addWidget(keyframe, row,0, 1,2);
     row++;
 
     topLayout->setRowStretch(row, 100);

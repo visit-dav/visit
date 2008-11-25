@@ -39,7 +39,7 @@
 #ifndef QVIS_GRID_WIDGET_H
 #define QVIS_GRID_WIDGET_H
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 
 class QPixmap;
 class QPainter;
@@ -62,14 +62,16 @@ class QPainter;
 //   the new QvisPeriodicTableWidget.  Renamed most of the color-specific
 //   members to refer to generic items.
 //
+//   Brad Whitlock, Mon Jun  2 16:27:18 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisGridWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisGridWidget(QWidget *parent = 0, const char *name = 0,
-                        WFlags f = 0);
+    QvisGridWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~QvisGridWidget();
     virtual QSize sizeHint () const;
     virtual QSize minimumSize() const;
@@ -102,18 +104,18 @@ protected:
     virtual void paintEvent(QPaintEvent *);
     virtual void resizeEvent(QResizeEvent *);
 
-    void drawItemArray();
+    void drawItemArray(QPainter &);
     virtual void drawItem(QPainter &paint, int index) = 0;
-    QRegion drawHighlightedItem(QPainter *paint, int index);
-    QRegion drawUnHighlightedItem(QPainter *paint, int index);
-    QRegion drawSelectedItem(QPainter *paint, int index);
+    QRegion getItemRegion(int index) const;
+    QRegion drawHighlightedItem(QPainter &paint, int index);
+    QRegion drawSelectedItem(QPainter &paint, int index);
 
     void setIsPopup();
-    virtual bool isValidIndex(int);
+    virtual bool isValidIndex(int) const;
     virtual void emitSelection();
 
 protected:
-    void getItemRect(int index, int &x, int &y, int &w, int &h);
+    void getItemRect(int index, int &x, int &y, int &w, int &h) const;
     int  getIndexFromXY(int x, int y) const;
     int  getIndex(int row, int col) const;
     void getRowColumnFromIndex(int index, int &row, int &column) const;
@@ -129,7 +131,6 @@ protected:
     bool    drawFrame;
     int     boxSizeValue;
     int     boxPaddingValue;
-    QPixmap *drawPixmap;
     QTimer  *timer;
 
 private:

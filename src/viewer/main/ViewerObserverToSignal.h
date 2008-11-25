@@ -43,7 +43,7 @@
 #ifndef VIEWER_OBSERVER_TO_SIGNAL_H
 #define VIEWER_OBSERVER_TO_SIGNAL_H
 #include <viewer_exports.h>
-#include <qobject.h>
+#include <QObject>
 #include <Observer.h>
 
 // ****************************************************************************

@@ -37,12 +37,13 @@
 *****************************************************************************/
 
 #include <QvisAppearanceWindow.h>
-#include <qapplication.h>
-#include <qcombobox.h>
-#include <qlayout.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
+#include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
 
 #include <QvisColorButton.h>
 #include <QvisDialogLineEdit.h>
@@ -52,40 +53,28 @@
 //
 // Tables of available styles.
 //
-static const char *styleNamesInMenu[] = {"Motif", "CDE", "Windows", "Platinum"
-#if QT_VERSION >= 230
-, "SGI"
-#endif
-#if QT_VERSION >= 300
+static const char *styleNamesInMenu[] = {
 #ifdef Q_WS_MACX
-, "Aqua", "Macintosh"
+"Macintosh",
 #endif
+#ifdef Q_WS_WIN
+"Windows XP", "Windows Vista",
 #endif
+"Windows", "Motif", "CDE", "Plastique", "CleanLooks"
 };
 
-static const char *styleNames[] = {"motif", "cde", "windows", "platinum"
-#if QT_VERSION >= 230
-, "sgi"
-#endif
-#if QT_VERSION >= 300
+static const char *styleNames[] = {
 #ifdef Q_WS_MACX
-, "aqua", "macintosh"
+"macintosh",
 #endif
+#ifdef Q_WS_WIN
+"windowsxp", "windowsvista",
 #endif
+"windows", "motif", "cde", "plastique", "cleanlooks"
 };
 
 // Determine the number of styles.
-#if QT_VERSION >= 300
-#ifdef Q_WS_MACX
-static const int numStyleNames = 7;
-#else
-static const int numStyleNames = 5;
-#endif 
-#elif QT_VERSION >= 230
-static const int numStyleNames = 5; // account for sgi
-#else
-static const int numStyleNames = 4;
-#endif
+static const int numStyleNames = sizeof(styleNamesInMenu) / sizeof(const char *);
 
 // ****************************************************************************
 // Method: QvisAppearanceWindow::QvisAppearanceWindow
@@ -150,56 +139,85 @@ QvisAppearanceWindow::~QvisAppearanceWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Jun 19 11:11:54 PDT 2008
+//   Qt 4.
+//
+//   Cyrus Harrison, Mon Nov 24 11:57:42 PST 2008
+//   Support for default system appearance.
+//
 // ****************************************************************************
 
 void
 QvisAppearanceWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 5, 2, 10);
+    QGridLayout *mainLayout = new QGridLayout(0);
+    mainLayout->setSpacing(10);
+    topLayout->addLayout(mainLayout);
 
+    int row = 0;
+    
+    useSysDefaultCheckBox = new QCheckBox(central);
+    connect(useSysDefaultCheckBox , SIGNAL(stateChanged(int)),
+            this, SLOT(useSysDefaultChanged(int)));
+    useSysDefaultCheckBox->setText(
+      tr("Use Default System Appearance (Applied at VisIt startup)"));
+    mainLayout->addWidget(useSysDefaultCheckBox,row,0,1,3);
+    row++;
+    
     // Create the background color button.
-    backgroundColorButton = new QvisColorButton(central, "backgroundColorButton");
+    backgroundColorButton = new QvisColorButton(central);
     connect(backgroundColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(backgroundChanged(const QColor &)));
-    mainLayout->addWidget(backgroundColorButton, 0, 1, AlignLeft);
-    mainLayout->addWidget(new QLabel(backgroundColorButton, tr("GUI background"),
-                                     central, "backgroundLabel"),0,0);
+    mainLayout->addWidget(backgroundColorButton, row, 1);
+    backgroundColorLabel = new QLabel(tr("GUI background"), central);
+    backgroundColorLabel->setBuddy(backgroundColorButton);
+    mainLayout->addWidget(backgroundColorLabel, row, 0);
+    row++;
 
     // Create the background color button.
-    foregroundColorButton = new QvisColorButton(central, "foregroundColorButton");
+    foregroundColorButton = new QvisColorButton(central);
     connect(foregroundColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(foregroundChanged(const QColor &)));
-    mainLayout->addWidget(foregroundColorButton, 1, 1, AlignLeft);
-    mainLayout->addWidget(new QLabel(foregroundColorButton, tr("GUI foreground"),
-                                     central, "foregroundLabel"),1,0);
-
+    mainLayout->addWidget(foregroundColorButton, row, 1);
+    foregroundColorLabel = new QLabel(tr("GUI foreground"), central);
+    foregroundColorLabel->setBuddy(foregroundColorButton);
+    mainLayout->addWidget(foregroundColorLabel, row, 0);
+    row++;
+    
     // Create the style combo box.
-    styleComboBox = new QComboBox(central, "styleComboBox");
+    styleComboBox = new QComboBox(central);
     for(int i = 0; i < numStyleNames; ++i)
-        styleComboBox->insertItem(styleNamesInMenu[i], i);
+        styleComboBox->addItem(styleNamesInMenu[i]);
     connect(styleComboBox, SIGNAL(activated(int)),
             this, SLOT(styleChanged(int)));
-    mainLayout->addWidget(styleComboBox, 2, 1, AlignLeft);
-    mainLayout->addWidget(new QLabel(styleComboBox, tr("GUI style"),
-                                     central, "foregroundLabel"),2,0);
+    mainLayout->addWidget(styleComboBox, row, 1);
+    styleLabel = new QLabel(tr("GUI style"), central);
+    styleLabel->setBuddy(styleComboBox);
+    mainLayout->addWidget(styleLabel, row, 0);
+    row++;
 
     // Create the orientation combo box.
-    orientationComboBox = new QComboBox(central, "orientationComboBox");
-    orientationComboBox->insertItem(tr("Vertical"), 0);
-    orientationComboBox->insertItem(tr("Horizontal"), 1);
+    orientationComboBox = new QComboBox(central);
+    orientationComboBox->addItem(tr("Vertical"));
+    orientationComboBox->addItem(tr("Horizontal"));
     connect(orientationComboBox, SIGNAL(activated(int)),
             this, SLOT(orientationChanged(int)));
-    mainLayout->addWidget(orientationComboBox, 3, 1, AlignLeft);
-    mainLayout->addWidget(new QLabel(orientationComboBox, tr("GUI orientation"),
-                                     central, "orientationLabel"),3,0);
+    mainLayout->addWidget(orientationComboBox, row, 1);
+    orientationLabel = new QLabel(tr("GUI orientation"), central);
+    orientationLabel->setBuddy(orientationComboBox);
+    mainLayout->addWidget(orientationLabel, row, 0);
+    row++;
 
     // Create the font edit.
-    fontName = new QvisDialogLineEdit(central, "fontName");
+    fontName = new QvisDialogLineEdit(central);
     fontName->setDialogMode(QvisDialogLineEdit::ChooseFont);
     connect(fontName, SIGNAL(textChanged(const QString &)),
             this, SLOT(fontNameChanged(const QString &)));
-    mainLayout->addWidget(fontName, 4, 1);
-    mainLayout->addWidget(new QLabel(fontName,tr("GUI font"), central), 4, 0);
+    mainLayout->addWidget(fontName, row, 1, 1, 2);
+    fontLabel = new QLabel(tr("GUI font"), central);
+    fontLabel->setBuddy(fontName);
+    mainLayout->addWidget(fontLabel, row, 0);
+    row++;
 }
 
 // ****************************************************************************
@@ -230,6 +248,12 @@ QvisAppearanceWindow::CreateWindowContents()
 //   Brad Whitlock, Fri Dec 14 16:57:53 PST 2007
 //   Made it use ids.
 //
+//   Brad Whitlock, Thu Jun 19 11:20:42 PDT 2008
+//   Qt 4.
+//
+//   Cyrus Harrison, Mon Nov 24 11:57:42 PST 2008
+//   Support for default system appearance.
+//
 // ****************************************************************************
 
 void
@@ -248,21 +272,32 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
+        case AppearanceAttributes::ID_useSystemDefault:
+            { // new scope
+            bool val = atts->GetUseSystemDefault();
+            useSysDefaultCheckBox->blockSignals(true);
+            if(val)
+                useSysDefaultCheckBox->setCheckState(Qt::Checked);
+            else
+                useSysDefaultCheckBox->setCheckState(Qt::Unchecked);
+            useSysDefaultCheckBox->blockSignals(false);
+            }
+            break;
         case AppearanceAttributes::ID_background:
-        { // new scope
+            { // new scope
             QColor bg(atts->GetBackground().c_str());
             backgroundColorButton->blockSignals(true);
             backgroundColorButton->setButtonColor(bg);
             backgroundColorButton->blockSignals(false);
-        }
+            }
             break;
         case AppearanceAttributes::ID_foreground:
-        { // new scope
+            { // new scope
             QColor fg(atts->GetForeground().c_str());
             foregroundColorButton->blockSignals(true);
             foregroundColorButton->setButtonColor(fg);
             foregroundColorButton->blockSignals(false);
-        }
+            }
             break;
         case AppearanceAttributes::ID_fontName:
             fontName->blockSignals(true);
@@ -275,7 +310,7 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
                 if(atts->GetStyle() == styleNames[j])
                 {
                     styleComboBox->blockSignals(true);
-                    styleComboBox->setCurrentItem(j);
+                    styleComboBox->setCurrentIndex(j);
                     styleComboBox->blockSignals(false);
                     break;
                 }
@@ -284,13 +319,47 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
         case AppearanceAttributes::ID_orientation:
             orientationComboBox->blockSignals(true);
             if(atts->GetOrientation() == 0)
-                orientationComboBox->setCurrentItem(0);
+                orientationComboBox->setCurrentIndex(0);
             else
-                orientationComboBox->setCurrentItem(1);
+                orientationComboBox->setCurrentIndex(1);
             orientationComboBox->blockSignals(false);
             break;
         }
     }
+    
+    UpdateWindowSensitivity();
+}
+
+// ****************************************************************************
+// Method: QvisAppearanceWindow::UpdateWindowSensitivity
+//
+// Purpose: 
+//   This method is called to update window sensitivity
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 24 10:28:26 PST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisAppearanceWindow::UpdateWindowSensitivity()
+{
+    AppearanceAttributes *atts = (AppearanceAttributes *)subject;
+    bool val = !atts->GetUseSystemDefault();
+    backgroundColorButton->setEnabled(val);
+    backgroundColorLabel->setEnabled(val);
+    foregroundColorButton->setEnabled(val);
+    foregroundColorLabel->setEnabled(val);
+    fontName->setEnabled(val);
+    fontLabel->setEnabled(val);
+    styleComboBox->setEnabled(val);
+    styleLabel->setEnabled(val);
+    orientationComboBox->setEnabled(val);
+    orientationLabel->setEnabled(val);
+    
 }
 
 // ****************************************************************************
@@ -316,7 +385,7 @@ QvisAppearanceWindow::GetCurrentValues(int which)
 
     if(which == 0 || which == -1)
     {
-        std::string newFontName(fontName->text().latin1());
+        std::string newFontName(fontName->text().toStdString());
         if(QFont().fromString(newFontName.c_str()))
             atts->SetFontName(newFontName);
     }
@@ -422,6 +491,33 @@ QvisAppearanceWindow::ColorsNotTooClose(const QColor &c0, const char *c1str)
 }
 
 // ****************************************************************************
+// Method: QvisAppearanceWindow::useSysDefaultChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the 
+//   the "Use System Default Appearance" Check Box.
+//
+// Arguments:
+//   state : The check state.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 24 10:20:10 PST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisAppearanceWindow::useSysDefaultChanged(int state)
+{
+    AppearanceAttributes *atts = (AppearanceAttributes *)subject;
+    atts->SetUseSystemDefault(state == Qt::Checked);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
+}
+
+// ****************************************************************************
 // Method: QvisAppearanceWindow::backgroundChanged
 //
 // Purpose: 
@@ -449,7 +545,7 @@ QvisAppearanceWindow::backgroundChanged(const QColor &bg)
     {
         QString tmp;
         tmp.sprintf("#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
-        atts->SetBackground(tmp.latin1());
+        atts->SetBackground(tmp.toStdString());
         SetUpdate(false);
         Apply();
     }
@@ -483,7 +579,7 @@ QvisAppearanceWindow::foregroundChanged(const QColor &fg)
     {
         QString tmp;
         tmp.sprintf("#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
-        atts->SetForeground(tmp.latin1());
+        atts->SetForeground(tmp.toStdString());
         SetUpdate(false);
         Apply();
     }
@@ -536,7 +632,7 @@ void
 QvisAppearanceWindow::fontNameChanged(const QString &newFont)
 {
     AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-    atts->SetFontName(newFont.latin1());
+    atts->SetFontName(newFont.toStdString());
     SetUpdate(false);
     Apply();
 }

@@ -58,13 +58,13 @@
 
 #include <DataNode.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qlineedit.h>
-#include <qobjectlist.h>
-#include <qspinbox.h>
-#include <qtextedit.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QObjectList>
+#include <QSpinBox>
+#include <QTextEdit>
 #include <QvisColorButton.h>
 #include <QvisDialogLineEdit.h>
 #include <QvisVariableButton.h>
@@ -534,7 +534,9 @@ QColorToDataNode(DataNode *node, const char *key, const QColor &c)
 // Creation:   Thu Nov 16 14:07:48 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 10:32:39 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 static void
@@ -550,16 +552,16 @@ InitializeQComboBoxFromDataNode(QComboBox *co, DataNode *node)
             index = 0;
         }
 
-        co->setCurrentItem(index);
+        co->setCurrentIndex(index);
     }
     else if(node->GetNodeType() == STRING_NODE)
     {
         int index = 0;
         for(int i = 0; i < co->count(); ++i)
         {
-            if(std::string(co->text(i).latin1()) == node->AsString())
+            if(co->itemText(i).toStdString() == node->AsString())
             {
-                co->setCurrentItem(i);
+                co->setCurrentIndex(i);
                 return;
             }
         }
@@ -588,13 +590,16 @@ InitializeQComboBoxFromDataNode(QComboBox *co, DataNode *node)
 // Creation:   Thu Nov 16 14:16:16 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 10:38:19 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 static void
 InitializeDataNodeFromQComboBox(QComboBox *co, DataNode *node)
 {
-    DataNode *currentNode = node->GetNode(co->name());
+    std::string objectName(co->objectName().toStdString());
+    DataNode *currentNode = node->GetNode(objectName);
     if(currentNode != 0)
     {
         // Use int or string, depending on what the node was initially.
@@ -606,20 +611,20 @@ InitializeDataNodeFromQComboBox(QComboBox *co, DataNode *node)
             t = INT_NODE;
         }
 
-        node->RemoveNode(co->name());
+        node->RemoveNode(objectName);
 
         if(t == INT_NODE)
-            node->AddNode(new DataNode(co->name(), co->currentItem()));
+            node->AddNode(new DataNode(objectName, co->currentIndex()));
         else if(t == STRING_NODE)
         {
-            node->AddNode(new DataNode(co->name(), 
-                std::string(co->text(co->currentItem()).latin1())));
+            node->AddNode(new DataNode(objectName, 
+                co->currentText().toStdString()));
         }
     }
     else
     {
         // There's no preference on which type to use so use int.
-        node->AddNode(new DataNode(co->name(), co->currentItem()));
+        node->AddNode(new DataNode(objectName, co->currentIndex()));
     }
 }
 
@@ -666,8 +671,9 @@ InitializeQCheckBoxFromDataNode(QCheckBox *co, DataNode *node)
 static void
 InitializeDataNodeFromQCheckBox(QCheckBox *co, DataNode *node)
 {
-    node->RemoveNode(co->name());
-    node->AddNode(new DataNode(co->name(), co->isChecked()));
+    std::string objectName(co->objectName().toStdString());
+    node->RemoveNode(objectName);
+    node->AddNode(new DataNode(objectName, co->isChecked()));
 }
 
 // ****************************************************************************
@@ -684,14 +690,17 @@ InitializeDataNodeFromQCheckBox(QCheckBox *co, DataNode *node)
 // Creation:   Fri Nov 17 10:41:50 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 10:37:40 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 static void
 InitializeQButtonGroupFromDataNode(QButtonGroup *co, DataNode *node)
 {
     int index = DataNodeToInt(node);
-    co->setButton(index);
+    if(co->button(index) != 0)
+        co->button(index)->setChecked(true);
 }
 
 // ****************************************************************************
@@ -708,39 +717,42 @@ InitializeQButtonGroupFromDataNode(QButtonGroup *co, DataNode *node)
 // Creation:   Fri Nov 17 10:39:23 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 10:36:30 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 static void
 InitializeDataNodeFromQButtonGroup(QButtonGroup *co, DataNode *node)
 {
-    DataNode *currentNode = node->GetNode(co->name());
-    QButton *sb = co->selected();
+    std::string objectName(co->objectName().toStdString());
+    DataNode *currentNode = node->GetNode(objectName);
+    QAbstractButton *sb = co->checkedButton();
 
     if(currentNode != 0)
     {
         // Use int or string, depending on what the node was initially.
         NodeTypeEnum t = currentNode->GetNodeType();
-        node->RemoveNode(co->name());
+        node->RemoveNode(objectName);
 
         if(t == STRING_NODE)
         {
             if(sb != 0)
-                node->AddNode(new DataNode(co->name(), std::string(sb->text().latin1())));
+                node->AddNode(new DataNode(objectName, sb->text().toStdString()));
             else
-                node->AddNode(new DataNode(co->name(), int(0)));
+                node->AddNode(new DataNode(objectName, int(0)));
         }
         else
         {
             int index = sb ? co->id(sb) : 0;
-            node->AddNode(new DataNode(co->name(), index));
+            node->AddNode(new DataNode(objectName, index));
         }
     }
     else
     {
         // There's no preference on which type to use so use int
         int index = sb ? co->id(sb) : 0;
-        node->AddNode(new DataNode(co->name(), index));
+        node->AddNode(new DataNode(objectName, index));
     }
 }
 
@@ -760,7 +772,9 @@ InitializeDataNodeFromQButtonGroup(QButtonGroup *co, DataNode *node)
 // Creation:   Thu Nov 16 13:36:10 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 11:14:47 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -771,17 +785,17 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
     // Iterate over the objects in the custom page and try and find
     // a setting in the config file with the same name. If we find
     // a compatible value then set it.
-    QObjectList *objList = ui->queryList();
-    QObjectListIt it(*objList);
-    QObject *obj = 0;
-    while((obj = it.current()) != 0)
+    QList<QWidget*> widgets = qFindChildren<QWidget*>(ui);
+    for(int i = 0; i < widgets.size(); ++i)
     {
-        ++it;
-        DataNode *objValues = node->GetNode(obj->name());
+        QWidget *obj = widgets[i];
+        std::string objectName(obj->objectName().toStdString());
+
+        DataNode *objValues = node->GetNode(objectName);
         if(objValues)
         {
             debug4 << "Found values for object "
-                   << obj->name() << endl;
+                   << objectName << endl;
             if(obj->inherits("QButtonGroup"))
             {
                 InitializeQButtonGroupFromDataNode((QButtonGroup*)obj, node);
@@ -820,7 +834,7 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
                 QColor color;
                 if(DataNodeToQColor(objValues, color))
                 {
-                    debug4 << "Setting " << obj->name()
+                    debug4 << "Setting " << objectName
                            << " to color (" << color.red()
                            << ", " << color.green()
                            << ", " << color.blue() << ")" << endl;
@@ -830,7 +844,7 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
                 {
                     debug4 << mName << "There was no acceptable "
                            << "conversion from the data node type "
-                           << "to QColor for " << obj->name()
+                           << "to QColor for " << objectName
                            << ".\n";
                 }
             }
@@ -847,17 +861,15 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
             else
             {
                 debug4 << "There is currently no support for "
-                       << obj->name() << " widgets." << endl;
+                       << objectName << " widgets." << endl;
             }
         }
         else
         {
             debug4 << "Did not find values for object "
-                   << obj->name() << endl;
+                   << objectName << endl;
         }
     }
-
-    delete objList;
 }
 
 // ****************************************************************************
@@ -874,7 +886,9 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
 // Creation:   Thu Nov 16 13:38:15 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 11:14:39 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -883,13 +897,14 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
     // Iterate over the objects in the custom page and try and find
     // a setting in the config file with the same name. If we find
     // a compatible value then set it.
-    QObjectList *objList = ui->queryList();
-    QObjectListIt it(*objList);
-    QObject *obj = 0;
-    while((obj = it.current()) != 0)
+
+    QList<QWidget*> widgets = qFindChildren<QWidget*>(ui);
+    for(int i = 0; i < widgets.size(); ++i)
     {
-        ++it;
-        DataNode *objValues = node->GetNode(obj->name());
+        QWidget *obj = widgets[i];
+        std::string objectName(obj->objectName().toStdString());
+
+        DataNode *objValues = node->GetNode(objectName);
         if(objValues)
         {
             // objValues points to the node in the settings that 
@@ -912,25 +927,25 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
                 QString text(co->text());
 
                 // Change values by deleting and inserting a node.
-                node->RemoveNode(obj->name());
-                node->AddNode(new DataNode(obj->name(), std::string(text.latin1())));
+                node->RemoveNode(objectName);
+                node->AddNode(new DataNode(objectName, text.toStdString()));
             }
             else if(obj->inherits("QSpinBox"))
             {
                 QSpinBox *co = (QSpinBox *)obj;
 
                 // Change values by deleting and inserting a node.
-                node->RemoveNode(obj->name());
-                node->AddNode(new DataNode(obj->name(), co->value()));
+                node->RemoveNode(objectName);
+                node->AddNode(new DataNode(objectName, co->value()));
             }
             else if(obj->inherits("QTextEdit"))
             {
                 QTextEdit *co = (QTextEdit *)obj;
-                QString text(co->text());
+                QString text(co->toPlainText());
 
                 // Change values by deleting and inserting a node.
-                node->RemoveNode(obj->name());
-                node->AddNode(new DataNode(obj->name(), std::string(text.latin1())));
+                node->RemoveNode(objectName);
+                node->AddNode(new DataNode(objectName, text.toStdString()));
             }
 
             //
@@ -941,14 +956,14 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
                 QvisColorButton *co = (QvisColorButton *)obj;
 
                 // Delete the current data node values.
-                node->RemoveNode(obj->name());
+                node->RemoveNode(objectName);
 
                 // Add in the new color data node.
                 int rgb[3];
                 rgb[0] = co->buttonColor().red();
                 rgb[1] = co->buttonColor().green();
                 rgb[2] = co->buttonColor().blue();
-                node->AddNode(new DataNode(obj->name(), rgb, 3));
+                node->AddNode(new DataNode(objectName, rgb, 3));
             }
             else if(obj->inherits("QvisDialogLineEdit"))
             {
@@ -956,8 +971,8 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
                 QString text(co->text());
 
                 // Change values by deleting and inserting a node.
-                node->RemoveNode(obj->name());
-                node->AddNode(new DataNode(obj->name(), std::string(text.latin1())));
+                node->RemoveNode(objectName);
+                node->AddNode(new DataNode(objectName, text.toStdString()));
             }
             else if(obj->inherits("QvisVariableButton"))
             {
@@ -965,8 +980,8 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
                 QString text(co->getVariable());
 
                 // Change values by deleting and inserting a node.
-                node->RemoveNode(obj->name());
-                node->AddNode(new DataNode(obj->name(), std::string(text.latin1())));
+                node->RemoveNode(objectName);
+                node->AddNode(new DataNode(objectName, text.toStdString()));
             }
         }
     }

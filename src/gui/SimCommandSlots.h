@@ -39,9 +39,9 @@
 #ifndef SIMCOMMANDSLOTS_H
 #define SIMCOMMANDSLOTS_H
 
-#include <qdialog.h>
-#include <qdatetime.h>
-#include <qdatetimeedit.h>
+#include <QDialog>
+#include <QDateTime>
+#include <QDateTimeEdit>
 
 #include <EngineList.h>
 #include <StatusAttributes.h>

@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#include <qlayout.h>
+#include <QLayout>
 #include <QvisDelayedWindow.h>
 
 // ****************************************************************************
@@ -61,9 +61,12 @@
 //   Brad Whitlock, Wed Apr  9 10:31:45 PDT 2008
 //   Changed ctor args.
 //
+//   Brad Whitlock, Thu Jun 19 14:14:27 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisDelayedWindow::QvisDelayedWindow(const QString &captionString, WFlags f) : 
+QvisDelayedWindow::QvisDelayedWindow(const QString &captionString, Qt::WindowFlags f) : 
     QvisWindowBase(captionString, f)
 {
     isCreated = false;
@@ -217,6 +220,9 @@ QvisDelayedWindow::GetCentralWidget()
 //   Brad Whitlock, Fri Feb 15 11:34:31 PDT 2002
 //   Added an early return if the window exists.
 //
+//   Brad Whitlock, Thu Jun 19 14:15:13 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -227,9 +233,10 @@ QvisDelayedWindow::CreateEntireWindow()
         return;
 
     // Create the central widget and the top layout.
-    central = new QWidget( this );
-    setCentralWidget( central );
-    topLayout = new QVBoxLayout(central, 10);
+    central = new QWidget(this);
+    setCentralWidget(central);
+    topLayout = new QVBoxLayout(central);
+    topLayout->setSpacing(10);
 
     // Call the Sub-class's CreateWindowContents function to create the
     // internal parts of the window.

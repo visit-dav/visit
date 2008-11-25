@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *AppearanceAttributes::TypeMapFormatString = "ssssi";
+const char *AppearanceAttributes::TypeMapFormatString = "bssssissssi";
 
 // ****************************************************************************
 // Method: AppearanceAttributes::AppearanceAttributes
@@ -60,6 +60,7 @@ const char *AppearanceAttributes::TypeMapFormatString = "ssssi";
 AppearanceAttributes::AppearanceAttributes() : 
     AttributeSubject(AppearanceAttributes::TypeMapFormatString)
 {
+    useSystemDefault = true;
     background = "#c0c0c0";
     foreground = "#000000";
     fontName = "Helvetica,12,-1,5,50,0,0,0,0,0";
@@ -85,11 +86,17 @@ AppearanceAttributes::AppearanceAttributes() :
 AppearanceAttributes::AppearanceAttributes(const AppearanceAttributes &obj) : 
     AttributeSubject(AppearanceAttributes::TypeMapFormatString)
 {
+    useSystemDefault = obj.useSystemDefault;
     background = obj.background;
     foreground = obj.foreground;
     fontName = obj.fontName;
     style = obj.style;
     orientation = obj.orientation;
+    defaultForeground = obj.defaultForeground;
+    defaultBackground = obj.defaultBackground;
+    defaultFontName = obj.defaultFontName;
+    defaultStyle = obj.defaultStyle;
+    defaultOrientation = obj.defaultOrientation;
 
     SelectAll();
 }
@@ -133,11 +140,17 @@ AppearanceAttributes&
 AppearanceAttributes::operator = (const AppearanceAttributes &obj)
 {
     if (this == &obj) return *this;
+    useSystemDefault = obj.useSystemDefault;
     background = obj.background;
     foreground = obj.foreground;
     fontName = obj.fontName;
     style = obj.style;
     orientation = obj.orientation;
+    defaultForeground = obj.defaultForeground;
+    defaultBackground = obj.defaultBackground;
+    defaultFontName = obj.defaultFontName;
+    defaultStyle = obj.defaultStyle;
+    defaultOrientation = obj.defaultOrientation;
 
     SelectAll();
     return *this;
@@ -162,11 +175,17 @@ bool
 AppearanceAttributes::operator == (const AppearanceAttributes &obj) const
 {
     // Create the return value
-    return ((background == obj.background) &&
+    return ((useSystemDefault == obj.useSystemDefault) &&
+            (background == obj.background) &&
             (foreground == obj.foreground) &&
             (fontName == obj.fontName) &&
             (style == obj.style) &&
-            (orientation == obj.orientation));
+            (orientation == obj.orientation) &&
+            (defaultForeground == obj.defaultForeground) &&
+            (defaultBackground == obj.defaultBackground) &&
+            (defaultFontName == obj.defaultFontName) &&
+            (defaultStyle == obj.defaultStyle) &&
+            (defaultOrientation == obj.defaultOrientation));
 }
 
 // ****************************************************************************
@@ -310,11 +329,17 @@ AppearanceAttributes::NewInstance(bool copy) const
 void
 AppearanceAttributes::SelectAll()
 {
-    Select(ID_background,  (void *)&background);
-    Select(ID_foreground,  (void *)&foreground);
-    Select(ID_fontName,    (void *)&fontName);
-    Select(ID_style,       (void *)&style);
-    Select(ID_orientation, (void *)&orientation);
+    Select(ID_useSystemDefault,   (void *)&useSystemDefault);
+    Select(ID_background,         (void *)&background);
+    Select(ID_foreground,         (void *)&foreground);
+    Select(ID_fontName,           (void *)&fontName);
+    Select(ID_style,              (void *)&style);
+    Select(ID_orientation,        (void *)&orientation);
+    Select(ID_defaultForeground,  (void *)&defaultForeground);
+    Select(ID_defaultBackground,  (void *)&defaultBackground);
+    Select(ID_defaultFontName,    (void *)&defaultFontName);
+    Select(ID_defaultStyle,       (void *)&defaultStyle);
+    Select(ID_defaultOrientation, (void *)&defaultOrientation);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -347,6 +372,12 @@ AppearanceAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     // Create a node for AppearanceAttributes.
     DataNode *node = new DataNode("AppearanceAttributes");
 
+    if(completeSave || !FieldsEqual(ID_useSystemDefault, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useSystemDefault", useSystemDefault));
+    }
+
     if(completeSave || !FieldsEqual(ID_background, &defaultObject))
     {
         addToParent = true;
@@ -375,6 +406,36 @@ AppearanceAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("orientation", orientation));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultForeground, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultForeground", defaultForeground));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultBackground, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultBackground", defaultBackground));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultFontName, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultFontName", defaultFontName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultStyle, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultStyle", defaultStyle));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultOrientation, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultOrientation", defaultOrientation));
     }
 
 
@@ -413,6 +474,8 @@ AppearanceAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("useSystemDefault")) != 0)
+        SetUseSystemDefault(node->AsBool());
     if((node = searchNode->GetNode("background")) != 0)
         SetBackground(node->AsString());
     if((node = searchNode->GetNode("foreground")) != 0)
@@ -423,11 +486,28 @@ AppearanceAttributes::SetFromNode(DataNode *parentNode)
         SetStyle(node->AsString());
     if((node = searchNode->GetNode("orientation")) != 0)
         SetOrientation(node->AsInt());
+    if((node = searchNode->GetNode("defaultForeground")) != 0)
+        SetDefaultForeground(node->AsString());
+    if((node = searchNode->GetNode("defaultBackground")) != 0)
+        SetDefaultBackground(node->AsString());
+    if((node = searchNode->GetNode("defaultFontName")) != 0)
+        SetDefaultFontName(node->AsString());
+    if((node = searchNode->GetNode("defaultStyle")) != 0)
+        SetDefaultStyle(node->AsString());
+    if((node = searchNode->GetNode("defaultOrientation")) != 0)
+        SetDefaultOrientation(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+AppearanceAttributes::SetUseSystemDefault(bool useSystemDefault_)
+{
+    useSystemDefault = useSystemDefault_;
+    Select(ID_useSystemDefault, (void *)&useSystemDefault);
+}
 
 void
 AppearanceAttributes::SetBackground(const std::string &background_)
@@ -464,9 +544,50 @@ AppearanceAttributes::SetOrientation(int orientation_)
     Select(ID_orientation, (void *)&orientation);
 }
 
+void
+AppearanceAttributes::SetDefaultForeground(const std::string &defaultForeground_)
+{
+    defaultForeground = defaultForeground_;
+    Select(ID_defaultForeground, (void *)&defaultForeground);
+}
+
+void
+AppearanceAttributes::SetDefaultBackground(const std::string &defaultBackground_)
+{
+    defaultBackground = defaultBackground_;
+    Select(ID_defaultBackground, (void *)&defaultBackground);
+}
+
+void
+AppearanceAttributes::SetDefaultFontName(const std::string &defaultFontName_)
+{
+    defaultFontName = defaultFontName_;
+    Select(ID_defaultFontName, (void *)&defaultFontName);
+}
+
+void
+AppearanceAttributes::SetDefaultStyle(const std::string &defaultStyle_)
+{
+    defaultStyle = defaultStyle_;
+    Select(ID_defaultStyle, (void *)&defaultStyle);
+}
+
+void
+AppearanceAttributes::SetDefaultOrientation(int defaultOrientation_)
+{
+    defaultOrientation = defaultOrientation_;
+    Select(ID_defaultOrientation, (void *)&defaultOrientation);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+bool
+AppearanceAttributes::GetUseSystemDefault() const
+{
+    return useSystemDefault;
+}
 
 const std::string &
 AppearanceAttributes::GetBackground() const
@@ -522,6 +643,60 @@ AppearanceAttributes::GetOrientation() const
     return orientation;
 }
 
+const std::string &
+AppearanceAttributes::GetDefaultForeground() const
+{
+    return defaultForeground;
+}
+
+std::string &
+AppearanceAttributes::GetDefaultForeground()
+{
+    return defaultForeground;
+}
+
+const std::string &
+AppearanceAttributes::GetDefaultBackground() const
+{
+    return defaultBackground;
+}
+
+std::string &
+AppearanceAttributes::GetDefaultBackground()
+{
+    return defaultBackground;
+}
+
+const std::string &
+AppearanceAttributes::GetDefaultFontName() const
+{
+    return defaultFontName;
+}
+
+std::string &
+AppearanceAttributes::GetDefaultFontName()
+{
+    return defaultFontName;
+}
+
+const std::string &
+AppearanceAttributes::GetDefaultStyle() const
+{
+    return defaultStyle;
+}
+
+std::string &
+AppearanceAttributes::GetDefaultStyle()
+{
+    return defaultStyle;
+}
+
+int
+AppearanceAttributes::GetDefaultOrientation() const
+{
+    return defaultOrientation;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -550,6 +725,30 @@ AppearanceAttributes::SelectStyle()
     Select(ID_style, (void *)&style);
 }
 
+void
+AppearanceAttributes::SelectDefaultForeground()
+{
+    Select(ID_defaultForeground, (void *)&defaultForeground);
+}
+
+void
+AppearanceAttributes::SelectDefaultBackground()
+{
+    Select(ID_defaultBackground, (void *)&defaultBackground);
+}
+
+void
+AppearanceAttributes::SelectDefaultFontName()
+{
+    Select(ID_defaultFontName, (void *)&defaultFontName);
+}
+
+void
+AppearanceAttributes::SelectDefaultStyle()
+{
+    Select(ID_defaultStyle, (void *)&defaultStyle);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -574,11 +773,17 @@ AppearanceAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_background:  return "background";
-    case ID_foreground:  return "foreground";
-    case ID_fontName:    return "fontName";
-    case ID_style:       return "style";
-    case ID_orientation: return "orientation";
+    case ID_useSystemDefault:   return "useSystemDefault";
+    case ID_background:         return "background";
+    case ID_foreground:         return "foreground";
+    case ID_fontName:           return "fontName";
+    case ID_style:              return "style";
+    case ID_orientation:        return "orientation";
+    case ID_defaultForeground:  return "defaultForeground";
+    case ID_defaultBackground:  return "defaultBackground";
+    case ID_defaultFontName:    return "defaultFontName";
+    case ID_defaultStyle:       return "defaultStyle";
+    case ID_defaultOrientation: return "defaultOrientation";
     default:  return "invalid index";
     }
 }
@@ -603,11 +808,17 @@ AppearanceAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_background:  return FieldType_string;
-    case ID_foreground:  return FieldType_string;
-    case ID_fontName:    return FieldType_string;
-    case ID_style:       return FieldType_string;
-    case ID_orientation: return FieldType_int;
+    case ID_useSystemDefault:   return FieldType_bool;
+    case ID_background:         return FieldType_string;
+    case ID_foreground:         return FieldType_string;
+    case ID_fontName:           return FieldType_string;
+    case ID_style:              return FieldType_string;
+    case ID_orientation:        return FieldType_int;
+    case ID_defaultForeground:  return FieldType_string;
+    case ID_defaultBackground:  return FieldType_string;
+    case ID_defaultFontName:    return FieldType_string;
+    case ID_defaultStyle:       return FieldType_string;
+    case ID_defaultOrientation: return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -632,11 +843,17 @@ AppearanceAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_background:  return "string";
-    case ID_foreground:  return "string";
-    case ID_fontName:    return "string";
-    case ID_style:       return "string";
-    case ID_orientation: return "int";
+    case ID_useSystemDefault:   return "bool";
+    case ID_background:         return "string";
+    case ID_foreground:         return "string";
+    case ID_fontName:           return "string";
+    case ID_style:              return "string";
+    case ID_orientation:        return "int";
+    case ID_defaultForeground:  return "string";
+    case ID_defaultBackground:  return "string";
+    case ID_defaultFontName:    return "string";
+    case ID_defaultStyle:       return "string";
+    case ID_defaultOrientation: return "int";
     default:  return "invalid index";
     }
 }
@@ -663,6 +880,11 @@ AppearanceAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_useSystemDefault:
+        {  // new scope
+        retval = (useSystemDefault == obj.useSystemDefault);
+        }
+        break;
     case ID_background:
         {  // new scope
         retval = (background == obj.background);
@@ -686,6 +908,31 @@ AppearanceAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_orientation:
         {  // new scope
         retval = (orientation == obj.orientation);
+        }
+        break;
+    case ID_defaultForeground:
+        {  // new scope
+        retval = (defaultForeground == obj.defaultForeground);
+        }
+        break;
+    case ID_defaultBackground:
+        {  // new scope
+        retval = (defaultBackground == obj.defaultBackground);
+        }
+        break;
+    case ID_defaultFontName:
+        {  // new scope
+        retval = (defaultFontName == obj.defaultFontName);
+        }
+        break;
+    case ID_defaultStyle:
+        {  // new scope
+        retval = (defaultStyle == obj.defaultStyle);
+        }
+        break;
+    case ID_defaultOrientation:
+        {  // new scope
+        retval = (defaultOrientation == obj.defaultOrientation);
         }
         break;
     default: retval = false;
@@ -719,7 +966,7 @@ AppearanceAttributes::InitializeStyle()
 
     style = "windows";
 #elif defined(__APPLE__)
-    style = "aqua";
+    style = "macintosh";
 #else
     style = "motif";
 #endif

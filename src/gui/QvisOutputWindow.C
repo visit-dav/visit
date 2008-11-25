@@ -36,11 +36,11 @@
 *
 *****************************************************************************/
 
-#include <qmultilineedit.h>
-#include <qtabwidget.h>
-#include <qpushbutton.h>
-#include <qlayout.h>
-#include <qstring.h>
+#include <QLayout>
+#include <QPushButton>
+#include <QString>
+#include <QTabWidget>
+#include <QTextEdit>
 
 #include <QvisOutputWindow.h>
 #include <QvisMainWindow.h>
@@ -122,10 +122,10 @@ void
 QvisOutputWindow::CreateWindowContents()
 {
     // Create a multi line edit to display the text.
-    outputText = new QMultiLineEdit(central, "outputText");
+    outputText = new QTextEdit(central);
     outputText->setMinimumWidth(fontMetrics().width("MESSAGE: Closed the "
         "compute engine on host"));
-    outputText->setWordWrap(QMultiLineEdit::WidgetWidth);
+    outputText->setWordWrapMode(QTextOption::WordWrap);
     outputText->setReadOnly(true);
     topLayout->addWidget(outputText);
 }
@@ -156,6 +156,9 @@ QvisOutputWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Apr 29 10:21:44 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri May 30 15:40:17 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -179,8 +182,7 @@ QvisOutputWindow::UpdateWindow(bool)
     temp += QString("\n");
 
     // Add the line of text.
-    outputText->insertLine(temp);
-    outputText->setCursorPosition(outputText->numLines() - 1, 0);
+    outputText->append(temp);
 
     // If the window is visible then tell the main window to turn its
     // unread icon back to blue.

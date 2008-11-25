@@ -44,7 +44,7 @@
 
 // Forward declarations
 class QGroupBox;
-class QListBox;
+class QListWidget;
 class QPushButton;
 
 // ****************************************************************************
@@ -85,7 +85,7 @@ private slots:
     void handleCancel();
 private:
     QGroupBox   *removalControlsGroup;
-    QListBox    *removalListBox;
+    QListWidget    *removalListBox;
     QPushButton *removeButton;
     QPushButton *removeAllButton;
     QPushButton *invertSelectionButton;

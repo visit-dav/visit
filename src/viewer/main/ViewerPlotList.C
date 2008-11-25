@@ -48,7 +48,7 @@
 #include <float.h>
 #include <snprintf.h>
 
-#include <qmessagebox.h>
+#include <QMessageBox>
 
 #include <ViewerSubject.h>
 
@@ -208,8 +208,7 @@ PlaybackMode_FromString(const std::string &s,
 // ****************************************************************************
 
 ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) : 
-    ViewerBase(0, "ViewerPlotList"),
-    hostDatabaseName(), hostName(), databaseName(), timeSliders()
+    ViewerBase(0), hostDatabaseName(), hostName(), databaseName(), timeSliders()
 {
     window           = viewerWindow;
     plots            = 0;
@@ -1660,7 +1659,7 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
         }
 
         debug3 << "Asking for permission to create correlation. Prompt="
-               << text.latin1() << endl;
+               << text.toStdString() << endl;
 
         // Pop up a Qt dialog to ask the user whether or not to correlate
         // the specified databases.

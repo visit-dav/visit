@@ -39,6 +39,7 @@
 #ifndef GENERATE_MAKEFILE_H
 #define GENERATE_MAKEFILE_H
 
+#include <QTextStream>
 #include "Field.h"
 #include <visit-config.h> // for the plugin extension.
 #include "Plugin.h"
@@ -237,6 +238,13 @@
 //    Mark C. Miller, Mon Aug 18 22:00:05 PDT 2008
 //    Replaced BZIP2_LIBS with ZLIB_LIB
 //
+//    Brad Whitlock, Fri Oct  3 15:05:40 PDT 2008
+//    Introduced LIBG_QT_LIBS, LIBV_QT_LIBS, which constitute the set of
+//    Qt libraries that a plugin must link against rather than all Qt libs.
+//
+//    Cyrus Harrison, Fri Sep 19 14:20:32 PDT 2008
+//    Added custom libs for gui,engine,mdserver, and viewer libs.
+//
 //    Brad Whitlock, Wed Oct 15 14:27:59 PDT 2008
 //    Added support for additional Java source.
 //
@@ -285,7 +293,7 @@ class MakefileGeneratorPlugin : public Plugin
     {
     }
 
-    void WriteMakefile(ostream &out)
+    void WriteMakefile(QTextStream &out)
     {
         const char *visithome = getenv("VISITARCHHOME");
         if (!visithome)
@@ -356,7 +364,9 @@ class MakefileGeneratorPlugin : public Plugin
         for (size_t i=0; i<ldflags.size(); i++)
             out << " " << ldflags[i];
         out << " -L" << visitplugininstall << "/" << type << "s";
-        out << endl;
+        out << endl << endl;
+        out << "LIBG_QT_LIBS=$(QT_CORE_LIB) $(QT_GUI_LIB)" << endl;
+        out << "LIBV_QT_LIBS=$(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_OPENGL_LIB)" << endl;
         out << "" << endl;
         out << "##" << endl;
         out << "## Files..." << endl;
@@ -445,6 +455,22 @@ class MakefileGeneratorPlugin : public Plugin
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
+            out << "GUI_LIBS_FORCED=";
+            for (size_t i=0; i<glibs.size(); i++)
+                out << glibs[i] << " ";
+            out << endl;
+            out << "ENGINE_LIBS_FORCED=";
+            for (size_t i=0; i<elibs.size(); i++)
+                out << elibs[i] << " ";
+            out << endl;
+            out << "MDSERVER_LIBS_FORCED=";
+            for (size_t i=0; i<mlibs.size(); i++)
+                out << mlibs[i] << " ";
+            out << endl;
+            out << "VIEWER_LIBS_FORCED=";
+            for (size_t i=0; i<vlibs.size(); i++)
+                out << vlibs[i] << " ";
+            out << endl;
 #ifndef __APPLE__
             out << "ELIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=" << endl;
@@ -458,7 +484,7 @@ class MakefileGeneratorPlugin : public Plugin
                    "-lenginerpc -lviewerrpc -lmdserverproxy -lmdserverrpc "
                    "-lvclproxy -lvclrpc -lplugin -lqtviswindow "
                    "-lviswindow_ser -lavtwriter_ser -lvtkqt -lwinutil "
-                   "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(ZLIB_LIB) "
+                   "-lproxybase $(QT_LDFLAGS) $(LIBV_QT_LIBS) $(ZLIB_LIB) "
                    "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser "
                    "-ldatabase_ser -lmir_ser -lplugin" << endl;
@@ -472,7 +498,7 @@ class MakefileGeneratorPlugin : public Plugin
                    "-lmdserverrpc -lviewerrpc -ldbatts -lwinutil "
                    "-lavtexceptions -lstate -lcomm -lmisc -lplugin "
                    "-lexpr -lparser -lutility "
-                   "$(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
+                   "$(QT_LDFLAGS) $(LIBG_QT_LIBS) $(X_LIBS)" << endl;
             out << "SLIBS=-lstate -lmisc -lutility -lcomm -lvisitpy "
                    "$(SLIBS_FOR_MACOSX_PREBINDING) $(PY_LIB)" << endl;
             out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
@@ -495,7 +521,7 @@ class MakefileGeneratorPlugin : public Plugin
                out << "-lviewer -lviewerrpc -lproxybase -lvclproxy -lvclrpc "
                       "-lmdserverproxy -lmdserverrpc -lengineproxy "
                       "-lenginerpc -lplugin -lavtwriter_ser -lviswindow_ser "
-                      "-lqtviswindow -lvtkqt -lwinutil $(QT_LIBS) ";
+                      "-lqtviswindow -lvtkqt -lwinutil $(LIBV_QT_LIBS) ";
             }
 
             // Add the rest of the viewer operator libs
@@ -568,13 +594,13 @@ class MakefileGeneratorPlugin : public Plugin
             {
                 for (size_t i=0; i<vfiles.size(); i++)
                 {
-                    int suffix = vfiles[i].findRev(".");
-                    if(suffix > 0 && vfiles[i].find("Mesa") != -1)
+                    int suffix = vfiles[i].lastIndexOf(".");
+                    if(suffix > 0 && vfiles[i].indexOf("Mesa") != -1)
                     {
                         if(vGraphicsObjects.length() == 0) vGraphicsObjects += " ";
                         vGraphicsObjects += (vfiles[i].left(suffix) + "_mesa.o ");
                     }
-                    else if(suffix > 0 && vfiles[i].find("OpenGL") != -1)
+                    else if(suffix > 0 && vfiles[i].indexOf("OpenGL") != -1)
                     {
                         if(vGraphicsObjects.length() == 0) vGraphicsObjects += " ";
                         vGraphicsObjects += (vfiles[i].left(suffix) + "_ogl.o ");
@@ -599,8 +625,8 @@ class MakefileGeneratorPlugin : public Plugin
             {
                 for (size_t i=0; i<efiles.size(); i++)
                 {
-                    int suffix = efiles[i].findRev(".");
-                    if(suffix > 0 && efiles[i].find("Mesa") != -1)
+                    int suffix = efiles[i].lastIndexOf(".");
+                    if(suffix > 0 && efiles[i].indexOf("Mesa") != -1)
                     {
                         QString root(efiles[i].left(suffix));
 
@@ -609,7 +635,7 @@ class MakefileGeneratorPlugin : public Plugin
                         eserGraphicsObjects += (root + "_mesa.o ");
                         eparGraphicsObjects += (root + "_par_mesa.o ");
                     }
-                    else if(suffix > 0 && efiles[i].find("OpenGL") != -1)
+                    else if(suffix > 0 && efiles[i].indexOf("OpenGL") != -1)
                     {
                         QString root(efiles[i].left(suffix));
 
@@ -649,6 +675,22 @@ class MakefileGeneratorPlugin : public Plugin
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
+            out << "GUI_LIBS_FORCED=";
+            for (size_t i=0; i<glibs.size(); i++)
+                out << glibs[i] << " ";
+            out << endl;
+            out << "ENGINE_LIBS_FORCED=";
+            for (size_t i=0; i<elibs.size(); i++)
+                out << elibs[i] << " ";
+            out << endl;
+            out << "MDSERVER_LIBS_FORCED=";
+            for (size_t i=0; i<mlibs.size(); i++)
+                out << mlibs[i] << " ";
+            out << endl;
+            out << "VIEWER_LIBS_FORCED=";
+            for (size_t i=0; i<vlibs.size(); i++)
+                out << vlibs[i] << " ";
+            out << endl;
 #ifndef __APPLE__
             out << "ELIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=" << endl;
@@ -661,14 +703,14 @@ class MakefileGeneratorPlugin : public Plugin
                    "-lenginerpc -lviewerrpc -lmdserverproxy -lmdserverrpc "
                    "-lvclproxy -lvclrpc -lplugin -lqtviswindow "
                    "-lviswindow_ser -lavtwriter_ser -lvtkqt -lwinutil "
-                   "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(ZLIB_LIB) "
+                   "-lproxybase $(QT_LDFLAGS) $(LIBV_QT_LIBS) $(ZLIB_LIB) "
                    "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin" << endl;
             out << "EPARLIBS_FOR_MACOSX_PREBINDING=-lavtddf_par -ldatabase_par -lmir_par -lplugin" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions -lplugin -ldbatts -lparser -lexpr" << endl;
 #endif
             out << "ILIBS=" << endl;
-            out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -ldbatts -lwinutil -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility $(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
+            out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -ldbatts -lwinutil -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility $(QT_LDFLAGS) $(LIBG_QT_LIBS) $(X_LIBS)" << endl;
             out << "SLIBS=-lstate -lmisc -lcomm -lutility -lvisitpy $(SLIBS_FOR_MACOSX_PREBINDING) $(PY_LIB)" << endl;
             out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
                    "-lavtmath_ser -lavtview -ldbatts -lavtexceptions "
@@ -741,6 +783,22 @@ class MakefileGeneratorPlugin : public Plugin
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
+            out << "GUI_LIBS_FORCED=";
+            for (size_t i=0; i<glibs.size(); i++)
+                out << glibs[i] << " ";
+            out << endl;
+            out << "ENGINE_LIBS_FORCED=";
+            for (size_t i=0; i<elibs.size(); i++)
+                out << elibs[i] << " ";
+            out << endl;
+            out << "MDSERVER_LIBS_FORCED=";
+            for (size_t i=0; i<mlibs.size(); i++)
+                out << mlibs[i] << " ";
+            out << endl;
+            out << "VIEWER_LIBS_FORCED=";
+            for (size_t i=0; i<vlibs.size(); i++)
+                out << vlibs[i] << " ";
+            out << endl;
             out << "ELIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "MLIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(ZLIB_LIB) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ILIBS=" << endl;

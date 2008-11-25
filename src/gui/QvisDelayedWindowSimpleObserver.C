@@ -57,10 +57,13 @@
 //   Brad Whitlock, Wed Apr  9 10:31:03 PDT 2008
 //   Changed ctor args.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // **************************************************************************** 
 
 QvisDelayedWindowSimpleObserver::QvisDelayedWindowSimpleObserver(
-    const QString &caption, WFlags f) : QvisDelayedWindow(caption, f),
+    const QString &caption, Qt::WindowFlags f) : QvisDelayedWindow(caption, f),
     SimpleObserver()
 {
     selectedSubject = 0;

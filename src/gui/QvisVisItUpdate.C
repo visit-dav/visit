@@ -37,69 +37,46 @@
 *****************************************************************************/
 
 #include <QvisVisItUpdate.h>
-#include <qapplication.h>
-#include <qcursor.h>
-#include <qfile.h>
-#include <qfileinfo.h>
-#include <qmessagebox.h>
-#include <qprocess.h>
-#include <qtimer.h>
-#include <qurlinfo.h>
+#include <QApplication>
+#include <QCursor>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QMap>
+#include <QMessageBox>
+#include <QProcess>
+#include <QTimer>
+
+#include <QvisDownloader.h>
     
 #include <stdlib.h>
 #include <visit-config.h>
 #include <DebugStream.h>
 #include <Utility.h>
 
-#define STAGE_CONNECT               0
-#define STAGE_LOGIN                 1
-#define STAGE_DETERMINE_VERSION     2
-#define STAGE_GET_FILES_FOR_VERSION 3
-#define STAGE_GET_FILES             4
-#define STAGE_INSTALL               5
-#define STAGE_CLEAN_UP              6
+#define STAGE_SUBMIT_RUNINFO        0
+#define STAGE_DETERMINE_VERSION     1
+#define STAGE_GET_FILES             2
+#define STAGE_INSTALL               3
+#define STAGE_CLEAN_UP              4
 #define STAGE_ERROR                 10
 
-//#define DEBUGGING
-#ifdef DEBUGGING
-#define CURRENT_VERSION "1.5.1"
-#define VISITARCHHOME   "/home/whitlocb/visitinstall/1.5.3b/linux-intel"
-#else
 #define CURRENT_VERSION VERSION
-#define VISITARCHHOME   getenv("VISITARCHHOME")
+
+#ifdef QT_NO_OPENSSL
+#define EXECUTABLE_HTML       "/codes/visit/executables.html"
+#define HTTPS_EXECUTABLE_HTML "https://wci.llnl.gov" EXECUTABLE_HTML
+#else
+// We don't have SSL so we can't download from our own website. 
+// Thanks a lot LLNL. Try a mirror site.
+#define EXECUTABLE_HTML       "/visit/executables.html"
+#define HTTPS_EXECUTABLE_HTML "http://www.visitusers.org" EXECUTABLE_HTML
 #endif
 
-//
-// Architecture names that match VisIt's architecture directories.
-//
-const char *archNames[] = {
-"darwin-ppc",
-"dec-osf1-alpha",
-"ibm-aix-pwr",
-"ibm-aix-pwr64",
-"linux-ia64",
-"linux-intel",
-"linux-x86_64",
-"sgi-irix6-mips2",
-"sun4-sunos5-sparc"
-};
-
-#define NARCH (sizeof(archNames) / sizeof(const char *))
-
-//
-// Names that match VisIt's distribution names.
-//
-const char *distNames[] = {
-"darwin",
-"osf1",
-"aix",
-"aix",
-"linux-ia64",
-"linux_chaos",
-"linux-x86_64",
-"irix6",
-"sunos5"
-};
+// There seems to be a QProcess bug on Apple so let's try a workaround.
+#ifdef __APPLE__
+#define QPROCESS_FINISHED_WORKAROUND
+#endif
 
 // ****************************************************************************
 // Method: QvisVisItUpdate::QvisVisItUpdate
@@ -121,16 +98,18 @@ const char *distNames[] = {
 //   Jeremy Meredith, Thu Aug  7 15:42:23 EDT 2008
 //   Fixed initializer order to match true order.
 //
+//   Brad Whitlock, Thu Oct  2 10:03:03 PDT 2008
+//   Made it use VisItDownloader.
+//
 // ****************************************************************************
 
-QvisVisItUpdate::QvisVisItUpdate(QObject *parent, const char *name) :
-    QObject(parent, name), GUIBase(), distName(), 
-    configName("none"), bankName("bdivp"),
+QvisVisItUpdate::QvisVisItUpdate(QObject *parent) : QObject(parent), GUIBase(), 
+    distName(), configName("none"), bankName("bdivp"),
     latestVersion(CURRENT_VERSION), 
-    files(), downloads()
+    files(), downloads(), bytes()
 {
-    stage = STAGE_CONNECT;
-    ftp = 0;
+    stage = STAGE_SUBMIT_RUNINFO;
+    downloader = 0;
     installProcess = 0;
 }
 
@@ -147,74 +126,50 @@ QvisVisItUpdate::QvisVisItUpdate(QObject *parent, const char *name) :
 //   Brad Whitlock, Wed Mar 2 11:13:28 PDT 2005
 //   I made it use QvisFtp.
 //
+//   Brad Whitlock, Thu Oct  2 14:03:15 PDT 2008
+//   Removed ftp.
+//
 // ****************************************************************************
 
 QvisVisItUpdate::~QvisVisItUpdate()
 {
-    if(ftp)
-    {
-        if(ftp->State() != QvisFtp::Unconnected)
-            ftp->Close();
-    }
 }
 
+
 // ****************************************************************************
-// Method: QvisVisItUpdate::provideLogin
+// Method: QvisVisItUpdate::runInformationString
 //
 // Purpose: 
 //   This class provides the ftp login for the VisIt FTP site.
+//
+// Returns: A bogus filename that contains a little run information.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 15 12:23:38 PDT 2005
 //
 // Modifications:
-//   Brad Whitlock, Wed Mar 2 11:13:28 PDT 2005
-//   I made it use QvisFtp.
-//
-//   Brad Whitlock, Thu May 25 12:04:40 PDT 2006
-//   I made it use the distName member.
 //
 // ****************************************************************************
 
-void
-QvisVisItUpdate::provideLogin()
+QString
+QvisVisItUpdate::runInformationString() const
 {
 #if defined(_WIN32)
     const char *platform = "win32";
 #else
-    const char *platform = distName.isEmpty() ? "?" : distName.latin1();
+    const char *platform = distName.isEmpty() ? "?" : distName.toStdString().c_str();
 #endif
 
     // Get the number of startups.
     ConfigStateEnum code;
     int nStartups = ConfigStateGetRunCount(code);
-    QString password;
-    password.sprintf("visit_update_%s_%s_%d", CURRENT_VERSION,
+    QString runinfo;
+    runinfo.sprintf("/codes/visit/visit_update_%s_%s_%d", CURRENT_VERSION,
         platform, nStartups);
 
-    ftp->Login("anonymous", password);
+    return runinfo;
 }
 
-// ****************************************************************************
-// Method: QvisVisItUpdate::latestDirectory
-//
-// Purpose: 
-//   This method returns the most recent version directory on the FTP site.
-//
-// Returns:    The most recent version directory.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 12:24:03 PDT 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-QString
-QvisVisItUpdate::latestDirectory() const
-{
-    return QString("/pub/visit/visit") + latestVersion + "/";
-}
 
 // ****************************************************************************
 // Method: QvisVisItUpdate::localTempDirectory
@@ -242,62 +197,6 @@ QvisVisItUpdate::localTempDirectory() const
 }
 
 // ****************************************************************************
-// Method: QvisVisItUpdate::getRequiredFiles
-//
-// Purpose: 
-//   Sets up the list of files that must be downloaded and starts downloading
-//   the files.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 12:25:22 PDT 2005
-//
-// Modifications:
-//   Brad Whitlock, Thu May 25 12:06:37 PDT 2006
-//   I made it use distName.
-//
-// ****************************************************************************
-
-void
-QvisVisItUpdate::getRequiredFiles()
-{
-    downloads.clear();
-#if defined(_WIN32)
-    QString dist("visit" + latestVersion + ".exe");
-    downloads += dist;
-#else
-    downloads += "visit-install";
-
-    //
-    // Add files that are appropriate for the architecture.
-    //
-    if(!distName.isEmpty())
-    {
-        QString dottedName(".");
-        dottedName += (distName + ".");
-        debug1 << "Look for a file having \"" << dottedName.latin1()
-               << "\" in the name" << endl;
-
-        for(int j = 0; j < files.count(); ++j)
-        {
-            if(files[j].find(dottedName) != -1)
-            {
-                debug1 << "Added " << files[j].ascii() << " to the list of downloads" << endl;
-                downloads += files[j];
-                break;
-            }
-        }
-    }
-#endif
-
-    // Make sure that all of the requested files are in the files list.
-    // If they are then initiate the download, otherwise issue an error.
-
-    files.clear();
-
-    initiateDownload();
-}
-
-// ****************************************************************************
 // Method: QvisVisItUpdate::getInstallationDir
 //
 // Purpose: 
@@ -321,7 +220,7 @@ QvisVisItUpdate::getRequiredFiles()
 QString
 QvisVisItUpdate::getInstallationDir() const
 {
-    return QString(GetVisItInstallationDirectory(latestVersion.latin1()).c_str());
+    return QString(GetVisItInstallationDirectory(latestVersion.toStdString().c_str()).c_str());
 }
 
 // ****************************************************************************
@@ -341,6 +240,9 @@ QvisVisItUpdate::getInstallationDir() const
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Oct  2 14:10:44 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -352,13 +254,13 @@ QvisVisItUpdate::installVisIt()
         if(installProcess != 0)
         {
 #if !defined(_WIN32)
-            disconnect(installProcess, SIGNAL(readyReadStdout()),
+            disconnect(installProcess, SIGNAL(readyReadStandardOutput()),
                        this, SLOT(readInstallerStdout()));
-            disconnect(installProcess, SIGNAL(readyReadStderr()),
+            disconnect(installProcess, SIGNAL(readyReadStandardError()),
                        this, SLOT(readInstallerStderr()));
 #endif
-            disconnect(installProcess, SIGNAL(processExited()),
-                       this, SLOT(emitInstallationComplete()));
+            disconnect(installProcess, SIGNAL(finished(int,QProcess::ExitStatus)),
+                       this, SLOT(emitInstallationComplete(int)));
             delete installProcess;
             installProcess = 0;
         }
@@ -367,49 +269,50 @@ QvisVisItUpdate::installVisIt()
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         Status(tr("Installing..."), 120000);
 
+        installProcess = new QProcess(0);
+        QStringList installerArgs;
 #if defined(_WIN32)
         // Install VisIt the WIN32 way by running the visit installer.
-        QString visitexe(files.front());
-        installProcess = new QProcess(visitexe, this, visitexe.latin1());
+        QString installer(files.front());
 #else
         // Install VisIt the UNIX way.
         QString visit_install(files.front());
-        QString command;
-        command.sprintf("chmod 700 %s", visit_install.latin1());
-        system(command.latin1());
+        QFile::setPermissions(visit_install, QFile::ReadOwner | 
+                              QFile::WriteOwner | QFile::ExeOwner);
 
         // Get the VisIt installation directory.
         QString installDir(getInstallationDir());
 
         // Create an installation process that will run visit-install.
-        if(installProcess == 0)
-        {
-            installProcess = new QProcess(visit_install, this, "visit-install");
-            installProcess->addArgument("-c");
-            installProcess->addArgument(configName);
-            installProcess->addArgument("-b");
-            installProcess->addArgument(bankName);
-            installProcess->addArgument(latestVersion);
-            installProcess->addArgument(distName);
-            installProcess->addArgument(installDir);
-            connect(installProcess, SIGNAL(readyReadStdout()),
-                    this, SLOT(readInstallerStdout()));
-            connect(installProcess, SIGNAL(readyReadStderr()),
-                    this, SLOT(readInstallerStderr()));
-            debug1 << "Going to run: visit-install -c "
-                   << configName.latin1()
-                   << " -b " << bankName.latin1() << " "
-                   << latestVersion.latin1() << " "
-                   << distName.latin1() << " " 
-                   << installDir.latin1() << endl;
-        }
+        QString installer(visit_install);
+
+        // Add installer arguments.
+        installerArgs.append("-c");
+        installerArgs.append(configName);
+        installerArgs.append("-b");
+        installerArgs.append(bankName);
+        installerArgs.append(latestVersion);
+        installerArgs.append(distName);
+        installerArgs.append(installDir);
+        connect(installProcess, SIGNAL(readyReadStandardOutput()),
+                this, SLOT(readInstallerStdout()));
+        connect(installProcess, SIGNAL(readyReadStandardError()),
+                this, SLOT(readInstallerStderr()));
+
+        debug1 << "Going to run: visit-install -c "
+               << configName.toStdString()
+               << " -b " << bankName.toStdString() << " "
+               << latestVersion.toStdString() << " "
+               << distName.toStdString() << " " 
+               << installDir.toStdString() << endl;
 #endif
+        debug1 << "Connecting finished->emitInstallationComplete" << endl;
         // We want to know when the installer completes.
-        connect(installProcess, SIGNAL(processExited()),
-                this, SLOT(emitInstallationComplete()));
+        connect(installProcess, SIGNAL(finished(int,QProcess::ExitStatus)),
+                this, SLOT(emitInstallationComplete(int)));
 
         // Start the visit installer.
-        installProcess->start();
+        installProcess->start(installer, installerArgs);
     }
 }
 
@@ -429,14 +332,50 @@ QvisVisItUpdate::installVisIt()
 void
 QvisVisItUpdate::cleanUp()
 {
+#ifdef QPROCESS_FINISHED_WORKAROUND
+    installProcess->kill();
+    delete installProcess;
+    installProcess = 0;
+#endif
+
     // Delete all of the files in the files list.
     QDir dir;
     for(size_t i = 0; i < files.count(); ++i)
     {
         dir.remove(files[i]);
-        debug1 << "Removed " << files[i].latin1() << endl;
+        debug1 << "Removed " << files[i].toStdString() << endl;
     }
     files.clear();
+}
+
+// ****************************************************************************
+// Method: QvisVisItUpdate::remoteToLocalName
+//
+// Purpose: 
+//   Converts the remote name to the local filename (strips off the end filename).
+//
+// Arguments:
+//   remote : The name of the remote file.
+//
+// Returns:    The name of the local file.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  2 10:53:45 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisVisItUpdate::remoteToLocalName(const QString &remote) const
+{
+    QString localName(remote);
+    int slash = remote.lastIndexOf("/");
+    if(slash != -1)
+        localName = localTempDirectory() + remote.right(remote.size()-slash-1); 
+    return localName;
 }
 
 //
@@ -463,6 +402,10 @@ QvisVisItUpdate::cleanUp()
 //   the VisIt distribution when we don't have enough information to tell
 //   from the archdir included in the path name.
 //
+//   Brad Whitlock, Thu Oct  2 09:56:03 PDT 2008
+//   Moved the code that reads the installation info into the 
+//   ReadInstallationInfo function.
+//
 // ****************************************************************************
 
 void
@@ -471,110 +414,25 @@ QvisVisItUpdate::startUpdate()
 #if !defined(_WIN32)
     const char *mName = "QvisVisItUpdate::startUpdate: ";
 
-    //
-    // Try and determine the platform that should be downloaded.
-    //
-    const char *archHome = VISITARCHHOME;
-    bool platformDetermined = false;
-    if(archHome != 0)
+    std::string s1, s2, s3;
+    if(ReadInstallationInfo(s1, s2, s3))
     {
-        QString arch(archHome);
+        distName   = s1.c_str();
+        if(s2.size() > 0)
+            configName = s2.c_str();
+        if(s3.size() > 0)
+            bankName = s3.c_str();
 
-        // Try and read the .installinfo file that tells us just how VisIt
-        // was installed. That way we can be sure that we pick up the right
-        // Linux or AIX installation.
-        QString installinfo(archHome);
-        if(installinfo[installinfo.length()-1] != '/')
-            installinfo += "/";
-        installinfo += ".installinfo";
-
-        debug1 << mName << "Opening " << installinfo.latin1() << endl;
-        FILE *fp = fopen(installinfo.latin1(), "rt");
-        if(fp != NULL)
-        {
-            int fver = 0;
-            if(fscanf(fp, "%d;", &fver) == 1)
-            {
-                char str[200];
-                for(int i = 0; i < 3; ++i)
-                {
-                    int j = 0;
-                    for(; j < 200-1; ++j)
-                    {                        
-                        str[j] = (char)fgetc(fp);
-                        if(str[j] == ';' || str[j] < ' ')
-                            break;
-                    }
-                    str[j] = '\0';
-
-                    if(j >= 1)
-                    {
-                        debug1 << mName << "str = " << str << endl;
-                        if(i == 0)
-                            configName = str;
-                        else if(i == 1)
-                            bankName = str;
-                        else
-                        {
-                            distName = str;
-                            platformDetermined = true;
-                        }                          
-                    }
-                    else
-                    {
-                        debug1 << mName << "Error reading .installinfo file." << endl;
-                        break;
-                    }
-                }
-
-                debug1 << mName << "distName = " << distName.ascii() << endl;
-                debug1 << mName << "configName = " << configName.ascii() << endl;
-                debug1 << mName << "bankName = " << bankName.ascii() << endl;
-            }
-            else
-                debug1 << mName << "Invalid .installinfo version" << endl;
-
-            fclose(fp);
-        }
-        else
-            debug1 << mName << "Could not open " << installinfo.latin1() << endl;
-
-        // We could not open the .installinfo file so let's try and
-        // determine the distName based on the archNames.
-        if(!platformDetermined)
-        {
-            debug1 << mName << "Guessing distribution name" << endl;
-            int lastSlash = arch.findRev('/');
-            if(lastSlash != -1)
-            {
-                arch = arch.right(arch.length() - lastSlash - 1);
-                for(int i = 0; i < NARCH; ++i)
-                {
-                    if(arch == archNames[i])
-                    {
-                        platformDetermined = true;
-                        distName = distNames[i];
-                        break;
-                    }
-                }
-            }
-        }
-
-        if(!platformDetermined)
-            debug1 << mName << "Unknown plaform: " << arch.latin1() << endl;
-        else
-            debug1 << mName << "Distribution: " <<  distName.latin1() << endl;
+        debug1 << mName << "distName = " << distName.toStdString().c_str() << endl;
+        debug1 << mName << "configName = " << configName.toStdString().c_str() << endl;
+        debug1 << mName << "bankName = " << bankName.toStdString().c_str() << endl;
     }
     else
-        debug1 << mName << "VISITARCHHOME was not set." << endl;
-
-    if(!platformDetermined)
     {
-        Error(tr("VisIt could not determine the platform that "
-              "you are running on so VisIt cannot automatically "
-              "update. You should browse to "
-              "ftp://ftp.llnl.gov/pub/visit and download "
-              "the latest binary distribution for your platform."));
+        Error(tr("VisIt could not determine the platform that you are running "
+                 "on so VisIt cannot automatically update. You should browse "
+                 "to %1 and download the latest binary distribution for your "
+                 "platform.").arg(HTTPS_EXECUTABLE_HTML));
         emit updateNotAllowed();
         return;
     }
@@ -601,22 +459,17 @@ QvisVisItUpdate::startUpdate()
     }
 #endif
 
-    if(ftp == 0)
+    // Create a downloader and start the process of updating by downloading
+    // the executables.html page and figuring out which versions are available.
+    if(downloader == 0)
     {
-        ftp = new QvisFtp(this);
-        connect( ftp, SIGNAL(CommandStarted()),
-            SLOT(ftp_commandStarted()) );
-        connect( ftp, SIGNAL(CommandFinished()),
-            SLOT(ftp_commandFinished()) );
-        connect( ftp, SIGNAL(Done(bool)),
-            SLOT(ftp_done(bool)) );
-        connect( ftp, SIGNAL(StateChanged(int)),
-            SLOT(ftp_stateChanged(int)) );
-        connect( ftp, SIGNAL(ListInfo(const QUrlInfo &)),
-            SLOT(ftp_listInfo(const QUrlInfo &)) );
+        downloader = new QvisDownloader(this);
+        connect(downloader, SIGNAL(downloadProgress(int,int)),
+                this, SLOT(reportDownloadProgress(int,int)));
     }
 
-    stage = STAGE_CONNECT;
+    // Start the process by determining the versions that are available.
+    stage = STAGE_DETERMINE_VERSION;
     initiateStage();
 }
 
@@ -634,6 +487,9 @@ QvisVisItUpdate::startUpdate()
 //   Brad Whitlock, Wed Mar 2 11:10:08 PDT 2005
 //   I made it use QvisFtp.
 //
+//   Brad Whitlock, Thu Oct  2 09:36:42 PDT 2008
+//   Simplified because we're using http now.
+//
 // ****************************************************************************
 
 void
@@ -643,33 +499,38 @@ QvisVisItUpdate::initiateStage()
 
     switch(stage)
     {
-    case STAGE_CONNECT:
-         ftp->ConnectToHost("ftp.llnl.gov", 21);
-         break;
-    case STAGE_LOGIN:
-         provideLogin();
+    case STAGE_SUBMIT_RUNINFO:
+         connect(downloader, SIGNAL(done(bool)),
+                 this, SLOT(doneSubmittingRunInfo(bool)));
+         bytes.clear();
+         debug1 << "Send run information to server: "
+                << runInformationString().toStdString().c_str() << endl;
+         downloader->get(runInformationString(), &bytes);
          break;
     case STAGE_DETERMINE_VERSION:
-         ftp->List("/pub/visit");
-         break;
-    case STAGE_GET_FILES_FOR_VERSION:
-         ftp->List(latestDirectory());
+         disconnect(downloader, SIGNAL(done(bool)),
+                    this, SLOT(doneSubmittingRunInfo(bool)));
+         connect(downloader, SIGNAL(done(bool)),
+                 this, SLOT(determineNewVersion(bool)));
+         disconnect(downloader, SIGNAL(done(bool)),
+                    this, SLOT(downloadDone(bool)));
+         debug1 << "Getting " << EXECUTABLE_HTML << endl;
+         bytes.clear();
+         downloader->get(EXECUTABLE_HTML, &bytes);
          break;
     case STAGE_GET_FILES:
-         connect(ftp, SIGNAL(DataTransferProgress(int,int)),
-             this, SLOT(ftp_reportDownloadProgress(int,int)));
+         disconnect(downloader, SIGNAL(done(bool)),
+                    this, SLOT(determineNewVersion(bool)));
+         connect(downloader, SIGNAL(done(bool)),
+                 this, SLOT(downloadDone(bool)));
          getRequiredFiles();
          break;
     case STAGE_INSTALL:
-         disconnect(ftp, SIGNAL(DataTransferProgress(int,int)),
-                this, SLOT(ftp_reportDownloadProgress(int,int)));
          installVisIt();
          break;
     case STAGE_CLEAN_UP:
     case STAGE_ERROR:
          cleanUp();
-         if(ftp->State() != QvisFtp::Unconnected)
-             ftp->Close();
          break;
     }
 
@@ -699,12 +560,185 @@ QvisVisItUpdate::nextStage()
 }
 
 // ****************************************************************************
-// Method: QvisVisItUpdate::initiateDownload
+// Method: QvisVisItUpdate::doneSubmittingRunInfo
 //
 // Purpose: 
-//   This is a Qt slot function that downloads a file from the VisIt FTP site
-//   and adds it to the files list, which contains the local names of the
-//   files that have been downloaded.
+//   Move us onto the next stage after submitting run information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  2 12:07:46 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVisItUpdate::doneSubmittingRunInfo(bool)
+{
+    nextStage();
+}
+
+// ****************************************************************************
+// Method: QvisVisItUpdate::determineNewVersion
+//
+// Purpose: 
+//   This Qt slot function is called when we're down downloading the
+//   executables.html page from which we discern the available versions.
+//
+// Arguments:
+//   error : True if an error occurred during download of the executables page.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  2 10:46:45 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVisItUpdate::determineNewVersion(bool error)
+{
+    QWidget *p = qApp->activeWindow();
+
+    if(!error)
+    {
+        // Now that we have the bytes, let's search them for "href=" and filter
+        // to create a map of versions to the installation files that are present.
+        int from = 0;
+        int index;
+        QMap<QString, QStringList> installations;
+        while((index = bytes.indexOf("href=\"", from)) != -1)
+        {
+            int start = index + 6;
+            int end = bytes.indexOf("\"", start + 6);
+            QString href(bytes.mid(start, end - start));
+            if((href.right(3) == ".gz" || href.right(4) == ".exe") && !href.contains("jvisit"))
+            {
+                int slash = href.indexOf("/");
+                if(slash != -1)
+                {
+                    QString version = href.left(slash);
+                    if(installations.find(version) == installations.end())
+                    {
+                        QStringList ilist;
+                        ilist.append(QString("/codes/visit/") + href);
+                        installations[version] = ilist;
+                    }
+                    else
+                        installations[version].append(QString("/codes/visit/") + href);
+                }
+            }
+            from = end + 1;
+        }
+        bytes.clear();
+
+        // Now we have a map of version numbers to string lists that contain hrefs
+        // that point to specific installation files. Write the files to the 
+        // debug logs.
+        for(QMap<QString, QStringList>::const_iterator it = installations.begin();
+            it != installations.end(); ++it)
+        {
+            debug4 << "Version " << it.key().toStdString().c_str() << endl;
+            for(int i = 0; i < it.value().size(); ++i)
+                debug4 << "\t" << it.value()[i].toStdString().c_str() << endl;
+        }
+
+        // Look for the newest version that has the supported distName.
+        QString maxVersion(CURRENT_VERSION), maxUsableVersion(CURRENT_VERSION);
+        QString installationFile;
+        for(QMap<QString, QStringList>::const_iterator it = installations.begin();
+            it != installations.end(); ++it)
+        {
+            if(VersionGreaterThan(it.key().toStdString(), maxVersion.toStdString()))
+            {
+                maxVersion = it.key();
+                for(int i = 0; i < it.value().size(); ++i)
+                {
+#ifdef WIN32
+                    if(it.value()[i].contains(".exe") &&
+                       !it.value()[i].contains("visitdev"))
+#else
+                    if(it.value()[i].contains(distName))
+#endif
+                    {
+                        maxUsableVersion = it.key();
+                        installationFile = it.value()[i];
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(VersionGreaterThan(maxVersion.toStdString(), CURRENT_VERSION))
+        {
+            if(maxVersion != maxUsableVersion)
+            {
+                // There's a newer version than the max usable version, probably
+                // meaning that the installed distribution type was discontinued
+                QMessageBox::information(p, tr("VisIt"),
+                    tr("There is a newer version of VisIt available (version %1) "
+                       "but your distribution type: %2 was not found in the new "
+                       "version. There is likely another distribution type that "
+                       "will work for you but you will need to determine that "
+                       "and install VisIt yourself. Alternatively, you can "
+                       "build VisIt for your platform using the build_visit "
+                       "script.").
+                    arg(maxVersion).arg(distName));
+                emit updateNotAllowed();
+                return;
+            }
+
+            latestVersion = maxUsableVersion;
+            downloads.clear();
+#ifndef WIN32
+            int slash = installationFile.lastIndexOf("/");
+            if(slash != -1)
+            {
+                QString visitinstall(installationFile.left(slash+1) + "visit-install");
+                downloads += visitinstall;
+            }
+#endif
+            downloads += installationFile;
+
+            // Print out the list of downloads.
+            debug1 << "Downloads for update:" << endl;
+            for(int i = 0; i < downloads.size(); ++i)
+                debug1 << "\t" << downloads[i].toStdString().c_str() << endl;
+
+            // Ask the user whether or not VisIt should be installed.
+            QString msg(tr("VisIt %1 is available for download. Would you "
+                           "like to install it?").arg(latestVersion));
+            if(QMessageBox::information(p, "VisIt", msg,
+               QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+            {
+                debug1 << "User chose not to install VisIt "
+                       << latestVersion.toStdString() << endl;
+                emit updateNotAllowed();
+            }
+            else
+                nextStage();
+        }
+        else
+        {
+            // we're up to date.
+            QMessageBox::information(p, tr("VisIt"),
+                tr("Your version of VisIt is up to date."));
+            emit updateNotAllowed();
+        }
+    }
+    else
+    {
+        QMessageBox::critical(p, tr("VisIt"),
+            tr("VisIt was not able to check for updates."));
+    }
+}
+
+// ****************************************************************************
+// Method: QvisVisItUpdate::getRequiredFiles
+//
+// Purpose: 
+//   This is a Qt slot function that initiates the download of a file from 
+//   the VisIt site.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 15 12:36:11 PDT 2005
@@ -716,53 +750,111 @@ QvisVisItUpdate::nextStage()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Oct  2 09:23:31 PDT 2008
+//   Rewrote for HTTP and Qt4.
+//
 // ****************************************************************************
 
 void
-QvisVisItUpdate::initiateDownload()
+QvisVisItUpdate::getRequiredFiles()
 {
-    if(downloads.count() > 0)
-    {
-        QString current(downloads.first());
-        downloads.pop_front();
-        QString localName(localTempDirectory() + current);
-        QString remoteName(latestDirectory() + current);
+    QString remoteName(downloads.first());
+    QString localName(remoteToLocalName(remoteName));
+    debug1 << "Going to download " <<  remoteName.toStdString().c_str()
+           << " into local file " << localName.toStdString().c_str() << endl;
 
-        debug1 << "Going to download " <<  remoteName.latin1()
-               << " into local file " << localName.latin1() << endl;
-
-        QFile *file = new QFile(localName);
-        if(!file->open(IO_WriteOnly))
-        {
-            QString msg = tr("Could not download %1! Can't finish updating VisIt.").
-                          arg(localName);
-            Error(msg);
-
-            delete file;
-            ++stage; // skip installation and go to cleanup.
-            nextStage();
-        }
-        files += localName;
-
-        ftp->Get(remoteName, file);
-    }
-    else
-        nextStage();
+    downloader->get(remoteName, localName);
 }
 
+// ****************************************************************************
+// Method: QvisVisItUpdate::downloadDone
+//
+// Purpose: 
+//   This slot function is called when the downloader has completed downloading
+//   a file.
+//
+// Arguments:
+//   error : Teue if an error occurred during the download of one of the
+//           required files.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  2 09:26:51 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVisItUpdate::downloadDone(bool error)
+{
+    QString remoteName(downloads.front());
+    downloads.pop_front();
+
+    if(error)
+    {
+        QMessageBox::critical(qApp->activeWindow(), tr("VisIt"),
+            tr("VisIt was not able to download %1 so the update will not "
+               "proceed. Try again later.").arg(remoteName));
+    }
+    else
+    {
+        files.push_back(remoteToLocalName(remoteName));
+        if(downloads.count() > 0)
+            QTimer::singleShot(10, this, SLOT(getRequiredFiles()));
+        else
+            nextStage();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisVisItUpdate::readInstallerStdout
+//
+// Purpose: 
+//   This Qt slot function adds the visit-install output to the output window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  2 10:52:06 PDT 2008
+//
+// Modifications:
+//   Brad Whitlock, Thu Oct  2 14:35:15 PDT 2008
+//   Qt 4.
+//   
+// ****************************************************************************
 
 void
 QvisVisItUpdate::readInstallerStdout()
 {
     // Add the output to the output window.
-    Message(installProcess->readLineStdout());
+    QString output(installProcess->readAllStandardOutput());
+#ifdef QPROCESS_FINISHED_WORKAROUND
+    Message(output);
+    if(output.contains("visit-install done"))
+        emitInstallationComplete(0);
+#else
+    Message(output);
+#endif
 }
+
+// ****************************************************************************
+// Method: QvisVisItUpdate::readInstallerStderr
+//
+// Purpose: 
+//   This Qt slot function adds the visit-install output to the output window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  2 10:52:06 PDT 2008
+//
+// Modifications:
+//   Brad Whitlock, Thu Oct  2 14:35:15 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
 
 void
 QvisVisItUpdate::readInstallerStderr()
 {
     // Add the output to the output window.
-    Message(installProcess->readLineStderr());
+    Message(QString(installProcess->readAllStandardError()));
 }
 
 // ****************************************************************************
@@ -784,11 +876,17 @@ QvisVisItUpdate::readInstallerStderr()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Mon Oct  6 09:28:59 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisVisItUpdate::emitInstallationComplete()
+QvisVisItUpdate::emitInstallationComplete(int exitCode)
 {
+    debug1 << "QvisVisItUpdate::emitInstallationComplete: exit=" << exitCode
+           << endl;
+
     // Restore the cursor since we're done installing.
     QApplication::restoreOverrideCursor();
     Status(tr("Installation complete."), 1000);
@@ -823,7 +921,7 @@ QvisVisItUpdate::emitInstallationComplete()
 }
 
 // ****************************************************************************
-// Method: QvisVisItUpdate::ftp_reportDownloadProgress
+// Method: QvisVisItUpdate::reportDownloadProgress
 //
 // Purpose: 
 //   This is a Qt slot function that we hook up while we download the 
@@ -839,286 +937,17 @@ QvisVisItUpdate::emitInstallationComplete()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
-//   
-// ****************************************************************************
-
-void
-QvisVisItUpdate::ftp_reportDownloadProgress(int done, int total)
-{
-    QString msg, b;
-    b.sprintf("%d/%d", done, total);
-    msg = tr("Downloaded %1 bytes.").arg(b);
-    Status(msg);
-}
-
-// ****************************************************************************
-// Method: QvisVisItUpdate::ftp_commandStarted
 //
-// Purpose: 
-//   This is a Qt slot function that is called when ftp commands start.
-//
-// Note:       We use this method to help determine state transitions.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 12:39:15 PDT 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVisItUpdate::ftp_commandStarted()
-{
-    debug1 << "ftp_commandStarted: stage=" << stage << endl;
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-
-    if(stage == STAGE_GET_FILES_FOR_VERSION)
-        files.clear();
-}
-
-// ****************************************************************************
-// Method: QvisVisItUpdate::ftp_commandFinished
-//
-// Purpose: 
-//   This is a Qt slot function that is called when ftp commands complete.
-//
-// Note:       We use this method to help determine state transitions.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 12:39:15 PDT 2005
-//
-// Modifications:
-//   Brad Whitlock, Wed Mar 2 11:17:24 PDT 2005
-//   I made it use QvisFtp.
-//
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
+//   Brad Whitlock, Mon Oct  6 09:47:22 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
 void
-QvisVisItUpdate::ftp_commandFinished()
+QvisVisItUpdate::reportDownloadProgress(int done, int total)
 {
-    debug1 << "ftp_commandFinished: stage=" << stage << endl;
-    QApplication::restoreOverrideCursor();
-
-    ftp->DeleteCurrentDevice();
-
-    if(stage == STAGE_CONNECT || stage == STAGE_LOGIN)
-    {
-         nextStage();
-    }
-    else if(stage == STAGE_DETERMINE_VERSION)
-    {
-        debug1 << "The latest version of VisIt that was found is: "
-               << latestVersion.latin1() << endl;
-
-        QWidget *p = 0;
-        if(parent() != 0 && parent()->isWidgetType())
-            p = (QWidget *)parent();
-
-        if(latestVersion == CURRENT_VERSION)
-        {
-            // Inform the user.
-            QMessageBox::information(p, "VisIt",
-                tr("Your version of VisIt is up to date."),
-                QMessageBox::Ok);
-            emit updateNotAllowed();
-        }
-        else
-        {
-            // Ask the user whether or not VisIt should be installed.
-            QString msg(tr("VisIt %1 is available for download. Would you "
-                           "like to install it?").arg(latestVersion));
-            if(QMessageBox::information(p, "VisIt", msg,
-               QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
-            {
-                // Make the next stage be the clean up stage.
-                stage = STAGE_CLEAN_UP-1;
-                debug1 << "User chose not to install VisIt "
-                       << latestVersion.latin1() << endl;
-                emit updateNotAllowed();
-            }
-
-            nextStage();
-        }
-    }
-    else if(stage == STAGE_GET_FILES_FOR_VERSION)
-    {
-        debug1 << "Files for version " << latestVersion.latin1() << ":\n";
-        for(size_t i = 0; i < files.count(); ++i) 
-            debug1 << "\t" << files[i].latin1() << endl;
-        nextStage();
-    }
-    else if (stage == STAGE_GET_FILES)
-    {
-        // Get the next file.
-        QTimer::singleShot(100, this, SLOT(initiateDownload()));
-    }
-}
-
-// ****************************************************************************
-// Method: QvisVisItUpdate::ftp_done
-//
-// Purpose: 
-//   This method is called when there is an FTP error.
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 12:47:58 PDT 2005
-//
-// Modifications:
-//   Brad Whitlock, Wed Mar 2 11:10:40 PDT 2005
-//   I made it use QvisFtp.
-//
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
-//
-// ****************************************************************************
-
-void
-QvisVisItUpdate::ftp_done(bool error)
-{
-    if(error)
-    {
-        QString msg(tr("VisIt could not complete the update.\nFTP Error: "));
-        msg += ftp->ErrorString();
-        Error(msg);
-
-        // If we are connected, but not logged in, it is not meaningful to stay
-        // connected to the server since the error is a really fatal one (login
-        // failed).
-        if(ftp->State() == QvisFtp::Connected)
-            ftp->Close();
-        stage = STAGE_ERROR;
-    }
-}
-
-void
-QvisVisItUpdate::ftp_stateChanged(int state)
-{
-#if 0
-    switch((QvisFtp::State)state)
-    {
-    case QvisFtp::Unconnected:
-        qDebug("Unconnected");
-        break;
-    case QvisFtp::HostLookup:
-        qDebug("Host lookup");
-        break;
-    case QvisFtp::Connecting:
-        qDebug("Connecting");
-        break;
-    case QvisFtp::Connected:
-        qDebug("Connected");
-        break;
-    case QvisFtp::LoggedIn:
-        qDebug("Logged in");
-        break;
-    case QvisFtp::Closing:
-        qDebug("Closing");
-        break;
-    }
-#endif
-}
-
-// ****************************************************************************
-// Method: QvisVisItUpdate::ftp_listInfo
-//
-// Purpose: 
-//   This is a Qt slot function that is called in response to an FTP list
-//   operation.
-//
-// Arguments:
-//   item : Information about the i'th item in the directory.
-//
-// Note:       This method is called for each item in a directory. We use
-//             this method to gather information about the version and the
-//             files that are available for download.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 12:43:43 PDT 2005
-//
-// Modifications:
-//   Brad Whitlock, Mon Mar 7 14:48:50 PST 2005
-//   I fixed some bad logic that prevented it from determining the correct
-//   new version.
-//
-// ****************************************************************************
-
-void
-QvisVisItUpdate::ftp_listInfo(const QUrlInfo &item)
-{
-#if 0
-    QString itemType;
-    if(item.isDir())
-        itemType = "dir";
+    if(done == total)
+        ClearStatus();
     else
-        itemType = "file";
-
-    qDebug("ftp_listInfo: %s %s %d %s", itemType.latin1(),
-           item.name().latin1(), item.size(), 
-           item.lastModified().toString().latin1());
-#endif
-
-    if(stage == STAGE_DETERMINE_VERSION)
-    {
-        // If it's a directory with "visit" at the start then
-        // look for a version number in the directory. Compare
-        // the version number to see if it's greater than the
-        // version compiled into the application.
-        int index = -1;
-        if(item.isDir() && 
-           ((index = item.name().find("visit")) == 0))
-        {
-            // Split the VisIt version into major, minor, patch.
-            QStringList visitVersion(QStringList::split(".", CURRENT_VERSION));
-
-            // Split the file version into major, minor, patch.
-            QString version(item.name().right(item.name().length() - 5));
-            QStringList fileVersion(QStringList::split(".", version));
-
-            // Make sure both versions have the same number of numbers.
-            int n = visitVersion.count();
-            if(n != fileVersion.count())
-            {
-                 n = (fileVersion.count() > n) ? fileVersion.count() : n;
-
-                 while(visitVersion.count() < n)
-                     visitVersion += "0";
-
-                 while(fileVersion.count() < n)
-                     fileVersion += "0";
-            }                      
-
-            for(int i = 0; i < n; ++i)
-            {
-                bool okay1 = true, okay2 = true;
-
-                int vv = visitVersion[i].toInt(&okay1);
-                int fv = fileVersion[i].toInt(&okay2);
-                if(okay1 && okay2)
-                {
-                    if(vv < fv)
-                    {
-                        latestVersion = version;
-                        break;
-                    }
-                    else if(fv != vv)
-                        break;
-                }
-                else
-                    break;
-            }
-        }
-    }
-    else if (stage == STAGE_GET_FILES_FOR_VERSION)
-    {
-        files += item.name();
-    }
+        Status(tr("Downloaded %1 / %2 bytes.").arg(done).arg(total));
 }

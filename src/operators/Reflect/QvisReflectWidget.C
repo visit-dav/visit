@@ -39,9 +39,11 @@
 #include <QvisReflectWidget.h>
 #include <math.h>
 #include <qdrawutil.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qtimer.h>
+#include <QColorGroup>
+#include <QPainter>
+#include <QPixmap>
+#include <QResizeEvent>
+#include <QTimer>
 
 #include <mini3D.h>
 
@@ -112,12 +114,15 @@ m3d_complex_element QvisReflectWidget::arrow;
 //   Brad Whitlock, Mon Jun 23 16:50:18 PST 2003
 //   I initialized the mode2D member.
 //
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
-QvisReflectWidget::QvisReflectWidget(QWidget *parent, const char *name) : 
-    QWidget(parent, name), renderer(250,250)
+QvisReflectWidget::QvisReflectWidget(QWidget *parent) : 
+    QWidget(parent), renderer(250,250)
 {
-    pixmap = 0;
+    setMinimumSize(250,250);
     rendererCreated = false;
     mode2D = true;
 
@@ -146,12 +151,13 @@ QvisReflectWidget::QvisReflectWidget(QWidget *parent, const char *name) :
 // Creation:   Tue Mar 11 09:48:28 PDT 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 QvisReflectWidget::~QvisReflectWidget()
 {
-    deleteBackingPixmap();
 }
 
 // ****************************************************************************
@@ -209,7 +215,9 @@ QvisReflectWidget::sizePolicy() const
 // Creation:   Mon Jun 23 16:51:40 PST 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -218,7 +226,6 @@ QvisReflectWidget::setMode2D(bool val)
     if(mode2D != val)
     {
         mode2D = val;
-        deleteBackingPixmap();
         update();
     }
 }
@@ -257,6 +264,9 @@ QvisReflectWidget::getMode2D() const
 //   Brad Whitlock, Tue Jun 24 16:32:45 PST 2003
 //   I added a call to initializeAxes2D.
 //
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -270,44 +280,22 @@ QvisReflectWidget::createSharedElements()
                          SPHERE_ON_RAD, 1., 0., 1.);
         initializeSphere(offSphere, SPHERE_OFF_XDIM, SPHERE_OFF_YDIM,
                          SPHERE_OFF_RAD,
-                         float(colorGroup().background().red()) / 255.,
-                         float(colorGroup().background().green()) / 255.,
-                         float(colorGroup().background().blue()) / 255.);
+                         float(palette().background().color().red()) / 255.,
+                         float(palette().background().color().green()) / 255.,
+                         float(palette().background().color().blue()) / 255.);
 
         initializeCube(onCube, CUBE_ON_NX, CUBE_ON_NY, CUBE_ON_SIZE,
                        0., 1., 0.);
         initializeCube(offCube, CUBE_OFF_NX, CUBE_OFF_NY, CUBE_OFF_SIZE,
-                       float(colorGroup().background().red()) / 255.,
-                       float(colorGroup().background().green()) / 255.,
-                       float(colorGroup().background().blue()) / 255.);
+                       float(palette().background().color().red()) / 255.,
+                       float(palette().background().color().green()) / 255.,
+                       float(palette().background().color().blue()) / 255.);
         initializeArrow();
 
         sharedElementsCreated = true;
     }
 }
 
-// ****************************************************************************
-// Method: QvisReflectWidget::deleteBackingPixmap
-//
-// Purpose: 
-//   Deletes the backing pixmap.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Mar 11 09:53:21 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisReflectWidget::deleteBackingPixmap()
-{
-    if(pixmap)
-    {
-        delete pixmap;
-        pixmap = 0;
-    }
-}
 
 // ****************************************************************************
 // Method: QvisReflectWidget::redrawScene
@@ -325,6 +313,9 @@ QvisReflectWidget::deleteBackingPixmap()
 //   Brad Whitlock, Mon Jun 23 16:56:48 PST 2003
 //   I split out the code that draws 3d into its own method and added code
 //   to draw the 2d scene too.
+//
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
 //
 // ****************************************************************************
 
@@ -373,7 +364,7 @@ void
 QvisReflectWidget::redrawScene2D(QPainter *painter)
 {
     // Fill in the background color.
-    painter->fillRect(rect(), colorGroup().brush(QColorGroup::Background));
+    painter->fillRect(rect(), palette().brush(QPalette::Background));
 
     //
     // Set up the camera.
@@ -407,7 +398,7 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
     vector3 x1 = renderer.transform_world_point(vec_create(axes_size, 0, axes_size));
     vector3 y0 = renderer.transform_world_point(vec_create(0, axes_size, axes_size));
     vector3 y1 = renderer.transform_world_point(vec_create(0, -axes_size, axes_size));
-    painter->setPen(colorGroup().foreground());
+    painter->setPen(palette().foreground().color());
     const char *x = "+X";
     painter->drawText((int) x0.x, (int) (x0.y + h), "-X");
     painter->drawText((int) (x1.x - fontMetrics().width(x)), (int) (x1.y + h), x);
@@ -563,13 +554,16 @@ QvisReflectWidget::setupCamera()
 //   Hank Childs, Thu Jun  8 14:08:18 PDT 2006
 //   Fix compiler warnings for casting.
 //
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisReflectWidget::setupAndDraw(QPainter *p)
 {
     // Fill in the background color.
-    p->fillRect(rect(), colorGroup().brush(QColorGroup::Background));
+    p->fillRect(rect(), palette().brush(QPalette::Background));
 
     renderer.set_light(1, M3D_LIGHT_EYE, 0.f,0.f,-35.f, 1.f, 1.f, 1.f);
     renderer.set_light(2, M3D_LIGHT_OFF, 0.f,0.f,-1.f, 0.f, 0.f, 0.f);
@@ -613,7 +607,7 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
     {
         int cx = width() / 2;
         int cy = height() / 2;
-        int edge = QMIN(width(), height());
+        int edge = qMin(width(), height());
         QRect square(cx - edge / 2, cy - edge / 2, edge, edge);
 
         if(activeCamera == 0)
@@ -716,7 +710,9 @@ QvisReflectWidget::ScaleTranslateFromOriginToOctant(int octant, float s)
 // Creation:   Tue Mar 11 10:26:53 PDT 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -732,9 +728,7 @@ QvisReflectWidget::setValues(bool *octants)
 
     if(different)
     {
-        deleteBackingPixmap();
         update();
-
         emit valueChanged(octantOn);
     }
 }
@@ -752,7 +746,9 @@ QvisReflectWidget::setValues(bool *octants)
 // Creation:   Tue Mar 11 10:27:49 PDT 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+// 
 // ****************************************************************************
 
 void
@@ -761,8 +757,6 @@ QvisReflectWidget::setOriginalOctant(int octant)
     if(octant != originOctant)
     {
         originOctant = octant;
-
-        deleteBackingPixmap();
         update();
 
         emit octantChanged(originOctant);
@@ -787,6 +781,9 @@ QvisReflectWidget::setOriginalOctant(int octant)
 //   I added code to handle mouse release events differently when the window
 //   is in 2d mode.
 //
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -798,8 +795,6 @@ QvisReflectWidget::mouseReleaseEvent(QMouseEvent *e)
     {
         // id happens to be the octant that was clicked.
         octantOn[id] = !octantOn[id];
-
-        deleteBackingPixmap();
         update();
 
         // Tell others about the new selections.
@@ -836,13 +831,14 @@ QvisReflectWidget::mouseReleaseEvent(QMouseEvent *e)
 // Creation:   Tue Mar 11 10:30:43 PDT 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisReflectWidget::handleTimer()
 {
-    deleteBackingPixmap();
     update();
 
     if(activeCamera == 0) 
@@ -877,29 +873,17 @@ QvisReflectWidget::handleTimer()
 // Creation:   Tue Mar 11 10:31:51 PDT 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisReflectWidget::paintEvent(QPaintEvent *e)
 {
-    bool clipByRegion = true;
-
-    // Draw the scene into the backing pixmap.
-    if(pixmap == 0)
-    {
-        pixmap = new QPixmap(width(), height());
-        QPainter pixpaint(pixmap);
-        redrawScene(&pixpaint);
-        setBackgroundPixmap(*pixmap);
-        clipByRegion = false;
-    }
-
-    // Blit the pixmap to the screen.
+    // with qt4 we dont need a bg pixmap for flicker free
     QPainter paint(this);
-    if(clipByRegion && !e->region().isEmpty() && !e->region().isNull())
-        paint.setClipRegion(e->region());
-    paint.drawPixmap(QPoint(0,0), *pixmap);
+    redrawScene(&paint);
 }
 
 // ****************************************************************************
@@ -915,13 +899,14 @@ QvisReflectWidget::paintEvent(QPaintEvent *e)
 // Creation:   Tue Mar 11 10:32:41 PDT 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisReflectWidget::resizeEvent(QResizeEvent *e)
 {
-    deleteBackingPixmap();
     renderer.resize(e->size().width(), e->size().height());
 }
 
@@ -967,7 +952,9 @@ QvisReflectWidget::initializeAxes2D()
 // Creation:   Mon Mar 3 10:38:41 PDT 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -977,9 +964,9 @@ QvisReflectWidget::initializeAxes()
 
     axes.set_default_line_style(DOT_LINE);
     color c;
-    c.r = float(colorGroup().foreground().red()) / 255.;
-    c.r = float(colorGroup().foreground().green()) / 255.;
-    c.b = float(colorGroup().foreground().blue()) / 255.;
+    c.r = float(palette().foreground().color().red()) / 255.;
+    c.r = float(palette().foreground().color().green()) / 255.;
+    c.b = float(palette().foreground().color().blue()) / 255.;
 
     axes.set_default_color(c);
     axes.add_line_c(-s,-s,-s,  -s,-s, s);

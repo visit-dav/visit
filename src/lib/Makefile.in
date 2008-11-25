@@ -159,6 +159,9 @@
 #    Make LIBSILO get set by configure so we can create links to libsilo.dylib
 #    or to libsiloh5.dylib on the Mac, depending on how Silo was built.
 #
+#    Brad Whitlock, Wed May  7 14:11:46 PDT 2008
+#    Qt 4.
+#
 #    Hank Childs, Fri Jun 13 15:36:21 PDT 2008
 #    Add support for google-perftools' tcmalloc.
 #
@@ -195,8 +198,6 @@ LIBVTKMPEG2ENCODE=libvtkMPEG2Encode.@SHLIB_LIBEXT@
 LIBMESAGL=libMesaGL.@SHLIB_LIBEXT@
 LIBGLU=libGLU.@SHLIB_LIBEXT@
 LIBOSMESA=libOSMesa.@SHLIB_LIBEXT@
-LIBQT=@LIBQT@.@SHLIB_LIBEXT@
-LIBQUI=libqui.@SHLIB_LIBEXT@
 LIBPYTHON=lib@PYVERSION@.@SHLIB_LIBEXT@
 
 # The following targets were split up so that they would work properly
@@ -293,25 +294,37 @@ libosmesa:
 	ln -s @MESA_DIR@/lib/$(LIBOSMESA)*  .
 
 libqt:
-	if test -n "@QT_LIB@"; then              \
-	    $(RM) $(LIBQT)*                 ;    \
-	    ln -s @QT_LIB@/$(LIBQT)* .   ;       \
-            if test -n "@QT_LIB@/@LIBQT@.a"; then  \
-                $(RM) @LIBQT@.a ;                  \
-                ln -s @QT_LIB@/@LIBQT@.a . ;       \
-            fi                                   \
-	fi
+	$(RM) $(QT_CORE)*
+	ln -s @QT_LIB@/$(QT_CORE)* .
+	$(RM) $(QT_GUI)*
+	ln -s @QT_LIB@/$(QT_GUI)* .
+	$(RM) $(QT_HELP)*
+	ln -s @QT_LIB@/$(QT_HELP)* .
+	$(RM) $(QT_CLUCENE)*
+	ln -s @QT_LIB@/$(QT_CLUCENE)* .
+	$(RM) $(QT_NETWORK)*
+	ln -s @QT_LIB@/$(QT_NETWORK)* .
+	$(RM) $(QT_OPENGL)*
+	ln -s @QT_LIB@/$(QT_OPENGL)* .
+	$(RM) $(QT_SCRIPT)*
+	ln -s @QT_LIB@/$(QT_SCRIPT)* .
+	$(RM) $(QT_SQL)*
+	ln -s @QT_LIB@/$(QT_SQL)* .
+	$(RM) $(QT_SVG)*
+	ln -s @QT_LIB@/$(QT_SVG)* .
+	$(RM) $(QT_TEST)*
+	ln -s @QT_LIB@/$(QT_TEST)* .
+	$(RM) $(QT_WEBKIT)*
+	ln -s @QT_LIB@/$(QT_WEBKIT)* .
+	$(RM) $(QT_XML)*
+	ln -s @QT_LIB@/$(QT_XML)* .
+	$(RM) $(QT_XMLPATTERNS)*
+	ln -s @QT_LIB@/$(QT_XMLPATTERNS)* .
 
 libqui:
-	if test -n "@QT_LIB@"; then              \
-	    $(RM) $(LIBQUI)*              ;      \
-	    ln -s @QT_LIB@/$(LIBQUI)* .   ;      \
-            if test -n "@QT_LIB@/libqui.a"; then \
-                $(RM) libqui.a ;                 \
-                ln -s @QT_LIB@/libqui.a . ;      \
-            fi                                   \
-	fi
-
+	$(RM) $(QT_QUI)
+	ln -s @QT_LIB@/$(QT_QUI) .
+	
 pythondir:
 	if test -n "@PYDIR@"; then                                     \
 	    $(RM) python lib@PYVERSION@.@SHLIB_LIBEXT@              ;  \
@@ -389,8 +402,20 @@ clean: clean_make_links
 	$(LIBMESAGL)* \
 	$(LIBGLU) \
 	$(LIBOSMESA)* \
-	$(LIBQT)* \
-	$(LIBQUI)* \
+        $(QT_CORE)* \
+        $(QT_GUI)* \
+        $(QT_HELP)* \
+        $(QT_CLUCENE)*\
+        $(QT_NETWORK)* \
+        $(QT_OPENGL)* \
+        $(QT_SCRIPT)* \
+        $(QT_SQL)* \
+        $(QT_SVG)* \
+        $(QT_TEST)* \
+        $(QT_WEBKIT)* \
+        $(QT_XML)* \
+        $(QT_XMLPATTERNS)* \
+        $(QT_QUI) \
 	$(LIBVTKCOMMON)* \
 	$(LIBVTKDICOM)* \
 	$(LIBVTKFILTERING)* \
@@ -409,8 +434,6 @@ clean: clean_make_links
 	$(LIBVTKEXPAT)* \
 	$(LIBVTKGRAPHICS)* \
 	$(LIBVTKRENDERING)* \
-	libqt.a \
-	libqui.a \
 	visit.so \
 	visitmodule.so
 
@@ -421,4 +444,3 @@ install:
 install_bin:
 install_lib:
 install_dirs:
-

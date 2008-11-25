@@ -37,8 +37,10 @@
 *****************************************************************************/
 
 #include <QvisScreenPositioner.h>
-#include <qpainter.h>
-#include <qpen.h>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPen>
 
 const int QvisScreenPositioner::minXScreenSize = 100;
 const int QvisScreenPositioner::minYScreenSize = 100;
@@ -57,11 +59,13 @@ const int QvisScreenPositioner::minYScreenSize = 100;
 // Creation:   Mon Dec 1 14:11:15 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 16:11:37 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisScreenPositioner::QvisScreenPositioner(QWidget *parent, const char *name,
-    WFlags flags) : QFrame(parent, name, flags)
+QvisScreenPositioner::QvisScreenPositioner(QWidget *parent, Qt::WindowFlags flags) :
+    QWidget(parent, flags)
 {
     xPosition = xTempPosition = minXScreenSize / 2;
     yPosition = yTempPosition = minYScreenSize / 2;
@@ -70,17 +74,16 @@ QvisScreenPositioner::QvisScreenPositioner(QWidget *parent, const char *name,
     setPageIncrement(10);
     dragging = false;
     paging = false;
+    drawFrame = false;
 
+    setContentsMargins(3,3,3,3);
     setMinimumSize(minimumSize());
 
-    setFocusPolicy(StrongFocus);
+    setFocusPolicy(Qt::StrongFocus);
 
     // Set the default size policy.
     setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
         QSizePolicy::MinimumExpanding));
-
-    // By default we don't want a frame.
-    setFrameStyle(NoFrame);
 }
 
 // ****************************************************************************
@@ -312,16 +315,16 @@ QvisScreenPositioner::setTempPositionFromWidgetCoords(int wx, int wy)
 // Creation:   Mon Dec 1 17:15:01 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 16:19:29 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisScreenPositioner::popupShow()
 {
     // Make the widget have a visible frame
-    setFrameStyle(PopupPanel);
-    setFrameShadow(Raised);
-    setLineWidth(2);
+    drawFrame = true;
 
     xTempPosition = xPosition;
     yTempPosition = yPosition;
@@ -351,44 +354,44 @@ QvisScreenPositioner::keyPressEvent(QKeyEvent *e)
     // Handle the key strokes.
     switch(e->key())
     {
-    case Key_Return:
-    case Key_Enter:
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
         sendNewScreenPosition();
         break;
-    case Key_Left:
+    case Qt::Key_Left:
         xTempPosition -= ((paging) ? (pageIncrement()) : 1);
         if(xTempPosition < 0)
             xTempPosition = 0;
         update();
         break;
-    case Key_Right:
+    case Qt::Key_Right:
         xTempPosition += ((paging) ? (pageIncrement()) : 1);
         if(xTempPosition >= xScreenSize)
             xTempPosition = xScreenSize - 1;
         update();
         break;
-    case Key_Down:
+    case Qt::Key_Down:
         yTempPosition -= ((paging) ? (pageIncrement()) : 1);
         if(yTempPosition < 0)
             yTempPosition = 0;
         update();
         break;
-    case Key_Up:
+    case Qt::Key_Up:
         yTempPosition += ((paging) ? (pageIncrement()) : 1);
         if(yTempPosition >= yScreenSize)
             yTempPosition = yScreenSize - 1;
         update();
         break;
-    case Key_Space:
+    case Qt::Key_Space:
         xTempPosition = xScreenSize / 2;
         yTempPosition = yScreenSize / 2;
         update();
         sendNewScreenPosition();
         break;
-    case Key_Shift:
-        paging = true;
-        break;
     }
+
+    if((e->modifiers() & Qt::ShiftModifier) > 0)
+        paging = true;
 }
 
 // ****************************************************************************
@@ -404,14 +407,16 @@ QvisScreenPositioner::keyPressEvent(QKeyEvent *e)
 // Creation:   Mon Dec 1 14:21:40 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 16:23:50 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisScreenPositioner::keyReleaseEvent(QKeyEvent *e)
 {
     // Handle the key strokes.
-    if(e->key() == Key_Shift)
+    if((e->modifiers() && Qt::ShiftModifier) > 0)
         paging = false;
 }
 
@@ -505,7 +510,9 @@ QvisScreenPositioner::mouseReleaseEvent(QMouseEvent *e)
 // Creation:   Mon Dec 1 14:27:12 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 16:24:19 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 #define CLAMP_VALUE(VAL, MINVAL, MAXVAL) \
@@ -513,9 +520,46 @@ QvisScreenPositioner::mouseReleaseEvent(QMouseEvent *e)
     if(VAL > (MAXVAL)) VAL = (MAXVAL);
 
 void
-QvisScreenPositioner::drawContents(QPainter *paint)
+QvisScreenPositioner::paintEvent(QPaintEvent *e)
 {
-    QPen pen(colorGroup().foreground());
+    // Set up the painter.
+    QPainter paint(this);
+    if(!e->region().isEmpty())
+    {
+        paint.setClipRegion(e->region());
+        paint.setClipping(true);
+    }
+
+    drawLines(paint);
+    drawBox(paint, rect(), palette().color(QPalette::Light),
+            palette().color(QPalette::Dark), 3);
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::drawLines
+//
+// Purpose: 
+//   Draws the lines that show the position.
+//
+// Arguments:
+//   paint : The painter that we'll use.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun  3 16:38:38 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::drawLines(QPainter &paint)
+{
+    // Draw the lines.
+    QPen pen(palette().color(QPalette::Text));
     int cx = contentsRect().x();
     int cy = contentsRect().y();
     int w = contentsRect().width();
@@ -528,9 +572,9 @@ QvisScreenPositioner::drawContents(QPainter *paint)
     t = 1. - double(yPosition) / double(yScreenSize);
     int oldwy = int(t * double(h - 1));
     CLAMP_VALUE(oldwy, 0, h - 1);
-    paint->setPen(pen);
-    paint->drawLine(oldwx + cx, cy, oldwx + cx, cy + h);
-    paint->drawLine(cx, cy + oldwy, cx + w, cy + oldwy);
+    paint.setPen(pen);
+    paint.drawLine(oldwx + cx, cy, oldwx + cx, cy + h);
+    paint.drawLine(cx, cy + oldwy, cx + w, cy + oldwy);
 
     // Draw the temporary position
     t = double(xTempPosition) / double(xScreenSize);
@@ -540,7 +584,53 @@ QvisScreenPositioner::drawContents(QPainter *paint)
     int twy = int(t * double(h - 1));
     CLAMP_VALUE(twy, 0, h - 1);
     pen.setStyle(Qt::DotLine);
-    paint->setPen(pen);
-    paint->drawLine(twx + cx, cy, twx + cx, cy + h);
-    paint->drawLine(cx, cy + twy, cx + w, cy + twy);
+    paint.setPen(pen);
+    paint.drawLine(twx + cx, cy, twx + cx, cy + h);
+    paint.drawLine(cx, cy + twy, cx + w, cy + twy);
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::drawBox
+//
+// Purpose: 
+//   Draws a bevel box.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun  3 16:39:08 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::drawBox(QPainter &paint, const QRect &r,
+    const QColor &light, const QColor &dark, int lw)
+{
+    int i;
+    int X  = r.x();
+    int X2 = r.x() + r.width() - 1;
+    int Y  = r.y();
+    int Y2 = r.y() + r.height() - 1;
+
+    // Draw the highlight
+    paint.setPen(QPen(light));
+    for(i = 0; i < lw; ++i)
+    {
+        paint.drawLine(QPoint(X + i, Y + i), QPoint(X + i, Y2 - i));
+        paint.drawLine(QPoint(X + i, Y + i), QPoint(X2 - i, Y + i));
+    }
+
+    // Draw the shadow
+    paint.setPen(QPen(dark));
+    for(i = 0; i < lw; ++i)
+    {
+        paint.drawLine(QPoint(X + i + 1, Y2 - i), QPoint(X2, Y2 - i));
+        paint.drawLine(QPoint(X2 - i, Y + i + 1), QPoint(X2 - i, Y2));
+    }
 }

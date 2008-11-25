@@ -44,7 +44,9 @@
 
 // Forward declarations.
 class AppearanceAttributes;
+class QCheckBox;
 class QComboBox;
+class QLabel;
 class QLineEdit;
 class QPushButton;
 class QvisColorButton;
@@ -73,6 +75,9 @@ class QvisDialogLineEdit;
 //   Brad Whitlock, Wed Apr  9 11:10:05 PDT 2008
 //   QString for caption, shortName.
 //
+//   Cyrus Harrison, Mon Nov 24 11:57:42 PST 2008
+//   Support for default system appearance.
+//
 // ****************************************************************************
 
 class GUI_API QvisAppearanceWindow : public QvisPostableWindowObserver
@@ -94,19 +99,27 @@ protected:
     void Apply(bool ignore = false);
     bool ColorsNotTooClose(const QColor &c0, const char *c1str);
     void GetCurrentValues(int);
+    void UpdateWindowSensitivity();
 
 private slots:
+    void useSysDefaultChanged(int state);
     void backgroundChanged(const QColor &bg);
     void foregroundChanged(const QColor &fg);
     void styleChanged(int index);
     void fontNameChanged(const QString &);
     void orientationChanged(int index);
 private:
+    QCheckBox          *useSysDefaultCheckBox;
     QvisColorButton    *backgroundColorButton;
+    QLabel             *backgroundColorLabel;
     QvisColorButton    *foregroundColorButton;
+    QLabel             *foregroundColorLabel;
     QComboBox          *styleComboBox;
+    QLabel             *styleLabel;
     QComboBox          *orientationComboBox;
+    QLabel             *orientationLabel;
     QvisDialogLineEdit *fontName;
+    QLabel             *fontLabel;
 };
 
 #endif

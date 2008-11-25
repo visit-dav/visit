@@ -1781,11 +1781,6 @@ avtStreamlineFilter::Initialize()
 //   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
 //   Add dataSpatialDimension and optimization for reclinear grids.
 //
-//   Dave Pugmire, Mon Nov 24 14:39:29 EST 2008
-//   Fix to rectilinear optimization. If there are ghost zones, need to do the
-//   full check. Otherwise, points in ghost zones are reported as inside the
-//   domain.
-//
 // ****************************************************************************
 
 bool
@@ -1818,11 +1813,7 @@ avtStreamlineFilter::PointInDomain(pt3d &pt, int domain)
         {
             return false;
         }
-
-        //If we don't have ghost zones, then we can rest assured that the
-        //point is in this domain. For ghost zones, we have to check cells.
-        if (ds->GetCellData()->GetArray("avtGhostZones") == NULL)
-            return true;
+        return true;
     }
 
     vtkVisItCellLocator *cellLocator = domainToCellLocatorMap[domain];
@@ -1830,6 +1821,7 @@ avtStreamlineFilter::PointInDomain(pt3d &pt, int domain)
     {
         cellLocator = vtkVisItCellLocator::New();
         cellLocator->SetDataSet(ds);
+        //cellLocator->IgnoreGhostsOff();
         cellLocator->IgnoreGhostsOn();
         cellLocator->BuildLocator();
         domainToCellLocatorMap[domain] = cellLocator;

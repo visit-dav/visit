@@ -43,7 +43,7 @@
 #include <Observer.h>
 
 class QLabel;
-class QMultiLineEdit;
+class QTextEdit;
 
 // *******************************************************************
 // Class: QvisMessageWindow
@@ -65,6 +65,9 @@ class QMultiLineEdit;
 //   Brad Whitlock, Wed Apr  9 10:54:00 PDT 2008
 //   QString for captionString.
 //
+//   Brad Whitlock, Fri May 30 14:27:35 PDT 2008
+//   Qt 4.
+//
 // *******************************************************************
 
 class GUI_API QvisMessageWindow : public QvisWindowBase, public Observer
@@ -78,9 +81,9 @@ public:
 private slots:
     void doHide();
 private:
-    QLabel         *severityLabel;
-    QMultiLineEdit *messageText;
-    bool            preserveInformation;
+    QLabel    *severityLabel;
+    QTextEdit *messageText;
+    bool       preserveInformation;
 };
 
 #endif

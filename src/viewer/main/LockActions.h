@@ -64,7 +64,7 @@ public:
 
     virtual void Execute();
     virtual bool Enabled() const;
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************
@@ -89,7 +89,7 @@ public:
     virtual ~ToggleLockTimeAction(){}
 
     virtual void Execute();
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************
@@ -114,7 +114,7 @@ public:
     virtual ~ToggleLockToolAction(){}
 
     virtual void Execute();
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************

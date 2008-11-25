@@ -43,13 +43,14 @@
 #ifndef _vtkQtRenderWindowInteractor_h
 #define _vtkQtRenderWindowInteractor_h
 #include <vtkqt_exports.h>
+#include <QtCore>
+#include <QObject>
+#include <QTimer>
 
 #include "vtkInteractorStyle.h"
 #include "vtkRenderWindowInteractor.h"
 #include "vtkQtRenderWindow.h"
 #include "vtkQtGLWidget.h"
-#include <qobject.h>
-#include <qtimer.h>
 
 class VTKQT_API vtkQtRenderWindowInteractor : public QObject, public vtkRenderWindowInteractor 
 {

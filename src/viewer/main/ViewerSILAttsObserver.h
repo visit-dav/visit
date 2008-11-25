@@ -43,7 +43,7 @@
 #ifndef VIEWER_SILATTS_OBSERVER_H
 #define VIEWER_SILATTS_OBSERVER_H
 #include <viewer_exports.h>
-#include <qobject.h>
+#include <QObject>
 #include <Observer.h>
 #include <string>
 

@@ -44,14 +44,15 @@
 #include <SILRestrictionAttributes.h>
 #include <QvisSILSetSelector.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
-#include <qtimer.h>
-#include <qvbox.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QRadioButton>
+#include <QSpinBox>
+#include <QTimer>
+#include <QWidget>
 #include <vectortypes.h>
 #include <stdio.h>
 #include <string>
@@ -133,66 +134,73 @@ QvisIndexSelectWindow::~QvisIndexSelectWindow()
 //   Brad Whitlock, Fri Apr 25 09:08:02 PDT 2008
 //   Added tr()'s
 //
+//   Cyrus Harrison, Tue Aug 19 16:23:19 PDT 2008
+//   Qt4 Port. 
+//
 // ****************************************************************************
 
 void
 QvisIndexSelectWindow::CreateWindowContents()
 {
-    QGridLayout *wholeLayout = new QGridLayout(topLayout, 7, 4, 10,
-                                              "wholeLayout");
-    QGridLayout *mainLayout = new QGridLayout(4,2,  10, "mainLayout");
-    wholeLayout->addMultiCellLayout(mainLayout, 0, 0, 0, 3);
+    QGridLayout *wholeLayout = new QGridLayout();
+    topLayout->addLayout(wholeLayout);
+    QGridLayout *mainLayout = new QGridLayout();
+    wholeLayout->addLayout(mainLayout, 0, 0, 1, 4);
 
 
-    mainLayout->addWidget(new QLabel(tr("Dimension"), central, "dimLabel"),0,0);
-    dim = new QButtonGroup(central, "dim");
-    dim->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *dimLayout = new QHBoxLayout(dim);
+    mainLayout->addWidget(new QLabel(tr("Dimension"), central),0,0);
+    QWidget *dimWidget = new QWidget(central);
+    dim = new QButtonGroup(dimWidget);
+    QHBoxLayout *dimLayout = new QHBoxLayout(dimWidget);
     dimLayout->setSpacing(2);
-    QRadioButton *dimDimensionOneD = new QRadioButton(tr("1D"), dim);
+    QRadioButton *dimDimensionOneD = new QRadioButton(tr("1D"), dimWidget);
+    dim->addButton(dimDimensionOneD,0);
     dimLayout->addWidget(dimDimensionOneD);
-    QRadioButton *dimDimensionTwoD = new QRadioButton(tr("2D"), dim);
+    QRadioButton *dimDimensionTwoD = new QRadioButton(tr("2D"), dimWidget);
     dimLayout->addWidget(dimDimensionTwoD);
-    QRadioButton *dimDimensionThreeD = new QRadioButton(tr("3D"), dim);
+    dim->addButton(dimDimensionTwoD,1);
+    QRadioButton *dimDimensionThreeD = new QRadioButton(tr("3D"), dimWidget);
     dimLayout->addWidget(dimDimensionThreeD);
-    connect(dim, SIGNAL(clicked(int)),
+    dim->addButton(dimDimensionThreeD,2);
+    connect(dim, SIGNAL(buttonClicked(int)),
             this, SLOT(dimChanged(int)));
-    mainLayout->addMultiCellWidget(dim, 0,0,1,2);
+    mainLayout->addWidget(dimWidget, 0,1,1,2);
 
+    QGridLayout *labelLayout = new QGridLayout();
 
-    QGridLayout *labelLayout = new QGridLayout(1, 3, 10, "labelLayout");
-    wholeLayout->addMultiCellLayout(labelLayout, 1, 1, 0,3 );
-
-    QLabel *minLabel = new QLabel(tr("Min"), central, "minLabel");
-    minLabel->setAlignment(AlignCenter);
-    labelLayout->addWidget(minLabel, 0, 0); 
-    QLabel *maxLabel = new QLabel(tr("Max"), central, "maxLabel");
-    maxLabel->setAlignment(AlignCenter);
-    labelLayout->addWidget(maxLabel, 0, 1); 
-    QLabel *incrLabel = new QLabel(tr("Incr"), central, "incrLabel");
-    incrLabel->setAlignment(AlignCenter);
-    labelLayout->addWidget(incrLabel, 0, 2); 
-
+    QLabel *minLabel = new QLabel(tr("Min"), central);
+    minLabel->setAlignment(Qt::AlignCenter);
+    labelLayout->addWidget(minLabel, 0, 1); 
+    QLabel *maxLabel = new QLabel(tr("Max"), central);
+    maxLabel->setAlignment(Qt::AlignCenter);
+    labelLayout->addWidget(maxLabel, 0, 2); 
+    QLabel *incrLabel = new QLabel(tr("Incr"), central);
+    incrLabel->setAlignment(Qt::AlignCenter);
+    labelLayout->addWidget(incrLabel, 0, 3); 
+    wholeLayout->addLayout(labelLayout, 1, 0, 1,4 );
 
     // 
     // Create the oneD spinBoxes
     // 
-    oneDWidgetGroup = new QGroupBox(central, "oneDWidgetGroup"); 
-    oneDWidgetGroup->setFrameShape(QFrame::NoFrame);
-    QGridLayout *oneDLayout = new QGridLayout(oneDWidgetGroup, 1, 6);
-    oneDLabel = new QLabel(central, tr("I"), oneDWidgetGroup);
-    oneDLabel->setAlignment(AlignCenter);
+    oneDWidget = new QWidget(central); 
+    QGridLayout *oneDLayout = new QGridLayout(oneDWidget);
+    oneDLabel = new QLabel(tr("I"), oneDWidget);
+    oneDLabel->setAlignment(Qt::AlignCenter);
     oneDLayout->addWidget(oneDLabel, 0, 0);
 
     // Set Up Min
-    oneDMin = new QSpinBox(0, MAX_VAL, 1, oneDWidgetGroup, "oneDMin");
+    oneDMin = new QSpinBox(oneDWidget);
+    oneDMin->setRange(0,MAX_VAL);
+    oneDMin->setSingleStep(1);
     connect(oneDMin, SIGNAL(valueChanged(int)),
              this, SLOT(oneDMinChanged(int)));
     oneDLayout->addWidget(oneDMin, 0, 1);
     oneDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
 
     // Set Up Max
-    oneDMax = new QSpinBox(-1, MAX_VAL, 1, oneDWidgetGroup, "oneDMax");
+    oneDMax = new QSpinBox(oneDWidget);
+    oneDMax->setRange(-1,MAX_VAL);
+    oneDMax->setSingleStep(1);
     oneDMax->setSpecialValueText(tr("max"));
     oneDMax->setValue(-1);
     connect(oneDMax, SIGNAL(valueChanged(int)),
@@ -201,32 +209,37 @@ QvisIndexSelectWindow::CreateWindowContents()
     oneDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
 
     // Set Up Incr
-    oneDIncr = new QSpinBox(1, MAX_VAL, 1, oneDWidgetGroup, "oneDIncr");
+    oneDIncr = new QSpinBox(oneDWidget);
+    oneDIncr->setRange(1,MAX_VAL);
+    oneDIncr->setSingleStep(1);
     connect(oneDIncr, SIGNAL(valueChanged(int)),
              this, SLOT(oneDIncrChanged(int)));
     oneDLayout->addWidget(oneDIncr, 0, 5);
 
-    wholeLayout->addMultiCellWidget(oneDWidgetGroup, 2,2, 0,3);
+    wholeLayout->addWidget(oneDWidget, 2,0, 1,4);
 
     // 
     // Create the twoD spinBoxes
     // 
-    twoDWidgetGroup = new QGroupBox(central, "twoDWidgetGroup"); 
-    twoDWidgetGroup->setFrameShape(QFrame::NoFrame);
-    QGridLayout *twoDLayout = new QGridLayout(twoDWidgetGroup, 1, 6);
-    twoDLabel = new QLabel(central, tr("J"), twoDWidgetGroup);
-    twoDLabel->setAlignment(AlignCenter);
+    twoDWidget = new QWidget(central); 
+    QGridLayout *twoDLayout = new QGridLayout(twoDWidget);
+    twoDLabel = new QLabel(tr("J"), twoDWidget);
+    twoDLabel->setAlignment(Qt::AlignCenter);
     twoDLayout->addWidget(twoDLabel, 0, 0);
 
     // Set Up Min
-    twoDMin = new QSpinBox(0, MAX_VAL, 1, twoDWidgetGroup, "twoDMin");
+    twoDMin = new QSpinBox(twoDWidget);
+    twoDMin->setRange(0,MAX_VAL);
+    twoDMin->setSingleStep(1);
     connect(twoDMin, SIGNAL(valueChanged(int)),
              this, SLOT(twoDMinChanged(int)));
     twoDLayout->addWidget(twoDMin, 0, 1);
     twoDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
 
     // Set Up Max
-    twoDMax = new QSpinBox(-1, MAX_VAL, 1, twoDWidgetGroup, "twoDMax");
+    twoDMax = new QSpinBox(twoDWidget);
+    twoDMax->setRange(-1,MAX_VAL);
+    twoDMax->setSingleStep(1);
     twoDMax->setSpecialValueText(tr("max"));
     twoDMax->setValue(-1);
     connect(twoDMax, SIGNAL(valueChanged(int)),
@@ -235,33 +248,38 @@ QvisIndexSelectWindow::CreateWindowContents()
     twoDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
 
     // Set Up Incr
-    twoDIncr = new QSpinBox(1, MAX_VAL, 1, twoDWidgetGroup, "twoDIncr");
+    twoDIncr = new QSpinBox(twoDWidget);
+    twoDIncr->setRange(1,MAX_VAL);
+    twoDIncr->setSingleStep(1);
     connect(twoDIncr, SIGNAL(valueChanged(int)),
              this, SLOT(twoDIncrChanged(int)));
     twoDLayout->addWidget(twoDIncr, 0, 5);
 
-    wholeLayout->addMultiCellWidget(twoDWidgetGroup, 3,3, 0,3);
+    wholeLayout->addWidget(twoDWidget, 3,0, 1,4);
 
     // 
     // Create the threeD spinBoxes
     // 
-    threeDWidgetGroup = new QGroupBox(central, "threeDWidgetGroup"); 
-    threeDWidgetGroup->setFrameShape(QFrame::NoFrame);
+    threeDWidget = new QWidget(central); 
 
-    QGridLayout *threeDLayout = new QGridLayout(threeDWidgetGroup, 1, 6);
-    threeDLabel = new QLabel(central, tr("K"), threeDWidgetGroup);
-    threeDLabel->setAlignment(AlignCenter);
+    QGridLayout *threeDLayout = new QGridLayout(threeDWidget);
+    threeDLabel = new QLabel(tr("K"), threeDWidget);
+    threeDLabel->setAlignment(Qt::AlignCenter);
     threeDLayout->addWidget(threeDLabel, 0, 0);
 
     // Set Up Min
-    threeDMin = new QSpinBox(0, MAX_VAL, 1, threeDWidgetGroup, "threeDMin");
+    threeDMin = new QSpinBox(threeDWidget);
+    threeDMin->setRange(0,MAX_VAL);
+    threeDMin->setSingleStep(1);
     connect(threeDMin, SIGNAL(valueChanged(int)),
              this, SLOT(threeDMinChanged(int)));
     threeDLayout->addWidget(threeDMin, 0, 1);
     threeDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
 
     // Set Up Max
-    threeDMax = new QSpinBox(-1, MAX_VAL, 1, threeDWidgetGroup, "threeDMax");
+    threeDMax = new QSpinBox(threeDWidget);
+    threeDMax->setRange(-1,MAX_VAL);
+    threeDMax->setSingleStep(1);
     threeDMax->setSpecialValueText(tr("max"));
     threeDMax->setValue(-1);
     connect(threeDMax, SIGNAL(valueChanged(int)),
@@ -270,19 +288,21 @@ QvisIndexSelectWindow::CreateWindowContents()
     threeDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
 
     // Set Up Incr
-    threeDIncr = new QSpinBox(1, MAX_VAL, 1, threeDWidgetGroup, "threeDIncr");
+    threeDIncr = new QSpinBox(threeDWidget);
+    threeDIncr->setRange(1,MAX_VAL);
+    threeDIncr->setSingleStep(1);
     connect(threeDIncr, SIGNAL(valueChanged(int)),
              this, SLOT(threeDIncrChanged(int)));
     threeDLayout->addWidget(threeDIncr, 0, 5);
 
-    wholeLayout->addMultiCellWidget(threeDWidgetGroup, 4,4, 0,3);
+    wholeLayout->addWidget(threeDWidget, 4,0, 1,4);
 
 
-    useWholeCollection = new QCheckBox(tr("Use Whole Collection"), central, "useWholeCollection");
+    useWholeCollection = new QCheckBox(tr("Use Whole Collection"), central);
     useWholeCollection->setChecked(false);
     connect(useWholeCollection, SIGNAL(toggled(bool)),
             this, SLOT(useWholeCollectionToggled(bool)));
-    wholeLayout->addMultiCellWidget(useWholeCollection, 5,5, 0,1);
+    wholeLayout->addWidget(useWholeCollection, 5,0, 1,1);
 
     //
     // silSet (category/subset)
@@ -290,13 +310,13 @@ QvisIndexSelectWindow::CreateWindowContents()
     intVector roles;
     roles.push_back(SIL_DOMAIN);
     roles.push_back(SIL_BLOCK);
-    silSet = new QvisSILSetSelector(central, "silSet", 
+    silSet = new QvisSILSetSelector(central,
         GetViewerState()->GetSILRestrictionAttributes(), roles);
     connect(silSet, SIGNAL(categoryChanged(const QString &)),
             this, SLOT(categoryChanged(const QString &)));
     connect(silSet, SIGNAL(subsetChanged(const QString &)),
             this, SLOT(subsetChanged(const QString &)));
-    wholeLayout->addMultiCellWidget(silSet, 5,5, 2,3);
+    wholeLayout->addWidget(silSet, 5,2, 1,2);
 }
 
 
@@ -320,6 +340,9 @@ QvisIndexSelectWindow::CreateWindowContents()
 //   Kathleen Bonnell,  Tue Jul 1 11:47:51 PDT 2008
 //   Removed unreferenced variables.
 //
+//   Cyrus Harrison, Tue Aug 19 16:23:19 PDT 2008
+//   Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -337,75 +360,75 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case 0: //dim
+          case IndexSelectAttributes::ID_dim:
             if (atts->GetDim() == IndexSelectAttributes::TwoD ||
                 atts->GetDim() == IndexSelectAttributes::ThreeD)
-                twoDWidgetGroup->setEnabled(true);
+                twoDWidget->setEnabled(true);
             else
-                twoDWidgetGroup->setEnabled(false);
+                twoDWidget->setEnabled(false);
             if (atts->GetDim() == IndexSelectAttributes::ThreeD)
-                threeDWidgetGroup->setEnabled(true);
+                threeDWidget->setEnabled(true);
             else
-                threeDWidgetGroup->setEnabled(false);
-            dim->setButton(atts->GetDim());
+                threeDWidget->setEnabled(false);
+            dim->button(atts->GetDim())->setChecked(true);
             break;
-          case 1: //xMin
+          case IndexSelectAttributes::ID_xMin:
             oneDMin->blockSignals(true);
             oneDMin->setValue(atts->GetXMin());
             oneDMin->blockSignals(false);
             break;
-          case 2: //xMax
+          case IndexSelectAttributes::ID_xMax:
             oneDMax->blockSignals(true);
             oneDMax->setValue(atts->GetXMax());
             oneDMax->blockSignals(false);
             break;
-          case 3: //xIncr
+          case IndexSelectAttributes::ID_xIncr:
             oneDIncr->blockSignals(true);
             oneDIncr->setValue(atts->GetXIncr());
             oneDIncr->blockSignals(false);
             break;
-          case 4: //yMin
+          case IndexSelectAttributes::ID_yMin:
             twoDMin->blockSignals(true);
             twoDMin->setValue(atts->GetYMin());
             twoDMin->blockSignals(false);
             break;
-          case 5: //yMax
+          case IndexSelectAttributes::ID_yMax:
             twoDMax->blockSignals(true);
             twoDMax->setValue(atts->GetYMax());
             twoDMax->blockSignals(false);
             break;
-          case 6: //yIncr
+          case IndexSelectAttributes::ID_yIncr:
             twoDIncr->blockSignals(true);
             twoDIncr->setValue(atts->GetYIncr());
             twoDIncr->blockSignals(false);
             break;
-          case 7: //zMin
+          case IndexSelectAttributes::ID_zMin:
             threeDMin->blockSignals(true);
             threeDMin->setValue(atts->GetZMin());
             threeDMin->blockSignals(false);
             break;
-          case 8: //zMax
+          case IndexSelectAttributes::ID_zMax:
             threeDMax->blockSignals(true);
             threeDMax->setValue(atts->GetZMax());
             threeDMax->blockSignals(false);
             break;
-          case 9: //zIncr
+          case IndexSelectAttributes::ID_zIncr:
             threeDIncr->blockSignals(true);
             threeDIncr->setValue(atts->GetZIncr());
             threeDIncr->blockSignals(false);
             break;
-          case 10: //useWholeCollection
+          case IndexSelectAttributes::ID_useWholeCollection:
             useWholeCollection->blockSignals(true);
             useWholeCollection->setChecked(atts->GetUseWholeCollection());
             silSet->setEnabled(!atts->GetUseWholeCollection());
             useWholeCollection->blockSignals(false);
             break;
-          case 11: //categoryName
+          case IndexSelectAttributes::ID_categoryName:
             silSet->blockSignals(true);
             silSet->SetCategoryName(atts->GetCategoryName().c_str());
             silSet->blockSignals(false);
             break;
-          case 12: // Subset Name
+          case IndexSelectAttributes::ID_subsetName:
             silSet->blockSignals(true);
             silSet->SetSubsetName(atts->GetSubsetName().c_str());
             silSet->blockSignals(false);
@@ -445,6 +468,9 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell,  Tue Jul 1 11:47:51 PDT 2008
 //   Removed unreferenced variables.
 //
+//   Cyrus Harrison, Tue Aug 19 16:23:19 PDT 2008
+//   Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -452,52 +478,47 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
 
-    // Do dim
-    if(which_widget == 0 || doAll)
-    {
-        // Nothing for dim
-    }
-    if(which_widget == 1 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_xMin || doAll)
     {
         if (atts->GetXMin() != oneDMin->value())
             atts->SetXMin(oneDMin->value());
     }
-    if(which_widget == 2 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_xMax || doAll)
     {
         if (atts->GetXMax() != oneDMax->value())
             atts->SetXMax(oneDMax->value());
     }
-    if(which_widget == 3 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_xIncr || doAll)
     {
         if (atts->GetXIncr() != oneDIncr->value())
             atts->SetXIncr(oneDIncr->value());
     }
-    if(which_widget == 4 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_yMin || doAll)
     {
         if (atts->GetYMin() != twoDMin->value())
             atts->SetYMin(twoDMin->value());
     }
-    if(which_widget == 5 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_yMax || doAll)
     {
         if (atts->GetYMax() != twoDMax->value())
             atts->SetYMax(twoDMax->value());
     }
-    if(which_widget == 6 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_yIncr || doAll)
     {
         if (atts->GetYIncr() != twoDIncr->value())
             atts->SetYIncr(twoDIncr->value());
     }
-    if(which_widget == 7 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_zMin || doAll)
     {
         if (atts->GetZMin() != threeDMin->value())
             atts->SetZMin(threeDMin->value());
     }
-    if(which_widget == 8 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_zMax || doAll)
     {
         if (atts->GetZMax() != threeDMax->value())
             atts->SetZMax(threeDMax->value());
     }
-    if(which_widget == 9 || doAll)
+    if(which_widget == IndexSelectAttributes::ID_zIncr || doAll)
     {
         if (atts->GetZIncr() != threeDIncr->value())
             atts->SetZIncr(threeDIncr->value());
@@ -506,8 +527,8 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
     // Do categoryName and subsetName
     if(doAll)
     {
-        atts->SetCategoryName(silSet->GetCategoryName().latin1());
-        atts->SetSubsetName(silSet->GetSubsetName().latin1());
+        atts->SetCategoryName(silSet->GetCategoryName().toStdString());
+        atts->SetSubsetName(silSet->GetSubsetName().toStdString());
     }
 }
 
@@ -530,63 +551,63 @@ QvisIndexSelectWindow::dimChanged(int val)
 void
 QvisIndexSelectWindow::oneDMinChanged(int)
 {
-    GetCurrentValues(1);
+    GetCurrentValues(IndexSelectAttributes::ID_xMin);
     Apply();
 }
 
 void
 QvisIndexSelectWindow::oneDMaxChanged(int)
 {
-    GetCurrentValues(2);
+    GetCurrentValues(IndexSelectAttributes::ID_xMax);
     Apply();
 }
 
 void
 QvisIndexSelectWindow::oneDIncrChanged(int)
 {
-    GetCurrentValues(3);
+    GetCurrentValues(IndexSelectAttributes::ID_xIncr);
     Apply();
 }
 
 void
 QvisIndexSelectWindow::twoDMinChanged(int)
 {
-    GetCurrentValues(4);
+    GetCurrentValues(IndexSelectAttributes::ID_yMin);
     Apply();
 }
 
 void
 QvisIndexSelectWindow::twoDMaxChanged(int)
 {
-    GetCurrentValues(5);
+    GetCurrentValues(IndexSelectAttributes::ID_yMax);
     Apply();
 }
 
 void
 QvisIndexSelectWindow::twoDIncrChanged(int)
 {
-    GetCurrentValues(6);
+    GetCurrentValues(IndexSelectAttributes::ID_yIncr);
     Apply();
 }
 
 void
 QvisIndexSelectWindow::threeDMinChanged(int)
 {
-    GetCurrentValues(7);
+    GetCurrentValues(IndexSelectAttributes::ID_zMin);
     Apply();
 }
 
 void
 QvisIndexSelectWindow::threeDMaxChanged(int )
 {
-    GetCurrentValues(8);
+    GetCurrentValues(IndexSelectAttributes::ID_xMax);
     Apply();
 }
 
 void
 QvisIndexSelectWindow::threeDIncrChanged(int)
 {
-    GetCurrentValues(9);
+    GetCurrentValues(IndexSelectAttributes::ID_zIncr);
     Apply();
 }
 
@@ -609,7 +630,7 @@ QvisIndexSelectWindow::useWholeCollectionToggled(bool val)
 void
 QvisIndexSelectWindow::categoryChanged(const QString &cname)
 {
-    atts->SetCategoryName(cname.latin1());
+    atts->SetCategoryName(cname.toStdString());
     if (AutoUpdate())
         QTimer::singleShot(100, this, SLOT(delayedApply()));
     else
@@ -619,7 +640,7 @@ QvisIndexSelectWindow::categoryChanged(const QString &cname)
 void
 QvisIndexSelectWindow::subsetChanged(const QString &sname)
 {
-    atts->SetSubsetName(sname.latin1());
+    atts->SetSubsetName(sname.toStdString());
     if (AutoUpdate())
         QTimer::singleShot(100, this, SLOT(delayedApply()));
     else

@@ -42,10 +42,16 @@
 //    Hank Childs, Thu Jun  8 16:45:00 PDT 2006
 //    Add copyright string.
 //
+//    Brad Whitlock, Thu May  8 12:05:45 PDT 2008
+//    Qt 4. Use QTextStream.
+//
 // ****************************************************************************
+#include <QString>
+#include <QTextStream>
+QTextStream cOut(stdout), cErr(stderr);
+QString Endl("\n");
 
 #include <qxml.h>
-#include <visitstream.h>
 #include "Field.h"
 #include "Attribute.h"
 #include "Enum.h"
@@ -67,7 +73,7 @@ bool outputtoinputdir = false;
 QString currentInputDir = "";
 QString preHeaderLeader = "pre_";
 
-std::string copyright_str = 
+const char *copyright_str = 
 "/*****************************************************************************\n"
 "*\n"
 "* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC\n"
@@ -106,7 +112,7 @@ std::string copyright_str =
 "*\n"
 "*****************************************************************************/\n";
 
-std::string java_copyright_str = 
+const char *java_copyright_str = 
 "// ***************************************************************************\n"
 "//\n"
 "// Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC\n"
@@ -181,6 +187,23 @@ bool generateVersion7Projects = true;
 
 #include "XMLParser.h"
 
+
+// ***************************************************************************
+//  Function: Die
+//  Purpose: 
+//   When a fatal error occurs we need to flush cErr & cOut manually before 
+//   calling exit().
+//
+// ***************************************************************************
+void
+Die(int err_code = -1)
+{
+    cOut.flush();
+    cErr.flush();
+    exit(err_code);
+}
+
+
 // ***************************************************************************
 //  Function: PrintUsage
 //
@@ -192,51 +215,61 @@ bool generateVersion7Projects = true;
 void
 PrintUsage(const char *prog)
 {
-    cerr << "usage: "<<prog<<" [options] <file.xml>" << endl;
-    cerr << "    options:" << endl;
-    cerr << "        -clobber       overwrite old files if possible" << endl;
-    cerr << "        -noprint       no debug output" << endl;
-    cerr << "        -public        (xml2makefile only) install publicly" 
-         << endl;
-    cerr << "        -private       (xml2makefile only) install privately" 
-         << endl;
-    cerr << "        -outputtoinputdir  store results in same location as "
-         << ".xml file" << endl;
+    cErr << "usage: "<<prog<<" [options] <file.xml>" << Endl;
+    cErr << "    options:" << Endl;
+    cErr << "        -clobber       overwrite old files if possible" << Endl;
+    cErr << "        -noprint       no debug output" << Endl;
+    cErr << "        -public        (xml2makefile only) install publicly" 
+         << Endl;
+    cErr << "        -private       (xml2makefile only) install privately" 
+         << Endl;
+    cErr << "        -outputtoinputdir  store results in same location as "
+         << ".xml file" << Endl;
 #ifdef GENERATE_PROJECTFILE
-    cerr << "        -version7      (xml2projectfile only) make MSVC .Net "
-         << "2003 projects (default)" << endl;
-    cerr << "        -version8      (xml2projectfile only) COMING SOON "
-          << "make MSVC 2005 projects " << endl;
+    cErr << "        -version7      (xml2projectfile only) make MSVC .Net "
+         << "2003 projects (default)" << Endl;
+    cErr << "        -version8      (xml2projectfile only) COMING SOON "
+          << "make MSVC 2005 projects " << Endl;
 #endif
 }
 
 class ErrorHandler : public QXmlErrorHandler
 {
+public:
+    ErrorHandler() : QXmlErrorHandler(), stream(stderr)
+    {
+    }
+    virtual ~ErrorHandler()
+    {
+    }
+
     bool error(const QXmlParseException & exception)
     {
-        cerr << "Error: " << exception.message() << endl;
-        cerr << "Line: "   << exception.lineNumber() << endl;
-        cerr << "Column: " << exception.columnNumber() << endl;
+        stream << "Error: " << exception.message() << "\n";
+        stream << "Line: "   << exception.lineNumber() << "\n";
+        stream << "Column: " << exception.columnNumber() << "\n";
         return true;
     }
     bool warning(const QXmlParseException & exception)
     {
-        cerr << "Warning: " << exception.message() << endl;
-        cerr << "Line: "   << exception.lineNumber() << endl;
-        cerr << "Column: " << exception.columnNumber() << endl;
+        stream << "Warning: " << exception.message() << "\n";
+        stream << "Line: "   << exception.lineNumber() << "\n";
+        stream << "Column: " << exception.columnNumber() << "\n";
         return true;
     }
     bool fatalError(const QXmlParseException & exception)
     {
-        cerr << "Fatal error: " << exception.message() << endl;
-        cerr << "Line: "   << exception.lineNumber() << endl;
-        cerr << "Column: " << exception.columnNumber() << endl;
+        stream << "Fatal error: " << exception.message() << "\n";
+        stream << "Line: "   << exception.lineNumber() << "\n";
+        stream << "Column: " << exception.columnNumber() << "\n";
         return true;
     }
-    QString errorString()
+    virtual QString errorString() const
     {
         return "No error string defined....";
     }
+
+    QTextStream stream;
 };
 
 // ****************************************************************************
@@ -253,10 +286,12 @@ class ErrorHandler : public QXmlErrorHandler
 //    Jeremy Meredith, Wed Jun  6 12:37:34 EDT 2007
 //    Added support for outputing files to the input directory.
 //
+//    Brad Whitlock, Wed May  7 16:39:34 PDT 2008
+//    Qt 4.
 // ****************************************************************************
 
-bool
-Open(ofstream &file, const QString &name_withoutpath)
+QFile *
+Open(const QString &name_withoutpath)
 {
     QString name;
     if (outputtoinputdir)
@@ -265,32 +300,34 @@ Open(ofstream &file, const QString &name_withoutpath)
         name = name_withoutpath;
 
     bool alreadyexists = false;
+    QFile *file = new QFile(name);
     if (clobber)
-        file.open(name.latin1(), ios::out);
+        file->open(QIODevice::WriteOnly | QIODevice::Text);
     else
     {
-        ifstream testopen(name.latin1(), ios::in);
-        if (!testopen)
+        if (!file->exists())
         {
-            file.open(name.latin1(), ios::out);
+            file->open(QIODevice::WriteOnly | QIODevice::Text);
         }
         else
         {
-            testopen.close();
             alreadyexists = true;
         }
     }
     if (alreadyexists || !file)
     {
-        cerr << "Warning: Could not create file '" << name
-             << "' for writing." << endl;
+        cErr << "Warning: Could not create file '"
+             << name.toStdString().c_str()
+             << "' for writing." << Endl;
         if (!clobber)
         {
-            cerr << "Info: If you wish to overwrite file '"<<name<<"'," << endl;
-            cerr << "Info: you might want to give the -clobber flag." << endl;
+            cErr << "Info: If you wish to overwrite file '"
+                 << name.toStdString().c_str()
+                 <<"'," << Endl;
+            cErr << "Info: you might want to give the -clobber flag." << Endl;
         }
     }
-    return bool(file);
+    return file;
 }
 
 // ****************************************************************************
@@ -304,26 +341,36 @@ Open(ofstream &file, const QString &name_withoutpath)
 //  Programmer:  Mark C. Miller 
 //  Creation:    April 9, 2008 
 //
+//  Modifications:
+//    Brad Whitlock, Thu May  8 13:40:53 PDT 2008
+//    Qt 4. Use QFile..
+//
 // ****************************************************************************
 
 bool
 FileContentsChecksum(const QString &name, unsigned int *sum)
 {
-    ifstream file(name.latin1(), ios::in);
+    QFile *file = new QFile(name);
 
-    if (file.fail())
+    if (!file->open(QIODevice::ReadOnly))
+    {
+        delete file;
         return false;
+    }
 
     // compute the checksum
     char buf[80];
     *sum = 0;
-    while (!file.eof())
+    while (!file->atEnd())
     {
-        file.read(buf, sizeof(buf));
-        *sum = BJHash::Hash((unsigned char *) buf, file.gcount(), *sum);
+        qint64 len = file->read(buf, 80);
+        *sum = BJHash::Hash((unsigned char *) buf,
+                            (unsigned int)len, *sum);
     }
 
-    file.close();
+    file->close();
+    delete file;
+
     return true;
 }
 
@@ -340,13 +387,18 @@ FileContentsChecksum(const QString &name, unsigned int *sum)
 //  Programmer:  Mark C. Miller 
 //  Creation:    April 9, 2008 
 //
+//  Modifications:
+//    Brad Whitlock, Thu May  8 13:48:35 PDT 2008
+//    Use QFile, QTextStream.
+//
 // ****************************************************************************
 
 void
-CloseHeader(ofstream &file, const QString &pre_name_withoutpath)
+CloseHeader(QTextStream &file, const QString &pre_name_withoutpath)
 {
     // close the file
-    file.close();
+    file.device()->close();
+    delete file.device();
 
     QString pre_name;
     if (outputtoinputdir)
@@ -368,21 +420,21 @@ CloseHeader(ofstream &file, const QString &pre_name_withoutpath)
         {
             // Since the new header file is the same as the old, don't
             // touch the old and remove the new (pre) one.
-            unlink(pre_name.latin1());
-            cout << "Note: Header file \"" << post_name << "\" did NOT change." << endl;
+            QFile(pre_name).remove();
+            cOut << "Note: Header file \"" << post_name << "\" did NOT change." << Endl;
         }
         else
         {
             // Since the new headeer file is different from the old,
             // remove the old one and rename the new one.
-            unlink(post_name.latin1());
-            rename(pre_name.latin1(), post_name.latin1());
-            cout << "Note: Header file \"" << post_name << "\" changed." << endl;
+            QFile(post_name).remove();
+            QFile(pre_name).rename(post_name);
+            cOut << "Note: Header file \"" << post_name << "\" changed." << Endl;
         }
     }
     else
     {
-        rename(pre_name.latin1(), post_name.latin1());
+        QFile(pre_name).rename(post_name);
     }
 }
 
@@ -553,20 +605,18 @@ int main(int argc, char *argv[])
 
     if (installpublic && installprivate)
     {
-        cerr << "Cannot specify -public and -private at the same time!\n";
+        cErr << "Cannot specify -public and -private at the same time!\n";
         PrintUsage(argv[0]);
         exit(1);
     }
 
     for (int f = 1 ; f < argc ; f++)
     {
-        ifstream testfile(argv[f],ios::in);
-        if (!testfile)
+        if (!QFile(argv[f]).exists())
         {
-            cerr << "File '"<<argv[1]<<"' doesn't exist!\n";
+            cErr << "File '"<<argv[1]<<"' doesn't exist!\n";
             exit(1);
         }
-        testfile.close();
     }
 
     for (int f = 1 ; f < argc ; f++)
@@ -592,20 +642,30 @@ int main(int argc, char *argv[])
 //    Added code to retrieve the full path for this executable when
 //    generating project files on windows. 
 //
+//    Brad Whitlock, Thu May  8 11:53:18 PDT 2008
+//    Qt 4. Use QTextStream.
+//
+//    Cyrus Harrison, Wed Oct  1 10:34:01 PDT 2008
+//    Use "Die" on fatal error.
+//
 // ****************************************************************************
+
 void
 ProcessFile(QString file)
 {
     QString    docType;
     Plugin    *plugin    = NULL;
     Attribute *attribute = NULL;
+    QTextStream cOut(stdout);
+    QTextStream cErr(stderr);
+    QString     Endl("\n");
 
     EnumType::enums.clear();
 
     currentInputDir = "";
-    int lastslash = file.findRev("/");
+    int lastslash = file.lastIndexOf("/");
     if (lastslash < 0)
-        lastslash = file.findRev("\\");
+        lastslash = file.lastIndexOf("\\");
     if (lastslash >= 0)
         currentInputDir = file.left(lastslash+1);
 
@@ -614,7 +674,7 @@ ProcessFile(QString file)
     try
     {
         QFile             xmlFile(file);
-        QXmlInputSource   source(xmlFile);
+        QXmlInputSource   source(&xmlFile);
         QXmlSimpleReader  reader;
         ErrorHandler      errorhandler;
         
@@ -640,29 +700,29 @@ ProcessFile(QString file)
     }
     catch (const char *s)
     {
-        cerr << "ERROR: " << s << endl;
-        exit(-1);
+        cErr << "ERROR: " << s << Endl;
+        Die();
     }
     catch (const QString &s)
     {
-        cerr << "ERROR: " << s << endl;
-        exit(-1);
+        cErr << "ERROR: " << s.toStdString().c_str() << Endl;
+        Die();
     }
 
     if (docType.isNull())
     {
-        cerr << "Error in parsing " << file << endl;
-        exit(-1);
+        cErr << "Error in parsing " << file.toStdString().c_str() << Endl;
+        Die();
     }
 
     if (print)
     {
-        cout << "--------------------------------------------------------------"
-             << "---" << endl;
-        cout << "               Parsed document of type " << docType << endl;
-        cout << "--------------------------------------------------------------"
-             << "---" << endl;
-        cout << endl;
+        cOut << "--------------------------------------------------------------"
+             << "---" << Endl;
+        cOut << "               Parsed document of type " << docType << Endl;
+        cOut << "--------------------------------------------------------------"
+             << "---" << Endl;
+        cOut << Endl;
     }
 
     // test mode
@@ -672,48 +732,53 @@ ProcessFile(QString file)
         {
             for (size_t i=0; i<EnumType::enums.size(); i++)
             {
-                EnumType::enums[i]->Print(cout);
-                cout << endl;
+                EnumType::enums[i]->Print(cOut);
+                cOut << Endl;
             }
             if (docType == "Plugin")
-                plugin->Print(cout);
+                plugin->Print(cOut);
             else if (docType == "Attribute")
-                attribute->Print(cout);
+                attribute->Print(cOut);
             else
             {
-                cerr << "Document type " << docType << "not supported" << endl;
-                exit(-1);
+                cErr << "Document type "
+                     << docType
+                     << "not supported" << Endl;
+                Die();
             }
-            cout << endl;
+            cOut << Endl;
         }
 
 #ifdef GENERATE_ATTS
         if (docType == "Plugin" && plugin->type == "database")
         {
-            cerr << "No attributes to generate for database plugins\n";
+            cErr << "No attributes to generate for database plugins\n";
         }
         else
         {
             // atts writer mode
-            ofstream h;
-            if (Open(h, "pre_"+attribute->name+".h"))
+            QFile *fh;
+            if ((fh = Open("pre_"+attribute->name+".h")) != 0)
             {
+                QTextStream h(fh);
                 attribute->WriteHeader(h);
                 CloseHeader(h, "pre_"+attribute->name+".h");
             }
 
-            ofstream c;
-            if (Open(c, attribute->name+".C"))
+            QFile *fc;
+            if ((fc = Open(attribute->name+".C")) != 0)
             {
+                QTextStream c(fc);
                 attribute->WriteSource(c);
-                c.close();
+                fc->close();
+                delete fc;
             }
         }
 #endif
 #ifdef GENERATE_WINDOW
         if (docType == "Plugin" && plugin->type == "database")
         {
-            cerr << "No window to generate for database plugins\n";
+            cErr << "No window to generate for database plugins\n";
         }
         else
         {
@@ -724,18 +789,21 @@ ProcessFile(QString file)
                 attribute->plugintype = plugin->type;
             }
 
-            ofstream h;
-            if (Open(h, "pre_"+attribute->windowname+".h"))
+            QFile *fh;
+            if ((fh = Open("pre_"+attribute->windowname+".h")) != 0)
             {
+                QTextStream h(fh);
                 attribute->WriteHeader(h);
                 CloseHeader(h, "pre_"+attribute->windowname+".h");
             }
 
-            ofstream c;
-            if (Open(c, attribute->windowname+".C"))
+            QFile *fc;
+            if ((fc = Open(attribute->windowname+".C")) != 0)
             {
+                QTextStream c(fc);
                 attribute->WriteSource(c);
-                c.close();
+                fc->close();
+                delete fc;
             }
         }
 #endif
@@ -743,186 +811,232 @@ ProcessFile(QString file)
         // info writer mode
         if (docType == "Plugin" && plugin->type == "database")
         {
-            ofstream ih;
-            if (Open(ih, plugin->name+"PluginInfo.h"))
+            QFile *fih;
+            if ((fih = Open(plugin->name+"PluginInfo.h")) != 0)
             {
+                QTextStream ih(fih);
                 plugin->WriteInfoHeader(ih);
-                ih.close();
+                fih->close();
+                delete fih;
             }
 
-            ofstream ic;
-            if (Open(ic, plugin->name+"PluginInfo.C"))
+            QFile *fic;
+            if ((fic = Open(plugin->name+"PluginInfo.C")) != 0)
             {
+                QTextStream ic(fic);
                 plugin->WriteInfoSource(ic);
-                ic.close();
+                fic->close();
+                delete fic;
             }
 
-            ofstream cc;
-            if (Open(cc, plugin->name+"CommonPluginInfo.C"))
+            QFile *fcc;
+            if ((fcc = Open(plugin->name+"CommonPluginInfo.C")) != 0)
             {
+                QTextStream cc(fcc);
                 plugin->WriteCommonInfoSource(cc);
-                cc.close();
+                fcc->close();
+                delete fcc;
             }
 
-            ofstream mc;
-            if (Open(mc, plugin->name+"MDServerPluginInfo.C"))
+            QFile *fmc;
+            if ((fmc = Open(plugin->name+"MDServerPluginInfo.C")) != 0)
             {
+                QTextStream mc(fmc);
                 plugin->WriteMDServerInfoSource(mc);
-                mc.close();
+                fmc->close();
+                delete fmc;
             }
 
-            ofstream ec;
-            if (Open(ec, plugin->name+"EnginePluginInfo.C"))
+            QFile *fec;
+            if ((fec = Open(plugin->name+"EnginePluginInfo.C")) != 0)
             {
+                QTextStream ec(fec);
                 plugin->WriteEngineInfoSource(ec);
-                ec.close();
+                fec->close();
+                delete fec;
             }
         }
         else
         {
-            ofstream ih;
-            if (Open(ih, plugin->name+"PluginInfo.h"))
+            QFile *fih;
+            if ((fih = Open(plugin->name+"PluginInfo.h")) != 0)
             {
+                QTextStream ih(fih);
                 plugin->WriteInfoHeader(ih);
-                ih.close();
+                fih->close();
+                delete fih;
             }
 
-            ofstream ic;
-            if (Open(ic, plugin->name+"PluginInfo.C"))
+            QFile *fic;
+            if ((fic = Open(plugin->name+"PluginInfo.C")) != 0)
             {
+                QTextStream ic(fic);
                 plugin->WriteInfoSource(ic);
-                ic.close();
+                fic->close();
+                delete fic;
             }
 
-            ofstream cc;
-            if (Open(cc, plugin->name+"CommonPluginInfo.C"))
+            QFile *fcc;
+            if ((fcc = Open(plugin->name+"CommonPluginInfo.C")) != 0)
             {
+                QTextStream cc(fcc);
                 plugin->WriteCommonInfoSource(cc);
-                cc.close();
+                fcc->close();
+                delete fcc;
             }
 
-            ofstream gc;
-            if (Open(gc, plugin->name+"GUIPluginInfo.C"))
+            QFile *fgc;
+            if ((fgc = Open(plugin->name+"GUIPluginInfo.C")) != 0)
             {
+                QTextStream gc(fgc);
                 plugin->WriteGUIInfoSource(gc);
-                gc.close();
+                fgc->close();
+                delete fgc;
             }
 
-            ofstream vc;
-            if (Open(vc, plugin->name+"ViewerPluginInfo.C"))
+            QFile *fvc;
+            if ((fvc = Open(plugin->name+"ViewerPluginInfo.C")) != 0)
             {
+                QTextStream vc(fvc);
                 plugin->WriteViewerInfoSource(vc);
-                vc.close();
+                fvc->close();
+                delete fvc;
             }
 
-            ofstream ec;
-            if (Open(ec, plugin->name+"EnginePluginInfo.C"))
+            QFile *fec;
+            if ((fec = Open(plugin->name+"EnginePluginInfo.C")) != 0)
             {
+                QTextStream ec(fec);
                 plugin->WriteEngineInfoSource(ec);
-                ec.close();
+                fec->close();
+                delete fec;
             }
 
-            ofstream sc;
-            if (Open(sc, plugin->name+"ScriptingPluginInfo.C"))
+            QFile *fsc;
+            if ((fsc = Open(plugin->name+"ScriptingPluginInfo.C")) != 0)
             {
+                QTextStream sc(fsc);
                 plugin->WriteScriptingInfoSource(sc);
-                sc.close();
+                fsc->close();
+                delete fsc;
             }
         }
 #endif
 #ifdef GENERATE_MAKEFILE
         // makefile writer mode
-        ofstream out;
-        if (Open(out, "Makefile"))
+        QFile *fout;
+        if ((fout = Open("Makefile")) != 0)
         {
+            QTextStream out(fout);
             plugin->WriteMakefile(out);
-            out.close();
+            fout->close();
+            delete fout;
         }
 #endif
 #ifdef GENERATE_AVT
         if (docType == "Plugin" && plugin->type == "database")
         {
             // avt writer mode
-            ofstream fh;
-            if (Open(fh, QString("avt") + plugin->name + "FileFormat.h"))
+            QFile *ffh;
+            if ((ffh = Open(QString("avt") + plugin->name + "FileFormat.h")) != 0)
             {
+                QTextStream fh(ffh);
                 plugin->WriteFileFormatReaderHeader(fh);
-                fh.close();
+                ffh->close();
+                delete ffh;
             }
 
-            ofstream fc;
-            if (Open(fc, QString("avt") + plugin->name + "FileFormat.C"))
+            QFile *ffc;
+            if ((ffc = Open(QString("avt") + plugin->name + "FileFormat.C")) != 0)
             {
+                QTextStream fc(ffc);
                 plugin->WriteFileFormatReaderSource(fc);
-                fc.close();
+                ffc->close();
+                delete ffc;
             }
 
             if (plugin->haswriter)
             {
                 // avt writer mode
-                ofstream wh;
-                if (Open(wh, QString("avt") + plugin->name + "Writer.h"))
+                QFile *fwh;
+                if ((fwh = Open(QString("avt") + plugin->name + "Writer.h")) != 0)
                 {
+                    QTextStream wh(fwh);
                     plugin->WriteFileFormatWriterHeader(wh);
-                    wh.close();
+                    fwh->close();
+                    delete fwh;
                 }
 
-                ofstream wc;
-                if (Open(wc, QString("avt") + plugin->name + "Writer.C"))
+                QFile *fwc;
+                if ((fwc = Open(QString("avt") + plugin->name + "Writer.C")) != 0)
                 {
+                    QTextStream wc(fwc);
                     plugin->WriteFileFormatWriterSource(wc);
-                    wc.close();
+                    fwc->close();
+                    delete fwc;
                 }
             }
             if (plugin->hasoptions)
             {
                 // DB options mode.
-                ofstream wh;
-                if (Open(wh, QString("avt") + plugin->name + "Options.h"))
+                QFile *fwh;
+                if ((fwh = Open(QString("avt") + plugin->name + "Options.h")) != 0)
                 {
+                    QTextStream wh(fwh);
                     plugin->WriteFileFormatOptionsHeader(wh);
-                    wh.close();
+                    fwh->close();
+                    delete fwh;
                 }
 
-                ofstream wc;
-                if (Open(wc, QString("avt") + plugin->name + "Options.C"))
+                QFile *fwc;
+                if ((fwc = Open(QString("avt") + plugin->name + "Options.C")) != 0)
                 {
+                    QTextStream wc(fwc);
                     plugin->WriteFileFormatOptionsSource(wc);
-                    wc.close();
+                    fwc->close();
+                    delete fwc;
                 }
             }
         }
         else
         {
             // avt filters
-            ofstream fh;
-            if (Open(fh, QString("avt") + plugin->name + "Filter.h"))
+            QFile *ffh;
+            if ((ffh = Open(QString("avt") + plugin->name + "Filter.h")) != 0)
             {
+                QTextStream fh(ffh);
                 plugin->WriteFilterHeader(fh);
-                fh.close();
+                ffh->close();
+                delete ffh;
             }
 
-            ofstream fc;
-            if (Open(fc, QString("avt") + plugin->name + "Filter.C"))
+            QFile *ffc;
+            if ((ffc = Open(QString("avt") + plugin->name + "Filter.C")) != 0)
             {
+                QTextStream fc(ffc);
                 plugin->WriteFilterSource(fc);
-                fc.close();
+                ffc->close();
+                delete ffc;
             }
 
             if (plugin->type=="plot")
             {
-                ofstream ph;
-                if (Open(ph, QString("avt") + plugin->name + "Plot.h"))
+                QFile *fph;
+                if ((fph = Open(QString("avt") + plugin->name + "Plot.h")) != 0)
                 {
+                    QTextStream ph(fph);
                     plugin->WritePlotHeader(ph);
-                    ph.close();
+                    fph->close();
+                    delete fph;
                 }
 
-                ofstream pc;
-                if (Open(pc, QString("avt") + plugin->name + "Plot.C"))
+                QFile *fpc;
+                if ((fpc = Open(QString("avt") + plugin->name + "Plot.C")) != 0)
                 {
+                    QTextStream pc(fpc);
                     plugin->WritePlotSource(pc);
-                    pc.close();
+                    fpc->close();
+                    delete fpc;
                 }
             }
         }
@@ -930,15 +1044,17 @@ ProcessFile(QString file)
 #ifdef GENERATE_PYTHON
         if (docType == "Plugin" && plugin->type == "database")
         {
-            cerr << "No python to generate for database plugins\n";
+            cErr << "No python to generate for database plugins\n";
         }
         else
         {
             // scripting writer mode
             QString prefix("Py");
-            ofstream h;
-            if (Open(h, "pre_"+prefix+attribute->name+".h"))
+            QFile *fh;
+            if ((fh = Open("pre_"+prefix+attribute->name+".h")) != 0)
             {
+                QTextStream h(fh);
+
                 if (docType == "Plugin")
                 {
                     plugin->WriteHeader(h);
@@ -950,18 +1066,20 @@ ProcessFile(QString file)
                 CloseHeader(h, "pre_"+prefix+attribute->name+".h");
             }
 
-            ofstream s;
-            if (Open(s, prefix+attribute->name+".C"))
+            QFile *fs;
+            if ((fs = Open(prefix+attribute->name+".C")) != 0)
             {
+                QTextStream s(fs);
                 attribute->WriteSource(s);
-                s.close();
+                fs->close();
+                delete fs;
             }
         }
 #endif
 #ifdef GENERATE_JAVA
         if (docType == "Plugin" && plugin->type == "database")
         {
-            cerr << "No java to generate for database plugins\n";
+            cErr << "No java to generate for database plugins\n";
         }
         else
         {
@@ -973,11 +1091,13 @@ ProcessFile(QString file)
             }
 
             // java atts writer mode
-            ofstream j;
-            if (Open(j, attribute->name+".java"))
+            QFile *fj;
+            if ((fj = Open(attribute->name+".java")) != 0)
             {
+                QTextStream j(fj);
                 attribute->WriteSource(j);
-                j.close();
+                fj->close();
+                delete fj;
             }
         }
 #endif
@@ -1006,24 +1126,24 @@ ProcessFile(QString file)
         }
         else
         {
-            cerr << "No project files to generate for non-plugins." << endl;
+            cErr << "No project files to generate for non-plugins." << Endl;
         }
 #endif
 
-        cout.flush();
-        cerr.flush();
+        cOut.flush();
+        cErr.flush();
 
         delete attribute;
         delete plugin;
     }
     catch (const char *s)
     {
-        cerr << "ERROR: " << s << endl;
-        exit(-1);
+        cErr << "ERROR: " << s << Endl;
+        Die();
     }
     catch (const QString &s)
     {
-        cerr << "ERROR: " << s << endl;
-        exit(-1);
+        cErr << "ERROR: " << s << Endl;
+        Die();
     }
 }

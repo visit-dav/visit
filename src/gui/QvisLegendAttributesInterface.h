@@ -71,7 +71,7 @@ class GUI_API QvisLegendAttributesInterface : public QvisAnnotationObjectInterfa
 {
     Q_OBJECT
 public:
-    QvisLegendAttributesInterface(QWidget *parent, const char *name = 0);
+    QvisLegendAttributesInterface(QWidget *parent);
     virtual ~QvisLegendAttributesInterface();
 
     virtual QString GetName() const { return "Legend"; }

@@ -41,12 +41,13 @@
 #include <QueryOverTimeAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QButtonGroup>
+#include <QRadioButton>
+#include <QGroupBox>
 #include <QNarrowLineEdit.h>
 #include <stdio.h>
 #include <string>
@@ -113,6 +114,9 @@ QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //   
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -121,47 +125,42 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // TimeType
     //
-    QGroupBox *timeTypeBox = new QGroupBox(central, "timeTypeBox");
+    QGroupBox *timeTypeBox = new QGroupBox(central);
     timeTypeBox->setTitle(tr("X-Axis:"));
     topLayout->addWidget(timeTypeBox);
    
-    QGridLayout *timeTypeBoxLayout = new QGridLayout(timeTypeBox, 3, 2);
-    timeTypeBoxLayout->setMargin(10);
-    timeTypeBoxLayout->setSpacing(5);
-    timeTypeBoxLayout->addRowSpacing(0, 10); 
+    QGridLayout *timeTypeBoxLayout = new QGridLayout(timeTypeBox);    
 
-    timeType = new QButtonGroup();
-    connect(timeType, SIGNAL(clicked(int)), this, SLOT(timeTypeChanged(int)));
+    timeType = new QButtonGroup(timeTypeBox);
+    connect(timeType, SIGNAL(buttonClicked(int)), this, SLOT(timeTypeChanged(int)));
 
     QHBoxLayout *timeTypeLayout = new QHBoxLayout();
-    //timeTypeLayout->setSpacing(10);
 
-
-    QRadioButton *cycle    = new QRadioButton(tr("Cycle"),    timeTypeBox);
-    QRadioButton *dtime    = new QRadioButton(tr("Time"),     timeTypeBox);
-    QRadioButton *timestep = new QRadioButton(tr("Timestep"), timeTypeBox);
-    timeType->insert(cycle);
-    timeType->insert(dtime);
-    timeType->insert(timestep);
+    QRadioButton *cycle    = new QRadioButton(tr("Cycle"),timeTypeBox);
+    QRadioButton *dtime    = new QRadioButton(tr("Time"),timeTypeBox);
+    QRadioButton *timestep = new QRadioButton(tr("Timestep"),timeTypeBox);
+    timeType->addButton(cycle,0);
+    timeType->addButton(dtime,1);
+    timeType->addButton(timestep,2);
 
     timeTypeLayout->addWidget(cycle);
     timeTypeLayout->addWidget(dtime);
     timeTypeLayout->addWidget(timestep);
 
     timeTypeBoxLayout->addLayout(timeTypeLayout, 1, 0);
-    //mainLayout->addMultiCellWidget(timeType, 0,0, 1,2);
-
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 6,3,  10, "mainLayout");
+    
+    QGridLayout *mainLayout = new QGridLayout();
+    topLayout->addLayout(mainLayout);
 
     //
     // StartTime 
     //
-    startTimeFlag = new QCheckBox(tr("Starting timestep"), central, "startTimeFlag");
+    startTimeFlag = new QCheckBox(tr("Starting timestep"), central);
     connect(startTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(startTimeFlagChanged(bool)));
     mainLayout->addWidget(startTimeFlag, 1,0);
 
-    startTime = new QNarrowLineEdit(central, "startTime");
+    startTime = new QNarrowLineEdit(central);
     connect(startTime, SIGNAL(returnPressed()),
             this, SLOT(startTimeProcessText()));
     mainLayout->addWidget(startTime, 1,1);
@@ -169,12 +168,12 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // EndTime 
     //
-    endTimeFlag = new QCheckBox(tr("Ending timestep"), central, "endTimeFlag");
+    endTimeFlag = new QCheckBox(tr("Ending timestep"), central);
     connect(endTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(endTimeFlagChanged(bool)));
     mainLayout->addWidget(endTimeFlag, 2,0);
 
-    endTime = new QNarrowLineEdit(central, "endTime");
+    endTime = new QNarrowLineEdit(central);
     connect(endTime, SIGNAL(returnPressed()),
             this, SLOT(endTimeProcessText()));
     mainLayout->addWidget(endTime, 2,1);
@@ -182,9 +181,9 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // Stride 
     //
-    strideLabel = new QLabel(tr("stride"), central, "strideLabel");
+    strideLabel = new QLabel(tr("stride"), central);
     mainLayout->addWidget(strideLabel,3,0);
-    stride = new QNarrowLineEdit(central, "stride");
+    stride = new QNarrowLineEdit(central);
     connect(stride, SIGNAL(returnPressed()),
             this, SLOT(strideProcessText()));
     mainLayout->addWidget(stride, 3,1);
@@ -193,17 +192,17 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     // CreateWindow 
     //
     createWindow = new QCheckBox(tr("Use 1st unused window or\ncreate new one.  All\nsubsequent queries will\nuse this same window."),
-                                  central, "createWindow");
+                                  central);
     connect(createWindow, SIGNAL(toggled(bool)),
             this, SLOT(createWindowChanged(bool)));
-    mainLayout->addMultiCellWidget(createWindow, 4,4,0,1);
+    mainLayout->addWidget(createWindow, 4,0,1,2);
 
     //
     // WindowId 
     //
-    windowIdLabel = new QLabel(tr("Window #"), central, "windowIdLabel");
+    windowIdLabel = new QLabel(tr("Window #"), central);
     mainLayout->addWidget(windowIdLabel,5,0);
-    windowId = new QNarrowLineEdit(central, "windowId");
+    windowId = new QNarrowLineEdit(central);
     connect(windowId, SIGNAL(returnPressed()),
             this, SLOT(windowIdProcessText()));
     mainLayout->addWidget(windowId, 5,1);
@@ -223,6 +222,9 @@ QvisQueryOverTimeWindow::CreateWindowContents()
 // Modifications:
 //   Brad Whitlock, Mon Dec 17 09:40:53 PST 2007
 //   Made it use ids.
+//
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -244,7 +246,7 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case QueryOverTimeAttributes::ID_timeType:
-            timeType->setButton(atts->GetTimeType());
+            timeType->button(atts->GetTimeType())->setChecked(true);
             break;
           case QueryOverTimeAttributes::ID_startTimeFlag:
             if (atts->GetStartTimeFlag() == true)
@@ -338,7 +340,7 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     // Do startTime
     if(which_widget == QueryOverTimeAttributes::ID_startTime || doAll)
     {
-        temp = startTime->displayText().simplifyWhiteSpace();
+        temp = startTime->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -365,7 +367,7 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     // Do endTime
     if(which_widget == QueryOverTimeAttributes::ID_endTime || doAll)
     {
-        temp = endTime->displayText().simplifyWhiteSpace();
+        temp = endTime->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -386,7 +388,7 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     // Do stride
     if(which_widget == QueryOverTimeAttributes::ID_stride || doAll)
     {
-        temp = stride->displayText().simplifyWhiteSpace();
+        temp = stride->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -413,7 +415,7 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     // Do windowId
     if(which_widget == QueryOverTimeAttributes::ID_windowId || doAll)
     {
-        temp = windowId->displayText().simplifyWhiteSpace();
+        temp = windowId->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {

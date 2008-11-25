@@ -39,7 +39,7 @@
 *****************************************************************************/
 #include <map>
 #include <string>
-#include <qstring.h>
+#include <QString>
 
 class MovieSequence;
 class QPixmap;

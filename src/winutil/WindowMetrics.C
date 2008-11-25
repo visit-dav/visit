@@ -38,11 +38,13 @@
 
 #include "WindowMetrics.h"
 #include <visitstream.h>
-#include <qapplication.h>
+#include <QApplication>
+#include <QDesktopWidget>
 
 #if defined(Q_WS_WIN)
 #include <windows.h>
 #elif defined(Q_WS_X11)
+#include <QX11Info>
 #include <X11/Xlib.h>
 static Window GetParent(Display *dpy, Window win, Window *root_ret=NULL);
 #endif
@@ -334,6 +336,7 @@ WindowMetrics::CalculateScreen(QWidget *win,
 }
 
 #elif defined(Q_WS_MACX)
+#include <QDesktopWidget>
 
 //
 // MacOS coding
@@ -472,7 +475,7 @@ WindowMetrics::CalculateBorders(QWidget *win,
     XWindowAttributes parent_attributes;
 
     // Get the display pointer and window Id from the main window.
-    Display *dpy = win->x11Display();
+    Display *dpy = QX11Info::display();
     Window main_window = win->winId();
 
     // There is a GUI window, so we must adjust the work area. 
@@ -596,12 +599,12 @@ WindowMetrics::CalculateBorders(QWidget *win,
 void
 WindowMetrics::WaitForWindowManagerToGrabWindow(QWidget *win)
 {
-    qApp->flushX(); 
+    XFlush(QX11Info::display()); 
     XEvent ev; 
-    while (!XCheckTypedWindowEvent(win->x11Display(), win->winId(),
+    while (!XCheckTypedWindowEvent(QX11Info::display(), win->winId(),
                                    ReparentNotify, &ev))
     { 
-        if (XCheckTypedWindowEvent(win->x11Display(), win->winId(),
+        if (XCheckTypedWindowEvent(QX11Info::display(), win->winId(),
                                    MapNotify, &ev)) 
             break; 
     } 
@@ -628,9 +631,9 @@ WindowMetrics::WaitForWindowManagerToGrabWindow(QWidget *win)
 void
 WindowMetrics::WaitForWindowManagerToMoveWindow(QWidget *win)
 {
-    qApp->flushX(); 
+    XFlush(QX11Info::display()); 
     XEvent ev; 
-    while (!XCheckTypedWindowEvent(win->x11Display(), win->winId(),
+    while (!XCheckTypedWindowEvent(QX11Info::display(), win->winId(),
                                    ConfigureNotify, &ev))
     {
         // just keep polling
@@ -659,7 +662,7 @@ WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
     XWindowAttributes atts;
 
     // Get the display pointer and window Id from the widget.
-    Display *dpy  = wid->x11Display();
+    Display *dpy  = QX11Info::display();
     Window window = wid->winId();
 
     // Find the parent and the root.
@@ -718,18 +721,18 @@ WindowMetrics::CalculateScreen(QWidget *win,
     // find the root window
     unsigned int nchildren;
     Window root, parent_window, *children=NULL;
-    XQueryTree(win->x11Display(), win->winId(),
+    XQueryTree(QX11Info::display(), win->winId(),
                &root, &parent_window, &children, &nchildren );
     if(nchildren > 0)
         XFree((char *)children);
 
     // find the children of the root window
-    XQueryTree(win->x11Display(), root,
+    XQueryTree(QX11Info::display(), root,
                &root, &parent_window, &children, &nchildren );
     for (int i=0; i<nchildren; i++)
     {
         XWindowAttributes atts;
-        XGetWindowAttributes(win->x11Display(), children[i], &atts );
+        XGetWindowAttributes(QX11Info::display(), children[i], &atts );
 
         // Make sure the window is visible
         if (atts.map_state != IsViewable)

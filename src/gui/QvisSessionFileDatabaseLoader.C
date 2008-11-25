@@ -42,7 +42,7 @@
 #include <Observer.h>
 #include <DebugStream.h>
 
-#include <qtimer.h>
+#include <QTimer>
 
 // ****************************************************************************
 // Class: CancelledObserver
@@ -97,12 +97,13 @@ public:
 // Creation:   Thu Oct 27 16:23:13 PST 2005
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
-QvisSessionFileDatabaseLoader::QvisSessionFileDatabaseLoader(QObject *parent, const char *name) :
-    QObject(parent, name), GUIBase(), databases(), cancelledObserver(),
-    sessionFile()
+QvisSessionFileDatabaseLoader::QvisSessionFileDatabaseLoader(QObject *parent) 
+:  QObject(parent), GUIBase(), databases(), cancelledObserver(), sessionFile()
 {
     index = 0;
     cancelledObserver = 0;
@@ -225,7 +226,7 @@ QvisSessionFileDatabaseLoader::ProcessFile()
             else
             {
                 debug1 << mName << "telling VisIt that it can load the "
-                          "session file: " << sessionFile.latin1() << endl;
+                          "session file: " << sessionFile.toStdString() << endl;
                 
                 emit complete(sessionFile);
                 emit complete(sessionFile, databases);

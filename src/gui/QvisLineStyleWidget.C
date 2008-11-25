@@ -39,10 +39,10 @@
 #include <stdio.h>
 
 #include <QvisLineStyleWidget.h>
-#include <qcombobox.h>
-#include <qlayout.h>
-#include <qpixmap.h>
-#include <qpixmapcache.h>
+#include <QComboBox>
+#include <QLayout>
+#include <QPixmap>
+#include <QPixmapCache>
 
 // Some static pixmap data.
 const char *QvisLineStyleWidget::style4[] = {
@@ -161,11 +161,13 @@ char QvisLineStyleWidget::augmentedForeground[15];
 //   Brad Whitlock, Thu Sep 6 15:42:41 PST 2001
 //   Changed the combobox from using a background color to a background mode.
 //
+//   Brad Whitlock, Tue Jun  3 10:39:54 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent,
-                                         const char *name) : 
-                                         QWidget(parent, name)
+QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent) : 
+    QWidget(parent)
 {
     // Create some pixmaps and store them in the application global
     // pixmap cache.
@@ -204,13 +206,14 @@ QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent,
 
     // Create the combo box and add the pixmaps to it.
     QHBoxLayout *topLayout = new QHBoxLayout(this);
-    lineStyleComboBox = new QComboBox(false, this, "lineStyleComboBox");
-    lineStyleComboBox->insertItem(style1Pixmap);
-    lineStyleComboBox->insertItem(style2Pixmap);
-    lineStyleComboBox->insertItem(style3Pixmap);
-    lineStyleComboBox->insertItem(style4Pixmap);
-    lineStyleComboBox->setBackgroundMode(PaletteBackground);
-    lineStyleComboBox->setCurrentItem(style);
+    topLayout->setMargin(0);
+    lineStyleComboBox = new QComboBox(this);
+    lineStyleComboBox->addItem(QIcon(style1Pixmap), "solid");
+    lineStyleComboBox->addItem(QIcon(style2Pixmap), "dash");
+    lineStyleComboBox->addItem(QIcon(style3Pixmap), "dash/dot");
+    lineStyleComboBox->addItem(QIcon(style4Pixmap), "dotted");
+    lineStyleComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    lineStyleComboBox->setCurrentIndex(style);
     topLayout->addWidget(lineStyleComboBox);
     connect(lineStyleComboBox, SIGNAL(activated(int)),
             this, SIGNAL(lineStyleChanged(int)));
@@ -280,7 +283,7 @@ QvisLineStyleWidget::SetLineStyle(int style)
         return;
 
     lineStyleComboBox->blockSignals(true);
-    lineStyleComboBox->setCurrentItem(style);
+    lineStyleComboBox->setCurrentIndex(style);
     lineStyleComboBox->blockSignals(false);
 
     // If signals are not blocked, emit the LineStyleChanged signal.
@@ -310,7 +313,7 @@ QvisLineStyleWidget::SetLineStyle(int style)
 int
 QvisLineStyleWidget::GetLineStyle() const
 {
-    return lineStyleComboBox->currentItem();
+    return lineStyleComboBox->currentIndex();
 }
 
 // ****************************************************************************
@@ -327,7 +330,9 @@ QvisLineStyleWidget::GetLineStyle() const
 // Creation:   Fri Dec 1 16:29:56 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 10:45:50 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -336,9 +341,11 @@ QvisLineStyleWidget::AugmentPixmap(const char *xpm[])
     for(int i = 0; i < 23; ++i)
         augmentedData[i] = (char *)xpm[i];
 
+    QColor foreground(palette().color(QPalette::Text));
+
     // Turn the third element into the foreground color.
     sprintf(augmentedForeground, ". c #%02x%02x%02x", 
-            foregroundColor().red(), foregroundColor().green(),
-            foregroundColor().blue());
+            foreground.red(), foreground.green(),
+            foreground.blue());
     augmentedData[2] = augmentedForeground;
 }

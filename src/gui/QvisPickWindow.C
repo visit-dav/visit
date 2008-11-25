@@ -40,19 +40,20 @@
 #include <string>
 #include <vector>
 
-#include <qcombobox.h>
-#include <qcheckbox.h>
-#include <qdir.h>
-#include <qfiledialog.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qmultilineedit.h>
-#include <qtabwidget.h>
-#include <qspinbox.h>
-#include <qstringlist.h>
-#include <qvbox.h>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QDir>
+#include <QFileDialog>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QTabWidget>
+#include <QTextEdit>
+#include <QTextStream>
+#include <QSpinBox>
+#include <QStringList>
+#include <QWidget>
 
 #include <QvisVariableButton.h>
 #include <QvisPickWindow.h>
@@ -220,6 +221,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri Jun  6 14:21:32 PDT 2008
+//   Qt 4.
+//
 //   Gunther H. Weber, Fri Aug 15 10:50:10 PDT 2008
 //   Add buttons for redoing pick with and without opening a Spreadsheet plot.
 //   Added a missing tr() for "Clear Picks".
@@ -229,18 +233,20 @@ QvisPickWindow::~QvisPickWindow()
 void
 QvisPickWindow::CreateWindowContents()
 {
-    tabWidget = new QTabWidget(central, "tabWidget");
+    tabWidget = new QTabWidget(central);
     tabWidget->setMinimumHeight(200);
     topLayout->addWidget(tabWidget, 10);
 
     for (int i = 0; i < MAX_PICK_TABS; i++)
     {
-        pages[i] = new QVBox(central, "page");
-        pages[i]->setMargin(10);
-        pages[i]->setSpacing(5);
+        pages[i] = new QWidget(central);
+        QVBoxLayout *vLayout = new QVBoxLayout(pages[i]);
+        vLayout->setMargin(10);
+        vLayout->setSpacing(5);
         pages[i]->hide();
-        infoLists[i]  = new QMultiLineEdit(pages[i], "infoList");
-        infoLists[i]->setWordWrap(QMultiLineEdit::WidgetWidth);
+        infoLists[i]  = new QTextEdit(pages[i]);
+        vLayout->addWidget(infoLists[i]);
+        infoLists[i]->setWordWrapMode(QTextOption::WordWrap);
         infoLists[i]->setReadOnly(true);
         if (i < MIN_PICK_TABS)
         {
@@ -249,189 +255,171 @@ QvisPickWindow::CreateWindowContents()
         }
     }
     
-    QGridLayout *gLayout = new QGridLayout(topLayout, 15, 4);
+    QGridLayout *gLayout = new QGridLayout(0);
+    topLayout->addLayout(gLayout);
 
-    userMaxPickTabs = new QSpinBox(MIN_PICK_TABS, MAX_PICK_TABS, 1, central, 
-                                   "userMaxPickTabs");
-    userMaxPickTabs->setButtonSymbols(QSpinBox::PlusMinus);
+    userMaxPickTabs = new QSpinBox(central);
+    userMaxPickTabs->setMinimum(MIN_PICK_TABS);
+    userMaxPickTabs->setMaximum(MAX_PICK_TABS);
+    userMaxPickTabs->setButtonSymbols(QAbstractSpinBox::PlusMinus);
     gLayout->addWidget(userMaxPickTabs, 0, 1);
-    gLayout->addWidget(new QLabel(userMaxPickTabs, tr("Max Tabs"), central), 0,0);
+    QLabel *userMaxPickTabsLabel = new QLabel(tr("Max Tabs"), central);
+    userMaxPickTabsLabel->setBuddy(userMaxPickTabs);
+    gLayout->addWidget(userMaxPickTabsLabel, 0,0);
 
-    QPushButton *savePicksButton = new QPushButton(tr("Save Picks as") + QString("..."), central,
-            "savePicksButton");
+    QPushButton *savePicksButton = new QPushButton(tr("Save Picks as") + QString("..."), central);
     connect(savePicksButton, SIGNAL(clicked()),
             this, SLOT(savePickText()));
-    gLayout->addWidget(savePicksButton, 0, 3);
+    gLayout->addWidget(savePicksButton, 0, 2, 1, 2);
 
-    varsButton = new QvisVariableButton(true, false, true, -1,
-        central, "varsButton");
+    varsButton = new QvisVariableButton(true, false, true, -1, central);
     varsButton->setText(tr("Variables"));
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addPickVariable(const QString &)));
     gLayout->addWidget(varsButton, 1, 0);
 
-    varsLineEdit = new QLineEdit(central, "varsLineEdit");
+    varsLineEdit = new QLineEdit(central);
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(variableProcessText()));
-    gLayout->addMultiCellWidget(varsLineEdit, 1, 1, 1, 3);
+    gLayout->addWidget(varsLineEdit, 1, 1, 1, 3);
 
     
-    QLabel *floatFormatLabel = new QLabel(tr("Float Format:"),central,
-                                          "floatFormatLabel");
+    QLabel *floatFormatLabel = new QLabel(tr("Float Format"),central);
     gLayout->addWidget(floatFormatLabel, 2, 0);
     
-    floatFormatLineEdit= new QLineEdit(central, "floatFormatLineEdit");
+    floatFormatLineEdit= new QLineEdit(central);
     floatFormatLineEdit->setText("%g"); 
-    gLayout->addMultiCellWidget(floatFormatLineEdit, 2, 2, 1, 3);
+    gLayout->addWidget(floatFormatLineEdit, 2, 1, 1, 3);
     connect(floatFormatLineEdit, SIGNAL(returnPressed()),
             this, SLOT(floatFormatProcessText()));
         
-    conciseOutputCheckBox = new QCheckBox(tr("Concise Output."), central,
-                                     "conciseOutputCheckBox");
+    conciseOutputCheckBox = new QCheckBox(tr("Concise Output"), central);
     connect(conciseOutputCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(conciseOutputToggled(bool)));
-    gLayout->addMultiCellWidget(conciseOutputCheckBox, 3, 3, 0, 1);
+    gLayout->addWidget(conciseOutputCheckBox, 3, 0);
 
 
-    showMeshNameCheckBox = new QCheckBox(tr("Show Mesh Name"), central, 
-                                  "showMeshNameCheckBox");
+    showMeshNameCheckBox = new QCheckBox(tr("Show Mesh Name"), central);
     connect(showMeshNameCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showMeshNameToggled(bool)));
-    gLayout->addMultiCellWidget(showMeshNameCheckBox, 4, 4, 0, 1);
+    gLayout->addWidget(showMeshNameCheckBox, 4, 0, 1, 2);
 
-    showTimestepCheckBox = new QCheckBox(tr("Show Timestep"), central, 
-                                  "showTimestepCheckBox");
+    showTimestepCheckBox = new QCheckBox(tr("Show Timestep"), central);
     connect(showTimestepCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showTimestepToggled(bool)));
-    gLayout->addMultiCellWidget(showTimestepCheckBox, 4, 4, 2, 3);
+    gLayout->addWidget(showTimestepCheckBox, 4, 2, 1, 2);
 
-    displayIncEls = new QCheckBox(tr("Display incident nodes/zones."), central, 
-                                  "displayIncEls");
+    displayIncEls = new QCheckBox(tr("Display incident nodes/zones"), central);
     connect(displayIncEls, SIGNAL(toggled(bool)),
             this, SLOT(displayIncElsToggled(bool)));
-    gLayout->addMultiCellWidget(displayIncEls, 5, 5, 0, 1);
+    gLayout->addWidget(displayIncEls, 5, 0, 1, 4);
 
-    displayGlobalIds = new QCheckBox(tr("Display global nodes/zones."), central, 
-                                  "displayGlobalIds");
+    displayGlobalIds = new QCheckBox(tr("Display global nodes/zones"), central);
     connect(displayGlobalIds, SIGNAL(toggled(bool)),
             this, SLOT(displayGlobalIdsToggled(bool)));
-    gLayout->addMultiCellWidget(displayGlobalIds, 6, 6, 0, 1);
+    gLayout->addWidget(displayGlobalIds, 6, 0, 1, 4);
 
-    displayPickLetter = new QCheckBox(tr("Display reference pick letter."), 
-                                      central, "displayPickLetter");
+    displayPickLetter = new QCheckBox(tr("Display reference pick letter"), 
+                                      central);
     connect(displayPickLetter, SIGNAL(toggled(bool)),
             this, SLOT(displayPickLetterToggled(bool)));
-    gLayout->addMultiCellWidget(displayPickLetter, 7, 7, 0, 1);
+    gLayout->addWidget(displayPickLetter, 7, 0, 1, 4);
 
 
     // Node settings
-    QGroupBox *nodeGroupBox = new QGroupBox(central, "nodeGroupBox");
-    nodeGroupBox->setTitle(tr("Display for Nodes:"));
-    nodeGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(nodeGroupBox, 8, 8, 0, 3);
-    QGridLayout *nLayout = new QGridLayout(nodeGroupBox, 3, 4);
+    QGroupBox *nodeGroupBox = new QGroupBox(central);
+    nodeGroupBox->setTitle(tr("Display for Nodes"));
+    gLayout->addWidget(nodeGroupBox, 8, 0, 1, 4);
+    QGridLayout *nLayout = new QGridLayout(nodeGroupBox);
     nLayout->setMargin(10);
     nLayout->setSpacing(10);
-    nLayout->addRowSpacing(0, 15);
 
-    nodeId = new QCheckBox(tr("Id"), nodeGroupBox, "nodeId");
+    nodeId = new QCheckBox(tr("Id"), nodeGroupBox);
     connect(nodeId, SIGNAL(toggled(bool)),
             this, SLOT(nodeIdToggled(bool)));
-    nLayout->addMultiCellWidget(nodeId, 1, 1, 0, 1);
-    nodePhysical = new QCheckBox(tr("Physical Coords"), nodeGroupBox, 
-                                 "nodePhysical");
+    nLayout->addWidget(nodeId, 0, 0);
+    nodePhysical = new QCheckBox(tr("Physical Coords"), nodeGroupBox);
     connect(nodePhysical, SIGNAL(toggled(bool)),
             this, SLOT(nodePhysicalToggled(bool)));
-    nLayout->addMultiCellWidget(nodePhysical, 2, 2, 0, 1);
-    nodeDomLog = new QCheckBox(tr("Domain-Logical Coords"), nodeGroupBox, 
-                               "nodeDomLog");
+    nLayout->addWidget(nodePhysical, 1, 0);
+    nodeDomLog = new QCheckBox(tr("Domain-Logical Coords"), nodeGroupBox);
     connect(nodeDomLog, SIGNAL(toggled(bool)),
             this, SLOT(nodeDomLogToggled(bool)));
-    nLayout->addMultiCellWidget(nodeDomLog, 1, 1, 2, 3);
-    nodeBlockLog = new QCheckBox(tr("Block-Logical Coords"), nodeGroupBox, 
-                                 "nodeBlockLog");
+    nLayout->addWidget(nodeDomLog, 0, 1);
+    nodeBlockLog = new QCheckBox(tr("Block-Logical Coords"), nodeGroupBox);
     connect(nodeBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(nodeBlockLogToggled(bool)));
-    nLayout->addMultiCellWidget(nodeBlockLog, 2, 2, 2, 3);
+    nLayout->addWidget(nodeBlockLog, 1, 1);
 
     // Zone settings
-    QGroupBox *zoneGroupBox = new QGroupBox(central, "zoneGroupBox");
-    zoneGroupBox->setTitle(tr("Display for Zones:"));
-    zoneGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(zoneGroupBox, 9, 9, 0, 3);
-    QGridLayout *zLayout = new QGridLayout(zoneGroupBox, 3, 4);
+    QGroupBox *zoneGroupBox = new QGroupBox(central);
+    zoneGroupBox->setTitle(tr("Display for Zones"));
+    gLayout->addWidget(zoneGroupBox, 9, 0, 1, 4);
+    QGridLayout *zLayout = new QGridLayout(zoneGroupBox);
     zLayout->setMargin(10);
     zLayout->setSpacing(10);
-    zLayout->addRowSpacing(0, 15);
 
-    zoneId = new QCheckBox(tr("Id"), zoneGroupBox, "zoneId");
+    zoneId = new QCheckBox(tr("Id"), zoneGroupBox);
     connect(zoneId, SIGNAL(toggled(bool)),
             this, SLOT(zoneIdToggled(bool)));
-    zLayout->addMultiCellWidget(zoneId, 1, 1, 0, 1);
-    zoneDomLog = new QCheckBox(tr("Domain-Logical Coords"), zoneGroupBox, 
-                               "zoneDomLog");
+    zLayout->addWidget(zoneId, 0, 0);
+    zoneDomLog = new QCheckBox(tr("Domain-Logical Coords"), zoneGroupBox);
     connect(zoneDomLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneDomLogToggled(bool)));
-    zLayout->addMultiCellWidget(zoneDomLog, 1, 1, 2, 3);
-    zoneBlockLog = new QCheckBox(tr("Block-Logical Coords"), zoneGroupBox,
-                                 "zoneBlockLog");
+    zLayout->addWidget(zoneDomLog, 0, 1);
+    zoneBlockLog = new QCheckBox(tr("Block-Logical Coords"), zoneGroupBox);
     connect(zoneBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneBlockLogToggled(bool)));
-    zLayout->addMultiCellWidget(zoneBlockLog, 2, 2, 2, 3);
+    zLayout->addWidget(zoneBlockLog, 1, 1);
 
    
-    autoShowCheckBox = new QCheckBox(tr("Automatically show window"), central,
-                                     "autoShowCheckBox");
+    autoShowCheckBox = new QCheckBox(tr("Automatically show window"), central);
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
-    gLayout->addMultiCellWidget(autoShowCheckBox, 10, 10, 0, 3);
+    gLayout->addWidget(autoShowCheckBox, 10, 0, 1, 4);
 
-    savePicksCheckBox = new QCheckBox(tr("Don't clear this window"), central,
-                                     "savePicksCheckBox");
+    savePicksCheckBox = new QCheckBox(tr("Don't clear this window"), central);
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 11, 11, 0, 2);
+    gLayout->addWidget(savePicksCheckBox, 11, 0, 1, 2);
 
-    QPushButton *clearPicksButton = new QPushButton(tr("Clear Picks"), central,
-            "clearPicksButton");
+    QPushButton *clearPicksButton = new QPushButton(tr("Clear Picks"), central);
     connect(clearPicksButton, SIGNAL(clicked()),
             this, SLOT(clearPicks()));
-    gLayout->addWidget(clearPicksButton, 11, 3);
+    gLayout->addWidget(clearPicksButton, 11, 2, 1, 2);
 
-    timeCurveCheckBox = new QCheckBox(tr("Create time curve with next pick."), 
-                                      central, "timeCurveCheckBox");
+    timeCurveCheckBox = new QCheckBox(tr("Create time curve with next pick"), 
+                                      central);
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
-    gLayout->addMultiCellWidget(timeCurveCheckBox, 12, 12, 0, 2);
+    gLayout->addWidget(timeCurveCheckBox, 12, 0, 1, 2);
 
-    QPushButton *redoPickButton = new QPushButton(tr("Repeat Pick"),
-            central, "redoPickButton");
+    QPushButton *redoPickButton = new QPushButton(tr("Repeat Pick"), central);
     connect(redoPickButton, SIGNAL(clicked()),
             this, SLOT(redoPickClicked()));
-    gLayout->addWidget(redoPickButton, 12, 3);
+    gLayout->addWidget(redoPickButton, 12, 2, 1, 2);
 
-    preserveCoord= new QComboBox(false, central, "preserveCoord");
-    preserveCoord->insertItem(tr("Time curve use picked element"));
-    preserveCoord->insertItem(tr("Time curve use picked coordinates"));
-    preserveCoord->setCurrentItem(0);
+    preserveCoord= new QComboBox(central);
+    preserveCoord->addItem(tr("Time curve use picked element"));
+    preserveCoord->addItem(tr("Time curve use picked coordinates"));
+    preserveCoord->setCurrentIndex(0);
     connect(preserveCoord, SIGNAL(activated(int)),
             this, SLOT(preserveCoordActivated(int)));
-    gLayout->addMultiCellWidget(preserveCoord, 13, 13, 0, 3);
+    gLayout->addWidget(preserveCoord, 13, 0, 1, 4);
 
-    spreadsheetCheckBox = new QCheckBox(tr("Create spreadsheet with next pick."), 
-                                        central, "spreadsheetCheckBox");
+    spreadsheetCheckBox = new QCheckBox(tr("Create spreadsheet with next pick"), 
+                                        central);
     connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(spreadsheetToggled(bool)));
-    gLayout->addMultiCellWidget(spreadsheetCheckBox, 14, 14, 0, 2);
+    gLayout->addWidget(spreadsheetCheckBox, 14, 0, 1, 2);
 
     QPushButton *redoPickWithSpreadsheetButton =
-        new QPushButton(tr("Display in Spreadsheet"), central,
-                "redoPickWithSpreadsheetButton");
+        new QPushButton(tr("Display in Spreadsheet"), central);
     connect(redoPickWithSpreadsheetButton, SIGNAL(clicked()),
             this, SLOT(redoPickWithSpreadsheetClicked()));
-    gLayout->addWidget(redoPickWithSpreadsheetButton, 14, 3);
+    gLayout->addWidget(redoPickWithSpreadsheetButton, 14, 2, 1, 2);
 }
 
 // ****************************************************************************
@@ -682,7 +670,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     if (pickAtts->IsSelected(PickAttributes::ID_timePreserveCoord) || doAll)
     {
         preserveCoord->blockSignals(true);
-        preserveCoord->setCurrentItem((int)pickAtts->GetTimePreserveCoord());
+        preserveCoord->setCurrentIndex((int)pickAtts->GetTimePreserveCoord());
         preserveCoord->blockSignals(false);
     }
 }
@@ -725,12 +713,12 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //   nodePick.
 //
 //   Brad Whitlock, Tue Sep 9 09:07:17 PDT 2003
-//   I made the infoLists be QMultiLineEdits instead of QListBoxes.
+//   I made the infoLists be QTextEdits instead of QListWidgetes.
 //
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
 //   Don't clear window if savePicks is checked. 
 //   Removed code that printed all the pickAtts info separately.  Code was here
-//   because "\n" did not play well with QListBox.  Any time PickAttributes 
+//   because "\n" did not play well with QListWidget.  Any time PickAttributes 
 //   changed, this code had to be updated as well.  Now simply use 
 //   pickAtts->CreateOutputString.
 //   
@@ -758,7 +746,7 @@ QvisPickWindow::UpdatePage()
         // Change the tab heading.
         lastLetter = pickLetter;
         temp.sprintf(" %s ", pickAtts->GetPickLetter().c_str());
-        tabWidget->changeTab(pages[nextPage], temp);
+        tabWidget->setTabText(nextPage, temp);
 
         //
         // Get the output string without the letter, as it is
@@ -768,11 +756,10 @@ QvisPickWindow::UpdatePage()
 
         // Make the tab display the string.
         infoLists[nextPage]->clear();
-        infoLists[nextPage]->insertLine(displayString.c_str());
-        infoLists[nextPage]->setCursorPosition(0, 0);
+        infoLists[nextPage]->setText(displayString.c_str());
 
         // Show the tab.
-        tabWidget->showPage(pages[nextPage]);
+        tabWidget->setCurrentIndex(nextPage);
         nextPage = (nextPage + 1) % userMaxPickTabs->value();
     }
 }
@@ -809,6 +796,9 @@ QvisPickWindow::UpdatePage()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri Jun  6 14:55:57 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -829,14 +819,14 @@ QvisPickWindow::GetCurrentValues(int which_widget)
     {
         QString temp;
         stringVector userVars;
-        temp = varsLineEdit->displayText().simplifyWhiteSpace();
-        QStringList lst(QStringList::split(" ", temp));
+        temp = varsLineEdit->displayText().simplified();
+        QStringList lst(temp.split(" "));
  
         QStringList::Iterator it;
  
         for (it = lst.begin(); it != lst.end(); ++it)
         {
-            userVars.push_back((*it).latin1());
+            userVars.push_back((*it).toStdString());
         }
  
         pickAtts->SetVariables(userVars);
@@ -844,7 +834,7 @@ QvisPickWindow::GetCurrentValues(int which_widget)
     if (which_widget == PickAttributes::ID_floatFormat || doAll)
     {
         string format = floatFormatLineEdit
-                               ->displayText().simplifyWhiteSpace().latin1();
+                               ->displayText().simplified().toStdString();
         if(!StringHelpers::ValidatePrintfFormatString(format.c_str(),
                                                       "float","EOA"))
             Error(tr("Invalid pick floating point format string."));
@@ -876,7 +866,10 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 //   
 //   Kathleen Bonnell, Mon Oct 31 10:47:53 PST 2005 
 //   Added a node for userMaxTabs.
-//   
+//
+//   Brad Whitlock, Fri Jun  6 14:56:43 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -888,7 +881,7 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
     // Add more information.
     if(saveWindowDefaults)
     {
-        DataNode *node = parentNode->GetNode(caption().latin1());
+        DataNode *node = parentNode->GetNode(windowTitle().toStdString());
         if(node)
         {
             node->AddNode(new DataNode("autoShow", autoShow));
@@ -921,7 +914,10 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
 //   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007 
 //   Added defaultAutoShow, defaultSavePicks, defaultNumTabs so that their
 //   counterparts can be 'reset' correclty from user-saved values when needed. 
-//   
+//
+//   Brad Whitlock, Fri Jun  6 14:56:56 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -929,7 +925,7 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
 {
     QvisPostableWindowObserver::SetFromNode(parentNode, borders);
 
-    DataNode *winNode = parentNode->GetNode(caption().latin1());
+    DataNode *winNode = parentNode->GetNode(windowTitle().toStdString());
     if(winNode == 0)
         return;
 
@@ -1060,6 +1056,10 @@ QvisPickWindow::floatFormatProcessText()
 // Programmer: Kathleen Bonnell
 // Creation:   March 25, 2002 
 //
+// Modifications:
+//   Brad Whitlock, Fri Jun  6 14:48:04 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 void
 QvisPickWindow::ClearPages()
@@ -1067,10 +1067,10 @@ QvisPickWindow::ClearPages()
     QString temp = " ";
     for (int i = 0; i < tabWidget->count(); i++)
     {
-        tabWidget->changeTab(pages[i], temp);
+        tabWidget->setTabText(i, temp);
         infoLists[i]->clear();
     }
-    tabWidget->showPage(pages[0]);
+    tabWidget->setCurrentIndex(0);
 }
 
 
@@ -1596,6 +1596,10 @@ QvisPickWindow::preserveCoordActivated(int val)
 // Programmer: Kathleen Bonnell 
 // Creation:   October 31, 2005 
 //
+// Modifications:
+//   Brad Whitlock, Fri Jun  6 14:50:19 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1614,9 +1618,9 @@ QvisPickWindow::ResizeTabs()
         // Reduce the number of pages that tabWidget holds
         for (i = currentMax-1; i >= newMax; i--)
         {
-            tabWidget->changeTab(pages[i], temp);
+            tabWidget->setTabText(i, temp);
             infoLists[i]->clear();
-            tabWidget->removePage(pages[i]);
+            tabWidget->removeTab(i);
             pages[i]->hide();
         }
         if (nextPage >= newMax)
@@ -1630,7 +1634,7 @@ QvisPickWindow::ResizeTabs()
             pages[i]->show();
             tabWidget->addTab(pages[i]," "); 
         }
-        if (tabWidget->label(nextPage) != " ")
+        if (tabWidget->tabText(nextPage) != " ")
             nextPage = currentMax; 
     }
 }
@@ -1647,7 +1651,10 @@ QvisPickWindow::ResizeTabs()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
-//   
+//
+//   Brad Whitlock, Fri Jun  6 14:59:53 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1667,7 +1674,8 @@ QvisPickWindow::savePickText()
 
     // Get the name of the file that the user saved.
     QString sFilter(QString("VisIt ") + QString("save") + QString(" (*") + saveExtension + ")");
-    QString fileName = QFileDialog::getSaveFileName(defaultFile, sFilter);
+    QString fileName = QFileDialog::getSaveFileName(
+        this, tr("Choose save filename"), defaultFile, sFilter);
 
     // If the user chose to save a file, write the pick result text
     // to that file.
@@ -1675,13 +1683,13 @@ QvisPickWindow::savePickText()
     {
         ++saveCount;
         QFile file( fileName );
-        if ( file.open(IO_WriteOnly) )
+        if ( file.open(QIODevice::WriteOnly) )
         {
             QTextStream stream( &file );
             int i;
             for ( i = 0; i < tabWidget->count(); i++ )
             {
-                QString txt( infoLists[i]->text() );
+                QString txt( infoLists[i]->toPlainText() );
                 if ( txt.length() > 0 )
                     stream << txt;
             }

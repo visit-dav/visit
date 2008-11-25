@@ -41,7 +41,7 @@
 #include <gui_exports.h>
 #include <vector>
 #include <string>
-#include <qobject.h>
+#include <QObject>
 #include <visit-config.h>
 #include <ViewerProxy.h>
 #include <ConfigManager.h>
@@ -398,6 +398,9 @@ private:
     void RestoreCrashRecoveryFile();
     void RemoveCrashRecoveryFile(bool) const;
     QString CrashRecoveryFile() const;
+    
+    void ExtractSystemDefaultAppearance();
+        
 public slots:
     void newExpression();
     void SaveCrashRecoveryFile();

@@ -40,8 +40,7 @@
 #define QvisAbstractOpacityBar_H
 #include <gui_exports.h>
 
-#include <qframe.h>
-class QPixmap;
+#include <QFrame>
 class QImage;
 class ColorControlPointList;
 
@@ -55,16 +54,19 @@ class ColorControlPointList;
 //  Creation:    January 30, 2001
 //
 //  Modifications:
-//
 //    Gunther Weber, Fri Apr  6 16:04:52 PDT 2007
 //    Added support for painting in the color spectrum.
 //
+//    Brad Whitlock, Fri May 30 09:32:22 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
+
 class GUI_API QvisAbstractOpacityBar : public QFrame
 {
     Q_OBJECT
   public:
-                   QvisAbstractOpacityBar(QWidget *parent=NULL, const char *name=NULL);
+                   QvisAbstractOpacityBar(QWidget *parent=NULL);
     virtual       ~QvisAbstractOpacityBar();
     virtual float *getRawOpacities(int) = 0;
     void           SetBackgroundColorControlPoints(const ColorControlPointList *ccp);
@@ -75,11 +77,13 @@ class GUI_API QvisAbstractOpacityBar : public QFrame
     int            val2y(float);
     float          y2val(int);
 
+    bool           ensureImageExists(int,int);
+
     virtual void   paintEvent(QPaintEvent*);
     virtual void   resizeEvent(QResizeEvent*);
-    virtual void   paintToPixmap(int,int) = 0;
+    virtual void   drawOpacities(int,int) = 0;
 
-    QPixmap       *pix;
+    QImage        *image;
     const ColorControlPointList
                   *backgroundColorControlPoints;
 

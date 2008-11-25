@@ -39,7 +39,7 @@
 #ifndef SPLASHSCREEN_H
 #define SPLASHSCREEN_H
 
-#include <qframe.h>
+#include <QFrame>
 #include <vector>
 
 // Forward declarations.
@@ -74,13 +74,16 @@ class QVBoxLayout;
 //   Brad Whitlock, Wed Apr  9 10:26:06 PDT 2008
 //   Use QString instead of const char *.
 //
+//   Brad Whitlock, Fri May 30 15:21:37 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class SplashScreen : public QFrame
 {
     Q_OBJECT
 public:
-    SplashScreen(bool cyclePictures = false, const char *name = 0);
+    SplashScreen(bool cyclePictures = false);
     ~SplashScreen();
 
     void Progress(const QString &msg, int progress);

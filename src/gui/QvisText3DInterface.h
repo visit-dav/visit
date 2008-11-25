@@ -69,7 +69,7 @@ class GUI_API QvisText3DInterface : public QvisAnnotationObjectInterface
 {
     Q_OBJECT
 public:
-    QvisText3DInterface(QWidget *parent, const char *name = 0);
+    QvisText3DInterface(QWidget *parent);
     virtual ~QvisText3DInterface();
 
     virtual QString GetName() const { return "3D Text"; }

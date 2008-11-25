@@ -40,7 +40,7 @@
 #define QVIS_HOST_PROFILE_WINDOW_H
 #include <gui_exports.h>
 #include <QvisPostableWindowObserver.h>
-#include <qmap.h>
+#include <QMap>
 
 // Forward declrations
 class HostProfileList;
@@ -52,8 +52,8 @@ class QGroupBox;
 class QLabel;
 class QComboBox;
 class QTabWidget;
-class QListBox;
-class QListBoxItem;
+class QListWidget;
+class QListWidgetItem;
 class QCheckBox;
 class QButtonGroup;
 class QRadioButton;
@@ -142,13 +142,15 @@ class QRadioButton;
 //    Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
 //    Added fields for commands to run pre and post the mpi command.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
 
-    typedef QMap<QString, QListBox*> HostTabMap;
 public:
     QvisHostProfileWindow(HostProfileList *profiles, 
                           const QString &caption = QString::null,
@@ -169,8 +171,8 @@ private slots:
     void deleteProfile();
     void apply();
 
-    void activateProfile(QListBoxItem *item);
-    void pageTurned(QWidget *);
+    void activateProfile(QListWidgetItem *item);
+    void pageTurned(int);
     void processProfileNameText(const QString &name);
     void processEngineArgumentsText(const QString &);
     void processPartitionNameText(const QString &);
@@ -219,10 +221,11 @@ private:
     QWidget *CreateAdvancedTab(QWidget *parent);
     QWidget *CreateHardwareAccelerationTab(QWidget *parent);
     QWidget *CreateNetworkingTab(QWidget *parent);
-
+    
+    QMap<QString, QListWidget*>   hostTabMap;
+    
     QTabWidget   *hostTabs;
-    QListBox     *emptyListBox;
-    HostTabMap   hostTabMap;
+    QListWidget  *emptyListBox;
 
     QTabWidget   *optionsTabs;
     QPushButton  *newButton;
