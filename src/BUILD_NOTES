@@ -15,7 +15,7 @@ shell prompt.
     =======  =======   ===========            ====================
     Mesa     5.0       3-D Graphics Library   http://www.mesa3d.org/
     Python   2.5       Scripting Language     http://www.python.org
-    Qt       3.3.2     GUI Toolkit            http://www.trolltech.com
+    Qt       4.4.3     GUI Toolkit            http://www.trolltech.com
     Silo     4.5.1     File I/O library       http://silo.llnl.gov
     VTK      5.0.0c    Visualization Toolkit  http://www.kitware.com
 
@@ -27,8 +27,7 @@ packages and VisIt should work properly.  For Mesa, you must build a mangled
 version of Mesa.  The distribution provided has already been set up to build
 a mangled version so no additional work is required if you use it.  For VTK,
 you must use the March 23, 2004 distribution provided. The version of Qt
-used to build VisIt must be greater than or equal to 2.3.0. VisIt is also
-compatible with Qt versions 3.0.2 or later.
+used to build VisIt must be greater than or equal to 4.4.0.
 
 VisIt also contains many database readers which are also built on external
 libraries.  If you want to make use of these readers you will also need to
@@ -73,16 +72,17 @@ operating systems.  It is suggested that you use the same compilers.
    Redhad Enterprise Linux 3 (x86)         g++ 3.2.3
    Redhad Enterprise Linux 4 (x86, ia64)   g++ 3.2.3 or icc 9.1
    Redhad Enterprise Linux 4 (x86_64)      g++ 3.4.4
-   Solaris 7                               g++ 3.2
+   Solaris 7                               (g++ 4.x would probably work)
    Tru64 5.1                               g++ 3.3.3
 
 The following compilers will *NOT* work with VisIt.  They will either not
-compile VisIt or will generate bad code.
+compile VisIt, one or more third party libraries, or will generate bad code.
 
    Operating System                        Compiler
    ================                        ========
    AIX 5.1                                 g++
    All                                     g++ earlier than 3.2
+   Solaris 7                               g++ 3.2
 
 It is essential that you build all the dependent packages and VisIt using
 the same c++ compiler or you will encounter linking problems because different
@@ -418,137 +418,78 @@ Qt
 
 The Qt toolkit from Trolltech is a free (for non-commercial use), cross-
 platform Graphical User Inteface toolkit that runs on X11, MS Windows, and
-Mac-X. VisIt uses Qt as the basis of its GUI and Viewer.  Follow the
-directions listed below to build Qt.  You can use Qt version 2.3.0, 3.0.2
-or 3.3.2 on all the systems except tru64 where you must can't use 2.3.0.
-We recommend using 3.3.2.  If you have any problems building or installing
-Qt, read the INSTALL file in the Qt distribution for more information.
+MacOS X. VisIt uses Qt as the basis of its GUI and Viewer.  Follow the
+directions listed below to build Qt.  You can use Qt version 4.4.0 or later.
+If you have any problems building or installing Qt, read the INSTALL file
+in the Qt distribution for more information. You can also read more at
+http://www.visitusers.org/index.php?title=Qt4_Build_Notes.
 
 #
-# Build Qt 3.3.2
+# Build Qt 4.4.3
 #
-gunzip qt-x11-free-3.3.2.tar.gz
-tar xf qt-x11-free-3.3.2.tar
-cd qt-x11-free-3.3.2
-setenv QTDIR `pwd`
-set path=($QTDIR/bin $path)
-
-setenv LD_LIBRARY_PATH $QTDIR/lib:$LD_LIBRARY_PATH
-# NOTE: if LD_LIBRARY_PATH is not set in your environment, this command will
-# fail.  In this case, just issue:
-# setenv LD_LIBRARY_PATH $QTDIR/lib
-
-setenv LD_LIBRARYN32_PATH $QTDIR/lib:$LD_LIBRARYN32_PATH     # SGI
-setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
+gunzip qt-x11-opensource-4.4.3.tar.gz
+tar xf qt-x11-opensource-4.4.3.tar
+cd qt-x11-opensource-4.4.3
 
 #
-# On tru64 systems qt generates some unaligned access errors. To
-# correct the problem change the following two code blocks in
-# src/tools/qlocale.cpp.
+# Prepare an installation location for Qt before we build it so we can
+# later use "make install" to install Qt since we need various helper
+# applications in addition to the libraries that get built.
 #
-# #if !defined(INFINITY)
-#         ...
-# #endif
+mkdir $VISITDIR/qt
+mkdir $VISITDIR/qt/4.4.3
+mkdir $VISITDIR/qt/4.4.3/$VISITARCH
+
 #
-#                    to
-#
-# #if !defined(INFINITY)
-# static const union {unsigned char c[8];double d;} be_inf_bytes = { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 } ;
-# static const union {unsigned char c[8];double d;} le_inf_bytes = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
-# static inline double inf()
-# {
-#     return ByteOrder == BigEndian ? be_inf_bytes.d : le_inf_bytes.d;
-# }
-# #   define INFINITY (::inf())
-# #endif
-#
-#                    and
-#
-# #if !defined(NAN)
-#         ...
-# #endif
-#                    to
-#
-# #if !defined(NAN)
-# static const union {unsigned char c[8];double d;} be_nan_bytes = { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 };
-# static const union {unsigned char c[8];double d;} le_nan_bytes = { 0, 0, 0, 0, 0, 0, 0xf8, 0x7f };
-# static inline double nan()
-# {
-#     return ByteOrder == BigEndian ? be_nan_bytes.d : le_nan_bytes.d;
-# }
-# #   define NAN (::nan())
-# #endif
-#
-# On later versions of the Irix compiler (e.g. 7.41), you will need to change
-# strtoll to strtol in src/tools/qdatastream.cpp before running configure.
-#
-# If you wish to specify a specific compiler then modify the appropriate
-# mkspecs/XXX/qmake.conf file, where XXX is the platform name.
-#
-# On linux systems if the OpenGL library is built with threading support,
-# qt won't by default compile the QGL widget.  To determine if the OpenGL
-# library was built with threading run the following command:
-#
-#     ./configure -platform <platform-type> -shared --help
-#
-# If the output contains:
-#
-#     WARNING: /usr/X11R6/lib/libGL.so is threaded!
-#     The Qt OpenGL module requires Qt to be configured with -thread.
-#
-# then you will need to add "-thread" to the configure line below.
-# (platform-type should be substituted with the appropriate platform below.)
-# 
 # Use the appropriate configure command based on the operating system on
 # which you are building Qt.  You should use the linux-g++ platform for
 # all linux versions except for opteron systems, in which case you should
 # use the linux-g++-64 platform.
 #
-./configure -platform aix-xlc -shared -qt-libpng
-./configure -platform aix-xlc-64 -shared -qt-libpng
-./configure -platform irix-cc-64 -shared -qt-libpng
-./configure -platform linux-g++ -shared -qt-libpng
-./configure -platform linux-g++-64 -shared -qt-libpng
-./configure -platform linux-icc -shared -qt-libpng
-./configure -platform solaris-g++ -shared -qt-libpng
-./configure -platform tru64-g++ -shared -qt-libpng
+setenv QTINSTALL $VISITDIR/qt/4.4.3/$VISITARCH
+./configure --prefix=$QTINSTALL -platform aix-xlc      -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite -qt-libpng
+./configure --prefix=$QTINSTALL -platform aix-xlc-64   -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite -qt-libpng
+./configure --prefix=$QTINSTALL -platform irix-cc-64   -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite -qt-libpng
+./configure --prefix=$QTINSTALL -platform linux-g++    -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite -qt-libpng
+./configure --prefix=$QTINSTALL -platform linux-g++-64 -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite -qt-libpng
+./configure --prefix=$QTINSTALL -platform linux-icc    -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite -qt-libpng
+./configure --prefix=$QTINSTALL -platform solaris-g++  -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite -qt-libpng
+./configure --prefix=$QTINSTALL -platform tru64-g++    -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite -qt-libpng
 
 #
-# On tru64 systems you will need to make the following changes to
-# the file mkspecs/tru64-g++/qmake.conf:
-# set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
+# Build Qt
 #
+make -j 4
 
 #
-# Issuing a top level make of Qt will build all portions of Qt.  VisIt really
-# only needs libqt, moc, and libqui.  You can have only these portions be 
-# built by issuing:
+# Install Qt in the visit directory under the qt directory.
 #
-make symlinks src-qmake src-moc sub-src
-cd tools/designer/uilib
-make
-cd ../../../
+make install
+cd ..
 
 #
-# Install it in the visit directory under the qt directory.
+# On AIX systems you will need to add an additional link to the lib
+# directory so that the loader can find the library. These steps
+# ONLY NEED TO BE DONE ON AIX.
 #
-mkdir $VISITDIR/qt
-mkdir $VISITDIR/qt/3.3.2
-mkdir $VISITDIR/qt/3.3.2/$VISITARCH
-mkdir $VISITDIR/qt/3.3.2/$VISITARCH/{bin,include,lib}
-mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include/private
-cp bin/{findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
-cd include; cp *.h $VISITDIR/qt/3.3.2/$VISITARCH/include
-cp private/*.h $VISITDIR/qt/3.3.2/$VISITARCH/include/private
-cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.3.2/$VISITARCH/lib
-cd ../..
-#
-# On aix systems you will need to add an additional link to the lib
-# directory so that the loader can find the library.
-#
-# ln -s libqt.so.3.3.2 $VISITDIR/qt/3.3.2/$VISITARCH/lib/libqt.so
-# ln -s libqui.so.1.0.0 $VISITDIR/qt/3.3.2/$VISITARCH/lib/libqui.so
-#
+pushd .
+cd $QTINSTALL
+ln -s libQtAssistantClient.a libQtAssistantClient.so
+ln -s libQtCLucene.a libQtCLucene.so
+ln -s libQtCore.a libQtCore.so
+ln -s libQtDesigner.a libQtDesigner.so
+ln -s libQtDesignerComponents.a libQtDesignerComponents.so
+ln -s libQtGui.a libQtGui.so
+ln -s libQtHelp.a libQtHelp.so
+ln -s libQtNetwork.a libQtNetwork.so
+ln -s libQtOpenGL.a libQtOpenGL.so
+ln -s libQtScript.a libQtScript.so
+ln -s libQtSql.a libQtSql.so
+ln -s libQtSvg.a libQtSvg.so
+ln -s libQtTest.a libQtTest.so
+ln -s libQtXml.a libQtXml.so
+popd 
+
 
 Silo
 =====
