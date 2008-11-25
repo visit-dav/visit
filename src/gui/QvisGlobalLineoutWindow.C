@@ -41,11 +41,11 @@
 #include <GlobalLineoutAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
 #include <QNarrowLineEdit.h>
 #include <stdio.h>
 
@@ -120,92 +120,81 @@ QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Wed Jun 11 13:19:35 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisGlobalLineoutWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
-
+    QGridLayout *mainLayout = new QGridLayout();
+    topLayout->addLayout(mainLayout);
     //
     // CreateWindow
     //
     createWindow = new QCheckBox(tr("Use 1st unused window or create\nnew one. All  subsequent lineouts\nwill use this same window."), 
-                                  central, "createWindow");
+                                  central);
     connect(createWindow, SIGNAL(toggled(bool)),
             this, SLOT(createWindowChanged(bool)));
-    mainLayout->addMultiCellWidget(createWindow, 0,0,0,1);
+    mainLayout->addWidget(createWindow, 0,0,1,2);
 
     //
     // WindowId
     //
-    windowIdLabel = new QLabel(tr("Window #"), central, "windowIdLabel");
+    windowIdLabel = new QLabel(tr("Window #"), central);
     mainLayout->addWidget(windowIdLabel,1,0);
-    windowId = new QNarrowLineEdit(central, "windowId");
+    windowId = new QNarrowLineEdit(central);
     connect(windowId, SIGNAL(returnPressed()),
             this, SLOT(windowIdProcessText()));
     mainLayout->addWidget(windowId, 1,1);
 
 
     // Freeze In Time
-    freezeInTime = new QCheckBox(tr("Freeze In Time"), central, "freezeInTime");
+    freezeInTime = new QCheckBox(tr("Freeze In Time"), central);
     connect(freezeInTime, SIGNAL(toggled(bool)),
             this, SLOT(freezeInTimeChanged(bool)));
-    mainLayout->addMultiCellWidget(freezeInTime,2,2,0,1);
+    mainLayout->addWidget(freezeInTime,2,0,1,2);
 
     //
     // Dynamic 
     //
-    QGroupBox *dbox;
-#if QT_VERSION >= 0x030200
-    dynamic = new QGroupBox(tr("Synchronize with originating plot"),
-                             central, "dynamic");
+    dynamic = new QGroupBox(tr("Synchronize with originating plot"),central);
     dynamic->setCheckable(true);
-    dbox = dynamic;
     connect(dynamic, SIGNAL(toggled(bool)),
             this, SLOT(dynamicChanged(bool)));
     topLayout->addWidget(dynamic);
-#else
-    dynamic = new QCheckBox(tr("Synchronize with originating plot"),
-                             central, "dynamic");
-    connect(dynamic, SIGNAL(toggled(bool)),
-            this, SLOT(dynamicChanged(bool)));
-    mainLayout->addMultiCellWidget(dynamic,3,3,0,1);
 
-    dynamicGroup = new QGroupBox(tr("Dynamic options"), central, "dynamic");
-    topLayout->addWidget(dynamicGroup);
-    dbox = dynamicGroup;
-#endif
-
-    QVBoxLayout *dlayout = new QVBoxLayout(dbox);
+    QVBoxLayout *dlayout = new QVBoxLayout(dynamic);
     dlayout->setMargin(10);
     dlayout->addSpacing(15);
 
-    QGridLayout *dgrid = new QGridLayout(dlayout, 4, 2);
+    QGridLayout *dgrid = new QGridLayout();
+    dlayout->addLayout(dgrid);
 
     //
     // curve options
     //
-    curveOptions = new QComboBox(dbox, "curveOptions");
-    curveOptions->insertItem(tr("updates curve"), 0);
-    curveOptions->insertItem(tr("creates new curve"), 1);
+    curveOptions = new QComboBox(dynamic);
+    curveOptions->addItem(tr("updates curve"));
+    curveOptions->addItem(tr("creates new curve"));
     connect(curveOptions, SIGNAL(activated(int)),
             this, SLOT(curveOptionsChanged(int)));
-    curveLabel = new QLabel(curveOptions, tr("Time change "), dbox, "curveLabel");
+    curveLabel = new QLabel(tr("Time change "), dynamic);
 
     dgrid->addWidget(curveLabel, 1, 0);
     dgrid->addWidget(curveOptions, 1, 1);
-    dgrid->addRowSpacing(2, 10);
+    dgrid->setRowMinimumHeight(2, 10);
 
     //
     // color options
     //
-    colorOptions = new QComboBox(dbox, "colorOptions");
-    colorOptions->insertItem(tr("repeats color"), 0);
-    colorOptions->insertItem(tr("creates new color"), 1);
+    colorOptions = new QComboBox(dynamic);
+    colorOptions->addItem(tr("repeats color"));
+    colorOptions->addItem(tr("creates new color"));
     connect(colorOptions, SIGNAL(activated(int)),
             this, SLOT(colorOptionsChanged(int)));
-    colorLabel = new QLabel(colorOptions, tr("New curve "), dbox, "colorLabel");
+    colorLabel = new QLabel(tr("New curve "), dynamic);
 
     dgrid->addWidget(colorLabel, 3, 0);
     dgrid->addWidget(colorOptions, 3, 1);
@@ -213,25 +202,26 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // Want the next items grouped.
     //
-    QGroupBox *gbox = new QGroupBox(central, "GBox");
+    QGroupBox *gbox = new QGroupBox(central);
     topLayout->addWidget(gbox);
 
     QVBoxLayout *blayout = new QVBoxLayout(gbox);
     blayout->setMargin(5);
 
-    QGridLayout *qgrid = new QGridLayout(blayout, 5, 2);
+    QGridLayout *qgrid = new QGridLayout();
+    blayout->addLayout(qgrid);
     qgrid->setMargin(5);
     
     QLabel *msg = new QLabel(gbox); 
     msg->setText(tr("These items can be overridden\nby Lineout Operator"));
     msg->setAlignment(Qt::AlignCenter);
-    qgrid->addMultiCellWidget(msg, 0,0,0,1);
-    qgrid->addRowSpacing(1,10);
+    qgrid->addWidget(msg, 0,0,1,2);
+    qgrid->setRowMinimumHeight(1,10);
 
     //
     // SamplingOn
     //
-    samplingOn = new QCheckBox(tr("Use Sampling"), gbox, "samplingOn");
+    samplingOn = new QCheckBox(tr("Use Sampling"), gbox);
     connect(samplingOn, SIGNAL(toggled(bool)),
             this, SLOT(samplingOnChanged(bool)));
     qgrid->addWidget(samplingOn, 2,0);
@@ -239,12 +229,11 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // NumSamples
     //
-    numSamplesLabel = new QLabel(tr("Sample Points "), 
-                                  gbox, "numSamplesLabel");
+    numSamplesLabel = new QLabel(tr("Sample Points "),gbox);
     numSamplesLabel->setAlignment(Qt::AlignCenter);
     qgrid->addWidget(numSamplesLabel,3,0);
 
-    numSamples = new QNarrowLineEdit(gbox, "numSamples");
+    numSamples = new QNarrowLineEdit(gbox);
     connect(numSamples, SIGNAL(returnPressed()),
             this, SLOT(numSamplesProcessText()));
     qgrid->addWidget(numSamples, 3,1);
@@ -252,8 +241,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // ReflineLabels
     //
-    createReflineLabels = new QCheckBox(tr("Create refline labels"), 
-                                        gbox, "createReflineLabels");
+    createReflineLabels = new QCheckBox(tr("Create refline labels"),gbox);
     connect(createReflineLabels, SIGNAL(toggled(bool)),
             this, SLOT(createReflineLabelsChanged(bool)));
     qgrid->addWidget(createReflineLabels, 4,0);
@@ -278,6 +266,9 @@ QvisGlobalLineoutWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Dec 14 17:22:35 PST 2007
 //   Made it use ids.
+//
+//   Cyrus Harrison, Wed Jun 11 13:19:35 PDT 2008
+//   Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -349,7 +340,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             createReflineLabels->setChecked(atts->GetCreateReflineLabels());
             break;
           case GlobalLineoutAttributes::ID_curveOption:
-            curveOptions->setCurrentItem(atts->GetCurveOption());
+            curveOptions->setCurrentIndex(atts->GetCurveOption());
             curveOptions->setEnabled(atts->GetDynamic()) ;
             curveLabel->setEnabled(atts->GetDynamic()) ;
             colorOptions->setEnabled(atts->GetDynamic() && 
@@ -358,7 +349,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
                 atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
             break;
           case GlobalLineoutAttributes::ID_colorOption:
-            colorOptions->setCurrentItem(atts->GetColorOption());
+            colorOptions->setCurrentIndex(atts->GetColorOption());
             break;
           case GlobalLineoutAttributes::ID_freezeInTime:
             freezeInTime->setChecked(atts->GetFreezeInTime());
@@ -407,7 +398,7 @@ QvisGlobalLineoutWindow::GetCurrentValues(int which_widget)
     // Do windowId
     if(which_widget == 2 || doAll)
     {
-        temp = windowId->displayText().simplifyWhiteSpace();
+        temp = windowId->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -434,7 +425,7 @@ QvisGlobalLineoutWindow::GetCurrentValues(int which_widget)
     // Do numSamples
     if(which_widget == 4 || doAll)
     {
-        temp = numSamples->displayText().simplifyWhiteSpace();
+        temp = numSamples->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {

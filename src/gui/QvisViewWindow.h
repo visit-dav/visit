@@ -46,7 +46,6 @@ class DataNode;
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
-class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QRadioButton;
@@ -225,8 +224,7 @@ private:
     bool                activeTabSetBySlot;
 
     // Curve widgets
-    QVBox        *pageCurve;
-    QGroupBox    *viewCurveGroup;
+    QWidget      *pageCurve;
     QLineEdit    *viewportCurveLineEdit;
     QLineEdit    *domainCurveLineEdit;
     QLineEdit    *rangeCurveLineEdit;
@@ -240,8 +238,7 @@ private:
     QRadioButton *rangeLog;
 
     // 2d widgets
-    QVBox        *page2D;
-    QGroupBox    *view2DGroup;
+    QWidget      *page2D;
     QLineEdit    *viewportLineEdit;
     QLineEdit    *windowLineEdit;
     QLabel       *fullFrameLabel;
@@ -259,8 +256,7 @@ private:
     QRadioButton *yLog;
 
     // 3d widgets
-    QVBox       *page3D;
-    QGroupBox   *view3DGroup;
+    QWidget     *page3D;
     QLineEdit   *normalLineEdit;
     QLineEdit   *focusLineEdit;
     QLineEdit   *upvectorLineEdit;
@@ -276,8 +272,7 @@ private:
     QComboBox   *alignComboBox;
 
     // AxisArray widgets
-    QVBox        *pageAxisArray;
-    QGroupBox    *viewAxisArrayGroup;
+    QWidget      *pageAxisArray;
     QLineEdit    *viewportAxisArrayLineEdit;
     QLineEdit    *domainAxisArrayLineEdit;
     QLineEdit    *rangeAxisArrayLineEdit;
@@ -289,7 +284,7 @@ private:
     QCheckBox   *lockedViewToggle;
     QCheckBox   *copyViewFromCameraToggle;
     QPushButton *makeViewKeyframeButton;
-    QVBox       *pageAdvanced;
+    QWidget     *pageAdvanced;
     QCheckBox   *centerToggle;
     QLineEdit   *centerLineEdit;
 };

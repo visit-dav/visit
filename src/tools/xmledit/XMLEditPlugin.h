@@ -86,13 +86,16 @@ class QGroupBox;
 //    Brad Whitlock, Fri Mar 7 10:55:40 PDT 2008
 //    Added some group boxes.
 //
+//   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
+//   Ported to Qt 4.4
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditPlugin(QWidget *p, const QString &n);
+    XMLEditPlugin(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:

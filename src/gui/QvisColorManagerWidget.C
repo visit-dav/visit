@@ -37,13 +37,13 @@
 *****************************************************************************/
 
 #include <QvisColorManagerWidget.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qgrid.h>
-#include <qlabel.h>
-#include <qpixmap.h>
-#include <qscrollview.h>
-#include <qvbox.h>
+#include <QLabel>
+#include <QLayout>
+#include <QWidget>
+#include <QLabel>
+#include <QPixmap>
+#include <QScrollArea>
+#include <QWidget>
 
 #include <QvisColorButton.h>
 #include <QvisOpacitySlider.h>
@@ -68,36 +68,37 @@
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Jul 15 16:21:08 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisColorManagerWidget::QvisColorManagerWidget(QWidget *parent,
-    const char *name) : QWidget(parent, name), colorEntries()
+QvisColorManagerWidget::QvisColorManagerWidget(QWidget *parent) : 
+    QScrollArea(parent), colorEntries()
 {
-    QVBoxLayout *topLayout = new QVBoxLayout(this);
-
-    // Create the scrollview.
-    scrollView = new QScrollView(this, "scrollView");
-    scrollView->setVScrollBarMode(QScrollView::Auto);
-    scrollView->setHScrollBarMode(QScrollView::Auto);
-    QPixmap *pix = colorGroup().brush(QColorGroup::Background).pixmap();
-    if(pix)
-        scrollView->viewport()->setBackgroundPixmap(*pix);
-    else
-        scrollView->viewport()->setBackgroundColor(colorGroup().background());
-    topLayout->addWidget(scrollView);
-
-    // Create the QGrid widget that will manage the layout of the buttons, etc.
-    grid = new QGrid(3, QGrid::Horizontal, scrollView->viewport(), "grid");
-    grid->setSpacing(10);
-    scrollView->addChild(grid);
+    top = new QWidget(this);
+    setWidget(top);
+    QVBoxLayout *topLayout = new QVBoxLayout(top);
+    grid = new QGridLayout(0);
+    grid->setColumnStretch(0, 1);
+    grid->setColumnStretch(1, 10);
+    grid->setColumnStretch(2, 20);
+    topLayout->addLayout(grid);
+    topLayout->addStretch(10);
+    setWidgetResizable(true);
 
     // Add some labels.
-    nameLabel = new QLabel(tr("Material"), grid, "nameLabel");
-    nameLabel->setAlignment(AlignHCenter | AlignVCenter);
-    colorLabel = new QLabel(tr("Color"), grid, "colorLabel");
-    colorLabel->setAlignment(AlignHCenter | AlignVCenter);
-    opacityLabel = new QLabel(tr("Opacity"), grid, "opacityLabel");
-    opacityLabel->setAlignment(AlignHCenter | AlignVCenter);
+    nameLabel = new QLabel(tr("Material"), top);
+    nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    grid->addWidget(nameLabel, 0, 0);
+
+    colorLabel = new QLabel(tr("Color"), top);
+    colorLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    grid->addWidget(colorLabel, 0, 1);
+
+    opacityLabel = new QLabel(tr("Opacity"), top);
+    opacityLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    grid->addWidget(opacityLabel, 0, 2);
 
 #if 0
     // Temporary default values.
@@ -172,18 +173,18 @@ QvisColorManagerWidget::sizeHint() const
 // Creation:   Thu Aug 22 12:13:05 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 15 14:53:13 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisColorManagerWidget::setEnabled(bool val)
 {
     // Call the base class's setEnabled method first.
-    QWidget::setEnabled(val);
+    QScrollArea::setEnabled(val);
 
     // Set the enabled state of the top-level widgets.
-    scrollView->setEnabled(val);
-    grid->setEnabled(val);
     nameLabel->setEnabled(val);
     colorLabel->setEnabled(val);
     opacityLabel->setEnabled(val);
@@ -218,8 +219,8 @@ QvisColorManagerWidget::setEnabled(bool val)
 //   Brad Whitlock, Wed Apr  9 10:36:22 PDT 2008
 //   Clean up string coding.
 //
-//   Jeremy Meredith, Thu Aug  7 15:40:58 EDT 2008
-//   Use %ld format for longs.
+//   Brad Whitlock, Tue Jul 15 14:54:19 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -230,33 +231,32 @@ QvisColorManagerWidget::addEntry(const QString &name, const QColor &color,
     QString    temp;
     const void *userData = (const void *)colorEntries.size();
     ColorEntry *entry = new ColorEntry;
+    int row = ((int)colorEntries.size()) + 1;
 
     // Create the name label.
-    temp.sprintf("entry%ld.nameLabel", colorEntries.size());
-    QString tempName(" ");
-    tempName += name;
-    entry->nameLabel = new QLabel(tempName, grid, temp.ascii());
+    entry->nameLabel = new QLabel(name, 0);
     entry->nameLabel->setEnabled(isEnabled());
+    grid->addWidget(entry->nameLabel, row, 0);
 
     // Create the color box.
-    temp.sprintf("entry%ld.colorBox", colorEntries.size());
-    entry->colorBox = new QvisColorButton(grid, temp.ascii(), userData);
+    entry->colorBox = new QvisColorButton(0, userData);
     entry->colorBox->setButtonColor(color);
     entry->colorBox->setEnabled(isEnabled());
     connect(entry->colorBox,
             SIGNAL(selectedColor(const QColor &, const void *)),
             this,
             SLOT(selectedColor(const QColor &, const void *)));
+    grid->addWidget(entry->colorBox, row, 1);
 
     // Create the opacity slider.
-    temp.sprintf("entry%ld.opacitySlider", colorEntries.size());
     entry->opacitySlider = new QvisOpacitySlider(0, 255, 25, opacity,
-        grid, temp.ascii(), userData);
+        0, userData);
     entry->opacitySlider->setTickInterval(64);
     entry->opacitySlider->setGradientColor(color);
     entry->opacitySlider->setEnabled(isEnabled());
     connect(entry->opacitySlider, SIGNAL(valueChanged(int, const void *)),
             this, SLOT(changedOpacity(int, const void *)));
+    grid->addWidget(entry->opacitySlider, row, 2);
 
     // If the widget is visible, we need to show the widgets that we created.
     if(isVisible())
@@ -265,6 +265,7 @@ QvisColorManagerWidget::addEntry(const QString &name, const QColor &color,
         entry->colorBox->show();
         entry->opacitySlider->show();
     }
+    grid->update();
 
     // Add the new entry to the list of ColorEntries.
     colorEntries.push_back(entry);
@@ -299,6 +300,11 @@ QvisColorManagerWidget::removeLastEntry()
                    SIGNAL(valueChanged(int, const void *)),
                    this,
                    SLOT(changedOpacity(int, const void *)));
+
+        // Remove the widgets from the layout.
+        grid->removeWidget(entry->nameLabel);
+        grid->removeWidget(entry->colorBox);
+        grid->removeWidget(entry->opacitySlider);
 
         // Delete the ColorEntry.
         delete entry->nameLabel;
@@ -611,32 +617,6 @@ QvisColorManagerWidget::opacity(const int index) const
     }
 
     return retval;
-}
-
-// ****************************************************************************
-// Method: QvisColorManagerWidget::paletteChange
-//
-// Purpose: 
-//   This method is called when the palette changes and it is intended to
-//   update the scrollview's viewport color.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Sep 6 15:27:53 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Fri Aug 22 14:51:14 PST 2003
-//   I changed the method so it works better on MacOS X.
-//
-// ****************************************************************************
-
-void
-QvisColorManagerWidget::paletteChange(const QPalette &)
-{
-    QPixmap *pix = colorGroup().brush(QColorGroup::Background).pixmap();
-    if(pix)
-        scrollView->viewport()->setBackgroundPixmap(*pix);
-    else
-        scrollView->viewport()->setBackgroundColor(colorGroup().background());
 }
 
 // ****************************************************************************

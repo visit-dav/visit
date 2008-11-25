@@ -139,6 +139,9 @@ class ViewerPlot;
 //    Made the GUI plugin info return QString so we can internationalize
 //    plot names. Added const to strings returned from GeneralPlotPluginInfo.
 //
+//    Cyrus Harrison, Tue Jul 22 10:24:33 PDT 2008
+//    Removed the name argument to CreatePluginWizard.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -169,7 +172,7 @@ class PLUGIN_API GUIPlotPluginInfo : public virtual CommonPlotPluginInfo
         QvisNotepadArea *notepad) = 0;
     virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr, QWidget *parent,
         const std::string &varName, const avtDatabaseMetaData *md,
-        const ExpressionList *expList, const char *name =0)
+        const ExpressionList *expList)
     {
         return 0;
     }

@@ -194,7 +194,9 @@ VisItViewer::SetVISITHOME(const std::string &path)
 // Creation:   Tue Aug 19 11:34:23 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 13:41:04 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 std::string
@@ -210,14 +212,14 @@ VisItViewer::GetVisItHome() const
     {
         QString appDir(QDir::current().path());
 #if defined(__WIN32)
-        int index = appDir.findRev("\\");
+        int index = appDir.lastIndexOf("\\");
 #else
-        int index = appDir.findRev("/");
+        int index = appDir.lastIndexOf("/");
 #endif
         if(index != -1)
-            home = appDir.left(index).latin1();
+            home = appDir.left(index).toStdString();
         else
-            home = appDir.latin1();
+            home = appDir.toStdString();
     }
     else // UserSpecified
         home = visitHome;

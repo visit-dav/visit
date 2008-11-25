@@ -53,8 +53,8 @@ class QGroupBox;
 class QLabel;
 class QTabWidget;
 class QVBox;
-class QListView;
-class QListViewItem;
+class QTreeWidget;
+class QTreeWidgetItem;
 class QCheckListItem;
 class QPushButton;
 
@@ -81,6 +81,9 @@ class QPushButton;
 //
 //    Brad Whitlock, Wed Apr  9 11:03:33 PDT 2008
 //    QString for caption, shortName.
+//
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -109,9 +112,9 @@ protected:
     void Apply(bool dontIgnore = false);
 private slots:
     virtual void apply();
-    void tabSelected(const QString &tabLabel);
+    void tabSelected(int);
     void databaseOptionsSetButtonClicked();
-    void databaseSelectedItemChanged(QListViewItem*);
+    void databaseSelectedItemChanged(QTreeWidgetItem*,QTreeWidgetItem*);
     void selectAllReadersButtonClicked();
     void unSelectAllReadersButtonClicked();
 private:
@@ -119,22 +122,22 @@ private:
     FileOpenOptions         *fileOpenOptions;
 
     QTabWidget      *tabs;
-    QVBox           *pagePlots;
-    QListView       *listPlots;
-    QVBox           *pageOperators;
-    QListView       *listOperators;
-    QVBox           *pageDatabases;
-    QListView       *listDatabases;
+    QWidget         *pagePlots;
+    QTreeWidget     *listPlots;
+    QWidget         *pageOperators;
+    QTreeWidget     *listOperators;
+    QWidget         *pageDatabases;
+    QTreeWidget     *listDatabases;
     QPushButton     *databaseOptionsSetButton;
-    QPushButton *selectAllReadersButton;
-    QPushButton *unSelectAllReadersButton;
+    QPushButton     *selectAllReadersButton;
+    QPushButton     *unSelectAllReadersButton;
 
-    std::vector<QCheckListItem*> plotItems;
-    std::vector<std::string>     plotIDs;
-    std::vector<QCheckListItem*> operatorItems;
-    std::vector<std::string>     operatorIDs;
-    std::vector<QCheckListItem*>  databaseItems;
-    std::vector<int>             databaseIndexes;
+    std::vector<QTreeWidgetItem*>  plotItems;
+    std::vector<std::string>       plotIDs;
+    std::vector<QTreeWidgetItem*>  operatorItems;
+    std::vector<std::string>       operatorIDs;
+    std::vector<QTreeWidgetItem*>  databaseItems;
+    std::vector<int>               databaseIndexes;
 
     int             activeTab;
     bool            pluginsInitialized;

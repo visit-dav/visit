@@ -48,11 +48,13 @@
 // Creation:   Tue Dec 30 14:21:30 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May 30 09:49:16 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisAnimationSlider::QvisAnimationSlider(Orientation orientation,
-    QWidget *parent, const char *name) :  QSlider(orientation, parent, name)
+QvisAnimationSlider::QvisAnimationSlider(Qt::Orientation orientation,
+    QWidget *parent) :  QSlider(orientation, parent)
 {
     the_sliderIsDown = false;
     emittedSignal = false;
@@ -65,8 +67,8 @@ QvisAnimationSlider::QvisAnimationSlider(Orientation orientation,
             this, SLOT(handleSliderReleased()));
 }
 
-QvisAnimationSlider::QvisAnimationSlider(QWidget *parent, const char *name) : 
-    QSlider(parent, name)
+QvisAnimationSlider::QvisAnimationSlider(QWidget *parent) : 
+    QSlider(parent)
 {
     the_sliderIsDown = false;
     emittedSignal = false;

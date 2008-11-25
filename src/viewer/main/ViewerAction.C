@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 #include <ViewerAction.h>
-#include <qaction.h>
-#include <qiconset.h>
-#include <qpopupmenu.h>
-#include <qtoolbar.h>
+#include <QAction>
+#include <QIcon>
+#include <QMenu>
+#include <QToolBar>
 
 // ****************************************************************************
 // Method: ViewerAction::ViewerAction
@@ -56,17 +56,18 @@
 // Creation:   Wed Feb 5 17:02:55 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 22 14:57:42 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-ViewerAction::ViewerAction(ViewerWindow *win, const char *name) : 
-    ViewerActionBase(win, name)
+ViewerAction::ViewerAction(ViewerWindow *win) : 
+    ViewerActionBase(win)
 {
     // Create a new QAction and make it call our Activate method when
     // it is activated.
-    QString n; n.sprintf("%s_action", name);
-    action = new QAction(0, name);
-    connect(action, SIGNAL(activated()),
+    action = new QAction(0);
+    connect(action, SIGNAL(triggered()),
             this, SLOT(Activate()));
     connect(action, SIGNAL(toggled(bool)),
             this, SLOT(HandleToggle(bool)));
@@ -121,7 +122,9 @@ ViewerAction::Setup()
 // Creation:   Wed Feb 5 17:03:29 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 22 15:02:25 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
   
 void
@@ -133,13 +136,13 @@ ViewerAction::Update()
         action->setEnabled(actionShouldBeEnabled);
 
     // Update the action's toggled state if it is a toggle action.
-    if(action->isToggleAction())
+    if(action->isCheckable())
     {
-        bool actionShouldBeToggled = Toggled();
-        if(action->isOn() != actionShouldBeToggled)
+        bool actionShouldBeChecked = Checked();
+        if(action->isChecked() != actionShouldBeChecked)
         {
             action->blockSignals(true);
-            action->setOn(actionShouldBeToggled);
+            action->setChecked(actionShouldBeChecked);
             action->blockSignals(false);
         }
     }
@@ -162,7 +165,7 @@ ViewerAction::SetText(const QString &text)
 void
 ViewerAction::SetMenuText(const QString &text)
 {
-    action->setMenuText(text);
+    action->setText(text);
 }
 
 void
@@ -172,15 +175,15 @@ ViewerAction::SetToolTip(const QString &text)
 }
 
 void
-ViewerAction::SetIconSet(const QIconSet &icons)
+ViewerAction::SetIcon(const QIcon &icon)
 {
-    action->setIconSet(icons);
+    action->setIcon(icon);
 }
 
 void
 ViewerAction::SetToggleAction(bool val)
 {
-    action->setToggleAction(val);
+    action->setCheckable(val);
 }
 
 // ****************************************************************************
@@ -196,14 +199,16 @@ ViewerAction::SetToggleAction(bool val)
 // Creation:   Wed Feb 5 17:03:29 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May 23 10:24:05 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-ViewerAction::ConstructMenu(QPopupMenu *menu)
+ViewerAction::ConstructMenu(QMenu *menu)
 {
     // simplest case
-    action->addTo(menu);
+    menu->addAction(action);
 }
 
 // ****************************************************************************
@@ -219,14 +224,16 @@ ViewerAction::ConstructMenu(QPopupMenu *menu)
 // Creation:   Tue Feb 25 10:04:41 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Fri May 23 10:24:05 PDT 2008
+//   Qt 4.
 //   
 // ****************************************************************************
 
 void
-ViewerAction::RemoveFromMenu(QPopupMenu *menu)
+ViewerAction::RemoveFromMenu(QMenu *menu)
 {
     // simplest case
-    action->removeFrom(menu);
+    menu->removeAction(action);
 }
 
 // ****************************************************************************
@@ -246,14 +253,17 @@ ViewerAction::RemoveFromMenu(QPopupMenu *menu)
 //   I added code to prevent actions that have no icons from being added
 //   to the toolbar.
 //
+//   Brad Whitlock, Thu May 22 15:00:39 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 ViewerAction::ConstructToolbar(QToolBar *toolbar)
 {
     // simplest case
-    if(!action->iconSet().pixmap().isNull())
-        action->addTo(toolbar);
+    if(!action->icon().isNull())
+        toolbar->addAction(action);
 }
 
 // ****************************************************************************
@@ -273,14 +283,17 @@ ViewerAction::ConstructToolbar(QToolBar *toolbar)
 //   I added code to prevent actions that have no icons from being added
 //   to the toolbar.
 //
+//   Brad Whitlock, Thu May 22 15:00:27 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 ViewerAction::RemoveFromToolbar(QToolBar *toolbar)
 {
     // simplest case
-    if(!action->iconSet().pixmap().isNull())
-        action->removeFrom(toolbar);
+    if(!action->icon().isNull())
+        toolbar->removeAction(action);
 }
 
 // ****************************************************************************

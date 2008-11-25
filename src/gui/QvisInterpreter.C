@@ -37,8 +37,8 @@
 *****************************************************************************/
 
 #include <QvisInterpreter.h>
-#include <qapplication.h>
-#include <qtimer.h>
+#include <QApplication>
+#include <QTimer>
 #include <vectortypes.h>
 #include <ViewerProxy.h>
 #include <ClientMethod.h>
@@ -57,11 +57,13 @@
 // Creation:   Mon May 9 10:00:08 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May 30 15:41:41 PDT 2008
+//   Removed name.
+//
 // ****************************************************************************
 
-QvisInterpreter::QvisInterpreter(QObject *parent, const char *name) :
-    QObject(parent, name), GUIBase(), pendingCommands()
+QvisInterpreter::QvisInterpreter(QObject *parent) :
+    QObject(parent), GUIBase(), pendingCommands()
 {
 }
 
@@ -105,7 +107,7 @@ QvisInterpreter::~QvisInterpreter()
 void
 QvisInterpreter::Interpret(const QString &s)
 {
-    std::string code(s.latin1());
+    std::string code(s.toStdString());
 
     // Add the code to the pending commands.
     if(code.size() > 0)

@@ -75,13 +75,13 @@ incqt:
 	fi
 
 clean:
+	$(RM) python vtk mesa qt glew
 
 distclean:
-	$(RM) python vtk mesa qt Makefile
+	$(RM) python vtk mesa qt glew Makefile
 
 install:
 install_bin:
 install_lib:
 install_dirs:
 
-.NO_WINK_IN: python vtk mesa qt

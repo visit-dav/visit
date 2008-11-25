@@ -37,7 +37,7 @@
 *****************************************************************************/
 #ifndef QVIS_AXIS_ATTRIBUTES_WIDGET_H
 #define QVIS_AXIS_ATTRIBUTES_WIDGET_H
-#include <qvbox.h>
+#include <QWidget>
 #include <GUIBase.h>
 #include <AxisAttributes.h>
 
@@ -61,15 +61,17 @@ class QvisFontAttributesWidget;
 // Creation:   Fri Feb 8 17:55:10 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun 25 09:59:31 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class QvisAxisAttributesWidget : public QVBox, public GUIBase
+class QvisAxisAttributesWidget : public QWidget, public GUIBase
 {
     Q_OBJECT
 public:
-    QvisAxisAttributesWidget(QWidget *parent, const char *name=0,
-        bool ticksCheckEnabled=true, bool titleCheckEnabled=true);
+    QvisAxisAttributesWidget(QWidget *parent, bool ticksCheckEnabled=true,
+        bool titleCheckEnabled=true);
     virtual ~QvisAxisAttributesWidget();
 
     void setAxisAttributes(const AxisAttributes &);
@@ -105,7 +107,7 @@ private:
     bool                     autoTickMarks;
 
     // Title widgets
-    QGroupBox               *titleGroup;
+    QGroupBox                *titleGroup;
     QCheckBox                *customTitleToggle;
     QLineEdit                *customTitle;
     QCheckBox                *customUnitsToggle;
@@ -113,13 +115,13 @@ private:
     QvisFontAttributesWidget *titleFont;
 
     // Label widgets
-    QGroupBox               *labelGroup;
+    QGroupBox                *labelGroup;
     QLabel                   *labelScalingLabel;
     QSpinBox                 *labelScaling;
     QvisFontAttributesWidget *labelFont;
 
     // Tick widgets
-    QGroupBox               *tickGroup;
+    QGroupBox                *tickGroup;
     QLabel                   *majorMinimumLabel;
     QNarrowLineEdit          *majorMinimum;
     QLabel                   *majorMaximumLabel;

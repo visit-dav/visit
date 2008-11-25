@@ -41,14 +41,13 @@
 #include <DualMeshAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -119,33 +118,36 @@ QvisDualMeshWindow::~QvisDualMeshWindow()
 // Creation:   omitted
 //
 // Modifications:
-//
-//   Cyrus Harrison, Thu May  8 08:50:55 PDT 2008
-//   Changed text labels for conversion mode radio buttons. 
+//   Cyrus Harrison, on Aug 18 20:13:20 PDT 2008
+//   Qt4 Port - Autogen + Changed labels of radio buttons.   
 //
 // ****************************************************************************
 
 void
 QvisDualMeshWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(0);
+    topLayout->addLayout(mainLayout);
 
-
-    modeLabel = new QLabel(tr("Conversion Mode:"), central, "modeLabel");
+    modeLabel = new QLabel(tr("Conversion Mode:"), central);
     mainLayout->addWidget(modeLabel,0,0);
-    mode = new QButtonGroup(central, "mode");
-    mode->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *modeLayout = new QHBoxLayout(mode);
+    QWidget *modeWidget = new QWidget(central);
+    mode = new QButtonGroup(modeWidget);
+    QHBoxLayout *modeLayout = new QHBoxLayout(modeWidget);
+    modeLayout->setMargin(0);
     modeLayout->setSpacing(10);
-    QRadioButton *modeConversionAuto = new QRadioButton(tr("Auto"), mode);
-    modeLayout->addWidget(modeConversionAuto);
-    QRadioButton *modeConversionNodalToZonal = new QRadioButton(tr("Nodes To Zones"), mode);
-    modeLayout->addWidget(modeConversionNodalToZonal);
-    QRadioButton *modeConversionZonalToNodal = new QRadioButton(tr("Zones To Nodes"), mode);
-    modeLayout->addWidget(modeConversionZonalToNodal);
-    connect(mode, SIGNAL(clicked(int)),
+    QRadioButton *modeConversionModeAuto = new QRadioButton(tr("Auto"), modeWidget);
+    mode->addButton(modeConversionModeAuto,0);
+    modeLayout->addWidget(modeConversionModeAuto);
+    QRadioButton *modeConversionModeNodesToZones = new QRadioButton(tr("Nodes to Zones"), modeWidget);
+    mode->addButton(modeConversionModeNodesToZones,1);
+    modeLayout->addWidget(modeConversionModeNodesToZones);
+    QRadioButton *modeConversionModeZonesToNodes = new QRadioButton(tr("Zones to Nodes"), modeWidget);
+    mode->addButton(modeConversionModeZonesToNodes,2);
+    modeLayout->addWidget(modeConversionModeZonesToNodes);
+    connect(mode, SIGNAL(buttonClicked(int)),
             this, SLOT(modeChanged(int)));
-    mainLayout->addWidget(mode, 0,1);
+    mainLayout->addWidget(modeWidget, 0,1);
 
 }
 
@@ -168,8 +170,6 @@ QvisDualMeshWindow::CreateWindowContents()
 void
 QvisDualMeshWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -181,18 +181,12 @@ QvisDualMeshWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case DualMeshAttributes::ID_mode:
             mode->blockSignals(true);
-            mode->setButton(atts->GetMode());
+            if(mode->button((int)atts->GetMode()) != 0)
+                mode->button((int)atts->GetMode())->setChecked(true);
             mode->blockSignals(false);
             break;
         }
@@ -218,9 +212,6 @@ QvisDualMeshWindow::UpdateWindow(bool doAll)
 void
 QvisDualMeshWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
-
 }
 
 

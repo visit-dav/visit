@@ -41,8 +41,8 @@
 #include <QvisWizard.h>
 
 class QButtonGroup;
-class QFrame;
 class QvisScatterWidget;
+class QWizardPage;
 
 // ****************************************************************************
 // Class: QvisScatterPlotWizard
@@ -57,48 +57,45 @@ class QvisScatterWidget;
 // Creation:   Tue Dec 14 09:53:27 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug  8 11:25:55 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisScatterPlotWizard : public QvisWizard
 {
     Q_OBJECT
 public:
-    QvisScatterPlotWizard(AttributeSubject *s, QWidget *parent,
-        const char *name = 0);
+    QvisScatterPlotWizard(AttributeSubject *s, QWidget *parent);
     virtual ~QvisScatterPlotWizard();
 
-    virtual bool appropriate(QWidget *) const;
+    virtual int nextId() const;
 private slots:
     void choseYVariable(const QString &);
     void choseZVariable(const QString &);
     void choseColorVariable(const QString &);
     void decideZ(int);
     void decideColor(int);
+    void updateAnimationFlags(int);
 protected:
-    void CreateVariablePage(QFrame **, QvisScatterWidget **,
-        const char *prompt, const char *slot,
+    void CreateVariablePage(QWizardPage **, QvisScatterWidget **,
+        const QString &prompt, const char *slot,
         bool highlight, bool threeD, bool colorPoints);
-    void CreateYesNoPage(QFrame **, QvisScatterWidget **, QButtonGroup **,
-        const char *prompt, const char *slot,
+    void CreateYesNoPage(QWizardPage **, QvisScatterWidget **, QButtonGroup **,
+        const QString &prompt, const char *slot,
         bool highlight, bool threeD, bool colorPoints);
-    void CreateFinishPage(QFrame **, QvisScatterWidget **,
-        const char *prompt,
+    void CreateFinishPage(QWizardPage **, QvisScatterWidget **,
+        const QString &prompt,
         bool highlight, bool threeD, bool colorPoints);
 
-    QFrame            *page1;
-    QFrame            *page2;
-    QFrame            *page3;
-    QFrame            *page4;
-    QFrame            *page5;
-    QFrame            *page6;
+    QWizardPage       *page0;
+    QWizardPage       *page1;
+    QWizardPage       *page2;
+    QWizardPage       *page3;
+    QWizardPage       *page4;
+    QWizardPage       *page5;
 
-    QvisScatterWidget *scatter1;
-    QvisScatterWidget *scatter2;
-    QvisScatterWidget *scatter3;
-    QvisScatterWidget *scatter4;
-    QvisScatterWidget *scatter5;
-    QvisScatterWidget *scatter6;
+    QvisScatterWidget *scatter[6];
 
     QButtonGroup      *bg2;
     QButtonGroup      *bg4;

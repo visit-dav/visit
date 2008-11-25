@@ -60,6 +60,9 @@
 #    Brad Whitlock, Tue Apr 29 10:07:41 PDT 2008
 #    Added UnicodeHelper.
 #
+#    Brad Whitlock, Fri May  9 13:32:54 PDT 2008
+#    Qt 4.
+# 
 ##############################################################################
 
 ##
@@ -68,8 +71,9 @@
 @SET_MAKE@
 @VARIABLES@
 
-CXXFLAGS=-I. -I../include/visit -I../include @QT_CXXFLAGS@ @CXXFLAGS@
+CXXFLAGS=-I. -I../include/visit -I../include $(QT_CXXFLAGS) @CXXFLAGS@
 CPPFLAGS=-I. @CPPFLAGS@
+LDFLAGS=$(LDFLAGSORIG) $(QT_LDFLAGS)
 
 ##
 ## Files...
@@ -85,7 +89,7 @@ OBJMOC=${SRCMOC:.C=.o}
 OBJ=$(SRC:.C=.o) ${OBJMOC}
 
 LIB=libwinutil
-LIBS=-lqt -ldbatts -lstate -lcomm -lmisc -lavtexceptions -lutility -lexpr -lparser
+LIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lutility -lexpr -lparser $(QT_CORE_LIB) $(QT_GUI_LIB)
 
 ##
 ## Standard targets...

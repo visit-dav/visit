@@ -49,11 +49,12 @@
 // Creation:   Thu Dec 9 16:35:42 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May  9 13:31:33 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisVariableButtonHelper::QvisVariableButtonHelper(QObject *parent,
-    const char *name) : QObject(parent, name)
+QvisVariableButtonHelper::QvisVariableButtonHelper(QObject *parent) : QObject(parent)
 {
     btn = 0;
 }

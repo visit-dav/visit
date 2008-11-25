@@ -38,10 +38,11 @@
 
 #include "QvisScribbleOpacityBar.h"
 
-#include <qpainter.h>
-#include <qpointarray.h>
-#include <qpixmap.h>
-#include <qimage.h>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPolygon>
+#include <QPixmap>
+#include <QImage>
 
 #include <visitstream.h>
 #include <math.h>
@@ -62,17 +63,20 @@
 //    Brad Whitlock, Thu Feb 14 12:57:49 PDT 2002
 //    Added deletion of values array and the internal pixmap.
 //
+//    Brad Whitlock, Wed Jun  4 09:20:11 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
-QvisScribbleOpacityBar::QvisScribbleOpacityBar(QWidget *parent, const char *name)
-    : QvisAbstractOpacityBar(parent, name)
+QvisScribbleOpacityBar::QvisScribbleOpacityBar(QWidget *parent)
+    : QvisAbstractOpacityBar(parent)
 {
     setFrameStyle( QFrame::Panel | QFrame::Sunken );
     setLineWidth( 2 );
     setMinimumHeight(50);
     setMinimumWidth(128);
 
-    nvalues = 256; //contentsRect().width();
+    nvalues = 256;
     values = new float[nvalues];
     for (int i=0; i<nvalues; ++i)
     {
@@ -112,16 +116,19 @@ QvisScribbleOpacityBar::~QvisScribbleOpacityBar()
 //  Creation:    January 31, 2001
 //
 //  Modifications:
+//    Gunther H. Weber, April 6, 2007
+//    Added possibility of having a "color table" background instead of solid
+//    black background.
 //
-//     Gunther H. Weber, April 6, 2007
-//     Added possibility of having a "color table" background instead of solid
-//     black background.
+//    Brad Whitlock, Wed Jun  4 09:55:53 PDT 2008
+//    Qt 4.
 //
 // ****************************************************************************
+
 void
-QvisScribbleOpacityBar::paintToPixmap(int w, int h)
+QvisScribbleOpacityBar::drawOpacities(int w,int h)
 {
-    QImage img(w,h, 32);
+    ensureImageExists(w, h);
 
     if (w != nvalues)
     {
@@ -168,24 +175,12 @@ QvisScribbleOpacityBar::paintToPixmap(int w, int h)
         {
             float yval2 = 1 - float(y)/float(h-1);
             if (yval2 < yval)
-                img.setPixel(x,y, cw); 
+                image->setPixel(x,y, cw); 
             else
-                img.setPixel(x,y, bgCols[x]);
+                image->setPixel(x,y, bgCols[x]);
        }
     }
     delete[] bgCols;
-
-    if (!pix || 
-        pix->height() != w ||
-        pix->width()  != h)
-    {
-        delete pix;
-        pix = new QPixmap;
-        pix->convertFromImage(img);
-    }
-    
-    QPainter p(this);
-    p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
 }
 
 
@@ -198,6 +193,10 @@ QvisScribbleOpacityBar::paintToPixmap(int w, int h)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Jun  4 09:58:43 PDT 2008
+//    Use update().
+//
 // ****************************************************************************
 void
 QvisScribbleOpacityBar::mousePressEvent(QMouseEvent *e)
@@ -209,8 +208,7 @@ QvisScribbleOpacityBar::mousePressEvent(QMouseEvent *e)
     lasty = y;
     mousedown = true;
 
-    QPainter p(this);
-    p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
+    update();
 }
 
 
@@ -222,6 +220,10 @@ QvisScribbleOpacityBar::mousePressEvent(QMouseEvent *e)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Wed Jun  4 09:58:43 PDT 2008
+//    Use update().
 //
 // ****************************************************************************
 void
@@ -237,8 +239,7 @@ QvisScribbleOpacityBar::mouseMoveEvent(QMouseEvent *e)
     lastx = x;
     lasty = y;
 
-    QPainter p(this);
-    p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
+    update();
 }
 
 
@@ -251,6 +252,10 @@ QvisScribbleOpacityBar::mouseMoveEvent(QMouseEvent *e)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Jun  4 09:58:43 PDT 2008
+//    Use update().
+//
 // ****************************************************************************
 void
 QvisScribbleOpacityBar::mouseReleaseEvent(QMouseEvent *e)
@@ -261,8 +266,7 @@ QvisScribbleOpacityBar::mouseReleaseEvent(QMouseEvent *e)
               x,     y);
     mousedown = false;
 
-    QPainter p(this);
-    p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
+    update();
 
     emit mouseReleased();
 }
@@ -307,37 +311,37 @@ QvisScribbleOpacityBar::setValues(int x1, int y1, int x2, int y2)
 //  Creation:    January 31, 2001
 //
 //  Modifications:
+//    Gunther H. Weber, April 6, 2007
+//    Added possibility of having a "color table" background instead of solid
+//    black background.
 //
-//     Gunther H. Weber, April 6, 2007
-//     Added possibility of having a "color table" background instead of solid
-//     black background.
+//    Brad Whitlock, Wed Jun  4 10:24:39 PDT 2008
+//    poke directly into the QImage.
 //
 // ****************************************************************************
+
 void
 QvisScribbleOpacityBar::setValue(float xval, float yval)
 {
-    QPainter p(pix);
-    QColor white(255, 255, 255 );
-
     int h = contentsRect().height();
     int x = int(xval * float(nvalues-1));
-    QColor backgroundColor(0, 0, 0 );
+    QRgb bg = QColor(0,0,0).rgb();
     if (backgroundColorControlPoints) 
     {
         unsigned char *cols = new unsigned char[nvalues*3];
         backgroundColorControlPoints->GetColors(cols, nvalues);
-        backgroundColor.setRgb(cols[x*3+0], cols[x*3+1],cols[x*3+2]);
+        bg = QColor(cols[x*3+0], cols[x*3+1],cols[x*3+2]).rgb();
         delete[] cols;
     }
     values[x] = yval;
+    QRgb white = QColor(255,255,255).rgb();
     for (int i = 0; i < h; i++)
     {
         float yval2 = 1 - float(i)/float(h);
         if (yval2 < yval)
-            p.setPen(white);
+            image->setPixel(x, i, white);
         else
-            p.setPen(backgroundColor);
-        p.drawPoint(x,i);
+            image->setPixel(x, i, bg);
     }
 }
 
@@ -400,7 +404,7 @@ QvisScribbleOpacityBar::setRawOpacities(int n, float *v)
             values[(i * nvalues) / n] = v[i];
     }
 
-    paintToPixmap(contentsRect().width(), contentsRect().height());
+    drawOpacities(contentsRect().width(), contentsRect().height());
     update();
 
     // Emit a signal indicating that the values changed.
@@ -428,7 +432,7 @@ QvisScribbleOpacityBar::makeTotallyZero()
     for(int i = 0; i < nvalues; ++i)
         values[i] = 0.;
 
-    paintToPixmap(contentsRect().width(), contentsRect().height());
+    drawOpacities(contentsRect().width(), contentsRect().height());
     update();
 
     // Emit a signal indicating that the values changed.
@@ -455,7 +459,7 @@ QvisScribbleOpacityBar::makeLinearRamp()
     for(int i = 0; i < nvalues; ++i)
         values[i] = float(i) * float(1. / nvalues);
 
-    paintToPixmap(contentsRect().width(), contentsRect().height());
+    drawOpacities(contentsRect().width(), contentsRect().height());
     update();
 
     // Emit a signal indicating that the values changed.
@@ -483,7 +487,7 @@ QvisScribbleOpacityBar::makeInverseLinearRamp()
     for(int i = 0; i < nvalues; ++i)
         values[i] = float(nvalues - i - 1) * float(1. / nvalues);
 
-    paintToPixmap(contentsRect().width(), contentsRect().height());
+    drawOpacities(contentsRect().width(), contentsRect().height());
     update();
 
     // Emit a signal indicating that the values changed.
@@ -512,7 +516,7 @@ QvisScribbleOpacityBar::makeTotallyOne()
     for(int i = 0; i < nvalues; ++i)
         values[i] = 1.;
 
-    paintToPixmap(contentsRect().width(), contentsRect().height());
+    drawOpacities(contentsRect().width(), contentsRect().height());
     update();
 
     // Emit a signal indicating that the values changed.
@@ -548,7 +552,7 @@ QvisScribbleOpacityBar::smoothCurve()
         values[i] = (smooth > 1.) ? 1. : smooth;
     }
 
-    paintToPixmap(contentsRect().width(), contentsRect().height());
+    drawOpacities(contentsRect().width(), contentsRect().height());
     update();
 
     // Emit a signal indicating that the values changed.

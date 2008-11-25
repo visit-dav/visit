@@ -45,8 +45,8 @@
 #include <DatabaseCorrelationList.h>
 #include <DebugStream.h>
 
-#include <qiconset.h>
-#include <qpixmap.h>
+#include <QIcon>
+#include <QPixmap>
 
 // Include icons
 #include <animationreversestep.xpm>
@@ -61,12 +61,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 TimeSliderReverseStepAction::TimeSliderReverseStepAction(ViewerWindow *win) :
-    ViewerAction(win, "ReverseStep")
+    ViewerAction(win)
 {
     SetAllText(tr("Reverse step"));
     SetToolTip(tr("Step back one frame"));
     if (!win->GetNoWinMode())
-        SetIconSet(QIconSet(QPixmap(animationreversestep_xpm)));
+        SetIcon(QIcon(QPixmap(animationreversestep_xpm)));
 }
 
 void
@@ -85,7 +85,7 @@ TimeSliderReverseStepAction::Enabled() const
 ///////////////////////////////////////////////////////////////////////////////
 
 AnimationReversePlayAction::AnimationReversePlayAction(ViewerWindow *win) :
-    ViewerToggleAction(win, "ReversePlay")
+    ViewerToggleAction(win)
 {
     SetAllText(tr("Reverse play"));
     SetToolTip(tr("Play animation in reverse"));
@@ -107,7 +107,7 @@ AnimationReversePlayAction::Enabled() const
 }
 
 bool
-AnimationReversePlayAction::Toggled() const
+AnimationReversePlayAction::Checked() const
 {
     return (window->GetPlotList()->GetAnimationMode() ==
             ViewerPlotList::ReversePlayMode);
@@ -116,7 +116,7 @@ AnimationReversePlayAction::Toggled() const
 ///////////////////////////////////////////////////////////////////////////////
 
 AnimationStopAction::AnimationStopAction(ViewerWindow *win) :
-    ViewerToggleAction(win, "Stop")
+    ViewerToggleAction(win)
 {
     SetAllText(tr("Stop"));
     SetToolTip(tr("Stop animation"));
@@ -138,7 +138,7 @@ AnimationStopAction::Enabled() const
 }
 
 bool
-AnimationStopAction::Toggled() const
+AnimationStopAction::Checked() const
 {
     return (window->GetPlotList()->GetAnimationMode() ==
             ViewerPlotList::StopMode);
@@ -147,7 +147,7 @@ AnimationStopAction::Toggled() const
 ///////////////////////////////////////////////////////////////////////////////
 
 AnimationPlayAction::AnimationPlayAction(ViewerWindow *win) :
-    ViewerToggleAction(win, "Play")
+    ViewerToggleAction(win)
 {
     SetAllText(tr("Play"));
     SetToolTip(tr("Play animation"));
@@ -169,7 +169,7 @@ AnimationPlayAction::Enabled() const
 }
 
 bool
-AnimationPlayAction::Toggled() const
+AnimationPlayAction::Checked() const
 {
     return (window->GetPlotList()->GetAnimationMode() ==
             ViewerPlotList::PlayMode);
@@ -178,12 +178,12 @@ AnimationPlayAction::Toggled() const
 ///////////////////////////////////////////////////////////////////////////////
 
 TimeSliderForwardStepAction::TimeSliderForwardStepAction(ViewerWindow *win) :
-    ViewerAction(win, "ForwardStep")
+    ViewerAction(win)
 {
     SetAllText(tr("Forward step"));
     SetToolTip(tr("Step forward one frame"));
     if (!win->GetNoWinMode())
-        SetIconSet(QIconSet(QPixmap(animationforwardstep_xpm)));
+        SetIcon(QIcon(QPixmap(animationforwardstep_xpm)));
 }
 
 void
@@ -202,7 +202,7 @@ TimeSliderForwardStepAction::Enabled() const
 ///////////////////////////////////////////////////////////////////////////////
 
 AnimationSetNFramesAction::AnimationSetNFramesAction(ViewerWindow *win) :
-    ViewerAction(win, "AnimationSetNFramesAction")
+    ViewerAction(win)
 {
     DisableVisual();
 }
@@ -232,7 +232,7 @@ AnimationSetNFramesAction::Execute()
 ///////////////////////////////////////////////////////////////////////////////
 
 SetTimeSliderStateAction::SetTimeSliderStateAction(ViewerWindow *win) :
-    ViewerAction(win, "SetTimeSliderStateAction")
+    ViewerAction(win)
 {
     DisableVisual();
 }
@@ -246,7 +246,7 @@ SetTimeSliderStateAction::Execute()
 ///////////////////////////////////////////////////////////////////////////////
 
 SetActiveTimeSliderAction::SetActiveTimeSliderAction(ViewerWindow *win) :
-    ViewerAction(win, "SetActiveTimeSliderAction")
+    ViewerAction(win)
 {
     DisableVisual();
 }

@@ -916,7 +916,7 @@ CQScore::CQScore(QWidget *p, const QString &n)
 
     QFrame *scoreFrame = new QFrame(filterBox);
     QGridLayout *scoreLayout = new QGridLayout(scoreFrame, 1,3, 0,0);
-    scoreGroup = new QButtonGroup(NULL);
+    scoreGroup = new QButtonGroup(scoreFrame);
     QRadioButton *scoreYes    = new QRadioButton("Yes",    scoreFrame);
     QRadioButton *scoreNo     = new QRadioButton("No",     scoreFrame);
     QRadioButton *scoreEither = new QRadioButton("Either", scoreFrame);

@@ -37,12 +37,12 @@
 *****************************************************************************/
 #include <QvisRotationTransition.h>
 #include <QvisColorButton.h>
-#include <qbuttongroup.h>
-#include <qframe.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
+#include <QButtonGroup>
+#include <QFrame>
+#include <QLabel>
+#include <QLayout>
+#include <QRadioButton>
+#include <QSpinBox>
 
 // ****************************************************************************
 // Method: QvisRotationTransition::QvisRotationTransition
@@ -61,53 +61,58 @@
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
-//   
+//
+//   Brad Whitlock, Tue Oct  7 09:37:43 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
-    QWidget *parent, const char *name)
+    QWidget *parent) : QGroupBox(parent)
 {
     QVBoxLayout *innerLayout = new QVBoxLayout(this);
     innerLayout->setMargin(10);
     innerLayout->addSpacing(15);
 
     // Add the pixmap here.
-    QLabel *pixLabel = new QLabel(this, "pixLabel");
+    QLabel *pixLabel = new QLabel(this);
     pixLabel->setPixmap(pix);
     innerLayout->addWidget(pixLabel);
     innerLayout->addSpacing(15);
 
-    QHBoxLayout *hLayout = new QHBoxLayout(innerLayout);
-    QGridLayout *gLayout = new QGridLayout(hLayout, 3, 2);
+    QHBoxLayout *hLayout = new QHBoxLayout(0);
+    innerLayout->addLayout(hLayout);
+    QGridLayout *gLayout = new QGridLayout(0);
+    hLayout->addLayout(gLayout);
     gLayout->setSpacing(10);
     hLayout->addStretch(10);
 
     // Angle controls.
-    startAngle = new QSpinBox(this, "startAngle");
-    startAngle->setMinValue(-360 * 100);
-    startAngle->setMaxValue(360 * 100);
+    startAngle = new QSpinBox(this);
+    startAngle->setMinimum(-360 * 100);
+    startAngle->setMaximum(360 * 100);
     startAngle->setValue(0);
     QString deg; deg.sprintf("%c", 176);
     QString startLabel(tr("Start angle") + deg);
     gLayout->addWidget(
-        new QLabel(startLabel, this, "startAngle"), 0, 0);
+        new QLabel(startLabel, this), 0, 0);
     gLayout->addWidget(startAngle, 0, 1);
     
-    endAngle = new QSpinBox(this, "endAngle");
-    endAngle->setMinValue(-360 * 100);
-    endAngle->setMaxValue(360 * 100);
+    endAngle = new QSpinBox(this);
+    endAngle->setMinimum(-360 * 100);
+    endAngle->setMaximum(360 * 100);
     endAngle->setValue(360);
     QString endLabel(tr("End angle") +deg);
     gLayout->addWidget(
-        new QLabel(endLabel, this, "endAngle"), 1, 0);
+        new QLabel(endLabel, this), 1, 0);
     gLayout->addWidget(endAngle, 1, 1);
 
     // Number of steps controls.
-    nSteps = new QSpinBox(this, "nSteps");
-    nSteps->setMinValue(1);
+    nSteps = new QSpinBox(this);
+    nSteps->setMinimum(1);
     nSteps->setValue(30);
     gLayout->addWidget(
-        new QLabel(tr("Number of steps"), this, "nStepsLabel"), 2, 0);
+        new QLabel(tr("Number of steps"), this), 2, 0);
     gLayout->addWidget(nSteps, 2, 1);
 
     innerLayout->addStretch(10);

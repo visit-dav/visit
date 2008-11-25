@@ -242,7 +242,7 @@ public:
 
     virtual void Setup();
     virtual void Execute();
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************
@@ -268,7 +268,7 @@ public:
 
     virtual void Execute();
     virtual bool Enabled() const;
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************
@@ -294,7 +294,7 @@ public:
 
     virtual void Execute();
     virtual bool Enabled() const;
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************
@@ -320,7 +320,7 @@ public:
 
     virtual void Setup();
     virtual void Execute(int val);
-    virtual bool ChoiceToggled(int i) const;
+    virtual bool ChoiceChecked(int i) const;
 };
 
 // ****************************************************************************
@@ -362,6 +362,9 @@ public:
 //   Kathleen Bonnell, Tue Jul 22 16:28:08 PDT 2003
 //   Added Setup.
 //   
+//   Brad Whitlock, Wed May 28 15:50:34 PDT 2008
+//   Removed CanHaveOwnToolbar.
+//
 // ****************************************************************************
 
 class VIEWER_API SetWindowModeAction : public ViewerMultipleAction
@@ -374,10 +377,9 @@ public:
     virtual void Execute(int val);
     virtual bool Enabled() const;
     virtual bool ChoiceEnabled(int i) const;
-    virtual bool ChoiceToggled(int i) const;
+    virtual bool ChoiceChecked(int i) const;
 
     virtual bool MenuTopLevel() const { return true; }
-    virtual bool CanHaveOwnToolbar() const { return true; }
 };
 
 // ****************************************************************************
@@ -392,7 +394,9 @@ public:
 // Creation:   Wed Feb 5 16:20:03 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed May 28 15:50:34 PDT 2008
+//   Removed CanHaveOwnToolbar.
+//
 // ****************************************************************************
 
 class VIEWER_API EnableToolAction : public ViewerMultipleAction
@@ -405,10 +409,9 @@ public:
     virtual void Execute(int val);
     virtual bool Enabled() const;
     virtual bool ChoiceEnabled(int i) const;
-    virtual bool ChoiceToggled(int i) const;
+    virtual bool ChoiceChecked(int i) const;
 
     virtual bool MenuTopLevel() const { return true; }
-    virtual bool CanHaveOwnToolbar() const { return true; }
 };
 
 #endif

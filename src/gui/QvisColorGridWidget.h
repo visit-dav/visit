@@ -39,7 +39,7 @@
 #ifndef QVIS_COLOR_GRID_WIDGET_H
 #define QVIS_COLOR_GRID_WIDGET_H
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 #include <QvisGridWidget.h>
 
 class QPixmap;
@@ -72,14 +72,16 @@ class QPainter;
 //   Jeremy Meredith, Fri Aug 11 16:49:48 EDT 2006
 //   Refactored most of this class to a new base QvisGridWidget.
 //
+//   Brad Whitlock, Tue Jun  3 10:26:51 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisColorGridWidget : public QvisGridWidget
 {
     Q_OBJECT
 public:
-    QvisColorGridWidget(QWidget *parent = 0, const char *name = 0,
-                        WFlags f = 0);
+    QvisColorGridWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~QvisColorGridWidget();
 
     void setSelectedColor(const QColor &c);

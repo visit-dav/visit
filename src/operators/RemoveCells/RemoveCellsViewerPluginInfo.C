@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <RemoveCellsPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <RemoveCellsAttributes.h>
 
 #if defined(__APPLE__)

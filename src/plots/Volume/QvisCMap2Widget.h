@@ -3,10 +3,10 @@
 
 #include <QvisCMap2Display.h> // Must come before other Qt includes because of SLIVR's
                               // "emit" method conflicing with Qt's emit macro.
-#include <qgroupbox.h>
+#include <QWidget>
 
 class QLineEdit;
-class QListBox;
+class QListWidget;
 class QPushButton;
 class QvisColorButton;
 class QvisOpacitySlider;
@@ -17,20 +17,25 @@ class QvisOpacitySlider;
 // Purpose:
 //   Simple 2D transfer function editing widget based on SLIVR 2D widgets.
 //
-// Notes:      Not productized
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 25 13:53:36 PDT 2008
 //
 // Modifications:
-//   
+//   Josh Stratton, August 2008
+//   Added additional SLIVR widget types.
+//
+//   Brad Whitlock, Tue Sep 30 09:48:58 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class QvisCMap2Widget : public QGroupBox
+class QvisCMap2Widget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisCMap2Widget(QWidget *parent, const char *name = 0);
+    QvisCMap2Widget(QWidget *parent);
     virtual ~QvisCMap2Widget();
 
     WidgetID addTriangleWidget(const QString &wName,
@@ -107,7 +112,7 @@ private:
 
     int                nameIndex;
     QvisCMap2Display  *cmap2;
-    QListBox          *names;
+    QListWidget       *names;
     QPushButton       *deleteButton;
     QLineEdit         *wName;
     QLineEdit         *sizeLoc;

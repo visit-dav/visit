@@ -38,23 +38,168 @@
 
 #include <stdio.h> // for sscanf
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qgrid.h>
-#include <qhgroupbox.h>
-#include <qvgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qradiobutton.h>
-#include <qvbox.h>
-#include <qhbox.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QWidget>
+#include <QGroupBox>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QRadioButton>
+#include <QWidget>
+#include <QWidget>
 
 #include <QvisClipWindow.h>
 #include <ClipAttributes.h>
 #include <ViewerProxy.h>
+
+// ****************************************************************************
+// Method: QPlaneGroup::QPlaneGroup
+//
+// Purpose: 
+//   Constructor for the QPlaneGroup class.
+//
+// Arguments:
+//   title    : Group Title
+//   parent   : Optional QWidget parent.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Aug 21 14:17:04 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+QPlaneGroup::QPlaneGroup(const QString &title, QWidget *parent)
+: QGroupBox(title,parent)
+{
+    setCheckable(true);
+    QGridLayout *layout = new QGridLayout(this);
+    origin = new QLineEdit(this);
+    normal = new QLineEdit(this);
+    layout->addWidget(new QLabel(tr("Origin")),0,0);
+    layout->addWidget(origin,0,1);
+    layout->addWidget(new QLabel(tr("Normal")),1,0);
+    layout->addWidget(normal,1,1);
+        
+    connect(origin,SIGNAL(returnPressed()),
+            this,SIGNAL(OriginChanged()));
+        
+    connect(normal,SIGNAL(returnPressed()),
+            this,SIGNAL(NormalChanged()));
+}
+
+// ****************************************************************************
+// Method: QPlaneGroup::~QPlaneGroup
+//
+// Purpose: 
+//   Destructor for the QPlaneGroup class.
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Aug 21 14:17:04 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+QPlaneGroup::~QPlaneGroup()
+{}
+
+// ****************************************************************************
+// Method: QPlaneGroup::SetOrigin
+//
+// Purpose: 
+//   Sets the plane origin.
+//
+// Arguments:
+//        val origin point location.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Aug 21 14:17:04 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+void 
+QPlaneGroup::SetOrigin(double val[3])
+{
+    origin->blockSignals(true);
+    origin->setText(GUIBase::DoublesToQString(val,3));
+    origin->blockSignals(false);
+}
+ 
+// ****************************************************************************
+// Method: QPlaneGroup::SetNormal
+//
+// Purpose: 
+//   Sets the plane normal.
+//
+// Arguments:
+//        val normal vector value.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Aug 21 14:17:04 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************   
+void 
+QPlaneGroup::SetNormal(double val[3])
+{
+    normal->blockSignals(true);
+    normal->setText(GUIBase::DoublesToQString(val,3));
+    normal->blockSignals(false);
+}
+   
+// ****************************************************************************
+// Method: QPlaneGroup::GetOrigin
+//
+// Purpose: 
+//   Trys to parse the plane origin from input line edit.
+//   
+// Returns:
+//   True if the input line edit contains 3 doubles.
+//
+// Arguments:
+//        val output for plane origin point.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Aug 21 14:17:04 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************    
+bool
+QPlaneGroup::GetOrigin(double val[3])
+{
+    return GUIBase::LineEditGetDoubles(origin, val, 3);
+}
+
+// ****************************************************************************
+// Method: QPlaneGroup::GetNormal
+//
+// Purpose: 
+//   Trys to parse the plane normal from input line edit.
+//   
+// Returns:
+//   True if the input line edit contains 3 doubles.
+//
+// Arguments:
+//        val output for plane normal vector.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Aug 21 14:17:04 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************    
+bool 
+QPlaneGroup::GetNormal(double val[3])
+{
+    return GUIBase::LineEditGetDoubles(normal, val, 3);
+}
 
 
 // ****************************************************************************
@@ -83,7 +228,7 @@ QvisClipWindow::QvisClipWindow(const int type,
     QvisNotepadArea *notepad) :
     QvisOperatorWindow(type, subj, caption, shortName, notepad)
 {
-    clipAtts = subj;
+    atts = subj;
 }
 
 // ****************************************************************************
@@ -143,204 +288,153 @@ QvisClipWindow::~QvisClipWindow()
 //   Brad Whitlock, Fri Apr 25 09:34:26 PDT 2008
 //   Added tr()'s
 //
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::CreateWindowContents()
 {
-    qualityGroup = new QButtonGroup(central, "Quality");
-    QHBoxLayout *qualityLayout = new QHBoxLayout(qualityGroup);
-    qualityLayout->addWidget(new QLabel(tr("Quality:"), qualityGroup));
-    QRadioButton *fastQuality = new QRadioButton("Fast", qualityGroup);
+    
+    QWidget *qualityWidget= new QWidget(central);
+    qualityGroup = new QButtonGroup(qualityWidget);
+    
+    QHBoxLayout *qualityLayout = new QHBoxLayout(qualityWidget);
+    qualityLayout->setMargin(0);
+    
+    QRadioButton *fastQuality = new QRadioButton("Fast", qualityWidget);
+    QRadioButton *accurateQuality = new QRadioButton(tr("Accurate"), qualityWidget);
+    
+    qualityLayout->addWidget(new QLabel(tr("Quality:"), qualityWidget));
+    qualityGroup->addButton(fastQuality,0);
+    qualityGroup->addButton(accurateQuality,1);
+    
     qualityLayout->addWidget(fastQuality);
-    QRadioButton *accurateQuality = new QRadioButton(tr("Accurate"), qualityGroup);
     qualityLayout->addWidget(accurateQuality);
-    topLayout->addWidget(qualityGroup);
-    connect(qualityGroup, SIGNAL(clicked(int)),
+    
+    topLayout->addWidget(qualityWidget);
+    connect(qualityGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(qualityChanged(int)));
 
-    typeGroup = new QButtonGroup(central, "Type");
-    QHBoxLayout *typeLayout = new QHBoxLayout(typeGroup);
-    typeLayout->addWidget(new QLabel(tr("Slice type:"), typeGroup));
-    QRadioButton *planeType = new QRadioButton(tr("Plane"), typeGroup);
+    
+    QWidget *typeWidget = new QWidget(central);
+    typeGroup = new QButtonGroup(typeWidget);
+    
+    QHBoxLayout  *typeLayout = new QHBoxLayout(typeWidget);
+    typeLayout->setMargin(0);
+    QRadioButton *planeType = new QRadioButton(tr("Plane"), typeWidget);
+    QRadioButton *sphereType = new QRadioButton(tr("Sphere"), typeWidget);
+    
+    typeLayout->addWidget(new QLabel(tr("Slice type:"), typeWidget));
     typeLayout->addWidget(planeType);
-    QRadioButton *sphereType = new QRadioButton(tr("Sphere"), typeGroup);
     typeLayout->addWidget(sphereType);
-    topLayout->addWidget(typeGroup);
-    connect(typeGroup, SIGNAL(clicked(int)),
+    topLayout->addWidget(typeWidget);
+
+    typeGroup->addButton(planeType,0);
+    typeGroup->addButton(sphereType,1);
+    
+    connect(typeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(sliceTypeChanged(int)));
 
-    QVGroupBox *frame = new QVGroupBox(tr("Clip parameters"), central,
-                                       "clipParameters");
+    QGroupBox *frame = new QGroupBox(tr("Clip parameters"),central);
+    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
     topLayout->addWidget(frame);
+    
+    planeWidgets = new QWidget(frame);
+    
+    frameLayout->addWidget(planeWidgets);
+    QVBoxLayout *planeWidgetsLayout = new QVBoxLayout(planeWidgets);
 
     // 
     // Plane widgets 
     // 
-    planeWidgets = new QVBox(frame, "planeWidgets");
-    planeWidgets->setMargin(10);
-    planeWidgets->setSpacing(5);
-
-    // Plane1 Group
-    CreatePlaneGroup(planeWidgets, (QWidget **)&plane1Status,
-#if QT_VERSION < 0x030200
-        (QWidget **)&plane1Group,
-#endif
-        (QWidget **)&plane1Origin, (QWidget **)&plane1Normal,
-        SLOT(plane1StatusToggled(bool)),
-        SLOT(processPlane1Origin()),
-        SLOT(processPlane1Normal()), 1);
-
-    // Plane2 Group
-    CreatePlaneGroup(planeWidgets, (QWidget **)&plane2Status,
-#if QT_VERSION < 0x030200
-        (QWidget **)&plane2Group,
-#endif
-        (QWidget **)&plane2Origin, (QWidget **)&plane2Normal,
-        SLOT(plane2StatusToggled(bool)),
-        SLOT(processPlane2Origin()),
-        SLOT(processPlane2Normal()), 2);
-
-    // Plane3 Group
-    CreatePlaneGroup(planeWidgets, (QWidget **)&plane3Status,
-#if QT_VERSION < 0x030200
-        (QWidget **)&plane3Group,
-#endif
-        (QWidget **)&plane3Origin, (QWidget **)&plane3Normal,
-        SLOT(plane3StatusToggled(bool)),
-        SLOT(processPlane3Origin()),
-        SLOT(processPlane3Normal()), 3);
-
+    
+    plane1Group = new QPlaneGroup(tr("Plane 1"),planeWidgets);
+    plane2Group = new QPlaneGroup(tr("Plane 2"),planeWidgets);
+    plane3Group = new QPlaneGroup(tr("Plane 3"),planeWidgets);
+    planeWidgetsLayout->addWidget(plane1Group);
+    planeWidgetsLayout->addWidget(plane2Group);
+    planeWidgetsLayout->addWidget(plane3Group);
+        
     // Plane Inverse
-    planeInverse = new QCheckBox(tr("Inverse"), planeWidgets, "planeInverse");
+    planeInverse = new QCheckBox(tr("Inverse"), planeWidgets);
     planeInverse->setChecked(false);
     connect(planeInverse, SIGNAL(toggled(bool)),
             this, SLOT(planeInverseToggled(bool)));
-
+    planeWidgetsLayout->addWidget(planeInverse);
+            
     // Plane tool controls
-    QLabel *planeToolControlledClipPlaneLabel = new QLabel(tr("Plane tool controls:"), planeWidgets, "planeToolControlledClipPlaneLabel");
-    planeToolControlledClipPlane = new QButtonGroup(planeWidgets, "planeToolControlledClipPlane");
-    planeToolControlledClipPlane->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *planeToolControlledClipPlaneLayout = new QHBoxLayout(planeToolControlledClipPlane);
-    planeToolControlledClipPlaneLayout->setSpacing(10);
-    QRadioButton *planeToolControlledClipPlaneWhichClipPlaneNone = new QRadioButton(tr("Nothing"), planeToolControlledClipPlane);
+    QLabel *planeToolControlledClipPlaneLabel = new QLabel(tr("Plane tool controls:"), planeWidgets);
+    
+    planeToolControlledClipPlane = new QButtonGroup(planeWidgets);
+    QWidget *planeToolControlledClipPlaneWidget = new QWidget(planeWidgets);
+    planeWidgetsLayout->addWidget(planeToolControlledClipPlaneLabel);
+    planeWidgetsLayout->addWidget(planeToolControlledClipPlaneWidget);
+    
+    QHBoxLayout *planeToolControlledClipPlaneLayout = new QHBoxLayout(planeToolControlledClipPlaneWidget);
+    planeToolControlledClipPlaneLayout->setMargin(0);
+    
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlaneNone = new QRadioButton(tr("Nothing"),          
+                                                                                    planeToolControlledClipPlaneWidget);
+    
+    
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane1 = new QRadioButton(tr("Plane 1"), 
+                                                                                      planeToolControlledClipPlaneWidget);
+    
+    
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane2 = new QRadioButton(tr("Plane 2"), 
+                                                                                      planeToolControlledClipPlaneWidget);
+    
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane3 = new QRadioButton(tr("Plane 3"), 
+                                                                                      planeToolControlledClipPlaneWidget);
+    
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlaneNone);
-    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane1 = new QRadioButton(tr("Plane 1"), planeToolControlledClipPlane);
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane1);
-    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane2 = new QRadioButton(tr("Plane 2"), planeToolControlledClipPlane);
-    planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane2);
-    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane3 = new QRadioButton(tr("Plane 3"), planeToolControlledClipPlane);
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane3);
-    connect(planeToolControlledClipPlane, SIGNAL(clicked(int)),
+    planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane2);
+    
+    planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlaneNone,0);
+    planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlanePlane1,1);
+    planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlanePlane2,2);
+    planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlanePlane3,3);
+    
+    connect(planeToolControlledClipPlane, SIGNAL(buttonClicked(int)),
             this, SLOT(planeToolControlledClipPlaneChanged(int)));
  
     // 
     // Sphere widgets
     // 
-    sphereWidgets = new QWidget(frame, "sphereWidgets");
-    QGridLayout *sphereLayout = new QGridLayout(sphereWidgets, 3, 2, 10, 10);
-
+    
+    sphereWidgets = new QWidget(frame);
+    frameLayout->addWidget(sphereWidgets);
+    
+    QGridLayout *sphereLayout = new QGridLayout(sphereWidgets);
+    
     // Sphere center
-    sphereLayout->addWidget(new QLabel(tr("Center"), sphereWidgets,
-                                       "centerLabel"),
+    sphereLayout->addWidget(new QLabel(tr("Center"), sphereWidgets),
                             0, 0, Qt::AlignRight);
-    centerLineEdit = new QLineEdit(sphereWidgets, "center");
+    centerLineEdit = new QLineEdit(sphereWidgets);
     sphereLayout->addWidget(centerLineEdit, 0, 1);
     connect(centerLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processCenterText()));
 
     // Sphere Radius 
-    sphereLayout->addWidget(new QLabel(tr("Radius"), sphereWidgets,
-                                       "radiusLabel"),
+    sphereLayout->addWidget(new QLabel(tr("Radius"), sphereWidgets),
                             1, 0, Qt::AlignRight);
-    radiusLineEdit = new QLineEdit(sphereWidgets, "radius");
+    radiusLineEdit = new QLineEdit(sphereWidgets);
     sphereLayout->addWidget(radiusLineEdit, 1, 1);
     connect(radiusLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processRadiusText()));
 
     // Sphere Inverse
-    sphereInverse = new QCheckBox(tr("Inverse"), sphereWidgets, "sphereInverse");
+    sphereInverse = new QCheckBox(tr("Inverse"), sphereWidgets);
     sphereInverse->setChecked(false);
-    sphereLayout->addMultiCellWidget(sphereInverse, 2, 2, 0, 1);
+    sphereLayout->addWidget(sphereInverse, 2, 0, 1, 2);
     connect(sphereInverse, SIGNAL(toggled(bool)),
             this, SLOT(sphereInverseToggled(bool)));
 }
 
-// ****************************************************************************
-// Method: QvisClipWindow::CreatePlaneGroup
-//
-// Purpose: 
-//   Create a group of widgets in a group box. The widgets are used to 
-//   control a plane.
-//
-// Arguments:
-//   parent            : The widgets' parent widget.
-//   planeStatus       : pointer to the plane status widget that we created.
-//   pg                : pointer to the plane group widget that we created.
-//   planeOrigin       : pointer to the plane origin widget that we created.
-//   planeNormal       : pointer to the plane normal widget that we created.
-//   statusToggledSlot : slot to call when plane status changes.
-//   planeOriginSlot   : slot to call when plane origin changes.
-//   planeNormalSlot   : slot to call when plane normal changes.
-//   index             : The number to use in the title.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Dec 21 09:47:49 PDT 2004
-//
-// Modifications:
-//   Brad Whitlock, Fri Apr 25 09:36:02 PDT 2008
-//   Added tr()'s
-//
-// ****************************************************************************
-
-void
-QvisClipWindow::CreatePlaneGroup(QWidget *parent, QWidget **planeStatus,
-#if QT_VERSION < 0x030200
-    QWidget **pg,
-#endif
-    QWidget **planeOrigin, QWidget **planeNormal,
-    const char *statusToggledSlot,
-    const char *planeOriginSlot,
-    const char *planeNormalSlot, int index)
-{
-    QString title(tr("Plane %1").arg(index));
-    QString n; n.sprintf("plane%d", index);
-#define N(s) QString(s).latin1()
-
-    QVGroupBox *planeGroup;
-#if QT_VERSION >= 0x030200
-    planeGroup = new QVGroupBox(parent, N(n + "GBox"));
-    planeGroup->setTitle(title);
-    planeGroup->setCheckable(true);
-    planeGroup->setColumns(2);
-    *planeStatus = planeGroup;
-    connect(planeGroup, SIGNAL(toggled(bool)),
-            this, statusToggledSlot);
-#else
-    QCheckBox *c = new QCheckBox(title, parent, N(n+"checkbox"));
-    *planeStatus = c;
-    connect(c, SIGNAL(toggled(bool)),
-            this, statusToggledSlot);
-    planeGroup = new QVGroupBox(title, parent, N(n + "GBox"));
-    planeGroup->setTitle(title);
-    planeGroup->setColumns(2);
-    *pg = planeGroup;
-#endif
-
-    // Plane origin
-    new QLabel(tr("Origin"), planeGroup, N(n+"OriginLabel"));
-    QLineEdit *origin = new QLineEdit(planeGroup, N(n+"Origin"));
-    *planeOrigin = origin;
-    connect(origin, SIGNAL(returnPressed()),
-            this, planeOriginSlot);
-
-    // Plane normal 
-    new QLabel(tr("Normal"), planeGroup, N(n+"NormalLabel"));
-    QLineEdit *normal = new QLineEdit(planeGroup, N(n+"Normal"));
-    *planeNormal = normal;
-    connect(normal, SIGNAL(returnPressed()),
-            this, planeNormalSlot); 
-}
 
 // ****************************************************************************
 // Method: QvisClipWindow::UpdateWindow
@@ -383,157 +477,122 @@ QvisClipWindow::CreatePlaneGroup(QWidget *parent, QWidget **planeStatus,
 //   Added code to handle radio buttons to select clip plane manipulated by
 //   plane tool
 //
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
 //
 // ****************************************************************************
 
 void
 QvisClipWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
     // for displaying the state values and setting widget sensitivity.
-    for(int i = 0; i < clipAtts->NumAttributes(); ++i)
+    for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
         {
-            if(!clipAtts->IsSelected(i))
+            if(!atts->IsSelected(i))
             {
                 continue;
             }
         }
 
-        double *dptr;
         switch(i)
         {
-        case 0: // funcType
-            typeGroup->setButton(clipAtts->GetFuncType());
-            if (clipAtts->GetFuncType() == ClipAttributes::Plane)
+        case ClipAttributes::ID_funcType:
+            typeGroup->button(atts->GetFuncType())->setChecked(true);
+            if (atts->GetFuncType() == ClipAttributes::Plane)
             {
-                plane1Status->setChecked(clipAtts->GetPlane1Status());
-                plane2Status->setChecked(clipAtts->GetPlane2Status());
-                plane3Status->setChecked(clipAtts->GetPlane3Status());
-                dptr = clipAtts->GetPlane1Origin();
-                temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-                plane1Origin->setText(temp);
-                dptr = clipAtts->GetPlane2Origin();
-                temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-                plane2Origin->setText(temp);
-                dptr = clipAtts->GetPlane3Origin();
-                temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-                plane3Origin->setText(temp);
-                dptr = clipAtts->GetPlane1Normal();
-                temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-                plane1Normal->setText(temp);
-                dptr = clipAtts->GetPlane2Normal();
-                temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-                plane2Normal->setText(temp);
-                dptr = clipAtts->GetPlane3Normal();
-                temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-                plane3Normal->setText(temp);
-                planeInverse->setChecked(clipAtts->GetPlaneInverse());
+                plane1Group->setChecked(atts->GetPlane1Status());
+                plane1Group->setChecked(atts->GetPlane2Status());
+                plane1Group->setChecked(atts->GetPlane3Status());
+                
+                plane1Group->SetOrigin(atts->GetPlane1Origin());
+                plane2Group->SetOrigin(atts->GetPlane2Origin());
+                plane3Group->SetOrigin(atts->GetPlane3Origin());
+                
+                plane1Group->SetNormal(atts->GetPlane1Normal());
+                plane2Group->SetNormal(atts->GetPlane2Normal());
+                plane3Group->SetNormal(atts->GetPlane3Normal());
+
+                planeInverse->setChecked(atts->GetPlaneInverse());
                 sphereWidgets->hide();
                 planeWidgets->show();
             }
-            else if (clipAtts->GetFuncType() == ClipAttributes::Sphere)
+            else if (atts->GetFuncType() == ClipAttributes::Sphere)
             {
-                dptr = clipAtts->GetCenter();
-                temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-                centerLineEdit->setText(temp);
-                r = clipAtts->GetRadius();
-                temp.setNum(r);
-                radiusLineEdit->setText(temp);
-                sphereInverse->setChecked(clipAtts->GetSphereInverse());
+                centerLineEdit->setText(DoublesToQString(atts->GetCenter(),3));
+                radiusLineEdit->setText(DoubleToQString(atts->GetRadius()));
+                sphereInverse->setChecked(atts->GetSphereInverse());
                 planeWidgets->hide();
                 sphereWidgets->show();
             }
             central->updateGeometry();
             break;
-        case 1: // plane1Status
-            plane1Status->blockSignals(true);
-            plane1Status->setChecked(clipAtts->GetPlane1Status());
-            plane1Status->blockSignals(false);
+        case ClipAttributes::ID_plane1Status:
+            plane1Group->blockSignals(true);
+            plane1Group->setChecked(atts->GetPlane1Status());
+            plane1Group->blockSignals(false);
             break;
-        case 2: // plane2Status
-            plane2Status->blockSignals(true);
-            plane2Status->setChecked(clipAtts->GetPlane2Status());
-            plane2Status->blockSignals(false);
+        case ClipAttributes::ID_plane2Status:
+            plane2Group->blockSignals(true);
+            plane2Group->setChecked(atts->GetPlane2Status());
+            plane2Group->blockSignals(false);
             break;
-        case 3: // plane3Status
-            plane3Status->blockSignals(true);
-            plane3Status->setChecked(clipAtts->GetPlane3Status());
-            plane3Status->blockSignals(false);
+        case ClipAttributes::ID_plane3Status:
+            plane3Group->blockSignals(true);
+            plane3Group->setChecked(atts->GetPlane3Status());
+            plane3Group->blockSignals(false);
             break;
-        case 4: // plane1Origin
-            dptr = clipAtts->GetPlane1Origin();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            plane1Origin->setText(temp);
+        case ClipAttributes::ID_plane1Origin:
+            plane1Group->SetOrigin(atts->GetPlane1Origin());
             break;
-        case 5: // plane2Origin
-            dptr = clipAtts->GetPlane2Origin();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            plane2Origin->setText(temp);
+        case ClipAttributes::ID_plane2Origin:
+            plane2Group->SetOrigin(atts->GetPlane2Origin());
             break;
-        case 6: // plane3Origin
-            dptr = clipAtts->GetPlane3Origin();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            plane3Origin->setText(temp);
+        case ClipAttributes::ID_plane3Origin:
+            plane3Group->SetOrigin(atts->GetPlane3Origin());
             break;
-        case 7: // plane1Normal
-            dptr = clipAtts->GetPlane1Normal();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            plane1Normal->setText(temp);
+        case ClipAttributes::ID_plane1Normal:
+            plane1Group->SetNormal(atts->GetPlane1Normal());
             break;
-        case 8: // plane2Normal
-            dptr = clipAtts->GetPlane2Normal();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            plane2Normal->setText(temp);
+        case ClipAttributes::ID_plane2Normal:
+            plane2Group->SetNormal(atts->GetPlane2Normal());
             break;
-        case 9: // plane3Normal
-            dptr = clipAtts->GetPlane3Normal();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            plane3Normal->setText(temp);
+        case ClipAttributes::ID_plane3Normal:
+            plane3Group->SetNormal(atts->GetPlane3Normal());
             break;
-        case 10: // planeInverse
+        case ClipAttributes::ID_planeInverse:
             planeInverse->blockSignals(true);
-            planeInverse->setChecked(clipAtts->GetPlaneInverse());
+            planeInverse->setChecked(atts->GetPlaneInverse());
             planeInverse->blockSignals(false);
             break;
-        case 11: //planeToolControlledClipPlane
+        case ClipAttributes::ID_planeToolControlledClipPlane:
             planeToolControlledClipPlane->blockSignals(true);
-            planeToolControlledClipPlane->setButton(clipAtts->GetPlaneToolControlledClipPlane());
+            planeToolControlledClipPlane->button(atts->GetPlaneToolControlledClipPlane())
+                                                    ->setChecked(true);
             planeToolControlledClipPlane->blockSignals(false);
             break;
-        case 12: // center
-            dptr = clipAtts->GetCenter();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            centerLineEdit->setText(temp);
+        case ClipAttributes::ID_center:
+            centerLineEdit->setText(DoublesToQString(atts->GetCenter(),3));
             break;
-        case 13: // radius
-            r = clipAtts->GetRadius();
-            temp.setNum(r);
-            radiusLineEdit->setText(temp);
+        case ClipAttributes::ID_radius:
+            radiusLineEdit->setText(DoubleToQString(atts->GetRadius()));
             break;
-        case 14: // sphereInverse
+        case ClipAttributes::ID_sphereInverse:
             sphereInverse->blockSignals(true);
-            sphereInverse->setChecked(clipAtts->GetSphereInverse());
+            sphereInverse->setChecked(atts->GetSphereInverse());
             sphereInverse->blockSignals(false);
             break;
-        case 15: // quality
+        case ClipAttributes::ID_quality:
             qualityGroup->blockSignals(true);
-            qualityGroup->setButton(clipAtts->GetQuality());
+            qualityGroup->button(atts->GetQuality())->setChecked(true);
             qualityGroup->blockSignals(false);
         }
     } // end for
 
-#if QT_VERSION < 0x030200
-    // Set the enabled state for the plane groups if Qt version < 3.2.
-    plane1Group->setEnabled(clipAtts->GetPlane1Status());
-    plane2Group->setEnabled(clipAtts->GetPlane2Status());
-    plane3Group->setEnabled(clipAtts->GetPlane3Status());
-#endif
 }
 
 // ****************************************************************************
@@ -559,226 +618,135 @@ QvisClipWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Tue May 20 16:02:52 PDT 2003  
 //   Disallow (0, 0, 0) for a normal vector.
 // 
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::GetCurrentValues(int which_widget)
 {
     bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
-    double *d = new double[3];
 
-    // Do the plane 1 origin vector
-    if(which_widget == 0 || doAll)
+    // Do plane1Origin
+    if(which_widget == ClipAttributes::ID_plane1Origin || doAll)
     {
-        temp = plane1Origin->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        // get from planeGroupWidget
+        double val[3];
+        if(plane1Group->GetOrigin(val))
+            atts->SetPlane1Origin(val);
+        else
         {
-            d[0] = d[1] = d[2] = 0;
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg", 
-                           &d[0], &d[1], &d[2]) == 3);
-            if(okay)
-                clipAtts->SetPlane1Origin(d);
+            ResettingError(tr("Plane 1 Origin"),
+                DoublesToQString(atts->GetPlane1Origin(),3));
+            atts->SetPlane1Origin(atts->GetPlane1Origin());
         }
-
-        if(!okay)
+    }
+    
+    // Do plane2Origin
+    if(which_widget == ClipAttributes::ID_plane2Origin || doAll)
+    {
+        // get from planeGroupWidget
+        double val[3];
+        if(plane2Group->GetOrigin(val))
+            atts->SetPlane1Origin(val);
+        else
         {
-            const double *d = clipAtts->GetPlane1Origin();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
-            msg = tr("The origin vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            clipAtts->SetPlane1Origin(d);
+            ResettingError(tr("Plane 2 Origin"),
+                DoublesToQString(atts->GetPlane2Origin(),3));
+            atts->SetPlane2Origin(atts->GetPlane2Origin());
         }
     }
 
-    // Do the plane 2 origin vector
-    if(which_widget == 1 || doAll)
+    // Do plane3Origin
+    if(which_widget == ClipAttributes::ID_plane3Origin || doAll)
     {
-        temp = plane2Origin->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        // get from planeGroupWidget
+        double val[3];
+        if(plane3Group->GetOrigin(val))
+            atts->SetPlane3Origin(val);
+        else
         {
-            d[0] = d[1] = d[2] = 0;
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg", 
-                           &d[0], &d[1], &d[2]) == 3);
-            if(okay)
-                clipAtts->SetPlane2Origin(d);
-        }
-
-        if(!okay)
-        {
-            const double *d = clipAtts->GetPlane2Origin();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
-            msg = tr("The origin vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            clipAtts->SetPlane2Origin(d);
+            ResettingError(tr("Plane 3 Origin"),
+                DoublesToQString(atts->GetPlane3Origin(),3));
+            atts->SetPlane3Origin(atts->GetPlane3Origin());
         }
     }
 
-
-    // Do the plane 3 origin vector
-    if(which_widget == 2 || doAll)
+    // Do plane1Normal
+    if(which_widget == ClipAttributes::ID_plane1Normal || doAll)
     {
-        temp = plane3Origin->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        // get from planeGroupWidget
+        double val[3];
+        if(plane1Group->GetNormal(val))
+            atts->SetPlane1Normal(val);
+        else
         {
-            d[0] = d[1] = d[2] = 0;
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg", 
-                           &d[0], &d[1], &d[2]) == 3);
-            if(okay)
-                clipAtts->SetPlane3Origin(d);
-        }
-
-        if(!okay)
-        {
-            const double *d = clipAtts->GetPlane3Origin();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
-            msg = tr("The origin vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            clipAtts->SetPlane3Origin(d);
+            ResettingError(tr("Plane 1 Normal"),
+                DoublesToQString(atts->GetPlane1Normal(),3));
+            atts->SetPlane1Normal(atts->GetPlane1Normal());
         }
     }
 
-    // Do the plane1 normal vector
-    if(which_widget == 3 || doAll)
+    // Do plane2Normal
+    if(which_widget == ClipAttributes::ID_plane2Normal || doAll)
     {
-        temp = plane1Normal->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        // get from planeGroupWidget
+        double val[3];
+        if(plane2Group->GetNormal(val))
+            atts->SetPlane2Normal(val);
+        else
         {
-            d[0] = d[1] = d[2] = 0;
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg", 
-                           &d[0], &d[1], &d[2]) == 3);
-            if(okay)
-            {
-                okay = (d[0] != 0. || d[1] != 0. || d[2] != 0.);
-                if(okay)
-                    clipAtts->SetPlane1Normal(d);
-            }
+            ResettingError(tr("Plane 2 Normal"),
+                DoublesToQString(atts->GetPlane2Normal(),3));
+            atts->SetPlane2Normal(atts->GetPlane2Normal());
         }
 
-        if(!okay)
+    }
+
+    // Do plane3Normal
+    if(which_widget == ClipAttributes::ID_plane3Normal || doAll)
+    {
+        // get from planeGroupWidget
+        double val[3];
+        if(plane3Group->GetNormal(val))
+            atts->SetPlane3Normal(val);
+        else
         {
-            const double *d = clipAtts->GetPlane1Normal();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
-            msg = tr("The normal vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            clipAtts->SetPlane1Normal(d);
+            ResettingError(tr("Plane 3 Normal"),
+                DoublesToQString(atts->GetPlane3Normal(),3));
+            atts->SetPlane3Normal(atts->GetPlane3Normal());
+        }
+
+    }
+
+ // Do center
+    if(which_widget == ClipAttributes::ID_center || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(centerLineEdit, val, 3))
+            atts->SetCenter(val);
+        else
+        {
+            ResettingError(tr("Center"),
+                DoublesToQString(atts->GetCenter(),3));
+            atts->SetCenter(atts->GetCenter());
         }
     }
 
-    // Do the plane2 normal vector
-    if(which_widget == 4 || doAll)
+    // Do radius
+    if(which_widget == ClipAttributes::ID_radius || doAll)
     {
-        temp = plane2Normal->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(radiusLineEdit, val))
+            atts->SetRadius(val);
+        else
         {
-            d[0] = d[1] = d[2] = 0;
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg", 
-                           &d[0], &d[1], &d[2]) == 3);
-            if(okay)
-            {
-                okay = (d[0] != 0. || d[1] != 0. || d[2] != 0.);
-                if(okay)
-                    clipAtts->SetPlane2Normal(d);
-            }
-        }
-
-        if(!okay)
-        {
-            const double *d = clipAtts->GetPlane2Normal();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
-            msg = tr("The normal vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            clipAtts->SetPlane2Normal(d);
+            ResettingError(tr("Radius"),
+                DoubleToQString(atts->GetRadius()));
+            atts->SetRadius(atts->GetRadius());
         }
     }
-
-    // Do the plane3 normal vector
-    if(which_widget == 5 || doAll)
-    {
-        temp = plane3Normal->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            d[0] = d[1] = d[2] = 0;
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg", 
-                           &d[0], &d[1], &d[2]) == 3);
-            if(okay)
-            {
-                okay = (d[0] != 0. || d[1] != 0. || d[2] != 0.);
-                if(okay)
-                    clipAtts->SetPlane3Normal(d);
-            }
-        }
-
-        if(!okay)
-        {
-            const double *d = clipAtts->GetPlane3Normal();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
-            msg = tr("The normal vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            clipAtts->SetPlane3Normal(d);
-        }
-    }
-
-    // Do the center vector
-    if(which_widget == 6 || doAll)
-    {
-        temp = centerLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            d[0] = d[1] = d[2] = 0;
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg", 
-                           &d[0], &d[1], &d[2]) == 3);
-            if(okay)
-                clipAtts->SetCenter(d);
-        }
-
-        if(!okay)
-        {
-            const double *d = clipAtts->GetCenter();
-            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
-            msg = tr("The center was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            clipAtts->SetCenter(d);
-        }
-    }
-
-    // Do the radius vector
-    if(which_widget == 7 || doAll)
-    {
-        temp = radiusLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double r;
-            okay = (sscanf(temp.latin1(), "%lg", &r) == 1);
-            if(okay)
-                clipAtts->SetRadius(r);
-        }
-
-        if(!okay)
-        {
-            double r = clipAtts->GetRadius();
-            msg = tr("The radius was invalid. "
-                     "Resetting to the last good value %1.").arg(r); 
-            Message(msg);
-            clipAtts->SetRadius(r);
-        }
-    }
-    delete [] d;
 }
 
 //
@@ -806,9 +774,9 @@ void
 QvisClipWindow::qualityChanged(int quality)
 {
     if (quality == 0)
-        clipAtts->SetQuality(ClipAttributes::Fast);
+        atts->SetQuality(ClipAttributes::Fast);
     else
-        clipAtts->SetQuality(ClipAttributes::Accurate);
+        atts->SetQuality(ClipAttributes::Accurate);
 
     Apply();
 }
@@ -827,12 +795,15 @@ QvisClipWindow::qualityChanged(int quality)
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::processPlane1Origin()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(ClipAttributes::ID_plane1Origin);
     Apply();
 }
 
@@ -851,12 +822,15 @@ QvisClipWindow::processPlane1Origin()
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::processPlane2Origin()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(ClipAttributes::ID_plane2Origin);
     Apply();
 }
 
@@ -880,7 +854,7 @@ QvisClipWindow::processPlane2Origin()
 void
 QvisClipWindow::processPlane3Origin()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(ClipAttributes::ID_plane3Origin);
     Apply();
 }
 
@@ -899,12 +873,15 @@ QvisClipWindow::processPlane3Origin()
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::processPlane1Normal()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(ClipAttributes::ID_plane1Normal);
     Apply();
 }
 
@@ -922,12 +899,15 @@ QvisClipWindow::processPlane1Normal()
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::processPlane2Normal()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(ClipAttributes::ID_plane2Normal);
     Apply();
 }
 
@@ -946,12 +926,15 @@ QvisClipWindow::processPlane2Normal()
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::processPlane3Normal()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(ClipAttributes::ID_plane3Normal);
     Apply();
 }
 
@@ -969,12 +952,15 @@ QvisClipWindow::processPlane3Normal()
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::processCenterText()
 {
-    GetCurrentValues(6);
+    GetCurrentValues(ClipAttributes::ID_center);
     Apply();
 }
 
@@ -993,12 +979,15 @@ QvisClipWindow::processCenterText()
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::processRadiusText()
 {
-    GetCurrentValues(7);
+    GetCurrentValues(ClipAttributes::ID_radius);
     Apply();
 }
 
@@ -1034,13 +1023,13 @@ QvisClipWindow::sliceTypeChanged(int type)
 {
     if (type == 0)
     {
-        clipAtts->SetFuncType(ClipAttributes::Plane);
+        atts->SetFuncType(ClipAttributes::Plane);
         sphereWidgets->hide();
         planeWidgets->show();
     }
     else
     {
-        clipAtts->SetFuncType(ClipAttributes::Sphere);
+        atts->SetFuncType(ClipAttributes::Sphere);
         planeWidgets->hide();
         sphereWidgets->show();
     }
@@ -1077,7 +1066,7 @@ QvisClipWindow::sliceTypeChanged(int type)
 void
 QvisClipWindow::plane1StatusToggled(bool val)
 {
-    clipAtts->SetPlane1Status(val);
+    atts->SetPlane1Status(val);
     Apply();
 }
 
@@ -1106,7 +1095,7 @@ QvisClipWindow::plane1StatusToggled(bool val)
 void
 QvisClipWindow::plane2StatusToggled(bool val)
 {
-    clipAtts->SetPlane2Status(val);
+    atts->SetPlane2Status(val);
     Apply();
 }
 
@@ -1136,7 +1125,7 @@ QvisClipWindow::plane2StatusToggled(bool val)
 void
 QvisClipWindow::plane3StatusToggled(bool val)
 {
-    clipAtts->SetPlane3Status(val);
+    atts->SetPlane3Status(val);
     Apply();
 }
 
@@ -1164,7 +1153,7 @@ QvisClipWindow::plane3StatusToggled(bool val)
 void
 QvisClipWindow::planeInverseToggled(bool val)
 {
-    clipAtts->SetPlaneInverse(val);
+    atts->SetPlaneInverse(val);
     Apply();
 }
 
@@ -1189,9 +1178,9 @@ QvisClipWindow::planeInverseToggled(bool val)
 void
 QvisClipWindow::planeToolControlledClipPlaneChanged(int val)
 {
-    if(val != clipAtts->GetPlaneToolControlledClipPlane())
+    if(val != atts->GetPlaneToolControlledClipPlane())
     {
-        clipAtts->SetPlaneToolControlledClipPlane(ClipAttributes::WhichClipPlane(val));
+        atts->SetPlaneToolControlledClipPlane(ClipAttributes::WhichClipPlane(val));
         SetUpdate(false);
         Apply();
     }
@@ -1221,6 +1210,6 @@ QvisClipWindow::planeToolControlledClipPlaneChanged(int val)
 void
 QvisClipWindow::sphereInverseToggled(bool val)
 {
-    clipAtts->SetSphereInverse(val);
+    atts->SetSphereInverse(val);
     Apply();
 }

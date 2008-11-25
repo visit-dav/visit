@@ -39,8 +39,8 @@
 #ifndef XML_PARSER_UTIL_H
 #define XML_PARSER_UTIL_H
 
-#include <qstring.h>
-#include <visitstream.h>
+#include <QTextStream>
+
 #include <vector>
 using std::vector;
 
@@ -70,7 +70,7 @@ class UniqueStringList
         if (!found)
             strings.push_back(s);
     }
-    void Write(ostream &out)
+    void Write(QTextStream &out)
     {
         for (size_t i=0; i<strings.size(); i++)
         {
@@ -84,7 +84,7 @@ SplitValues(const QString &buff)
 {
     vector<QString> output;
     
-    buff.stripWhiteSpace();
+    buff.trimmed();
     QString tmp="";
     int len = buff.length();
     for (int i=0; i<len; i++)
@@ -142,12 +142,12 @@ JoinValues(const vector<QString> &strs, QString &j)
 inline bool
 Text2Bool(const QString &s)
 {
-    if (s.lower() == "true" || s.lower() == "t" || s.lower() == "yes")
+    if (s.toLower() == "true" || s.toLower() == "t" || s.toLower() == "yes")
         return true;
-    else if (s.lower() == "false" || s.lower() == "f" || s.lower() == "no")
+    else if (s.toLower() == "false" || s.toLower() == "f" || s.toLower() == "no")
         return false;
 
-    throw QString().sprintf("bad value '%s' for bool",s.latin1());
+    throw QString("bad value '%1' for bool").arg(s);
 }
 
 inline QString
@@ -221,14 +221,14 @@ FileBase(const QString &buff)
 // ****************************************************************************
 
 inline void
-StartOpenTag(ostream &out, const QString &tag, QString &indent)
+StartOpenTag(QTextStream &out, const QString &tag, QString &indent)
 {
     indent += "  ";
     out << indent << "<" << tag;
 }
 
 inline void
-WriteTagAttr(ostream &out, const QString &attr, const QString &value)
+WriteTagAttr(QTextStream &out, const QString &attr, const QString &value)
 {
     if (! value.isNull())
     {
@@ -237,41 +237,42 @@ WriteTagAttr(ostream &out, const QString &attr, const QString &value)
 }
 
 inline void
-FinishOpenTag(ostream &out)
+FinishOpenTag(QTextStream &out)
 {
     out << ">\n";
 }
 
 inline void
-WriteOpenTag(ostream &out, const QString &tag, QString &indent)
+WriteOpenTag(QTextStream &out, const QString &tag, QString &indent)
 {
     indent += "  ";
     out << indent << "<" << tag << ">\n";
 }
 
 inline void
-WriteCloseTag(ostream &out, const QString &tag, QString &indent)
+WriteCloseTag(QTextStream &out, const QString &tag, QString &indent)
 {
     out << indent << "</" << tag << ">" << endl;
     indent = indent.left(indent.length()-2);
 }
 
 inline void
-WriteValues(ostream &out, const vector<QString> &values, QString &indent)
+WriteValues(QTextStream &out, const vector<QString> &values, QString &indent)
 {
     indent += "  ";
     for (size_t i=0; i<values.size(); i++)
     {
-        out << indent << values[i] << endl;
+        QString s(indent + values[i]);
+        out << s << endl;
     }
     indent = indent.left(indent.length()-2);
 }
 
 inline void
-WriteValue(ostream &out, const QString &value, QString &indent)
+WriteValue(QTextStream &out, const QString &value, QString &indent)
 {
     indent += "  ";
-    out << indent << value << endl;
+    out << (indent + value) << endl;
     indent = indent.left(indent.length()-2);
 }
 

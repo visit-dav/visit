@@ -39,7 +39,7 @@
 #ifndef QVIS_FILE_PANEL
 #define QVIS_FILE_PANEL
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 #include <SimpleObserver.h>
 #include <GUIBase.h>
 #include <QualifiedFilename.h>
@@ -49,13 +49,13 @@
 // Forward declarations.
 class QComboBox;
 class QLabel;
-class QListView;
-class QListViewItem;
+class QTreeWidget;
+class QTreeWidgetItem;
 class QPushButton;
 class QLineEdit;
 class QPixmap;
 class QvisAnimationSlider;
-class QvisListViewFileItem;
+class QvisFilePanelItem;
 class QvisVCRControl;
 
 class avtDatabaseMetaData;
@@ -143,6 +143,12 @@ class ViewerProxy;
 //   Brad Whitlock, Mon Jun 27 14:54:27 PST 2005
 //   Added updateOpenButtonState
 //
+//   Brad Whitlock, Fri May 30 14:23:14 PDT 2008
+//   Qt 4.
+// 
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
 //   Brad Whitlock, Thu Jul 24 09:17:05 PDT 2008
 //   Made it possible to overlay a file at a given state.
 //
@@ -182,7 +188,7 @@ class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIB
             FileDisplayInformationMap;
 
 public:
-    QvisFilePanel(QWidget *parent = 0, const char *name = 0);
+    QvisFilePanel(QWidget *parent = 0);
     virtual ~QvisFilePanel();
     virtual void Update(Subject *);
     virtual void SubjectRemoved(Subject *);
@@ -211,7 +217,7 @@ private:
     void SetTimeFieldText(const QString &text);
     void UpdateAnimationControlsEnabledState();
     bool UpdateReplaceButtonEnabledState();
-    void UpdateOpenButtonState(QvisListViewFileItem *fileItem);
+    void UpdateOpenButtonState(QvisFilePanelItem *fileItem);
 
     bool OpenFile(const QualifiedFilename &filename, int timeState,
                   bool reOpen);
@@ -219,9 +225,9 @@ private:
     void OverlayFile(const QualifiedFilename &filename, int timeState=0);
 
     void ExpandDatabases();
-    void ExpandDatabaseItem(QvisListViewFileItem *item);
-    void ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item);
-    void ExpandDatabaseItemUsingVirtualDBDefinition(QvisListViewFileItem *item);
+    void ExpandDatabaseItem(QvisFilePanelItem *item);
+    void ExpandDatabaseItemUsingMetaData(QvisFilePanelItem *item);
+    void ExpandDatabaseItemUsingVirtualDBDefinition(QvisFilePanelItem *item);
     void RemoveExpandedFile(const QualifiedFilename &filename);
     void SetFileExpanded(const QualifiedFilename &filename, bool);
     bool FileIsExpanded(const QualifiedFilename &filename) const;
@@ -248,20 +254,18 @@ private slots:
     void sliderChange(int val);
     void processTimeText();
 
-    void fileCollapsed(QListViewItem *);
-    void fileExpanded(QListViewItem *);
-    void highlightFile(QListViewItem *);
+    void fileCollapsed(QTreeWidgetItem *);
+    void fileExpanded(QTreeWidgetItem *);
+    void highlightFile(QTreeWidgetItem *);
     void openFile();
-    void openFileDblClick(QListViewItem *);
+    void openFileDblClick(QTreeWidgetItem *);
     void replaceFile();
     void overlayFile();
-    void updateHeaderWidth();
-    void updateHeaderWidthForLongName();
     void internalUpdateFileList();
 private:
     bool                     showSelectedFiles;
 
-    QListView                *fileListView;
+    QTreeWidget              *fileTree;
     QComboBox                *activeTimeSlider;
     QLabel                   *activeTimeSliderLabel;
     QPushButton              *openButton;

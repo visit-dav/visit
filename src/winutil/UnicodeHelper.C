@@ -93,7 +93,7 @@ MessageAttributes_SetText(MessageAttributes &ma, const QString &text,
     bool hasUnicode)
 {
     // Set the text (this is a fallback now)
-    ma.SetText(std::string(text.latin1()));
+    ma.SetText(std::string(text.toStdString()));
 
     // Store the unicode version of the text as a unsignedCharVector. We'll 
     // use this if it is available.
@@ -164,7 +164,7 @@ StatusAttributes_SetStatusMessage(StatusAttributes &sa, const QString &text,
     bool hasUnicode)
 {
     // Set the text (this is a fallback now)
-    sa.SetStatusMessage(std::string(text.latin1()));
+    sa.SetStatusMessage(std::string(text.toStdString()));
 
     // Store the unicode version of the text as a unsignedCharVector. We'll 
     // use this if it is available.

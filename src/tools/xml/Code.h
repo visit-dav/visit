@@ -39,7 +39,7 @@
 #ifndef CODE_H
 #define CODE_H
 
-#include <qstring.h>
+#include <QTextStream>
 
 // ****************************************************************************
 //  Class:  Code
@@ -67,7 +67,7 @@ class Code
          const QString &t) : name(n), prefix(pre), postfix(post), target(t)
     {
     }
-    void Print(ostream &out, const QString &generatorName = QString::null)
+    void Print(QTextStream &out, const QString &generatorName = QString::null)
     {
         if(generatorName.isEmpty() || generatorName == target)
             out << "        Code: (" << target << ") " << name << endl;

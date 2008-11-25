@@ -37,7 +37,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qgroupbox.h>
+#include <QGroupBox>
 
 class QCheckBox;
 class QSpinBox;
@@ -54,14 +54,16 @@ class QSpinBox;
 // Creation:   Mon Oct 16 11:35:55 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 09:22:35 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisCompositeTransition : public QGroupBox
 {
     Q_OBJECT
 public:
-    QvisCompositeTransition(const QPixmap &, QWidget *parent, const char *name);
+    QvisCompositeTransition(const QPixmap &, QWidget *parent);
     virtual ~QvisCompositeTransition();
 
     void setNFrames(int);
@@ -71,7 +73,7 @@ public:
     bool getReverse() const;
 
 private:
-    QSpinBox *nFrames;
+    QSpinBox  *nFrames;
     QCheckBox *reverseCheckbox;
 };
 

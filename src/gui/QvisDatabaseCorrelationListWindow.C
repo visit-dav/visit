@@ -39,14 +39,14 @@
 #include <QvisDatabaseCorrelationListWindow.h>
 #include <QvisDatabaseCorrelationWindow.h>
 
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlistbox.h>
-#include <qpushbutton.h>
-#include <qtimer.h>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QListWidget>
+#include <QPushButton>
+#include <QTimer>
 
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
@@ -123,12 +123,15 @@ QvisDatabaseCorrelationListWindow::~QvisDatabaseCorrelationListWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisDatabaseCorrelationListWindow::CreateWindowContents()
 {
-    QGroupBox *correlationGroup = new QGroupBox(central, "correlationGroup");
+    QGroupBox *correlationGroup = new QGroupBox(central);
     correlationGroup->setTitle(tr("Database correlations"));
     topLayout->addWidget(correlationGroup, 5);
 
@@ -136,20 +139,22 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
     QVBoxLayout *innerCorrelationTopLayout = new QVBoxLayout(correlationGroup);
     innerCorrelationTopLayout->setMargin(10);
     innerCorrelationTopLayout->addSpacing(15);
-    QHBoxLayout *hLayout = new QHBoxLayout(innerCorrelationTopLayout);
+    QHBoxLayout *hLayout = new QHBoxLayout();
+    innerCorrelationTopLayout->addLayout(hLayout);
     hLayout->setSpacing(5);
 
     // Create buttons to manage the list of correlations.
-    QVBoxLayout *buttonLayout = new QVBoxLayout(hLayout);
-    newButton = new QPushButton(tr("New ..."), correlationGroup, "newButton");
+    QVBoxLayout *buttonLayout = new QVBoxLayout();
+    hLayout->addLayout(buttonLayout);
+    newButton = new QPushButton(tr("New ..."), correlationGroup);
     connect(newButton, SIGNAL(clicked()), this, SLOT(newCorrelation()));
     buttonLayout->addWidget(newButton);
 
-    editButton = new QPushButton(tr("Edit ..."), correlationGroup, "editButton");
+    editButton = new QPushButton(tr("Edit ..."), correlationGroup);
     connect(editButton, SIGNAL(clicked()), this, SLOT(editCorrelation()));
     buttonLayout->addWidget(editButton);
 
-    deleteButton = new QPushButton(tr("Delete"), correlationGroup, "deleteButton");
+    deleteButton = new QPushButton(tr("Delete"), correlationGroup);
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteCorrelation()));
     buttonLayout->addWidget(deleteButton);
     buttonLayout->addStretch(5);
@@ -157,56 +162,56 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
     //
     // Create the list of correlations.
     //
-    QVBoxLayout *vLayout = new QVBoxLayout(hLayout);
-    correlationListBox = new QListBox(correlationGroup, "correlationListBox");
-    connect(correlationListBox, SIGNAL(highlighted(int)),
+    QVBoxLayout *vLayout = new QVBoxLayout();
+    hLayout->addLayout(vLayout);
+    correlationListBox = new QListWidget(correlationGroup);
+    connect(correlationListBox, SIGNAL(currentRowChanged(int)),
             this, SLOT(highlightCorrelation(int)));
     vLayout->addWidget(correlationListBox, 10);
 
     //
     // Create the widgets for setting the correlation defaults.
     //
-    QGroupBox *automaticCorrelationGroup = new QGroupBox(central,
-        "automaticCorrelationGroup");
+    QGroupBox *automaticCorrelationGroup = new QGroupBox(central);
     automaticCorrelationGroup->setTitle(tr("Automatic database correlation"));
     topLayout->addWidget(automaticCorrelationGroup, 5);
 
     QVBoxLayout *innerACTopLayout = new QVBoxLayout(automaticCorrelationGroup);
-    innerACTopLayout->setMargin(10);
-    innerACTopLayout->addSpacing(15);
-    QGridLayout *adcLayout = new QGridLayout(innerACTopLayout, 3, 2);
+    //innerACTopLayout->setMargin(10);
+    //innerACTopLayout->addSpacing(15);
+    QGridLayout *adcLayout = new QGridLayout();
+    innerACTopLayout->addLayout(adcLayout);
     adcLayout->setSpacing(10);
 
     // Create the prompt user checkbox.
     promptUser = new QCheckBox(tr("Prompt before creating new correlation"),
-        automaticCorrelationGroup, "promptUser");
+                               automaticCorrelationGroup);
     connect(promptUser, SIGNAL(toggled(bool)),
             this, SLOT(promptUserChecked(bool)));
-    adcLayout->addMultiCellWidget(promptUser, 0, 0, 0, 1);
+    adcLayout->addWidget(promptUser, 0, 0, 1, 2);
 
     // Create the "When to correlate" combo box.
-    whenToCorrelate = new QComboBox(automaticCorrelationGroup, "whenToCorrelate");
-    whenToCorrelate->insertItem(tr("Always"));
-    whenToCorrelate->insertItem(tr("Never"));
-    whenToCorrelate->insertItem(tr("Same number of states"));
+    whenToCorrelate = new QComboBox(automaticCorrelationGroup);
+    whenToCorrelate->addItem(tr("Always"));
+    whenToCorrelate->addItem(tr("Never"));
+    whenToCorrelate->addItem(tr("Same number of states"));
     connect(whenToCorrelate, SIGNAL(activated(int)),
             this, SLOT(whenToCorrelateChanged(int)));
     adcLayout->addWidget(whenToCorrelate, 1,1);
-    adcLayout->addWidget(new QLabel(whenToCorrelate, 
-        tr("When to create correlation"), automaticCorrelationGroup), 1, 0);
+    adcLayout->addWidget(new QLabel(tr("When to create correlation")), 1, 0);
 
     // Create the default correlation method combo box.
-    defaultCorrelationMethod = new QComboBox(automaticCorrelationGroup,
-        "defaultCorrelationMethod");
-    defaultCorrelationMethod->insertItem(tr("Padded index"));
-    defaultCorrelationMethod->insertItem(tr("Stretched index"));
-    defaultCorrelationMethod->insertItem(tr("Time"));
-    defaultCorrelationMethod->insertItem(tr("Cycle"));
+    defaultCorrelationMethod = new QComboBox(automaticCorrelationGroup);
+    defaultCorrelationMethod->addItem(tr("Padded index"));
+    defaultCorrelationMethod->addItem(tr("Stretched index"));
+    defaultCorrelationMethod->addItem(tr("Time"));
+    defaultCorrelationMethod->addItem(tr("Cycle"));
     connect(defaultCorrelationMethod, SIGNAL(activated(int)),
             this, SLOT(defaultCorrelationMethodChanged(int)));
     adcLayout->addWidget(defaultCorrelationMethod, 2,1);
-    adcLayout->addWidget(new QLabel(defaultCorrelationMethod, 
-        tr("Default correlation method"), automaticCorrelationGroup), 2, 0);
+    adcLayout->addWidget(new QLabel(tr("Default correlation method"), 
+                                    automaticCorrelationGroup), 2, 0);
+    topLayout->addStretch(2);
 }
 
 // ****************************************************************************
@@ -225,6 +230,9 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
 // Modifications:
 //   Brad Whitlock, Fri Dec 14 17:02:52 PST 2007
 //   Made it use ids.
+//
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -261,12 +269,12 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
         {
             const DatabaseCorrelation &c = correlationList->GetCorrelations(i);
             nameMap[shortNames[i]] = c.GetName();
-            correlationListBox->insertItem(shortNames[i].c_str());
+            correlationListBox->addItem(shortNames[i].c_str());
         }
 
         correlationListBox->setEnabled(nC > 1);
         if(nC > 0)
-            correlationListBox->setCurrentItem(0);
+            correlationListBox->setCurrentRow(0);
         highlightedCorrelation = (nC > 0) ? 0 : -1;
         correlationListBox->blockSignals(false);
 
@@ -286,7 +294,7 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
     if(correlationList->IsSelected(DatabaseCorrelationList::ID_defaultCorrelationMethod) || doAll)
     {
         defaultCorrelationMethod->blockSignals(true);
-        defaultCorrelationMethod->setCurrentItem(
+        defaultCorrelationMethod->setCurrentIndex(
             correlationList->GetDefaultCorrelationMethod());
         defaultCorrelationMethod->blockSignals(false);
     }
@@ -294,7 +302,7 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
     if(correlationList->IsSelected(DatabaseCorrelationList::ID_whenToCorrelate) || doAll)
     {
         whenToCorrelate->blockSignals(true);
-        whenToCorrelate->setCurrentItem((int)correlationList->GetWhenToCorrelate());
+        whenToCorrelate->setCurrentIndex((int)correlationList->GetWhenToCorrelate());
         whenToCorrelate->blockSignals(false);
     }
 }
@@ -316,7 +324,9 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
 // Creation:   Mon Mar 29 12:17:18 PDT 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -330,8 +340,8 @@ QvisDatabaseCorrelationListWindow::UpdateButtons()
     {
         // Get the name of the correlation from the list box and send
         // it through nameMap because we likely shortened the name.
-        std::string shortName(correlationListBox->text(highlightedCorrelation).
-            latin1());
+        QString hl_name = correlationListBox->item(highlightedCorrelation)->text();
+        std::string shortName = hl_name.toStdString();
         std::string realName(nameMap[shortName]);
 
         // Search for the correlation in the correlation list.
@@ -465,6 +475,9 @@ QvisDatabaseCorrelationListWindow::showNormal()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -479,7 +492,7 @@ QvisDatabaseCorrelationListWindow::newCorrelation()
     do
     {
         newName.sprintf("Correlation%02d", newCorrelationCounter++);
-    } while(correlationList->FindCorrelation(newName.latin1()) != 0);
+    } while(correlationList->FindCorrelation(newName.toStdString()) != 0);
 
     //
     // Create a new correlation window and set it up so that when you click
@@ -488,12 +501,12 @@ QvisDatabaseCorrelationListWindow::newCorrelation()
     QString caption(tr("Create database correlation: "));
     caption += newName;
     QvisDatabaseCorrelationWindow *win = new QvisDatabaseCorrelationWindow(
-        newName, caption.latin1());
+        newName, caption);
     connect(win, SIGNAL(deleteMe(QvisWindowBase *)),
             this, SLOT(deleteWindow(QvisWindowBase *)));
     activeCorrelationWindows.push_back(win);
     win->show();
-    win->setActiveWindow();
+    win->activateWindow();
 }
 
 // ****************************************************************************
@@ -510,6 +523,9 @@ QvisDatabaseCorrelationListWindow::newCorrelation()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -518,7 +534,8 @@ QvisDatabaseCorrelationListWindow::editCorrelation()
     // Show a dialog to make the user type a name.
     if(highlightedCorrelation >= 0)
     {
-        std::string shortName(correlationListBox->text(highlightedCorrelation).latin1());
+        QString hl_name = correlationListBox->item(highlightedCorrelation)->text();
+        std::string shortName = hl_name.toStdString();
         std::string realName(nameMap[shortName]);
 
         //
@@ -530,12 +547,12 @@ QvisDatabaseCorrelationListWindow::editCorrelation()
         {
             QString caption(tr("Alter database correlation: %1").arg(realName.c_str()));
             QvisDatabaseCorrelationWindow *win = new QvisDatabaseCorrelationWindow(
-                *c, caption.latin1());
+                *c, caption);
             connect(win, SIGNAL(deleteMe(QvisWindowBase *)),
                     this, SLOT(deleteWindow(QvisWindowBase *)));
             activeCorrelationWindows.push_back(win);
             win->show();
-            win->setActiveWindow();
+            win->activateWindow();
         }
     }
 }
@@ -551,7 +568,9 @@ QvisDatabaseCorrelationListWindow::editCorrelation()
 // Creation:   Mon Mar 29 12:21:12 PDT 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -559,7 +578,8 @@ QvisDatabaseCorrelationListWindow::deleteCorrelation()
 {
     if(highlightedCorrelation >= 0)
     {
-        std::string shortName(correlationListBox->text(highlightedCorrelation).latin1());
+        QString hl_name = correlationListBox->item(highlightedCorrelation)->text();
+        std::string shortName = hl_name.toStdString();
         std::string realName(nameMap[shortName]);
         GetViewerMethods()->DeleteDatabaseCorrelation(realName);
         editButton->setEnabled(false);

@@ -36,12 +36,14 @@
 *
 *****************************************************************************/
 
-#include <stdio.h>
 #include <QvisAnnotationObjectInterface.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qtimer.h>
+
+#include <QApplication>
+#include <QLayout>
+#include <QLineEdit>
+#include <QKeyEvent>
+#include <QSpinBox>
+#include <QTimer>
 #include <QvisScreenPositionEdit.h>
 
 #include <AnnotationObject.h>
@@ -61,17 +63,18 @@
 // Creation:   Wed Nov 5 12:00:18 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun 26 13:51:22 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisAnnotationObjectInterface::QvisAnnotationObjectInterface(QWidget *parent,
-    const char *name) : QGroupBox(parent, name), GUIBase()
+QvisAnnotationObjectInterface::QvisAnnotationObjectInterface(QWidget *parent) :
+    QGroupBox(parent), GUIBase()
 {
     annot = 0;
 
     topLayout = new QVBoxLayout(this);
     topLayout->setMargin(10);
-    topLayout->addSpacing(10);
 }
 
 // ****************************************************************************
@@ -223,26 +226,16 @@ QvisAnnotationObjectInterface::SetUpdate(bool val)
 // Creation:   Wed Nov 5 12:17:18 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun 26 13:53:20 PDT 2008
+//   Use base class method to parse the line edit.
+//
 // ****************************************************************************
 
 bool
 QvisAnnotationObjectInterface::GetCoordinate(QLineEdit *le, double c[3],
     bool force2D)
 {
-    QString temp(le->displayText().stripWhiteSpace());
-
-    bool okay = !temp.isEmpty();
-    if (okay)
-    {
-        okay = (sscanf(temp.latin1(), "%lg %lg %lg", &c[0], &c[1], &c[2]) == 3);
-        if(!okay)
-            okay = (sscanf(temp.latin1(), "%lg %lg", &c[0], &c[1]) == 2);
-        if(force2D)
-            c[2] = 0.;
-    }
-
-    return okay;
+    return LineEditGetDoubles(le, c, force2D ? 2 : 3);
 }
 
 // ****************************************************************************
@@ -429,24 +422,11 @@ QvisAnnotationObjectInterface::GetScreenPosition2(QvisScreenPositionEdit *spe,
 // Creation:   Mon Mar 6 14:21:40 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 QvisAnnotationObjectInterface::ForceSpinBoxUpdate(QSpinBox *sb)
 {
-    // Block signals.
-    sb->blockSignals(true);
-
-    // textChanged is protected and the compiler does not let us call
-    // it directly so call it as a slot. We do this to make the spin box
-    // think that it has new text input so it will parse it again when
-    // we call value().
-    QTimer::singleShot(0, sb, SLOT(textChanged()));
-
-    // Call the value function to make the spin box parse the new value.
-    sb->value();
-
-    // Let the spinbox emit signals again.
-    sb->blockSignals(false);
+// No longer needed...
 }

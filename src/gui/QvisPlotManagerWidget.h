@@ -39,32 +39,33 @@
 #ifndef QVIS_PLOT_MANAGER_WIDGET_H
 #define QVIS_PLOT_MANAGER_WIDGET_H
 #include <gui_exports.h>
-#include <qaction.h>
-#include <qpopupmenu.h>
 #include <vector>
 #include <string>
-#include <qwidget.h>
-#include <qstringlist.h>
+
+#include <QAction>
+#include <QMenu>
+#include <QStringList>
+#include <QWidget>
+
 #include <GUIBase.h>
 #include <SimpleObserver.h>
 #include <VariableMenuPopulator.h>
 
 // Forward declarations.
-class  avtDatabaseMetaData;
+class  Plot;
 class  PlotList;
 class  ExpressionList;
 class  FileServerList;
 class  GlobalAttributes;
-class  PluginManagerAttributes;
 class  WindowInformation;
 
 class  QComboBox;
 class  QGridLayout;
 class  QLabel;
-class  QListBoxItem;
+class  QListWidgetItem;
 class  QCheckBox;
 class  QMenuBar;
-class  QPopupMenu;
+class  QMenu;
 class  QPushButton;
 struct QualifiedFilename;
 class  QvisPlotListBox;
@@ -75,11 +76,11 @@ typedef struct
 {
     QString                pluginName;
     QString                menuName;
-    QIconSet               icon;
+    QIcon                  icon;
     QvisVariablePopupMenu *varMenu;
     int                    varTypes;
     int                    varMask;
-    int                    id;
+    QAction               *action;
 } PluginEntry;
 
 typedef std::vector<PluginEntry> PluginEntryVector;
@@ -197,6 +198,12 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Fri Apr 25 10:22:11 PDT 2008
 //   Use QString for plot and operator names to support internationalization.
 //
+//   Cyrus Harrison, Thu Jul  3 09:16:15 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Tue Sep  9 10:40:33 PDT 2008
+//   Removed metaData and pluginAtts since they were not used.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -204,8 +211,7 @@ class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
 {
     Q_OBJECT
 public:
-    QvisPlotManagerWidget(QMenuBar *menuBar, QWidget *parent = 0,
-        const char *name = 0);
+    QvisPlotManagerWidget(QMenuBar *menuBar, QWidget *parent = 0);
     ~QvisPlotManagerWidget();
     virtual void Update(Subject *);
     virtual void SubjectRemoved(Subject *);
@@ -213,15 +219,14 @@ public:
     void ConnectFileServer(FileServerList *);
     void ConnectGlobalAttributes(GlobalAttributes *);
     void ConnectExpressionList(ExpressionList *);
-    void ConnectPluginManagerAttributes(PluginManagerAttributes *);
     void ConnectWindowInformation(WindowInformation *);
-    void ConnectDatabaseMetaData(avtDatabaseMetaData *);
 
     void AddPlotType(const QString &plotName, const int varTypes,
                      const char **iconData = 0);
     void AddOperatorType(const QString &operatorName, const int varTypes,
                          const int varMask, bool userSelectable,
                          const char **iconData = 0);
+    void FinishAddingOperators();
     void EnablePluginMenus();
 
     void SetSourceVisible(bool);
@@ -238,8 +243,8 @@ public slots:
     
 signals:
     void activateSubsetWindow();
-    void activatePlotWindow(int index);
-    void activateOperatorWindow(int index);
+    void activatePlotWindow(int);
+    void activateOperatorWindow(int);
     void addPlot(int, const QString &);
     void addOperator(int);
 protected:
@@ -258,6 +263,7 @@ private:
     void UpdateSourceList(bool updateActiveSourceOnly);
     void UpdatePlotAndOperatorMenuEnabledState();
     void UpdateHideDeleteDrawButtonsEnabledState() const;
+
 private slots:
     void setActivePlots();
     void hidePlots();
@@ -268,9 +274,12 @@ private slots:
     void promoteOperator(int operatorIndex);
     void demoteOperator(int operatorIndex);
     void removeOperator(int operatorIndex);
+    
+    void activatePlotWindow(QAction *);
+    void activateOperatorWindow(QAction *);
 
     void addPlotHelper(int plotType, const QString &varName);
-    void operatorAction(int);
+    void operatorAction(QAction *);
     void applyOperatorToggled(bool val);
     void applySelectionToggled(bool val);
     void sourceChanged(int);
@@ -289,22 +298,24 @@ private:
     QPushButton             *drawButton;
     QCheckBox               *applyOperatorToggle;
     QCheckBox               *applySelectionToggle;
-    QPopupMenu              *WindowChoiceMenu;  
+    QMenu                   *WindowChoiceMenu;  
     QAction                 *win1Act;
     QAction                 *win2Act;
 
     // Menu widgets
     QMenuBar                *plotMenuBar;
-    QPopupMenu              *plotMenu;
-    int                      plotMenuId;
-    QPopupMenu              *plotAttsMenu;
-    int                      plotAttsMenuId;
-    QPopupMenu              *operatorAttsMenu;
-    int                      operatorAttsMenuId;
+    QMenu                   *plotMenu;
+    QAction                 *plotMenuAct;
+    QMenu                   *plotAttsMenu;
+    QAction                 *plotAttsMenuAct;
+    QMenu                   *operatorAttsMenu;
+    QAction                 *operatorAttsMenuAct;
     QvisVariablePopupMenu   *varMenu;
-    int                      varMenuId;
-    QPopupMenu              *operatorMenu;
-    int                      operatorMenuId;
+    QAction                 *varMenuAct;
+    QMenu                   *operatorMenu;
+    QAction                 *operatorMenuAct;
+    QAction                 *operatorRemoveLastAct;
+    QAction                 *operatorRemoveAllAct;
 
     bool                     updatePlotVariableMenuEnabledState;
     bool                     updateOperatorMenuEnabledState;
@@ -320,11 +331,9 @@ private:
     bool                     pluginsLoaded;
 
     // State objects that this window observes.
-    avtDatabaseMetaData     *metaData;
     PlotList                *plotList;
     GlobalAttributes        *globalAtts;
     ExpressionList          *exprList;
-    PluginManagerAttributes *pluginAtts;
     WindowInformation       *windowInfo;
     
 };

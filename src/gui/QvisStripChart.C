@@ -37,10 +37,13 @@
 *****************************************************************************/
 
 #include "QvisStripChart.h"
-#include <qtimer.h>
 #include <math.h>
-#include <qpen.h>
-#include <qfont.h>
+
+#include <QFont>
+#include <QPainter>
+#include <QPen>
+#include <QScrollArea>
+#include <QTimer>
 
 // ****************************************************************************
 // Method: VisItSimStripChart::VisItSimStripChart
@@ -68,19 +71,24 @@
 //    Shelly Prevost Wed Oct 10 11:27:08 PDT 2007 
 //    added support for current cycle display.
 //
+//    Brad Whitlock, Tue Jul  8 09:59:25 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 
-VisItSimStripChart::VisItSimStripChart( QWidget *parent, const char *name, int winX, int winY )
-    : QWidget( parent, name, WStaticContents )
+VisItSimStripChart::VisItSimStripChart(QWidget *parent, int winX, int winY )
+    : QWidget(parent)
 {
-    setBackgroundColor( white );  // white background
+    QPalette pal(palette());
+    pal.setColor(QPalette::Background, Qt::white);
+    setPalette(pal);
+
     down = FALSE;
     delta = 0;
     vdelta = 0;
     winXSize = winX;
     winYSize = winY;
-    QPainter paint( this );
     maxPoint = 1.0;
     minPoint =-1.0;
     minData = HUGE_VAL;
@@ -101,7 +109,7 @@ VisItSimStripChart::VisItSimStripChart( QWidget *parent, const char *name, int w
     // controls maximum amount you can zoom out.
     zoomOutLimit = 0.001;
     pointSize = 14;
-    gridFont = new QFont("Helvetica",pointSize);
+    gridFont = new QFont("Helvetica");
     setFont(*gridFont);
     currentData =0;
     currentCycle =0;
@@ -146,9 +154,12 @@ VisItSimStripChart::~VisItSimStripChart()
 //   Added zoom and focus controls. 
 //
 //   Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
-//   added setPointSize call to update font size. 
+//   added setPointSize call to update font size.
+//
+//   Brad Whitlock, Tue Jul  8 10:00:54 PDT 2008
+//   Qt 4.
+// 
 // ****************************************************************************
-
 
 void VisItSimStripChart::paintEvent( QPaintEvent * )
 {
@@ -181,7 +192,7 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
         //  Set the pen width and color
         penLimits.setWidth(2);
         // set pen color to normal
-        penLimits.setColor(darkGreen);
+        penLimits.setColor(Qt::darkGreen);
         VisItPointD startPoint(0,0);
         startPoint.setX( (*it).x() - startOffset.x());
         startPoint.setY( (*it).y() - startOffset.y());
@@ -197,7 +208,7 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
                 endPoint.y() > maxYLimit || endPoint.y() < minYLimit )
             {
                 // set pen color to out of limits
-                penLimits.setColor(red);
+                penLimits.setColor(Qt::red);
             }
         }
         paint.setPen( penLimits );
@@ -222,7 +233,7 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
         // draw limit extents
         if ( outOfBandLimitsEnabled )
         {
-            penLimits.setColor(red);
+            penLimits.setColor(Qt::red);
             penLimits.setWidth(3);
             paint.setPen( penLimits ); 
             paint.drawLine( QPoint(int(0),int(h-((maxYLimit)-minPoint)*vdelta)), QPoint(int(w),int(h-((maxYLimit-minPoint)*vdelta)))); // draw line
@@ -251,6 +262,10 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
 //
 //    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
 //    added gridRes variable and dynamic grid resolution base on zoom
+//
+//    Brad Whitlock, Tue Jul  8 10:03:45 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 void VisItSimStripChart::paintGrid(QPainter *paint)
@@ -267,13 +282,13 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
     for ( int i=int(0); i<last*delta; i+= int(delta*10)) 
     {   
         // draw verticle lines
-        paint->setPen( darkGray ); // set pen color
-        paint->drawLine( QPoint(int(i+timeShift),int(0)), QPoint(i+timeShift,int(h*5.0) )); // draw line
+        paint->setPen(Qt::darkGray); // set pen color
+        paint->drawLine(QPoint(int(i+timeShift),int(0)), QPoint(i+timeShift,int(h*5.0) )); // draw line
     }    
 
     for ( float i=-range; i<=range*5.0; i+=range/gridRes)
     {// draw horizontal lines
-        paint->setPen( black ); // set pen color
+        paint->setPen(Qt::black); // set pen color
         paint->drawLine( QPoint(int(0),int(h-(i*vdelta))), QPoint(int(w),int(h-(i*vdelta)))); // draw line
         paint->drawText( int(0),   int(h-(i*vdelta)), QString::number(i+minPoint));
         // be careful not to draw over the other numbers.
@@ -283,11 +298,11 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
         for ( int t=int(0); t<int(last*delta); t+=int(delta)) 
         {
             // draw verticle tick lines
-            paint->setPen( darkGray ); // set pen color
+            paint->setPen(Qt::darkGray); // set pen color
             paint->drawLine( QPoint(t+timeShift,int(h-(-delta+i*vdelta))), QPoint(t+timeShift,int(h-(delta+i*vdelta )))); // draw line
         }
     }    
-    setCaption(tr("Strip Chart"));
+    setWindowTitle(tr("Strip chart"));
 }
 
 
@@ -595,8 +610,6 @@ bool VisItSimStripChart::getEnableLogScale()
 // ****************************************************************************
 void VisItSimStripChart::mouseMoveEvent( QMouseEvent *e )
 {
-    QPainter paint( this );
-
 }
 
 // ****************************************************************************
@@ -747,7 +760,6 @@ void VisItSimStripChart::reset()
 
     delta = 0;
     vdelta = 0;
-    QPainter paint( this );
     maxPoint = 1.0;
     minPoint =-1.0;
     minData = HUGE_VAL;
@@ -773,8 +785,10 @@ void VisItSimStripChart::reset()
     // controls maximum amount you can zoom out.
     zoomOutLimit = 0.001;
     pointSize = 14;
-    gridFont = new QFont("Helvetica",pointSize);
+    gridFont = new QFont("Helvetica");
     setFont(*gridFont);
+
+    update();
 }
 
 
@@ -794,12 +808,13 @@ void VisItSimStripChart::reset()
 //    Fixed the focus function to work properly under different
 //    zoom levels.
 //
+//    Brad Whitlock, Tue Jul  8 10:07:20 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
-void VisItSimStripChart::focus(QScrollView *sc)
+void VisItSimStripChart::focus(QScrollArea *sc)
 {
-    
-    sc->center( width(), currentScaledY);
-    sc->updateContents();
+    sc->ensureVisible( width(), currentScaledY);
 }
 

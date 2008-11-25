@@ -37,10 +37,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qgridview.h>
-#include <qmap.h>
-#include <qvaluelist.h>
-#include <qpixmap.h>
+#include <QTableView>
 
 // ****************************************************************************
 // Class: QvisSequenceView
@@ -54,14 +51,16 @@
 // Creation:   Wed Oct 4 12:33:24 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Oct 17 14:27:20 PDT 2008
+//   Total rewrite for Qt 4.
+//
 // ****************************************************************************
 
-class QvisSequenceView : public QGridView
+class QvisSequenceView : public QTableView
 {
     Q_OBJECT
 public:
-    QvisSequenceView(QWidget *parent, const char *name = 0);
+    QvisSequenceView(QWidget *parent);
     virtual ~QvisSequenceView();
 
     void clear();
@@ -72,9 +71,10 @@ public:
                                const QPixmap &pix, int seqType = 0);
     void removeSequence(const QString &name);
 
-    int getNumberOfSequencesInViewport(const QString &vpt) const;
     bool getSequenceInViewport(const QString &vpName, int index,
                                QString &, int &) const;
+    void selectSequence(const QString &name);
+
 signals:
     void updatedMapping(const QString &vp1,
                         const QStringList &seqList1);
@@ -82,56 +82,6 @@ signals:
                         const QStringList &seqList1,
                         const QString &vp2,
                         const QStringList &seqList2);
-protected:
-    virtual void paintCell(QPainter *p, int row, int col);
-
-    virtual void contentsMouseMoveEvent(QMouseEvent* e);
-    virtual void contentsMousePressEvent(QMouseEvent* e);
-    virtual void contentsMouseReleaseEvent(QMouseEvent* e);
-
-    virtual void drawContents(QPainter *p, int clipx, int clipy, 
-                              int clipw, int cliph);
-
-private:
-    bool getCellInformation(int row, int col, QString &txt, QPixmap &pix, int &t) const;
-
-    struct QSequenceData
-    {
-        QString name;
-        QPixmap pixmap;
-        int     seqType;
-    };
-
-    struct DropData
-    {
-        QString name;
-        int     index;
-        QRect   site;
-    };
-    typedef QValueList<QSequenceData> QSequenceDataList;
-    typedef QValueList<DropData>      DropDataList;
-
-    typedef QMap<QString, QSequenceDataList> QStringQSequenceDataListMap;
-
-    void drawCellContents(QPainter *p, int row, int col);
-    void drawCellContentsAt(QPainter *p, const QRect &r, int row, int col);
-    void drawDropSitesThatIntersect(QPainter *p, const QRect &clip);
-    void drawCellContentsOverlay(QPainter *p, const QRect &r, int row, int col);
-
-    bool getViewportName(int row, QString &name) const;
-    bool getSequenceInformation(const QString &vpName, int index,
-                                QSequenceData&) const;
-    void insertSequenceInViewport(const QString &vpt, int index,
-                                  const QSequenceData &);
-    void printContents() const;
-
-    QStringQSequenceDataListMap sequencesPerViewport;
-    int                         nRowsExist;
-    int                         nColsExist;
-
-    DropDataList                dropSites;
-    int                         dropSiteIndex;
-    int                         srcRow, srcCol;
 };
 
 #endif

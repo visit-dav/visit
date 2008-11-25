@@ -268,7 +268,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     // Note that this only works because we've made the GenericDisplayId 
     // method return the GL widget pointer. On other platforms where 
     // the display is actually used for something, this does not work.
-    typedef struct { int x,y,w,h; void *handle; } OverlayInfo;
+    typedef struct { int x,y,w,h; } OverlayInfo;
     OverlayInfo *info = (OverlayInfo *)window->GetGenericDisplayId();
     int H = info->h;
 
@@ -283,7 +283,6 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
         wRect.right = info->x + info->w;
         wRect.top = info->y;
         wRect.bottom = info->y + info->h;
-        QDLocalToGlobalRect(GetWindowPort((WindowPtr)info->handle), &wRect );
         
         // Try and create the overlay window.        
         overlay = new vtkDashedXorGridMapper2DOverlay;

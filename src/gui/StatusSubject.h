@@ -39,7 +39,7 @@
 #ifndef STATUS_SUBJECT_H
 #define STATUS_SUBJECT_H
 #include <Subject.h>
-#include <qstring.h>
+#include <QString>
 
 // *******************************************************************
 // Class: StatusSubject

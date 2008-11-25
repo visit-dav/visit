@@ -105,11 +105,13 @@ std::vector<std::string> UTILITY_API SplitValues(const std::string &buff,
 
 std::string UTILITY_API GetVisItInstallationDirectory();
 std::string UTILITY_API GetVisItInstallationDirectory(const char *version);
+bool        UTILITY_API ReadInstallationInfo(std::string &distName, 
+                                             std::string &configName, 
+                                             std::string &bankName);
+
 std::string UTILITY_API GetVisItArchitectureDirectory();
 std::string UTILITY_API GetVisItArchitectureDirectory(const char *version);
 std::string UTILITY_API GetVisItLauncher();
-void        UTILITY_API SetIsDevelopmentVersion(bool val);
-bool        UTILITY_API GetIsDevelopmentVersion();
 
 std::string UTILITY_API GetUserVisItDirectory();
 UTILITY_API char *      GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
@@ -128,9 +130,14 @@ bool        UTILITY_API VisItInitExtentsToLimits(double *exts, int n);
 bool        UTILITY_API VisItInitExtentsToLimits(float *exts, int n);
 bool        UTILITY_API VisItInitExtentsToLimits(int *exts, int n);
 
-int  UTILITY_API GetVisItVersionFromString(const char*, int&, int&, int&);
-bool UTILITY_API VisItVersionsCompatible(const char*, const char*);
+// Version functions
+int         UTILITY_API GetVisItVersionFromString(const char*, int&, int&, int&);
+bool        UTILITY_API VisItVersionsCompatible(const char*, const char*);
+bool        UTILITY_API VersionGreaterThan(const std::string &v1, const std::string &v2);
+void        UTILITY_API SetIsDevelopmentVersion(bool val);
+bool        UTILITY_API GetIsDevelopmentVersion();
 
+// NOTE: Put these in their own header.
 void UTILITY_API PutOnSameXIntervals(int on1, const float *ox1, 
         const float *oy1, int on2, const float *ox2, const float *oy2,
         floatVector &usedX, floatVector &newCurve1Vals,

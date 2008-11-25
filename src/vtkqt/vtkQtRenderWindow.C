@@ -41,19 +41,20 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   
   =========================================================================*/
+
+#include <QtCore>
+
+#ifdef Q_WS_X11
+#include <QX11Info>
+#endif
+
 #include "vtkQtRenderWindow.h"
 #include "vtkQtRenderWindowInteractor.h"
 #include "vtkQtGLWidget.h"
 
-#ifdef Q_WS_X11
-#include <X11/Xlib.h>
-#endif
-
 #include <vtkFloatArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkRendererCollection.h>
-
-#include <qcursor.h>
 
 #define MAX_LIGHTS 8
 
@@ -87,9 +88,9 @@ vtkQtRenderWindow* vtkQtRenderWindow::New() {
     }
 
     // Create the render window as a child of the parent widget.
-    vtkQtRenderWindow *tmp = new vtkQtRenderWindow(parentForAllWindows, WType_TopLevel);
+    vtkQtRenderWindow *tmp = new vtkQtRenderWindow(parentForAllWindows, Qt::Window);
 #else
-    vtkQtRenderWindow *tmp = new vtkQtRenderWindow(0, WType_TopLevel);
+    vtkQtRenderWindow *tmp = new vtkQtRenderWindow(0, Qt::Window);
 #endif
 
     return tmp;
@@ -128,14 +129,22 @@ int vtkQtRenderWindow::GetGlobalMaximumNumberOfMultiSamples() {
 //   Brad Whitlock, Wed Mar 12 10:04:38 PDT 2003
 //   I added hide and show callbacks.
 //
+//   Brad Whitlock, Thu May  8 16:19:05 PDT 2008
+//   Qt 4.
+//
 //   Brad Whitlock, Wed Aug 20 09:47:48 PDT 2008
 //   Removed all but 2 arguments.
 //
 // ****************************************************************************
 
-vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, WFlags f)
-    : vtkRenderWindow(), QMainWindow(parent, 0, f)
+vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f)
+    : vtkRenderWindow(), QMainWindow(parent, f)
 {
+    // Make sure that we get the window flags that we've specified. The
+    // QMainWindow class seems to override them so we have to set them  
+    // again.
+    this->setWindowFlags(f);
+
     vtkDebugMacro(<< " vtkQtRenderWindow constructor\n");
     this->WindowName = 0;
     this->Interactor = NULL;
@@ -154,12 +163,17 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, WFlags f)
     // Set the window name
     SetWindowName("window 1");
 
-    setFocusPolicy(QWidget:: WheelFocus);
-    setBackgroundMode(QWidget::NoBackground);
+    setFocusPolicy(Qt::WheelFocus);
+    setAutoFillBackground(false);
 
     // Create the GL widget.
-    gl = new vtkQtGLWidget(this, "vtkQtGLWidget");
+    gl = new vtkQtGLWidget(this);
     setCentralWidget(gl);
+
+    usesBigPixmaps = false;
+    setIconSize(QSize(20,20));
+
+    setAnimated(false);
 }
 
 #include <qtoolbar.h>
@@ -326,51 +340,6 @@ vtkQtRenderWindow::closeEvent(QCloseEvent *e)
 }
 
 // ****************************************************************************
-// Method: vtkQtRenderWindow::paintEvent
-//
-// Purpose: 
-//   This method handles paint events for the window.
-//
-// Arguments:
-//   pe : The paint event to process.
-//
-// Returns:    
-//
-// Note:       We have to draw the toolbar background ourselves because we've
-//             told the main window (this widget) not to erase in the background
-//             color before calling this method. We told it not to erase so
-//             it does not erase the area behind the GL widget and cause flicker.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Jan 27 17:09:02 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-vtkQtRenderWindow::paintEvent(QPaintEvent *pe)
-{
-    // Determine the area of the window occupied by the toolbars.
-    QRegion whole(QRect(0, 0, width(), height()));
-    QRegion glRegion(QRect(gl->x(), gl->y(), gl->width(), gl->height()));
-    QRegion toolArea = whole.subtract(glRegion);
-    QRegion updateArea(pe->region().intersect(toolArea));
-
-    if(!updateArea.isEmpty() && !updateArea.isNull())
-    {
-        QPainter paint(this);
-        // Only allow updates where the update area intersects the toolbar area.
-        paint.setClipRegion(updateArea);
-        // Draw a filled rectangle over the entire window. Most should be
-        // clipped away because the toolbars only take up a smaller portion
-        // of the window.
-        QBrush brush(colorGroup().button());
-        paint.fillRect(rect(), brush);
-    }
-}
-
-// ****************************************************************************
 // Method: vtkQtRenderWindow::hideEvent
 //
 // Purpose: 
@@ -483,21 +452,24 @@ vtkQtRenderWindow::mapFromGlobal(const QPoint &pos) const
 // Creation:   Wed Jan 29 14:19:41 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May  8 16:38:33 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void *
 vtkQtRenderWindow::CreateToolbar(const char *name)
 {
-// Maybe we should do dock windows instead...
-    QToolBar *tools = new QToolBar(this, name);
-    if(tools)
+    void *t = (void *)this->addToolBar(name);
+    bool vertical = false;
+    if(strcmp(name, "Plots") == 0 || strcmp(name, "Operators") == 0) // hack for now
     {
-        tools->setBackgroundMode(QWidget::PaletteButton);
-        tools->setLabel(name);
+        this->addToolBar(Qt::LeftToolBarArea, (QToolBar *)t);
+        this->addToolBarBreak(Qt::LeftToolBarArea);
     }
-
-    return (void *)tools;
+    if(strcmp(name, "Lock") == 0) // hack
+        this->addToolBarBreak();
+    return t;
 }
 
 // ****************************************************************************
@@ -513,14 +485,22 @@ vtkQtRenderWindow::CreateToolbar(const char *name)
 // Creation:   Tue Mar 16 09:31:47 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May  8 16:50:44 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 vtkQtRenderWindow::SetLargeIcons(bool val)
 {
-    if(usesBigPixmaps() != val)
-        setUsesBigPixmaps(val);
+    if(usesBigPixmaps != val)
+    {
+        usesBigPixmaps = val;
+        if(usesBigPixmaps)
+            setIconSize(QSize(32,32));
+        else
+            setIconSize(QSize(20,20));
+    }
 }
 
 // ****************************************************************************
@@ -552,6 +532,9 @@ vtkQtRenderWindow::SetLargeIcons(bool val)
 //   Brad Whitlock, Fri May 16 9:23:23 PDT 2003
 //   I added a MacOS X implementation.
 //
+//   Brad Whitlock
+//   Qt 4.4.0
+//
 // ****************************************************************************
 
 void *
@@ -560,7 +543,7 @@ vtkQtRenderWindow::GetGenericContext()
 #if defined(Q_WS_X11)
     static GC gc = (GC) NULL; 
 
-    if (!gc) gc = XCreateGC(gl->x11Display(), gl->winId(), 0, 0);
+    if (!gc) gc = XCreateGC(QX11Info::display(), QX11Info::appRootWindow(), 0, 0);
 
     return (void *) gc;
 #elif defined(Q_WS_WIN)
@@ -607,7 +590,7 @@ vtkQtRenderWindow::SetWindowName(const char *name)
 
         this->WindowName = new char[len + 1];
         strcpy(this->WindowName, name);
-        setCaption(this->WindowName);
+        setAccessibleName(this->WindowName); // IS this right?
     }
 }
 
@@ -889,22 +872,27 @@ void vtkQtRenderWindow::SetSize(int a[2])       { this->SetSize(a[0], a[1]); }
 int* vtkQtRenderWindow::GetSize()               { return this->Size; }
 
 // Added by LLNL
+//
+// Modifications:
+//   Brad Whitlock, Wed May 28 11:58:12 PDT 2008
+//   Qt 4.
+//
 void *vtkQtRenderWindow::GetGenericDisplayId()
 {
 #if defined(Q_WS_WIN)
     return (void *)qt_display_dc();
 #elif defined(Q_WS_X11)
-    return (void *)this->x11Display();
+    return (void *)QX11Info::display();
 #elif defined(Q_WS_MACX)
     // Return the information about the GL widget so we can create a
     // transparent window over it.
-    typedef struct { int x,y,w,h; void *handle; } OverlayInfo;
+    typedef struct { int x,y,w,h; } OverlayInfo;
     OverlayInfo *info = new OverlayInfo;
-    info->x = gl->x();
-    info->y = gl->y();
+    QPoint tl(gl->mapToGlobal(QPoint(0,0)));
+    info->x = tl.x();
+    info->y = tl.y();
     info->w = gl->width();
     info->h = gl->height();
-    info->handle = (void *)gl->handle();
     return (void *)info;
 #endif
 };
@@ -956,7 +944,7 @@ vtkQtRenderWindow::SetStereoCapableWindow(int capable)
 void
 vtkQtRenderWindow::HideCursor()
 {
-    qApp->setOverrideCursor(BlankCursor);
+    qApp->setOverrideCursor(Qt::BlankCursor);
 }
 
 // ****************************************************************************

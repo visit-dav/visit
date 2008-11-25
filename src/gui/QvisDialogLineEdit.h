@@ -1,5 +1,5 @@
-#ifndef QVIS_DIRECTORY_LINE_EDIT_H
-#define QVIS_DIRECTORY_LINE_EDIT_H
+#ifndef QVIS_DIALOG_LINE_EDIT_H
+#define QVIS_DIALOG_LINE_EDIT_H
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
@@ -37,7 +37,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qhbox.h>
+#include <QWidget>
 #include <gui_exports.h>
 
 class QLineEdit;
@@ -58,9 +58,12 @@ class QPushButton;
 //   Brad Whitlock, Fri Mar 16 15:01:10 PST 2007
 //   Renamed the class and added the ChooseFont option.
 //
+//   Brad Whitlock, Thu Jun 19 11:23:38 PDT 2008
+//   QT 4.
+//
 // ****************************************************************************
 
-class GUI_API QvisDialogLineEdit : public QHBox
+class GUI_API QvisDialogLineEdit : public QWidget
 {
     Q_OBJECT
 public:
@@ -71,7 +74,7 @@ public:
         ChooseFont
     } DialogMode;
 
-    QvisDialogLineEdit(QWidget *parent, const char *name);
+    QvisDialogLineEdit(QWidget *parent);
     virtual ~QvisDialogLineEdit();
 
     void setText(const QString &);
@@ -86,7 +89,7 @@ signals:
     void returnPressed();
     void textChanged(const QString &);
 protected:
-    void fontChange(const QFont &oldFont);
+    virtual void changeEvent(QEvent *);
 private slots:
     void pushButtonClicked();
 private:

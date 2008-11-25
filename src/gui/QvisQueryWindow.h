@@ -52,8 +52,8 @@ class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QListBox;
-class QMultiLineEdit;
+class QListWidget;
+class QTextEdit;
 class QPushButton;
 class QueryList;
 class QvisVariableButton;
@@ -165,10 +165,10 @@ private:
     PlotList        *plotList;
 
     QComboBox       *displayMode;
-    QListBox        *queryList;
+    QListWidget        *queryList;
     QPushButton     *queryButton;
     QPushButton     *timeQueryButton;
-    QMultiLineEdit  *resultText;
+    QTextEdit  *resultText;
     QGroupBox       *argPanel;
     QLabel          *labels[4];
     QLineEdit       *textFields[4];

@@ -37,7 +37,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qdialog.h>
+#include <QDialog>
 #include <QvisSessionSourceChanger.h>
 
 // ****************************************************************************
@@ -53,14 +53,16 @@
 // Creation:   Tue Nov 14 15:27:03 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisSessionSourceChangerDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QvisSessionSourceChangerDialog(QWidget *parent, const char *name=0);
+    QvisSessionSourceChangerDialog(QWidget *parent);
     virtual ~QvisSessionSourceChangerDialog();
 
     void setSources(const stringVector &keys, const stringVector &values,

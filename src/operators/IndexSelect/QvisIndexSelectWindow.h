@@ -70,6 +70,9 @@ class QvisSILSetSelector;
 //   Added QvisSILSetSelector, removed domainIndex, groupIndex.
 //   Changed whichData buttongroup to useWholeCollection checkbox.
 // 
+//   Cyrus Harrison, Tue Aug 19 16:23:19 PDT 2008
+//   Qt4 Port. 
+//
 // ****************************************************************************
 
 class QvisIndexSelectWindow : public QvisOperatorWindow
@@ -103,19 +106,19 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
   private:
     QButtonGroup *dim;
 
-    QGroupBox    *oneDWidgetGroup;
+    QWidget      *oneDWidget;
     QLabel       *oneDLabel;
     QSpinBox     *oneDMin;
     QSpinBox     *oneDMax;
     QSpinBox     *oneDIncr;
 
-    QGroupBox    *twoDWidgetGroup;
+    QWidget      *twoDWidget;
     QLabel       *twoDLabel;
     QSpinBox     *twoDMin;
     QSpinBox     *twoDMax;
     QSpinBox     *twoDIncr;
 
-    QGroupBox    *threeDWidgetGroup;
+    QWidget      *threeDWidget;
     QLabel       *threeDLabel;
     QSpinBox     *threeDMin;
     QSpinBox     *threeDMax;

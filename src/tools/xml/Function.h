@@ -39,8 +39,7 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-#include <qstring.h>
-#include <visitstream.h>
+#include <QTextStream>
 
 // ****************************************************************************
 //  Class:  Function
@@ -65,6 +64,9 @@
 //    Brad Whitlock, Fri Apr 25 11:13:20 PDT 2008
 //    Added accessType
 //
+//    Brad Whitlock, Thu May  8 11:35:41 PDT 2008
+//    Qt 4. Use QTextStream.
+//
 // ****************************************************************************
 class Function
 {
@@ -86,7 +88,7 @@ class Function
     {
         usedThisFunction = false;
     }
-    void Print(ostream &out, const QString &generatorName = QString::null)
+    void Print(QTextStream &out, const QString &generatorName = QString::null)
     {
         if(generatorName.isEmpty() || generatorName == target)
         {

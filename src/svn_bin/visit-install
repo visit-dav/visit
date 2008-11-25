@@ -678,3 +678,7 @@ endif
 if ($dmg == true) then
    /usr/bin/hdiutil create -fs HFS+ -srcfolder $dir -volname VisIt-$version VisIt-$version.dmg
 endif
+
+# Write out a message that we can look for in the visit update process. This is
+# a workaround for a Qt bug.
+echo "visit-install done"

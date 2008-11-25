@@ -37,7 +37,7 @@
 *****************************************************************************/
 #ifndef SPREADSHEET_TAB_WIDGET_H
 #define SPREADSHEET_TAB_WIDGET_H
-#include <qtabwidget.h>
+#include <QTabWidget>
 
 // ****************************************************************************
 // Class: SpreadsheetTabWidget
@@ -52,16 +52,21 @@
 // Creation:   Thu Feb 22 09:41:32 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 15:23:58 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class SpreadsheetTabWidget : public QTabWidget
 {
+    Q_OBJECT
 public:
-    SpreadsheetTabWidget(QWidget *parent, const char *name);
+    SpreadsheetTabWidget(QWidget *parent);
     virtual ~SpreadsheetTabWidget();
     void setHighlightColor(const QColor &c);
     const QColor &highlightColor() const;
+protected slots:
+    void changeTabColors(int index);
 private:
     QColor highlight;
 };

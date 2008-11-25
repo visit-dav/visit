@@ -12,6 +12,7 @@
 #                   [-nd] [-nmesa] [-npython] [-nqt] [-nstrip] [-nvtk]
 #                   [-os <operating_system>] [-compiler <compiler>]
 #                   [-arch <architecture>] [-max_silo_bytes <one> <tot>]
+#                   [-norel]
 #
 # Modifications:
 #    Jeremy Meredith, Fri May 11 14:15:01 PDT 2001
@@ -337,6 +338,9 @@
 #    Brad Whitlock, Thu Sep 11 09:58:11 PDT 2008
 #    Added code to copy the Python lib-tk modules.
 #
+#    Brad Whitlock, Thu Oct  2 14:52:53 PDT 2008
+#    Qt 4. Added -norel
+#
 #    Eric Brugger, Fri Oct 10 16:27:33 PDT 2008
 #    I removed the -switch option.
 #
@@ -381,6 +385,7 @@ set Strip = "TRUE"
 set Make = "make"
 set Help = "FALSE"
 set Configuration = "open"
+set makerelative = "TRUE"
 set max_one_silo_bytes = 2000000  #  2e6 bytes (about 2 megabytes)
 set max_tot_silo_bytes = 20000000 # 20e6 bytes (about 20 megabytes)
 
@@ -465,6 +470,10 @@ while ($#argv >= 1)
                set Configuration = $1
                breaksw
 
+      case -norel:
+               set makerelative = FALSE
+               breaksw
+
       case -max_silo_bytes:
                shift
                set max_one_silo_bytes = $1
@@ -502,6 +511,8 @@ if ($Help == TRUE) then
    echo "       -os os         Operating system."
    echo "       -compiler cc   Compiler."
    echo "       -arch architecture Force architecture package."
+   echo "       -norel         Skip the pass on the Mac that makes sure "
+   echo "                      libraries are relative to @executable_path."
    echo "       -max_silo_bytes  <one-file> <total>"
    exit (1)
 endif
@@ -570,33 +581,46 @@ else
 endif
 
 #
-# Determine the name of the Qt shared library.
+# Determine the name of the Qt shared libraries
 #
 if ("$os" == "darwin") then
-    set QtLibName = `cd $VisItDir/lib && ls libqt.$SHLIB_SOEXT`
-    set QUILibName = `cd $VisItDir/lib && ls libqui.$SHLIB_SOEXT`
+    set QtCore        = "QtCore.framework"
+    set QtGui         = "QtGui.framework"
+    set QtHelp        = "QtHelp.framework"
+    set QtNetwork     = "QtNetwork.framework"
+    set QtOpenGL      = "QtOpenGL.framework"
+    set QtScript      = "QtScript.framework"
+    set QtSql         = "QtSql.framework"
+    set QtSvg         = "QtSvg.framework"
+    set QtXml         = "QtXml.framework"
+    set QtXmlPatterns = "QtXmlPatterns.framework"
+    set QtUiTools     = "libQtUiTools.a"
 else
-    set QtLibName = `cd $VisItDir/lib && ls libqt.$SHLIB_SOEXT.?.?.?`
-    if ($QtLibName == "") then
-        set QtLibName = `cd $VisItDir/lib && ls libqt-mt.$SHLIB_SOEXT.?.?.?`
-    endif
-    set QUILibName = `cd $VisItDir/lib && ls libqui.$SHLIB_SOEXT.?.?.?`
+    set QtCore        = `cd $VisItDir/lib && ls libQtCore.$SHLIB_SOEXT.?.?.?`
+    set QtGui         = `cd $VisItDir/lib && ls libQtGui.$SHLIB_SOEXT.?.?.?`
+    set QtHelp        = `cd $VisItDir/lib && ls libQtHelp.$SHLIB_SOEXT.?.?.?`
+    set QtNetwork     = `cd $VisItDir/lib && ls libQtNetwork.$SHLIB_SOEXT.?.?.?`
+    set QtOpenGL      = `cd $VisItDir/lib && ls libQtOpenGL.$SHLIB_SOEXT.?.?.?`
+    set QtScript      = `cd $VisItDir/lib && ls libQtScript.$SHLIB_SOEXT.?.?.?`
+    set QtSql         = `cd $VisItDir/lib && ls libQtSql.$SHLIB_SOEXT.?.?.?`
+    set QtSvg         = `cd $VisItDir/lib && ls libQtSvg.$SHLIB_SOEXT.?.?.?`
+    set QtXml         = `cd $VisItDir/lib && ls libQtXml.$SHLIB_SOEXT.?.?.?`
+    set QtXmlPatterns = `cd $VisItDir/lib && ls libQtXmlPatterns.$SHLIB_SOEXT.?.?.?`
+    set QtUiTools     = "libQtUiTools.a"
 endif
 
 #
 # Check that the Qt libraries exist.
 #
-if (("$QtLibs" == "TRUE") && (! -e $VisItDir/lib/$QtLibName)) then
-   echo " "
-   echo "Error: The file $VisItDir/lib/$QtLibName does not exist. aborting ..."
-   echo " "
-   exit (1)
-endif
-if (("$QtLibs" == "TRUE") && (! -e $VisItDir/lib/$QUILibName)) then
-   echo " "
-   echo "Error: The file $VisItDir/lib/$QUILibName does not exist. aborting ..."
-   echo " "
-   exit (1)
+if ("$QtLibs" == "TRUE") then
+    foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
+        if (! -e $VisItDir/lib/$qlib) then
+            echo " "
+            echo "Error: The file $VisItDir/lib/$qlib does not exist. aborting ..."
+            echo " "
+            exit (1)
+        endif
+    end
 endif
 
 #
@@ -759,7 +783,7 @@ if ("$ArchGiven" == "FALSE") then
 
    case darwin:
       echo "Found a MacOS X version of visit"
-      set archBins = `file $VisItDir/lib/$QtLibName | head -n 1`
+      set archBins = `file $VisItDir/lib/$MesaMesaGLLibName | head -n 1`
       if (`echo "$archBins" | grep "universal"` == "") then
          set arch = `/usr/bin/uname -p`
          switch ($arch)
@@ -1049,7 +1073,7 @@ endif
 #
 # Copy the VisIt libraries to the distribution.
 #
-cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk\\\|libqt\\\|libqui\\\|libpython\\\|libMesaGL\\\|libOSMesa\\\|libhdf\\\|libsz` $libdir
+cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk\\\|libQt\\\|libpython\\\|libMesaGL\\\|libOSMesa\\\|libhdf\\\|libsz` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
 if("$os" == "darwin") then
@@ -1064,44 +1088,48 @@ if("$os" == "darwin") then
    cp `ls $VisItDir/lib/*.a` $libdir
 endif
 
-
 #
 # Copy the Qt libraries to the distribution.
 #
-cp $VisItDir/lib/$QtLibName $libdir/$QtLibName
-if ("$os" != "darwin") then
-    set QtLibBase = `echo $QtLibName | awk '{printf substr($1, 1, 8)}'`
-    if ("$QtLibBase" == "libqt.so") then
-        set majorVersion = `echo $QtLibName | awk '{printf substr($1, 10, 1)}'`
-        set minorVersion = `echo $QtLibName | awk '{printf substr($1, 12, 1)}'`
-        ln -s $QtLibName $libdir/libqt.so.$majorVersion.$minorVersion
-        ln -s $QtLibName $libdir/libqt.so.$majorVersion
-        ln -s $QtLibName $libdir/libqt.so
-        if (-e $VisItDir/lib/libqt.a) then
-            ln -s $QtLibName $libdir/libqt.a
+foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
+    if ("$os" != "darwin") then
+        cp $VisItDir/lib/$qlib $libdir
+        set libnoext = `echo $qlib | awk '{i=index($1,".so"); print substr($1,1,i-1)}'`
+        set majorVersion = `echo $qlib | awk '{i=index($1,"so."); split(substr($1,i+3),v,"."); print v[1]}'`
+        set minorVersion = `echo $qlib | awk '{i=index($1,"so."); split(substr($1,i+3),v,"."); print v[2]}'`
+        pushd . > /dev/null
+        cd $libdir
+        if (! -e $libnoext.so.$majorVersion.$minorVersion) then
+            ln -s $qlib $libnoext.so.$majorVersion.$minorVersion
         endif
+        if (! -e $libnoext.so.$majorVersion) then
+            ln -s $qlib $libnoext.so.$majorVersion
+        endif
+        if (! -e $libnoext.so) then
+            ln -s $qlib $libnoext.so
+        endif
+        if (-e $VisItDir/lib/$libnoext.a) then
+            ln -s $qlib $libnoext.a
+        endif
+        popd > /dev/null
     else
-        set majorVersion = `echo $QtLibName | awk '{printf substr($1, 13, 1)}'`
-        set minorVersion = `echo $QtLibName | awk '{printf substr($1, 15, 1)}'`
-        ln -s $QtLibName $libdir/libqt-mt.so.$majorVersion.$minorVersion
-        ln -s $QtLibName $libdir/libqt-mt.so.$majorVersion
-        ln -s $QtLibName $libdir/libqt-mt.so
-        if (-e $VisItDir/lib/libqt-mt.a) then
-            ln -s $QtLibName $libdir/libqt-mt.a
+        if(-d $VisItDir/lib/$qlib) then
+            # Copy the framework directory. Since it can have symlinks and all 
+            # sorts of stuff in it, use tar to copy the contents.
+            set startdir=`pwd`
+            mkdir "$libdir/$qlib"
+            cd $VisItDir/lib/$qlib
+            tar cf $startdir/frameworktmp.tar * > /dev/null
+            cd $startdir
+            cd $libdir/$qlib
+            tar xvf $startdir/frameworktmp.tar > /dev/null
+            cd $startdir
+            rm -f frameworktmp.tar
+        else
+            cp $VisItDir/lib/$qlib $libdir
         endif
     endif
-endif
-cp $VisItDir/lib/$QUILibName $libdir/$QUILibName
-set majorVersion = `echo $QUILibName | awk '{printf substr($1, 11, 1)}'`
-set minorVersion = `echo $QUILibName | awk '{printf substr($1, 13, 1)}'`
-if ("$os" != "darwin") then
-    ln -s $QUILibName $libdir/libqui.so.$majorVersion.$minorVersion
-    ln -s $QUILibName $libdir/libqui.so.$majorVersion
-    ln -s $QUILibName $libdir/libqui.so
-    if (-e $VisItDir/lib/libqui.a) then
-        ln -s $QUILibName $libdir/libqui.a
-    endif
-endif
+end
 
 #
 # Copy the Mesa libraries to the distribution.
@@ -1478,6 +1506,76 @@ if ($Strip == "TRUE") then
         strip $plugindir/operators/* >& /dev/null
         strip $plugindir/databases/* >& /dev/null
     endif
+endif
+
+#
+# On the Mac, we may be using libraries and frameworks that are not using
+# @executable_path/../lib so let's make sure that we are by modifying
+# them.
+#
+if("$os" == "darwin" && $makerelative == "TRUE") then
+    # Gather the list of files that we're going to change to @executable_path/../lib
+    set candidates = ()
+    foreach f (`ls $libdir`)
+        set dylib = `echo $f | awk '{i=index($1,".dylib"); if(i>1)print 1;else print 0;}'`
+        if($dylib == 1) then
+            set candidates = ($candidates $libdir/$f)
+        else
+            set framework = `echo $f | awk '{i=index($1,".framework"); if(i>1)print substr($1,1,i-1);else print "";}'`
+            if($framework != "") then
+                set candidates = ($candidates $libdir/$framework.framework/$framework)
+            endif
+        endif
+    end
+    foreach f (`ls $bindir`)
+        set exetype = `file $bindir/$f | awk '{print $2 $3}'`
+        if($exetype == "Mach-Oexecutable") then
+            set candidates = ($candidates $bindir/$f)
+        endif
+    end
+    # In principle we should check all plugins but for now, let's just check the
+    # libG,libV plugins for plots and operators since it should speed up the
+    # checks
+    foreach ptype (plots operators)
+        foreach f (`ls $plugindir/$ptype/lib{G,V}*.dylib`)
+            set candidates = ($candidates $f)
+        end
+    end
+
+    # For each candidate, make sure that any VisIt-related library that we use is
+    # referenced relative to @executable_path/../lib instead of using the whole
+    # path, which won't likely exist on the target machine. Of course, we're
+    # assuming that the library is named like "/path/...visit...", which is
+    # unlikely if the developer is using a library or framework that has been
+    # installed globally on the system.
+    foreach dyobj ($candidates)
+        set dyname=""
+        set installprefix = ""
+        foreach f (`otool -L $dyobj`)
+            # Determine whether the line contains "visit" and begins with "/"
+            set notlibrel = `echo $f | awk '{i=index($1,"visit");j=index($1,"/");if((i>1)&&(j==1))print 1;else print 0;}'`
+            if($notlibrel == 1) then
+                # Determine whether the line ends with ":". If so, then the line is the 
+                # name of the library/framework we're inspecting.
+                set tmpinstallprefix = `echo $f | awk '{i=index($1,":");if(i>1){j=index($1,"/lib/");print substr($1,1,j+4);}else print ""}'`
+                if($tmpinstallprefix != "") then
+                    set installprefix = $tmpinstallprefix
+                    set dyname = `echo $f | awk '{i=index($1,":");if(i>1){j=index($1,"/lib/");print substr($1,j+5,length($1)-j-5);}else print ""}'`
+                else
+                    set depname = `echo $f | awk '{i=index($1,"/lib/");print substr($1,i+5,length($1)-i-3)}'`
+                    set contains_dyname = `echo $f $dyname | awk '{i=index($1,$2);if(i>=1)print 1;else print 0}'`
+                    set match = `echo $depname $dyname | awk '{split($1,a,"/");split($2,b,"/");c=-1;for(i=0;i<length(a);++i)for(j=0;j<length(b);++j)if(a[i]==b[j]){c++};print c}'`
+                    if($match > 0) then
+                        #echo "install_name_tool -id @executable_path/../lib/$depname $installprefix$depname"
+                        install_name_tool -id @executable_path/../lib/$depname $installprefix$depname
+                    else
+                        #echo "install_name_tool -change $f @executable_path/../lib/$depname $installprefix$dyname"
+                        install_name_tool -change $f @executable_path/../lib/$depname $installprefix$dyname
+                    endif
+                endif
+            endif
+        end
+    end
 endif
 
 #

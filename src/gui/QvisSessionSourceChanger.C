@@ -37,10 +37,10 @@
 *****************************************************************************/
 #include <QvisSessionSourceChanger.h>
 
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlistbox.h>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QListWidget>
 
 #include <QvisDialogLineEdit.h>
 
@@ -61,40 +61,35 @@
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
-QvisSessionSourceChanger::QvisSessionSourceChanger(QWidget *parent,
-    const char *name) : QFrame(parent, name),
+QvisSessionSourceChanger::QvisSessionSourceChanger(QWidget *parent) 
+: QWidget(parent),
     sourceIds(), sources(), sourceUses()
 {
-    setFrameStyle(QFrame::NoFrame);
-    QVBoxLayout *frameinnerLayout = new QVBoxLayout(this);
-    frameinnerLayout->setMargin(10);
-    frameinnerLayout->addSpacing(10);
-
-    QVBoxLayout *pageLayout = new QVBoxLayout(frameinnerLayout);
-    pageLayout->setSpacing(10);
-    QGridLayout *gridLayout = new QGridLayout(pageLayout, 2, 2);
+    QGridLayout *gridLayout = new QGridLayout(this);
     gridLayout->setSpacing(5);
 
     // Create the source list.
-    sourceList = new QListBox(this, "sourceList");
-    connect(sourceList, SIGNAL(selectionChanged()),
+    sourceList = new QListWidget(this);
+    connect(sourceList, SIGNAL(itemSelectionChanged()),
             this, SLOT(selectedSourceChanged()));
-    gridLayout->addWidget(new QLabel(tr("Source identifiers"), this, "sourceIdLabel"), 0, 0);
+    gridLayout->addWidget(new QLabel(tr("Source identifiers"), this), 0, 0);
     gridLayout->addWidget(sourceList, 1, 0);
 
-    QGroupBox *sourceProperties = new QGroupBox(tr("Source"), this,
-        "sourceProperties");
-    gridLayout->addMultiCellWidget(sourceProperties, 0, 1, 1, 1);
-    gridLayout->setColStretch(1, 10);
+    QGroupBox *sourceProperties = new QGroupBox(tr("Source"), this);
+    gridLayout->addWidget(sourceProperties, 0, 1, 2, 1);
+    gridLayout->setColumnStretch(1, 10);
+    
     QVBoxLayout *srcPropLayout = new QVBoxLayout(sourceProperties);
     srcPropLayout->setMargin(10);
     srcPropLayout->setSpacing(5);
-    srcPropLayout->addSpacing(10);
 
     // Create the source property controls.
-    fileLineEdit = new QvisDialogLineEdit(sourceProperties, "fileLineEdit");
+    fileLineEdit = new QvisDialogLineEdit(sourceProperties);
     fileLineEdit->setDialogMode(QvisDialogLineEdit::ChooseFile);
     connect(fileLineEdit, SIGNAL(returnPressed()),
             this, SLOT(sourceChanged()));
@@ -102,8 +97,8 @@ QvisSessionSourceChanger::QvisSessionSourceChanger(QWidget *parent,
             this, SLOT(sourceChanged(const QString &)));
     srcPropLayout->addWidget(fileLineEdit);
 
-    useList = new QListBox(sourceProperties, "useList");
-    srcPropLayout->addWidget(new QLabel(tr("Source used in"), sourceProperties, "srcUseLabel"));
+    useList = new QListWidget(sourceProperties);
+    srcPropLayout->addWidget(new QLabel(tr("Source used in"), sourceProperties));
     srcPropLayout->addWidget(useList);
 }
 
@@ -139,7 +134,9 @@ QvisSessionSourceChanger::~QvisSessionSourceChanger()
 // Creation:   Mon Nov 13 15:42:13 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -155,8 +152,8 @@ QvisSessionSourceChanger::setSources(const stringVector &keys,
     sourceList->blockSignals(true);
     sourceList->clear();
     for(size_t i = 0; i < keys.size(); ++i)
-        sourceList->insertItem(keys[i].c_str());
-    sourceList->setSelected(0, true);
+        sourceList->addItem(keys[i].c_str());
+    sourceList->item(0)->setSelected(true);
     sourceList->blockSignals(false);
 
     updateControls(0);
@@ -175,7 +172,9 @@ QvisSessionSourceChanger::setSources(const stringVector &keys,
 // Creation:   Mon Nov 13 15:42:58 PST 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -200,8 +199,8 @@ QvisSessionSourceChanger::updateControls(int ci)
             if(pos != sourceUses.end())
             {
                 for(size_t i = 0; i < pos->second.size(); ++i)
-                    useList->insertItem(pos->second[i].c_str());        
-                useList->setSelected(ci, true);
+                    useList->addItem(pos->second[i].c_str());        
+                useList->item(ci)->setSelected(true);
             }
         }
     }
@@ -236,28 +235,32 @@ QvisSessionSourceChanger::getSources() const
 //
 // Qt slot functions
 //
+// Modifications:
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 
 void
 QvisSessionSourceChanger::selectedSourceChanged()
 {
-    updateControls(sourceList->currentItem());
+    updateControls(sourceList->currentRow());
 }
 
 void
 QvisSessionSourceChanger::sourceChanged()
 {
     // Get the active source index.
-    int ci = sourceList->currentItem();
+    int ci = sourceList->currentRow();
     if(ci >= 0)
-        sources[ci] = std::string(fileLineEdit->text().latin1());
+        sources[ci] = std::string(fileLineEdit->text().toStdString());
 }
 
 void
 QvisSessionSourceChanger::sourceChanged(const QString &s)
 {
     // Get the active source index.
-    int ci = sourceList->currentItem();
+    int ci = sourceList->currentRow();
     if(ci >= 0)
-        sources[ci] = std::string(s.latin1());
+        sources[ci] = std::string(s.toStdString());
 }
 

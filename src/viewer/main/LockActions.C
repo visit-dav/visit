@@ -66,7 +66,7 @@
 // ****************************************************************************
 
 ToggleLockViewAction::ToggleLockViewAction(ViewerWindow *win) :
-    ViewerToggleAction(win, "ToggleLockViewAction")
+    ViewerToggleAction(win)
 {
     SetAllText(tr("Lock view"));
     if (!win->GetNoWinMode())
@@ -88,7 +88,7 @@ ToggleLockViewAction::Enabled() const
 }
 
 bool
-ToggleLockViewAction::Toggled() const
+ToggleLockViewAction::Checked() const
 {
     return window->GetViewIsLocked();
 }
@@ -112,7 +112,7 @@ ToggleLockViewAction::Toggled() const
 // ****************************************************************************
 
 ToggleLockTimeAction::ToggleLockTimeAction(ViewerWindow *win) :
-    ViewerToggleAction(win, "ToggleLockTimeAction")
+    ViewerToggleAction(win)
 {
     SetAllText(tr("Lock time"));
     if (!win->GetNoWinMode())
@@ -126,7 +126,7 @@ ToggleLockTimeAction::Execute()
 }
 
 bool
-ToggleLockTimeAction::Toggled() const
+ToggleLockTimeAction::Checked() const
 {
     return window->GetTimeLock();
 }
@@ -150,7 +150,7 @@ ToggleLockTimeAction::Toggled() const
 // ****************************************************************************
 
 ToggleLockToolAction::ToggleLockToolAction(ViewerWindow *win) :
-    ViewerToggleAction(win, "ToggleLockToolAction")
+    ViewerToggleAction(win)
 {
     SetAllText(tr("Lock tools"));
     if (!win->GetNoWinMode())
@@ -164,7 +164,7 @@ ToggleLockToolAction::Execute()
 }
 
 bool
-ToggleLockToolAction::Toggled() const
+ToggleLockToolAction::Checked() const
 {
     return window->GetToolLock();
 }
@@ -188,7 +188,7 @@ ToggleLockToolAction::Toggled() const
 // ****************************************************************************
 
 TurnOffAllLocksAction::TurnOffAllLocksAction(ViewerWindow *win) :
-    ViewerAction(win, "TurnOffAllLocksAction")
+    ViewerAction(win)
 {
     SetAllText(tr("Unlock everything"));
 }

@@ -14,7 +14,7 @@
         Probability
         ZoneCount
       </Enum>
-      <Field name="var1" label="var1" type="string">
+      <Field name="var1" label="Variable 1" type="string">
         default
       </Field>
       <Field name="var1MinFlag" label="Use variable 1 min" type="bool">

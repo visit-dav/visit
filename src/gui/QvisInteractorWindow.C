@@ -41,14 +41,15 @@
 #include <InteractorAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QWidget>
+#include <QButtonGroup>
+#include <QRadioButton>
+#include <QGroupBox>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -95,7 +96,9 @@ QvisInteractorWindow::QvisInteractorWindow(
 // Creation:   Mon Aug 16 15:29:28 PST 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 24 08:39:21 PDT
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 QvisInteractorWindow::~QvisInteractorWindow()
@@ -128,80 +131,72 @@ QvisInteractorWindow::~QvisInteractorWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Tue Jun 24 08:39:21 PDT
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisInteractorWindow::CreateWindowContents()
 {
 
-    QGroupBox *zoomGroup = new QGroupBox(central, "zoomGroup");
+    QGroupBox *zoomGroup = new QGroupBox(central);
     zoomGroup->setTitle(tr("Zoom interaction:"));
     topLayout->addWidget(zoomGroup);
 
     QVBoxLayout *zoomVBoxLayout = new QVBoxLayout(zoomGroup);
-    zoomVBoxLayout->addSpacing(10);
 
-    QGridLayout *zoomGridLayout = new QGridLayout(zoomVBoxLayout, 3, 2);
-    zoomVBoxLayout->setSpacing(5);
-    zoomGridLayout->setMargin(10);
-
-    showGuidelines = new QCheckBox(tr("Show Guidelines"), zoomGroup, "showGuidelines");
+    QGridLayout *zoomGridLayout = new QGridLayout();
+    zoomVBoxLayout->addLayout(zoomGridLayout);
+    
+    showGuidelines = new QCheckBox(tr("Show Guidelines"), zoomGroup);
     connect(showGuidelines, SIGNAL(toggled(bool)),
             this, SLOT(showGuidelinesChanged(bool)));
     zoomGridLayout->addWidget(showGuidelines, 1,0);
 
-    clampSquare = new QCheckBox(tr("Clamp to Square"), zoomGroup, "clampSquare");
+    clampSquare = new QCheckBox(tr("Clamp to Square"), zoomGroup);
     connect(clampSquare, SIGNAL(toggled(bool)),
             this, SLOT(clampSquareChanged(bool)));
     zoomGridLayout->addWidget(clampSquare, 2,0);
 
-    fillViewportOnZoom = new QCheckBox(tr("Fill viewport on zoom"), zoomGroup, "fillViewportOnZoom");
+    fillViewportOnZoom = new QCheckBox(tr("Fill viewport on zoom"), zoomGroup);
     connect(fillViewportOnZoom, SIGNAL(toggled(bool)),
             this, SLOT(fillViewportOnZoomChanged(bool)));
     zoomGridLayout->addWidget(fillViewportOnZoom, 3,0);
 
-    QGroupBox *navigationGroup = new QGroupBox(central, "navigationGroup");
+    QGroupBox *navigationGroup = new QGroupBox(central);
     navigationGroup->setTitle(tr("Navigation mode:"));
     topLayout->addWidget(navigationGroup);
 
     QVBoxLayout *navigationVBoxLayout = new QVBoxLayout(navigationGroup);
-    navigationVBoxLayout->addSpacing(10);
 
-    QGridLayout *navigationLayout = new QGridLayout(navigationVBoxLayout,
-                                                    1, 3);
-    navigationLayout->setSpacing(5);
-    navigationLayout->setMargin(10);
+    QGridLayout *navigationLayout = new QGridLayout();
+    navigationVBoxLayout->addLayout(navigationLayout);
 
-    navigationMode = new QButtonGroup(0, "navigationMode");
-    connect(navigationMode, SIGNAL(clicked(int)),
+    navigationMode = new QButtonGroup(navigationGroup);
+    connect(navigationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(navigationModeChanged(int)));
-    QRadioButton *trackball = new QRadioButton(tr("Trackball"), navigationGroup,
-                                               "Trackball");
-    navigationMode->insert(trackball);
+    QRadioButton *trackball = new QRadioButton(tr("Trackball"), navigationGroup);
+    navigationMode->addButton(trackball,0);
     navigationLayout->addWidget(trackball, 1, 1);
-    QRadioButton *dolly = new QRadioButton(tr("Dolly"), navigationGroup,
-                                           "Dolly");
-    navigationMode->insert(dolly);
+    QRadioButton *dolly = new QRadioButton(tr("Dolly"), navigationGroup);
+    navigationMode->addButton(dolly,1);
     navigationLayout->addWidget(dolly, 1, 2);
-    QRadioButton *flythrough = new QRadioButton(tr("Flythrough"), navigationGroup,
-                                                "Flythrough");
-    navigationMode->insert(flythrough);
+    QRadioButton *flythrough = new QRadioButton(tr("Flythrough"), navigationGroup);
+    navigationMode->addButton(flythrough,2);
     navigationLayout->addWidget(flythrough, 1, 3);
 
 
-    QGroupBox *axisGroup = new QGroupBox(central, "axisGroup");
+    QGroupBox *axisGroup = new QGroupBox(central);
     axisGroup->setTitle(tr("Axis Array interaction:"));
     topLayout->addWidget(axisGroup);
 
     QVBoxLayout *axisVBoxLayout = new QVBoxLayout(axisGroup);
-    axisVBoxLayout->addSpacing(10);
 
-    QGridLayout *axisGridLayout = new QGridLayout(axisVBoxLayout, 1, 2);
-    axisVBoxLayout->setSpacing(5);
-    axisGridLayout->setMargin(10);
-
-    axisSnap = new QCheckBox(tr("Snap to horizontal grid"),
-                             axisGroup, "axisSnap");
+    QGridLayout *axisGridLayout = new QGridLayout();
+    axisVBoxLayout->addLayout(axisGridLayout);
+    
+    axisSnap = new QCheckBox(tr("Snap to horizontal grid"),axisGroup);
     connect(axisSnap, SIGNAL(toggled(bool)),
             this, SLOT(axisSnapChanged(bool)));
     axisGridLayout->addWidget(axisSnap, 1,0);
@@ -233,6 +228,9 @@ QvisInteractorWindow::CreateWindowContents()
 //   Jeremy Meredith, Thu Feb  7 17:51:32 EST 2008
 //   Added snap-to-horizontal grid support for axis array mode navigation.
 //
+//   Cyrus Harrison, Tue Jun 24 08:39:21 PDT
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -261,11 +259,11 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
             break;
           case InteractorAttributes::ID_navigationMode:
             if (atts->GetNavigationMode() == InteractorAttributes::Trackball)
-                navigationMode->setButton(0);
+                navigationMode->button(0)->setChecked(true);
             else if (atts->GetNavigationMode() == InteractorAttributes::Dolly)
-                navigationMode->setButton(1);
+                navigationMode->button(1)->setChecked(true);
             else
-                navigationMode->setButton(2);
+                navigationMode->button(2)->setChecked(true);
             break;
           case InteractorAttributes::ID_axisArraySnap:
             axisSnap->setChecked(atts->GetAxisArraySnap());

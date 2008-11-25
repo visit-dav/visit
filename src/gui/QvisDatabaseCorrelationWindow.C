@@ -38,12 +38,12 @@
 
 #include <QvisDatabaseCorrelationWindow.h>
 
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qpushbutton.h>
+#include <QComboBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
 
 #include <DatabaseCorrelationList.h>
 #include <DatabaseCorrelation.h>
@@ -78,7 +78,7 @@ QvisDatabaseCorrelationWindow::QvisDatabaseCorrelationWindow(
     QvisWindowBase(caption), createMode(true)
 {
     DatabaseCorrelation emptyCorrelation;
-    emptyCorrelation.SetName(correlationName.latin1());
+    emptyCorrelation.SetName(correlationName.toStdString());
     CreateWidgets(emptyCorrelation);
 }
 
@@ -122,16 +122,15 @@ QvisDatabaseCorrelationWindow::~QvisDatabaseCorrelationWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisDatabaseCorrelationWindow::CreateWidgets(
     const DatabaseCorrelation &correlation)
 {
-    // Set the name of this window.
-    QString s; s.sprintf("QvisDatabaseCorrelationWindow%04d", instanceCount++);
-    setName(s.latin1());
-
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
 
@@ -140,39 +139,38 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     topLayout->setSpacing(5);
 
     // Create the name line edit.
-    QGridLayout *gLayout = new QGridLayout(topLayout, 2, 2);
-    correlationNameLineEdit = new QLineEdit(central, "correlationNameLineEdit");
+    QGridLayout *gLayout = new QGridLayout();
+    topLayout->addLayout(gLayout);
+    correlationNameLineEdit = new QLineEdit(central);
     correlationNameLineEdit->setText(correlation.GetName().c_str());
     correlationNameLineEdit->setEnabled(createMode);
-    QLabel *nameLabel = new QLabel(correlationNameLineEdit, tr("Name"), central,
-        "nameLabel");
+    QLabel *nameLabel = new QLabel(tr("Name"), central);
     nameLabel->setEnabled(createMode);
     gLayout->addWidget(nameLabel, 0, 0);
     gLayout->addWidget(correlationNameLineEdit, 0, 1);
 
     // Create the correlation method combobox.
-    correlationMethodComboBox = new QComboBox(central, "correlationMethodComboBox");
-    correlationMethodComboBox->insertItem(tr("Padded index"));
-    correlationMethodComboBox->insertItem(tr("Stretched index"));
-    correlationMethodComboBox->insertItem(tr("Time"));
-    correlationMethodComboBox->insertItem(tr("Cycle"));
+    correlationMethodComboBox = new QComboBox(central);
+    correlationMethodComboBox->addItem(tr("Padded index"));
+    correlationMethodComboBox->addItem(tr("Stretched index"));
+    correlationMethodComboBox->addItem(tr("Time"));
+    correlationMethodComboBox->addItem(tr("Cycle"));
     int method = (int)correlation.GetMethod();
-    correlationMethodComboBox->setCurrentItem(method);
+    correlationMethodComboBox->setCurrentIndex(method);
     gLayout->addWidget(correlationMethodComboBox, 1, 1);
-    gLayout->addWidget(new QLabel(correlationMethodComboBox,
-        tr("Correlation method"), central), 1, 0);
+    gLayout->addWidget(new QLabel(tr("Correlation method"), central), 1, 0);
     topLayout->addSpacing(10);
 
     // Create the widgets that let us add sources to the database correlation.
-    QGridLayout *srcLayout = new QGridLayout(topLayout, 5, 3);
+    QGridLayout *srcLayout = new QGridLayout();
+    topLayout->addLayout(srcLayout);
     srcLayout->setSpacing(5);
     const int S[] = {1, 5, 1, 1, 5};
     int i;
     for(i = 0; i < 5; ++i)
         srcLayout->setRowStretch(i, S[i]);
-    srcLayout->addWidget(new QLabel(tr("Sources"), central, "Sources"), 0, 0);
-    srcLayout->addWidget(new QLabel(tr("Correlated sources"), central,
-        "CorrelatedSources"), 0, 2);
+    srcLayout->addWidget(new QLabel(tr("Sources"), central), 0, 0);
+    srcLayout->addWidget(new QLabel(tr("Correlated sources"), central), 0, 2);
 
     //
     // Simplify the source names.
@@ -191,38 +189,38 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     }
 
     // Create and populate the list of sources.
-    sourcesListBox = new QListBox(central, "sourcesListBox");
-    sourcesListBox->setSelectionMode(QListBox::Multi);
+    sourcesListBox = new QListWidget(central);
+    sourcesListBox->setSelectionMode(QAbstractItemView::MultiSelection);
     for(i = 0; i < sources.size(); ++i)
     {
         if(!correlation.UsesDatabase(sources[i]))
-            sourcesListBox->insertItem(shortSources[i].c_str());
+            sourcesListBox->addItem(shortSources[i].c_str());
     }
     if(sources.size() > 0)
         sourcesListBox->setCurrentItem(0);
-    connect(sourcesListBox, SIGNAL(highlighted(int)),
+    connect(sourcesListBox, SIGNAL(currentRowChanged(int)),
             this, SLOT(setAddButtonEnabled(int)));
-    srcLayout->addMultiCellWidget(sourcesListBox, 1, 4, 0, 0);
+    srcLayout->addWidget(sourcesListBox, 1, 0, 5, 1);
 
     // Create and populate the list of correlated sources.
-    correlatedSourcesListBox = new QListBox(central, "correlatedSourcesListBox");
-    correlatedSourcesListBox->setSelectionMode(QListBox::Multi);
+    correlatedSourcesListBox = new QListWidget(central);
+    correlatedSourcesListBox->setSelectionMode(QAbstractItemView::MultiSelection);
     const stringVector &dbs = correlation.GetDatabaseNames();
     for(i = 0; i < correlation.GetNumDatabases(); ++i)
-        correlatedSourcesListBox->insertItem(longToShort[dbs[i]].c_str());
+        correlatedSourcesListBox->addItem(longToShort[dbs[i]].c_str());
     if(dbs.size() > 0)
-        correlatedSourcesListBox->setCurrentItem(0);
-    connect(correlatedSourcesListBox, SIGNAL(highlighted(int)),
+        correlatedSourcesListBox->setCurrentRow(0);
+    connect(correlatedSourcesListBox, SIGNAL(currentRowChanged(int)),
             this, SLOT(setRemoveButtonEnabled(int)));
-    srcLayout->addMultiCellWidget(correlatedSourcesListBox, 1, 4, 2, 2);
+    srcLayout->addWidget(correlatedSourcesListBox, 1, 2, 5, 1);
 
     // Create the add and remove buttons.
-    addButton = new QPushButton("-->", central, "addButton");
+    addButton = new QPushButton("-->", central);
     connect(addButton, SIGNAL(clicked()),
             this, SLOT(addSources()));
     srcLayout->addWidget(addButton, 2, 1);
 
-    removeButton = new QPushButton("<--", central, "removeButton");
+    removeButton = new QPushButton("<--", central);
     connect(removeButton, SIGNAL(clicked()),
             this, SLOT(removeSources()));
     srcLayout->addWidget(removeButton, 3, 1);
@@ -230,16 +228,16 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     UpdateAddRemoveButtonsEnabledState();
 
     // Add the action and cancel buttons.
-    topLayout->addSpacing(10);
-    QHBoxLayout *actionButtonLayout = new QHBoxLayout(topLayout);
+    //topLayout->addSpacing(10);
+    QHBoxLayout *actionButtonLayout = new QHBoxLayout();
+    topLayout->addLayout(actionButtonLayout);
     QPushButton *actionButton = new QPushButton(
-        createMode?tr("Create database correlation") : tr("Alter database correlation"), central,
-        "actionButton");
+        createMode?tr("Create database correlation") : tr("Alter database correlation"), central);
     connect(actionButton, SIGNAL(clicked()),
             this, SLOT(actionClicked()));
     actionButtonLayout->addWidget(actionButton);
     actionButtonLayout->addStretch(10);
-    QPushButton *cancelButton = new QPushButton(tr("Cancel"), central, "cancelButton");
+    QPushButton *cancelButton = new QPushButton(tr("Cancel"), central);
     connect(cancelButton, SIGNAL(clicked()),
             this, SLOT(cancelClicked()));
     actionButtonLayout->addWidget(cancelButton);
@@ -262,15 +260,17 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
 // Creation:   Mon Mar 29 12:26:55 PDT 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 int
-QvisDatabaseCorrelationWindow::SelectedCount(const QListBox *lb) const
+QvisDatabaseCorrelationWindow::SelectedCount(const QListWidget *lb) const
 {
     int selCount = 0;
     for(int i = 0; i < lb->count(); ++i)
-        if(lb->isSelected(i))
+        if(lb->item(i)->isSelected())
             ++selCount;
 
     return selCount;
@@ -310,30 +310,32 @@ QvisDatabaseCorrelationWindow::UpdateAddRemoveButtonsEnabledState()
 // Creation:   Mon Mar 29 12:28:06 PDT 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisDatabaseCorrelationWindow::TransferItems(QListBox *srcLB, QListBox *destLB)
+QvisDatabaseCorrelationWindow::TransferItems(QListWidget *srcLB, QListWidget *destLB)
 {
     stringVector src;
     stringVector dest;
     int i;
     for(i = 0; i < srcLB->count(); ++i)
     {
-        if(srcLB->isSelected(i))
-            dest.push_back(srcLB->text(i).latin1());
+        if(srcLB->item(i)->isSelected())
+            dest.push_back(srcLB->item(i)->text().toStdString());
         else
-            src.push_back(srcLB->text(i).latin1());
+            src.push_back(srcLB->item(i)->text().toStdString());
     }
 
     for(i = 0; i < destLB->count(); ++i)
-        dest.push_back(destLB->text(i).latin1());
+        dest.push_back(destLB->item(i)->text().toStdString());
 
     srcLB->blockSignals(true);
     srcLB->clear();
     for(i = 0; i < src.size(); ++i)
-        srcLB->insertItem(src[i].c_str());
+        srcLB->addItem(src[i].c_str());
     if(src.size() > 0)
         srcLB->setCurrentItem(0);
     srcLB->blockSignals(false);
@@ -341,9 +343,9 @@ QvisDatabaseCorrelationWindow::TransferItems(QListBox *srcLB, QListBox *destLB)
     destLB->blockSignals(true);
     destLB->clear();
     for(i = 0; i < dest.size(); ++i)
-        destLB->insertItem(dest[i].c_str());
+        destLB->addItem(dest[i].c_str());
     if(dest.size() > 0)
-        destLB->setCurrentItem(0);
+        destLB->setCurrentRow(0);
     destLB->blockSignals(false);
 
     UpdateAddRemoveButtonsEnabledState();
@@ -419,6 +421,9 @@ QvisDatabaseCorrelationWindow::removeSources()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //   
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -426,12 +431,12 @@ QvisDatabaseCorrelationWindow::actionClicked()
 {
     std::string name;
     stringVector dbs;
-    int method = correlationMethodComboBox->currentItem();
+    int method = correlationMethodComboBox->currentIndex();
 
     //
     // Get the name from the line edit.
     //
-    name = correlationNameLineEdit->displayText().stripWhiteSpace().latin1();
+    name = correlationNameLineEdit->displayText().trimmed().toStdString();
 
     //
     // If we're creating a new correlation, check the name in the line edit.
@@ -441,7 +446,7 @@ QvisDatabaseCorrelationWindow::actionClicked()
         if(name.size() < 1)
         {
             Warning(tr("A new database correlation must have a name."));
-            correlationNameLineEdit->setActiveWindow();
+            correlationNameLineEdit->activateWindow();
             correlationNameLineEdit->setFocus();
             correlationNameLineEdit->setSelection(0,
                 correlationNameLineEdit->displayText().length());
@@ -456,7 +461,7 @@ QvisDatabaseCorrelationWindow::actionClicked()
                 Warning(tr("The given database correlation name is already "
                         "being used. Please change the name of this "
                         "correlation."));
-                correlationNameLineEdit->setActiveWindow();
+                correlationNameLineEdit->activateWindow();
                 correlationNameLineEdit->setFocus();
                 correlationNameLineEdit->setSelection(0,
                     correlationNameLineEdit->displayText().length());
@@ -482,7 +487,7 @@ QvisDatabaseCorrelationWindow::actionClicked()
     // Get the sources from the correlated source list.
     for(i = 0; i < correlatedSourcesListBox->count(); ++i)
     {
-        std::string srcName(correlatedSourcesListBox->text(i).latin1());
+        std::string srcName(correlatedSourcesListBox->item(i)->text().toStdString());
         dbs.push_back(shortToLong[srcName]);
     }
     if(dbs.size() < 1)

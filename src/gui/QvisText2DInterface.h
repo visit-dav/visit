@@ -68,7 +68,7 @@ class GUI_API QvisText2DInterface : public QvisAnnotationObjectInterface
 {
     Q_OBJECT
 public:
-    QvisText2DInterface(QWidget *parent, const char *name = 0);
+    QvisText2DInterface(QWidget *parent);
     virtual ~QvisText2DInterface();
 
     virtual QString GetName() const { return "Text"; }

@@ -75,11 +75,14 @@
 //    Brad Whitlock, Mon Feb 12 17:50:29 PST 2007
 //    Added ViewerBase base class.
 //
+//    Brad Whitlock, Fri May  9 14:37:00 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 ViewerOperator::ViewerOperator(const int type_, 
     ViewerOperatorPluginInfo *viewerPluginInfo_,
-    ViewerPlot *plot_, const bool fromDefault) : ViewerBase(0, "ViewerOperator")
+    ViewerPlot *plot_, const bool fromDefault) : ViewerBase(0)
 {
     type              = type_;
     viewerPluginInfo  = viewerPluginInfo_;

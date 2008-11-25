@@ -57,7 +57,7 @@ ViewerWindowManager *ViewerActionBase::windowMgr = 0;
 //
 // Arguments:
 //   win  : The viewer window that owns the action.
-//   name : The name of the object instance.
+//   n    : The name of the object instance.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 5 17:16:35 PST 2003
@@ -71,8 +71,8 @@ ViewerWindowManager *ViewerActionBase::windowMgr = 0;
 //
 // ****************************************************************************
 
-ViewerActionBase::ViewerActionBase(ViewerWindow *win, const char *name) :
-    ViewerBase(0, name)
+ViewerActionBase::ViewerActionBase(ViewerWindow *win) :
+    ViewerBase(0)
 {
     window = win;
     windowId = window->GetWindowId();
@@ -163,6 +163,27 @@ void
 ViewerActionBase::SetRPCType(ViewerRPC::ViewerRPCType t)
 {
     rpcType = t;
+}
+
+// ****************************************************************************
+// Method: ViewerActionBase::GetName
+//
+// Purpose: 
+//   Returns the action name based on its RPC type.
+//
+// Returns:    The action name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 28 10:17:23 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+ViewerActionBase::GetName() const
+{
+    return ViewerRPC::ViewerRPCType_ToString(rpcType);
 }
 
 // ****************************************************************************

@@ -38,9 +38,9 @@
 
 #ifndef QVIS_MOVIE_PROGRESS_DIALOG_H
 #define QVIS_MOVIE_PROGRESS_DIALOG_H
-#include <qdialog.h>
-#include <qlabel.h>
-#include <qprogressbar.h>
+#include <QDialog>
+#include <QLabel>
+#include <QProgressBar>
 
 class QPushButton;
 
@@ -56,24 +56,26 @@ class QPushButton;
 // Creation:   Mon Jun 20 15:07:09 PST 2005
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisMovieProgressDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QvisMovieProgressDialog(QWidget *parent = 0, const char *name = 0);
+    QvisMovieProgressDialog(QWidget *parent = 0);
     virtual ~QvisMovieProgressDialog();
 
     void setLabelText(const QString &t) { labelTextLabel->setText(t); }
     QString labelText() const           { return labelTextLabel->text(); }
 
     void setProgress(int val);
-    int  progress() const               { return progressBar->progress(); }
+    int  progress() const               { return progressBar->value(); }
 
-    void setTotalSteps(int val)         { progressBar->setTotalSteps(val); }
-    int  totalSteps() const             { return progressBar->totalSteps(); }
+    void setTotalSteps(int val)         { progressBar->setMaximum(val); }
+    int  totalSteps() const             { return progressBar->maximum(); }
 signals:
     void cancelled();
 private slots:

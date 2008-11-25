@@ -39,13 +39,14 @@
 #ifndef QVIS_NOTEPAD_AREA
 #define QVIS_NOTEPAD_AREA
 #include <gui_exports.h>
-#include <qvbox.h>
-#include <qsizepolicy.h>
-#include <qmap.h>
+#include <QWidget>
+#include <QSizePolicy>
+#include <QMap>
 
 // forward declarations
 class QvisPostableWindow;
 class QTabWidget;
+class QVBoxLayout;
 
 // ****************************************************************************
 // Class: QvisNotepadArea
@@ -66,31 +67,35 @@ class QTabWidget;
 //   Changed an internal data structure and removed the method to handle
 //   paletteChange events since I found a better way to do it.
 //
+//   Brad Whitlock, Fri Jun  6 09:36:11 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class GUI_API QvisNotepadArea : public QVBox
+class GUI_API QvisNotepadArea : public QWidget
 {
     Q_OBJECT
 
     typedef struct
     {
-        QWidget *parent;
-        bool     parentIsScrollView;
-        int      minWidth;
-        int      minHeight;
+        QWidget     *parent;
+        QVBoxLayout *parentLayout;
+        bool         parentIsScrollView;
+        int          minWidth;
+        int          minHeight;
     } PostedInfo;
 
     typedef QMap<QWidget*, PostedInfo> PostedInfoLookup;
 public:
-    QvisNotepadArea(QWidget *parent = 0, const char *name = 0);
+    QvisNotepadArea(QWidget *parent = 0);
     virtual ~QvisNotepadArea();
     void showPage(QvisPostableWindow *pw);
     void postWindow(QvisPostableWindow *pw);
 private:
-    int              numPosted;
+    int               numPosted;
     QTabWidget       *tabs;
     QWidget          *empty;
-    PostedInfoLookup postedLookup;
+    PostedInfoLookup  postedLookup;
 };
 
 #endif

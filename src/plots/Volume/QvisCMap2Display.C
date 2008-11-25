@@ -6,19 +6,13 @@
 #include <slivr/ColorMap2.h>
 #include <slivr/Plane.h>
 
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
-
 #include <QvisCMap2Display.h>
-#include <qcursor.h>
-#include <qpixmap.h>
-#include <qpainter.h>
-#include <qimage.h>
-
-#include <iostream>
+#include <QCursor>
+#include <QImage>
+#include <QList>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
 
 #include <avtVolumeRenderer.h> // just for USE_HISTOGRAM
 
@@ -35,7 +29,10 @@
 // Creation:   Fri Sep 7 14:52:53 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep 30 11:43:32 PDT 2008
+//   Added code to draw a black quad behind the textured quad to ensure that
+//   the widget background is always black.
+//
 // ****************************************************************************
 
 class WidgetRenderer : public SLIVR::TextureRenderer
@@ -110,11 +107,13 @@ WidgetID QvisCMap2Display::WIDGET_NOT_FOUND = -1;
 // Creation:   Tue Mar 25 13:55:08 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep 30 10:13:29 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisCMap2Display::QvisCMap2Display(QWidget *parent, const char *name) : 
-  QGLWidget(QGLFormat(DoubleBuffer | AlphaChannel),parent,name), 
+QvisCMap2Display::QvisCMap2Display(QWidget *parent) : 
+  QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::AlphaChannel), parent), 
   init_done(false), defaultColor(1., 1., 1.), defaultAlpha(0.8), 
   idToWidget(), nextID(0), read_histogram(true), histogram_texture(0)
 {
@@ -128,6 +127,19 @@ QvisCMap2Display::QvisCMap2Display(QWidget *parent, const char *name) :
     ren = new WidgetRenderer(cmap2, 256*1000*1000);
 }
 
+// ****************************************************************************
+// Method: QvisCMap2Display::~QvisCMap2Display
+//
+// Purpose: 
+//   Destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:21:06 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 QvisCMap2Display::~QvisCMap2Display()
 {
     // Delete the cmap2 color maps...
@@ -135,18 +147,63 @@ QvisCMap2Display::~QvisCMap2Display()
     delete ren;
 }
 
+// ****************************************************************************
+// Method: QvisCMap2Display::sizeHint
+//
+// Purpose: 
+//   Returns the widget's size hint.
+//
+// Returns:    The widget's size hint.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:21:20 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 QSize
 QvisCMap2Display::sizeHint() const
 {
     return QSize(200,200);
 }
 
+// ****************************************************************************
+// Method: QvisCMap2Display::sizePolicy
+//
+// Purpose: 
+//   Returns the widget's size policy.
+//
+// Returns:    The widget's size policy.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:21:44 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 QSizePolicy
 QvisCMap2Display::sizePolicy() const
 {
-    QSizePolicy s(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding, 5, 5);
+    QSizePolicy s(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     return s;
 }
+
+// ****************************************************************************
+// Method: QvisCMap2Display::paintGL
+//
+// Purpose: 
+//   Paints the color table and the widgets onto the GL context.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:19:31 PDT 2008
+//
+// Modifications:
+//   Josh Stratton, August 2008
+//   Added histogram painting code.
+//
+// ****************************************************************************
 
 void
 QvisCMap2Display::paintGL()
@@ -154,8 +211,9 @@ QvisCMap2Display::paintGL()
     // Make a texture from the color map widgets.
     ren->make_colormap();
 
-    if (histogram_texture == 0) {
-      glGenTextures(1, &histogram_texture);
+    if (histogram_texture == 0)
+    {
+        glGenTextures(1, &histogram_texture);
 
       // initialize texture to no data
       /* (not working for some reason)
@@ -170,7 +228,7 @@ QvisCMap2Display::paintGL()
       glTexImage2D(GL_TEXTURE_2D, 0, 3, 512, 512,
                    0, GL_RGBA, GL_UNSIGNED_BYTE, gl_image.bits());
       */
-      read_histogram = true;
+        read_histogram = true;
     }
 
     //
@@ -187,45 +245,43 @@ QvisCMap2Display::paintGL()
     glDisable(GL_LIGHTING);
 
     read_histogram = true;
-    if (read_histogram) {
+    if (read_histogram)
+    {
 #if USE_HISTOGRAM
-      FILE* file = fopen("/tmp/histogram.dump", "r");
-      if (file == 0) {
+        FILE* file = fopen("/tmp/histogram.dump", "r");
+        if (file == 0)
+        {
         //        debug1 << "Error opening histogram file" << endl;
+        }
+        else
+        {
+            int hist_dim;
 
+            // read in histogram size
+            fread(&hist_dim, 1, sizeof(int), file);
 
-      }
-      else {
-        int hist_dim;
+            // read in histogram
+            GLfloat *hist = new GLFloat[hist_dim * hist_dim];
+            fread(hist, 1, sizeof(GLfloat)*hist_dim*hist_dim, file);
 
-        // read in histogram size
-        fread(&hist_dim, 1, sizeof(int), file);
+            float count = 0;
+            for (int i = 0; i < hist_dim*hist_dim; i++)
+                if (hist[i] > 0)
+                    count += 1;
+            count = count / (hist_dim * hist_dim);
 
-        // read in histogram
-        GLfloat hist[1024*1024];
-        for (int i = 0; i < 1024*1024; i++)
-          hist[i] = 0;
-        fread(hist, 1, sizeof(GLfloat)*hist_dim*hist_dim, file);
+            // read to a texture
+            glBindTexture(GL_TEXTURE_2D, histogram_texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, hist_dim, hist_dim,
+                         0, GL_LUMINANCE, GL_FLOAT, hist);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            delete [] hist;
 
-        float count = 0;
-        for (int i = 0; i < hist_dim*hist_dim; i++)
-          if (hist[i] > 0)
-            count += 1;
-        count = count / (hist_dim * hist_dim);
-
-        // read to a texture
-        glBindTexture(GL_TEXTURE_2D, histogram_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, hist_dim, hist_dim,
-                     0, GL_LUMINANCE, GL_FLOAT, hist);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        fclose(file);
-      }
+            fclose(file);
+        }
 #endif
     }
-
-
 
     // draw the texture to the screen
     glEnable(GL_TEXTURE_2D);
@@ -252,6 +308,19 @@ QvisCMap2Display::paintGL()
     swapBuffers();
 }
 
+// ****************************************************************************
+// Method: QvisCMap2Display::init
+//
+// Purpose: 
+//   Initializes the GL context.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:15:59 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
 QvisCMap2Display::init()
 {
@@ -274,6 +343,26 @@ QvisCMap2Display::init()
 
     init_done = true;
 }
+
+// ****************************************************************************
+// Method: QvisCMap2Display::ChangeCursor
+//
+// Purpose: 
+//   Changes the Qt cursor based on the SLIVR cursor name.
+//
+// Arguments:
+//   tkcursor : The name of the Cursor in SLIVR.
+//
+// Returns:    True if the cursor was set; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:15:03 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 bool
 QvisCMap2Display::ChangeCursor(const QString &tkcursor)
@@ -304,10 +393,27 @@ QvisCMap2Display::ChangeCursor(const QString &tkcursor)
     return retval;
 }
 
+// ****************************************************************************
+// Method: QvisCMap2Display::mousePressEvent
+//
+// Purpose: 
+//   Called in response to a mouse press. We use the mouse press to select
+//   a new widget.
+//
+// Arguments:
+//   e : The mouse event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:16:23 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
 QvisCMap2Display::mousePressEvent(QMouseEvent *e)
 {
-    int doColor = (e->button() == MidButton) ? 1 : 0;
+    int doColor = (e->button() == Qt::MidButton) ? 1 : 0;
 
     for(int c = 0; c < cmap2.size(); ++c)
     {
@@ -337,6 +443,23 @@ QvisCMap2Display::mousePressEvent(QMouseEvent *e)
     }
 }
 
+// ****************************************************************************
+// Method: QvisCMap2Display::mouseMoveEvent
+//
+// Purpose: 
+//   This method is called when the mouse moves and we're pressing. We use 
+//   this method to move the active SLIVR widget.
+//
+// Arguments:
+//   e : The mouse event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:17:19 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
 QvisCMap2Display::mouseMoveEvent(QMouseEvent *e)
 {
@@ -348,6 +471,23 @@ QvisCMap2Display::mouseMoveEvent(QMouseEvent *e)
         updateGL();
     }
 }
+
+// ****************************************************************************
+// Method: QvisCMap2Display::mouseReleaseEvent
+//
+// Purpose: 
+//   This method is called when we release the mouse. We use this method to 
+//   unselect the active widget.
+//
+// Arguments:
+//   e : The mouse event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 30 10:17:19 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 void
 QvisCMap2Display::mouseReleaseEvent(QMouseEvent *e)
@@ -377,7 +517,7 @@ QvisCMap2Display::LookupWidgetId(SLIVR::CM2Widget *w) const
     for(IdToWidgetMap::const_iterator it = idToWidget.begin();
         it != idToWidget.end(); ++it)
     {
-        if(w == it.data())
+        if(w == it.value())
             return it.key();
     }
     return WIDGET_NOT_FOUND;
@@ -432,7 +572,7 @@ QvisCMap2Display::addTriangleWidget(const QString &wName,
     SLIVR::TriangleCM2Widget *newW = 0;
     newW = new SLIVR::TriangleCM2Widget(base, top_x, top_y,
                          w, bottom);
-    newW->set_name(wName.latin1());
+    newW->set_name(wName.toStdString());
     newW->set_value_range(SLIVR::range_t(0., 1.));
     newW->set_color(defaultColor);
     newW->set_faux(true);
@@ -478,7 +618,7 @@ QvisCMap2Display::addRectangleWidget(const QString &wName,
     newW = new SLIVR::RectangleCM2Widget(type, left_x, left_y,
                           w, h, offset);
 
-    newW->set_name(wName.latin1());
+    newW->set_name(wName.toStdString());
     newW->set_color(defaultColor);
     newW->set_faux(true);
     newW->set_alpha(defaultAlpha);
@@ -520,7 +660,7 @@ QvisCMap2Display::addEllipsoidWidget(const QString &wName,
     SLIVR::EllipsoidCM2Widget *newW = 0;
     newW = new SLIVR::EllipsoidCM2Widget(x, y, a, b, rot);
 
-    newW->set_name(wName.latin1());
+    newW->set_name(wName.toStdString());
     newW->set_color(defaultColor);
     newW->set_faux(true);
     newW->set_alpha(defaultAlpha);
@@ -562,7 +702,7 @@ QvisCMap2Display::addParaboloidWidget(const QString &wName,
     SLIVR::ParaboloidCM2Widget *newW = 0;
     newW = new SLIVR::ParaboloidCM2Widget(top_x, top_y, bottom_x, bottom_y, left_x, left_y, right_x, right_y);
 
-    newW->set_name(wName.latin1());
+    newW->set_name(wName.toStdString());
     newW->set_color(defaultColor);
     newW->set_faux(true);
     newW->set_alpha(defaultAlpha);
@@ -596,7 +736,7 @@ QvisCMap2Display::setName(WidgetID id, const QString &n)
     IdToWidgetMap::iterator it =  idToWidget.find(id);
     if(it != idToWidget.end())
     {
-        it.data()->set_name(n.latin1());
+        it.value()->set_name(n.toStdString());
 
         emit widgetChanged(id);
         emit widgetListChanged();
@@ -609,7 +749,7 @@ QvisCMap2Display::getName(WidgetID id) const
     QString retval;
     IdToWidgetMap::const_iterator it =  idToWidget.find(id);
     if(it != idToWidget.end())
-        retval = QString(it.data()->get_name().c_str());
+        retval = QString(it.value()->get_name().c_str());
     return retval;
 }
 
@@ -622,7 +762,7 @@ QvisCMap2Display::setColor(WidgetID id, const QColor &c)
         float r = float(c.red()) / 255.f;
         float g = float(c.green()) / 255.f;
         float b = float(c.blue()) / 255.f;
-        it.data()->set_color(SLIVR::Color(r,g,b));
+        it.value()->set_color(SLIVR::Color(r,g,b));
 
         ren->set_colormap2(cmap2);
         updateGL();
@@ -638,9 +778,9 @@ QvisCMap2Display::getColor(WidgetID id) const
     IdToWidgetMap::const_iterator it =  idToWidget.find(id);
     if(it != idToWidget.end())
     {
-        int r = (int)(it.data()->get_color().r() * 255.f);
-        int g = (int)(it.data()->get_color().g() * 255.f);
-        int b = (int)(it.data()->get_color().b() * 255.f);
+        int r = (int)(it.value()->get_color().r() * 255.f);
+        int g = (int)(it.value()->get_color().g() * 255.f);
+        int b = (int)(it.value()->get_color().b() * 255.f);
         retval = QColor(r,g,b);
     }
     return retval;
@@ -652,7 +792,7 @@ QvisCMap2Display::setAlpha(WidgetID id, float a)
     IdToWidgetMap::iterator it =  idToWidget.find(id);
     if(it != idToWidget.end())
     {
-        it.data()->set_alpha(a);
+        it.value()->set_alpha(a);
 
         ren->set_colormap2(cmap2);
         updateGL();
@@ -667,7 +807,7 @@ QvisCMap2Display::getAlpha(WidgetID id) const
     float retval;
     IdToWidgetMap::const_iterator it =  idToWidget.find(id);
     if(it != idToWidget.end())
-        retval = it.data()->get_alpha();
+        retval = it.value()->get_alpha();
     return retval;
 }
 
@@ -677,7 +817,7 @@ QvisCMap2Display::setString(WidgetID id, const QString &s)
     IdToWidgetMap::iterator it =  idToWidget.find(id);
     if(it != idToWidget.end())
     {
-        it.data()->tcl_unpickle(std::string(s.latin1()));
+        it.value()->tcl_unpickle(std::string(s.toStdString()));
 
         ren->set_colormap2(cmap2);
         updateGL();
@@ -692,7 +832,7 @@ QvisCMap2Display::getString(WidgetID id) const
     QString retval;
     IdToWidgetMap::const_iterator it =  idToWidget.find(id);
     if(it != idToWidget.end())
-        retval = it.data()->tcl_pickle().c_str();
+        retval = it.value()->tcl_pickle().c_str();
     return retval;
 }
 
@@ -724,7 +864,7 @@ QvisCMap2Display::removeWidget(WidgetID id)
             std::vector<SLIVR::CM2Widget*>::iterator w = widgets.begin();
             for(; w != widgets.end(); ++w)
             { 
-                if(*w == it.data())
+                if(*w == it.value())
                 {
                     widgets.erase(w);
                     break;
@@ -747,7 +887,7 @@ WidgetID
 QvisCMap2Display::getID(int index) const
 {
     WidgetID retval = WIDGET_NOT_FOUND;
-    QValueList<WidgetID> keys(idToWidget.keys());
+    QList<WidgetID> keys(idToWidget.keys());
     if(index >= 0 && index < keys.count())
         retval = keys[index];
     return retval;

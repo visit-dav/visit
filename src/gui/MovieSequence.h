@@ -37,9 +37,9 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qobject.h>
+#include <QObject>
 #include <string>
-#include <qpixmap.h>
+#include <QPixmap>
 
 class DataNode;
 class QWidget;

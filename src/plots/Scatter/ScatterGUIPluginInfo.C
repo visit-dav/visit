@@ -159,9 +159,9 @@ ScatterGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject *attr,
 QvisWizard *
 ScatterGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
     QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
-    const ExpressionList *expList, const char *name)
+    const ExpressionList *expList)
 {
-    return new QvisScatterPlotWizard(attr, parent, name);
+    return new QvisScatterPlotWizard(attr, parent);
 }
 
 

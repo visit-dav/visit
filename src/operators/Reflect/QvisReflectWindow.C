@@ -42,14 +42,14 @@
 #include <ViewerProxy.h>
 
 #include <QvisReflectWidget.h>
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qcombobox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QWidget>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <stdio.h>
 #include <string>
 using std::string;
@@ -104,14 +104,14 @@ QvisReflectWindow::QvisReflectWindow(const int type,
 //    Brad Whitlock, Tue Mar 11 11:56:34 PDT 2003
 //    I added code to delete certain widgets that have no parents.
 //
+//    Cyrus Harrison, Tue Aug 26 15:45:00 PDT 2008
+//    Set parents for button groups, so we dont have to delete the explicitly.
+//
 // ****************************************************************************
 
 QvisReflectWindow::~QvisReflectWindow()
 {
-    delete modeButtons;
-    delete xBound;
-    delete yBound;
-    delete zBound;
+
 }
 
 // ****************************************************************************
@@ -137,74 +137,79 @@ QvisReflectWindow::~QvisReflectWindow()
 //    Brad Whitlock, Thu Apr 24 16:54:17 PDT 2008
 //    Added tr()'s
 //
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisReflectWindow::CreateWindowContents()
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout(topLayout, 10, "mainLayout");
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    topLayout->addLayout(mainLayout);
 
     // Add the controls to select the input mode.
-    QGridLayout *octantLayout = new QGridLayout(mainLayout, 2, 3);
-    modeButtons = new QButtonGroup(0, "modeButtons");
-    octantLayout->addWidget(new QLabel(tr("Input mode"), central, "inputModeLabel"),
-                            0, 0);
-    QRadioButton *rb = new QRadioButton(tr("2D"), central, "mode2D");
-    modeButtons->insert(rb);
+    QGridLayout *octantLayout = new QGridLayout();
+    mainLayout->addLayout(octantLayout);
+    
+    modeButtons = new QButtonGroup(central);
+    octantLayout->addWidget(new QLabel(tr("Input mode"), central),0, 0);
+    QRadioButton *rb = new QRadioButton(tr("2D"), central);
+    modeButtons->addButton(rb,0);
     octantLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("3D"), central, "mode3D");
-    modeButtons->insert(rb);
-    modeButtons->setButton(0);
-    connect(modeButtons, SIGNAL(clicked(int)),
+    rb = new QRadioButton(tr("3D"), central);
+    modeButtons->addButton(rb,1);
+    modeButtons->button(0)->setChecked(true);
+    connect(modeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(selectMode(int)));
     octantLayout->addWidget(rb, 0, 2);
 
     // Octant
-    originalDataLabel = new QLabel(tr("Original data quadrant"), central,
-        "originalDataLabel");
+    originalDataLabel = new QLabel(tr("Original data quadrant"), central);
     octantLayout->addWidget(originalDataLabel, 1, 0);
-    octant = new QComboBox(false, central, "octant");
-    octantLayout->addMultiCellWidget(octant, 1, 1, 1, 2);
+    octant = new QComboBox(central);
+    octantLayout->addWidget(octant, 1, 1, 1, 2);
 
     // Reflection widget
-    reflect = new QvisReflectWidget(central, "reflect");
+    reflect = new QvisReflectWidget(central);
     reflect->setMode2D(mode2D);
     connect(reflect, SIGNAL(valueChanged(bool*)),
             this, SLOT(selectOctants(bool*)));
-    reflectionLabel = new QLabel(reflect, tr("Reflection quadrants"), central);
+    reflectionLabel = new QLabel(tr("Reflection quadrants"), central);
     mainLayout->addWidget(reflectionLabel);
     mainLayout->addWidget(reflect, 100);
 
     // Limits
-    mainLayout->addWidget(new QLabel(tr("Reflection Limits:"), central, "reflectionLabel"));
-    QGridLayout *limitsLayout = new QGridLayout(mainLayout, 3,4, 10, "limitsLayout");
-    limitsLayout->addColSpacing(0, 20);
+    mainLayout->addWidget(new QLabel(tr("Reflection Limits:"), central));
+    QGridLayout *limitsLayout = new QGridLayout();
+    mainLayout->addLayout(limitsLayout);
+    //limitsLayout->addColumnSpacing(0, 20);
 
-    xBound = new QButtonGroup(0, "xBound");
-    xUseData = new QRadioButton(tr("Use X Min"),   central, "xUseData");
-    xSpecify = new QRadioButton(tr("Specify X ="), central, "xSpecify");
-    xBound->insert(xUseData);
-    xBound->insert(xSpecify);
+    xBound = new QButtonGroup(central);
+    xUseData = new QRadioButton(tr("Use X Min"),   central);
+    xSpecify = new QRadioButton(tr("Specify X ="), central);
+    xBound->addButton(xUseData,0);
+    xBound->addButton(xSpecify,1);
     specifiedX = new QLineEdit("0", central);
     limitsLayout->addWidget(xUseData,   0, 1);
     limitsLayout->addWidget(xSpecify,   0, 2);
     limitsLayout->addWidget(specifiedX, 0, 3);
 
-    yBound = new QButtonGroup(0, "yBound");
-    yUseData = new QRadioButton(tr("Use Y Min"),   central, "yUseData");
-    ySpecify = new QRadioButton(tr("Specify Y ="), central, "ySpecify");
-    yBound->insert(yUseData);
-    yBound->insert(ySpecify);
+    yBound = new QButtonGroup(central);
+    yUseData = new QRadioButton(tr("Use Y Min"),   central);
+    ySpecify = new QRadioButton(tr("Specify Y ="), central);
+    yBound->addButton(yUseData,0);
+    yBound->addButton(ySpecify,1);
     specifiedY = new QLineEdit("0", central);
     limitsLayout->addWidget(yUseData,   1, 1);
     limitsLayout->addWidget(ySpecify,   1, 2);
     limitsLayout->addWidget(specifiedY, 1, 3);
 
-    zBound = new QButtonGroup(0, "zBound");
-    zUseData = new QRadioButton(tr("Use Z Min"),   central, "zUseData");
-    zSpecify = new QRadioButton(tr("Specify Z ="), central, "zSpecify");
-    zBound->insert(zUseData);
-    zBound->insert(zSpecify);
+    zBound = new QButtonGroup(central);
+    zUseData = new QRadioButton(tr("Use Z Min"),   central);
+    zSpecify = new QRadioButton(tr("Specify Z ="), central);
+    zBound->addButton(zUseData,0);
+    zBound->addButton(zSpecify,1);
     specifiedZ = new QLineEdit("0", central);
     limitsLayout->addWidget(zUseData,   2, 1);
     limitsLayout->addWidget(zSpecify,   2, 2);
@@ -214,15 +219,15 @@ QvisReflectWindow::CreateWindowContents()
 
     connect(octant,        SIGNAL(activated(int)),
             this,          SLOT(octantChanged(int)));
-    connect(xBound,        SIGNAL(clicked(int)),
+    connect(xBound,        SIGNAL(buttonClicked(int)),
             this,          SLOT(xBoundaryChanged(int)));
     connect(specifiedX,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedXProcessText()));
-    connect(yBound,        SIGNAL(clicked(int)),
+    connect(yBound,        SIGNAL(buttonClicked(int)),
             this,          SLOT(yBoundaryChanged(int)));
     connect(specifiedY,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedYProcessText()));
-    connect(zBound,        SIGNAL(clicked(int)),
+    connect(zBound,        SIGNAL(buttonClicked(int)),
             this,          SLOT(zBoundaryChanged(int)));
     connect(specifiedZ,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedZProcessText()));
@@ -258,6 +263,9 @@ QvisReflectWindow::CreateWindowContents()
 //    Brad Whitlock, Thu Apr 24 16:55:18 PDT 2008
 //    Added tr()'s
 //
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -287,7 +295,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             break;
           case 1: //xBound
             xUseData->setText((atts->GetOctant()&0x01) ? tr("Use dataset max") : tr("Use dataset min"));
-            xBound->setButton(atts->GetUseXBoundary() ? 0 : 1);
+            xBound->button(atts->GetUseXBoundary() ? 0 : 1)->setChecked(true);
             specifiedX->setEnabled(atts->GetUseXBoundary() ? false : true);
             break;
           case 2: //specifiedX
@@ -296,7 +304,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             break;
           case 3: //yBound
             yUseData->setText((atts->GetOctant()&0x02) ? tr("Use dataset max") : tr("Use dataset min"));
-            yBound->setButton(atts->GetUseYBoundary() ? 0 : 1);
+            yBound->button(atts->GetUseYBoundary() ? 0 : 1)->setChecked(true);
             specifiedY->setEnabled(atts->GetUseYBoundary() ? false : true);
             break;
           case 4: //specifiedY
@@ -305,7 +313,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             break;
           case 5: //zBound
             zUseData->setText((atts->GetOctant()&0x04) ? tr("Use dataset max") : tr("Use dataset min"));
-            zBound->setButton(atts->GetUseZBoundary() ? 0 : 1);
+            zBound->button(atts->GetUseZBoundary() ? 0 : 1)->setChecked(true);
             specifiedZ->setEnabled(atts->GetUseZBoundary() ? false : true);
             break;
           case 6: //specifiedZ
@@ -336,7 +344,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
         {
             mode2D = newMode2D;
             modeButtons->blockSignals(true);
-            modeButtons->setButton(mode2D ? 0 : 1);
+            modeButtons->button(mode2D ? 0 : 1)->setChecked(true);
             modeButtons->blockSignals(false);
             reflect->setMode2D(mode2D);
             UpdateOctantMenuContents();
@@ -347,7 +355,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
         bool oldMode2D = mode2D;
         mode2D = true;
         modeButtons->blockSignals(true);
-        modeButtons->setButton(0);
+        modeButtons->button(0)->setChecked(true);
         modeButtons->blockSignals(false);
         reflect->setMode2D(mode2D);
         if (oldMode2D != mode2D)
@@ -357,7 +365,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
     if(setOctant)
     {
         octant->blockSignals(true);
-        octant->setCurrentItem(atts->GetOctant());
+        octant->setCurrentIndex(atts->GetOctant());
         octant->blockSignals(false);
         reflect->setOriginalOctant(operator2WidgetOctants[atts->GetOctant()]);
     }
@@ -381,6 +389,9 @@ QvisReflectWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Thu Apr 24 16:55:58 PDT 2008
 //   Added tr()'s
 //
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -389,23 +400,23 @@ QvisReflectWindow::UpdateOctantMenuContents()
     octant->clear();
     if (mode2D)
     {
-        octant->insertItem(tr("+X  +Y"));
-        octant->insertItem(tr("-X  +Y"));
-        octant->insertItem(tr("+X  -Y"));
-        octant->insertItem(tr("-X  -Y"));
+        octant->addItem(tr("+X  +Y"));
+        octant->addItem(tr("-X  +Y"));
+        octant->addItem(tr("+X  -Y"));
+        octant->addItem(tr("-X  -Y"));
         reflectionLabel->setText(tr("Reflection quadrants"));
         originalDataLabel->setText(tr("Original data quadrant"));
     }
     else
     {
-        octant->insertItem(tr("+X  +Y  +Z"));
-        octant->insertItem(tr("-X  +Y  +Z"));
-        octant->insertItem(tr("+X  -Y  +Z"));
-        octant->insertItem(tr("-X  -Y  +Z"));
-        octant->insertItem(tr("+X  +Y  -Z"));
-        octant->insertItem(tr("-X  +Y  -Z"));
-        octant->insertItem(tr("+X  -Y  -Z"));
-        octant->insertItem(tr("-X  -Y  -Z"));
+        octant->addItem(tr("+X  +Y  +Z"));
+        octant->addItem(tr("-X  +Y  +Z"));
+        octant->addItem(tr("+X  -Y  +Z"));
+        octant->addItem(tr("-X  -Y  +Z"));
+        octant->addItem(tr("+X  +Y  -Z"));
+        octant->addItem(tr("-X  +Y  -Z"));
+        octant->addItem(tr("+X  -Y  -Z"));
+        octant->addItem(tr("-X  -Y  -Z"));
         reflectionLabel->setText(tr("Reflection octants"));
         originalDataLabel->setText(tr("Original data octant"));
     }
@@ -423,6 +434,10 @@ QvisReflectWindow::UpdateOctantMenuContents()
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 11, 2002
 //
+// Modifications:
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisReflectWindow::GetCurrentValues(int which_field)
@@ -431,67 +446,43 @@ QvisReflectWindow::GetCurrentValues(int which_field)
     QString msg, temp;
 
     // Do specifiedX
-    if(which_field == 2 || doAll)
+    if(which_field == ReflectAttributes::ID_specifiedX || doAll)
     {
-        temp = specifiedX->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(specifiedX, val))
+            atts->SetSpecifiedX(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetSpecifiedX(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of specifiedX was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetSpecifiedX());
-            Message(msg);
+            ResettingError(tr("Specified X"),
+                DoubleToQString(atts->GetSpecifiedX()));
             atts->SetSpecifiedX(atts->GetSpecifiedX());
         }
     }
 
     // Do specifiedY
-    if(which_field == 4 || doAll)
+    if(which_field == ReflectAttributes::ID_specifiedY || doAll)
     {
-        temp = specifiedY->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(specifiedY, val))
+            atts->SetSpecifiedY(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetSpecifiedY(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of specifiedY was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetSpecifiedY());
-            Message(msg);
+            ResettingError(tr("Specified Y"),
+                DoubleToQString(atts->GetSpecifiedY()));
             atts->SetSpecifiedY(atts->GetSpecifiedY());
         }
     }
 
     // Do specifiedZ
-    if(which_field == 6 || doAll)
+    if(which_field == ReflectAttributes::ID_specifiedZ || doAll)
     {
-        temp = specifiedZ->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(specifiedZ, val))
+            atts->SetSpecifiedZ(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                atts->SetSpecifiedZ(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of specifiedZ was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetSpecifiedZ());
-            Message(msg);
+            ResettingError(tr("Specified Z"),
+                DoubleToQString(atts->GetSpecifiedZ()));
             atts->SetSpecifiedZ(atts->GetSpecifiedZ());
         }
     }
@@ -654,7 +645,9 @@ QvisReflectWindow::specifiedZProcessText()
 // Creation:   Wed Jun 25 12:44:20 PDT 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -680,7 +673,7 @@ QvisReflectWindow::selectMode(int mode)
                      "octants has a negative Z value. The input mode will remain 3D."));
             mode2D = false;
             modeButtons->blockSignals(true);
-            modeButtons->setButton(1);
+            modeButtons->button(1)->setChecked(true);
             modeButtons->blockSignals(false);
         }
         else

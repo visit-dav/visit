@@ -57,17 +57,19 @@
 //   Brad Whitlock, Wed Feb 6 11:17:57 PDT 2002
 //   Added initialization of varPath member.
 //
+//   Brad Whitlock, Fri May  9 10:30:16 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisVariablePopupMenu::QvisVariablePopupMenu(int plotType_, QWidget *parent,
-    const char *name) : QPopupMenu(parent, name), varPath("")
+QvisVariablePopupMenu::QvisVariablePopupMenu(int plotType_, QWidget *parent) :
+    QMenu(parent), varPath("")
 {
     plotType = plotType_;
 
-    // Connect a slot to QPopupMenu's activate signal so we can re-emit a
-    // signal that has more information.
-    connect(this, SIGNAL(activated(int)),
-            this, SLOT(activatedCaught(int)));
+    actions = new QActionGroup(this);
+    connect(actions, SIGNAL(triggered(QAction*)),
+            this, SLOT(caughtTriggered(QAction*)));
 }
 
 // ****************************************************************************
@@ -85,32 +87,88 @@ QvisVariablePopupMenu::QvisVariablePopupMenu(int plotType_, QWidget *parent,
 
 QvisVariablePopupMenu::~QvisVariablePopupMenu()
 {
-    // nothing here.
+    delete actions;
 }
 
 // ****************************************************************************
-// Method: QvisVariablePopupMenu::activatedCaught
+// Method: QvisVariablePopupMenu::addVar
 //
 // Purpose: 
-//   This is a Qt slot function that catches QPopupMenu's activated slot and
+//   Adds a variable entry to the menu and does bookkeeping to ensure that the
+//   signals will still be emitted by this class properly.
+//
+// Arguments:
+//   var   : The variable name.
+//   valid : Whether the variable is valid.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  9 11:10:38 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QAction *
+QvisVariablePopupMenu::addVar(const QString &var, bool valid)
+{
+    QAction *a = addAction(var);
+    a->setEnabled(valid);
+    actions->addAction(a);
+    return a;
+}
+
+// ****************************************************************************
+// Method: QvisVariablePopupMenu::count
+//
+// Purpose: 
+//   Returns the number of actions in the menu.
+//
+// Returns:    The number of actions in the menu.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  9 12:25:06 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisVariablePopupMenu::count() const
+{
+    return actions->actions().count();
+}
+
+//
+// Qt slots
+//
+
+// ****************************************************************************
+// Method: QvisVariablePopupMenu::caughtTriggered
+//
+// Purpose: 
+//   This is a Qt slot function that catches QMenu's activated slot and
 //   re-emits it with the plotType and variable name.
 //
 // Arguments:
-//   index : The index of the menu item that was selected.
+//   action : The action for the variable that caused the signal.
+//
+// Returns:    
+//
+// Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Mar 26 11:30:48 PDT 2001
+// Creation:   Fri May  9 11:09:22 PDT 2008
 //
 // Modifications:
-//   Brad Whitlock, Wed Feb 6 11:19:02 PDT 2002
-//   Modified to support cascading variable menus.
-//
+//   
 // ****************************************************************************
 
 void
-QvisVariablePopupMenu::activatedCaught(int index)
+QvisVariablePopupMenu::caughtTriggered(QAction *action)
 {
-    // Re-emit the signal with different arguments.
-    QString completeVar(varPath + text(index));
-    emit activated(plotType, completeVar);
+    emit activated(plotType, varPath + action->text());
 }

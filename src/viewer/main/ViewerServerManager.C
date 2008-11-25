@@ -39,7 +39,7 @@
 #include <visit-config.h>
 #include <snprintf.h>
 
-#include <qsocketnotifier.h>
+#include <QSocketNotifier>
 
 #include <ViewerServerManager.h>
 #include <Connection.h>
@@ -88,7 +88,7 @@ void * ViewerServerManager::cbData[2] = {0,0};
 //
 // ****************************************************************************
 
-ViewerServerManager::ViewerServerManager() : ViewerBase(0, "ViewerServerManager")
+ViewerServerManager::ViewerServerManager() : ViewerBase(0)
 {
 }
 
@@ -522,6 +522,9 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
 //   I made the timeout be zero on MacOS X. This can be undone later when
 //   VisIt launches faster there.
 //
+//   Brad Whitlock, Tue May 27 15:54:41 PDT 2008
+//   VisIt is fast on Intel Macs so make the timeout be non-zero.
+//
 // ****************************************************************************
 
 ViewerConnectionProgressDialog *
@@ -535,13 +538,8 @@ ViewerServerManager::SetupConnectionProgressWindow(RemoteProxyBase *component,
     //
     if(!avtCallback::GetNowinMode())
     {
-#if defined(__APPLE__)
-        // Make the timeout on MacOS X be zero since it takes so long to
-        // launch an engine. This at least gives the user something to look at.
-        int timeout = 0;
-#else
         int timeout = (component->Parallel() || !HostIsLocalHost(host)) ? 0 : 4000;
-#endif
+
         // Create a new connection dialog.
         dialog = new ViewerConnectionProgressDialog(
             component->GetComponentName().c_str(),
@@ -744,7 +742,7 @@ ViewerServerManager::StartLauncher(const std::string &host,
             // Create a socket notifier for the launcher's data socket so
             // we can read remote console output as it is forwarded.
             launchers[host].notifier = new ViewerConnectionPrinter(
-                 newLauncher->GetWriteConnection(1), "launcher_notifier");
+                 newLauncher->GetWriteConnection(1));
 
             // Set the dialog's information back to the previous values.
             if(dialog)
@@ -1042,8 +1040,8 @@ ViewerServerManager::GetPortTunnelMap(const std::string &host)
 //   
 // ****************************************************************************
 
-ViewerConnectionPrinter::ViewerConnectionPrinter(Connection *c, const char *name) : 
-    QSocketNotifier(c->GetDescriptor(), QSocketNotifier::Read, 0, name)
+ViewerConnectionPrinter::ViewerConnectionPrinter(Connection *c) : 
+    QSocketNotifier(c->GetDescriptor(), QSocketNotifier::Read, 0)
 {
     conn = c;
     connect(this, SIGNAL(activated(int)),

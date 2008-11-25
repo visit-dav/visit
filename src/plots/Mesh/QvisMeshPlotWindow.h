@@ -93,6 +93,9 @@ class MeshAttributes;
 //   Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
 //   Added a new slot to handle a new signal from QvisPointControl.
 //
+//   Cyrus Harrison, Fri Jul 18 14:44:51 PDT 2008
+//   Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -145,14 +148,14 @@ private:
     QCheckBox              *outlineOnlyToggle;
     QLabel                 *errorToleranceLabel;
     QLineEdit              *errorToleranceLineEdit;
-    QButtonGroup           *opaqueMode;
+    QButtonGroup           *opaqueModeGroup;
     QCheckBox              *legendToggle;
     QCheckBox              *showInternalToggle;
     QLabel                 *opaqueColorLabel;
     QvisColorButton        *opaqueColor;
     QCheckBox              *backgroundToggle;
     QCheckBox              *foregroundToggle;
-    QButtonGroup           *smoothingLevelButtons;
+    QButtonGroup           *smoothingLevelGroup;
     QvisPointControl       *pointControl;
 };
 

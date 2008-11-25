@@ -37,11 +37,11 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qframe.h>
+#include <QWidget>
 #include <vectortypes.h>
 #include <map>
 
-class QListBox;
+class QListWidget;
 class QvisDialogLineEdit;
 
 // ****************************************************************************
@@ -59,14 +59,16 @@ class QvisDialogLineEdit;
 // Creation:   Mon Nov 13 10:57:19 PDT 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
-class QvisSessionSourceChanger : public QFrame
+class QvisSessionSourceChanger : public QWidget
 {
     Q_OBJECT
 public:
-    QvisSessionSourceChanger(QWidget *parent, const char *name=0);
+    QvisSessionSourceChanger(QWidget *parent);
     virtual ~QvisSessionSourceChanger();
 
     void setSources(const stringVector &keys, const stringVector &values,
@@ -80,9 +82,9 @@ private slots:
 private:
     void updateControls(int ci);
 
-    QListBox           *sourceList;
+    QListWidget        *sourceList;
     QvisDialogLineEdit *fileLineEdit;
-    QListBox           *useList;
+    QListWidget        *useList;
 
     stringVector sourceIds;
     stringVector sources;

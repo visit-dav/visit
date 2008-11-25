@@ -53,12 +53,11 @@ class QCheckBox;
 class QComboBox;
 class QGroupBox;
 class QLabel;
-class QListBox;
+class QListWidget;
 class QNarrowLineEdit;
 class QPushButton;
 class QSpinBox;
 class QTabWidget;
-class QVBox;
 class QvisAnnotationObjectInterface;
 class QvisAxisAttributesWidget;
 class QvisColorButton;
@@ -124,6 +123,9 @@ class QvisLineWidthWidget;
 //
 //   Brad Whitlock, Wed Apr  9 10:58:41 PDT 2008
 //   QString for caption, shortName.
+//
+//   Brad Whitlock, Wed Jun 25 09:28:14 PDT 2008
+//   Qt 4.
 //
 //   Jeremy Meredith, Tue Nov 18 15:49:29 EST 2008
 //   Added AxisArray modality options.
@@ -255,8 +257,8 @@ private:
     QPushButton              *turnOffAllButton;
 
     // axisarray tab widgets
-    QVBox                    *pageArray;
-    QGroupBox                *axesArrayGroup;
+    QWidget                  *pageArray;
+    QWidget                  *axesArrayGroup;
     QCheckBox                *axesFlagToggleArray;
     QCheckBox                *ticksToggleArray;
     QCheckBox                *axesAutoSetTicksToggleArray;
@@ -265,8 +267,7 @@ private:
     QvisAxisAttributesWidget *axesArray[1];
 
     // 2D tab widgets
-    QVBox                    *page2D;
-    QGroupBox                *axes2DGroup;
+    QWidget                  *page2D;
     QCheckBox                *axesFlagToggle2D;
     QCheckBox                *axesAutoSetTicksToggle2D;
     QCheckBox                *labelAutoSetScalingToggle2D;
@@ -276,8 +277,7 @@ private:
     QvisAxisAttributesWidget *axes2D[2];
 
     // 3D tab widgets
-    QVBox                    *page3D;
-    QGroupBox                *axes3DGroup;
+    QWidget                  *page3D;
     QCheckBox                *axes3DVisible;
     QCheckBox                *axesAutoSetTicksToggle;
     QCheckBox                *labelAutoSetScalingToggle;
@@ -289,7 +289,7 @@ private:
     QvisAxisAttributesWidget *axes3D[3];
 
     // Color tab widgets
-    QGroupBox                *pageColor;
+    QWidget                  *pageColor;
     QvisColorButton          *backgroundColorButton;
     QvisColorButton          *foregroundColorButton;
     QButtonGroup             *backgroundStyleButtons;
@@ -307,9 +307,9 @@ private:
     QLabel                   *imageRepeatYLabel;
 
     // Objects tab widgets
-    QGroupBox                *pageObjects;
+    QWidget                  *pageObjects;
     QButtonGroup             *objButtonGroup;
-    QListBox                 *annotationListBox;
+    QListWidget              *annotationListBox;
     QPushButton              *hideShowAnnotationButton;
     QPushButton              *deleteAnnotationButton;
 };

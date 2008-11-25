@@ -39,12 +39,13 @@
 #ifndef QVIS_POSTABLE_WINDOW
 #define QVIS_POSTABLE_WINDOW
 #include <gui_exports.h>
-#include <qstring.h>
+#include <QString>
 #include <QvisWindowBase.h>
 
 class DataNode;
 class QvisNotepadArea;
 class QPushButton;
+class QVBoxLayout;
 class QVBoxLayout;
 
 // ****************************************************************************
@@ -80,6 +81,9 @@ class QVBoxLayout;
 //   Brad Whitlock, Wed Apr  9 10:50:05 PDT 2008
 //   QString for caption and shortName.
 //
+//   Brad Whitlock, Fri May 30 09:59:10 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisPostableWindow : public QvisWindowBase
@@ -112,10 +116,12 @@ protected slots:
 protected:
     bool               isCreated;
     bool               isPosted;
+    bool               addLayoutStretch;
     QString            shortCaption;
     QWidget            *central;
     QVBoxLayout        *topLayout;
     QPushButton        *postButton;
+    QPushButton        *dismissButton;
     QvisNotepadArea    *notepad;
 
     static bool         postWhenShown;

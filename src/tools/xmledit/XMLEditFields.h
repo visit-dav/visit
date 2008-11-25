@@ -39,7 +39,7 @@
 #ifndef XMLEDITFIELDS_H
 #define XMLEDITFIELDS_H
 
-#include <qframe.h>
+#include <QFrame>
 
 class XMLDocument;
 class QButtonGroup;
@@ -49,9 +49,8 @@ class QNarrowLineEdit;
 class QButtonGroup;
 class QComboBox;
 class QCheckBox;
-class QListBox;
+class QListWidget;
 class QTextEdit;
-class QMultiLineEdit;
 class QPushButton;
 
 // ****************************************************************************
@@ -70,13 +69,16 @@ class QPushButton;
 //    Brad Whitlock, Wed Feb 28 18:41:56 PST 2007
 //    Added public/private
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
 class XMLEditFields : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditFields(QWidget *p, const QString &n);
+    XMLEditFields(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:
@@ -111,7 +113,7 @@ class XMLEditFields : public QFrame
     QPushButton     *upButton;
     QPushButton     *downButton;
 
-    QListBox        *fieldlist;
+    QListWidget     *fieldlist;
     QLineEdit       *name;
     QLineEdit       *label;
     QComboBox       *type;
@@ -122,10 +124,11 @@ class XMLEditFields : public QFrame
     QCheckBox       *internal;
     QCheckBox       *ignoreeq;
     QButtonGroup    *access;
+    QGroupBox       *accessGroup;
     QGroupBox       *variableNameGroup;
     QButtonGroup    *varNameButtons;
     QCheckBox       *init;
-    QMultiLineEdit  *values;
+    QTextEdit       *values;
 };
 
 #endif

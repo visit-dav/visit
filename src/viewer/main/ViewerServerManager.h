@@ -43,7 +43,7 @@
 #include <ViewerBase.h>
 #include <vectortypes.h>
 #include <map>
-#include <qsocketnotifier.h>
+#include <QSocketNotifier>
 
 #include <HostProfile.h>
 
@@ -174,14 +174,16 @@ private:
 // Creation:   Wed Nov 21 15:14:14 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May 27 14:17:46 PDT 2008
+//   Removed name.
+//
 // ****************************************************************************
 
 class ViewerConnectionPrinter : public QSocketNotifier
 {
     Q_OBJECT
 public:
-    ViewerConnectionPrinter(Connection *, const char *name = 0);
+    ViewerConnectionPrinter(Connection *);
     virtual ~ViewerConnectionPrinter();
 private slots:
     void HandleRead(int);

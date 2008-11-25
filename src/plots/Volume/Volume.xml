@@ -4,17 +4,18 @@
       $(SLIVR_INCLUDE)
       $(GLEW_INCLUDE)
     </CXXFLAGS>
-    <LIBS>
+    <LIBS components="G">
+      $(QT_OPENGL_LIB)
       $(SLIVR_LIBS)
       $(GLEW_LIBS)
       $(GL_LIBS)
       -lGLU
     </LIBS>
-    <Files components="S">
-      TransferFunctionWidget.C
-    </Files>
     <Files components="G">
       $(SLIVR_GUI_IMPL)
+      TransferFunctionWidget.C
+    </Files>
+    <Files components="S">
       TransferFunctionWidget.C
     </Files>
     <Files components="V">
@@ -28,6 +29,12 @@
       BoundingBoxContourer.C
       TransferFunctionWidget.C
     </Files>
+    <LIBS components="V">
+      $(SLIVR_LIBS)
+      $(GLEW_LIBS)
+      $(GL_LIBS)
+      -lGLU
+    </LIBS>
     <Files components="E">
       avtVolumeRenderer.C
       avtVolumeFilter.C
@@ -39,6 +46,12 @@
       BoundingBoxContourer.C
       TransferFunctionWidget.C
     </Files>
+    <LIBS components="E">
+      $(SLIVR_LIBS)
+      $(GLEW_LIBS)
+      $(GL_LIBS)
+      -lGLU
+    </LIBS>
     <Files components="W">
       $(SLIVR_GUI_HDR)
     </Files>

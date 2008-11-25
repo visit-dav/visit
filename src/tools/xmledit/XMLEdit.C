@@ -38,11 +38,11 @@
 
 #include "XMLEdit.h"
 
-#include <qapplication.h>
-#include <qfiledialog.h>
-#include <qmenubar.h>
-#include <qpopupmenu.h>
-#include <qtabwidget.h>
+#include <QApplication>
+#include <QFileDialog>
+#include <QMenuBar>
+#include <qmenu.h>
+#include <QTabWidget>
 
 #include <XMLEditAttribute.h>
 #include <XMLEditMakefile.h>
@@ -70,59 +70,61 @@
 //    Brad Whitlock, Fri Mar 7 13:19:55 PST 2008
 //    Added "Generate code" menu option.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
-XMLEdit::XMLEdit(const QString &file, QWidget *p, const QString &n)
-    : QMainWindow(p,n)
+XMLEdit::XMLEdit(const QString &file, QWidget *p)
+    : QMainWindow(p)
 {
-    setCaption(tr("XMLEdit: %1").arg(file));
+    setWindowTitle(tr("XMLEdit: %1").arg(file));
 
-    QPopupMenu *filemenu = new QPopupMenu( this );
-    menuBar()->insertItem(tr("&File"),filemenu);
-    filemenu->insertItem( tr("&New"),  this, SLOT(newdoc()),  CTRL+Key_N );
-    filemenu->insertItem( tr("&Open"),  this, SLOT(open()),  CTRL+Key_O );
-    filemenu->insertItem( tr("&Save"),  this, SLOT(save()),  CTRL+Key_S );
-    filemenu->insertItem( tr("Save &as"),  this, SLOT(saveAs()),  CTRL+Key_A );
-    filemenu->insertSeparator();
-    filemenu->insertItem( tr("&Generate code"),  this, SLOT(generateCode()),  CTRL+Key_G );
-    filemenu->insertSeparator();
-    filemenu->insertItem( tr("E&xit"), this, SLOT(close()),  CTRL+Key_X );
+    QMenu *filemenu = menuBar()->addMenu(tr("&File"));
+    filemenu->addAction( tr("&New"), this, SLOT(newdoc()), QKeySequence(Qt::CTRL + Qt::Key_N));
+    filemenu->addAction(tr("&Open"),  this, SLOT(open()),  QKeySequence(Qt::CTRL + Qt::Key_O));
+    filemenu->addAction(tr("&Save"),  this, SLOT(save()),  QKeySequence(Qt::CTRL + Qt::Key_S));
+    filemenu->addAction(tr("Save &as"),  this, SLOT(saveAs()),  QKeySequence(Qt::CTRL + Qt::Key_A));
+    filemenu->addSeparator();
+    filemenu->addAction(tr("&Generate code"),  this, SLOT(generateCode()), QKeySequence(Qt::CTRL + Qt::Key_G));
+    filemenu->addSeparator();
+    filemenu->addAction( tr("E&xit"), this, SLOT(close()),  QKeySequence(Qt::CTRL + Qt::Key_X) );
 
-    tabs = new QTabWidget(this, "tabs");
-    tabs->setMargin(5);
+    tabs = new QTabWidget(this);
+    tabs->setContentsMargins(5,5,5,5);
 
-    plugintab = new XMLEditPlugin(this, "plugintab");
-    tabs->insertTab(plugintab, tr("Plugin"));
+    plugintab = new XMLEditPlugin(this);
+    tabs->addTab(plugintab, tr("Plugin"));
 
-    makefiletab = new XMLEditMakefile(this, "makefiletab");
-    tabs->insertTab(makefiletab, tr("Makefile"));
+    makefiletab = new XMLEditMakefile(this);
+    tabs->addTab(makefiletab, tr("Makefile"));
+   
+    attributetab = new XMLEditAttribute(this);
+    tabs->addTab(attributetab, tr("Attribute"));
+   
+    enumstab = new XMLEditEnums(this);
+    tabs->addTab(enumstab, tr("Enums"));
+    
+    fieldstab = new XMLEditFields(this);
+    tabs->addTab(fieldstab, tr("Fields"));
 
-    attributetab = new XMLEditAttribute(this, "attributetab");
-    tabs->insertTab(attributetab, tr("Attribute"));
+    functionstab = new XMLEditFunctions(this);
+    tabs->addTab(functionstab, tr("Functions"));
 
-    enumstab = new XMLEditEnums(this, "enumstab");
-    tabs->insertTab(enumstab, tr("Enums"));
-
-    fieldstab = new XMLEditFields(this, "fieldstab");
-    tabs->insertTab(fieldstab, tr("Fields"));
-
-    functionstab = new XMLEditFunctions(this, "functionstab");
-    tabs->insertTab(functionstab, tr("Functions"));
-
-    constantstab = new XMLEditConstants(this, "constantstab");
-    tabs->insertTab(constantstab, tr("Constants"));
-
-    includestab = new XMLEditIncludes(this, "includestab");
-    tabs->insertTab(includestab, tr("Includes"));
-
-    codetab = new XMLEditCode(this, "codetab");
-    tabs->insertTab(codetab, tr("Code"));
-
-    connect(tabs, SIGNAL(currentChanged(QWidget*)),
-            this, SLOT(updateTab(QWidget*)));
-
+    constantstab = new XMLEditConstants(this);
+    tabs->addTab(constantstab, tr("Constants"));
+   
+    includestab = new XMLEditIncludes(this);
+    tabs->addTab(includestab, tr("Includes"));
+    
+    codetab = new XMLEditCode(this);
+    tabs->addTab(codetab, tr("Code"));
+    
+    connect(tabs, SIGNAL(currentChanged(int)),
+            this, SLOT(updateTab(int)));
+            
     setCentralWidget(tabs);
     codeGenerationWindow = 0;
-
+    
     OpenFile(file);
 }
 
@@ -141,14 +143,19 @@ XMLEdit::newdoc()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEdit::open()
 {
-    QString file = 
-        QFileDialog::getOpenFileName(QString(),
-                                     tr("XML files (*.xml)"),
-                                     NULL, tr("XMLOpen"), tr("Open file..."));
+    QString file = QFileDialog::getOpenFileName(
+                    this,
+                    tr("Open file..."),
+                    QString(),
+                    tr("XML files (*.xml)"));
     if (file.isNull())
         return;
 
@@ -164,14 +171,20 @@ XMLEdit::open()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEdit::saveAs()
 {
-    QString file = 
-        QFileDialog::getSaveFileName(QString(),
-                                     tr("XML files (*.xml)"),
-                                     NULL, tr("XMLSave"), tr("Save file..."));
+    QString file = QFileDialog::getSaveFileName(
+                        this,
+                        tr("Save file..."),
+                        QString(),
+                        tr("XML files (*.xml)"));
+
     if (file.isNull())
         return;
 
@@ -213,6 +226,10 @@ XMLEdit::save()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEdit::OpenFile(const QString &file)
@@ -231,7 +248,7 @@ XMLEdit::OpenFile(const QString &file)
     constantstab->SetDocument(xmldoc);
     includestab->SetDocument(xmldoc);
     codetab->SetDocument(xmldoc);
-
+     
     plugintab->UpdateWindowContents();
     makefiletab->UpdateWindowContents();
     attributetab->UpdateWindowContents();
@@ -241,8 +258,8 @@ XMLEdit::OpenFile(const QString &file)
     constantstab->UpdateWindowContents();
     includestab->UpdateWindowContents();
     codetab->UpdateWindowContents();
-
-    setCaption(tr("XMLEdit: %1").arg(file));
+    
+    setWindowTitle(tr("XMLEdit: %1").arg(file));
 }
 
 // ****************************************************************************
@@ -257,13 +274,17 @@ XMLEdit::OpenFile(const QString &file)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEdit::SaveFile(const QString &file)
 {
     xmldoc->save(file);
 
-    setCaption(tr("XMLEdit: ")+file);
+    setWindowTitle(tr("XMLEdit: ")+file);
 }
 
 // ****************************************************************************
@@ -278,27 +299,31 @@ XMLEdit::SaveFile(const QString &file)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
-XMLEdit::updateTab(QWidget *tab)
+XMLEdit::updateTab(int tab)
 {
-    if (tab == plugintab)
+    if (tab == 0)
         plugintab->UpdateWindowContents();
-    else if (tab == makefiletab)
+    else if (tab == 1)
         makefiletab->UpdateWindowContents();
-    else if (tab == attributetab)
+    else if (tab == 2)
         attributetab->UpdateWindowContents();
-    else if (tab == enumstab)
+    else if (tab == 3)
         enumstab->UpdateWindowContents();
-    else if (tab == fieldstab)
+    else if (tab == 4)
         fieldstab->UpdateWindowContents();
-    else if (tab == functionstab)
+    else if (tab == 5)
         functionstab->UpdateWindowContents();
-    else if (tab == constantstab)
+    else if (tab == 6)
         constantstab->UpdateWindowContents();
-    else if (tab == includestab)
+    else if (tab == 7)
         includestab->UpdateWindowContents();
-    else if (tab == codetab)
+    else if (tab == 8)
         codetab->UpdateWindowContents();
     else
         cerr << "UNKNOWN TAB IN " << __FILE__ << " LINE " << __LINE__ << endl;
@@ -315,7 +340,9 @@ XMLEdit::updateTab(QWidget *tab)
 // Creation:   Fri Mar 7 14:23:15 PST 2008
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
 void
@@ -355,8 +382,8 @@ XMLEdit::generateCode()
        useTool, toolEnabled))
     {
         if(codeGenerationWindow == 0)
-            codeGenerationWindow = new XMLEditCodeGeneratorWindow(0,"codeGeneratorWindow");
-        codeGenerationWindow->setCaption(tr("Generate code for %1").arg(xmldoc->filename));
+            codeGenerationWindow = new XMLEditCodeGeneratorWindow(0);
+        codeGenerationWindow->setWindowTitle(tr("Generate code for %1").arg(xmldoc->filename));
 
         // Generate the code for the selected tools.
         codeGenerationWindow->GenerateCode(xmldoc->filename, useTool);

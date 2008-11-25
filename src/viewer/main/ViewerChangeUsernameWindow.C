@@ -41,11 +41,11 @@
 
 #include <vector>
 
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
-#include <qtimer.h>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
+#include <QTimer>
 
 #include <HostProfile.h>
 #include <HostProfileList.h>
@@ -71,15 +71,21 @@ ViewerChangeUsernameWindow *ViewerChangeUsernameWindow::instance = NULL;
 //    Brad Whitlock, Tue Apr 29 11:58:00 PDT 2008
 //    Added tr()'s
 //
+//    Brad Whitlock, Fri May 23 10:47:52 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
-ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent, const char *name)
-    : QDialog(parent, name, true)
+ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent)
+    : QDialog(parent)
 {
+    setModal(true);
+
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(10);
 
-    QHBoxLayout *l2 = new QHBoxLayout(layout);
+    QHBoxLayout *l2 = new QHBoxLayout;
+    layout->addLayout(l2);
     l2->setSpacing(5);
     label = new QLabel(tr("Username for localhost: "), this);
     l2->addWidget(label);
@@ -89,13 +95,14 @@ ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent, const ch
     connect(usernameedit, SIGNAL(returnPressed()), this, SLOT(accept()));
     layout->addSpacing(20);
 
-    QHBoxLayout *l3 = new QHBoxLayout(layout);
-    QPushButton *okay = new QPushButton(tr("Confirm username"), this, "OK");
+    QHBoxLayout *l3 = new QHBoxLayout;
+    layout->addLayout(l3);
+    QPushButton *okay = new QPushButton(tr("Confirm username"), this);
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     l3->addWidget(okay);
     l3->addStretch(10);
 
-    QPushButton *cancel = new QPushButton(tr("Cancel"), this, "Cancel");
+    QPushButton *cancel = new QPushButton(tr("Cancel"), this);
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
     l3->addWidget(cancel);
 }
@@ -126,14 +133,14 @@ ViewerChangeUsernameWindow::~ViewerChangeUsernameWindow()
 //
 // ****************************************************************************
 
-const char *
+std::string
 ViewerChangeUsernameWindow::getUsername()
 {
     // if never instantiated, no user name has been set here
     if (!instance)
         return NULL;
 
-    return instance->usernameedit->text().latin1();
+    return instance->usernameedit->text().toStdString();
 }
 
 // ****************************************************************************
@@ -155,25 +162,28 @@ ViewerChangeUsernameWindow::getUsername()
 //   Brad Whitlock, Tue Apr 29 11:58:35 PDT 2008
 //   Added tr()'s
 //
+//   Brad Whitlock, Fri May 23 11:03:20 PDT 2008
+//   Use std::string, Qt 4.
+//
 // ****************************************************************************
 
 bool
-ViewerChangeUsernameWindow::changeUsername(const char *host)
+ViewerChangeUsernameWindow::changeUsername(const std::string &host)
 {
     HostProfileList *profiles = ViewerServerManager::GetClientAtts();
 
     if(!instance)
         instance = new ViewerChangeUsernameWindow();
 
-    instance->setCaption(tr("Choose new username"));
+    instance->setWindowTitle(tr("Choose new username"));
 
     // Set the username prompt.
-    QString labelText(tr("New username for %1: ").arg(host));
+    QString labelText(tr("New username for %1: ").arg(host.c_str()));
     instance->label->setText(labelText);
 
     // Make the username window be the active window.
-    instance->topLevelWidget()->setActiveWindow();
-    instance->topLevelWidget()->raise();
+    instance->activateWindow();
+    instance->raise();
 
     // Clear the username.
     instance->usernameedit->clear();
@@ -195,8 +205,8 @@ ViewerChangeUsernameWindow::changeUsername(const char *host)
     {
         // Accepted; hit return or Okay.
         
-        const char *new_username = instance->usernameedit->text().latin1();
-        if (new_username == NULL || new_username[0] == '\0')
+        std::string new_username(instance->usernameedit->text().toStdString());
+        if (new_username.size() == 0)
             return false;
        
         // Let this convenience function do things like looking up the fully

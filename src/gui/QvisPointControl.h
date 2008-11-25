@@ -39,7 +39,7 @@
 #ifndef QVIS_POINT_CONTROLS_H
 #define QVIS_POINT_CONTROLS_H
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 
 class QCheckBox;
 class QComboBox;
@@ -70,6 +70,9 @@ class QvisVariableButton;
 //   Brad Whitlock, Thu Aug 25 09:29:56 PDT 2005
 //   I changed the point size from a button group to a combo box.
 //
+//   Cyrus Harrison, Tue Jul  8 09:58:45 PDT 2008
+//   Initial Qt4 Port
+//
 // ****************************************************************************
 
 class GUI_API QvisPointControl : public QWidget
@@ -77,7 +80,7 @@ class GUI_API QvisPointControl : public QWidget
     Q_OBJECT
 
 public:
-    QvisPointControl(QWidget * parent=0, const char * name=0);
+    QvisPointControl(QWidget * parent=0);
     ~QvisPointControl();
 
     void SetPointSize(double);

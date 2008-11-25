@@ -38,21 +38,23 @@
 
 #include <QvisSubsetPlotWindow.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlistbox.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qpixmapcache.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qslider.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QItemDelegate>
+#include <QLabel>
+#include <QLayout>
+#include <QListWidget>
+#include <QPainter>
+#include <QPixmap>
+#include <QPixmapCache>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSlider>
 
 #include <QvisColorButton.h>
+#include <QvisColorSwatchListWidget.h>
 #include <QvisColorTableButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
@@ -62,89 +64,17 @@
 #include <ViewerProxy.h>
 
 // ****************************************************************************
-// Class: QListBoxTextWithColor
-//
-// Purpose:
-//   This class is the type of item that we put into the listbox. It is 
-//   mostly just a stock QListBoxText except that the paint() method draws
-//   a square of color to the left of the name.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 1 09:46:11 PDT 2002
-//
-// Modifications:
-//   Brad Whitlock, Mon Dec 2 09:17:10 PDT 2002
-//   Made it look different when it is disabled.
-//
-// ****************************************************************************
-
-class QListBoxTextWithColor : public QListBoxText
-{
-public:
-    QListBoxTextWithColor(QListBox *listbox, const QString &text,
-        const QColor &c) : QListBoxText(listbox, text)
-    {
-        C = c;
-    }
-
-    virtual ~QListBoxTextWithColor() { };
-    void setText(const QString &str) { QListBoxItem::setText(str); };
-    void setColor(const QColor &c)   { C = c; };
-    const QColor &color() const      { return C; };
-
-    void paint(QPainter *painter)
-    {
-        QFontMetrics fm = painter->fontMetrics();
-        QRect r(fm.boundingRect("XX"));
-        QBrush brush(C);
-        QPen oldPen(painter->pen()), newPen(listBox()->colorGroup().text());
-
-        if(!listBox()->isEnabled())
-        {
-            brush.setStyle(QBrush::Dense5Pattern);
-            painter->fillRect(QRect(0, 0, listBox()->visibleWidth(), height(listBox())),
-                QBrush(listBox()->colorGroup().base()));
-        }
-        else
-        {
-            if(selected())
-            {
-                newPen = QPen(listBox()->colorGroup().highlightedText());
-                painter->fillRect(QRect(0, 0, listBox()->visibleWidth(), height(listBox())),
-                    QBrush(listBox()->colorGroup().highlight()));
-            }
-            else
-            {
-                painter->fillRect(QRect(0, 0, listBox()->visibleWidth(), height(listBox())),
-                    QBrush(listBox()->colorGroup().base()));
-            }
-        }
-        int fontY = fm.ascent() + fm.leading()/2;
-        painter->fillRect(QRect(4, fontY-1, r.width(), height(listBox()) - 2*fontY), brush);
-        painter->setPen(newPen);
-        painter->drawText(r.width()+8, fontY, text());
-        painter->setPen(oldPen);
-    }
-
-protected:
-    QColor C;
-};
-
-
-// ****************************************************************************
 // Method: QvisSubsetPlotWindow::QvisSubsetPlotWindow
 //
 // Purpose: 
 //   Constructor for the QvisSubsetPlotWindow class.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:49:54 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//    Eric Brugger, Wed Mar 14 14:14:38 PST 2001
-//    I added the argument type.
 //   
 // ****************************************************************************
 
@@ -161,6 +91,7 @@ QvisSubsetPlotWindow::QvisSubsetPlotWindow(const int type,
     // Initialize widgets that we'll have to delete manually. These are
     // parentless widgets.
     colorModeButtons = 0;
+    smoothingLevelButtons = 0;
 }
 
 // ****************************************************************************
@@ -169,12 +100,12 @@ QvisSubsetPlotWindow::QvisSubsetPlotWindow(const int type,
 // Purpose: 
 //   Destructor for the QvisSubsetPlotWindow class.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Aug 1 17:06:01 PST 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//   Brad Whitlock, Fri Feb 1 15:14:35 PST 2002
-//   Added code to delete widgets without parents.
 //
 // ****************************************************************************
 
@@ -182,8 +113,6 @@ QvisSubsetPlotWindow::~QvisSubsetPlotWindow()
 {
     subsetAtts = 0;
 
-    // no parents, delete them manually.
-    delete colorModeButtons;
 }
 
 // ****************************************************************************
@@ -193,92 +122,75 @@ QvisSubsetPlotWindow::~QvisSubsetPlotWindow()
 //   This method creates the widgets that are in the window and sets
 //   up their signals/slots.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Aug 1 17:06:30 PST 2000
+// Programmer: Jeremy Meredith
+// Creation:   June 12, 2003
 //
 // Modifications:
-//   Brad Whitlock, Fri Dec 8 12:13:11 PDT 2000
-//   Added code for color selection.
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Added pointControl.
 //
-//   Jeremy Meredith, Tue Mar 12 17:15:49 PST 2002
-//   Added a toggle for wireframe mode.
+//   Brad Whitlock, Wed Jul 20 17:58:11 PST 2005
+//   Added a new slot
 //
-//   Jeremy Meredith, March 14, 2002
-//   Added a toggle to draw internal surfaces.
+//   Brad Whitlock, Tue Apr 22 16:24:27 PDT 2008
+//   Added tr()'s.
 //
-//   Jeremy Meredith, Fri Mar 15 13:00:20 PST 2002
-//   Fixed checkboxes and opacity slider at bottom of window.
-//
-//   Brad Whitlock, Tue Dec 3 12:43:52 PDT 2002
-//   I added a color table button.
-//
-//   Jeremy Meredith, Tue Dec 10 10:25:41 PST 2002
-//   Added smoothing options.
-//
-//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
-//   Added pointControl. 
-//
-//   Brad Whitlock, Wed Jul 20 14:27:00 PST 2005
-//   Added pointSizePixelsChanged slot.
-//
-//   Brad Whitlock, Wed Apr 23 11:58:58 PDT 2008
-//   Added tr()'s
+//   Brad Whitlock, Thu Jul 17 11:35:40 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
 void
 QvisSubsetPlotWindow::CreateWindowContents()
 {
-    QGridLayout *checkBoxLayout = new QGridLayout(topLayout, 2, 4, 10);
+    QHBoxLayout *lineLayout = new QHBoxLayout(0);
+    lineLayout->setMargin(0);
+    topLayout->addLayout(lineLayout);
 
     // Create the lineSyle widget.
-    lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
-    checkBoxLayout->addWidget(lineStyle, 1, 1);
+    lineStyle = new QvisLineStyleWidget(0, central);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, tr("Line style"),
-                                central, "lineStyleLabel");
-    checkBoxLayout->addWidget(lineStyleLabel, 1, 0);
+    lineStyleLabel = new QLabel(tr("Line style"), central);
+    lineStyleLabel->setBuddy(lineStyle);
+    lineLayout->addWidget(lineStyleLabel);
+    lineLayout->addWidget(lineStyle);
 
     // Create the lineSyle widget.
-    lineWidth = new QvisLineWidthWidget(0, central, "lineWidth");
-    checkBoxLayout->addWidget(lineWidth, 1, 3);
+    lineWidth = new QvisLineWidthWidget(0, central);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, tr("Line width"),
-                                central, "lineWidthLabel");
-    checkBoxLayout->addWidget(lineWidthLabel, 1, 2);
+    lineWidthLabel = new QLabel(tr("Line width"), central);
+    lineWidthLabel->setBuddy(lineWidth);
+    lineLayout->addWidget(lineWidthLabel);
+    lineLayout->addWidget(lineWidth);
 
-    // Create the subset color group box.
-    subsetColorGroup = new QGroupBox(central, "subsetColorGroup");
+    // Create the boundary color group box.
+    subsetColorGroup = new QGroupBox(central);
     subsetColorGroup->setTitle(tr("Subset colors"));
     topLayout->addWidget(subsetColorGroup);
-    QVBoxLayout *innerLayout = new QVBoxLayout(subsetColorGroup);
-    innerLayout->setMargin(10);
-    innerLayout->addSpacing(15);
 
     // Create the mode buttons that determine if the window is in single
     // or multiple color mode.
-    colorModeButtons = new QButtonGroup(0, "colorModeButtons");
-    connect(colorModeButtons, SIGNAL(clicked(int)),
+    colorModeButtons = new QButtonGroup(subsetColorGroup);
+    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
-    QGridLayout *colorLayout = new QGridLayout(innerLayout, 5, 3);
+    QGridLayout *colorLayout = new QGridLayout(subsetColorGroup);
     colorLayout->setSpacing(10);
-    colorLayout->setColStretch(2, 1000);
-    QRadioButton *rb = new QRadioButton(tr("Color table"), subsetColorGroup,
-        "colorTable");
-    colorModeButtons->insert(rb);
+    colorLayout->setMargin(5);
+    colorLayout->setColumnStretch(2, 1000);
+    QRadioButton *rb = new QRadioButton(tr("Color table"), subsetColorGroup);
+    colorModeButtons->addButton(rb, 0);
     colorLayout->addWidget(rb, 1, 0);
-    rb = new QRadioButton(tr("Single"), subsetColorGroup, "singleColor");
-    colorModeButtons->insert(rb);
+    rb = new QRadioButton(tr("Single"), subsetColorGroup);
+    colorModeButtons->addButton(rb, 1);
     colorLayout->addWidget(rb, 2, 0);
-    rb = new QRadioButton(tr("Multiple"), subsetColorGroup, "multipleColor");
-    colorModeButtons->insert(rb);
+    rb = new QRadioButton(tr("Multiple"), subsetColorGroup);
+    colorModeButtons->addButton(rb, 2);
     colorLayout->addWidget(rb, 3, 0);
 
     // Create the single color button.
-    singleColor = new QvisColorButton(subsetColorGroup,
-        "singleColorButton");
+    singleColor = new QvisColorButton(subsetColorGroup);
     singleColor->setButtonColor(QColor(255, 0, 0));
     connect(singleColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(singleColorChanged(const QColor &)));
@@ -286,7 +198,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
 
     // Create the single color opacity.
     singleColorOpacity = new QvisOpacitySlider(0, 255, 25, 255,
-        subsetColorGroup, "singleColorOpacity", NULL);
+        subsetColorGroup, NULL);
     singleColorOpacity->setTickInterval(64);
     singleColorOpacity->setGradientColor(QColor(0, 0, 0));
     connect(singleColorOpacity, SIGNAL(valueChanged(int)),
@@ -294,56 +206,57 @@ QvisSubsetPlotWindow::CreateWindowContents()
     colorLayout->addWidget(singleColorOpacity, 2, 2);
 
     // Try adding the multiple color button.
-    multipleColor = new QvisColorButton(subsetColorGroup,
-        "multipleColor");
+    multipleColor = new QvisColorButton(subsetColorGroup);
     connect(multipleColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(multipleColorChanged(const QColor &)));
     colorLayout->addWidget(multipleColor, 3, 1);
 
     // Create the multiple color opacity.
     multipleColorOpacity = new QvisOpacitySlider(0, 255, 25, 255,
-        subsetColorGroup, "multipleColorOpacity", NULL);
+        subsetColorGroup, NULL);
     multipleColorOpacity->setTickInterval(64);
     multipleColorOpacity->setGradientColor(QColor(0, 0, 0));
     connect(multipleColorOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(multipleColorOpacityChanged(int)));
     colorLayout->addWidget(multipleColorOpacity, 3, 2);
 
-    // Create the multiple color listbox.
-    multipleColorList = new QListBox(subsetColorGroup, "multipleColorList");
+    // Create the multiple color list widget.
+    multipleColorList = new QvisColorSwatchListWidget(subsetColorGroup);
     multipleColorList->setMinimumHeight(100);
-    multipleColorList->setSelectionMode(QListBox::Extended);
-    connect(multipleColorList, SIGNAL(selectionChanged()),
+    connect(multipleColorList, SIGNAL(itemSelectionChanged()),
             this, SLOT(subsetSelectionChanged()));
-    colorLayout->addMultiCellWidget(multipleColorList, 4, 4, 1, 2);
-    multipleColorLabel = new QLabel(multipleColorList, tr("Subsets"),
-        subsetColorGroup, "multipleColorLabel");
+    colorLayout->addWidget(multipleColorList, 4, 1, 1, 2);
+    multipleColorLabel = new QLabel(tr("Subsets"), subsetColorGroup);
+    multipleColorLabel->setBuddy(multipleColorList);
     colorLayout->addWidget(multipleColorLabel, 4, 0, Qt::AlignRight);
 
     // Create the color table widget
-    colorTableButton = new QvisColorTableButton(subsetColorGroup, "colorTableButton");
+    colorTableButton = new QvisColorTableButton(subsetColorGroup);
     connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    colorLayout->addMultiCellWidget(colorTableButton, 1, 1, 1, 2, AlignLeft | AlignVCenter);
+    colorLayout->addWidget(colorTableButton, 1, 1, 1, 2, Qt::AlignLeft | Qt::AlignVCenter);
 
     // Create the overall opacity.
-    QGridLayout *opLayout = new QGridLayout(topLayout, 6, 2);
+    QHBoxLayout *opLayout = new QHBoxLayout(0);
+    opLayout->setMargin(0);
     opLayout->setSpacing(5);
+    topLayout->addLayout(opLayout);
     overallOpacity = new QvisOpacitySlider(0, 255, 25, 255, central, 
-                    "overallOpacity", NULL);
+                     NULL);
     overallOpacity->setTickInterval(64);
     overallOpacity->setGradientColor(QColor(0, 0, 0));
     connect(overallOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(overallOpacityChanged(int)));
-    opLayout->addWidget(overallOpacity, 0, 1);
 
-    QLabel *overallOpacityLabel = new QLabel(overallOpacity, tr("Opacity"), 
-                                      central, "overallOpacityLabel"); 
-    overallOpacityLabel->setAlignment(AlignLeft | AlignVCenter);
-    opLayout->addWidget(overallOpacityLabel, 0, 0);
+    QLabel *overallOpacityLabel = new QLabel(tr("Opacity"), central);
+    overallOpacityLabel->setBuddy(overallOpacity);
+    overallOpacityLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    opLayout->addWidget(overallOpacityLabel);
+    opLayout->addWidget(overallOpacity);
+    opLayout->setStretchFactor(overallOpacity, 10);
 
     // Create the point control 
-    pointControl = new QvisPointControl(central, "pointControl");
+    pointControl = new QvisPointControl(central);
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
     connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
@@ -354,45 +267,45 @@ QvisSubsetPlotWindow::CreateWindowContents()
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
             this, SLOT(pointTypeChanged(int)));
-    opLayout->addMultiCellWidget(pointControl, 1, 1, 0, 1);
+    topLayout->addWidget(pointControl);
  
     // Create the legend toggle
-    legendCheckBox = new QCheckBox(tr("Legend"), central, "legendToggle");
+    legendCheckBox = new QCheckBox(tr("Legend"), central);
     connect(legendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    opLayout->addWidget(legendCheckBox, 2, 0);
+    topLayout->addWidget(legendCheckBox);
 
     // Create the wireframe toggle
-    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central, "wireframeCheckBox");
+    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central);
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
-    opLayout->addWidget(wireframeCheckBox, 3, 0);
+    topLayout->addWidget(wireframeCheckBox);
 
     // Create the internal surfaces toggle
-    drawInternalCheckBox = new QCheckBox(tr("Draw internal surfaces"), central, "drawInternalCheckBox");
+    drawInternalCheckBox = new QCheckBox(tr("Draw internal surfaces"), central);
     connect(drawInternalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawInternalToggled(bool)));
-    opLayout->addMultiCellWidget(drawInternalCheckBox, 4,4, 0,1);
+    topLayout->addWidget(drawInternalCheckBox);
 
     // Create the smoothing level buttons
-    smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
-    connect(smoothingLevelButtons, SIGNAL(clicked(int)),
+    smoothingLevelButtons = new QButtonGroup(central);
+    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
-    QGridLayout *smoothingLayout = new QGridLayout(1, 5);
+    QGridLayout *smoothingLayout = new QGridLayout(0);
+    smoothingLayout->setMargin(0);
+    topLayout->addLayout(smoothingLayout);
     smoothingLayout->setSpacing(10);
-    smoothingLayout->setColStretch(4, 1000);
-    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
-    rb = new QRadioButton(tr("None"), central, "NoSmoothing");
-    smoothingLevelButtons->insert(rb);
+    smoothingLayout->setColumnStretch(4, 100);
+    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0, 0);
+    rb = new QRadioButton(tr("None"), central);
+    smoothingLevelButtons->addButton(rb, 0);
     smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("Fast"), central, "LowSmoothing");
-    smoothingLevelButtons->insert(rb);
+    rb = new QRadioButton(tr("Fast"), central);
+    smoothingLevelButtons->addButton(rb, 1);
     smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton(tr("High"), central, "HighSmoothing");
-    smoothingLevelButtons->insert(rb);
+    rb = new QRadioButton(tr("High"), central);
+    smoothingLevelButtons->addButton(rb, 2);
     smoothingLayout->addWidget(rb, 0, 3);
-    opLayout->addMultiCellLayout(smoothingLayout, 5,5 , 0,1);
-
 }
 
 // ****************************************************************************
@@ -411,46 +324,24 @@ QvisSubsetPlotWindow::CreateWindowContents()
 //
 // Note:       
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:53:23 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   June 12, 2003
 //
 // Modifications:
-//   Brad Whitlock, Fri Dec 8 12:12:55 PDT 2000
-//   Added code for color selection.
-//
-//   Kathleen Bonnell, Mon Mar 26 18:17:53 PST 2001 
-//   Disabled lineStyle and lineStyleLabel until we have vtk version
-//   in which line stippling is available. 
-//
-//   Kathleen Bonnell, Thu Jun 21 16:33:54 PDT 2001
-//   Enabled lineStyle and lineStyleLabel. 
-//
-//   Brad Whitlock, Thu Jan 31 12:16:10 PDT 2002
-//   Modified to support multiple colors in a different way.
-//
-//   Jeremy Meredith, Tue Mar 12 17:15:49 PST 2002
-//   Added a toggle for wireframe mode.
-//
-//   Jeremy Meredith, Thu Mar 14 17:51:16 PST 2002
-//   Added a toggle for drawing internal surfaces.
-//
-//   Brad Whitlock, Mon Nov 25 17:13:27 PST 2002
-//   Updated code to fit new version of the attributes.
-//
-//   Jeremy Meredith, Tue Dec 10 10:25:51 PST 2002
-//   Added smoothing options.
-//
-//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
-//   Added point options.
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Added pointControl cases.
 //
 //   Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
 //   Fixed SGI compiler error with string conversion to QString
 //
-//   Brad Whitlock, Wed Jul 20 18:10:08 PST 2005
+//   Brad Whitlock, Wed Jul 20 17:58:45 PST 2005
 //   Added pointSizePixels.
 //
 //   Hank Childs, Thu Jun  8 13:41:24 PDT 2006
 //   Fix compiler warning for casting.
+//
+//   Brad Whitlock, Thu Jul 17 11:43:27 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -473,36 +364,36 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // colorType
+        case SubsetAttributes::ID_colorType:
             if(subsetAtts->GetColorType() == SubsetAttributes::ColorBySingleColor) 
-                colorModeButtons->setButton(1);
+                colorModeButtons->button(1)->setChecked(true);
             else if(subsetAtts->GetColorType() == SubsetAttributes::ColorByMultipleColors) 
-                colorModeButtons->setButton(2);
+                colorModeButtons->button(2)->setChecked(true);
             else
-                colorModeButtons->setButton(0);
+                colorModeButtons->button(0)->setChecked(true);
             break;
-        case 1: // colorTableName
+        case SubsetAttributes::ID_colorTableName:
             colorTableButton->setColorTable(subsetAtts->GetColorTableName().c_str());
             break;
-        case 2: // filledFlag
+        case SubsetAttributes::ID_filledFlag:
             // nothing anymore
             break;
-        case 3: // legendFlag
+        case SubsetAttributes::ID_legendFlag:
             legendCheckBox->blockSignals(true);
             legendCheckBox->setChecked(subsetAtts->GetLegendFlag());
             legendCheckBox->blockSignals(false);
             break;
-        case 4: // lineStyle
+        case SubsetAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(subsetAtts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
-        case 5: // lineWidth
+        case SubsetAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(subsetAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-        case 6: // singleColor
+        case SubsetAttributes::ID_singleColor:
             { // new scope
             QColor temp(subsetAtts->GetSingleColor().Red(),
                         subsetAtts->GetSingleColor().Green(),
@@ -517,56 +408,57 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
             singleColorOpacity->blockSignals(false);
             }
             break;
-        case 7: // multiColor
+        case SubsetAttributes::ID_multiColor:
             updateMultiple = true;
             break;
-        case 8: // subsetNames
+        case SubsetAttributes::ID_subsetNames:
             updateMultiple = true;
             break;
-        case 9: // needDomainLabels
+        case SubsetAttributes::ID_subsetType:
             break;
-        case 10: // opacity
+        case SubsetAttributes::ID_opacity:
             overallOpacity->blockSignals(true);
             overallOpacity->setValue((int)(subsetAtts->GetOpacity() * 255.f));
             overallOpacity->blockSignals(false);
             break;
-        case 11: // wireframe
+        case SubsetAttributes::ID_wireframe:
             wireframeCheckBox->blockSignals(true);
             wireframeCheckBox->setChecked(subsetAtts->GetWireframe());
             wireframeCheckBox->blockSignals(false);
             break;
-        case 12: // drawInternal
+        case SubsetAttributes::ID_drawInternal:
             drawInternalCheckBox->blockSignals(true);
             drawInternalCheckBox->setChecked(subsetAtts->GetDrawInternal());
             drawInternalCheckBox->blockSignals(false);
             break;
-        case 13: // smoothingLevel
+        case SubsetAttributes::ID_smoothingLevel:
             smoothingLevelButtons->blockSignals(true);
-            smoothingLevelButtons->setButton(subsetAtts->GetSmoothingLevel());
+            smoothingLevelButtons->button(subsetAtts->GetSmoothingLevel())->setChecked(true);
             smoothingLevelButtons->blockSignals(false);
             break;
-        case 14: // pointSize
+        case SubsetAttributes::ID_pointSize:
             pointControl->blockSignals(true);
             pointControl->SetPointSize(subsetAtts->GetPointSize());
             pointControl->blockSignals(false);
             break;
-        case 15: // pointType
+        case SubsetAttributes::ID_pointType:
             pointControl->blockSignals(true);
             pointControl->SetPointType(subsetAtts->GetPointType());
             pointControl->blockSignals(false);
             break;
-        case 16: // pointSizeVarEnabled
+        case SubsetAttributes::ID_pointSizeVarEnabled:
             pointControl->blockSignals(true);
-            pointControl->SetPointSizeVarChecked(subsetAtts->GetPointSizeVarEnabled());
+            pointControl->SetPointSizeVarChecked(
+                          subsetAtts->GetPointSizeVarEnabled());
             pointControl->blockSignals(false);
             break;
-        case 17: // pointSizeVar
+        case SubsetAttributes::ID_pointSizeVar:
             pointControl->blockSignals(true);
             temp = QString(subsetAtts->GetPointSizeVar().c_str());
             pointControl->SetPointSizeVar(temp);
             pointControl->blockSignals(false);
             break;
-        case 18: // pointSizePixels
+        case SubsetAttributes::ID_pointSizePixels:
             pointControl->blockSignals(true);
             pointControl->SetPointSizePixels(subsetAtts->GetPointSizePixels());
             pointControl->blockSignals(false);
@@ -599,20 +491,17 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
 // Method: QvisSubsetPlotWindow::UpdateMultipleArea
 //
 // Purpose: 
-//   This method updates the multipleColors widget with the list of subset
+//   This method updates the multipleColors widget with the list of boundary
 //   names.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Dec 8 12:19:06 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//   Brad Whitlock, Thu Jan 31 12:17:26 PDT 2002
-//   Rewrote it so it supports setting both the names and the colors.
-//
-//   Brad Whitlock, Thu Feb 6 14:02:19 PST 2003
-//   I modified the code so it forces all listview items to update when
-//   there are the same number of colors but the colors are different (as in
-//   keyframing).
+//   Brad Whitlock, Thu Jul 17 12:12:45 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -620,10 +509,10 @@ void
 QvisSubsetPlotWindow::UpdateMultipleArea()
 {
     const stringVector &matNames = subsetAtts->GetSubsetNames();
-    intVector selectedSubsets;
+    intVector selectedsubsets;
     bool update = true;
     int i;
-    QListBoxTextWithColor *item;
+    QListWidgetItem *item;
 
     multipleColorList->blockSignals(true);
 
@@ -632,8 +521,8 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     //
     for(i = 0; i < multipleColorList->count(); ++i)
     {
-        if(multipleColorList->isSelected(i))
-            selectedSubsets.push_back(i);
+        if(multipleColorList->item(i)->isSelected())
+            selectedsubsets.push_back(i);
     }
 
     //
@@ -645,30 +534,23 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
         bool same = true;
         for(i = 0; i < matNames.size() && same; ++i)
         {
-            item = (QListBoxTextWithColor *)multipleColorList->item(i);
             ColorAttribute c(subsetAtts->GetMultiColor()[i]);
-            same &= (item->text() == QString(matNames[i].c_str()) &&
-                     item->color() == QColor(c.Red(), c.Green(), c.Blue()));
+            
+            same &= CompareItem(i, QString(matNames[i].c_str()),
+                                   QColor(c.Red(), c.Green(), c.Blue()));
         }
 
         // If the strings are not the same then modifiy the widgets.
         if(!same)
         {
-            int topItem = multipleColorList->topItem();
             for(i = 0; i < matNames.size(); ++i)
                 UpdateItem(i);
-
-            // Make sure the current item is still visible.
-            if(topItem > 0)
-                multipleColorList->setTopItem(topItem);
         }
         else
             update = false;
     }
     else if(matNames.size() > multipleColorList->count())
     {
-        int topItem = multipleColorList->topItem();
-
         // Set all of the existing names.
         for(i = 0; i < multipleColorList->count(); ++i)
             UpdateItem(i);
@@ -679,18 +561,11 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
             QString        itemText(matNames[i].c_str());
             ColorAttribute c(subsetAtts->GetMultiColor()[i]);
             QColor         itemColor(c.Red(), c.Green(), c.Blue());
-
-            item = new QListBoxTextWithColor(multipleColorList, itemText,
-                                             itemColor);
+            multipleColorList->addItem(matNames[i].c_str(), itemColor);
         }
-        // Make sure the current item is still visible.
-        if(topItem > 0)
-            multipleColorList->setTopItem(topItem);
     }
     else // if(matNames.size() < multipleColorList->count())
     {
-        int topItem = multipleColorList->topItem();
-
         // Set all of the existing names.
         for(i = 0; i < matNames.size(); ++i)
             UpdateItem(i);
@@ -699,14 +574,9 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
         int numEntries = multipleColorList->count();
         for(i = matNames.size(); i < numEntries; ++i)
         {
-            multipleColorList->removeItem(multipleColorList->count() - 1);
-        }
-
-        if(multipleColorList->count() > 0)
-        {
-            if(topItem > multipleColorList->count())
-                topItem = 0;
-            multipleColorList->setTopItem(topItem);
+            QListWidgetItem *item = multipleColorList->takeItem(multipleColorList->count() - 1);
+            if(item != 0)
+                delete item;
         }
     }
 
@@ -717,41 +587,30 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     {
         multipleColorList->clearSelection();
         bool noneSelected = true, first = true;
-        for(i = 0; i < selectedSubsets.size(); ++i)
+        for(i = 0; i < selectedsubsets.size(); ++i)
         {
-            if(selectedSubsets[i] < multipleColorList->count())
+            if(selectedsubsets[i] < multipleColorList->count())
             {
-                multipleColorList->setSelected(selectedSubsets[i], true);
+                item = multipleColorList->item(selectedsubsets[i]);
+                item->setSelected(true);
                 if(first)
                 {
                     first = false;
-                    multipleColorList->setCurrentItem(selectedSubsets[i]);
+                    multipleColorList->setCurrentItem(item);
                 }
                 noneSelected = false;
             }
         }
 
         // If there are no subsets selected then select the first. If there 
-        // is more than one subset selected then update the listbox to cover
+        // is more than one boundary selected then update the listbox to cover
         // the case where we have to update the color for more than one
         // listboxitem.
-        if(noneSelected)
+        if(noneSelected && multipleColorList->count() > 0)
         {
-            multipleColorList->setSelected(0, true);
-            multipleColorList->setCurrentItem(0);
-        }
-        else// if(selectedSubsets.size() > 1) // remove check
-        {
-#define LISTBOX_UPDATE_KLUDGE
-#ifdef LISTBOX_UPDATE_KLUDGE
-            // Force the listbox to redraw itself and *all* of its listbox items.
-            multipleColorList->resize(multipleColorList->width(),
-                                      multipleColorList->height()+1);
-            multipleColorList->resize(multipleColorList->width(),
-                                      multipleColorList->height()-1);
-#else
-            multipleColorList->update();
-#endif
+            item = multipleColorList->item(0);
+            item->setSelected(true);
+            multipleColorList->setCurrentItem(item);
         }
     }
 
@@ -761,9 +620,9 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     //
     if(matNames.size() > 0)
     {
-        int selectedIndex = (selectedSubsets.size() > 0) ?
-            selectedSubsets[0] : 0;
-        // Make sure that the selected index is in the range of visitble colors.
+        int selectedIndex = (selectedsubsets.size() > 0) ?
+            selectedsubsets[0] : 0;
+        // Make sure that the selected index is in the range of visible colors.
         if(selectedIndex >= matNames.size())
             selectedIndex = 0;
 
@@ -771,6 +630,34 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
     }
 
     multipleColorList->blockSignals(false);
+}
+
+// ****************************************************************************
+// Method: QvisSubsetPlotWindow::CompareItem
+//
+// Purpose: 
+//   Compares an item against a name and a color.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 17 11:54:42 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisSubsetPlotWindow::CompareItem(int i, const QString &name, 
+    const QColor &c) const
+{
+    QString itemName(multipleColorList->text(i));
+    QColor  itemColor(multipleColorList->color(i));
+    return  itemName == name && itemColor == c;
 }
 
 // ****************************************************************************
@@ -782,24 +669,23 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
 // Arguments:
 //   i : The index of the item to be updated.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 1 12:25:01 PDT 2002
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 17 12:10:40 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisSubsetPlotWindow::UpdateItem(int i)
 {
-    QListBoxTextWithColor *item;
-    item = (QListBoxTextWithColor *)multipleColorList->item(i);
-    if(item)
-    {
-        item->setText(subsetAtts->GetSubsetNames()[i].c_str());
-        ColorAttribute c(subsetAtts->GetMultiColor()[i]);
-        item->setColor(QColor(c.Red(), c.Green(), c.Blue()));
-    }
+    multipleColorList->setText(i, subsetAtts->GetSubsetNames()[i].c_str());
+    ColorAttribute c(subsetAtts->GetMultiColor()[i]);
+    multipleColorList->setColor(i, QColor(c.Red(), c.Green(), c.Blue()));
 }
 
 // ****************************************************************************
@@ -809,10 +695,12 @@ QvisSubsetPlotWindow::UpdateItem(int i)
 //   Sets the colors for the multiple color widgets.
 //
 // Arguments:
-//   index : The index into the subset list.
+//   index : The index into the boundary list.
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu Jan 31 12:30:58 PDT 2002
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -837,26 +725,23 @@ QvisSubsetPlotWindow::SetMultipleColorWidgets(int index)
 // Method: QvisSubsetPlotWindow::Apply
 //
 // Purpose: 
-//   This method applies the subset plot attributes and optionally
+//   This method applies the boundary plot attributes and optionally
 //   tells the viewer to apply them.
 //
 // Arguments:
 //   ignore : This flag, when true, tells the code to ignore the
 //            AutoUpdate function and tell the viewer to apply the
-//            subset plot attributes.
+//            boundary plot attributes.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:48:08 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//    Eric Brugger, Wed Mar 14 14:14:38 PST 2001
-//    I modified the routine to pass to the viewer proxy the plot
-//    type stored within the class instead of the one hardwired from
-//    an include file.
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Uncommented GetCurrentValues.
 //   
-//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
-//   Uncommented GetCurrentValues. 
-//
 // ****************************************************************************
 
 void
@@ -864,12 +749,12 @@ QvisSubsetPlotWindow::Apply(bool ignore)
 {
     if(AutoUpdate() || ignore)
     {
-        // Get the current subset plot attributes and tell the other
+        // Get the current boundary plot attributes and tell the other
         // observers about them.
         GetCurrentValues(-1);
         subsetAtts->Notify();
 
-        // Tell the viewer to set the subset plot attributes.
+        // Tell the viewer to set the boundary plot attributes.
         GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
@@ -887,8 +772,10 @@ QvisSubsetPlotWindow::Apply(bool ignore)
 //   This is a Qt slot function that is called when the window's Apply
 //   button is clicked.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:54:23 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -907,24 +794,21 @@ QvisSubsetPlotWindow::apply()
 //   This is a Qt slot function that is called when the window's
 //   "Make default" button is clicked.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:54:54 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//    Eric Brugger, Wed Mar 14 14:14:38 PST 2001
-//    I modified the routine to pass to the viewer proxy the plot
-//    type stored within the class instead of the one hardwired from
-//    an include file.
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Uncommented GetCurrentValues.
 //   
-//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
-//   Uncommented GetCurrentValues. 
-//
 // ****************************************************************************
 
 void
 QvisSubsetPlotWindow::makeDefault()
 {
-    // Tell the viewer to set the default subset plot attributes.
+    // Tell the viewer to set the default boundary plot attributes.
     GetCurrentValues(-1);
     subsetAtts->Notify();
     GetViewerMethods()->SetDefaultPlotOptions(plotType);
@@ -937,8 +821,10 @@ QvisSubsetPlotWindow::makeDefault()
 //   This is a Qt slot function that is called when the window's
 //   Reset button is clicked.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:55:52 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -947,7 +833,7 @@ QvisSubsetPlotWindow::makeDefault()
 void
 QvisSubsetPlotWindow::reset()
 {
-    // Tell the viewer to reset the subset plot attributes to the last
+    // Tell the viewer to reset the boundary plot attributes to the last
     // applied values.
     GetViewerMethods()->ResetPlotOptions(plotType);
 }
@@ -962,8 +848,10 @@ QvisSubsetPlotWindow::reset()
 // Arguments:
 //   newStyle : The new line style.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:55:52 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -986,8 +874,10 @@ QvisSubsetPlotWindow::lineStyleChanged(int newStyle)
 // Arguments:
 //   newWidth : The new line width.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:55:52 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -1010,8 +900,10 @@ QvisSubsetPlotWindow::lineWidthChanged(int newWidth)
 // Arguments:
 //   val : The new toggle value.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 13 08:55:52 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -1035,7 +927,9 @@ QvisSubsetPlotWindow::legendToggled(bool val)
 //   val : The new toggle value.
 //
 // Programmer: Jeremy Meredith
-// Creation:   March 12, 2002
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -1045,30 +939,6 @@ void
 QvisSubsetPlotWindow::wireframeToggled(bool val)
 {
     subsetAtts->SetWireframe(val);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisSubsetPlotWindow::drawInternalToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the window's
-//   draw internal surfaces toggle button is clicked.
-//
-// Arguments:
-//   val : The new toggle value.
-//
-// Programmer: Jeremy Meredith
-// Creation:   March 14, 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisSubsetPlotWindow::drawInternalToggled(bool val)
-{
-    subsetAtts->SetDrawInternal(val);
     Apply();
 }
 
@@ -1084,12 +954,12 @@ QvisSubsetPlotWindow::drawInternalToggled(bool val)
 //           then the single color button was clicked, otherwise the multiple
 //           colors button was clicked.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Dec 8 11:59:55 PDT 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//   Brad Whitlock, Mon Nov 25 17:55:07 PST 2002
-//   I changed the code to work with the new version of the attributes.
 //
 // ****************************************************************************
 
@@ -1115,8 +985,10 @@ QvisSubsetPlotWindow::colorModeChanged(int index)
 // Arguments:
 //   color : The new single color.
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 14:06:56 PST 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -1141,8 +1013,10 @@ QvisSubsetPlotWindow::singleColorChanged(const QColor &color)
 // Arguments:
 //   opacity : The new opacity.
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Jan 30 11:36:44 PDT 2002
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -1169,15 +1043,14 @@ QvisSubsetPlotWindow::singleColorOpacityChanged(int opacity)
 //   color : The new color for the button.
 //   index : The index of the color that changed.
 // 
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 14:02:58 PST 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//   Brad Whitlock, Fri Mar 30 18:56:15 PST 2001
-//   Changed a method call to conform to a new interface.
-//
-//   Brad Whitlock, Wed Jan 30 11:38:42 PDT 2002
-//   Rewrote it to work with the new window.
+//   Brad Whitlock, Thu Jul 17 13:50:59 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -1185,11 +1058,11 @@ void
 QvisSubsetPlotWindow::multipleColorChanged(const QColor &color)
 {
     // If any subsets are selected, change their colors.
-    if(multipleColorList->currentItem() != -1)
+    if(multipleColorList->currentItem() != 0)
     {
         for(int i = 0; i < multipleColorList->count(); ++i)
         {
-            if(multipleColorList->isSelected(i) &&
+            if(multipleColorList->item(i)->isSelected() &&
                (i < subsetAtts->GetMultiColor().GetNumColors()))
             {
                 subsetAtts->GetMultiColor()[i].SetRgb(color.red(),
@@ -1212,17 +1085,16 @@ QvisSubsetPlotWindow::multipleColorChanged(const QColor &color)
 //
 // Arguments:
 //   opacity : The new opacity.
-//   index   : The index of the subset that changed.
+//   index   : The index of the boundary that changed.
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 14:07:46 PST 2000
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//   Brad Whitlock, Fri Mar 30 18:56:15 PST 2001
-//   Changed a method call to conform to a new interface.
-//
-//   Brad Whitlock, Wed Jan 30 11:38:42 PDT 2002
-//   Rewrote it to work with the new window.
+//   Brad Whitlock, Thu Jul 17 13:51:42 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -1230,11 +1102,11 @@ void
 QvisSubsetPlotWindow::multipleColorOpacityChanged(int opacity)
 {
     // If any subsets are selected, change their opacities.
-    if(multipleColorList->currentItem() != -1)
+    if(multipleColorList->currentItem() != 0)
     {
         for(int i = 0; i < multipleColorList->count(); ++i)
         {
-            if(multipleColorList->isSelected(i) &&
+            if(multipleColorList->item(i)->isSelected() &&
                (i < subsetAtts->GetMultiColor().GetNumColors()))
             {
                 subsetAtts->GetMultiColor()[i].SetAlpha(opacity);
@@ -1250,14 +1122,18 @@ QvisSubsetPlotWindow::multipleColorOpacityChanged(int opacity)
 // Method: QvisSubsetPlotwindow::subsetSelectionChanged
 //
 // Purpose: 
-//   This is a Qt slot function that is called when the subset selection
+//   This is a Qt slot function that is called when the boundary selection
 //   changes.
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu Jan 31 13:15:21 PST 2002
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 17 13:52:02 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1267,7 +1143,7 @@ QvisSubsetPlotWindow::subsetSelectionChanged()
     int index = -1;
     for(int i = 0; i < multipleColorList->count(); ++i)
     {
-        if(multipleColorList->isSelected(i))
+        if(multipleColorList->item(i)->isSelected())
         {
             index = i;
             break;
@@ -1290,8 +1166,10 @@ QvisSubsetPlotWindow::subsetSelectionChanged()
 // Arguments:
 //   opacity : The new opacity.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 1 16:01:20 PST 2002
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -1315,8 +1193,10 @@ QvisSubsetPlotWindow::overallOpacityChanged(int opacity)
 //  Arguments:
 //    level  :   The new level.
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    December  9, 2002
+//  Programmer: Jeremy Meredith
+//  Creation:    May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 //  Modifications:
 //
@@ -1335,14 +1215,16 @@ QvisSubsetPlotWindow::smoothingLevelChanged(int level)
 //
 // Purpose: 
 //   This is a Qt slot function that sets the desired color table into the
-//   subset plot attributes.
+//   boundary plot attributes.
 //
 // Arguments:
 //   useDefault : Whether or not to use the default color table.
 //   ctName     : The name of the color table to use.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 25 17:53:36 PST 2002
+// Programmer: Jeremy Meredith
+// Creation:   May  7, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
 //
 // Modifications:
 //   
@@ -1351,7 +1233,7 @@ QvisSubsetPlotWindow::smoothingLevelChanged(int level)
 void
 QvisSubsetPlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
 {
-    subsetAtts->SetColorTableName(ctName.latin1());
+    subsetAtts->SetColorTableName(ctName.toStdString());
     Apply();
 }
 
@@ -1367,11 +1249,11 @@ QvisSubsetPlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
 //                  the routine gets the current values for all widgets.
 //
 // Programmer: Kathleen Bonnell 
-// Creation:   November 4, 2004 
+// Creation:   November 10, 2004 
 //
 // Modifications:
-//   Brad Whitlock, Wed Jul 20 18:11:27 PST 2005
-//   Added pointSizePixels.
+//   Brad Whitlock, Wed Jul 20 18:00:29 PST 2005
+//   Added SetPointSizePixels.
 //
 // ****************************************************************************
 
@@ -1380,12 +1262,12 @@ QvisSubsetPlotWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
 
-    // Do the point size
+    // Do the point size and pointsize var
     if(doAll)
     {
         subsetAtts->SetPointSize(pointControl->GetPointSize());
         subsetAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
-        subsetAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
+        subsetAtts->SetPointSizeVar(pointControl->GetPointSizeVar().toStdString());
     }
 }
 
@@ -1401,7 +1283,7 @@ QvisSubsetPlotWindow::GetCurrentValues(int which_widget)
 //    type   :   The new type
 //
 //  Programmer:  Kathleen Bonnell 
-//  Creation:    November 4, 2004 
+//  Creation:    November 10, 2004 
 //
 //  Modifications:
 //
@@ -1411,6 +1293,7 @@ void
 QvisSubsetPlotWindow::pointTypeChanged(int type)
 {
     subsetAtts->SetPointType((SubsetAttributes::PointType) type);
+    SetUpdate(false);
     Apply();
 }
 
@@ -1426,7 +1309,7 @@ QvisSubsetPlotWindow::pointTypeChanged(int type)
 //   val : The new state of the pointSizeVar toggle.
 //
 // Programmer: Kathleen Bonnell 
-// Creation:   November 4, 2004 
+// Creation:   November 10, 2004 
 //   
 // ****************************************************************************
 
@@ -1439,17 +1322,14 @@ QvisSubsetPlotWindow::pointSizeVarToggled(bool val)
 
 
 // ****************************************************************************
-// Method: QvisSubsetPlotWindow::pointSizeVarChanged
+// Method: QvisSubsetPlotWindow::processPointSizeVarText
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user changes the
-//   point size variable text and presses the Enter key.
-//
-// Arguments:
-//   val :     The new value of the pointSizeVar text.
+//   point size variable text and pressed the Enter key.
 //
 // Programmer: Kathleen Bonnell 
-// Creation:   November 4, 2004 
+// Creation:   November 10, 2004 
 //
 // Modifications:
 //   
@@ -1458,7 +1338,7 @@ QvisSubsetPlotWindow::pointSizeVarToggled(bool val)
 void
 QvisSubsetPlotWindow::pointSizeVarChanged(const QString &var)
 {
-    subsetAtts->SetPointSizeVar(var.latin1()); 
+    subsetAtts->SetPointSizeVar(var.toStdString()); 
     Apply();
 }
 
@@ -1468,22 +1348,19 @@ QvisSubsetPlotWindow::pointSizeVarChanged(const QString &var)
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user changes the
-//   point size text and presses the Enter key.
-//
-// Arguments:
-//   size :     The new point size.
+//   point size text and pressed the Enter key.
 //
 // Programmer: Kathleen Bonnell 
-// Creation:   November 4, 2004 
+// Creation:   November 10, 2004 
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisSubsetPlotWindow::pointSizeChanged(double size)
+QvisSubsetPlotWindow::pointSizeChanged(double d)
 {
-    subsetAtts->SetPointSize(size); 
+    subsetAtts->SetPointSize(d); 
     Apply();
 }
 
@@ -1505,5 +1382,31 @@ void
 QvisSubsetPlotWindow::pointSizePixelsChanged(int size)
 {
     subsetAtts->SetPointSizePixels(size); 
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSubsetPlotWindow::drawInternalToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the window's
+//   draw internal surfaces toggle button is clicked.
+//
+// Arguments:
+//   val : The new toggle value.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May  9, 2003
+//
+//  Note:  taken almost verbatim from the Boundary plot
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetPlotWindow::drawInternalToggled(bool val)
+{
+    subsetAtts->SetDrawInternal(val);
     Apply();
 }

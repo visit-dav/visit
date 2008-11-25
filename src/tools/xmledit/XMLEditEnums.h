@@ -39,15 +39,15 @@
 #ifndef XMLEDITENUMS_H
 #define XMLEDITENUMS_H
 
-#include <qframe.h>
+#include <QFrame>
 
 class XMLDocument;
 class QLineEdit;
 class QButtonGroup;
 class QComboBox;
 class QCheckBox;
-class QListBox;
-class QMultiLineEdit;
+class QListWidget;
+class QTextEdit;
 class QPushButton;
 
 // ****************************************************************************
@@ -59,12 +59,16 @@ class QPushButton;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+// Modifications:
+//   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
+//   Ported to Qt 4.4
+//
 // ****************************************************************************
 class XMLEditEnums : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditEnums(QWidget *p, const QString &n);
+    XMLEditEnums(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:
@@ -83,9 +87,9 @@ class XMLEditEnums : public QFrame
     QPushButton     *newButton;
     QPushButton     *delButton;
 
-    QListBox        *enumlist;
+    QListWidget     *enumlist;
     QLineEdit       *name;
-    QMultiLineEdit  *valuelist;
+    QTextEdit       *valuelist;
 };
 
 #endif

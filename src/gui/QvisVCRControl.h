@@ -39,7 +39,7 @@
 #ifndef QVIS_VCR_CONTROLS_H
 #define QVIS_VCR_CONTROLS_H
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 
 class QPushButton;
 
@@ -64,13 +64,16 @@ class QPushButton;
 //   Added a method to change the pixmap strings. It is used before the
 //   pixmaps are created.
 //
+//   Brad Whitlock, Tue Jun  3 13:44:14 PDT 2008
+//   Qt 4.
+//
 // *******************************************************************
 
 class GUI_API QvisVCRControl : public QWidget
 {
     Q_OBJECT
 public:
-    QvisVCRControl(QWidget * parent=0, const char * name=0);
+    QvisVCRControl(QWidget * parent=0);
     ~QvisVCRControl();
     void SetActiveButton(int btn);
 signals:

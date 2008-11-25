@@ -38,7 +38,7 @@
 #ifndef SPREADSHEET_TABLE_H
 #define SPREADSHEET_TABLE_H
 #include <string>
-#include <qtable.h>
+#include <QTableView>
 #include <list>
 
 class avtLookupTable;
@@ -63,15 +63,18 @@ class vtkDataArray;
 //   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
 //   Add support for updating column width after changing the font
 //
+//   Brad Whitlock, Tue Aug 26 15:09:37 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class SpreadsheetTable : public QTable
+class SpreadsheetTable : public QTableView
 {
     Q_OBJECT
 public:
     typedef enum {SliceX, SliceY, SliceZ, UCDCell, UCDNode} DisplayMode;
 
-    SpreadsheetTable(QWidget *parent = 0, const char *name = 0);
+    SpreadsheetTable(QWidget *parent = 0);
     virtual ~SpreadsheetTable();
 
     void setLUT(avtLookupTable *);
@@ -87,42 +90,18 @@ public:
     double  selectedCellsSum() const;
     double  selectedCellsAverage() const;
 
-    void addSelectedCellLabel(int, int, const std::string&);
+    void addSelectedCellLabel(int r, int c, const QString &label);
     void clearSelectedCellLabels();
 
     void setFont(QFont&);
 
+signals:
+    void selectionChanged();
 public slots:
     void selectAll();
     void selectNone();
 protected:
-    virtual void paintCell(QPainter *painter, int row, int col, 
-                           const QRect &rect, bool selected,
-                           const QColorGroup &cg);
-    int rowColToIndex(int row, int col) const;
-    double displayValue(int row, int col, bool &ghost) const;
     void updateColumnWidths();
-
-    bool            renderInColor;
-    avtLookupTable *lut;
-    QString         formatString;
-
-    vtkDataArray   *dataArray;
-    vtkDataArray   *ghostArray;
-    int             dims[3];
-    DisplayMode     displayMode;
-    int             sliceIndex;
-
-    struct SelectedCellLabel
-    {
-        int row;
-        int col;
-        std::string label;
-        
-        SelectedCellLabel(int r, int c, const std::string& l)
-            : row(r), col(c), label(l) {}
-    };
-    std::list<SelectedCellLabel> selectedCellLabels;
 };
 
 #endif

@@ -40,7 +40,7 @@
 #define QVIS_SIL_SET_SELECTOR_H
 
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 #include <SimpleObserver.h>
 #include <GUIBase.h>
 #include <vectortypes.h>
@@ -62,7 +62,10 @@ class SILRestrictionAttributes;
 //   Kathleen Bonnell, Thu Jun 14 12:18:47 PDT 2007
 //   Added userCategory, userSubset, so that options stored in sesisonfiles
 //   can be restored.
-//   
+//
+//   Brad Whitlock, Fri Jul 18 08:35:26 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisSILSetSelector : public QWidget, 
@@ -71,7 +74,7 @@ class GUI_API QvisSILSetSelector : public QWidget,
 {
     Q_OBJECT
   public:
-    QvisSILSetSelector(QWidget *parent , const char *name ,
+    QvisSILSetSelector(QWidget *parent,
             SILRestrictionAttributes *, intVector &);
     virtual ~QvisSILSetSelector();
 

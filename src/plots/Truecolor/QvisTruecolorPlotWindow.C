@@ -41,9 +41,9 @@
 #include <TruecolorAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
 #include <QvisOpacitySlider.h>
 #include <stdio.h>
 
@@ -107,23 +107,27 @@ QvisTruecolorPlotWindow::~QvisTruecolorPlotWindow()
 //   Brad Whitlock, Wed Apr 23 12:09:16 PDT 2008
 //   Added tr()'s
 //
+//   Brad Whitlock, Tue Aug 5 20:03:23 PST 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisTruecolorPlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(0);
+    topLayout->addLayout(mainLayout);
 
-    opacityLabel = new QLabel(tr("Opacity"), central, "opacityLabel");
+    opacityLabel = new QLabel(tr("Opacity"), central);
     mainLayout->addWidget(opacityLabel,0,0);
-    opacity = new QvisOpacitySlider(0,255,25,255, central, "opacity", NULL);
+    opacity = new QvisOpacitySlider(0,255,25,255, central, NULL);
     opacity->setTickInterval(64);
     opacity->setGradientColor(QColor(0, 0, 0));
     connect(opacity, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(opacityChanged(int, const void*)));
     mainLayout->addWidget(opacity, 0,1);
 
-    lighting = new QCheckBox(tr("Lighting"), central, "lighting");
+    lighting = new QCheckBox(tr("Lighting"), central);
     connect(lighting, SIGNAL(toggled(bool)), this, SLOT(lightingToggled(bool)));
     mainLayout->addWidget(lighting, 1, 0);
 }

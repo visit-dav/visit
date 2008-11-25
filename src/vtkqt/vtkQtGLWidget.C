@@ -35,6 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <QtCore>
 
 #include <vtkQtGLWidget.h>
 #include <vtkQtRenderWindow.h>
@@ -48,17 +49,17 @@
 //
 // Arguments:
 //   parent : The parent vtkQtRenderWindow widget.
-//   name   : The name of this widget.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jan 27 17:32:28 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May  8 16:21:37 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-vtkQtGLWidget::vtkQtGLWidget(QWidget *parent, const char *name) :
-    QGLWidget(parent, name)
+vtkQtGLWidget::vtkQtGLWidget(QWidget *parent) : QGLWidget(parent)
 {
     lineSmoothing = false;
     interactor = 0;

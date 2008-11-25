@@ -38,20 +38,20 @@
 
 #include <QvisHostProfileWindow.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
-#include <qstringlist.h>
-#include <qtabwidget.h>
-#include <qvbox.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSpinBox>
+#include <QStringList>
+#include <QTabWidget>
+#include <QWidget>
 
 #include <snprintf.h>
 
@@ -61,7 +61,7 @@
 
 #include <cstdlib>
 
-#define HOST_PROFILE_SPACING 8
+#define HOST_PROFILE_SPACING 6
 
 // ****************************************************************************
 // Method: QvisHostProfileWindow::QvisHostProfileWindow
@@ -239,33 +239,38 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::CreateWindowContents()
 {
-    QLabel *hostProfileLabel = new QLabel(tr("Host profiles"), central,
-        "hostProfileLabel");
+    
+    QLabel *hostProfileLabel = new QLabel(tr("Host profiles"), central);
     topLayout->addWidget(hostProfileLabel);
 
-    hostTabs = new QTabWidget(central, "hostTabs");
+    hostTabs = new QTabWidget(central);
     hostTabs->setMinimumHeight(hostTabs->fontMetrics().height() * 6);
-    connect(hostTabs, SIGNAL(currentChanged(QWidget *)),
-            this, SLOT(pageTurned(QWidget *)));
-    topLayout->addWidget(hostTabs, 20);
+    connect(hostTabs, SIGNAL(currentChanged(int)),
+            this, SLOT(pageTurned(int)));
+    topLayout->addWidget(hostTabs,10);
     emptyListBox = 0;
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
-    newButton = new QPushButton(tr("New profile"), central, "newButton");
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    topLayout->addLayout(buttonLayout);
+    
+    newButton = new QPushButton(tr("New profile"));
     connect(newButton, SIGNAL(clicked()), this, SLOT(newProfile()));
     buttonLayout->addWidget(newButton);
 
-    deleteButton = new QPushButton(tr("Delete profile"), central, "deleteButton");
+    deleteButton = new QPushButton(tr("Delete profile"));
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteProfile()));
     buttonLayout->addWidget(deleteButton);
     buttonLayout->addStretch(10);
 
-    optionsTabs = new QTabWidget(central, "optionsTabs");
+    optionsTabs = new QTabWidget(central);
     topLayout->addWidget(optionsTabs);
 
     //
@@ -311,17 +316,20 @@ QvisHostProfileWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 QWidget *
 QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 {
-    activeProfileGroup = new QWidget(parent, "activeProfileGroup");
+    activeProfileGroup = new QWidget(parent);
 
     QVBoxLayout *innerLayout = new QVBoxLayout(activeProfileGroup);
-    innerLayout->setMargin(10);
-    innerLayout->addSpacing(5);
-    QGridLayout *profileLayout = new QGridLayout(innerLayout, 8, 2);
+    QGridLayout *profileLayout = new QGridLayout();
+    innerLayout->addLayout(profileLayout);
+    
     profileLayout->setSpacing(HOST_PROFILE_SPACING);
     innerLayout->addStretch(5);
 
@@ -329,79 +337,75 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
         QString("<i>* ") + 
         tr("Applies to all profiles for a given host") + 
         QString("</i>"),
-        activeProfileGroup, "disclaimer");
-    disclaimer->setTextFormat(Qt::RichText);
+        activeProfileGroup);
     innerLayout->addWidget(disclaimer);
 
     int row = 0;
 
-    profileName = new QLineEdit(activeProfileGroup, "profileName");
+    profileName = new QLineEdit(activeProfileGroup);
     connect(profileName, SIGNAL(textChanged(const QString&)),
             this, SLOT(processProfileNameText(const QString&)));
-    profileNameLabel = new QLabel(profileName, tr("Profile name"),
-        activeProfileGroup, "profileNameLabel");
+    profileNameLabel = new QLabel(tr("Profile name"),activeProfileGroup);
     profileLayout->addWidget(profileNameLabel, row, 0);
     profileLayout->addWidget(profileName, row, 1);
     row++;
 
-    activeProfileCheckBox = new QCheckBox(tr("Default profile for host"),
-        activeProfileGroup, "activeProfileCheckBox");
+    activeProfileCheckBox = new QCheckBox(tr("Default profile for host"),activeProfileGroup);
     connect(activeProfileCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(makeActiveProfile(bool)));
     profileLayout->addWidget(activeProfileCheckBox, row, 1);
     row++;
 
-    hostName = new QComboBox(true, activeProfileGroup, "hostName");
+    hostName = new QComboBox(activeProfileGroup);
     hostName->setDuplicatesEnabled(false);
+    hostName->setEditable(true);
     connect(hostName, SIGNAL(activated(const QString &)),
             this, SLOT(hostNameChanged(const QString &)));
-    hostNameLabel = new QLabel(hostName, tr("Remote host name"),
-        activeProfileGroup, "hostNameLabel");
+    hostNameLabel = new QLabel(tr("Remote host name"), activeProfileGroup);
     profileLayout->addWidget(hostNameLabel, row, 0);
     profileLayout->addWidget(hostName, row, 1);
     row++;
 
-    hostAliases = new QLineEdit(activeProfileGroup, "hostAliases");
+    hostAliases = new QLineEdit(activeProfileGroup);
     connect(hostAliases, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostAliasesChanged(const QString &)));
-    hostAliasesLabel = new QLabel(hostAliases, QString("*") + tr("Host name aliases"),
-        activeProfileGroup, "hostAliasesLabel");
+    hostAliasesLabel = new QLabel(QString("*") + tr("Host name aliases"), activeProfileGroup);
     profileLayout->addWidget(hostAliasesLabel, row, 0);
     profileLayout->addWidget(hostAliases, row, 1);
     row++;
 
-    userName = new QLineEdit(activeProfileGroup, "userName");
+    userName = new QLineEdit(activeProfileGroup);
     connect(userName, SIGNAL(textChanged(const QString &)),
             this, SLOT(userNameChanged(const QString &)));
-    userNameLabel = new QLabel(userName, QString("*") + tr("Username"),
-        activeProfileGroup, "userNameLabel");
+    userNameLabel = new QLabel(QString("*") + tr("Username"), activeProfileGroup);
     profileLayout->addWidget(userNameLabel, row, 0);
     profileLayout->addWidget(userName, row, 1);
     row++;
 
-    timeout = new QSpinBox(1, 1440, 1, activeProfileGroup, "timeout");
+    timeout = new QSpinBox(activeProfileGroup);
+    timeout->setRange(1, 1440);
+    timeout->setSingleStep(1);
+    
+    
     connect(timeout, SIGNAL(valueChanged(int)),
             this, SLOT(timeoutChanged(int)));
-    timeoutLabel = new QLabel(timeout, tr("Timeout (minutes)"),
-        activeProfileGroup, "timeoutLabel");
+    timeoutLabel = new QLabel(tr("Timeout (minutes)"), activeProfileGroup);
     profileLayout->addWidget(timeoutLabel, row, 0);
     profileLayout->addWidget(timeout, row, 1);
     row++;
 
-    engineArguments = new QLineEdit(activeProfileGroup, "engineArguments");
+    engineArguments = new QLineEdit(activeProfileGroup);
     connect(engineArguments, SIGNAL(textChanged(const QString &)),
             this, SLOT(processEngineArgumentsText(const QString &)));
-    engineArgumentsLabel = new QLabel(engineArguments, tr("Additional options"),
-        activeProfileGroup, "engineArgumentsLabel");
+    engineArgumentsLabel = new QLabel(tr("Additional options"), activeProfileGroup);
     profileLayout->addWidget(engineArgumentsLabel, row, 0);
     profileLayout->addWidget(engineArguments, row, 1);
     row++;
 
-    parallelCheckBox = new QCheckBox(tr("Parallel computation engine"), 
-                                     activeProfileGroup, "parallelCheckBox");
+    parallelCheckBox = new QCheckBox(tr("Parallel computation engine"), activeProfileGroup);
     connect(parallelCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleParallel(bool)));
-    profileLayout->addMultiCellWidget(parallelCheckBox, row, row, 0, 1);
+    profileLayout->addWidget(parallelCheckBox, row, 0, 1, 2);
     row++;
 
     return activeProfileGroup;
@@ -445,6 +449,9 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 //   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
 //   Added fields for commands to run pre and post the mpi command.
 //
+//   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//   Initial Qt4 Port.
+//
 //   Eric Brugger, Mon Aug 18 10:39:11 PDT 2008
 //   Added support for just "msub" as a parallel launch method.
 //
@@ -453,160 +460,154 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 QWidget *
 QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
 {
-    parGroup = new QWidget(parent, "parGroup");
+    parGroup = new QWidget(parent);
 
     QVBoxLayout *innerParLayout = new QVBoxLayout(parGroup);
-    innerParLayout->setMargin(10);
-    innerParLayout->addSpacing(5);
 
-    QGridLayout *parLayout = new QGridLayout(innerParLayout, 9, 2);
+    QGridLayout *parLayout = new QGridLayout();
+    innerParLayout->addLayout(parLayout);
     parLayout->setSpacing(HOST_PROFILE_SPACING);
-
+    innerParLayout->addStretch(5);
+    
     int prow = 0;
 
-    launchMethod = new QComboBox(false, parGroup, "launchMethod");
-    launchMethod->insertItem(tr("(default)"));
-    launchMethod->insertItem("bsub");
-    launchMethod->insertItem("dmpirun");
-    launchMethod->insertItem("mpirun");
-    launchMethod->insertItem("msub");
-    launchMethod->insertItem("poe");
-    launchMethod->insertItem("prun");
-    launchMethod->insertItem("psub");
-    launchMethod->insertItem("srun");
-    launchMethod->insertItem("yod");
-    launchMethod->insertItem("msub/srun");
-    launchMethod->insertItem("psub/mpirun");
-    launchMethod->insertItem("psub/poe");
-    launchMethod->insertItem("psub/srun");
-    launchMethod->insertItem("qsub/aprun");
-    launchMethod->insertItem("qsub/mpiexec");
-    launchMethod->insertItem("qsub/mpirun");
-    launchMethod->insertItem("qsub/srun");
+    launchMethod = new QComboBox(parGroup);
+    launchMethod->addItem(tr("(default)"));
+    launchMethod->addItem("bsub");
+    launchMethod->addItem("dmpirun");
+    launchMethod->addItem("mpirun");
+    launchMethod->addItem("msub");
+    launchMethod->addItem("poe");
+    launchMethod->addItem("prun");
+    launchMethod->addItem("psub");
+    launchMethod->addItem("srun");
+    launchMethod->addItem("yod");
+    launchMethod->addItem("msub/srun");
+    launchMethod->addItem("psub/mpirun");
+    launchMethod->addItem("psub/poe");
+    launchMethod->addItem("psub/srun");
+    launchMethod->addItem("qsub/aprun");
+    launchMethod->addItem("qsub/mpiexec");
+    launchMethod->addItem("qsub/mpirun");
+    launchMethod->addItem("qsub/srun");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
-    launchCheckBox = new QCheckBox(tr("Parallel launch method"),
-                                   parGroup, "launchCheckBox");
+    launchCheckBox = new QCheckBox(tr("Parallel launch method"), parGroup);
     connect(launchCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleLaunch(bool)));
     parLayout->addWidget(launchCheckBox, prow, 0);
     parLayout->addWidget(launchMethod, prow, 1);
     prow++;
 
-    launchArgs = new QLineEdit(parGroup, "launchArgs");
+    launchArgs = new QLineEdit(parGroup);
     connect(launchArgs, SIGNAL(textChanged(const QString &)),
             this, SLOT(processLaunchArgsText(const QString &)));
-    launchArgsCheckBox = new QCheckBox(tr("Launcher arguments"),
-                                      parGroup, "launchArgsLabel");
+    launchArgsCheckBox = new QCheckBox(tr("Launcher arguments"),parGroup);
     connect(launchArgsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleLaunchArgs(bool)));
     parLayout->addWidget(launchArgsCheckBox, prow, 0);
     parLayout->addWidget(launchArgs, prow, 1);
     prow++;
 
-    sublaunchArgs = new QLineEdit(parGroup, "sublaunchArgs");
+    sublaunchArgs = new QLineEdit(parGroup);
     connect(sublaunchArgs, SIGNAL(textChanged(const QString &)),
             this, SLOT(processSublaunchArgsText(const QString &)));
-    sublaunchArgsCheckBox = new QCheckBox(tr("Sublauncher arguments"),
-                                      parGroup, "sublaunchArgsLabel");
+    sublaunchArgsCheckBox = new QCheckBox(tr("Sublauncher arguments"),parGroup);
     connect(sublaunchArgsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSublaunchArgs(bool)));
     parLayout->addWidget(sublaunchArgsCheckBox, prow, 0);
     parLayout->addWidget(sublaunchArgs, prow, 1);
     prow++;
 
-    sublaunchPreCmd = new QLineEdit(parGroup, "sublaunchPreCmd");
+    sublaunchPreCmd = new QLineEdit(parGroup);
     connect(sublaunchPreCmd, SIGNAL(textChanged(const QString &)),
             this, SLOT(processSublaunchPreCmdText(const QString &)));
-    sublaunchPreCmdCheckBox = new QCheckBox(tr("Sublauncher pre-mpi command"),
-                                      parGroup, "sublaunchPreCmdLabel");
+    sublaunchPreCmdCheckBox = new QCheckBox(tr("Sublauncher pre-mpi command"), parGroup);
     connect(sublaunchPreCmdCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSublaunchPreCmd(bool)));
     parLayout->addWidget(sublaunchPreCmdCheckBox, prow, 0);
     parLayout->addWidget(sublaunchPreCmd, prow, 1);
     prow++;
 
-    sublaunchPostCmd = new QLineEdit(parGroup, "sublaunchPostCmd");
+    sublaunchPostCmd = new QLineEdit(parGroup);
     connect(sublaunchPostCmd, SIGNAL(textChanged(const QString &)),
             this, SLOT(processSublaunchPostCmdText(const QString &)));
-    sublaunchPostCmdCheckBox = new QCheckBox(tr("Sublauncher post-mpi command"),
-                                      parGroup, "sublaunchPostCmdLabel");
+    sublaunchPostCmdCheckBox = new QCheckBox(tr("Sublauncher post-mpi command"), parGroup);
     connect(sublaunchPostCmdCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSublaunchPostCmd(bool)));
     parLayout->addWidget(sublaunchPostCmdCheckBox, prow, 0);
     parLayout->addWidget(sublaunchPostCmd, prow, 1);
     prow++;
 
-    partitionName = new QLineEdit(parGroup, "partitionName");
+    partitionName = new QLineEdit(parGroup);
     connect(partitionName, SIGNAL(textChanged(const QString &)),
             this, SLOT(processPartitionNameText(const QString &)));
-    partitionCheckBox = new QCheckBox(tr("Partition / Pool"),
-                                      parGroup, "partitionLabel");
+    partitionCheckBox = new QCheckBox(tr("Partition / Pool"),parGroup);
     connect(partitionCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(togglePartitionName(bool)));
     parLayout->addWidget(partitionCheckBox, prow, 0);
     parLayout->addWidget(partitionName, prow, 1);
     prow++;
 
-    loadBalancing = new QComboBox(false, parGroup, "loadBalancing");
-    loadBalancing->insertItem(tr("Auto"));
-    loadBalancing->insertItem(tr("Static"));
-    loadBalancing->insertItem(tr("Dynamic"));
+    loadBalancing = new QComboBox(parGroup);
+    loadBalancing->addItem(tr("Auto"));
+    loadBalancing->addItem(tr("Static"));
+    loadBalancing->addItem(tr("Dynamic"));
     connect(loadBalancing, SIGNAL(activated(int)),
             this, SLOT(loadBalancingChanged(int)));
 
-    loadBalancingLabel = new QLabel(tr("Load balancing"), parGroup, "loadBalancingLabel");
+    loadBalancingLabel = new QLabel(tr("Load balancing"));
     parLayout->addWidget(loadBalancingLabel, prow, 0);
     parLayout->addWidget(loadBalancing, prow, 1);
     prow++;
 
-    numProcessors = new QSpinBox(1, 99999, 1, parGroup, "numProcessors");
+    numProcessors = new QSpinBox(parGroup);
+    numProcessors->setRange(1,99999);
+    numProcessors->setSingleStep(1);
     connect(numProcessors, SIGNAL(valueChanged(int)),
             this, SLOT(numProcessorsChanged(int)));
-    numProcLabel = new QLabel(numProcessors, tr("Default number of processors"),
-        parGroup, "numProcLabel");
+    numProcLabel = new QLabel(tr("Default number of processors"), parGroup);
     parLayout->addWidget(numProcLabel, prow, 0);
     parLayout->addWidget(numProcessors, prow, 1);
     prow++;
 
-    numNodes = new QSpinBox(1, 99999, 1, parGroup, "numNodes");
+    numNodes = new QSpinBox(parGroup);
+    numNodes->setRange(1,99999);
+    numNodes->setSingleStep(1);
+    
     connect(numNodes, SIGNAL(valueChanged(int)),
             this, SLOT(numNodesChanged(int)));
-    numNodesCheckBox = new QCheckBox(tr("Default number of nodes"),
-                                     parGroup, "numNodesCheckBox");
+    numNodesCheckBox = new QCheckBox(tr("Default number of nodes"), parGroup);
     connect(numNodesCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleNumNodes(bool)));
     parLayout->addWidget(numNodesCheckBox, prow, 0);
     parLayout->addWidget(numNodes, prow, 1);
     prow++;
 
-    bankName = new QLineEdit(parGroup, "bankName");
+    bankName = new QLineEdit(parGroup);
     connect(bankName, SIGNAL(textChanged(const QString &)),
             this, SLOT(processBankNameText(const QString &)));
-    bankCheckBox = new QCheckBox(tr("Default Bank"),
-                                 parGroup, "bankLabel");
+    bankCheckBox = new QCheckBox(tr("Default Bank"),parGroup);
     connect(bankCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleBankName(bool)));
     parLayout->addWidget(bankCheckBox, prow, 0);
     parLayout->addWidget(bankName, prow, 1);
     prow++;
 
-    timeLimit = new QLineEdit(parGroup, "timeLimit");
+    timeLimit = new QLineEdit(parGroup);
     connect(timeLimit, SIGNAL(textChanged(const QString &)),
             this, SLOT(processTimeLimitText(const QString &)));
-    timeLimitCheckBox = new QCheckBox(tr("Default Time Limit"),
-                                      parGroup, "timeLimitLabel");
+    timeLimitCheckBox = new QCheckBox(tr("Default Time Limit"), parGroup);
     connect(timeLimitCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleTimeLimit(bool)));
     parLayout->addWidget(timeLimitCheckBox, prow, 0);
     parLayout->addWidget(timeLimit, prow, 1);
     prow++;
 
-    machinefile = new QLineEdit(parGroup, "machinefile");
+    machinefile = new QLineEdit(parGroup);
     connect(machinefile, SIGNAL(textChanged(const QString &)),
             this, SLOT(processMachinefileText(const QString &)));
-    machinefileCheckBox = new QCheckBox(tr("Default Machine File"),
-                                      parGroup, "machinefileLabel");
+    machinefileCheckBox = new QCheckBox(tr("Default Machine File"), parGroup);
     connect(machinefileCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleMachinefile(bool)));
     parLayout->addWidget(machinefileCheckBox, prow, 0);
@@ -640,34 +641,36 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 QWidget *
 QvisHostProfileWindow::CreateAdvancedTab(QWidget *parent)
 {
-    advancedGroup = new QWidget(parent, "advancedGroup");
+    advancedGroup = new QWidget(parent);
 
     QVBoxLayout *innerAdvLayout = new QVBoxLayout(advancedGroup);
-    innerAdvLayout->setMargin(10);
-    innerAdvLayout->addSpacing(5);
 
-    QVBoxLayout *advLayout = new QVBoxLayout(innerAdvLayout);
+    QVBoxLayout *advLayout = new QVBoxLayout();
+    innerAdvLayout->addLayout(advLayout);
     advLayout->setSpacing(HOST_PROFILE_SPACING);
 
     shareMDServerCheckBox = new QCheckBox(tr("Share batch job with Metadata Server"),
-                                          advancedGroup, "shareMDServerCheckBox");
+                                          advancedGroup);
     advLayout->addWidget(shareMDServerCheckBox);
     connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleShareMDServer(bool)));
 
     useVisItScriptForEnvCheckBox = new QCheckBox(
                              tr("Use VisIt script to set up parallel environment"),
-                             advancedGroup, "useVisItScriptForEnvCheckBox");
+                             advancedGroup);
     advLayout->addWidget(useVisItScriptForEnvCheckBox);
     connect(useVisItScriptForEnvCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleUseVisItScriptForEnv(bool)));
 
-    QTabWidget *advancedOptionsTabs = new QTabWidget(advancedGroup, "advancedOptionsTabs");
+    QTabWidget *advancedOptionsTabs = new QTabWidget(advancedGroup);
     advLayout->addWidget(advancedOptionsTabs);
 
     //
@@ -713,6 +716,9 @@ QvisHostProfileWindow::CreateAdvancedTab(QWidget *parent)
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 QWidget *
@@ -720,13 +726,13 @@ QvisHostProfileWindow::CreateNetworkingTab(QWidget *parent)
 {
     int nrow = 0;
 
-    networkingGroup = new QWidget(parent, "networkingGroup");
+    networkingGroup = new QWidget(parent);
 
     QVBoxLayout *innerNetLayout = new QVBoxLayout(networkingGroup);
-    innerNetLayout->setMargin(10);
-    innerNetLayout->addSpacing(5);
 
-    QGridLayout *netLayout = new QGridLayout(innerNetLayout, 7, 4);
+    QGridLayout *netLayout = new QGridLayout();
+    innerNetLayout->addLayout(netLayout);
+    
     netLayout->setSpacing(HOST_PROFILE_SPACING);
     innerNetLayout->addStretch(5);
 
@@ -734,57 +740,55 @@ QvisHostProfileWindow::CreateNetworkingTab(QWidget *parent)
         QString("<i>") +
         tr("Networking options apply to all profiles for a given host.") +
         QString("</i>"), 
-        networkingGroup, "disclaimer");
-    disclaimer->setTextFormat(Qt::RichText);
-    netLayout->addMultiCellWidget(disclaimer, nrow, nrow, 0, 3);
+        networkingGroup);
+    netLayout->addWidget(disclaimer, nrow, 0, 1, 4);
     nrow++;
 
-    tunnelSSH = new QCheckBox(tr("Tunnel data connections through SSH"),
-                              networkingGroup, "tunnelSSH");
-    netLayout->addMultiCellWidget(tunnelSSH, nrow,nrow, 0,3);
+    tunnelSSH = new QCheckBox(tr("Tunnel data connections through SSH"), networkingGroup);
+    netLayout->addWidget(tunnelSSH, nrow,0, 1,4);
     connect(tunnelSSH, SIGNAL(toggled(bool)),
             this, SLOT(toggleTunnelSSH(bool)));
     nrow++;
 
-    clientHostNameMethod = new QButtonGroup(0, "clientHostNameMethod");
-    connect(clientHostNameMethod, SIGNAL(clicked(int)),
+    clientHostNameMethod = new QButtonGroup(networkingGroup);
+    connect(clientHostNameMethod, SIGNAL(buttonClicked(int)),
             this, SLOT(clientHostNameMethodChanged(int)));
-    chnMachineName = new QRadioButton(tr("Use local machine name"),
-                                      networkingGroup, "chnMachineName");
+    chnMachineName = new QRadioButton(tr("Use local machine name"), networkingGroup);
     chnParseFromSSHClient = new QRadioButton(tr("Parse from SSH_CLIENT environment variable"),
-                                             networkingGroup, "chnParseFromSSHClient");
+                                             networkingGroup);
     chnSpecifyManually = new QRadioButton(tr("Specify manually:"),
-                                          networkingGroup, "chnSpecifyManually");
+                                          networkingGroup);
     chnMachineName->setChecked(true);
-    clientHostNameMethod->insert(chnMachineName);
-    clientHostNameMethod->insert(chnParseFromSSHClient);
-    clientHostNameMethod->insert(chnSpecifyManually);
+    clientHostNameMethod->addButton(chnMachineName,0);
+
+    clientHostNameMethod->addButton(chnParseFromSSHClient,1);
+    clientHostNameMethod->addButton(chnSpecifyManually,2);
     clientHostNameMethodLabel =
         new QLabel(tr("Method used to determine local host name when not tunneling:"),
-                   networkingGroup, "clientHostNameMethodLabel");
-    netLayout->addMultiCellWidget(clientHostNameMethodLabel,
-                                  nrow, nrow, 0, 3);
+                   networkingGroup);
+    netLayout->addWidget(clientHostNameMethodLabel,
+                                  nrow, 0, 1, 4);
     nrow++;
-    netLayout->addMultiCellWidget(chnMachineName, nrow, nrow, 1, 3);
+    netLayout->addWidget(chnMachineName, nrow, 1, 1, 3);
     nrow++;
-    netLayout->addMultiCellWidget(chnParseFromSSHClient, nrow, nrow, 1, 3);
+    netLayout->addWidget(chnParseFromSSHClient, nrow, 1, 1, 3);
     nrow++;
-    netLayout->addMultiCellWidget(chnSpecifyManually, nrow, nrow, 1, 2);
-    clientHostName = new QLineEdit(networkingGroup, "clientHostName");
+    netLayout->addWidget(chnSpecifyManually, nrow, 1, 1, 2);
+    
+    clientHostName = new QLineEdit(networkingGroup);
     connect(clientHostName, SIGNAL(textChanged(const QString &)),
             this, SLOT(clientHostNameChanged(const QString &)));
-    netLayout->addMultiCellWidget(clientHostName, nrow, nrow, 3,3);
+    netLayout->addWidget(clientHostName, nrow, 3, 1,1);
     nrow++;
 
-    sshPort = new QLineEdit(networkingGroup, "sshPort");
-    sshPortCheckBox = new QCheckBox(tr("Specify SSH port"), networkingGroup,
-                                    "sshPortCheckBox");
+    sshPort = new QLineEdit(networkingGroup);
+    sshPortCheckBox = new QCheckBox(tr("Specify SSH port"), networkingGroup);
     connect(sshPort, SIGNAL(textChanged(const QString &)),
             this, SLOT(sshPortChanged(const QString &)));
     connect(sshPortCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSSHPort(bool)));
-    netLayout->addMultiCellWidget(sshPortCheckBox, nrow, nrow, 0, 1);
-    netLayout->addMultiCellWidget(sshPort, nrow, nrow, 2, 3);
+    netLayout->addWidget(sshPortCheckBox, nrow, 0, 1, 2);
+    netLayout->addWidget(sshPort, nrow, 2, 1, 2);
     nrow++;
 
     return networkingGroup;
@@ -814,18 +818,20 @@ QvisHostProfileWindow::CreateNetworkingTab(QWidget *parent)
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 QWidget *
 QvisHostProfileWindow::CreateHardwareAccelerationTab(QWidget *parent)
 {
-    hwGroup = new QWidget(parent, "hwGroup");
+    hwGroup = new QWidget(parent);
 
     QVBoxLayout *innerHwLayout = new QVBoxLayout(hwGroup);
-    innerHwLayout->setMargin(10);
-    innerHwLayout->addSpacing(5);
 
-    QGridLayout *hwLayout = new QGridLayout(innerHwLayout, 4, 2);
+    QGridLayout *hwLayout = new QGridLayout();
+    innerHwLayout->addLayout(hwLayout);
     hwLayout->setSpacing(HOST_PROFILE_SPACING);
     innerHwLayout->addStretch(5);
 
@@ -837,41 +843,41 @@ QvisHostProfileWindow::CreateHardwareAccelerationTab(QWidget *parent)
           "parallel clusters that have graphics cards.") +
        QString("</i>"));
 
-    QLabel *disclaimer = new QLabel(str1, hwGroup, "disclaimer1");
-    disclaimer->setTextFormat(Qt::RichText);
+    QLabel *disclaimer = new QLabel(str1, hwGroup);
+    disclaimer->setWordWrap(true);
+    
     int hrow = 0;
-    hwLayout->addMultiCellWidget(disclaimer, hrow, hrow, 0, 1);
+    hwLayout->addWidget(disclaimer, hrow, 0, 1, 2);
     hrow++;
 
-    canDoHW = new QCheckBox(tr("Use cluster's graphics cards"),
-                                     hwGroup, "canDoHW");
+    canDoHW = new QCheckBox(tr("Use cluster's graphics cards"), hwGroup);
     connect(canDoHW, SIGNAL(toggled(bool)),
             this, SLOT(toggleCanDoHW(bool)));
-    hwLayout->addMultiCellWidget(canDoHW, hrow, hrow, 0, 1);
+    hwLayout->addWidget(canDoHW, hrow, 0, 1, 2);
     hrow++;
 
-    preCommand = new QLineEdit(hwGroup, "preCommand");
-    preCommandCheckBox = new QCheckBox(tr("Pre-command"), hwGroup,
-                                    "preCommandCheckBox");
+    preCommand = new QLineEdit(hwGroup);
+    preCommandCheckBox = new QCheckBox(tr("Pre-command"), hwGroup);
     connect(preCommand, SIGNAL(textChanged(const QString &)),
             this, SLOT(preCommandChanged(const QString &)));
     connect(preCommandCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(togglePreCommand(bool)));
-    hwLayout->addMultiCellWidget(preCommandCheckBox, hrow, hrow, 0, 0);
-    hwLayout->addMultiCellWidget(preCommand, hrow, hrow, 1, 1);
+    hwLayout->addWidget(preCommandCheckBox, hrow, 0, 1, 1);
+    hwLayout->addWidget(preCommand, hrow, 1, 1, 1);
     hrow++;
 
-    postCommand = new QLineEdit(hwGroup, "postCommand");
-    postCommandCheckBox = new QCheckBox(tr("Post-command"), hwGroup,
-                                    "postCommandCheckBox");
+    postCommand = new QLineEdit(hwGroup);
+    postCommandCheckBox = new QCheckBox(tr("Post-command"), hwGroup);
     connect(postCommand, SIGNAL(textChanged(const QString &)),
             this, SLOT(postCommandChanged(const QString &)));
     connect(postCommandCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(togglePostCommand(bool)));
-    hwLayout->addMultiCellWidget(postCommandCheckBox, hrow, hrow, 0, 0);
-    hwLayout->addMultiCellWidget(postCommand, hrow, hrow, 1, 1);
+    hwLayout->addWidget(postCommandCheckBox, hrow, 0, 1, 1);
+    hwLayout->addWidget(postCommand, hrow, 1, 1, 1);
     hrow++;
-
+    
+    
+    
     return hwGroup;
 }
 
@@ -934,6 +940,9 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
 //   Made it pull the old host name from the widget before
 //   clearing the text.
 //
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -941,152 +950,164 @@ QvisHostProfileWindow::UpdateProfileList()
 {
     HostProfileList *profiles = (HostProfileList *)subject;
 
-    int i;
-    HostTabMap::Iterator pos;
-
+    QMapIterator<QString,QListWidget*> itr(hostTabMap);
     // If there are host profiles, add the empty tab. Otherwise remove it.
     hostTabs->blockSignals(true);
     if(profiles->GetNumProfiles() < 1)
     {
         // Clear the tab map.
-        for(pos = hostTabMap.begin(); pos != hostTabMap.end(); ++pos)
+        int idx = 0;
+        while(itr.hasNext())
         {
-            // Disconnect the signals of the listboxes we're deleting.
-            disconnect(pos.data(), SIGNAL(doubleClicked(QListBoxItem *)),
-                this, SLOT(activateProfile(QListBoxItem *)));
-            disconnect(pos.data(), SIGNAL(selectionChanged(QListBoxItem *)),
-                this, SLOT(activateProfile(QListBoxItem *)));
-            pos.data()->clear();
-            hostTabs->removePage(pos.data());
+            itr.next();
+            QListWidget *list = itr.value();
+            hostTabs->removeTab(idx);
+            delete list;
+            idx++;
         }
+        
         hostTabMap.clear();
+        
         if(emptyListBox == 0)
-        {
-            emptyListBox = new QListBox(hostTabs, "emptyList");
-            emptyListBox->setVScrollBarMode(QScrollView::Auto);
-            emptyListBox->setHScrollBarMode(QScrollView::Auto);
-        }
-        hostTabs->insertTab(emptyListBox, "    ");
-
+            emptyListBox = new QListWidget(hostTabs);
+        
+        hostTabs->addTab(emptyListBox, "    ");
+        hostTabs->blockSignals(false);
         return;
     }
     else if(emptyListBox != 0)
-        hostTabs->removePage(emptyListBox);
+        hostTabs->removeTab(hostTabs->indexOf(emptyListBox));
 
+    
     // Find a list of hosts that no longer need a tab.
-    HostTabMap removal;
-    for(pos = hostTabMap.begin(); pos != hostTabMap.end(); ++pos)
+    QMap<QString,QListWidget*> removal;
+    
+    // reset the itr
+    itr = QMapIterator<QString,QListWidget*>(hostTabMap);
+    
+    while(itr.hasNext())
     {
-        // If the host has no profiles, add it to the remove list.
-        if(profiles->GetNumProfilesForHost(std::string(pos.key().latin1())) == 0)
-        {
-            removal.insert(pos.key(), pos.data());
-        }
+        itr.next();
+        if(profiles->GetNumProfilesForHost(itr.key().toStdString()) == 0)
+            removal.insert(itr.key(),itr.value());
     }
-
+    
     // Find a list of hosts that need a tab and do not have one.
-    HostTabMap additional;
-    for(i = 0; i < profiles->GetNumProfiles(); ++i)
+    QStringList additional;
+    
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         QString host(profiles->operator[](i).GetHost().c_str());
-        if(hostTabMap.find(host) == hostTabMap.end())
-        {
-            additional.insert(host, 0);
-        }
+        if(!hostTabMap.contains(host))
+            additional.append(host);
     }
-
+    
+    
+        
     // If there are any tabs to be added, try and use tabs already in
     // the widget. If none are available, create new tabs.
-    for(pos = additional.begin(); pos != additional.end(); ++pos)
+    QStringListIterator add_itr(additional);
+    
+    while(add_itr.hasNext())
     {
-        QListBox *newListBox;
-        QString shortHostName(HostProfile::GetShortHostname(pos.key().latin1()).c_str());
-
+        QString add_name = add_itr.next();
+        QListWidget *newListBox;
+        QString shortHostName(HostProfile::GetShortHostname(add_name.toStdString()).c_str());
+        
         if(removal.count() > 0)
         {
             // Reuse the tab
-            newListBox = removal.begin().data();
-            hostTabs->changeTab(newListBox, shortHostName);
-            hostTabMap.remove(hostTabMap.find(removal.begin().key()));
+            newListBox = removal.begin().value();
+            int tab_idx = hostTabs->indexOf(newListBox);
+            hostTabs->setTabText(tab_idx, shortHostName);
+            hostTabMap.remove(removal.begin().key());
             removal.remove(removal.begin().key());
         }
         else
         {
-            newListBox = new QListBox(hostTabs);
-            connect(newListBox, SIGNAL(doubleClicked(QListBoxItem *)),
-                this, SLOT(activateProfile(QListBoxItem *)));
-            connect(newListBox, SIGNAL(selectionChanged(QListBoxItem *)),
-                this, SLOT(activateProfile(QListBoxItem *)));
+            newListBox = new QListWidget(hostTabs);
+            
+            connect(newListBox, SIGNAL(currentItemChanged(QListWidgetItem *,QListWidgetItem *)),
+                this, SLOT(activateProfile(QListWidgetItem *)));
+            
             hostTabs->addTab(newListBox, shortHostName);
         }
 
         // Associate the host with the list box.
-        hostTabMap.insert(pos.key(), newListBox);
+        hostTabMap.insert(add_name, newListBox);
     }
-
+    
     // If the remove map is not empty, remove the tabs associated with
     // the hosts in the removal map.
-    for(pos = removal.begin(); pos != removal.end(); ++pos)
+    
+    // set the itr to use the removal map
+    itr = QMapIterator<QString,QListWidget*>(removal); 
+    while(itr.hasNext())
     {
-        hostTabs->removePage(pos.data());
-        hostTabMap.remove(pos.key());
-
-        // Disconnect the signals of the listboxes we're deleting.
-        disconnect(pos.data(), SIGNAL(doubleClicked(QListBoxItem *)),
-            this, SLOT(activateProfile(QListBoxItem *)));
-        disconnect(pos.data(), SIGNAL(selectionChanged(QListBoxItem *)),
-            this, SLOT(activateProfile(QListBoxItem *)));
+        itr.next();
+        hostTabMap.remove(itr.key());
+        QListWidget *list = itr.value();
+        delete list;
     }
+    
     hostTabs->blockSignals(false);
 
     // Clear all of the listboxes in the hostTabMap so there are no
     // duplicates when we add the entire list of profiles to the
     // various listboxes.
-    for(pos = hostTabMap.begin(); pos != hostTabMap.end(); ++pos)
-        pos.data()->clear();
+    
+    itr = QMapIterator<QString,QListWidget*>(hostTabMap);
+    while(itr.hasNext())
+    {
+        itr.next();
+        itr.value()->clear();
+    }
 
     // Now that the tabs are settled, go through and add all of the 
     // profiles to the appropriate tab.
     hostTabs->blockSignals(true);
-    for(i = 0; i < profiles->GetNumProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         const HostProfile &current = profiles->operator[](i);
 
         QString profileString(current.GetProfileName().c_str());
         QString hostName(current.GetHost().c_str());
-        HostTabMap::Iterator pos;
-
-        if((pos = hostTabMap.find(hostName)) != hostTabMap.end())
+        
+        if(hostTabMap.contains(hostName))
         {
-            int newIndex = pos.data()->count();
-            pos.data()->insertItem(profileString, newIndex);
+            QListWidget *list = hostTabMap[hostName];
             
-            if(i == profiles->GetActiveProfile())
+            int new_index= list->count();
+            
+            list->blockSignals(true);
+            QListWidgetItem *item = new QListWidgetItem(profileString,list);
+            
+            if( i == profiles->GetActiveProfile())
             {
-                hostTabs->showPage(pos.data());
-                pos.data()->blockSignals(true);
-                pos.data()->setSelected(newIndex, true);
-                pos.data()->setCurrentItem(newIndex);
-                pos.data()->blockSignals(false);
-                pos.data()->triggerUpdate(false);
+                hostTabs->setCurrentWidget(list);
+                item->setSelected(true);
+                list->setCurrentItem(item);
             }
-            else
-            {
-                pos.data()->blockSignals(true);
-                pos.data()->setSelected(newIndex, false);
-                pos.data()->blockSignals(false);
-            }
+            list->blockSignals(false);
         }
     }
+    
     hostTabs->blockSignals(false);
-
+    
     hostName->blockSignals(true);
     QString oldHostName = hostName->currentText();
     hostName->clear();
-    for(pos = hostTabMap.begin(); pos != hostTabMap.end(); ++pos)
-        hostName->insertItem(pos.key());
+    
+    itr = QMapIterator<QString,QListWidget*>(hostTabMap);
+    while(itr.hasNext())
+    {
+        itr.next();
+        hostName->addItem(itr.key());
+    }
+          
     hostName->setEditText(oldHostName);
     hostName->blockSignals(false);
+
 }
 
 // ****************************************************************************
@@ -1166,6 +1187,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
 //   Added fields for commands to run pre and post the mpi command.
 //
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -1220,14 +1244,17 @@ QvisHostProfileWindow::UpdateActiveProfile()
     if(i < 0)
     {
         profileName->setText("");
-        hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str());
+        hostName->setEditText("");
+        //hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str()); TODO
         hostAliases->setText("");
-        userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
+        userName->setText("");
+        //userName->setText(GetViewerProxy()->GetLocalUserName().c_str()); TODO
         numProcessors->setValue(1);
         timeout->setValue(60*4);   // 4 hour default
+        
         parallelCheckBox->setChecked(false);
         launchCheckBox->setChecked(false);
-        launchMethod->setCurrentItem(0);
+        launchMethod->setCurrentIndex(0);
         numNodesCheckBox->setChecked(false);
         numNodes->setValue(1);
         partitionCheckBox->setChecked(false);
@@ -1246,10 +1273,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
         sublaunchPreCmd->setText("");
         sublaunchPostCmdCheckBox->setChecked(false);
         sublaunchPostCmd->setText("");
-        loadBalancing->setCurrentItem(0);
+        loadBalancing->setCurrentIndex(0);
         engineArguments->setText("");
         activeProfileCheckBox->setChecked(false);
-        clientHostNameMethod->setButton(0);
+        clientHostNameMethod->button(0)->setChecked(true);
         clientHostName->setText("");
         sshPortCheckBox->setChecked(false);
         sshPort->setText("");
@@ -1267,7 +1294,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
         hostAliases->setText(current.GetHostAliases().c_str());
         // If there is no user name then give it a valid user name.
         if(current.GetUserName() == "notset")
-            userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
+        {
+            userName->setText("username");
+            //userName->setText(GetViewerProxy()->GetLocalUserName().c_str()); TODO
+        }
         else
             userName->setText(current.GetUserName().c_str());
 
@@ -1290,14 +1320,14 @@ QvisHostProfileWindow::UpdateActiveProfile()
             int index = 0;
             for (int j=0; j < launchMethod->count() ; j++)
             {
-                if (launchMethod->text(j) == current.GetLaunchMethod().c_str())
+                if (launchMethod->itemText(j) == current.GetLaunchMethod().c_str())
                     index = j;
             }
-            launchMethod->setCurrentItem(index);
+            launchMethod->setCurrentIndex(index);
         }
         else
         {
-            launchMethod->setCurrentItem(0);
+            launchMethod->setCurrentIndex(0);
         }
         launchArgsCheckBox->setChecked(parEnabled && current.GetLaunchArgsSet());
         if (parEnabled && current.GetLaunchArgsSet())
@@ -1354,7 +1384,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
             lb = 1;
         if (current.GetForceDynamic())
             lb = 2;
-        loadBalancing->setCurrentItem(lb);
+        loadBalancing->setCurrentIndex(lb);
         // Turn the string list into a single QString.
         QString temp;
         stringVector::const_iterator pos;
@@ -1376,13 +1406,13 @@ QvisHostProfileWindow::UpdateActiveProfile()
         switch (current.GetClientHostDetermination())
         {
           case HostProfile::MachineName:
-            clientHostNameMethod->setButton(0);
+            clientHostNameMethod->button(0)->setChecked(true);
             break;
           case HostProfile::ParsedFromSSHCLIENT:
-            clientHostNameMethod->setButton(1);
+            clientHostNameMethod->button(1)->setChecked(true);
             break;
           case HostProfile::ManuallySpecified:
-            clientHostNameMethod->setButton(2);
+            clientHostNameMethod->button(2)->setChecked(true);
             break;
         }
         clientHostName->setText(current.GetManualClientHostName().c_str());
@@ -1450,7 +1480,9 @@ QvisHostProfileWindow::UpdateActiveProfile()
 // Creation:   Mon Sep 24 11:47:11 PDT 2001
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -1462,7 +1494,8 @@ QvisHostProfileWindow::ReplaceLocalHost()
     {
         HostProfile &current = profiles->operator[](i);
         if(current.GetHost() == lh)
-            current.SetHost(GetViewerProxy()->GetLocalHostName());
+            current.SetHost("localhost");
+            //current.SetHost(GetViewerProxy()->GetLocalHostName()); TODO
     }
 }
 
@@ -1517,6 +1550,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Jeremy Meredith, Thu Jun 28 13:19:55 EDT 2007
 //    Disable client host name method determination widgets when SSH tunneling
 //    is enabled.
+// 
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -1543,7 +1579,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     userName->setEnabled(enabled);
     timeout->setEnabled(enabled);
     parGroup->setEnabled(parEnabled);
-    optionsTabs->setTabEnabled(parGroup, parEnabled);
+    optionsTabs->setTabEnabled(1, parEnabled);
     launchCheckBox->setEnabled(parEnabled);
     launchMethod->setEnabled(parEnabled && current->GetLaunchMethodSet());
     launchArgsCheckBox->setEnabled(parEnabled);
@@ -1573,7 +1609,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     loadBalancingLabel->setEnabled(false);
     loadBalancing->setEnabled(false);
 #endif
-    optionsTabs->setTabEnabled(advancedGroup, enabled);
+    optionsTabs->setTabEnabled(2, enabled);
     advancedGroup->setEnabled(enabled);
 
     canDoHW->setEnabled(enabled);
@@ -1665,6 +1701,9 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
 //   Added fields for commands to run pre and post the mpi command.
 //
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 bool
 QvisHostProfileWindow::GetCurrentValues(int which_widget)
@@ -1689,7 +1728,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         temp = profileName->displayText();
         if(!temp.isEmpty())
         {
-            current.SetProfileName(std::string(temp.latin1()));
+            current.SetProfileName(std::string(temp.toStdString()));
 
             // The profile name changed; we need to mark the profile list
             // so the new name appears in the list the next time update
@@ -1710,13 +1749,13 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(which_widget == widget || doAll)
     {
         temp = hostName->currentText();
-        temp = temp.stripWhiteSpace();
+        temp = temp.trimmed();
         if(!temp.isEmpty())
         {
-            std::string newHost(temp.latin1());
+            std::string newHost(temp.toStdString());
             if(newHost == "localhost")
             {
-                newHost = GetViewerProxy()->GetLocalHostName();
+                // newHost = GetViewerProxy()->GetLocalHostName(); TODO
                 hostName->setEditText(newHost.c_str());
             }
             if (newHost != current.GetHost())
@@ -1737,10 +1776,10 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(which_widget == widget || doAll)
     {
         temp = userName->displayText();
-        temp = temp.stripWhiteSpace();
+        temp = temp.trimmed();
         if(!temp.isEmpty())
         {
-            current.SetUserName(std::string(temp.latin1()));
+            current.SetUserName(std::string(temp.toStdString()));
         }
         else
         {
@@ -1756,10 +1795,10 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = launchMethod->currentText();
-        temp = temp.stripWhiteSpace();
+        temp = temp.trimmed();
         if (temp == tr("(default)"))
             temp = "";
-        current.SetLaunchMethod(std::string(temp.latin1()));
+        current.SetLaunchMethod(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -1768,7 +1807,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     {
         bool okay = false;
         temp = numProcessors->text();
-        temp = temp.stripWhiteSpace();
+        temp = temp.trimmed();
         if(!temp.isEmpty())
         {
             int nProc = temp.toInt(&okay);
@@ -1796,7 +1835,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     {
         bool okay = false;
         temp = numNodes->text();
-        temp = temp.stripWhiteSpace();
+        temp = temp.trimmed();
         if(!temp.isEmpty())
         {
             int nNodes = temp.toInt(&okay);
@@ -1821,8 +1860,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = partitionName->displayText();
-        temp = temp.stripWhiteSpace();
-        current.SetPartition(std::string(temp.latin1()));
+        temp = temp.trimmed();
+        current.SetPartition(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -1830,8 +1869,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = bankName->displayText();
-        temp = temp.stripWhiteSpace();
-        current.SetBank(std::string(temp.latin1()));
+        temp = temp.trimmed();
+        current.SetBank(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -1839,8 +1878,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = timeLimit->displayText();
-        temp = temp.stripWhiteSpace();
-        current.SetTimeLimit(std::string(temp.latin1()));
+        temp = temp.trimmed();
+        current.SetTimeLimit(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -1849,16 +1888,16 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     {
         stringVector arguments;
         QString temp(engineArguments->displayText());
-        temp = temp.simplifyWhiteSpace();
+        temp = temp.simplified();
         if(!(temp.isEmpty()))
         {
             // Split the arguments into a string list.
-            QStringList str = QStringList::split(' ', temp);
+            QStringList str = temp.split(' ');
 
             // Fill the arguments vector.
             for(int i = 0; i < str.count(); ++i)
             {
-                arguments.push_back(std::string(str[i].latin1()));
+                arguments.push_back(std::string(str[i].toStdString()));
             }
         }
         // Set the arguments.
@@ -1870,8 +1909,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = launchArgs->displayText();
-        temp = temp.stripWhiteSpace();
-        current.SetLaunchArgs(std::string(temp.latin1()));
+        temp = temp.trimmed();
+        current.SetLaunchArgs(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -1880,7 +1919,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     {
         bool okay = false;
         temp = timeout->text();
-        temp = temp.stripWhiteSpace();
+        temp = temp.trimmed();
         if(!temp.isEmpty())
         {
             int tOut = temp.toInt(&okay);
@@ -1906,9 +1945,9 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(which_widget == widget || doAll)
     {
         temp = hostAliases->text();
-        temp = temp.stripWhiteSpace();
+        temp = temp.trimmed();
 
-        std::string newAliases(temp.latin1());
+        std::string newAliases(temp.toStdString());
         if (newAliases != current.GetHostAliases())
             needNotify = true;
 
@@ -1927,9 +1966,9 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(which_widget == widget || doAll)
     {
         temp = clientHostName->text();
-        temp = temp.stripWhiteSpace();
+        temp = temp.trimmed();
 
-        std::string newClientHostName(temp.latin1());
+        std::string newClientHostName(temp.toStdString());
         if (newClientHostName != current.GetManualClientHostName())
             needNotify = true;
 
@@ -1968,8 +2007,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = machinefile->displayText();
-        temp = temp.stripWhiteSpace();
-        current.SetMachinefile(std::string(temp.latin1()));
+        temp = temp.trimmed();
+        current.SetMachinefile(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -1977,8 +2016,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = sublaunchArgs->displayText();
-        temp = temp.stripWhiteSpace();
-        current.SetSublaunchArgs(std::string(temp.latin1()));
+        temp = temp.trimmed();
+        current.SetSublaunchArgs(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -1986,8 +2025,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = sublaunchPreCmd->displayText();
-        temp = temp.stripWhiteSpace();
-        current.SetSublaunchPreCmd(std::string(temp.latin1()));
+        temp = temp.trimmed();
+        current.SetSublaunchPreCmd(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -1995,8 +2034,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
         temp = sublaunchPostCmd->displayText();
-        temp = temp.stripWhiteSpace();
-        current.SetSublaunchPostCmd(std::string(temp.latin1()));
+        temp = temp.trimmed();
+        current.SetSublaunchPostCmd(std::string(temp.toStdString()));
     }
     widget++;
 
@@ -2097,6 +2136,9 @@ QvisHostProfileWindow::apply()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -2116,9 +2158,11 @@ QvisHostProfileWindow::newProfile()
     else
     {
         // Set the default user name.
-        temp.SetUserName(GetViewerProxy()->GetLocalUserName());
+        temp.SetUserName("username");
+        //temp.SetUserName(GetViewerProxy()->GetLocalUserName()); TODO
         // Set the default host name.
-        temp.SetHost(GetViewerProxy()->GetLocalHostName());
+        temp.SetHost("localhost");
+        //temp.SetHost(GetViewerProxy()->GetLocalHostName()); TODO
         // Make the first created profile active.
         temp.SetActive(true);
     }
@@ -2126,7 +2170,7 @@ QvisHostProfileWindow::newProfile()
     QString profileName(tr("New profile"));
     QString num; num.sprintf(" #%d", profileCounter);
     profileName += num;
-    temp.SetProfileName(std::string(profileName.latin1()));
+    temp.SetProfileName(std::string(profileName.toStdString()));
 
     // Add the new profile to the list and make it the active profile.
     profiles->AddProfiles(temp);
@@ -2229,7 +2273,7 @@ QvisHostProfileWindow::userNameChanged(const QString &u)
         HostProfile &prof = profiles->operator[](i);
 
         if (prof.GetHost() == current.GetHost())
-            prof.SetUserName(u.latin1());
+            prof.SetUserName(u.toStdString());
     }
 }
 
@@ -2289,10 +2333,10 @@ QvisHostProfileWindow::launchMethodChanged(const QString &method)
     if(profiles->GetActiveProfile() >= 0)
     {
         HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        QString temp(method.stripWhiteSpace());
+        QString temp(method.trimmed());
         if(temp == tr("(default)"))
             temp = "";
-        current.SetLaunchMethod(std::string(temp.latin1()));
+        current.SetLaunchMethod(std::string(temp.toStdString()));
         profiles->MarkActiveProfile();
         SetUpdate(false);
         Apply();
@@ -2954,7 +2998,7 @@ QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
         HostProfile &prof = profiles->operator[](i);
 
         if (prof.GetHost() == current.GetHost())
-            prof.SetHostAliases(aliases.latin1());
+            prof.SetHostAliases(aliases.toStdString());
     }
 }
 
@@ -3065,10 +3109,13 @@ QvisHostProfileWindow::toggleUseVisItScriptForEnv(bool state)
 //    Jeremy Meredith, Mon Apr 14 18:28:04 PDT 2003
 //    Removed last change.  It caused stability problems.
 //
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::activateProfile(QListBoxItem *item)
+QvisHostProfileWindow::activateProfile(QListWidgetItem *item)
 {
     if(item == 0)
         return;
@@ -3078,17 +3125,22 @@ QvisHostProfileWindow::activateProfile(QListBoxItem *item)
 
     // Get the host asociated with the item.
     std::string hostName;
-    HostTabMap::Iterator pos;
+    //HostTabMap::Iterator pos;
     bool keepSearching = true;
-    for(pos = hostTabMap.begin(); pos != hostTabMap.end() && keepSearching; ++pos)
+    
+    QMapIterator<QString,QListWidget*> itr(hostTabMap);
+    
+    while(itr.hasNext() && keepSearching)
     {
-        if(pos.data() == item->listBox())
+        itr.next();
+        if(itr.value() == item->listWidget())
         {
-            hostName = std::string(pos.key().latin1());
+            hostName = itr.key().toStdString();
             keepSearching = false;
         }
+        
     }
-
+    
     // Get the index of the selected profile in the profile list.
     keepSearching = true;
     int index = 0;
@@ -3096,7 +3148,7 @@ QvisHostProfileWindow::activateProfile(QListBoxItem *item)
     {
         const HostProfile &current = profiles->operator[](i);
         if(current.GetHost() == hostName &&
-           current.GetProfileName() == std::string(item->text().latin1()))
+           current.GetProfileName() == std::string(item->text().toStdString()))
         {
             index = i;
             keepSearching = false;
@@ -3142,24 +3194,30 @@ QvisHostProfileWindow::activateProfile(QListBoxItem *item)
 //   Jeremy Meredith, Thu Jun 24 10:09:40 PDT 2004
 //   Forced an update of the profile list to fix a bug.  ('5083)
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::pageTurned(QWidget *tab)
+QvisHostProfileWindow::pageTurned(int tab_index)
 {
+    QWidget *tab = hostTabs->widget(tab_index);
     QString host = "";
-    HostTabMap::Iterator pos = hostTabMap.begin();
-    while (pos != hostTabMap.end())
+    
+    QMapIterator<QString,QListWidget*> itr(hostTabMap);
+    
+    while(itr.hasNext())
     {
-        if (pos.data() == tab)
+        itr.next();
+        if(itr.value() == tab)
         {
-            host = pos.key();
+            host = itr.key();
             break;
         }
-        pos++;
     }
 
-    if(pos != hostTabMap.end())
+    if(itr.hasNext())
     {
         // Get the current attributes in case they were changed.
         GetCurrentValues(-1);
@@ -3175,7 +3233,7 @@ QvisHostProfileWindow::pageTurned(QWidget *tab)
 
         // Get a pointer to the active profile for this host.
         HostProfile *activeProfile = (HostProfile *)profiles->GetProfileForHost(
-            std::string(host.latin1()));
+            std::string(host.toStdString()));
         if(activeProfile == 0)
         {
             return;
@@ -3203,6 +3261,7 @@ QvisHostProfileWindow::pageTurned(QWidget *tab)
             profiles->Notify();
         }
     }
+    
 }
 
 // ****************************************************************************
@@ -3225,6 +3284,9 @@ QvisHostProfileWindow::pageTurned(QWidget *tab)
 //    stability problems, and all I really needed to do was update some
 //    text in a list box.  That's exactly what I'm now doing.
 //
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::processProfileNameText(const QString &name)
@@ -3232,11 +3294,14 @@ QvisHostProfileWindow::processProfileNameText(const QString &name)
     HostProfileList *profiles = (HostProfileList *)subject;
     HostProfile &current = profiles->operator[](profiles->GetActiveProfile());    
     QString temp = profileName->displayText();
+
     if (!temp.isEmpty())
     {
-        current.SetProfileName(temp.latin1());
-        hostTabMap[current.GetHost().c_str()]->changeItem(temp,
-                        hostTabMap[current.GetHost().c_str()]->currentItem());
+        current.SetProfileName(temp.toStdString());
+        QString cname(current.GetHost().c_str());
+        
+        QListWidget *list = hostTabMap[cname];
+        list->currentItem()->setText(temp);
     }
 }
 
@@ -3289,6 +3354,10 @@ QvisHostProfileWindow::toggleSSHPort(bool state)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  9, 2003
 //
+//  Modifications:
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::sshPortChanged(const QString &portStr)
@@ -3305,7 +3374,7 @@ QvisHostProfileWindow::sshPortChanged(const QString &portStr)
     {
         HostProfile &prof = profiles->operator[](i);
 
-        int port = atoi(portStr.latin1());
+        int port = atoi(portStr.toStdString().c_str());
 
         if (prof.GetHost() == current.GetHost())
             prof.SetSshPort(port);
@@ -3391,7 +3460,7 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
         HostProfile &prof = profiles->operator[](i);
 
         if (prof.GetHost() == current.GetHost())
-            prof.SetManualClientHostName(h.latin1());
+            prof.SetManualClientHostName(h.toStdString());
     }
 }
 
@@ -3412,6 +3481,9 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
 //   Jeremy Meredith, Thu Jun 28 13:20:48 EDT 2007
 //   Force host name determination method to default values when tunneling
 //   is enabled.  The two are incompatible.
+//
+//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -3436,7 +3508,7 @@ QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
                 prof.SetManualClientHostName("");
                 clientHostNameMethod->blockSignals(true);
                 clientHostName->blockSignals(true);
-                clientHostNameMethod->setButton(0);
+                clientHostNameMethod->button(0)->setChecked(true);
                 clientHostName->setText("");
                 clientHostNameMethod->blockSignals(false);
                 clientHostName->blockSignals(false);
@@ -3566,7 +3638,7 @@ QvisHostProfileWindow::preCommandChanged(const QString &portStr)
         temp = preCommand->displayText();
         if(!temp.isEmpty())
         {
-            current.SetHwAccelPreCommand(std::string(temp.latin1()));
+            current.SetHwAccelPreCommand(std::string(temp.toStdString()));
         }
         else
         {
@@ -3608,7 +3680,7 @@ QvisHostProfileWindow::postCommandChanged(const QString &portStr)
         temp = postCommand->displayText();
         if(!temp.isEmpty())
         {
-            current.SetHwAccelPostCommand(std::string(temp.latin1()));
+            current.SetHwAccelPostCommand(std::string(temp.toStdString()));
         }
         else
         {

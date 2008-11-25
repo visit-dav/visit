@@ -1,25 +1,43 @@
 #include <QvisCMap2Widget.h>
 
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qpushbutton.h>
-#include <qtimer.h>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
+#include <QTimer>
 
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
 
-QvisCMap2Widget::QvisCMap2Widget(QWidget *parent, const char *name) : QGroupBox(parent,name)
+// ****************************************************************************
+// Method: QvisCMap2Widget::QvisCMap2Widget
+//
+// Purpose: 
+//   Constructor.
+//
+// Arguments:
+//   parent : The widget's parent.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 25 13:55:08 PDT 2008
+//
+// Modifications:
+//   Brad Whitlock, Tue Sep 30 10:36:48 PDT 2008
+//   Qt 4, added tr()'s.
+//
+// ****************************************************************************
+
+QvisCMap2Widget::QvisCMap2Widget(QWidget *parent) : QWidget(parent)
 {
     nameIndex = 0;
 
-    QGridLayout *topLayout = new QGridLayout(this, 3, 2);
+    QGridLayout *topLayout = new QGridLayout(this);
     topLayout->setSpacing(5);
     topLayout->setMargin(5); 
-    cmap2 = new QvisCMap2Display(this, "cmap2");
-    topLayout->addMultiCellWidget(cmap2, 0, 0, 0, 1);
+    cmap2 = new QvisCMap2Display(this);
+    topLayout->addWidget(cmap2, 0, 0, 1, 2);
     topLayout->setRowStretch(0, 5);
     connect(cmap2, SIGNAL(widgetListChanged()),
             this, SIGNAL(widgetListChanged()));
@@ -32,72 +50,74 @@ QvisCMap2Widget::QvisCMap2Widget(QWidget *parent, const char *name) : QGroupBox(
     connect(cmap2, SIGNAL(widgetChanged(WidgetID)),
             this, SLOT(updateWidget(WidgetID)));
 
-    QLabel *nameLabel = new QLabel("Widgets", this, "nameLabel");
+    QLabel *nameLabel = new QLabel(tr("Widgets"), this);
     topLayout->addWidget(nameLabel, 1, 0);
 
-    names = new QListBox(this, "names");
-    connect(names, SIGNAL(highlighted(int)),
+    names = new QListWidget(this);
+    connect(names, SIGNAL(currentRowChanged(int)),
             this, SLOT(showProperties(int)));
     topLayout->addWidget(names, 2, 0);
 
     QHBoxLayout *btnLayout = new QHBoxLayout(0);
-    topLayout->addMultiCellLayout(btnLayout, 3, 3, 0, 1);
+    topLayout->addLayout(btnLayout, 3, 0, 1, 2);
     btnLayout->setSpacing(5);
 
-    QPushButton *addTriButton = new QPushButton("New triangle", this, "addTriButton");
+    QPushButton *addTriButton = new QPushButton(tr("New triangle"), this);
     btnLayout->addWidget(addTriButton);
     connect(addTriButton, SIGNAL(clicked()),
             this, SLOT(addNewTriangle()));
 
-    QPushButton *addRectButton = new QPushButton("New rectangle", this, "addRectButton");
+    QPushButton *addRectButton = new QPushButton(tr("New rectangle"), this);
     btnLayout->addWidget(addRectButton);
     connect(addRectButton, SIGNAL(clicked()),
             this, SLOT(addNewRectangle()));
 
-    QPushButton *addEllipseButton = new QPushButton("New ellipsoid", this, "addEllipseButton");
+    QPushButton *addEllipseButton = new QPushButton(tr("New ellipsoid"), this);
     btnLayout->addWidget(addEllipseButton);
     connect(addEllipseButton, SIGNAL(clicked()),
             this, SLOT(addNewEllipsoid()));
 
-    QPushButton *addParaboloidButton = new QPushButton("New paraboloid", this, "addParaboloidButton");
+    QPushButton *addParaboloidButton = new QPushButton(tr("New paraboloid"), this);
     btnLayout->addWidget(addParaboloidButton);
     connect(addParaboloidButton, SIGNAL(clicked()),
             this, SLOT(addNewParaboloid()));
 
-    deleteButton = new QPushButton("Delete", this, "deleteButton");
+    deleteButton = new QPushButton(tr("Delete"), this);
     btnLayout->addStretch(1);
     btnLayout->addWidget(deleteButton);
     connect(deleteButton, SIGNAL(clicked()),
             this, SLOT(deleteWidget()));
 
-    QGroupBox *attsGroup = new QGroupBox(this, "attsGroup");
-    attsGroup->setTitle("Widget attributes");
-    topLayout->addMultiCellWidget(attsGroup, 1, 2, 1, 1);
+    QGroupBox *attsGroup = new QGroupBox(this);
+    attsGroup->setTitle(tr("Widget attributes"));
+    topLayout->addWidget(attsGroup, 1, 1, 2, 1);
+    topLayout->setColumnStretch(1, 10);
     QVBoxLayout *attsInnerTopLayout = new QVBoxLayout(attsGroup);
     attsInnerTopLayout->setMargin(10);
-    attsInnerTopLayout->addSpacing(15);
     attsInnerTopLayout->setSpacing(10);
-    QGridLayout *attsLayout = new QGridLayout(attsInnerTopLayout, 4, 2);
+    QGridLayout *attsLayout = new QGridLayout(0);
+    attsInnerTopLayout->addLayout(attsLayout);
+    attsInnerTopLayout->addStretch(5);
     attsLayout->setSpacing(5);
 
-    wName = new QLineEdit(attsGroup, "wName");
+    wName = new QLineEdit(attsGroup);
     wName->setEnabled(false); // allow editing name sometime.
-    attsLayout->addWidget(new QLabel(wName, "Name", attsGroup, "wNameLabel"), 0, 0);
+    attsLayout->addWidget(new QLabel(tr("Name"), attsGroup), 0, 0);
     attsLayout->addWidget(wName, 0, 1);
 
-    sizeLoc = new QLineEdit(attsGroup, "sizeLoc");
+    sizeLoc = new QLineEdit(attsGroup);
     connect(sizeLoc, SIGNAL(returnPressed()),
             this, SLOT(setSizeLoc()));
-    attsLayout->addWidget(new QLabel(sizeLoc, "Size/Location", attsGroup, "sizeLocLabel"), 1, 0);
+    attsLayout->addWidget(new QLabel(tr("Size/Location"), attsGroup), 1, 0);
     attsLayout->addWidget(sizeLoc, 1, 1);
   
-    color = new QvisColorButton(attsGroup, "color");
+    color = new QvisColorButton(attsGroup);
     connect(color, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(setWidgetColor(const QColor &)));
-    attsLayout->addWidget(new QLabel(color, "Color", attsGroup, "colorLabel"), 2, 0);
+    attsLayout->addWidget(new QLabel(tr("Color"), attsGroup), 2, 0);
     attsLayout->addWidget(color, 2, 1);
 
-    opacity = new QvisOpacitySlider(attsGroup, "opacity");
+    opacity = new QvisOpacitySlider(attsGroup);
     connect(opacity, SIGNAL(valueChanged(int)),
             this, SLOT(setWidgetOpacity(int)));
     attsLayout->addWidget(opacity, 3, 1);
@@ -225,14 +245,14 @@ QvisCMap2Widget::newName(const QString &base)
 {
     nameIndex++;
     QString s;
-    s.sprintf("%s%04d", base.latin1(), nameIndex);
-    return s;
+    s.sprintf("%04d", nameIndex);
+    return base + s;
 }
 
 WidgetID
 QvisCMap2Widget::getSelectedWidget() const
 {
-    int index = names->index(names->selectedItem());
+    int index = names->currentRow();
     WidgetID id = cmap2->getID(index);
     return id;
 }
@@ -243,7 +263,7 @@ QvisCMap2Widget::getSelectedWidget() const
 void
 QvisCMap2Widget::addNewTriangle()
 {
-    WidgetID w = cmap2->addTriangleWidget(newName("tri"),
+    WidgetID w = cmap2->addTriangleWidget(newName(tr("tri")),
         0.3, // X-coordinate of bottom point
         0.25, // Offset in X from top left point
         0.5, // Y-coordinate of top left point
@@ -256,7 +276,7 @@ QvisCMap2Widget::addNewTriangle()
 void
 QvisCMap2Widget::addNewRectangle()
 {
-    WidgetID w = cmap2->addRectangleWidget(newName("rect"),
+    WidgetID w = cmap2->addRectangleWidget(newName(tr("rect")),
         0.1, // left_x
         0.4, // left_y
         0.5, // w
@@ -270,7 +290,7 @@ QvisCMap2Widget::addNewRectangle()
 void
 QvisCMap2Widget::addNewEllipsoid()
 {
-  WidgetID w = cmap2->addEllipsoidWidget(newName("ellipse"),
+  WidgetID w = cmap2->addEllipsoidWidget(newName(tr("ellipse")),
                                          .2,
                                          .2,
                                          .1,
@@ -283,7 +303,7 @@ QvisCMap2Widget::addNewEllipsoid()
 void
 QvisCMap2Widget::addNewParaboloid()
 {
-  WidgetID w = cmap2->addParaboloidWidget(newName("paraboloid"),
+  WidgetID w = cmap2->addParaboloidWidget(newName(tr("paraboloid")),
                                           .5, .6,
                                           .5, .4,
                                           .3, .5,
@@ -303,7 +323,7 @@ QvisCMap2Widget::updateList()
         if(id != QvisCMap2Display::WIDGET_NOT_FOUND)
         {
             QString n(cmap2->getName(id));
-            names->insertItem(n);
+            names->addItem(n);
         }
     }
 
@@ -313,24 +333,24 @@ QvisCMap2Widget::updateList()
 void
 QvisCMap2Widget::selectLastItem()
 {
-    names->setCurrentItem(names->count()-1);
-    names->setSelected(names->count()-1, true);
+    names->setCurrentItem(names->item(names->count()-1));
+    names->item(names->count()-1)->setSelected(true);
 }
 
 void
 QvisCMap2Widget::deleteWidget()
 {
-    if(names->selectedItem() != 0)
+    if(names->currentItem() != 0)
     {
-        int index = names->index(names->selectedItem());
+        int index = names->currentRow();
         WidgetID id = cmap2->getID(index);
         if(id != QvisCMap2Display::WIDGET_NOT_FOUND)
         {
             removeWidget(id);
         }
     }
-    else
-        qDebug("No widget selected");
+//    else
+//        qDebug("No widget selected");
 
     QTimer::singleShot(100, this, SLOT(selectLastItem()));
 }
@@ -353,7 +373,7 @@ QvisCMap2Widget::updateWidget(WidgetID id)
         for(int i = 0; i < names->count(); ++i)
             if(cmap2->getID(i) == id)
             {
-                names->setCurrentItem(i);
+                names->setCurrentItem(names->item(i));
                 break;
             }
         names->blockSignals(false);

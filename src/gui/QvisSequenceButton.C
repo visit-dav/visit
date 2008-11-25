@@ -37,8 +37,9 @@
 *****************************************************************************/
     
 #include <QvisSequenceButton.h>
-#include <qpixmap.h>
-#include <qpopupmenu.h>
+#include <QAction>
+#include <QMenu>
+#include <QPixmap>
 
 #include <MovieSequenceFactory.h>
 
@@ -54,11 +55,13 @@
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
-//   
+//
+//   Brad Whitlock, Tue Oct  7 09:06:17 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisSequenceButton::QvisSequenceButton(QWidget *parent, 
-    const char *name) : QPushButton(parent, name)
+QvisSequenceButton::QvisSequenceButton(QWidget *parent) : QPushButton(parent)
 {
     setText(tr("New sequence"));
 
@@ -66,13 +69,13 @@ QvisSequenceButton::QvisSequenceButton(QWidget *parent,
     // Create the menu based on the contents of the MovieSequenceFactory
     // class factory.
     //
-    menu = new QPopupMenu(0, "menu");
-    QPopupMenu *transitions = new QPopupMenu(menu, "transitions");
-    QPopupMenu *compositing = new QPopupMenu(menu, "compositing");
-    QPopupMenu *rotations = new QPopupMenu(menu, "rotations");
-    menu->insertItem(tr("Compositing"), compositing);
-    menu->insertItem(tr("Transitions"), transitions);
-    menu->insertItem(tr("Rotations"), rotations);
+    menu = new QMenu(0);
+    QMenu *transitions = new QMenu(tr("Compositing"), menu);
+    QMenu *compositing = new QMenu(tr("Transitions"), menu);
+    QMenu *rotations = new QMenu(tr("Rotations"), menu);
+    menu->addMenu(compositing);
+    menu->addMenu(transitions);
+    menu->addMenu(rotations);
 
     MovieSequenceFactory *f = MovieSequenceFactory::Instance();
     for(int index = 0; index < f->NumSequenceTypes(); ++index)
@@ -81,7 +84,7 @@ QvisSequenceButton::QvisSequenceButton(QWidget *parent,
         if(f->SequenceIdForIndex(index, id) &&
            f->SequenceProvidesMenu(id))
         {
-            QPopupMenu *m = menu;
+            QMenu *m = menu;
             int mIndex = -1;
             f->SequenceSubMenuIndex(id, mIndex);
             if(mIndex == 0)
@@ -96,28 +99,21 @@ QvisSequenceButton::QvisSequenceButton(QWidget *parent,
             {
                 QPixmap pix;
                 f->SequencePixmap(id, pix);
+                QAction *action = 0;
 
                 if(!pix.isNull())
-                {
-                    QIconSet icon;
-                    icon.setPixmap(pix, QIconSet::Small);
-                    m->insertItem(icon, menuName, id);
-                }
+                    action = m->addAction(QIcon(pix), menuName);
                 else
-                    m->insertItem(menuName, id);
+                    action = m->addAction(menuName);
+
+                action->setData(QVariant(id));
             }
         }
     }
 
-    setPopup(menu);
-    connect(menu, SIGNAL(activated(int)),
-            this, SIGNAL(activated(int)));
-    connect(transitions, SIGNAL(activated(int)),
-            this, SIGNAL(activated(int)));
-    connect(compositing, SIGNAL(activated(int)),
-            this, SIGNAL(activated(int)));
-    connect(rotations, SIGNAL(activated(int)),
-            this, SIGNAL(activated(int)));
+    setMenu(menu);
+    connect(menu, SIGNAL(triggered(QAction*)),
+            this, SLOT(emitActivated(QAction*)));
 }
 
 // ****************************************************************************
@@ -136,4 +132,28 @@ QvisSequenceButton::QvisSequenceButton(QWidget *parent,
 QvisSequenceButton::~QvisSequenceButton()
 {
     delete menu;
+}
+
+// ****************************************************************************
+// Method: QvisSequenceButton::emitActivated
+//
+// Purpose: 
+//   Translates a QAction activation to an activated signal that passes
+//   along the action's actual sequence Id.
+//
+// Arguments:
+//   action : The action that was triggered.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct  7 09:19:41 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSequenceButton::emitActivated(QAction *action)
+{
+    int id = action->data().toInt();
+    emit activated(id);
 }

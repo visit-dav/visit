@@ -41,15 +41,15 @@
 #include <RemoveCellsAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qlistbox.h>
-#include <qradiobutton.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QWidget>
+#include <QButtonGroup>
+#include <QListWidget>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -62,7 +62,6 @@
 using std::string;
 using std::vector;
 
-static const char * formatString = "%d (%d)";
 
 // ****************************************************************************
 // Method: QvisRemoveCellsWindow::QvisRemoveCellsWindow
@@ -74,7 +73,9 @@ static const char * formatString = "%d (%d)";
 // Creation:   Thu Jul 17 15:33:35 PST 2003
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Thu Aug 21 16:11:16 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 QvisRemoveCellsWindow::QvisRemoveCellsWindow(const int type,
@@ -85,7 +86,6 @@ QvisRemoveCellsWindow::QvisRemoveCellsWindow(const int type,
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
     atts = subj;
-    buildingList = false;
 }
 
 
@@ -120,47 +120,51 @@ QvisRemoveCellsWindow::~QvisRemoveCellsWindow()
 //   Brad Whitlock, Thu Apr 24 16:52:40 PDT 2008
 //   Added tr()'s
 //
+//   Cyrus Harrison, Thu Aug 21 16:11:16 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisRemoveCellsWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 6,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout();
+    topLayout->addLayout(mainLayout);
 
-    QGridLayout *midLayout = new QGridLayout(mainLayout);
+    QGridLayout *midLayout = new QGridLayout();
     
-    cellList = new QListBox(central);
-    connect(cellList, SIGNAL(highlighted(int)),
-            this, SLOT(listSelected(int)));
+    cellList = new QListWidget(central);
     midLayout->addWidget(cellList, 0,0);
-    mainLayout->addMultiCell(midLayout, 0, 2, 0, 0);
+    mainLayout->addLayout(midLayout, 0, 0, 3, 1);
+    connect(cellList,SIGNAL(currentRowChanged(int)),
+            this,SLOT(selectionChanged(int)));
     
-    changeButton = new QPushButton(tr("Change"), central, "Change");
+    changeButton = new QPushButton(tr("Change"), central);
     connect(changeButton, SIGNAL(clicked()),
             this, SLOT(changeButtonClicked()));
     mainLayout->addWidget(changeButton, 0, 1);
     
-    removeButton = new QPushButton(tr("Remove"), central, "Remove");
+    removeButton = new QPushButton(tr("Remove"), central);
     connect(removeButton, SIGNAL(clicked()),
             this, SLOT(removeButtonClicked()));
     mainLayout->addWidget(removeButton, 1, 1);
 
-    addButton = new QPushButton(tr("Add"), central, "Add");
+    addButton = new QPushButton(tr("Add"), central);
     connect(addButton, SIGNAL(clicked()),
             this, SLOT(addButtonClicked()));
     mainLayout->addWidget(addButton, 2,1);
     
     const int fieldWidth = 90;
     
-    mainLayout->addWidget(new QLabel(tr("Cell"), central, "cell"),3,0);
-    cell = new QLineEdit("0.0", central, "cell");
+    mainLayout->addWidget(new QLabel(tr("Cell"), central),3,0);
+    cell = new QLineEdit("0", central);
     cell->setMaximumWidth(fieldWidth);
     connect(cell, SIGNAL(returnPressed()),
             this, SLOT(cellProcessText()));
     mainLayout->addWidget(cell, 3,1);
 
-    mainLayout->addWidget(new QLabel(tr("Domain"), central, "domain"),4,0);
-    domain = new QLineEdit("0.0", central, "domain");
+    mainLayout->addWidget(new QLabel(tr("Domain"), central),4,0);
+    domain = new QLineEdit("0", central);
     domain->setMaximumWidth(fieldWidth);
     connect(domain, SIGNAL(returnPressed()),
             this, SLOT(domainProcessText()));
@@ -182,6 +186,9 @@ QvisRemoveCellsWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon Jun 30 15:15:02 PDT 2008
 //   Removed unreferenced variables.
 //
+//   Cyrus Harrison, Thu Aug 21 16:11:16 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -197,25 +204,17 @@ QvisRemoveCellsWindow::UpdateWindow(bool doAll)
             {
                 continue;
             }
-        }
-        else if (i == 3) // skip domainList if we've done cellList
+        } // skip domainList if we've done cellList
+        else if (i == RemoveCellsAttributes::ID_domainList) 
             continue;
 
         switch(i)
         {
-          case 0: //cell
-            temp.sprintf("%d", atts->GetCell());
-            cell->setText(temp);
-            break;
-          case 1: //domain
-            temp.sprintf("%d", atts->GetDomain());
-            domain->setText(temp);
-            break;
-          case 2: //cellList
-          case 3: //domainList
-            buildingList = true;
+          case RemoveCellsAttributes::ID_cellList:
+          case RemoveCellsAttributes::ID_domainList:
+            cellList->blockSignals(true);
+            int row = cellList->currentRow();
             
-            int currentItem = cellList->currentItem();
             // Destroy the list
             cellList->clear();
 
@@ -223,19 +222,12 @@ QvisRemoveCellsWindow::UpdateWindow(bool doAll)
             const vector<int> &cV = atts->GetCellList();
             const vector<int> &dV = atts->GetDomainList();
             
-            int j;
-            for (j = 0; j < cV.size(); ++j)
-            {
-                QString qstr;
-                qstr.sprintf(formatString, cV[j], dV[j]);
-
-                cellList->insertItem(qstr);
-            }
+            for (int j = 0; j < cV.size(); ++j)
+                cellList->addItem(CreateEntryString(cV[j],dV[j]));
             
-            if (currentItem > 0 && currentItem < cellList->count())
-                cellList->setCurrentItem(currentItem);
-
-            buildingList = false;
+            if (row > 0 && row < cellList->count())
+                cellList->setCurrentRow(row);
+            cellList->blockSignals(false);
             break;
         }
     }
@@ -251,74 +243,30 @@ QvisRemoveCellsWindow::UpdateWindow(bool doAll)
 // Programmer: xml2window
 // Creation:   Thu Jul 17 15:33:35 PST 2003
 //
-// Modifications:
-//   
+// Modifications:   
+//   Cyrus Harrison, Thu Aug 21 16:11:16 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisRemoveCellsWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
-
-    // Do cell
-    if(which_widget == 0 || doAll)
-    {
-        temp = cell->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetCell(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of cell was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetCell());
-            Message(msg);
-            atts->SetCell(atts->GetCell());
-        }
-    }
-
-    // Do domain
-    if(which_widget == 1 || doAll)
-    {
-        temp = domain->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
-            if(okay)
-                atts->SetDomain(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of domain was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetDomain());
-            Message(msg);
-            atts->SetDomain(atts->GetDomain());
-        }
-    }
+    bool doAll = (which_widget == -1);
 
     // Do cellList / domainList
-    if(which_widget == 2 || which_widget == 3 || doAll)
+    if(which_widget == RemoveCellsAttributes::ID_cellList    || 
+       which_widget == RemoveCellsAttributes::ID_domainList  || doAll)
     {
-        int i;
-        vector<int> cV = atts->GetCellList();
-        vector<int> dV = atts->GetDomainList();
+        vector<int> cV;
+        vector<int> dV;
 
         cV.resize(cellList->count());
         dV.resize(cellList->count());
         
-        for (i = 0; i < cellList->count(); ++i)
+        for (int i = 0; i < cellList->count(); ++i)
         {
-            const char *str = cellList->text(i).latin1();
-            sscanf(str, formatString, &(cV[i]), &(dV[i]));
+            ParseEntryString(cellList->item(i)->text(),cV[i],dV[i]);
         }
 
         atts->SetCellList(cV);
@@ -327,44 +275,104 @@ QvisRemoveCellsWindow::GetCurrentValues(int which_widget)
 }
 
 
+// ****************************************************************************
+// Method: QvisRemoveCellsWindow::ParseEntryString
+//
+// Purpose: 
+//   Helper that parses cell/domain from an entry string.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Jul 17 15:33:35 PST 2003
+//
+// Modifications:   
+//
+// ****************************************************************************
+void 
+QvisRemoveCellsWindow::ParseEntryString(const QString &str, int &cell, int &domain)
+{
+    QString s = str;
+    s.replace("(","");
+    s.replace(")","");
+    QStringList tok = s.split(" ");  
+    cell   = tok[0].toInt();
+    domain = tok[1].toInt();
+}
+
+// ****************************************************************************
+// Method: QvisRemoveCellsWindow::GetCurrentCell
+//
+// Purpose: 
+//   Helper that obtains the current values from the cell/domain line edits.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Jul 17 15:33:35 PST 2003
+//
+// Modifications:   
+//
+// ****************************************************************************
+void 
+QvisRemoveCellsWindow::GetCurrentCell(int &cell, int &domain)
+{
+    LineEditGetInt(this->cell,cell);
+    LineEditGetInt(this->domain,domain);
+}
+
+// ****************************************************************************
+// Method: QvisRemoveCellsWindow::CreateEntryString
+//
+// Purpose: 
+//   Helper that creates an entry string - "Cell (Domain)"
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Jul 17 15:33:35 PST 2003
+//
+// Modifications:   
+//
+// ****************************************************************************
+QString
+QvisRemoveCellsWindow::CreateEntryString(int cell, int domain)
+{
+    return QString("%1 (%2)").arg(cell).arg(domain);
+}
+
 //
 // Qt Slot functions
 //
+
+void
+QvisRemoveCellsWindow::selectionChanged(int row)
+{
+    if(row <0)
+        return;
+    int cell_id,domain_id;
+    ParseEntryString(cellList->item(row)->text(),cell_id,domain_id);
+    cell->setText(IntToQString(cell_id));
+    domain->setText(IntToQString(domain_id));
+}
 
 
 void
 QvisRemoveCellsWindow::cellProcessText()
 {
-    GetCurrentValues(0);
-    Apply();
+    int val;
+    if(!LineEditGetInt(cell, val))
+    {
+        ResettingError(tr("Cell"),0);
+        cell->setText(0);
+    }
+        
 }
 
 
 void
 QvisRemoveCellsWindow::domainProcessText()
 {
-    GetCurrentValues(1);
-    Apply();
-}
-
-
-void
-QvisRemoveCellsWindow::listSelected(int index)
-{
-    // 
-    // We don't want to do anything if nothing was really selected,
-    // or if this signal came because we were regenerating the list.
-    // 
-    if (index < 0 || buildingList)
-        return;
-    const char *str = cellList->text(index).latin1();
-    int cell, domain;
-    sscanf(str, formatString, &cell, &domain);
-
-    atts->SetCell(cell);
-    atts->SetDomain(domain);
-
-    UpdateWindow(false);
+    int val;
+    if(!LineEditGetInt(domain, val))
+    {
+        ResettingError(tr("Domain"),0);
+        domain->setText(0);        
+    }
 }
 
 
@@ -373,11 +381,7 @@ QvisRemoveCellsWindow::addButtonClicked()
 {
     int cell, domain;
     
-    GetCurrentValues(0);
-    GetCurrentValues(1);
-    
-    cell = atts->GetCell();
-    domain = atts->GetDomain();
+    GetCurrentCell(cell,domain);
     
     vector<int> cV = atts->GetCellList();
     vector<int> dV = atts->GetDomainList();
@@ -388,10 +392,7 @@ QvisRemoveCellsWindow::addButtonClicked()
     atts->SetCellList(cV);
     atts->SetDomainList(dV);
     
-    QString qstr;
-
-    qstr.sprintf(formatString, cell, domain);
-    cellList->insertItem(qstr);
+    cellList->addItem(CreateEntryString(cell,domain));
 
     Apply();
 }
@@ -399,43 +400,22 @@ QvisRemoveCellsWindow::addButtonClicked()
 void
 QvisRemoveCellsWindow::removeButtonClicked()
 {
-    int index = cellList->currentItem();
-    if (index < 0)
-        return;
-    if (index == 0)
-    {
-        if (cellList->count() == 1)
-            cellList->clear();
-        else
-        {
-            cellList->setCurrentItem(1);
-            cellList->removeItem(index);
-        }
-    }
-    else
-    {
-        cellList->setCurrentItem(index - 1);
-        cellList->removeItem(index);
-    }
-    
-    GetCurrentValues(3);
+    if(cellList->currentItem())
+        delete cellList->currentItem();
+    GetCurrentValues(RemoveCellsAttributes::ID_cellList);
 }
 
 
 void
 QvisRemoveCellsWindow::changeButtonClicked()
 {
-    int index = cellList->currentItem();
+    int index = cellList->currentRow();
     if (index < 0)
         return;
 
     int cell, domain;
 
-    GetCurrentValues(0);
-    GetCurrentValues(1);
-    
-    cell = atts->GetCell();
-    domain = atts->GetDomain();
+    GetCurrentCell(cell,domain);
     
     vector<int> cV = atts->GetCellList();
     vector<int> dV = atts->GetDomainList();
@@ -446,10 +426,7 @@ QvisRemoveCellsWindow::changeButtonClicked()
     atts->SetCellList(cV);
     atts->SetDomainList(dV);
     
-    QString qstr;
-
-    qstr.sprintf(formatString, cell, domain);
-    cellList->changeItem(qstr, index);  
+    cellList->item(index)->setText(CreateEntryString(cell,domain));
 
     Apply();
 }

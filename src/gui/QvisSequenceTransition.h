@@ -37,7 +37,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qgroupbox.h>
+#include <QGroupBox>
 
 class QvisColorButton;
 class QButtonGroup;
@@ -55,14 +55,16 @@ class QSpinBox;
 // Creation:   Thu Oct 12 15:11:36 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct  7 09:27:48 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisSequenceTransition : public QGroupBox
 {
     Q_OBJECT
 public:
-    QvisSequenceTransition(const QPixmap &, QWidget *parent, const char *name);
+    QvisSequenceTransition(const QPixmap &, QWidget *parent);
     virtual ~QvisSequenceTransition();
 
     void getFromTransition(bool &frames, QColor &color) const;

@@ -45,9 +45,9 @@ class QButtonGroup;
 class QCheckBox;
 class QGroupBox;
 class QLabel;
-class QListBox;
 class QSlider;
 class QvisColorButton;
+class QvisColorSwatchListWidget;
 class QvisColorTableButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
@@ -95,6 +95,7 @@ protected:
     void SetMultipleColorWidgets(int index);
     void UpdateMultipleArea();
     void UpdateItem(int i);
+    bool CompareItem(int i, const QString &name, const QColor &c) const;
     void GetCurrentValues(int which_widget);
 private slots:
     void lineStyleChanged(int newStyle);
@@ -130,7 +131,7 @@ private:
     QvisColorButton        *singleColor;
     QvisOpacitySlider      *singleColorOpacity;
     QLabel                 *multipleColorLabel;
-    QListBox               *multipleColorList;
+    QvisColorSwatchListWidget *multipleColorList;
     QvisColorButton        *multipleColor;
     QvisOpacitySlider      *multipleColorOpacity;
     QvisColorTableButton   *colorTableButton;

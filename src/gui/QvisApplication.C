@@ -38,15 +38,15 @@
 
 #include <QvisApplication.h>
 
-#include <qmenubar.h>
+#include <QMenuBar>
 
 #ifdef Q_WS_MACX
 // Include some MacOS X stuff
 #include <Carbon/Carbon.h>
 #include <visit-config.h>
 // Include extra Qt stuff.
-#include <qeventloop.h>
-#include <qtimer.h>
+#include <QEventLoop>
+#include <QTimer>
 #endif
 
 // ****************************************************************************
@@ -67,6 +67,7 @@ QvisApplication::QvisApplication( int &argc, char **argv) :
 {
 #ifdef Q_WS_MACX
     needToMakeActive = false;
+    eventLoop = 0;
 #endif
 }
 
@@ -75,6 +76,7 @@ QvisApplication::QvisApplication( int &argc, char **argv, bool GUIenabled ) :
 {
 #ifdef Q_WS_MACX
     needToMakeActive = false;
+    eventLoop = 0;
 #endif
 }
 
@@ -120,7 +122,10 @@ QvisApplication::~QvisApplication()
 //   Brad Whitlock, Tue Oct 9 15:16:34 PST 2007
 //   Changed signature for macEventFilter to match newer Qt method. Fixed
 //   focus click problem for the menus.
-//   
+//
+//   Brad Whitlock, Fri May 30 11:40:21 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 static EventRef request_make_app_active = NULL;
 
@@ -144,14 +149,14 @@ QvisApplication::macEventFilter(EventHandlerCallRef er, EventRef event)
             if(ekind == kEventWindowShown)
             {
                 QString mainWindowName(QString("VisIt ") + QString(VERSION));
-                if(mainWindowName == QString(widget->name()))
+                if(mainWindowName == QString(widget->windowTitle()))
                     emit showApplication();
                 //qDebug("ekind = kEventWindowShown");
             }
             else if(ekind == kEventWindowHidden)
             {
                 QString mainWindowName(QString("VisIt ") + QString(VERSION));
-                if(mainWindowName == QString(widget->name()))
+                if(mainWindowName == QString(widget->windowTitle()))
                     emit hideApplication();            
                 //qDebug("ekind = kEventWindowHidden");
             }
@@ -267,7 +272,8 @@ QvisApplication::macEventFilter(EventHandlerCallRef er, EventRef event)
 
                 // Start a new event loop to make the app active and then quit
                 // the sub-event loop.
-                eventLoop()->enterLoop();
+                eventLoop = new QEventLoop(0);
+                eventLoop->exec();
             }
         }
         break;
@@ -292,12 +298,16 @@ QvisApplication::macEventFilter(EventHandlerCallRef er, EventRef event)
 // Creation:   Tue Oct 9 18:28:34 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Fri May 30 11:52:03 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 void
 QvisApplication::exitTheLoop()
 {
 #ifdef Q_WS_MACX
-    eventLoop()->exitLoop();
+    eventLoop->exit();
+    delete eventLoop;
+    eventLoop = 0;
 #endif
 }

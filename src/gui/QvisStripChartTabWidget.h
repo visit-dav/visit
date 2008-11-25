@@ -36,29 +36,30 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef QVISSTRIPCHARTTABWIDGET
-#define QVISSTRIPCHARTTABWIDGET
-#include <qwidget.h>
-#include <qstring.h>
-#include <qpainter.h>
-#include <qtabwidget.h>
-#include <stdlib.h>
-#include <qvaluevector.h>
-class VisItSimStripChart;
-class QVBoxLayout;
+#ifndef QVIS_STRIPCHART_TABWIDGET_H
+#define QVIS_STRIPCHART_TABWIDGET_H
+#include <QPainter>
+#include <QString>
+#include <QTabWidget>
+#include <QVector>
+#include <QWidget>
+
+class QCheckBox;
+class QColor;
 class QComboBox;
+class QGridLayout;
 class QGroupBox;
 class QLabel;
-class QPushButton;
 class QLineEdit;
-class QListView;
-class QSpinBox;
-class QCheckBox;
-class QGridLayout;
-class QScrollView;
-class QColor;
-class QSignal;
 class QObject;
+class QPushButton;
+class QScrollArea;
+class QSignal;
+class QSpinBox;
+class QTreeWidget;
+class QVBoxLayout;
+class VisItSimStripChart;
+
 
 // ****************************************************************************
 // Class: SC_NamesTabsIndex
@@ -82,22 +83,21 @@ class SC_NamesTabsIndex
 public:
     SC_NamesTabsIndex(){}
     SC_NamesTabsIndex(const char *n, const char *tab, int i):name(n),tabName(tab), index(i){}
-    QString getName() {return name;}
-    void setScrollView(QScrollView *sc) {scrollView = sc;}
-    QScrollView *getScrollView() {return scrollView;}
-    QString getTabName() {return tabName;}
-    int getIndex() {return index;}
+    QString getName() const {return name;}
+    void setScrollView(QScrollArea *sc) {scrollView = sc;}
+    QScrollArea *getScrollView() {return scrollView;}
+    QString getTabName() const {return tabName;}
+    int getIndex() const {return index;}
 private:
      QString name;
      QString tabName;
      int  index;
      VisItSimStripChart *StripChart;
-     QScrollView *scrollView;
-     
+     QScrollArea *scrollView;
 };
 
 // holds and keeps properly associate all the strip chart infomation.
-typedef QValueVector<SC_NamesTabsIndex> SC_NamesVector;
+typedef QVector<SC_NamesTabsIndex> SC_NamesVector;
 
 // ****************************************************************************
 // Class: QvisStripChartTabWidget
@@ -111,36 +111,37 @@ typedef QValueVector<SC_NamesTabsIndex> SC_NamesVector;
 // Creation:   Wed Aug  1 15:11:06 PDT 2007
 //
 // Modifications:
-
+//   Brad Whitlock, Tue Jul  8 09:33:22 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisStripChartTabWidget : public QTabWidget
 {                                                          
     Q_OBJECT
-    
 public:
-    QvisStripChartTabWidget( QWidget *parent=0, const char *name=0, QObject *mgr=NULL, int winX=4000, int winY=1000 );
+    QvisStripChartTabWidget( QWidget *parent=0, QObject *mgr=NULL, int winX=4000, int winY=1000 );
     ~QvisStripChartTabWidget();
-    void setEnable( QString name, bool enable );
-    bool getEnable( QString name );
-    bool addDataPoint ( QString name,double x, double y);
-    void update(QString name);
-    void getMinMaxData( QString name, double &minY, double &maxY);
-    void getMinMaxData(  double &minY, double &maxY);
+    void setEnable(const QString &name, bool enable );
+    bool getEnable(const QString &name) const;
+    bool addDataPoint (const QString &name,double x, double y);
+    void update(const QString &name);
+    void getMinMaxData(const QString &name, double &minY, double &maxY);
+    void getMinMaxData(double &minY, double &maxY);
  
     enum numStripCharts { maxStripCharts = 5 };
-    int  nameToIndex(QString SC_Name);
-    int  nameToTabIndex(QString Tab_Name);
-    bool isStripChartWidget( QString name );
-    bool isStripChartTabLabel( QString name );
-    int  getCurrentPageIndex();
+    int  nameToIndex(const QString &SC_Name) const;
+    int  nameToTabIndex(const QString &Tab_Name) const;
+    bool isStripChartWidget(const QString &name) const;
+    bool isStripChartTabLabel(const QString &name) const;
+    int  getCurrentPageIndex() const;
     void executeEnableStripChartLimits();
     QWidget *getCurrentStripChart();
     void getOutOfBandLimits(double &min, double &max);
     bool getEnableOutOfBandLimits();
     void setEnableLogScale( bool enable );
     bool getEnableLogScale();
-    void setTabLabel(int tabIndex, QString newLabel );
+    void setTabLabel(int tabIndex, const QString &newLabel);
     double getCurrentData();
     int  getCurrentCycle();
     
@@ -150,9 +151,9 @@ public slots:
     void zoomOut();
     void focus();
     void updateCurrentTabData();
-    void enableOutOfBandLimits(QString name, bool enabled);
+    void enableOutOfBandLimits(const QString &name, bool enabled);
     void enableOutOfBandLimits( bool enabled);
-    void setOutOfBandLimits(QString name,double min, double max);
+    void setOutOfBandLimits(const QString &name,double min, double max);
     void setOutOfBandLimits(double min, double max);
 
 private:

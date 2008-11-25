@@ -40,29 +40,33 @@
 #include <float.h>
 #include <cassert>
 
-#include <qapplication.h>
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qclipboard.h>
-#include <qcombobox.h>
-#include <qfile.h>
-#include <qfiledialog.h>
-#include <qframe.h>
-#include <qhbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qmenubar.h>
-#include <qmessagebox.h>
-#include <qpushbutton.h>
-#include <qpopupmenu.h>
-#include <qradiobutton.h>
-#include <qslider.h>
+#include <QApplication>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QClipboard>
+#include <QComboBox>
+#include <QFile>
+#include <QFileDialog>
+#include <QFrame>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSlider>
+#include <QTabWidget>
+#include <QTextStream>
+#include <QTimer>
+#include <QWidget>
 #include <SpreadsheetTable.h>
-#include <qtabwidget.h>
-#include <qtextstream.h>
-#include <qtimer.h>
+
+// Need these?
+#include <QCloseEvent>
 
 #include <QvisColorTableButton.h>
 #include <QvisVariableButton.h>
@@ -136,11 +140,14 @@
 //   Brad Whitlock, Wed Apr 23 11:12:31 PDT 2008
 //   Added tr()'s
 //
+//   Brad Whitlock, Mon Aug 11 16:13:52 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent, 
-    const char *name) : QMainWindow(parent, name),
-    Observer((Subject*)p->GetPlotAtts()), cachedAtts(), menuPopulator()
+SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
+    QMainWindow(parent), Observer((Subject*)p->GetPlotAtts()), 
+    cachedAtts(), menuPopulator()
 {
     // Initialize members.
     input = 0;
@@ -155,36 +162,39 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     sliding = false;
 
     // Create widgets.
-    setCaption(tr("Spreadsheet"));
+    setWindowTitle(tr("Spreadsheet"));
 
-    QFrame *top = new QFrame(this, "vbox");
+    QFrame *top = new QFrame(this);
     setCentralWidget(top);
     QVBoxLayout *topLayout = new QVBoxLayout(top);
     topLayout->setSpacing(5);
     topLayout->setMargin(10);
 #ifdef Q_WS_MAC
-    QHBox *menuContainer = new QHBox(top, "menuContainer");
+    QWidget *menuContainer = new QWidget(top);
+    QHBoxLayout *menuLayout = new QHBoxLayout(menuContainer);
     topLayout->addWidget(menuContainer);
 #endif
-    QHBoxLayout *layout = new QHBoxLayout(topLayout);
+    QHBoxLayout *layout = new QHBoxLayout(0);
+    topLayout->addLayout(layout);
     layout->setSpacing(5);
 
     //
     // 3D controls
     //
-    controls3D = new QGroupBox(tr("3D"), top, "controls3D");
+    controls3D = new QGroupBox(tr("3D"), top);
     layout->addWidget(controls3D, 10);
     QVBoxLayout *inner3D = new QVBoxLayout(controls3D);
     inner3D->addSpacing(10);
     inner3D->setMargin(10);
-    QGridLayout *layout3D = new QGridLayout(inner3D, 2, 3);
+    QGridLayout *layout3D = new QGridLayout(0);
+    inner3D->addLayout(layout3D);
     layout3D->setSpacing(5);
     inner3D->addStretch(1);
 
-    kLabel = new QLabel("k [1,1]", controls3D, "kLabel");
+    kLabel = new QLabel("k [1,1]", controls3D);
     layout3D->addWidget(kLabel, 0, 0);
 
-    kSlider = new QSlider(controls3D, "kSlider");
+    kSlider = new QSlider(controls3D);
     kSlider->setOrientation(Qt::Horizontal);
     kSlider->setPageStep(1);
     connect(kSlider, SIGNAL(valueChanged(int)),
@@ -194,47 +204,50 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     connect(kSlider, SIGNAL(sliderReleased()),
             this, SLOT(sliderReleased()));
 
-    layout3D->addMultiCellWidget(kSlider, 0, 0, 1, 2);
+    layout3D->addWidget(kSlider, 0, 1, 1, 2);
 
-    normalLabel = new QLabel(tr("Normal"), controls3D, "normalLabel");
+    normalLabel = new QLabel(tr("Normal"), controls3D);
     layout3D->addWidget(normalLabel, 1, 0);
 
-    normalButtonGroup = new QButtonGroup (0, "normalButtonGroup");
-    connect(normalButtonGroup, SIGNAL(clicked(int)),
+    normalButtonGroup = new QButtonGroup (0);
+    connect(normalButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(normalChanged(int)));
-    normalRadioButtons = new QHBox(controls3D, "normalRadioButtons");
+    normalRadioButtons = new QWidget(controls3D);
+    QHBoxLayout *nLayout = new QHBoxLayout(normalRadioButtons);
+    nLayout->setMargin(0);
     layout3D->addWidget(normalRadioButtons, 1, 1);
-    normalButtonGroup->insert(new QRadioButton(tr("X"), normalRadioButtons, "rb0"), 0);
-    normalButtonGroup->insert(new QRadioButton(tr("Y"), normalRadioButtons, "rb1"), 1);
-    QRadioButton *rb = new QRadioButton(tr("Z"), normalRadioButtons, "rb2");
-    normalButtonGroup->insert(rb, 2);
-    normalRadioButtons->setStretchFactor(rb, 5);
+    QRadioButton *rb = new QRadioButton(tr("X"), normalRadioButtons);
+    normalButtonGroup->addButton(rb, 0);
+    nLayout->addWidget(rb);
+    rb = new QRadioButton(tr("Y"), normalRadioButtons);
+    normalButtonGroup->addButton(rb, 1);
+    nLayout->addWidget(rb);
+    rb = new QRadioButton(tr("Z"), normalRadioButtons);
+    normalButtonGroup->addButton(rb, 2);
+    nLayout->addWidget(rb);
+    nLayout->setStretchFactor(rb, 5);
 
     //
     // Display controls
     //
-    QGroupBox *display = new QGroupBox(tr("Display"), top, "display");
+    QGroupBox *display = new QGroupBox(tr("Display"), top);
     layout->addWidget(display);
-    QVBoxLayout *innerDisplay = new QVBoxLayout(display);
-    innerDisplay->addSpacing(10);
-    innerDisplay->setMargin(10);
-    QGridLayout *layoutDisplay = new QGridLayout(innerDisplay, 3, 2);
-    layoutDisplay->setSpacing(5);
+    QGridLayout *layoutDisplay = new QGridLayout(display);
 
-    formatLabel = new QLabel(tr("Format"), display, "formatLabel");
+    formatLabel = new QLabel(tr("Format"), display);
     layoutDisplay->addWidget(formatLabel, 0, 0);
-    formatLineEdit = new QLineEdit(display, "formatLineEdit");
+    formatLineEdit = new QLineEdit(display);
     connect(formatLineEdit, SIGNAL(returnPressed()),
             this, SLOT(formatChanged()));
     layoutDisplay->addWidget(formatLineEdit, 0, 1);
 
-    colorTableCheckBox = new QCheckBox(tr("Color"), display, "colorTableCheckBox");
+    colorTableCheckBox = new QCheckBox(tr("Color"), display);
     connect(colorTableCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(colorTableCheckBoxToggled(bool)));
     layoutDisplay->addWidget(colorTableCheckBox, 1, 0);
 
     // Just a push button for now. It will be a color table button later.
-    colorTableButton = new QvisColorTableButton(display, "colorTableButton");
+    colorTableButton = new QvisColorTableButton(display);
     connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(selectedColorTable(bool, const QString &)));
     layoutDisplay->addWidget(colorTableButton, 1, 1);
@@ -242,30 +255,31 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     //
     // Show in viswindow controls
     //
-    QGroupBox *show = new QGroupBox(1, Qt::Vertical, tr("Show in visualizaion window"), top, "show");
+    QGroupBox *show = new QGroupBox(tr("Show in visualization window"), top);
     topLayout->addWidget(show);
-    tracerCheckBox = new QCheckBox(tr("Tracer plane"), show, "tracerCheckBox");
+    QHBoxLayout *sLayout = new QHBoxLayout(show);
+    tracerCheckBox = new QCheckBox(tr("Tracer plane"), show);
+    sLayout->addWidget(tracerCheckBox);
     connect(tracerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(tracerCheckBoxToggled(bool)));
-    patchOutlineCheckBox = new QCheckBox(tr("Patch outline"), show, "patchOutline");
+    patchOutlineCheckBox = new QCheckBox(tr("Patch outline"), show);
+    sLayout->addWidget(patchOutlineCheckBox);
     connect(patchOutlineCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(outlineCheckBoxToggled(bool)));
-    currentCellOutlineCheckBox = new QCheckBox(tr("Current cell outline"), show, "currentCellOutline");
+    currentCellOutlineCheckBox = new QCheckBox(tr("Current cell outline"), show);
+    sLayout->addWidget(currentCellOutlineCheckBox);
     connect(currentCellOutlineCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showCurrentCellOutlineCheckBoxToggled(bool)));
 
     //
     // Tables
     //
-    zTabs = new SpreadsheetTabWidget(top, "zTabs");
+    zTabs = new SpreadsheetTabWidget(top);
     topLayout->addWidget(zTabs, 10);
     nTables = 1;
     nTablesForSlider = 1;
     tables = new SpreadsheetTable*[1];
-    tables[0] = new SpreadsheetTable(0, "table");
-    tables[0]->setNumRows(20);
-    tables[0]->setNumCols(20);
-    tables[0]->setReadOnly(true);
+    tables[0] = new SpreadsheetTable(0);
     tables[0]->setLUT(colorLUT);
     QFont spreadsheetFont;
     if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
@@ -274,71 +288,76 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     connect(tables[0], SIGNAL(selectionChanged()),
             this, SLOT(tableSelectionChanged()));
     zTabs->addTab(tables[0], "k=1");
-    connect(zTabs, SIGNAL(currentChanged(QWidget*)),
-            this, SLOT(tabChanged(QWidget*)));
+    connect(zTabs, SIGNAL(currentChanged(int)),
+            this, SLOT(tabChanged(int)));
 
     //
     // Variables and min,max buttons
     //
-    QGridLayout *varLayout = new QGridLayout(topLayout, 2, 3);
+    QGridLayout *varLayout = new QGridLayout(0);
+    topLayout->addLayout(varLayout);
     varLayout->setSpacing(5);
-    varLayout->setColStretch(1, 5);
-    varLayout->setColStretch(2, 5);
-    varLabel = new QLabel(tr("Variable"), top, "varLabel");
+    varLayout->setColumnStretch(1, 5);
+    varLayout->setColumnStretch(2, 5);
+    varLabel = new QLabel(tr("Variable"), top);
     varLayout->addWidget(varLabel, 0, 0);
     // Have to display metadata -- the list of variables.
     varButton = new QvisVariableButton(false, false, true, 
-        QvisVariableButton::Scalars, top, "varComboBox");
+        QvisVariableButton::Scalars, top);
     connect(varButton, SIGNAL(activated(const QString &)),
             this, SLOT(changedVariable(const QString &)));
-    varLayout->addMultiCellWidget(varButton, 0, 0, 1, 2);    
+    varLayout->addWidget(varButton, 0, 1, 1, 2);
 
     // min, max buttons
-    minButton = new QPushButton(tr("Min = "), top, "minButton");
+    minButton = new QPushButton(tr("Min = "), top);
     connect(minButton, SIGNAL(clicked()),
             this, SLOT(minClicked()));
-    varLayout->addMultiCellWidget(minButton, 1,1,1,1);
+    varLayout->addWidget(minButton, 1,1);
 
-    maxButton = new QPushButton(tr("Max = "), top, "maxButton");
+    maxButton = new QPushButton(tr("Max = "), top);
     connect(maxButton, SIGNAL(clicked()),
             this, SLOT(maxClicked()));
-    varLayout->addMultiCellWidget(maxButton, 1,1,2,2);
+    varLayout->addWidget(maxButton, 1,2);
 
 
     //
     // Do the main menu.
     //
-    filePopup = new QPopupMenu(this);
+    fileMenu = new QMenu(tr("&File"), this);
 #ifdef Q_WS_MAC
-    QPushButton *fileButton = new QPushButton(tr("&File"), menuContainer, "fileButton");
-    fileButton->setPopup(filePopup);
+    QPushButton *fileButton = new QPushButton(tr("&File"), menuContainer);
+    menuLayout->addWidget(fileButton);
+    fileButton->setMenu(fileMenu);
 #else
-    saveMenuId = menuBar()->insertItem(tr("&File"), filePopup);
+    menuBar()->addMenu(fileMenu);
 #endif
-    saveMenu_SaveTextId = filePopup->insertItem(tr("Save as text . . ."), this, SLOT(saveAsText()), CTRL+Key_S);
+    fileMenu_SaveText = fileMenu->addAction(tr("Save as text . . ."), this, SLOT(saveAsText()), Qt::CTRL+Qt::Key_S);
 
-    editPopup = new QPopupMenu(this);
+    editMenu = new QMenu(tr("&Edit"), this);
 #ifdef Q_WS_MAC
-    QPushButton *editButton = new QPushButton(tr("&Edit"), menuContainer, "editButton");
-    editButton->setPopup(editPopup);
+    QPushButton *editButton = new QPushButton(tr("&Edit"), menuContainer);
+    menuLayout->addWidget(editButton);
+    editButton->setMenu(editMenu);
 #else
-    editMenuId = menuBar()->insertItem(tr("&Edit"), editPopup);
+    menuBar()->addMenu(editMenu);
 #endif
-    editMenu_CopyId = editPopup->insertItem(tr("&Copy"), this, SLOT(copySelectionToClipboard()), CTRL+Key_C);
-    editPopup->insertSeparator();
-    editPopup->insertItem(tr("Select &All"), this, SLOT(selectAll()), CTRL+Key_A);
-    editPopup->insertItem(tr("Select &None"), this, SLOT(selectNone()), CTRL+Key_N);
+    editMenu_Copy = editMenu->addAction(tr("&Copy"), this, SLOT(copySelectionToClipboard()), Qt::CTRL+Qt::Key_C);
+    editMenu->addSeparator();
+    editMenu->addAction(tr("Select &All"), this, SLOT(selectAll()), Qt::CTRL+Qt::Key_A);
+    editMenu->addAction(tr("Select &None"), this, SLOT(selectNone()), Qt::CTRL+Qt::Key_N);
 
-    operationsPopup = new QPopupMenu(this);
+    operationsMenu = new QMenu(tr("&Operations"), this);
 #ifdef Q_WS_MAC
-    QPushButton *opButton = new QPushButton(tr("&Operations"), menuContainer, "opButton");
-    opButton->setPopup(operationsPopup);
+    opButton = new QPushButton(tr("&Operations"), menuContainer);
+    menuLayout->addWidget(opButton);
+    opButton->setMenu(operationsMenu);
+    opButton->setEnabled(false);
 #else
-    operationMenuId = menuBar()->insertItem(tr("&Operations"), operationsPopup);
+    menuBar()->addMenu(operationsMenu);
 #endif
-    operationsPopup->insertItem(tr("Sum"), this, SLOT(operationSum()));
-    operationsPopup->insertItem(tr("Average"), this, SLOT(operationAverage()));
-    updateMenuEnabledState(tables[0]);
+    operationsMenu->addAction(tr("Sum"), this, SLOT(operationSum()));
+    operationsMenu->addAction(tr("Average"), this, SLOT(operationAverage()));
+    updateMenuEnabledState(0);
 }
 
 // ****************************************************************************
@@ -422,6 +441,9 @@ SpreadsheetViewer::setAllowRender(bool val)
 //   Brad Whitlock, Wed Apr 23 11:13:35 PDT 2008
 //   Added tr().
 //
+//   Brad Whitlock, Tue Aug 26 15:33:42 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -460,7 +482,7 @@ SpreadsheetViewer::render(vtkDataSet *ds)
             if (plotAtts->GetSliceIndex() < nTables)
             {
                 zTabs->blockSignals(true);
-                zTabs->showPage(tables[plotAtts->GetSliceIndex()]);
+                zTabs->setCurrentIndex(plotAtts->GetSliceIndex());
                 zTabs->blockSignals(false);
             }
 
@@ -480,7 +502,7 @@ SpreadsheetViewer::render(vtkDataSet *ds)
         QString caption = tr("Spreadsheet - %1: %2").
             arg(plot->GetVariableName().c_str()).
             arg(plotAtts->GetSubsetName().c_str());
-        setCaption(caption);
+        setWindowTitle(caption);
 
         // Set the variable in the variable button based on the plot's
         // active variable.
@@ -490,7 +512,7 @@ SpreadsheetViewer::render(vtkDataSet *ds)
         varButton->blockSignals(false);
 
         // Update the menu enabled state.
-        updateMenuEnabledState((QTable *)zTabs->currentPage());
+        updateMenuEnabledState(zTabs->currentIndex());
     }
 }
 
@@ -596,7 +618,9 @@ SpreadsheetViewer::closeEvent(QCloseEvent *e)
 // Creation:   Tue Feb 20 14:03:20 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 16:00:36 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 bool
@@ -613,9 +637,8 @@ SpreadsheetViewer::setColorTable(const char *ctName)
     if(colorTableChanged)
     {
         // Send a paint event to the currently visible page so its cells update
-        QTable *page = (QTable*)zTabs->currentPage();
-        if(page != 0)
-            page->updateContents();
+        if(zTabs->currentWidget() != 0)
+            zTabs->currentWidget()->update();
     }
 
     return colorTableChanged;
@@ -699,6 +722,9 @@ SpreadsheetViewer::PickPointsChanged() const
 //   Gunther H. Weber, Wed Nov 28 15:20:58 PST 2007
 //   Added toggle for showing current cell outline
 //
+//   Brad Whitlock, Tue Aug 26 15:38:24 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -718,7 +744,7 @@ SpreadsheetViewer::Update(Subject *)
 
         switch(i)
         {
-        case 0: //subsetName
+        case SpreadsheetAttributes::ID_subsetName:
             if (cachedAtts.GetSubsetName() != plotAtts->GetSubsetName())
             {
                 // Invalidate pointer to data set so that pick information
@@ -726,14 +752,14 @@ SpreadsheetViewer::Update(Subject *)
                 input = 0; 
             }
             break;
-        case 1: //formatString
+        case SpreadsheetAttributes::ID_formatString:
             formatLineEdit->setText(plotAtts->GetFormatString().c_str());
 
             // If we've changed format strings then we need to update the spreadsheet.
             if(cachedAtts.GetFormatString() != plotAtts->GetFormatString())
                 needsUpdate = true;
             break;
-        case 2: //useColorTable
+        case SpreadsheetAttributes::ID_useColorTable:
             colorTableButton->setEnabled(plotAtts->GetUseColorTable());
             colorTableCheckBox->blockSignals(true);
             colorTableCheckBox->setChecked(plotAtts->GetUseColorTable());
@@ -743,47 +769,47 @@ SpreadsheetViewer::Update(Subject *)
             if(cachedAtts.GetUseColorTable() != plotAtts->GetUseColorTable())
                  needsUpdate = true;
             break;
-        case 3: //colorTableName
+        case SpreadsheetAttributes::ID_colorTableName:
             colorTableButton->setText(plotAtts->GetColorTableName().c_str());
 
             // If we've changed then we need to update the spreadsheet.
             if(cachedAtts.GetColorTableName() != plotAtts->GetColorTableName())
                  needsUpdate = true;
             break;
-        case 4: //showTracerPlane
+        case SpreadsheetAttributes::ID_showTracerPlane:
             tracerCheckBox->blockSignals(true);
             tracerCheckBox->setChecked(plotAtts->GetShowTracerPlane());
             tracerCheckBox->blockSignals(false);
             break;
-        case 5: //tracerColor
+        case SpreadsheetAttributes::ID_tracerColor:
             zTabs->setHighlightColor(QColor(plotAtts->GetTracerColor().Red(),
                                             plotAtts->GetTracerColor().Green(),
                                             plotAtts->GetTracerColor().Blue()));
             break;
-        case 6: //normal
+        case SpreadsheetAttributes::ID_normal:
             normalButtonGroup->blockSignals(true);
-            normalButtonGroup->setButton(plotAtts->GetNormal());
+            normalButtonGroup->button(plotAtts->GetNormal())->setChecked(true);
             normalButtonGroup->blockSignals(false);
 
             // If we've changed normals then we need to update the spreadsheet.
             if(cachedAtts.GetNormal() != plotAtts->GetNormal())
                 needsRebuild = true;
             break;
-        case 7: //sliceIndex
+        case SpreadsheetAttributes::ID_sliceIndex:
             sliceIndexSet = true;
 #ifdef SINGLE_TAB_WINDOW
             needsRebuild = true;
 #endif
             break;
-        case 8: //currentPick
-        case 9: //currentPickValid
-        case 10: //pastPicks
+        case SpreadsheetAttributes::ID_currentPick:
+        case SpreadsheetAttributes::ID_currentPickValid:
+        case SpreadsheetAttributes::ID_pastPicks:
             // Check to see if the pick points changed.
             pickPt.clear();
             cellId.clear();
             needsPickUpdate |= PickPointsChanged();
             break;
-        case 13: // fontName
+        case SpreadsheetAttributes::ID_spreadsheetFont:
             { // Start a new block to avoid complaints about skipping QFont initialization
                 QFont spreadsheetFont;
                 if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
@@ -795,12 +821,12 @@ SpreadsheetViewer::Update(Subject *)
                 }
                 break;
             }
-        case 14: //showPatchOutline
+        case SpreadsheetAttributes::ID_showPatchOutline:
             patchOutlineCheckBox->blockSignals(true);
             patchOutlineCheckBox->setChecked(plotAtts->GetShowPatchOutline());
             patchOutlineCheckBox->blockSignals(false);
             break;
-        case 15: //showCurrentCellOutline
+        case SpreadsheetAttributes::ID_showCurrentCellOutline:
             currentCellOutlineCheckBox->blockSignals(true);
             currentCellOutlineCheckBox->setChecked(plotAtts->GetShowCurrentCellOutline());
             currentCellOutlineCheckBox->blockSignals(false);
@@ -828,8 +854,8 @@ SpreadsheetViewer::Update(Subject *)
             tables[i]->setFormatString(plotAtts->GetFormatString().c_str());
 
             // Send a paint event to the currently visible page so its cells update
-            if(tables[i] == zTabs->currentPage())
-                 tables[i]->updateContents();
+            if(tables[i] == zTabs->currentWidget())
+                 tables[i]->update();
         }
 
         // Update the min/max buttons.
@@ -857,7 +883,7 @@ SpreadsheetViewer::Update(Subject *)
         if(plotAtts->GetSliceIndex() < nTables)
         {
             zTabs->blockSignals(true);
-            zTabs->showPage(tables[plotAtts->GetSliceIndex()]);
+            zTabs->setCurrentIndex(plotAtts->GetSliceIndex());
             zTabs->blockSignals(false);
         }
    
@@ -925,9 +951,8 @@ SpreadsheetViewer::updateSpreadsheet()
     colorLUT->GetLookupTable()->Build();
 
     // Send a paint event to the currently visible page so its cells update
-    QTable *page = (QTable *)zTabs->currentPage();
-    if(page != 0)
-        page->updateContents();
+    if(zTabs->currentIndex() != -1)
+        zTabs->currentWidget()->update();
 }
 
 // ****************************************************************************
@@ -1173,13 +1198,13 @@ SpreadsheetViewer::displayUnstructuredGrid()
 
 #define END_MINMAX \
         QString fmt, tmp;\
-        fmt = QString("Min = ") + QString(plotAtts->GetFormatString().c_str());\
-        tmp.sprintf(fmt.latin1(), minValue);\
+        fmt = tr("Min = ") + QString(plotAtts->GetFormatString().c_str());\
+        tmp.sprintf(fmt.toStdString().c_str(), minValue);\
         minButton->setText(tmp);\
         minButton->setEnabled(true);\
         debug5 << mName << "min=" << minValue << ", minCell=[" << minCell[0] << "," << minCell[1] << "," << minCell[2] << "]" << endl;\
-        fmt = QString("Max = ") + QString(plotAtts->GetFormatString().c_str());\
-        tmp.sprintf(fmt.latin1(), maxValue);\
+        fmt = tr("Max = ") + QString(plotAtts->GetFormatString().c_str());\
+        tmp.sprintf(fmt.toStdString().c_str(), maxValue);\
         maxButton->setText(tmp);\
         maxButton->setEnabled(true);\
         debug5 << mName << "max=" << maxValue << ", maxCell=[" << maxCell[0] << "," << maxCell[1] << "," << maxCell[2] << "]" << endl;
@@ -1200,7 +1225,9 @@ SpreadsheetViewer::displayUnstructuredGrid()
 // Creation:   Tue Feb 20 14:12:46 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 28 14:09:58 PDT 2008
+//   Fixed a bug with Y slicing.
+//
 // ****************************************************************************
 
 void
@@ -1265,18 +1292,19 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
             BEGIN_MINMAX
             for(int k = 0; k < dims[2]; ++k)
             {
-                int col = dims[2]-1-k;
+                int col = k;//dims[2]-1-k;
                 for(int j = 0; j < dims[1]; ++j)
                 {
                     for(int i = 0; i < dims[0]; ++i, ++index)
                     {
+                        int row = dims[0]-1-i;
                         // If the data has ghost zones then skip ghosts so they
                         // don't mess up min/max calculations.
                         if(ghostZones != 0 && ghostZones[index] != 0)
                             continue;
 
                         double *val = arr->GetTuple(index);
-                        EVAL_MINMAX(j, i, col /*k*/)
+                        EVAL_MINMAX(j, row, col /*k*/)
                     }
                 }
             }
@@ -1373,6 +1401,9 @@ SpreadsheetViewer::updateMinMaxButtons()
 //   Brad Whitlock, Wed Apr 23 11:26:17 PDT 2008
 //   Set nTablesForSlider.
 //
+//   Brad Whitlock, Tue Aug 26 15:31:41 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1401,7 +1432,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
             else
             {
                 QString name; name.sprintf("%d", i);
-                t[i] = new SpreadsheetTable(0, name.latin1());
+                t[i] = new SpreadsheetTable(0);
                 t[i]->setUpdatesEnabled(false);
                 t[i]->setLUT(colorLUT);
                 QFont spreadsheetFont;
@@ -1409,7 +1440,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
                     t[i]->setFont(spreadsheetFont);
                 connect(t[i], SIGNAL(selectionChanged()),
                         this, SLOT(tableSelectionChanged()));
-                zTabs->addTab(t[i], name);
+                zTabs->addTab(t[i],"");
             }
         }
         nTables = ntabs;
@@ -1427,7 +1458,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
                 t[i] = tables[i];
             else
             {
-                zTabs->removePage(tables[i]);
+                zTabs->removeTab(zTabs->count()-1);
                 disconnect(tables[i], SIGNAL(selectionChanged()),
                            this, SLOT(tableSelectionChanged()));
                 delete tables[i];
@@ -1452,14 +1483,14 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
     {
         QString name;
         if(!structured)
-            name.sprintf(tr("Unstructured"));
+            name = tr("Unstructured");
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
             name.sprintf("i=%d", i+base+offset);
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
             name.sprintf("j=%d", i+base+offset);
         else
             name.sprintf("k=%d", i+base+offset);
-        zTabs->setTabLabel(tables[i], name);
+        zTabs->setTabText(i, name);
     }
     zTabs->blockSignals(false);
 
@@ -1470,8 +1501,8 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
     if(updateSlider)
     {
         kSlider->blockSignals(true);
-        kSlider->setMinValue(0);
-        kSlider->setMaxValue(ntabs - 1);
+        kSlider->setMinimum(0);
+        kSlider->setMaximum(ntabs - 1);
         kSlider->blockSignals(false);
     }
 }
@@ -1550,7 +1581,9 @@ SpreadsheetViewer::updateSliderLabel()
 // Creation:   Tue Feb 20 14:15:26 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 15:54:05 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1563,9 +1596,8 @@ SpreadsheetViewer::clear()
         tables[k]->clearDataArray();
 
     // Update the visible table.
-    QTable *page = (QTable *)zTabs->currentPage();
-    if(page != 0)
-        page->updateContents();
+    if(zTabs->currentIndex() != -1)
+        zTabs->currentWidget()->update();
 
     minButton->setEnabled(false);
     maxButton->setEnabled(false);
@@ -1588,23 +1620,29 @@ SpreadsheetViewer::clear()
 //   Brad Whitlock, Tue Apr 22 10:26:54 PDT 2008
 //   Don't set the enabled state for the operation menu on the Mac.
 //
+//   Brad Whitlock, Tue Aug 26 15:28:00 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-SpreadsheetViewer::updateMenuEnabledState(QTable *table)
+SpreadsheetViewer::updateMenuEnabledState(int tableIndex)
 {
     //
     // If the sender is the current page then update the menus based on
     // whether it has any selections.
     //
-    if(zTabs->currentPage() == table)
+    if(zTabs->currentIndex() == tableIndex)
     {
-        bool enabled = table->numSelections() > 0;
+        QTableView *table = (QTableView *)zTabs->currentWidget();
+        bool enabled = table->selectionModel()->hasSelection();
 
-        filePopup->setItemEnabled(saveMenu_SaveTextId, enabled);
-        editPopup->setItemEnabled(editMenu_CopyId, enabled);
+        fileMenu_SaveText->setEnabled(enabled);
+        editMenu_Copy->setEnabled(enabled);
 #ifndef Q_WS_MAC
-        menuBar()->setItemEnabled(operationMenuId, enabled);
+        operationsMenu->setEnabled(enabled);
+#else
+        opButton->setEnabled(enabled);
 #endif
     }
 }
@@ -1723,10 +1761,12 @@ SpreadsheetViewer::moveSliceToCurrentPick()
 // Creation:   Mon Sep 10 15:05:01 PDT 2007
 //
 // Modifications:
-//
 //   Hank Childs, Sun Oct 28 21:48:23 PST 2007
 //   Account for layers of ghost zones when calculating indices.
-//   
+//
+//   Brad Whitlock, Thu Aug 28 13:53:57 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1740,9 +1780,8 @@ SpreadsheetViewer::selectPickPoints()
     debug5 << mName << "Clearing old pick selections." << std::endl;
     for(int t = 0; t < nTables; ++t)
     {
-        tables[t]->setCurrentCell(-1,-1);
+        tables[t]->selectionModel()->clear();
         tables[t]->clearSelectedCellLabels();
-        tables[t]->clearSelection(true);
     }
 
     // ... Calculate position (slice, row, column) of current pick
@@ -1805,28 +1844,31 @@ SpreadsheetViewer::selectPickPoints()
 #endif
                 int col = ijk[columnAxis];
                 // Convert logical index row to spreadsheet row
-                int row = tables[activeTable]->numRows() - ijk[rowAxis] - 1;
+                int row = tables[activeTable]->model()->rowCount() - ijk[rowAxis] - 1;
 
                 // Select the new cell in the active table.
                 debug1 << mName << "Selecting current cell (" << row << ", "
                        << col << ")" << std::endl;
-                QTableSelection sel;
-                sel.init(row, col);
-                sel.expandTo(row, col);
-                tables[activeTable]->addSelection(sel);
-                tables[activeTable]->ensureCellVisible(row, col);
-                tables[activeTable]->addSelectedCellLabel(row, col, plotAtts->GetCurrentPickLetter());
+
+                // Select the new cell.
+                QModelIndex index(tables[activeTable]->model()->index(row, col));
+                tables[activeTable]->selectionModel()->clear();
+                tables[activeTable]->selectionModel()->select(index, QItemSelectionModel::Select);
+                tables[activeTable]->scrollTo(index);
+                tables[activeTable]->addSelectedCellLabel(row, col, plotAtts->GetCurrentPickLetter().c_str());
 
 #ifndef SINGLE_TAB_WINDOW
                 debug1 << mName << "Setting current cell (" << row << ", " << col << ")"
-                       << std::endl;
-                tables[activeTable]->setCurrentCell(row, col);
+                       << std::endl; 
+                QModelIndex id = tables[activeTable]->model()->index(row, col);
+                tables[activeTable]->selectionModel()->setCurrentIndex(id, QItemSelectionModel::ClearAndSelect);
 #else
                 if (ijk[sliceAxis] == plotAtts->GetSliceIndex())
                 {
                     debug1 << mName << "Setting current cell (" << row << ", " << col << ")"
                            << std::endl;
-                    tables[activeTable]->setCurrentCell(row, col);
+                    QModelIndex id = tables[activeTable]->model()->index(row, col);
+                    tables[activeTable]->selectionModel()->setCurrentIndex(id, QItemSelectionModel::ClearAndSelect);
                 }
                 else
                 {
@@ -1853,7 +1895,7 @@ SpreadsheetViewer::selectPickPoints()
 
 #ifdef SINGLE_TAB_WINDOW
                 // Get row and column of old pick
-                int oldRow = tables[0]->numRows() - old_ijk[rowAxis] - 1;
+                int oldRow = tables[0]->model()->rowCount() - old_ijk[rowAxis] - 1;
                 int oldCol = old_ijk[columnAxis];
 
                 // If old pick is in same slice as current pick -> highlight it
@@ -1861,15 +1903,15 @@ SpreadsheetViewer::selectPickPoints()
                 {
                     debug1 << mName << "Highlight cell (" << oldRow << ", "
                         << oldCol << ") in single slice" << endl;
-                    QTableSelection sel;
-                    sel.init(oldRow, oldCol);
-                    sel.expandTo(oldRow, oldCol);
-                    tables[0]->addSelection(sel);
-                    tables[0]->addSelectedCellLabel(oldRow, oldCol, pastPickLetters[i]);
+                    QModelIndex index(tables[0]->model()->index(oldRow, oldCol));
+                    tables[0]->selectionModel()->select(index, QItemSelectionModel::Select);
+                    tables[0]->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+                    tables[0]->scrollTo(index);
+                    tables[0]->addSelectedCellLabel(oldRow, oldCol, pastPickLetters[i].c_str());
                 }
 #else
                 // Get row and column of old pick
-                int oldRow = tables[old_ijk[sliceAxis]]->numRows() - old_ijk[rowAxis] - 1;
+                int oldRow = tables[old_ijk[sliceAxis]]->model()->rowCount() - old_ijk[rowAxis] - 1;
                 int oldCol = old_ijk[columnAxis];
 
                 // In multi-tab mode highlight selections in all tables
@@ -1877,11 +1919,12 @@ SpreadsheetViewer::selectPickPoints()
                 {
                     debug1 << mName << "Highlight cell (" << oldRow << ", "
                            << oldCol << ") in table " << old_ijk[sliceAxis] << endl;
-                    QTableSelection sel;
-                    sel.init(oldRow, oldCol);
-                    sel.expandTo(oldRow, oldCol);
-                    tables[old_ijk[sliceAxis]]->addSelection(sel);
-                    tables[old_ijk[sliceAxis]]->addSelectedCellLabel(oldRow, oldCol, pastPickLetters[i]);
+                    SpreadsheetTable *table = tables[old_ijk[sliceAxis]];
+                    QModelIndex index(table->model()->index(oldRow, oldCol));
+                    table->selectionModel()->select(index, QItemSelectionModel::Select);
+                    table->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+                    table->scrollTo(index);
+                    table->addSelectedCellLabel(oldRow, oldCol, pastPickLetters[i].c_str());
                 }
 #endif
             }
@@ -1915,7 +1958,7 @@ void
 SpreadsheetViewer::formatChanged()
 {
     // Set the attributes and notify the viewer about the changes
-    std::string formatString(formatLineEdit->text().latin1());
+    std::string formatString(formatLineEdit->text().toStdString());
     plotAtts->SetFormatString(formatString);
     plotAtts->Notify();
 }
@@ -1937,7 +1980,10 @@ SpreadsheetViewer::formatChanged()
 // Modifications:
 //   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
 //   Support using a single tab of values.
-//   
+//
+//   Brad Whitlock, Tue Aug 26 15:52:50 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1954,11 +2000,11 @@ SpreadsheetViewer::sliderChanged(int slice)
         postNotify();
 
         zTabs->blockSignals(true);
-        zTabs->showPage(tables[tabIndex]);
+        zTabs->setCurrentIndex(tabIndex);
         zTabs->blockSignals(false);
 
         updateSliderLabel();
-        updateMenuEnabledState(tables[tabIndex]);
+        updateMenuEnabledState(tabIndex);
     }
 }
 
@@ -2020,34 +2066,32 @@ SpreadsheetViewer::sliderReleased()
 //   right spreadshset page is visible.
 //
 // Arguments:
-//   val : The new slice value.
+//   index : The new slice value.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 20 14:16:44 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 15:53:01 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-SpreadsheetViewer::tabChanged(QWidget *tab)
+SpreadsheetViewer::tabChanged(int index)
 {
-    if(nTables > 1 && isVisible())
+    if(nTables > 1 && isVisible() && index >= 0)
     {
-        int index = zTabs->indexOf(tab);
-        if(index >= 0)
-        {
-            SetUpdate(false);
-            plotAtts->SetSliceIndex(index);
-            plotAtts->Notify();
+        SetUpdate(false);
+        plotAtts->SetSliceIndex(index);
+        plotAtts->Notify();
 
-            kSlider->blockSignals(true);
-            kSlider->setValue(index);
-            kSlider->blockSignals(false);
+        kSlider->blockSignals(true);
+        kSlider->setValue(index);
+        kSlider->blockSignals(false);
 
-            updateSliderLabel();
-            updateMenuEnabledState(tables[index]);
-        }
+        updateSliderLabel();
+        updateMenuEnabledState(index);
     }
 }
 
@@ -2184,7 +2228,10 @@ SpreadsheetViewer::showCurrentCellOutlineCheckBoxToggled(bool val)
 // Modifications:
 //   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
 //   Support using a single tab of values.
-//   
+//
+//   Brad Whitlock, Wed Aug 27 15:49:42 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -2199,18 +2246,14 @@ SpreadsheetViewer::minClicked()
     {
         // Show the page and don't block signals so we are sure to also
         // update the kSlider via the tabShanged slot
-        zTabs->showPage(tables[minCell[0]]);
-
-        // Remove the selections that may be on the table.
-        for(int i = 0; i < tables[minCell[0]]->numSelections(); ++i)
-            tables[minCell[0]]->removeSelection(i);
+        zTabs->setCurrentIndex(minCell[0]);
 
         // Select the new cell.
-        QTableSelection sel;
-        sel.init(minCell[1], minCell[2]);
-        sel.expandTo(minCell[1], minCell[2]);
-        tables[minCell[0]]->addSelection(sel);
-        tables[minCell[0]]->ensureCellVisible(minCell[1], minCell[2]);
+        SpreadsheetTable *table = tables[minCell[0]];
+        QModelIndex index(table->model()->index(minCell[1], minCell[2]));
+        table->selectionModel()->clear();
+        table->selectionModel()->select(index, QItemSelectionModel::Select);
+        table->scrollTo(index);
     }
 #else
     if(minCell[0] != -1 && minCell[1] != -1 && minCell[2] != -1)
@@ -2219,16 +2262,12 @@ SpreadsheetViewer::minClicked()
         plotAtts->SetSliceIndex(minCell[0]);
         plotAtts->Notify();
 
-        // Remove the selections that may be on the table.
-        for(int i = 0; i < tables[0]->numSelections(); ++i)
-            tables[0]->removeSelection(i);
-
         // Select the new cell.
-        QTableSelection sel;
-        sel.init(minCell[1], minCell[2]);
-        sel.expandTo(minCell[1], minCell[2]);
-        tables[0]->addSelection(sel);
-        tables[0]->ensureCellVisible(minCell[1], minCell[2]);
+        SpreadsheetTable *table = tables[0];
+        QModelIndex index(table->model()->index(minCell[1], minCell[2]));
+        table->selectionModel()->clear();
+        table->selectionModel()->select(index, QItemSelectionModel::Select);
+        table->scrollTo(index);
     }
 #endif
 }
@@ -2246,33 +2285,32 @@ SpreadsheetViewer::minClicked()
 // Modifications:
 //   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
 //   Support using a single tab of values.
-//   
+//
+//   Brad Whitlock, Wed Aug 27 16:15:32 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 SpreadsheetViewer::maxClicked()
 {
-    // maxCell[0] = The index of the table that contains max
-    // maxCell[1] = The row of the table that contains max
-    // maxCell[2] = The column of the table that contains max
+    // maxCell[0] = The index of the table that contains min
+    // maxCell[1] = The row of the table that contains min
+    // maxCell[2] = The column of the table that contains min
 #ifndef SINGLE_TAB_WINDOW
     if(maxCell[0] != -1 && maxCell[1] != -1 && maxCell[2] != -1 &&
        maxCell[0] < nTables)
     {
         // Show the page and don't block signals so we are sure to also
         // update the kSlider via the tabShanged slot
-        zTabs->showPage(tables[maxCell[0]]);
-
-        // Remove the selections that may be on the table.
-        for(int i = 0; i < tables[maxCell[0]]->numSelections(); ++i)
-            tables[maxCell[0]]->removeSelection(i);
+        zTabs->setCurrentIndex(maxCell[0]);
 
         // Select the new cell.
-        QTableSelection sel;
-        sel.init(maxCell[1], maxCell[2]);
-        sel.expandTo(maxCell[1], maxCell[2]);
-        tables[maxCell[0]]->addSelection(sel);
-        tables[maxCell[0]]->ensureCellVisible(maxCell[1], maxCell[2]);
+        SpreadsheetTable *table = tables[maxCell[0]];
+        QModelIndex index(table->model()->index(maxCell[1], maxCell[2]));
+        table->selectionModel()->clear();
+        table->selectionModel()->select(index, QItemSelectionModel::Select);
+        table->scrollTo(index);
     }
 #else
     if(maxCell[0] != -1 && maxCell[1] != -1 && maxCell[2] != -1)
@@ -2281,16 +2319,12 @@ SpreadsheetViewer::maxClicked()
         plotAtts->SetSliceIndex(maxCell[0]);
         plotAtts->Notify();
 
-        // Remove the selections that may be on the table.
-        for(int i = 0; i < tables[0]->numSelections(); ++i)
-            tables[0]->removeSelection(i);
-
         // Select the new cell.
-        QTableSelection sel;
-        sel.init(maxCell[1], maxCell[2]);
-        sel.expandTo(maxCell[1], maxCell[2]);
-        tables[0]->addSelection(sel);
-        tables[0]->ensureCellVisible(maxCell[1], maxCell[2]);
+        SpreadsheetTable *table = tables[0];
+        QModelIndex index(table->model()->index(maxCell[1], maxCell[2]));
+        table->selectionModel()->clear();
+        table->selectionModel()->select(index, QItemSelectionModel::Select);
+        table->scrollTo(index);
     }
 #endif
 }
@@ -2361,7 +2395,7 @@ void
 SpreadsheetViewer::selectedColorTable(bool, const QString &ctName)
 {
     // Set the color table in the attributes.
-    plotAtts->SetColorTableName(ctName.latin1());
+    plotAtts->SetColorTableName(ctName.toStdString());
     plotAtts->Notify();
 }
 
@@ -2390,7 +2424,7 @@ SpreadsheetViewer::changedVariable(const QString &newVar)
 
     // Change the plot variable. May need to have this encoded into
     // the xfer object to avoid possible reentrancy problems.
-    plot->GetViewerMethods()->ChangeActivePlotsVar(newVar.latin1());
+    plot->GetViewerMethods()->ChangeActivePlotsVar(newVar.toStdString());
 }
 
 // ****************************************************************************
@@ -2406,6 +2440,9 @@ SpreadsheetViewer::changedVariable(const QString &newVar)
 //   Brad Whitlock, Wed Apr 23 11:28:00 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Aug 26 16:03:11 PDT 2008
+//   Qt 4.
+//
 //   Brad Whitlock, Thu Oct  9 14:12:35 PDT 2008
 //   Added a message about the vertical ordering being different.
 //
@@ -2417,18 +2454,18 @@ SpreadsheetViewer::saveAsText()
     if(nTables > 0)
     {
         // Get the name of the file that the user wants to save
-        QString fileName = QFileDialog::getSaveFileName(tr("selection.txt"),
-            tr("Text (*.txt)"));
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save as"), 
+            tr("selection.txt"), tr("Text (*.txt)"));
 
         // If the user chose to save a file, write it out.
         if(!fileName.isNull())
         {
-            SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentPage();
+            SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
             QString txt(t->selectedCellsAsText());
 
             // Save the text to a file.
             QFile file(fileName);
-            if(file.open(IO_WriteOnly))
+            if(file.open(QIODevice::WriteOnly))
             {
                 QTextStream stream( &file );
                 stream << tr("* Note that the vertical ordering of this file's "
@@ -2440,7 +2477,7 @@ SpreadsheetViewer::saveAsText()
             else
             {
                 QString err(tr("Could not write %1.").arg(fileName));
-                plot->Error(err.latin1());
+                plot->Error(err.toStdString().c_str());
             }
         }
     }
@@ -2465,7 +2502,7 @@ SpreadsheetViewer::copySelectionToClipboard()
 {
     if(nTables > 0)
     {
-        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentPage();
+        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
 
         // Copy the text to the clipbard.
         QClipboard *cb = QApplication::clipboard();
@@ -2491,7 +2528,7 @@ SpreadsheetViewer::selectAll()
 {
     if(nTables > 0)
     {
-        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentPage();
+        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
         t->selectAll();
     }
 }
@@ -2514,7 +2551,7 @@ SpreadsheetViewer::selectNone()
 {
     if(nTables > 0)
     {
-        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentPage();
+        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
         t->selectNone();
     }
 }
@@ -2540,7 +2577,7 @@ SpreadsheetViewer::operationSum()
 {
     if(nTables > 0)
     {
-        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentPage();
+        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
         double sum = t->selectedCellsSum();
         QString sumStr;
         sumStr.sprintf(plotAtts->GetFormatString().c_str(), sum);
@@ -2570,7 +2607,7 @@ SpreadsheetViewer::operationAverage()
 {
     if(nTables > 0)
     {
-        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentPage();
+        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
         double avg = t->selectedCellsAverage();
         QString avgStr;
         avgStr.sprintf(plotAtts->GetFormatString().c_str(), avg);
@@ -2590,13 +2627,15 @@ SpreadsheetViewer::operationAverage()
 // Creation:   Thu Feb 22 13:27:01 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Aug 27 11:16:34 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 SpreadsheetViewer::tableSelectionChanged()
 {
-    updateMenuEnabledState((QTable *)sender());
+    updateMenuEnabledState(zTabs->indexOf((QWidget *)sender()));
 }
 
 // ****************************************************************************

@@ -37,17 +37,18 @@
 *****************************************************************************/
 
 #include <QvisPluginWindow.h>
-#include <qbuttongroup.h>
-#include <qcombobox.h>
-#include <qcheckbox.h>
-#include <qgroupbox.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
-#include <qtabwidget.h>
-#include <qvbox.h>
-#include <qradiobutton.h>
-#include <qlistview.h>
+#include <QButtonGroup>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QTabWidget>
+#include <QWidget>
+#include <QRadioButton>
+#include <QTreeWidget>
+#include <QHeaderView>
 
 #include <PluginManagerAttributes.h>
 #include <FileOpenOptions.h>
@@ -105,13 +106,18 @@ QvisPluginWindow::QvisPluginWindow(const QString &caption, const QString &shortN
 //  Modifications:
 //    Jeremy Meredith, Wed Jan 23 15:36:03 EST 2008
 //    Also observer fileOpenOptions for the database options.
-//   
+//
+//    Brad Whitlock, Wed Nov 19 14:11:32 PST 2008
+//    Detach if the subjects are not NULL.
+//
 // ****************************************************************************
 
 QvisPluginWindow::~QvisPluginWindow()
 {
-    pluginAtts = NULL;
-    fileOpenOptions = NULL;
+    if(pluginAtts != 0)
+        pluginAtts->Detach(this);
+    if(fileOpenOptions != 0)
+        fileOpenOptions->Detach(this);
 }
 
 
@@ -188,91 +194,112 @@ QvisPluginWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //    Allow the ability enable/disable DB plugins. Add two buttons to select
 //    unselect all. Provide an "X" next to the plugin if read options are available.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
+//    Cyrus Harrison, Thu Jul 10 13:58:23 PDT 2008
+//    Fixed porting mistake and look and feel of tree widgets.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::CreateWindowContents()
 {
     // Create the tab widget.
-    QTabWidget *tabs = new QTabWidget(central, "tabs");
-    connect(tabs, SIGNAL(selected(const QString &)),
-            this, SLOT(tabSelected(const QString &)));
+    QTabWidget *tabs = new QTabWidget(central);
+    
+    connect(tabs, SIGNAL(currentChanged(int)),
+            this, SLOT(tabSelected(int)));
+            
     topLayout->addWidget(tabs,10000);
 
     //
     // Create the plot page
     //
-    pagePlots = new QVBox(central, "pagePlots");
-    pagePlots->setSpacing(5);
-    pagePlots->setMargin(10);
+    
+    pagePlots = new QWidget(central);
+    QVBoxLayout *plots_layout= new QVBoxLayout(pagePlots);
     tabs->addTab(pagePlots, tr("Plots"));
 
-    listPlots = new QListView(pagePlots, "listPlots");
-    listPlots->addColumn("  ");
-    listPlots->addColumn(tr("Name"));
-    listPlots->addColumn(tr("Version"));
-    listPlots->setAllColumnsShowFocus(true);
-    listPlots->setColumnAlignment(0, Qt::AlignHCenter);
-    listPlots->setColumnAlignment(2, Qt::AlignHCenter);
-
+    listPlots = new QTreeWidget(pagePlots);
+    listPlots->setRootIsDecorated(false);
+    // add header item
+    QStringList plotHeaders;
+    plotHeaders << tr("Enabled") << tr("Name") << tr("Version");
+    listPlots->setHeaderLabels(plotHeaders);
+    listPlots->headerItem()->setTextAlignment(1, Qt::AlignHCenter);
+    listPlots->headerItem()->setTextAlignment(2, Qt::AlignHCenter);
+    listPlots->header()->setResizeMode(0,QHeaderView::ResizeToContents);
+    listPlots->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+    plots_layout->addWidget(listPlots);
+    
+    
     //
     // Create the operator page
     //
-    pageOperators = new QVBox(central, "pageOperators");
-    pageOperators->setSpacing(10);
-    pageOperators->setMargin(10);
+    pageOperators = new QWidget(central);
+    QVBoxLayout *ops_layout= new QVBoxLayout(pageOperators);
     tabs->addTab(pageOperators, tr("Operators"));
 
-    listOperators = new QListView(pageOperators, "listOperators");
-    listOperators->addColumn("  ");
-    listOperators->addColumn(tr("Name"));
-    listOperators->addColumn(tr("Version"));
-    listOperators->setAllColumnsShowFocus(true);
-    listOperators->setColumnAlignment(0, Qt::AlignHCenter);
-    listOperators->setColumnAlignment(2, Qt::AlignHCenter);
+    listOperators = new QTreeWidget(pageOperators);
+    listOperators->setRootIsDecorated(false);
 
+    QStringList operatorHeaders;
+    operatorHeaders << tr("Enabled") << tr("Name") << tr("Version");
+    listOperators->setHeaderLabels(operatorHeaders);
+    listOperators->headerItem()->setTextAlignment(1, Qt::AlignHCenter);
+    listOperators->headerItem()->setTextAlignment(2, Qt::AlignHCenter);
+    listOperators->header()->setResizeMode(0,QHeaderView::ResizeToContents);
+    listOperators->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+    ops_layout->addWidget(listOperators);
+    
     //
     // Create the database page
     //
-    pageDatabases = new QVBox(central, "pageDatabases");
-    pageDatabases->setSpacing(10);
-    pageDatabases->setMargin(10);
+    pageDatabases = new QWidget(central);
+    QVBoxLayout *db_layout= new QVBoxLayout(pageDatabases);
+    
     tabs->addTab(pageDatabases, tr("Databases"));
 
-    listDatabases = new QListView(pageDatabases, "listDatabases");
-    listDatabases->addColumn("  ");
-    listDatabases->addColumn(tr("Name"));
-    listDatabases->addColumn(tr("Open Options"));
-    listDatabases->setAllColumnsShowFocus(true);
-    listDatabases->setColumnAlignment(0, Qt::AlignHCenter);
-    listDatabases->setColumnAlignment(2, Qt::AlignLeft);
+    listDatabases = new QTreeWidget(pageDatabases);
+    listDatabases->setRootIsDecorated(false);
 
-    QGroupBox *grpBox = new QGroupBox( 2, Horizontal, "Selection", pageDatabases );
-    QHBox *box = new QHBox( grpBox, "hBox" );
-    box->setSpacing(10);
-    box->setMargin(10);
+    QStringList dbHeaders;
+    dbHeaders << tr("Enabled") << tr("Name") << tr("Open Options");
+    listDatabases->setHeaderLabels(dbHeaders);
+    listDatabases->headerItem()->setTextAlignment(1, Qt::AlignHCenter);
+    listDatabases->headerItem()->setTextAlignment(2, Qt::AlignHCenter);
+    listDatabases->header()->setResizeMode(0,QHeaderView::ResizeToContents);
+    listDatabases->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+    db_layout->addWidget(listDatabases);
+
+    QGroupBox *grpBox = new QGroupBox(central);
+    QHBoxLayout *grp_layout = new QHBoxLayout(grpBox);
 
     // Add select all and unselect all buttons.
-    selectAllReadersButton = new QPushButton(tr("Select all"), box );
-    connect( selectAllReadersButton, SIGNAL(clicked()), this, SLOT(selectAllReadersButtonClicked()));
-    unSelectAllReadersButton = new QPushButton(tr("Unselect all"), box );
-    connect( unSelectAllReadersButton, SIGNAL(clicked()), this, SLOT(unSelectAllReadersButtonClicked()));
+    selectAllReadersButton = new QPushButton(tr("Select all"), grpBox);
+    connect(selectAllReadersButton, SIGNAL(clicked()),
+            this, SLOT(selectAllReadersButtonClicked()));
+    grp_layout->addWidget(selectAllReadersButton);
+
+    unSelectAllReadersButton = new QPushButton(tr("Unselect all"), grpBox);
+    connect(unSelectAllReadersButton, SIGNAL(clicked()),
+            this, SLOT(unSelectAllReadersButtonClicked()));
+    grp_layout->addWidget(unSelectAllReadersButton);
     
-    databaseOptionsSetButton = new QPushButton(tr("Set Default Open Options"), pageDatabases);
+    databaseOptionsSetButton = new QPushButton(tr("Set Default Open Options"), grpBox);
     connect(databaseOptionsSetButton, SIGNAL(clicked()),
             this, SLOT(databaseOptionsSetButtonClicked()));
-    connect(listDatabases, SIGNAL(selectionChanged(QListViewItem*)), 
-            this, SLOT(databaseSelectedItemChanged(QListViewItem*)));
-
+    connect(listDatabases, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), 
+            this, SLOT(databaseSelectedItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
+    
+    db_layout->addWidget(grpBox);
+    db_layout->addWidget(databaseOptionsSetButton);
+    
     // Show the appropriate page based on the activeTab setting.
     tabs->blockSignals(true);
-    if(activeTab == 0)
-        tabs->showPage(pagePlots);
-    else if(activeTab == 1)
-        tabs->showPage(pageOperators);
-    else
-        tabs->showPage(pageDatabases);
-    tabs->blockSignals(false);
+    tabs->setCurrentIndex(activeTab);
+    tabs->blockSignals(false);    
 }
 
 // ****************************************************************************
@@ -344,6 +371,12 @@ QvisPluginWindow::Update(Subject *s)
 //    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
 //    Update the FileOpenOptions for enable/disable DB plugins.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
+//    Cyrus Harrison, Tue Jul  8 16:03:44 PDT 2008
+//    Fixed problem where database were shown in the operators tab.
+//
 // ****************************************************************************
 
 void
@@ -353,53 +386,60 @@ QvisPluginWindow::UpdateWindow(bool doAll)
     if (doAll || selectedSubject == pluginAtts)
     {
         listPlots->clear();
-        listPlots->setSorting(1, true);
+        listPlots->setSortingEnabled(true);
+        listPlots->sortByColumn(1,Qt::AscendingOrder);
         plotIDs.clear();
         plotItems.clear();
+        
         for (i=0; i<pluginAtts->GetName().size(); i++)
         {
             if (pluginAtts->GetType()[i] == "plot")
             {
-                QCheckListItem *item = new QCheckListItem(listPlots, "", QCheckListItem::CheckBox);
-                item->setOn(pluginAtts->GetEnabled()[i]);
+                QTreeWidgetItem *item = new QTreeWidgetItem(listPlots);
+                item->setCheckState(0,pluginAtts->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
                 item->setText(1,pluginAtts->GetName()[i].c_str());
                 item->setText(2,pluginAtts->GetVersion()[i].c_str());
-
+                
                 plotItems.push_back(item);
                 plotIDs.push_back(pluginAtts->GetId()[i]);
             }
         }
 
         listOperators->clear();
-        listOperators->setSorting(1, true);
+        listOperators->setSortingEnabled(true);
+        listOperators->sortByColumn(1,Qt::AscendingOrder);
         operatorIDs.clear();
         operatorItems.clear();
         for (i=0; i<pluginAtts->GetName().size(); i++)
         {
             if (pluginAtts->GetType()[i] == "operator")
             {
-                QCheckListItem *item = new QCheckListItem(listOperators, "", QCheckListItem::CheckBox);
-                item->setOn(pluginAtts->GetEnabled()[i]);
+                QTreeWidgetItem *item = new QTreeWidgetItem(listOperators);
+                item->setCheckState(0,pluginAtts->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
                 item->setText(1,pluginAtts->GetName()[i].c_str());
                 item->setText(2,pluginAtts->GetVersion()[i].c_str());
-
+                
                 operatorItems.push_back(item);
                 operatorIDs.push_back(pluginAtts->GetId()[i]);
             }
         }
     }
-
+    
     if (doAll || selectedSubject == fileOpenOptions)
     {
         listDatabases->clear();
-        listDatabases->setSorting(0,true);
+        listDatabases->setSortingEnabled(true);
+        listDatabases->sortByColumn(1,Qt::AscendingOrder);
+
         databaseItems.clear();
         databaseIndexes.clear();
         for (i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
         {
-            QCheckListItem *item = new QCheckListItem(listDatabases, "", QCheckListItem::CheckBox);
-            item->setOn(fileOpenOptions->GetEnabled()[i]);
+            
+            QTreeWidgetItem *item = new QTreeWidgetItem(listDatabases);
+            item->setCheckState(0,fileOpenOptions->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
             item->setText(1,fileOpenOptions->GetTypeNames()[i].c_str());
+            
             if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
                 item->setText(2, "  " );
             else
@@ -442,6 +482,9 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -451,7 +494,7 @@ QvisPluginWindow::Apply(bool dontIgnore)
     int i;
     for (i=0; i<plotItems.size(); i++)
     {
-        bool newvalue = plotItems[i]->isOn();
+        bool newvalue = plotItems[i]->checkState(0);
         int  &value =
             pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(plotIDs[i])];
         if (bool(value) != newvalue)
@@ -460,7 +503,7 @@ QvisPluginWindow::Apply(bool dontIgnore)
     }
     for (i=0; i<operatorItems.size(); i++)
     {
-        bool newvalue = operatorItems[i]->isOn();
+        bool newvalue = operatorItems[i]->checkState(0);
         int  &value =
             pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(operatorIDs[i])];
         if (bool(value) != newvalue)
@@ -470,7 +513,7 @@ QvisPluginWindow::Apply(bool dontIgnore)
 
     for (i=0; i<databaseItems.size(); i++)
     {
-        bool newvalue = databaseItems[i]->isOn();
+        bool newvalue = databaseItems[i]->checkState(0);
         int &value = fileOpenOptions->GetEnabled()[i];
         if (bool(value) != newvalue)
             dirty = true;
@@ -507,6 +550,9 @@ QvisPluginWindow::Apply(bool dontIgnore)
 //    Jeremy Meredith, Wed Jan 23 15:39:32 EST 2008
 //    Handle two observed subjects.
 //   
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -517,7 +563,7 @@ QvisPluginWindow::CreateNode(DataNode *parentNode)
 
     if(saveWindowDefaults)
     {
-        DataNode *node = parentNode->GetNode(std::string(caption().latin1()));
+        DataNode *node = parentNode->GetNode(windowTitle().toStdString());
 
         // Save the current tab.
         node->AddNode(new DataNode("activeTab", activeTab));
@@ -541,12 +587,15 @@ QvisPluginWindow::CreateNode(DataNode *parentNode)
 //    Jeremy Meredith, Wed Jan 23 15:39:32 EST 2008
 //    Handle two observed subjects.
 //   
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::SetFromNode(DataNode *parentNode, const int *borders)
 {
-    DataNode *winNode = parentNode->GetNode(std::string(caption().latin1()));
+    DataNode *winNode = parentNode->GetNode(windowTitle().toStdString());
     if(winNode == 0)
         return;
 
@@ -597,18 +646,15 @@ QvisPluginWindow::apply()
 //  Creation:   August 31, 2001
 //
 //  Modifications:
-//   
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisPluginWindow::tabSelected(const QString &tabLabel)
+QvisPluginWindow::tabSelected(int tab)
 {
-    if(tabLabel == QString(tr("Plots")))
-        activeTab = 0;
-    else if(tabLabel == QString(tr("Operators")))
-        activeTab = 1;
-    else
-        activeTab = 2;
+    activeTab = tab;
 }
 
 
@@ -629,11 +675,14 @@ QvisPluginWindow::tabSelected(const QString &tabLabel)
 //    Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //    Support for internationalization.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisPluginWindow::databaseOptionsSetButtonClicked()
 {
-    QListViewItem *item = listDatabases->selectedItem();
+    QTreeWidgetItem *item = listDatabases->currentItem();
     if (!item)
         return;
 
@@ -653,11 +702,10 @@ QvisPluginWindow::databaseOptionsSetButtonClicked()
         fileOpenOptions->GetOpenOptions(databaseIndexes[index]);
     if (opts.GetNumberOfOptions() > 0)
     {
-        QvisDBOptionsDialog *optsdlg = new QvisDBOptionsDialog(&opts, NULL,
-                                                               "opts");
+        QvisDBOptionsDialog *optsdlg = new QvisDBOptionsDialog(&opts, NULL);
         QString caption = tr("Default file opening options for %1 reader").
                           arg(fileOpenOptions->GetTypeNames()[index].c_str());
-        optsdlg->setCaption(caption);
+        optsdlg->setWindowTitle(caption);
         int result = optsdlg->exec();
         delete optsdlg;
         if (result == QDialog::Accepted)
@@ -690,9 +738,14 @@ QvisPluginWindow::databaseOptionsSetButtonClicked()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 23, 2008
 //
+//  Modifications:
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
-QvisPluginWindow::databaseSelectedItemChanged(QListViewItem *item)
+QvisPluginWindow::databaseSelectedItemChanged(QTreeWidgetItem *item,
+                                              QTreeWidgetItem *prev_item)
 {
     for (int i=0; i<databaseItems.size(); i++)
     {
@@ -723,12 +776,15 @@ QvisPluginWindow::databaseSelectedItemChanged(QListViewItem *item)
 //    Bug fix. The message to save settings and restart visit on Apply was not
 //    being shown. Just set the checkbox state. No need to call update window.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisPluginWindow::selectAllReadersButtonClicked()
 {
     for (int i=0; i<databaseItems.size(); i++)
-        databaseItems[i]->setOn(true);
+        databaseItems[i]->setCheckState(0,Qt::Checked);
 }
 
 // ****************************************************************************
@@ -748,10 +804,13 @@ QvisPluginWindow::selectAllReadersButtonClicked()
 //    Bug fix. The message to save settings and restart visit on Apply was not
 //    being shown. Just set the checkbox state. No need to call update window.
 //
+//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisPluginWindow::unSelectAllReadersButtonClicked()
 {
     for (int i=0; i<databaseItems.size(); i++)
-        databaseItems[i]->setOn(false);
+        databaseItems[i]->setCheckState(0,Qt::Unchecked);
 }

@@ -97,7 +97,7 @@ LIBS=
 ##
 ## Files...
 ##
-SRC=AtomicProperties.C NamingConvention.C StringHelpers.C Utility.C\
+SRC=AtomicProperties.C CoordUtils.C NamingConvention.C StringHelpers.C Utility.C\
     void_ref_ptr.C
 HDR=AtomicProperties.h BJHash.h NamingConvention.h StringHelpers.h Utility.h\
     ref_ptr.h array_ref_ptr.h void_ref_ptr.h

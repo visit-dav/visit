@@ -43,7 +43,8 @@
 #include <map>
 
 // Forward declares.
-class QPopupMenu;
+class QAction;
+class QMenu;
 class ViewerActionBase;
 class ViewerWindow;
 
@@ -60,6 +61,9 @@ class ViewerWindow;
 //   Brad Whitlock, Tue Feb 25 10:09:39 PDT 2003
 //   I added RemoveAction.
 //
+//   Brad Whitlock, Tue May 27 14:10:57 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPopupMenu
@@ -68,12 +72,12 @@ class VIEWER_API ViewerPopupMenu
     {
         SubMenuInfo();
         SubMenuInfo(const SubMenuInfo &);
-        SubMenuInfo(QPopupMenu *, int);
+        SubMenuInfo(QMenu *, QAction *);
         virtual ~SubMenuInfo();
         void operator = (const SubMenuInfo &);
 
-        QPopupMenu *menu;
-        int         menuId;
+        QMenu   *menu;
+        QAction *action;
     };
 
     typedef std::map<std::string, SubMenuInfo> MenuMap;
@@ -91,9 +95,9 @@ public:
     void EnableMenu(const std::string &menuName);
     void DisableMenu(const std::string &menuName);
 private:
-    QPopupMenu   *CreateMenu(const std::string &name);
+    QMenu   *CreateMenu(const std::string &name);
 
-    QPopupMenu   *popup;
+    QMenu   *popup;
     ViewerWindow *window;
     MenuMap       menus;
 };

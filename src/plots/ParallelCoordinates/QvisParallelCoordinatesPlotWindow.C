@@ -40,17 +40,18 @@
 #include <ParallelCoordinatesAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistview.h>
-#include <qradiobutton.h>
-#include <qslider.h>
-#include <qspinbox.h>
-#include <qvbox.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
+#include <QRadioButton>
+#include <QSlider>
+#include <QSpinBox>
+#include <QWidget>
 #include <QNarrowLineEdit.h>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
@@ -126,7 +127,7 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //    Added ability to unify extents across all axes.
 //
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
-//    Changed axis list to QListView to support multiple columns.
+//    Changed axis list to QTreeView to support multiple columns.
 //    Added min/max extents columns for each axis, and a button to reset them.
 //
 //    Jeremy Meredith, Mon Feb 18 16:18:06 EST 2008
@@ -134,6 +135,9 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //
 //    Brad Whitlock, Wed Apr 23 10:07:16 PDT 2008
 //    Added tr()'s
+//
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
 //
 // ****************************************************************************
 
@@ -143,54 +147,53 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     //
     // Axes to plot
     //
-    axisGroup = new QGroupBox(tr("Axes"),
-                              central, "axisGroup");
+    axisGroup = new QGroupBox(tr("Axes"),central);
     topLayout->addWidget(axisGroup);
-    QVBoxLayout *axisSpacingLayout = new QVBoxLayout(axisGroup);
-    axisSpacingLayout->setMargin(10);
-    axisSpacingLayout->addSpacing(20);
-
-    QGridLayout *axisLayout = new QGridLayout(axisSpacingLayout, 5, 2, 5);
+    QGridLayout *axisLayout = new QGridLayout(axisGroup);
 
     // axes list
-    axisList = new QListView(axisGroup, "axisList");
-    axisList->setAllColumnsShowFocus(true);
-    axisList->setResizeMode(QListView::AllColumns);
-    axisList->setSorting(-1);
-    axisList->addColumn(tr("Axis"));
-    axisList->addColumn(tr("Min"));
-    axisList->addColumn(tr("Max"));
-    axisLayout->addMultiCellWidget(axisList, 0,3, 0,0);
-    connect(axisList, SIGNAL(currentChanged(QListViewItem*)),
-            this, SLOT(axisSelected(QListViewItem*)));
+    
+    axisTree = new QTreeWidget(axisGroup);
+    axisTree->setSortingEnabled(false);
+    axisTree->setRootIsDecorated(false);
+    
+    QTreeWidgetItem *header = new QTreeWidgetItem();
+    header->setText(0,tr("Axis"));
+    header->setText(1,tr("Min"));
+    header->setText(2,tr("Max"));
+    axisTree->setHeaderItem(header);
+        
+    axisLayout->addWidget(axisTree, 0,0, 4,1);
+    connect(axisTree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+            this, SLOT(axisSelected(QTreeWidgetItem*)));
 
     // axes new/del/up/down buttons
     axisNewButton = new QvisVariableButton(false, true, true,
                                            QvisVariableButton::Scalars,
-                                           axisGroup, "axisNewButton");
+                                           axisGroup);
     axisNewButton->setText(tr("Add axis"));
     axisNewButton->setChangeTextOnVariableChange(false);
     axisLayout->addWidget(axisNewButton, 0, 1);
     connect(axisNewButton, SIGNAL(activated(const QString &)),
             this, SLOT(addAxis(const QString &)));
 
-    axisDelButton = new QPushButton(tr("Delete"), axisGroup, "axisDelButton");
+    axisDelButton = new QPushButton(tr("Delete"), axisGroup);
     axisLayout->addWidget(axisDelButton, 1, 1);
     connect(axisDelButton, SIGNAL(clicked()),
             this, SLOT(delAxis()));
 
-    axisUpButton = new QPushButton(tr("Move up"), axisGroup, "axisUpButton");
+    axisUpButton = new QPushButton(tr("Move up"), axisGroup);
     axisLayout->addWidget(axisUpButton, 2, 1);
     connect(axisUpButton, SIGNAL(clicked()),
             this, SLOT(moveAxisUp()));
 
-    axisDownButton = new QPushButton(tr("Move down"), axisGroup, "axisDownButton");
+    axisDownButton = new QPushButton(tr("Move down"), axisGroup);
     axisLayout->addWidget(axisDownButton, 3, 1);
     connect(axisDownButton, SIGNAL(clicked()),
             this, SLOT(moveAxisDown()));
 
     axisResetExtentsButton = new QPushButton(tr("Reset all axis restrictions"),
-                                           axisGroup,"axisResetExtentsButton");
+                                             axisGroup);
     axisLayout->addWidget(axisResetExtentsButton, 4, 0);
     connect(axisResetExtentsButton, SIGNAL(clicked()),
             this, SLOT(resetAxisExtents()));
@@ -198,31 +201,29 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     //
     // Draw lines, and the needed settings
     //
-    drawLines = new QGroupBox(tr("Draw individual lines"),
-                              central, "drawLines");
+    drawLines = new QGroupBox(tr("Draw individual lines"),central);
     drawLines->setCheckable(true);
     connect(drawLines, SIGNAL(toggled(bool)),
             this, SLOT(drawLinesChanged(bool)));
     topLayout->addWidget(drawLines);
 
     QVBoxLayout *linesSpacingLayout = new QVBoxLayout(drawLines);
-    linesSpacingLayout->setMargin(10);
-    linesSpacingLayout->addSpacing(20);
 
-    QGridLayout *linesLayout = new QGridLayout(linesSpacingLayout, 2, 2, 5);
+    QGridLayout *linesLayout = new QGridLayout();
+    linesSpacingLayout->addLayout(linesLayout );
 
     // Lines color
     linesOnlyIfExtents = new QCheckBox(
                          tr("... but only when axis extents have been restricted"),
-                                       drawLines, "linesOnlyIfExtents");
+                         drawLines);
     connect(linesOnlyIfExtents, SIGNAL(toggled(bool)),
             this, SLOT(linesOnlyIfExtentsToggled(bool)));
-    linesLayout->addMultiCellWidget(linesOnlyIfExtents, 0,0, 0,1);
+    linesLayout->addWidget(linesOnlyIfExtents, 0,0, 1,2);
 
     // Lines color
-    linesColorLabel = new QLabel(tr("Line color"), drawLines, "linesColorLabel");
+    linesColorLabel = new QLabel(tr("Line color"), drawLines);
     linesLayout->addWidget(linesColorLabel,1,0);
-    linesColor = new QvisColorButton(drawLines, "linesColor");
+    linesColor = new QvisColorButton(drawLines);
     connect(linesColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(linesColorChanged(const QColor&)));
     linesLayout->addWidget(linesColor, 1,1);
@@ -230,29 +231,30 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     //
     // Draw context, and the needed settings
     //
-    drawContext = new QGroupBox(tr("Draw context"),
-                              central, "drawContext");
+    drawContext = new QGroupBox(tr("Draw context"),central);
     drawContext->setCheckable(true);
     connect(drawContext, SIGNAL(toggled(bool)),
             this, SLOT(drawContextChanged(bool)));
     topLayout->addWidget(drawContext);
 
     QVBoxLayout *contextSpacingLayout = new QVBoxLayout(drawContext);
-    contextSpacingLayout->setMargin(10);
-    contextSpacingLayout->addSpacing(20);
 
-    QGridLayout *contextLayout = new QGridLayout(contextSpacingLayout, 3, 3, 5);
+    QGridLayout *contextLayout = new QGridLayout();
+    contextSpacingLayout->addLayout(contextLayout);
 
     // Contex gamma correction
-    contextGammaLabel = new QLabel(tr("Brightness (gamma)"),
-                                   drawContext, "contextGammaLabel");
+    contextGammaLabel = new QLabel(tr("Brightness (gamma)"),drawContext);
     contextLayout->addWidget(contextGammaLabel,0,0);
-    contextGamma = new QNarrowLineEdit(drawContext, "contextGamma");
+    contextGamma = new QNarrowLineEdit(drawContext);
     connect(contextGamma, SIGNAL(returnPressed()),
             this, SLOT(contextGammaProcessText()));
     contextLayout->addWidget(contextGamma, 0,1);
-    contextGammaSlider = new QSlider(0,100,5,66,Qt::Horizontal,drawContext,
-                                     "contextGammaSlider");
+    contextGammaSlider = new QSlider(Qt::Horizontal,drawContext);
+    contextGammaSlider->setRange(0,100);
+    contextGammaSlider->setPageStep(5);
+    contextGammaSlider->setValue(66);
+    
+                                     
     connect(contextGammaSlider, SIGNAL(valueChanged(int)),
             this, SLOT(contextGammaSliderChanged(int)));
     connect(contextGammaSlider, SIGNAL(sliderReleased()),
@@ -260,16 +262,18 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     contextLayout->addWidget(contextGammaSlider, 0,2);
 
     // Number of partitions
-    contextNumPartitionsLabel = new QLabel(tr("Number of partitions"), drawContext,
-                                           "contextNumPartitionsLabel");
+    contextNumPartitionsLabel = new QLabel(tr("Number of partitions"),
+                                           drawContext);
     contextLayout->addWidget(contextNumPartitionsLabel,1,0);
-    contextNumPartitions = new QNarrowLineEdit(drawContext,
-                                               "contextNumPartitions");
+    contextNumPartitions = new QNarrowLineEdit(drawContext);
     connect(contextNumPartitions, SIGNAL(returnPressed()),
             this, SLOT(contextNumPartitionsProcessText()));
     contextLayout->addWidget(contextNumPartitions, 1,1);
-    contextNumPartitionsSlider = new QSlider(1,10,1,5,Qt::Horizontal,
-                                      drawContext,"contextNumPartitionsSlider");
+    contextNumPartitionsSlider = new QSlider(Qt::Horizontal,drawContext);
+    contextNumPartitionsSlider->setRange(1,10);
+    contextNumPartitionsSlider->setPageStep(1);
+    contextNumPartitionsSlider->setValue(5);
+
     connect(contextNumPartitionsSlider, SIGNAL(valueChanged(int)),
             this, SLOT(contextNumPartitionsSliderChanged(int)));
     connect(contextNumPartitionsSlider, SIGNAL(sliderReleased()),
@@ -277,17 +281,16 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     contextLayout->addWidget(contextNumPartitionsSlider, 1,2);
 
     // Context color
-    contextColorLabel = new QLabel(tr("Context color"),
-                                   drawContext, "contextColorLabel");
+    contextColorLabel = new QLabel(tr("Context color"),drawContext);
     contextLayout->addWidget(contextColorLabel,2,0);
-    contextColor = new QvisColorButton(drawContext, "contextColor");
+    contextColor = new QvisColorButton(drawContext);
     connect(contextColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(contextColorChanged(const QColor&)));
     contextLayout->addWidget(contextColor, 2,1);
 
     // Unify axis extents
     unifyAxisExtents = new QCheckBox(tr("Unify the data extents across all axes"),
-                                     central, "unifyAxisExtents");
+                                     central);
     connect(unifyAxisExtents, SIGNAL(toggled(bool)),
             this, SLOT(unifyAxisExtentsToggled(bool)));
     topLayout->addWidget(unifyAxisExtents);
@@ -316,7 +319,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Added ability to unify extents across all axes.  Also fixed typo.
 //
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
-//    Changed axis list to QListView to support multiple columns.
+//    Changed axis list to QTreeView to support multiple columns.
 //    Added min/max extents columns for each axis, and a button to reset them.
 //
 //    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
@@ -339,6 +342,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Kathleen Bonnel, Wed Jun 4 07:58:48 PDT 2008
 //    Removed unused variables.
 //
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -346,8 +352,8 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
 
-    QString oldAxis = axisList->currentItem() ? 
-        axisList->currentItem()->text(0) : QString("");
+    QString oldAxis = axisTree->currentItem() ? 
+        axisTree->currentItem()->text(0) : QString("");
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -366,8 +372,8 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
           case ParallelCoordinatesAttributes::ID_visualAxisNames:
           case ParallelCoordinatesAttributes::ID_extentMinima:
           case ParallelCoordinatesAttributes::ID_extentMaxima:
-            axisList->blockSignals(true);
-            axisList->clear();
+            axisTree->blockSignals(true);
+            axisTree->clear();
             for (int ax=0; ax<atts->GetExtentMinima().size(); ax++)
             {
                 QString name, emin("min"), emax("max");
@@ -382,12 +388,16 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
                     name.sprintf(" %02d",ax);
                     name = tr("Axis") + name;
                 }
-                QListViewItem *item =
-                    new QListViewItem(axisList,
-                                      axisList->lastItem(),
-                                      name, emin, emax);
+                QTreeWidgetItem *item =
+                    new QTreeWidgetItem(axisTree);
+                item->setText(0,name);
+                item->setText(1,emin);
+                item->setText(2,emax);
             }
-            axisList->blockSignals(false);
+            axisTree->resizeColumnToContents(0);
+            axisTree->resizeColumnToContents(1);
+            axisTree->resizeColumnToContents(2);
+            axisTree->blockSignals(false);
             break;
           case ParallelCoordinatesAttributes::ID_drawLines:
             drawLines->blockSignals(true);
@@ -413,7 +423,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
             temp.sprintf("%.2f", atts->GetContextGamma());
             contextGamma->setText(temp);
             sliderpos = int(50 + 50*log10(atts->GetContextGamma()) + .5);
-            sliderpos = QMIN(QMAX(0, sliderpos), 100);
+            sliderpos = qMin(qMax(0, sliderpos), 100);
             contextGammaSlider->setValue(sliderpos);
             contextGamma->blockSignals(false);
             contextGammaSlider->blockSignals(false);
@@ -423,7 +433,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
             contextNumPartitionsSlider->blockSignals(true);
             temp.sprintf("%d", atts->GetContextNumPartitions());
             sliderpos = int(log((float)atts->GetContextNumPartitions())/log(2.f)+.5);
-            sliderpos = QMIN(QMAX(1, sliderpos), 10);
+            sliderpos = qMin(qMax(1, sliderpos), 10);
             contextNumPartitionsSlider->setValue(sliderpos);
             contextNumPartitions->setText(temp);
             contextNumPartitions->blockSignals(false);
@@ -451,22 +461,31 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
     }
 
     // Re-select the previously selected item in case updating this window
-    // regenerated the list box contents
-    QListViewItem *item = axisList->firstChild();    
-    while (item && item->text(0) != oldAxis)
-        item = item->nextSibling();
-    axisList->setCurrentItem(item);
-
+    // regenerated the tree contents
+    bool found = false;
+    int nitems = axisTree->topLevelItemCount();
+    for(int i=0;i< nitems && !found; i++)
+    {
+        QTreeWidgetItem *item = axisTree->topLevelItem(i);
+        if(item->text(0) == oldAxis)
+        {
+            axisTree->setCurrentItem(item);
+            found = true;
+        }
+    }
+    
     // Set enabled states
-    axisDelButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
-                              axisList->currentItem()!= NULL);
-    axisUpButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
-                             axisList->currentItem()!= axisList->firstChild());
+    
+    nitems = atts->GetScalarAxisNames().size();
+    axisDelButton->setEnabled( nitems > 2 &&
+                              axisTree->currentItem()!= NULL);
+    axisUpButton->setEnabled(nitems  > 0 &&
+                             axisTree->currentItem()!= axisTree->topLevelItem(0));
     axisDownButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
-                               axisList->currentItem()!= axisList->lastItem());
+                               axisTree->currentItem()!= axisTree->topLevelItem(nitems -1));
     axisNewButton->setEnabled(atts->GetScalarAxisNames().size() > 0);
     axisResetExtentsButton->setEnabled(atts->GetExtentMinima().size() > 0);
-    axisList->setEnabled(atts->GetExtentMinima().size() > 0);
+    axisTree->setEnabled(atts->GetExtentMinima().size() > 0);
 }
 
 
@@ -483,6 +502,9 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Wed Apr 23 10:10:28 PDT 2008
 //   Added tr()
 //
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
@@ -494,7 +516,7 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
     // Do contextGamma
     if(which_widget == 18 || doAll)
     {
-        temp = contextGamma->displayText().simplifyWhiteSpace();
+        temp = contextGamma->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -518,7 +540,7 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
     // Do contextNumPartitions
     if(which_widget == 19 || doAll)
     {
-        temp = contextNumPartitions->displayText().simplifyWhiteSpace();
+        temp = contextNumPartitions->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -738,23 +760,29 @@ QvisParallelCoordinatesPlotWindow::resetAxisExtents()
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
-//    Changed axis list to QListView to support multiple columns.
+//    Changed axis list to QTreeView to support multiple columns.
 //    Added min/max extents columns for each axis, and a button to reset them.
 //
 //    Jeremy Meredith, Mon Feb 18 16:17:21 EST 2008
 //    Don't enable de/up/down buttons if we were created from an array var.
 //
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
-QvisParallelCoordinatesPlotWindow::axisSelected(QListViewItem*)
+QvisParallelCoordinatesPlotWindow::axisSelected(QTreeWidgetItem*)
 {
-    axisDelButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
-                              axisList->currentItem()!= NULL);
-    axisUpButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
-                             axisList->currentItem()!= axisList->firstChild());
-    axisDownButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
-                               axisList->currentItem()!= axisList->lastItem());
+    int nitems = atts->GetScalarAxisNames().size();
+    axisDelButton->setEnabled( nitems > 2 &&
+                              axisTree->currentItem()!= NULL);
+    axisUpButton->setEnabled(nitems > 0 &&
+                           axisTree->currentItem()!= axisTree->topLevelItem(0));
+
+    
+    axisDownButton->setEnabled(nitems > 0 &&
+                   axisTree->currentItem() != axisTree->topLevelItem(nitems-1));
 }
 
 // ****************************************************************************
@@ -769,12 +797,16 @@ QvisParallelCoordinatesPlotWindow::axisSelected(QListViewItem*)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 16, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
+//
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWindow::addAxis(const QString &axisToAdd)
 {
-    atts->InsertAxis(axisToAdd.latin1());
+    atts->InsertAxis(axisToAdd.toStdString());
     //SetUpdate(false);
     Apply();
 }
@@ -793,17 +825,20 @@ QvisParallelCoordinatesPlotWindow::addAxis(const QString &axisToAdd)
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
-//    Changed axis list to QListView to support multiple columns.
+//    Changed axis list to QTreeView to support multiple columns.
+//
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
 //
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWindow::delAxis()
 {
-    if (axisList->currentItem())
+    if (axisTree->currentItem())
     { 
-        QString axis = axisList->currentItem()->text(0);
-        atts->DeleteAxis(axis.latin1(), 2);
+        QString axis = axisTree->currentItem()->text(0);
+        atts->DeleteAxis(axis.toStdString(), 2);
         Apply();
     }
 }
@@ -822,11 +857,14 @@ QvisParallelCoordinatesPlotWindow::delAxis()
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
-//    Changed axis list to QListView to support multiple columns.
+//    Changed axis list to QTreeView to support multiple columns.
 //
 //    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
 //    Renamed orderedAxisNames to scalarAxisNames to distinguish these
 //    as names of actual scalars instead of just display names.
+//
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
 //
 // ****************************************************************************
 
@@ -834,25 +872,15 @@ void
 QvisParallelCoordinatesPlotWindow::moveAxisUp()
 {
     // Find the index of the current item
-    int index = 0;
-    QListViewItem *item = axisList->firstChild();
-    while (item && item != axisList->currentItem())
-    {
-        item = item->nextSibling();
-        index++;
-    }
-
+    int index = GetSelectedAxisIndex();
     // verify something is selected
-    if (!item)
+    // and it wasn't the first itme (can't move first axis up in list)
+    if (index <= 0)
         return;
 
     // must make a local copy
     stringVector axes = atts->GetScalarAxisNames();
     int naxes = axes.size();
-
-    // can't move first axis up in list
-    if (index == 0)
-        return;
 
     // InsertAxis() will reorder axes already in the list, so we
     // just insert all the changed ones in the new desired order
@@ -879,30 +907,25 @@ QvisParallelCoordinatesPlotWindow::moveAxisUp()
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
-//    Changed axis list to QListView to support multiple columns.
+//    Changed axis list to QTreeView to support multiple columns.
 //
 //    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
 //    Renamed orderedAxisNames to scalarAxisNames to distinguish these
 //    as names of actual scalars instead of just display names.
+//
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
 //
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWindow::moveAxisDown()
 {
-    // Find the index of the current item
-    int index = 0;
-    QListViewItem *item = axisList->firstChild();
-    while (item && item != axisList->currentItem())
-    {
-        item = item->nextSibling();
-        index++;
-    }
 
-    // verify something is selected
-    if (!item)
+    int index = GetSelectedAxisIndex();
+    if( index < 0)
         return;
-
+    
     // must make a local copy
     stringVector axes = atts->GetScalarAxisNames();
     int naxes = axes.size();
@@ -1068,4 +1091,29 @@ QvisParallelCoordinatesPlotWindow::unifyAxisExtentsToggled(bool val)
 {
     atts->SetUnifyAxisExtents(val);
     Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelCoordinatesPlotWindow::GetSelectedAxisIndex
+//
+//  Purpose:
+//    Helper that obtains the index of the currently selected axis, or
+//    -1 if no axis is selected. 
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Mon Jul 21 09:12:28 PDT 2008
+//
+// ****************************************************************************
+
+int
+QvisParallelCoordinatesPlotWindow::GetSelectedAxisIndex()
+{
+    int nitems = axisTree->topLevelItemCount();
+    for(int i =0;i<nitems;i++)
+    {
+        if(axisTree->currentItem() == axisTree->topLevelItem(i))
+            return i;
+    }
+    return -1;
 }

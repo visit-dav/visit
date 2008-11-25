@@ -58,13 +58,13 @@ const char *SubdivideQuadsAttributes::TypeMapFormatString = "dibbs";
 // ****************************************************************************
 
 SubdivideQuadsAttributes::SubdivideQuadsAttributes() : 
-    AttributeSubject(SubdivideQuadsAttributes::TypeMapFormatString)
+    AttributeSubject(SubdivideQuadsAttributes::TypeMapFormatString),
+    variable("default")
 {
     threshold = 0.500002;
     maxSubdivs = 4;
     fanOutPoints = true;
     doTriangles = false;
-    variable = "default";
 }
 
 // ****************************************************************************
@@ -571,7 +571,7 @@ SubdivideQuadsAttributes::GetFieldType(int index) const
     case ID_maxSubdivs:   return FieldType_int;
     case ID_fanOutPoints: return FieldType_bool;
     case ID_doTriangles:  return FieldType_bool;
-    case ID_variable:     return FieldType_string;
+    case ID_variable:     return FieldType_variablename;
     default:  return FieldType_unknown;
     }
 }
@@ -600,7 +600,7 @@ SubdivideQuadsAttributes::GetFieldTypeName(int index) const
     case ID_maxSubdivs:   return "int";
     case ID_fanOutPoints: return "bool";
     case ID_doTriangles:  return "bool";
-    case ID_variable:     return "string";
+    case ID_variable:     return "variablename";
     default:  return "invalid index";
     }
 }

@@ -37,20 +37,18 @@
 *****************************************************************************/
 
 #include <ViewerConnectionProgressDialog.h>
-#include <qapplication.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qtimer.h>
-#include <qwmatrix.h>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QLabel>
+#include <QLayout>
+#include <QMatrix>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QTimer>
 
 // Icons
 #include <leftdesk.xpm>
 #include <super.xpm>
-
-// Window flags to make the dialog modal.
-#define DIALOG_FLAGS (WType_Modal | WStyle_Customize | WStyle_NormalBorder | WStyle_Title)
 
 // ****************************************************************************
 // Method: ViewerConnectionProgressDialog::ViewerConnectionProgressDialog
@@ -70,12 +68,17 @@
 //   Brad Whitlock, Wed May 7 10:16:53 PDT 2003
 //   I initialized some new flags.
 //
+//   Brad Whitlock, Fri May 23 11:21:26 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &component,
-    const QString &host, bool par, int t) : QWidget(0, "dialog", DIALOG_FLAGS),
+    const QString &host, bool par, int t) : QWidget(0, Qt::Dialog),
     componentName(component), hostName(host)
 {
+    setWindowModality(Qt::ApplicationModal);
+
     parallel = par;
     iconFrame = 0;
     cancelled = false;
@@ -84,7 +87,7 @@ ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &co
     ignoreHide = false;
 
     // Create the timer that animates the icons.
-    timer = new QTimer(this, "timer");
+    timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()),
             this, SLOT(updateAnimation()));
 
@@ -93,15 +96,17 @@ ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &co
     topLayout->setMargin(10);
     topLayout->setSpacing(10);
 
-    QHBoxLayout *iconLayout = new QHBoxLayout(topLayout);
+    QHBoxLayout *iconLayout = new QHBoxLayout;
+    topLayout->addLayout(iconLayout);
     iconLayout->setSpacing(10);
     QPixmap left(leftdesk_xpm);
-    QLabel *leftComputer = new QLabel("", this, "leftComputer");
+    QLabel *leftComputer = new QLabel("", this);
     leftComputer->setPixmap(left);
     iconLayout->addWidget(leftComputer);
 
     // Create some radio buttons to display the progress.
-    QHBoxLayout *dotLayout = new QHBoxLayout(iconLayout);
+    QHBoxLayout *dotLayout = new QHBoxLayout;
+    iconLayout->addLayout(dotLayout);
     dotLayout->setMargin(0);
     dotLayout->setSpacing(5);
     for(int i = 0; i < 6; ++i)
@@ -117,24 +122,24 @@ ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &co
         right = QPixmap(super_xpm);
     else
     {
-        QWMatrix m;
+        QMatrix m;
         m.scale(-1., 1.);
-        right = left.xForm(m);
+        right = left.transformed(m);
     }
-    QLabel *rightComputer = new QLabel("", this, "rightComputer");
+    QLabel *rightComputer = new QLabel("", this);
     rightComputer->setPixmap(right);
     iconLayout->addWidget(rightComputer);
     iconLayout->addSpacing(20);
     iconLayout->addStretch(5);
 
     // Add the cancel button.
-    cancelButton = new QPushButton(tr("Cancel"), this, "cancelButton");
+    cancelButton = new QPushButton(tr("Cancel"), this);
     connect(cancelButton, SIGNAL(clicked()),
             this, SLOT(cancel()));
     iconLayout->addWidget(cancelButton);
 
     // Add a message string.
-    msgLabel = new QLabel("", this, "msgLabel");
+    msgLabel = new QLabel("", this);
     topLayout->addWidget(msgLabel);
 
     // Set the component name.
@@ -174,6 +179,9 @@ ViewerConnectionProgressDialog::~ViewerConnectionProgressDialog()
 //   Brad Whitlock, Tue Apr 29 13:18:38 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri May 23 11:32:17 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -183,7 +191,7 @@ ViewerConnectionProgressDialog::setComponentName(const QString &cn)
 
     // Set the window caption.
     QString str; str = componentName + " launch progress";
-    setCaption(str);
+    setWindowTitle(str);
 
     // Set the message string.
     QString msg;
@@ -263,6 +271,9 @@ ViewerConnectionProgressDialog::hide()
 //   Brad Whitlock, Wed Apr 23 09:03:17 PDT 2003
 //   I made the window raise and center iself.
 //
+//   Brad Whitlock, Fri May 23 11:33:00 PDT 2008
+//   Make the window active.
+//
 // ****************************************************************************
 
 void
@@ -281,7 +292,7 @@ ViewerConnectionProgressDialog::timedShow()
         move(x, y);
 
         // Make it the active viewer window.
-        setActiveWindow();
+        activateWindow();
     }
 }
 

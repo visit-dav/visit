@@ -39,7 +39,7 @@
 #ifndef VIEWER_TOGGLE_ACTION_H
 #define VIEWER_TOGGLE_ACTION_H
 #include <ViewerAction.h>
-#include <qpixmap.h>
+#include <QPixmap>
 
 // ****************************************************************************
 // Class: ViewerToggleAction
@@ -63,7 +63,7 @@
 class VIEWER_API ViewerToggleAction : public ViewerAction
 {
 public:
-    ViewerToggleAction(ViewerWindow *win, const char *name = 0);
+    ViewerToggleAction(ViewerWindow *win);
     virtual ~ViewerToggleAction();
 
     virtual void Update();

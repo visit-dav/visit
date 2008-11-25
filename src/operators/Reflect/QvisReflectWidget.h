@@ -38,7 +38,7 @@
 
 #ifndef QVIS_REFLECT_WIDGET_H
 #define QVIS_REFLECT_WIDGET_H
-#include <qwidget.h>
+#include <QWidget>
 #include <mini3D.h>
 
 class QTimer;
@@ -59,13 +59,16 @@ class QTimer;
 //   Brad Whitlock, Mon Jun 23 16:49:01 PST 2003
 //   I added a 2d interaction mode.
 //
+//   Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisReflectWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisReflectWidget(QWidget *parent, const char *name=0);
+    QvisReflectWidget(QWidget *parent);
     virtual ~QvisReflectWidget();
     virtual QSize sizeHint() const;
     virtual QSizePolicy sizePolicy() const;
@@ -82,7 +85,6 @@ protected slots:
     void handleTimer();
 protected:
     void drawOnOffActors(int n, float scale);
-    void deleteBackingPixmap();
     void redrawScene(QPainter *painter);
     void redrawScene2D(QPainter *painter);
     void redrawScene3D(QPainter *painter);
@@ -104,7 +106,6 @@ protected:
 
     bool          mode2D;
 
-    QPixmap      *pixmap;
     m3d_renderer  renderer;
     bool          rendererCreated;
 

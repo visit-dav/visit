@@ -36,15 +36,12 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef QVIS_STRIPCHART
-#define QVIS_STRIPCHART
-#include <qwidget.h>
-#include <qpainter.h>
-#include <qscrollview.h>
-#include <qapplication.h>
-#include <qvaluevector.h>
-#include <stdlib.h>
+#ifndef QVIS_STRIPCHART_H
+#define QVIS_STRIPCHART_H
+#include <QVector>
+#include <QWidget>
 
+class QScrollArea;
 
 // ****************************************************************************
 // Class: VisItPointD
@@ -75,7 +72,7 @@ private:
     double p_y;  
 };
 
-typedef QValueVector<VisItPointD> Points;
+typedef QVector<VisItPointD> Points;
 
 
 // ****************************************************************************
@@ -100,16 +97,15 @@ typedef QValueVector<VisItPointD> Points;
 //    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
 //    added Font variable to update font size as zoom changes. Also added variable
 //    zoomOutLimit for zoom checks.
+//
 // ****************************************************************************
-class QTimerEvent;
-class QScrollView;
-class QFont;
+
 class VisItSimStripChart : public QWidget
 {                                                          
     Q_OBJECT
     
 public:
-            VisItSimStripChart( QWidget *parent=0, const char *name=0 , int winX=4000, int winY=1000 );
+            VisItSimStripChart( QWidget *parent=0, int winX=4000, int winY=1000 );
             ~VisItSimStripChart();
     void    setOutOfBandLimits( double minY, double miaxY );
     void    getOutOfBandLimits( double &minY, double &maxY );
@@ -122,7 +118,7 @@ public:
     void    zoomOut();
     void    zoomIn();
     void    reset();
-    void    focus(QScrollView *sc);
+    void    focus(QScrollArea *sc);
     void    setFontSize();
     void    setEnableLogScale( bool enable );
     bool    getEnableLogScale();
@@ -150,7 +146,7 @@ private:
     double  minData;
     double  maxData;
     double  currentData;
-    int  currentCycle;
+    int     currentCycle;
     int     winXSize;
 
     int     winYSize;

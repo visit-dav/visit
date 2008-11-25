@@ -341,6 +341,16 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
         AddAction(actionNode, "Lock", ViewerRPC::TurnOffAllLocksRPC);
     }
 
+    // Add actions that are new in 1.10.0
+    if(VersionLessThan(configVersion, "1.10.0"))
+    {
+        // Make sure to add the "lock tools" button to the Lock group.
+        RemoveActionFromNode(actionNode, "Lock", "ToggleLockToolsRPC");
+        RemoveActionFromNode(actionNode, "Lock", "TurnOffAllLocksRPC");
+        AddAction(actionNode, "Lock", ViewerRPC::ToggleLockToolsRPC);
+        AddAction(actionNode, "Lock", ViewerRPC::TurnOffAllLocksRPC);
+    }
+
     //
     // Remove all of the animation actions and then re-add them with
     // the new names in the right order.

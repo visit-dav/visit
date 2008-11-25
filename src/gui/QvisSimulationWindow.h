@@ -40,30 +40,33 @@
 #define QVIS_SIMULATION_WINDOW_H
 #include <gui_exports.h>
 #include <QvisPostableWindowObserver.h>
-#include <qmap.h>
+#include <QMap>
 #include <avtDatabaseMetaData.h>
 
 
 // Forward declarations.
-class EngineList;
+class QCheckBox;
+class QColor;
 class QComboBox;
+class QGridLayout;
 class QGroupBox;
+class QHBoxLayout;
 class QLabel;
+class QLineEdit;
 class QProgressBar;
 class QPushButton;
-class StatusAttributes;
-class QLineEdit;
-class QListView;
-class QString;
+class QScrollArea;
 class QSpinBox;
-class QCheckBox;
-class QGridLayout;
-class QScrollView;
-class QColor;
-        
-class QHBoxLayout;
-class QvisStripChartMgr;
+class QString;
+class QTreeWidget;
 
+class QvisSimulationCommandWindow;
+class QvisSimulationMessageWindow;
+class QvisStripChartMgr;
+class QvisUiLoader;
+
+class EngineList;
+class StatusAttributes;
 class avtSimulationCommandSpecification;
 
 // ****************************************************************************
@@ -122,32 +125,21 @@ private:
     QString GetUIFileDirectory() const;
     QString GetUIFile() const;
     void ViewerSendCMD ( int simIndex, QString cmd);
-    QColor *getColor(const QString color);
+    QColor getColor(const QString &color) const;
 private slots:
     void closeEngine();
     void interruptEngine();
     void selectEngine(int index);
     void clearCache();
     void showCommandWindow();
-    void executeSimCommand();
-    void executePushButtonCommand(int);
-    void executePushButtonCommand0();
-    void executePushButtonCommand1();
-    void executePushButtonCommand2();
-    void executePushButtonCommand3();
-    void executePushButtonCommand4();
-    void executePushButtonCommand5();
-    void executePushButtonCommand6();
-    void executePushButtonCommand7();
-    void executePushButtonCommand8();
-    void executeEnableTimeRange();
-    void executeSpinBoxStartCommand();
-    void executeSpinBoxStopCommand();
-    void executeSpinBoxStepCommand();
+    void executePushButtonCommand(const QString &cmd);
+    void executeEnableTimeRange(const QString &cmd);
+    void executeStartCommand(const QString &cmd);
+    void executeStopCommand(const QString &cmd);
+    void executeStepCommand(const QString &cmd);
     void zoomOut();
     void zoomIn();
     void focus();
-    void postStripChartWindow();
     
 private:
     EngineList           *engines;
@@ -160,27 +152,18 @@ private:
     SimulationMetaDataMap metadataMap;
 
     QComboBox          *simCombo;
-    QListView          *simInfo;
+    QTreeWidget        *simInfo;
     QLabel             *simulationMode;
     QProgressBar       *totalProgressBar;
-    QHBoxLayout        *progressLayout;
-    QHBoxLayout        *progressLayout2;
-    QLineEdit          *startCycle;
-    QLineEdit          *stopCycle;
-    QLineEdit          *stepCycle;
-    QCheckBox          *enableTimeRange;
-    QLabel             *startLabel;
-    QLabel             *stopLabel;
-    QLabel             *stepLabel;
     QPushButton        *interruptEngineButton;
     QPushButton        *closeEngineButton;
     QPushButton        *clearCacheButton;
-    QLineEdit          *simCommandEdit;
     QWidget            *DynamicCommandsWin;
-    QPushButton        *cmdButtons[9];
+    QvisUiLoader       *uiLoader;
     QMap<int,int>      simulationToEngineListMap;
     QvisStripChartMgr  *stripCharts;
-    
+    QvisSimulationMessageWindow *simMessages;
+    QvisSimulationCommandWindow *simCommands;
 };
 
 #endif

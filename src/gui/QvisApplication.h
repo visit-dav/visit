@@ -38,7 +38,11 @@
 
 #ifndef QVIS_APPLICATION_H
 #define QVIS_APPLICATION_H
-#include <qapplication.h>
+#include <QApplication>
+
+#ifdef Q_WS_MACX
+class QEventLoop;
+#endif
 
 // ****************************************************************************
 // Class: QvisApplication
@@ -55,6 +59,9 @@
 // Modifications:
 //   Brad Whitlock, Tue Oct 9 15:16:34 PST 2007
 //   Changed signature for macEventFilter to match newer Qt method.
+//
+//   Brad Whitlock, Fri May 30 11:50:32 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
@@ -75,7 +82,8 @@ private slots:
 #ifdef Q_WS_MACX
 public:
     virtual bool macEventFilter(EventHandlerCallRef, EventRef);
-    bool needToMakeActive;
+    bool         needToMakeActive;
+    QEventLoop  *eventLoop;
 #endif
 };
 #endif

@@ -40,8 +40,7 @@
 #define QVIS_IMAGE_ANNOTATION_INTERFACE_H
 
 #include <QvisAnnotationObjectInterface.h>
-
-#include <qstring.h>
+#include <QString>
 
 class QCheckBox;
 class QComboBox;
@@ -49,6 +48,7 @@ class QLineEdit;
 class QSpinBox;
 
 class QvisColorButton;
+class QvisDialogLineEdit;
 class QvisOpacitySlider;
 class QvisScreenPositionEdit;
 
@@ -64,16 +64,17 @@ class QvisScreenPositionEdit;
 // Creation:   Fri Oct 31 12:47:34 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun 26 14:57:22 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class GUI_API QvisImageAnnotationInterface:
-  public QvisAnnotationObjectInterface
+class GUI_API QvisImageAnnotationInterface : public QvisAnnotationObjectInterface
 {
     Q_OBJECT
 
 public:
-    QvisImageAnnotationInterface(QWidget *parent, const char *name = 0);
+    QvisImageAnnotationInterface(QWidget *parent);
     virtual ~QvisImageAnnotationInterface();
 
     virtual QString GetName() const { return "Image"; }
@@ -86,7 +87,6 @@ protected:
 
 private slots:
     void imageSourceChanged(const QString &);
-    void imageSourceEdit(); 
     void positionStartChanged(double, double);
     void widthChanged(int);
     void heightChanged(int);
@@ -97,8 +97,7 @@ private slots:
     void visibilityToggled(bool);
 
 private:
-    QString                 initialDir;
-    QLineEdit              *imageSource;
+    QvisDialogLineEdit     *imageSource;
     QvisScreenPositionEdit *positionStartEdit;
     QSpinBox               *widthSpinBox;
     QSpinBox               *heightSpinBox;

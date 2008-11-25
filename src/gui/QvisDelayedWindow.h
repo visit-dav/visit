@@ -69,13 +69,16 @@ class QVBoxLayout;
 //   Brad Whitlock, Wed Apr  9 10:31:28 PDT 2008
 //   Changed ctor args.
 //
+//   Brad Whitlock, Thu Jun 19 14:13:42 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisDelayedWindow : public QvisWindowBase
 {
     Q_OBJECT
 public:
-    QvisDelayedWindow(const QString &captionString, WFlags f = 0);
+    QvisDelayedWindow(const QString &captionString, Qt::WindowFlags f = 0);
     virtual ~QvisDelayedWindow();
     QWidget *GetCentralWidget();
     virtual void CreateEntireWindow();

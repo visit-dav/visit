@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ParallelCoordinatesPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtParallelCoordinatesPlot.h>
 
 #if defined(__APPLE__)
@@ -282,7 +282,7 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
         vector<ArgExpr*> *args = argsExpr ? argsExpr->GetArgs() : NULL;
         if (!args)
             return;
-        for (int i=0; i<args->size(); i++)
+        for (size_t i=0; i<args->size(); i++)
         {
             ExprNode *arg = (ExprNode*)((*args)[i]->GetExpr());
             if (arg->GetTypeName() == "List")

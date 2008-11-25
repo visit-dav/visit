@@ -39,7 +39,7 @@
 #ifndef QVIS_LINE_WIDTH_WIDGET_H
 #define QVIS_LINE_WIDTH_WIDGET_H
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 
 class QComboBox;
 
@@ -61,15 +61,17 @@ class QComboBox;
 //   
 //   Kathleen Bonnell, Tue Dec  3 16:14:25 PST 2002 
 //   Added more styles for larger line widths. 
-//   
+//
+//   Brad Whitlock, Tue Jun  3 13:35:12 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisLineWidthWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisLineWidthWidget(int width_ = 0, QWidget *parent = 0,
-                        const char *name = 0);
+    QvisLineWidthWidget(int width_ = 0, QWidget *parent = 0);
     virtual ~QvisLineWidthWidget();
     void SetLineWidth(int style);
     int  GetLineWidth() const;

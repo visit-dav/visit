@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 #include <QvisText2DInterface.h>
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QRadioButton>
+#include <QSpinBox>
 #include <QvisColorButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisScreenPositionEdit.h>
@@ -67,103 +67,103 @@
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
-//   
+//
+//   Brad Whitlock, Mon Jul 21 10:58:05 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisText2DInterface::QvisText2DInterface(QWidget *parent,
-    const char *name) : QvisAnnotationObjectInterface(parent, name)
+QvisText2DInterface::QvisText2DInterface(QWidget *parent) : 
+    QvisAnnotationObjectInterface(parent)
 {
     // Set the title of the group box.
     this->setTitle(GetName());
 
-    QGridLayout *cLayout = new QGridLayout(topLayout, 8, 4);
+    QGridLayout *cLayout = new QGridLayout(0);
+    topLayout->addLayout(cLayout);
     cLayout->setSpacing(10);
 
     // Add controls for the position
-    positionEdit = new QvisScreenPositionEdit(this, "positionEdit");
+    positionEdit = new QvisScreenPositionEdit(this);
     connect(positionEdit, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(positionChanged(double, double)));
-    cLayout->addMultiCellWidget(positionEdit, 0, 0, 1, 3);
-    cLayout->addWidget(new QLabel(positionEdit, tr("Lower left"),
-        this), 0, 0);
+    cLayout->addWidget(positionEdit, 0, 1, 1, 3);
+    cLayout->addWidget(new QLabel(tr("Lower left"), this), 0, 0);
 
     // Add controls for position2
-    widthSpinBox = new QSpinBox(1, 100, 1, this, "widthSpinBox");
+    widthSpinBox = new QSpinBox(this);
+    widthSpinBox->setMinimum(1);
+    widthSpinBox->setMaximum(100);
     widthSpinBox->setSuffix("%");
     widthSpinBox->setButtonSymbols(QSpinBox::PlusMinus);
     connect(widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(widthChanged(int)));
     cLayout->addWidget(widthSpinBox, 1, 1);
-    cLayout->addWidget(new QLabel(widthSpinBox, tr("Width"),
-        this), 1, 0);
+    cLayout->addWidget(new QLabel(tr("Width"), this), 1, 0);
 #if 0
-    heightSpinBox = new QSpinBox(1, 100, 1, this, "heightSpinBox");
+    heightSpinBox = new QSpinBox(1, 100, 1, this);
     heightSpinBox->setSuffix("%");
     heightSpinBox->setButtonSymbols(QSpinBox::PlusMinus);
     connect(heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(heightChanged(int)));
     cLayout->addWidget(heightSpinBox, 1, 3);
-    cLayout->addWidget(new QLabel(widthSpinBox, tr("Height"),
-        this), 1, 2);
+    cLayout->addWidget(new QLabel(tr("Height"), this), 1, 2);
 #endif
 
     // Add controls for entering the text
-    textLineEdit = new QLineEdit(this, "textLineEdit");
+    textLineEdit = new QLineEdit(this);
     connect(textLineEdit, SIGNAL(returnPressed()),
             this, SLOT(textChanged()));
-    cLayout->addMultiCellWidget(textLineEdit, 2, 2, 1, 3);
-    cLayout->addWidget(new QLabel(textLineEdit, tr("Text"),
-        this), 2, 0);
+    cLayout->addWidget(textLineEdit, 2, 1, 1, 3);
+    cLayout->addWidget(new QLabel(tr("Text"), this), 2, 0);
 
     // Add controls for the text color.
-    textColorButton = new QvisColorButton(this, "textColorButton");
+    textColorButton = new QvisColorButton(this);
     connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(textColorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(textColorButton, tr("Text color"), this),
+    cLayout->addWidget(new QLabel(tr("Text color"), this),
         3, 0, Qt::AlignLeft);
     cLayout->addWidget(textColorButton, 3, 1);
-    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this,
-        "textColorOpacity");
+    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this);
     connect(textColorOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(textOpacityChanged(int)));
-    cLayout->addMultiCellWidget(textColorOpacity, 3, 3, 2, 3);
+    cLayout->addWidget(textColorOpacity, 3, 2, 1, 2);
 
     // Added a use foreground toggle
-    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this,
-        "useForegroundColorCheckBox");
+    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this);
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));
-    cLayout->addMultiCellWidget(useForegroundColorCheckBox, 4, 4, 0, 3);
+    cLayout->addWidget(useForegroundColorCheckBox, 4, 0, 1, 4);
 
     // Add controls to set the font family.
-    fontFamilyComboBox = new QComboBox(this, "fontFamilyComboBox");
-    fontFamilyComboBox->insertItem("Arial", 0);
-    fontFamilyComboBox->insertItem("Courier", 1);
-    fontFamilyComboBox->insertItem("Times", 2);
+    fontFamilyComboBox = new QComboBox(this);
+    fontFamilyComboBox->addItem(tr("Arial"));
+    fontFamilyComboBox->addItem(tr("Courier"));
+    fontFamilyComboBox->addItem(tr("Times"));
     fontFamilyComboBox->setEditable(false);
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
-    cLayout->addMultiCellWidget(fontFamilyComboBox, 5, 5, 1, 3);
+    cLayout->addWidget(fontFamilyComboBox, 5, 1, 1, 3);
     cLayout->addWidget(new QLabel(tr("Font family"), this), 5, 0);
 
     // Add controls for font properties.
-    boldCheckBox = new QCheckBox(tr("Bold"), this, "boldCheckBox");
+    boldCheckBox = new QCheckBox(tr("Bold"), this);
     connect(boldCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(boldToggled(bool)));
     cLayout->addWidget(boldCheckBox, 6, 0);
 
-    italicCheckBox = new QCheckBox(tr("Italic"), this, "italicCheckBox");
+    italicCheckBox = new QCheckBox(tr("Italic"), this);
     connect(italicCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(italicToggled(bool)));
     cLayout->addWidget(italicCheckBox, 6, 1);
 
-    shadowCheckBox = new QCheckBox(tr("Shadow"), this, "shadowCheckBox");
+    shadowCheckBox = new QCheckBox(tr("Shadow"), this);
     connect(shadowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(shadowToggled(bool)));
     cLayout->addWidget(shadowCheckBox, 6, 2);
 
     // Added a visibility toggle
-    visibleCheckBox = new QCheckBox(tr("Visible"), this, "visibleCheckBox");
+    visibleCheckBox = new QCheckBox(tr("Visible"), this);
     connect(visibleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(visibilityToggled(bool)));
     cLayout->addWidget(visibleCheckBox, 7, 0);
@@ -201,7 +201,9 @@ QvisText2DInterface::~QvisText2DInterface()
 // Creation:   Wed Nov 5 16:06:47 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 21 11:43:39 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QString
@@ -209,7 +211,7 @@ QvisText2DInterface::GetMenuText(const AnnotationObject &annot) const
 {
     QString retval;
     if(annot.GetText().size() > 0)
-        retval.sprintf("%s - %s", GetName().latin1(), annot.GetText()[0].c_str());
+        retval = QString("%1 - %2").arg(GetName()).arg(annot.GetText()[0].c_str());
     else
         retval = GetName();
 
@@ -291,7 +293,7 @@ QvisText2DInterface::UpdateControls()
 
     // Set the font family
     fontFamilyComboBox->blockSignals(true);
-    fontFamilyComboBox->setCurrentItem(int(annot->GetFontFamily()));
+    fontFamilyComboBox->setCurrentIndex(int(annot->GetFontFamily()));
     fontFamilyComboBox->blockSignals(false);
 
     // Set the bold check box.
@@ -347,7 +349,7 @@ QvisText2DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 1 || doAll)
     {
         stringVector sv;
-        sv.push_back(textLineEdit->text().latin1());
+        sv.push_back(textLineEdit->text().toStdString());
         annot->SetText(sv);
     }
 

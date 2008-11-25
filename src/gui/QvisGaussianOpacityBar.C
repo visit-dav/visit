@@ -38,10 +38,10 @@
 
 #include "QvisGaussianOpacityBar.h"
 
-#include <qpainter.h>
-#include <qpointarray.h>
-#include <qpixmap.h>
-#include <qimage.h>
+#include <QImage>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPolygon>
 
 #include <visitstream.h>
 #include <math.h>
@@ -58,10 +58,14 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Jun  4 10:35:08 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
-QvisGaussianOpacityBar::QvisGaussianOpacityBar(QWidget *parent, const char *name)
-    : QvisAbstractOpacityBar(parent, name)
+QvisGaussianOpacityBar::QvisGaussianOpacityBar(QWidget *parent)
+    : QvisAbstractOpacityBar(parent)
 {
     setFrameStyle( QFrame::Panel | QFrame::Sunken );
     setLineWidth( 2 );
@@ -103,18 +107,23 @@ QvisGaussianOpacityBar::~QvisGaussianOpacityBar()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Jun  4 10:37:39 PDT 2008
+//    Draw on the image as opposed to a pixmap.
+//
 // ****************************************************************************
+
 void
 QvisGaussianOpacityBar::drawControlPoints()
 {
-    int pw = pix->width();
-    int ph = pix->height();
-    QPainter painter(pix);
+    int pw = image->width();
+    int ph = image->height();
+    QPainter painter(image);
     QPen bluepen(QColor(100,100,255), 2);
     QPen greenpen(QColor(100,255,0),  2);;
     QPen cyanpen(QColor(100,255,255), 2);;
     QPen graypen(QColor(100,100,100), 2);
-    QPointArray pts;
+    QPolygon pts;
     for (int p=0; p<ngaussian; p++)
     {
         int x  = int(float(gaussian[p].x+gaussian[p].bx)*float(pw));
@@ -226,7 +235,7 @@ QvisGaussianOpacityBar::drawControlPoints()
 
 
 // ****************************************************************************
-//  Method:  QvisGaussianOpacityBar::paintToPixmap
+//  Method:  QvisGaussianOpacityBar::drawOpacities
 //
 //  Purpose:
 //    
@@ -235,17 +244,21 @@ QvisGaussianOpacityBar::drawControlPoints()
 //  Creation:    January 31, 2001
 //
 //  Modifications:
+//    Gunther H. Weber, April 6, 2007
+//    Added possibility of having a "color table" background instead of solid
+//    black background.
 //
-//     Gunther H. Weber, April 6, 2007
-//     Added possibility of having a "color table" background instead of solid
-//     black background.
+//    Brad Whitlock, Wed Jun  4 10:38:23 PDT 2008
+//    Draw on an image instead of a pixmap.
 //
 // ****************************************************************************
+
 void
-QvisGaussianOpacityBar::paintToPixmap(int w,int h)
+QvisGaussianOpacityBar::drawOpacities(int w,int h)
 {
-    QImage img(w,h, 32);
     float *values = getRawOpacities(w);
+
+    ensureImageExists(w, h);
 
     QRgb *bgCols = new QRgb[w];
     if (backgroundColorControlPoints) 
@@ -274,20 +287,19 @@ QvisGaussianOpacityBar::paintToPixmap(int w,int h)
         for (int y = 0; y < h; y++)
         {
             float yvalc = 1 - float(y)/float(h-1);
-            if (yvalc >= QMIN(yval1,yval2)-dy && yvalc < QMAX(yval1,yval2))
+            if (yvalc >= qMin(yval1,yval2)-dy && yvalc < qMax(yval1,yval2))
             {
-                img.setPixel(x,y, cw); 
+                image->setPixel(x,y, cw); 
             }
             else
             {
-                img.setPixel(x,y, bgCols[x]);
+                image->setPixel(x,y, bgCols[x]);
             }
        }
     }
     delete[] values;
     delete[] bgCols;
 
-    pix->convertFromImage(img);
     drawControlPoints();
 }
 
@@ -301,19 +313,24 @@ QvisGaussianOpacityBar::paintToPixmap(int w,int h)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Jun  4 10:39:42 PDT 2008
+//    Use update().
+//
 // ****************************************************************************
+
 void
 QvisGaussianOpacityBar::mousePressEvent(QMouseEvent *e)
 {
     int x = e->x();
     int y = e->y();
 
-    if (e->button() == RightButton)
+    if (e->button() == Qt::RightButton)
     {
         if (findGaussianControlPoint(x,y, &currentGaussian, &currentMode))
             removeGaussian(currentGaussian);
     }
-    else if (e->button() == LeftButton)
+    else if (e->button() == Qt::LeftButton)
     {
         if (! findGaussianControlPoint(x,y,
                                        &currentGaussian, &currentMode))
@@ -327,10 +344,8 @@ QvisGaussianOpacityBar::mousePressEvent(QMouseEvent *e)
         mousedown = true;
     }
 
-
-    paintToPixmap(contentsRect().width(), contentsRect().height());
-    QPainter p(this);
-    p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
+    drawOpacities(contentsRect().width(), contentsRect().height());
+    update();
 }
 
 
@@ -344,8 +359,14 @@ QvisGaussianOpacityBar::mousePressEvent(QMouseEvent *e)
 //  Creation:    January 31, 2001
 //
 //  Modifications:
+//    Brad Whitlock, Wed Jun  4 10:40:22 PDT 2008
+//    Use update().
+//
 //    Jeremy Meredith, Thu Aug  7 15:39:32 EDT 2008
 //    Added missing case to avoid warnings.
+//
+//    Cyrus Harrison, Mon Aug 25 16:26:20 PDT 2008
+//    Fixed build problem on AIX - confusion between float and double literal.
 //
 // ****************************************************************************
 void
@@ -363,8 +384,7 @@ QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
             oldMode     != currentMode)
         {
             drawControlPoints();
-            QPainter p(this);
-            p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
+            update();
         }
         return;
     }
@@ -378,15 +398,15 @@ QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
         gaussian[currentGaussian].h = y2val(y);
         break;
       case modeW:
-        gaussian[currentGaussian].w = QMAX(fabs(x2val(x) - gaussian[currentGaussian].x),0.01);
+        gaussian[currentGaussian].w = qMax((float)fabs(x2val(x) - gaussian[currentGaussian].x),0.01f);
         break;
       case modeWR:
-        gaussian[currentGaussian].w = QMAX(x2val(x) - gaussian[currentGaussian].x,0.01);
+        gaussian[currentGaussian].w = qMax(x2val(x) - gaussian[currentGaussian].x,0.01f);
         if (gaussian[currentGaussian].w < fabs(gaussian[currentGaussian].bx))
             gaussian[currentGaussian].w = fabs(gaussian[currentGaussian].bx);
         break;
       case modeWL:
-        gaussian[currentGaussian].w = QMAX(gaussian[currentGaussian].x - x2val(x),0.01);
+        gaussian[currentGaussian].w = qMax(gaussian[currentGaussian].x - x2val(x),0.01f);
         if (gaussian[currentGaussian].w < fabs(gaussian[currentGaussian].bx))
             gaussian[currentGaussian].w = fabs(gaussian[currentGaussian].bx);
         break;
@@ -411,9 +431,8 @@ QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
     lastx = x;
     lasty = y;
 
-    paintToPixmap(contentsRect().width(), contentsRect().height());
-    QPainter p(this);
-    p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
+    drawOpacities(contentsRect().width(), contentsRect().height());
+    update();
 }
 
 
@@ -426,15 +445,18 @@ QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Jun  4 10:41:07 PDT 2008
+//    Use update().
+//
 // ****************************************************************************
 void
 QvisGaussianOpacityBar::mouseReleaseEvent(QMouseEvent *)
 {
     mousedown = false;
 
-    paintToPixmap(contentsRect().width(), contentsRect().height());
-    QPainter p(this);
-    p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
+    drawOpacities(contentsRect().width(), contentsRect().height());
+    update();
 
     emit mouseReleased();
 }
@@ -471,7 +493,7 @@ QvisGaussianOpacityBar::getRawOpacities(int n)
             // clamp non-zero values to pos +/- width
             if (x > pos+width || x < pos-width)
             {
-                values[i] = QMAX(values[i],0);
+                values[i] = qMax(values[i],0.f);
                 continue;
             }
 
@@ -517,7 +539,7 @@ QvisGaussianOpacityBar::getRawOpacities(int n)
             float h2 = height * h1;
             
             // perform the MAX over different guassians, not the sum
-            values[i] = QMAX(values[i], h2);
+            values[i] = qMax(values[i], h2);
         }
     }
 
@@ -703,6 +725,6 @@ QvisGaussianOpacityBar::setAllGaussians(int n, float *gaussdata)
                     gaussdata[i*5 + 3],
                     gaussdata[i*5 + 4]);
     }
-    paintToPixmap(contentsRect().width(), contentsRect().height());
+    drawOpacities(contentsRect().width(), contentsRect().height());
     update();
 }

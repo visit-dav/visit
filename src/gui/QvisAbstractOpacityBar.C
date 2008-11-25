@@ -38,10 +38,10 @@
 
 #include "QvisAbstractOpacityBar.h"
 
-#include <qpainter.h>
-#include <qpointarray.h>
-#include <qpixmap.h>
-#include <qimage.h>
+#include <QPainter>
+#include <QPolygon>
+#include <QPixmap>
+#include <QImage>
 
 #include <visitstream.h>
 #include <math.h>
@@ -58,20 +58,26 @@
 //  Creation:    January 31, 2001
 //
 //  Modifications:
-//
 //    Gunther Weber, Fri Apr  6 16:04:52 PDT 2007
 //    Initialize backgroundColorControlPoints.
 //
+//    Brad Whitlock, Fri May 30 09:32:57 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
-QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent, const char *name)
-    : QFrame(parent, name)
+QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent)
+    : QFrame(parent)
 {
     setFrameStyle( QFrame::Panel | QFrame::Sunken );
     setLineWidth( 2 );
     setMinimumHeight(50);
     setMinimumWidth(128);
-    pix = new QPixmap;
+    setContentsMargins(0,0,0,0);
+    QSizePolicy sp(QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding);
+    setSizePolicy(sp);
+
+    image = 0;
     backgroundColorControlPoints = 0;
 }
 
@@ -92,12 +98,12 @@ QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent, const char *name
 
 QvisAbstractOpacityBar::~QvisAbstractOpacityBar()
 {
-    delete pix;
-    pix = 0;
+    delete image;
+    image = 0;
 }
 
 // ****************************************************************************
-//  Method:  QvisAbstractOpacityBar::SetBackgroundColorControlPoints(const ColorControlPointList *ccp)
+//  Method:  QvisAbstractOpacityBar::SetBackgroundColorControlPoints
 //
 //  Purpose: Set color control points for color transfer function backdrop
 //    
@@ -112,7 +118,7 @@ QvisAbstractOpacityBar::~QvisAbstractOpacityBar()
 void QvisAbstractOpacityBar::SetBackgroundColorControlPoints(const ColorControlPointList *ccp)
 {
     backgroundColorControlPoints = ccp;
-    paintToPixmap(contentsRect().width(), contentsRect().height());
+    drawOpacities(contentsRect().width(), contentsRect().height());
     update();
 }
 
@@ -133,10 +139,9 @@ QvisAbstractOpacityBar::val2x(float val)
     int w = c.width();
     int l = c.left();
     int x = int(val*float(w) + l);
-    x = QMAX(l, QMIN(l+w, x));
+    x = qMax(l, qMin(l+w, x));
     return x;
 }
-
 
 // ****************************************************************************
 //  Method:  QvisAbstractOpacityBar::x2val
@@ -155,10 +160,9 @@ QvisAbstractOpacityBar::x2val(int x)
     int w = c.width();
     int l = c.left();
     float val = float(x-l)/float(w);
-    val = QMAX(0, QMIN(1, val));
+    val = qMax(0.f, qMin(1.f, val));
     return val;
 }
-
 
 // ****************************************************************************
 //  Method:  QvisAbstractOpacityBar::val2y
@@ -177,10 +181,9 @@ QvisAbstractOpacityBar::val2y(float val)
     int h = c.height();
     int t = c.top();
     int y = int((1-val)*float(h) + t);
-    y = QMAX(t, QMIN(t+h, y));
+    y = qMax(t, qMin(t+h, y));
     return y;
 }
-
 
 // ****************************************************************************
 //  Method:  QvisAbstractOpacityBar::y2val
@@ -199,10 +202,9 @@ QvisAbstractOpacityBar::y2val(int y)
     int h = c.height();
     int t = c.top();
     float val = float(y-t)/float(h);
-    val = QMAX(0, QMIN(1, (1-val)));
+    val = qMax(0.f, qMin(1.f, (1.f-val)));
     return val;
 }
-
 
 // ****************************************************************************
 //  Method:  QvisAbstractOpacityBar::paintEvent
@@ -213,19 +215,25 @@ QvisAbstractOpacityBar::y2val(int y)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Jun  4 09:53:23 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 void
 QvisAbstractOpacityBar::paintEvent(QPaintEvent *e)
 {
     QFrame::paintEvent(e);
-    if (!pix)
-        return;
-    
+
+    int w = contentsRect().width();
+    int h = contentsRect().height();
+    if(ensureImageExists(w, h))
+        drawOpacities(w,h);
+
     QPainter p(this);
-    p.drawPixmap(contentsRect().left(),contentsRect().top(),*pix);
+    QPoint pos(contentsRect().left(),contentsRect().top());
+    p.drawImage(pos, *image);
 }
-
-
 
 // ****************************************************************************
 //  Method:  QvisAbstractOpacityBar::resizeEvent
@@ -236,21 +244,58 @@ QvisAbstractOpacityBar::paintEvent(QPaintEvent *e)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jul 18 15:34:34 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 void
 QvisAbstractOpacityBar::resizeEvent(QResizeEvent*)
 {
     QRect framerect(rect());
-    framerect.setTop(framerect.top()       +5);
-    framerect.setBottom(framerect.bottom( )-5);
-    framerect.setLeft(framerect.left()     +13);
-    framerect.setRight(framerect.right()   -13);
+    framerect.setLeft(framerect.left()     +5);
+    framerect.setRight(framerect.right()   -10);
     setFrameRect(framerect);
 
     int w=contentsRect().width();
     int h=contentsRect().height();
 
-    delete pix;
-    pix = new QPixmap;
-    paintToPixmap(w,h);
+    delete image;
+    image = new QImage(w, h, QImage::Format_RGB32);
+    drawOpacities(w,h);
+    update();
+}
+
+// ****************************************************************************
+// Method: QvisAbstractOpacityBar::ensureImageExists
+//
+// Purpose: 
+//   Ensure that the image to which we're drawing exists.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 18 14:38:14 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisAbstractOpacityBar::ensureImageExists(int w, int h)
+{
+    bool retval = image == 0;
+    if(retval)
+        image = new QImage(w, h, QImage::Format_RGB32);
+    else if(w != image->width() || h != image->height())
+    {
+        delete image;
+        retval = true;
+        image = new QImage(w, h, QImage::Format_RGB32);
+    }
+    return retval;
 }

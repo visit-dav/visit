@@ -53,21 +53,22 @@
 
 #include <snprintf.h>
 
-#include <qaction.h>
-#include <qiconset.h>
-#include <qmainwindow.h>
-#include <qmenubar.h>
-#include <qobjectlist.h>
-#include <qpixmapcache.h>
-#include <qpopupmenu.h>
-#include <qtoolbar.h>
-#include <qtoolbutton.h>
-#include <qtooltip.h>
+#include <QAction>
+#include <QIcon>
+#include <QMainWindow>
+#include <QMenuBar>
+#include <QPixmapCache>
+#include <QMenu>
+#include <QToolBar>
+#include <QToolButton>
+#include <QToolTip>
 
 #include <QvisVariablePopupMenu.h>
 
 #include <DebugStream.h>
 #include <InvalidExpressionException.h>
+
+#define VMAX(A,B) (((A) > (B)) ? (A) : (B))
 
 //
 // Include icons
@@ -99,7 +100,7 @@
 // ****************************************************************************
 
 AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
-    ViewerMultipleAction(win, "AddOperator"), graphicalPlugins()
+    ViewerMultipleAction(win), graphicalPlugins()
 {
     SetAllText(tr("Add operator"));
     SetExclusive(false);
@@ -299,25 +300,15 @@ AddOperatorAction::ChoiceEnabled(int) const
 // Creation:   Thu Mar 20 12:48:44 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 22 13:49:04 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 AddOperatorAction::ConstructToolbar(QToolBar *toolbar)
 {
     ViewerMultipleAction::ConstructToolbar(toolbar);
-
-#if 1
-    // This is a hack. I eventually need to put the toolbar orientation
-    // into the ViewerWindowManagerAttributes.
-
-    // Make the toolbar be vertical.
-    toolbar->setOrientation(Qt::Vertical);
-    if(toolbar->mainWindow())
-    {
-        toolbar->mainWindow()->moveToolBar(toolbar, QMainWindow::Left);
-    }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -340,8 +331,7 @@ AddOperatorAction::ConstructToolbar(QToolBar *toolbar)
 //   
 // ****************************************************************************
 
-PromoteOperatorAction::PromoteOperatorAction(ViewerWindow *win) :
-    ViewerAction(win, "PromoteOperatorAction")
+PromoteOperatorAction::PromoteOperatorAction(ViewerWindow *win) : ViewerAction(win)
 {
     DisableVisual();
 }
@@ -404,8 +394,7 @@ PromoteOperatorAction::Execute()
 //   
 // ****************************************************************************
 
-DemoteOperatorAction::DemoteOperatorAction(ViewerWindow *win) :
-    ViewerAction(win, "DemoteOperatorAction")
+DemoteOperatorAction::DemoteOperatorAction(ViewerWindow *win) : ViewerAction(win)
 {
     DisableVisual();
 }
@@ -468,8 +457,7 @@ DemoteOperatorAction::Execute()
 //   
 // ****************************************************************************
 
-RemoveOperatorAction::RemoveOperatorAction(ViewerWindow *win) :
-    ViewerAction(win, "RemoveOperatorAction")
+RemoveOperatorAction::RemoveOperatorAction(ViewerWindow *win) : ViewerAction(win)
 {
     DisableVisual();
 }
@@ -532,12 +520,11 @@ RemoveOperatorAction::Execute()
 //   
 // ****************************************************************************
 
-RemoveLastOperatorAction::RemoveLastOperatorAction(ViewerWindow *win) :
-    ViewerAction(win, "RemoveLastOperatorAction")
+RemoveLastOperatorAction::RemoveLastOperatorAction(ViewerWindow *win) : ViewerAction(win)
 {
     SetAllText(tr("Remove last operator"));
     if(!window->GetNoWinMode())
-        SetIconSet(QIconSet(QPixmap(removelastoperator_xpm)));
+        SetIcon(QIcon(QPixmap(removelastoperator_xpm)));
 }
 
 // ****************************************************************************
@@ -621,11 +608,11 @@ RemoveLastOperatorAction::Enabled() const
 // ****************************************************************************
 
 RemoveAllOperatorsAction::RemoveAllOperatorsAction(ViewerWindow *win) : 
-    ViewerAction(win, "RemoveAllOperatorsAction")
+    ViewerAction(win)
 {
     SetAllText(tr("Remove all operators"));
     if(!window->GetNoWinMode())
-        SetIconSet(QIconSet(QPixmap(removealloperators_xpm)));
+        SetIcon(QIcon(QPixmap(removealloperators_xpm)));
 }
 
 // ****************************************************************************
@@ -712,7 +699,7 @@ RemoveAllOperatorsAction::Enabled() const
 // ****************************************************************************
 
 SetOperatorOptionsAction::SetOperatorOptionsAction(ViewerWindow *win) : 
-   ViewerAction(win, "SetOperatorOptionsAction")
+   ViewerAction(win)
 {
     DisableVisual();
 }
@@ -785,16 +772,18 @@ SetOperatorOptionsAction::Execute()
 //   Added tr(), remove code to disable Curve plot. Made the code use the
 //   plot's menu name.
 //
+//   Brad Whitlock, Thu May 22 13:53:02 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
-    "AddPlotAction"), pluginEntries(), menuPopulator()
+AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win),
+    pluginEntries(), menuPopulator()
 {
     SetAllText(tr("Add plot"));
     SetExclusive(false);
 
     maxPixmapWidth = maxPixmapHeight = 0;
-    menu = 0;
 
     //
     // Iterate through all of the loaded plot plugins and add a
@@ -825,8 +814,8 @@ AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
                     }
 
                     // Find the maximum pixmap width and height
-                    maxPixmapWidth = QMAX(maxPixmapWidth, pix.width());
-                    maxPixmapHeight = QMAX(maxPixmapHeight, pix.height());
+                    maxPixmapWidth = VMAX(maxPixmapWidth, pix.width());
+                    maxPixmapHeight = VMAX(maxPixmapHeight, pix.height());
 
                     // Add a choice for plot so that it has an icon.
                     QString tip(tr("Add %1 plot").arg(*menuName));
@@ -909,6 +898,10 @@ AddPlotAction::~AddPlotAction()
 //   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //   Changed how treatAllDBsAsTimeVarying to be obtained from
 //   ViewerWindowManager which manages the GlobalAttributes object
+//
+//   Brad Whitlock, Thu May 29 15:50:33 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -958,14 +951,10 @@ AddPlotAction::Update()
                     bool hasEntries = (varCount > 0);
 
                     // Set the new menu's enabled state based on the variable type.
-                    if(hasEntries != actionMenu->isItemEnabled(i))
-                        actionMenu->setItemEnabled(i, hasEntries);
-                    if(hasEntries != menu->isItemEnabled(i))
-                        menu->setItemEnabled(i, hasEntries);
+                    if(hasEntries != pluginEntries[i].varMenu->isEnabled())
+                        pluginEntries[i].varMenu->setEnabled(hasEntries);
                     menuEnabled |= hasEntries;
                 }
-
-                menu->setEnabled(menuEnabled);
             }
         }
     }
@@ -1065,34 +1054,38 @@ AddPlotAction::ChoiceEnabled(int i) const
 // Creation:   Thu Mar 20 12:47:03 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed May 28 16:50:13 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-AddPlotAction::ConstructMenu(QPopupMenu *menu)
+AddPlotAction::ConstructMenu(QMenu *menu)
 {
     // Create a new menu and add all of the actions to it.
-    actionMenu = new QPopupMenu(menu, "AddPlotAction");
+    actionMenu = new QMenu("Add plot", menu);
 
     for(int i = 0; i < pluginEntries.size(); ++i)
     {
         // Create the menu for the plot.
-        pluginEntries[i].varMenu = new QvisVariablePopupMenu(i, 0,
-            children[i]->menuText());
+        pluginEntries[i].varMenu = new QvisVariablePopupMenu(i, 0);
+        pluginEntries[i].varMenu->setIcon(children[i]->icon());
+        pluginEntries[i].varMenu->setTitle(children[i]->text());
         connect(pluginEntries[i].varMenu, SIGNAL(activated(int, const QString &)),
             this, SLOT(addPlot(int, const QString &)));
 
-        // Add the menu to the action menu.
-        actionMenu->insertItem(children[i]->iconSet(),
-            children[i]->menuText(), pluginEntries[i].varMenu,
-            actionMenu->count());
+        // Set the variable menu into the action
+        children[i]->setMenu(pluginEntries[i].varMenu);
+
+        // Add the action into the actionMenu
+        actionMenu->addAction(children[i]);
     }
 
     // Insert the new menu into the old menu.
     if(iconSpecified)
-        actionMenuId = menu->insertItem(action->iconSet(), action->menuText(), actionMenu);
-    else
-        actionMenuId = menu->insertItem(action->menuText(), actionMenu);
+        actionMenu->setIcon(icon);
+    actionMenu->setTitle(menuText);
+    menu->addMenu(actionMenu);
 }
 
 // ****************************************************************************
@@ -1112,7 +1105,7 @@ AddPlotAction::ConstructMenu(QPopupMenu *menu)
 // ****************************************************************************
 
 void
-AddPlotAction::RemoveFromMenu(QPopupMenu *menu)
+AddPlotAction::RemoveFromMenu(QMenu *menu)
 {
     // NOT IMPLEMENTED. Remove the action from the menu.
 }
@@ -1142,90 +1135,16 @@ AddPlotAction::RemoveFromMenu(QPopupMenu *menu)
 //   Brad Whitlock, Tue Apr 29 11:45:08 PDT 2008
 //   Added tr()
 //
+//   Brad Whitlock, Thu May 29 16:37:07 PDT 2008
+//   Qt 4. Ditched menu-based implementation.
+//
 // ****************************************************************************
 
 void
 AddPlotAction::ConstructToolbar(QToolBar *toolbar)
 {
-    // If we don't have any plugin entries, return.
-    if(pluginEntries.size() < 1)
-        return;
-
-    // If we're in nowin mode, return.
-    if(window->GetNoWinMode())
-        return;
-
-    //
-    // Connect the toolbar to a slot function that lets this object know when
-    // it changes orientations.
-    //
-    connect(toolbar, SIGNAL(orientationChanged(Orientation)),
-            this, SLOT(orientationChanged(Orientation)));
-
-    //
-    // Connect the top level window's pixmapSizeChanged signal to this
-    // object's changeMenuIconSize slot so we can change the icon size
-    // when the main window changes its icon size.
-    //
-    connect(toolbar->topLevelWidget(), SIGNAL(pixmapSizeChanged(bool)),
-            this, SLOT(changeMenuIconSize(bool)));
-
-    // Add a menu bar to the toolbar.
-    menu = new QMenuBar(toolbar, "AddPlotAction");
-    menu->setFrameStyle(QFrame::NoFrame);
-    QRect tipRectH(0,0,0,0);
-    tipRectH.setX(menu->contentsRect().x());
-    tipRectH.setY(menu->contentsRect().y());
-    QRect tipRectV(0,0,0,0);
-    tipRectV.setX(menu->contentsRect().x());
-    tipRectV.setY(menu->contentsRect().y());
-    for(int i = 0; i < pluginEntries.size(); ++i)
-    {
-        // Create the menu for the plot.
-        if(pluginEntries[i].varMenu == 0)
-        {
-            pluginEntries[i].varMenu = new QvisVariablePopupMenu(i, 0,
-                children[i]->menuText());
-            connect(pluginEntries[i].varMenu, SIGNAL(activated(int, const QString &)),
-                this, SLOT(addPlot(int, const QString &)));
-        }
-
-        // Add the menu to the action menu.
-        QPixmap pix(children[i]->iconSet().pixmap(
-            windowMgr->UsesLargeIcons() ? QIconSet::Large : QIconSet::Small,
-            QIconSet::Normal));
-        int id = menu->insertItem(pix, pluginEntries[i].varMenu, menu->count());
-        menu->setItemEnabled(id, false);
-
-        // Create the plot's tool tip string.
-        QString tip(tr("Add %1 plot").arg(children[i]->menuText()));
-
-        // Add a tooltip in the horizontal direction.
-        tipRectH.setWidth(pix.width());
-        tipRectH.setHeight(pix.height());
-        QToolTip::add(menu, tipRectH, tip);
-        tipRectH.setX(tipRectH.x() + pix.width() + 4);
-
-        // Add a tooltip in the vertical direction.
-        tipRectV.setWidth(pix.width());
-        tipRectV.setHeight(pix.height());
-        QToolTip::add(menu, tipRectV, tip);
-        tipRectV.setY(tipRectV.y() + pix.height() + 4);
-    }
-
-    menu->setMaximumWidth(maxPixmapWidth);
-
-#if 1
-    // This is a hack. I eventually need to put the toolbar orientation
-    // into the ViewerWindowManagerAttributes.
-
-    // Make the toolbar be vertical.
-    toolbar->setOrientation(Qt::Vertical);
-    if(toolbar->mainWindow())
-    {
-        toolbar->mainWindow()->moveToolBar(toolbar, QMainWindow::Left);
-    }
-#endif
+    for(int i = 0; i < children.size(); ++i)
+        toolbar->addAction(children[i]);
 }
 
 // ****************************************************************************
@@ -1257,48 +1176,10 @@ AddPlotAction::addPlot(int index, const QString &var)
 
     // Set the plot type and variable name into the args.
     args.SetPlotType(plotType);
-    args.SetVariable(var.latin1());
+    args.SetVariable(var.toStdString());
 
     // Execute the action.
     Activate();
-}
-
-// ****************************************************************************
-// Method: AddPlotAction::orientationChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the toolbar changes
-//   orientations. We use this information to set the maximum height and
-//   widths on the menu so it will stack vertically if we need it to do that.
-//
-// Arguments:
-//   o : The orientation of the toolbar.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Mar 20 12:52:51 PDT 2003
-//
-// Modifications:
-//   Brad Whitlock, Mon Aug 2 09:55:30 PDT 2004
-//   Prevent action in -nowin mode.
-//
-// ****************************************************************************
-
-void
-AddPlotAction::orientationChanged(Qt::Orientation o)
-{
-    if(!window->GetNoWinMode())
-    {
-        if(o == Horizontal)
-        {
-            menu->setMaximumWidth(1024);
-            menu->setMaximumHeight(maxPixmapHeight);
-        }
-        else
-        {
-            menu->setMaximumWidth(maxPixmapWidth);
-            menu->setMaximumHeight(1024);
-        }
-    }
 }
 
 // ****************************************************************************
@@ -1320,6 +1201,9 @@ AddPlotAction::orientationChanged(Qt::Orientation o)
 //   Brad Whitlock, Mon Aug 2 09:57:20 PDT 2004
 //   Prevented any action in -nowin mode.
 //
+//   Brad Whitlock, Thu May 22 14:16:17 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1327,12 +1211,15 @@ AddPlotAction::changeMenuIconSize(bool large)
 {
     if(!window->GetNoWinMode())
     {
+#if 1
+//#//warning Finish porting AddPlotAction::changeMenuIconSize
+#else
         if(large)
         {
             for(int i = 0; i < pluginEntries.size(); ++i)
             {
-                QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Large,
-                            QIconSet::Normal));
+                QPixmap pix(children[i]->icon().pixmap(Qt::Large,
+                            QIcon::Normal));
                 menu->changeItem(i, pix);
             }
         }
@@ -1340,11 +1227,12 @@ AddPlotAction::changeMenuIconSize(bool large)
         {
             for(int i = 0; i < pluginEntries.size(); ++i)
             {
-                QPixmap pix(children[i]->iconSet().pixmap(QIconSet::Small,
-                            QIconSet::Normal));
+                QPixmap pix(children[i]->icon().pixmap(Qt::Small,
+                            QIcon::Normal));
                 menu->changeItem(i, pix);
             }
         }
+#endif
     }
 }
 
@@ -1368,8 +1256,7 @@ AddPlotAction::changeMenuIconSize(bool large)
 //   
 // ****************************************************************************
 
-DrawPlotsAction::DrawPlotsAction(ViewerWindow *win) : ViewerAction(win,
-    "DrawPlotsAction")
+DrawPlotsAction::DrawPlotsAction(ViewerWindow *win) : ViewerAction(win)
 {
     SetAllText(tr("Draw plots"));
 }
@@ -1451,8 +1338,7 @@ DrawPlotsAction::Enabled() const
 //   
 // ****************************************************************************
 
-HideActivePlotsAction::HideActivePlotsAction(ViewerWindow *win) : ViewerAction(win,
-    "HideActivePlotsAction")
+HideActivePlotsAction::HideActivePlotsAction(ViewerWindow *win) : ViewerAction(win)
 {
     SetAllText(tr("Hide active plots"));
     // Think of an icon...
@@ -1534,7 +1420,7 @@ HideActivePlotsAction::Enabled() const
 // ****************************************************************************
 
 DeleteActivePlotsAction::DeleteActivePlotsAction(ViewerWindow *win) :
-    ViewerAction(win, "DeleteActivePlotsAction")
+    ViewerAction(win)
 {
     SetAllText(tr("Delete active plots"));
     // Think of an icon...
@@ -1629,8 +1515,7 @@ DeleteActivePlotsAction::Enabled() const
 //   
 // ****************************************************************************
 
-SetActivePlotsAction::SetActivePlotsAction(ViewerWindow *win) :
-    ViewerAction(win, "SetActivePlotsAction")
+SetActivePlotsAction::SetActivePlotsAction(ViewerWindow *win) : ViewerAction(win)
 {
     DisableVisual();
 }
@@ -1713,7 +1598,7 @@ SetActivePlotsAction::Execute()
 // ****************************************************************************
 
 ChangeActivePlotsVarAction::ChangeActivePlotsVarAction(ViewerWindow *win) : 
-   ViewerAction(win, "ChangeActivePlotsVarAction")
+   ViewerAction(win)
 {
     DisableVisual();
 }
@@ -1792,7 +1677,7 @@ ChangeActivePlotsVarAction::Execute()
 // ****************************************************************************
 
 SetPlotSILRestrictionAction::SetPlotSILRestrictionAction(ViewerWindow *win) : 
-   ViewerAction(win, "SetPlotSILRestrictionAction")
+   ViewerAction(win)
 {
     DisableVisual();
 }
@@ -1860,8 +1745,7 @@ SetPlotSILRestrictionAction::Execute()
 //   
 // ****************************************************************************
 
-SetPlotOptionsAction::SetPlotOptionsAction(ViewerWindow *win) : 
-   ViewerAction(win, "SetPlotOptionsAction")
+SetPlotOptionsAction::SetPlotOptionsAction(ViewerWindow *win) : ViewerAction(win)
 {
     DisableVisual();
 }
@@ -1923,7 +1807,7 @@ SetPlotOptionsAction::Execute()
 // ****************************************************************************
 
 SetPlotFrameRangeAction::SetPlotFrameRangeAction(ViewerWindow *win) : 
-   ViewerAction(win, "SetPlotFrameRangeAction")
+   ViewerAction(win)
 {
     DisableVisual();
 }
@@ -1994,7 +1878,7 @@ SetPlotFrameRangeAction::Execute()
 // ****************************************************************************
 
 DeletePlotKeyframeAction::DeletePlotKeyframeAction(ViewerWindow *win) : 
-   ViewerAction(win, "DeletePlotKeyframeAction")
+   ViewerAction(win)
 {
     DisableVisual();
 }
@@ -2061,7 +1945,7 @@ DeletePlotKeyframeAction::Execute()
 // ****************************************************************************
 
 MovePlotKeyframeAction::MovePlotKeyframeAction(ViewerWindow *win) : 
-   ViewerAction(win, "MovePlotKeyframeAction")
+   ViewerAction(win)
 {
     DisableVisual();
 }
@@ -2132,7 +2016,7 @@ MovePlotKeyframeAction::Execute()
 // ****************************************************************************
 
 SetPlotDatabaseStateAction::SetPlotDatabaseStateAction(ViewerWindow *win) : 
-   ViewerAction(win, "SetPlotDatabaseStateAction")
+   ViewerAction(win)
 {
     DisableVisual();
 }
@@ -2203,7 +2087,7 @@ SetPlotDatabaseStateAction::Execute()
 // ****************************************************************************
 
 DeletePlotDatabaseKeyframeAction::DeletePlotDatabaseKeyframeAction(
-   ViewerWindow *win) : ViewerAction(win, "DeletePlotDatabaseKeyframeAction")
+   ViewerWindow *win) : ViewerAction(win)
 {
     DisableVisual();
 }
@@ -2273,7 +2157,7 @@ DeletePlotDatabaseKeyframeAction::Execute()
 // ****************************************************************************
 
 MovePlotDatabaseKeyframeAction::MovePlotDatabaseKeyframeAction(
-   ViewerWindow *win) : ViewerAction(win, "MovePlotDatabaseKeyframeAction")
+   ViewerWindow *win) : ViewerAction(win)
 {
     DisableVisual();
 }
@@ -2348,8 +2232,7 @@ MovePlotDatabaseKeyframeAction::Execute()
 //   
 // ****************************************************************************
 
-CopyPlotAction::CopyPlotAction(ViewerWindow *win) : ViewerAction(win,
-    "CopyPlotAction")
+CopyPlotAction::CopyPlotAction(ViewerWindow *win) : ViewerAction(win)
 {
     SetAllText(tr("Copy active plots"));
     // Think of an icon...
@@ -2430,8 +2313,7 @@ CopyPlotAction::Enabled() const
 //   
 // ****************************************************************************
 
-SetPlotFollowsTimeAction::SetPlotFollowsTimeAction(ViewerWindow *win) : ViewerAction(win,
-    "SetPlotFollowsTimeAction")
+SetPlotFollowsTimeAction::SetPlotFollowsTimeAction(ViewerWindow *win) : ViewerAction(win)
 {
     SetAllText(tr("Disconnect from time slider"));
     // Think of an icon...

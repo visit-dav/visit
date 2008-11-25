@@ -39,7 +39,7 @@
 #ifndef QVIS_WINDOW_BASE_H
 #define QVIS_WINDOW_BASE_H
 #include <gui_exports.h>
-#include <qmainwindow.h>
+#include <QMainWindow>
 #include <GUIBase.h>
 #include <vectortypes.h>
 #include <vector>
@@ -80,6 +80,9 @@ class DataNode;
 //   Brad Whitlock, Wed Apr  9 10:32:12 PDT 2008
 //   Changed ctor args.
 //
+//   Brad Whitlock, Tue May 27 14:51:18 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
@@ -87,7 +90,7 @@ class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
     Q_OBJECT
 public:
     QvisWindowBase(const QString &captionString = QString::null,
-                   WFlags f = WType_TopLevel);
+                   Qt::WindowFlags f = Qt::Window);
     virtual ~QvisWindowBase();
 
     virtual void showMinimized();

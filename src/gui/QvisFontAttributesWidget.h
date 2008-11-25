@@ -37,7 +37,7 @@
 *****************************************************************************/
 #ifndef QVIS_FONT_ATTRIBUTES_WIDGET_H
 #define QVIS_FONT_ATTRIBUTES_WIDGET_H
-#include <qframe.h>
+#include <QFrame>
 #include <FontAttributes.h>
 
 class QCheckBox;
@@ -61,13 +61,16 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Wed Mar 26 14:56:16 PDT 2008
 //   Changed fontHeight to fontScale. Added disableOpacity.
 //
+//   Brad Whitlock, Thu Jun  5 16:05:23 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class QvisFontAttributesWidget : public QFrame
 {
     Q_OBJECT
 public:
-    QvisFontAttributesWidget(QWidget *parent, const char *name=0);
+    QvisFontAttributesWidget(QWidget *parent);
     virtual ~QvisFontAttributesWidget();
 
     void setFontAttributes(const FontAttributes &);

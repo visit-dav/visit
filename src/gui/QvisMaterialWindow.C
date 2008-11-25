@@ -41,16 +41,16 @@
 #include <MaterialAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcombobox.h>
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
 #include <QNarrowLineEdit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QSpinBox>
+#include <QWidget>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -132,64 +132,71 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
 //
+//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisMaterialWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 8,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout();
+    topLayout->addLayout(mainLayout);
 
-    QHBox *algBox = new QHBox(central);
-    algorithmLabel = new QLabel(tr("Algorithm:"), algBox, "algorithmLabel");
-    algBox->setSpacing(10);
+    QHBoxLayout *algLayout = new QHBoxLayout();
+    algorithmLabel = new QLabel(tr("Algorithm:"), central);
+    algLayout->setSpacing(10);
+    algLayout->addWidget(algorithmLabel);
 
-    algorithm = new QComboBox(false, algBox, "algorithm");
-    algorithm->insertItem(tr("Tetrahedral (obsolete)"));
-    algorithm->insertItem(tr("Zoo-based (default)"));
-    algorithm->insertItem(tr("Isovolume (special-purpose)"));
+    algorithm = new QComboBox(central);
+    algorithm->addItem(tr("Tetrahedral (obsolete)"));
+    algorithm->addItem(tr("Zoo-based (default)"));
+    algorithm->addItem(tr("Isovolume (special-purpose)"));
+    algLayout->addWidget(algorithm);
     connect(algorithm, SIGNAL(activated(int)),
             this, SLOT(algorithmChanged(int)));
-    mainLayout->addMultiCellWidget(algBox, 0,0, 0,1);
+    mainLayout->addLayout(algLayout, 0,0, 1,2);
 
-    smoothing = new QCheckBox(tr("Enable interface smoothing"), central, "smoothing");
+    smoothing = new QCheckBox(tr("Enable interface smoothing"), central);
     connect(smoothing, SIGNAL(toggled(bool)),
             this, SLOT(smoothingChanged(bool)));
     mainLayout->addWidget(smoothing, 1,0);
 
-    forceFullConnectivity = new QCheckBox(tr("Force full connectivity"), central, "forceFullConnectivity");
+    forceFullConnectivity = new QCheckBox(tr("Force full connectivity"), central);
     connect(forceFullConnectivity, SIGNAL(toggled(bool)),
             this, SLOT(forceFullConnectivityChanged(bool)));
     mainLayout->addWidget(forceFullConnectivity, 2,0);
 
-    forceMIR = new QCheckBox(tr("Force interface reconstruction"), central, "forceMIR");
+    forceMIR = new QCheckBox(tr("Force interface reconstruction"), central);
     connect(forceMIR, SIGNAL(toggled(bool)),
             this, SLOT(forceMIRChanged(bool)));
     mainLayout->addWidget(forceMIR, 3,0);
 
-    cleanZonesOnly = new QCheckBox(tr("Clean zones only"), central, "cleanZonesOnly");
+    cleanZonesOnly = new QCheckBox(tr("Clean zones only"), central);
     cleanZonesOnly->setEnabled(false);
     connect(cleanZonesOnly, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyChanged(bool)));
     mainLayout->addWidget(cleanZonesOnly, 4,0);
 
     simplifyHeavilyMixedZones = new QCheckBox(tr("Simplify heavily mixed zones"), 
-                 central, "simplifyHeavilyMixedZones");
+                                              central);
     connect(simplifyHeavilyMixedZones, SIGNAL(toggled(bool)),
             this, SLOT(simplifyHeavilyMixedZonesChanged(bool)));
     mainLayout->addWidget(simplifyHeavilyMixedZones, 5,0);
 
     maxMatsPerZoneLabel = new QLabel(tr("Maximum materials per zone"),
-                                     central, "maxMatsPerZoneLabel");
+                                     central);
     mainLayout->addWidget(maxMatsPerZoneLabel, 6, 0);
 
-    maxMatsPerZone = new QNarrowLineEdit(central, "maxMatsPerZone");
+    maxMatsPerZone = new QNarrowLineEdit(central);
     connect(maxMatsPerZone, SIGNAL(returnPressed()), this,
             SLOT(maxMatsPerZoneProcessText()));
     mainLayout->addWidget(maxMatsPerZone, 6, 1);
 
-    isoVolumeFractionLabel = new QLabel(tr("Volume Fraction for Isovolume"), central, "isoVolumeFractionLabel");
+    isoVolumeFractionLabel = new QLabel(tr("Volume Fraction for Isovolume"), 
+                                        central);
     mainLayout->addWidget(isoVolumeFractionLabel,7,0);
-    isoVolumeFraction = new QNarrowLineEdit(central, "isoVolumeFraction");
+    isoVolumeFraction = new QNarrowLineEdit(central);
     connect(isoVolumeFraction, SIGNAL(returnPressed()),
             this, SLOT(isoVolumeFractionProcessText()));
     mainLayout->addWidget(isoVolumeFraction, 7,1);
@@ -273,7 +280,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
                 isoVolumeFraction->setEnabled(false);
                 isoVolumeFractionLabel->setEnabled(false);
             }
-            algorithm->setCurrentItem(atts->GetAlgorithm());
+            algorithm->setCurrentIndex(atts->GetAlgorithm());
             break;
           case MaterialAttributes::ID_simplifyHeavilyMixedZones:
             simplifyHeavilyMixedZones->setChecked(
@@ -379,7 +386,7 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
     // Do maxMatsPerZone
     if(which_widget == MaterialAttributes::ID_maxMaterialsPerZone || doAll)
     {
-        temp = maxMatsPerZone->displayText().simplifyWhiteSpace();
+        temp = maxMatsPerZone->displayText().simplified();
         bool okay = !temp.isEmpty();
         if(okay)
         {
@@ -403,7 +410,7 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
     // Do isoVolumeFraction
     if(which_widget == MaterialAttributes::ID_isoVolumeFraction || doAll)
     {
-        temp = isoVolumeFraction->displayText().simplifyWhiteSpace();
+        temp = isoVolumeFraction->displayText().simplified();
         bool okay = !temp.isEmpty();
         if (okay)
         {

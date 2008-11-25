@@ -39,17 +39,17 @@
 #include <math.h>
 #include <stdio.h> // for sscanf
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qslider.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSlider>
 
 #include <QvisSliceWindow.h>
 #include <FileServerList.h>
@@ -75,9 +75,9 @@
 //   Brad Whitlock, Fri Apr 12 12:59:38 PDT 2002
 //   Made it inherit from QvisOperatorWindow.
 //
-//    Jeremy Meredith, Mon May  5 14:40:32 PDT 2003
-//    Added "sliderDragging" to keep track of when the user is dragging
-//    the slice-by-percent slider.
+//   Jeremy Meredith, Mon May  5 14:40:32 PDT 2003
+//   Added "sliderDragging" to keep track of when the user is dragging
+//   the slice-by-percent slider.
 //
 //   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
 //   Initialize defaultItem, attach fileServer.
@@ -91,7 +91,8 @@ QvisSliceWindow::QvisSliceWindow(const int type,
 {
     sliceAtts = subj;
     sliderDragging = false;
-
+    originTypeGroup = 0;
+    normalTypeGroup = 0;
     defaultItem = "default";
     fileServer->Attach(this);   
 }
@@ -154,23 +155,25 @@ QvisSliceWindow::~QvisSliceWindow()
 //   Brad Whitlock, Thu Apr 24 16:33:00 PDT 2008
 //   Added tr()'s
 //
+//   Cyrus Harrison, Tue Jul  8 14:48:38 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisSliceWindow::CreateWindowContents()
 {
     // Normal
-    QGroupBox *normalBox = new QGroupBox(central, "normalBox");
+    QGroupBox *normalBox = new QGroupBox(central);
     normalBox->setTitle(tr("Normal"));
     topLayout->addWidget(normalBox);
 
-    QGridLayout *normalLayout = new QGridLayout(normalBox, 4, 2);
+    QGridLayout *normalLayout = new QGridLayout(normalBox);
     normalLayout->setMargin(10);
     normalLayout->setSpacing(5);
-    normalLayout->addRowSpacing(0, 10);
 
-    normalTypeGroup = new QButtonGroup();
-    connect(normalTypeGroup, SIGNAL(clicked(int)),
+    normalTypeGroup = new QButtonGroup(normalBox);
+    connect(normalTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(normalTypeChanged(int)));
 
     //    Orthogonal
@@ -178,18 +181,21 @@ QvisSliceWindow::CreateWindowContents()
 
     QHBoxLayout *orthogonalLayout = new QHBoxLayout();
 
-    QRadioButton *xAxis = new QRadioButton(tr("X Axis"), normalBox, "xAxis");
-    QRadioButton *yAxis = new QRadioButton(tr("Y Axis"), normalBox, "yAxis");
-    QRadioButton *zAxis = new QRadioButton(tr("Z Axis"), normalBox, "zAxis");
-    normalTypeGroup->insert(xAxis);
-    normalTypeGroup->insert(yAxis);
-    normalTypeGroup->insert(zAxis);
+    QRadioButton *xAxis = new QRadioButton(tr("X Axis"), normalBox);
+    QRadioButton *yAxis = new QRadioButton(tr("Y Axis"), normalBox);
+    QRadioButton *zAxis = new QRadioButton(tr("Z Axis"), normalBox);
+    
+    normalTypeGroup->addButton(xAxis,0);
+    normalTypeGroup->addButton(yAxis,1);
+    normalTypeGroup->addButton(zAxis,2);
+    
     orthogonalLayout->addWidget(xAxis);
     orthogonalLayout->addWidget(yAxis);
     orthogonalLayout->addWidget(zAxis);
 
-    flipNormalToggle = new QCheckBox(tr("flip"), normalBox, "flipNormalToggle");
-    connect(flipNormalToggle, SIGNAL(toggled(bool)), this, SLOT(flipNormalToggled(bool)));
+    flipNormalToggle = new QCheckBox(tr("flip"), normalBox);
+    connect(flipNormalToggle, SIGNAL(toggled(bool)),
+            this, SLOT(flipNormalToggled(bool)));
     orthogonalLayout->addWidget(flipNormalToggle);
 
     normalLayout->addLayout(orthogonalLayout, 1,1);
@@ -199,12 +205,13 @@ QvisSliceWindow::CreateWindowContents()
 
     QHBoxLayout *arbitraryLayout = new QHBoxLayout();
 
-    QRadioButton *arbAxis = new QRadioButton(" ", normalBox, "arbAxis");
-    normalTypeGroup->insert(arbAxis);
+    QRadioButton *arbAxis = new QRadioButton(" ", normalBox);
+    normalTypeGroup->addButton(arbAxis,3);
     arbitraryLayout->addWidget(arbAxis);
 
-    normalLineEdit = new QLineEdit(normalBox, "normalLineEdit");
-    connect(normalLineEdit, SIGNAL(returnPressed()), this, SLOT(processNormalText()));
+    normalLineEdit = new QLineEdit(normalBox);
+    connect(normalLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processNormalText()));
     arbitraryLayout->addWidget(normalLineEdit);
 
     normalLayout->addLayout(arbitraryLayout, 2,1);
@@ -215,42 +222,44 @@ QvisSliceWindow::CreateWindowContents()
 
     QHBoxLayout *thetaPhiLayout = new QHBoxLayout();
 
-    QRadioButton *thetaPhiRadio = new QRadioButton(" ", normalBox, "thetaPhi");
-    normalTypeGroup->insert( thetaPhiRadio );
-    thetaPhiLayout->addWidget( thetaPhiRadio );
+    QRadioButton *thetaPhiRadio = new QRadioButton(" ", normalBox);
+    normalTypeGroup->addButton(thetaPhiRadio,4);
+    thetaPhiLayout->addWidget(thetaPhiRadio);
 
-    thetaPhiLineEdit = new QLineEdit( normalBox, "thetaPhiLineEdit");
-    connect( thetaPhiLineEdit, SIGNAL(returnPressed()), this, SLOT(processThetaPhiText()));
+    thetaPhiLineEdit = new QLineEdit(normalBox);
+    connect( thetaPhiLineEdit, SIGNAL(returnPressed()),
+             this, SLOT(processThetaPhiText()));
     thetaPhiLayout->addWidget( thetaPhiLineEdit );
 
     normalLayout->addLayout( thetaPhiLayout, 3, 1 );
 
     // Origin
-    originTypeGroup = new QButtonGroup();
-    connect(originTypeGroup, SIGNAL(clicked(int)),
-            this, SLOT(originTypeChanged(int)));
-
-    QGroupBox *originBox = new QGroupBox(central, "originBox");
+    
+    QGroupBox *originBox = new QGroupBox(central);
     originBox->setTitle(tr("Origin"));
     topLayout->addWidget(originBox);
+    
+    originTypeGroup = new QButtonGroup(originBox);
+    connect(originTypeGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(originTypeChanged(int)));
 
-    QGridLayout *originLayout = new QGridLayout(originBox, 8, 1);
-    originLayout->setMargin(10);
-    originLayout->addRowSpacing(0, 10);
+    
+    QGridLayout *originLayout = new QGridLayout(originBox);
 
-    QHBoxLayout *originTypeLayout = new QHBoxLayout(5);
-    originLayout->addMultiCellLayout(originTypeLayout, 1,1,  0,0);
+    QHBoxLayout *originTypeLayout = new QHBoxLayout();
+    originTypeLayout->setMargin(0);
+    originLayout->addLayout(originTypeLayout, 1,0,  1,1);
 
-    QRadioButton *otPoint     = new QRadioButton(tr("Point"),     originBox, "otPoint");
-    QRadioButton *otIntercept = new QRadioButton(tr("Intercept"), originBox, "otIntercept");
-    QRadioButton *otPercent   = new QRadioButton(tr("Percent"),   originBox, "otPercent");
-    QRadioButton *otZone      = new QRadioButton(tr("Zone"),      originBox, "otZone");
-    QRadioButton *otNode      = new QRadioButton(tr("Node"),      originBox, "otNode");
-    originTypeGroup->insert(otPoint);
-    originTypeGroup->insert(otIntercept);
-    originTypeGroup->insert(otPercent);
-    originTypeGroup->insert(otZone);
-    originTypeGroup->insert(otNode);
+    QRadioButton *otPoint     = new QRadioButton(tr("Point"),     originBox);
+    QRadioButton *otIntercept = new QRadioButton(tr("Intercept"), originBox);
+    QRadioButton *otPercent   = new QRadioButton(tr("Percent"),   originBox);
+    QRadioButton *otZone      = new QRadioButton(tr("Zone"),      originBox);
+    QRadioButton *otNode      = new QRadioButton(tr("Node"),      originBox);
+    originTypeGroup->addButton(otPoint,0);
+    originTypeGroup->addButton(otIntercept,1);
+    originTypeGroup->addButton(otPercent,2);
+    originTypeGroup->addButton(otZone,3);
+    originTypeGroup->addButton(otNode,4);
     originTypeLayout->addWidget(otPoint);
     originTypeLayout->addWidget(otIntercept);
     originTypeLayout->addWidget(otPercent);
@@ -259,11 +268,13 @@ QvisSliceWindow::CreateWindowContents()
 
 
     // -- origin (point)
-    originPointLayout = new QHBoxLayout(5);
+    originPointLayout = new QHBoxLayout();
+    originPointLayout->setMargin(0);
     originPointLabel = new QLabel(tr("Point"), originBox);
 
-    originPointLineEdit = new QLineEdit(originBox, "originPointLineEdit");
-    connect(originPointLineEdit, SIGNAL(returnPressed()), this, SLOT(processOriginPointText()));
+    originPointLineEdit = new QLineEdit(originBox);
+    connect(originPointLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOriginPointText()));
 
     originPointLayout->addWidget(originPointLabel);
     originPointLayout->addWidget(originPointLineEdit);
@@ -271,11 +282,13 @@ QvisSliceWindow::CreateWindowContents()
     originLayout->addLayout(originPointLayout, 2,0);
 
     // -- origin (intercept)
-    originInterceptLayout = new QHBoxLayout(5);
+    originInterceptLayout = new QHBoxLayout();
+    originInterceptLayout->setMargin(0);
     originInterceptLabel = new QLabel(tr("Intercept"), originBox);
 
-    originInterceptLineEdit = new QLineEdit(originBox, "originInterceptLineEdit");
-    connect(originInterceptLineEdit, SIGNAL(returnPressed()), this, SLOT(processOriginInterceptText()));
+    originInterceptLineEdit = new QLineEdit(originBox);
+    connect(originInterceptLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOriginInterceptText()));
 
     originInterceptLayout->addWidget(originInterceptLabel);
     originInterceptLayout->addWidget(originInterceptLineEdit);
@@ -283,14 +296,19 @@ QvisSliceWindow::CreateWindowContents()
     originLayout->addLayout(originInterceptLayout, 3,0);
 
     // -- origin (percent)
-    originPercentLayout = new QHBoxLayout(5);
+    originPercentLayout = new QHBoxLayout();
+    originPercentLayout->setMargin(0);
     originPercentLabel = new QLabel(tr("Percent"), originBox);
 
-    originPercentLineEdit = new QNarrowLineEdit(originBox, "originPercentLineEdit");
-    connect(originPercentLineEdit, SIGNAL(returnPressed()), this, SLOT(processOriginPercentText()));
+    originPercentLineEdit = new QNarrowLineEdit(originBox);
+    connect(originPercentLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOriginPercentText()));
 
-    originPercentSlider = new QSlider(0, 100, 10, 50, Qt::Horizontal,
-                                      originBox, "originPercentSlider");
+    originPercentSlider = new QSlider(Qt::Horizontal, originBox);
+    originPercentSlider->setRange(0,100);
+    originPercentSlider->setSingleStep(10);
+    originPercentSlider->setValue(50);
+
     connect(originPercentSlider, SIGNAL(valueChanged(int)),
             this, SLOT(originPercentSliderChanged(int)));
     connect(originPercentSlider, SIGNAL(sliderPressed()),
@@ -305,14 +323,16 @@ QvisSliceWindow::CreateWindowContents()
     originLayout->addLayout(originPercentLayout, 4,0);
 
     // -- origin (zone)
-    originZoneLayout = new QHBoxLayout(5);
+    originZoneLayout = new QHBoxLayout();
+    originZoneLayout->setMargin(0);
     originZoneLabel = new QLabel(tr("Zone"), originBox);
 
-    originZoneLineEdit = new QLineEdit(originBox, "originZoneLineEdit");
-    connect(originZoneLineEdit, SIGNAL(returnPressed()), this, SLOT(processOriginZoneText()));
+    originZoneLineEdit = new QLineEdit(originBox);
+    connect(originZoneLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOriginZoneText()));
 
     originZoneDomainLabel = new QLabel(tr("Domain"), originBox);
-    originZoneDomainLineEdit = new QLineEdit(originBox, "originZoneDomainLineEdit");
+    originZoneDomainLineEdit = new QLineEdit(originBox);
     connect(originZoneDomainLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processOriginZoneDomainText()));
 
@@ -324,14 +344,16 @@ QvisSliceWindow::CreateWindowContents()
     originLayout->addLayout(originZoneLayout, 5,0);
 
     // -- origin (node)
-    originNodeLayout = new QHBoxLayout(5);
+    originNodeLayout = new QHBoxLayout();
+    originNodeLayout->setMargin(0);
     originNodeLabel = new QLabel(tr("Node"), originBox);
 
-    originNodeLineEdit = new QLineEdit(originBox, "originNodeLineEdit");
-    connect(originNodeLineEdit, SIGNAL(returnPressed()), this, SLOT(processOriginNodeText()));
+    originNodeLineEdit = new QLineEdit(originBox);
+    connect(originNodeLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOriginNodeText()));
 
     originNodeDomainLabel = new QLabel(tr("Domain"), originBox);
-    originNodeDomainLineEdit = new QLineEdit(originBox, "originNodeDomainLineEdit");
+    originNodeDomainLineEdit = new QLineEdit(originBox);
     connect(originNodeDomainLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processOriginNodeDomainText()));
 
@@ -342,43 +364,46 @@ QvisSliceWindow::CreateWindowContents()
 
     originLayout->addLayout(originNodeLayout, 6,0);
 
-    QHBoxLayout *meshLayout = new QHBoxLayout(5);
+    // mesh name
+    QHBoxLayout *meshLayout = new QHBoxLayout();
     meshLayout->setMargin(5);
-    meshLabel = new QLabel(tr("Mesh"), originBox, "MeshLabel");
-    meshName = new QComboBox(true, originBox, "meshName");
+    meshLabel = new QLabel(tr("Mesh"), originBox);
+    meshName = new QComboBox(originBox);
+    meshName->setEditable(true);
     meshName->setAutoCompletion(true);
-    meshName->setInsertionPolicy(QComboBox::NoInsertion);
-    meshName->insertItem(defaultItem);
-    meshName->setCurrentItem(0);
+    meshName->setInsertPolicy(QComboBox::NoInsert);
+    meshName->addItem(defaultItem);
+    meshName->setCurrentIndex(0);
     meshName->setEditText(defaultItem);
-    connect(meshName, SIGNAL(activated(int)), this, SLOT(meshNameChanged()));
+    connect(meshName, SIGNAL(activated(int)),   
+            this, SLOT(meshNameChanged()));
     meshLayout->addWidget(meshLabel);
     meshLayout->addWidget(meshName);
     originLayout->addLayout(meshLayout, 7, 0);
 
     // Up Axis
-    QGroupBox *upAxisBox = new QGroupBox(central, "upAxisBox");
+    QGroupBox *upAxisBox = new QGroupBox(central);
     upAxisBox->setTitle(tr("Up Axis"));
     topLayout->addWidget(upAxisBox);
 
-    QVBoxLayout *upAxisLayoutTop = new QVBoxLayout(upAxisBox);
-    upAxisLayoutTop->setMargin(10);
-    upAxisLayoutTop->addSpacing(10);
-    QGridLayout *upAxisLayout = new QGridLayout(upAxisLayoutTop, 2, 2);
+    QGridLayout *upAxisLayout = new QGridLayout(upAxisBox);
     upAxisLayout->setSpacing(5);
 
-    projectToggle = new QCheckBox(tr("Project to 2D"), upAxisBox, "projectToggle");
-    connect(projectToggle, SIGNAL(toggled(bool)), this, SLOT(projectToggled(bool)));
-    upAxisLayout->addMultiCellWidget(projectToggle, 0, 0, 0, 1);
+    projectToggle = new QCheckBox(tr("Project to 2D"), upAxisBox);
+    connect(projectToggle, SIGNAL(toggled(bool)),
+            this, SLOT(projectToggled(bool)));
+    upAxisLayout->addWidget(projectToggle, 0, 0, 1, 2);
 
-    upAxisLineEdit = new QLineEdit(upAxisBox, "upAxisLineEdit");
-    connect(upAxisLineEdit, SIGNAL(returnPressed()), this, SLOT(processUpAxisText()));
+    upAxisLineEdit = new QLineEdit(upAxisBox);
+    connect(upAxisLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processUpAxisText()));
     upAxisLayout->addWidget(upAxisLineEdit, 1, 1);
-    upAxisLabel = new QLabel(upAxisLineEdit, tr("Direction"), upAxisBox, "Direction");
+    upAxisLabel = new QLabel(tr("Direction"), upAxisBox);
     upAxisLayout->addWidget(upAxisLabel, 1, 0);
 
-    interactiveToggle = new QCheckBox(tr("Interactive"), central, "interactiveToggle");
-    connect(interactiveToggle, SIGNAL(toggled(bool)), this, SLOT(interactiveToggled(bool)));
+    interactiveToggle = new QCheckBox(tr("Interactive"), central);
+    connect(interactiveToggle, SIGNAL(toggled(bool)),
+            this, SLOT(interactiveToggled(bool)));
     topLayout->addWidget(interactiveToggle);
 }
 
@@ -433,6 +458,12 @@ QvisSliceWindow::CreateWindowContents()
 //   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
 //   Added theta-phi method of editing the plane normal.
 //
+//   Cyrus Harrison, Tue Jul  8 14:48:38 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Wed Jul  9 13:48:07 PDT 2008
+//   Made it use ids.
+//
 //   Hank Childs, Thu Oct  9 11:13:19 PDT 2008
 //   Update test for what is "orthogonal" (theta-phi is not!).
 //
@@ -471,57 +502,54 @@ QvisSliceWindow::UpdateWindow(bool doAll)
         int ival;
         switch(i)
         {
-          case 0: // origin type
+          case SliceAttributes::ID_originType:
             originTypeGroup->blockSignals(true);
-            originTypeGroup->setButton(int(sliceAtts->GetOriginType()));
+            originTypeGroup->button(int(sliceAtts->GetOriginType()))->setChecked(true);
             originTypeGroup->blockSignals(false);
             break;
-          case 1: // origin point
+          case SliceAttributes::ID_originPoint:
             dptr = sliceAtts->GetOriginPoint();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            originPointLineEdit->setText(temp);
+            originPointLineEdit->setText(DoublesToQString(dptr,3));
             break;
-          case 2: // origin intercept
+          case SliceAttributes::ID_originIntercept:
             temp.setNum(sliceAtts->GetOriginIntercept());
             originInterceptLineEdit->setText(temp);
             break;
-          case 3: // origin percent
+          case SliceAttributes::ID_originPercent:
             temp.setNum(sliceAtts->GetOriginPercent());
             originPercentLineEdit->setText(temp);
-            ival = int(QMIN(QMAX(0,sliceAtts->GetOriginPercent()),100));
+            ival = int(qMin(qMax(0.0,sliceAtts->GetOriginPercent()),100.0));
             originPercentSlider->blockSignals(true);
             originPercentSlider->setValue(ival);
             originPercentSlider->blockSignals(false);
             break;
-          case 4: // origin zone
+          case SliceAttributes::ID_originZone:
             temp.sprintf("%d", sliceAtts->GetOriginZone());
             originZoneLineEdit->setText(temp);
             break;
-          case 5: // origin node
+          case SliceAttributes::ID_originNode:
             temp.sprintf("%d", sliceAtts->GetOriginNode());
             originNodeLineEdit->setText(temp);
             break;
-          case 6: // normal
+          case SliceAttributes::ID_normal:
             dptr = sliceAtts->GetNormal();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            normalLineEdit->setText(temp);
+            normalLineEdit->setText(DoublesToQString(dptr, 3));
             break;
-          case 7: // axisType
+          case SliceAttributes::ID_axisType:
             normalTypeGroup->blockSignals(true);
-            normalTypeGroup->setButton(int(sliceAtts->GetAxisType()));
+            normalTypeGroup->button(int(sliceAtts->GetAxisType()))->setChecked(true);
             normalTypeGroup->blockSignals(false);
 
             normalLineEdit->setEnabled(!orthogonal);
-	    thetaPhiLineEdit->setEnabled( sliceAtts->GetAxisType() == SliceAttributes::ThetaPhi );
+            thetaPhiLineEdit->setEnabled( sliceAtts->GetAxisType() == SliceAttributes::ThetaPhi );
             upAxisLineEdit->setEnabled(!orthogonal && sliceAtts->GetProject2d());
             upAxisLabel->setEnabled(!orthogonal && sliceAtts->GetProject2d());
             break;
-          case 8: // upAxis
+          case SliceAttributes::ID_upAxis:
             dptr = sliceAtts->GetUpAxis();
-            temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-            upAxisLineEdit->setText(temp);
+            upAxisLineEdit->setText(DoublesToQString(dptr, 3));
             break;
-          case 9: // project2d;
+          case SliceAttributes::ID_project2d:
             projectToggle->blockSignals(true);
             projectToggle->setChecked(sliceAtts->GetProject2d());
             projectToggle->blockSignals(false);
@@ -530,30 +558,30 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             upAxisLineEdit->setEnabled(!orthogonal && sliceAtts->GetProject2d());
             upAxisLabel->setEnabled(!orthogonal && sliceAtts->GetProject2d());
             break;
-          case 10: // interactive;
+          case SliceAttributes::ID_interactive:
             interactiveToggle->blockSignals(true);
             interactiveToggle->setChecked(sliceAtts->GetInteractive());
             interactiveToggle->blockSignals(false);
             break;
-          case 11: // flip
+          case SliceAttributes::ID_flip:
             flipNormalToggle->blockSignals(true);
             flipNormalToggle->setChecked(sliceAtts->GetFlip());
             flipNormalToggle->setEnabled(sliceAtts->GetProject2d());
             flipNormalToggle->blockSignals(false);
             break;
-          case 12: // origin zone domain
+          case SliceAttributes::ID_originZoneDomain:
             temp.sprintf("%d", sliceAtts->GetOriginZoneDomain());
             originZoneDomainLineEdit->setText(temp);
             break;
-          case 13: // origin node domain
+          case SliceAttributes::ID_originNodeDomain:
             temp.sprintf("%d", sliceAtts->GetOriginNodeDomain());
             originNodeDomainLineEdit->setText(temp);
             break;
-	case 15: //theta
-	case 16: //phi
-	    temp.sprintf( "%g %g", sliceAtts->GetTheta(), sliceAtts->GetPhi() );
-	    thetaPhiLineEdit->setText( temp );
-	    break;
+          case SliceAttributes::ID_theta:
+          case SliceAttributes::ID_phi:
+            temp.sprintf( "%g %g", sliceAtts->GetTheta(), sliceAtts->GetPhi());
+            thetaPhiLineEdit->setText(temp);
+            break;
         }
     } // end for
 
@@ -692,8 +720,14 @@ QvisSliceWindow::UpdateOriginArea()
 //   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
 //   Added theta-phi method of editing the plane normal.
 //
-//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
-//    Removed dependencies on vtkMath.
+//   Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//   Removed dependencies on vtkMath.
+//
+//   Cyrus Harrison, Tue Jul  8 14:48:38 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Wed Jul  9 13:56:57 PDT 2008
+//   Made it use ids and used helper methods.
 //
 // ****************************************************************************
 
@@ -704,312 +738,208 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
     double  vals[3];
     QString msg, temp;
 
-    // Do the origin type
-    if(which_widget == 0 || doAll)
-    {
-        // do nothing
-    }
-
     // Do the normal vector
-    if(which_widget == 1 || doAll)
+    if(which_widget == SliceAttributes::ID_normal || doAll)
     {
-        temp = normalLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if((okay = LineEditGetDoubles(normalLineEdit, vals, 3)) == true)
         {
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg",
-                           &vals[0], &vals[1], &vals[2]) == 3);
-            if(okay)
+            okay = (vals[0] != 0. || vals[1] != 0. || vals[2] != 0. );
+            if (okay)
             {
-                okay = (vals[0] != 0. || vals[1] != 0. || vals[2] != 0. );
-                if (okay)
-		{
-                    sliceAtts->SetNormal(vals);
+                sliceAtts->SetNormal(vals);
 
-		    if ( sliceAtts->GetAxisType() != SliceAttributes::ThetaPhi )
-		    {
-			double len = sqrt(vals[0]*vals[0] + vals[1]*vals[1] + vals[2]*vals[2]);
-			vals[0] /= len;
-			vals[1] /= len;
-			vals[2] /= len;
-			len = 1.0;
-			double theta = atan2( vals[1], vals[0] ) * 57.29577951308232;
-			double phi = acos( vals[2] / len ) * 57.29577951308232;
-			theta -= 90;
-			phi -= 90;
-			phi = - phi;
+                if (sliceAtts->GetAxisType() != SliceAttributes::ThetaPhi)
+                {
+                    double len = sqrt(vals[0]*vals[0] + vals[1]*vals[1] + vals[2]*vals[2]);
+                    vals[0] /= len;
+                    vals[1] /= len;
+                    vals[2] /= len;
+                    len = 1.0;
+                    double theta = atan2( vals[1], vals[0] ) * 57.29577951308232;
+                    double phi = acos( vals[2] / len ) * 57.29577951308232;
+                    theta -= 90;
+                    phi -= 90;
+                    phi = - phi;
 
-			theta = (fabs(theta) < 1e-5 ? 0 : theta);
-			phi = (fabs(phi) < 1e-5 ? 0 : phi);
-			sliceAtts->SetTheta( theta );
-			sliceAtts->SetPhi( phi );
-		    }
-		}
-	    }
-        }
-
-        if(!okay)
-        {
-            const double *d = sliceAtts->GetNormal();
-            QString num; num.sprintf("<%g %g %g>", d[0], d[1], d[2]);
-            msg = tr("The normal vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            sliceAtts->SetNormal(d);
-        }
-    }
-
-    // Do the UpAxis vector
-    if(which_widget == 2 || doAll)
-    {
-        temp = upAxisLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg",
-                           &vals[0], &vals[1], &vals[2]) == 3);
-            if(okay)
-            {
-                okay = (vals[0] != 0. || vals[1] != 0. || vals[2] != 0. );
-                if(okay)
-                    sliceAtts->SetUpAxis(vals);
+                    theta = (fabs(theta) < 1e-5 ? 0 : theta);
+                    phi = (fabs(phi) < 1e-5 ? 0 : phi);
+                    sliceAtts->SetTheta(theta);
+                    sliceAtts->SetPhi(phi);
+                }
             }
         }
 
         if(!okay)
         {
-            const double *d = sliceAtts->GetUpAxis();
-            QString num; num.sprintf("<%g %g %g>", d[0], d[1], d[2]);
-            msg = tr("The upAxis vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            sliceAtts->SetUpAxis(d);
+            ResettingError(tr("normal vector"),
+                DoublesToQString(sliceAtts->GetNormal(), 3));
+            sliceAtts->SetNormal(sliceAtts->GetNormal());
+        }
+    }
+
+    // Do the UpAxis vector
+    if(which_widget == SliceAttributes::ID_upAxis || doAll)
+    {
+        if((okay = LineEditGetDoubles(upAxisLineEdit, vals, 3)) == true)
+        {
+            okay = (vals[0] != 0. || vals[1] != 0. || vals[2] != 0. );
+            if (okay)
+                sliceAtts->SetUpAxis(vals);
+        }
+        if(!okay)
+        {
+            ResettingError(tr("upAxis vector"),
+                DoublesToQString(sliceAtts->GetUpAxis(), 3));
+            sliceAtts->SetUpAxis(sliceAtts->GetUpAxis());
         }
     }
 
     // Do the origin (point)
-    if(which_widget == 3 || doAll)
+    if(which_widget == SliceAttributes::ID_originPoint || doAll)
     {
-        temp = originPointLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if(LineEditGetDoubles(originPointLineEdit, vals, 3))
+            sliceAtts->SetOriginPoint(vals);
+        else
         {
-            okay = (sscanf(temp.latin1(), "%lg %lg %lg",
-                           &vals[0], &vals[1], &vals[2]) == 3);
-            if(okay)
-                sliceAtts->SetOriginPoint(vals);
-        }
-
-        if(!okay)
-        {
-            const double *d = sliceAtts->GetOriginPoint();
-            QString num; num.sprintf("<%g %g %g>", d[0], d[1], d[2]);
-            msg = tr("The origin point vector was invalid. "
-                     "Resetting to the last good value %1.").arg(num);
-            Message(msg);
-            sliceAtts->SetOriginPoint(d);
+            ResettingError(tr("origin point vector"),
+                DoublesToQString(sliceAtts->GetOriginPoint(), 3));
+            sliceAtts->SetOriginPoint(sliceAtts->GetOriginPoint());
         }
     }
 
     // Do the origin (intercept)
-    if(which_widget == 4 || doAll)
+    if(which_widget == SliceAttributes::ID_originIntercept || doAll)
     {
-        temp = originInterceptLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if(LineEditGetDouble(originInterceptLineEdit, vals[0]))
+            sliceAtts->SetOriginIntercept(vals[0]);
+        else
         {
-            double val;
-            okay = (sscanf(temp.latin1(), "%lg", &val) == 1);
-            if(okay)
-                sliceAtts->SetOriginIntercept(val);
-        }
-
-        if(!okay)
-        {
-            const double d = sliceAtts->GetOriginIntercept();
-            msg = tr("The origin intercept was invalid. "
-                     "Resetting to the last good value %1.").arg(d);
-            Message(msg);
-            sliceAtts->SetOriginIntercept(d);
+            ResettingError(tr("origin intercept"),
+                DoubleToQString(sliceAtts->GetOriginIntercept()));
+            sliceAtts->SetOriginIntercept(sliceAtts->GetOriginIntercept());
         }
     }
 
     
     // Do the origin (percent)
-    if(which_widget == 5 || doAll)
+    if(which_widget == SliceAttributes::ID_originPercent || doAll)
     {
-        temp = originPercentLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if(LineEditGetDouble(originPercentLineEdit, vals[0]))
+            sliceAtts->SetOriginPercent(vals[0]);
+        else
         {
-            double val;
-            okay = (sscanf(temp.latin1(), "%lg", &val) == 1);
-            if(okay)
-                sliceAtts->SetOriginPercent(val);
-        }
-
-        if(!okay)
-        {
-            const double d = sliceAtts->GetOriginPercent();
-            msg = tr("The origin percent was invalid. "
-                     "Resetting to the last good value %1.").arg(d);
-            Message(msg);
-            sliceAtts->SetOriginPercent(d);
+            ResettingError(tr("origin percent"),
+                DoubleToQString(sliceAtts->GetOriginPercent()));
+            sliceAtts->SetOriginPercent(sliceAtts->GetOriginPercent());
         }
     }
 
     // Do the origin (zone)
-    if(which_widget == 6 || doAll)
+    if(which_widget == SliceAttributes::ID_originZone || doAll)
     {
-        temp = originZoneLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(originZoneLineEdit, val))
+            sliceAtts->SetOriginZone(val);
+        else
         {
-            int val;
-            okay = (sscanf(temp.latin1(), "%d", &val) == 1);
-            if(okay)
-                sliceAtts->SetOriginZone(val);
-        }
-
-        if(!okay)
-        {
-            const int d = sliceAtts->GetOriginZone();
-            msg = tr("The origin zone was invalid. "
-                     "Resetting to the last good value %1.").arg(d);
-            Message(msg);
-            sliceAtts->SetOriginZone(d);
+            ResettingError(tr("origin zone"),
+                IntToQString(sliceAtts->GetOriginZone()));
+            sliceAtts->SetOriginZone(sliceAtts->GetOriginZone());
         }
     }
 
     // Do the origin (node)
-    if(which_widget == 7 || doAll)
+    if(which_widget == SliceAttributes::ID_originNode || doAll)
     {
-        temp = originNodeLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(originNodeLineEdit, val))
+            sliceAtts->SetOriginNode(val);
+        else
         {
-            int val;
-            okay = (sscanf(temp.latin1(), "%d", &val) == 1);
-            if(okay)
-                sliceAtts->SetOriginNode(val);
-        }
-
-        if(!okay)
-        {
-            const int d = sliceAtts->GetOriginNode();
-            msg = tr("The origin node was invalid. "
-                     "Resetting to the last good value %1.").arg(d);
-            Message(msg);
-            sliceAtts->SetOriginNode(d);
+            ResettingError(tr("origin node"),
+                IntToQString(sliceAtts->GetOriginNode()));
+            sliceAtts->SetOriginNode(sliceAtts->GetOriginNode());
         }
     }
 
     // Do the origin zone domain
-    if(which_widget == 8 || doAll)
+    if(which_widget == SliceAttributes::ID_originZoneDomain || doAll)
     {
-        temp = originZoneDomainLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(originZoneDomainLineEdit, val))
+            sliceAtts->SetOriginZoneDomain(val);
+        else
         {
-            int val;
-            okay = (sscanf(temp.latin1(), "%d", &val) == 1);
-            if(okay)
-                sliceAtts->SetOriginZoneDomain(val);
-        }
-
-        if(!okay)
-        {
-            const int d = sliceAtts->GetOriginZoneDomain();
-            msg = tr("The origin domain was invalid. "
-                     "Resetting to the last good value %1.").arg(d);
-            Message(msg);
-            sliceAtts->SetOriginZoneDomain(d);
+            ResettingError(tr("origin domain"),
+                IntToQString(sliceAtts->GetOriginZoneDomain()));
+            sliceAtts->SetOriginZoneDomain(sliceAtts->GetOriginZoneDomain());
         }
     }
 
     // Do the origin node domain
-    if(which_widget == 9 || doAll)
+    if(which_widget == SliceAttributes::ID_originNodeDomain || doAll)
     {
-        temp = originNodeDomainLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        if(LineEditGetInt(originNodeDomainLineEdit, val))
+            sliceAtts->SetOriginNodeDomain(val);
+        else
         {
-            int val;
-            okay = (sscanf(temp.latin1(), "%d", &val) == 1);
-            if(okay)
-                sliceAtts->SetOriginNodeDomain(val);
-        }
-
-        if(!okay)
-        {
-            const int d = sliceAtts->GetOriginNodeDomain();
-            msg = tr("The origin domain was invalid. "
-                     "Resetting to the last good value %1.").arg(d);
-            Message(msg);
-            sliceAtts->SetOriginNodeDomain(d);
+            ResettingError(tr("origin domain"),
+                IntToQString(sliceAtts->GetOriginNodeDomain()));
+            sliceAtts->SetOriginNodeDomain(sliceAtts->GetOriginNodeDomain());
         }
     }
+
+
     // Do the meshName 
-    if(which_widget == 10 || doAll)
+    if(which_widget == SliceAttributes::ID_meshName || doAll)
     {
         temp = meshName->currentText();
         okay = !temp.isEmpty();
         if(okay)
         {
-            sliceAtts->SetMeshName(temp.latin1());
+            sliceAtts->SetMeshName(temp.toStdString());
         }
 
         if(!okay)
         {
-            msg = tr("The value of meshName was invalid. " 
-                     "Resetting to the last good value of %1.").
-                  arg(sliceAtts->GetMeshName().c_str());
-            Message(msg);
+            ResettingError(tr("mesh name"), sliceAtts->GetMeshName().c_str());
             sliceAtts->SetMeshName(sliceAtts->GetMeshName());
         }
     }
 
     // Do theta/phi
-    if(which_widget == 11 || doAll)
+    if(which_widget == SliceAttributes::ID_theta || doAll)
     {
-        temp = thetaPhiLineEdit->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if(LineEditGetDoubles(thetaPhiLineEdit, vals, 2))
         {
-            okay = (sscanf(temp.latin1(), "%lg %lg", &vals[0], &vals[1]) == 2);
-            if(okay)
+            sliceAtts->SetTheta( vals[0] );
+            sliceAtts->SetPhi( vals[1] );
+            //Calculate the normal.
+            if ( sliceAtts->GetAxisType() == SliceAttributes::ThetaPhi )
             {
-		sliceAtts->SetTheta( vals[0] );
-		sliceAtts->SetPhi( vals[1] );
-		//Calculate the normal.
-		if ( sliceAtts->GetAxisType() == SliceAttributes::ThetaPhi )
-		{
-		    vals[0] -= 90;
-		    vals[1] -= 90;
-		    vals[0] *= 0.017453292519943295;
-		    vals[1] *= 0.017453292519943295;
-		    double n[3] = { cos(vals[0])*sin(vals[1]),
-				    sin(vals[0])*sin(vals[1]),
-				    cos(vals[1]) };
-		    static double eps = 1e-5;
-		    n[0] = (fabs(n[0]) < eps ? 0 : n[0]);
-		    n[1] = (fabs(n[1]) < eps ? 0 : n[1]);
-		    n[2] = (fabs(n[2]) < eps ? 0 : n[2]);
-		    sliceAtts->SetNormal( n );
-		}
+                vals[0] -= 90;
+                vals[1] -= 90;
+                vals[0] *= 0.017453292519943295;
+                vals[1] *= 0.017453292519943295;
+                double n[3] = { cos(vals[0])*sin(vals[1]),
+                                sin(vals[0])*sin(vals[1]),
+                                cos(vals[1]) };
+                static double eps = 1e-5;
+                n[0] = (fabs(n[0]) < eps ? 0 : n[0]);
+                n[1] = (fabs(n[1]) < eps ? 0 : n[1]);
+                n[2] = (fabs(n[2]) < eps ? 0 : n[2]);
+                sliceAtts->SetNormal( n );
             }
         }
-
-        if(!okay)
+        else
         {
-	    double theta = sliceAtts->GetTheta();
-	    double phi = sliceAtts->GetPhi();
+            double theta = sliceAtts->GetTheta();
+            double phi = sliceAtts->GetPhi();
             QString angles; angles.sprintf("<%g %g>", theta, phi);
-            msg = tr("The theta-phi angles were invalid. "
-                     "Resetting to the last good value %1.").arg(angles);
-            Message(msg);
-	    sliceAtts->SetTheta( theta );
-	    sliceAtts->SetPhi( phi );
+            ResettingError(tr("theta-phi angles"), angles);
+            sliceAtts->SetTheta(theta);
+            sliceAtts->SetPhi(phi);
         }
     }
 }
@@ -1057,7 +987,7 @@ QvisSliceWindow::originTypeChanged(int index)
 void
 QvisSliceWindow::processOriginPointText()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(SliceAttributes::ID_originPoint);
     Apply();
 }
 
@@ -1077,7 +1007,7 @@ QvisSliceWindow::processOriginPointText()
 void
 QvisSliceWindow::processOriginInterceptText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(SliceAttributes::ID_originIntercept);
     Apply();
 }
 
@@ -1097,7 +1027,7 @@ QvisSliceWindow::processOriginInterceptText()
 void
 QvisSliceWindow::processOriginPercentText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(SliceAttributes::ID_originPercent);
     Apply();
 }
 
@@ -1185,7 +1115,7 @@ QvisSliceWindow::originPercentSliderReleased()
 void
 QvisSliceWindow::processOriginZoneDomainText()
 {
-    GetCurrentValues(8);
+    GetCurrentValues(SliceAttributes::ID_originZoneDomain);
     Apply();
 }
 
@@ -1205,7 +1135,7 @@ QvisSliceWindow::processOriginZoneDomainText()
 void
 QvisSliceWindow::processOriginNodeDomainText()
 {
-    GetCurrentValues(9);
+    GetCurrentValues(SliceAttributes::ID_originNodeDomain);
     Apply();
 }
 
@@ -1225,7 +1155,7 @@ QvisSliceWindow::processOriginNodeDomainText()
 void
 QvisSliceWindow::processOriginZoneText()
 {
-    GetCurrentValues(6);
+    GetCurrentValues(SliceAttributes::ID_originZone);
     Apply();
 }
 
@@ -1245,7 +1175,7 @@ QvisSliceWindow::processOriginZoneText()
 void
 QvisSliceWindow::processOriginNodeText()
 {
-    GetCurrentValues(7);
+    GetCurrentValues(SliceAttributes::ID_originNode);
     Apply();
 }
 
@@ -1265,7 +1195,7 @@ QvisSliceWindow::processOriginNodeText()
 void
 QvisSliceWindow::processNormalText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(SliceAttributes::ID_normal);
     Apply();
 }
 
@@ -1285,7 +1215,7 @@ QvisSliceWindow::processNormalText()
 void
 QvisSliceWindow::processThetaPhiText()
 {
-    GetCurrentValues(11);
+    GetCurrentValues(SliceAttributes::ID_theta);
     Apply();
 }
 
@@ -1305,7 +1235,7 @@ QvisSliceWindow::processThetaPhiText()
 void
 QvisSliceWindow::processUpAxisText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(SliceAttributes::ID_upAxis);
     Apply();
 }
 
@@ -1410,6 +1340,9 @@ QvisSliceWindow::interactiveToggled(bool val)
 //   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
 //   Added theta-phi method of editing the plane normal.
 //
+//   Brad Whitlock, Wed Jul  9 14:03:54 PDT 2008
+//   Use helper methods.
+//
 // ****************************************************************************
 
 void
@@ -1457,13 +1390,9 @@ QvisSliceWindow::normalTypeChanged(int index)
 
     // Change the normal and upaxis here or it will not change if autoupdate is
     // on because of Apply's call to GetCurrentValues.
-    double *dptr = sliceAtts->GetNormal();
-    temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-    normalLineEdit->setText(temp);
-    dptr = sliceAtts->GetUpAxis();
-    temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
-    upAxisLineEdit->setText(temp);
-    temp.sprintf("%g %g", sliceAtts->GetTheta(), sliceAtts->GetPhi() );
+    normalLineEdit->setText(DoublesToQString(sliceAtts->GetNormal(), 3));
+    upAxisLineEdit->setText(DoublesToQString(sliceAtts->GetUpAxis(), 3));
+    temp.sprintf("%g %g", sliceAtts->GetTheta(), sliceAtts->GetPhi());
     thetaPhiLineEdit->setText( temp );
 
     Apply();
@@ -1483,6 +1412,10 @@ QvisSliceWindow::normalTypeChanged(int index)
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
+//
+//   Cyrus Harrison, Tue Jul  8 14:48:38 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -1502,7 +1435,7 @@ QvisSliceWindow::UpdateMeshNames()
             stringVector meshNames = md->GetAllMeshNames();
             for (int i = 0; i < meshNames.size(); i++)
             {
-                meshName->insertItem(QString(meshNames[i].c_str()));
+                meshName->addItem(QString(meshNames[i].c_str()));
             }
         }
         if (meshName->count() != 0)
@@ -1510,21 +1443,20 @@ QvisSliceWindow::UpdateMeshNames()
             QString mn(sliceAtts->GetMeshName().c_str());
             if (mn == defaultItem)
             {
-                meshName->setCurrentItem (0);
+                meshName->setCurrentIndex(0);
             }
             else
             {
-                QListBox *lb = meshName->listBox();
-                int idx = lb->index(lb->findItem(mn));
+                int idx = meshName->findText(mn);
                 idx = (idx == -1 ? 0 : idx);
-                meshName->setCurrentItem (idx);
+                meshName->setCurrentIndex(idx);
             }
         }
     }
     if (meshName->count() == 0)
     {
-        meshName->insertItem(defaultItem);
-        meshName->setCurrentItem(0);
+        meshName->addItem(defaultItem);
+        meshName->setCurrentIndex(0);
         meshName->setEnabled(false);
         meshLabel->setEnabled(false);
     }
@@ -1557,6 +1489,6 @@ QvisSliceWindow::UpdateMeshNames()
 void
 QvisSliceWindow::meshNameChanged()
 {
-    GetCurrentValues(10);
+    GetCurrentValues(SliceAttributes::ID_meshName);
     Apply();
 }

@@ -38,6 +38,7 @@
 
 #ifndef GENERATE_PYTHON_H
 #define GENERATE_PYTHON_H
+#include <QTextStream>
 
 #include <vector>
 #include <algorithm>
@@ -45,7 +46,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include "Field.h"
-#include <qregexp.h>
+#include <QRegExp>
 
 using std::vector;
 
@@ -85,7 +86,7 @@ inline char toupper(char c)
 //    Made enumerated types be real enums.
 //
 //    Jeremy Meredith, Fri Jul 12 16:28:40 PDT 2002
-//    Added my own toupper() since some implementations don't have one.
+//    Added my own t.toUpper() since some implementations don't have one.
 //
 //    Jeremy Meredith, Tue Aug 27 14:32:50 PDT 2002
 //    Added mfiles, dbtype, and libs.  Allowed NULL atts.
@@ -198,29 +199,29 @@ class PythonGeneratorField : public virtual Field
         return tmp;
     }
 
-    virtual void WriteIncludedHeaders(ostream &c)
+    virtual void WriteIncludedHeaders(QTextStream &c)
     {
         // Write the list of include files that the object needs.
     }
 
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // NOT IMPLEMENTED!!!" << endl;
-        c << "    // name=" << name << ", type=" << type << endl;
+        c << "    // NOT IMPLEMENTED!!!" << Endl;
+        c << "    // name=" << name << ", type=" << type << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // NOT IMPLEMENTED!!!" << endl;
-        c << "    // name=" << name << ", type=" << type << endl;
-        c << "    PyObject *retval = NULL;" << endl;
+        c << "    // NOT IMPLEMENTED!!!" << Endl;
+        c << "    // name=" << name << ", type=" << type << Endl;
+        c << "    PyObject *retval = NULL;" << Endl;
     }
 
     // Whether a Set method should be created. Most objects will allow the set 
     // method to be created but att and attVector do not allow it for all types.
     virtual bool ProvidesSetMethod() const { return true; }
 
-    virtual void WriteAdditionalMethods(ostream &c, const QString &className)
+    virtual void WriteAdditionalMethods(QTextStream &c, const QString &className)
     {
         // Do nothing.
     }
@@ -231,63 +232,63 @@ class PythonGeneratorField : public virtual Field
         return ret;
     }
 
-    virtual void WriteSetMethod(ostream &c, const QString &className)
+    virtual void WriteSetMethod(QTextStream &c, const QString &className)
     {
-        c << "/*static*/ PyObject *" << endl;
-        c << className << "_" << MethodNameSet() << "(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
-        c << endl;
+        c << "/*static*/ PyObject *" << Endl;
+        c << className << "_" << MethodNameSet() << "(PyObject *self, PyObject *args)" << Endl;
+        c << "{" << Endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << Endl;
         WriteSetMethodBody(c, className);
-        c << endl;
-        c << "    Py_INCREF(Py_None);" << endl;
-        c << "    return Py_None;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << Endl;
+        c << "    Py_INCREF(Py_None);" << Endl;
+        c << "    return Py_None;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
     }
 
-    virtual void WriteGetMethod(ostream &c, const QString &className)
+    virtual void WriteGetMethod(QTextStream &c, const QString &className)
     {
-        c << "/*static*/ PyObject *" << endl;
-        c << className << "_" << MethodNameGet() << "(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        c << "/*static*/ PyObject *" << Endl;
+        c << className << "_" << MethodNameGet() << "(PyObject *self, PyObject *args)" << Endl;
+        c << "{" << Endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
         WriteGetMethodBody(c, className);
-        c << "    return retval;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "    return retval;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    //" << name << endl;
+        c << "    //" << name << Endl;
     }
 
-    virtual void WritePyObjectMethodTable(ostream &c, const QString &className)
+    virtual void WritePyObjectMethodTable(QTextStream &c, const QString &className)
     {
         // Do not add any methods if the field is internal.
         if(internal)
             return;
 
         if(ProvidesSetMethod())
-            c << "    {\"" << MethodNameSet() << "\", " << className << "_" << MethodNameSet() << ", METH_VARARGS}," << endl;
+            c << "    {\"" << MethodNameSet() << "\", " << className << "_" << MethodNameSet() << ", METH_VARARGS}," << Endl;
 
-        c << "    {\"" << MethodNameGet() << "\", " << className << "_" << MethodNameGet() << ", METH_VARARGS}," << endl;
+        c << "    {\"" << MethodNameGet() << "\", " << className << "_" << MethodNameGet() << ", METH_VARARGS}," << Endl;
 
         // Write any additional methods that may go along with this field.
         std::vector<QString> additionalMethods(AdditionalMethodNames(className));
         for(size_t i = 0; i < additionalMethods.size(); i += 2)
-            c << "    {\"" << additionalMethods[i] << "\", " << additionalMethods[i+1] << ", METH_VARARGS}," << endl;
+            c << "    {\"" << additionalMethods[i] << "\", " << additionalMethods[i+1] << ", METH_VARARGS}," << Endl;
     }
 
-    virtual void WriteGetAttr(ostream &c, const QString &className)
+    virtual void WriteGetAttr(QTextStream &c, const QString &className)
     {
         // Do not add any methods if the field is internal.
         if(internal)
             return;
 
-        c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
-        c << "        return " << className << "_" << MethodNameGet() << "(self, NULL);" << endl;
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;
+        c << "        return " << className << "_" << MethodNameGet() << "(self, NULL);" << Endl;
     }
 
     virtual bool HasSetAttr()
@@ -295,7 +296,7 @@ class PythonGeneratorField : public virtual Field
         return true;
     }
 
-    virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
+    virtual void WriteSetAttr(QTextStream &c, const QString &className, bool first)
     {
         if(internal)
             return;
@@ -303,11 +304,11 @@ class PythonGeneratorField : public virtual Field
         if(ProvidesSetMethod())
         {
             if(first)
-                c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
+                c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;
             else
-                c << "    else if(strcmp(name, \"" << name << "\") == 0)" << endl;
+                c << "    else if(strcmp(name, \"" << name << "\") == 0)" << Endl;
 
-            c << "        obj = "<<className<<"_"<<MethodNameSet()<<"(self, tuple);" << endl;
+            c << "        obj = "<<className<<"_"<<MethodNameSet()<<"(self, tuple);" << Endl;
         }
     }
 };
@@ -320,38 +321,38 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
   public:
     AttsGeneratorInt(const QString &n, const QString &l)
         : Field("int",n,l), Int(n,l), PythonGeneratorField("int",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    int ival;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         if(accessType == AccessPublic)
-            c << "    obj->data->" << name << " = (" << type << ")ival;" << endl;
+            c << "    obj->data->" << name << " = (" << type << ")ival;" << Endl;
         else
-            c << "    obj->data->" << MethodNameSet() << "((" << type << ")ival);" << endl;
+            c << "    obj->data->" << MethodNameSet() << "((" << type << ")ival);" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
         if(accessType == AccessPublic)
             c << name;
         else
             c << MethodNameGet()<<"()";
-        c << "));" << endl;
+        c << "));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ");" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ");" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -364,14 +365,14 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
   public:
     AttsGeneratorIntArray(const QString &s, const QString &n, const QString &l)
         : Field("intArray",n,l), IntArray(s,n,l), PythonGeneratorField("intArray",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    int *ivals = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
+        c << ";" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"";
         int i;
         for(i = 0; i < length; ++i)
@@ -383,78 +384,78 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
             if(i < length - 1)
                 c << ", ";
         }
-        c << "))" << endl;
-        c << "    {" << endl;
-        c << "        PyObject     *tuple;" << endl;
-        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "            return NULL;" << endl;
-        c << endl;
-        c << "        if(PyTuple_Check(tuple))" << endl;
-        c << "        {" << endl;
-        c << "            if(PyTuple_Size(tuple) != " << length << ")" << endl;
-        c << "                return NULL;" << endl;
-        c << endl;
-        c << "            PyErr_Clear();" << endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "            {" << endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "                if(PyFloat_Check(item))" << endl;
-        c << "                    ivals[i] = int(PyFloat_AS_DOUBLE(item));" << endl;
-        c << "                else if(PyInt_Check(item))" << endl;
-        c << "                    ivals[i] = int(PyInt_AS_LONG(item));" << endl;
-        c << "                else if(PyLong_Check(item))" << endl;
-        c << "                    ivals[i] = int(PyLong_AsDouble(item));" << endl;
-        c << "                else" << endl;
-        c << "                    ivals[i] = 0;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        else" << endl;
-        c << "            return NULL;" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "    // Mark the " << name << " in the object as modified." << endl;
+        c << "))" << Endl;
+        c << "    {" << Endl;
+        c << "        PyObject     *tuple;" << Endl;
+        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "            return NULL;" << Endl;
+        c << Endl;
+        c << "        if(PyTuple_Check(tuple))" << Endl;
+        c << "        {" << Endl;
+        c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
+        c << "                return NULL;" << Endl;
+        c << Endl;
+        c << "            PyErr_Clear();" << Endl;
+        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "            {" << Endl;
+        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "                if(PyFloat_Check(item))" << Endl;
+        c << "                    ivals[i] = int(PyFloat_AS_DOUBLE(item));" << Endl;
+        c << "                else if(PyInt_Check(item))" << Endl;
+        c << "                    ivals[i] = int(PyInt_AS_LONG(item));" << Endl;
+        c << "                else if(PyLong_Check(item))" << Endl;
+        c << "                    ivals[i] = int(PyLong_AsDouble(item));" << Endl;
+        c << "                else" << Endl;
+        c << "                    ivals[i] = 0;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        else" << Endl;
+        c << "            return NULL;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Mark the " << name << " in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << endl;
+            c << "    obj->data->SelectAll();" << Endl;
         else
-            c << "    obj->data->Select" << Name << "();" << endl;
+            c << "    obj->data->Select" << Name << "();" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    PyObject *retval = PyTuple_New(" << length << ");" << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << length << ");" << Endl;
         c << "    const int *" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << ";" << endl;
+            c << name << ";" << Endl;
         else
-            c << MethodNameGet() << "();" << endl;
-        c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
+            c << MethodNameGet() << "();" << Endl;
+        c << "    for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    {   const int *" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%d\", " << name << "[i]);" << endl;
-        c << "            str += tmpStr;" << endl;
-        c << "            if(i < " << length - 1 << ")" << endl;
-        c << "            {" << endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << endl;
-        c << "                str += tmpStr;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "    }" << endl;
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"%d\", " << name << "[i]);" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << length - 1 << ")" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 
 };
@@ -468,95 +469,95 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
   public:
     AttsGeneratorIntVector(const QString &n, const QString &l)
         : Field("intVector",n,l), IntVector(n,l), PythonGeneratorField("intVector",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    intVector  &vec = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "    PyObject   *tuple;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    if(PyTuple_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(PyTuple_Size(tuple));" << endl;
-        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "            if(PyFloat_Check(item))" << endl;
-        c << "                vec[i] = int(PyFloat_AS_DOUBLE(item));" << endl;
-        c << "            else if(PyInt_Check(item))" << endl;
-        c << "                vec[i] = int(PyInt_AS_LONG(item));" << endl;
-        c << "            else if(PyLong_Check(item))" << endl;
-        c << "                vec[i] = int(PyLong_AsLong(item));" << endl;
-        c << "            else" << endl;
-        c << "                vec[i] = 0;" << endl;
-        c << "        }" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyFloat_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        vec[0] = int(PyFloat_AS_DOUBLE(tuple));" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyInt_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        vec[0] = int(PyInt_AS_LONG(tuple));" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyLong_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        vec[0] = int(PyLong_AsLong(tuple));" << endl;
-        c << "    }" << endl;
-        c << "    else" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Mark the "<<name<<" in the object as modified." << endl;
+        c << ";" << Endl;
+        c << "    PyObject   *tuple;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    if(PyTuple_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
+        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "            if(PyFloat_Check(item))" << Endl;
+        c << "                vec[i] = int(PyFloat_AS_DOUBLE(item));" << Endl;
+        c << "            else if(PyInt_Check(item))" << Endl;
+        c << "                vec[i] = int(PyInt_AS_LONG(item));" << Endl;
+        c << "            else if(PyLong_Check(item))" << Endl;
+        c << "                vec[i] = int(PyLong_AsLong(item));" << Endl;
+        c << "            else" << Endl;
+        c << "                vec[i] = 0;" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyFloat_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = int(PyFloat_AS_DOUBLE(tuple));" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyInt_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = int(PyInt_AS_LONG(tuple));" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyLong_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = int(PyLong_AsLong(tuple));" << Endl;
+        c << "    }" << Endl;
+        c << "    else" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << endl;
+            c << "    obj->data->SelectAll();" << Endl;
         else
-            c << "    obj->data->Select"<<Name<<"();" << endl;
+            c << "    obj->data->Select"<<Name<<"();" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
         c << "    const intVector &" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << ";" << endl;
+            c << name << ";" << Endl;
         else
-            c << MethodNameGet() << "();" << endl;
-        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
-        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << endl;
-        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
+            c << MethodNameGet() << "();" << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << Endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    {   const intVector &" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%d\", " << name << "[i]);" << endl;
-        c << "            str += tmpStr;" << endl;
-        c << "            if(i < " << name << ".size() - 1)" << endl;
-        c << "            {" << endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << endl;
-        c << "                str += tmpStr;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "    }" << endl;
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"%d\", " << name << "[i]);" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << name << ".size() - 1)" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -569,43 +570,43 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
   public:
     AttsGeneratorBool(const QString &n, const QString &l)
         : Field("bool",n,l), Bool(n,l), PythonGeneratorField("bool",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    int ival;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
             c << name << " = ";
         else
             c << MethodNameSet();
-        c << "(ival != 0);" << endl;
+        c << "(ival != 0);" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyInt_FromLong(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet()<<"()";
-        c << "?1L:0L);" << endl;
+        c << "?1L:0L);" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    if(atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ")" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 1\\n\", prefix);" << endl;
-        c << "    else" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 0\\n\", prefix);" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ")" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 1\\n\", prefix);" << Endl;
+        c << "    else" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 0\\n\", prefix);" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -618,39 +619,39 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
   public:
     AttsGeneratorFloat(const QString &n, const QString &l)
         : Field("float",n,l), Float(n,l), PythonGeneratorField("float",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    float fval;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"f\", &fval))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    float fval;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"f\", &fval))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = fval;" << endl;
+            c << name << " = fval;" << Endl;
         else
-            c << MethodNameSet() << "(fval);" << endl;
+            c << MethodNameSet() << "(fval);" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyFloat_FromDouble(double(obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << ";" << endl;
+            c << name << ";" << Endl;
         else
             c <<MethodNameGet()<<"()";
-        c << "));" << endl;
+        c << "));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ");" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ");" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -663,14 +664,14 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
   public:
     AttsGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
         : Field("floatArray",n,l), FloatArray(s,n,l), PythonGeneratorField("floatArray",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    float *fvals = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
+        c << ";" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"";
         int i;
         for(i = 0; i < length; ++i)
@@ -682,78 +683,78 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
             if(i < length - 1)
                 c << ", ";
         }
-        c << "))" << endl;
-        c << "    {" << endl;
-        c << "        PyObject     *tuple;" << endl;
-        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "            return NULL;" << endl;
-        c << endl;
-        c << "        if(PyTuple_Check(tuple))" << endl;
-        c << "        {" << endl;
-        c << "            if(PyTuple_Size(tuple) != " << length << ")" << endl;
-        c << "                return NULL;" << endl;
-        c << endl;
-        c << "            PyErr_Clear();" << endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "            {" << endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "                if(PyFloat_Check(item))" << endl;
-        c << "                    fvals[i] = float(PyFloat_AS_DOUBLE(item));" << endl;
-        c << "                else if(PyInt_Check(item))" << endl;
-        c << "                    fvals[i] = float(PyInt_AS_LONG(item));" << endl;
-        c << "                else if(PyLong_Check(item))" << endl;
-        c << "                    fvals[i] = float(PyLong_AsDouble(item));" << endl;
-        c << "                else" << endl;
-        c << "                    fvals[i] = 0.;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        else" << endl;
-        c << "            return NULL;" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "    // Mark the " << name << " in the object as modified." << endl;
+        c << "))" << Endl;
+        c << "    {" << Endl;
+        c << "        PyObject     *tuple;" << Endl;
+        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "            return NULL;" << Endl;
+        c << Endl;
+        c << "        if(PyTuple_Check(tuple))" << Endl;
+        c << "        {" << Endl;
+        c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
+        c << "                return NULL;" << Endl;
+        c << Endl;
+        c << "            PyErr_Clear();" << Endl;
+        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "            {" << Endl;
+        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "                if(PyFloat_Check(item))" << Endl;
+        c << "                    fvals[i] = float(PyFloat_AS_DOUBLE(item));" << Endl;
+        c << "                else if(PyInt_Check(item))" << Endl;
+        c << "                    fvals[i] = float(PyInt_AS_LONG(item));" << Endl;
+        c << "                else if(PyLong_Check(item))" << Endl;
+        c << "                    fvals[i] = float(PyLong_AsDouble(item));" << Endl;
+        c << "                else" << Endl;
+        c << "                    fvals[i] = 0.;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        else" << Endl;
+        c << "            return NULL;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Mark the " << name << " in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << endl;
+            c << "    obj->data->SelectAll();" << Endl;
         else
-            c << "    obj->data->Select" << Name << "();" << endl;
+            c << "    obj->data->Select" << Name << "();" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    PyObject *retval = PyTuple_New(" << length << ");" << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << length << ");" << Endl;
         c << "    const float *" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << ";" << endl;
+            c << name << ";" << Endl;
         else
-            c << MethodNameGet() << "();" << endl;
-        c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(" << name << "[i])));" << endl;
+            c << MethodNameGet() << "();" << Endl;
+        c << "    for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(" << name << "[i])));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    {   const float *" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << endl;
-        c << "            str += tmpStr;" << endl;
-        c << "            if(i < " << length - 1 << ")" << endl;
-        c << "            {" << endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << endl;
-        c << "                str += tmpStr;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "    }" << endl;
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << length - 1 << ")" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -766,39 +767,39 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
   public:
     AttsGeneratorDouble(const QString &n, const QString &l)
         : Field("double",n,l), Double(n,l), PythonGeneratorField("double",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    double dval;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"d\", &dval))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    double dval;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"d\", &dval))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = dval;" << endl;
+            c << name << " = dval;" << Endl;
         else
-            c << MethodNameSet() << "(dval);" << endl;
+            c << MethodNameSet() << "(dval);" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyFloat_FromDouble(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c << ");" << endl;
+        c << ");" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ");" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ");" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -811,14 +812,14 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
   public:
     AttsGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
         : Field("doubleArray",n,l), DoubleArray(s,n,l), PythonGeneratorField("doubleArray",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    double *dvals = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
+        c << ";" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"";
         int i;
         for(i = 0; i < length; ++i)
@@ -830,79 +831,79 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
             if(i < length - 1)
                 c << ", ";
         }
-        c << "))" << endl;
-        c << "    {" << endl;
-        c << "        PyObject     *tuple;" << endl;
-        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "            return NULL;" << endl;
-        c << endl;
-        c << "        if(PyTuple_Check(tuple))" << endl;
-        c << "        {" << endl;
-        c << "            if(PyTuple_Size(tuple) != " << length << ")" << endl;
-        c << "                return NULL;" << endl;
-        c << endl;
-        c << "            PyErr_Clear();" << endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "            {" << endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "                if(PyFloat_Check(item))" << endl;
-        c << "                    dvals[i] = PyFloat_AS_DOUBLE(item);" << endl;
-        c << "                else if(PyInt_Check(item))" << endl;
-        c << "                    dvals[i] = double(PyInt_AS_LONG(item));" << endl;
-        c << "                else if(PyLong_Check(item))" << endl;
-        c << "                    dvals[i] = PyLong_AsDouble(item);" << endl;
-        c << "                else" << endl;
-        c << "                    dvals[i] = 0.;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        else" << endl;
-        c << "            return NULL;" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "    // Mark the " << name << " in the object as modified." << endl;
+        c << "))" << Endl;
+        c << "    {" << Endl;
+        c << "        PyObject     *tuple;" << Endl;
+        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "            return NULL;" << Endl;
+        c << Endl;
+        c << "        if(PyTuple_Check(tuple))" << Endl;
+        c << "        {" << Endl;
+        c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
+        c << "                return NULL;" << Endl;
+        c << Endl;
+        c << "            PyErr_Clear();" << Endl;
+        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "            {" << Endl;
+        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "                if(PyFloat_Check(item))" << Endl;
+        c << "                    dvals[i] = PyFloat_AS_DOUBLE(item);" << Endl;
+        c << "                else if(PyInt_Check(item))" << Endl;
+        c << "                    dvals[i] = double(PyInt_AS_LONG(item));" << Endl;
+        c << "                else if(PyLong_Check(item))" << Endl;
+        c << "                    dvals[i] = PyLong_AsDouble(item);" << Endl;
+        c << "                else" << Endl;
+        c << "                    dvals[i] = 0.;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        else" << Endl;
+        c << "            return NULL;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Mark the " << name << " in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << endl;
+            c << "    obj->data->SelectAll();" << Endl;
         else
-            c << "    obj->data->Select" << Name << "();" << endl;
+            c << "    obj->data->Select" << Name << "();" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    PyObject *retval = PyTuple_New(" << length << ");" << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << length << ");" << Endl;
         c << "    const double *" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c << ";" << endl;
-        c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << endl;
+        c << ";" << Endl;
+        c << "    for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    {   const double *" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << endl;
-        c << "            str += tmpStr;" << endl;
-        c << "            if(i < " << length - 1 << ")" << endl;
-        c << "            {" << endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << endl;
-        c << "                str += tmpStr;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "    }" << endl;
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << length - 1 << ")" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -915,96 +916,96 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
   public:
     AttsGeneratorDoubleVector(const QString &n, const QString &l)
         : Field("doubleVector",n,l), DoubleVector(n,l), PythonGeneratorField("doubleVector",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    doubleVector  &vec = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "    PyObject     *tuple;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    if(PyTuple_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(PyTuple_Size(tuple));" << endl;
-        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "            if(PyFloat_Check(item))" << endl;
-        c << "                vec[i] = PyFloat_AS_DOUBLE(item);" << endl;
-        c << "            else if(PyInt_Check(item))" << endl;
-        c << "                vec[i] = double(PyInt_AS_LONG(item));" << endl;
-        c << "            else if(PyLong_Check(item))" << endl;
-        c << "                vec[i] = PyLong_AsDouble(item);" << endl;
-        c << "            else" << endl;
-        c << "                vec[i] = 0.;" << endl;
-        c << "        }" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyFloat_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        vec[0] = PyFloat_AS_DOUBLE(tuple);" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyInt_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        vec[0] = double(PyInt_AS_LONG(tuple));" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyLong_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        vec[0] = PyLong_AsDouble(tuple);" << endl;
-        c << "    }" << endl;
-        c << "    else" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Mark the "<<name<<" in the object as modified." << endl;
+        c << ";" << Endl;
+        c << "    PyObject     *tuple;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    if(PyTuple_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
+        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "            if(PyFloat_Check(item))" << Endl;
+        c << "                vec[i] = PyFloat_AS_DOUBLE(item);" << Endl;
+        c << "            else if(PyInt_Check(item))" << Endl;
+        c << "                vec[i] = double(PyInt_AS_LONG(item));" << Endl;
+        c << "            else if(PyLong_Check(item))" << Endl;
+        c << "                vec[i] = PyLong_AsDouble(item);" << Endl;
+        c << "            else" << Endl;
+        c << "                vec[i] = 0.;" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyFloat_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = PyFloat_AS_DOUBLE(tuple);" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyInt_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = double(PyInt_AS_LONG(tuple));" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyLong_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = PyLong_AsDouble(tuple);" << Endl;
+        c << "    }" << Endl;
+        c << "    else" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << endl;
+            c << "    obj->data->SelectAll();" << Endl;
         else
-            c << "    obj->data->Select"<<Name<<"();" << endl;
+            c << "    obj->data->Select"<<Name<<"();" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
         c << "    const doubleVector &" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c << ";" << endl;
-        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
-        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << endl;
-        c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << endl;
+        c << ";" << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << Endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    {   const doubleVector &" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << endl;
-        c << "            str += tmpStr;" << endl;
-        c << "            if(i < " << name << ".size() - 1)" << endl;
-        c << "            {" << endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << endl;
-        c << "                str += tmpStr;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "    }" << endl;
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << name << ".size() - 1)" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -1017,39 +1018,39 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
   public:
     AttsGeneratorUChar(const QString &n, const QString &l)
         : Field("uchar",n,l), UChar(n,l), PythonGeneratorField("uchar",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    unsigned char uval;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"c\", &uval))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    unsigned char uval;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"c\", &uval))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = uval;" << endl;
+            c << name << " = uval;" << Endl;
         else
-            c << MethodNameSet() << "(uval);" << endl;
+            c << MethodNameSet() << "(uval);" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c <<"));" << endl;
+        c <<"));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, int(atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << "));" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << "));" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -1062,14 +1063,14 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
   public:
     AttsGeneratorUCharArray(const QString &s, const QString &n, const QString &l)
         : Field("ucharArray",n,l), UCharArray(s,n,l), PythonGeneratorField("ucharArray",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    unsigned char *cvals = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
+        c << ";" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"";
         int i;
         for(i = 0; i < length; ++i)
@@ -1081,84 +1082,84 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
             if(i < length - 1)
                 c << ", ";
         }
-        c << "))" << endl;
-        c << "    {" << endl;
-        c << "        PyObject     *tuple;" << endl;
-        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "            return NULL;" << endl;
-        c << endl;
-        c << "        if(PyTuple_Check(tuple))" << endl;
-        c << "        {" << endl;
-        c << "            if(PyTuple_Size(tuple) != " << length << ")" << endl;
-        c << "                return NULL;" << endl;
-        c << endl;
-        c << "            PyErr_Clear();" << endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "            {" << endl;
-        c << "                int c;" << endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "                if(PyFloat_Check(item))" << endl;
-        c << "                    c = int(PyFloat_AS_DOUBLE(item));" << endl;
-        c << "                else if(PyInt_Check(item))" << endl;
-        c << "                    c = int(PyInt_AS_LONG(item));" << endl;
-        c << "                else if(PyLong_Check(item))" << endl;
-        c << "                    c = int(PyLong_AsDouble(item));" << endl;
-        c << "                else" << endl;
-        c << "                    c = 0;" << endl;
-        c << endl;
-        c << "                if(c < 0) c = 0;" << endl;
-        c << "                if(c > 255) c = 255;" << endl;
-        c << "                cvals[i] = (unsigned char)(c);" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        else" << endl;
-        c << "            return NULL;" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "    // Mark the " << name << " in the object as modified." << endl;
+        c << "))" << Endl;
+        c << "    {" << Endl;
+        c << "        PyObject     *tuple;" << Endl;
+        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "            return NULL;" << Endl;
+        c << Endl;
+        c << "        if(PyTuple_Check(tuple))" << Endl;
+        c << "        {" << Endl;
+        c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
+        c << "                return NULL;" << Endl;
+        c << Endl;
+        c << "            PyErr_Clear();" << Endl;
+        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "            {" << Endl;
+        c << "                int c;" << Endl;
+        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "                if(PyFloat_Check(item))" << Endl;
+        c << "                    c = int(PyFloat_AS_DOUBLE(item));" << Endl;
+        c << "                else if(PyInt_Check(item))" << Endl;
+        c << "                    c = int(PyInt_AS_LONG(item));" << Endl;
+        c << "                else if(PyLong_Check(item))" << Endl;
+        c << "                    c = int(PyLong_AsDouble(item));" << Endl;
+        c << "                else" << Endl;
+        c << "                    c = 0;" << Endl;
+        c << Endl;
+        c << "                if(c < 0) c = 0;" << Endl;
+        c << "                if(c > 255) c = 255;" << Endl;
+        c << "                cvals[i] = (unsigned char)(c);" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        else" << Endl;
+        c << "            return NULL;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Mark the " << name << " in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << endl;
+            c << "    obj->data->SelectAll();" << Endl;
         else
-            c << "    obj->data->Select" << Name << "();" << endl;
+            c << "    obj->data->Select" << Name << "();" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    PyObject *retval = PyTuple_New(" << length << ");" << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << length << ");" << Endl;
         c << "    const unsigned char *" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c << ";" << endl;
-        c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
+        c << ";" << Endl;
+        c << "    for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    {   const unsigned char *" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << endl;
-        c << "            str += tmpStr;" << endl;
-        c << "            if(i < " << length - 1 << ")" << endl;
-        c << "            {" << endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << endl;
-        c << "                str += tmpStr;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "    }" << endl;
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << length - 1 << ")" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -1171,110 +1172,110 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
   public:
     AttsGeneratorUCharVector(const QString &n, const QString &l)
         : Field("ucharVector",n,l), UCharVector(n,l), PythonGeneratorField("ucharVector",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    unsignedCharVector  &vec = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "    PyObject     *tuple;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    if(PyTuple_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(PyTuple_Size(tuple));" << endl;
-        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            int c;" << endl;
-        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "            if(PyFloat_Check(item))" << endl;
-        c << "                c = int(PyFloat_AS_DOUBLE(item));" << endl;
-        c << "            else if(PyInt_Check(item))" << endl;
-        c << "                c = int(PyInt_AS_LONG(item));" << endl;
-        c << "            else if(PyLong_Check(item))" << endl;
-        c << "                c = int(PyLong_AsDouble(item));" << endl;
-        c << "            else" << endl;
-        c << "                c = 0;" << endl;
-        c << endl;
-        c << "            if(c < 0) c = 0;" << endl;
-        c << "            if(c > 255) c = 255;" << endl;
-        c << "            vec[i] = (unsigned char)(c);" << endl;
-        c << "        }" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyFloat_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        int c = int(PyFloat_AS_DOUBLE(tuple));" << endl;
-        c << "        if(c < 0) c = 0;" << endl;
-        c << "        if(c > 255) c = 255;" << endl;
-        c << "        vec[0] = (unsigned char)(c);" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyInt_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        int c = int(PyInt_AS_LONG(tuple));" << endl;
-        c << "        if(c < 0) c = 0;" << endl;
-        c << "        if(c > 255) c = 255;" << endl;
-        c << "        vec[0] = (unsigned char)(c);" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyLong_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        int c = PyLong_AsLong(tuple);" << endl;
-        c << "        if(c < 0) c = 0;" << endl;
-        c << "        if(c > 255) c = 255;" << endl;
-        c << "        vec[0] = (unsigned char)(c);" << endl;
-        c << "    }" << endl;
-        c << "    else" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Mark the "<<name<<" in the object as modified." << endl;
+        c << ";" << Endl;
+        c << "    PyObject     *tuple;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    if(PyTuple_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
+        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            int c;" << Endl;
+        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "            if(PyFloat_Check(item))" << Endl;
+        c << "                c = int(PyFloat_AS_DOUBLE(item));" << Endl;
+        c << "            else if(PyInt_Check(item))" << Endl;
+        c << "                c = int(PyInt_AS_LONG(item));" << Endl;
+        c << "            else if(PyLong_Check(item))" << Endl;
+        c << "                c = int(PyLong_AsDouble(item));" << Endl;
+        c << "            else" << Endl;
+        c << "                c = 0;" << Endl;
+        c << Endl;
+        c << "            if(c < 0) c = 0;" << Endl;
+        c << "            if(c > 255) c = 255;" << Endl;
+        c << "            vec[i] = (unsigned char)(c);" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyFloat_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        int c = int(PyFloat_AS_DOUBLE(tuple));" << Endl;
+        c << "        if(c < 0) c = 0;" << Endl;
+        c << "        if(c > 255) c = 255;" << Endl;
+        c << "        vec[0] = (unsigned char)(c);" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyInt_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        int c = int(PyInt_AS_LONG(tuple));" << Endl;
+        c << "        if(c < 0) c = 0;" << Endl;
+        c << "        if(c > 255) c = 255;" << Endl;
+        c << "        vec[0] = (unsigned char)(c);" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyLong_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        int c = PyLong_AsLong(tuple);" << Endl;
+        c << "        if(c < 0) c = 0;" << Endl;
+        c << "        if(c > 255) c = 255;" << Endl;
+        c << "        vec[0] = (unsigned char)(c);" << Endl;
+        c << "    }" << Endl;
+        c << "    else" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << endl;
+            c << "    obj->data->SelectAll();" << Endl;
         else
-            c << "    obj->data->Select"<<Name<<"();" << endl;
+            c << "    obj->data->Select"<<Name<<"();" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
         c << "    const unsignedCharVector &" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c << ";" << endl;
-        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
-        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << endl;
-        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
+        c << ";" << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << Endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    {   const unsignedCharVector &" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << endl;
-        c << "            str += tmpStr;" << endl;
-        c << "            if(i < " << name << ".size() - 1)" << endl;
-        c << "            {" << endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << endl;
-        c << "                str += tmpStr;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "    }" << endl;
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << name << ".size() - 1)" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -1286,39 +1287,39 @@ class AttsGeneratorString : public virtual String , public virtual PythonGenerat
   public:
     AttsGeneratorString(const QString &n, const QString &l)
         : Field("string",n,l), String(n,l), PythonGeneratorField("string",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    char *str;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    char *str;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = std::string(str);" << endl;
+            c << name << " = std::string(str);" << Endl;
         else
-            c << MethodNameSet() << "(std::string(str));" << endl;
+            c << MethodNameSet() << "(std::string(str));" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyString_FromString(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c << ".c_str());" << endl;
+        c << ".c_str());" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ".c_str());" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ".c_str());" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -1331,82 +1332,82 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
   public:
     AttsGeneratorStringVector(const QString &n, const QString &l)
         : Field("stringVector",n,l), StringVector(n,l), PythonGeneratorField("stringVector",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    stringVector  &vec = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "    PyObject     *tuple;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    if(PyTuple_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(PyTuple_Size(tuple));" << endl;
-        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "            if(PyString_Check(item))" << endl;
-        c << "                vec[i] = std::string(PyString_AS_STRING(item));" << endl;
-        c << "            else" << endl;
-        c << "                vec[i] = std::string(\"\");" << endl;
-        c << "        }" << endl;
-        c << "    }" << endl;
-        c << "    else if(PyString_Check(tuple))" << endl;
-        c << "    {" << endl;
-        c << "        vec.resize(1);" << endl;
-        c << "        vec[0] = std::string(PyString_AS_STRING(tuple));" << endl;
-        c << "    }" << endl;
-        c << "    else" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Mark the "<<name<<" in the object as modified." << endl;
+        c << ";" << Endl;
+        c << "    PyObject     *tuple;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    if(PyTuple_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
+        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "            if(PyString_Check(item))" << Endl;
+        c << "                vec[i] = std::string(PyString_AS_STRING(item));" << Endl;
+        c << "            else" << Endl;
+        c << "                vec[i] = std::string(\"\");" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyString_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = std::string(PyString_AS_STRING(tuple));" << Endl;
+        c << "    }" << Endl;
+        c << "    else" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << endl;
+            c << "    obj->data->SelectAll();" << Endl;
         else
-            c << "    obj->data->Select"<<Name<<"();" << endl;
+            c << "    obj->data->Select"<<Name<<"();" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
         c << "    const stringVector &" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c << ";" << endl;
-        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
-        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << endl;
-        c << "        PyTuple_SET_ITEM(retval, i, PyString_FromString(" << name << "[i].c_str()));" << endl;
+        c << ";" << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << Endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyString_FromString(" << name << "[i].c_str()));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    {   const stringVector &" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ";" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"\\\"%s\\\"\", " << name << "[i].c_str());" << endl;
-        c << "            str += tmpStr;" << endl;
-        c << "            if(i < " << name << ".size() - 1)" << endl;
-        c << "            {" << endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << endl;
-        c << "                str += tmpStr;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << endl;
-        c << "        str += tmpStr;" << endl;
-        c << "    }" << endl;
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"\\\"%s\\\"\", " << name << "[i].c_str());" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << name << ".size() - 1)" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -1419,39 +1420,39 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual Pytho
   public:
     AttsGeneratorColorTable(const QString &n, const QString &l)
         : Field("colortable",n,l), ColorTable(n,l), PythonGeneratorField("colortable",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    char *str;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    char *str;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = std::string(str);" << endl;
+            c << name << " = std::string(str);" << Endl;
         else
-            c << MethodNameSet() << "(std::string(str));" << endl;
+            c << MethodNameSet() << "(std::string(str));" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyString_FromString(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c <<".c_str());" << endl;
+        c <<".c_str());" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ".c_str());" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ".c_str());" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -1464,99 +1465,99 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
   public:
     AttsGeneratorColor(const QString &n, const QString &l)
         : Field("color",n,l), Color(n,l), PythonGeneratorField("color",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int c[4];" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"iiii\", &c[0], &c[1], &c[2], &c[3]))" << endl;
-        c << "    {" << endl;
-        c << "        c[3] = 255;" << endl;
-        c << "        if(!PyArg_ParseTuple(args, \"iii\", &c[0], &c[1], &c[2]))" << endl;
-        c << "        {" << endl;
-        c << "            double dr, dg, db, da;" << endl;
-        c << "            if(PyArg_ParseTuple(args, \"dddd\", &dr, &dg, &db, &da))" << endl;
-        c << "            {" << endl;
-        c << "                c[0] = int(dr);" << endl;
-        c << "                c[1] = int(dg);" << endl;
-        c << "                c[2] = int(db);" << endl;
-        c << "                c[3] = int(da);" << endl;
-        c << "            }" << endl;
-        c << "            else if(PyArg_ParseTuple(args, \"ddd\", &dr, &dg, &db))" << endl;
-        c << "            {" << endl;
-        c << "                c[0] = int(dr);" << endl;
-        c << "                c[1] = int(dg);" << endl;
-        c << "                c[2] = int(db);" << endl;
-        c << "                c[3] = 255;" << endl;
-        c << "            }" << endl;
-        c << "            else" << endl;
-        c << "            {" << endl;
-        c << "                PyObject *tuple = NULL;" << endl;
-        c << "                if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "                    return NULL;" << endl;
-        c << endl;
-        c << "                if(!PyTuple_Check(tuple))" << endl;
-        c << "                    return NULL;" << endl;
-        c << endl;
-        c << "                // Make sure that the tuple is the right size." << endl;
-        c << "                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)" << endl;
-        c << "                    return NULL;" << endl;
-        c << endl;
-        c << "                // Make sure that all elements in the tuple are ints." << endl;
-        c << "                for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
-        c << "                {" << endl;
-        c << "                    PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "                    if(PyInt_Check(item))" << endl;
-        c << "                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));" << endl;
-        c << "                    else if(PyFloat_Check(item))" << endl;
-        c << "                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));" << endl;
-        c << "                    else" << endl;
-        c << "                        return NULL;" << endl;
-        c << "                }" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "        PyErr_Clear();" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
-        c << "    ColorAttribute ca(c[0], c[1], c[2], c[3]);" << endl;
+        c << "    int c[4];" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"iiii\", &c[0], &c[1], &c[2], &c[3]))" << Endl;
+        c << "    {" << Endl;
+        c << "        c[3] = 255;" << Endl;
+        c << "        if(!PyArg_ParseTuple(args, \"iii\", &c[0], &c[1], &c[2]))" << Endl;
+        c << "        {" << Endl;
+        c << "            double dr, dg, db, da;" << Endl;
+        c << "            if(PyArg_ParseTuple(args, \"dddd\", &dr, &dg, &db, &da))" << Endl;
+        c << "            {" << Endl;
+        c << "                c[0] = int(dr);" << Endl;
+        c << "                c[1] = int(dg);" << Endl;
+        c << "                c[2] = int(db);" << Endl;
+        c << "                c[3] = int(da);" << Endl;
+        c << "            }" << Endl;
+        c << "            else if(PyArg_ParseTuple(args, \"ddd\", &dr, &dg, &db))" << Endl;
+        c << "            {" << Endl;
+        c << "                c[0] = int(dr);" << Endl;
+        c << "                c[1] = int(dg);" << Endl;
+        c << "                c[2] = int(db);" << Endl;
+        c << "                c[3] = 255;" << Endl;
+        c << "            }" << Endl;
+        c << "            else" << Endl;
+        c << "            {" << Endl;
+        c << "                PyObject *tuple = NULL;" << Endl;
+        c << "                if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "                    return NULL;" << Endl;
+        c << Endl;
+        c << "                if(!PyTuple_Check(tuple))" << Endl;
+        c << "                    return NULL;" << Endl;
+        c << Endl;
+        c << "                // Make sure that the tuple is the right size." << Endl;
+        c << "                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)" << Endl;
+        c << "                    return NULL;" << Endl;
+        c << Endl;
+        c << "                // Make sure that all elements in the tuple are ints." << Endl;
+        c << "                for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "                {" << Endl;
+        c << "                    PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "                    if(PyInt_Check(item))" << Endl;
+        c << "                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));" << Endl;
+        c << "                    else if(PyFloat_Check(item))" << Endl;
+        c << "                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));" << Endl;
+        c << "                    else" << Endl;
+        c << "                        return NULL;" << Endl;
+        c << "                }" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        PyErr_Clear();" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
+        c << "    ColorAttribute ca(c[0], c[1], c[2], c[3]);" << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = ca;" << endl;
+            c << name << " = ca;" << Endl;
         else
-            c << MethodNameSet() << "(ca);" << endl;
+            c << MethodNameSet() << "(ca);" << Endl;
     }
 
-    virtual void WriteIncludedHeaders(ostream &c)
+    virtual void WriteIncludedHeaders(QTextStream &c)
     {
         // Write the list of include files that the object needs.
-        c << "#include <ColorAttribute.h>" << endl;
+        c << "#include <ColorAttribute.h>" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    PyObject *retval = PyTuple_New(4);" << endl;
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
+        c << "    PyObject *retval = PyTuple_New(4);" << Endl;
         c << "    const unsigned char *" << name << " = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c << ".GetColor();" << endl;
-        c << "    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(" << name << "[0])));" << endl;
-        c << "    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(" << name << "[1])));" << endl;
-        c << "    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(" << name << "[2])));" << endl;
-        c << "    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(" << name << "[3])));" << endl;
+        c << ".GetColor();" << Endl;
+        c << "    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(" << name << "[0])));" << Endl;
+        c << "    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(" << name << "[1])));" << Endl;
+        c << "    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(" << name << "[2])));" << Endl;
+        c << "    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(" << name << "[3])));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    const unsigned char *" << name << " = atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ".GetColor();" << endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = (%d, %d, %d, %d)\\n\", prefix, int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ".GetColor();" << Endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = (%d, %d, %d, %d)\\n\", prefix, int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -1569,42 +1570,42 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
   public:
     AttsGeneratorLineStyle(const QString &n, const QString &l)
         : Field("linestyle",n,l), LineStyle(n,l), PythonGeneratorField("linestyle",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
-        c << "    if(ival >= 0 && ival <= 3)" << endl;
+        c << "    int ival;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
+        c << "    if(ival >= 0 && ival <= 3)" << Endl;
         c << "        obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = ival;" << endl;
+            c << name << " = ival;" << Endl;
         else
-            c << MethodNameSet() << "(ival);" << endl;
-        c << "    else" << endl;
-        c << "    {" << endl;
-        c << "        fprintf(stderr, \"An invalid  value was given. \"" << endl;
-        c << "                        \"Valid values are in the range of [0,3]. \"" << endl;
-        c << "                        \"You can also use the following names: \"" << endl;
-        c << "                        \"\\\"SOLID\\\", \\\"DASH\\\", \\\"DOT\\\", \\\"DOTDASH\\\"\\n\");" << endl;
-        c << "        return NULL;" << endl;
-        c << "    }" << endl;
+            c << MethodNameSet() << "(ival);" << Endl;
+        c << "    else" << Endl;
+        c << "    {" << Endl;
+        c << "        fprintf(stderr, \"An invalid  value was given. \"" << Endl;
+        c << "                        \"Valid values are in the range of [0,3]. \"" << Endl;
+        c << "                        \"You can also use the following names: \"" << Endl;
+        c << "                        \"\\\"SOLID\\\", \\\"DASH\\\", \\\"DOT\\\", \\\"DOTDASH\\\"\\n\");" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    }" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c <<"));" << endl;
+        c <<"));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    const char *" << name << "_values[] = {\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"};" << endl;
+        c << "    const char *" << name << "_values[] = {\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"};" << Endl;
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = ";
         c << "%s%s  # SOLID, DASH, DOT, DOTDASH\\n\", prefix, prefix, " << name << "_values[atts->";
 
@@ -1612,26 +1613,26 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << "]);" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << "]);" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 
-    virtual void WriteGetAttr(ostream &c, const QString &classname)
+    virtual void WriteGetAttr(QTextStream &c, const QString &classname)
     {
         if (internal)
             return;
 
-        c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
-        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << endl;
-        c << "    if(strcmp(name, \"SOLID\") == 0)" << endl;
-        c << "        return PyInt_FromLong(long(0));" << endl;
-        c << "    else if(strcmp(name, \"DASH\") == 0)" << endl;
-        c << "        return PyInt_FromLong(long(1));" << endl;
-        c << "    else if(strcmp(name, \"DOT\") == 0)" << endl;
-        c << "        return PyInt_FromLong(long(2));" << endl;
-        c << "    else if(strcmp(name, \"DOTDASH\") == 0)" << endl;
-        c << "        return PyInt_FromLong(long(3));" << endl;
-        c << endl;
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;
+        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << Endl;
+        c << "    if(strcmp(name, \"SOLID\") == 0)" << Endl;
+        c << "        return PyInt_FromLong(long(0));" << Endl;
+        c << "    else if(strcmp(name, \"DASH\") == 0)" << Endl;
+        c << "        return PyInt_FromLong(long(1));" << Endl;
+        c << "    else if(strcmp(name, \"DOT\") == 0)" << Endl;
+        c << "        return PyInt_FromLong(long(2));" << Endl;
+        c << "    else if(strcmp(name, \"DOTDASH\") == 0)" << Endl;
+        c << "        return PyInt_FromLong(long(3));" << Endl;
+        c << Endl;
     }
 };
 
@@ -1644,39 +1645,39 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
   public:
     AttsGeneratorLineWidth(const QString &n, const QString &l)
         : Field("linewidth",n,l), LineWidth(n,l), PythonGeneratorField("linewidth",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    int ival;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = ival;" << endl;
+            c << name << " = ival;" << Endl;
         else
-            c << MethodNameSet() << "(ival);" << endl;
+            c << MethodNameSet() << "(ival);" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c <<"));" << endl;
+        c <<"));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ");" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ");" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -1689,39 +1690,39 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
   public:
     AttsGeneratorOpacity(const QString &n, const QString &l)
         : Field("opacity",n,l), Opacity(n,l), PythonGeneratorField("opacity",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    double dval;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"d\", &dval))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    double dval;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"d\", &dval))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = dval;" << endl;
+            c << name << " = dval;" << Endl;
         else
-            c << MethodNameSet() << "(dval);" << endl;
+            c << MethodNameSet() << "(dval);" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyFloat_FromDouble(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c <<");" << endl;
+        c <<");" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ");" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ");" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -1734,39 +1735,39 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
   public:
     AttsGeneratorVariableName(const QString &n, const QString &l)
         : Field("variablename",n,l), VariableName(n,l), PythonGeneratorField("variablename",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    char *str;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
+        c << "    char *str;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = std::string(str);" << endl;
+            c << name << " = std::string(str);" << Endl;
         else
-            c << MethodNameSet() << "(std::string(str));" << endl;
+            c << MethodNameSet() << "(std::string(str));" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    PyObject *retval = PyString_FromString(obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c <<MethodNameGet()<<"()";
-        c<<".c_str());" << endl;
+        c<<".c_str());" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
-        c << ".c_str());" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << ".c_str());" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 };
 
@@ -1789,258 +1790,258 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
 {
   public:
     AttsGeneratorAtt(const QString &t, const QString &n, const QString &l)
-        : Field("att",n,l), Att(t,n,l), PythonGeneratorField("att",n,l) { cerr << "**** AttType=" << AttType << endl;}
+        : Field("att",n,l), Att(t,n,l), PythonGeneratorField("att",n,l) { /*cerr << "**** AttType=" << AttType << endl;*/}
 
-    virtual void WriteIncludedHeaders(ostream &c)
+    virtual void WriteIncludedHeaders(QTextStream &c)
     {
         // Write the list of include files that the object needs.
-        c << "#include <Py" << attType << ".h>" << endl;
+        c << "#include <Py" << attType << ".h>" << Endl;
     }
 
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         if(AttType == "ColorAttributeList")
         {
-            c << "    PyObject *pyobj = NULL;" << endl;
+            c << "    PyObject *pyobj = NULL;" << Endl;
             c << "    ColorAttributeList &cL = obj->data->";
             if(accessType == Field::AccessPublic)
                 c << name;
             else
                 c << MethodNameGet() << "()";
-            c << ";" << endl;
-            c << "    int index = 0;" << endl;
-            c << "    int c[4] = {0,0,0,255};" << endl;
-            c << "    bool setTheColor = true;" << endl;
-            c << endl;
-            c << "    if(!PyArg_ParseTuple(args, \"iiiii\", &index, &c[0], &c[1], &c[2], &c[3]))" << endl;
-            c << "    {" << endl;
-            c << "        if(!PyArg_ParseTuple(args, \"iiii\", &index, &c[0], &c[1], &c[2]))" << endl;
-            c << "        {" << endl;
-            c << "            double dr, dg, db, da;" << endl;
-            c << "            if(PyArg_ParseTuple(args, \"idddd\", &index, &dr, &dg, &db, &da))" << endl;
-            c << "            {" << endl;
-            c << "                c[0] = int(dr);" << endl;
-            c << "                c[1] = int(dg);" << endl;
-            c << "                c[2] = int(db);" << endl;
-            c << "                c[3] = int(da);" << endl;
-            c << "            }" << endl;
-            c << "            else if(PyArg_ParseTuple(args, \"iddd\", &index, &dr, &dg, &db))" << endl;
-            c << "            {" << endl;
-            c << "                c[0] = int(dr);" << endl;
-            c << "                c[1] = int(dg);" << endl;
-            c << "                c[2] = int(db);" << endl;
-            c << "                c[3] = 255;" << endl;
-            c << "            }" << endl;
-            c << "            else" << endl;
-            c << "            {" << endl;
-            c << "                if(!PyArg_ParseTuple(args, \"iO\", &index, &pyobj))" << endl;
-            c << "                {" << endl;
-            c << "                    if(PyArg_ParseTuple(args, \"O\", &pyobj))" << endl;
-            c << "                    {" << endl;
-            c << "                        setTheColor = false;" << endl;
-            c << "                        if(PyTuple_Check(pyobj))" << endl;
-            c << "                        {" << endl;
-            c << "                            // Make sure that the tuple is the right size." << endl;
-            c << "                            if(PyTuple_Size(pyobj) < cL.GetNumColors())" << endl;
-            c << "                                return NULL;" << endl;
-            c << endl;
-            c << "                            // Make sure that the tuple is the right size." << endl;
-            c << "                            bool badInput = false;" << endl;
-            c << "                            int *C = new int[4 * cL.GetNumColors()];" << endl;
-            c << "                            for(int i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)" << endl;
-            c << "                            {" << endl;
-            c << "                                PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << endl;
-            c << "                                if(PyTuple_Check(item) &&" << endl;
-            c << "                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)" << endl;
-            c << "                                {" << endl;
-            c << "                                    C[i*4] = 0;" << endl;
-            c << "                                    C[i*4+1] = 0;" << endl;
-            c << "                                    C[i*4+2] = 0;" << endl;
-            c << "                                    C[i*4+3] = 255;" << endl;
-            c << "                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)" << endl;
-            c << "                                    {" << endl;
-            c << "                                        PyObject *colorcomp = PyTuple_GET_ITEM(item, j);" << endl;
-            c << "                                        if(PyInt_Check(colorcomp))" << endl;
-            c << "                                           C[i*4+j] = int(PyInt_AS_LONG(colorcomp));" << endl;
-            c << "                                        else if(PyFloat_Check(colorcomp))" << endl;
-            c << "                                           C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));" << endl;
-            c << "                                        else" << endl;
-            c << "                                           badInput = true;" << endl;
-            c << "                                    }" << endl;
-            c << "                                }" << endl;
-            c << "                                else" << endl;
-            c << "                                    badInput = true;" << endl;
-            c << "                            }" << endl;
-            c << endl;
-            c << "                            if(badInput)" << endl;
-            c << "                            {" << endl;
-            c << "                                delete [] C;" << endl;
-            c << "                                return NULL;" << endl;
-            c << "                            }" << endl;
-            c << endl;
-            c << "                            for(int i = 0; i < cL.GetNumColors(); ++i)" << endl;
-            c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << endl;
-            c << "                            delete [] C;" << endl;
-            c << "                        }" << endl;
-            c << "                        else if(PyList_Check(pyobj))" << endl;
-            c << "                        {" << endl;
-            c << "                            // Make sure that the list is the right size." << endl;
-            c << "                            if(PyList_Size(pyobj) < cL.GetNumColors())" << endl;
-            c << "                                return NULL;" << endl;
-            c << endl;
-            c << "                            // Make sure that the tuple is the right size." << endl;
-            c << "                            bool badInput = false;" << endl;
-            c << "                            int *C = new int[4 * cL.GetNumColors()];" << endl;
-            c << "                            for(int i = 0; i < PyList_Size(pyobj) && !badInput; ++i)" << endl;
-            c << "                            {" << endl;
-            c << "                                PyObject *item = PyList_GET_ITEM(pyobj, i);" << endl;
-            c << "                                if(PyTuple_Check(item) &&" << endl;
-            c << "                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)" << endl;
-            c << "                                {" << endl;
-            c << "                                    C[i*4] = 0;" << endl;
-            c << "                                    C[i*4+1] = 0;" << endl;
-            c << "                                    C[i*4+2] = 0;" << endl;
-            c << "                                    C[i*4+3] = 255;" << endl;
-            c << "                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)" << endl;
-            c << "                                    {" << endl;
-            c << "                                        PyObject *colorcomp = PyTuple_GET_ITEM(item, j);" << endl;
-            c << "                                        if(PyInt_Check(colorcomp))" << endl;
-            c << "                                           C[i*4+j] = int(PyInt_AS_LONG(colorcomp));" << endl;
-            c << "                                        else if(PyFloat_Check(colorcomp))" << endl;
-            c << "                                           C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));" << endl;
-            c << "                                        else" << endl;
-            c << "                                           badInput = true;" << endl;
-            c << "                                    }" << endl;
-            c << "                                }" << endl;
-            c << "                                else" << endl;
-            c << "                                    badInput = true;" << endl;
-            c << "                            }" << endl;
-            c << endl;
-            c << "                            if(badInput)" << endl;
-            c << "                            {" << endl;
-            c << "                                delete [] C;" << endl;
-            c << "                                return NULL;" << endl;
-            c << "                            }" << endl;
-            c << endl;
-            c << "                            for(int i = 0; i < cL.GetNumColors(); ++i)" << endl;
-            c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << endl;
-            c << endl;
-            c << "                            delete [] C;" << endl;
-            c << "                        }" << endl;
-            c << "                        else" << endl;
-            c << "                            return NULL;" << endl;
-            c << "                    }" << endl;
-            c << "                }" << endl;
-            c << "                else" << endl;
-            c << "                {" << endl;
-            c << "                    if(!PyTuple_Check(pyobj))" << endl;
-            c << "                        return NULL;" << endl;
-            c << endl;
-            c << "                    // Make sure that the tuple is the right size." << endl;
-            c << "                    if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)" << endl;
-            c << "                        return NULL;" << endl;
-            c << endl;
-            c << "                    // Make sure that all elements in the tuple are ints." << endl;
-            c << "                    for(int i = 0; i < PyTuple_Size(pyobj); ++i)" << endl;
-            c << "                    {" << endl;
-            c << "                        PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << endl;
-            c << "                        if(PyInt_Check(item))" << endl;
-            c << "                            c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(pyobj, i)));" << endl;
-            c << "                        else if(PyFloat_Check(item))" << endl;
-            c << "                            c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));" << endl;
-            c << "                        else" << endl;
-            c << "                            return NULL;" << endl;
-            c << "                    }" << endl;
-            c << "                }" << endl;
-            c << "            }" << endl;
-            c << "        }" << endl;
-            c << "        PyErr_Clear();" << endl;
-            c << "    }" << endl;
-            c << endl;
-            c << "    if(index < 0 || index >= cL.GetNumColors())" << endl;
-            c << "        return NULL;" << endl;
-            c << endl;
-            c << "    // Set the color in the object." << endl;
-            c << "    if(setTheColor)" << endl;
-            c << "        cL[index] = ColorAttribute(c[0], c[1], c[2], c[3]);" << endl;
-            c << "    cL.SelectColors();" << endl;
-            c << "    obj->data->Select" << Name << "();" << endl;
+            c << ";" << Endl;
+            c << "    int index = 0;" << Endl;
+            c << "    int c[4] = {0,0,0,255};" << Endl;
+            c << "    bool setTheColor = true;" << Endl;
+            c << Endl;
+            c << "    if(!PyArg_ParseTuple(args, \"iiiii\", &index, &c[0], &c[1], &c[2], &c[3]))" << Endl;
+            c << "    {" << Endl;
+            c << "        if(!PyArg_ParseTuple(args, \"iiii\", &index, &c[0], &c[1], &c[2]))" << Endl;
+            c << "        {" << Endl;
+            c << "            double dr, dg, db, da;" << Endl;
+            c << "            if(PyArg_ParseTuple(args, \"idddd\", &index, &dr, &dg, &db, &da))" << Endl;
+            c << "            {" << Endl;
+            c << "                c[0] = int(dr);" << Endl;
+            c << "                c[1] = int(dg);" << Endl;
+            c << "                c[2] = int(db);" << Endl;
+            c << "                c[3] = int(da);" << Endl;
+            c << "            }" << Endl;
+            c << "            else if(PyArg_ParseTuple(args, \"iddd\", &index, &dr, &dg, &db))" << Endl;
+            c << "            {" << Endl;
+            c << "                c[0] = int(dr);" << Endl;
+            c << "                c[1] = int(dg);" << Endl;
+            c << "                c[2] = int(db);" << Endl;
+            c << "                c[3] = 255;" << Endl;
+            c << "            }" << Endl;
+            c << "            else" << Endl;
+            c << "            {" << Endl;
+            c << "                if(!PyArg_ParseTuple(args, \"iO\", &index, &pyobj))" << Endl;
+            c << "                {" << Endl;
+            c << "                    if(PyArg_ParseTuple(args, \"O\", &pyobj))" << Endl;
+            c << "                    {" << Endl;
+            c << "                        setTheColor = false;" << Endl;
+            c << "                        if(PyTuple_Check(pyobj))" << Endl;
+            c << "                        {" << Endl;
+            c << "                            // Make sure that the tuple is the right size." << Endl;
+            c << "                            if(PyTuple_Size(pyobj) < cL.GetNumColors())" << Endl;
+            c << "                                return NULL;" << Endl;
+            c << Endl;
+            c << "                            // Make sure that the tuple is the right size." << Endl;
+            c << "                            bool badInput = false;" << Endl;
+            c << "                            int *C = new int[4 * cL.GetNumColors()];" << Endl;
+            c << "                            for(int i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)" << Endl;
+            c << "                            {" << Endl;
+            c << "                                PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << Endl;
+            c << "                                if(PyTuple_Check(item) &&" << Endl;
+            c << "                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)" << Endl;
+            c << "                                {" << Endl;
+            c << "                                    C[i*4] = 0;" << Endl;
+            c << "                                    C[i*4+1] = 0;" << Endl;
+            c << "                                    C[i*4+2] = 0;" << Endl;
+            c << "                                    C[i*4+3] = 255;" << Endl;
+            c << "                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)" << Endl;
+            c << "                                    {" << Endl;
+            c << "                                        PyObject *colorcomp = PyTuple_GET_ITEM(item, j);" << Endl;
+            c << "                                        if(PyInt_Check(colorcomp))" << Endl;
+            c << "                                           C[i*4+j] = int(PyInt_AS_LONG(colorcomp));" << Endl;
+            c << "                                        else if(PyFloat_Check(colorcomp))" << Endl;
+            c << "                                           C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));" << Endl;
+            c << "                                        else" << Endl;
+            c << "                                           badInput = true;" << Endl;
+            c << "                                    }" << Endl;
+            c << "                                }" << Endl;
+            c << "                                else" << Endl;
+            c << "                                    badInput = true;" << Endl;
+            c << "                            }" << Endl;
+            c << Endl;
+            c << "                            if(badInput)" << Endl;
+            c << "                            {" << Endl;
+            c << "                                delete [] C;" << Endl;
+            c << "                                return NULL;" << Endl;
+            c << "                            }" << Endl;
+            c << Endl;
+            c << "                            for(int i = 0; i < cL.GetNumColors(); ++i)" << Endl;
+            c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << Endl;
+            c << "                            delete [] C;" << Endl;
+            c << "                        }" << Endl;
+            c << "                        else if(PyList_Check(pyobj))" << Endl;
+            c << "                        {" << Endl;
+            c << "                            // Make sure that the list is the right size." << Endl;
+            c << "                            if(PyList_Size(pyobj) < cL.GetNumColors())" << Endl;
+            c << "                                return NULL;" << Endl;
+            c << Endl;
+            c << "                            // Make sure that the tuple is the right size." << Endl;
+            c << "                            bool badInput = false;" << Endl;
+            c << "                            int *C = new int[4 * cL.GetNumColors()];" << Endl;
+            c << "                            for(int i = 0; i < PyList_Size(pyobj) && !badInput; ++i)" << Endl;
+            c << "                            {" << Endl;
+            c << "                                PyObject *item = PyList_GET_ITEM(pyobj, i);" << Endl;
+            c << "                                if(PyTuple_Check(item) &&" << Endl;
+            c << "                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)" << Endl;
+            c << "                                {" << Endl;
+            c << "                                    C[i*4] = 0;" << Endl;
+            c << "                                    C[i*4+1] = 0;" << Endl;
+            c << "                                    C[i*4+2] = 0;" << Endl;
+            c << "                                    C[i*4+3] = 255;" << Endl;
+            c << "                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)" << Endl;
+            c << "                                    {" << Endl;
+            c << "                                        PyObject *colorcomp = PyTuple_GET_ITEM(item, j);" << Endl;
+            c << "                                        if(PyInt_Check(colorcomp))" << Endl;
+            c << "                                           C[i*4+j] = int(PyInt_AS_LONG(colorcomp));" << Endl;
+            c << "                                        else if(PyFloat_Check(colorcomp))" << Endl;
+            c << "                                           C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));" << Endl;
+            c << "                                        else" << Endl;
+            c << "                                           badInput = true;" << Endl;
+            c << "                                    }" << Endl;
+            c << "                                }" << Endl;
+            c << "                                else" << Endl;
+            c << "                                    badInput = true;" << Endl;
+            c << "                            }" << Endl;
+            c << Endl;
+            c << "                            if(badInput)" << Endl;
+            c << "                            {" << Endl;
+            c << "                                delete [] C;" << Endl;
+            c << "                                return NULL;" << Endl;
+            c << "                            }" << Endl;
+            c << Endl;
+            c << "                            for(int i = 0; i < cL.GetNumColors(); ++i)" << Endl;
+            c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << Endl;
+            c << Endl;
+            c << "                            delete [] C;" << Endl;
+            c << "                        }" << Endl;
+            c << "                        else" << Endl;
+            c << "                            return NULL;" << Endl;
+            c << "                    }" << Endl;
+            c << "                }" << Endl;
+            c << "                else" << Endl;
+            c << "                {" << Endl;
+            c << "                    if(!PyTuple_Check(pyobj))" << Endl;
+            c << "                        return NULL;" << Endl;
+            c << Endl;
+            c << "                    // Make sure that the tuple is the right size." << Endl;
+            c << "                    if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)" << Endl;
+            c << "                        return NULL;" << Endl;
+            c << Endl;
+            c << "                    // Make sure that all elements in the tuple are ints." << Endl;
+            c << "                    for(int i = 0; i < PyTuple_Size(pyobj); ++i)" << Endl;
+            c << "                    {" << Endl;
+            c << "                        PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << Endl;
+            c << "                        if(PyInt_Check(item))" << Endl;
+            c << "                            c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(pyobj, i)));" << Endl;
+            c << "                        else if(PyFloat_Check(item))" << Endl;
+            c << "                            c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));" << Endl;
+            c << "                        else" << Endl;
+            c << "                            return NULL;" << Endl;
+            c << "                    }" << Endl;
+            c << "                }" << Endl;
+            c << "            }" << Endl;
+            c << "        }" << Endl;
+            c << "        PyErr_Clear();" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
+            c << "    if(index < 0 || index >= cL.GetNumColors())" << Endl;
+            c << "        return NULL;" << Endl;
+            c << Endl;
+            c << "    // Set the color in the object." << Endl;
+            c << "    if(setTheColor)" << Endl;
+            c << "        cL[index] = ColorAttribute(c[0], c[1], c[2], c[3]);" << Endl;
+            c << "    cL.SelectColors();" << Endl;
+            c << "    obj->data->Select" << Name << "();" << Endl;
         }
         else
         {
-            c << "    PyObject *newValue = NULL;" << endl;
-            c << "    if(!PyArg_ParseTuple(args, \"O\", &newValue))" << endl;
-            c << "        return NULL;" << endl;
-            c << "    if(!Py" << attType << "_Check(newValue))" << endl;
-            c << "    {" << endl;
-            c << "        fprintf(stderr, \"The " << name << " field can only be set with " << attType << " objects.\\n\");" << endl;
-            c << "        return NULL;" << endl;
-            c << "    }" << endl;
-            c << endl;
-            c << "    obj->data->Set" << Name << "(*Py" << attType << "_FromPyObject(newValue));" << endl;
+            c << "    PyObject *newValue = NULL;" << Endl;
+            c << "    if(!PyArg_ParseTuple(args, \"O\", &newValue))" << Endl;
+            c << "        return NULL;" << Endl;
+            c << "    if(!Py" << attType << "_Check(newValue))" << Endl;
+            c << "    {" << Endl;
+            c << "        fprintf(stderr, \"The " << name << " field can only be set with " << attType << " objects.\\n\");" << Endl;
+            c << "        return NULL;" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
+            c << "    obj->data->Set" << Name << "(*Py" << attType << "_FromPyObject(newValue));" << Endl;
         }
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         if(AttType == "ColorAttributeList")
         {
-            c << "    PyObject *retval = NULL;" << endl;
-            c << "    ColorAttributeList &cL = obj->data->Get" << Name << "();" << endl;
-            c << endl;
-            c << "    int index = 0;" << endl;
-            c << "    if(PyArg_ParseTuple(args, \"i\", &index))" << endl;
-            c << "    {" << endl;
-            c << "        if(index < 0 || index >= cL.GetNumColors())" << endl;
-            c << "            return NULL;" << endl;
-            c << endl;
-            c << "        // Allocate a tuple the with enough entries to hold the singleColor." << endl;
-            c << "        retval = PyTuple_New(4);" << endl;
-            c << "        const unsigned char *c = cL.GetColors(index).GetColor();" << endl;
-            c << "        PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(c[0])));" << endl;
-            c << "        PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(c[1])));" << endl;
-            c << "        PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(c[2])));" << endl;
-            c << "        PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(c[3])));" << endl;
-            c << "    }" << endl;
-            c << "    else" << endl;
-            c << "    {" << endl;
-            c << "        PyErr_Clear();" << endl;
-            c << endl;
-            c << "        // Return the whole thing." << endl;
-            c << "        retval = PyList_New(cL.GetNumColors());" << endl;
-            c << "        for(int i = 0; i < cL.GetNumColors(); ++i)" << endl;
-            c << "        {" << endl;
-            c << "            const unsigned char *c = cL.GetColors(i).GetColor();" << endl;
-            c << endl;
-            c << "            PyObject *t = PyTuple_New(4);" << endl;
-            c << "            PyTuple_SET_ITEM(t, 0, PyInt_FromLong(long(c[0])));" << endl;
-            c << "            PyTuple_SET_ITEM(t, 1, PyInt_FromLong(long(c[1])));" << endl;
-            c << "            PyTuple_SET_ITEM(t, 2, PyInt_FromLong(long(c[2])));" << endl;
-            c << "            PyTuple_SET_ITEM(t, 3, PyInt_FromLong(long(c[3])));" << endl;
-            c << endl;
-            c << "            PyList_SET_ITEM(retval, i, t);" << endl;
-            c << "        }" << endl;
-            c << "    }" << endl;
+            c << "    PyObject *retval = NULL;" << Endl;
+            c << "    ColorAttributeList &cL = obj->data->Get" << Name << "();" << Endl;
+            c << Endl;
+            c << "    int index = 0;" << Endl;
+            c << "    if(PyArg_ParseTuple(args, \"i\", &index))" << Endl;
+            c << "    {" << Endl;
+            c << "        if(index < 0 || index >= cL.GetNumColors())" << Endl;
+            c << "            return NULL;" << Endl;
+            c << Endl;
+            c << "        // Allocate a tuple the with enough entries to hold the singleColor." << Endl;
+            c << "        retval = PyTuple_New(4);" << Endl;
+            c << "        const unsigned char *c = cL.GetColors(index).GetColor();" << Endl;
+            c << "        PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(c[0])));" << Endl;
+            c << "        PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(c[1])));" << Endl;
+            c << "        PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(c[2])));" << Endl;
+            c << "        PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(c[3])));" << Endl;
+            c << "    }" << Endl;
+            c << "    else" << Endl;
+            c << "    {" << Endl;
+            c << "        PyErr_Clear();" << Endl;
+            c << Endl;
+            c << "        // Return the whole thing." << Endl;
+            c << "        retval = PyList_New(cL.GetNumColors());" << Endl;
+            c << "        for(int i = 0; i < cL.GetNumColors(); ++i)" << Endl;
+            c << "        {" << Endl;
+            c << "            const unsigned char *c = cL.GetColors(i).GetColor();" << Endl;
+            c << Endl;
+            c << "            PyObject *t = PyTuple_New(4);" << Endl;
+            c << "            PyTuple_SET_ITEM(t, 0, PyInt_FromLong(long(c[0])));" << Endl;
+            c << "            PyTuple_SET_ITEM(t, 1, PyInt_FromLong(long(c[1])));" << Endl;
+            c << "            PyTuple_SET_ITEM(t, 2, PyInt_FromLong(long(c[2])));" << Endl;
+            c << "            PyTuple_SET_ITEM(t, 3, PyInt_FromLong(long(c[3])));" << Endl;
+            c << Endl;
+            c << "            PyList_SET_ITEM(retval, i, t);" << Endl;
+            c << "        }" << Endl;
+            c << "    }" << Endl;
         }
         else
         {
-            c << "    // Since the new object will point to data owned by this object," << endl;
-            c << "    // we need to increment the reference count." << endl;
-            c << "    Py_INCREF(self);" << endl;
-            c << endl;
+            c << "    // Since the new object will point to data owned by this object," << Endl;
+            c << "    // we need to increment the reference count." << Endl;
+            c << "    Py_INCREF(self);" << Endl;
+            c << Endl;
             c << "    PyObject *retval = Py" << attType << "_Wrap(";
             if(accessType == Field::AccessPublic)
-                c << "&obj->data->" << name << ");" << endl;
+                c << "&obj->data->" << name << ");" << Endl;
             else
-                c << "&obj->data->Get" << Name << "());" << endl;
-            c << "    // Set the object's parent so the reference to the parent can be decref'd" << endl;
-            c << "    // when the child goes out of scope." << endl;
-            c << "    Py" << attType << "_SetParent(retval, self);" << endl;
-            c << endl;
+                c << "&obj->data->Get" << Name << "());" << Endl;
+            c << "    // Set the object's parent so the reference to the parent can be decref'd" << Endl;
+            c << "    // when the child goes out of scope." << Endl;
+            c << "    Py" << attType << "_SetParent(retval, self);" << Endl;
+            c << Endl;
         }
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         if(AttType == "ColorAttributeList")
         {
@@ -2049,29 +2050,29 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
                 c << name;
             else
                 c << MethodNameGet() << "()";
-            c << ";" << endl;
-            c << "        const char *comment = (prefix==0 || strcmp(prefix,\"\")==0) ? \"# \" : \"\";" << endl;
-            c << "        for(int i = 0; i < cL.GetNumColors(); ++i)" << endl;
-            c << "        {" << endl;
-            c << "            const unsigned char *c = cL[i].GetColor();" << endl;
-            c << "            SNPRINTF(tmpStr, 1000, \"%s%sSet" << Name << "(%d, (%d, %d, %d, %d))\\n\"," << endl;
-            c << "                     comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));" << endl;
-            c << "            str += tmpStr;" << endl;
-            c << "        }" << endl;
-            c << "    }" << endl;
+            c << ";" << Endl;
+            c << "        const char *comment = (prefix==0 || strcmp(prefix,\"\")==0) ? \"# \" : \"\";" << Endl;
+            c << "        for(int i = 0; i < cL.GetNumColors(); ++i)" << Endl;
+            c << "        {" << Endl;
+            c << "            const unsigned char *c = cL[i].GetColor();" << Endl;
+            c << "            SNPRINTF(tmpStr, 1000, \"%s%sSet" << Name << "(%d, (%d, %d, %d, %d))\\n\"," << Endl;
+            c << "                     comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));" << Endl;
+            c << "            str += tmpStr;" << Endl;
+            c << "        }" << Endl;
+            c << "    }" << Endl;
         }
         else
         {
-            c << "    { // new scope" << endl;
-            c << "        std::string objPrefix(prefix);" << endl;
-            c << "        objPrefix += \"" << name << ".\";" << endl;
+            c << "    { // new scope" << Endl;
+            c << "        std::string objPrefix(prefix);" << Endl;
+            c << "        objPrefix += \"" << name << ".\";" << Endl;
             c << "        str += Py" << attType << "_ToString(";
             if(accessType == Field::AccessPublic)
                 c << "atts->" << name;
             else
                 c << "&atts->" << MethodNameGet() << "()";
-            c << ", objPrefix.c_str());" << endl;
-            c << "    }" << endl;
+            c << ", objPrefix.c_str());" << Endl;
+            c << "    }" << Endl;
         }
     }
 };
@@ -2086,7 +2087,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
     AttsGeneratorAttVector(const QString &t, const QString &n, const QString &l)
         : Field("attVector",n,l), AttVector(t,n,l), PythonGeneratorField("attVector",n,l) { }
 
-    virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
+    virtual void WriteSetAttr(QTextStream &c, const QString &className, bool first)
     {
         // Not implemented yet!
     }
@@ -2096,152 +2097,152 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         return false;
     }
 
-    virtual void WriteIncludedHeaders(ostream &c)
+    virtual void WriteIncludedHeaders(QTextStream &c)
     {
         // Write the list of include files that the object needs.
-        c << "#include <Py" << attType << ".h>" << endl;
+        c << "#include <Py" << attType << ".h>" << Endl;
     }
 
     // Do not allow set methods. Make the user use the Get### method to return a reference
     // to the object.
     virtual bool ProvidesSetMethod() const { return false; }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int index;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << endl;
-        c << "        return NULL;" << endl;
-        c << "    if(index < 0 || index >= obj->data->Get" << Name << "().size())" << endl;
-        c << "    {" << endl;
-        c << "        char msg[200];" << endl;
-        c << "        if(obj->data->Get" << Name << "().size() == 0)" << endl;
-        c << "            SNPRINTF(msg, 200, \"The index is invalid because " << name << " is empty.\");" << endl;
-        c << "        else" << endl;
-        c << "            SNPRINTF(msg, 200, \"The index is invalid. Use index values in: [0, %ld).\", obj->data->Get" << Name << "().size());" << endl;
-        c << "        PyErr_SetString(PyExc_IndexError, msg);" << endl;
-        c << "        return NULL;" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "    // Since the new object will point to data owned by the this object," << endl;
-        c << "    // we need to increment the reference count." << endl;
-        c << "    Py_INCREF(self);" << endl;
-        c << endl;
-        c << "    PyObject *retval = Py" << attType << "_Wrap(&obj->data->Get" << Name << "(index));" << endl;
-        c << "    // Set the object's parent so the reference to the parent can be decref'd" << endl;
-        c << "    // when the child goes out of scope." << endl;
-        c << "    Py" << attType << "_SetParent(retval, self);" << endl;
-        c << endl;
+        c << "    int index;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    if(index < 0 || index >= obj->data->Get" << Name << "().size())" << Endl;
+        c << "    {" << Endl;
+        c << "        char msg[200];" << Endl;
+        c << "        if(obj->data->Get" << Name << "().size() == 0)" << Endl;
+        c << "            SNPRINTF(msg, 200, \"The index is invalid because " << name << " is empty.\");" << Endl;
+        c << "        else" << Endl;
+        c << "            SNPRINTF(msg, 200, \"The index is invalid. Use index values in: [0, %ld).\", obj->data->Get" << Name << "().size());" << Endl;
+        c << "        PyErr_SetString(PyExc_IndexError, msg);" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    // Since the new object will point to data owned by the this object," << Endl;
+        c << "    // we need to increment the reference count." << Endl;
+        c << "    Py_INCREF(self);" << Endl;
+        c << Endl;
+        c << "    PyObject *retval = Py" << attType << "_Wrap(&obj->data->Get" << Name << "(index));" << Endl;
+        c << "    // Set the object's parent so the reference to the parent can be decref'd" << Endl;
+        c << "    // when the child goes out of scope." << Endl;
+        c << "    Py" << attType << "_SetParent(retval, self);" << Endl;
+        c << Endl;
     }
 
-    virtual void WriteAdditionalMethods(ostream &c, const QString &className)
+    virtual void WriteAdditionalMethods(QTextStream &c, const QString &className)
     {
-        c << "PyObject *" << endl;
-        c << className << "_GetNum" << Name << "(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
-        c << "    return PyInt_FromLong((long)obj->data->Get" << Name << "().size());" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "PyObject *" << Endl;
+        c << className << "_GetNum" << Name << "(PyObject *self, PyObject *args)" << Endl;
+        c << "{" << Endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    return PyInt_FromLong((long)obj->data->Get" << Name << "().size());" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
-        c << "PyObject *" << endl;
-        c << className << "_Add" << Name << "(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
-        c << "    PyObject *element = NULL;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &element))" << endl;
-        c << "        return NULL;" << endl;
-        c << "    if(!Py" << attType << "_Check(element))" << endl; 
-        c << "    {" << endl;
-        c << "        char msg[400];" << endl;
-        c << "        SNPRINTF(msg, 400, \"The Add" << Name << " method only accepts " << attType << " objects.\");" << endl;
-        c << "        PyErr_SetString(PyExc_TypeError, msg);" << endl;
-        c << "        return NULL;" << endl;
-        c << "    }" << endl;
-        c << "    " << attType << " *newData = Py" << attType << "_FromPyObject(element);" << endl;
+        c << "PyObject *" << Endl;
+        c << className << "_Add" << Name << "(PyObject *self, PyObject *args)" << Endl;
+        c << "{" << Endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    PyObject *element = NULL;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"O\", &element))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    if(!Py" << attType << "_Check(element))" << Endl; 
+        c << "    {" << Endl;
+        c << "        char msg[400];" << Endl;
+        c << "        SNPRINTF(msg, 400, \"The Add" << Name << " method only accepts " << attType << " objects.\");" << Endl;
+        c << "        PyErr_SetString(PyExc_TypeError, msg);" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    }" << Endl;
+        c << "    " << attType << " *newData = Py" << attType << "_FromPyObject(element);" << Endl;
         if(accessType != Field::AccessPublic)
         {
-            c << "    obj->data->Add" << Name << "(*newData);" << endl;
-            c << "    obj->data->Select" << Name << "();" << endl;
+            c << "    obj->data->Add" << Name << "(*newData);" << Endl;
+            c << "    obj->data->Select" << Name << "();" << Endl;
         }
         else
         {
-            c << "    obj->data->" << name << ".push_back(new " << attType << "(*newData));" << endl;
+            c << "    obj->data->" << name << ".push_back(new " << attType << "(*newData));" << Endl;
         }
-        c << "    Py_INCREF(Py_None);" << endl;
-        c << "    return Py_None;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "    Py_INCREF(Py_None);" << Endl;
+        c << "    return Py_None;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
-        c << "static PyObject *" << endl;
-        c << className << "_Remove_One_" << Name << "(PyObject *self, int index)" << endl;
-        c << "{" << endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        c << "static PyObject *" << Endl;
+        c << className << "_Remove_One_" << Name << "(PyObject *self, int index)" << Endl;
+        c << "{" << Endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
         c << "    // Remove in the AttributeGroupVector instead of calling Remove" << Name
-          << "() because we don't want to delete the object; just remove it." << endl;
+          << "() because we don't want to delete the object; just remove it." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    AttributeGroupVector &atts = obj->data->" << name << ";" << endl;
+            c << "    AttributeGroupVector &atts = obj->data->" << name << ";" << Endl;
         else
-            c << "    AttributeGroupVector &atts = obj->data->Get" << Name << "();" << endl;
-        c << "    AttributeGroupVector::iterator pos = atts.begin();" << endl;
-        c << "    // Iterate through the vector \"index\" times. " << endl;
-        c << "    for(int i = 0; i < index; ++i)" << endl;
-        c << "        ++pos;" << endl;
-        c << endl;
-        c << "    // If pos is still a valid iterator, remove that element." << endl;
-        c << "    if(pos != atts.end())" << endl;
-        c << "    {" << endl;
-        c << "        // NOTE: Leak the object since other Python objects may reference it. Ideally," << endl;
-        c << "        // we would put the object into some type of pool to be cleaned up later but" << endl;
-        c << "        // this will do for now." << endl;
-        c << "        //" << endl;
-        c << "        // delete *pos;" << endl;
-        c << "        atts.erase(pos);" << endl;
-        c << "    }" << endl;
-        c << endl;
+            c << "    AttributeGroupVector &atts = obj->data->Get" << Name << "();" << Endl;
+        c << "    AttributeGroupVector::iterator pos = atts.begin();" << Endl;
+        c << "    // Iterate through the vector \"index\" times. " << Endl;
+        c << "    for(int i = 0; i < index; ++i)" << Endl;
+        c << "        ++pos;" << Endl;
+        c << Endl;
+        c << "    // If pos is still a valid iterator, remove that element." << Endl;
+        c << "    if(pos != atts.end())" << Endl;
+        c << "    {" << Endl;
+        c << "        // NOTE: Leak the object since other Python objects may reference it. Ideally," << Endl;
+        c << "        // we would put the object into some type of pool to be cleaned up later but" << Endl;
+        c << "        // this will do for now." << Endl;
+        c << "        //" << Endl;
+        c << "        // delete *pos;" << Endl;
+        c << "        atts.erase(pos);" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
         if(accessType != Field::AccessPublic)
-            c << "    obj->data->Select" << Name << "();" << endl;
-        c << "    Py_INCREF(Py_None);" << endl;
-        c << "    return Py_None;" << endl;
-        c << "}" << endl;
-        c << endl;
+            c << "    obj->data->Select" << Name << "();" << Endl;
+        c << "    Py_INCREF(Py_None);" << Endl;
+        c << "    return Py_None;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
-        c << "PyObject *" << endl;
-        c << className << "_Remove" << Name << "(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    int index;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << endl;
-        c << "        return NULL;" << endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        c << "PyObject *" << Endl;
+        c << className << "_Remove" << Name << "(PyObject *self, PyObject *args)" << Endl;
+        c << "{" << Endl;
+        c << "    int index;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    if(index < 0 || index >= obj->data->" << name << ".size())" << endl;
+            c << "    if(index < 0 || index >= obj->data->" << name << ".size())" << Endl;
         else
-            c << "    if(index < 0 || index >= obj->data->GetNum" << Name << "())" << endl;
-        c << "    {" << endl;
-        c << "        PyErr_SetString(PyExc_IndexError, \"Index out of range\");" << endl;
-        c << "        return NULL;" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "    return " << className << "_Remove_One_" << Name << "(self, index);" << endl;
-        c << "}" << endl;
-        c << endl;
+            c << "    if(index < 0 || index >= obj->data->GetNum" << Name << "())" << Endl;
+        c << "    {" << Endl;
+        c << "        PyErr_SetString(PyExc_IndexError, \"Index out of range\");" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    return " << className << "_Remove_One_" << Name << "(self, index);" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
-        c << "PyObject *" << endl;
-        c << className << "_Clear" << Name << "(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        c << "PyObject *" << Endl;
+        c << className << "_Clear" << Name << "(PyObject *self, PyObject *args)" << Endl;
+        c << "{" << Endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
         if(accessType == Field::AccessPublic)
-            c << "    int n = obj->data->" << name << ".size();" << endl;
+            c << "    int n = obj->data->" << name << ".size();" << Endl;
         else
-            c << "    int n = obj->data->GetNum" << Name << "();" << endl; 
-        c << "    for(int i = 0; i < n; ++i)" << endl;
-        c << "    {" << endl;
-        c << "        " << className << "_Remove_One_" << Name << "(self, 0);" << endl;
-        c << "        Py_DECREF(Py_None);" << endl;
-        c << "    }" << endl;
-        c << "    Py_INCREF(Py_None);" << endl;
-        c << "    return Py_None;" << endl;
-        c << "}" << endl;
-        c << endl;
+            c << "    int n = obj->data->GetNum" << Name << "();" << Endl; 
+        c << "    for(int i = 0; i < n; ++i)" << Endl;
+        c << "    {" << Endl;
+        c << "        " << className << "_Remove_One_" << Name << "(self, 0);" << Endl;
+        c << "        Py_DECREF(Py_None);" << Endl;
+        c << "    }" << Endl;
+        c << "    Py_INCREF(Py_None);" << Endl;
+        c << "    return Py_None;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
     }
 
     virtual std::vector<QString> AdditionalMethodNames(const QString &className)
@@ -2263,24 +2264,24 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         return nameFunc;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    { // new scope" << endl;
-        c << "        int index = 0;" << endl;
-        c << "        // Create string representation of " << name << " from atts." << endl;
+        c << "    { // new scope" << Endl;
+        c << "        int index = 0;" << Endl;
+        c << "        // Create string representation of " << name << " from atts." << Endl;
         if(accessType == Field::AccessPublic)
-            c << "        for(AttributeGroupVector::const_iterator pos = atts->" << name << ".begin(); pos != atts->" << name << ".end(); ++pos, ++index)" << endl;
+            c << "        for(AttributeGroupVector::const_iterator pos = atts->" << name << ".begin(); pos != atts->" << name << ".end(); ++pos, ++index)" << Endl;
         else
-            c << "        for(AttributeGroupVector::const_iterator pos = atts->" << MethodNameGet() << "().begin(); pos != atts->" << MethodNameGet() << "().end(); ++pos, ++index)" << endl;
-        c << "        {" << endl;
-        c << "            const " << attType << " *current" << " = (const " << attType << " *)(*pos);" << endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"Get" << Name << "(%d).\", index);" << endl;
-        c << "            std::string objPrefix(prefix + std::string(tmpStr));" << endl;
-        c << "            str += Py" << attType << "_ToString(current, objPrefix.c_str());" << endl;
-        c << "        }" << endl;
-        c << "        if(index == 0)" << endl;
-        c << "            str += \"#" << name << " does not contain any " << attType << " objects.\\n\";" << endl;
-        c << "    }" << endl;
+            c << "        for(AttributeGroupVector::const_iterator pos = atts->" << MethodNameGet() << "().begin(); pos != atts->" << MethodNameGet() << "().end(); ++pos, ++index)" << Endl;
+        c << "        {" << Endl;
+        c << "            const " << attType << " *current" << " = (const " << attType << " *)(*pos);" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"Get" << Name << "(%d).\", index);" << Endl;
+        c << "            std::string objPrefix(prefix + std::string(tmpStr));" << Endl;
+        c << "            str += Py" << attType << "_ToString(current, objPrefix.c_str());" << Endl;
+        c << "        }" << Endl;
+        c << "        if(index == 0)" << Endl;
+        c << "            str += \"#" << name << " does not contain any " << attType << " objects.\\n\";" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -2293,27 +2294,27 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
   public:
     PythonGeneratorEnum(const QString &t, const QString &n, const QString &l)
         : Field("enum",n,l), Enum(t,n,l), PythonGeneratorField("enum",n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
-        c << "    if(ival >= 0 && ival < " << enumType->values.size() << ")" << endl;
+        c << "    int ival;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
+        c << "    if(ival >= 0 && ival < " << enumType->values.size() << ")" << Endl;
         c << "        obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = " << GetCPPName(true,className) << "(ival);" << endl;
+            c << name << " = " << GetCPPName(true,className) << "(ival);" << Endl;
         else
-            c << MethodNameSet() << "(" << GetCPPName(true,className) << "(ival));" << endl;
-        c << "    else" << endl;
-        c << "    {" << endl;
+            c << MethodNameSet() << "(" << GetCPPName(true,className) << "(ival));" << Endl;
+        c << "    else" << Endl;
+        c << "    {" << Endl;
         c << "        fprintf(stderr, \"An invalid " << name 
-          << " value was given. \"" << endl;
+          << " value was given. \"" << Endl;
         c << "                        \"Valid values are in the range of [0," 
-          << enumType->values.size()-1 << "]. \"" << endl;
+          << enumType->values.size()-1 << "]. \"" << Endl;
         c << "                        \"You can also use the following names: \"" 
-          << endl;
+          << Endl;
         c << "                        \"";
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
@@ -2323,17 +2324,17 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             if(i  > 0 && i%4==0)
                 c << "\"\n                        \"";
         }
-        c << ".\");" << endl;
-        c << "        return NULL;" << endl;
-        c << "    }"<< endl;
+        c << ".\");" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    }"<< Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         // Create a string that shows the possible values.
         c << "    const char *" << name << "_names = \"";
@@ -2347,7 +2348,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
                 c << "\"\n        \"";
             }
         }
-        c << "\";" << endl;
+        c << "\";" << Endl;
 
         c << "    switch (atts->";
         if(accessType == Field::AccessPublic)
@@ -2361,24 +2362,24 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << "      case " << classname << "::" << enumType->values[i] << ":\n";
             c << "          SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" 
               << enumType->values[i] << "  # %s\\n\", prefix, prefix, " 
-              << name << "_names);" << endl;
-            c << "          str += tmpStr;" << endl;
-            c << "          break;" << endl;
+              << name << "_names);" << Endl;
+            c << "          str += tmpStr;" << Endl;
+            c << "          break;" << Endl;
         }
-        c << "      default:" << endl;
-        c << "          break;\n    }" << endl;
+        c << "      default:" << Endl;
+        c << "          break;\n    }" << Endl;
 
-        c << endl;
+        c << Endl;
     }
 
-    virtual void WriteGetAttr(ostream &c, const QString &classname)
+    virtual void WriteGetAttr(QTextStream &c, const QString &classname)
     {
         if (internal)
             return;
 
-        c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;
         c << "        return " << classname << "_" << MethodNameGet() 
-          << "(self, NULL);" << endl;
+          << "(self, NULL);" << Endl;
 
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
@@ -2386,42 +2387,42 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << "if";
             c << "(strcmp(name, \"";
             c << enumType->values[i];
-            c << "\") == 0)" << endl;
+            c << "\") == 0)" << Endl;
             c << "        return PyInt_FromLong(long(";
             c << classname << "::" << enumType->values[i];
-            c << "));" << endl;
+            c << "));" << Endl;
         }
-        c << endl;
+        c << Endl;
     }
 };
 
 #define AVT_GENERATOR_METHODS \
-    virtual void WriteIncludedHeaders(ostream &c) \
+    virtual void WriteIncludedHeaders(QTextStream &c) \
     { \
-        c << "#include <avtTypes.h>" << endl; \
+        c << "#include <avtTypes.h>" << Endl; \
     } \
-    virtual void WriteSetMethodBody(ostream &c, const QString &className) \
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className) \
     { \
-        c << "    int ival;" << endl; \
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl; \
-        c << "        return NULL;" << endl; \
-        c << endl; \
+        c << "    int ival;" << Endl; \
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl; \
+        c << "        return NULL;" << Endl; \
+        c << Endl; \
         QString T(type); T.replace("Field", "");\
         if(accessType == AccessPublic) \
-            c << "    obj->data->" << name << " = (" << T << ")ival;" << endl; \
+            c << "    obj->data->" << name << " = (" << T << ")ival;" << Endl; \
         else \
-            c << "    obj->data->" << MethodNameSet() << "((" << T << ")ival);" << endl; \
+            c << "    obj->data->" << MethodNameSet() << "((" << T << ")ival);" << Endl; \
     } \
-    virtual void WriteGetMethodBody(ostream &c, const QString &className) \
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className) \
     { \
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"; \
         if(accessType == AccessPublic) \
             c << name; \
         else \
             c << MethodNameGet()<<"()"; \
-        c << "));" << endl; \
+        c << "));" << Endl; \
     } \
-    virtual void StringRepresentation(ostream &c, const QString &classname) \
+    virtual void StringRepresentation(QTextStream &c, const QString &classname) \
     { \
         c << "    const char *" << name << "_names = \""; \
         int values_size = 0; \
@@ -2432,7 +2433,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             if(j < values_size - 1) \
                 c << ", "; \
         } \
-        c << "\";" << endl; \
+        c << "\";" << Endl; \
         for(int i = 0; i < values_size; ++i) \
         { \
             c << "    "; \
@@ -2443,7 +2444,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
                     c << name; \
                 else \
                     c << MethodNameGet() << "()"; \
-                c << " == " << values[i] << ")" << endl; \
+                c << " == " << values[i] << ")" << Endl; \
             } \
             else if(i < values_size - 1) \
             { \
@@ -2453,23 +2454,23 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
                     c << name; \
                 else \
                     c << MethodNameGet() << "()"; \
-                c << " == " << values[i] << ")" << endl; \
+                c << " == " << values[i] << ")" << Endl; \
             } \
             else \
-                c << "else" << endl; \
-            c << "    {" << endl; \
-            c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" << values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << endl; \
-            c << "        str += tmpStr;" << endl; \
-            c << "    }" << endl; \
+                c << "else" << Endl; \
+            c << "    {" << Endl; \
+            c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" << values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << Endl; \
+            c << "        str += tmpStr;" << Endl; \
+            c << "    }" << Endl; \
         } \
-        c << endl; \
+        c << Endl; \
     }\
-    virtual void WriteGetAttr(ostream &c, const QString &classname)\
+    virtual void WriteGetAttr(QTextStream &c, const QString &classname)\
     {\
         if (internal)\
             return;\
-        c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;\
-        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << endl;\
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;\
+        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << Endl;\
         int values_size = 0;\
         const char **values = GetSymbols(values_size);\
         for(int i = 0; i < values_size; ++i)\
@@ -2481,12 +2482,12 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
                 c << "else if";\
             c << "(strcmp(name, \"";\
             c << values[i];\
-            c << "\") == 0)" << endl;\
+            c << "\") == 0)" << Endl;\
             c << "        return PyInt_FromLong(long(";\
             c << values[i];\
-            c << "));" << endl;\
+            c << "));" << Endl;\
         }\
-        c << endl;\
+        c << Endl;\
     }
 
 //
@@ -2593,49 +2594,49 @@ class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtu
   public:
     AttsGeneratorScaleMode(const QString &n, const QString &l)
         : Field("scalemode",n,l), PythonGeneratorField("scalemode",n,l), ScaleMode(n,l) { }
-    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl;
-        c << "        return NULL;" << endl;
-        c << endl;
-        c << "    // Set the " << name << " in the object." << endl;
-        c << "    if(ival >= 0 && ival <= 1)" << endl;
-        c << "        obj->data->" << MethodNameSet() << "(ival);" << endl;
-        c << "    else" << endl;
-        c << "    {" << endl;
-        c << "        fprintf(stderr, \"An invalid  value was given. \"" << endl;
-        c << "                        \"Valid values are in the range of [0,1]. \"" << endl;
-        c << "                        \"You can also use the following names: \"" << endl;
-        c << "                        \"\\\"LINEAR\\\", \\\"LOG\\\"\\n\");" << endl;
-        c << "        return NULL;" << endl;
-        c << "    }" << endl;
+        c << "    int ival;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Set the " << name << " in the object." << Endl;
+        c << "    if(ival >= 0 && ival <= 1)" << Endl;
+        c << "        obj->data->" << MethodNameSet() << "(ival);" << Endl;
+        c << "    else" << Endl;
+        c << "    {" << Endl;
+        c << "        fprintf(stderr, \"An invalid  value was given. \"" << Endl;
+        c << "                        \"Valid values are in the range of [0,1]. \"" << Endl;
+        c << "                        \"You can also use the following names: \"" << Endl;
+        c << "                        \"\\\"LINEAR\\\", \\\"LOG\\\"\\n\");" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    }" << Endl;
     }
 
-    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << Endl;
     }
 
-    virtual void StringRepresentation(ostream &c, const QString &classname)
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    const char *" << name << "_values[] = {\"LINEAR\", \"LOG\"};" << endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s  # LINEAR, LOG\\n\", prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << endl;
-        c << "    str += tmpStr;" << endl;
+        c << "    const char *" << name << "_values[] = {\"LINEAR\", \"LOG\"};" << Endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s  # LINEAR, LOG\\n\", prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << Endl;
+        c << "    str += tmpStr;" << Endl;
     }
 
-    virtual void WriteGetAttr(ostream &c, const QString &classname)
+    virtual void WriteGetAttr(QTextStream &c, const QString &classname)
     {
         if (internal)
             return;
 
-        c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
-        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << endl;
-        c << "    if(strcmp(name, \"LINEAR\") == 0)" << endl;
-        c << "        return PyInt_FromLong(long(0));" << endl;
-        c << "    else if(strcmp(name, \"LOG\") == 0)" << endl;
-        c << "        return PyInt_FromLong(long(1));" << endl;
-        c << endl;
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;
+        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << Endl;
+        c << "    if(strcmp(name, \"LINEAR\") == 0)" << Endl;
+        c << "        return PyInt_FromLong(long(0));" << Endl;
+        c << "    else if(strcmp(name, \"LOG\") == 0)" << Endl;
+        c << "        return PyInt_FromLong(long(1));" << Endl;
+        c << Endl;
     }
 };
 
@@ -2659,7 +2660,7 @@ class PythonFieldFactory
                                            const QString &label)
     {
         PythonGeneratorField *f = NULL;
-        if      (type.isNull())          throw QString().sprintf("Field %s was specified with no type.",name.latin1());
+        if      (type.isNull())          throw QString("Field %1 was specified with no type.").arg(name);
         else if (type == "int")          f = new AttsGeneratorInt(name,label);
         else if (type == "intArray")     f = new AttsGeneratorIntArray(length,name,label);
         else if (type == "intVector")    f = new AttsGeneratorIntVector(name,label);
@@ -2696,7 +2697,7 @@ class PythonFieldFactory
         else if (type == "LoadBalanceScheme") f = new AttsGeneratorLoadBalanceScheme(name, label);
 
         if (!f)
-            throw QString().sprintf("PythonFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
+            throw QString("PythonFieldFactory: unknown type for field %1: %2").arg(name).arg(type);
 
         return f;
     }
@@ -2735,16 +2736,16 @@ class PythonGeneratorAttribute : public GeneratorBase
 
     void DisableVISITPY() { visitpy_api = false; }
 
-    void PrintFunction(ostream &out, const QString &f)
+    void PrintFunction(QTextStream &out, const QString &f)
     {
         for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f)
                 out << functions[i]->def;
     }
 
-    void Print(ostream &out)
+    void Print(QTextStream &out)
     {
-        out << "    Attribute: " << name << " (" << purpose << ")" << endl;
+        out << "    Attribute: " << name << " (" << purpose << ")" << Endl;
         size_t i;
         for (i=0; i<fields.size(); i++)
             fields[i]->Print(out);
@@ -2752,101 +2753,101 @@ class PythonGeneratorAttribute : public GeneratorBase
             functions[i]->Print(out, generatorName);
     }
 
-    void WriteHeader(ostream &h)
+    void WriteHeader(QTextStream &h)
     {
-        h << copyright_str.c_str() << endl;
-        h << "#ifndef PY_" << name.upper() << "_H" << endl;
-        h << "#define PY_" << name.upper() << "_H" << endl;
-        h << "#include <Python.h>" << endl;
-        h << "#include <"<<name<<".h>" << endl;
+        h << copyright_str << Endl;
+        h << "#ifndef PY_" << name.toUpper() << "_H" << Endl;
+        h << "#define PY_" << name.toUpper() << "_H" << Endl;
+        h << "#include <Python.h>" << Endl;
+        h << "#include <"<<name<<".h>" << Endl;
         QString api(""); 
         if(visitpy_api)
         {
-             h << "#include <visitpy_exports.h>" << endl;
+             h << "#include <visitpy_exports.h>" << Endl;
              api = "VISITPY_API ";
         }
-        h << endl;
-        h << "//" << endl;
-        h << "// Functions exposed to the VisIt module." << endl;
-        h << "//" << endl;
-        h << "void "<<api<<"          Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
-        h << "void "<<api<<"          Py"<<name<<"_CloseDown();" << endl;
-        h << api << "PyMethodDef * "<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
-        h << "bool "<<api<<"          Py"<<name<<"_Check(PyObject *obj);" << endl;
-        h << api << name << " * "<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
-        h << api << "PyObject * "<<"     Py"<<name<<"_New();" << endl;
-        h << api << "PyObject * "<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << endl;
-        h << "void "<<api<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << endl;
-        h << "void "<<api<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
-        h << "std::string "<<api<<"   Py"<<name<<"_GetLogString();" << endl;
-        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *);" << endl;
-        h << endl;
-        h << "#endif" << endl;
-        h << endl;
+        h << Endl;
+        h << "//" << Endl;
+        h << "// Functions exposed to the VisIt module." << Endl;
+        h << "//" << Endl;
+        h << "void "<<api<<"          Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << Endl;
+        h << "void "<<api<<"          Py"<<name<<"_CloseDown();" << Endl;
+        h << api << "PyMethodDef * "<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << Endl;
+        h << "bool "<<api<<"          Py"<<name<<"_Check(PyObject *obj);" << Endl;
+        h << api << name << " * "<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << Endl;
+        h << api << "PyObject * "<<"     Py"<<name<<"_New();" << Endl;
+        h << api << "PyObject * "<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << Endl;
+        h << "void "<<api<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << Endl;
+        h << "void "<<api<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << Endl;
+        h << "std::string "<<api<<"   Py"<<name<<"_GetLogString();" << Endl;
+        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *);" << Endl;
+        h << Endl;
+        h << "#endif" << Endl;
+        h << Endl;
     }
 
-    void WriteIncludedHeaders(ostream &c)
+    void WriteIncludedHeaders(QTextStream &c)
     {
-        c << "#include <snprintf.h>" << endl;
+        c << "#include <snprintf.h>" << Endl;
 
         // Write the headers that are needed.
         for(size_t i = 0; i < fields.size(); ++i)
             fields[i]->WriteIncludedHeaders(c);
     }
 
-    void WriteHeaderComment(ostream &c)
+    void WriteHeaderComment(QTextStream &c)
     {
-        c << "// ****************************************************************************" << endl;
-        c << "// Module: Py" << name << endl;
-        c << "//" << endl;
-        c << "// Purpose: " << endl;
-        c << "//   " << purpose << endl;
-        c << "//" << endl;
-        c << "// Note:       Autogenerated by xml2python. Do not modify by hand!" << endl;
-        c << "//" << endl;
-        c << "// Programmer: xml2python" << endl;
-        c << "// Creation:   " << CurrentTime() << endl;       
-        c << "//" << endl;
-        c << "// ****************************************************************************" << endl;
-        c << endl;
+        c << "// ****************************************************************************" << Endl;
+        c << "// Module: Py" << name << Endl;
+        c << "//" << Endl;
+        c << "// Purpose: " << Endl;
+        c << "//   " << purpose << Endl;
+        c << "//" << Endl;
+        c << "// Note:       Autogenerated by xml2python. Do not modify by hand!" << Endl;
+        c << "//" << Endl;
+        c << "// Programmer: xml2python" << Endl;
+        c << "// Creation:   " << CurrentTime() << Endl;       
+        c << "//" << Endl;
+        c << "// ****************************************************************************" << Endl;
+        c << Endl;
     }
 
-    void WritePyObjectStruct(ostream &c)
+    void WritePyObjectStruct(QTextStream &c)
     {
-        c << "//" << endl;
-        c << "// This struct contains the Python type information and a "<<name<<"." << endl;
-        c << "//" << endl;
-        c << "struct "<<name<<"Object" << endl;
-        c << "{" << endl;
-        c << "    PyObject_HEAD" << endl;
-        c << "    "<<name<<" *data;" << endl;
-        c << "    bool        owns;" << endl;
-        c << "    PyObject   *parent;" << endl;
-        c << "};" << endl;
-        c << endl;
+        c << "//" << Endl;
+        c << "// This struct contains the Python type information and a "<<name<<"." << Endl;
+        c << "//" << Endl;
+        c << "struct "<<name<<"Object" << Endl;
+        c << "{" << Endl;
+        c << "    PyObject_HEAD" << Endl;
+        c << "    "<<name<<" *data;" << Endl;
+        c << "    bool        owns;" << Endl;
+        c << "    PyObject   *parent;" << Endl;
+        c << "};" << Endl;
+        c << Endl;
     }
 
-    void WriteInternalPrototypes(ostream &c)
+    void WriteInternalPrototypes(QTextStream &c)
     {
-        c << "//" << endl;
-        c << "// Internal prototypes" << endl;
-        c << "//" << endl;
-        c << "static PyObject *New"<<name<<"(int);" << endl;
-        c << endl;
+        c << "//" << Endl;
+        c << "// Internal prototypes" << Endl;
+        c << "//" << Endl;
+        c << "static PyObject *New"<<name<<"(int);" << Endl;
+        c << Endl;
     }
 
-    void WritePyObjectMethods(ostream &c)
+    void WritePyObjectMethods(QTextStream &c)
     {
         // Write the Notify method.
-        c << "static PyObject *" << endl;
-        c << name << "_Notify(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    " << name << "Object *obj = ("<<name<<"Object *)self;" << endl;
-        c << "    obj->data->Notify();" << endl;
-        c << "    Py_INCREF(Py_None);" << endl;
-        c << "    return Py_None;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "static PyObject *" << Endl;
+        c << name << "_Notify(PyObject *self, PyObject *args)" << Endl;
+        c << "{" << Endl;
+        c << "    " << name << "Object *obj = ("<<name<<"Object *)self;" << Endl;
+        c << "    obj->data->Notify();" << Endl;
+        c << "    Py_INCREF(Py_None);" << Endl;
+        c << "    return Py_None;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
         // Write the rest of the methods.
         for(size_t i = 0; i < fields.size(); ++i)
@@ -2861,7 +2862,7 @@ class PythonGeneratorAttribute : public GeneratorBase
                 if(HasFunction(sName))
                 {
                     PrintFunction(c, sName);
-                    c << endl;
+                    c << Endl;
                 }
                 else
                     fields[i]->WriteSetMethod(c, name);
@@ -2871,31 +2872,31 @@ class PythonGeneratorAttribute : public GeneratorBase
             if(HasFunction(gName))
             {
                 PrintFunction(c, gName);
-                c << endl;
+                c << Endl;
             }
             else
                 fields[i]->WriteGetMethod(c, name);
 
             fields[i]->WriteAdditionalMethods(c, name);
         }
-        c << endl;
+        c << Endl;
     }
 
-    void WriteUserDefinedFunctions(ostream &c)
+    void WriteUserDefinedFunctions(QTextStream &c)
     { 
         for(size_t i = 0; i < functions.size(); ++i)
         {
             if(functions[i]->target == generatorName &&
                functions[i]->user)
-                c << functions[i]->def << endl;
+                c << functions[i]->def << Endl;
         }
     }
 
-    void WritePyObjectMethodTable(ostream &c)
+    void WritePyObjectMethodTable(QTextStream &c)
     {
-        c << endl;
-        c << "static struct PyMethodDef "<<name<<"_methods[] = {" << endl;
-        c << "    {\"Notify\", " << name << "_Notify, METH_VARARGS}," << endl;
+        c << Endl;
+        c << "static struct PyMethodDef "<<name<<"_methods[] = {" << Endl;
+        c << "    {\"Notify\", " << name << "_Notify, METH_VARARGS}," << Endl;
         for(size_t i = 0; i < fields.size(); ++i)
         {
             fields[i]->WritePyObjectMethodTable(c, name);
@@ -2911,58 +2912,58 @@ class PythonGeneratorAttribute : public GeneratorBase
                 c << "    {\"" << pyMethName << "\", " << functions[i]->decl << ", METH_VARARGS}," << endl;
             }
         }
-        c << "    {NULL, NULL}" << endl;
-        c << "};" << endl;
-        c << endl;
+        c << "    {NULL, NULL}" << Endl;
+        c << "};" << Endl;
+        c << Endl;
     }
 
-    void WriteGetAttrFunction(ostream &c)
+    void WriteGetAttrFunction(QTextStream &c)
     {
         QString mName(name + "_getattr");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
-            c << endl;
+            c << Endl;
             return;
         }
 
-        c << "PyObject *" << endl;
-        c << mName << "(PyObject *self, char *name)" << endl;
-        c << "{" << endl;
+        c << "PyObject *" << Endl;
+        c << mName << "(PyObject *self, char *name)" << Endl;
+        c << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
         for(size_t i = 0; i < fields.size(); ++i)
             fields[i]->WriteGetAttr(c, name);
-        c << endl;
+        c << Endl;
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
-        c << "    return Py_FindMethod("<<name<<"_methods, self, name);" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "    return Py_FindMethod("<<name<<"_methods, self, name);" << Endl;
+        c << "}" << Endl;
+        c << Endl;
     }
 
-    void WriteSetAttrFunction(ostream &c)
+    void WriteSetAttrFunction(QTextStream &c)
     {
         QString mName(name + "_setattr");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
-            c << endl;
+            c << Endl;
             return;
         }
 
-        c << "static int" << endl;
-        c << mName << "(PyObject *self, char *name, PyObject *args)" << endl;
-        c << "{" << endl;
+        c << "static int" << Endl;
+        c << mName << "(PyObject *self, char *name, PyObject *args)" << Endl;
+        c << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        c << "    // Create a tuple to contain the arguments since all of the Set" << endl;
-        c << "    // functions expect a tuple." << endl;
-        c << "    PyObject *tuple = PyTuple_New(1);" << endl;
-        c << "    PyTuple_SET_ITEM(tuple, 0, args);" << endl;
-        c << "    Py_INCREF(args);" << endl;
-        c << "    PyObject *obj = NULL;" << endl;
-        c << endl;
+        c << "    // Create a tuple to contain the arguments since all of the Set" << Endl;
+        c << "    // functions expect a tuple." << Endl;
+        c << "    PyObject *tuple = PyTuple_New(1);" << Endl;
+        c << "    PyTuple_SET_ITEM(tuple, 0, args);" << Endl;
+        c << "    Py_INCREF(args);" << Endl;
+        c << "    PyObject *obj = NULL;" << Endl;
+        c << Endl;
 
         // Figure out the first field that can write a _setattr method.
         size_t i, index = 0;
@@ -2977,60 +2978,60 @@ class PythonGeneratorAttribute : public GeneratorBase
 
         for(i = index; i < fields.size(); ++i)
             fields[i]->WriteSetAttr(c, name, i == index);
-        c << endl;
+        c << Endl;
 
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
 
-        c << "    if(obj != NULL)" << endl;
-        c << "        Py_DECREF(obj);" << endl;
-        c << endl;
-        c << "    Py_DECREF(tuple);" << endl;
-        c << "    return (obj != NULL) ? 0 : -1;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "    if(obj != NULL)" << Endl;
+        c << "        Py_DECREF(obj);" << Endl;
+        c << Endl;
+        c << "    Py_DECREF(tuple);" << Endl;
+        c << "    return (obj != NULL) ? 0 : -1;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
     }
 
-    void WritePrintFunction(ostream &c)
+    void WritePrintFunction(QTextStream &c)
     {
         QString mName(name + "_print");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
-            c << endl;
+            c << Endl;
             return;
         }
 
-        c << "static int" << endl;
-        c << mName << "(PyObject *v, FILE *fp, int flags)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << endl;
+        c << "static int" << Endl;
+        c << mName << "(PyObject *v, FILE *fp, int flags)" << Endl;
+        c << "{" << Endl;
+        c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\").c_str());" << endl;
+        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\").c_str());" << Endl;
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
-        c << "    return 0;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "    return 0;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
     }
 
-    void WriteToStringFunction(ostream &c)
+    void WriteToStringFunction(QTextStream &c)
     {
         QString mName(QString("Py") + name + "_ToString");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
-            c << endl;
+            c << Endl;
             return;
         }
 
-        c << "std::string" << endl;
-        c << mName << "(const "<<name<<" *atts, const char *prefix)" << endl;
-        c << "{" << endl;
-        c << "    std::string str; " << endl;
-        c << "    char tmpStr[1000]; " << endl;
-        c << endl;
+        c << "std::string" << Endl;
+        c << mName << "(const "<<name<<" *atts, const char *prefix)" << Endl;
+        c << "{" << Endl;
+        c << "    std::string str; " << Endl;
+        c << "    char tmpStr[1000]; " << Endl;
+        c << Endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
         for(size_t i = 0; i < fields.size(); ++i)
@@ -3040,55 +3041,55 @@ class PythonGeneratorAttribute : public GeneratorBase
         }
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
-        c << "    return str;" << endl;
-        c << "}" << endl << endl;
+        c << "    return str;" << Endl;
+        c << "}" << endl << Endl;
     }
 
-    void WriteStringRepresentationFunction(ostream &c)
+    void WriteStringRepresentationFunction(QTextStream &c)
     {
         QString mName(name + "_str");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
-            c << endl;
+            c << Endl;
             return;
         }
 
-        c << "PyObject *" << endl;
-        c << mName << "(PyObject *v)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << endl;
-        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\").c_str());" << endl;
-        c << "}" << endl << endl;
+        c << "PyObject *" << Endl;
+        c << mName << "(PyObject *v)" << Endl;
+        c << "{" << Endl;
+        c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
+        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\").c_str());" << Endl;
+        c << "}" << endl << Endl;
     }
 
 
-    void WriteTypeFunctions(ostream &c)
+    void WriteTypeFunctions(QTextStream &c)
     {
-        c << "//" << endl;
-        c << "// Type functions" << endl;
-        c << "//" << endl;
-        c << endl;
+        c << "//" << Endl;
+        c << "// Type functions" << Endl;
+        c << "//" << Endl;
+        c << Endl;
 
-        c << "static void" << endl;
-        c << name << "_dealloc(PyObject *v)" << endl;
-        c << "{" << endl;
-        c << "   " << name << "Object *obj = (" << name << "Object *)v;" << endl;
-        c << "   if(obj->parent != 0)" << endl;
-        c << "       Py_DECREF(obj->parent);" << endl;
-        c << "   if(obj->owns)" << endl;
-        c << "       delete obj->data;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "static void" << Endl;
+        c << name << "_dealloc(PyObject *v)" << Endl;
+        c << "{" << Endl;
+        c << "   " << name << "Object *obj = (" << name << "Object *)v;" << Endl;
+        c << "   if(obj->parent != 0)" << Endl;
+        c << "       Py_DECREF(obj->parent);" << Endl;
+        c << "   if(obj->owns)" << Endl;
+        c << "       delete obj->data;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
-        c << "static int" << endl;
-        c << name << "_compare(PyObject *v, PyObject *w)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<" *a = (("<<name<<"Object *)v)->data;" << endl;
-        c << "    "<<name<<" *b = (("<<name<<"Object *)w)->data;" << endl;
-        c << "    return (*a == *b) ? 0 : -1;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "static int" << Endl;
+        c << name << "_compare(PyObject *v, PyObject *w)" << Endl;
+        c << "{" << Endl;
+        c << "    "<<name<<" *a = (("<<name<<"Object *)v)->data;" << Endl;
+        c << "    "<<name<<" *b = (("<<name<<"Object *)w)->data;" << Endl;
+        c << "    return (*a == *b) ? 0 : -1;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
         // Write the getattr function
         WriteGetAttrFunction(c);
@@ -3102,103 +3103,103 @@ class PythonGeneratorAttribute : public GeneratorBase
         // Write the str function.
         WriteStringRepresentationFunction(c);
 
-        c << "//" << endl;
-        c << "// The doc string for the class." << endl;
-        c << "//" << endl;
+        c << "//" << Endl;
+        c << "// The doc string for the class." << Endl;
+        c << "//" << Endl;
         c << "#if PY_MAJOR_VERSION > 2 || "
-          << "(PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)" << endl;
-        c << "static const char *" << name << "_Purpose = \"" << purpose << "\";" << endl;
-        c << "#else" << endl;
-        c << "static char *" << name << "_Purpose = \"" << purpose << "\";" << endl;
-        c << "#endif" << endl;
-        c << endl;
+          << "(PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)" << Endl;
+        c << "static const char *" << name << "_Purpose = \"" << purpose << "\";" << Endl;
+        c << "#else" << Endl;
+        c << "static char *" << name << "_Purpose = \"" << purpose << "\";" << Endl;
+        c << "#endif" << Endl;
+        c << Endl;
 
-        c << "//" << endl;
-        c << "// The type description structure" << endl;
-        c << "//" << endl;
-        c << "static PyTypeObject "<<name<<"Type =" << endl;
-        c << "{" << endl;
-        c << "    //" << endl;
-        c << "    // Type header" << endl;
-        c << "    //" << endl;
-        c << "    PyObject_HEAD_INIT(&PyType_Type)" << endl;
-        c << "    0,                                   // ob_size" << endl;
-        c << "    \""<<name<<"\",                    // tp_name" << endl;
-        c << "    sizeof("<<name<<"Object),        // tp_basicsize" << endl;
-        c << "    0,                                   // tp_itemsize" << endl;
-        c << "    //" << endl;
-        c << "    // Standard methods" << endl;
-        c << "    //" << endl;
-        c << "    (destructor)"<<name<<"_dealloc,  // tp_dealloc" << endl;
-        c << "    (printfunc)"<<name<<"_print,     // tp_print" << endl;
-        c << "    (getattrfunc)"<<name<<"_getattr, // tp_getattr" << endl;
-        c << "    (setattrfunc)"<<name<<"_setattr, // tp_setattr" << endl;
-        c << "    (cmpfunc)"<<name<<"_compare,     // tp_compare" << endl;
-        c << "    (reprfunc)0,                         // tp_repr" << endl;
-        c << "    //" << endl;
-        c << "    // Type categories" << endl;
-        c << "    //" << endl;
-        c << "    0,                                   // tp_as_number" << endl;
-        c << "    0,                                   // tp_as_sequence" << endl;
-        c << "    0,                                   // tp_as_mapping" << endl;
-        c << "    //" << endl;
-        c << "    // More methods" << endl;
-        c << "    //" << endl;
-        c << "    0,                                   // tp_hash" << endl;
-        c << "    0,                                   // tp_call" << endl;
-        c << "    (reprfunc)" << name << "_str,        // tp_str" << endl;
-        c << "    0,                                   // tp_getattro" << endl;
-        c << "    0,                                   // tp_setattro" << endl;
-        c << "    0,                                   // tp_as_buffer" << endl;
-        c << "    Py_TPFLAGS_CHECKTYPES,               // tp_flags" << endl;
-        c << "    "<<name<<"_Purpose,              // tp_doc" << endl;
-        c << "    0,                                   // tp_traverse" << endl;
-        c << "    0,                                   // tp_clear" << endl;
-        c << "    0,                                   // tp_richcompare" << endl;
-        c << "    0                                    // tp_weaklistoffset" << endl;
-        c << "};" << endl;
-        c << endl;
-        c << "//" << endl;
-        c << "// Helper functions for object allocation." << endl;
-        c << "//" << endl;
-        c << endl;
-        c << "static "<<name<<" *defaultAtts = 0;" << endl;
-        c << "static "<<name<<" *currentAtts = 0;" << endl;
-        c << endl;
-        c << "static PyObject *" << endl;
-        c << "New"<<name<<"(int useCurrent)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<"Object *newObject;" << endl;
-        c << "    newObject = PyObject_NEW("<<name<<"Object, &"<<name<<"Type);" << endl;
-        c << "    if(newObject == NULL)" << endl;
-        c << "        return NULL;" << endl;
-        c << "    if(useCurrent && currentAtts != 0)" << endl;
-        c << "        newObject->data = new "<<name<<"(*currentAtts);" << endl;
-        c << "    else if(defaultAtts != 0)" << endl;
-        c << "        newObject->data = new "<<name<<"(*defaultAtts);" << endl;
-        c << "    else" << endl;
-        c << "        newObject->data = new "<<name<<";" << endl;
-        c << "    newObject->owns = true;" << endl;
-        c << "    newObject->parent = 0;" << endl;
-        c << "    return (PyObject *)newObject;" << endl;
-        c << "}" << endl;
-        c << endl;
-        c << "static PyObject *" << endl;
-        c << "Wrap"<<name<<"(const " << name << " *attr)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<"Object *newObject;" << endl;
-        c << "    newObject = PyObject_NEW("<<name<<"Object, &"<<name<<"Type);" << endl;
-        c << "    if(newObject == NULL)" << endl;
-        c << "        return NULL;" << endl;
-        c << "    newObject->data = ("<<name<< " *)attr;" << endl;
-        c << "    newObject->owns = false;" << endl;
-        c << "    newObject->parent = 0;" << endl;
-        c << "    return (PyObject *)newObject;" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "//" << Endl;
+        c << "// The type description structure" << Endl;
+        c << "//" << Endl;
+        c << "static PyTypeObject "<<name<<"Type =" << Endl;
+        c << "{" << Endl;
+        c << "    //" << Endl;
+        c << "    // Type header" << Endl;
+        c << "    //" << Endl;
+        c << "    PyObject_HEAD_INIT(&PyType_Type)" << Endl;
+        c << "    0,                                   // ob_size" << Endl;
+        c << "    \""<<name<<"\",                    // tp_name" << Endl;
+        c << "    sizeof("<<name<<"Object),        // tp_basicsize" << Endl;
+        c << "    0,                                   // tp_itemsize" << Endl;
+        c << "    //" << Endl;
+        c << "    // Standard methods" << Endl;
+        c << "    //" << Endl;
+        c << "    (destructor)"<<name<<"_dealloc,  // tp_dealloc" << Endl;
+        c << "    (printfunc)"<<name<<"_print,     // tp_print" << Endl;
+        c << "    (getattrfunc)"<<name<<"_getattr, // tp_getattr" << Endl;
+        c << "    (setattrfunc)"<<name<<"_setattr, // tp_setattr" << Endl;
+        c << "    (cmpfunc)"<<name<<"_compare,     // tp_compare" << Endl;
+        c << "    (reprfunc)0,                         // tp_repr" << Endl;
+        c << "    //" << Endl;
+        c << "    // Type categories" << Endl;
+        c << "    //" << Endl;
+        c << "    0,                                   // tp_as_number" << Endl;
+        c << "    0,                                   // tp_as_sequence" << Endl;
+        c << "    0,                                   // tp_as_mapping" << Endl;
+        c << "    //" << Endl;
+        c << "    // More methods" << Endl;
+        c << "    //" << Endl;
+        c << "    0,                                   // tp_hash" << Endl;
+        c << "    0,                                   // tp_call" << Endl;
+        c << "    (reprfunc)" << name << "_str,        // tp_str" << Endl;
+        c << "    0,                                   // tp_getattro" << Endl;
+        c << "    0,                                   // tp_setattro" << Endl;
+        c << "    0,                                   // tp_as_buffer" << Endl;
+        c << "    Py_TPFLAGS_CHECKTYPES,               // tp_flags" << Endl;
+        c << "    "<<name<<"_Purpose,              // tp_doc" << Endl;
+        c << "    0,                                   // tp_traverse" << Endl;
+        c << "    0,                                   // tp_clear" << Endl;
+        c << "    0,                                   // tp_richcompare" << Endl;
+        c << "    0                                    // tp_weaklistoffset" << Endl;
+        c << "};" << Endl;
+        c << Endl;
+        c << "//" << Endl;
+        c << "// Helper functions for object allocation." << Endl;
+        c << "//" << Endl;
+        c << Endl;
+        c << "static "<<name<<" *defaultAtts = 0;" << Endl;
+        c << "static "<<name<<" *currentAtts = 0;" << Endl;
+        c << Endl;
+        c << "static PyObject *" << Endl;
+        c << "New"<<name<<"(int useCurrent)" << Endl;
+        c << "{" << Endl;
+        c << "    "<<name<<"Object *newObject;" << Endl;
+        c << "    newObject = PyObject_NEW("<<name<<"Object, &"<<name<<"Type);" << Endl;
+        c << "    if(newObject == NULL)" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    if(useCurrent && currentAtts != 0)" << Endl;
+        c << "        newObject->data = new "<<name<<"(*currentAtts);" << Endl;
+        c << "    else if(defaultAtts != 0)" << Endl;
+        c << "        newObject->data = new "<<name<<"(*defaultAtts);" << Endl;
+        c << "    else" << Endl;
+        c << "        newObject->data = new "<<name<<";" << Endl;
+        c << "    newObject->owns = true;" << Endl;
+        c << "    newObject->parent = 0;" << Endl;
+        c << "    return (PyObject *)newObject;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
+        c << "static PyObject *" << Endl;
+        c << "Wrap"<<name<<"(const " << name << " *attr)" << Endl;
+        c << "{" << Endl;
+        c << "    "<<name<<"Object *newObject;" << Endl;
+        c << "    newObject = PyObject_NEW("<<name<<"Object, &"<<name<<"Type);" << Endl;
+        c << "    if(newObject == NULL)" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    newObject->data = ("<<name<< " *)attr;" << Endl;
+        c << "    newObject->owns = false;" << Endl;
+        c << "    newObject->parent = 0;" << Endl;
+        c << "    return (PyObject *)newObject;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
     }
 
-    void WriteCallLogRoutineMethod(ostream &c)
+    void WriteCallLogRoutineMethod(QTextStream &c)
     {
         QString shortName(name);
         shortName.replace(QRegExp("Attributes"), "Atts");
@@ -3208,243 +3209,243 @@ class PythonGeneratorAttribute : public GeneratorBase
             PrintFunction(c, GetLogString);
         else
         { 
-            c << "std::string" << endl;
-            c << "Py" << name << "_GetLogString()" << endl;
-            c << "{" << endl;
-            c << "    std::string s(\"" << shortName << " = " << name << "()\\n\");" << endl;
-            c << "    if(currentAtts != 0)" << endl;
-            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << endl;
-            c << "    return s;" << endl;
-            c << "}" << endl;
+            c << "std::string" << Endl;
+            c << "Py" << name << "_GetLogString()" << Endl;
+            c << "{" << Endl;
+            c << "    std::string s(\"" << shortName << " = " << name << "()\\n\");" << Endl;
+            c << "    if(currentAtts != 0)" << Endl;
+            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << Endl;
+            c << "    return s;" << Endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
 
         QString CallLogRoutine(QString("Py") + name + "_CallLogRoutine");
         if(HasFunction(CallLogRoutine))
             PrintFunction(c, CallLogRoutine);
         else
         { 
-            c << "static void" << endl;
-            c << CallLogRoutine << "(Subject *subj, void *data)" << endl;
-            c << "{" << endl;
-            c << "    "<<name<<" *atts = ("<<name<<" *)subj;" << endl;
+            c << "static void" << Endl;
+            c << CallLogRoutine << "(Subject *subj, void *data)" << Endl;
+            c << "{" << Endl;
+            c << "    "<<name<<" *atts = ("<<name<<" *)subj;" << Endl;
             if(HasCode(CallLogRoutine, 0))
                 PrintCode(c, CallLogRoutine, 0);
-            c << "    typedef void (*logCallback)(const std::string &);" << endl;
-            c << "    logCallback cb = (logCallback)data;" << endl;
-            c << endl;
-            c << "    if(cb != 0)" << endl;
-            c << "    {" << endl;
-            c << "        std::string s(\"" << shortName << " = " << name << "()\\n\");" << endl;
-            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << endl;
-            c << "        cb(s);" << endl;
-            c << "    }" << endl;
+            c << "    typedef void (*logCallback)(const std::string &);" << Endl;
+            c << "    logCallback cb = (logCallback)data;" << Endl;
+            c << Endl;
+            c << "    if(cb != 0)" << Endl;
+            c << "    {" << Endl;
+            c << "        std::string s(\"" << shortName << " = " << name << "()\\n\");" << Endl;
+            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << Endl;
+            c << "        cb(s);" << Endl;
+            c << "    }" << Endl;
             if(HasCode(CallLogRoutine, 1))
                 PrintCode(c, CallLogRoutine, 1);
-            c << "}" << endl;
+            c << "}" << Endl;
         }
     }
 
-    void WriteExposedInterface(ostream &c)
+    void WriteExposedInterface(QTextStream &c)
     {
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-        c << "//" << endl;
-        c << "// Interface that is exposed to the VisIt module." << endl;
-        c << "//" << endl;
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-        c << endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+        c << "//" << Endl;
+        c << "// Interface that is exposed to the VisIt module." << Endl;
+        c << "//" << Endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << Endl;
+        c << Endl;
 
         QString Py_new(name + "_new");
         if(HasFunction(Py_new))
             PrintFunction(c, Py_new);
         else
         { 
-            c << "PyObject *" << endl;
-            c << Py_new << "(PyObject *self, PyObject *args)" << endl;
-            c << "{" << endl;
+            c << "PyObject *" << Endl;
+            c << Py_new << "(PyObject *self, PyObject *args)" << Endl;
+            c << "{" << Endl;
             if(HasCode(Py_new, 0))
                 PrintCode(c, Py_new, 0);
-            c << "    int useCurrent = 0;" << endl;
-            c << "    if (!PyArg_ParseTuple(args, \"i\", &useCurrent))" << endl;
-            c << "    {" << endl;
-            c << "        if (!PyArg_ParseTuple(args, \"\"))" << endl;
-            c << "            return NULL;" << endl;
-            c << "        else" << endl;
-            c << "            PyErr_Clear();" << endl;
-            c << "    }" << endl;
-            c << endl;
+            c << "    int useCurrent = 0;" << Endl;
+            c << "    if (!PyArg_ParseTuple(args, \"i\", &useCurrent))" << Endl;
+            c << "    {" << Endl;
+            c << "        if (!PyArg_ParseTuple(args, \"\"))" << Endl;
+            c << "            return NULL;" << Endl;
+            c << "        else" << Endl;
+            c << "            PyErr_Clear();" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
             if(HasCode(Py_new, 1))
                 PrintCode(c, Py_new, 1);
-            c << "    return (PyObject *)New"<<name<<"(useCurrent);" << endl;
-            c << "}" << endl;
+            c << "    return (PyObject *)New"<<name<<"(useCurrent);" << Endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
 
-        c << "//" << endl;
-        c << "// Plugin method table. These methods are added to the visitmodule's methods." << endl;
-        c << "//" << endl;
-        c << "static PyMethodDef "<<name<<"Methods[] = {" << endl;
-        c << "    {\""<<name<<"\", "<<name<<"_new, METH_VARARGS}," << endl;
-        c << "    {NULL,      NULL}        /* Sentinel */" << endl;
-        c << "};" << endl;
-        c << endl;
-        c << "static Observer *"<<name<<"Observer = 0;" << endl;
-        c << endl;
+        c << "//" << Endl;
+        c << "// Plugin method table. These methods are added to the visitmodule's methods." << Endl;
+        c << "//" << Endl;
+        c << "static PyMethodDef "<<name<<"Methods[] = {" << Endl;
+        c << "    {\""<<name<<"\", "<<name<<"_new, METH_VARARGS}," << Endl;
+        c << "    {NULL,      NULL}        /* Sentinel */" << Endl;
+        c << "};" << Endl;
+        c << Endl;
+        c << "static Observer *"<<name<<"Observer = 0;" << Endl;
+        c << Endl;
         WriteCallLogRoutineMethod(c);
-        c << endl;
+        c << Endl;
 
         QString StartUp(QString("Py") + name + "_StartUp");
         if(HasFunction(StartUp))
             PrintFunction(c, StartUp);
         else
         { 
-            c << "void" << endl;
-            c << StartUp << "("<<name<<" *subj, void *data)" << endl;
-            c << "{" << endl;
-            c << "    if(subj == 0)" << endl;
-            c << "        return;" << endl;
-            c << endl;
+            c << "void" << Endl;
+            c << StartUp << "("<<name<<" *subj, void *data)" << Endl;
+            c << "{" << Endl;
+            c << "    if(subj == 0)" << Endl;
+            c << "        return;" << Endl;
+            c << Endl;
             if(HasCode(StartUp, 0))
                 PrintCode(c, StartUp, 0);
-            c << "    currentAtts = subj;" << endl;
-            c << "    Py" << name << "_SetDefaults(subj);" << endl;
-            c << endl;
-            c << "    //" << endl;
-            c << "    // Create the observer that will be notified when the attributes change." << endl;
-            c << "    //" << endl;
-            c << "    if("<<name<<"Observer == 0)" << endl;
-            c << "    {" << endl;
-            c << "        "<<name<<"Observer = new ObserverToCallback(subj," << endl;
-            c << "            Py"<<name<<"_CallLogRoutine, (void *)data);" << endl;
-            c << "    }" << endl;
-            c << endl;
+            c << "    currentAtts = subj;" << Endl;
+            c << "    Py" << name << "_SetDefaults(subj);" << Endl;
+            c << Endl;
+            c << "    //" << Endl;
+            c << "    // Create the observer that will be notified when the attributes change." << Endl;
+            c << "    //" << Endl;
+            c << "    if("<<name<<"Observer == 0)" << Endl;
+            c << "    {" << Endl;
+            c << "        "<<name<<"Observer = new ObserverToCallback(subj," << Endl;
+            c << "            Py"<<name<<"_CallLogRoutine, (void *)data);" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
             if(HasCode(StartUp, 1))
                 PrintCode(c, StartUp, 1);
-            c << "}" << endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
 
         QString CloseDown(QString("Py") + name + "_CloseDown");
         if(HasFunction(CloseDown))
             PrintFunction(c, CloseDown);
         else
         { 
-            c << "void" << endl;
-            c << CloseDown << "()" << endl;
-            c << "{" << endl;
+            c << "void" << Endl;
+            c << CloseDown << "()" << Endl;
+            c << "{" << Endl;
             if(HasCode(CloseDown, 0))
                 PrintCode(c, CloseDown, 0);
-            c << "    delete defaultAtts;" << endl;
-            c << "    defaultAtts = 0;" << endl;
-            c << "    delete "<<name<<"Observer;" << endl;
-            c << "    "<<name<<"Observer = 0;" << endl;
+            c << "    delete defaultAtts;" << Endl;
+            c << "    defaultAtts = 0;" << Endl;
+            c << "    delete "<<name<<"Observer;" << Endl;
+            c << "    "<<name<<"Observer = 0;" << Endl;
             if(HasCode(CloseDown, 1))
                 PrintCode(c, CloseDown, 1);
-            c << "}" << endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
 
-        c << "PyMethodDef *" << endl;
-        c << "Py"<<name<<"_GetMethodTable(int *nMethods)" << endl;
-        c << "{" << endl;
-        c << "    *nMethods = 1;" << endl;
-        c << "    return "<<name<<"Methods;" << endl;
-        c << "}" << endl;
-        c << endl;
-        c << "bool" << endl;
-        c << "Py"<<name<<"_Check(PyObject *obj)" << endl;
-        c << "{" << endl;
-        c << "    return (obj->ob_type == &"<<name<<"Type);" << endl;
-        c << "}" << endl;
-        c << endl;
+        c << "PyMethodDef *" << Endl;
+        c << "Py"<<name<<"_GetMethodTable(int *nMethods)" << Endl;
+        c << "{" << Endl;
+        c << "    *nMethods = 1;" << Endl;
+        c << "    return "<<name<<"Methods;" << Endl;
+        c << "}" << Endl;
+        c << Endl;
+        c << "bool" << Endl;
+        c << "Py"<<name<<"_Check(PyObject *obj)" << Endl;
+        c << "{" << Endl;
+        c << "    return (obj->ob_type == &"<<name<<"Type);" << Endl;
+        c << "}" << Endl;
+        c << Endl;
 
         QString FromPyObject(QString("Py") + name + "_FromPyObject");
         if(HasFunction(FromPyObject))
             PrintFunction(c, FromPyObject);
         else
         { 
-            c << name << " *" << endl;
-            c << FromPyObject << "(PyObject *obj)" << endl;
-            c << "{" << endl;
-            c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << endl;
-            c << "    return obj2->data;" << endl;
-            c << "}" << endl;
+            c << name << " *" << Endl;
+            c << FromPyObject << "(PyObject *obj)" << Endl;
+            c << "{" << Endl;
+            c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << Endl;
+            c << "    return obj2->data;" << Endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
 
         QString PyNew(QString("Py") + name + "_New");
         if(HasFunction(PyNew))
             PrintFunction(c, PyNew);
         else
         { 
-            c << "PyObject *" << endl;
-            c << PyNew << "()" << endl;
-            c << "{" << endl;
-            c << "    return New"<<name<<"(0);" << endl;
-            c << "}" << endl;
+            c << "PyObject *" << Endl;
+            c << PyNew << "()" << Endl;
+            c << "{" << Endl;
+            c << "    return New"<<name<<"(0);" << Endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
 
         QString Wrap(QString("Py") + name + "_Wrap");
         if(HasFunction(Wrap))
             PrintFunction(c, Wrap);
         else
         { 
-            c << "PyObject *" << endl;
-            c << Wrap << "(const " << name << " *attr)" << endl;
-            c << "{" << endl;
-            c << "    return Wrap"<<name<<"(attr);" << endl;
-            c << "}" << endl;
+            c << "PyObject *" << Endl;
+            c << Wrap << "(const " << name << " *attr)" << Endl;
+            c << "{" << Endl;
+            c << "    return Wrap"<<name<<"(attr);" << Endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
 
         QString SetParent(QString("Py") + name + "_SetParent");
         if(HasFunction(SetParent))
             PrintFunction(c, SetParent);
         else
         { 
-            c << "void" << endl;
-            c << SetParent << "(PyObject *obj, PyObject *parent)" << endl;
-            c << "{" << endl;
-            c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << endl;
+            c << "void" << Endl;
+            c << SetParent << "(PyObject *obj, PyObject *parent)" << Endl;
+            c << "{" << Endl;
+            c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << Endl;
             if(HasCode(SetParent, 0))
                 PrintCode(c, SetParent, 0);
-            c << "    obj2->parent = parent;" << endl;
+            c << "    obj2->parent = parent;" << Endl;
             if(HasCode(SetParent, 1))
                 PrintCode(c, SetParent, 1);
-            c << "}" << endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
         
         QString SetDefaults(QString("Py") + name + "_SetDefaults");
         if(HasFunction(SetDefaults))
             PrintFunction(c, SetDefaults);
         else
         {    
-            c << "void" << endl;
-            c << SetDefaults << "(const " << name << " *atts)" << endl;
-            c << "{" << endl;
+            c << "void" << Endl;
+            c << SetDefaults << "(const " << name << " *atts)" << Endl;
+            c << "{" << Endl;
             if(HasCode(SetDefaults, 0))
                 PrintCode(c, SetDefaults, 0);
-            c << "    if(defaultAtts)" << endl;
-            c << "        delete defaultAtts;" << endl;
-            c << endl;
-            c << "    defaultAtts = new " << name << "(*atts);" << endl;
+            c << "    if(defaultAtts)" << Endl;
+            c << "        delete defaultAtts;" << Endl;
+            c << Endl;
+            c << "    defaultAtts = new " << name << "(*atts);" << Endl;
             if(HasCode(SetDefaults, 1))
                 PrintCode(c, SetDefaults, 1);
-            c << "}" << endl;
+            c << "}" << Endl;
         }
-        c << endl;
+        c << Endl;
     }
 
-    void WriteSource(ostream &c)
+    void WriteSource(QTextStream &c)
     {
-        c << copyright_str.c_str() << endl;
-        c << "#include <Py" << name << ".h>" << endl;
-        c << "#include <ObserverToCallback.h>" << endl;
-        c << "#include <stdio.h>" << endl;
+        c << copyright_str << Endl;
+        c << "#include <Py" << name << ".h>" << Endl;
+        c << "#include <ObserverToCallback.h>" << Endl;
+        c << "#include <stdio.h>" << Endl;
         WriteIncludedHeaders(c);
-        c << endl;
+        c << Endl;
         WriteHeaderComment(c);
         WritePyObjectStruct(c);
         WriteInternalPrototypes(c);
@@ -3485,9 +3486,9 @@ class PythonGeneratorPlugin : public PluginBase
     {
     }
 
-    void Print(ostream &out)
+    void Print(QTextStream &out)
     {
-        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
+        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< Endl;
         if (atts)
         {
             atts->DisableVISITPY();
@@ -3495,7 +3496,7 @@ class PythonGeneratorPlugin : public PluginBase
         }
     }
 
-    void WriteHeader(ostream &h)
+    void WriteHeader(QTextStream &h)
     {
         if (atts)
         {

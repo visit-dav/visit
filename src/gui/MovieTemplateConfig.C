@@ -1105,7 +1105,10 @@ MovieTemplateConfig::ViewportRemove(const std::string &name)
 // Creation:   Tue Nov 14 11:26:09 PDT 2006
 //
 // Modifications:
-//   
+//   Cyrus Harrison & Brad Whitlock Mon Nov 10 09:59:39 PST 2008
+//   Fixed problem with deletion altering the **children array in
+//   the middle of removing all viewports, derailing the actual clear.
+//
 // ****************************************************************************
 
 bool
@@ -1121,13 +1124,21 @@ MovieTemplateConfig::ViewportRemoveAll()
     {
         DataNode **children = vpData->GetChildren();
         int nc = vpData->GetNumChildren();
+        // since we will be removing children, and will alter the contents
+        // of **children we need to make a copy of the pointers and use them
+        // to loop though.
+        
+        DataNode **copies = new  DataNode*[nc]; 
+        memcpy(copies,children,sizeof(DataNode*)*nc);
         for(int i = 0; i < nc; ++i)
         {
-            debug5 << mName << "Removing " << children[i]->GetKey().c_str() << endl;
-            vpData->RemoveNode(children[i]->GetKey());
+            debug5 << mName << "Removing " << copies[i]->GetKey().c_str() << endl;
+            vpData->RemoveNode(copies[i]);
         }
         activeViewport = 0;
 
+        delete [] copies;
+        
         retval = true;
     }
     else

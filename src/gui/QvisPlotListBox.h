@@ -39,9 +39,10 @@
 #ifndef QVIS_PLOT_LIST_BOX_H
 #define QVIS_PLOT_LIST_BOX_H
 #include <gui_exports.h>
-#include <qaction.h>
-#include <qlistbox.h>
-#include <qpopupmenu.h>
+#include <QAction>
+#include <QListWidget>
+#include <QMenu>
+#include <QMouseEvent>
 #include <vectortypes.h>
 #include <GUIBase.h>
 
@@ -51,7 +52,7 @@ class PlotList;
 // Class: QvisPlotListBox
 //
 // Purpose:
-//   This has the same functionality as QListBox except that its
+//   This has the same functionality as QListWidget except that its
 //   doubleClicked signal also sends the position of where the mouse
 //   was clicked.
 //
@@ -81,13 +82,16 @@ class PlotList;
 //   Brad Whitlock, Tue Nov 20 14:37:05 PST 2007
 //   Removed itemClicked.
 //
+//   Brad Whitlock, Fri May 30 15:43:50 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class GUI_API QvisPlotListBox : public QListBox
+class GUI_API QvisPlotListBox : public QListWidget
 {
     Q_OBJECT
 public:
-    QvisPlotListBox(QWidget *parent = 0, const char *name = 0, WFlags f=0);
+    QvisPlotListBox(QWidget *parent = 0);
     virtual ~QvisPlotListBox();
 
     bool isExpanded(int) const;
@@ -96,18 +100,14 @@ public:
     bool NeedsToBeRegenerated(const PlotList *, const stringVector &indices) const;
     bool NeedToUpdateSelection(const PlotList *) const;
 signals:
+    void itemExpansionChanged();
     void activateSubsetWindow();
     void activatePlotWindow(int plotType);
     void activateOperatorWindow(int operatorType);
     void promoteOperator(int operatorIndex);
     void demoteOperator(int operatorIndex);
     void removeOperator(int operatorIndex);
-protected:
-    virtual void viewportMousePressEvent(QMouseEvent *e);
-    virtual void viewportMouseDoubleClickEvent(QMouseEvent *e);
-    void clickHandler(const QPoint &p, bool, bool);
-    void contextMenuEvent( QContextMenuEvent *event );
-signals:
+
     void hideThisPlot();
     void deleteThisPlot();
     void drawThisPlot();
@@ -117,10 +117,15 @@ signals:
     void redrawThisPlot();
     void disconnectThisPlot();
     void setActivePlot();
+protected:
+    virtual void mousePressEvent(QMouseEvent *e);
+    virtual void mouseDoubleClickEvent(QMouseEvent *e);
+    void clickHandler(const QPoint &p, bool, bool);
+    void contextMenuEvent( QContextMenuEvent *event );
 private:
     void contextMenuCreateActions();
     
-    QPopupMenu *plotContextMenu;
+    QMenu      *plotContextMenu;
     QAction    *hideShowAct;
     QAction    *deleteAct;
     QAction    *drawAct;
@@ -129,11 +134,8 @@ private:
     QAction    *copyToWinAct;
     QAction    *redrawAct;
     QAction    *disconnectAct;
-    
-    int         hideItem;
-    int         deleteItem;
 
-    QPopupMenu *copyWinSubMenu;
+    QMenu      *copyWinSubMenu;
     QAction    *win1Act;
     QAction    *win2Act;
 };

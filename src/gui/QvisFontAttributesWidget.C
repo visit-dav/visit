@@ -37,10 +37,10 @@
 *****************************************************************************/
 #include <QvisFontAttributesWidget.h>
 
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <qlayout.h>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLayout>
 #include <QNarrowLineEdit.h>
 #include <QvisColorButton.h>
 #include <QvisOpacitySlider.h>
@@ -67,63 +67,68 @@
 //   Brad Whitlock, Tue Apr  8 14:10:36 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Wed Jun  4 16:57:33 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent, const char *name) :
-    QFrame(parent,name), atts()
+QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent) :
+    QFrame(parent), atts()
 {
     opacityEnabled = true;
 
-    QGridLayout *gLayout = new QGridLayout(this, 2, 6);
-    gLayout->setSpacing(5);
+    QGridLayout *gLayout = new QGridLayout(this);
+    gLayout->setMargin(0);
+    gLayout->setSpacing(10);
     int row = 0;
 
     // Add controls to set the font family.
-    fontFamilyComboBox = new QComboBox(this, "fontFamilyComboBox");
-    fontFamilyComboBox->insertItem("Arial", 0);
-    fontFamilyComboBox->insertItem("Courier", 1);
-    fontFamilyComboBox->insertItem("Times", 2);
+    fontFamilyComboBox = new QComboBox(this);
+    fontFamilyComboBox->addItem("Arial");
+    fontFamilyComboBox->addItem("Courier");
+    fontFamilyComboBox->addItem("Times");
     fontFamilyComboBox->setEditable(false);
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
-    gLayout->addWidget(new QLabel(fontFamilyComboBox, tr("Font name"), this), row, 0);
+    QLabel *ffLabel = new QLabel(tr("Font name"), this);
+    ffLabel->setBuddy(fontFamilyComboBox);
+    gLayout->addWidget(ffLabel, row, 0);
     gLayout->addWidget(fontFamilyComboBox, row, 1);
 
     // Add control for text font height
-    fontScale = new QNarrowLineEdit(this, "fontScale");
+    fontScale = new QNarrowLineEdit(this);
     connect(fontScale, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     gLayout->addWidget(fontScale, row, 3);
-    gLayout->addWidget(new QLabel(fontScale, tr("Font scale"),
-        this), row, 2);
+    QLabel *fsLabel = new QLabel(tr("Font scale"), this);
+    fsLabel->setBuddy(fontScale);
+    gLayout->addWidget(fsLabel, row, 2);
 
-    boldCheckBox = new QCheckBox(tr("Bold"), this, "boldCheckBox");
+    boldCheckBox = new QCheckBox(tr("Bold"), this);
     connect(boldCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(boldToggled(bool)));
     gLayout->addWidget(boldCheckBox, row, 4);
 
-    italicCheckBox = new QCheckBox(tr("Italic"), this, "italicCheckBox");
+    italicCheckBox = new QCheckBox(tr("Italic"), this);
     connect(italicCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(italicToggled(bool)));
     gLayout->addWidget(italicCheckBox, row, 5);
     ++row;
 
-    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this,
-        "useForegroundColorCheckBox");
+    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this);
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));
-    gLayout->addMultiCellWidget(useForegroundColorCheckBox, row, row, 0, 1);
+    gLayout->addWidget(useForegroundColorCheckBox, row, 0, 1, 2);
 
     // Add controls for the text color.
-    textColorButton = new QvisColorButton(this, "textColorButton");
+    textColorButton = new QvisColorButton(this);
     connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(textColorChanged(const QColor &)));
     gLayout->addWidget(textColorButton, row, 2);
-    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this,
-        "textColorOpacity");
+    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this);
     connect(textColorOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(textOpacityChanged(int)));
-    gLayout->addMultiCellWidget(textColorOpacity, row, row, 3, 5);
+    gLayout->addWidget(textColorOpacity, row, 3, 1, 4);
     ++row;
 }
 
@@ -243,7 +248,7 @@ QvisFontAttributesWidget::Update(int which_widget)
     if(doAll || which_widget == FontAttributes::ID_font)
     {
         fontFamilyComboBox->blockSignals(true);
-        fontFamilyComboBox->setCurrentItem(int(atts.GetFont()));
+        fontFamilyComboBox->setCurrentIndex(int(atts.GetFont()));
         fontFamilyComboBox->blockSignals(false);
     }
 

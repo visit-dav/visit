@@ -49,8 +49,8 @@ class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QListBox;
-class QMultiLineEdit;
+class QListWidget;
+class QTextEdit;
 class QvisColorButton;
 class QvisColorManagerWidget;
 class QvisColorTableButton;
@@ -132,13 +132,13 @@ class QvisWellBorePlotWindow : public QvisPostableWindowObserver
 
     QPushButton            *readWellBoresButton;
     QPushButton            *writeWellBoresButton;
-    QListBox               *wellListBox;
+    QListWidget               *wellListBox;
     QPushButton            *newWellButton;
     QPushButton            *deleteWellButton;
     QLabel                 *wellNameLabel;
     QLineEdit              *wellName;
     QLabel                 *wellDefinitionLabel;
-    QMultiLineEdit         *wellDefinition;
+    QTextEdit              *wellDefinition;
     QGroupBox              *wellColorGroup;
     QButtonGroup           *colorModeButtons;
     QvisColorButton        *singleColor;

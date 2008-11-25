@@ -86,6 +86,9 @@
 #    Eric Brugger, Fri Jun 29 09:43:34 PDT 2007
 #    Removed the setting of the NOT_DISTRIB variable.
 #
+#    Brad Whitlock, Fri May  9 10:22:52 PDT 2008
+#    Qt 4.
+#
 ##############################################################################
 
 ##
@@ -94,7 +97,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@
+CXXFLAGS=@CXXFLAGS@ $(QT_CXXFLAGS)
 CPPFLAGS=@CPPFLAGS@ -I. -I../include/visit @VTK_INCLUDES@
 
 ##
@@ -109,7 +112,7 @@ MOCOBJ=$(MOCSRC:.C=.o)
 
 OBJ=$(SRC:.C=.o) $(MOCOBJ)
 LIB=libvtkqt
-LIBS=@QT_LDFLAGS@ @QT_LIBS@ @VTK_LIBS@ @MESA_LIBS@ @GL_LIBS@ $(X_LIBS)
+LIBS=$(QT_LDFLAGS) $(VTK_LIBS) $(MESA_LIBS) $(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_OPENGL_LIB) $(GL_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

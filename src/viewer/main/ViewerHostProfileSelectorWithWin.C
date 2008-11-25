@@ -43,12 +43,12 @@
 
 #include <stdio.h>
 
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
-#include <qlistbox.h>
-#include <qspinbox.h>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
+#include <QListWidget>
+#include <QSpinBox>
 
 #include <DebugStream.h>
 
@@ -78,16 +78,22 @@ extern ViewerSubject *viewerSubject;
 //   Brad Whitlock, Tue Apr 29 15:07:23 PDT 2008
 //   Added tr()'s
 //
+//   Brad Whitlock, Fri May 23 11:36:45 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *parent, const char *name)
-    : QDialog(parent, name, true)
+ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *parent)
+    : QDialog(parent)
 {
+    setWindowModality(Qt::ApplicationModal);
+
     waitingOnUser = false;
 
     QVBoxLayout *topLayout = new QVBoxLayout(this);
 
-    QGridLayout *layout = new QGridLayout(topLayout, 5, 4);
+    QGridLayout *layout = new QGridLayout;
+    topLayout->addLayout(layout);
     layout->setMargin(10);
     layout->setSpacing(5);
     layout->setRowStretch(0, 100);
@@ -95,52 +101,57 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     layout->setRowStretch(2, 0);
     layout->setRowStretch(3, 0);
 
-    layout->setColStretch(0, 0);
-    layout->setColStretch(1, 100);
-    layout->setColStretch(2, 0);
-    layout->setColStretch(3, 100);
+    layout->setColumnStretch(0, 0);
+    layout->setColumnStretch(1, 100);
+    layout->setColumnStretch(2, 0);
+    layout->setColumnStretch(3, 100);
 
-    profiles = new QListBox(this, "profiles");
+    profiles = new QListWidget(this);
     profiles->setMinimumHeight(100);
-    layout->addMultiCellWidget(profiles, 0,0, 0,3);
-    connect(profiles, SIGNAL(selectionChanged()),
+    layout->addWidget(profiles, 0,0, 1,4);
+    connect(profiles, SIGNAL(itemSelectionChanged()),
             this,     SLOT(newProfileSelected()));
 
-    numProcsLabel = new QLabel(tr("Num procs"), this, "numProcsLabel");
-    numProcs = new QSpinBox(1, 99999, 1, this, "numProcs");
-    layout->addMultiCellWidget(numProcsLabel, 1,1, 0,0);
-    layout->addMultiCellWidget(numProcs,      1,1, 1,1);
+    numProcsLabel = new QLabel(tr("Num procs"), this);
+    numProcs = new QSpinBox(this);
+    numProcs->setMinimum(1);
+    numProcs->setMaximum(99999);
+    layout->addWidget(numProcsLabel, 1,0);
+    layout->addWidget(numProcs,      1,1);
 
-    numNodesLabel = new QLabel(tr("Num nodes"), this, "numNodesLabel");
-    numNodes = new QSpinBox(1, 99999, 1, this, "numNodes");
-    layout->addMultiCellWidget(numNodesLabel, 1,1, 2,2);
-    layout->addMultiCellWidget(numNodes,      1,1, 3,3);
+    numNodesLabel = new QLabel(tr("Num nodes"), this);
+    numNodes = new QSpinBox(this);
+    numNodes->setMinimum(1);
+    numNodes->setMaximum(99999);
+    layout->addWidget(numNodesLabel, 1,2);
+    layout->addWidget(numNodes,      1,3);
 
-    bankNameLabel = new QLabel(tr("Bank"), this, "bankNameLabel");
-    bankName = new QLineEdit(this, "bankName");
-    layout->addMultiCellWidget(bankNameLabel, 2,2, 0,0);
-    layout->addMultiCellWidget(bankName,      2,2, 1,1);
+    bankNameLabel = new QLabel(tr("Bank"), this);
+    bankName = new QLineEdit(this);
+    layout->addWidget(bankNameLabel, 2,0);
+    layout->addWidget(bankName,      2,1);
 
-    timeLimitLabel = new QLabel(tr("Time limit"), this, "timeLimitLabel");
-    timeLimit = new QLineEdit(this, "timeLimit");
-    layout->addMultiCellWidget(timeLimitLabel, 2,2, 2,2);
-    layout->addMultiCellWidget(timeLimit,      2,2, 3,3);
+    timeLimitLabel = new QLabel(tr("Time limit"), this);
+    timeLimit = new QLineEdit(this);
+    layout->addWidget(timeLimitLabel, 2,2);
+    layout->addWidget(timeLimit,      2,3);
 
-    machinefileLabel = new QLabel(tr("Machine file"), this, "machinefileLabel");
-    machinefile = new QLineEdit(this, "machinefile");
-    layout->addMultiCellWidget(machinefileLabel, 3,3, 0,0);
-    layout->addMultiCellWidget(machinefile,      3,3, 1,3);
+    machinefileLabel = new QLabel(tr("Machine file"), this);
+    machinefile = new QLineEdit(this);
+    layout->addWidget(machinefileLabel, 3,0);
+    layout->addWidget(machinefile,      3,1, 1,3);
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
+    QHBoxLayout *buttonLayout = new QHBoxLayout;
+    topLayout->addLayout(buttonLayout);
     buttonLayout->setMargin(10);
 
-    okayButton = new QPushButton(tr("OK"), this, "okayButton");
+    okayButton = new QPushButton(tr("OK"), this);
     buttonLayout->addWidget(okayButton, 0);
     connect(okayButton, SIGNAL(clicked()), this, SLOT(accept()));
 
     buttonLayout->addStretch(100);
 
-    cancelButton = new QPushButton(tr("Cancel"), this, "cancelButton");
+    cancelButton = new QPushButton(tr("Cancel"), this);
     buttonLayout->addWidget(cancelButton, 0);
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 }
@@ -209,6 +220,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    Brad Whitlock, Tue Apr 29 15:08:19 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Fri May 23 11:54:42 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 bool 
@@ -217,7 +231,7 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 {
     int  i;
     QString title = tr("Select options for '%1'").arg(hostName.c_str());
-    setCaption(title);
+    setWindowTitle(title);
 
     profile = HostProfile();
 
@@ -261,15 +275,15 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
             profiles->clear();
             for (i=0; i<matchingProfiles.size(); i++)
             {
-                profiles->insertItem(matchingProfiles[i]->GetProfileName().c_str());
+                profiles->addItem(matchingProfiles[i]->GetProfileName().c_str());
             }
-            profiles->setSelected(0, true);
+            profiles->setCurrentRow(0);
             for (i=0; i<matchingProfiles.size(); i++)
             {
                 if (matchingProfiles[i]->GetActive())
                 {
                     // this signals the callback to set the default profile
-                    profiles->setSelected(i, true);
+                    profiles->setCurrentRow(i);
                 }
             }
 
@@ -286,9 +300,9 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 
             profile.SetNumProcessors(numProcs->value());
             profile.SetNumNodes(numNodes->value());
-            profile.SetBank(bankName->text().latin1());
-            profile.SetTimeLimit(timeLimit->text().latin1());
-            profile.SetMachinefile(machinefile->text().latin1());
+            profile.SetBank(bankName->text().toStdString());
+            profile.SetTimeLimit(timeLimit->text().toStdString());
+            profile.SetMachinefile(machinefile->text().toStdString());
         }
 
         // Save it for use later
@@ -330,7 +344,7 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 void
 ViewerHostProfileSelectorWithWin::newProfileSelected()
 {
-    int index = profiles->currentItem();
+    int index = profiles->currentRow();
     if (index == -1)
         return;
 

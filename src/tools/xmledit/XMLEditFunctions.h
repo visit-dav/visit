@@ -39,7 +39,7 @@
 #ifndef XMLEDITFUNCTIONS_H
 #define XMLEDITFUNCTIONS_H
 
-#include <qframe.h>
+#include <QFrame>
 
 class XMLDocument;
 class QLabel;
@@ -47,8 +47,8 @@ class QLineEdit;
 class QButtonGroup;
 class QComboBox;
 class QCheckBox;
-class QListBox;
-class QMultiLineEdit;
+class QListWidget;
+class QTextEdit;
 class QRadioButton;
 class QPushButton;
 
@@ -68,12 +68,15 @@ class QPushButton;
 //    Brad Whitlock, Mon Apr 28 15:59:21 PDT 2008
 //    Added accessGroup.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 class XMLEditFunctions : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditFunctions(QWidget *p, const QString &n);
+    XMLEditFunctions(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:
@@ -97,7 +100,7 @@ class XMLEditFunctions : public QFrame
     QPushButton    *newButton;
     QPushButton    *delButton;
 
-    QListBox       *functionlist;
+    QListWidget    *functionlist;
     QLineEdit      *name;
     QButtonGroup   *typeGroup;
     QRadioButton   *newFunctionButton;
@@ -107,7 +110,7 @@ class XMLEditFunctions : public QFrame
     QLabel         *accessLabel;
     QComboBox      *access;
     QLineEdit      *declaration;
-    QMultiLineEdit *definition;
+    QTextEdit      *definition;
 };
 
 #endif

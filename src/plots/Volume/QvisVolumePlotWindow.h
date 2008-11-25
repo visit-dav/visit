@@ -152,12 +152,15 @@ protected:
     void CopyGaussianOpacitiesToFreeForm();
     void SetResampleTargetSliderFromAtts();
     void SetRendererSamplesSliderFromAtts();
+    void CreateColorGroup(int);
+    void CreateOpacityGroup(int);
+    void CreateOptions(int);
 private slots:
     void addControlPoint();
     void removeControlPoint();
     void alignControlPoints();
     void controlPointMoved(int index, float position);
-    void popupColorSelect(int index);
+    void popupColorSelect(int index, const QPoint &);
     void selectedColor(const QColor &color);
     void interactionModeChanged(int index);
     void showColorsInAlphaWidgetToggled(bool);

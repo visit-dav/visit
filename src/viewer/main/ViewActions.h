@@ -70,7 +70,7 @@ public:
 
     virtual void Execute();
     virtual bool Enabled() const;
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
 };
 
 // ****************************************************************************
@@ -202,7 +202,7 @@ public:
 
     virtual void Execute();
     virtual bool Enabled() const;
-    virtual bool Toggled() const;
+    virtual bool Checked() const;
     virtual bool AllowInToolbar() const { return false; }
 };
 
@@ -258,7 +258,7 @@ public:
 
     virtual bool Enabled() const;
     virtual bool ChoiceEnabled(int i) const;
-    virtual bool ChoiceToggled(int i) const { return false;}
+    virtual bool ChoiceChecked(int i) const { return false;}
 
     virtual bool CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *, const std::string &);

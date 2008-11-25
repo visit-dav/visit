@@ -35,23 +35,24 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
+#include "XMLEditStd.h"
 #include "XMLEditFields.h"
 
 #include <XMLDocument.h>
 #include <Attribute.h>
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qhbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qmultilineedit.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QTextEdit>
 
 #include <QNarrowLineEdit.h>
 
@@ -78,19 +79,22 @@
 //    Brad Whitlock, Fri Mar 7 10:26:23 PDT 2008
 //    Made values/code monospace.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
-XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
-    : QFrame(p, n)
+XMLEditFields::XMLEditFields(QWidget *p)
+    : QFrame(p)
 {
     QHBoxLayout *hLayout = new QHBoxLayout(this);
+    
+    QGridLayout *listLayout = new QGridLayout();
 
-    QGridLayout *listLayout = new QGridLayout(hLayout, 3,2, 5);
-
-    fieldlist = new QListBox(this);
-    fieldlist->insertItem("testint");
-    fieldlist->insertItem("testfloat");
-    listLayout->addMultiCellWidget(fieldlist, 0,0, 0,1);
+    fieldlist = new QListWidget(this);
+    fieldlist->addItem("testint");
+    fieldlist->addItem("testfloat");
+    listLayout->addWidget(fieldlist, 0,0, 1,2);
 
     upButton = new QPushButton(tr("Up"), this);
     listLayout->addWidget(upButton, 1,0);
@@ -103,135 +107,153 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
 
     delButton = new QPushButton(tr("Del"), this);
     listLayout->addWidget(delButton, 2,1);
-
+    
+    hLayout->addLayout(listLayout);
     hLayout->addSpacing(10);
 
-    QGridLayout *topLayout = new QGridLayout(hLayout, 12,5, 5);
+    QGridLayout *topLayout = new QGridLayout();
     int row = 0;
 
-    topLayout->setColStretch(0, 0);
-    topLayout->setColStretch(1, 0);
-    topLayout->setColStretch(2, 75);
-    topLayout->setColStretch(3, 0);
-    topLayout->setColStretch(4, 25);
+    topLayout->setColumnMinimumWidth(0, 0);
+    topLayout->setColumnMinimumWidth(1, 0);
+    topLayout->setColumnMinimumWidth(2, 75);
+    topLayout->setColumnMinimumWidth(3, 0);
+    topLayout->setColumnMinimumWidth(4, 25);
 
     name = new QLineEdit(this);
-    topLayout->addMultiCellWidget(new QLabel(tr("Name"), this), row,row, 0,0);
-    topLayout->addMultiCellWidget(name, row,row, 1,4);
+    topLayout->addWidget(new QLabel(tr("Name"), this), row,0);
+    topLayout->addWidget(name, row,1,1,5);
     row++;
 
     label = new QLineEdit(this);
-    topLayout->addMultiCellWidget(new QLabel(tr("Label"), this), row,row, 0,0);
-    topLayout->addMultiCellWidget(label, row,row, 1,4);
+    topLayout->addWidget(new QLabel(tr("Label"), this), row,0);
+    topLayout->addWidget(label, row,1, 1,5);
     row++;
 
     type = new QComboBox(this);
-    type->insertItem("");
+    type->addItem("");
     type->setMinimumWidth(150);
-    topLayout->addMultiCellWidget(new QLabel(tr("Type"), this), row,row, 0,0);
-    topLayout->addMultiCellWidget(type, row,row, 1,3);
-    QHBox *lengthHBox = new QHBox(this, "lengthHBox");
-    new QLabel(tr("Length"), lengthHBox);
-    length = new QNarrowLineEdit(lengthHBox);
-    topLayout->addWidget(lengthHBox, row, 4);
+    topLayout->addWidget(new QLabel(tr("Type"), this), row,0);
+    topLayout->addWidget(type, row,1, 1,3);
+    
+    QHBoxLayout *lengthHBox = new QHBoxLayout();
+    lengthHBox->addWidget(new QLabel(tr("Length"), this)); 
+    length = new QNarrowLineEdit(this);
+    lengthHBox->addWidget(length);
+    topLayout->addLayout(lengthHBox, row, 4);
     row++;
-
+    
     subtype = new QLineEdit(this);
-    topLayout->addMultiCellWidget(new QLabel(tr("Subtype"), this), row,row, 0,0);
-    topLayout->addMultiCellWidget(subtype, row,row, 1,4);
+    topLayout->addWidget(new QLabel(tr("Subtype"), this), row,0);
+    topLayout->addWidget(subtype, row,1, 1,5);
     row++;
 
     enabler = new QComboBox(this);
-    enabler->insertItem(tr("(none)"));
-    topLayout->addMultiCellWidget(new QLabel(tr("Enabler"), this), row,row, 0,0);
-    topLayout->addMultiCellWidget(enabler, row,row, 1,4);
+    enabler->addItem(tr("(none)"));
+    topLayout->addWidget(new QLabel(tr("Enabler"), this), row,0);
+    topLayout->addWidget(enabler, row,1, 1,5);
     row++;
 
     enableval = new QLineEdit(this);
-    topLayout->addMultiCellWidget(new QLabel(tr("Values"), this), row,row, 1,1);
-    topLayout->addMultiCellWidget(enableval, row,row, 2,4); 
+    topLayout->addWidget(new QLabel(tr("Values"), this), row,1, 1,1);
+    topLayout->addWidget(enableval, row,2, 1,3); 
     row++;
 
     internal = new QCheckBox(tr("Internal use only"), this);
-    topLayout->addMultiCellWidget(internal, row,row, 0,2);
+    topLayout->addWidget(internal, row,0, 1,3);
 
     // Add a group box that contains controls to set the variable
     // types that will be accepted by a variablename object.
-    variableNameGroup = new QGroupBox(this, "variableNameGroup");
+    variableNameGroup = new QGroupBox(this);
     variableNameGroup->setTitle(tr("Accepted variable types"));
-    QVBoxLayout *innerVarNameLayout = new QVBoxLayout(variableNameGroup);
+    
+    QHBoxLayout *innerVarNameLayout = new QHBoxLayout(variableNameGroup);
     innerVarNameLayout->setMargin(10);
-    innerVarNameLayout->addSpacing(15);
-    QGridLayout *vnLayout = new QGridLayout(innerVarNameLayout, 4, 3);
+    QGridLayout *vnLayout = new QGridLayout();
     vnLayout->setSpacing(5);
-    varNameButtons = new QButtonGroup(0, "varNameButtons");
-    connect(varNameButtons, SIGNAL(clicked(int)),
+    varNameButtons = new QButtonGroup(this);
+    connect(varNameButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(variableTypeClicked(int)));
     QCheckBox *cb = new QCheckBox(tr("Meshes"), variableNameGroup);
-    varNameButtons->insert(cb,0);
+    varNameButtons->addButton(cb,0);
     vnLayout->addWidget(cb, 0, 0);
     cb = new QCheckBox(tr("Scalars"), variableNameGroup);
-    varNameButtons->insert(cb,1);
+    varNameButtons->addButton(cb,1);
     vnLayout->addWidget(cb, 1, 0);
     cb = new QCheckBox(tr("Materials"), variableNameGroup);
-    varNameButtons->insert(cb,2);
+    varNameButtons->addButton(cb,2);
     vnLayout->addWidget(cb, 2, 0);
     cb = new QCheckBox(tr("Labels"), variableNameGroup);
-    varNameButtons->insert(cb,9);
+    varNameButtons->addButton(cb,9);
     vnLayout->addWidget(cb, 3, 0);
 
     cb = new QCheckBox(tr("Vectors"), variableNameGroup);
-    varNameButtons->insert(cb,3);
+    varNameButtons->addButton(cb,3);
     vnLayout->addWidget(cb, 0, 1);
     cb = new QCheckBox(tr("Subsets"), variableNameGroup);
-    varNameButtons->insert(cb,4);
+    varNameButtons->addButton(cb,4);
     vnLayout->addWidget(cb, 1, 1);
     cb = new QCheckBox(tr("Species"), variableNameGroup);
-    varNameButtons->insert(cb,5);
+    varNameButtons->addButton(cb,5);
     vnLayout->addWidget(cb, 2, 1);
     cb = new QCheckBox(tr("Arrays"), variableNameGroup);
-    varNameButtons->insert(cb,10);
+    varNameButtons->addButton(cb,10);
     vnLayout->addWidget(cb, 3, 1);
 
     cb = new QCheckBox(tr("Curves"), variableNameGroup);
-    varNameButtons->insert(cb,6);
+    varNameButtons->addButton(cb,6);
     vnLayout->addWidget(cb, 0, 2);
     cb = new QCheckBox(tr("Tensors"), variableNameGroup);
-    varNameButtons->insert(cb,7);
+    varNameButtons->addButton(cb,7);
     vnLayout->addWidget(cb, 1, 2);
     cb = new QCheckBox(tr("Symmetric Tensors"), variableNameGroup);
-    varNameButtons->insert(cb,8);
+    varNameButtons->addButton(cb,8);
     vnLayout->addWidget(cb, 2, 2);
-
-    topLayout->addMultiCellWidget(variableNameGroup, row,row+2,3,4);
+    innerVarNameLayout->addLayout(vnLayout);
+    
+    topLayout->addWidget(variableNameGroup, row,3,3,2);
     row++;
 
     ignoreeq = new QCheckBox(tr("Ignore field for attribute\nequality calculations"), this);
-    topLayout->addMultiCellWidget(ignoreeq, row,row, 0,2);
+    topLayout->addWidget(ignoreeq, row,0, 1,3);
     row++;
 
-    access = new QButtonGroup(tr("Access"), this, "access");
-    access->setColumns(1);
-    new QRadioButton(tr("private"), access, "private");
-    new QRadioButton(tr("protected"), access, "protected");
-    new QRadioButton(tr("public"), access, "public");
-    topLayout->addMultiCellWidget(access, row,row, 0,2);
+    accessGroup = new QGroupBox(tr("Access"),this);
+    
+    access = new QButtonGroup(accessGroup);
+    QRadioButton *access_private   = new QRadioButton(tr("private"), accessGroup);
+    QRadioButton *access_protected = new QRadioButton(tr("protected"), accessGroup);
+    QRadioButton *access_public    = new QRadioButton(tr("public"), accessGroup);
+    
+    access->addButton(access_private,0);
+    access->addButton(access_protected,1);
+    access->addButton(access_public,2);
+    
+    // create a vbox layout for the access group box
+    QVBoxLayout *access_layout= new QVBoxLayout(accessGroup);
+    accessGroup->setLayout(access_layout);
+    access_layout->addWidget(access_private);
+    access_layout->addWidget(access_protected);
+    access_layout->addWidget(access_public);
+        
+    topLayout->addWidget(accessGroup, row,0, 1,3);
     row++;
 
     init = new QCheckBox(tr("Special initialization code"), this);
-    topLayout->addMultiCellWidget(init, row,row, 0,2);
+    topLayout->addWidget(init, row,0, 1,3);
     row++;
 
-    topLayout->addMultiCellWidget(new QLabel(tr("Initialization Values / Code"), this), row,row, 0,4);
+    topLayout->addWidget(new QLabel(tr("Initialization Values / Code"), this), row,0, 1,4);
     row++;
 
-    values = new QMultiLineEdit(this);
+    values = new QTextEdit(this);
     QFont monospaced("Courier");
     values->setFont(monospaced);
-    values->setWordWrap(QTextEdit::NoWrap);
-    topLayout->addMultiCellWidget(values, row,row, 1,4);
-
-    connect(fieldlist, SIGNAL(selectionChanged()),
+    values->setWordWrapMode(QTextOption::NoWrap);
+    topLayout->addWidget(values, row,1, 1,4);
+    hLayout->addLayout(topLayout);
+    
+    connect(fieldlist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
     connect(name, SIGNAL(textChanged(const QString&)),
             this, SLOT(nameTextChanged(const QString&)));
@@ -263,7 +285,7 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
             this, SLOT(fieldlistUp()));
     connect(downButton, SIGNAL(pressed()),
             this, SLOT(fieldlistDown()));
-    connect(access, SIGNAL(clicked(int)),
+    connect(access, SIGNAL(buttonClicked(int)),
             this, SLOT(accessChanged(int)));
 }
 
@@ -276,6 +298,10 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateWindowContents()
@@ -286,7 +312,7 @@ XMLEditFields::UpdateWindowContents()
     fieldlist->clear();
     for (size_t i=0; i<a->fields.size(); i++)
     {
-        fieldlist->insertItem(a->fields[i]->name);
+        fieldlist->addItem(a->fields[i]->name);
     }
     BlockAllSignals(false);
 
@@ -309,16 +335,19 @@ XMLEditFields::UpdateWindowContents()
 //    Brad Whitlock, Wed Feb 28 18:47:36 PST 2007
 //    Added access.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
 void
 XMLEditFields::UpdateWindowSensitivity()
 {
-    bool active = fieldlist->currentItem() != -1;
+    bool active = fieldlist->currentRow() != -1;
 
     delButton->setEnabled(fieldlist->count() > 0);
-    upButton->setEnabled(fieldlist->currentItem() > 0);
-    downButton->setEnabled(fieldlist->currentItem() < fieldlist->count()-1);
+    upButton->setEnabled(fieldlist->currentRow() > 0);
+    downButton->setEnabled(fieldlist->currentRow() < fieldlist->count()-1);
     name->setEnabled(active);
     label->setEnabled(active);
     type->setEnabled(active);
@@ -332,7 +361,7 @@ XMLEditFields::UpdateWindowSensitivity()
     variableNameGroup->setEnabled(active && type->currentText() == "variablename");
     init->setEnabled(active);
     values->setEnabled(active);
-    access->setEnabled(active);
+    accessGroup->setEnabled(active);
 }
 
 // ****************************************************************************
@@ -354,6 +383,9 @@ XMLEditFields::UpdateWindowSensitivity()
 //     Brad Whitlock, Thu Mar 6 15:00:08 PST 2008
 //     Deal with multi-target init codes.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
 void
@@ -362,7 +394,7 @@ XMLEditFields::UpdateWindowSingleItem()
     BlockAllSignals(true);
 
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
 
     if (index == -1)
     {
@@ -375,18 +407,9 @@ XMLEditFields::UpdateWindowSingleItem()
         enableval->setText("");
         internal->setChecked(false);
         ignoreeq->setChecked(false);
-        access->setButton(0);
+        access->button(0)->setChecked(true);
         init->setChecked(false);
         values->setText("");
-        for(int i = 0; i < varNameButtons->count(); ++i)
-        {
-            QButton *b = varNameButtons->find(i);
-            if(b != 0 && b->isA("QCheckBox"))
-            {
-                QCheckBox *cb = (QCheckBox *)b;
-                cb->setChecked(false);
-            }
-        }
     }
     else
     {
@@ -399,16 +422,16 @@ XMLEditFields::UpdateWindowSingleItem()
             QString enumtype = QString("enum:")+f->GetSubtype();
             for (int i=0; i<type->count(); i++)
             {
-                if (type->text(i) == enumtype)
-                    type->setCurrentItem(i);
+                if (type->itemText(i) == enumtype)
+                    type->setCurrentIndex(i);
             }
         }
         else
         {
             for (int i=0; i<type->count(); i++)
             {
-                if (type->text(i) == f->type)
-                    type->setCurrentItem(i);
+                if (type->itemText(i) == f->type)
+                    type->setCurrentIndex(i);
             }
         }
         if (f->type == "att" || f->type == "attVector")
@@ -422,7 +445,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if (f->type.right(5) == "Array")
         {
             QString str;
-            str.sprintf("%d",f->length);
+            str.sprintf("%d",f->length); 
             length->setText(str);
         }
         else
@@ -434,35 +457,31 @@ XMLEditFields::UpdateWindowSingleItem()
         {
             for (int i=0; i<enabler->count(); i++)
             {
-                if (enabler->text(i) == f->enabler->name)
-                    enabler->setCurrentItem(i);
+                if (enabler->itemText(i) == f->enabler->name)
+                    enabler->setCurrentIndex(i);
             }
             enableval->setText(JoinValues(f->enableval, ' '));
         }
         else
         {
-            enabler->setCurrentItem(0);
+            enabler->setCurrentIndex(0);
             enableval->setText("");
         }
         internal->setChecked(f->internal);
         ignoreeq->setChecked(f->ignoreEquality);
         if(f->accessType == Field::AccessPrivate)
-            access->setButton(0);
+            access->button(0)->setChecked(true);
         else if(f->accessType == Field::AccessProtected)
-            access->setButton(1);
+            access->button(1)->setChecked(true);
         else if(f->accessType == Field::AccessPublic)
-            access->setButton(2);
+            access->button(2)->setChecked(true);
         if(f->type == "variablename")
         {
             int mask = 1;
-            for(int i = 0; i < varNameButtons->count(); ++i)
+
+            foreach (QAbstractButton *b, varNameButtons->buttons())
             {
-                QButton *b = varNameButtons->find(i);
-                if(b != 0 && b->isA("QCheckBox"))
-                {
-                    QCheckBox *cb = (QCheckBox *)b;
-                    cb->setChecked((f->varTypes & mask) != 0);
-                }
+                b->setChecked((f->varTypes & mask) != 0);
                 mask = mask << 1;
             }
         }
@@ -506,49 +525,52 @@ XMLEditFields::UpdateWindowSingleItem()
 //    Kathleen Bonnell, Thu Mar 22 17:12:44 PDT 2007
 //    Added scalemode.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateTypeList()
 {
     type->clear();
-    type->insertItem("int");
-    type->insertItem("intArray");
-    type->insertItem("intVector");
-    type->insertItem("bool");
-    type->insertItem("float");
-    type->insertItem("floatArray");
-    type->insertItem("double");
-    type->insertItem("doubleArray");
-    type->insertItem("doubleVector");
-    type->insertItem("uchar");
-    type->insertItem("ucharArray");
-    type->insertItem("ucharVector");
-    type->insertItem("string");
-    type->insertItem("stringVector");
-    type->insertItem("colortable");
-    type->insertItem("color");
-    type->insertItem("opacity");
-    type->insertItem("linestyle");
-    type->insertItem("linewidth");
-    type->insertItem("scalemode");
-    type->insertItem("variablename");
-    type->insertItem("att");
-    type->insertItem("attVector");
+    type->addItem("int");
+    type->addItem("intArray");
+    type->addItem("intVector");
+    type->addItem("bool");
+    type->addItem("float");
+    type->addItem("floatArray");
+    type->addItem("double");
+    type->addItem("doubleArray");
+    type->addItem("doubleVector");
+    type->addItem("uchar");
+    type->addItem("ucharArray");
+    type->addItem("ucharVector");
+    type->addItem("string");
+    type->addItem("stringVector");
+    type->addItem("colortable");
+    type->addItem("color");
+    type->addItem("opacity");
+    type->addItem("linestyle");
+    type->addItem("linewidth");
+    type->addItem("scalemode");
+    type->addItem("variablename");
+    type->addItem("att");
+    type->addItem("attVector");
 
     // Add built-in AVT enums
-    type->insertItem("LoadBalanceScheme");
-    type->insertItem("avtCentering");
-    type->insertItem("avtExtentType");
-    type->insertItem("avtGhostType");
-    type->insertItem("avtMeshCoordType");
-    type->insertItem("avtMeshType");
-    type->insertItem("avtSubsetType");
-    type->insertItem("avtVarType");
+    type->addItem("LoadBalanceScheme");
+    type->addItem("avtCentering");
+    type->addItem("avtExtentType");
+    type->addItem("avtGhostType");
+    type->addItem("avtMeshCoordType");
+    type->addItem("avtMeshType");
+    type->addItem("avtSubsetType");
+    type->addItem("avtVarType");
 
     // Add enums
     for (size_t i=0; i<EnumType::enums.size(); i++)
     {
-        type->insertItem(QString("enum:") + EnumType::enums[i]->type);
+        type->addItem(QString("enum:") + EnumType::enums[i]->type);
     }
 }
 
@@ -561,6 +583,9 @@ XMLEditFields::UpdateTypeList()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateEnablerList()
@@ -568,11 +593,11 @@ XMLEditFields::UpdateEnablerList()
     Attribute *a = xmldoc->attribute;
 
     enabler->clear();
-    enabler->insertItem(tr("(none)"));
+    enabler->addItem(tr("(none)"));
     for (size_t i=0; i<a->fields.size(); i++)
     {
         if (name->text() != a->fields[i]->name)
-            enabler->insertItem(a->fields[i]->name);
+            enabler->addItem(a->fields[i]->name);
     }
 }
 
@@ -627,21 +652,25 @@ XMLEditFields::BlockAllSignals(bool block)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::nameTextChanged(const QString &text)
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
 
-    QString newname = text.stripWhiteSpace();
+    QString newname = text.trimmed();
     f->name = newname;
 
     BlockAllSignals(true);
-    fieldlist->changeItem(newname, index);
+    fieldlist->item(index)->setText(newname);
     BlockAllSignals(false);
 }
 
@@ -651,12 +680,16 @@ XMLEditFields::nameTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::labelTextChanged(const QString &text)
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
@@ -674,17 +707,20 @@ XMLEditFields::labelTextChanged(const QString &text)
 //    Jeremy Meredith, Tue Dec 10 10:24:31 PST 2002
 //    Fixed a bug where setting a type to an enum would fail.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::typeChanged(int typeindex)
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
 
-    QString t = type->text(typeindex);
+    QString t = type->itemText(typeindex);
     QString st;
     if (t.left(5) == "enum:")
     {
@@ -716,7 +752,7 @@ XMLEditFields::typeChanged(int typeindex)
     delete f;
 
     UpdateWindowContents();
-    fieldlist->setCurrentItem(index);
+    fieldlist->setCurrentRow(index);
 }
 
 // ****************************************************************************
@@ -725,12 +761,16 @@ XMLEditFields::typeChanged(int typeindex)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::subtypeTextChanged(const QString &text)
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
@@ -749,12 +789,15 @@ XMLEditFields::subtypeTextChanged(const QString &text)
 //    Fixed a bug with the enabler field selection not being translated
 //    into the correct Field pointer.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::enablerChanged(int enablerindex)
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
@@ -786,12 +829,16 @@ XMLEditFields::enablerChanged(int enablerindex)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::enablevalTextChanged(const QString &text)
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
@@ -805,12 +852,16 @@ XMLEditFields::enablevalTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::lengthTextChanged(const QString &text)
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
@@ -824,12 +875,16 @@ XMLEditFields::lengthTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::internalChanged()
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
@@ -843,12 +898,16 @@ XMLEditFields::internalChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::ignoreeqChanged()
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
@@ -862,12 +921,16 @@ XMLEditFields::ignoreeqChanged()
 //  Programmer:  Brad Whitlock
 //  Creation:    Wed Feb 28 18:50:06 PST 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::accessChanged(int btn)
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
@@ -894,19 +957,24 @@ XMLEditFields::accessChanged(int btn)
 // Creation:   Fri Dec 10 10:51:49 PDT 2004
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
 void
 XMLEditFields::variableTypeClicked(int bIndex)
 {
+    /*
     QButton *b = varNameButtons->find(bIndex);
     if(b != 0 && b->isA("QCheckBox"))
     {
-        Attribute *a = xmldoc->attribute;
-        int index = fieldlist->currentItem();
-        if (index == -1)
-            return;
+
+    Attribute *a = xmldoc->attribute;
+    int index = fieldlist->currentRow();
+    if (index == -1)
+        return;
+
         Field *f = a->fields[index];
         if(f->type == "variablename")
         {
@@ -917,6 +985,7 @@ XMLEditFields::variableTypeClicked(int bIndex)
             f->varTypes = (f->varTypes & mask) | bit;
         }
     }
+    */
 }
 
 // ****************************************************************************
@@ -929,23 +998,26 @@ XMLEditFields::variableTypeClicked(int bIndex)
 //    Brad Whitlock, Thu Mar 6 15:36:09 PST 2008
 //    Updated.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::initChanged()
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
 
     if (init->isChecked())
     {
-        f->SetInitCodeFromString(values->text());
+        f->SetInitCodeFromString(values->toPlainText());
     }
     else
     {
-        vector<QString> splitvalues = SplitValues(values->text());
+        vector<QString> splitvalues = SplitValues(values->toPlainText());
         int length = splitvalues.size();
         if (!f->isVector && (length > f->length))
             length = f->length;
@@ -974,23 +1046,26 @@ XMLEditFields::initChanged()
 //    Brad Whitlock, Thu Mar 6 15:38:41 PST 2008
 //    Updated init coding.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::valuesChanged()
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
     if (index == -1)
         return;
     Field *f = a->fields[index];
 
     if (init->isChecked())
     {
-        f->SetInitCodeFromString(values->text());
+        f->SetInitCodeFromString(values->toPlainText());
     }
     else
     {
-        vector<QString> splitvalues = SplitValues(values->text());
+        vector<QString> splitvalues = SplitValues(values->toPlainText());
         int length = splitvalues.size();
         if (!f->isVector && (length > f->length))
             length = f->length;
@@ -1015,6 +1090,10 @@ XMLEditFields::valuesChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::fieldlistNew()
@@ -1029,7 +1108,7 @@ XMLEditFields::fieldlistNew()
         newname.sprintf("unnamed%d", newid);
         for (size_t i=0; i<fieldlist->count() && okay; i++)
         {
-            if (fieldlist->text(i) == newname)
+            if (fieldlist->item(i)->text() == newname)
                 okay = false;
         }
         if (!okay)
@@ -1042,9 +1121,9 @@ XMLEditFields::fieldlistNew()
     UpdateWindowContents();
     for (size_t i=0; i<fieldlist->count(); i++)
     {
-        if (fieldlist->text(i) == newname)
+        if (fieldlist->item(i)->text() == newname)
         {
-            fieldlist->setCurrentItem(i);
+            fieldlist->setCurrentRow(i);
             UpdateWindowSingleItem();
         }
     }
@@ -1056,12 +1135,16 @@ XMLEditFields::fieldlistNew()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::fieldlistDel()
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
 
     if (index == -1)
         return;
@@ -1092,7 +1175,7 @@ XMLEditFields::fieldlistDel()
 
     if (index >= fieldlist->count())
         index = fieldlist->count()-1;
-    fieldlist->setCurrentItem(index);
+    fieldlist->setCurrentRow(index);
 }
 
 // ****************************************************************************
@@ -1101,12 +1184,20 @@ XMLEditFields::fieldlistDel()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 2008
+//    First pass at porting to Qt 4.4.0
+//
+//    Cyrus Harrison, Mon Nov 24 09:09:51 PST 2008
+//    Fixed bug w/ wrong text label in fieldList.
+//
+//
 // ****************************************************************************
 void
 XMLEditFields::fieldlistUp()
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
 
     if (index == -1)
         return;
@@ -1122,9 +1213,9 @@ XMLEditFields::fieldlistUp()
     a->fields[index-1]->index = index-1;
 
     BlockAllSignals(true);
-    fieldlist->changeItem(a->fields[index]->name, index);
-    fieldlist->changeItem(a->fields[index-1]->name, index-1);
-    fieldlist->setCurrentItem(index-1);
+    fieldlist->item(index)->setText(a->fields[index]->name);
+    fieldlist->item(index-1)->setText(a->fields[index-1]->name);
+    fieldlist->setCurrentRow(index-1);
     BlockAllSignals(false);
 
     UpdateWindowSensitivity();
@@ -1136,12 +1227,16 @@ XMLEditFields::fieldlistUp()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 void
 XMLEditFields::fieldlistDown()
 {
     Attribute *a = xmldoc->attribute;
-    int index = fieldlist->currentItem();
+    int index = fieldlist->currentRow();
 
     if (index == -1)
         return;
@@ -1157,9 +1252,9 @@ XMLEditFields::fieldlistDown()
     a->fields[index+1]->index = index+1;
 
     BlockAllSignals(true);
-    fieldlist->changeItem(a->fields[index]->name, index);
-    fieldlist->changeItem(a->fields[index+1]->name, index+1);
-    fieldlist->setCurrentItem(index+1);
+    fieldlist->item(index)->setText(a->fields[index]->name);
+    fieldlist->item(index+1)->setText(a->fields[index+1]->name);
+    fieldlist->setCurrentRow(index+1);
     BlockAllSignals(false);
 
     UpdateWindowSensitivity();

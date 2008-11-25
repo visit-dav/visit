@@ -37,7 +37,7 @@
 *****************************************************************************/
 #ifndef XMLEDIT_CODEGENERATOR_WINDOW_H
 #define XMLEDIT_CODEGENERATOR_WINDOW_H
-#include <qmainwindow.h>
+#include <QMainWindow>
 #include <XMLToolIds.h>
 class QProcess;
 class QTextEdit;
@@ -55,7 +55,9 @@ class QTextEdit;
 // Creation:   Fri Mar 7 16:27:04 PST 2008
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 
 class XMLEditCodeGeneratorWindow : public QMainWindow
@@ -63,7 +65,7 @@ class XMLEditCodeGeneratorWindow : public QMainWindow
     Q_OBJECT
 public:
 
-    XMLEditCodeGeneratorWindow(QWidget *parent, const char *name);
+    XMLEditCodeGeneratorWindow(QWidget *parent);
     virtual ~XMLEditCodeGeneratorWindow();
 
     void GenerateCode(const QString &, const bool tools[ID_XML_MAX]);

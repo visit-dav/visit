@@ -41,15 +41,15 @@
 #include <math.h>
 #include <stdio.h>
 
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
 
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
@@ -72,9 +72,12 @@
 // Creation:   Sat Feb 17 13:42:22 PST 2001
 //
 // Modifications:
-//    Eric Brugger, Wed Mar 14 12:00:23 PST 2001
-//    I added the argument type.
-//   
+//   Eric Brugger, Wed Mar 14 12:00:23 PST 2001
+//   I added the argument type.
+//
+//   Brad Whitlock, Tue Jul 15 15:17:01 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisContourPlotWindow::QvisContourPlotWindow(const int type,
@@ -85,6 +88,7 @@ QvisContourPlotWindow::QvisContourPlotWindow(const int type,
     plotType    = type;
     contourAtts = contourAtts_;
     colorModeButtons = 0;
+    scalingButtons = 0;
 }
 
 // ****************************************************************************
@@ -97,13 +101,14 @@ QvisContourPlotWindow::QvisContourPlotWindow(const int type,
 // Creation:   Tue Aug 1 17:06:01 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 15 15:16:52 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 QvisContourPlotWindow::~QvisContourPlotWindow()
 {
     contourAtts = 0;
-    delete colorModeButtons;
 }
 
 // ****************************************************************************
@@ -138,6 +143,9 @@ QvisContourPlotWindow::~QvisContourPlotWindow()
 //   Brad Whitlock, Tue Apr 22 16:26:59 PDT 2008
 //   Added tr()'s.
 //
+//   Brad Whitlock, Tue Jul 15 15:05:35 PDT 2008
+//   Qt 4.
+//
 //   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
 //   Swap the min/max in the gui.
 //
@@ -146,175 +154,167 @@ QvisContourPlotWindow::~QvisContourPlotWindow()
 void
 QvisContourPlotWindow::CreateWindowContents()
 {
-    QGridLayout *checkBoxLayout = new QGridLayout(topLayout, 1, 4, 10);
+    QHBoxLayout *lineLayout = new QHBoxLayout(0);
+    lineLayout->setMargin(0);
+    topLayout->addLayout(lineLayout);
 
     // Create the lineSyle widget.
-    lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
-    checkBoxLayout->addWidget(lineStyle, 0, 1);
+    lineStyle = new QvisLineStyleWidget(0, central);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, tr("Line style"),
-                                central, "lineStyleLabel");
-    checkBoxLayout->addWidget(lineStyleLabel, 0, 0);
+    lineStyleLabel = new QLabel(tr("Line style"), central);
+    lineStyleLabel->setBuddy(lineStyle);
+    lineLayout->addWidget(lineStyleLabel);
+    lineLayout->addWidget(lineStyle);
 
     // Create the lineSyle widget.
-    lineWidth = new QvisLineWidthWidget(0, central, "lineWidth");
-    checkBoxLayout->addWidget(lineWidth, 0, 3);
+    lineWidth = new QvisLineWidthWidget(0, central);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, tr("Line width"),
-                                central, "lineWidthLabel");
-    checkBoxLayout->addWidget(lineWidthLabel, 0, 2);
+    lineWidthLabel = new QLabel(tr("Line width"), central);
+    lineWidthLabel->setBuddy(lineWidth);
+    lineLayout->addWidget(lineWidthLabel);
+    lineLayout->addWidget(lineWidth);
 
     // Create the contour color group box.
-    contourColorGroup = new QGroupBox(central, "contourColorGroup");
+    contourColorGroup = new QGroupBox(central);
     contourColorGroup->setTitle(tr("Contour colors"));
     topLayout->addWidget(contourColorGroup);
-    QVBoxLayout *innerLayout = new QVBoxLayout(contourColorGroup);
-    innerLayout->setMargin(10);
-    innerLayout->addSpacing(15);
-    QVBoxLayout *colorLayout = new QVBoxLayout(innerLayout);
+    topLayout->setStretchFactor(contourColorGroup, 100);
+    QGridLayout *colorLayout = new QGridLayout(contourColorGroup);
     colorLayout->setSpacing(10);
 
     // Create the mode buttons that determine if the window is in single,
     // multiple, or color table color mode.
-    colorModeButtons = new QButtonGroup(0, "colorModeButtons");
-    colorModeButtons->setFrameStyle(QFrame::NoFrame);
-    connect(colorModeButtons, SIGNAL(clicked(int)),
+    colorModeButtons = new QButtonGroup(contourColorGroup);
+    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
-    QGridLayout *innerColorLayout = new QGridLayout(colorLayout,4,3);
-    innerColorLayout->setSpacing(10);
-    innerColorLayout->setColStretch(2, 1000);
 
-    QRadioButton *rb = new QRadioButton(tr("Color table"), contourColorGroup,
-        "colorTable");
-    colorModeButtons->insert(rb);
-    innerColorLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Single"), contourColorGroup, "singleColor");
-    colorModeButtons->insert(rb);
-    innerColorLayout->addWidget(rb, 1, 0);
-    rb = new QRadioButton(tr("Multiple"), contourColorGroup, "multipleColor");
-    colorModeButtons->insert(rb);
-    innerColorLayout->addWidget(rb, 2, 0);
+    QRadioButton *rb = new QRadioButton(tr("Color table"), contourColorGroup);
+    colorModeButtons->addButton(rb, 0);
+    colorLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton(tr("Single"), contourColorGroup);
+    colorModeButtons->addButton(rb, 1);
+    colorLayout->addWidget(rb, 1, 0);
+    rb = new QRadioButton(tr("Multiple"), contourColorGroup);
+    colorModeButtons->addButton(rb, 2);
+    colorLayout->addWidget(rb, 2, 0);
 
     // Create the single color button.
-    singleColor = new QvisColorButton(contourColorGroup,
-        "singleColorButton");
+    singleColor = new QvisColorButton(contourColorGroup);
     singleColor->setButtonColor(QColor(255, 0, 0));
     connect(singleColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(singleColorChanged(const QColor &)));
-    innerColorLayout->addWidget(singleColor, 1, 1);
+    colorLayout->addWidget(singleColor, 1, 1);
     // Create the single color opacity.
-    singleColorOpacity = new QvisOpacitySlider(contourColorGroup,
-        "singleColorOpacity");
-    singleColorOpacity->setMinValue(0);
-    singleColorOpacity->setMaxValue(255);
+    singleColorOpacity = new QvisOpacitySlider(contourColorGroup);
+    singleColorOpacity->setMinimum(0);
+    singleColorOpacity->setMaximum(255);
     singleColorOpacity->setTickInterval(64);
     connect(singleColorOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(singleColorOpacityChanged(int)));
-    innerColorLayout->addWidget(singleColorOpacity, 1, 2);
+    colorLayout->addWidget(singleColorOpacity, 1, 2);
 
     // Add the multiple colors widget.
-    multipleColors = new QvisColorManagerWidget(contourColorGroup,
-        "multipleColors");
+    multipleColors = new QvisColorManagerWidget(contourColorGroup);
     multipleColors->setNameLabelText(tr("Level"));
     connect(multipleColors, SIGNAL(colorChanged(const QColor &, int)),
             this, SLOT(multipleColorChanged(const QColor &, int)));
     connect(multipleColors, SIGNAL(opacityChanged(int, int)),
             this, SLOT(opacityChanged(int, int)));
-    innerColorLayout->addMultiCellWidget(multipleColors, 3, 3, 0, 2);
+    colorLayout->addWidget(multipleColors, 3, 0, 1, 3);
 
     // Add the color table button.
-    colorTableButton = new QvisColorTableButton(contourColorGroup, "colorTableButton");
+    colorTableButton = new QvisColorTableButton(contourColorGroup);
     connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    innerColorLayout->addMultiCellWidget(colorTableButton, 0, 0, 1, 2,
-        AlignLeft | AlignVCenter);
+    colorLayout->addWidget(colorTableButton, 0, 1, 1, 2,
+        Qt::AlignLeft | Qt::AlignVCenter);
 
     // Add the select by and limits stuff.
     topLayout->addSpacing(5);
-    QGridLayout *limitsLayout = new QGridLayout(topLayout, 3, 3);
+    QGridLayout *limitsLayout = new QGridLayout(0);
+    topLayout->addLayout(limitsLayout);
     limitsLayout->setSpacing(10);
+    limitsLayout->setMargin(0);
 
     // Add the select by combo box.
-    selectByComboBox = new QComboBox(false, central, "selectByComboBox");
-    selectByComboBox->insertItem(tr("N levels"));
-    selectByComboBox->insertItem(tr("Value(s)"));
-    selectByComboBox->insertItem(tr("Percent(s)"));
+    selectByComboBox = new QComboBox(central);
+    selectByComboBox->addItem(tr("N levels"));
+    selectByComboBox->addItem(tr("Value(s)"));
+    selectByComboBox->addItem(tr("Percent(s)"));
     connect(selectByComboBox, SIGNAL(activated(int)),
            this, SLOT(selectByChanged(int)));
-    QLabel *selectByLabel = new QLabel(selectByComboBox, tr("Select by"),
-                                       central, "selectByLabel");
+    QLabel *selectByLabel = new QLabel(tr("Select by"), central);
+    selectByLabel->setBuddy(selectByComboBox);
     limitsLayout->addWidget(selectByLabel, 0, 0);
     limitsLayout->addWidget(selectByComboBox, 0, 1);
 
     // Add the select by text field.
-    selectByLineEdit = new QLineEdit(central, "selectByLineEdit");
+    selectByLineEdit = new QLineEdit(central);
     connect(selectByLineEdit, SIGNAL(returnPressed()),
            this, SLOT(processSelectByText()));
     limitsLayout->addWidget(selectByLineEdit, 0, 2);
 
     //
-    // Create the scale radio buttons
-    //
-    QHBoxLayout *scaleLayout = new QHBoxLayout(topLayout);
-
-    // Create a group of radio buttons
-    scalingButtons = new QButtonGroup( central, "scaleRadioGroup" );
-    scalingButtons->setFrameStyle(QFrame::NoFrame);
-    QLabel *scaleLabel = new QLabel(scalingButtons, tr("Scale"), central,
-        "scaleLabel");
-    scaleLayout->addWidget(scaleLabel);
-
-    QHBoxLayout *scaleButtonsLayout = new QHBoxLayout(scalingButtons);
-    scaleButtonsLayout->setSpacing(10);
-    rb = new QRadioButton(tr("Linear"), scalingButtons );
-    rb->setChecked( TRUE );
-    scaleButtonsLayout->addWidget(rb);
-    rb = new QRadioButton( scalingButtons );
-    rb->setText( tr("Log") );
-    scaleButtonsLayout->addWidget(rb);
-    scaleLayout->addWidget( scalingButtons );
-    scaleLayout->addStretch(0);
-    // Each time a radio button is clicked, call the scaleClicked slot.
-    connect(scalingButtons, SIGNAL(clicked(int)),
-            this, SLOT(scaleClicked(int)));
-
-    //
     // Create the Limits stuff
     //
-    QLabel *limitsLabel = new QLabel(tr("Limits"), central, "limitsLabel");
+    QLabel *limitsLabel = new QLabel(tr("Limits"), central);
     limitsLayout->addWidget(limitsLabel, 1, 0);
 
     // Create the max toggle and line edit
-    maxToggle = new QCheckBox(tr("Max"), central, "maxToggle");
+    maxToggle = new QCheckBox(tr("Maximum"), central);
     limitsLayout->addWidget(maxToggle, 1, 1);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
-    maxLineEdit = new QLineEdit(central, "maxLineEdit");
+    maxLineEdit = new QLineEdit(central);
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText())); 
     limitsLayout->addWidget(maxLineEdit, 1, 2);
 
-
     // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Min"), central, "minToggle");
+    minToggle = new QCheckBox(tr("Minimum"), central);
     limitsLayout->addWidget(minToggle, 2, 1);
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(central, "minLineEdit");
+    minLineEdit = new QLineEdit(central);
     connect(minLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMinLimitText())); 
     limitsLayout->addWidget(minLineEdit, 2, 2);
 
+    //
+    // Create the scale radio buttons
+    //
+    QHBoxLayout *scaleLayout = new QHBoxLayout(0);
+    topLayout->addLayout(scaleLayout);
+    scaleLayout->setMargin(0);
+
+    // Create a group of radio buttons
+    scalingButtons = new QButtonGroup(central);
+    connect(scalingButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(scaleClicked(int)));
+
+    QLabel *scaleLabel = new QLabel(tr("Scale"), central);
+    scaleLayout->addWidget(scaleLabel);
+
+    rb = new QRadioButton(tr("Linear"), central);
+    scalingButtons->addButton(rb, 0);
+    rb->setChecked(TRUE);
+    scaleLayout->addWidget(rb);
+
+    rb = new QRadioButton(tr("Log"), central);
+    scalingButtons->addButton(rb, 1);
+    scaleLayout->addWidget(rb);
+    scaleLayout->addStretch(0);
+
     // Create the legend toggle
-    legendCheckBox = new QCheckBox(tr("Legend"), central, "legendToggle");
+    legendCheckBox = new QCheckBox(tr("Legend"), central);
     connect(legendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     topLayout->addWidget(legendCheckBox);
 
     // Create the wireframe toggle
-    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central, "wireframeCheckBox");
+    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central);
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
     topLayout->addWidget(wireframeCheckBox);
@@ -369,6 +369,9 @@ QvisContourPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Apr 22 16:27:30 PDT 2008
 //   Added tr()'s
 //
+//   Brad Whitlock, Tue Jul 15 15:21:40 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -393,13 +396,13 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // defaultPalette
+        case ContourAttributes::ID_defaultPalette:
             // Do nothing
             break;
-        case 1: // changedColors
+        case ContourAttributes::ID_changedColors:
             // Do nothing
             break;
-        case 2: // colorType
+        case ContourAttributes::ID_colorType:
             colorModeButtons->blockSignals(true);
             if(contourAtts->GetColorType() == ContourAttributes::ColorByColorTable) 
                 index = 0;
@@ -407,32 +410,32 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
                 index = 1;
             else
                 index = 2;
-            colorModeButtons->setButton(index);
+            colorModeButtons->button(index)->setChecked(true);
             colorModeButtons->blockSignals(false);
 
             singleColor->setEnabled(index == 1);
             singleColorOpacity->setEnabled(index == 1);
             colorTableButton->setEnabled(index == 0);
             break;
-        case 3: // colorTableName
+        case ContourAttributes::ID_colorTableName:
             colorTableButton->setColorTable(contourAtts->GetColorTableName().c_str());
             break;
-        case 4: // legendFlag
+        case ContourAttributes::ID_legendFlag:
             legendCheckBox->blockSignals(true);
             legendCheckBox->setChecked(contourAtts->GetLegendFlag());
             legendCheckBox->blockSignals(false);
             break;
-        case 5: // lineStyle
+        case ContourAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(contourAtts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
-        case 6: // lineWidth
+        case ContourAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(contourAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-        case 7: // singleColor
+        case ContourAttributes::ID_singleColor:
             { // new scope
             QColor temp(contourAtts->GetSingleColor().Red(),
                         contourAtts->GetSingleColor().Green(),
@@ -446,33 +449,33 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
             singleColorOpacity->blockSignals(false);
             }
             break;
-        case 8: // multiColor
+        case ContourAttributes::ID_multiColor:
             updateColors = true;
             break;
-        case 9: // contourNLevels
+        case ContourAttributes::ID_contourNLevels:
             updateNames = true;
             updateColors = true;
 
             if(contourAtts->GetContourMethod() == ContourAttributes::Level)
                 UpdateSelectByText();
             break;
-        case 10: // contourValue
+        case ContourAttributes::ID_contourValue:
             updateNames = true;
             updateColors = true;
 
             if(contourAtts->GetContourMethod() == ContourAttributes::Value)
                 UpdateSelectByText();
             break;
-        case 11: // contourPercent
+        case ContourAttributes::ID_contourPercent:
             updateNames = true;
             updateColors = true;
 
             if(contourAtts->GetContourMethod() == ContourAttributes::Percent)
                 UpdateSelectByText();
             break;
-        case 12: // contourMethod
+        case ContourAttributes::ID_contourMethod:
             selectByComboBox->blockSignals(true);
-            selectByComboBox->setCurrentItem(contourAtts->GetContourMethod());
+            selectByComboBox->setCurrentIndex(contourAtts->GetContourMethod());
             selectByComboBox->blockSignals(false);
 
             // Set the column header for the name on the color manager.
@@ -506,30 +509,30 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
             updateColors = true;
             UpdateSelectByText();
             break;
-        case 13: // minFlag
+        case ContourAttributes::ID_minFlag:
             minToggle->blockSignals(true);
             minToggle->setChecked(contourAtts->GetMinFlag());
             minLineEdit->setEnabled(contourAtts->GetMinFlag());
             minToggle->blockSignals(false);
             break;
-        case 14: // maxFlag
+        case ContourAttributes::ID_maxFlag:
             maxToggle->blockSignals(true);
             maxToggle->setChecked(contourAtts->GetMaxFlag());
             maxLineEdit->setEnabled(contourAtts->GetMaxFlag());
             maxToggle->blockSignals(false);
             break;
-        case 15: // min
+        case ContourAttributes::ID_min:
             temp.setNum(contourAtts->GetMin());
             minLineEdit->setText(temp);
             break;
-        case 16: // max
+        case ContourAttributes::ID_max:
             temp.setNum(contourAtts->GetMax());
             maxLineEdit->setText(temp);
             break;
-        case 17: // scaling 
-            scalingButtons->setButton(contourAtts->GetScaling());
+        case ContourAttributes::ID_scaling:
+            scalingButtons->button(contourAtts->GetScaling())->setChecked(true);
             break;
-        case 18: // wireframe
+        case ContourAttributes::ID_wireframe:
             wireframeCheckBox->blockSignals(true);
             wireframeCheckBox->setChecked(contourAtts->GetWireframe());
             wireframeCheckBox->blockSignals(false);
@@ -820,6 +823,9 @@ QvisContourPlotWindow::UpdateSelectByText()
 //   Brad Whitlock, Tue Apr 22 16:29:24 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Jul 15 16:40:16 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -833,45 +839,29 @@ QvisContourPlotWindow::GetCurrentValues(int which_widget)
         ProcessSelectByText();
 
     // Do the minimum value.
-    if(which_widget == 1 || doAll)
+    if(which_widget == ContourAttributes::ID_min || doAll)
     {
-        temp = minLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(minLineEdit, val))
+            contourAtts->SetMin(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                contourAtts->SetMin(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The minimum value was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(contourAtts->GetMin());
-            Message(msg);
+            ResettingError(tr("minimum value"),
+                         DoubleToQString(contourAtts->GetMin()));
             contourAtts->SetMin(contourAtts->GetMin());
         }
     }
 
     // Do the maximum value
-    if(which_widget == 2 || doAll)
+    if(which_widget == ContourAttributes::ID_max || doAll)
     {
-        temp = maxLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        double val;
+        if(LineEditGetDouble(maxLineEdit, val))
+            contourAtts->SetMax(val);
+        else
         {
-            double val = temp.toDouble(&okay);
-            if(okay)
-                contourAtts->SetMax(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The maximum value was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(contourAtts->GetMax());
-            Message(msg);
+            ResettingError(tr("maximum value"),
+                         DoubleToQString(contourAtts->GetMax()));
             contourAtts->SetMax(contourAtts->GetMax());
         }
     }
@@ -897,6 +887,9 @@ QvisContourPlotWindow::GetCurrentValues(int which_widget)
 //   Brad Whitlock, Tue Apr 22 16:30:36 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Jul 15 15:39:11 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -908,11 +901,8 @@ QvisContourPlotWindow::ProcessSelectByText()
     {
         // Try converting the line edit to a double vector so we can take
         // the first element as the number of levels.
-        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp,
-                           ContourAttributes::MAX_CONTOURS);
-
-        // If there were elements in the list use the first one, else use 10.
-        int nlevels = (temp.size() > 0) ? int(temp[0]) : 10;
+        int nlevels = contourAtts->GetContourNLevels();
+        LineEditGetInt(selectByLineEdit, nlevels);
 
         // Prevent less than one contour
         if(nlevels < 1)
@@ -937,7 +927,7 @@ QvisContourPlotWindow::ProcessSelectByText()
     {
         // Convert the text fo a list of doubles and store them in the
         // contour's value vector.
-        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp,
+        LineEditGetDoubles(selectByLineEdit, temp,
                            ContourAttributes::MAX_CONTOURS);
         contourAtts->SetContourValue(temp);
     }
@@ -945,7 +935,7 @@ QvisContourPlotWindow::ProcessSelectByText()
     {
         // Convert the text to a list of doubles and store them in the
         // contour's percent vector.
-        StringToDoubleList(selectByLineEdit->displayText().latin1(), temp,
+        LineEditGetDoubles(selectByLineEdit, temp,
                            ContourAttributes::MAX_CONTOURS);
         contourAtts->SetContourPercent(temp);
     }
@@ -1444,13 +1434,15 @@ QvisContourPlotWindow::scaleClicked(int button)
 // Creation:   Sat Feb 17 10:11:38 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 15 16:44:34 PDT 2008
+//   updated style.
+//
 // ****************************************************************************
 
 void
 QvisContourPlotWindow::processMinLimitText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(ContourAttributes::ID_min);
     Apply();
 }
 
@@ -1487,13 +1479,15 @@ QvisContourPlotWindow::maxToggled(bool val)
 // Creation:   Sat Feb 17 10:11:38 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 15 16:44:42 PDT 2008
+//   updated style.
+//
 // ****************************************************************************
 
 void
 QvisContourPlotWindow::processMaxLimitText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(ContourAttributes::ID_max);
     Apply();
 }
 
@@ -1518,7 +1512,7 @@ QvisContourPlotWindow::processMaxLimitText()
 void
 QvisContourPlotWindow::colorTableClicked(bool, const QString &ctName)
 {
-    contourAtts->SetColorTableName(ctName.latin1());
+    contourAtts->SetColorTableName(ctName.toStdString());
     Apply();
 }
 

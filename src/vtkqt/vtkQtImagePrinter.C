@@ -35,12 +35,12 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <QtCore>
+#include <QPainter>
+#include <QImage>
 
 #include "vtkQtImagePrinter.h"
 #include "vtkObjectFactory.h"
-#include <qpainter.h>
-#include <qimage.h>
-#include <qpaintdevicemetrics.h>
 
 #include <vtkImageData.h>
 #include <vtkPointData.h>
@@ -119,6 +119,9 @@ vtkQtImagePrinter::vtkQtImagePrinter() : print()
 //   Kathleen Bonnell, Wed Aug 22 17:40:34 PDT 2007 
 //   Made scaling of viewport coords specific to WIN32 and QT version 3.0.2. 
 //
+//   Brad Whitlock, Fri May  9 10:21:26 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -153,9 +156,6 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
         return;
     }
 
-    // Get the size of the printer. Figure out a suitable viewport and
-    // window to use for the painter.
-    QPaintDeviceMetrics metrics(&print);
     // Find the image dimensions
     int rowLength = extent[1] - extent[0] + 1;
     int columnHeight = extent[3] - extent[2] + 1;
@@ -165,8 +165,8 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
     //
     int vptW = rowLength;
     int vptH = columnHeight;
-    bool squeezeX = vptW > metrics.width();
-    bool squeezeY = vptH > metrics.height();
+    bool squeezeX = vptW > print.width();
+    bool squeezeY = vptH > print.height();
     float aspect = float(vptH) / float(vptW);
     do
     {
@@ -175,14 +175,14 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
             if(aspect > 1.)
             {
                 // Taller than wide
-                vptH = metrics.height();
+                vptH = print.height();
                 vptW = int(float(vptH) / aspect);
                 squeezeY = false;
             }
             else
             {
                 // Wider than tall
-                vptW = metrics.width();
+                vptW = print.width();
                 vptH = int(float(vptW) * aspect);
                 squeezeX = false;
             }
@@ -191,26 +191,26 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
         if(squeezeX)
         {
             // X dimension larger, Y smaller
-            vptW = metrics.width();
-            vptH = int(float(metrics.width()) * aspect);
+            vptW = print.width();
+            vptH = int(float(print.width()) * aspect);
         }
         else if(squeezeY)
         {
             // Y dimension larger, X smaller.
-            vptH = metrics.height();
-            vptW = int(float(metrics.height()) / aspect);
+            vptH = print.height();
+            vptW = int(float(print.height()) / aspect);
         }
 
         // See if we need to go through the loop again.
-        squeezeX = vptW > metrics.width();
-        squeezeY = vptH > metrics.height();
+        squeezeX = vptW > print.width();
+        squeezeY = vptH > print.height();
     } while(squeezeX || squeezeY);
 
     //
     // Set the viewport and the window.
     //
-    int vptX = (metrics.width() - vptW) / 2;
-    int vptY = (metrics.height() - vptH) / 2;
+    int vptX = (print.width() - vptW) / 2;
+    int vptY = (print.height() - vptH) / 2;
 #if defined(_WIN32) && QT_VERSION == 302
     // At this point, I'm not sure whether this is because of Windows
     // or because of printing support in Qt 3.0.2. Just make the image's
@@ -301,7 +301,8 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
     //
     // Draw the image on the printer surface.
     //
-    QImage image(imageData, rowLength, columnHeight, 32, 0, 0, QImage::IgnoreEndian);
+    int bytesPerLine = 4 * rowLength;
+    QImage image(imageData, rowLength, columnHeight, bytesPerLine, QImage::Format_RGB32);
     paint.drawImage(QPoint(0, 0), image);
 
     // Indicate that we're done drawing.

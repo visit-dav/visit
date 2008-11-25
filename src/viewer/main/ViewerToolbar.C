@@ -39,7 +39,7 @@
 #include <ViewerToolbar.h>
 #include <ViewerAction.h>
 #include <ViewerWindow.h>
-#include <qtoolbar.h>
+#include <QToolBar>
 
 // ****************************************************************************
 // Method: ViewerToolbar::ViewerToolbar

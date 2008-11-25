@@ -39,12 +39,13 @@
 #ifndef QVIS_COLOR_BUTTON_H
 #define QVIS_COLOR_BUTTON_H
 #include <gui_exports.h>
-#include <qcolor.h>
-#include <qbutton.h>
+
+#include <QAbstractButton>
+#include <QColor>
 #include <vector>
 
 class QPainter;
-class QPopupMenu;
+class QMenu;
 class QvisColorSelectionWidget;
 
 // ****************************************************************************
@@ -60,17 +61,18 @@ class QvisColorSelectionWidget;
 // Creation:   Mon Dec 4 09:49:14 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 15:28:12 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-class GUI_API QvisColorButton : public QButton
+class GUI_API QvisColorButton : public QAbstractButton
 {
     Q_OBJECT
 
     typedef std::vector<QvisColorButton *> ColorButtonVector;
 public:
-    QvisColorButton(QWidget *parent = 0, const char *name = 0,
-                    const void *userData = 0);
+    QvisColorButton(QWidget *parent = 0, const void *userData = 0);
     virtual ~QvisColorButton();
     virtual QSize sizeHint() const;
     virtual QSizePolicy sizePolicy () const;
@@ -84,8 +86,9 @@ signals:
     void selectedColor(const QColor &c);
     void selectedColor(const QColor &c, const void *data);
 protected:
-    virtual void  drawButton(QPainter *);
-    virtual void  drawButtonLabel(QPainter *);
+    virtual void paintEvent(QPaintEvent *);
+    virtual void drawButton(QPainter *);
+    virtual void drawButtonLabel(QPainter *);
 private slots:
     void popupPressed();
     void colorSelected(const QColor &c);

@@ -39,22 +39,21 @@
 #ifndef QVIS_HELP_WINDOW_H
 #define QVIS_HELP_WINDOW_H
 #include <gui_exports.h>
-#include <qmap.h>
-#include <qpixmap.h>
+#include <QMap>
+#include <QIcon>
 #include <QvisDelayedWindow.h>
 
 class QAction;
 class QDomElement;
 class QLineEdit;
-class QListBox;
-class QListView;
-class QListViewItem;
+class QListWidget;
 class QPushButton;
 class QSplitter;
 class QTabWidget;
 class QTextBrowser;
-class QVBox;
-class QvisHelpListViewItem;
+class QTreeWidget;
+class QTreeWidgetItem;
+class QWidget;
 
 // ****************************************************************************
 // Class: QvisHelpWindow
@@ -86,6 +85,9 @@ class QvisHelpListViewItem;
 //   Brad Whitlock, Mon Apr 21 15:26:37 PDT 2008
 //   Added helper methods and the SetLocale method.
 //
+//   Brad Whitlock, Thu Jun 19 13:55:53 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisHelpWindow : public QvisDelayedWindow
@@ -107,13 +109,13 @@ public slots:
     void displayContributors();
     virtual void show();
 private slots:
-    void activeTabChanged(QWidget *);
+    void activeTabChanged(int);
     void activateContentsTab();
     void activateIndexTab();
     void activateBookmarkTab();
-    void openHelp(QListViewItem *);
-    void topicExpanded(QListViewItem *);
-    void topicCollapsed(QListViewItem *);
+    void openHelp(QTreeWidgetItem *);
+    void topicExpanded(QTreeWidgetItem *);
+    void topicCollapsed(QTreeWidgetItem *);
     void displayNoHelp();
     void displayTitle(const QString &title);
     void displayHome();
@@ -132,36 +134,36 @@ private:
     void LoadHelp(const QString &helpFile);
     void BuildIndex();
     void AddToIndex(const QString &topic, const QString &doc);
-    void BuildContents(QListViewItem *parentItem,
+    void BuildContents(QTreeWidgetItem *parentItem,
                        const QDomElement &parentElement);
     void BuildBookmarks();
     QString TopicFromDoc(const QString &doc);
     bool TopicFromDocHelper(QString &str, const QString &doc,
-                            QvisHelpListViewItem *item);
+                            QTreeWidgetItem *item);
     QString CompleteFileName(const QString &page) const;
     void synchronizeContents(const QString &page);
     void displayReleaseNotesHelper(bool);
 
     QString       locale;
     QTabWidget   *helpTabs;
-    QListView    *helpContents;
+    QTreeWidget  *helpContents;
     QTextBrowser *helpBrowser;
     QSplitter    *splitter;
     QAction      *backAction;
     QAction      *forwardAction;
 
-    QVBox        *helpIndexTab;
-    QListBox     *helpIndex;
+    QWidget      *helpIndexTab;
+    QListWidget  *helpIndex;
     QLineEdit    *helpIndexText;
 
-    QVBox        *helpBookmarksTab;
+    QWidget      *helpBookmarksTab;
     QPushButton  *addBookmarkButton;
     QPushButton  *removeBookmarkButton;
-    QListBox     *helpBookMarks;
+    QListWidget  *helpBookMarks;
 
-    QPixmap      closedBookIcon;
-    QPixmap      openBookIcon;
-    QPixmap      helpIcon;
+    QIcon        closedBookIcon;
+    QIcon        openBookIcon;
+    QIcon        helpIcon;
     QString      helpFile;
     QString      helpPath;
     bool         firstShow;

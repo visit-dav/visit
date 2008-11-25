@@ -39,8 +39,8 @@
 #ifndef XMLEDIT_H
 #define XMLEDIT_H
 
-#include <qmainwindow.h>
-#include <qstring.h>
+#include <QMainWindow>
+#include <QString>
 
 class QTabWidget;
 class XMLDocument;
@@ -69,12 +69,15 @@ class XMLEditCodeGeneratorWindow;
 //    Brad Whitlock, Fri Mar 7 15:02:37 PST 2008
 //    Added code generation window.
 //
+//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//    First pass at porting to Qt 4.4.0
+//
 // ****************************************************************************
 class XMLEdit : public QMainWindow
 {
     Q_OBJECT
   public:
-    XMLEdit(const QString &file, QWidget *p, const QString &n);
+    XMLEdit(const QString &file, QWidget *p);
     void OpenFile(const QString &file);
     void SaveFile(const QString &file);
   public slots:
@@ -82,7 +85,7 @@ class XMLEdit : public QMainWindow
     void open();
     void save();
     void saveAs();
-    void updateTab(QWidget *tab);
+    void updateTab(int tab);
     void generateCode();
   private:
     QString  filename;

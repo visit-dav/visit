@@ -39,7 +39,7 @@
 #ifndef QVIS_TURNDOWN_BUTTON_H
 #define QVIS_TURNDOWN_BUTTON_H
 #include <gui_exports.h>
-#include <qpushbutton.h>
+#include <QPushButton>
 
 // ****************************************************************************
 // Class: QvisTurnDownButton
@@ -53,18 +53,20 @@
 // Creation:   Tue Dec 2 13:59:57 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  3 16:12:47 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisTurnDownButton : public QPushButton
 {
     Q_OBJECT
 public:
-    QvisTurnDownButton(QWidget *parent = 0, const char *name = 0);
+    QvisTurnDownButton(QWidget *parent = 0);
     virtual ~QvisTurnDownButton();
-    virtual QSize sizeHint() const { return QSize(15,15); }
+    virtual QSize sizeHint() const { return QSize(20,15); }
 protected:
-    virtual void drawButtonLabel(QPainter *);
+    virtual void paintEvent(QPaintEvent *);
 };
 
 #endif

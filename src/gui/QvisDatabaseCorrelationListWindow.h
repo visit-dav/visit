@@ -44,7 +44,7 @@
 class DatabaseCorrelationList;
 class QCheckBox;
 class QComboBox;
-class QListBox;
+class QListWidget;
 class QPushButton;
 
 // ****************************************************************************
@@ -111,7 +111,7 @@ protected:
     QPushButton             *newButton;
     QPushButton             *editButton;
     QPushButton             *deleteButton;
-    QListBox                *correlationListBox;
+    QListWidget                *correlationListBox;
     QCheckBox               *promptUser;
     QComboBox               *whenToCorrelate;
     QComboBox               *defaultCorrelationMethod;

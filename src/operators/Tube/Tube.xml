@@ -12,7 +12,7 @@
       <Field name="fineness" label="Fineness of tube" type="int">
         3
       </Field>
-      <Field name="capping" label="Cap Tubes?" type="bool">
+      <Field name="capping" label="Cap ends of the tubes" type="bool">
         false
       </Field>
     </Attribute>

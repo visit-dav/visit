@@ -57,13 +57,16 @@ class QPixmap;
 //    Jeremy Meredith, Mon Feb  7 10:37:27 PST 2005
 //    Removed mouseReleased because it was already in the base class.
 //
+//    Brad Whitlock, Wed Jun  4 10:32:52 PDT 2008
+//    Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisGaussianOpacityBar : public QvisAbstractOpacityBar
 {
     Q_OBJECT
   public:
-                  QvisGaussianOpacityBar(QWidget *parent=NULL, const char *name=NULL);
+                  QvisGaussianOpacityBar(QWidget *parent=NULL);
                  ~QvisGaussianOpacityBar();
     float        *getRawOpacities(int);
     int           getNumberOfGaussians();
@@ -71,10 +74,10 @@ class GUI_API QvisGaussianOpacityBar : public QvisAbstractOpacityBar
     void          setAllGaussians(int, float*);
 
   protected:
-    void          mouseMoveEvent(QMouseEvent*);
-    void          mousePressEvent(QMouseEvent*);
-    void          mouseReleaseEvent(QMouseEvent*);
-    void          paintToPixmap(int,int);
+    virtual void  mouseMoveEvent(QMouseEvent*);
+    virtual void  mousePressEvent(QMouseEvent*);
+    virtual void  mouseReleaseEvent(QMouseEvent*);
+    virtual void  drawOpacities(int,int);
     void          drawControlPoints();
 
   private:

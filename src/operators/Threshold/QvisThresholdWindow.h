@@ -42,7 +42,7 @@
 #include <QvisOperatorWindow.h>
 #include <ThresholdAttributes.h>
 
-class QTable;
+class QTableWidget;
 class QLabel;
 class QButtonGroup;
 class QvisVariableButton;
@@ -90,6 +90,9 @@ class QvisVariableButton;
 //   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
 //   Rewritten to support new Threshold GUI.
 //
+//   Cyrus Harrison, Thu Aug 21 08:45:29 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -117,20 +120,17 @@ private slots:
 
 private:
     void                PopulateThresholdVariablesList();
-    void                AddNewRowToVariablesList(const QString &listVarName);
-    void                MakeDisplayableVariableNameText(char displayVarText[],
-                            const std::string &variableName, int maxDisplayChars);
-
+    void                AddNewRowToVariablesList(const QString &variableName);
+    QString             PrepareVariableNameText(const QString &variableName,
+                                                int maxDisplayChars);
+    void                SetZoneIncludeSelectEnabled(bool val);
+    void                SetTableWidth();
+    
     ThresholdAttributes *atts;
 
-    QTable              *threshVarsList;
-/* debug 041907
-    QvisVariableButton  *addVarToList;
-    QPushButton         *deleteSelectedVar;
-*/
+    QTableWidget        *threshVars;
     QButtonGroup        *outputMeshType;
-    
-    stringVector        guiFullVarNames;
+     stringVector        guiFullVarNames;
 };
 
 #endif

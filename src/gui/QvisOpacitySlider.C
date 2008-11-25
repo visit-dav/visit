@@ -37,14 +37,16 @@
 *****************************************************************************/
 
 #include <QvisOpacitySlider.h>
-#include <qbitmap.h>
-#include <qcolor.h>
-#include <qdrawutil.h>
-#include <qimage.h>
-#include <qpainter.h>
-#include <qpalette.h>
-#include <qstyle.h>
-#include <qtimer.h>
+#include <QBitmap>
+#include <QColor>
+#include <QImage>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPalette>
+#include <QStyle>
+#include <QStyleOption>
+#include <QTimer>
 
 // some static constants.
 static const int thresholdTime = 500;
@@ -66,11 +68,13 @@ static int sliderStartVal = 0;
 // Creation:   Thu Dec 7 12:14:41 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 11:20:03 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisOpacitySlider::QvisOpacitySlider(QWidget *parent, const char *name,
-    const void *data) : QWidget(parent, name)
+QvisOpacitySlider::QvisOpacitySlider(QWidget *parent, const void *data) : 
+    QAbstractSlider(parent)
 {
     init();
     userData = data;
@@ -95,16 +99,21 @@ QvisOpacitySlider::QvisOpacitySlider(QWidget *parent, const char *name,
 // Creation:   Thu Dec 7 12:14:41 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 11:19:54 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
-QvisOpacitySlider::QvisOpacitySlider(int minValue, int maxValue, int pageStep,
-    int value, QWidget *parent, const char *name, const void *data) :
-    QWidget(parent, name), QRangeControl(minValue, maxValue, 1, pageStep,
-                                         value)
+QvisOpacitySlider::QvisOpacitySlider(int minValue, int maxValue, int step,
+    int val, QWidget *parent, const void *data) :
+    QAbstractSlider(parent)
 {
     init();
-    sliderVal = value;
+    setMinimum(minValue);
+    setMaximum(maxValue);
+    setPageStep(step);
+    setValue(val);
+
     userData = data;
 }
 
@@ -123,7 +132,7 @@ QvisOpacitySlider::QvisOpacitySlider(int minValue, int maxValue, int pageStep,
 
 QvisOpacitySlider::~QvisOpacitySlider()
 {
-    deleteGradientPixmap();
+    deleteGradientImage();
 }
 
 // ****************************************************************************
@@ -142,16 +151,19 @@ QvisOpacitySlider::~QvisOpacitySlider()
 void
 QvisOpacitySlider::init()
 {
-    gradientPixmap = 0;
+    gradientImage = 0;
     timer = 0;
     sliderPos = 0;
     sliderVal = 0;
     clickOffset = 0;
     state = Idle;
     tickInt = 0;
-    gradientColor = colorGroup().background();
-    setFocusPolicy(TabFocus);
+    gradientColor = palette().color(QPalette::Window);
+    setFocusPolicy(Qt::StrongFocus);
     initTicks();
+
+    connect(this, SIGNAL(valueChanged(int)),
+            this, SLOT(handle_valueChanged(int)));
 }
 
 // ****************************************************************************
@@ -194,7 +206,8 @@ QvisOpacitySlider::initTicks()
 int
 QvisOpacitySlider::positionFromValue(int value) const
 {
-    return QRangeControl::positionFromValue(value, available());
+    float t = float(value - minimum()) / float(maximum() - minimum());
+    return (int)(t * available());
 }
 
 // ****************************************************************************
@@ -210,14 +223,14 @@ QvisOpacitySlider::positionFromValue(int value) const
 //
 // Modifications:
 //   Brad Whitlock, Thu Nov 13 09:49:31 PDT 2003
-//   I made it use pixmapWidth.
+//   I made it use imageWidth.
 //
 // ****************************************************************************
 
 int
 QvisOpacitySlider::available() const
 {
-    return pixmapWidth() - sliderLength();
+    return imageWidth() - sliderLength();
 }
 
 // ****************************************************************************
@@ -238,14 +251,16 @@ QvisOpacitySlider::available() const
 int
 QvisOpacitySlider::valueFromPosition(int position) const
 {
-    return QRangeControl::valueFromPosition(position, available());
+    float t = float(position) / float(available());
+    float val = ((1.f - t) * float(minimum())) + (t * float(maximum()));
+    return int(val);
 }
 
 // ****************************************************************************
 // Method: QvisOpacitySlider::rangeChange
 //
 // Purpose: 
-//   Implements the virtual QRangeControl function.
+//   Implements the virtual QAbstractSlider function.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:23:15 PDT 2000
@@ -279,36 +294,8 @@ QvisOpacitySlider::rangeChange()
 void
 QvisOpacitySlider::paletteChange(const QPalette &)
 {
-    deleteGradientPixmap();
+    deleteGradientImage();
     update();
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::valueChange
-//
-// Purpose: 
-//   Implements the virtual QRangeControl function.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 12:23:57 PDT 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisOpacitySlider::valueChange()
-{
-    if(sliderVal != value())
-    {
-        int newPos = positionFromValue(value());
-        sliderVal = value();
-        reallyMoveSlider(newPos);
-    }
-
-    // emit the valueChanged signals.
-    emit valueChanged(value());
-    emit valueChanged(value(), userData);
 }
 
 // ****************************************************************************
@@ -348,6 +335,9 @@ QvisOpacitySlider::sliderRect() const
 //   Brad Whitlock, Thu Nov 13 10:32:26 PDT 2003
 //   I made it repaint the text value.
 //
+//   Brad Whitlock, Thu Jun  5 14:30:50 PDT 2008
+//   Use regions and update().
+//
 // ****************************************************************************
 
 void 
@@ -360,20 +350,15 @@ QvisOpacitySlider::reallyMoveSlider(int newPos)
     // Since sliderRect isn't virtual, I know that oldR and newR
     // are the same size.
     if(oldR.left() < newR.left())
-        oldR.setRight(QMIN(oldR.right(), newR.left()));
+        oldR.setRight(qMin(oldR.right(), newR.left()));
     else
-        oldR.setLeft(QMAX(oldR.left(), newR.right()));
+        oldR.setLeft(qMax(oldR.left(), newR.right()));
 
     // If we're moving the slider, we have to update the text.
-    int pmw = pixmapWidth();
-    QRect newTextR(pmw, 0, width() - pmw, height());
+    int pmw = imageWidth();
+    QRegion newTextR(pmw, 0, width() - pmw, height());
 
-    repaint(oldR);
-    repaint(newR, FALSE);
-    repaint(newTextR);
-
-    if(autoMask())
-        updateMask();
+    update(QRegion(oldR) + QRegion(newR) + newTextR);
 }
 
 // ****************************************************************************
@@ -431,7 +416,7 @@ QvisOpacitySlider::maximumSliderDragDistance() const
 // ****************************************************************************
 
 void
-QvisOpacitySlider::paintSlider( QPainter *p, const QColorGroup &,
+QvisOpacitySlider::paintSlider( QPainter *p, const QPalette &,
     const QRect &r )
 {
     QPoint bo = p->brushOrigin();
@@ -439,44 +424,6 @@ QvisOpacitySlider::paintSlider( QPainter *p, const QColorGroup &,
 
     drawSlider(p, r.x(), r.y(), r.width(), r.height());
     p->setBrushOrigin(bo);
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::drawSliderMask
-//
-// Purpose: 
-//   Draws the slider mask.
-//
-// Arguments:
-//   p : The painter used to draw.
-//   x : The x location of the mask.
-//   y : The y location of the mask.
-//   w : The mask's width.
-//   h : The mask's height.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 12:39:43 PDT 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisOpacitySlider::drawSliderMask(QPainter *p, int x, int y, int w, int h)
-{
-    int x1 = x;
-    int x2 = x+w-1;
-    int y1 = y;
-    int y2 = y+h-1;
-
-    y1 = y1 + w/2;
-
-    QPointArray a;
-    a.setPoints(5, x1,y1, x1 + w/2, y1 - w/2, x2,y1, x2,y2, x1,y2);
-
-    p->setBrush(color1);
-    p->setPen(color1);
-    p->drawPolygon( a );
 }
 
 // ****************************************************************************
@@ -497,15 +444,17 @@ QvisOpacitySlider::drawSliderMask(QPainter *p, int x, int y, int w, int h)
 // Creation:   Thu Dec 7 12:37:18 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 11:30:44 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisOpacitySlider::drawSliderGroove(QPainter *p, int x, int y, int w, int,
-    QCOORD c)
+    int c)
 {
-    qDrawWinPanel(p, x, y + c - 2,  w, 4, colorGroup(), TRUE);
-    p->setPen(colorGroup().shadow());
+    qDrawWinPanel(p, x, y + c - 2,  w, 4, palette(), TRUE);
+    p->setPen(palette().color(QPalette::Shadow));
     p->drawLine(x+1, y + c - 1, x + w - 3, y + c - 1);
 }
 
@@ -526,17 +475,19 @@ QvisOpacitySlider::drawSliderGroove(QPainter *p, int x, int y, int w, int,
 // Creation:   Thu Dec 7 12:32:38 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 11:29:44 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisOpacitySlider::drawSlider(QPainter *p, int x, int y, int w, int h)
 {
     // Get some colors from the widget's colorgroup.
-    const QColor c0 = colorGroup().shadow();
-    const QColor c1 = colorGroup().dark();
-    const QColor c3 = colorGroup().midlight();
-    const QColor c4 = colorGroup().light();
+    const QColor c0 = palette().color(QPalette::Shadow);
+    const QColor c1 = palette().color(QPalette::Dark);
+    const QColor c3 = palette().color(QPalette::Mid);
+    const QColor c4 = palette().color(QPalette::Light);
 
     int x1 = x;
     int x2 = x+w-1;
@@ -546,12 +497,12 @@ QvisOpacitySlider::drawSlider(QPainter *p, int x, int y, int w, int h)
     y1 = y1 + w/2;
     d =  (w + 1) / 2 - 1;
 
-    QPointArray a;
+    QPolygon a;
     a.setPoints(5, x1,y1, x1,y2, x2,y2, x2,y1, x1+d,y1-d);
 
     QBrush oldBrush = p->brush();
-    p->setBrush(colorGroup().brush(QColorGroup::Button));
-    p->setPen(NoPen);
+    p->setBrush(palette().button());
+    p->setPen(Qt::NoPen);
     p->drawRect(x1, y1, x2-x1+1, y2-y1+1);
     p->drawPolygon(a);
     p->setBrush(oldBrush);
@@ -602,7 +553,7 @@ QvisOpacitySlider::drawSlider(QPainter *p, int x, int y, int w, int h)
 void
 QvisOpacitySlider::drawTicks(QPainter *p, int dist, int w, int i) const
 {
-    drawTicks(p, colorGroup(), dist, w, i);
+    drawTicks(p, palette(), dist, w, i);
 }
 
 // ****************************************************************************
@@ -622,17 +573,19 @@ QvisOpacitySlider::drawTicks(QPainter *p, int dist, int w, int i) const
 // Creation:   Thu Dec 7 13:13:53 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 11:44:18 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisOpacitySlider::drawTicks( QPainter *p, const QColorGroup& g, int dist,
+QvisOpacitySlider::drawTicks( QPainter *p, const QPalette& g, int dist,
     int w, int i) const
 {
-    p->setPen( g.foreground() );
-    int v = minValue();
+    p->setPen(g.color(QPalette::Text));
+    int v = minimum();
     int fudge = sliderLength() / 2 + 1;
-    while(v <= maxValue() + 1)
+    while(v <= maximum() + 1)
     {
         int pos = positionFromValue(v) + fudge;
         p->drawLine( pos, dist, pos, dist + w );
@@ -662,7 +615,7 @@ QvisOpacitySlider::textPadding() const
 }
 
 // ****************************************************************************
-// Method: QvisOpacitySlider::pixmapWidth
+// Method: QvisOpacitySlider::imageWidth
 //
 // Purpose: 
 //   Returns the width of the pixmap area, which is the width of the whole
@@ -678,7 +631,7 @@ QvisOpacitySlider::textPadding() const
 // ****************************************************************************
 
 int
-QvisOpacitySlider::pixmapWidth() const
+QvisOpacitySlider::imageWidth() const
 {
     return width() - fontMetrics().width("100%") - textPadding();
 }
@@ -698,16 +651,18 @@ QvisOpacitySlider::pixmapWidth() const
 // Creation:   Thu Nov 13 10:19:22 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 14:29:03 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisOpacitySlider::paintValueText(QPainter *p, const QColorGroup &cg, int x,
+QvisOpacitySlider::paintValueText(QPainter *p, const QPalette &cg, int x,
     int h)
 {
     // Create the text that we have to display.
     int v = (state == Dragging) ? (valueFromPosition(sliderPos)) : value();
-    float t = float(v - minValue()) / float(maxValue() - minValue());
+    float t = float(v - minimum()) / float(maximum() - minimum());
     QString txt; txt.sprintf("%d%%", int(t * 100.f));
 
     // Figure out the y offset.
@@ -715,12 +670,12 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QColorGroup &cg, int x,
     int y = (h - dy / 2);
 
     // Set the brush and draw the text.
-    p->setPen(cg.text());
+    p->setPen(cg.color(QPalette::Text));
     p->drawText(x + textPadding(), y, txt);
 }
 
 // ****************************************************************************
-// Method: QvisOpacitySlider::createGradientPixmap
+// Method: QvisOpacitySlider::createGradientImage
 //
 // Purpose: 
 //   Creates the opacity gradient pixmap that is used as the slider's 
@@ -741,116 +696,66 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QColorGroup &cg, int x,
 //   Brad Whitlock, Thu Nov 13 09:47:15 PDT 2003
 //   I made it use a smaller width so we can display the percent.
 //
+//   Brad Whitlock, Thu Jun  5 14:17:51 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisOpacitySlider::createGradientPixmap()
+QvisOpacitySlider::createGradientImage()
 {
     // Create the pixmap.
-    int w = pixmapWidth();
+    int w = imageWidth();
     int h = height() - tickOffset;
-    gradientPixmap = new QPixmap(w, h);
+    gradientImage = new QImage(w, h, QImage::Format_RGB32);
 
-    QBrush brush(colorGroup().brush(QColorGroup::Background));
-    QPainter paint(gradientPixmap);
+    QBrush brush(palette().window());
+    QPainter paint(gradientImage);
 
-    if(brush.pixmap())
+    if(!brush.textureImage().isNull())
     {
         // Paint the background into the pixmap.
-        paint.fillRect(0, 0, w, h, colorGroup().brush(QColorGroup::Background));
-        QImage img = gradientPixmap->convertToImage();
-        if(!img.isNull())
+        paint.fillRect(0, 0, w, h, brush);
+        for(int i = 0; i < w; ++i)
         {
-            for(int i = 0; i < w; ++i)
+            float t = float(i) / float(w - 1);
+            float omt = 1.f - t;
+            int   rc, gc, bc;
+            for(int j = 0; j < h; ++j)
             {
-                float t = float(i) / float(w - 1);
-                float omt = 1.f - t;
-                int   rc, gc, bc;
-                for(int j = 0; j < h; ++j)
-                {
-                    // Alpha blend with the pixel that's there already.
-                    QRgb p = img.pixel(i, j);
-                    rc = int(omt * float(qRed(p)) + t * float(gradientColor.red()));
-                    rc = (rc > 255) ? 255 : rc;
-                    gc = int(omt * float(qGreen(p)) + t * float(gradientColor.green()));
-                    gc = (gc > 255) ? 255 : gc;
-                    bc = int(omt * float(qBlue(p)) + t * float(gradientColor.blue()));
-                    bc = (bc > 255) ? 255 : bc;
-                    img.setPixel(i, j, qRgb(rc, gc, bc));
-                }
+                // Alpha blend with the pixel that's there already.
+                QRgb p = gradientImage->pixel(i, j);
+                rc = int(omt * float(qRed(p)) + t * float(gradientColor.red()));
+                rc = (rc > 255) ? 255 : rc;
+                gc = int(omt * float(qGreen(p)) + t * float(gradientColor.green()));
+                gc = (gc > 255) ? 255 : gc;
+                bc = int(omt * float(qBlue(p)) + t * float(gradientColor.blue()));
+                bc = (bc > 255) ? 255 : bc;
+                gradientImage->setPixel(i, j, qRgb(rc, gc, bc));
             }
-
-            if(!gradientPixmap->convertFromImage(img))
-            {
-                qDebug("QvisOpacitySlider::createGradientPixmap: "
-                       "Could not convert the image to a pixmap!");
-            }
-        }
-        else
-        {
-            qDebug("QvisOpacitySlider::createGradientPixmap: "
-                   "Could not create the initial image from the pixmap.");
         }
     }
     else
     {
-        // Now draw the color gradient into the pixmap.
-        float invWidth = 1.0 / ((float)w);
-        float deltaRed = gradientColor.red() - colorGroup().background().red();
-        float deltaGreen = gradientColor.green() - colorGroup().background().green();
-        float deltaBlue = gradientColor.blue() - colorGroup().background().blue();
-
-        deltaRed *= invWidth;
-        deltaGreen *= invWidth;
-        deltaBlue *= invWidth;
-
-        float red = (float)colorGroup().background().red();
-        float green = (float)colorGroup().background().green();
-        float blue = (float)colorGroup().background().blue();
-
-        for(int i = 0; i < w; ++i)
-        {
-            int currentRed = (int)red;
-            int currentGreen = (int)green;
-            int currentBlue = (int)blue;
-
-            // Clamp values just in case they went out of range.
-            if(currentRed < 0)
-                currentRed = 0;
-            else if(currentRed > 255)
-                currentRed = 255;
-
-            if(currentGreen < 0)
-                currentGreen = 0;
-            else if(currentGreen > 255)
-                currentGreen = 255;
-
-            if(currentBlue < 0)
-                currentBlue = 0;
-            else if(currentBlue > 255)
-                currentBlue = 255;
-
-            QColor tempColor(currentRed, currentGreen, currentBlue);
-            paint.setPen(tempColor);
-            paint.drawLine(i, 0, i, h);
-
-            red += deltaRed;
-            green += deltaGreen;
-            blue += deltaBlue;
-        }
+        QLinearGradient grad(QPointF(0.,0.), QPointF(1.,0.));
+        grad.setCoordinateMode(QGradient::ObjectBoundingMode);
+        grad.setColorAt(0., palette().color(QPalette::Background));
+        grad.setColorAt(1., gradientColor);
+        QBrush gradBrush(grad);
+        paint.fillRect(0, 0, w, h, gradBrush);
     }
 
     // If the widget is disabled then draw a checkerboard over it.
     if(!isEnabled())
     {
-        QBrush brush2(colorGroup().background());
-        brush2.setStyle(QBrush::Dense6Pattern);
-        paint.fillRect(QRect(0, 0, w, h), brush2);
+        QBrush brush2(palette().window());
+        brush2.setStyle(Qt::Dense6Pattern);
+        paint.fillRect(rect(), brush2);
     }
 }
 
 // ****************************************************************************
-// Method: QvisOpacitySlider::deleteGradientPixmap
+// Method: QvisOpacitySlider::deleteGradientImage
 //
 // Purpose: 
 //   Delete the gradient pixmap.
@@ -863,12 +768,12 @@ QvisOpacitySlider::createGradientPixmap()
 // ****************************************************************************
 
 void
-QvisOpacitySlider::deleteGradientPixmap()
+QvisOpacitySlider::deleteGradientImage()
 {
-    if(gradientPixmap != 0)
+    if(gradientImage != 0)
     {
-        delete gradientPixmap;
-        gradientPixmap = 0;
+        delete gradientImage;
+        gradientImage = 0;
     }
 }
 
@@ -897,7 +802,7 @@ QvisOpacitySlider::setGradientColor(const QColor &color)
     if(gradientColor != color)
     {
         gradientColor = color;
-        deleteGradientPixmap();
+        deleteGradientImage();
 
         if(isVisible())
             update();
@@ -925,10 +830,7 @@ QvisOpacitySlider::resizeEvent(QResizeEvent *)
 
     // Delete the gradient pixmap so it will be regenerated before the next
     // paint event.
-    deleteGradientPixmap();
-
-    if(autoMask())
-        updateMask();
+    deleteGradientImage();
 }
 
 // ****************************************************************************
@@ -960,94 +862,44 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
     int mid = thickness()/2 + sliderLength() / 8;
 
     // Draw the gradient pixmap.
-    if(gradientPixmap == 0)
-        createGradientPixmap();
-    p.drawPixmap(0, tickOffset, *gradientPixmap);
+    if(gradientImage == 0)
+        createGradientImage();
+    p.drawImage(0, tickOffset, *gradientImage);
 
     // Draw the groove on which the slider slides.    
-    drawSliderGroove(&p, 0, tickOffset, pixmapWidth(), thickness(), mid);
+    drawSliderGroove(&p, 0, tickOffset, imageWidth(), thickness(), mid);
 
     // Figure out the interval between the tick marks.
     int interval = tickInt;
     if(interval <= 0)
     {
-        interval = lineStep();
+        interval = singleStep();
         if(positionFromValue(interval) - positionFromValue(0) < 3)
             interval = pageStep();
     }
 
     // Draw the tick marks.
-    p.fillRect(0, 0, pixmapWidth(), tickOffset,
-               colorGroup().brush(QColorGroup::Background));
-    p.fillRect(0, tickOffset + thickness(), pixmapWidth(), height(),
-               colorGroup().brush(QColorGroup::Background));
-    drawTicks(&p, colorGroup(), 0, tickOffset - 2, interval);
+    p.fillRect(0, 0, imageWidth(), tickOffset,
+               palette().brush(QPalette::Background));
+    p.fillRect(0, tickOffset + thickness(), imageWidth(), height(),
+               palette().brush(QPalette::Background));
+    drawTicks(&p, palette(), 0, tickOffset - 2, interval);
+
+    // Draw the slider
+    paintSlider(&p, palette(), sliderRect());
+
+    // Draw the value text.
+    paintValueText(&p, palette(), imageWidth(), height());
 
     // If this widget has focus, draw the focus rectangle.
     if(hasFocus())
     {
-        QRect r;
-        r.setRect( 0, tickOffset-1, pixmapWidth(), thickness()+2 );
-        r = r.intersect(rect());
-#if QT_VERSION >= 300
-        style().drawPrimitive(QStyle::PE_FocusRect, &p, r, colorGroup(),
-                              QStyle::Style_HasFocus);
-#else
-        style().drawFocusRect(&p, r, colorGroup());
-#endif
+        QStyleOptionFocusRect so;
+        so.initFrom(this);
+        style()->drawPrimitive(QStyle::PE_FrameFocusRect, 
+                               &so,
+                               &p);
     }
-
-    // Draw the slider
-    paintSlider(&p, colorGroup(), sliderRect());
-
-    // Draw the value text.
-    paintValueText(&p, colorGroup(), pixmapWidth(), height());
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::updateMask
-//
-// Purpose: 
-//   Reimplementation of QWidget::updateMask(). Draws the mask of the
-//   slider when transparency is required.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 12:42:23 PDT 2000
-//
-// Modifications:
-//   Brad Whitlock, Mon Mar 11 12:46:13 PDT 2002
-//   Upgraded to Qt 3.0.
-//
-// ****************************************************************************
-
-void
-QvisOpacitySlider::updateMask()
-{
-    QBitmap bm( size() );
-    bm.fill( color0 );
-
-    QPainter p( &bm, this );
-    QRect sliderR = sliderRect();
-    QColorGroup g(color1, color1, color1, color1, color1, color1, color1, color1, color0);
-    QBrush fill (color1);
-    int mid = tickOffset + thickness()/2;
-    mid += sliderLength() / 8;
-
-    drawSliderMask(&p, sliderR.x(), sliderR.y(), sliderR.width(),
-                   sliderR.height());
-
-    int interval = tickInt;
-    if(interval <= 0 )
-    {
-        interval = lineStep();
-        if(positionFromValue(interval) - positionFromValue(0) < 3)
-        interval = pageStep();
-    }
-
-    // Draw the tick marks
-    drawTicks(&p, g, 0, tickOffset - 2, interval);
-
-    setMask(bm);
 }
 
 // ****************************************************************************
@@ -1063,7 +915,9 @@ QvisOpacitySlider::updateMask()
 // Creation:   Thu Dec 7 12:43:54 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 14:21:18 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1073,19 +927,19 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
     sliderStartVal = sliderVal;
     QRect r = sliderRect();
 
-    if(e->button() == RightButton)
+    if(e->button() == Qt::RightButton)
     {
         return;
     }
     else if(r.contains(e->pos()))
     {
         state = Dragging;
-        clickOffset = (QCOORD)(goodPart( e->pos() ) - sliderPos);
+        clickOffset = (int)(e->pos().x() - sliderPos);
 //    emit sliderPressed();
     }
-    else if(e->button() == MidButton)
+    else if(e->button() == Qt::MidButton)
     {
-        int pos = goodPart(e->pos());
+        int pos = e->pos().x();
         moveSlider(pos - sliderLength() / 2);
         state = Dragging;
         clickOffset = sliderLength() / 2;
@@ -1097,7 +951,8 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
         if(!timer)
             timer = new QTimer(this);
         connect( timer, SIGNAL(timeout()), SLOT(repeatTimeout()));
-        timer->start( thresholdTime, TRUE );
+        timer->setSingleShot(true);
+        timer->start(thresholdTime);
     }
     else if(e->pos().x() > r.right())
     {
@@ -1106,7 +961,8 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
         if(!timer)
             timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), SLOT(repeatTimeout()));
-        timer->start( thresholdTime, TRUE );
+        timer->setSingleShot(true);
+        timer->start(thresholdTime);
     }
 }
 
@@ -1145,7 +1001,7 @@ QvisOpacitySlider::mouseMoveEvent(QMouseEvent *e)
         }
     }
 
-    moveSlider(goodPart(e->pos()) - clickOffset );
+    moveSlider(e->pos().x() - clickOffset );
 }
 
 // ****************************************************************************
@@ -1174,8 +1030,8 @@ QvisOpacitySlider::wheelEvent(QWheelEvent * e)
         offset_owner = this;
         offset = 0;
     }
-    offset += -e->delta()*QMAX(pageStep(),lineStep())/120;
-    if(QABS(offset)<1)
+    offset += -e->delta()*qMax(pageStep(),singleStep())/120;
+    if(qAbs(offset)<1)
         return;
     setValue( value() + int(offset) );
     offset -= int(offset);
@@ -1220,13 +1076,8 @@ QvisOpacitySlider::mouseReleaseEvent(QMouseEvent *)
 void
 QvisOpacitySlider::moveSlider(int pos)
 {
-    int newPos = QMIN(available(), QMAX( 0, pos));
+    int newPos = qMin(available(), qMax( 0, pos));
     int newVal = valueFromPosition(newPos);
-//    if ( sliderVal != newVal ) {
-//    sliderVal = newVal;
-//    emit sliderMoved( sliderVal );
-//    }
-
     newPos = positionFromValue( newVal );
 
     if(sliderPos != newPos)
@@ -1287,7 +1138,9 @@ QvisOpacitySlider::resetState()
 // Creation:   Thu Dec 7 12:53:45 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 14:23:51 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -1295,23 +1148,29 @@ QvisOpacitySlider::keyPressEvent(QKeyEvent *e)
 {
     switch(e->key())
     {
-    case Key_Left:
-        subtractLine();
+    case Qt::Key_Left:
+        if((e->modifiers() & Qt::ShiftModifier) > 0)
+            subtractPage();
+        else
+            subtractLine();
         break;
-    case Key_Right:
-        addLine();
+    case Qt::Key_Right:
+        if((e->modifiers() & Qt::ShiftModifier) > 0)
+            addPage();
+        else
+            addLine();
         break;
-    case Key_Prior:
+    case Qt::Key_PageDown:
         subtractPage();
         break;
-    case Key_Next:
+    case Qt::Key_PageUp:
         addPage();
         break;
-    case Key_Home:
-        setValue( minValue() );
+    case Qt::Key_Home:
+        setValue( minimum() );
         break;
-    case Key_End:
-        setValue( maxValue() );
+    case Qt::Key_End:
+        setValue( maximum() );
         break;
     default:
         e->ignore();
@@ -1322,7 +1181,7 @@ QvisOpacitySlider::keyPressEvent(QKeyEvent *e)
 // Method: QvisOpacitySlider::setValue
 //
 // Purpose: 
-//   Makes QRangeControl::setValue() available as a slot.
+//   Makes QAbstractSlider::setValue() available as a slot.
 //
 // Arguments:
 //   value : The slider's new value.
@@ -1331,13 +1190,21 @@ QvisOpacitySlider::keyPressEvent(QKeyEvent *e)
 // Creation:   Thu Dec 7 12:55:39 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jun  5 15:42:05 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
 QvisOpacitySlider::setValue(int value)
 {
-    QRangeControl::setValue(value);
+    int v = value;
+    if(v < minimum())
+        v = minimum();
+    if(v > maximum())
+        v = maximum();
+    QAbstractSlider::setValue(v);
+    rangeChange();
 }
 
 // ****************************************************************************
@@ -1360,7 +1227,7 @@ void
 QvisOpacitySlider::setEnabled(bool val)
 {
     if(isEnabled() != val)
-        deleteGradientPixmap();
+        deleteGradientImage();
 
     QWidget::setEnabled(val);
 }
@@ -1419,35 +1286,15 @@ QvisOpacitySlider::subtractStep()
 void
 QvisOpacitySlider::repeatTimeout()
 {
-    ASSERT(timer);
+    if(timer==0)
+        return;
     timer->disconnect();
     if(state == TimingDown)
         connect(timer, SIGNAL(timeout()), SLOT(subtractStep()));
     else if ( state == TimingUp )
         connect(timer, SIGNAL(timeout()), SLOT(addStep()));
-    timer->start(repeatTime, FALSE);
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::goodPart
-//
-// Purpose: 
-//   Returns the x coordinate of p.
-//
-// Arguments:
-//   p : The point of interest.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:22:21 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-QvisOpacitySlider::goodPart(const QPoint &p) const
-{
-    return p.x();
+    timer->setSingleShot(false);
+    timer->start(repeatTime);
 }
 
 // ****************************************************************************
@@ -1468,7 +1315,6 @@ QvisOpacitySlider::goodPart(const QPoint &p) const
 QSize
 QvisOpacitySlider::sizeHint() const
 {
-    constPolish();
     const int length = 150;
     int thick = 16;
     const int tickSpace = 5;
@@ -1573,199 +1419,50 @@ QvisOpacitySlider::thickness() const
 void
 QvisOpacitySlider::setTickInterval(int i)
 {
-    tickInt = QMAX(0, i);
+    tickInt = qMax(0, i);
     update();
-    if(autoMask())
-        updateMask();
 }
 
-// ****************************************************************************
-// Method: QvisOpacitySlider::minValue
-//
-// Purpose: 
-//   Returns the slider's min value.
-//
-// Returns:    The slider's min value.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:23:58 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-QvisOpacitySlider::minValue() const
+void
+QvisOpacitySlider::addPage()
 {
-    return QRangeControl::minValue();
+    setValue(value() + pageStep());
 }
 
-// ****************************************************************************
-// Method: QvisOpacitySlider::maxValue
-//
-// Purpose: 
-//   Returns the slider's max value.
-//
-// Returns:    The slider's max value.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:24:34 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-QvisOpacitySlider::maxValue() const
+void
+QvisOpacitySlider::subtractPage()
 {
-    return QRangeControl::maxValue();
+    setValue(value() - pageStep());
+}
+
+void
+QvisOpacitySlider::addLine()
+{
+    setValue(value() + singleStep());
+}
+
+void
+QvisOpacitySlider::subtractLine()
+{
+    setValue(value() - singleStep());
 }
 
 // ****************************************************************************
-// Method: QvisOpacitySlider::setMinValue
+// Method: QvisOpacitySlider::valueChanged
 //
 // Purpose: 
-//   Sets the slider's minimum value.
-//
-// Arguments:
-//   i : The slider's new min value.
+//   Implements the virtual QAbstractSlider function.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:25:12 PST 2000
+// Creation:   Thu Dec 7 12:23:57 PDT 2000
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisOpacitySlider::setMinValue(int i)
+QvisOpacitySlider::handle_valueChanged(int val)
 {
-    setRange(i, maxValue());
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::setMaxValue
-//
-// Purpose: 
-//   Sets the slider's max value.
-//
-// Arguments:
-//   i : The slider's new max value.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:26:03 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void QvisOpacitySlider::setMaxValue( int i )
-{
-    setRange( minValue(), i );
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::lineStep
-//
-// Purpose: 
-//   Returns the slider's linestep.
-//
-// Returns:    The slider's linestep.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:28:08 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-QvisOpacitySlider::lineStep() const
-{
-    return QRangeControl::lineStep();
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::pageStep
-//
-// Purpose: 
-//   Returns the slider's pagestep.
-//
-// Returns:    The slider's pagestep.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:28:36 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int QvisOpacitySlider::pageStep() const
-{
-    return QRangeControl::pageStep();
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::setLineStep
-//
-// Purpose: 
-//   Sets the slider's line step.
-//
-// Arguments:
-//   i : The new line step.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:29:15 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisOpacitySlider::setLineStep(int i)
-{
-    setSteps(i, pageStep());
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::setPageStep
-//
-// Purpose: 
-//   Sets the slider's page step.
-//
-// Arguments:
-//   i : The new page step.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:29:48 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisOpacitySlider::setPageStep(int i)
-{
-    setSteps(lineStep(), i);
-}
-
-// ****************************************************************************
-// Method: QvisOpacitySlider::value
-//
-// Purpose: 
-//   Returns the slider's current value.
-//
-// Returns:    The slider's current value.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 7 13:30:31 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-QvisOpacitySlider::value() const
-{
-    return QRangeControl::value();
+    // emit the valueChanged with user data signal.
+    emit valueChanged(val, userData);
 }

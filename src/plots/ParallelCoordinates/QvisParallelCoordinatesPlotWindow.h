@@ -35,8 +35,8 @@
 *
 *****************************************************************************/
 
-#ifndef QVISPARALLELAXISPLOTWINDOW_H
-#define QVISPARALLELAXISPLOTWINDOW_H
+#ifndef QVIS_PARALLEL_COORDINATES_PLOTWINDOW_H
+#define QVIS_PARALLEL_COORDINATES_PLOTWINDOW_H
 
 #include <QvisPostableWindowObserver.h>
 #include <AttributeSubject.h>
@@ -47,7 +47,7 @@ class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QListView;
+class QTreeWidget;
 class QSlider;
 class QSpinBox;
 class QVBox;
@@ -57,7 +57,7 @@ class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
 class QvisVariableButton;
-class QListViewItem;
+class QTreeWidgetItem;
 
 // ****************************************************************************
 // Class: QvisParallelCoordinatesPlotWindow
@@ -75,8 +75,11 @@ class QListViewItem;
 //    Added ability to unify extents across all axes.
 //   
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
-//    Changed axis list to QListView to support multiple columns.
+//    Changed axis list to QTreeView to support multiple columns.
 //    Added min/max extents columns for each axis, and a button to reset them.
+//
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port. 
 //
 // ****************************************************************************
 
@@ -110,7 +113,7 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     void contextNumPartitionsSliderChanged(int val);
     void contextNumPartitionsSliderReleased();
     void contextColorChanged(const QColor &color);
-    void axisSelected(QListViewItem*);
+    void axisSelected(QTreeWidgetItem*);
     void addAxis(const QString &axisToAdd);
     void delAxis();
     void moveAxisUp();
@@ -119,33 +122,34 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     void linesOnlyIfExtentsToggled(bool);
     void unifyAxisExtentsToggled(bool);
   private:
+    int GetSelectedAxisIndex();
     int plotType;
 
-    QGroupBox *axisGroup;
-    QListView *axisList;
+    QGroupBox          *axisGroup;
+    QTreeWidget        *axisTree;
     QvisVariableButton *axisNewButton;
-    QPushButton *axisDelButton;
-    QPushButton *axisUpButton;
-    QPushButton *axisDownButton;
-    QPushButton *axisResetExtentsButton;
+    QPushButton        *axisDelButton;
+    QPushButton        *axisUpButton;
+    QPushButton        *axisDownButton;
+    QPushButton        *axisResetExtentsButton;
 
-    QGroupBox *drawLines;
-    QCheckBox *linesOnlyIfExtents;
-    QvisColorButton *linesColor;
+    QGroupBox          *drawLines;
+    QCheckBox          *linesOnlyIfExtents;
+    QvisColorButton    *linesColor;
 
-    QGroupBox *drawContext;
-    QLineEdit *contextGamma;
-    QSlider   *contextGammaSlider;
-    QLineEdit *contextNumPartitions;
-    QSlider   *contextNumPartitionsSlider;
-    QvisColorButton *contextColor;
+    QGroupBox          *drawContext;
+    QLineEdit          *contextGamma;
+    QSlider            *contextGammaSlider;
+    QLineEdit          *contextNumPartitions;
+    QSlider            *contextNumPartitionsSlider;
+    QvisColorButton    *contextColor;
 
-    QLabel *linesColorLabel;
-    QLabel *contextGammaLabel;
-    QLabel *contextNumPartitionsLabel;
-    QLabel *contextColorLabel;
+    QLabel             *linesColorLabel;
+    QLabel             *contextGammaLabel;
+    QLabel             *contextNumPartitionsLabel;
+    QLabel             *contextColorLabel;
 
-    QCheckBox *unifyAxisExtents;
+    QCheckBox          *unifyAxisExtents;
 
     ParallelCoordinatesAttributes *atts;
 };

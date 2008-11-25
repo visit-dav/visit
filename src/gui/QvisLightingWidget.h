@@ -39,7 +39,7 @@
 #ifndef QVIS_LIGHTING_WIDGET_H
 #define QVIS_LIGHTING_WIDGET_H
 #include <gui_exports.h>
-#include <qwidget.h>
+#include <QWidget>
 #include <mini3D.h>
 
 // ****************************************************************************
@@ -59,13 +59,16 @@
 //   I updated the code to use the new m3d_renderer class instead of using
 //   global m3d functions.
 //
+//   Brad Whitlock, Thu Jun  5 16:19:17 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisLightingWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisLightingWidget(QWidget *parent, const char *name = 0);
+    QvisLightingWidget(QWidget *parent);
     virtual ~QvisLightingWidget();
     virtual QSize sizeHint() const;
     virtual QSizePolicy sizePolicy() const;

@@ -63,14 +63,17 @@ class QvisScreenPositionEdit;
 // Modifications:
 //   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
 //   Added timeFormatLinEdit and timeFormatChanged slot.
-//   
+//
+//   Brad Whitlock, Fri Jul 18 16:20:40 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisTimeSliderInterface : public QvisAnnotationObjectInterface
 {
     Q_OBJECT
 public:
-    QvisTimeSliderInterface(QWidget *parent, const char *name = 0);
+    QvisTimeSliderInterface(QWidget *parent);
     virtual ~QvisTimeSliderInterface();
 
     virtual QString GetName() const { return "Time slider"; }

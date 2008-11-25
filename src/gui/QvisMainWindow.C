@@ -36,19 +36,23 @@
 *
 *****************************************************************************/
 
-#include <qapplication.h>
-#include <qlabel.h>
-#include <qcheckbox.h>
-#include <qlayout.h>
-#include <qpixmap.h>
-#include <qmenubar.h>
-#include <qpopupmenu.h>
-#include <qcombobox.h>
-#include <qsplitter.h>
-#include <qstatusbar.h>
-#include <qpushbutton.h>
-#include <qtimer.h>
-#include <qtooltip.h>
+#include <QApplication>
+#include <QLabel>
+#include <QCheckBox>
+#include <QLayout>
+#include <QPixmap>
+#include <QMenuBar>
+#include <QMenu>
+#include <QComboBox>
+#include <QSplitter>
+#include <QStatusBar>
+#include <QPushButton>
+#include <QTimer>
+#include <QToolTip>
+#include <QDesktopWidget>
+#include <QCloseEvent>
+#include <QHideEvent>
+#include <QShowEvent>
 
 #include <QvisMainWindow.h>
 #include <QvisFilePanel.h>
@@ -309,8 +313,9 @@
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
-    : QvisWindowBase(captionString, WDestructiveClose)
+    : QvisWindowBase(captionString)
 {
+    setAttribute(Qt::WA_DeleteOnClose,true);
     int     id;
     QPixmap openIcon, saveIcon, computerIcon, printIcon, rainbowIcon;
     QPixmap annotIcon, lightIcon, subsetIcon, viewIcon;
@@ -368,224 +373,346 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     //
     // Add the File menu.
     //
-    filePopup = new QPopupMenu( this );
-    menuBar()->insertItem( tr("&File"), filePopup );
-    filePopup->insertItem(openIcon, tr("Select &file . . ."), this, SIGNAL(activateFileWindow()), CTRL+Key_F );
-    filePopup->insertItem(openIcon, tr("Open file . . ."), this, SIGNAL(activateFileOpenWindow()), CTRL+Key_O);
+    
+    filePopup = menuBar()->addMenu(tr("&File"));
+    
+    filePopup->addAction(openIcon, tr("Select &file . . ."), 
+                         this, SIGNAL(activateFileWindow()), 
+                         QKeySequence(Qt::CTRL + Qt::Key_F));
+    // keep this action so we can add reopen after it in certian cases
+    openFileAct = filePopup->addAction(openIcon, tr("Open file . . ."), 
+                                       this, SIGNAL(activateFileOpenWindow()),
+                                       QKeySequence(Qt::CTRL + Qt::Key_O));
 
     // Advanced pull-right menu.
-    fileAdvancedPopup = new QPopupMenu(filePopup, "fileAdvancedPopup");
-    fileAdvancedPopupId = filePopup->insertItem(tr("Advanced file options"), fileAdvancedPopup);
+    
+    fileAdvancedPopup  = new QMenu(tr("Advanced file options"),filePopup);    
+    fileAdvancedPopupAct = filePopup->addMenu(fileAdvancedPopup);
     advancedMenuShowing = true;
 
     // ReOpen pull-right menu.
-    reopenPopup = new QPopupMenu(fileAdvancedPopup, "reopenPopup");
-    connect(reopenPopup, SIGNAL(activated(int)),
-            this, SLOT(reopenFile(int)));
-    reopenPopupId = fileAdvancedPopup->insertItem(tr("ReOpen file"), reopenPopup);
-    fileAdvancedPopup->setItemEnabled(reopenPopupId, false);
+    
+    reopenPopup = new QMenu(tr("ReOpen file"),fileAdvancedPopup);        
+    reopenPopupAct = fileAdvancedPopup->addMenu(reopenPopup);
+    reopenPopupAct->setEnabled(false);
+    //fileAdvancedPopup->setItemEnabled(reopenPopupId, false);
 
     // Close pull-right menu
-    closePopup = new QPopupMenu(fileAdvancedPopup, "closePopup");
-    connect(closePopup, SIGNAL(activated(int)),
-            this, SLOT(closeFile(int)));
-    closePopupId = fileAdvancedPopup->insertItem(tr("Close file"), closePopup);
-    fileAdvancedPopup->setItemEnabled(closePopupId, false);
+    closePopup = new QMenu(tr("Close file"),fileAdvancedPopup);
+    closePopupAct = fileAdvancedPopup->addMenu(closePopup);
+    closePopupAct->setEnabled(false);
 
-    filePopup->insertItem( tr("Refresh file list"), this, SIGNAL(refreshFileList()), CTRL+Key_R);
-    filePopup->insertItem( tr("File &information . . ."), this, SIGNAL(activateFileInformationWindow()), CTRL+Key_I);
-    filePopup->insertItem( tr("Compute &engines . . ."), this, SIGNAL(activateEngineWindow()), CTRL+Key_E);
-    filePopup->insertItem( tr("Simulations . . ."), this, SIGNAL(activateSimulationWindow()), CTRL+SHIFT+Key_S);
-    filePopup->insertSeparator();
-    filePopup->insertItem(saveIcon, tr("&Save window"), this, SIGNAL(saveWindow()), CTRL+Key_S );
-    filePopup->insertItem( tr("Set Save &options . . ."), this, SIGNAL(activateSaveWindow()), CTRL+SHIFT+Key_O);
-    filePopup->insertItem(saveMovieIcon, tr("Save movie . . ."), this, SIGNAL(saveMovie()));
-    id = filePopup->insertItem(tr("Export database . . ."), this, SIGNAL(activateExportDBWindow()));
-    id = filePopup->insertItem(printIcon, tr("Print window"), this, SIGNAL(printWindow()));
-    id = filePopup->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()), CTRL+Key_P);
-    filePopup->insertSeparator();
-    id = filePopup->insertItem(tr("Restore session . . ."), this, SIGNAL(restoreSession()));
-    id = filePopup->insertItem(tr("Restore session with sources . . ."), this, SIGNAL(restoreSessionWithSources()));
-    id = filePopup->insertItem(tr("Save session . . ."), this, SIGNAL(saveSession()));
-    filePopup->insertSeparator();
+    filePopup->addAction(tr("Refresh file list"), 
+                          this, SIGNAL(refreshFileList()), 
+                          QKeySequence(Qt::CTRL + Qt::Key_R));
+    filePopup->addAction(tr("File &information . . ."), 
+                         this, SIGNAL(activateFileInformationWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_I));
+    filePopup->addAction(tr("Compute &engines . . ."), 
+                         this, SIGNAL(activateEngineWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_E));
+    filePopup->addAction(tr("Simulations . . ."),
+                         this, SIGNAL(activateSimulationWindow()),
+                         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
+                          
+    filePopup->addSeparator();
+    
+    filePopup->addAction(saveIcon, tr("&Save window"),
+                         this, SIGNAL(saveWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_S));
+    filePopup->addAction(tr("Set Save &options . . ."),
+                         this, SIGNAL(activateSaveWindow()), 
+                         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
+    filePopup->addAction(saveMovieIcon, tr("Save movie . . ."),
+                         this, SIGNAL(saveMovie()));
+    filePopup->addAction(tr("Export database . . ."),
+                         this, SIGNAL(activateExportDBWindow()));
+    filePopup->addAction(printIcon, tr("Print window"),
+                         this, SIGNAL(printWindow()));
+    filePopup->addAction(tr("Set Print options . . ."),
+                         this, SIGNAL(activatePrintWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_P));
+    
+    filePopup->addSeparator();
+    
+    filePopup->addAction(tr("Restore session . . ."),
+                         this, SIGNAL(restoreSession()));
+    filePopup->addAction(tr("Restore session with sources . . ."),
+                         this, SIGNAL(restoreSessionWithSources()));
+    filePopup->addAction(tr("Save session . . ."),
+                         this, SIGNAL(saveSession()));
+                         
+    filePopup->addSeparator();
+
 #ifdef Q_WS_MACX
-    filePopup->insertItem( tr("&Quit"), this, SIGNAL(quit()), CTRL+Key_Q );
+    filePopup->addAction(tr("&Quit"),this, SIGNAL(quit()),
+                         QKeySequence(Qt::CTRL + Qt::Key_Q));
 #else
-    filePopup->insertItem( tr("E&xit"), this, SIGNAL(quit()), CTRL+Key_X );
+    filePopup->addAction(tr("E&xit"), this, SIGNAL(quit()),
+                         QKeySequence(Qt::CTRL + Qt::Key_X));
 #endif
 
     //
     // Add the Controls menu.
     //
-    QPopupMenu *ctrls = new QPopupMenu(this);
-    menuBar()->insertItem( tr("&Controls"), ctrls);
-    id = ctrls->insertItem(animIcon, tr("&Animation . . ."), this, SIGNAL(activateAnimationWindow()), CTRL+Key_A);
-    id = ctrls->insertItem(annotIcon, tr("A&nnotation . . ."), this, SIGNAL(activateAnnotationWindow()), CTRL+Key_N);
-    id = ctrls->insertItem(rainbowIcon, tr("Color &table . . ."), this, SIGNAL(activateColorTableWindow()), CTRL+Key_T);
-    id = ctrls->insertItem(commandIcon, tr("Command . . ."), this, SIGNAL(activateCommandWindow()), CTRL+SHIFT+Key_C);
-    id = ctrls->insertItem(correlationIcon, tr("&Database correlations . . ."), this, SIGNAL(activateCorrelationListWindow()), CTRL+Key_D);
-    id = ctrls->insertItem(exprIcon, tr("&Expressions . . ."), this, SIGNAL(activateExpressionsWindow()), CTRL+SHIFT+Key_E );
-    id = ctrls->insertItem(keyframeIcon, tr("&Keyframing . . ."), this, SIGNAL(activateKeyframeWindow()), CTRL+Key_K);
-    id = ctrls->insertItem(lightIcon, tr("&Lighting . . ."), this, SIGNAL(activateLightingWindow()), CTRL+Key_L );
-    id = ctrls->insertItem(globalLineoutIcon, tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
-    id = ctrls->insertItem(tr("Macros . . ."), this, SIGNAL(activateMacroWindow()));
-    id = ctrls->insertItem(materialIcon, tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
-    id = ctrls->insertItem(tr("&Mesh management . . ."), this, SIGNAL(activateMeshManagementWindow()), CTRL+SHIFT+Key_M);
-    id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+SHIFT+Key_P );
-#ifdef Q_WS_MACX
-    id = ctrls->insertItem(tr("Quer&y . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Y );
-    id = ctrls->insertItem(tr("Quer&y over time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+SHIFT+Key_Y );
-#else
-    id = ctrls->insertItem(tr("&Query over time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+SHIFT+Key_Q );
-    id = ctrls->insertItem(tr("&Query . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Q );
-#endif
-    id = ctrls->insertItem(subsetIcon, tr("S&ubset . . ."), this, SIGNAL(activateSubsetWindow()), CTRL+Key_U);
-    id = ctrls->insertItem(viewIcon, tr("&View . . ."), this, SIGNAL(activateViewWindow()), CTRL+Key_V);
+    
+    QMenu *ctrls  = menuBar()->addMenu(tr("&Controls"));
+    ctrls->addAction(animIcon, tr("&Animation . . ."),
+                     this, SIGNAL(activateAnimationWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_A));
+    ctrls->addAction(annotIcon, tr("A&nnotation . . ."),
+                     this, SIGNAL(activateAnnotationWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_N));
+    ctrls->addAction(rainbowIcon, tr("Color &table . . ."),
+                     this, SIGNAL(activateColorTableWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_T));
+    ctrls->addAction(commandIcon, tr("Command . . ."),
+                     this, SIGNAL(activateCommandWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
+    ctrls->addAction(correlationIcon, tr("&Database correlations . . ."),
+                      this, SIGNAL(activateCorrelationListWindow()), 
+                      QKeySequence(Qt::CTRL + Qt::Key_D));
+    ctrls->addAction(exprIcon, tr("&Expressions . . ."),
+                     this, SIGNAL(activateExpressionsWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_E));
+    ctrls->addAction(keyframeIcon, tr("&Keyframing . . ."),
+                     this, SIGNAL(activateKeyframeWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_K));
+    ctrls->addAction(lightIcon, tr("&Lighting . . ."), 
+                     this, SIGNAL(activateLightingWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_L));
+    ctrls->addAction(globalLineoutIcon, tr("&Lineout . . ."),
+                     this, SIGNAL(activateGlobalLineoutWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L));
+    ctrls->addAction(tr("Macros . . ."), 
+                     this, SIGNAL(activateMacroWindow()));
+    ctrls->addAction(materialIcon, tr("&Material Options . . ."),
+                     this, SIGNAL(activateMaterialWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_M));
+    ctrls->addAction(tr("&Mesh management . . ."),
+                     this, SIGNAL(activateMeshManagementWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M));
+    ctrls->addAction(pickIcon, tr("&Pick . . ."),
+                     this, SIGNAL(activatePickWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P));
 
+#ifdef Q_WS_MACX
+    ctrls->addAction(tr("Quer&y . . ."), 
+                     this, SIGNAL(activateQueryWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_Y));
+    ctrls->addAction(tr("Quer&y over time options . . ."),
+                     this, SIGNAL(activateQueryOverTimeWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Y));
+#else
+    ctrls->addAction(tr("&Query over time options . . ."),
+                     this, SIGNAL(activateQueryOverTimeWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Q));
+    ctrls->addAction(tr("&Query . . ."),
+                     this, SIGNAL(activateQueryWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_Q));
+#endif
+    ctrls->addAction(subsetIcon, tr("S&ubset . . ."),
+                     this, SIGNAL(activateSubsetWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_U));
+    ctrls->addAction(viewIcon, tr("&View . . ."),
+                     this, SIGNAL(activateViewWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_V));
+    
     //
-    // Add the Options menu.
+    // Add the Prefs menu.
     //
-    QPopupMenu * pref = new QPopupMenu( this );
-    menuBar()->insertItem( tr("&Options"), pref );
-    pref->insertItem( tr("&Appearance . . ."), this, SIGNAL(activateAppearanceWindow()), CTRL+SHIFT+Key_A);
-    pref->insertItem(computerIcon, tr("&Host profiles . . ."), this, SIGNAL(activateHostWindow()), CTRL+Key_H );
-    pref->insertItem(tr("&Interactors . . ."), this, SIGNAL(activateInteractorWindow()), CTRL+SHIFT+Key_I );
-    pref->insertItem(pluginIcon, tr("&Plugin Manager . . ."), this, SIGNAL(activatePluginWindow()));
-    pref->insertItem(tr("Preferences . . ."), this, SIGNAL(activatePreferencesWindow()));
-    pref->insertItem(tr("Rendering . . ."), this, SIGNAL(activateRenderingWindow()));
-    pref->insertSeparator();
-    pref->insertItem( tr("Save Settings"), this, SIGNAL(saveSettings()));
+    QMenu *pref = menuBar()->addMenu(tr("&Options"));
+    pref->addAction(tr("&Appearance . . ."), 
+                    this, SIGNAL(activateAppearanceWindow()), 
+                    QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
+    pref->addAction(computerIcon, tr("&Host profiles . . ."),
+                    this, SIGNAL(activateHostWindow()), 
+                    QKeySequence(Qt::CTRL + Qt::Key_H));
+    pref->addAction(tr("&Interactors . . ."),
+                    this, SIGNAL(activateInteractorWindow()),
+                    QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I));
+    pref->addAction(pluginIcon, tr("&Plugin Manager . . ."),
+                    this, SIGNAL(activatePluginWindow()));
+    pref->addAction(tr("Preferences . . ."),
+                    this, SIGNAL(activatePreferencesWindow()));
+    pref->addAction(tr("Rendering . . ."),
+                    this, SIGNAL(activateRenderingWindow()));
+    
+    pref->addSeparator();
+    
+    pref->addAction(tr("Save Settings"),
+                    this, SIGNAL(saveSettings()));
 
     //
     // Add the Windows menu.
     //
-    winPopup = new QPopupMenu( this );
-    menuBar()->insertItem( tr("&Windows"), winPopup );
-    winPopup->insertItem(QPixmap(newwindow_xpm), tr("Add"), this, SLOT(windowAdd())
+    
+    winPopup = menuBar()->addMenu(tr("&Windows"));
+    
+    winPopup->addAction(QPixmap(newwindow_xpm), tr("Add"),
+                        this, SLOT(windowAdd())
 #ifndef Q_WS_MACX
-                         , CTRL+Key_Insert
+                         , QKeySequence(Qt::CTRL + Qt::Key_Insert)
 #endif
                         );
-    winPopup->insertItem(copyIcon, tr("Clone"), this, SLOT(windowClone()));
-    winPopup->insertItem(QPixmap(deletewindow_xpm), tr("Delete"), this, SLOT(windowDelete()), CTRL+Key_Delete);
-    winPopup->insertItem( tr("Clear all"), this, SLOT(windowClearAll()));
+    
+    winPopup->addAction(copyIcon, tr("Clone"),this, SLOT(windowClone()));
+
+    winPopup->addAction(QPixmap(deletewindow_xpm), tr("Delete"),
+                         this, SLOT(windowDelete()), 
+                         QKeySequence(Qt::CTRL + Qt::Key_Delete));
+
+    winPopup->addAction(tr("Clear all"), this, SLOT(windowClearAll()));
+    
     // Layout sub menu
-    layoutPopup = new QPopupMenu( winPopup );
-    layoutPopup->insertItem(QPixmap(layout1x1_xpm), tr("1x1"), this, SLOT(windowLayout1x1()), 0, 0);
-    layoutPopup->insertItem(QPixmap(layout1x2_xpm), tr("1x2"), this, SLOT(windowLayout1x2()), 0, 1);
-    layoutPopup->insertItem(QPixmap(layout2x2_xpm), tr("2x2"), this, SLOT(windowLayout2x2()), 0, 2);
-    layoutPopup->insertItem(QPixmap(layout2x3_xpm), tr("2x3"), this, SLOT(windowLayout2x3()), 0, 3);
-    layoutPopup->insertItem(QPixmap(layout2x4_xpm), tr("2x4"), this, SLOT(windowLayout2x4()), 0, 4);
-    layoutPopup->insertItem(QPixmap(layout3x3_xpm), tr("3x3"), this, SLOT(windowLayout3x3()), 0, 5);
-    winPopup->insertItem(QPixmap(layout2x2_xpm), tr("Layouts"), layoutPopup);
+    layoutPopup = winPopup->addMenu(QPixmap(layout2x2_xpm),tr("Layouts"));
+    
+    layoutActions[0] = layoutPopup->addAction(QPixmap(layout1x1_xpm), tr("1x1"),
+                                              this, SLOT(windowLayout1x1()));
+    layoutActions[1] = layoutPopup->addAction(QPixmap(layout1x2_xpm), tr("1x2"),
+                                              this, SLOT(windowLayout1x2()));
+    layoutActions[2] = layoutPopup->addAction(QPixmap(layout2x2_xpm), tr("2x2"),
+                                              this, SLOT(windowLayout2x2()));
+    layoutActions[3] = layoutPopup->addAction(QPixmap(layout2x3_xpm), tr("2x3"),
+                                              this, SLOT(windowLayout2x3()));
+    layoutActions[4] = layoutPopup->addAction(QPixmap(layout2x4_xpm), tr("2x4"),
+                                              this, SLOT(windowLayout2x4()));
+    layoutActions[5] = layoutPopup->addAction(QPixmap(layout3x3_xpm), tr("3x3"),
+                                              this, SLOT(windowLayout3x3()));
+    
+    
+    
     // Active window sub menu
-    activeWindowPopup = new QPopupMenu( winPopup );
-    connect(activeWindowPopup, SIGNAL(activated(int)),
-            this, SLOT(winset2(int)));
-    activeWindowPopupId = winPopup->insertItem(tr("Active window"), activeWindowPopup);
-    winPopup->setItemEnabled(activeWindowPopupId, false);
-    winPopup->insertSeparator();
-
+    activeWindowPopup = new QMenu(tr("Active window"));
+    activeWindowPopupAct =  winPopup->addMenu(activeWindowPopup);
+    activeWindowPopupAct->setEnabled(false);
+    winPopup->addSeparator();
+    
+    connect(activeWindowPopup, SIGNAL(triggered(QAction *)),
+            this, SLOT(winset2(QAction *)));
+      
     // Copy sub menu.
-    topCopyPopup = new QPopupMenu(winPopup, "topCopyPopup");
-    copyPopup[0] = new QPopupMenu(topCopyPopup, "copyView");
-    connect(copyPopup[0], SIGNAL(activated(int)),
-            this, SLOT(copyView(int)));
-    copyPopupId[0] = topCopyPopup->insertItem(tr("View from"), copyPopup[0], 0);
-    topCopyPopup->setItemEnabled(copyPopupId[0], false);
-    copyPopup[1] = new QPopupMenu(topCopyPopup, "copyLighting");
-    connect(copyPopup[1], SIGNAL(activated(int)),
-            this, SLOT(copyLighting(int)));
-    copyPopupId[1] = topCopyPopup->insertItem(tr("Lighting from"), copyPopup[1], 1);
-    topCopyPopup->setItemEnabled(copyPopupId[1], false);
-    copyPopup[2] = new QPopupMenu(topCopyPopup, "copyAnnotations");
-    connect(copyPopup[2], SIGNAL(activated(int)),
-            this, SLOT(copyAnnotations(int)));
-    copyPopupId[2] = topCopyPopup->insertItem(tr("Annotations from"), copyPopup[2], 2);
-    topCopyPopup->setItemEnabled(copyPopupId[2], false);
-    copyPopup[3] = new QPopupMenu(topCopyPopup, "copyPlots");
-    connect(copyPopup[3], SIGNAL(activated(int)),
-            this, SLOT(copyPlots(int)));
-    copyPopupId[3] = topCopyPopup->insertItem(tr("Plots from"), copyPopup[3], 3);
-    topCopyPopup->setItemEnabled(copyPopupId[3], false);
-    copyPopup[4] = new QPopupMenu(topCopyPopup, "copyAll");
-    connect(copyPopup[4], SIGNAL(activated(int)),
-            this, SLOT(copyAll(int)));
-    copyPopupId[4] = topCopyPopup->insertItem(tr("Everything from"), copyPopup[4], 4);
-    topCopyPopup->setItemEnabled(copyPopupId[4], false);
-    topCopyPopupId = winPopup->insertItem(copyIcon, tr("Copy"), topCopyPopup);
-    winPopup->setItemEnabled(id, false);
-
+    
+    topCopyPopup = new QMenu(tr("Copy"),winPopup);
+    topCopyPopup->setIcon(copyIcon);
+    
+    copyPopup[0] = new QMenu(tr("View from"),topCopyPopup);
+    connect(copyPopup[0], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyView(QAction*)));
+    copyPopupAct[0] = topCopyPopup->addMenu(copyPopup[0]);
+    copyPopupAct[0]->setEnabled(false);
+    
+    
+    copyPopup[1] = new QMenu(tr("Lighting from"),topCopyPopup);
+    connect(copyPopup[1], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyLighting(QAction*)));
+    copyPopupAct[1] = topCopyPopup->addMenu(copyPopup[1]);
+    copyPopupAct[1]->setEnabled(false);
+    
+    copyPopup[2] = new QMenu(tr("Annotations from"), topCopyPopup);
+    connect(copyPopup[2], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyAnnotations(QAction*)));
+    copyPopupAct[2] = topCopyPopup->addMenu(copyPopup[2]);
+    copyPopupAct[2]->setEnabled(false);
+    
+    copyPopup[3] = new QMenu(tr("Plots from"), topCopyPopup);
+    connect(copyPopup[3], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyPlots(QAction*)));
+    copyPopupAct[3] = topCopyPopup->addMenu(copyPopup[3]);
+    copyPopupAct[3]->setEnabled(false);
+    
+    
+    copyPopup[4] = new QMenu(tr("Everything from"),topCopyPopup);
+    connect(copyPopup[4], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyAll(QAction*)));
+    copyPopupAct[4] = topCopyPopup->addMenu(copyPopup[4]);
+    copyPopupAct[4]->setEnabled(false);
+    
+    
+    topCopyPopupAct = winPopup->addMenu(topCopyPopup);
+    topCopyPopupAct->setEnabled(false);    
+    
     // Clear sub menu
-    QPopupMenu *clearPopup = new QPopupMenu( winPopup );
-    clearPopup->insertItem( tr("Pick points"), this, SLOT(clearPickPoints()));
-    clearPopup->insertItem( tr("Plots"), this, SLOT(clearPlots()));
-    clearPopup->insertItem( tr("Reference lines"), this, SLOT(clearReferenceLines()));
-    clearPopupId = winPopup->insertItem(tr("Clear"), clearPopup);
+    
+    clearPopup = new QMenu(tr("Clear"));
+    clearPopup->addAction( tr("Pick points"), this, SLOT(clearPickPoints()));
+    clearPopup->addAction( tr("Plots"), this, SLOT(clearPlots()));
+    clearPopup->addAction( tr("Reference lines"), this, SLOT(clearReferenceLines()));
+    clearPopupAct = winPopup->addMenu(clearPopup);
 
     // Lock sub menu
-    lockPopup = new QPopupMenu( winPopup );
-    lockTimeId  = lockPopup->insertItem( tr("Time"), this, SLOT(lockTime()));
-    lockToolsId = lockPopup->insertItem( tr("Tools"), this, SLOT(lockTools()));
-    lockViewId  = lockPopup->insertItem( tr("View"), this, SLOT(lockView()));
-    lockPopup->insertSeparator();
-    lockPopup->insertItem(tr("Unlock everything"), this, SLOT(unlockEverything()));
-    lockPopupId = winPopup->insertItem(lockIcon, tr("Lock"), lockPopup);
+    lockPopup = new QMenu(tr("Lock"),winPopup );
+    lockPopup->setIcon(lockIcon);
+    lockTimeAct  = lockPopup->addAction( tr("Time"), this, SLOT(lockTime()));
+    lockToolsAct = lockPopup->addAction( tr("Tools"), this, SLOT(lockTools()));
+    lockViewAct  = lockPopup->addAction( tr("View"), this, SLOT(lockView()));
+    lockPopup->addSeparator();
+    lockPopup->addAction(tr("Unlock everything"), this, SLOT(unlockEverything()));
+    lockPopupAct = winPopup->addMenu(lockPopup);
+    
 
     // Other options.
-    fullFrameModeId = winPopup->insertItem(tr("Full frame"), this, SLOT(toggleFullFrameMode()));
-    navigateModeId = winPopup->insertItem(tr("Navigate bbox"), this, SLOT(toggleNavigateMode()));
-    spinModeId = winPopup->insertItem(tr("Spin"), this, SLOT(toggleSpinMode()));
+    fullFrameModeAct = winPopup->addAction(tr("Full frame"),
+                                          this, SLOT(toggleFullFrameMode()));
+    navigateModeAct = winPopup->addAction(tr("Navigate bbox"),
+                                         this, SLOT(toggleNavigateMode()));
+    spinModeAct = winPopup->addAction(tr("Spin"),
+                                     this, SLOT(toggleSpinMode()));
     
     //
     // Add the Help menu
     //
-    helpPopup = new QPopupMenu( this );
-    menuBar()->insertSeparator();
-    menuBar()->insertItem( tr("&Help"), helpPopup);
-    helpPopup->insertItem( tr("About . . ."), this, SIGNAL(activateAboutWindow()));
-    helpPopup->insertItem( tr("Copyright . . ."), this, SIGNAL(activateCopyrightWindow()));
-    helpPopup->insertItem( tr("Help . . ."), this, SIGNAL(activateHelpWindow()), Key_F1);
-    helpPopup->insertItem( tr("Release notes . . ."), this, SIGNAL(activateReleaseNotesWindow()));
-    helpPopup->insertSeparator();
-    updateVisItId = helpPopup->insertItem( tr("Check for new version . . ."), this, SIGNAL(updateVisIt()));
+    menuBar()->addSeparator();
+    helpPopup = menuBar()->addMenu(tr("&Help"));
+
+    helpPopup->addAction(tr("About . . ."),
+                         this, SIGNAL(activateAboutWindow()));
+
+    helpPopup->addAction(tr("Copyright . . ."),
+                         this, SIGNAL(activateCopyrightWindow()));
+
+    helpPopup->addAction(tr("Help . . ."),
+                         this, SIGNAL(activateHelpWindow()),
+                         QKeySequence(Qt::Key_F1));
+
+    helpPopup->addAction(tr("Release notes . . ."),
+                         this, SIGNAL(activateReleaseNotesWindow()));
+
+    helpPopup->addSeparator();
+    
+    updateVisItAct = helpPopup->addAction(tr("Check for new version . . ."),
+                                          this, SIGNAL(updateVisIt()));
 
     // Make a central widget to contain the other widgets
     splitter = new QSplitter(this);
-    splitter->setOrientation(QSplitter::Vertical);
+    splitter->setOrientation(Qt::Vertical);
     setCentralWidget(splitter);
 
     //
     // Create the file panel and make it an observer of the file server.
     //
-    QVBox *panel1 = new QVBox(splitter);
-    panel1->setMargin(5);
-    filePanel = new QvisFilePanel(panel1, "FilePanel");
+    filePanel = new QvisFilePanel(this);
+    splitter->addWidget(filePanel);
     connect(filePanel, SIGNAL(reopenOnNextFrame()),
             this, SIGNAL(reopenOnNextFrame()));
     filePanel->ConnectFileServer(fileServer);
     filePanel->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
 
-    // Create the global area.
-    QVBox *panel2 = new QVBox(splitter);
-    panel2->setMargin(5);
-    QWidget *topOfHBox = new QWidget(panel2);
-    CreateGlobalArea(topOfHBox);
-    splitter->setResizeMode(panel2,QSplitter::Stretch);
-
-    // Create the plot Manager.
-    plotManager = new QvisPlotManagerWidget(menuBar(), panel2, "plotManager");
+    // create the plot manager    
+    QWidget     *globalAreaWidget = new QWidget(this);
+    CreateGlobalArea(globalAreaWidget);
+    splitter->addWidget(globalAreaWidget);    
+    plotManager = new QvisPlotManagerWidget(menuBar(), globalAreaWidget);
     plotManager->ConnectPlotList(GetViewerState()->GetPlotList());
     plotManager->ConnectFileServer(fileServer);
     plotManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
     plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
-    plotManager->ConnectPluginManagerAttributes(GetViewerState()->GetPluginManagerAttributes());
     plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
-    plotManager->ConnectDatabaseMetaData(GetViewerState()->GetDatabaseMetaData());
-
-    QValueList<int> splitterSizes;
+    globalAreaWidget->layout()->addWidget(plotManager);
+    
+    // Adjust splitter sizes and whether the notepad is visible.
+    QList<int> splitterSizes;
     int nVisiblePanels = 2;
-
     if(qApp->desktop()->height() < 1024)
     {
         // No notepad
@@ -607,25 +734,32 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     int hgt = qApp->desktop()->height();
     if(nVisiblePanels == 2)
     {
-        splitterSizes.push_back(int(hgt * 0.5));
-        splitterSizes.push_back(int(hgt * 0.5));
+        splitterSizes.append(int(hgt * 0.5));
+        splitterSizes.append(int(hgt * 0.5));
     }
     else
     {
-        splitterSizes.push_back(int(hgt * 0.3));
-        splitterSizes.push_back(int(hgt * 0.3));
-        splitterSizes.push_back(int(hgt * 0.4));
+        splitterSizes.append(int(hgt * 0.3));
+        splitterSizes.append(int(hgt * 0.3));
+        splitterSizes.append(int(hgt * 0.4));
     }
     splitter->setSizes(splitterSizes);
 
     // Create the output button and put it in the status bar as a
     // permanent widget.
-    outputButton = new QPushButton(statusBar(), "outputButton");
-    connect(outputButton, SIGNAL(clicked()), this, SLOT(emitActivateOutputWindow()));
-    outputButton->setPixmap(*outputBlue);
+    // need to add a label to the status bar so the output button 
+    // ends up on the right side
+    statusBar()->addWidget(new QLabel("",this),10);
+    outputButton = new QPushButton(statusBar());
+    connect(outputButton, SIGNAL(clicked()),
+            this, SLOT(emitActivateOutputWindow()));
+
+    outputButton->setIcon(*outputBlue);
     outputButton->setFixedSize(32 , 32);
-    QToolTip::add(outputButton, tr("Output window"));
-    statusBar()->addWidget(outputButton, 0, true);
+    
+    outputButton->setToolTip(tr("Output window"));
+    
+    statusBar()->addWidget(outputButton, 0);
     statusBar()->setSizeGripEnabled(false);
     unreadOutputFlag = false;
 
@@ -728,49 +862,52 @@ QvisMainWindow::~QvisMainWindow()
 //   Eric Brugger, Mon Mar 29 13:07:58 PST 2004
 //   I added maintain data limits.
 //
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::CreateGlobalArea(QWidget *par)
 {
-    QGridLayout *globalLayout = new QGridLayout(par, 2, 7);
+    QVBoxLayout *globalTopLayout = new QVBoxLayout(par);
+    globalTopLayout->setMargin(5);
+    QGridLayout *globalLayout = new QGridLayout();
+    globalTopLayout->addLayout(globalLayout);
+    globalLayout->setMargin(0);
     globalLayout->setSpacing(0);
-    globalLayout->setColStretch(2, 50);
-    globalLayout->setColStretch(5, 50);
+    globalLayout->setColumnStretch(2, 50);
+    globalLayout->setColumnStretch(5, 50);
 
-    activeWindowComboBox = new QComboBox(false, par,
-        "activeWindowComboBox");
+    activeWindowComboBox = new QComboBox(par);
     connect(activeWindowComboBox, SIGNAL(activated(int)),
             this, SLOT(winset(int)));
-    activeWindowComboBox->insertItem("1");
-    QLabel *activeWindowLabel = new QLabel(activeWindowComboBox, 
-       tr("Active window"), par, "activeWindowLabel");
-    globalLayout->addMultiCellWidget(activeWindowLabel, 0, 0, 0, 1, Qt::AlignCenter);
-    globalLayout->addMultiCellWidget(activeWindowComboBox, 1, 1, 0, 1);
+    
+    activeWindowComboBox->addItem("1");
+    QLabel *activeWindowLabel = new QLabel(tr("Active window"), par);
+    
+    globalLayout->addWidget(activeWindowLabel, 0, 0, 1, 2, Qt::AlignCenter);
+    globalLayout->addWidget(activeWindowComboBox, 1, 0, 1, 2);
 
-    QLabel *maintainLabel = new QLabel(tr("Maintain limits"), par);
-    globalLayout->addMultiCellWidget(maintainLabel, 0, 0, 3, 4, Qt::AlignCenter);
+    QLabel *maintainLabel = new QLabel(tr("Maintain limits"));
+    globalLayout->addWidget(maintainLabel, 0, 3, 1, 2, Qt::AlignCenter);
 
-    maintainViewCheckBox = new QCheckBox(tr("view"), par,
-        "maintainViewCheckBox");
+    maintainViewCheckBox = new QCheckBox(tr("view"), par);
     connect(maintainViewCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(maintainViewToggled(bool)));
     globalLayout->addWidget(maintainViewCheckBox, 1, 3);
 
-    maintainDataCheckBox = new QCheckBox(tr("data"), par,
-        "maintainDataCheckBox");
+    maintainDataCheckBox = new QCheckBox(tr("data"), par);
     connect(maintainDataCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(maintainDataToggled(bool)));
     globalLayout->addWidget(maintainDataCheckBox, 1, 4);
 
-    replacePlotsCheckBox = new QCheckBox(tr("Replace plots"), par,
-        "replacePlotsCheckBox");
+    replacePlotsCheckBox = new QCheckBox(tr("Replace plots"), par);
     connect(replacePlotsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(replacePlotsToggled(bool)));
     globalLayout->addWidget(replacePlotsCheckBox, 0, 6);
 
-    autoUpdateCheckBox = new QCheckBox(tr("Auto update"), par,
-        "autoUpdateCheckBox");
+    autoUpdateCheckBox = new QCheckBox(tr("Auto update"), par);
     connect(autoUpdateCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoUpdateToggled(bool)));
 
@@ -839,6 +976,9 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
 //   Access the message text via MessageAttributes_GetText to try and 
 //   preserve unicode from the viewer, if possible.
 //
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -854,10 +994,12 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
     {
         // Update the status bar.
         if(statusSubject->clearing)
-            statusBar()->clear();
+            statusBar()->clearMessage();
         else
-            statusBar()->message(statusSubject->text, statusSubject->milliseconds);
+            statusBar()->showMessage(statusSubject->text, statusSubject->milliseconds);
 
+        // not sure if we need this with qt4?
+        /*
         // Force the status bar to redraw.
         QPaintEvent *pe = new QPaintEvent(statusBar()->visibleRect(), true);
         QApplication::sendEvent(statusBar(), pe);
@@ -865,13 +1007,14 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 #ifdef Q_WS_X11
         QApplication::flushX();
 #endif
+        */
     }
     else if(TheChangedSubject == statusAtts)
     {
         // Update the status bar.
         if(statusAtts->GetClearStatus())
         {
-            statusBar()->clear();
+            statusBar()->clearMessage();
         }
         else
         {
@@ -905,9 +1048,11 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
                             progress + ofStage + progress2;
             }
 
-            statusBar()->message(statusMsg, statusAtts->GetDuration());
+            statusBar()->showMessage(statusMsg, statusAtts->GetDuration());
         }
 
+        // not sure if we need this with qt4?
+        /*
         // Force the status bar to redraw.
         QPaintEvent *pe = new QPaintEvent(statusBar()->visibleRect(), true);
         QApplication::sendEvent(statusBar(), pe);
@@ -915,6 +1060,7 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 #ifdef Q_WS_X11
         QApplication::flushX();
 #endif
+        */
     }
     else if(TheChangedSubject == viewerMessageAtts)
     {
@@ -1027,6 +1173,9 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Fri Dec 14 17:34:28 PST 2007
 //   Made it use ids.
 //
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -1046,8 +1195,8 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
         switch(i)
         {
         case GlobalAttributes::ID_sources:
-            UpdateFileMenuPopup(reopenPopup, reopenPopupId);
-            UpdateFileMenuPopup(closePopup, closePopupId);
+            UpdateFileMenuPopup(reopenPopup, reopenPopupAct);
+            UpdateFileMenuPopup(closePopup, closePopupAct);
             break;
         case GlobalAttributes::ID_windows:
             UpdateWindowList(true);
@@ -1076,14 +1225,15 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
             break;
         case GlobalAttributes::ID_windowLayout:
         { // new scope
-            layoutPopup->setItemChecked(0,globalAtts->GetWindowLayout() == 1);
-            layoutPopup->setItemChecked(1,globalAtts->GetWindowLayout() == 2);
-            layoutPopup->setItemChecked(2,globalAtts->GetWindowLayout() == 4);
-            layoutPopup->setItemChecked(3,globalAtts->GetWindowLayout() == 6);
-            layoutPopup->setItemChecked(4,globalAtts->GetWindowLayout() == 8);
-            layoutPopup->setItemChecked(5,globalAtts->GetWindowLayout() == 9);
+            
+            layoutActions[0]->setChecked(globalAtts->GetWindowLayout() == 1);
+            layoutActions[1]->setChecked(globalAtts->GetWindowLayout() == 2);
+            layoutActions[2]->setChecked(globalAtts->GetWindowLayout() == 4);
+            layoutActions[3]->setChecked(globalAtts->GetWindowLayout() == 6);
+            layoutActions[4]->setChecked(globalAtts->GetWindowLayout() == 8);
+            layoutActions[5]->setChecked(globalAtts->GetWindowLayout() == 9);
             for(int j = 0; j < 6; ++j)
-                layoutPopup->setItemEnabled(j, true);
+                layoutActions[j]->setEnabled(true);
         }
             break;
         case GlobalAttributes::ID_makeDefaultConfirm:
@@ -1125,10 +1275,13 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
 //   Brad Whitlock, Mon Apr 5 15:33:39 PST 2004
 //   I renamed the method.
 //
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::UpdateFileMenuPopup(QPopupMenu *m, int menuId)
+QvisMainWindow::UpdateFileMenuPopup(QMenu *m, QAction *action)
 {
     stringVector simpleNames;
     const stringVector &sources = globalAtts->GetSources();
@@ -1142,19 +1295,16 @@ QvisMainWindow::UpdateFileMenuPopup(QPopupMenu *m, int menuId)
 
     // Clear out the old list and add the new list.
     m->clear();
+    
     for(i = 0; i < simpleNames.size(); ++i)
-        m->insertItem(simpleNames[i].c_str(), i, i);
+        m->addAction(simpleNames[i].c_str());
 
     //
     // Set the menu's enabled state.
     //
-    bool menuEnabled = (m->count() > 0);
-    if(m->parent()->inherits("QPopupMenu"))
-    {
-        QPopupMenu *p = (QPopupMenu *)m->parent();
-        if(p->isItemEnabled(menuId) != menuEnabled)
-            p->setItemEnabled(menuId, menuEnabled);
-    }
+    bool menuEnabled = (m->actions().count() > 0);
+    m->setEnabled(menuEnabled);
+
 }
 
 // ****************************************************************************
@@ -1180,6 +1330,9 @@ QvisMainWindow::UpdateFileMenuPopup(QPopupMenu *m, int menuId)
 //   Brad Whitlock, Fri Apr 15 09:42:58 PDT 2005
 //   I added some code that prevents an update unless it is really needed.
 //
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -1193,7 +1346,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
     {
         intVector oldIndices;
         for(i = 0; i < activeWindowComboBox->count(); ++i)
-            oldIndices.push_back(activeWindowComboBox->text(i).toInt());
+            oldIndices.push_back(activeWindowComboBox->itemText(i).toInt());
 
         // Update the Active window combo box.
         if(oldIndices != indices)
@@ -1202,7 +1355,7 @@ QvisMainWindow::UpdateWindowList(bool doList)
             for(i = 0; i < indices.size(); ++i)
             {
                 QString temp; temp.sprintf("%d", indices[i]);
-                activeWindowComboBox->insertItem(temp);
+                activeWindowComboBox->addItem(temp);
             }
 
             // Update the Active window menu
@@ -1210,8 +1363,9 @@ QvisMainWindow::UpdateWindowList(bool doList)
             for(i = 0; i < indices.size(); ++i)
             {
                 QString str; str.sprintf("%d", indices[i]);
-                activeWindowPopup->insertItem(tr("Window ") + str, i);
-                activeWindowPopup->setItemChecked(i, indices[i] == index);
+                QAction *act = activeWindowPopup->addAction(tr("Window ") + str);
+                act->setChecked(indices[i] == index);
+                //activeWindowPopup->setItemChecked(i,indices[i] == index );
             }
         }
     }
@@ -1219,16 +1373,27 @@ QvisMainWindow::UpdateWindowList(bool doList)
     {
         // Set the active item in the Active window combobox.
         if(index >= 0 && index < activeWindowComboBox->count())
-            activeWindowComboBox->setCurrentItem(index);
+            activeWindowComboBox->setCurrentIndex(index);
 
+        QListIterator<QAction*> itr(actions());
+        i =0;
+        while(itr.hasNext())
+        {
+            itr.next()->setChecked(index == i);
+            i++;
+        }
+            
+        /*
         // Set the active item in the Active window menu.
         for(i = 0; i < activeWindowPopup->count(); ++i)
             activeWindowPopup->setItemChecked(i, index == i);
+        */
     }
 
     // Only enable the active window menu when there is more than one
     // vis window.
-    winPopup->setItemEnabled(activeWindowPopupId, indices.size() > 1);
+    activeWindowPopupAct->setEnabled(indices.size() > 1);
+    //winPopup->setItemEnabled(, indices.size() > 1);
 }
 
 // ****************************************************************************
@@ -1252,6 +1417,9 @@ QvisMainWindow::UpdateWindowList(bool doList)
 //
 //   Brad Whitlock, Wed May 21 07:46:24 PDT 2003
 //   I added fullframe mode.
+//
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -1279,37 +1447,43 @@ QvisMainWindow::UpdateWindowMenu(bool updateNumbers)
 
                 QString str;
                 str.sprintf("%d", indices[j]);
-                copyPopup[i]->insertItem(tr("Window ") + str, n++);
+                copyPopup[i]->addAction(tr("Window ") + str);
             }
-
-            topCopyPopup->setItemEnabled(i, n > 0);
+            copyPopup[i]->setEnabled(n > 0);
+            //topCopyPopup->setItemEnabled(i, n > 0);
         }
     }
 
     // Set the enabled state of the copy and clear menus.
     bool enoughPlots = (plotList->GetNumPlots() > 0);
     bool enoughWindows = (indices.size() > 1);
-    winPopup->setItemEnabled(topCopyPopupId, enoughWindows);
-    topCopyPopup->setItemEnabled(copyPopupId[0], enoughPlots && enoughWindows);
-    topCopyPopup->setItemEnabled(copyPopupId[1], enoughWindows);
-    topCopyPopup->setItemEnabled(copyPopupId[2], enoughWindows);
-    topCopyPopup->setItemEnabled(copyPopupId[3], enoughWindows);
-    topCopyPopup->setItemEnabled(copyPopupId[4], enoughWindows);
+    
+    topCopyPopupAct->setEnabled(enoughWindows);
+    copyPopupAct[0]->setEnabled(enoughPlots && enoughWindows);
+    copyPopupAct[1]->setEnabled(enoughWindows);
+    copyPopupAct[2]->setEnabled(enoughWindows);
+    copyPopupAct[3]->setEnabled(enoughWindows);
+    copyPopupAct[4]->setEnabled(enoughWindows);
+    
+    copyPopupAct[0]->setEnabled(enoughPlots && enoughWindows);
+    copyPopupAct[1]->setEnabled(enoughWindows);
+    copyPopupAct[2]->setEnabled(enoughWindows);
+    copyPopupAct[3]->setEnabled(enoughWindows);
+    copyPopupAct[4]->setEnabled(enoughWindows);
 
-    winPopup->setItemEnabled(clearPopupId, enoughPlots);
-    winPopup->setItemEnabled(lockPopupId, enoughPlots);
-    lockPopup->setItemChecked(lockTimeId, windowInfo->GetLockTime());
-    lockPopup->setItemChecked(lockToolsId, windowInfo->GetLockTools());
-    lockPopup->setItemChecked(lockViewId, windowInfo->GetLockView());
-
-    winPopup->setItemEnabled(fullFrameModeId, enoughPlots);
-    winPopup->setItemChecked(fullFrameModeId,
-        windowInfo->GetFullFrame());
-    winPopup->setItemEnabled(navigateModeId, enoughPlots);
-    winPopup->setItemChecked(navigateModeId,
-        windowInfo->GetBoundingBoxNavigate());
-    winPopup->setItemEnabled(spinModeId, enoughPlots);
-    winPopup->setItemChecked(spinModeId, windowInfo->GetSpin());
+    clearPopupAct->setEnabled(enoughPlots);
+    lockPopupAct->setEnabled(enoughPlots);
+    lockTimeAct->setChecked(windowInfo->GetLockTime());
+    lockToolsAct->setChecked(windowInfo->GetLockTools());
+    lockViewAct->setChecked(windowInfo->GetLockView());
+    
+    fullFrameModeAct->setEnabled(enoughPlots);
+    fullFrameModeAct->setChecked(windowInfo->GetFullFrame());
+    
+    navigateModeAct->setEnabled(enoughPlots);
+    navigateModeAct->setChecked(windowInfo->GetBoundingBoxNavigate());
+    spinModeAct->setEnabled(enoughPlots);
+    spinModeAct->setChecked(windowInfo->GetSpin());
 }
 
 // ****************************************************************************
@@ -1534,8 +1708,8 @@ QvisMainWindow::GetPlotManager()
 void
 QvisMainWindow::SetOrientation(int orientation)
 {
-    splitter->setOrientation((orientation < 2) ? QSplitter::Vertical :
-                             QBoxLayout::Horizontal);
+    splitter->setOrientation((orientation < 2) ? 
+                              Qt::Vertical : Qt::Horizontal);
 }
 
 // ****************************************************************************
@@ -1577,7 +1751,7 @@ QvisMainWindow::CreateNode(DataNode *parentNode)
 #endif
 
     // Add splitter values as a proportion of the window height.
-    QValueList<int> splitterSizes(splitter->sizes());
+    QList<int> splitterSizes(splitter->sizes());
     floatVector ss;
     for(int i = 0; i < splitterSizes.size(); ++i)
         ss.push_back(float(splitterSizes[i]) / 
@@ -1610,6 +1784,9 @@ QvisMainWindow::CreateNode(DataNode *parentNode)
 //   Brad Whitlock, Tue Jan 22 16:03:57 PST 2008
 //   Check for NULL notepad.
 //
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -1622,7 +1799,7 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
     DataNode *winNode = 0, *node = 0;
     int w = width();
     int h = height();
-    QValueList<int> splitterSizes;
+    QList<int> splitterSizes;
 
     if((winNode = parentNode->GetNode("MainWin")) != 0)
     {
@@ -1855,12 +2032,16 @@ QvisMainWindow::show()
 // Creation:   Fri Feb 27 11:42:41 PDT 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::reopenFile(int fileIndex)
+QvisMainWindow::reopenFile(QAction *action)
 {
+    // Get file index from action!
+    int fileIndex = 0;
     const stringVector &sources = globalAtts->GetSources();
 
     if(fileIndex >= 0 && fileIndex < sources.size())
@@ -1895,11 +2076,16 @@ QvisMainWindow::reopenFile(int fileIndex)
 //   Brad Whitlock, Mon Jun 27 14:53:14 PST 2005
 //   Added a little code to update the file panel.
 //
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::closeFile(int fileIndex)
+QvisMainWindow::closeFile(QAction *action)
 {
+    // Get file index from action!
+    int fileIndex = 0;
     const stringVector &sources = globalAtts->GetSources();
 
     if(fileIndex >= 0 && fileIndex < sources.size())
@@ -1917,7 +2103,7 @@ QvisMainWindow::closeFile(int fileIndex)
         GetViewerMethods()->CloseDatabase(sources[fileIndex]);
 
         // Update the file panel based on what's selected.
-        filePanel->UpdateOpenButtonState();
+        //filePanel->UpdateOpenButtonState();
     }
 }
 
@@ -2003,7 +2189,9 @@ QvisMainWindow::windowLayout3x3()
 // Creation:   Sat Sep 16 12:16:03 PDT 2000
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -2013,7 +2201,7 @@ QvisMainWindow::emitActivateOutputWindow()
     if(unreadOutputFlag)
     {
         unreadOutputFlag = false;
-        outputButton->setPixmap(*outputBlue);
+        outputButton->setIcon(*outputBlue);
     }
 
     // Activate the output window.
@@ -2031,7 +2219,9 @@ QvisMainWindow::emitActivateOutputWindow()
 // Creation:   Sat Sep 16 11:50:35 PDT 2000
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -2040,9 +2230,9 @@ QvisMainWindow::unreadOutput(bool val)
     // Change to the read icon.
     unreadOutputFlag = val;
     if(val)
-        outputButton->setPixmap(*outputRed);
+        outputButton->setIcon(*outputRed);
     else
-        outputButton->setPixmap(*outputBlue);
+        outputButton->setIcon(*outputBlue);
 }
 
 // ****************************************************************************
@@ -2055,13 +2245,15 @@ QvisMainWindow::unreadOutput(bool val)
 // Creation:   Tue Feb 15 14:16:28 PST 2005
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::updateNotAllowed()
 {
-    helpPopup->setItemEnabled(updateVisItId, false);
+    updateVisItAct->setEnabled(false);
 }
 
 // ****************************************************************************
@@ -2083,7 +2275,7 @@ QvisMainWindow::updateNotAllowed()
 void
 QvisMainWindow::SetTimeStateFormat(const TimeFormat &fmt)
 {
-    filePanel->SetTimeStateFormat(fmt);
+    //filePanel->SetTimeStateFormat(fmt);
 }
 
 // ****************************************************************************
@@ -2098,7 +2290,9 @@ QvisMainWindow::SetTimeStateFormat(const TimeFormat &fmt)
 // Creation:   Mon Oct 13 17:20:14 PST 2003
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 const TimeFormat &
@@ -2129,6 +2323,9 @@ QvisMainWindow::GetTimeStateFormat() const
 //   Changed positions of some menu entries to account for the new File
 //   Open entry.
 //
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -2142,33 +2339,33 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
         if(!advancedMenuShowing)
         {
             // Show selected files. Put reopen, close in an advanced menu.
-            filePopup->removeItem(reopenPopupId);
-            filePopup->removeItem(closePopupId);
+            filePopup->removeAction(reopenPopupAct);
+            filePopup->removeAction(closePopupAct);
+            
+            delete fileAdvancedPopupAct;
+            delete closePopupAct;
 
-            fileAdvancedPopup = new QPopupMenu(filePopup, "fileAdvancedPopup");
-            fileAdvancedPopupId = filePopup->insertItem(tr("Advanced file options"),
-                                  fileAdvancedPopup, -1, 2);
+            fileAdvancedPopup = new QMenu(tr("Advanced file options"));
+            fileAdvancedPopupAct = filePopup->insertMenu(openFileAct,fileAdvancedPopup);
 
             // ReOpen pull-right menu.
-            reopenPopup = new QPopupMenu(fileAdvancedPopup, "reopenPopup");
-            connect(reopenPopup, SIGNAL(activated(int)),
-                    this, SLOT(reopenFile(int)));
-            reopenPopupId = fileAdvancedPopup->insertItem(tr("ReOpen file"), reopenPopup);
-            fileAdvancedPopup->setItemEnabled(reopenPopupId, false);
+            reopenPopup = new QMenu(tr("ReOpen file"));
+            connect(reopenPopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(reopenFile(QAction*)));
+            reopenPopupAct = fileAdvancedPopup->addMenu(reopenPopup);
+            reopenPopupAct->setEnabled(false);
 
             // Close pull-right menu
-            closePopup = new QPopupMenu(fileAdvancedPopup, "closePopup");
-            connect(closePopup, SIGNAL(activated(int)),
-                    this, SLOT(closeFile(int)));
-            closePopupId = fileAdvancedPopup->insertItem(tr("Close file"), closePopup);
-            fileAdvancedPopup->setItemEnabled(closePopupId, false);
-            advancedMenuShowing = true;
-
+            closePopup = new QMenu(tr("Close file"), fileAdvancedPopup);
+            connect(closePopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(closeFile(QAction*)));
+            closePopupAct = fileAdvancedPopup->addMenu(closePopup);
+            closePopupAct->setEnabled(true);
             //
             // Update the new visible menus with the active sources.
             //
-            UpdateFileMenuPopup(reopenPopup, reopenPopupId);
-            UpdateFileMenuPopup(closePopup, closePopupId);
+            UpdateFileMenuPopup(reopenPopup, reopenPopupAct);
+            UpdateFileMenuPopup(closePopup, closePopupAct);
         }
     }
     else
@@ -2176,29 +2373,29 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
         if(advancedMenuShowing)
         {
             // No selected files. Put reopen and close in the file menu.
-            filePopup->removeItem(fileAdvancedPopupId);
-            fileAdvancedPopupId = -1;
+            filePopup->removeAction(fileAdvancedPopupAct);
+            delete fileAdvancedPopupAct;
 
             // ReOpen pull-right menu.
-            reopenPopup = new QPopupMenu(filePopup, "reopenPopup");
-            connect(reopenPopup, SIGNAL(activated(int)),
-                    this, SLOT(reopenFile(int)));
-            reopenPopupId = filePopup->insertItem(tr("ReOpen file"), reopenPopup, -1, 2);
-            filePopup->setItemEnabled(reopenPopupId, false);
+            reopenPopup = new QMenu(tr("ReOpen file"), filePopup);
+            connect(reopenPopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(reopenFile(QAction*)));
+            reopenPopupAct = filePopup->insertMenu(openFileAct,reopenPopup);
+            reopenPopupAct->setEnabled(true);
 
             // Close pull-right menu
-            closePopup = new QPopupMenu(filePopup, "closePopup");
-            connect(closePopup, SIGNAL(activated(int)),
-                    this, SLOT(closeFile(int)));
-            closePopupId = filePopup->insertItem(tr("Close file"), closePopup, -1, 3);
-            filePopup->setItemEnabled(closePopupId, false);
+            closePopup = new QMenu(tr("Close file"), filePopup);
+            connect(closePopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(closeFile(QAction*)));
+            closePopupAct = filePopup->insertMenu(reopenPopupAct,closePopup);
+            closePopupAct->setEnabled(false);
             advancedMenuShowing = false;
 
             //
             // Update the new visible menus with the active sources.
             //
-            UpdateFileMenuPopup(reopenPopup, reopenPopupId);
-            UpdateFileMenuPopup(closePopup, closePopupId);
+            UpdateFileMenuPopup(reopenPopup, reopenPopupAct);
+            UpdateFileMenuPopup(closePopup, closePopupAct);
         }
     }
 }
@@ -2219,7 +2416,7 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
 bool
 QvisMainWindow::GetShowSelectedFiles() const
 {
-    return filePanel->GetShowSelectedFiles();
+    filePanel->GetShowSelectedFiles();
 }
 
 // ****************************************************************************
@@ -2239,7 +2436,7 @@ QvisMainWindow::GetShowSelectedFiles() const
 bool
 QvisMainWindow::GetAllowFileSelectionChange() const
 {
-    return filePanel->GetAllowFileSelectionChange();
+    filePanel->GetAllowFileSelectionChange();
 }
 
 // ****************************************************************************
@@ -2463,13 +2660,15 @@ QvisMainWindow::winset(int index)
 // Creation:   Mon Sep 16 17:22:55 PST 2002
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::winset2(int id)
+QvisMainWindow::winset2(QAction *action)
 {
-    QString name(activeWindowPopup->text(id));
+    QString name = action->text();
     name = name.right(name.length() - 7);
     int index = name.toInt() - 1;
     winset(index);
@@ -2489,13 +2688,15 @@ QvisMainWindow::winset2(int id)
 // Creation:   Mon Sep 16 17:23:59 PST 2002
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::copyView(int id)
+QvisMainWindow::copyView(QAction *action)
 {
-    QString name(copyPopup[0]->text(id));
+    QString name = action->text();
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
@@ -2516,13 +2717,15 @@ QvisMainWindow::copyView(int id)
 // Creation:   Mon Sep 16 17:23:59 PST 2002
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::copyLighting(int id)
+QvisMainWindow::copyLighting(QAction *action)
 {
-    QString name(copyPopup[1]->text(id));
+    QString name = action->text();
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
@@ -2543,13 +2746,15 @@ QvisMainWindow::copyLighting(int id)
 // Creation:   Mon Sep 16 17:23:59 PST 2002
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::copyAnnotations(int id)
+QvisMainWindow::copyAnnotations(QAction *action)
 {
-    QString name(copyPopup[2]->text(id));
+    QString name = action->text();
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
@@ -2570,13 +2775,15 @@ QvisMainWindow::copyAnnotations(int id)
 // Creation:   Tue Oct 15 16:15:46 PST 2002
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::copyPlots(int id)
+QvisMainWindow::copyPlots(QAction *action)
 {
-    QString name(copyPopup[3]->text(id));
+    QString name = action->text();
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
@@ -2584,7 +2791,7 @@ QvisMainWindow::copyPlots(int id)
 }
 
 // ****************************************************************************
-// Method: QvisMainWindow::copyView
+// Method: QvisMainWindow::copyAll
 //
 // Purpose: 
 //   This is a Qt slot function that causes the view, annotations, lighting
@@ -2600,12 +2807,15 @@ QvisMainWindow::copyPlots(int id)
 //   Brad Whitlock, Tue Oct 15 16:15:18 PST 2002
 //   Added plot copying.
 //
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::copyAll(int id)
+QvisMainWindow::copyAll(QAction *action)
 {
-    QString name(copyPopup[4]->text(id));
+    QString name = action->text();
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;

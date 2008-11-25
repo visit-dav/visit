@@ -38,6 +38,7 @@
 
 #ifndef GENERATE_JAVA_H
 #define GENERATE_JAVA_H
+#include <QTextStream>
 
 #include <vector>
 #include <map>
@@ -138,24 +139,24 @@ class JavaGeneratorField : public virtual Field
         return s;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &h, const QString &indent) = 0;
-    virtual bool WriteSourceReadAtts(ostream &h, const QString &indent) = 0;
-    virtual void WriteSourceSetDefault(ostream &c) = 0;
+    virtual void WriteSourceWriteAtts(QTextStream &h, const QString &indent) = 0;
+    virtual bool WriteSourceReadAtts(QTextStream &h, const QString &indent) = 0;
+    virtual void WriteSourceSetDefault(QTextStream &c) = 0;
 
     virtual void AddImports(UniqueStringList &sl) { }
 
-    virtual void WriteSourceAttribute(ostream &h, int w)
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
     {
         h << "    private " << GetCPPNameW(w) << " " << name << ";" << endl;
     }
 
     // ------------------------------------------------------------------------
 
-    virtual void WriteAuxiliarySetFunction(ostream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c)
     {
     }
 
-    virtual void WriteSourceSetFunction(ostream &c, const QString &classname)
+    virtual void WriteSourceSetFunction(QTextStream &c, const QString &classname)
     {
         // Write prototype.
         c << "    public void Set" << Name << "(";
@@ -188,23 +189,23 @@ class JavaGeneratorField : public virtual Field
         WriteAuxiliarySetFunction(c);
     }
 
-    virtual void WriteSourceGetFunction(ostream &c, int w)
+    virtual void WriteSourceGetFunction(QTextStream &c, int w)
     {
         c << "    public " << GetCPPNameW(w) << " Get" << Name << "() { return "
           << name << "; }" << endl;
     }
 
-    virtual void WriteSourceAGVectorFunctions(ostream &c)
+    virtual void WriteSourceAGVectorFunctions(QTextStream &c)
     {
     }
 
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = obj." << name << ";" << endl;
     }
 
-    virtual void WriteSourceComparisonPrecalc(ostream &c)
+    virtual void WriteSourceComparisonPrecalc(QTextStream &c)
     {
         if (isArray)
         {
@@ -236,7 +237,7 @@ class JavaGeneratorField : public virtual Field
         return "";
     }
 
-    virtual void WriteSourceComparison(ostream &c)
+    virtual void WriteSourceComparison(QTextStream &c)
     {
         if (isArray || isVector)
             c << name << "_equal";
@@ -246,7 +247,7 @@ class JavaGeneratorField : public virtual Field
         }
     }
 
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
     }
 };
@@ -260,7 +261,7 @@ class JavaGeneratorInt : public virtual Int , public virtual JavaGeneratorField
     JavaGeneratorInt(const QString &n, const QString &l)
         : Field("int",n,l), Int(n,l), JavaGeneratorField("int",n,l) { }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         if(valueSet)
             c << "    " << name << " = " << val << ";" << endl;
@@ -268,17 +269,17 @@ class JavaGeneratorInt : public virtual Int , public virtual JavaGeneratorField
             c << "    " << name << " = 0;" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteInt(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -299,7 +300,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
         return "int[]";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new int[" << length << "];" << endl;
         if(valueSet)
@@ -314,7 +315,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
         }
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new int[" << length << "];" << endl;
 
@@ -334,7 +335,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
         c << endl;
     }
 
-    virtual void WriteAuxiliarySetFunction(ostream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c)
     {
         if(length < 6)
         {
@@ -355,17 +356,17 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
         }
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteIntArray(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadIntArray());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + intArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -392,12 +393,12 @@ class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGen
         return "Vector";
     }
 
-    virtual void WriteSourceAttribute(ostream &h, int w)
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
     {
         h << "    private " << GetCPPNameW(w) << " " << name << "; // vector of Integer objects" << endl;
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new Vector();" << endl;
         if(valueSet)
@@ -407,7 +408,7 @@ class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGen
         }
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new Vector();" << endl;
         c << "        for(i = 0; i < obj." << name << ".size(); ++i)" << endl;
@@ -417,17 +418,17 @@ class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGen
         c << "        }" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteIntVector(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadIntVector());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + intVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -452,22 +453,22 @@ class JavaGeneratorBool : public virtual Bool , public virtual JavaGeneratorFiel
         return "boolean";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << (val ? "true" : "false") << ";" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteBool(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadBool());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + boolToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -483,22 +484,22 @@ class JavaGeneratorFloat : public virtual Float , public virtual JavaGeneratorFi
     JavaGeneratorFloat(const QString &n, const QString &l)
         : Field("float",n,l), Float(n,l), JavaGeneratorField("float",n,l) { }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << val << "f;" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteFloat(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadFloat());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + floatToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -519,7 +520,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
         return "float[]";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new float[" << length << "];" << endl;
         if(valueSet)
@@ -534,7 +535,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
         }
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new float[" << length << "];" << endl;
 
@@ -554,7 +555,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
         c << endl;
     }
 
-    virtual void WriteAuxiliarySetFunction(ostream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c)
     {
         if(length < 6)
         {
@@ -575,17 +576,17 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
         }
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteFloatArray(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadFloatArray());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + floatArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -601,22 +602,22 @@ class JavaGeneratorDouble : public virtual Double , public virtual JavaGenerator
     JavaGeneratorDouble(const QString &n, const QString &l)
         : Field("double",n,l), Double(n,l), JavaGeneratorField("double",n,l) { }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << val << ";" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteDouble(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadDouble());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + doubleToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -637,7 +638,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
         return "double[]";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new double[" << length << "];" << endl;
         if(valueSet)
@@ -653,7 +654,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
 
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new double[" << length << "];" << endl;
 
@@ -673,7 +674,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
         c << endl;
     }
 
-    virtual void WriteAuxiliarySetFunction(ostream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c)
     {
         if(length < 6)
         {
@@ -694,17 +695,17 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
         }
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteDoubleArray(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadDoubleArray());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + doubleArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -730,19 +731,19 @@ class JavaGeneratorDoubleVector : public virtual DoubleVector , public virtual J
         return "Vector";
     }
 
-    virtual void WriteSourceAttribute(ostream &h, int w)
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
     {
         h << "    private " << GetCPPNameW(w) << " " << name << "; // vector of Double objects" << endl;
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new Vector();" << endl;
         for (size_t i = 0; i < val.size(); ++i)
             c << "        " << name << ".addElement(new Double(" << val[i] << "));" << endl;
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new Vector(obj." << name << ".size());" << endl;
         c << "        for(i = 0; i < obj." << name << ".size(); ++i)" << endl;
@@ -753,17 +754,17 @@ class JavaGeneratorDoubleVector : public virtual DoubleVector , public virtual J
         c << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteDoubleVector(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadDoubleVector());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + doubleVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -788,22 +789,22 @@ class JavaGeneratorUChar : public virtual UChar , public virtual JavaGeneratorFi
         return "byte";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << int(val) << ";" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteByte(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadByte());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + ucharToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -824,7 +825,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
         return "byte[]";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new byte[" << length << "];" << endl;
         if(valueSet)
@@ -839,7 +840,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
         }
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new byte[" << length << "];" << endl;
 
@@ -859,7 +860,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
         c << endl;
     }
 
-    virtual void WriteAuxiliarySetFunction(ostream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c)
     {
         if(length < 6)
         {
@@ -880,17 +881,17 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
         }
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteByteArray(" << name << ", true);" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadByteArray());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + ucharArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -917,19 +918,19 @@ class JavaGeneratorUCharVector : public virtual UCharVector , public virtual Jav
         return "Vector";
     }
 
-    virtual void WriteSourceAttribute(ostream &h, int w)
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
     {
         h << "    private " << GetCPPNameW(w) << " " << name << "; // vector of Byte objects" << endl;
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new Vector();" << endl;
         for (size_t i = 0; i < val.size(); ++i)
             c << "        " << name << ".addElement(new Byte(" << val[i] << "));" << endl;
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new Vector(obj." << name << ".size());" << endl;
         c << "        for(i = 0; i < obj." << name << ".size(); ++i)" << endl;
@@ -940,17 +941,17 @@ class JavaGeneratorUCharVector : public virtual UCharVector , public virtual Jav
         c << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteByteVector(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadByteVector());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + ucharVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -975,7 +976,7 @@ class JavaGeneratorString : public virtual String , public virtual JavaGenerator
         return "String";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         if (valueSet)
             c << "    " << name << " = new String(\"" << val << "\");" << endl;
@@ -983,26 +984,26 @@ class JavaGeneratorString : public virtual String , public virtual JavaGenerator
             c << "    " << name << " = new String(\"\");" << endl;
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new String(obj." << name << ");" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteString(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadString());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
-    virtual void WriteSourceComparison(ostream &c)
+    virtual void WriteSourceComparison(QTextStream &c)
     {
         c << "(" << name << ".equals(obj." << name << "))";
     }
@@ -1028,19 +1029,19 @@ class JavaGeneratorStringVector : public virtual StringVector , public virtual J
         return "Vector";
     }
 
-    virtual void WriteSourceAttribute(ostream &h, int w)
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
     {
         h << "    private " << GetCPPNameW(w) << " " << name << "; // vector of String objects" << endl;
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new Vector();" << endl;
         for (size_t i = 0; i < val.size(); ++i)
-        c << "        " << name << ".addElement(new String(" << "\"" << val[i].latin1() << "\"));" << endl;
+        c << "        " << name << ".addElement(new String(" << "\"" << val[i] << "\"));" << endl;
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new Vector(obj." << name << ".size());" << endl;
         c << "        for(i = 0; i < obj." << name << ".size(); ++i)" << endl;
@@ -1048,17 +1049,17 @@ class JavaGeneratorStringVector : public virtual StringVector , public virtual J
         c << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteStringVector(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadStringVector());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + stringVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -1083,31 +1084,31 @@ class JavaGeneratorColorTable : public virtual ColorTable , public virtual JavaG
         return "String";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new String(\"" << val << "\");" << endl;
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new String(obj." << name << ");" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteString(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadString());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
-    virtual void WriteSourceComparison(ostream &c)
+    virtual void WriteSourceComparison(QTextStream &c)
     {
         c << "(" << name << ".equals(obj." << name << "))";
     }
@@ -1134,7 +1135,7 @@ class JavaGeneratorColor : public virtual Color , public virtual JavaGeneratorFi
         return "ColorAttribute";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new ColorAttribute(";
         if(valueSet)
@@ -1150,22 +1151,22 @@ class JavaGeneratorColor : public virtual Color , public virtual JavaGeneratorFi
             c << ");" << endl;
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new ColorAttribute(obj." << name << ");" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    " << name << ".Write(buf);" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << name << ".Read(buf);" << endl;
         return false;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + indent + \"" << name << " = {\" + ";
         c << name << ".Red() + \", \" + ";
@@ -1185,22 +1186,22 @@ class JavaGeneratorLineStyle : public virtual LineStyle , public virtual JavaGen
     JavaGeneratorLineStyle(const QString &n, const QString &l)
         : Field("linestyle",n,l), LineStyle(n,l), JavaGeneratorField("linestyle",n,l) { }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << val << ";" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteInt(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -1216,22 +1217,22 @@ class JavaGeneratorLineWidth : public virtual LineWidth , public virtual JavaGen
     JavaGeneratorLineWidth(const QString &n, const QString &l)
         : Field("linewidth",n,l), LineWidth(n,l), JavaGeneratorField("linewidth",n,l) { }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << val << ";" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteInt(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -1247,22 +1248,22 @@ class JavaGeneratorOpacity : public virtual Opacity , public virtual JavaGenerat
     JavaGeneratorOpacity(const QString &n, const QString &l)
         : Field("opacity",n,l), Opacity(n,l), JavaGeneratorField("opacity",n,l) { }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << val << ";" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteDouble(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadDouble());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + doubleToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
@@ -1286,7 +1287,7 @@ class JavaGeneratorVariableName : public virtual VariableName,
         return "String";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new String(\"";
         if(!val.isEmpty())
@@ -1294,26 +1295,26 @@ class JavaGeneratorVariableName : public virtual VariableName,
         c << "\");" << endl;
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new String(obj." << name << ");" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteString(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadString());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
-    virtual void WriteSourceComparison(ostream &c)
+    virtual void WriteSourceComparison(QTextStream &c)
     {
         c << "(" << name << ".equals(obj." << name << "))";
     }
@@ -1333,37 +1334,36 @@ class JavaGeneratorAtt : public virtual Att , public virtual JavaGeneratorField
     { 
         if(generatePlugin)
         {
-            QString import;
-            import.sprintf("import llnl.visit.%s;\n", attType.latin1());
+            QString import(QString("import llnl.visit.%1;\n").arg(attType));
             sl.AddString(import);
         }
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new " << attType << "();" << endl;
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        " << name << " = new " << attType << "(obj." << name << ");" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    " << name << ".Write(buf);" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << name << ".Read(buf);" << endl;
         return false;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + indent + \"" << name << " = {\\n\" + " << name << ".toString(indent + \"    \") + indent + \"}\\n\";" << endl;
     }
-    virtual void WriteSourceComparison(ostream &c)
+    virtual void WriteSourceComparison(QTextStream &c)
     {
         c << "(" << name << ".equals(obj." << name << "))";
     }
@@ -1384,8 +1384,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         sl.AddString("import java.util.Vector;\n");
         if(generatePlugin)
         {
-            QString import;
-            import.sprintf("import llnl.visit.%s;\n", attType.latin1());
+            QString import(QString("import llnl.visit.%1;\n").arg(attType));
             sl.AddString(import);
         }
     }
@@ -1395,21 +1394,21 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         return "Vector";
     }
 
-    virtual void WriteSourceAttribute(ostream &h, int w)
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
     {
         h << "    private " << GetCPPNameW(w) << " " << name << "; // vector of "<<attType<<" objects" << endl;
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = new Vector();" << endl;
     }
 
-    virtual void WriteSourceSetFunction(ostream &c, const QString &classname)
+    virtual void WriteSourceSetFunction(QTextStream &c, const QString &classname)
     {
     }
 
-    virtual void WriteSourceCopyCode(ostream &c)
+    virtual void WriteSourceCopyCode(QTextStream &c)
     {
         c << "        // *** Copy the " << name << " field ***" << endl;
         c << "        " << name << " = new Vector(obj." << name << ".size());" << endl;
@@ -1420,7 +1419,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         c << "        }" << endl << endl;
     }
 
-    virtual void WriteSourceAGVectorFunctions(ostream &c)
+    virtual void WriteSourceAGVectorFunctions(QTextStream &c)
     {
         QString s = attType;
         QString plural("");
@@ -1465,7 +1464,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         c << "    }" << endl << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "{" << endl;
         c << indent << "    buf.WriteInt(" << name << ".size());" << endl;
@@ -1477,7 +1476,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         c << indent << "}" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "{" << endl;
         c << indent << "    int len = buf.ReadInt();" << endl;
@@ -1492,7 +1491,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         return false;
     }
 
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + indent + \""<<name<<" = {\\n\";" << endl;
         c << indent << "for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
@@ -1527,33 +1526,33 @@ class JavaGeneratorEnum : public virtual Enum , public virtual JavaGeneratorFiel
         return "int";
     }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         if (valueSet)
         {
             QString constName(enumType->type + QString("_") + enumType->values[val]);
-            c << "    " << name << " = " << constName.upper() << ";" << endl;
+            c << "    " << name << " = " << constName.toUpper() << ";" << endl;
         }
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteInt(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + indent + \"" << name <<" = \";" << endl;
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
             QString constName(enumType->type + QString("_") + enumType->values[i]);
-            c << indent << "if(" << name << " == " << constName.upper() << ")" << endl;
-            c << indent << "    str = str + \"" << constName.upper() << "\";" << endl;
+            c << indent << "if(" << name << " == " << constName.toUpper() << ")" << endl;
+            c << indent << "    str = str + \"" << constName.toUpper() << "\";" << endl;
         }
         c << indent << "str = str + \"\\n\";" << endl;
     }
@@ -1569,22 +1568,22 @@ class JavaGeneratorScaleMode : public virtual ScaleMode , public virtual JavaGen
     JavaGeneratorScaleMode(const QString &n, const QString &l)
         : Field("scalemode",n,l), ScaleMode(n,l), JavaGeneratorField("scalemode",n,l) { }
 
-    virtual void WriteSourceSetDefault(ostream &c)
+    virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << val << ";" << endl;
     }
 
-    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteInt(" << name << ");" << endl;
     }
 
-    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
     }
-    virtual void WriteToString(ostream &c, const QString &indent)
+    virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent);" << endl;       
     }
@@ -1611,7 +1610,7 @@ class JavaFieldFactory
                                            const QString &label)
     {
         JavaGeneratorField *f = NULL;
-        if      (type.isNull())          throw QString().sprintf("Field %s was specified with no type.",name.latin1());
+        if      (type.isNull())          throw QString("Field %1 was specified with no type.").arg(name);
         else if (type == "int")          f = new JavaGeneratorInt(name,label);
         else if (type == "intArray")     f = new JavaGeneratorIntArray(length,name,label);
         else if (type == "intVector")    f = new JavaGeneratorIntVector(name,label);
@@ -1648,7 +1647,7 @@ class JavaFieldFactory
         else if (type == "LoadBalanceScheme") f = new JavaGeneratorInt(name, label);
 
         if (!f)
-            throw QString().sprintf("JavaFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
+            throw QString("JavaFieldFactory: unknown type for field %1: %2").arg(name).arg(type);
 
         return f;
     }
@@ -1684,7 +1683,7 @@ class JavaGeneratorAttribute : public GeneratorBase
         fields.clear();
     }
 
-    void Print(ostream &out)
+    void Print(QTextStream &out)
     {
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
         out << "        exportAPI=" << exportAPI << endl;
@@ -1702,10 +1701,10 @@ class JavaGeneratorAttribute : public GeneratorBase
 
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
-    void WriteSource(ostream &h)
+    void WriteSource(QTextStream &h)
     {
         bool generatePlugin = (pluginType == "plot" || pluginType == "operator");
-        h << java_copyright_str.c_str() << endl;
+        h << java_copyright_str << endl;
 
         if(pluginType == "plot")
             h << "package llnl.visit.plots;" << endl;
@@ -1823,7 +1822,7 @@ class JavaGeneratorAttribute : public GeneratorBase
     }
 
 private:
-    void WriteSourceImports(ostream &h)
+    void WriteSourceImports(QTextStream &h)
     {
         UniqueStringList sysincludes;
 
@@ -1842,8 +1841,7 @@ private:
         {
             if(includes[i]->target == generatorName)
             {
-                QString importLine;
-                importLine.sprintf("import %s;\n", includes[i]->include.latin1());
+                QString importLine(QString("import %1;\n").arg(includes[i]->include));
                 sysincludes.AddString(importLine);
             }
         }
@@ -1896,7 +1894,7 @@ private:
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
 
-    void WriteSourceConstructor(ostream &c)
+    void WriteSourceConstructor(QTextStream &c)
     {
         c << "    public " << name << "()" << endl;
         c << "    {" << endl;
@@ -1920,7 +1918,7 @@ private:
         c << "    }" << endl << endl;
     }
 
-    void WriteSourceCopyConstructor(ostream &c)
+    void WriteSourceCopyConstructor(QTextStream &c)
     {
         c << "    public " << name << "(" << name << " obj)" << endl;
         c << "    {" << endl;
@@ -1943,7 +1941,7 @@ private:
         c << "    }" << endl << endl;
     }
 
-    void WriteSourceComparison(ostream &c)
+    void WriteSourceComparison(QTextStream &c)
     {
         if(HasFunction("equals"))
         {
@@ -1995,7 +1993,7 @@ private:
         c << "    }" << endl << endl;
     }
 
-    void WriteSourceEnumsAndConstants(ostream &h)
+    void WriteSourceEnumsAndConstants(QTextStream &h)
     {
         // Write the enums out as groups of static int constants.
         if(EnumType::enums.size() > 0)
@@ -2006,7 +2004,7 @@ private:
             for (size_t j = 0; j < EnumType::enums[i]->values.size(); ++j)
             {
                 QString constName(EnumType::enums[i]->type + QString("_") + EnumType::enums[i]->values[j]);
-                h << "    public final static int " << constName.upper() << " = " << j << ";" << endl;
+                h << "    public final static int " << constName.toUpper() << " = " << j << ";" << endl;
             }
             h << endl;
         }
@@ -2028,7 +2026,7 @@ private:
                 continue;
 
             QString def(constants[i]->def);
-            if (def.simplifyWhiteSpace().isEmpty())
+            if (def.simplified().isEmpty())
                 continue;
 
             h << def << endl;
@@ -2038,7 +2036,7 @@ private:
             h << endl;
     }
 
-    void WriteSourceWriteAtts(ostream &h)
+    void WriteSourceWriteAtts(QTextStream &h)
     {
         h << "    // Write and read methods." << endl;
         if(HasFunction("WriteAtts"))
@@ -2058,7 +2056,7 @@ private:
         h << endl;
     }
 
-    void WriteSourceReadAtts(ostream &h)
+    void WriteSourceReadAtts(QTextStream &h)
     {
         if(HasFunction("ReadAtts"))
         {
@@ -2095,7 +2093,7 @@ private:
         h << endl;
     }
 
-    void WriteSourceAGVectorFunctions(ostream &h)
+    void WriteSourceAGVectorFunctions(QTextStream &h)
     {
         if (HaveAGVectors())
         {
@@ -2106,7 +2104,7 @@ private:
         h << endl;
     }
 
-    void WriteToString(ostream &h)
+    void WriteToString(QTextStream &h)
     {
         h << "    public String toString(String indent)" << endl;
         h << "    {" << endl;
@@ -2129,7 +2127,7 @@ private:
 //        h << endl;
     }
 
-    void WriteUserDefinedFunctions(ostream &h)
+    void WriteUserDefinedFunctions(QTextStream &h)
     {
         for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->target == generatorName)
@@ -2163,7 +2161,7 @@ class JavaGeneratorPlugin : public PluginBase
     {
     }
 
-    void Print(ostream &out)
+    void Print(QTextStream &out)
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
         if (atts)

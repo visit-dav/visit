@@ -42,18 +42,18 @@
 #include <ExpressionList.h>
 #include <ViewerProxy.h>
 
-#include <qapplication.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qmultilineedit.h>
-#include <qpopupmenu.h>
-#include <qpushbutton.h>
-#include <qsplitter.h>
+#include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QTextEdit>
+#include <QMenu>
+#include <QPushButton>
+#include <QSplitter>
 
 #include <QNarrowLineEdit.h>
 #include <QvisVariableButton.h>
@@ -458,6 +458,9 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Added '&' bitwise binary and operation
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 //    Jeremy Meredith, Thu Aug  7 15:37:17 EDT 2008
 //    changed an erroneous pointer-based string comparison to a true
 //    string based comparison.
@@ -467,119 +470,99 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 void
 QvisExpressionsWindow::CreateWindowContents()
 {
-#define USE_SPLITTER
-#ifndef USE_SPLITTER
-    QHBoxLayout *mainLayout = new QHBoxLayout(topLayout, -1, "mainLayout");
-#else
+
     QSplitter *mainSplitter = new QSplitter(central);
     topLayout->addWidget(mainSplitter);
     topLayout->setStretchFactor(mainSplitter, 100);
-#endif
+    
+    QGroupBox *f1 = new QGroupBox(tr("Expression List"));
+    QGridLayout *listLayout = new QGridLayout(f1);
 
-#ifndef USE_SPLITTER
-    QGridLayout *listLayout = new QGridLayout(mainLayout, 3,2, 5, "listLayout");
-    mainLayout->setStretchFactor(listLayout, 50);
-#define f1 central
-#else
-    QGroupBox *f1 = new QGroupBox(tr("Expression List"),mainSplitter);
-    QGridLayout *listLayout = new QGridLayout(f1, 4,2, 7, 5, "listLayout");
-#endif
+    exprListBox = new QListWidget(f1);
+    listLayout->addWidget(exprListBox, 1,0, 1,2);
 
-    listLayout->addRowSpacing(0, 10);
-
-    exprListBox = new QListBox(f1);
-    listLayout->addMultiCellWidget(exprListBox, 1,1, 0,1);
-
-    newButton = new QPushButton(tr("New"), f1, "newButton");
+    newButton = new QPushButton(tr("New"), f1);
     listLayout->addWidget(newButton, 2,0);
 
-    delButton = new QPushButton(tr("Delete"), f1, "delButton");
+    delButton = new QPushButton(tr("Delete"), f1);
     listLayout->addWidget(delButton, 2,1);
 
-    displayAllVars = new QCheckBox(tr("Display expressions from database"), f1, "displayAllVars");
-    listLayout->addMultiCellWidget(displayAllVars, 3,3, 0,1);
+    displayAllVars = new QCheckBox(tr("Display expressions from database"), f1);
+    listLayout->addWidget(displayAllVars, 3,0, 1,2);
 
-#ifndef USE_SPLITTER
-    mainLayout->addSpacing(10);
-    QGridLayout *editLayout = new QGridLayout(mainLayout, 6,2, 5, "editLayout");
-    mainLayout->setStretchFactor(editLayout, 50);
-#define f2 central
-#else
-    QGroupBox *f2 = new QGroupBox(tr("Definition"), mainSplitter);
-    QGridLayout *editLayout = new QGridLayout(f2, 6,4, 7, 5, "editLayout");
-#endif
+    mainSplitter->addWidget(f1);
+    
+    QGroupBox *f2 = new QGroupBox(tr("Definition"));
+    QGridLayout *editLayout = new QGridLayout(f2);
+    
     int row = 0;
 
-    editLayout->addRowSpacing(row, 10);
     row++;
 
-    nameEditLabel = new QLabel(tr("Name"), f2, "nameEditLabel");
-    nameEdit = new QNarrowLineEdit(f2, "nameEdit");
-    editLayout->addMultiCellWidget(nameEditLabel, row,row, 0,0);
-    editLayout->addMultiCellWidget(nameEdit, row,row, 1,3);
+    nameEditLabel = new QLabel(tr("Name"), f2);
+    nameEdit = new QNarrowLineEdit(f2);
+    editLayout->addWidget(nameEditLabel, row,0, 1,1);
+    editLayout->addWidget(nameEdit, row,1, 1,3);
     row++;
 
-    typeLabel = new QLabel(tr("Type"), f2, "typeLabel");
-    typeList = new QComboBox(f2, "typeList");
+    typeLabel = new QLabel(tr("Type"), f2);
+    typeList = new QComboBox(f2);
     // Extracted from Expression::GetTypeString so we can internationalize.
-    typeList->insertItem(tr("Scalar Mesh Variable"));
-    typeList->insertItem(tr("Vector Mesh Variable"));
-    typeList->insertItem(tr("Tensor Mesh Variable"));
-    typeList->insertItem(tr("Symmetric Tensor Mesh Variable"));
-    typeList->insertItem(tr("Array Mesh Variable"));
-    typeList->insertItem(tr("Curve Mesh Variable"));
-    //typeList->insertItem(tr("Mesh"));
+    typeList->addItem(tr("Scalar Mesh Variable"));
+    typeList->addItem(tr("Vector Mesh Variable"));
+    typeList->addItem(tr("Tensor Mesh Variable"));
+    typeList->addItem(tr("Symmetric Tensor Mesh Variable"));
+    typeList->addItem(tr("Array Mesh Variable"));
+    typeList->addItem(tr("Curve Mesh Variable"));
 
-    editLayout->addMultiCellWidget(typeLabel, row,row, 0,0);
-    editLayout->addMultiCellWidget(typeList, row,row, 1,3);
+    editLayout->addWidget(typeLabel, row,0, 1,1);
+    editLayout->addWidget(typeList, row,1, 1,3);
     row++;
 
-    definitionEditLabel = new QLabel(tr("Definition"), f2, "definitionEditLabel");
+    definitionEditLabel = new QLabel(tr("Definition"), f2);
     editLayout->addWidget(definitionEditLabel, row, 0);
     row++;
 
-    definitionEdit = new QMultiLineEdit(f2, "definitionEdit");
-    definitionEdit->setWordWrap(QMultiLineEdit::WidgetWidth);
-    definitionEdit->setWrapPolicy(QMultiLineEdit::AtWhiteSpace);
-    editLayout->addMultiCellWidget(definitionEdit, row,row, 0,3);
+    definitionEdit = new QTextEdit(f2);
+    editLayout->addWidget(definitionEdit, row,0,1,4);
     row++;
 
-    notHidden = new QCheckBox(tr("Show variable in plot menus"), f2, "notHidden");
+    notHidden = new QCheckBox(tr("Show variable in plot menus"), f2);
     editLayout->addWidget(notHidden, row, 0);
 
-    insertFunctionButton = new QPushButton(tr("Insert Function..."), f2);
-    insertFunctionMenu = new QPopupMenu(f2, "insertFunctionMenu");
+    insertFunctionButton = new QPushButton(tr("Insert Function..."));
+    insertFunctionMenu = new QMenu(f2);
     for (int i=0; i < NUM_EXPRESSION_CATEGORIES; i++)
     {
-        QPopupMenu *tmpMenu = new QPopupMenu(f2, exprlist[i].name.ascii());
+        QMenu *submnu = insertFunctionMenu->addMenu(exprlist[i].name);
         for (int j=0; exprlist[i].list[j]; j++)
         {
             if (std::string(exprlist[i].list[j])=="&")
-                tmpMenu->insertItem("&&");
+                submnu->addAction("&&");
             else
-                tmpMenu->insertItem(exprlist[i].list[j]);
+                submnu->addAction(exprlist[i].list[j]);
         }
-        insertFunctionMenu->insertItem(exprlist[i].name, tmpMenu);
-        connect(tmpMenu, SIGNAL(activated(int)),
-                this, SLOT(insertFunction(int)));
+        connect(submnu, SIGNAL(triggered(QAction *)),
+                this, SLOT(insertFunction(QAction *)));
+        
     }
-    insertFunctionButton->setPopup(insertFunctionMenu);
+    insertFunctionButton->setMenu(insertFunctionMenu);
     editLayout->addWidget(insertFunctionButton, row, 2);
 
     // Create a variable button so we can insert variables for the
     // active source.
-    insertVariableButton = new QvisVariableButton(false, false, false, -1, f2,
-        "insertVariableButton");
+    insertVariableButton = new QvisVariableButton(false, false, false, -1, f2);
     insertVariableButton->setChangeTextOnVariableChange(false);
     insertVariableButton->setText(tr("Insert Variable..."));
     connect(insertVariableButton, SIGNAL(activated(const QString &)),
             this, SLOT(insertVariable(const QString &)));
     editLayout->addWidget(insertVariableButton, row, 3);
     row++;
-
+    
+    mainSplitter->addWidget(f2);
     // connect signals
 
-    connect(exprListBox, SIGNAL(selectionChanged()),
+    connect(exprListBox, SIGNAL(itemSelectionChanged()),
             this, SLOT(UpdateWindowSingleItem()));
     connect(nameEdit, SIGNAL(textChanged(const QString&)),
             this, SLOT(nameTextChanged(const QString&)));
@@ -621,6 +604,9 @@ QvisExpressionsWindow::CreateWindowContents()
 //    Jeremy Meredith, Tue Feb 19 14:20:57 EST 2008
 //    Don't display expressions that were created by operators.
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::UpdateWindow(bool)
@@ -637,7 +623,7 @@ QvisExpressionsWindow::UpdateWindow(bool)
         if (displayAllVars->isChecked() ||
             !exprList->GetExpressions(i).GetFromDB())
         {
-            exprListBox->insertItem(exprList->GetExpressions(i).GetName().c_str());
+            exprListBox->addItem(exprList->GetExpressions(i).GetName().c_str());
             indexMap[pos++] = i;
         }
     }
@@ -661,13 +647,15 @@ QvisExpressionsWindow::UpdateWindow(bool)
 //    Always access the expression list by index, just in case there
 //    are two expressions with the same name.
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::UpdateWindowSingleItem()
 {
     BlockAllSignals(true);
-    int index = exprListBox->currentItem();
-
+    int index = exprListBox->currentRow();
     if (index <  0)
     {
         nameEdit->setText("");
@@ -680,7 +668,8 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 
         nameEdit->setText(e.GetName().c_str());
         notHidden->setChecked(! e.GetHidden());
-        typeList->setCurrentText(Expression::GetTypeString(e.GetType()));
+        int tidx = typeList->findText(Expression::GetTypeString(e.GetType()));
+        typeList->setCurrentIndex(tidx);
         definitionEdit->setText(e.GetDefinition().c_str());
     }
     
@@ -710,13 +699,16 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //    Changed definitionEdit to be readOnly instead of disabled
 //    for database expressions so users can select/copy them.
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
 QvisExpressionsWindow::UpdateWindowSensitivity()
 {
     bool enable = true;
-    int index = exprListBox->currentItem();
+    int index = exprListBox->currentRow();
 
     if (index <  0)
     {
@@ -789,24 +781,32 @@ QvisExpressionsWindow::Apply(bool forceUpdate)
 // Creation:   October 10, 2004
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::apply()
 {
     // Apply will recreate the window and unselect the current expression.
     // If we have an expression selected, reselect it afterwards.
-    int reselect = (exprListBox->currentItem() != -1);
-    QString item = exprListBox->currentText();
-
+    
+    int reselect = (exprListBox->currentRow() != -1);
+    QString item = exprListBox->currentItem()->text();
+    
     Apply(true);
 
     if (reselect)
     {
         for (int i=0; i<exprListBox->count(); i++)
         {
-            if (exprListBox->text(i) == item)
-                exprListBox->setSelected(i, true);
+            if (exprListBox->item(i)->text() == item)
+            {
+                exprListBox->item(i)->setSelected(true);
+                exprListBox->setCurrentRow(i);
+                UpdateWindowSingleItem();
+                break;
+            }
         }
     }
 }
@@ -824,7 +824,10 @@ QvisExpressionsWindow::apply()
 //    Jeremy Meredith, Mon Oct 25 12:39:53 PDT 2004
 //    Always access the expression list by index, just in case there
 //    are two expressions with the same name.
-//   
+//
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::addExpression()
@@ -836,14 +839,14 @@ QvisExpressionsWindow::addExpression()
     while (!okay)
     {
         newName.sprintf("unnamed%d", newid);
-        if ((*exprList)[newName.latin1()])
+        if ((*exprList)[newName.toStdString().c_str()])
             newid++;
         else
             okay = true;
     }
 
     Expression e;
-    e.SetName(newName.latin1());
+    e.SetName(newName.toStdString());
     e.SetDefinition("");
     exprList->AddExpressions(e);
 
@@ -851,8 +854,13 @@ QvisExpressionsWindow::addExpression()
 
     for (int i=0; i<exprListBox->count(); i++)
     {
-        if (exprListBox->text(i) == newName)
-            exprListBox->setSelected(i, true);
+        if (exprListBox->item(i)->text() == newName)
+        {
+            exprListBox->item(i)->setSelected(true);
+            exprListBox->setCurrentRow(i);
+            UpdateWindowSingleItem();
+            break;
+        }
     }
 }
 
@@ -871,18 +879,39 @@ QvisExpressionsWindow::addExpression()
 //    expression list (instead of assuming its index in the list box was
 //    correct).  This was an oversight from my 10/25/04 change.  ('5682)
 //   
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
+//    Cyrus Harrison, Mon Jul 21 16:22:30 PDT 2008
+//    Fixed a crash when last expression was deleted. 
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::delExpression()
 {
-    int index = exprListBox->currentItem();
+    int index = exprListBox->currentRow();
 
     if (index <  0)
         return;
 
     exprList->RemoveExpressions(indexMap[index]);
-
     exprList->Notify();
+    
+    // try to select sensible expression:
+    // if del expr was last expr: before 
+    // else: after
+    
+    int nrows = exprListBox->count();
+    
+    if(nrows > 0)
+    {
+        if(index == nrows)
+            index--;
+        exprListBox->item(index)->setSelected(true);
+        exprListBox->setCurrentRow(index);
+        UpdateWindowSingleItem();
+    }
+    
 }
 
 // ****************************************************************************
@@ -900,18 +929,21 @@ QvisExpressionsWindow::delExpression()
 //    Always access the expression list by index, just in case there
 //    are two expressions with the same name.
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::definitionTextChanged()
 {
-    int index = exprListBox->currentItem();
+    int index = exprListBox->currentRow();
 
     if (index <  0)
         return;
 
     Expression &e = (*exprList)[indexMap[index]];
 
-    e.SetDefinition(definitionEdit->text().latin1());
+    e.SetDefinition(definitionEdit->toPlainText().toStdString());
 }
 
 // ****************************************************************************
@@ -935,18 +967,21 @@ QvisExpressionsWindow::definitionTextChanged()
 //    Never allow an empty name to get into the expression list.  This
 //    could cause crashes.  ('6295)
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::nameTextChanged(const QString &text)
 {
-    int index = exprListBox->currentItem();
+    int index = exprListBox->currentRow();
 
     if (index <  0)
         return;
 
     Expression &e = (*exprList)[indexMap[index]];
 
-    QString newname = text.stripWhiteSpace();
+    QString newname = text.trimmed();
 
     if (newname.isEmpty())
     {
@@ -955,16 +990,16 @@ QvisExpressionsWindow::nameTextChanged(const QString &text)
         while (!okay)
         {
             newname.sprintf("unnamed%d", newid);
-            if ((*exprList)[newname.latin1()])
+            if ((*exprList)[newname.toStdString().c_str()])
                 newid++;
             else
                 okay = true;
         }
     }
 
-    e.SetName(newname.latin1());
+    e.SetName(newname.toStdString());
     BlockAllSignals(true);
-    exprListBox->changeItem(newname, index);
+    exprListBox->item(index)->setText(newname);
     BlockAllSignals(false);
 }
 
@@ -985,11 +1020,14 @@ QvisExpressionsWindow::nameTextChanged(const QString &text)
 //    Always access the expression list by index, just in case there
 //    are two expressions with the same name.
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::typeChanged(int value)
 {
-    int index = exprListBox->currentItem();
+    int index = exprListBox->currentRow();
 
     if (index <  0)
         return;
@@ -1017,11 +1055,14 @@ QvisExpressionsWindow::typeChanged(int value)
 //    Always access the expression list by index, just in case there
 //    are two expressions with the same name.
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::notHiddenChanged()
 {
-    int index = exprListBox->currentItem();
+    int index = exprListBox->currentRow();
 
     if (index <  0)
         return;
@@ -1045,14 +1086,17 @@ QvisExpressionsWindow::notHiddenChanged()
 //    Jeremy Meredith, Mon Oct 25 13:33:35 PDT 2004
 //    Made it reselect an expression that was already selected, like Apply.
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::displayAllVarsChanged()
 {
     // This updates the window, which rebuilds the expression list.
     // If we have an expression selected, reselect it afterwards.
-    int reselect = (exprListBox->currentItem() != -1);
-    QString item = exprListBox->currentText();
+    int reselect = (exprListBox->currentRow() != -1);
+    QString item = exprListBox->currentItem()->text();
 
     UpdateWindow(true);
 
@@ -1060,8 +1104,13 @@ QvisExpressionsWindow::displayAllVarsChanged()
     {
         for (int i=0; i<exprListBox->count(); i++)
         {
-            if (exprListBox->text(i) == item)
-                exprListBox->setSelected(i, true);
+            if (exprListBox->item(i)->text() == item)
+            {
+                exprListBox->item(i)->setSelected(true);
+                exprListBox->setCurrentRow(i);
+                UpdateWindowSingleItem();
+                break;
+            }
         }
     }
 }
@@ -1121,6 +1170,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Added support for '&' bitwise binary and operation
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 //    Sean Ahern, Wed Sep 10 12:44:22 EDT 2008
 //    Added support for recenter with optional argument.
 //
@@ -1130,128 +1182,124 @@ QvisExpressionsWindow::displayAllVarsChanged()
 // ****************************************************************************
 
 void
-QvisExpressionsWindow::insertFunction(int id)
+QvisExpressionsWindow::insertFunction(QAction * action)
 {
-    if (!definitionEdit->isEnabled())
+   if (!definitionEdit->isEnabled())
         return;
+    
+    QString func_name = action->text();
+        
+    bool doParens = (func_name.length() >= 2);
 
-    bool doParens = (insertFunctionMenu->text(id).length() >= 2);
-
-    if (insertFunctionMenu->text(id) == "&&")
+    if (func_name == "&&")
     {
-        definitionEdit->insert("&");
+        definitionEdit->insertPlainText("&");
         doParens = false;
     }
     else
     {
-        definitionEdit->insert(insertFunctionMenu->text(id));
+        definitionEdit->insertPlainText(func_name);
     }
 
-    std::string str = insertFunctionMenu->text(id).latin1();
-    if (str == "conn_cmfe")
+
+    if (func_name == "conn_cmfe")
     {
-        definitionEdit->insert("(<filename:var>, <meshname>)");
+        definitionEdit->insertPlainText("(<filename:var>, <meshname>)");
         doParens = false;
     }
-    else if (str == "pos_cmfe")
+    else if (func_name == "pos_cmfe")
     {
-        definitionEdit->insert("(<filename:var>, <meshname>, <fill-var-for-uncovered-regions>)");
+        definitionEdit->insertPlainText("(<filename:var>, <meshname>, <fill-var-for-uncovered-regions>)");
         doParens = false;
     }
-    else if (str == "symm_point")
+    else if (func_name == "symm_point")
     {
-        definitionEdit->insert("(<var>, [Px, Py, Pz])");
+        definitionEdit->insertPlainText("(<var>, [Px, Py, Pz])");
         doParens = false;
     }
-    else if (str == "symm_plane")
+    else if (func_name == "symm_plane")
     {
-        definitionEdit->insert("(<var>, [Nx, Ny, Nz, Ox, Oy, Oz])");
+        definitionEdit->insertPlainText("(<var>, [Nx, Ny, Nz, Ox, Oy, Oz])");
         doParens = false;
     }
-    else if (str == "symm_transform")
+    else if (func_name == "symm_transform")
     {
-        definitionEdit->insert("(<var>, [T00, T01, T02, T10, T11, T12, "
+        definitionEdit->insertPlainText("(<var>, [T00, T01, T02, T10, T11, T12, "
                                         "T20, T21, T22])");
         doParens = false;
     }
-    else if (str == "matvf")
+    else if (func_name == "matvf")
     {
-        definitionEdit->insert("(<material-object-name>, [#, #, ... #])");
+        definitionEdit->insertPlainText("(<material-object-name>, [#, #, ... #])");
         doParens = false;
     }
-    else if (str == "specmf")
+    else if (func_name == "specmf")
     {
-        definitionEdit->insert("(<species-variable-name>, <material-name-or-number>, [#, #, ... #])");
+        definitionEdit->insertPlainText("(<species-variable-name>, <material-name-or-number>, [#, #, ... #])");
         doParens = false;
     }
-    else if (str == "if")
+    else if (func_name == "if")
     {
-        definitionEdit->insert("(<condition>, <then-var>, <else-var>)");
+        definitionEdit->insertPlainText("(<condition>, <then-var>, <else-var>)");
         doParens = false;
     }
-    else if (str == "min" || str == "max" || str == "cross" || str == "mod" ||
-             str == "and" || str == "or")
+    else if (func_name == "min" || func_name == "max" || func_name == "cross" || func_name == "mod" ||
+             func_name == "and" || func_name == "or")
     {
-        definitionEdit->insert("(<var1>, <var2>)");
+        definitionEdit->insertPlainText("(<var1>, <var2>)");
         doParens = false;
     }
-    else if (str == "array_compose")
+    else if (func_name == "array_compose")
     {
-        definitionEdit->insert("(<var1>, <var2>, ..., <varN>)");
+        definitionEdit->insertPlainText("(<var1>, <var2>, ..., <varN>)");
         doParens = false;
     }
-    else if (str == "array_compose_with_bins")
+    else if (func_name == "array_compose_with_bins")
     {
-        definitionEdit->insert("(<var1>, <var2>, ..., <varN>, [b1, b2, ..., bN+1])");
+        definitionEdit->insertPlainText("(<var1>, <var2>, ..., <varN>, [b1, b2, ..., bN+1])");
         doParens = false;
     }
-    else if (str == "eq" || str == "ge" || str == "gt" || 
-             str == "le" || str == "lt" || str == "ne")
+    else if (func_name == "eq" || func_name == "ge" || func_name == "gt" || 
+             func_name == "le" || func_name == "lt" || func_name == "ne")
     {
-        definitionEdit->insert("(<var-LHS>, <var-RHS>)");
+        definitionEdit->insertPlainText("(<var-LHS>, <var-RHS>)");
         doParens = false;
     }
-    else if(str == "color4")
+    else if(func_name == "color4")
     {
-        definitionEdit->insert("(<var1>, <var2>, <var3>, <var4>)");
+        definitionEdit->insertPlainText("(<var1>, <var2>, <var3>, <var4>)");
         doParens = false;      
     }
-    else if(str == "color")
+    else if(func_name == "color")
     {
-        definitionEdit->insert("(<var1>, <var2>, <var3>)");
+        definitionEdit->insertPlainText("(<var1>, <var2>, <var3>)");
         doParens = false;      
     }
-    else if (str == "recenter")
+    else if (func_name == "recenter")
     {
-        definitionEdit->insert("(<var>, [\"nodal\", \"zonal\", \"toggle\"])");
+        definitionEdit->insertPlainText("(<var>, [\"nodal\", \"zonal\", \"toggle\"])");
         doParens = false;
     }
-    else if(str == "value_for_material")
+    else if(func_name == "value_for_material")
     {
-        definitionEdit->insert("(<var>, <material-name-or-number>)");
+        definitionEdit->insertPlainText("(<var>, <material-name-or-number>)");
         doParens = false;
     }
-    else if (str == "enumerate")
+    else if (func_name == "enumerate")
     {
-        definitionEdit->insert("(<var>, [<val-if-0>, <val-if-1>, ...])");
+        definitionEdit->insertPlainText("(<var>, [<val-if-0>, <val-if-1>, ...])");
         doParens = false;
     }
-    else if (str == "cell_constant" || str == "point_constant")
+    else if (func_name == "cell_constant" || func_name == "point_constant")
     {
-        definitionEdit->insert("(<meshvar>, <constantvalue>)");
+        definitionEdit->insertPlainText("(<meshvar>, <constantvalue>)");
         doParens = false;
     }
 
     if (doParens)
     {
-        definitionEdit->insert("()");
-
-        int col,line;
-        definitionEdit->getCursorPosition(&line, &col);
-        col--;
-        if (col < 0)
-            col = 0;
-        definitionEdit->setCursorPosition(line, col);
+        definitionEdit->insertPlainText("()");
+        definitionEdit->moveCursor(QTextCursor::Left,QTextCursor::MoveAnchor);
     }
 
     definitionEdit->setFocus();
@@ -1275,6 +1323,9 @@ QvisExpressionsWindow::insertFunction(int id)
 //    Jeremy Meredith, Fri Sep  2 16:26:42 PDT 2005
 //    Made it be more aggressive about quoting.
 //
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
 // ****************************************************************************
 
 void
@@ -1289,7 +1340,7 @@ QvisExpressionsWindow::insertVariable(const QString &var)
 
     for (int i=0; i<var.length(); i++)
     {
-        char c = var[i];
+        char c = var[i].toAscii();
         if ((c < 'A' || c > 'Z') &&
             (c < 'a' || c > 'z') &&
             (c < '0' || c > '9') &&
@@ -1306,7 +1357,7 @@ QvisExpressionsWindow::insertVariable(const QString &var)
     else
         newVar = var;
 
-    definitionEdit->insert(newVar);
+    definitionEdit->insertPlainText(newVar);
     definitionEdit->setFocus();
 }
 

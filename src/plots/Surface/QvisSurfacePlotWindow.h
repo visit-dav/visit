@@ -127,28 +127,33 @@ private slots:
 private:
     int                     plotType;
     SurfaceAttributes      *surfaceAtts;
-    QLabel                 *lineStyleLabel;
-    QvisLineStyleWidget    *lineStyle;
-    QLabel                 *lineWidthLabel;
-    QvisLineWidthWidget    *lineWidth;
-    QCheckBox              *legendToggle;
-    QCheckBox              *lightingToggle;
-    QButtonGroup           *scalingButtons;
-    QCheckBox              *surfaceToggle;
-    QCheckBox              *wireframeToggle;
-    QGroupBox              *colorModeGroup;
+
+    // Surface controls
+    QGroupBox              *surfaceGroup;
     QButtonGroup           *colorModeButtons;
     QvisColorButton        *surfaceColor;
+    QvisColorTableButton   *colorTableButton;
+
+    // Wireframe controls
+    QGroupBox              *wireframeGroup;
+    QvisLineStyleWidget    *lineStyle;
+    QvisLineWidthWidget    *lineWidth;
     QvisColorButton        *wireframeColor;
-    QLabel                 *wireframeLabel;
+
+    // Scale controls
+    QButtonGroup           *scalingButtons;
+    QLabel                 *skewLabel;
+    QLineEdit              *skewLineEdit;
+
+    // Limits controls
     QComboBox              *limitsSelect;
     QCheckBox              *minToggle;
     QLineEdit              *minLineEdit;
     QCheckBox              *maxToggle;
     QLineEdit              *maxLineEdit;
-    QLabel                 *skewLabel;
-    QLineEdit              *skewLineEdit;
-    QvisColorTableButton   *colorTableButton;
+
+    QCheckBox              *legendToggle;
+    QCheckBox              *lightingToggle;
 };
 
 #endif

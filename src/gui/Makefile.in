@@ -395,9 +395,9 @@
 @VARIABLES@
 LIB=libgui
 
-LIBS=-lplugin $(QT_LIBS) $(QUI_LIBS) -L../lib -lviewerproxy -lviewerrpc \
-     -lmdserverproxy -lmdserverrpc -ldbatts -lproxybase \
-     -lmisc -lstate -lcomm -lavtexceptions -lutility -lexpr -lparser \
+LIBS=-lplugin $(QT_QUI_LIB) $(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_XML_LIB) $(QT_NETWORK_LIB) \
+     -L../lib -lviewerproxy -lviewerrpc -lmdserverproxy -lmdserverrpc -ldbatts \
+     -lproxybase -lmisc -lstate -lcomm -lavtexceptions -lutility -lexpr -lparser \
      -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@ @GUIFRAMEWORKS@
 
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@ @EXE_LDFLAGS@
@@ -410,8 +410,6 @@ CXXFLAGS=-I. @CXXFLAGS@ @QT_CXXFLAGS@ -I../include/visit
 
 # First, all of the header files that define Qt objects.
 HDRMOC = \
-    KFListView.h \
-    KFTimeSlider.h \
     QvisAbstractOpacityBar.h \
     QvisAnimationSlider.h \
     QvisAnimationWindow.h \
@@ -420,14 +418,11 @@ HDRMOC = \
     QvisAppearanceWindow.h \
     QvisApplication.h \
     QvisAxisAttributesWidget.h \
-    QvisCheckListManagerWidget.h \
     QvisColorButton.h \
     QvisColorGridWidget.h \
-    QvisColorManagerWidget.h \
     QvisColorSelectionWidget.h \
     QvisColorTableWindow.h \
     QvisCommandWindow.h \
-    QvisCompositeTransition.h \
     QvisDBOptionsDialog.h \
     QvisDatabaseCorrelationListWindow.h \
     QvisDatabaseCorrelationWindow.h \
@@ -435,6 +430,7 @@ HDRMOC = \
     QvisDelayedWindowObserver.h \
     QvisDelayedWindowSimpleObserver.h \
     QvisDialogLineEdit.h \
+    QvisDownloader.h \
     QvisMeshManagementWindow.h \
     QvisElementButton.h \
     QvisElementSelectionWidget.h \
@@ -444,10 +440,9 @@ HDRMOC = \
     QvisFileInformationWindow.h \
     QvisFilePanel.h \
     QvisFileSelectionWindow.h \
-    QvisFileOpenDialog.h \
     QvisFileOpenWindow.h \
+    QvisFileWindowBase.h \
     QvisFontAttributesWidget.h \
-    QvisFtp.h \
     QvisGaussianOpacityBar.h \
     QvisGlobalLineoutWindow.h \
     QvisGridWidget.h \
@@ -457,11 +452,8 @@ HDRMOC = \
     QvisImageAnnotationInterface.h \
     QvisInteractorWindow.h \
     QvisInterpreter.h \
-    QvisKeyframeWindow.h \
-    QvisLegendAttributesInterface.h \
     QvisLightingWidget.h \
     QvisLightingWindow.h \
-    QvisLine2DInterface.h \
     QvisLineStyleWidget.h \
     QvisLineWidthWidget.h \
     QvisMacroWindow.h \
@@ -470,55 +462,67 @@ HDRMOC = \
     QvisMessageWindow.h \
     QvisMovieProgressDialog.h \
     QvisNotepadArea.h \
-    QvisOpacitySlider.h \
     QvisOperatorWindow.h \
+    QvisOpacitySlider.h \
     QvisOutputWindow.h \
     QvisPeriodicTableWidget.h \
     QvisPickWindow.h \
     QvisPlotListBox.h \
+    QvisPointControl.h \
     QvisPlotManagerWidget.h \
     QvisPluginWindow.h \
-    QvisPointControl.h \
     QvisPostableWindow.h \
     QvisPostableWindowObserver.h \
     QvisPostableWindowSimpleObserver.h \
-    QvisPredefinedViewports.h \
     QvisPreferencesWindow.h \
     QvisQueryOverTimeWindow.h \
     QvisQueryWindow.h \
     QvisRecentPathRemovalWindow.h \
     QvisRenderingWindow.h \
-    QvisSaveMovieWizard.h \
     QvisSaveWindow.h \
     QvisScreenPositionEdit.h \
     QvisScreenPositioner.h \
     QvisScribbleOpacityBar.h \
-    QvisSequenceButton.h \
-    QvisSequenceTransition.h \
-    QvisSequenceView.h \
     QvisSessionFileDatabaseLoader.h \
     QvisSessionSourceChanger.h \
     QvisSessionSourceChangerDialog.h \
-    QvisSILSetSelector.h \
-    QvisSimulationWindow.h \
     QvisSpectrumBar.h \
-    QvisStripChart.h \
-    QvisStripChartTabWidget.h \
-    QvisStripChartMgr.h \
-    QvisSubsetListView.h \
-    QvisSubsetWindow.h \
-    QvisText2DInterface.h \
-    QvisText3DInterface.h \
-    QvisTimeSliderInterface.h \
     QvisTurnDownButton.h \
     QvisVCRControl.h \
     QvisViewWindow.h \
-    QvisViewportWidget.h \
-    QvisVisItUpdate.h \
     QvisWindowBase.h \
     QvisWizard.h \
+    SplashScreen.h \
+    QvisSimulationWindow.h \
+    QvisStripChartMgr.h \
+    QvisStripChart.h \
+    QvisStripChartTabWidget.h \
     SimCommandSlots.h \
-    SplashScreen.h
+    QvisSimulationMessageWindow.h \
+    QvisSimulationCommandWindow.h \
+    QvisFileOpenDialog.h \
+    QvisColorManagerWidget.h \
+    QvisColorSwatchListWidget.h \
+    QvisSILSetSelector.h\
+    QvisSubsetWindow.h \
+    QvisSubsetPanelWidget.h \
+    QvisTimeSliderInterface.h \
+    QvisLegendAttributesInterface.h \
+    QvisLine2DInterface.h \
+    QvisText3DInterface.h \
+    QvisText2DInterface.h \
+    QvisVisItUpdate.h \
+    QvisSequenceButton.h \
+    QvisCompositeTransition.h \
+    QvisSequenceTransition.h \
+    QvisPredefinedViewports.h \
+    QvisSaveMovieWizard.h \
+    QvisSequenceView.h \
+    QvisSequenceMappingModel.h \
+    QvisKeyframeWindow.h \
+    QvisKeyframeWidget.h \
+    QvisKeyframePlotRangeWidget.h \
+    QvisViewportWidget.h 
 
 # Then, all of the rest of the header files
 HDR = ${HDRMOC} \
@@ -526,16 +530,15 @@ HDR = ${HDRMOC} \
     FileServerList.h \
     GUIBase.h \
     KFBase.h \
-    KFListViewItem.h \
     NameSimplifier.h \
-    mini3D.h \
     QualifiedFilename.h \
-    QvisListViewFileItem.h \
     QvisAnnotationObjectInterfaceFactory.h \
+    QvisFilePanelItem.h \
     QvisPlotListBoxItem.h \
-    QvisSubsetListViewItem.h \
+    QvisSubsetPanleItem.h \
+    SimWidgetNames.h \
     StatusSubject.h\
-    SimWidgetNames.h 
+    mini3D.h
 
 # All of the sources that are not Qt objects.
 SRC = \
@@ -544,8 +547,8 @@ SRC = \
     ColorTableObserver.C \
     FileServerList.C \
     GUIBase.C \
-    KFBase.C \
-    KFListViewItem.C \
+    KeyframeData.C \
+    KeyframeDataModel.C \
     MovieSequence.C \
     MovieSequenceCompositeTransition.C \
     MovieSequenceCurrentPlots.C \
@@ -556,18 +559,17 @@ SRC = \
     MovieTemplateConfig.C \
     MovieUtility.C \
     NameSimplifier.C \
-    mini3D.C \
     QualifiedFilename.C \
-    QFileSelectionListBoxItem.C \
-    QVirtualFileListBoxItem.C \
-    QvisListViewFileItem.C \
+    QvisAnnotationObjectInterfaceFactory.C \
+    QvisFilePanelItem.C \
+    QvisKeyframeDelegate.C \
+    QvisKeyframeDrawer.C \
     QvisPlotListBoxItem.C \
     QvisRotationTransition.C \
-    QvisSubsetListViewItem.C \
-    QvisAnnotationObjectInterfaceFactory.C \
-    QvisHelpListViewItem.C \
-    QvisWidgetFactory.C \
-    WidgetDataNode.C
+    QvisSubsetPanelItem.C \
+    QvisUiLoader.C \
+    WidgetDataNode.C \
+    mini3D.C 
 
 # Where main() is.
 MAINSRC = main.C
@@ -593,13 +595,13 @@ clean:
 ## Other targets...
 ##
 $(tmpbin)/gui: $(LIBDEP) $(MAINOBJ) $(LIBSHARED)
-	$(CXX) -o $@ $(MAINOBJ) $(LDFLAGS) $(LIBS) -lgui
+	$(CXX) -o $@ $(MAINOBJ) $(LDFLAGS) -lgui $(LIBS)
 
 purify: $(LIBDEP) $(MAINOBJ) $(LIBSHARED)
-	purify $(CXX) -o $(tmpbin)/gui $(MAINOBJ) $(LDFLAGS) $(LIBS) -lgui
+	purify $(CXX) -o $(tmpbin)/gui $(MAINOBJ) $(LDFLAGS) -lgui $(LIBS)
 
 quantify: $(LIBDEP) $(MAINOBJ) $(LIBSHARED)
-	quantify $(CXX) -o $(tmpbin)/gui $(MAINOBJ) $(LDFLAGS) $(LIBS) -lgui
+	quantify $(CXX) -o $(tmpbin)/gui $(MAINOBJ) $(LDFLAGS) -lgui $(LIBS)
 
 install_bin: $(tmpbin)/gui
 	$(INSTALL) $(tmpbin)/gui $(bindir)

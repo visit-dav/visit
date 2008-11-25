@@ -87,7 +87,7 @@ credits.html:
 	gunzip < glew-1.3.4-src.tgz | tar xvf - > /dev/null
 	cp glew/doc/credits.html .
 	cd ../../include/ && \
-	ln -s ../third_party_builtin/glew/glew/include glew
+	rm glew; ln -s ../third_party_builtin/glew/glew/include glew
 
 glew/src/glew.c: credits.html
 

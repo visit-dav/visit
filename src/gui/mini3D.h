@@ -39,7 +39,7 @@
 #ifndef _MINI3D_H_
 #define _MINI3D_H_
 #include <gui_exports.h>
-#include <qcolor.h>
+#include <QColor>
 
 class QPainter;
 

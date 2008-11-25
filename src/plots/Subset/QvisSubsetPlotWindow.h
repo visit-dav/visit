@@ -45,9 +45,9 @@ class QButtonGroup;
 class QCheckBox;
 class QGroupBox;
 class QLabel;
-class QListBox;
 class QSlider;
 class QvisColorButton;
+class QvisColorSwatchListWidget;
 class QvisColorTableButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
@@ -67,26 +67,8 @@ class QvisPointControl;
 // Creation:   October 16, 2001 
 //
 // Modifications:
-//   Brad Whitlock, Wed Jan 30 11:04:17 PDT 2002
-//   Rewrote the way multiple colors are assigned.
-//
-//   Jeremy Meredith, Tue Mar 12 17:15:49 PST 2002
-//   Added a toggle for wireframe mode.
-//
-//   Jeremy Meredith, Thu Mar 14 17:49:58 PST 2002
-//   Added a toggle for internal surfaces.
-//
-//   Brad Whitlock, Mon Nov 25 17:04:48 PST 2002
-//   I added a color table button.
-//
-//   Jeremy Meredith, Tue Dec 10 10:22:40 PST 2002
-//   Added smoothing level.
-//
-//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
-//   Added pointControl and its associated slots.  Also added GetCurrentValues. 
-//
-//   Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
-//   Added a new slot to handle a new signal from QvisPointControl.
+//   Brad Whitlock, Thu Jul 17 15:44:03 PDT 2008
+//   Adapted from Boundary plot window after that windows was ported to Qt 4.
 //
 // ****************************************************************************
 
@@ -94,10 +76,10 @@ class QvisSubsetPlotWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
 public:
-    QvisSubsetPlotWindow(const int type, SubsetAttributes *subsetAtts_,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
-                         QvisNotepadArea *notepad = 0);
+    QvisSubsetPlotWindow(const int type, SubsetAttributes *SubsetAtts_,
+                           const QString &caption = QString::null,
+                           const QString &shortName = QString::null,
+                           QvisNotepadArea *notepad = 0);
     virtual ~QvisSubsetPlotWindow();
     virtual void CreateWindowContents();
 public slots:
@@ -110,13 +92,13 @@ protected:
     void SetMultipleColorWidgets(int index);
     void UpdateMultipleArea();
     void UpdateItem(int i);
+    bool CompareItem(int i, const QString &name, const QColor &c) const;
     void GetCurrentValues(int which_widget);
 private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
     void legendToggled(bool val);
     void wireframeToggled(bool val);
-    void drawInternalToggled(bool val);
     void singleColorChanged(const QColor &color);
     void singleColorOpacityChanged(int opacity);
     void multipleColorChanged(const QColor &color);
@@ -133,9 +115,11 @@ private slots:
     void pointSizeVarToggled(bool on);
     void pointSizeVarChanged(const QString &);
 
+    void drawInternalToggled(bool);
 private:
     int                     plotType;
     SubsetAttributes       *subsetAtts;
+
     QLabel                 *lineStyleLabel;
     QvisLineStyleWidget    *lineStyle;
     QLabel                 *lineWidthLabel;
@@ -146,16 +130,15 @@ private:
     QvisColorButton        *singleColor;
     QvisOpacitySlider      *singleColorOpacity;
     QLabel                 *multipleColorLabel;
-    QListBox               *multipleColorList;
+    QvisColorSwatchListWidget *multipleColorList;
     QvisColorButton        *multipleColor;
     QvisOpacitySlider      *multipleColorOpacity;
     QvisColorTableButton   *colorTableButton;
     QvisOpacitySlider      *overallOpacity;
     QCheckBox              *wireframeCheckBox;
-    QCheckBox              *drawInternalCheckBox;
     QButtonGroup           *smoothingLevelButtons;
-
     QvisPointControl       *pointControl;
+    QCheckBox              *drawInternalCheckBox;
 };
 
 #endif

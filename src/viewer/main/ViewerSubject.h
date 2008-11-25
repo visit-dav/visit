@@ -46,7 +46,7 @@
 #define VIEWER_NUM_ENGINE_RESTARTS        2
 
 #include <viewer_exports.h>
-#include <qobject.h>
+#include <QObject>
 
 #include <ViewerBase.h>
 #include <ParentProcess.h>

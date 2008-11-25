@@ -39,11 +39,12 @@
 #ifndef QVIS_COLORTABLE_BUTTON_H
 #define QVIS_COLORTABLE_BUTTON_H
 #include <winutil_exports.h>
-#include <vector>
-#include <qpushbutton.h>
+#include <QPushButton>
 
 // Forward declarations.
-class QPopupMenu;
+class QAction;
+class QActionGroup;
+class QMenu;
 
 // ****************************************************************************
 // Class: QvisColorTableButton
@@ -64,6 +65,9 @@ class QPopupMenu;
 //   Brad Whitlock, Tue Feb 20 11:47:37 PDT 2007
 //   Changed API.
 //
+//   Brad Whitlock, Fri May  9 11:20:10 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class WINUTIL_API QvisColorTableButton : public QPushButton
@@ -72,7 +76,7 @@ class WINUTIL_API QvisColorTableButton : public QPushButton
 
     typedef std::vector<QvisColorTableButton *> ColorTableButtonVector;
 public:
-    QvisColorTableButton(QWidget *parent, const char *name = 0);
+    QvisColorTableButton(QWidget *parent);
     virtual ~QvisColorTableButton();
     virtual QSize sizeHint() const;
     virtual QSizePolicy sizePolicy () const;
@@ -89,7 +93,7 @@ signals:
     void selectedColorTable(bool useDefault, const QString &ctName);
 private slots:
     void popupPressed();
-    void colorTableSelected(int index);
+    void colorTableSelected(QAction *);
 private:
     static int  getColorTableIndex(const QString &ctName);
     static void regeneratePopupMenu();
@@ -97,7 +101,8 @@ private:
     QString                        colorTable;
 
     static int                     numInstances;
-    static QPopupMenu             *colorTablePopup;
+    static QMenu                  *colorTableMenu;
+    static QActionGroup           *colorTableMenuActionGroup;
     static bool                    popupHasEntries;
     static ColorTableButtonVector  buttons;
 

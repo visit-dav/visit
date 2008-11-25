@@ -45,6 +45,7 @@
 class CreateBondsAttributes;
 class QLabel;
 class QCheckBox;
+class QGroupBox;
 class QLineEdit;
 class QSpinBox;
 class QVBox;
@@ -56,10 +57,10 @@ class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisVariableButton;
 class QPushButton;
-class QListBox;
+class QListWidget;
 class QComboBox;
-class QListView;
-class QListViewItem;
+class QTreeWidget;
+class QTreeWidgetItem;
 class QvisElementButton;
 
 // ****************************************************************************
@@ -78,6 +79,9 @@ class QvisElementButton;
 //    Added support for wildcards for atomic numbers.  Necessitated
 //    adding an up/down button (since order is now significant).
 //   
+//    Cyrus Harrison, Wed Aug 20 08:27:03 PDT 2008
+//    Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisCreateBondsWindow : public QvisOperatorWindow
@@ -94,15 +98,14 @@ class QvisCreateBondsWindow : public QvisOperatorWindow
   protected:
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
-    int  GetItemIndex(QListViewItem*);
     int  GetListLength();
   private slots:
     void UpdateWindowSingleItem();
     void elementVariableChanged(const QString &varName);
-    void bondsListNew();
-    void bondsListDel();
-    void bondsListUp();
-    void bondsListDown();
+    void bondsTreeNew();
+    void bondsTreeDel();
+    void bondsTreeUp();
+    void bondsTreeDown();
     void minDistTextChanged(const QString&);
     void maxDistTextChanged(const QString&);
     void minDistReturnPressed();
@@ -111,25 +114,25 @@ class QvisCreateBondsWindow : public QvisOperatorWindow
     void firstElementChanged(int);
     void secondElementChanged(int);
   private:
-    QvisVariableButton *elementVariable;
-    QLabel *elementVariableLabel;
+    QvisVariableButton    *elementVariable;
+    QLabel                *elementVariableLabel;
 
-    QLineEdit *maxBonds;
-    QLabel    *maxBondsLabel;
+    QLineEdit             *maxBonds;
+    QLabel                *maxBondsLabel;
 
-    QPushButton     *newButton;
-    QPushButton     *delButton;
+    QPushButton           *newButton;
+    QPushButton           *delButton;
 
-    QPushButton     *upButton;
-    QPushButton     *downButton;
+    QPushButton           *upButton;
+    QPushButton           *downButton;
 
-    QListView       *bondsList;
+    QTreeWidget           *bondsTree;
     CreateBondsAttributes *atts;
 
-    QvisElementButton *firstElement;
-    QvisElementButton *secondElement;
-    QLineEdit         *minDist;
-    QLineEdit         *maxDist;
+    QvisElementButton     *firstElement;
+    QvisElementButton     *secondElement;
+    QLineEdit             *minDist;
+    QLineEdit             *maxDist;
 };
 
 

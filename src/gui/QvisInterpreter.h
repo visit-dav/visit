@@ -39,7 +39,7 @@
 #ifndef QVISINTERPRETER_H
 #define QVISINTERPRETER_H
 #include <gui_exports.h>
-#include <qobject.h>
+#include <QObject>
 #include <GUIBase.h>
 #include <deque>
 
@@ -58,13 +58,16 @@
 //   Brad Whitlock, Mon Apr 7 11:41:21 PDT 2008
 //   Made Initialize be public.
 //
+//   Brad Whitlock, Fri May 30 15:41:19 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 class GUI_API QvisInterpreter : public QObject, public GUIBase
 {
     Q_OBJECT
 public:
-    QvisInterpreter(QObject *parent = 0, const char *name = 0);
+    QvisInterpreter(QObject *parent = 0);
     virtual ~QvisInterpreter();
     bool Initialize();
 signals:

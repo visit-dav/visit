@@ -45,22 +45,11 @@
 #include <snprintf.h>
 #include <ViewerSubject.h>
 
-#if QT_VERSION < 300
-// If we're using less than Qt 3.0, include the style headers.
-#include <qmotifstyle.h>
-#include <qcdestyle.h>
-#include <qwindowsstyle.h>
-#include <qplatinumstyle.h>
-#if QT_VERSION >= 230
-#include <qsgistyle.h>
-#endif
-#endif
-
-#include <qfile.h>
-#include <qlocale.h>
-#include <qtimer.h>
-#include <qtranslator.h>
-#include <qwidgetlist.h>
+#include <QDesktopWidget>
+#include <QFile>
+#include <QLocale>
+#include <QTimer>
+#include <QTranslator>
 
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
@@ -147,8 +136,8 @@
 #include <PlotPluginManager.h>
 #include <OperatorPluginManager.h>
 
-#include <qapplication.h>
-#include <qsocketnotifier.h>
+#include <QApplication>
+#include <QSocketNotifier>
 #include <QvisColorTableButton.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -230,12 +219,15 @@ using std::string;
 //    Brad Whitlock, Thu Apr 10 09:49:27 PDT 2008
 //    Added applicationLocale.
 //
+//    Brad Whitlock, Fri May  9 14:39:09 PDT 2008
+//    Qt 4.
+//
 //    Brad Whitlock, Thu Aug 14 09:57:59 PDT 2008
 //    Removed mainApp, Added call to CreateState.
 //
 // ****************************************************************************
 
-ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"), 
+ViewerSubject::ViewerSubject() : ViewerBase(0), 
     interpretCommands(), xfer(), clients(),
     borders(), shift(), preshift(), geometry(),
     engineParallelArguments(), unknownArguments(), clientArguments(),
@@ -477,11 +469,11 @@ ViewerSubject::Initialize()
     if(applicationLocale == "default")
         applicationLocale = QLocale::system().name();
     QString transFile(QString("visit_") + applicationLocale);
-    debug1 << "Trying to load translator file: " << (transPath + transFile).ascii() << endl;
+    debug1 << "Trying to load translator file: " << (transPath + transFile).toStdString() << endl;
     if(translator->load(transFile, transPath))
     {
         qApp->installTranslator(translator);
-        debug1 << "Loaded translation " << (transPath + transFile).ascii() << endl;
+        debug1 << "Loaded translation " << (transPath + transFile).toStdString() << endl;
     }
     else
     {
@@ -693,6 +685,9 @@ ViewerSubject::ConnectXfer()
 //   try to use 127.0.0.1 whenever possible, this is the way to
 //   get the externally visible hostname.
 //
+//   Brad Whitlock, Fri May  9 14:51:37 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -707,7 +702,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
         {
             checkParent = new QSocketNotifier(
                 parent->GetWriteConnection()->GetDescriptor(),
-                QSocketNotifier::Read);
+                QSocketNotifier::Read, this);
             connect(checkParent, SIGNAL(activated(int)),
                     this, SLOT(ReadFromParentAndProcess(int)));
         }
@@ -767,7 +762,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
     // signal to all of the remote processes. This will keep their connections
     // alive.
     //
-    keepAliveTimer = new QTimer(this, "keepAliveTimer");
+    keepAliveTimer = new QTimer(this);
     connect(keepAliveTimer, SIGNAL(timeout()),
             this, SLOT(SendKeepAlives()));
     keepAliveTimer->start(5 * 60 * 1000);
@@ -1175,7 +1170,7 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
                this, SLOT(DisconnectClient(ViewerClientConnection *)));
 
     debug1 << "VisIt's viewer lost a connection to one of its clients ("
-           << client->name() << ")." << endl;
+           << client->Name().toStdString() << ")." << endl;
     client->deleteLater();
 
     // If we ever get down to no client connections, quit.
@@ -1752,6 +1747,9 @@ ViewerSubject::ProcessEventsCB(void *cbData)
 //   Brad Whitlock, Tue Sep 9 15:38:10 PST 2003
 //   I increased the amount of time that we can use to process events.
 //
+//   Brad Whitlock, Fri May  9 14:47:32 PDT 2008
+//   Qt 4.
+//
 //   Brad Whitlock, Thu Aug 14 09:56:41 PDT 2008
 //   Use qApp.
 //
@@ -1762,7 +1760,7 @@ ViewerSubject::ProcessEvents()
 {
     if (interruptionEnabled)
     {
-         qApp->processEvents(100);
+        qApp->processEvents(QEventLoop::AllEvents, 100);
     }
 }
 
@@ -1813,7 +1811,7 @@ ViewerSubject::InitializeWorkArea()
         }
         if (geometry.size() == 0)
         {
-            if (smallWindow)
+            if (!smallWindow)
                 geometry = "1024x1024";
             else
                 geometry = "512x512";
@@ -1953,6 +1951,9 @@ ViewerSubject::InitializeWorkArea()
 //   Brad Whitlock, Mon Mar 19 16:30:42 PST 2007
 //   Added font changing.
 //
+//   Brad Whitlock, Fri May  9 14:48:31 PDT 2008
+//   Qt 4.
+//
 //   Brad Whitlock, Thu Aug 14 09:56:54 PDT 2008
 //   Use qApp.
 //
@@ -1966,26 +1967,11 @@ ViewerSubject::CustomizeAppearance()
     //
     // Set the style and inform the widgets.
     //
-#if QT_VERSION < 300
-    if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "cde")
-        qApp->setStyle(new QCDEStyle);
-    else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "windows")
-        qApp->setStyle(new QWindowsStyle);
-    else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "platinum")
-        qApp->setStyle(new QPlatinumStyle);
-#if QT_VERSION >= 230
-    else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "sgi")
-        qApp->setStyle(new QSGIStyle);
-#endif
-    else
-        qApp->setStyle(new QMotifStyle);
-#else
     debug1 << mName << "Setting the application style to: "
            << GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str()
            << endl;
     // Set the style via the style name.
     qApp->setStyle(GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str());
-#endif
 
     QFont font;
     bool okay = true;
@@ -2002,29 +1988,23 @@ ViewerSubject::CustomizeAppearance()
         
     if(okay)
     {
-        debug1 << mName << "Font okay. name=" << font.toString().latin1() << endl;
-        qApp->setFont(font, true);
+        debug1 << mName << "Font okay. name=" << font.toString().toStdString() << endl;
+        qApp->setFont(font);
 
         // Force the font change on all top level widgets.
-        QWidgetList *list = QApplication::topLevelWidgets();
-        QWidgetListIt it(*list);
-        QWidget * w;
-        while ( (w=it.current()) != 0 )
-        {   // for each top level widget...
-            ++it;
-            w->setFont(font);
-        }
-        delete list;
+        QWidgetList list = QApplication::topLevelWidgets();
+        for(int i = 0; i < list.size(); ++i)
+             list.at(i)->setFont(font);
     }
     else
     {
-        debug1 << mName << "Font NOT okay. name=" << font.toString().latin1() << endl;
+        debug1 << mName << "Font NOT okay. name=" << font.toString().toStdString() << endl;
     }
 
     //
     // Set the colors and inform the widgets.
     //
-    if(GetViewerState()->GetAppearanceAttributes()->GetStyle() != "aqua" &&
+    if(GetViewerState()->GetAppearanceAttributes()->GetStyle() != "cleanlooks" &&
        GetViewerState()->GetAppearanceAttributes()->GetStyle() != "macintosh")
     {
         debug1 << mName << "Setting foreground and background color" << endl;
@@ -2040,7 +2020,7 @@ ViewerSubject::CustomizeAppearance()
         GetViewerState()->GetAppearanceAttributes()->SetForeground(tmp);
 
         int h,s,v;
-        fg.hsv(&h,&s,&v);
+        fg.getHsv(&h,&s,&v);
         QColor base = Qt::white;
         bool bright_mode = false;
         if (v >= 255 - 50)
@@ -2049,35 +2029,39 @@ ViewerSubject::CustomizeAppearance()
             bright_mode = TRUE;
         }
 
-        QColorGroup cg(fg, btn, btn.light(),
-                       btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
+        QPalette pal(fg, btn, btn.light(),
+                     btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
+        pal.setCurrentColorGroup(QPalette::Normal);
         if (bright_mode)
         {
-            cg.setColor(QColorGroup::HighlightedText, base );
-            cg.setColor(QColorGroup::Highlight, Qt::white );
+            pal.setColor(QPalette::HighlightedText, base );
+            pal.setColor(QPalette::Highlight, Qt::white );
         }
         else
         {
-            cg.setColor(QColorGroup::HighlightedText, Qt::white );
-            cg.setColor(QColorGroup::Highlight, Qt::darkBlue );
+            pal.setColor(QPalette::HighlightedText, Qt::white );
+            pal.setColor(QPalette::Highlight, Qt::darkBlue );
         }
         QColor disabled((fg.red()+btn.red())/2,
                         (fg.green()+btn.green())/2,
                         (fg.blue()+btn.blue())/2);
-        QColorGroup dcg(disabled, btn, btn.light( 125 ), btn.dark(), btn.dark(150),
-                        disabled, Qt::white, Qt::white, bg );
+        pal.setCurrentColorGroup(QPalette::Disabled);
+        pal.setColor(QPalette::WindowText, disabled);
+        pal.setColor(QPalette::Light, btn.light( 125 ));
+        pal.setColor(QPalette::Text, disabled);
+        pal.setColor(QPalette::Base, Qt::white);
         if (bright_mode)
         {
-            dcg.setColor(QColorGroup::HighlightedText, base);
-            dcg.setColor(QColorGroup::Highlight, Qt::white);
+            pal.setColor(QPalette::HighlightedText, base);
+            pal.setColor(QPalette::Highlight, Qt::white);
         }
         else
         {
-            dcg.setColor(QColorGroup::HighlightedText, Qt::white);
-            dcg.setColor(QColorGroup::Highlight, Qt::darkBlue);
+            pal.setColor(QPalette::HighlightedText, Qt::white);
+            pal.setColor(QPalette::Highlight, Qt::darkBlue);
         }
-        QPalette pal(cg, dcg, cg);
-        qApp->setPalette(pal, true);
+
+        qApp->setPalette(pal);
     }
 }
 
@@ -2528,20 +2512,20 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
                      << endl;
                 continue;
             }
-            if (strcmp(argv[i + 1], "motif") == 0 ||
-               strcmp(argv[i + 1], "cde") == 0 ||
-               strcmp(argv[i + 1], "windows") == 0 ||
-               strcmp(argv[i + 1], "platinum") == 0
-#if QT_VERSION >= 230
-               || strcmp(argv[i + 1], "sgi") == 0
-#endif
-#if QT_VERSION >= 300
+            if (
 #ifdef QT_WS_MACX
-               || strcmp(argv[i + 1], "aqua") == 0
-               || strcmp(argv[i + 1], "macintosh") == 0
+                strcmp(argv[i + 1], "macintosh") == 0 ||
 #endif
+#ifdef QT_WS_WIN
+                strcmp(argv[i + 1], "windowsxp") == 0 ||
+                strcmp(argv[i + 1], "windowsvista") == 0 ||
 #endif
-                     )
+                strcmp(argv[i + 1], "windows") == 0 ||
+                strcmp(argv[i + 1], "motif") == 0 ||
+                strcmp(argv[i + 1], "cde") == 0 ||
+                strcmp(argv[i + 1], "plastique") == 0 ||
+                strcmp(argv[i + 1], "cleanlooks") == 0
+               )
             {
                 clientArguments.push_back(argv[i]);
                 clientArguments.push_back(argv[i+1]);
@@ -3809,6 +3793,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Hank Childs, Tue Feb 19 10:28:15 PST 2008
 //    Fix bug introduced by Klocwork fix.
 //
+//    Brad Whitlock, Fri May  9 14:52:00 PDT 2008
+//    Qt 4.
+//
 //    Cyrus Harrison,  Mon Aug  4 16:21:04 PDT 2008
 //    Moved set of active host database until after we have obtained valid
 //    meta data. 
@@ -3975,7 +3962,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             {
                 int sock = vem->GetWriteSocket(ek);
                 QSocketNotifier *sn = new QSocketNotifier(sock,
-                    QSocketNotifier::Read, this, "originalNotifier");
+                    QSocketNotifier::Read, this);
 
                 simulationSocketToKey[sock] = ek;
 
@@ -5769,7 +5756,9 @@ ViewerSubject::ImportEntireStateWithDifferentSources()
 // Creation:   Thu Jan 31 12:06:32 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri May  9 14:54:53 PDT 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
@@ -5787,7 +5776,7 @@ ViewerSubject::RemoveCrashRecoveryFile() const
     if(cr.exists())
     {
         debug1 << "Removing crash recovery file: "
-               << cr.name().latin1() << endl;
+               << filename.toStdString() << endl;
         cr.remove();
     }
 }
@@ -7279,6 +7268,9 @@ ViewerSubject::EndLaunchProgress()
 //   It should be safe to do this because the dialog's timer is constantly
 //   generating new events to process.
 //
+//   Brad Whitlock, Fri May  9 14:50:23 PDT 2008
+//   Qt 4.
+//
 //   Brad Whitlock, Thu Oct  9 13:23:27 PDT 2008
 //   Don't perform dialog operations if the dialog does not exist.
 //
@@ -7309,7 +7301,7 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
     {
         if (windowsShowing)
         {
-            qApp->processOneEvent();
+            qApp->processEvents(QEventLoop::AllEvents, 50);
             retval = !dialog->getCancelled();
         }
     }
@@ -7966,7 +7958,8 @@ ViewerSubject::PostponeAction(ViewerActionBase *action)
     // Add the postponed input to the xfer object so it can be executed later.
     AddInputToXfer(0, GetViewerState()->GetPostponedAction());
 
-    debug4 << "Postponing execution of  " << action->GetName()
+    debug4 << "Postponing execution of  "
+           << action->GetName().c_str()
            << " action." << endl;
 }
 
