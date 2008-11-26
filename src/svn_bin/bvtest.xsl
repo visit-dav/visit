@@ -9,7 +9,7 @@
         <table class="wikitable">
         <tr>
             <td colspan="6">
-            <b>bvtest results:</b>
+            <b>bvtest results</b>
             </td>
         </tr>
         
