@@ -102,7 +102,7 @@ protected:
     void UpdateWindowSensitivity();
 
 private slots:
-    void useSysDefaultChanged(int state);
+    void useSysDefaultChanged(bool val);
     void backgroundChanged(const QColor &bg);
     void foregroundChanged(const QColor &fg);
     void styleChanged(int index);
