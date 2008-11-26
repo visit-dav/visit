@@ -7574,7 +7574,8 @@ for arg in "${arguments[@]}" ; do
         -y|-Y) deprecated="${deprecated} --java";;
         -z|-Z) deprecated="${deprecated} --console";;
         *)
-            echo "Unrecognized option '${arg}'.";;
+            echo "Unrecognized option '${arg}'."
+            ANY_ERRORS="yes";;
     esac
 done
 if test -n "${deprecated}" ; then
