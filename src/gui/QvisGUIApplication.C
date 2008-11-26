@@ -152,6 +152,7 @@
 #include <SplashScreen.h>
 #include <WindowMetrics.h>
 
+#include <Appearance.h>
 #include <BadHostException.h>
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
@@ -2206,6 +2207,28 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 }
 
 // ****************************************************************************
+// Method: QvisGUIApplication::ExtractSystemDefaultAppearance
+//
+// Purpose: 
+//   Gets Qt's default appearance settings and puts the values into the default 
+//   section of the appearance attributes.
+//
+// Programmer: Cyrus Harrison
+// Creation:   
+//
+// Modifications:
+//   Brad Whitlock, Wed Nov 26 11:16:47 PDT 2008
+//   I moved the implementation into the GetAppearance function from winutil.
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::ExtractSystemDefaultAppearance()
+{
+   GetAppearance(qApp, GetViewerState()->GetAppearanceAttributes());
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::CustomizeAppearance
 //
 // Purpose: 
@@ -2244,178 +2267,16 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 //    Cyrus Harrison, Mon Nov 24 11:57:42 PST 2008
 //    Support for default system appearance.
 //
+//    Brad Whitlock, Wed Nov 26 11:17:56 PDT 2008
+//    I moved the bulk of the code into winutil's SetAppearance function.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::CustomizeAppearance(bool notify)
 {
-    const char *mName = "QvisGUIApplication::CustomizeAppearance: ";
     AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
-    bool backgroundSelected = aa->IsSelected(AppearanceAttributes::ID_background);
-    bool foregroundSelected = aa->IsSelected(AppearanceAttributes::ID_foreground);
-    bool fontSelected = aa->IsSelected(AppearanceAttributes::ID_fontName);
-    bool styleSelected = aa->IsSelected(AppearanceAttributes::ID_style);
-    bool orientationSelected = aa->IsSelected(AppearanceAttributes::ID_orientation);
-
-    debug1 << mName << "Called with notify=" << (notify?"true":"false") << endl;
-
-    bool use_sys_def = aa->GetUseSystemDefault();
-    //
-    // Set the style
-    //
-    if(styleSelected)
-    {
-        string style = aa->GetStyle();
-        if(use_sys_def)
-        {
-            style = aa->GetDefaultStyle();
-            aa->SetStyle(style);
-        }
-        debug1 << mName << "Setting style to: " << style << endl;
-        // Set the style via the style name.
-        mainApp->setStyle(style.c_str());
-        
-    }
-     
-    //
-    // Set the font.
-    //
-    if(fontSelected || styleSelected)
-    {
-        QFont font;
-        bool okay = true;
-        string font_name = aa->GetFontName();
-        if(use_sys_def)
-        {
-            font_name = aa->GetDefaultFontName();
-            aa->SetFontName(font_name);
-        }
-
-        if(font_name.size() > 0 &&
-            font_name[0] == '-')
-        {
-            // It's probably an XLFD
-            font = QFont(font_name.c_str());
-            debug1 << mName << "The font looks like XLFD: "
-                   << font_name << endl;
-        }
-        else
-            okay = font.fromString(font_name.c_str());
-        
-        if(okay)
-        {
-            
-            debug1 << mName << "Font okay. name=" << font.toString().toStdString() << endl;
-            mainApp->setFont(font);
-
-            //Force the font change on all top level widgets.
-            // for each top level widget...
-            foreach(QWidget *w,QApplication::topLevelWidgets())
-            w->setFont(font);
-        }
-        else
-            debug1 << mName << "Font NOT okay. name=" << font.toString().toStdString() << endl;
-        
-    }
-    //
-    // Set the application colors
-    //
-    bool needToSetColors = backgroundSelected || foregroundSelected || styleSelected;
-    bool colorStyle = aa->GetStyle() != "macintosh";
-    if(needToSetColors && colorStyle)
-    {
-        string bg_str = aa->GetBackground();
-        string fg_str = aa->GetForeground();
-        
-        if(use_sys_def)
-        {
-            bg_str  = aa->GetDefaultBackground();
-            fg_str  = aa->GetDefaultForeground();
-        }
-        
-        QColor bg(bg_str.c_str());
-        QColor fg(fg_str.c_str());
-        
-        QColor btn(bg);
-
-        // Put the converted RGB format color into the appearance attributes.
-        char tmp[20];
-        sprintf(tmp, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
-        aa->SetBackground(tmp);
-        sprintf(tmp, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
-        aa->SetForeground(tmp);
-
-        
-        int h,s,v;
-        fg.getHsv(&h,&s,&v);
-        QColor base = Qt::white;
-        bool bright_mode = false;
-        if(v >= 255 - 50)
-        {
-            base = btn.dark(150);
-            bright_mode = TRUE;
-        }
-
-        QPalette pal(fg, btn, btn.light(),
-                     btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
-        pal.setCurrentColorGroup(QPalette::Normal);
-        
-        if (bright_mode)
-        {
-            pal.setColor(QPalette::Text, fg);
-            pal.setColor(QPalette::WindowText, fg);
-            pal.setColor(QPalette::HighlightedText, base );
-            pal.setColor(QPalette::Highlight, Qt::white );
-        }
-        else
-        {
-            pal.setColor(QPalette::Text, fg);
-            pal.setColor(QPalette::WindowText, fg);
-            pal.setColor(QPalette::HighlightedText, Qt::white );
-            pal.setColor(QPalette::Highlight, Qt::darkBlue );
-        }
-        
-        pal.setCurrentColorGroup(QPalette::Inactive);
-        if (bright_mode)
-        {
-            pal.setColor(QPalette::Text, fg);
-            pal.setColor(QPalette::WindowText, fg);
-            pal.setColor(QPalette::HighlightedText, base );
-            pal.setColor(QPalette::Highlight, Qt::white );
-        }
-        else
-        {
-            pal.setColor(QPalette::Text, fg);
-            pal.setColor(QPalette::WindowText, fg);
-            pal.setColor(QPalette::HighlightedText, Qt::white );
-            pal.setColor(QPalette::Highlight, Qt::darkBlue );
-        }
-
-                
-        QColor disabled((fg.red()+btn.red())/2,
-                        (fg.green()+btn.green())/2,
-                        (fg.blue()+btn.blue())/2);
-        
-        pal.setCurrentColorGroup(QPalette::Disabled);
-        pal.setColor(QPalette::WindowText, disabled);
-        pal.setColor(QPalette::Light, btn.light( 125 ));
-        pal.setColor(QPalette::Text, disabled);
-        pal.setColor(QPalette::Base, Qt::white);
-        if (bright_mode)
-        {
-            pal.setColor(QPalette::HighlightedText, base);
-            pal.setColor(QPalette::Highlight, Qt::white);
-        }
-        else
-        {
-            pal.setColor(QPalette::HighlightedText, Qt::white);
-            pal.setColor(QPalette::Highlight, Qt::darkBlue);
-        }
-
-        
-        
-        mainApp->setPalette(pal);
-    }
+    SetAppearance(qApp, aa);
 
     //
     // If the notify flag is set then tell the viewer and the splashscreen
@@ -2427,11 +2288,9 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
         // Set the window orientation if is was selected and the main window
         // has been created.
         //
+        bool orientationSelected = aa->IsSelected(AppearanceAttributes::ID_orientation);
         if(orientationSelected)
-        {
-
             SetOrientation(aa->GetOrientation());
-        }
 
         // Tell the viewer about the new appearance.
         aa->Notify();
@@ -8053,72 +7912,6 @@ void
 QvisGUIApplication::InterpreterSync()
 {
     Synchronize(INTERPRETER_SYNC_TAG);
-}
-
-// ****************************************************************************
-// Method: QvisGUIApplication::ExtractSystemDefaultAppearance
-//
-// Purpose: 
-//   Called when the GUI is created to obtain the Qt's default appearance 
-//   values.
-//
-// Programmer: Cyrus Harrison
-// Creation:   Mon Nov 24 13:49:38 PST 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisGUIApplication::ExtractSystemDefaultAppearance()
-{
-    const char *mName = "QvisGUIApplication::ExtractSystemDefaultAppearance ";
-    AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
-    
-    // get system default style
-    QStyle *style = mainApp->style();
-    QString style_class(style->metaObject()->className());
-    string style_name = "windows";
-    if(style_class == "QWindowsStyle")
-        style_name = "windows";
-    else if(style_class == "QWindowsVistaStyle")
-        style_name = "windowsvista";
-    else if(style_class == "QWindowsXPStyle")
-        style_name = "windowsxp";
-    else if(style_class == "QMotifStyle")
-        style_name = "motif";
-    else if(style_class == "QCleanlooksStyle")
-        style_name = "cleanlooks";
-    else if(style_class == "QPlastiqueStyle")
-        style_name = "plastique";
-    else if(style_class == "QCDEStyle")
-        style_name = "cde";
-    else if(style_class == "QMacStyle")
-        style_name = "macintosh";
-    
-    debug1 << mName << "Default System Style is: " << style_name << endl;
-    aa->SetDefaultStyle(style_name);
-    
-    // get system default font
-    QFont font = mainApp->font();
-    string font_name = font.key().toStdString();
-    debug1 << mName << "Default system font is:" << font_name << endl;
-    aa->SetDefaultFontName(font_name);
-        
-    //set aa colors from defaults
-    QColor bg = mainApp->palette().window().color();
-    QColor fg = mainApp->palette().windowText().color();
-        
-    char tmp[20];
-    sprintf(tmp, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
-    debug1 << mName << "Default background color is:" << tmp << endl;
-    aa->SetDefaultBackground(tmp);
-    sprintf(tmp, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
-    debug1 << mName << "Default foreground color is:" << tmp << endl;
-    aa->SetDefaultForeground(tmp);
-    
-    debug1 << mName << "Default orientation:" << 0 << endl;
-    aa->SetDefaultOrientation(0);
 }
 
 // ****************************************************************************

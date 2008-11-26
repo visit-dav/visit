@@ -62,7 +62,10 @@
 #
 #    Brad Whitlock, Fri May  9 13:32:54 PDT 2008
 #    Qt 4.
-# 
+#
+#    Brad Whitlock, Wed Nov 26 11:19:34 PDT 2008
+#    I added Appearance.C
+#
 ##############################################################################
 
 ##
@@ -82,7 +85,7 @@ HDRMOC = QvisColorTableButton.h \
          QvisVariableButton.h \
          QvisVariableButtonHelper.h \
          QvisVariablePopupMenu.h
-HDR=VariableMenuPopulator.h WindowMetrics.h UnicodeHelper.h ${HDRMOC}
+HDR=Appearance.h VariableMenuPopulator.h WindowMetrics.h UnicodeHelper.h ${HDRMOC}
 SRC=${HDR:.h=.C}
 SRCMOC=${HDRMOC:.h=_moc.C}
 OBJMOC=${SRCMOC:.C=.o}

@@ -157,10 +157,10 @@ QvisAppearanceWindow::CreateWindowContents()
     int row = 0;
     
     useSysDefaultCheckBox = new QCheckBox(central);
-    connect(useSysDefaultCheckBox , SIGNAL(stateChanged(int)),
-            this, SLOT(useSysDefaultChanged(int)));
+    connect(useSysDefaultCheckBox , SIGNAL(toggled(bool)),
+            this, SLOT(useSysDefaultChanged(bool)));
     useSysDefaultCheckBox->setText(
-      tr("Use Default System Appearance (Applied at VisIt startup)"));
+      tr("Use default system appearance"));
     mainLayout->addWidget(useSysDefaultCheckBox,row,0,1,3);
     row++;
     
@@ -254,6 +254,10 @@ QvisAppearanceWindow::CreateWindowContents()
 //   Cyrus Harrison, Mon Nov 24 11:57:42 PST 2008
 //   Support for default system appearance.
 //
+//   Brad Whitlock, Tue Nov 25 15:52:04 PST 2008
+//   Make the window reflect the state object when we're using the
+//   system defaults.
+//
 // ****************************************************************************
 
 void
@@ -285,7 +289,11 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
             break;
         case AppearanceAttributes::ID_background:
             { // new scope
-            QColor bg(atts->GetBackground().c_str());
+            QColor bg;
+            if(atts->GetUseSystemDefault())
+                bg = QColor(atts->GetDefaultBackground().c_str());
+            else
+                bg = QColor(atts->GetBackground().c_str());
             backgroundColorButton->blockSignals(true);
             backgroundColorButton->setButtonColor(bg);
             backgroundColorButton->blockSignals(false);
@@ -293,7 +301,11 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
             break;
         case AppearanceAttributes::ID_foreground:
             { // new scope
-            QColor fg(atts->GetForeground().c_str());
+            QColor fg;
+            if(atts->GetUseSystemDefault())
+                fg = QColor(atts->GetDefaultForeground().c_str());
+            else
+                fg = QColor(atts->GetForeground().c_str());
             foregroundColorButton->blockSignals(true);
             foregroundColorButton->setButtonColor(fg);
             foregroundColorButton->blockSignals(false);
@@ -301,19 +313,29 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
             break;
         case AppearanceAttributes::ID_fontName:
             fontName->blockSignals(true);
-            fontName->setText(atts->GetFontName().c_str());
+            if(atts->GetUseSystemDefault())
+                fontName->setText(atts->GetDefaultFontName().c_str());
+            else
+                fontName->setText(atts->GetFontName().c_str());
             fontName->blockSignals(false);
             break;
         case AppearanceAttributes::ID_style:
+            { // new scope
+            std::string styleName;
+            if(atts->GetUseSystemDefault())
+                styleName = atts->GetDefaultStyle();
+            else
+                styleName = atts->GetStyle();
             for(j = 0; j < numStyleNames; ++j)
             {
-                if(atts->GetStyle() == styleNames[j])
+                if(styleName == styleNames[j])
                 {
                     styleComboBox->blockSignals(true);
                     styleComboBox->setCurrentIndex(j);
                     styleComboBox->blockSignals(false);
                     break;
                 }
+            }
             }
             break;
         case AppearanceAttributes::ID_orientation:
@@ -358,8 +380,7 @@ QvisAppearanceWindow::UpdateWindowSensitivity()
     styleComboBox->setEnabled(val);
     styleLabel->setEnabled(val);
     orientationComboBox->setEnabled(val);
-    orientationLabel->setEnabled(val);
-    
+    orientationLabel->setEnabled(val);   
 }
 
 // ****************************************************************************
@@ -375,20 +396,14 @@ QvisAppearanceWindow::UpdateWindowSensitivity()
 // Creation:   Thu Mar 15 15:45:17 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 26 11:29:38 PDT 2008
+//   I removed code that no longer seemed needed.
+//
 // ****************************************************************************
 
 void
 QvisAppearanceWindow::GetCurrentValues(int which)
 {
-    AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-
-    if(which == 0 || which == -1)
-    {
-        std::string newFontName(fontName->text().toStdString());
-        if(QFont().fromString(newFontName.c_str()))
-            atts->SetFontName(newFontName);
-    }
 }
 
 // ****************************************************************************
@@ -508,13 +523,12 @@ QvisAppearanceWindow::ColorsNotTooClose(const QColor &c0, const char *c1str)
 // ****************************************************************************
 
 void
-QvisAppearanceWindow::useSysDefaultChanged(int state)
+QvisAppearanceWindow::useSysDefaultChanged(bool val)
 {
     AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-    atts->SetUseSystemDefault(state == Qt::Checked);
-    SetUpdate(false);
-    Apply();
-    UpdateWindowSensitivity();
+    atts->SetUseSystemDefault(val);
+    atts->SelectAll();
+    atts->Notify();
 }
 
 // ****************************************************************************

@@ -54,6 +54,7 @@
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
+#include <Appearance.h>
 #include <AppearanceAttributes.h>
 #include <ClientMethod.h>
 #include <ClientInformation.h>
@@ -449,7 +450,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
 // Creation:   Thu Aug 14 10:04:24 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 26 11:39:27 PDT 2008
+//   Get the current appearance attributes
+//
 // ****************************************************************************
 
 void
@@ -482,7 +485,11 @@ ViewerSubject::Initialize()
     }
 
     // Customize the colors and fonts.
-    CustomizeAppearance();
+    if (!ViewerWindow::GetNoWinMode())
+    {
+        GetAppearance(qApp, GetViewerState()->GetAppearanceAttributes());
+        CustomizeAppearance();
+    }
 
     //
     // Set up the Xfer object.
@@ -1957,111 +1964,17 @@ ViewerSubject::InitializeWorkArea()
 //   Brad Whitlock, Thu Aug 14 09:56:54 PDT 2008
 //   Use qApp.
 //
+//   Brad Whitlock, Wed Nov 26 11:35:10 PDT 2008
+//   Use a new function from winutil since it does a better job.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::CustomizeAppearance()
 {
-    const char *mName = "ViewerSubject::CustomizeAppearance: ";
-
-    //
-    // Set the style and inform the widgets.
-    //
-    debug1 << mName << "Setting the application style to: "
-           << GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str()
-           << endl;
-    // Set the style via the style name.
-    qApp->setStyle(GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str());
-
-    QFont font;
-    bool okay = true;
-    if(GetViewerState()->GetAppearanceAttributes()->GetFontName().size() > 0 &&
-       GetViewerState()->GetAppearanceAttributes()->GetFontName()[0] == '-')
+    if (!ViewerWindow::GetNoWinMode())
     {
-        // It's probably an XLFD
-        font = QFont(GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str());
-        debug1 << mName << "The font looks like XLFD: "
-               << GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str() << endl;
-    }
-    else
-        okay = font.fromString(GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str());
-        
-    if(okay)
-    {
-        debug1 << mName << "Font okay. name=" << font.toString().toStdString() << endl;
-        qApp->setFont(font);
-
-        // Force the font change on all top level widgets.
-        QWidgetList list = QApplication::topLevelWidgets();
-        for(int i = 0; i < list.size(); ++i)
-             list.at(i)->setFont(font);
-    }
-    else
-    {
-        debug1 << mName << "Font NOT okay. name=" << font.toString().toStdString() << endl;
-    }
-
-    //
-    // Set the colors and inform the widgets.
-    //
-    if(GetViewerState()->GetAppearanceAttributes()->GetStyle() != "cleanlooks" &&
-       GetViewerState()->GetAppearanceAttributes()->GetStyle() != "macintosh")
-    {
-        debug1 << mName << "Setting foreground and background color" << endl;
-        QColor bg(GetViewerState()->GetAppearanceAttributes()->GetBackground().c_str());
-        QColor fg(GetViewerState()->GetAppearanceAttributes()->GetForeground().c_str());
-        QColor btn(bg);
-
-        // Put the converted RGB format color into the appearance attributes.
-        char tmp[20];
-        SNPRINTF(tmp, 20, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
-        GetViewerState()->GetAppearanceAttributes()->SetBackground(tmp);
-        SNPRINTF(tmp, 20, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
-        GetViewerState()->GetAppearanceAttributes()->SetForeground(tmp);
-
-        int h,s,v;
-        fg.getHsv(&h,&s,&v);
-        QColor base = Qt::white;
-        bool bright_mode = false;
-        if (v >= 255 - 50)
-        {
-            base = btn.dark(150);
-            bright_mode = TRUE;
-        }
-
-        QPalette pal(fg, btn, btn.light(),
-                     btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
-        pal.setCurrentColorGroup(QPalette::Normal);
-        if (bright_mode)
-        {
-            pal.setColor(QPalette::HighlightedText, base );
-            pal.setColor(QPalette::Highlight, Qt::white );
-        }
-        else
-        {
-            pal.setColor(QPalette::HighlightedText, Qt::white );
-            pal.setColor(QPalette::Highlight, Qt::darkBlue );
-        }
-        QColor disabled((fg.red()+btn.red())/2,
-                        (fg.green()+btn.green())/2,
-                        (fg.blue()+btn.blue())/2);
-        pal.setCurrentColorGroup(QPalette::Disabled);
-        pal.setColor(QPalette::WindowText, disabled);
-        pal.setColor(QPalette::Light, btn.light( 125 ));
-        pal.setColor(QPalette::Text, disabled);
-        pal.setColor(QPalette::Base, Qt::white);
-        if (bright_mode)
-        {
-            pal.setColor(QPalette::HighlightedText, base);
-            pal.setColor(QPalette::Highlight, Qt::white);
-        }
-        else
-        {
-            pal.setColor(QPalette::HighlightedText, Qt::white);
-            pal.setColor(QPalette::Highlight, Qt::darkBlue);
-        }
-
-        qApp->setPalette(pal);
+        SetAppearance(qApp, GetViewerState()->GetAppearanceAttributes());
     }
 }
 
