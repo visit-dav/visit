@@ -3,13 +3,13 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:template match="/bvtest">
     <html>
-    <header><title>bvtest.py results</title></header>
+    <header><title>bvtest results</title></header>
     <link rel="stylesheet" type="text/css" href="bvtest.css" title="Style"/>
     <body>
         <table class="wikitable">
         <tr>
             <td colspan="6">
-            <b>test_build_visit.py results:</b>
+            <b>bvtest results:</b>
             </td>
         </tr>
         
