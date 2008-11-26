@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # *****************************************************************************
-#   Script: test_build_visit.py
+#   Script: bvtest.py
 #
 #   Purpose:
 #       Provide an easy (and cron-able) way to test the build_visit script.
 #   Usage:
-#       test_build_visit.py [output_dir] [lib1] <lib2> ... <libn>
+#       bvtest.py [output_dir] [lib1] <lib2> ... <libn>
 #   
 #   Results:
 #       Outputs a xml summary of build results to stdout.
@@ -29,9 +29,10 @@ class BuildResult:
     """
     Class that holds the results for an attemped build of a library.
     """
-    def __init__(self,lib,cmd,build_start,build_end,result):
+    def __init__(self,lib,cmd,log,build_start,build_end,result):
         self.lib = lib
         self.cmd = cmd
+        self.log = log
         self.build_start = build_start
         self.build_end   = build_end
         self.result = result 
@@ -39,6 +40,7 @@ class BuildResult:
         res =  space + "<build_result>\n"
         res += space + space +"<lib>%s</lib>\n" % self.lib
         res += space + space +"<cmd>%s</cmd>\n" % self.cmd
+        res += space + space +"<log>%s</log>\n" % self.log
         res += space + space +"<start>%s</start>\n" % self.build_start
         res += space + space +"<end>%s</end>\n"  % self.build_end
         res += space + space +"<result>%s</result>\n" % self.result
@@ -58,20 +60,17 @@ def sexe(cmd):
     sys.stderr.write("[exe:%s]\n" % cmd)
     os.system(cmd)
 
-def log_file(lib,odir=""):
+def log_file(lib):
     """
     Construct the output log file name.
     """
-    if odir == "":
-        return "bv_log_%s" % lib
-    else:
-        return "%s/bv_log_%s" % (odir,lib)
+    return "bv_log_%s.txt" % lib
     
 def build_visit_command(libs,odir=""):
     """
     Construct the proper build_visit command.
     """
-    options = "--console --no-visit --no-thirdparty --no-hostconf --stdout --makeflags -j4"
+    options = "--console --svn HEAD --no-visit --no-thirdparty --no-hostconf --stdout --makeflags -j4"
     blibs=""
     for l in libs:
         blibs+="--%s " % l
@@ -81,7 +80,7 @@ def build_visit_command(libs,odir=""):
         cmd = cmd % (options,blibs,log_file(lib))
     else:
         cmd = "echo yes | ./build_visit %s %s --thirdparty-path  %s >> %s"
-        cmd = cmd % (options,blibs,odir,log_file(lib,odir))
+        cmd = cmd % (options,blibs,odir,log_file(lib))
     return cmd
 
 def check_build(lib,odir):
@@ -89,7 +88,7 @@ def check_build(lib,odir):
     Checks for sucessful build by examining at the end of the build log.
     """
     try:
-        lines = open(log_file(lib,odir)).readlines()
+        lines = open(log_file(lib)).readlines()
         nlines = len(lines)
         last = lines[nlines-1].strip()
         return last == "Finished!"
@@ -103,13 +102,14 @@ def build(libcmd,odir):
     libs = parse_libcmd(libcmd)
     bvc = build_visit_command(libs,odir);
     lib = libs[-1]
+    lfile = log_file(lib)
     bresult = "failure"
     bstart = get_current_time()
     sexe(bvc)
     bend = get_current_time()
     if check_build(lib,odir):
         bresult = "success"
-    return BuildResult(lib,libcmd,bstart,bend,bresult)
+    return BuildResult(lib,libcmd,lfile,bstart,bend,bresult)
    
 def build_libs(libcmds,odir):
     """
@@ -144,9 +144,10 @@ def main():
     """
     nargs = len(sys.argv)
     if nargs < 3:
-        sys.stderr.write("usage: test_build_visit.py [output_dir] [lib_1] <lib_2> .... <lib_n>\n")
+        sys.stderr.write("usage: bvtest.py [output_dir] [lib_1] <lib_2> .... <lib_n>\n")
         sys.exit(1)
     odir = sys.argv[1]
+    odir = os.path.abspath(odir)
     libcmds = sys.argv[2:]
     if odir[-1] == "/":
         odir = odir[:-1]
@@ -154,14 +155,15 @@ def main():
     results = build_libs(libcmds,odir)
     etime = get_current_time()
     print '<?xml version="1.0"?>'
+    print '<?xml-stylesheet type="text/xsl" href="bvtest.xsl"?>'
     host=socket.gethostname()
     info = 'host="%s" odir="%s" libs="%s" start="%s" end="%s"' % (host,str(odir),str(libcmds),stime,etime)
-    print "<test_build_visit %s >" % info
+    print "<bvtest %s >" % info
     print "  <results>"
     for r in results:
         print r.to_xml("  ")
     print "  </results>"
-    print "</test_build_visit>"
+    print "</bvtest>"
     
 
 if __name__ == "__main__":
