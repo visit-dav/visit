@@ -110,6 +110,10 @@ class VTKQT_API vtkQtRenderWindow : public vtkRenderWindow, public QMainWindow
 //  Brad Whitlock, Wed Aug 20 09:41:03 PDT 2008
 //  Changed to a single constructor that defaults to an embedded widget.
 //
+//  Brad Whitlock, Wed Nov 26 14:12:17 PST 2008
+//  Added implementation for GetRGBACharPixelData to fix a new screen capture
+//  crash.
+//
 // ****************************************************************************
 
 public:
@@ -173,10 +177,10 @@ public:
                         int, int blend=0);
     // Description:
     // Set/Get the pixel data of an image, transmitted as unsigned char RGBA, RGBA...
-    /*NOT IMPLEMENTED YET*/
-    virtual unsigned char *GetRGBACharPixelData(int ,int ,int ,int ,int ) { return 0; };
+    virtual unsigned char *GetRGBACharPixelData(int ,int ,int ,int ,int );
     virtual int GetRGBACharPixelData(int ,int, int, int, int,
-                   vtkUnsignedCharArray*) { return 0; };
+                                     vtkUnsignedCharArray*);
+    /*NOT IMPLEMENTED YET*/
     virtual int SetRGBACharPixelData(int ,int ,int ,int ,unsigned char *, int,
                     int blend=0) { return 0; };
     virtual int SetRGBACharPixelData(int, int, int, int,
