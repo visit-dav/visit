@@ -501,6 +501,9 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    I made the pointSize in the atts be used for to set the point size for
 //    points, which is not the same as what's used for Box, Axis, Icosahedra.
 //
+//    Jeremy Meredith, Wed Nov 26 11:28:24 EST 2008
+//    Added line style/width control.
+//
 // ****************************************************************************
 
 void
@@ -528,6 +531,8 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         SetColorTable(atts.GetColorTableName().c_str());
     }
 
+    glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
+    glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
     glyphMapper->SetScale(atts.GetPointSize());
     if (atts.GetPointSizeVarEnabled() &&
         atts.GetPointSizeVar() != "" &&
