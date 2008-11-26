@@ -1,0 +1,43 @@
+table.wikitable,
+table.prettytable {
+    margin: 1em 1em 1em 0;
+    background: #f9f9f9;
+    border: 1px #aaa solid;
+    border-collapse: collapse;
+}
+.wikitable th, .wikitable td,
+.prettytable th, .prettytable td {
+    border: 1px #aaa solid;
+    padding: 0.2em;
+}
+.wikitable th,
+.prettytable th {
+    background: #f2f2f2;
+    text-align: center;
+}
+.wikitable caption,
+.prettytable caption {
+    margin-left: inherit;
+    margin-right: inherit;
+    font-weight: bold;
+}
+
+
+.rh 
+{
+    background: #ececec;
+    color: black;
+    text-align: left;
+    padding-left: 0.5em;
+    font-weight: bold;
+}
+
+.green
+{
+    background: #90ff90;
+}
+
+.red
+{
+    background: #ff9090;
+}

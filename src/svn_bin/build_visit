@@ -594,7 +594,7 @@ else
 fi
 
 REDIRECT_ACTIVE="no"
-
+ANY_ERRORS="no"
 #
 # OPTIONS
 #
@@ -1463,6 +1463,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "boxlib"  "" $BOXLIB_BUILD_DIR  $BOXLIB_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build Boxlib.  ${BOXLIB_FILE} not found."
+            ANY_ERRORS="yes"
             DO_BOXLIB="no"
         fi
     fi
@@ -1471,6 +1472,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "ccmio"  $CCMIO_VERSION $CCMIO_BUILD_DIR  $CCMIO_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build CCMIO.  ${CCMIO_FILE} not found."
+            ANY_ERRORS="yes"
             DO_CCMIO="no"
         fi
     fi
@@ -1479,6 +1481,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "cfitsio" $CFITSIO_VERSION $CFITSIO_BUILD_DIR $CFITSIO_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build CFITSIO.  ${CFITSIO_FILE} not found."
+            ANY_ERRORS="yes"
             DO_CFITSIO="no"
         fi
     fi
@@ -1487,6 +1490,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "cgns" $CGNS_VERSION $CGNS_BUILD_DIR $CGNS_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build CGNS.  ${CGNS_FILE} not found."
+            ANY_ERRORS="yes"
             DO_CGNS="no"
         fi
     fi
@@ -1495,6 +1499,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "exodus" $EXODUS_VERSION $EXODUS_BUILD_DIR $EXODUS_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build ExodusII.  ${EXODUS_FILE} not found."
+            ANY_ERRORS="yes"
             DO_EXODUS="no"
         fi
     fi
@@ -1503,6 +1508,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "gdal" $GDAL_VERSION $GDAL_BUILD_DIR $GDAL_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build GDAL.  ${GDAL_FILE} not found."
+            ANY_ERRORS="yes"
             DO_GDAL="no"
         fi
     fi
@@ -1511,6 +1517,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "h5part" $H5PART_VERSION $H5PART_BUILD_DIR $H5PART_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build H5Part.  ${H5PART_FILE} not found."
+            ANY_ERRORS="yes"
             DO_H5PART="no"
         fi
     fi
@@ -1519,6 +1526,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_BUILD_DIR $HDF4_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build HDF4.  ${HDF4_FILE} not found."
+            ANY_ERRORS="yes"
             DO_HDF4="no"
         fi
     fi
@@ -1528,6 +1536,7 @@ function check_optional_3rdparty
         if [[ $? != 0 ]] ; then
             # fatal error, since other libs require hdf5
             error "Unable to build HDF5.  ${HDF5_FILE} not found."
+            ANY_ERRORS="yes"
             DO_HDF5="no"
         fi
     fi
@@ -1536,6 +1545,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "itaps" $ITAPS_VERSION $ITAPS_BUILD_DIR  $ITAPS_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build ITAPS.  ${ITAPS_FILE} not found."
+            ANY_ERRORS="yes"
             DO_ITAPS="no"
         fi
     fi
@@ -1544,6 +1554,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "mili" $MILI_VERSION $MILI_BUILD_DIR $MILI_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build Mili.  ${MILI_FILE} not found."
+            ANY_ERRORS="yes"
             DO_MILI="no"
             if [[ "$DO_SVN" != "yes" ]] ; then
                 warn "Note: You have requested to build the Mili library." 
@@ -1558,6 +1569,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "netcdf" $NETCDF_VERSION $NETCDF_BUILD_DIR $NETCDF_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build NetCDF.  ${NETCDF_FILE} not found."
+            ANY_ERRORS="yes"
             DO_NETCDF="no"
         fi
     fi
@@ -1566,6 +1578,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "silo" $SILO_VERSION $SILO_BUILD_DIR $SILO_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build ilo.  ${SILO_FILE} not found."
+            ANY_ERRORS="yes"
             DO_SILO="no"
         fi
     fi
@@ -1574,6 +1587,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "szip" $SZIP_VERSION $SZIP_BUILD_DIR $SZIP_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build SZIP.  ${SZIP_FILE} not found."
+            ANY_ERRORS="yes"
             DO_SZIP="no"
         fi
     fi
@@ -1582,6 +1596,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "visus" $VISUS_VERSION $VISUS_BUILD_DIR $VISUS_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build ViSUS.  ${VISUS_FILE} not found."
+            ANY_ERRORS="yes"
             DO_VISUS="no"
         fi
     fi
@@ -1590,6 +1605,7 @@ function check_optional_3rdparty
         ensure_built_or_ready "google-perftools" $TCMALLOC_VERSION $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build google perftools.  ${TCMALLOC_FILE} not found."
+            ANY_ERRORS="yes"
             DO_TCMALLOC="no"
             if [[ "$DO_SVN" != "yes" ]] ; then
                 warn "You have requested to build the google perftools library."
@@ -8255,7 +8271,11 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
     echo 
     echo "If you run into problems, contact visit-users@ornl.gov"
 else
-    echo "Finished!"
+    if [[ $ANY_ERRORS == "no" ]] ; then
+        echo "Finished!"
+    else
+        echo "Finished with Errors"
+    fi
 fi
 
 exit 0
