@@ -80,7 +80,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
 
     public PseudocolorAttributes()
     {
-        super(18);
+        super(20);
 
         legendFlag = true;
         lightingFlag = true;
@@ -100,11 +100,13 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
         pointSizePixels = 2;
+        lineStyle = 0;
+        lineWidth = 0;
     }
 
     public PseudocolorAttributes(PseudocolorAttributes obj)
     {
-        super(18);
+        super(20);
 
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
@@ -124,6 +126,8 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizeVarEnabled = obj.pointSizeVarEnabled;
         pointSizeVar = new String(obj.pointSizeVar);
         pointSizePixels = obj.pointSizePixels;
+        lineStyle = obj.lineStyle;
+        lineWidth = obj.lineWidth;
 
         SelectAll();
     }
@@ -148,7 +152,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
                 (smoothingLevel == obj.smoothingLevel) &&
                 (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
                 (pointSizeVar.equals(obj.pointSizeVar)) &&
-                (pointSizePixels == obj.pointSizePixels));
+                (pointSizePixels == obj.pointSizePixels) &&
+                (lineStyle == obj.lineStyle) &&
+                (lineWidth == obj.lineWidth));
     }
 
     public String GetName() { return "Pseudocolor"; }
@@ -263,6 +269,18 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         Select(17);
     }
 
+    public void SetLineStyle(int lineStyle_)
+    {
+        lineStyle = lineStyle_;
+        Select(18);
+    }
+
+    public void SetLineWidth(int lineWidth_)
+    {
+        lineWidth = lineWidth_;
+        Select(19);
+    }
+
     // Property getting methods
     public boolean GetLegendFlag() { return legendFlag; }
     public boolean GetLightingFlag() { return lightingFlag; }
@@ -282,6 +300,8 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public boolean GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String  GetPointSizeVar() { return pointSizeVar; }
     public int     GetPointSizePixels() { return pointSizePixels; }
+    public int     GetLineStyle() { return lineStyle; }
+    public int     GetLineWidth() { return lineWidth; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -322,6 +342,10 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             buf.WriteString(pointSizeVar);
         if(WriteSelect(17, buf))
             buf.WriteInt(pointSizePixels);
+        if(WriteSelect(18, buf))
+            buf.WriteInt(lineStyle);
+        if(WriteSelect(19, buf))
+            buf.WriteInt(lineWidth);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -385,6 +409,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             case 17:
                 SetPointSizePixels(buf.ReadInt());
                 break;
+            case 18:
+                SetLineStyle(buf.ReadInt());
+                break;
+            case 19:
+                SetLineWidth(buf.ReadInt());
+                break;
             }
         }
     }
@@ -440,6 +470,8 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("pointSizeVarEnabled", pointSizeVarEnabled, indent) + "\n";
         str = str + stringToString("pointSizeVar", pointSizeVar, indent) + "\n";
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
+        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
+        str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         return str;
     }
 
@@ -463,5 +495,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     private boolean pointSizeVarEnabled;
     private String  pointSizeVar;
     private int     pointSizePixels;
+    private int     lineStyle;
+    private int     lineWidth;
 }
 

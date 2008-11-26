@@ -52,6 +52,8 @@
 #include <QvisOpacitySlider.h>
 #include <QvisColorTableButton.h>
 #include <QvisPointControl.h>
+#include <QvisLineStyleWidget.h>
+#include <QvisLineWidthWidget.h>
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow
@@ -166,11 +168,39 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
 //   Swap the min/max in the gui.
 //
+//   Jeremy Meredith, Wed Nov 26 11:28:24 EST 2008
+//   Added line style/width controls.
+//
 // ****************************************************************************
 
 void
 QvisPseudocolorPlotWindow::CreateWindowContents()
 {
+    //
+    // Create the line style/width buttons
+    //
+    QHBoxLayout *lineLayout = new QHBoxLayout(0);
+    lineLayout->setMargin(0);
+    topLayout->addLayout(lineLayout);
+
+    // Create the lineSyle widget.
+    lineStyle = new QvisLineStyleWidget(0, central);
+    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
+            this, SLOT(lineStyleChanged(int)));
+    lineStyleLabel = new QLabel(tr("Line style"), central);
+    lineStyleLabel->setBuddy(lineStyle);
+    lineLayout->addWidget(lineStyleLabel);
+    lineLayout->addWidget(lineStyle);
+
+    // Create the lineSyle widget.
+    lineWidth = new QvisLineWidthWidget(0, central);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    lineWidthLabel = new QLabel(tr("Line width"), central);
+    lineWidthLabel->setBuddy(lineWidth);
+    lineLayout->addWidget(lineWidthLabel);
+    lineLayout->addWidget(lineWidth);
+
     //
     // Create the centering radio buttons
     //
@@ -416,6 +446,9 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Thu Jun 26 16:58:00 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Wed Nov 26 11:28:24 EST 2008
+//   Added line style/width controls.
+//
 // ****************************************************************************
 
 void
@@ -544,6 +577,16 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             pointControl->SetPointSizePixels(pcAtts->GetPointSizePixels());
             pointControl->blockSignals(false);
             break;
+        case PseudocolorAttributes::ID_lineStyle:
+            lineStyle->blockSignals(true);
+            lineStyle->SetLineStyle(pcAtts->GetLineStyle());
+            lineStyle->blockSignals(false);
+            break;
+        case PseudocolorAttributes::ID_lineWidth:
+            lineWidth->blockSignals(true);
+            lineWidth->SetLineWidth(pcAtts->GetLineWidth());
+            lineWidth->blockSignals(false);
+            break;
         }
     } // end for
 }
@@ -582,7 +625,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 void
 QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
 
     // Do the minimum value.
@@ -952,4 +995,52 @@ QvisPseudocolorPlotWindow::pointSizeVarChanged(const QString &var)
     Apply();
 }
 
+
+// ****************************************************************************
+// Method: QvisContourPlotWindow::lineStyleChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the window's
+//   line style is changed.
+//
+// Arguments:
+//   newStyle : The new line style.
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 26, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::lineStyleChanged(int newStyle)
+{
+    pcAtts->SetLineStyle(newStyle);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisContourPlotWindow::lineWidthChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the window's
+//   line width widget is changed.
+//
+// Arguments:
+//   newWidth : The new line width.
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 26, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::lineWidthChanged(int newWidth)
+{
+    pcAtts->SetLineWidth(newWidth);
+    Apply();
+}
 

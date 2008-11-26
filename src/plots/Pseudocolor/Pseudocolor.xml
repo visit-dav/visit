@@ -82,6 +82,12 @@
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         2
       </Field>
+      <Field name="lineStyle" label="lineStyle" type="linestyle">
+        0
+      </Field>
+      <Field name="lineWidth" label="lineWidth" type="linewidth">
+        0
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="Print" user="true" member="true">

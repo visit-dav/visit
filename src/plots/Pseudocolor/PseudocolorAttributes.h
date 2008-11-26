@@ -123,6 +123,8 @@ public:
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
     void SetPointSizePixels(int pointSizePixels_);
+    void SetLineStyle(int lineStyle_);
+    void SetLineWidth(int lineWidth_);
 
     // Property getting methods
     bool              GetLegendFlag() const;
@@ -145,6 +147,8 @@ public:
     const std::string &GetPointSizeVar() const;
           std::string &GetPointSizeVar();
     int               GetPointSizePixels() const;
+    int               GetLineStyle() const;
+    int               GetLineWidth() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -201,7 +205,9 @@ public:
         ID_smoothingLevel,
         ID_pointSizeVarEnabled,
         ID_pointSizeVar,
-        ID_pointSizePixels
+        ID_pointSizePixels,
+        ID_lineStyle,
+        ID_lineWidth
     };
 
 private:
@@ -223,6 +229,8 @@ private:
     bool        pointSizeVarEnabled;
     std::string pointSizeVar;
     int         pointSizePixels;
+    int         lineStyle;
+    int         lineWidth;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
