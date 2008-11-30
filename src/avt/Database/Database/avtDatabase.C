@@ -1685,6 +1685,10 @@ avtDatabase::AddVectorMagnitudeExpressions(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Tom Fogal, Thu Nov 20 12:13:57 MST 2008
+//    Don't re-use the iterator after the find, because the erase invalidates
+//    it.
 // ****************************************************************************
 
 avtDatabaseMetaData *
@@ -1719,7 +1723,7 @@ avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes,
     }
     else
     {
-
+        bool found = false;
         // see if we've already cached metadata for this timestep
         for (i = metadata.begin(); i != metadata.end(); i++)
         {
@@ -1729,6 +1733,7 @@ avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes,
                 CachedMDEntry tmp = *i;
                 metadata.erase(i);
                 metadata.push_front(tmp);
+                found = true;
                 break;
             }
         }
@@ -1737,7 +1742,7 @@ avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes,
         // and read new metadata
         avtDatabaseMetaData *frontMd;
         avtDatabaseMetaData *thisMd;
-        if (i == metadata.end())
+        if (false == found)
         {
             if (metadata.size() >= mdCacheSize)
             {
