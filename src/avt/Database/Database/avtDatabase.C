@@ -1901,6 +1901,9 @@ avtDatabase::GetNewSIL(int timeState, bool treatAllDBsAsTimeVarying)
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added logic for treatAllDBsAsTimeVarying
 //
+//    Tom Fogal, Thu Nov 20 12:28:54 MST 2008
+//    Don't re-use the iterator after an erase.
+//
 // ****************************************************************************
 
 avtSIL *
@@ -1914,6 +1917,7 @@ avtDatabase::GetSIL(int timeState, bool treatAllDBsAsTimeVarying)
     }
     else
     {
+        bool found = false;
         // see if we've already cached sil for this timestep
         std::list<CachedSILEntry>::iterator i;
         for (i = sil.begin(); i != sil.end(); i++)
@@ -1924,13 +1928,14 @@ avtDatabase::GetSIL(int timeState, bool treatAllDBsAsTimeVarying)
                 CachedSILEntry tmp = *i;
                 sil.erase(i);
                 sil.push_front(tmp);
+                found = true;
                 break;
             }
         }
 
        // if we didn't find it in the cache, remove the oldest (last) entry
        // and read new sil
-       if (i == sil.end())
+       if (false == found)
        {
            if (sil.size() >= silCacheSize)
            {
