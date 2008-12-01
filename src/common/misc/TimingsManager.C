@@ -516,6 +516,10 @@ TimingsManager::StartTimer(bool forced)
 //    Change handling of values so that the handles given to calling functions
 //    will be valid indefinitely.
 //
+//    Hank Childs, Mon Dec  1 15:03:50 PST 2008
+//    Make sure we use a SNPRINTF instead of a sprintf, so we don't blow the
+//    stack.
+//
 // ****************************************************************************
 
 double
@@ -532,8 +536,9 @@ TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
         numCurrentTimings -= 1;
         if (enabled)
         {
-            char indented[1000];
-            sprintf(indented, "%*s%s", 3*numCurrentTimings, " ", summary.c_str());
+            char indented[2048];
+            SNPRINTF(indented, 2048, "%*s%s", 3*numCurrentTimings, 
+                      " ", summary.c_str());
             summaries.push_back(indented);
         }
     }
