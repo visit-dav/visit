@@ -99,6 +99,9 @@
 #    Dave Pugmire, Mon Oct  6 12:47:24 EDT 2008
 #    Added back the streamlinefilter.
 #
+#    Hank Childs, Tue Dec  2 13:41:08 PST 2008
+#    Add the avtStreamlinePolyDataFilter.
+#
 ##############################################################################
 
 ##
@@ -142,6 +145,7 @@ SRC=\
  avtSimilarityTransformFilter.C \
  avtSmoothPolyDataFilter.C \
  avtStreamlineFilter.C \
+ avtStreamlinePolyDataFilter.C \
  avtSummationFilter.C \
  avtSurfaceFilter.C \
  avtTiledImageCompositor.C \

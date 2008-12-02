@@ -50,7 +50,7 @@
 
 class     avtLookupTable;
 class     avtShiftCenteringFilter;
-class     avtStreamlineFilter;
+class     avtStreamlinePolyDataFilter;
 class     avtVariableLegend;
 class     avtVariableMapper;
 
@@ -73,6 +73,9 @@ class     avtVariableMapper;
 //    streamline plot uses a different decomposition of the data and the
 //    compositor assumes that z-buffer issues are resolved before it starts
 //    compositing in 2D ... unless this flag is on.
+//
+//    Hank Childs, Tue Dec  2 13:54:46 PST 2008
+//    Use an avtStreamlinePolyDataFilter to fit the new class refactoring.
 //
 // ****************************************************************************
 
@@ -100,7 +103,7 @@ class avtStreamlinePlot : public avtLineDataPlot
     avtVariableMapper          *varMapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
-    avtStreamlineFilter        *streamlineFilter;
+    avtStreamlinePolyDataFilter  *streamlineFilter;
     avtShiftCenteringFilter    *shiftCenteringFilter;
     avtLookupTable             *avtLUT;
 
