@@ -887,6 +887,16 @@ dnl    the rpath to $ORIGIN/../src/lib on linux systems.
 dnl 
 dnl    Mark C. Miller, Tue Dec  2 11:47:01 PST 2008
 dnl    Removed silex
+dnl
+dnl    Brad Whitlock, Tue Dec  2 11:32:06 PST 2008
+dnl    I set VISITWRAPPER_RPATH if --prefix is specified and we're on Linux
+dnl    so we can set -rpath LDFLAGS that let the visit engine wrapper libraries
+dnl    know where they will be installed. This is key to getting them to work
+dnl    without requiring LD_LIBRARY_PATH to be specified before running the
+dnl    client simulation. It also prevents the sim writers from having to do
+dnl    very bad things such as using a specific VisIt rpath when linking
+dnl    their codes.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1758,6 +1768,65 @@ if test "$Usebilib" = "yes"; then
     AC_DEFINE(HAVE_BILIB, [1], [Define if you have the boost interval template library.])
 fi
 AC_SUBST(BUILD_BILIB)
+
+dnl
+dnl Determine the installation path to VisIt's lib directory. We take --prefix 
+dnl into account if it has been specified.
+dnl
+VISITWRAPPER_RPATH=
+if test "x$prefix" != xNONE; then
+    PLATFORM=
+    case "$UNAME" in
+    Linux)
+        # Adapted from visit-bin-dist
+        INSTALL_ARCH=`/bin/uname -m`
+        case $INSTALL_ARCH in
+           ia64)
+              PLATFORM="linux-ia64"
+              ;;
+           x86_64)
+              PLATFORM="linux-x86_64"
+              ;;
+           *)
+              if test "$CC" == "icc" ; then
+                  PLATFORM="linux-intel-icc"
+              else
+                  PLATFORM="linux-intel"
+              fi
+              ;;
+        esac
+        ;;
+    Darwin)
+        # Adapted from visit-bin-dist
+        INSTALL_ARCH=`/bin/uname -p`
+        case $INSTALL_ARCH in
+           powerpc)
+              PLATFORM="darwin-ppc"
+              ;;
+           *)
+              PLATFORM="darwin-i386"
+              ;;
+        esac
+        ;;
+    esac
+    COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
+    VISIT_LIB_DIR="$prefix/$COMPATIBILITY_VERSION/$PLATFORM/lib"
+
+    dnl
+    dnl Set up "rpath" flags that let the visit wrapper library know where it will be 
+    dnl installed so we don't have to specify a LD_LIBRARY_PATH or rpath to the 
+    dnl client simulation.
+    dnl
+    case $UNAME in
+    Linux)
+        VISITWRAPPER_RPATH="-Wl,-rpath,$VISIT_LIB_DIR"
+        ;;
+    Darwin)
+        VISITWRAPPER_RPATH="-Wl,-install_name,$VISIT_LIB_DIR/\$@,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+        ;;
+    esac
+fi
+AC_SUBST(VISITWRAPPER_RPATH)
 
 dnl
 dnl Make note if no CXXFLAGS have STILL yet been specified; this is the
@@ -3549,9 +3618,9 @@ AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}", [Shared library extensio
 # This is versioned to ensure compatibility with future changes.
 #
 if test -d engine; then
-    ENGINEWRAPSER="$""(libdir)/libvisitenginev1_ser.${SHLIB_SOEXT}"
+    ENGINEWRAPSER="libvisitenginev1_ser.${SHLIB_SOEXT}"
     if test -n "$PARALLEL"; then
-        ENGINEWRAPPAR="$""(libdir)/libvisitenginev1_par.${SHLIB_SOEXT}"
+        ENGINEWRAPPAR="libvisitenginev1_par.${SHLIB_SOEXT}"
     fi
 fi
 AC_SUBST(ENGINEWRAPSER)

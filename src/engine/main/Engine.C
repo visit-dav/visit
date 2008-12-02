@@ -251,11 +251,13 @@ Engine::Engine()
 //    Tom Fogal, Mon Sep  1 13:04:51 EDT 2008
 //    Add renderingDisplay.
 //
+//    Brad Whitlock, Mon Dec  1 10:22:05 PST 2008
+//    Delete network manager last to delay when plugins are unloaded.
+//
 // ****************************************************************************
 
 Engine::~Engine()
 {
-    delete netmgr;
     delete xfer;
     delete lb;
     delete silAtts;
@@ -289,6 +291,12 @@ Engine::~Engine()
     delete setEFileOpenOptionsRPC;
 
     delete renderingDisplay;
+
+    // Delete the network manager last since it deletes plugin managers
+    // and out RPC's may need to call plugin AttributeSubject destructors.
+    // We can't seem to do that reliably on Linux once plugins have been
+    // unloaded.
+    delete netmgr;
 }
 
 // ****************************************************************************

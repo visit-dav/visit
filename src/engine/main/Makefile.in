@@ -276,6 +276,9 @@
 #    Brad Whitlock, Fri Sep 26 09:53:10 PDT 2008
 #    Added cognomen to the parallel engine wrapper library.
 #
+#    Brad Whitlock, Tue Dec  2 12:28:19 PST 2008
+#    I changed the enginewrapper targets so they can have an rpath built in.
+#
 ##############################################################################
 
 ##
@@ -360,8 +363,9 @@ LIBRARYPAROBJ=$(LIBRARYSRC:.C=_par.o)
 all: @ENGINE_SER@ @ENGINE_PAR@ $(ENGINEWRAPSER) $(ENGINEWRAPPAR)
 
 clean:
-	$(RM) $(SEROBJ) $(LIBSHAREDSER) @ENGINE_SER@ $(MAINSEROBJ) $(LIBRARYSEROBJ) $(ENGINEWRAPSER)
-	$(RM) $(PAROBJ) $(LIBSHAREDPAR) @ENGINE_PAR@ $(MAINPAROBJ) $(LIBRARYPAROBJ) $(ENGINEWRAPPAR)
+	$(RM) $(SEROBJ) $(LIBSHAREDSER) @ENGINE_SER@ $(MAINSEROBJ) $(LIBRARYSEROBJ)
+	$(RM) $(PAROBJ) $(LIBSHAREDPAR) @ENGINE_PAR@ $(MAINPAROBJ) $(LIBRARYPAROBJ)
+	$(RM) $(libdir)/libvisitengine*
 
 ##
 ## Other targets...
@@ -374,10 +378,10 @@ clean:
 	@MPI_LIBS@ @ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 $(ENGINEWRAPSER) or_no_ser_wrapper: $(SERLIBDEP) $(SEROBJ) $(LIBRARYSEROBJ) $(LIBSHAREDSER)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYSEROBJ) -lengine_ser $(SERLIBS)
+	@SHLIB_CREATEPROG@ $(libdir)/$@ @VISITWRAPPER_RPATH@ $(LDFLAGS) $(LIBRARYSEROBJ) -lengine_ser $(SERLIBS)
 
 $(ENGINEWRAPPAR) or_no_par_wrapper: $(PARLIBDEP) $(PAROBJ) $(LIBRARYPAROBJ) $(LIBSHAREDPAR)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYPAROBJ) -lengine_par $(PARLIBS) \
+	@SHLIB_CREATEPROG@ $(libdir)/$@ @VISITWRAPPER_RPATH@ $(LDFLAGS) $(LIBRARYPAROBJ) -lengine_par $(PARLIBS) \
 	@ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 purify: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER) $(MAINPAROBJ) $(LIBSHAREDPAR)
