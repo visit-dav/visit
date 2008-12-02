@@ -2748,7 +2748,10 @@ if test -n "$with_itaps_impls" && test with_itaps_impls != "no"; then
         sed -i -e "s/ITAPS_C/${impl_name}/g" databases/$impl_name/*
 
         #
-        # Fix contents of the .xml file 
+        # Fix contents of the .xml file. Note that if the ITAPS_C.xml file
+        # ever gets re-generated, then it probably WILL NOT get formatted
+        # exactly how the following sed commands want it with, for example,
+        # <CXXFLAGS> and </CXXFLAGS> on the same line.
         #
         sed -i -e "s%<Extensions>\(.*\)</Extensions>%<Extensions>${impl_exts}</Extensions>%" databases/$impl_name/$impl_name.xml
         sed -i -e "s%<CXXFLAGS>\(.*\)</CXXFLAGS>%<CXXFLAGS>$\(ITAPS_C${itaps_impl_id}_INCLUDE)</CXXFLAGS>%" databases/$impl_name/$impl_name.xml
