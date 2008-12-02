@@ -28,6 +28,11 @@
 #   Eric Brugger, Mon Apr  7 13:51:23 PDT 2008
 #   Removed sc build.
 #
+#   Brad Whitlock, Tue Dec  2 13:49:50 PST 2008
+#   Add --prefix for Linux targets so we can use -rpath for the engine
+#   wrapper library. I commented out sunset since Qt4 does not build
+#   there.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -144,7 +149,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS=-O2 ./configure >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ../..
@@ -174,63 +179,63 @@ then
    fi
 fi
 
+##
+## Build on sunset.
+##
+#rm -f sunset
+#cat <<EOF > sunset
+##!/bin/sh
+#PATH=\$PATH:/usr/local/bin:/usr/ccs/bin
+#export PATH
+#if test ! -d /export/scratch/$user ; then
+#   mkdir /export/scratch/$user
+#fi
+#if test ! -d /export/scratch/$user/sunset ; then
+#   mkdir /export/scratch/$user/sunset
+#fi
+#rm -rf /export/scratch/$user/sunset/visitbuild
+#mkdir /export/scratch/$user/sunset/visitbuild
+#mv sunset_$dist.tar.gz /export/scratch/$user/sunset/visitbuild/$dist.tar.gz
+#cd /export/scratch/$user/sunset/visitbuild
+#gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+#cd $dist/src
+#ver=\`cat VERSION\`
+#ver2=\`echo \$ver | tr "." "_"\`
+#LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/gnu/gcc-3.2/lib
+#export LD_LIBRARY_PATH
+#env CXXFLAGS=-O2 ./configure >> ../../buildlog 2>&1
+#cp /usr/local/gnu/gcc-3.2/lib/libgcc_s.so.1 lib
+#cp /usr/local/gnu/gcc-3.2/lib/libstdc++.so.5 lib
+#cd databases/Fluent
+#sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
+#cd ../..
+#make -j 4 >> ../../buildlog 2>&1
+#svn_bin/visit-bin-dist >> ../../buildlog 2>&1
+#mv visit\$ver2.sunos5.tar.gz ../..
+#cd ../..
+#echo "        build of visit on sunset"       > resultlog 2>&1
+#echo "       --------------------------"      >> resultlog 2>&1
+#echo ""                                       >> resultlog 2>&1
+#ls -l                                         >> resultlog 2>&1
+#echo ""                                       >> resultlog 2>&1
+#echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+#echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+#echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+#echo ""                                       >> resultlog 2>&1
+#echo "The database plugins:"                  >> resultlog 2>&1
+#ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+#EOF
 #
-# Build on sunset.
-#
-rm -f sunset
-cat <<EOF > sunset
-#!/bin/sh
-PATH=\$PATH:/usr/local/bin:/usr/ccs/bin
-export PATH
-if test ! -d /export/scratch/$user ; then
-   mkdir /export/scratch/$user
-fi
-if test ! -d /export/scratch/$user/sunset ; then
-   mkdir /export/scratch/$user/sunset
-fi
-rm -rf /export/scratch/$user/sunset/visitbuild
-mkdir /export/scratch/$user/sunset/visitbuild
-mv sunset_$dist.tar.gz /export/scratch/$user/sunset/visitbuild/$dist.tar.gz
-cd /export/scratch/$user/sunset/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/gnu/gcc-3.2/lib
-export LD_LIBRARY_PATH
-env CXXFLAGS=-O2 ./configure >> ../../buildlog 2>&1
-cp /usr/local/gnu/gcc-3.2/lib/libgcc_s.so.1 lib
-cp /usr/local/gnu/gcc-3.2/lib/libstdc++.so.5 lib
-cd databases/Fluent
-sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
-cd ../..
-make -j 4 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist >> ../../buildlog 2>&1
-mv visit\$ver2.sunos5.tar.gz ../..
-cd ../..
-echo "        build of visit on sunset"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $sunset = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on sunset"
-      scp -P 22 sunset sunset:sunset_buildit
-      scp -P 22 $dist.tar.gz sunset:sunset_$dist.tar.gz
-      ssh -p 22 sunset "chmod 750 sunset_buildit;./sunset_buildit" &
-   fi
-fi
+#if [ $sunset = true ]
+#then
+#   if [ $test = no ]
+#   then
+#      echo "Building on sunset"
+#      scp -P 22 sunset sunset:sunset_buildit
+#      scp -P 22 $dist.tar.gz sunset:sunset_$dist.tar.gz
+#      ssh -p 22 sunset "chmod 750 sunset_buildit;./sunset_buildit" &
+#   fi
+#fi
 
 #
 # Build on purple, both serial and parallel versions.
@@ -327,7 +332,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-parallel >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
