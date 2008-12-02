@@ -53,8 +53,6 @@ using std::vector;
 using std::string;
 
 
-
-
 // ****************************************************************************
 //  Method: avtSILArray constructor
 //
@@ -312,6 +310,12 @@ avtSILArray::GetSetState(const vector<unsigned char> &useSet) const
 //  Programmer: Dave Bremer
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  1 15:21:28 PST 2008
+//    Add additional logic for the new designations of how a set can be used
+//    (specifically SomeUsedOtherProc).
+//
 // ****************************************************************************
 
 void
@@ -321,9 +325,13 @@ avtSILArray::TurnSet(vector<unsigned char> &useSet,
     for (int ii = 0; ii < iNumSets; ii++)
     {
         int set = ii+iFirstSet;
-        if (forLoadBalance && (val==NoneUsed) && 
-            ((useSet[set]==AllUsed) || (useSet[set]==AllUsedOtherProc)))
-            useSet[set] = AllUsedOtherProc;
+        if (forLoadBalance && (val==NoneUsed))
+        { 
+            if ((useSet[set]==AllUsed) || (useSet[set]==AllUsedOtherProc))
+                useSet[set] = AllUsedOtherProc;
+            else if ((useSet[set]==SomeUsed) || (useSet[set]==SomeUsedOtherProc))
+                useSet[set] = SomeUsedOtherProc;
+        }
         else
             useSet[set] = val;
     }

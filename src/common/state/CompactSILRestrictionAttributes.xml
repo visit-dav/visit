@@ -4,4 +4,7 @@
     </Field>
     <Field name="topSet" label="topSet" type="string">
     </Field>
+    <Field name="topSetIsAllOn" label="topSetIsAllOn" type="bool">
+      false
+    </Field>
   </Attribute>

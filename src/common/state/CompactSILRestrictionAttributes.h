@@ -81,12 +81,14 @@ public:
     // Property setting methods
     void SetUseSet(const unsignedCharVector &useSet_);
     void SetTopSet(const std::string &topSet_);
+    void SetTopSetIsAllOn(bool topSetIsAllOn_);
 
     // Property getting methods
     const unsignedCharVector &GetUseSet() const;
           unsignedCharVector &GetUseSet();
     const std::string        &GetTopSet() const;
           std::string        &GetTopSet();
+    bool                     GetTopSetIsAllOn() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -103,12 +105,14 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_useSet = 0,
-        ID_topSet
+        ID_topSet,
+        ID_topSetIsAllOn
     };
 
 private:
     unsignedCharVector useSet;
     std::string        topSet;
+    bool               topSetIsAllOn;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

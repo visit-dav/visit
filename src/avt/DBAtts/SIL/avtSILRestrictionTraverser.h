@@ -71,6 +71,10 @@
 //    Mark C. Miller, Wed Mar 26 16:23:27 PDT 2008
 //    Added support for scalar enumerations w/graphs
 //
+//    Hank Childs, Sat Nov 15 18:02:46 CST 2008
+//    Add a data member that allows for material selection queries to go much
+//    faster in simple cases.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILRestrictionTraverser
@@ -106,6 +110,7 @@ class DBATTS_API avtSILRestrictionTraverser
     avtSILRestriction_p        silr;
 
     bool                       preparedForMaterialSearches;
+    bool                       noMaterials;
     std::vector<MaterialList>  materialList;
     std::vector<int>           materialListForChunk;
     std::vector<bool>          shouldMatSelect;

@@ -24,6 +24,9 @@ Definition:
 //    Brad Whitlock, Fri Feb 15 15:32:57 PST 2008
 //    Delete silAtts.
 //
+//    Hank Childs, Tue Nov 18 09:39:37 PST 2008
+//    Account for new optimization in CompactSILAttributes.
+//
 // ****************************************************************************
 #include <avtSIL.h>
 #include <avtSILRestriction.h>
@@ -90,7 +93,12 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                 std::vector<int> sets = collection->GetSubsetList();
                 for (size_t i = 0; i < sets.size() && !subsetNameValid; ++i)
                 {
-                    if (useSet[sets[i]] != 0)
+                    bool isOn = false;
+                    if (silAtts->GetTopSetIsAllOn())
+                        isOn = true;
+                    else
+                        isOn = (useSet[sets[i]] != 0);
+                    if (isOn)
                     {
                         avtSILSet_p set = restriction->GetSILSet(sets[i]);
                         if (set->GetName() == subsetName)
