@@ -19604,7 +19604,6 @@ TOOLS_FILES="tools/Makefile
              tools/mpeg2encode/Makefile
              tools/mpeg_encode/Makefile
              tools/protocol/Makefile
-             tools/silex/Makefile
              tools/surfcomp/Makefile
              tools/windowmaker/Makefile
              tools/writer/Makefile

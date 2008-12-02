@@ -885,6 +885,8 @@ dnl    Eric Brugger, Wed Oct 22 16:10:34 PDT 2008
 dnl    Added DATA_EXE_LDFLAGS, which is used in the data directory to set
 dnl    the rpath to $ORIGIN/../src/lib on linux systems.
 dnl 
+dnl    Mark C. Miller, Tue Dec  2 11:47:01 PST 2008
+dnl    Removed silex
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3853,7 +3855,6 @@ TOOLS_FILES="tools/Makefile
              tools/mpeg2encode/Makefile
              tools/mpeg_encode/Makefile
              tools/protocol/Makefile
-             tools/silex/Makefile
              tools/surfcomp/Makefile
              tools/windowmaker/Makefile 
              tools/writer/Makefile 
