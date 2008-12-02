@@ -453,18 +453,22 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 //    It must be done, otherwise in the X case we'll leave stale displays
 //    around.
 //
+//    Hank Childs, Tue Dec  2 10:04:37 PST 2008
+//    Remove unmatched StartTimer call.  (The resulting timing can't be 
+//    dumped anyways.)
+//
 // ****************************************************************************
+
 void
 Engine::Finalize(void)
 {
-    visitTimer->StartTimer();
-
     delete this->renderingDisplay;
     // Now null it out; in case the destructor actually *does* get called.
     this->renderingDisplay = NULL;
 
     VisItInit::Finalize();
 }
+
 
 // ****************************************************************************
 //  Method:  Engine::SetUpViewerInterface
