@@ -62,7 +62,6 @@
 #include <avtSILNamespace.h>
 #include <avtSILRestrictionTraverser.h>
 #include <avtOriginatingSource.h>
-#include <CompactSILRestrictionAttributes.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>

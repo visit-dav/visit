@@ -185,6 +185,9 @@ IndexSelectViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //    Brad Whitlock, Fri Feb 15 15:15:01 PST 2008
 //    Delete silAtts.
 //
+//    Hank Childs, Tue Nov 18 09:39:37 PST 2008
+//    Account for new optimization in CompactSILAttributes.
+//
 // ****************************************************************************
 #include <avtSIL.h>
 #include <avtSILRestriction.h>
@@ -219,7 +222,7 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     // 
     avtSILSet_p current = restriction->GetSILSet(silTopSet);
     const std::vector<int> &mapsOut = current->GetMapsOut();
-    for (int j = 0; j < mapsOut.size() && !categoryNameValid; ++j)
+    for (size_t j = 0; j < mapsOut.size() && !categoryNameValid; ++j)
     {
         int cIndex = mapsOut[j];
         avtSILCollection_p collection =restriction->GetSILCollection(cIndex);
@@ -248,9 +251,14 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
             if (*collection != NULL)
             {
                 std::vector<int> sets = collection->GetSubsetList();
-                for (int i = 0; i < sets.size() && !subsetNameValid; ++i)
+                for (size_t i = 0; i < sets.size() && !subsetNameValid; ++i)
                 {
-                    if (useSet[sets[i]] != 0)
+                    bool isOn = false;
+                    if (silAtts->GetTopSetIsAllOn())
+                        isOn = true;
+                    else
+                        isOn = (useSet[sets[i]] != 0);
+                    if (isOn)
                     {
                         avtSILSet_p set = restriction->GetSILSet(sets[i]);
                         if (set->GetName() == subsetName)

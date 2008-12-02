@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *CompactSILRestrictionAttributes::TypeMapFormatString = "u*s";
+const char *CompactSILRestrictionAttributes::TypeMapFormatString = "u*sb";
 
 // ****************************************************************************
 // Method: CompactSILRestrictionAttributes::CompactSILRestrictionAttributes
@@ -60,6 +60,7 @@ const char *CompactSILRestrictionAttributes::TypeMapFormatString = "u*s";
 CompactSILRestrictionAttributes::CompactSILRestrictionAttributes() : 
     AttributeSubject(CompactSILRestrictionAttributes::TypeMapFormatString)
 {
+    topSetIsAllOn = false;
 }
 
 // ****************************************************************************
@@ -82,6 +83,7 @@ CompactSILRestrictionAttributes::CompactSILRestrictionAttributes(const CompactSI
 {
     useSet = obj.useSet;
     topSet = obj.topSet;
+    topSetIsAllOn = obj.topSetIsAllOn;
 
     SelectAll();
 }
@@ -127,6 +129,7 @@ CompactSILRestrictionAttributes::operator = (const CompactSILRestrictionAttribut
     if (this == &obj) return *this;
     useSet = obj.useSet;
     topSet = obj.topSet;
+    topSetIsAllOn = obj.topSetIsAllOn;
 
     SelectAll();
     return *this;
@@ -152,7 +155,8 @@ CompactSILRestrictionAttributes::operator == (const CompactSILRestrictionAttribu
 {
     // Create the return value
     return ((useSet == obj.useSet) &&
-            (topSet == obj.topSet));
+            (topSet == obj.topSet) &&
+            (topSetIsAllOn == obj.topSetIsAllOn));
 }
 
 // ****************************************************************************
@@ -296,8 +300,9 @@ CompactSILRestrictionAttributes::NewInstance(bool copy) const
 void
 CompactSILRestrictionAttributes::SelectAll()
 {
-    Select(ID_useSet, (void *)&useSet);
-    Select(ID_topSet, (void *)&topSet);
+    Select(ID_useSet,        (void *)&useSet);
+    Select(ID_topSet,        (void *)&topSet);
+    Select(ID_topSetIsAllOn, (void *)&topSetIsAllOn);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -342,6 +347,12 @@ CompactSILRestrictionAttributes::CreateNode(DataNode *parentNode, bool completeS
         node->AddNode(new DataNode("topSet", topSet));
     }
 
+    if(completeSave || !FieldsEqual(ID_topSetIsAllOn, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("topSetIsAllOn", topSetIsAllOn));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -382,6 +393,8 @@ CompactSILRestrictionAttributes::SetFromNode(DataNode *parentNode)
         SetUseSet(node->AsUnsignedCharVector());
     if((node = searchNode->GetNode("topSet")) != 0)
         SetTopSet(node->AsString());
+    if((node = searchNode->GetNode("topSetIsAllOn")) != 0)
+        SetTopSetIsAllOn(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -400,6 +413,13 @@ CompactSILRestrictionAttributes::SetTopSet(const std::string &topSet_)
 {
     topSet = topSet_;
     Select(ID_topSet, (void *)&topSet);
+}
+
+void
+CompactSILRestrictionAttributes::SetTopSetIsAllOn(bool topSetIsAllOn_)
+{
+    topSetIsAllOn = topSetIsAllOn_;
+    Select(ID_topSetIsAllOn, (void *)&topSetIsAllOn);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -428,6 +448,12 @@ std::string &
 CompactSILRestrictionAttributes::GetTopSet()
 {
     return topSet;
+}
+
+bool
+CompactSILRestrictionAttributes::GetTopSetIsAllOn() const
+{
+    return topSetIsAllOn;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -470,8 +496,9 @@ CompactSILRestrictionAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_useSet: return "useSet";
-    case ID_topSet: return "topSet";
+    case ID_useSet:        return "useSet";
+    case ID_topSet:        return "topSet";
+    case ID_topSetIsAllOn: return "topSetIsAllOn";
     default:  return "invalid index";
     }
 }
@@ -496,8 +523,9 @@ CompactSILRestrictionAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_useSet: return FieldType_ucharVector;
-    case ID_topSet: return FieldType_string;
+    case ID_useSet:        return FieldType_ucharVector;
+    case ID_topSet:        return FieldType_string;
+    case ID_topSetIsAllOn: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -522,8 +550,9 @@ CompactSILRestrictionAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_useSet: return "ucharVector";
-    case ID_topSet: return "string";
+    case ID_useSet:        return "ucharVector";
+    case ID_topSet:        return "string";
+    case ID_topSetIsAllOn: return "bool";
     default:  return "invalid index";
     }
 }
@@ -558,6 +587,11 @@ CompactSILRestrictionAttributes::FieldsEqual(int index_, const AttributeGroup *r
     case ID_topSet:
         {  // new scope
         retval = (topSet == obj.topSet);
+        }
+        break;
+    case ID_topSetIsAllOn:
+        {  // new scope
+        retval = (topSetIsAllOn == obj.topSetIsAllOn);
         }
         break;
     default: retval = false;

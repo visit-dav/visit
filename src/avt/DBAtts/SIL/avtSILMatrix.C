@@ -359,6 +359,11 @@ avtSILMatrix::GetSILCollection(int index) const
 //  Programmer: Hank Childs
 //  Creation:   November 20, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  1 15:25:06 PST 2008
+//    Add support for the SomeUsedOtherProc designation.
+//
 // ****************************************************************************
 
 SetState
@@ -366,7 +371,9 @@ avtSILMatrix::GetSetState(const vector<unsigned char> &useSet, int index) const
 {
     int NoneUsedCount = 0;
     int SomeUsedCount = 0;
+    int SomeUsedOtherProcCount = 0;
     int AllUsedCount = 0;
+    int AllUsedOtherProcCount = 0;
 
     int set1size = set1.size();
     int set2size = set2.size();
@@ -382,6 +389,10 @@ avtSILMatrix::GetSetState(const vector<unsigned char> &useSet, int index) const
                 NoneUsedCount++;
             else if (s == SomeUsed)
                 SomeUsedCount++;
+            else if (s == SomeUsedOtherProc)
+                SomeUsedOtherProcCount++;
+            else if (s == AllUsedOtherProc)
+                AllUsedOtherProcCount++;
             else 
                 AllUsedCount++;
         }
@@ -397,6 +408,10 @@ avtSILMatrix::GetSetState(const vector<unsigned char> &useSet, int index) const
                 NoneUsedCount++;
             else if (s == SomeUsed)
                 SomeUsedCount++;
+            else if (s == SomeUsedOtherProc)
+                SomeUsedOtherProcCount++;
+            else if (s == AllUsedOtherProc)
+                AllUsedOtherProcCount++;
             else 
                 AllUsedCount++;
         }
@@ -405,11 +420,17 @@ avtSILMatrix::GetSetState(const vector<unsigned char> &useSet, int index) const
     SetState retval;
     if (SomeUsedCount > 0)
         retval = SomeUsed;
-    else if (NoneUsedCount == 0 && AllUsedCount != 0)
+    else if(NoneUsedCount != 0 && AllUsedCount != 0)
+        retval = SomeUsed;
+    else if(NoneUsedCount != 0 && AllUsedOtherProcCount != 0)
+        retval = SomeUsedOtherProc;
+    else if(AllUsedOtherProcCount != 0)
+        retval = AllUsedOtherProc;
+    else if(AllUsedCount != 0)
         retval = AllUsed;
-    else if (AllUsedCount == 0 && NoneUsedCount != 0)
+    else if(NoneUsedCount != 0)
         retval = NoneUsed;
-    else
+    else 
         retval = SomeUsed;
 
     return retval;
@@ -501,6 +522,9 @@ avtSILMatrix::GetMaterialList(int index, MaterialList &matlist,
 //    Added forLoadBalance argument.  This was causing a serious AMR bug 
 //    with respect to properly ghosting out coarser zones in parallel.
 //
+//    Hank Childs, Mon Dec  1 15:25:06 PST 2008
+//    Add support for the SomeUsedOtherProc designation.
+//
 // ****************************************************************************
 
 void
@@ -516,9 +540,13 @@ avtSILMatrix::TurnSet(vector<unsigned char> &useSet, int index,
         for (int i = 0 ; i < set2size ; i++)
         {
             int set = setsStartAt + row*set2size + i;
-            if (forLoadBalance && (val==NoneUsed) && 
-               ((useSet[set]==AllUsed) || (useSet[set]==AllUsedOtherProc)))
-                useSet[set] = AllUsedOtherProc;
+            if (forLoadBalance && (val==NoneUsed))
+            {
+                if ((useSet[set]==AllUsed) || (useSet[set]==AllUsedOtherProc))
+                    useSet[set] = AllUsedOtherProc;
+                else if ((useSet[set]==SomeUsed) || (useSet[set]==SomeUsedOtherProc))
+                    useSet[set] = SomeUsedOtherProc;
+            }
             else
                 useSet[set] = val;
         }
@@ -529,9 +557,13 @@ avtSILMatrix::TurnSet(vector<unsigned char> &useSet, int index,
         for (int i = 0 ; i < set1size ; i++)
         {
             int set = setsStartAt + i*set2size + column;
-            if (forLoadBalance && (val==NoneUsed) && 
-               ((useSet[set]==AllUsed) || (useSet[set]==AllUsedOtherProc)))
-                useSet[set] = AllUsedOtherProc;
+            if (forLoadBalance && (val==NoneUsed))
+            {
+                if ((useSet[set]==AllUsed) || (useSet[set]==AllUsedOtherProc))
+                    useSet[set] = AllUsedOtherProc;
+                else if ((useSet[set]==SomeUsed) || (useSet[set]==SomeUsedOtherProc))
+                    useSet[set] = SomeUsedOtherProc;
+            }
             else
                 useSet[set] = val;
         }

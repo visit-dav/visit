@@ -64,12 +64,18 @@ using     std::vector;
 //  Programmer: Hank Childs
 //  Creation:   November 22, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Nov 15 18:06:24 CST 2008
+//    Initialize new data member "noMaterials".
+//
 // ****************************************************************************
 
 avtSILRestrictionTraverser::avtSILRestrictionTraverser(avtSILRestriction_p s)
 {
     silr = s;
     preparedForMaterialSearches = false;
+    noMaterials = false;
 }
 
 
@@ -482,6 +488,10 @@ avtSILRestrictionTraverser::GetDomainListAllProcs(vector<int> &list)
 //    Optimized to avoid some calls to create avtSILSets on demand, and
 //    reserved some space in an array to avoid reallocating memory during
 //    push_backs.
+//
+//    Hank Childs, Sat Nov 15 18:06:24 CST 2008
+//    Add some logic for the special case where all domains are on.
+//
 // ****************************************************************************
  
 void
@@ -500,6 +510,26 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
     vector<int> setList;
     setList.push_back(silr->topSet);
  
+    bool allBeingUsed = (silr->useSet[silr->topSet] == AllUsed);
+    if (allProcs)
+        allBeingUsed = (silr->useSet[silr->topSet] == AllUsed) ||
+                       (silr->useSet[silr->topSet] == AllUsedOtherProc);
+
+    if (silr->GetWholes().size() == 1 && silr->GetNumCollections() == 1 
+        && allBeingUsed
+        && silr->GetSILCollection(0)->GetRole() == SIL_DOMAIN)
+    {
+        // Why go any further?  We know this is a multi-domain data set with 
+        // all domains on.
+        int numSets = silr->GetNumSets();
+        numSets -= 1; // for the top set.
+        list.resize(numSets);
+        for (i = 0 ; i < numSets ; i++)
+            list[i] = i;
+        visitTimer->StopTimer(timingsHandle, "GetDomainList with early return");
+        return;
+    }
+
     for (i = 0 ; i < setList.size() ; i++)
     {
         int setid = setList[i];
@@ -525,6 +555,7 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
             {
                 if ((silr->useSet[setid] == AllUsed) ||
                     (silr->useSet[setid] == AllUsedOtherProc) ||
+                    (silr->useSet[setid] == SomeUsedOtherProc) ||
                     (silr->useSet[setid] == SomeUsed))
                 {
                     // If a set has an identifier, all subsets must have the same
@@ -742,8 +773,8 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
         //
         // Since we have only one domain, assume we are using them all.
         //
-        visitTimer->StopTimer(timingsHandle, "Testing to see if we should use "
-                                             "all the domains.");
+        visitTimer->StopTimer(timingsHandle, 
+                           "Testing to see if we should use all the domains.");
         return true;
     }
  
@@ -813,6 +844,10 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
 //    Hank Childs, Fri Nov 22 14:06:36 PST 2002
 //    Moved into the SIL restriction traverser class.
 //
+//    Hank Childs, Sat Nov 15 18:06:24 CST 2008
+//    Modify the early return logic to accomodate new handling of simple
+//    cases.
+//
 // ****************************************************************************
  
 const vector<string> &
@@ -825,7 +860,7 @@ avtSILRestrictionTraverser::GetMaterials(int chunk, bool &sms)
         PrepareForMaterialSearches();
     }
  
-    if (materialListForChunk.size() == 0)
+    if (noMaterials || materialListForChunk.size() == 0)
     {
         sms = false;
         return nomats;
@@ -866,12 +901,34 @@ avtSILRestrictionTraverser::GetMaterials(int chunk, bool &sms)
 //    Dave Bremer, Mon Jan 28 18:58:05 PST 2008
 //    Added an early out if a given set would have no maps out.  
 //    In that case it can avoid creating the set on demand.
+//
+//    Hank Childs, Sat Nov 15 18:06:24 CST 2008
+//    Look to see if there are materials at all.  If not, then we should
+//    not do any more work.
+//
 // ****************************************************************************
  
 void
 avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
 {
     int timingsHandle = visitTimer->StartTimer();
+
+    if (silr->GetNumCollections() < 10)
+    {
+        bool haveMaterialCollection = false;
+        for (int c = 0 ; c < silr->GetNumCollections() ; c++)
+        {
+            avtSILCollection_p coll = silr->GetSILCollection(c);
+            if (coll->GetRole() == SIL_MATERIAL)
+                haveMaterialCollection = true;
+        }
+        if (!haveMaterialCollection)
+        {
+            noMaterials = true;
+            preparedForMaterialSearches = true;
+            return;
+        }
+    }
 
     //TODO:  See if this increased size is a problem. -DJB
     vector<bool> setIsInProcessList(silr->GetNumSets(), false);

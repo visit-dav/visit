@@ -8224,6 +8224,10 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
 //    Hank Childs, Thu Feb  8 09:26:19 PST 2007
 //    Add a stage for the transform manager ... it is always called.
 //
+//    Hank Childs, Mon Dec  1 15:39:54 PST 2008
+//    No longer add a stage for material select.  For big SILs, getting this
+//    information just takes too long.
+//
 // ****************************************************************************
 
 int
@@ -8237,17 +8241,22 @@ avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
 
     avtSILRestriction_p silr = spec->GetRestriction();
     avtSILRestrictionTraverser trav(silr);
-    intVector domains;
-    trav.GetDomainList(domains);
-    
+
     //
     // Determine if there will be a material selection phase.
     //
     bool needMatSel = false;
     
     needMatSel |= spec->MustDoMaterialInterfaceReconstruction();
-    if (!needMatSel)
+    // Note from HRC: it is just not worth it to get this right.  The 
+    // traversal takes time and that time only is going to make our stage
+    // numbering more accurate.
+    //if (!needMatSel)
+    if (0)
     {
+        intVector domains;
+        trav.GetDomainList(domains);
+    
         for (int i = 0 ; i < domains.size() ; i++)
         {
             bool needMatSelForThisDom;

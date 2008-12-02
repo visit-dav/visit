@@ -122,10 +122,11 @@ enum avtMeshCoordType
 
 enum SetState
 {
-    NoneUsed          = 0,
-    SomeUsed,        /* 1 */
-    AllUsed,         /* 2 */
-    AllUsedOtherProc /* 3 */
+    NoneUsed            = 0,
+    SomeUsed,          /* 1 */
+    AllUsed,           /* 2 */
+    SomeUsedOtherProc, /* 3 */
+    AllUsedOtherProc   /* 4 */
 }; 
 
 
