@@ -37,145 +37,197 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//  File: ITAPS_CPluginInfo.C
+//                            avtITAPS_CWriter.C                             //
 // ************************************************************************* //
 
-#include <ITAPS_CPluginInfo.h>
+#include <avtITAPS_CWriter.h>
 
-#include <visit-config.h>
-#if defined(__APPLE__)
-extern "C" const char *ITAPS_CVisItPluginVersion = VERSION;
-#else
-extern "C" const char *VisItPluginVersion = VERSION;
+#include <avtDatabaseMetaData.h>
+#include <DBOptionsAttributes.h>
+#include <DebugStream.h>
+#include <ImproperUseException.h>
+
+#include <iMesh.h>
+
+#include <vtkDataSet.h>
+#include <vtkType.h>
+
+using std::map;
+using std::string;
+using std::vector;
+
+
+// ****************************************************************************
+//  Method: avtITAPS_CWriter constructor
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 20, 2008 
+//
+// ****************************************************************************
+
+avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
+{
+    for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
+    {
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtITAPS_CWriter destructor
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 20, 2008 
+//
+// ****************************************************************************
+
+avtITAPS_CWriter::~avtITAPS_CWriter()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtITAPS_CWriter::OpenFile
+//
+//  Purpose:
+//
+//  Programmer: November 20, 2008 
+//  Creation:   September 11, 2003
+//
+// ****************************************************************************
+
+void
+avtITAPS_CWriter::OpenFile(const string &stemname, int nb)
+{
+    stem = stemname;
+    nblocks = nb;
+}
+
+// ****************************************************************************
+//  Method: avtITAPS_CWriter::WriteHeaders
+//
+//  Purpose:
+//      This will write out the multi-vars for the ITAPS_C constructs.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 20, 2008 
+//
+// ****************************************************************************
+
+void
+avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
+                            vector<string> &scalars, vector<string> &vectors,
+                            vector<string> &materials)
+{
+    const avtMeshMetaData *mmd = md->GetMesh(0);
+
+}
+
+// ****************************************************************************
+//  Method: avtITAPS_CWriter::WriteChunk
+//
+//  Purpose:
+//      This writes out one chunk of an avtDataset.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 20, 2008 
+//
+// ****************************************************************************
+
+void
+avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
+{
+    //
+    // Use sub-routines to do the mesh-type specific writes.
+    //
+    switch (ds->GetDataObjectType())
+    {
+       case VTK_UNSTRUCTURED_GRID:
+         break;
+
+       case VTK_STRUCTURED_GRID:
+         break;
+
+       case VTK_RECTILINEAR_GRID:
+         break;
+
+       case VTK_POLY_DATA:
+         break;
+
+       default:
+         EXCEPTION0(ImproperUseException);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtITAPS_CWriter::CloseFile
+//
+//  Purpose:
+//      Closes the file.  This does nothing in this case.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 20, 2008 
+//
+// ****************************************************************************
+
+void
+avtITAPS_CWriter::CloseFile(void)
+{
+}
+
+// ****************************************************************************
+//  Method: avtITAPS_CWriter::VTKZoneTypeToITAPS_CZoneType
+//
+//  Purpose:
+//      Converts a VTK cell type to the proper ITAPS_C zone type.
+//
+//  Arguments:
+//      vtk_zonetype     Input VTK zone type.
+//
+//  Returns:     ITAPS_C zone type
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 26, 2007
+//
+// ****************************************************************************
+
+int
+avtITAPS_CWriter::VTKZoneTypeToITAPS_CZoneType(int vtk_zonetype)
+{
+#if 0
+    int  silo_zonetype = -1;
+
+    switch (vtk_zonetype)
+    {
+      case VTK_POLYGON:
+        silo_zonetype = DB_ZONETYPE_POLYGON;
+        break;
+      case VTK_TRIANGLE:
+        silo_zonetype = DB_ZONETYPE_TRIANGLE;
+        break;
+      case VTK_PIXEL:
+      case VTK_QUAD:
+        silo_zonetype = DB_ZONETYPE_QUAD;
+        break;
+      case VTK_TETRA:
+        silo_zonetype = DB_ZONETYPE_TET;
+        break;
+      case VTK_PYRAMID:
+        silo_zonetype = DB_ZONETYPE_PYRAMID;
+        break;
+      case VTK_WEDGE:
+        silo_zonetype = DB_ZONETYPE_PRISM;
+        break;
+      case VTK_VOXEL:
+      case VTK_HEXAHEDRON:
+        silo_zonetype = DB_ZONETYPE_HEX;
+        break;
+      case VTK_LINE:
+        silo_zonetype = DB_ZONETYPE_BEAM;
+        break;
+    }
+
+    return silo_zonetype;
 #endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo ITAPS_C_GetGeneralInfo
-#endif
-
-// ****************************************************************************
-//  Function:  GetGeneralInfo
-//
-//  Purpose:
-//    Return a new GeneralPluginInfo for the ITAPS_C database.
-//
-//  Programmer:  generated by xml2info
-//  Creation:    omitted
-//
-// ****************************************************************************
-extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
-{
-    return new ITAPS_CGeneralPluginInfo;
-}
-
-// ****************************************************************************
-//  Method: ITAPS_CGeneralPluginInfo::GetName
-//
-//  Purpose:
-//    Return the name of the database plugin.
-//
-//  Returns:    A pointer to the name of the database plugin.
-//
-//  Programmer: generated by xml2info
-//  Creation:   omitted
-//
-// ****************************************************************************
-
-const char *
-ITAPS_CGeneralPluginInfo::GetName() const
-{
-    return "ITAPS_C";
-}
-
-// ****************************************************************************
-//  Method: ITAPS_CGeneralPluginInfo::GetVersion
-//
-//  Purpose:
-//    Return the version of the database plugin.
-//
-//  Returns:    A pointer to the version of the database plugin.
-//
-//  Programmer: generated by xml2info
-//  Creation:   omitted
-//
-// ****************************************************************************
-
-const char *
-ITAPS_CGeneralPluginInfo::GetVersion() const
-{
-    return "1.0";
-}
-
-// ****************************************************************************
-//  Method: ITAPS_CGeneralPluginInfo::GetID
-//
-//  Purpose:
-//    Return the id of the database plugin.
-//
-//  Returns:    A pointer to the id of the database plugin.
-//
-//  Programmer: generated by xml2info
-//  Creation:   omitted
-//
-// ****************************************************************************
-
-const char *
-ITAPS_CGeneralPluginInfo::GetID() const
-{
-    return "ITAPS_C_1.0";
-}
-// ****************************************************************************
-//  Method: ITAPS_CGeneralPluginInfo::EnabledByDefault
-//
-//  Purpose:
-//    Return true if this plugin should be enabled by default; false otherwise.
-//
-//  Returns:    true/false
-//
-//  Programmer: generated by xml2info
-//  Creation:   omitted
-//
-// ****************************************************************************
-
-bool
-ITAPS_CGeneralPluginInfo::EnabledByDefault() const
-{
-    return true;
-}
-// ****************************************************************************
-//  Method: ITAPS_CGeneralPluginInfo::HasWriter
-//
-//  Purpose:
-//    Return true if this plugin has a database writer.
-//
-//  Returns:    true/false
-//
-//  Programmer: generated by xml2info
-//  Creation:   omitted
-//
-// ****************************************************************************
-
-bool
-ITAPS_CGeneralPluginInfo::HasWriter() const
-{
-    return true;
-}
-// ****************************************************************************
-//  Method:  ITAPS_CGeneralPluginInfo::GetDfltExtsFromGen
-//
-//  Purpose:
-//    Returns the default extensions for a ITAPS_C database.
-//
-//  Programmer:  generated by xml2info
-//  Creation:    omitted
-//
-// ****************************************************************************
-std::vector<std::string>
-ITAPS_CGeneralPluginInfo::GetDfltExtsFromGen() const
-{
-    std::vector<std::string> defaultExtensions;
-    defaultExtensions.push_back("cub");
-    defaultExtensions.push_back("vmesh");
-
-    return defaultExtensions;
 }

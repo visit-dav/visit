@@ -52,6 +52,8 @@
 #include <string>
 #include <vector>
 
+class     DBOptionsAttributes;
+
 using std::map;
 using std::string;
 using std::vector;
@@ -88,7 +90,7 @@ typedef struct _VisItEntitySetInfo {
 class avtITAPS_CFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtITAPS_CFileFormat(const char *);
+                       avtITAPS_CFileFormat(const char *, DBOptionsAttributes *);
     virtual           ~avtITAPS_CFileFormat();
 
     virtual const char    *GetType(void)   { return "ITAPS_C"; };

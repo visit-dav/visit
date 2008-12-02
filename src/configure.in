@@ -2054,6 +2054,14 @@ fi
 # Handle the Silo library
 #
 VAC_ARG_WITH3RD(silo,,siloxx siloh5 silo)
+# Check for possible dependence on HDF5
+if test -n "$SILO_LIB"; then
+    if test -n "`strings $SILO_LIBFILE | grep -i 'SILO built with HDF5'`"; then
+        if test -z "`echo $SILO_LIB | tr ' ' '\n' | grep -x -e '-lhdf5'`"; then
+            AC_MSG_ERROR(Silo appears to have a dependence on HDF5. Add dependent libs after ':' in --with-silo arg.)
+        fi
+    fi
+fi
 
 dnl
 dnl Check for exodus libraries
