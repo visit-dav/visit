@@ -1,6 +1,25 @@
 <?xml version="1.0"?>
-  <Plugin name="ITAPS_C" type="database" label="ITAPS_C" mdspecificcode="true" version="1.0" dbtype="STMD">
-    <Extensions> cub vmesh </Extensions>
-    <CXXFLAGS> $(ITAPS_C_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(ITAPS_C_LIB) </LIBS>
+  <Plugin name="ITAPS_C" type="database" label="ITAPS_C" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" specifiedFilenames="false">
+    <CXXFLAGS>
+      $(ITAPS_C_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(ITAPS_C_LIB)
+    </LIBS>
+    <Extensions>
+      cub
+      vmesh
+    </Extensions>
+    <Files components="M">
+      avtITAPS_CFileFormat.C
+      avtITAPS_CUtility.C
+      avtITAPS_CWriter.C
+    </Files>
+    <Files components="E">
+      avtITAPS_CFileFormat.C
+      avtITAPS_CUtility.C
+      avtITAPS_CWriter.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true">
+    </Attribute>
   </Plugin>

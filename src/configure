@@ -8619,6 +8619,16 @@ echo "${ECHO_T}no" >&6
 
 
 
+# Check for possible dependence on HDF5
+if test -n "$SILO_LIB"; then
+    if test -n "`strings $SILO_LIBFILE | grep -i 'SILO built with HDF5'`"; then
+        if test -z "`echo $SILO_LIB | tr ' ' '\n' | grep -x -e '-lhdf5'`"; then
+            { { echo "$as_me:$LINENO: error: Silo appears to have a dependence on HDF5. Add dependent libs after ':' in --with-silo arg." >&5
+echo "$as_me: error: Silo appears to have a dependence on HDF5. Add dependent libs after ':' in --with-silo arg." >&2;}
+   { (exit 1); exit 1; }; }
+        fi
+    fi
+fi
 
 
 # Check whether --with-exodus or --without-exodus was given.
