@@ -463,6 +463,9 @@
 #        fixed with a special name BV_[NAME]_DIR, I just made everything 
 #        uniform.
 #
+#     Cyrus Harrison, Tue Dec  2 13:44:29 PST 2008
+#     Stopped creating symlink of szip static lib in hdf5 install.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -3906,9 +3909,6 @@ function build_hdf5
        return 1
     fi
 
-    # Put a copy SZIP into HDF5 directory for convenience
-    ln -s "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.a" \
-        "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libsz.a"
     if [[ "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable, need to patch up the install path and
