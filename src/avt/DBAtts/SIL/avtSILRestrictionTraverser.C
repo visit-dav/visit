@@ -906,6 +906,9 @@ avtSILRestrictionTraverser::GetMaterials(int chunk, bool &sms)
 //    Look to see if there are materials at all.  If not, then we should
 //    not do any more work.
 //
+//    Hank Childs, Tue Dec  2 09:21:07 PST 2008
+//    Pair up an unmatched StartTimer.
+//
 // ****************************************************************************
  
 void
@@ -926,6 +929,8 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
         {
             noMaterials = true;
             preparedForMaterialSearches = true;
+            visitTimer->StopTimer(timingsHandle,
+                                  "Prep for material searches (early return)");
             return;
         }
     }
