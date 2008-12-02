@@ -212,6 +212,9 @@ class avtStreamlineWrapper
 //   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
 //   Remove accurate distance calculate option.
 //
+//   Hank Childs, Tue Dec  2 13:53:49 PST 2008
+//   Made CreateStreamlineOutput be a pure virtual function.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -338,8 +341,9 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     void                      IntegrateStreamline(avtStreamlineWrapper *slSeg);
     avtIVPSolver::Result      IntegrateDomain(avtStreamlineWrapper *slSeg, 
                                               vtkDataSet *ds, double *extents);
-    void                      CreateStreamlineOutput( 
-                                 vector<avtStreamlineWrapper *> &streamlines );
+    virtual void              CreateStreamlineOutput( 
+                                   vector<avtStreamlineWrapper *> &streamlines)
+                                  = 0;
 
     void                      ReportStatistics(
                                   vector<avtStreamlineWrapper *> &streamlines);

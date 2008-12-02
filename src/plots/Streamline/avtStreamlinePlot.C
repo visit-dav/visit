@@ -43,7 +43,7 @@
 #include <avtStreamlinePlot.h>
 
 #include <avtShiftCenteringFilter.h>
-#include <avtStreamlineFilter.h>
+#include <avtStreamlinePolyDataFilter.h>
 #include <avtVariableLegend.h>
 #include <avtVariableMapper.h>
 #include <avtLookupTable.h>
@@ -66,7 +66,7 @@ avtStreamlinePlot::avtStreamlinePlot()
 {
     colorsInitialized = false;
 #ifdef ENGINE
-    streamlineFilter = new avtStreamlineFilter;
+    streamlineFilter = new avtStreamlinePolyDataFilter;
 #endif
     shiftCenteringFilter = NULL;
 
