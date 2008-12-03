@@ -1130,6 +1130,11 @@ avtIndexSelectFilter::FilterUnderstandsTransformedRectMesh()
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007
 //    Determine amrLevel during set validation.
 //
+//    Eric Brugger, Wed Dec  3 08:23:58 PST 2008
+//    I modified the routine to set groupCatergory to true when "Use Whole
+//    Collection" was set, so that it would would index select based on the
+//    whole mesh (using base_index) and not on a per block basis.
+//
 // ****************************************************************************
 
 void
@@ -1137,6 +1142,7 @@ avtIndexSelectFilter::VerifyInput()
 {
     if (atts.GetUseWholeCollection() || atts.GetSubsetName() == "Whole")
     {
+        groupCategory = true;
         return;
     }
 
