@@ -6,6 +6,10 @@
 # Programmer: Mark C. Miller
 # Created:    November 24, 2008 
 #
+# Modifications:
+#
+#   Mark C. Miller, Tue Dec  2 16:01:01 PST 2008
+#   Added aclocal.m4 th permitted cases.
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -54,6 +58,9 @@ for f in ${files} ; do
             continue
             ;;
         *src/svn_bin/build_visit) 
+            continue
+            ;;
+        *src/aclocal.m4) 
             continue
             ;;
         *src/svn_bin/hooks/check_gpl.sh) 
