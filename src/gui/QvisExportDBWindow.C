@@ -425,6 +425,12 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//
+//   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//   Fixed problem with empty string from split propagating into the export
+//   vars.
+//   
+//
 // ****************************************************************************
 
 void
@@ -461,8 +467,8 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
         QString temp;
         stringVector vars;
         temp = varsLineEdit->displayText().simplified();
-        QStringList lst = temp.split(" ");
-
+        QStringList lst = temp.split(" ",QString::SkipEmptyParts);
+        
         QStringListIterator it(lst);
         while(it.hasNext())
             vars.push_back(it.next().toStdString());
