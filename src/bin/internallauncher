@@ -401,6 +401,9 @@ exec perl -x $0 ${1+"$@"};
 #    Add support for Eureka at Argonne.  Note that this sets up an environment
 #    variable (PYTHONPATH) that is likely to change.
 #
+#    Hank Childs, Wed Dec  3 10:39:44 PST 2008
+#    Add -sshtunneling to the "-fullhelp" message.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -652,6 +655,7 @@ $fullusage = "$usage
                              the SSH_CLIENT, SSH2_CLIENT, or SSH_CONNECTION
                              environment variables.
         -noloopback          Disable use of the 127.0.0.1 loopback device.
+        -sshtunneling        Tunnel connections through ssh.
         -noint               Disable interruption capability.
         -nopty               Run without PTYs.
         -verbose             Prints status information during pipeline
