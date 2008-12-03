@@ -72,6 +72,7 @@ std::string ViewerServerManager::localHost("localhost");
 stringVector ViewerServerManager::arguments;
 ViewerServerManager::LauncherMap ViewerServerManager::launchers;
 void * ViewerServerManager::cbData[2] = {0,0};
+bool ViewerServerManager::sshTunnelingForcedOn = false;
 
 // ****************************************************************************
 // Method: ViewerServerManager::ViewerServerManager
@@ -392,6 +393,9 @@ ViewerServerManager::GetSSHPortOptions(const std::string &host,
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //   
+//    Jeremy Meredith, Wed Dec  3 16:48:35 EST 2008
+//    Allowed commandline override forcing-on of SSH tunneling.
+//
 // ****************************************************************************
 
 void
@@ -404,17 +408,24 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
     //
 #if defined(PANTHERHACK)
 // Broken on Panther
-        tunnelSSH = false;
+    tunnelSSH = false;
 #else
-    const HostProfile *profile =
-         clientAtts->FindMatchingProfileForHost(host.c_str());
-    if(profile != 0)
+    if (sshTunnelingForcedOn)
     {
-        tunnelSSH = profile->GetTunnelSSH();
+        tunnelSSH = true;
     }
     else
     {
-        tunnelSSH = false;
+        const HostProfile *profile =
+            clientAtts->FindMatchingProfileForHost(host.c_str());
+        if(profile != 0)
+        {
+            tunnelSSH = profile->GetTunnelSSH();
+        }
+        else
+        {
+            tunnelSSH = false;
+        }
     }
 #endif
 }
@@ -1101,4 +1112,26 @@ ViewerConnectionPrinter::HandleRead(int)
         debug1 << "Lost connection in ViewerConnectionPrinter::HandleRead" << endl;
     }
     ENDTRY
+}
+
+// ****************************************************************************
+//  Method:  ViewerServerManager::ForceSSHTunnelingForAllConnections
+//
+//  Purpose:
+//    Force SSH tunnelling for all connections.  This allows a more
+//    convenient way to initiate SSH tunneling on the command line, as
+//    this will override values in the host profiles.
+//
+//  Arguments:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    December  3, 2008
+//
+// ****************************************************************************
+
+void 
+ViewerServerManager::ForceSSHTunnelingForAllConnections()
+{
+    sshTunnelingForcedOn = true;
 }

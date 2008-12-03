@@ -2267,6 +2267,11 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    Brad Whitlock, Wed Aug 13 10:31:38 PDT 2008
 //    Moved the code to read the config files to here.
 //
+//    Jeremy Meredith, Wed Dec  3 16:00:10 EST 2008
+//    Allow the -sshtunneling argument to be passed to the viewer as a
+//    convenience.  This will even override whatever the setting is in
+//    a selected host profile.
+//
 // ****************************************************************************
 
 void
@@ -2564,8 +2569,12 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
         }
         else if(strcmp(argv[i], "-nowindowmetrics") == 0)
         {
-debug1 << "Handling -nowindowmetrics" << endl;
+            debug1 << "Handling -nowindowmetrics" << endl;
             useWindowMetrics = false;
+        }
+        else if(strcmp(argv[i], "-sshtunneling") == 0)
+        {
+            ViewerServerManager::ForceSSHTunnelingForAllConnections();
         }
         else // Unknown argument -- add it to the list
         {
