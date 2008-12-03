@@ -90,6 +90,9 @@ class ViewerConnectionProgressDialog;
 //    Brad Whitlock, Wed Nov 21 14:32:31 PST 2007
 //    Added support for printing out remote process console output.
 //
+//    Jeremy Meredith, Wed Dec  3 16:48:35 EST 2008
+//    Allowed commandline override forcing-on of SSH tunneling.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager : public ViewerBase
@@ -112,6 +115,7 @@ public:
     static void SetArguments(const stringVector &arg);
     static void SetLocalHost(const std::string &hostName);
     static bool HostIsLocalHost(const std::string &hostName);
+    static void ForceSSHTunnelingForAllConnections();
 
     static HostProfileList *GetClientAtts();
 protected:
@@ -158,6 +162,7 @@ private:
     static std::string              localHost;
     static stringVector             arguments;
     static LauncherMap              launchers;
+    static bool                     sshTunnelingForcedOn;
     static void                    *cbData[2];
 };
 

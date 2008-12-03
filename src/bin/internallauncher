@@ -404,6 +404,9 @@ exec perl -x $0 ${1+"$@"};
 #    Hank Childs, Wed Dec  3 10:39:44 PST 2008
 #    Add -sshtunneling to the "-fullhelp" message.
 #
+#    Jeremy Meredith, Wed Dec  3 15:52:00 EST 2008
+#    Added a little warning to -sshtunneling.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -655,7 +658,8 @@ $fullusage = "$usage
                              the SSH_CLIENT, SSH2_CLIENT, or SSH_CONNECTION
                              environment variables.
         -noloopback          Disable use of the 127.0.0.1 loopback device.
-        -sshtunneling        Tunnel connections through ssh.
+        -sshtunneling        Tunnel all remote connections through ssh.  NOTE:
+                             this overrides values set in the host profiles.
         -noint               Disable interruption capability.
         -nopty               Run without PTYs.
         -verbose             Prints status information during pipeline

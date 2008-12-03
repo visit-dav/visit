@@ -1187,8 +1187,11 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
 //   Added fields for commands to run pre and post the mpi command.
 //
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Jeremy Meredith, Wed Dec  3 16:50:17 EST 2008
+//   Uncommented "TODO" lines since they appear to work correctly now.
 //
 // ****************************************************************************
 
@@ -1244,11 +1247,9 @@ QvisHostProfileWindow::UpdateActiveProfile()
     if(i < 0)
     {
         profileName->setText("");
-        hostName->setEditText("");
-        //hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str()); TODO
+        hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str());
         hostAliases->setText("");
-        userName->setText("");
-        //userName->setText(GetViewerProxy()->GetLocalUserName().c_str()); TODO
+        userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         numProcessors->setValue(1);
         timeout->setValue(60*4);   // 4 hour default
         
@@ -1295,8 +1296,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
         // If there is no user name then give it a valid user name.
         if(current.GetUserName() == "notset")
         {
-            userName->setText("username");
-            //userName->setText(GetViewerProxy()->GetLocalUserName().c_str()); TODO
+            userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         }
         else
             userName->setText(current.GetUserName().c_str());
@@ -1483,6 +1483,9 @@ QvisHostProfileWindow::UpdateActiveProfile()
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Jeremy Meredith, Wed Dec  3 16:50:17 EST 2008
+//    Uncommented "TODO" lines since they appear to work correctly now.
+//
 // ****************************************************************************
 
 void
@@ -1494,8 +1497,7 @@ QvisHostProfileWindow::ReplaceLocalHost()
     {
         HostProfile &current = profiles->operator[](i);
         if(current.GetHost() == lh)
-            current.SetHost("localhost");
-            //current.SetHost(GetViewerProxy()->GetLocalHostName()); TODO
+            current.SetHost(GetViewerProxy()->GetLocalHostName());
     }
 }
 
@@ -1701,8 +1703,11 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
 //   Added fields for commands to run pre and post the mpi command.
 //
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Jeremy Meredith, Wed Dec  3 16:50:17 EST 2008
+//   Uncommented "TODO" lines since they appear to work correctly now.
 //
 // ****************************************************************************
 bool
@@ -1755,7 +1760,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             std::string newHost(temp.toStdString());
             if(newHost == "localhost")
             {
-                // newHost = GetViewerProxy()->GetLocalHostName(); TODO
+                newHost = GetViewerProxy()->GetLocalHostName();
                 hostName->setEditText(newHost.c_str());
             }
             if (newHost != current.GetHost())
@@ -2136,8 +2141,11 @@ QvisHostProfileWindow::apply()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Jeremy Meredith, Wed Dec  3 16:50:17 EST 2008
+//   Uncommented "TODO" lines since they appear to work correctly now.
 //
 // ****************************************************************************
 
@@ -2158,11 +2166,9 @@ QvisHostProfileWindow::newProfile()
     else
     {
         // Set the default user name.
-        temp.SetUserName("username");
-        //temp.SetUserName(GetViewerProxy()->GetLocalUserName()); TODO
+        temp.SetUserName(GetViewerProxy()->GetLocalUserName());
         // Set the default host name.
-        temp.SetHost("localhost");
-        //temp.SetHost(GetViewerProxy()->GetLocalHostName()); TODO
+        temp.SetHost(GetViewerProxy()->GetLocalHostName());
         // Make the first created profile active.
         temp.SetActive(true);
     }
