@@ -42,6 +42,8 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QLineEdit>
+
+#include <DebugStream.h>
 #include <DBOptionsAttributes.h>
 
 // ****************************************************************************
@@ -188,12 +190,19 @@ QvisDBOptionsDialog::~QvisDBOptionsDialog()
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Brad Whitlock, Wed Dec  3 08:52:25 PST 2008
+//    Index into the widget arrays using different indices. Added debugging code.
+//
 // ****************************************************************************
 
 void
 QvisDBOptionsDialog::okayClicked()
 {
+    const char *mName = "QvisDBOptionsDialog::okayClicked: ";
     int size = atts->GetNumberOfOptions();
+    int lineedit_index = 0;
+    int checkbox_index = 0;
+    int combobox_index = 0;
     for (int i=0; i<size; i++)
     {
         QString txt;
@@ -202,22 +211,47 @@ QvisDBOptionsDialog::okayClicked()
         switch (t)
         {
           case DBOptionsAttributes::Bool:
-            atts->SetBool(name, checkboxes[i]->isChecked());
+          {
+            bool val = checkboxes[checkbox_index++]->isChecked();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to " 
+                   << (val?"true":"false") << endl;
+            atts->SetBool(name, val);
+          }
             break;
           case DBOptionsAttributes::Int:
-            atts->SetInt(name, lineedits[i]->displayText().toInt());
+          {
+            int val = lineedits[lineedit_index++]->displayText().toInt();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to " << val << endl;
+            atts->SetInt(name, val);
+          }
             break;
           case DBOptionsAttributes::Float:
-            atts->SetFloat(name, lineedits[i]->displayText().toFloat());
+          {
+            float val = lineedits[lineedit_index++]->displayText().toFloat();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to " << val << endl;
+            atts->SetFloat(name, val);
+          }
             break;
           case DBOptionsAttributes::Double:
-            atts->SetDouble(name, lineedits[i]->displayText().toDouble());
+          {
+            double val = lineedits[lineedit_index++]->displayText().toDouble();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to " << val << endl;
+            atts->SetDouble(name, val);
+          }
             break;
           case DBOptionsAttributes::String:
-            atts->SetString(name, lineedits[i]->displayText().toStdString());
+          {
+            std::string val = lineedits[lineedit_index++]->displayText().toStdString();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to " << val.c_str() << endl;
+            atts->SetString(name, val);
+          }
             break;
           case DBOptionsAttributes::Enum:
-            atts->SetEnum(name, comboboxes[i]->currentIndex());
+          {
+            int val = comboboxes[combobox_index++]->currentIndex();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to " << val << endl;
+            atts->SetEnum(name, val);
+          }
             break;
         }
     }
