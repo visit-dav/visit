@@ -14,15 +14,17 @@
 <p>Welcome to VisIt's release notes page. Release 1.11.1 is primarily a bug fix release to release 1.11.  Look <a href="relnotes1.11.0.html">here</a> to see a complete list of bugs fixed in release 1.11.</p>
 <p><b><font size="4">Bugs fixed in version 1.11.1</font></b></p>
 <ul>
-<li>A bug was fixed where scalable rendering (the parallel rendering mode) would produce the wrong image under a variety of conditions, including zooming in too far or clipping away part of the data set.</li>
+<li>A bug was fixed where VisIt would crash when saving images in screen capture mode.</li>
+<li>A bug was fixed where scalable rendering (the parallel rendering mode) would leave out portions of the data set under a variety of conditions, including zooming in too far or clipping away part of the data set.</li>
 <li>A bug was fixed where a slice that lay between two, flat domain boundaries could lead to a double contribution (one from each boundary).  The images from VisIt were basically unaffected, but integrations (Weighted Variable Sums) and 2D area queries were double counting.</li>
+<li>A bug was fixed where index selecting a multi-block mesh when "Use Whole Collection" was set would index select the mesh on a per-block basis, instead of across the entire mesh. It now index selects across the entire mesh in that situation.</li>
+<li>A bug was fixed with the Windows installer so that it correctly set the chosen network configuration files.<li>
+<li>The help files have been made available once again for the windows platform.</li>
+<li>Silex no longer crashes on start up on Windows.</li>
+<li>Host profiles for LLNL's hera system have been added.</li>
 <li>The host profiles for LLNL's juno system have been corrected to handle node names with 4 digits.</li>
 <li>The source code was modified so that VisIt would compile with the gcc 4.3.x compilers.</li>
-<li>The help files have been made available once again for the windows platform.</li>
-<li>VisIt crashes when saving images in screen capture mode.</li>
-<li>Fixed Windows installer to correctly set chosen network configuration files.<li>
-<li>Fixed silex run-time error on Windows</li>
-<li>Fixed problems with configuration switch --with-hdf5 where VisIt's configure would attempt to locate hdf5 library even if it was not requested or even specifically disabled.</li>
+<li>A bug was fixed with VisIt's configure script where the configuration switch --with-hdf5 would attempt to locate the hdf5 library even if it was not requested or even specifically disabled.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.11.0.html">VisIt 1.11.0 Release Notes</a>.</p>
