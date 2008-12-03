@@ -620,6 +620,10 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
 //   Added call to SendFileOpenOptions after StartServer.
 //
+//   Hank Childs, Wed Dec  3 10:56:10 PST 2008
+//   Fix typo in generating error message for opening bad file when running
+//   client-server.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -703,7 +707,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 else
                 {
                     msg = tr("VisIt could not read from the file "
-                             "\"%`\" on host %2.\n\nThe generated error message"
+                             "\"%1\" on host %2.\n\nThe generated error message"
                              " was:\n\n%3").
                           arg(db.c_str()).arg(host.c_str()).
                           arg(gmde.Message().c_str());
