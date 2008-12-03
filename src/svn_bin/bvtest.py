@@ -25,7 +25,21 @@
 
 import sys,os,time,socket
 
-class BuildResult:
+def sexe(cmd):
+    """
+    Execute a shell command.
+    """
+    sys.stderr.write("[exe:%s]\n" % cmd)
+    os.system(cmd)
+
+def current_time():
+    """
+    Helper to return a human readble string /w the current time.
+    """
+    return time.strftime("%Y-%m-%d %H:%M:%S")
+    #time.asctime(time.gmtime())
+
+class BuildResult(object):
     """
     Class that holds the results for an attemped build of a library.
     """
@@ -47,95 +61,128 @@ class BuildResult:
         res += space + "</build_result>"
         return res
 
-def get_current_time():
+class BuildTest(object):
     """
-    Helper to return a human readble string /w the current time.
+    Class executes build_visit tests and holds a set of results.
     """
-    return time.asctime(time.gmtime())
-        
-def sexe(cmd):
-    """
-    Execute a shell command.
-    """
-    sys.stderr.write("[exe:%s]\n" % cmd)
-    os.system(cmd)
-
-def log_file(lib):
-    """
-    Construct the output log file name.
-    """
-    return "bv_log_%s.txt" % lib
+    def __init__(self,output_dir,libcmds,bvexe,mode = "svn"):
+        self.odir = os.path.abspath(output_dir)
+        if self.odir[-1] == "/":
+            self.odir = self.odir[:-1]
+        self.libcmds = libcmds
+        self.bvexe = bvexe
+        self.mode = mode
+        self.host = socket.gethostname()
+        self.start_time = None
+        self.end_time   = None
+        self.results    = []
     
-def build_visit_command(libs,odir=""):
-    """
-    Construct the proper build_visit command.
-    """
-    options = "--console --svn HEAD --no-visit --no-thirdparty --no-hostconf --stdout --makeflags -j4"
-    blibs=""
-    for l in libs:
-        blibs+="--%s " % l
-    lib = libs[-1]
-    if odir == "":
-        cmd = "echo yes | ./build_visit %s %s >> %s"
-        cmd = cmd % (options,blibs,log_file(lib))
-    else:
-        cmd = "echo yes | ./build_visit %s %s --thirdparty-path  %s >> %s"
-        cmd = cmd % (options,blibs,odir,log_file(lib))
-    return cmd
-
-def check_build(lib,odir):
-    """
-    Checks for sucessful build by examining at the end of the build log.
-    """
-    try:
-        lines = open(log_file(lib)).readlines()
-        nlines = len(lines)
-        last = lines[nlines-1].strip()
-        return last == "Finished!"
-    except:
-        return False
-
-def build(libcmd,odir):
-    """
-    Build a library using build_visit and return a BuildResult.
-    """
-    libs = parse_libcmd(libcmd)
-    bvc = build_visit_command(libs,odir);
-    lib = libs[-1]
-    lfile = log_file(lib)
-    bresult = "failure"
-    bstart = get_current_time()
-    sexe(bvc)
-    bend = get_current_time()
-    if check_build(lib,odir):
-        bresult = "success"
-    return BuildResult(lib,libcmd,lfile,bstart,bend,bresult)
+    def execute(self):
+        self.start_time = current_time()
+        self.results    = self.build_libs(self.libcmds)
+        self.end_time   = current_time()
+    
+    def build_lib(self,libcmd):
+        """
+        Build a library using build_visit and return a BuildResult.
+        """
+        # make sure output dir exists!
+        if self.odir != "":
+            if not os.path.exists(self.odir):
+                os.mkdir(self.odir)
+        libs  = self.__parse_libcmd(libcmd)
+        bvc   = self.__build_visit_command(libs);
+        lib   = libs[-1]
+        lfile = self.__log_file_name(lib)
+        bresult = "failure"
+        bstart = current_time()
+        sexe(bvc)
+        bend = current_time()
+        if self.__check_build(lib):
+            bresult = "success"
+        return BuildResult(lib,libcmd,lfile,bstart,bend,bresult)
    
-def build_libs(libcmds,odir):
-    """
-    Build a collection of libraries using build_visit and return a BuildResult for each.
-    """
-    if odir != "":
-        if not os.path.exists(odir):
-            os.mkdir(odir)
-    return [ build(libcmd,odir) for libcmd in libcmds ]
+    def build_libs(self,libcmds):
+        """
+        Build a collection of libraries using build_visit and return a BuildResult for each.
+        """
+        return [ self.build_lib(libcmd) for libcmd in libcmds ]
+        
+            
+    def result_xml(self):
+        res  = '<?xml version="1.0"?>\n'
+        res += '<?xml-stylesheet type="text/xsl" href="bvtest.xsl"?>'
+        info  = 'host="%s" '  % self.host
+        info += 'odir="%s" '  % self.odir
+        info += 'libs="%s" '  % str(self.libcmds)
+        info += 'start="%s" ' % self.start_time
+        info += 'end="%s" '   % self.end_time
+        res += "<bvtest %s >\n" % info
+        res += "  <results>\n"
+        for r in self.results:
+            res += r.to_xml("  ")
+        res +="  </results>\n"
+        res +="</bvtest>\n"
+        return res
+        
+    def __log_file_name(self,lib):
+        """
+        Construct the output log file name.
+        """
+        if self.odir != "":
+            return  "%s/bv_log_%s.txt" % (self.odir,lib)
+        else:
+            return "bv_log_%s.txt" % (lib)
+    
+    def __build_visit_command(self,libs):
+        """
+        Construct the proper build_visit command.
+        """
+        options = "--console --no-visit --no-thirdparty --no-hostconf --stdout --makeflags -j4"
+        if self.mode == "svn":
+            options = "--svn HEAD " + options
+        blibs=""
+        for l in libs:
+            blibs+="--%s " % l
+        lib = libs[-1]
+        if self.odir == "":
+            cmd = "echo yes | %s %s %s >> %s"
+            cmd = cmd % (self.bvexe,options,blibs,self.__log_file_name(lib))
+        else:
+            cmd = "echo yes | %s %s %s --thirdparty-path  %s >> %s"
+            cmd = cmd % (self.bvexe,options,blibs,self.odir,self.__log_file_name(lib))
+        return cmd
+
+    def __check_build(self,lib):
+        """
+        Checks for sucessful build by examining the end of the build log.
+        """
+        try:
+            lines = open(self.__log_file_name(lib)).readlines()
+            nlines = len(lines)
+            last = lines[nlines-1].strip()
+            return last == "Finished!"
+        except:
+            return False
 
     
-def parse_libcmd(vstr):
-    # lib >>> [lib[
-    # lib_3:lib_1,lib_2 >>> [lib_1,lib_2,lib_3]
-    #
-    res = []
-    cidx = vstr.find(":")
-    if cidx >0:
-        pre  = vstr[cidx+1:].split(",")
-        post = vstr[:cidx]
-        for p in pre:
-            res.append(p)
-        res.append(post)
-    else:
-        res.append(vstr)
-    return res
+    def __parse_libcmd(self,vstr):
+        """
+        Parses two simple build command types:
+            lib --> [lib]
+            lib_3:lib_1,lib_2 -->  [lib_1,lib_2,lib_3]
+        """
+        res = []
+        cidx = vstr.find(":")
+        if cidx >0:
+            pre  = vstr[cidx+1:].split(",")
+            post = vstr[:cidx]
+            for p in pre:
+                res.append(p)
+            res.append(post)
+        else:
+            res.append(vstr)
+        return res
     
     
 def main():
@@ -146,24 +193,11 @@ def main():
     if nargs < 3:
         sys.stderr.write("usage: bvtest.py [output_dir] [lib_1] <lib_2> .... <lib_n>\n")
         sys.exit(1)
-    odir = sys.argv[1]
-    odir = os.path.abspath(odir)
+    odir    = sys.argv[1]
     libcmds = sys.argv[2:]
-    if odir[-1] == "/":
-        odir = odir[:-1]
-    stime = get_current_time()
-    results = build_libs(libcmds,odir)
-    etime = get_current_time()
-    print '<?xml version="1.0"?>'
-    print '<?xml-stylesheet type="text/xsl" href="bvtest.xsl"?>'
-    host=socket.gethostname()
-    info = 'host="%s" odir="%s" libs="%s" start="%s" end="%s"' % (host,str(odir),str(libcmds),stime,etime)
-    print "<bvtest %s >" % info
-    print "  <results>"
-    for r in results:
-        print r.to_xml("  ")
-    print "  </results>"
-    print "</bvtest>"
+    bt = BuildTest(odir,libcmds,"./build_visit")
+    bt.execute()
+    print bt.result_xml()
     
 
 if __name__ == "__main__":
