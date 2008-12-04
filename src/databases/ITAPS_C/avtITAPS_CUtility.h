@@ -42,6 +42,11 @@
 #ifndef AVT_ITAPS_C_UTILITY_H
 #define AVT_ITAPS_C_UTILITY_H
 
+#include <snprintf.h>
+#include <stdarg.h>
+
+#include <avtCallback.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -156,7 +161,8 @@ namespace avtITAPS_CUtility
     void ITAPSErrorCleanupHelper(int dummy, ...);
     void InitDataTypeNames();
     string VisIt_iMesh_getTagName(iMesh_Instance theMesh, iBase_TagHandle theTag);
-    int ITAPSEntityTopologyToVTKZoneType(int ttype);
+    int ITAPSEntityTopologyToVTKZoneType(int ztype);
+    int VTKZoneTypeToITAPSEntityTopology(int ztype);
     void TraverseSetHierarchy(iMesh_Instance aMesh, int level, int memberId,
         bool isEntitySet, iBase_EntitySetHandle esh, bool debugOff,
         HandleThisSet handleSetCb, void *handleSetCb_data);

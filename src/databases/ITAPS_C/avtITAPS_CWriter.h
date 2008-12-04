@@ -45,6 +45,8 @@
 
 #include <avtDatabaseWriter.h>
 
+#include <iMesh.h>
+
 #include <string>
 #include <vector>
 
@@ -82,10 +84,11 @@ class avtITAPS_CWriter : public virtual avtDatabaseWriter
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
 
-    int            VTKZoneTypeToITAPS_CZoneType(int);
+    enum iMesh_EntityTopology VTKZoneTypeToITAPS_CZoneType(int);
 
   private:
     string         stem;
+    string         dir;
     int            nblocks;
 };
 

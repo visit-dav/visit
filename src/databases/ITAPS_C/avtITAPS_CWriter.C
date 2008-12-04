@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtITAPS_CWriter.h>
+#include <avtITAPS_CUtility.h>
 
 #include <avtDatabaseMetaData.h>
 #include <DBOptionsAttributes.h>
@@ -49,13 +50,19 @@
 
 #include <iMesh.h>
 
+#include <vtkCell.h>
+#include <vtkCellType.h>
 #include <vtkDataSet.h>
 #include <vtkType.h>
+
+#include <map>
+#include <string>
+#include <vector>
 
 using std::map;
 using std::string;
 using std::vector;
-
+using namespace avtITAPS_CUtility;
 
 // ****************************************************************************
 //  Method: avtITAPS_CWriter constructor
@@ -101,6 +108,15 @@ avtITAPS_CWriter::OpenFile(const string &stemname, int nb)
 {
     stem = stemname;
     nblocks = nb;
+    dir ="";
+    // find dir if provided
+    int idx = stem.rfind("/");
+    if ( idx != string::npos )
+    {
+        int stem_len = stem.size() - (idx+1) ;
+        dir  = stem.substr(0,idx+1);
+        stem = stem.substr(idx+1,stem_len);
+    }
 }
 
 // ****************************************************************************
@@ -137,6 +153,8 @@ avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
 void
 avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
+    int i;
+
     //
     // Use sub-routines to do the mesh-type specific writes.
     //
@@ -157,6 +175,79 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
        default:
          EXCEPTION0(ImproperUseException);
     }
+
+    char dummyStr[32];
+    iMesh_Instance itapsMesh;
+    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, 0);
+
+    iBase_EntitySetHandle rootSet;
+    iMesh_getRootSet(itapsMesh, &rootSet, &itapsError);
+
+    // Create the entity set representing this chunk 
+    iBase_EntitySetHandle chunkSet;
+    iMesh_createEntSet(itapsMesh, 0, &chunkSet, &itapsError);
+
+    // Add the nodes of this mesh as vertices of the iMesh instance.
+    // Note that vertices can only ever be created or live in the instance
+    // itself and not in entity sets of the instance. Though, I think we
+    // can create 'links' to vertices from a given entity set using 'add'
+    // method(s). We should really use the 'Arr' versions of this method
+    // but initial coding is simplest to use individual entity methods.
+    //
+    // In fact, it would appear as though everything is, by fiat, created
+    // in the iMesh instance itself (root set), and then can be 'moved' by
+    // adding to another set and removing from root?
+    int npts = ds->GetNumberOfPoints(); 
+    iBase_EntityHandle *ptHdls = new iBase_EntityHandle[npts];
+    for (i = 0; i < npts; i++)
+    {
+        double pt[3];
+        ds->GetPoint(i, pt);
+
+        // create initial Vtx entity
+        iMesh_createVtx(itapsMesh, pt[0], pt[1], pt[2], &ptHdls[i], &itapsError);
+
+        // add Vtx entity to chunkSet
+        //iMesh_addEntToSet(itapsMesh, ptHdls[i], &chunkSet, &itapsError);
+
+        // remove Vtx entity from root set
+        //iMesh_rmvEntFromSet(itapsMesh, ptHdls[i], &rootSet, &itapsError); 
+    }
+
+    // add just created Vtx entites to chunkSet
+    iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, &chunkSet, &itapsError);
+
+    // remove just created Vtx entities from rootSet, ok?
+    iMesh_rmvEntArrFromSet(itapsMesh, ptHdls, npts, &rootSet, &itapsError);
+
+    int ncells = ds->GetNumberOfCells();
+    iBase_EntityHandle *znHdls = new iBase_EntityHandle[ncells];
+    for (i = 0; i < ncells; i++)
+    {
+        vtkCell *theCell = ds->GetCell(i);
+
+        int status;
+        int topo = VTKZoneTypeToITAPSEntityTopology(theCell->GetCellType());
+        int ncellPts = theCell->GetNumberOfPoints();
+        iBase_EntityHandle *cellPtEnts = new iBase_EntityHandle[ncellPts];
+        for (int j = 0; j < ncellPts; j++)
+            cellPtEnts[j] = ptHdls[theCell->GetPointId(j)];
+
+        iMesh_createEnt(itapsMesh, topo, cellPtEnts, ncellPts, &znHdls[i], &status, &itapsError);
+    }
+
+    // add just created cell entites to chunkSet
+    iMesh_addEntArrToSet(itapsMesh, znHdls, ncells, &chunkSet, &itapsError);
+
+    // remove just created cell entities from rootSet, ok?
+    iMesh_rmvEntArrFromSet(itapsMesh, znHdls, ncells, &rootSet, &itapsError);
+
+    // save the file
+    string fname = dir + stem;
+    char filename[1024];
+    sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
+    iMesh_save(itapsMesh, rootSet, filename, 0, &itapsError, strlen(filename), 0);
+
 }
 
 
@@ -174,60 +265,4 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
 void
 avtITAPS_CWriter::CloseFile(void)
 {
-}
-
-// ****************************************************************************
-//  Method: avtITAPS_CWriter::VTKZoneTypeToITAPS_CZoneType
-//
-//  Purpose:
-//      Converts a VTK cell type to the proper ITAPS_C zone type.
-//
-//  Arguments:
-//      vtk_zonetype     Input VTK zone type.
-//
-//  Returns:     ITAPS_C zone type
-//
-//  Programmer: Cyrus Harrison
-//  Creation:   February 26, 2007
-//
-// ****************************************************************************
-
-int
-avtITAPS_CWriter::VTKZoneTypeToITAPS_CZoneType(int vtk_zonetype)
-{
-#if 0
-    int  silo_zonetype = -1;
-
-    switch (vtk_zonetype)
-    {
-      case VTK_POLYGON:
-        silo_zonetype = DB_ZONETYPE_POLYGON;
-        break;
-      case VTK_TRIANGLE:
-        silo_zonetype = DB_ZONETYPE_TRIANGLE;
-        break;
-      case VTK_PIXEL:
-      case VTK_QUAD:
-        silo_zonetype = DB_ZONETYPE_QUAD;
-        break;
-      case VTK_TETRA:
-        silo_zonetype = DB_ZONETYPE_TET;
-        break;
-      case VTK_PYRAMID:
-        silo_zonetype = DB_ZONETYPE_PYRAMID;
-        break;
-      case VTK_WEDGE:
-        silo_zonetype = DB_ZONETYPE_PRISM;
-        break;
-      case VTK_VOXEL:
-      case VTK_HEXAHEDRON:
-        silo_zonetype = DB_ZONETYPE_HEX;
-        break;
-      case VTK_LINE:
-        silo_zonetype = DB_ZONETYPE_BEAM;
-        break;
-    }
-
-    return silo_zonetype;
-#endif
 }
