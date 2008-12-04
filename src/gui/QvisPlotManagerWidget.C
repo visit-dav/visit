@@ -324,10 +324,16 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 //   Brad Whitlock, Tue Sep  9 10:40:33 PDT 2008
 //   Removed metaData and pluginAtts since they were not used.
 //
+//   Hank Childs, Thu Dec  4 10:19:11 PST 2008
+//   Commit fix for memory leak contributed by David Camp of UC Davis.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::~QvisPlotManagerWidget()
 {
+    for (int i = 0 ; i < plotPlugins.size() ; i++)
+        DestroyPlotMenuItem(i);
+
     if(plotList)
         plotList->Detach(this);
 
