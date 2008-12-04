@@ -911,6 +911,9 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 //   Added interpreter. I also made it possible to detach from the viewer
 //   rather than always telling it to close.
 //
+//   Hank Childs, Thu Dec  4 10:17:36 PST 2008
+//   Commit fix for memory leak contributed by David Camp of UC Davis.
+//
 // ****************************************************************************
 
 QvisGUIApplication::~QvisGUIApplication()
@@ -973,6 +976,9 @@ QvisGUIApplication::~QvisGUIApplication()
     delete mainApp;
 
     // Delete the args for QT
+    for (i = 0 ; i < qt_argc ; i++)
+        if (qt_argv[i])
+            free(qt_argv[i]);
     delete [] qt_argv;
 
     // Delete the printer object.
