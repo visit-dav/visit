@@ -558,6 +558,7 @@ PP_ZFileReader::GetTimeVaryingInformation(avtDatabaseMetaData *md)
 //   out the material names from it.
 //
 // Arguments:
+//   p         : The PDB file object to use.
 //   namregVar : The name of the variable that contains the names of the
 //               materials.
 //   nmats     : The expected number of materials.
@@ -574,17 +575,20 @@ PP_ZFileReader::GetTimeVaryingInformation(avtDatabaseMetaData *md)
 //   ireg value for 0 is used for ghosting. This means that there are nmats+1
 //   material names in the file and we should skip the first one.
 //
+//   Brad Whitlock, Thu Dec  4 11:34:51 PST 2008
+//   I passed in the pdb object and made the method static.
+//
 // ****************************************************************************
 
 bool
-PP_ZFileReader::ReadMaterialNamesHelper(const char *namregVar, int nmats,
-    stringVector &matNames)
+PP_ZFileReader::ReadMaterialNamesHelper(PDBFileObject *p, const char *namregVar,
+    int nmats, stringVector &matNames)
 {
     bool     retval = false;
     TypeEnum t;
     int      nTotalElements, *dims = 0, nDims = 0;
 
-    if(pdb->SymbolExists(namregVar, &t, &nTotalElements, &dims, &nDims))
+    if(p->SymbolExists(namregVar, &t, &nTotalElements, &dims, &nDims))
     {
         char *namreg = 0;
         int   namregLen = 0, maxNameLength = 64;
@@ -593,7 +597,7 @@ PP_ZFileReader::ReadMaterialNamesHelper(const char *namregVar, int nmats,
         if(nDims > 1)
             maxNameLength = dims[0];
 
-        if(pdb->GetString(namregVar, &namreg, &namregLen))
+        if(p->GetString(namregVar, &namreg, &namregLen))
         {
             debug5 << "namregLen = " << namregLen << " namreg="
                    << namreg << endl;
@@ -649,6 +653,7 @@ PP_ZFileReader::ReadMaterialNamesHelper(const char *namregVar, int nmats,
 //   Reads actual material names from the file if they are present.
 //
 // Arguments:
+//   p        : The PDB file object to use.
 //   nmats    : The expected number of materials.
 //   matNames : The return stringVector for the material names.
 //
@@ -658,18 +663,21 @@ PP_ZFileReader::ReadMaterialNamesHelper(const char *namregVar, int nmats,
 // Creation:   Wed Sep 8 09:42:30 PDT 2004
 //
 // Modifications:
+//   Brad Whitlock, Thu Dec  4 11:34:51 PST 2008
+//   I passed in the pdb object and made the method static.
 //   
 // ****************************************************************************
 
 bool
-PP_ZFileReader::ReadMaterialNames(int nmats, stringVector &matNames)
+PP_ZFileReader::ReadMaterialNames(PDBFileObject *p, int nmats, 
+    stringVector &matNames)
 {
     // Try this variable first.
-    if(ReadMaterialNamesHelper("namreg@value", nmats, matNames))
+    if(ReadMaterialNamesHelper(p, "namreg@value", nmats, matNames))
         return true;
 
     // Try this variable second.
-    return ReadMaterialNamesHelper("namreg@las", nmats, matNames);
+    return ReadMaterialNamesHelper(p, "namreg@las", nmats, matNames);
 }
 
 // ****************************************************************************
@@ -697,6 +705,9 @@ PP_ZFileReader::ReadMaterialNames(int nmats, stringVector &matNames)
 //   If we had to scan ireg to determine the number of materials then we can
 //   still look for material names from namreg and use them.
 //
+//   Brad Whitlock, Thu Dec  4 11:36:35 PST 2008
+//   I updated the calls to ReadMaterialNames.
+//
 // ****************************************************************************
 
 bool
@@ -717,7 +728,7 @@ PP_ZFileReader::PopulateMaterialNames()
         //
         // Read any material names that might be stored in the file.
         //
-        ReadMaterialNames(nMaterials, materialNames);
+        ReadMaterialNames(pdb, nMaterials, materialNames);
 
         //
         // Fill in any materials that were not added yet.
@@ -746,7 +757,7 @@ PP_ZFileReader::PopulateMaterialNames()
         //
         // Read any material names that might be stored in the file.
         //
-        ReadMaterialNames(nMaterials, materialNames);
+        ReadMaterialNames(pdb, nMaterials, materialNames);
 
         //
         // Fill in any materials that were not added yet.
@@ -834,7 +845,7 @@ PP_ZFileReader::PopulateMaterialNames()
                         // There were no gaps so see if we can read the
                         // material names.
                         stringVector names;
-                        if(ReadMaterialNames(usedMats, names))
+                        if(ReadMaterialNames(pdb, usedMats, names))
                         {
                             materialNames = names;
                             numericMaterialNames = false;

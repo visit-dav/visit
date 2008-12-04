@@ -37,9 +37,9 @@
 *****************************************************************************/
 #ifndef STREAKER_H
 #define STREAKER_H
-#include <string>
-#include <vector>
 #include <map>
+#include <vectortypes.h>
+#include <void_ref_ptr.h>
 
 class avtDatabaseMetaData;
 class PDBFileObject;
@@ -63,7 +63,9 @@ class vtkFloatArray;
 // Creation:   Fri Nov  7 10:42:02 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec  2 15:53:13 PST 2008
+//   Added GetAuxiliaryData so we can return materials.
+//
 // ****************************************************************************
 
 class Streaker
@@ -79,7 +81,9 @@ public:
 
     vtkDataSet   *GetMesh(const std::string &mesh, const PDBFileObjectVector &pdb);
     vtkDataArray *GetVar(const std::string &mesh, const PDBFileObjectVector &pdb);
-
+    void         *GetAuxiliaryData(const std::string &var, 
+                                   const char *type, void *args, DestructorFunction &df, 
+                                   const PDBFileObjectVector &pdb);
     void FreeUpResources();
 private:
     struct StreakInfo
@@ -89,6 +93,9 @@ private:
         std::string xvar;
         std::string yvar;
         std::string zvar;
+
+        bool        hasMaterial;
+
         int         slice;
         int         sliceIndex;
         int         hsize;
@@ -101,6 +108,8 @@ private:
     };
 
     void AddStreak(const std::string &varname, StreakInfo &s, PDBFileObject *pdb);
+    bool FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims);
+
 #ifndef MDSERVER
     vtkDataSet *ConstructDataset(const std::string &, const StreakInfo &,
                                  const PDBFileObjectVector &pdb);
@@ -109,6 +118,10 @@ private:
 #endif
 
     std::map<std::string, StreakInfo> streaks;
+    std::string                       matvar;
+    intVector                         matnos;
+    stringVector                      matNames;
+    std::map<std::string,std::string> matToStreak;
 };
 
 #endif
