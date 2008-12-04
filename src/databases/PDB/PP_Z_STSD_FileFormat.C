@@ -100,13 +100,7 @@ public:
     virtual vtkDataSet *
     GetMesh(int ts, int dom, const char *mesh)
     {
-        Streaker::PDBFileObjectVector pdbs;
-        for(int b = 0; b < nBlocks; ++b)
-            for(int t = 0; t < nTimesteps; ++t)
-            {
-                PP_Z_STSD_FileFormat *ff = (PP_Z_STSD_FileFormat *)timesteps[t][b];
-                pdbs.push_back(ff->PDB());
-            }
+        Streaker::PDBFileObjectVector pdbs(GetPDBs());
         vtkDataSet *retval = streaker.GetMesh(mesh, pdbs);
 
         if(retval == 0)
@@ -117,6 +111,33 @@ public:
     virtual vtkDataArray *
     GetVar(int ts, int dom, const char *var)
     {
+        Streaker::PDBFileObjectVector pdbs(GetPDBs());
+        vtkDataArray *retval = streaker.GetVar(var, pdbs);
+
+        if(retval == 0)
+            retval = avtSTSDFileFormatInterface::GetVar(ts, dom, var);
+        return retval;
+    }
+
+    virtual void *
+    GetAuxiliaryData(const char *var, int ts, int dom,
+                     const char *type, void *args, 
+                     DestructorFunction &df)
+    {
+        Streaker::PDBFileObjectVector pdbs(GetPDBs());
+        void *retval = streaker.GetAuxiliaryData(var, type, args, df, pdbs);
+
+        if(retval == 0)
+        {
+            retval = avtSTSDFileFormatInterface::GetAuxiliaryData(var, ts, 
+                dom, type, args, df);
+        }
+        return retval;
+    }
+
+    Streaker::PDBFileObjectVector
+    GetPDBs()
+    {
         Streaker::PDBFileObjectVector pdbs;
         for(int b = 0; b < nBlocks; ++b)
             for(int t = 0; t < nTimesteps; ++t)
@@ -124,11 +145,7 @@ public:
                 PP_Z_STSD_FileFormat *ff = (PP_Z_STSD_FileFormat *)timesteps[t][b];
                 pdbs.push_back(ff->PDB());
             }
-        vtkDataArray *retval = streaker.GetVar(var, pdbs);
-
-        if(retval == 0)
-            retval = avtSTSDFileFormatInterface::GetVar(ts, dom, var);
-        return retval;
+        return pdbs;
     }
 
     Streaker streaker;

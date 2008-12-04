@@ -84,6 +84,9 @@ class avtVariableCache;
 //   Hank Childs, Fri Nov 18 09:08:48 PST 2005
 //   Add new arguments to revolve data sets.
 //
+//   Brad Whitlock, Thu Dec  4 11:33:09 PST 2008
+//   I exposed ReadMaterialNames as a static, public method.
+//
 // ****************************************************************************
 
 class PP_ZFileReader : public PDBReader
@@ -109,6 +112,9 @@ public:
 
     void          FreeUpResources();
     void          SetCache(avtVariableCache *);
+
+    static bool ReadMaterialNames(PDBFileObject *, int nmats, 
+                                  stringVector &matNames);
 protected:
     virtual bool IdentifyFormat();
 
@@ -123,8 +129,8 @@ protected:
     const int *GetIreg(int state);
     int  GetUnstructuredCellCount();
     bool PopulateMaterialNames();
-    bool ReadMaterialNames(int nmats, stringVector &matNames);
-    bool ReadMaterialNamesHelper(const char *, int , stringVector &);
+    static bool ReadMaterialNamesHelper(PDBFileObject *, const char *, int , 
+                                        stringVector &);
     void AddRayMetaData(avtDatabaseMetaData *);
     vtkDataSet *GetRayMesh(int state, const char *var);
     vtkDataSet *ConstructRayMesh(int state, bool is3d);

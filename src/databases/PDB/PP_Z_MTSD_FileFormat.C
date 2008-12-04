@@ -574,6 +574,9 @@ PP_Z_MTSD_FileFormat::DetermineTimeFlow(int ts)
 //    Brad Whitlock, Mon Dec 6 16:50:27 PST 2004
 //    Added code to set the reader's cache pointer.
 //
+//    Brad Whitlock, Tue Dec  2 15:52:01 PST 2008
+//    Added streaker material support.
+//
 // ****************************************************************************
 
 void *
@@ -581,6 +584,16 @@ PP_Z_MTSD_FileFormat::GetAuxiliaryData(const char *var, int ts,
     const char *type, void *args, DestructorFunction &df)
 {
     void *retval = 0;
+
+#ifdef PDB_STREAK_PLOTS
+    // Try and get a streak mesh first. If none exists, return the mesh.
+    Streaker::PDBFileObjectVector pdbs;
+    for(int i = 0; i < nReaders; ++i)
+        pdbs.push_back(readers[i]->PDB());
+    retval = streaker.GetAuxiliaryData(var, type, args, df, pdbs);
+    if(retval != 0)
+        return retval;
+#endif
 
     int localTimeState = 0;
     int index = GetReaderIndexAndTimeStep(ts, localTimeState);

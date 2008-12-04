@@ -38,16 +38,25 @@
 #include <Streaker.h>
 #include <PP_ZFileReader.h>
 
+#include <set>
 #include <math.h>
+#include <snprintf.h>
 
 #include <vtkStructuredGrid.h>
+#include <vtkCellData.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 
 #include <visitstream.h>
 #include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
 #include <DebugStream.h>
+
+#include <PP_ZFileReader.h>
+
+#define STREAK_MATERIAL "streak_material"
 
 // ****************************************************************************
 // Method: Streaker::StreakInfo::StreakInfo
@@ -59,12 +68,14 @@
 // Creation:   Wed Nov 12 13:39:55 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec  2 16:11:54 PST 2008
+//   I added material vars.
+//
 // ****************************************************************************
 
-Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), slice(0), 
-    sliceIndex(0), hsize(0), dataset(0), integrate(false), log(false),
-    y_scale(1.), y_translate(0.)
+Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), hasMaterial(false),
+    slice(0), sliceIndex(0), hsize(0), dataset(0), integrate(false),
+    log(false), y_scale(1.), y_translate(0.)
 {
 }
 
@@ -78,10 +89,12 @@ Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), slice(0),
 // Creation:   Wed Nov 12 13:40:10 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec  3 14:05:29 PST 2008
+//   Added material related vars.
+//
 // ****************************************************************************
 
-Streaker::Streaker() : streaks()
+Streaker::Streaker() : streaks(), matvar(), matnos(), matNames(), matToStreak()
 {
 }
 
@@ -114,6 +127,8 @@ Streaker::~Streaker()
 // Creation:   Wed Nov 12 13:40:56 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Wed Dec  3 14:05:29 PST 2008
+//   Added material related vars.
 //   
 // ****************************************************************************
 
@@ -128,6 +143,10 @@ Streaker::FreeUpResources()
             it->second.dataset->Delete();
     }
     streaks.clear();
+    matvar = "";
+    matnos.clear();
+    matNames.clear();
+    matToStreak.clear();
 }
 
 // ****************************************************************************
@@ -345,6 +364,8 @@ Streaker::AddStreak(const std::string &varname, StreakInfo &s,
             s.hsize = dimensions[1][0];
         }
 
+        s.hasMaterial = FindMaterial(pdb, dimensions[2], nDims[2]);
+
         // Okay, it looks good. Add the streak.
         streaks[varname] = s;
     }
@@ -353,6 +374,126 @@ Streaker::AddStreak(const std::string &varname, StreakInfo &s,
 invalid:
     for(int i = 0; i < 3; ++i)
         delete [] dimensions[i];    
+}
+
+// ****************************************************************************
+// Method: Streaker::FindMaterial
+//
+// Purpose: 
+//   Looks through the file for "ireg" and if it matches the size of the
+//   current z variable, we add a material for it.
+//
+// Arguments:
+//   s           : The streak info that we're modifying.
+//   pdb         : The PDB file that contains the data.
+//   zDimensions : The size of the zvar.
+//   zDims       : The number of dimensions in Z.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec  2 16:38:01 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
+{
+    // Let's see if there's an ireg variable.
+    bool hasMaterial = false;
+    PDBfile *pdbPtr = pdb->filePointer();
+    int numVars = 0;
+    char *m = 0;
+    char **varList = PD_ls(pdbPtr, NULL /*path*/, NULL /*pattern*/, &numVars);
+    if(varList != NULL)
+    {
+        for(int j = 0; j < numVars; ++j)
+        {
+            if(strncmp(varList[j], "ireg@", 5) == 0)
+            {
+                // Get more information about ireg.
+                TypeEnum    t;
+                std::string typeString;
+                int         nTotalElements;
+                int        *dimensions;
+                int         nDims;
+                pdb->SymbolExists(varList[j], &t, typeString, 
+                       &nTotalElements, &dimensions, &nDims);
+
+                // Check whether ireg is the same size as zvar.
+                bool sameSize = nDims == nDims;
+                if(sameSize)
+                {
+                    for(int k = 0; k < nDims; ++k)
+                        sameSize &= (zDimensions[k] == dimensions[k]);
+                }
+
+                // If ireg is the same size then we can add a material var.
+                if(sameSize && t == INTEGERARRAY_TYPE)
+                {
+                    m = varList[j];
+                    hasMaterial = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // If we have not yet read the matnos then do that now.
+    if(hasMaterial && matvar.size() == 0)
+    {
+        // Read the matvar array and determine a list of material numbers. This can
+        // conceivably be a lot of data since we're reading the whole array for 
+        // this PDB file, which could contain several time steps.
+        int *ireg = 0, nvals = 0;
+        if(pdb->GetIntegerArray(m, &ireg, &nvals))
+        {
+            // Get a unique set of material numbers.
+            std::set<int> mats;
+            int *ptr = ireg;
+            for(int i = 0; i < nvals; ++i)
+            {
+                int mat = *ptr++;
+                if(mat > 0)
+                    mats.insert(*ptr++);
+            }
+            delete [] ireg;
+
+            if(mats.size() > 0)
+            {
+                this->matvar = std::string(m);
+                for(std::set<int>::const_iterator it = mats.begin();
+                    it != mats.end(); ++it)
+                {
+                    this->matnos.push_back(*it);
+                }
+
+                // Set up the material names. Try and be consistent with the
+                // PPZ reader.
+                stringVector names;
+                if(PP_ZFileReader::ReadMaterialNames(pdb, matnos.size(), names))
+                {
+                    for(size_t i = 0; i < names.size(); ++i)
+                        this->matNames.push_back(names[i]);
+                }
+                else
+                {
+                    for(size_t i = 0; i < matnos.size(); ++i)
+                    {
+                        char tmp[10];
+                        SNPRINTF(tmp, 10, "%d", matnos[i]);
+                        this->matNames.push_back(tmp);
+                    }
+                }
+            }
+            else
+                hasMaterial = false;
+        }
+    }
+
+    SFREE(varList);
+
+    return hasMaterial;
 }
 
 // ****************************************************************************
@@ -368,7 +509,9 @@ invalid:
 // Creation:   Wed Nov 12 13:45:03 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec  2 16:52:24 PST 2008
+//   Added material support.
+//
 // ****************************************************************************
 
 void
@@ -400,6 +543,17 @@ Streaker::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         smd->meshName = meshName;
         smd->centering = AVT_NODECENT;
         md->Add(smd);
+
+        // Add a material for this streak plot if its ireg matched the size of zvar.
+        if(it->second.hasMaterial)
+        {
+            std::string matName(it->first + "_mat");
+            matToStreak[matName] = it->first;
+
+            avtMaterialMetaData *mmd = new avtMaterialMetaData(matName,
+                meshName, matNames.size(), matNames);
+            md->Add(mmd);
+        }
     }
 }
 
@@ -674,7 +828,9 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
 // Creation:   Wed Nov 12 13:52:50 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec  3 14:02:10 PST 2008
+//   Added material support.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -764,9 +920,131 @@ Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PD
     zvar->SetName(var.c_str());
     sgrid->GetPointData()->AddArray(zvar);
 
+    // Assemble the vtkDataArray for the matvar if this streak plot has a material.
+    if(s.hasMaterial)
+    {
+        vtkFloatArray *nodecent_matvar = AssembleData(matvar, sdims, s.slice, s.sliceIndex, pdb);
+
+        // Convert the node centered matvar into a cell centered var. We just convert
+        // 1 fewer columns and rows from the node centered data to make the cell centered
+        // data. Not ideal.
+        vtkIntArray *cellcent_matvar = vtkIntArray::New();
+        int cx = sdims[0] - 1;
+        int cy = sdims[1] - 1;
+        cellcent_matvar->SetNumberOfTuples(cx * cy);
+        int *dest = (int *)cellcent_matvar->GetVoidPointer(0);
+        int ghostMat = matnos[0];
+        for(int j = 0; j < cy; ++j)
+        {
+            float *f = (float *)nodecent_matvar->GetVoidPointer(0);
+            float *src = f + ((j+1) * sdims[0]);
+            for(int i = 0; i < cx; ++i)
+            {
+                // mat==0 is a ghost zone. Safeguard against that value appearing
+                // in the material data or VisIt will complain.
+                int mat = (int)(*src++);
+                if(mat <= 0)
+                    mat = ghostMat;
+                *dest++ = mat;
+            }
+        }
+        cellcent_matvar->SetName(STREAK_MATERIAL);
+        sgrid->GetCellData()->AddArray(cellcent_matvar);
+
+        nodecent_matvar->Delete();
+    }
+
     // cleanup
     yvar->Delete();
 
     return sgrid;
 }
 #endif
+
+// ****************************************************************************
+// Method: Streaker::GetAuxiliaryData
+//
+// Purpose: 
+//   This method gets the streak data associated with the material. The material
+//   data was added to the streak data when the data was read -- otherwise it
+//   gets created when we get the mesh via GetMesh here. We use the material
+//   data stored on the mesh to create a material that we then pass back to
+//   VisIt.
+//
+// Arguments:
+//   var  : The variable to read.
+//   type : The type of data to read.
+//   args : unused
+//   df   : The destructor function needed to destroy the return value.
+//   pdb  : The PDB files that we'll use to construct the data.
+//
+// Returns:    An avtMaterial.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec  3 14:51:30 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void *
+Streaker::GetAuxiliaryData(const std::string &var, const char *type, void *args,
+    DestructorFunction &df, const PDBFileObjectVector &pdb)
+{
+#ifndef MDSERVER
+    if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        // Get the streak associated with the material var.
+        std::map<std::string,std::string>::const_iterator it;
+        it = matToStreak.find(var);
+        if(it != matToStreak.end())
+        {
+            // Get the streak's dataset, which carries with it the cell-centered
+            // material data.
+            vtkDataSet *ds = GetMesh(it->second + "_mesh", pdb);
+            if(ds != 0)
+            {
+                vtkIntArray *matlist = (vtkIntArray *)ds->GetCellData()->
+                    GetArray(STREAK_MATERIAL);
+
+                int *mnos = new int[matNames.size()];
+                char **names = new char *[matNames.size()];
+                for(size_t i = 0; i < matNames.size(); ++i)
+                {
+                    mnos[i] = matnos[i];
+                    names[i] = (char *)matNames[i].c_str();
+                }
+
+                int dims = matlist->GetNumberOfTuples();
+                int ndims = 1;
+                df = avtMaterial::Destruct;
+
+                avtMaterial *retval = new avtMaterial(
+                    (int)matNames.size(),
+                    mnos,
+                    names,
+                    ndims,
+                    &dims,
+                    0,
+                    (int*)matlist->GetVoidPointer(0),
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                );
+
+                delete [] mnos;
+                delete [] names;
+                ds->Delete();
+
+                return retval;
+            }
+        }
+    }
+#endif
+    return 0;
+}
+
