@@ -108,7 +108,7 @@ typedef __int64 int64_t;
 //
 //   The var codes are single characters that indicate the presence or absence
 //   of known variables.
-//   X Y Z U P T 1 2 3 4   indicates a mesh (X Y Z), velocity vec (U), pressure, 
+//   X Y Z U P T 1 2 3 4   indicates a mesh (X Y Z), velocity vec (U), pressure,
 //                         temperature, and 4 misc scalars
 //   A space in place of a letter code means that variable is absent.
 //   The variables always are written into the file in this order.
@@ -2007,7 +2007,6 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 }
 
 
-
 // ****************************************************************************
 //  Method: avtNek3DFileFormat::GetAuxiliaryData
 //
@@ -2071,11 +2070,11 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
 
         for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
         {
-
-            int iFileSizeWithoutMetaData = 136 + sizeof(int)*aBlocksPerFile[ii] + 
-                                        nFloatsPerDomain*sizeof(float)*aBlocksPerFile[ii];
+            int64_t iFileSizeWithoutMetaData = 136 
+                    + sizeof(int)*aBlocksPerFile[ii] 
+                    + ((int64_t)nFloatsPerDomain)*sizeof(float)*((int64_t)aBlocksPerFile[ii]);
     
-            int iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * aBlocksPerFile[ii]) / 
+            int64_t iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * aBlocksPerFile[ii]) / 
                         (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
 
             GetFileName(iTimestepsWithMesh[0], ii, blockfilename, fileTemplate.size() + 64);
@@ -2086,7 +2085,7 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
                 break;
             }
             f.seekg( 0, std::ios_base::end );
-            int iFileSize = f.tellg();
+            int64_t iFileSize = f.tellg();
             if (iFileSize != iFileSizeWithoutMetaData+iMDSize)
             {
                 errorReadingData = 1;
