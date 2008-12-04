@@ -145,6 +145,27 @@ avtITAPS_CUtility::VisIt_iMesh_getTagName(iMesh_Instance theMesh, iBase_TagHandl
     return string(tmpName);
 }
 
+int
+avtITAPS_CUtility::VTKZoneTypeToITAPSEntityTopology(int vtk_zonetype)
+{
+    // Note that there is no value for 'UNKNOWN' or 'NOT SET'
+    int imesh_zonetype = -1; 
+    switch (vtk_zonetype)
+    {
+        case VTK_VERTEX:     imesh_zonetype = iMesh_POINT;         break;
+        case VTK_LINE:       imesh_zonetype = iMesh_LINE_SEGMENT;  break;
+        case VTK_POLYGON:    imesh_zonetype = iMesh_POLYGON;       break;
+        case VTK_TRIANGLE:   imesh_zonetype = iMesh_TRIANGLE;      break;
+        case VTK_QUAD:       imesh_zonetype = iMesh_QUADRILATERAL; break;
+        case VTK_TETRA:      imesh_zonetype = iMesh_TETRAHEDRON;   break;
+        case VTK_PYRAMID:    imesh_zonetype = iMesh_PYRAMID;       break;
+        case VTK_WEDGE:      imesh_zonetype = iMesh_PRISM;         break;
+        case VTK_VOXEL:
+        case VTK_HEXAHEDRON: imesh_zonetype = iMesh_HEXAHEDRON;    break;
+    }
+    return imesh_zonetype;
+}
+
 int avtITAPS_CUtility::ITAPSEntityTopologyToVTKZoneType(int ttype)
 {
     switch (ttype)
@@ -155,9 +176,10 @@ int avtITAPS_CUtility::ITAPSEntityTopologyToVTKZoneType(int ttype)
     case iMesh_TRIANGLE:      return VTK_TRIANGLE;
     case iMesh_QUADRILATERAL: return VTK_QUAD;
     case iMesh_TETRAHEDRON:   return VTK_TETRA;
-    case iMesh_HEXAHEDRON:    return VTK_HEXAHEDRON;
-    case iMesh_PRISM:         return VTK_WEDGE;
     case iMesh_PYRAMID:       return VTK_PYRAMID;
+    case iMesh_PRISM:         return VTK_WEDGE;
+    case VTK_VOXEL:
+    case iMesh_HEXAHEDRON:    return VTK_HEXAHEDRON;
     }
     return -1;
 }

@@ -43,15 +43,8 @@
 #include "iBase.h"
 #include "iMesh.h"
 
-#include <snprintf.h>
-
 #include <avtITAPS_CFileFormat.h>
-
-#include <map>
-#include <string>
-#include <vector>
-
-#include <stdarg.h>
+#include <avtITAPS_CUtility.h>
 
 #include <vtkCellType.h>
 #include <vtkCharArray.h>
@@ -71,7 +64,10 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <avtITAPS_CUtility.h>
+
+#include <map>
+#include <string>
+#include <vector>
 
 using     std::map;
 using     std::string;
