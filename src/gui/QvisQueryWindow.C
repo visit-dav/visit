@@ -1738,11 +1738,24 @@ QvisQueryWindow::useGlobalToggled(bool val)
 //   Cyrus Harrison, Tue Jun 24 16:21:00 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Cyrus Harrison, Thu Dec  4 09:38:44 PST 2008
+//   Added default file support to the save as dialog.
+//   Skip file save if no results are available. 
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::saveResultText()
 {
+    // make sure there are results to save!
+    
+    QString result_txt( resultText->toPlainText() );
+    if ( result_txt.length() == 0 )
+    {
+        Error(tr("There are currently no query results to save."));
+        return;
+    }
+
     QString saveExtension(".txt");
 
     // Create the name of a VisIt save file to use.
@@ -1758,29 +1771,26 @@ QvisQueryWindow::saveResultText()
     // Get the name of the file that the user saved.
     QString sFilter(QString("VisIt ") + tr("save") + QString(" (*") + saveExtension + ")");
     
-    // TODO DEFAULT FILE SUPPORT!
-    QString fileName = QFileDialog::getSaveFileName(this,sFilter);
-
-    // If the user chose to save a file, write the query result text
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save Query Results As"),
+                                                    defaultFile,
+                                                    sFilter);
+    // If the user choose to save a file, write the query result text
     // to that file.
     if(!fileName.isNull())
     {
         ++saveCount;
         
         QFile file( fileName );
-        if ( file.open(QIODevice::ReadOnly | QIODevice::Text) )
+        if ( file.open(QIODevice::WriteOnly | QIODevice::Text) )
         {
             QTextStream stream( &file );
-            QString txt( resultText->toPlainText() );
-            if ( txt.length() > 0 )
-                stream << txt;
-            else
-                file.remove();
+            stream << result_txt + "\n";
         
             file.close();
         }
         else
-            Error(tr("VisIt could not save the query results"
+            Error(tr("VisIt could not save the query results "
                      "to the selected file"));
         
     }

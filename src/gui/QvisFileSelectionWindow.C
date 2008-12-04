@@ -198,6 +198,9 @@ QvisFileSelectionWindow::~QvisFileSelectionWindow()
 //   Brad Whitlock, Thu Jul 10 16:18:10 PDT 2008
 //   Moved code to base class.
 //
+//   Cyrus Harrison, Thu Dec  4 09:13:50 PST 2008
+//   Removed unnecssary todo comment.
+//
 // ****************************************************************************
 
 void
@@ -225,9 +228,6 @@ QvisFileSelectionWindow::CreateWindowContents()
     
     connect(directoryList, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
             this, SLOT(changeDirectory(QListWidgetItem *)));
-    // TODO: In Qt3 we were using returnPressed as the signal here,
-    // I think itemActivated is a good sub, however we should try it on
-    // all platforms.
     connect(directoryList, SIGNAL(itemActivated(QListWidgetItem *)),
             this, SLOT(changeDirectory(QListWidgetItem *)));
     
