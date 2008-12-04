@@ -615,9 +615,13 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   scrollbar mode of the listview appropriately.
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
-//   Changed interface to FileServerList::GetMetaData\
+//   Changed interface to FileServerList::GetMetaData
+//
 //   Cyrus Harrison, Tue Jul  1 14:28:23 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Cyrus Harrison, Thu Dec  4 09:13:50 PST 2008
+//   Removed unnecssary todo comment.
 //
 // ****************************************************************************
 
@@ -627,7 +631,6 @@ QvisFilePanel::RepopulateFileList()
     const QualifiedFilenameVector &f = fileServer->GetAppliedFileList();
     // Holds pointers to the list item for each host.
     std::map<std::string, QTreeWidgetItem *> hostMap;
-    // TODO: QMap?
 
     // Go through all of the files and build a list of unique hosts.
     bool hostOtherThanLocalHost = false;
@@ -1761,6 +1764,9 @@ QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
 // 
+//   Cyrus Harrison, Thu Dec  4 08:09:20 PST 2008
+//   Made sure the current item is visible via scroll to item. 
+// 
 // ****************************************************************************
 
 void
@@ -1906,7 +1912,7 @@ QvisFilePanel::UpdateFileSelection()
     {
         selectedItem->setSelected(true);
         fileTree->setCurrentItem(selectedItem);
-        // TODO: fileTree->ensureItemVisible(selectedItem);
+        fileTree->scrollToItem(selectedItem);
     }
 
     // Restore signals.

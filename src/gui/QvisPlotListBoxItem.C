@@ -82,15 +82,15 @@ QPixmap *QvisPlotListBoxItem::subsetIcon = 0;
 //   Cyrus Harrison, Mon Jul  7 13:39:58 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Cyrus Harrison, Thu Dec  4 08:28:50 PST 2008
+//   Removed unnecessary todo comment. 
+//
 // ****************************************************************************
 
 QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
     : QListWidgetItem(), plot(p), prefix(prefix_), clickable()
 {
     addClickableRects = true;
-
-    // Tell the listbox that we'll use custom highlighting.
-    // TODO setCustomHighlighting(true);
 
     // Set the string that we'll use when the item is not expanded.
     setText(GetDisplayString(plot, prefix));

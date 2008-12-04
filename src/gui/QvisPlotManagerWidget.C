@@ -579,6 +579,12 @@ QvisPlotManagerWidget::CreateVariableMenu()
 //   Cyrus Harrison, Thu Jul  3 09:16:15 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Cyrus Harrison, Thu Jul  3 09:16:15 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Cyrus Harrison, Thu Dec  4 09:13:50 PST 2008
+//   Removed unnecssary todo comment.
+//
 // ****************************************************************************
 
 void
@@ -590,11 +596,6 @@ QvisPlotManagerWidget::DestroyVariableMenu()
         plotMenuBar->removeAction(varMenuAct);
 
         // Delete the variable menu.
-        /*
-        TODO: Delete should hande the disconnect?
-        disconnect(varMenu, SIGNAL(activated(int, const QString &)),
-                   this, SLOT(changeVariable(int, const QString &)));
-        */         
         delete varMenu;
         varMenu = 0;
         varMenuAct = 0;
