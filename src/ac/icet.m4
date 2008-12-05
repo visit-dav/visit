@@ -62,6 +62,7 @@ dnl    in the HW rendering case.
 dnl
 dnl    Tom Fogal, Fri Dec  5 09:14:33 MST 2008
 dnl    Add the ICET_ENABLE variable as a synonym for --enable-icet.
+dnl    Make sure there is always a message about IceT status.
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
@@ -89,9 +90,14 @@ ICET_LIBS=
 ax_ICET_LIB=
 ax_ICET_LIB_MPI=
 ax_ICET_LIB_STRATEGIES=
+AC_MSG_CHECKING([if IceT should be used])
 if test -n "${ICET_ENABLE}" ; then
     enable_icet="yes"
 fi
+if test -z "${enable_icet}" ; then
+    enable_icet="no"
+fi
+AC_MSG_RESULT([$enable_icet])
 
 ])
 
