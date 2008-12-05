@@ -326,13 +326,13 @@ QViewportItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     else if( y - dx <=0)     // move top
         resizeMode = 7;
       
-    if(resizeMode == 1 or resizeMode == 5)       // left & right
+    if(resizeMode == 1 || resizeMode == 5)       // left & right
         view->setCursor(QCursor(Qt::SizeHorCursor));
-    else if(resizeMode == 2 or resizeMode == 6)  // bottom left & upper right
+    else if(resizeMode == 2 || resizeMode == 6)  // bottom left & upper right
         view->setCursor(QCursor(Qt::SizeBDiagCursor));
-    else if(resizeMode == 3 or resizeMode == 7) // top & bottom
+    else if(resizeMode == 3 || resizeMode == 7) // top & bottom
         view->setCursor(QCursor(Qt::SizeVerCursor));
-    else if(resizeMode == 4 or resizeMode == 8) // bottom right & upper left
+    else if(resizeMode == 4 || resizeMode == 8) // bottom right & upper left
         view->setCursor(QCursor(Qt::SizeFDiagCursor));
     else // no resize
         view->setCursor(QCursor(Qt::ArrowCursor));

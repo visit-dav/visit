@@ -7520,7 +7520,7 @@ MakeCodeSlashes(const QString &s)
 
     for(int i = 0; i < s.length(); ++i)
     {
-        tmp[0] = s[i];
+        tmp[0] = s[i].toLatin1();
         if(s[i] == '\\')
             retval += tmp;
         retval += tmp;

@@ -547,7 +547,7 @@ vtkQtRenderWindow::GetGenericContext()
 
     return (void *) gc;
 #elif defined(Q_WS_WIN)
-    return (void *)qt_display_dc();
+    return (void *)qt_win_display_dc();
 #elif defined(Q_WS_MACX)
     cerr << "vtkQtRenderWindow::GetGenericContext(): Mac version not implemented!" <<  endl;
     return 0;
@@ -880,7 +880,7 @@ int* vtkQtRenderWindow::GetSize()               { return this->Size; }
 void *vtkQtRenderWindow::GetGenericDisplayId()
 {
 #if defined(Q_WS_WIN)
-    return (void *)qt_display_dc();
+    return (void *)qt_win_display_dc();
 #elif defined(Q_WS_X11)
     return (void *)QX11Info::display();
 #elif defined(Q_WS_MACX)

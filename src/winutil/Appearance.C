@@ -35,6 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include "Appearance.h"
 #include <string>
 #include <snprintf.h>
 
