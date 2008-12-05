@@ -270,7 +270,7 @@ main(int argc, char *argv[])
     // Run the command on the remote machine.
     bool keepTrying = true;
 
-	while (keepTrying)
+    while (keepTrying)
     {
         try
         {
@@ -281,9 +281,9 @@ main(int argc, char *argv[])
         catch(DoUsernameWindow)
         {
             const char *n = graphicalGetUsername(host);
-            namelen = strlen(n) +1;
             if (n != NULL)
             {
+                namelen = strlen(n) +1;
                 if (!shouldDeleteUsername)
                 {
                     username = new char[namelen];
