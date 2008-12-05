@@ -95,5 +95,16 @@ DBOptionsAttributes *
 GetITAPS_CWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    rv->SetEnum("Format", 0);
+    vector<string> formats;
+    formats.push_back("MOAB");   // 0
+    formats.push_back("EXODUS"); // 1
+    formats.push_back("VTK");    // 2
+    formats.push_back("SLAC");   // 3
+    formats.push_back("GMV");    // 4
+    formats.push_back("ANSYS");  // 5
+    formats.push_back("GMSH");   // 6
+    formats.push_back("STL");    // 7
+    rv->SetEnumStrings("Format", formats);
     return rv;
 }
