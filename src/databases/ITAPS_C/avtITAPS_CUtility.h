@@ -168,7 +168,7 @@ namespace avtITAPS_CUtility
         HandleThisSet handleSetCb, void *handleSetCb_data);
     void GetTagsForEntity(iMesh_Instance aMesh, bool isEntitySet,
         iBase_EntitySetHandle esh, vector<string> &tagNames, vector<int> &tagTypes,
-        vector<int> &tagSizes, vector<string> &tagVals);
+        vector<int> &tagSizes, vector<string> &tagVals, int level);
     bool GetTopLevelSets(iMesh_Instance ima, int level, int memidx, bool ises,
         iBase_EntitySetHandle esh, void *cb_data);
 }

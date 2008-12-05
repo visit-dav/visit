@@ -74,11 +74,27 @@ using namespace avtITAPS_CUtility;
 
 avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
 {
+    formatType = "MOAB";
+    formatExtension = "h5m";
+
     for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
     {
+        if (dbopts->GetName(i) == "Format")
+        {
+            switch (dbopts->GetEnum("Format"))
+            {
+                case 0: break; // default case 
+                case 1: formatType = "EXODUS"; formatExtension = "exoII"; break;
+                case 2: formatType = "VTK";    formatExtension = "vtk"; break;
+                case 3: formatType = "SLAC";   formatExtension = "slac"; break;
+                case 4: formatType = "GMV";    formatExtension = "gmv"; break;
+                case 5: formatType = "ANSYS";  formatExtension = "ans"; break;
+                case 6: formatType = "GMSH";   formatExtension = "gmsh"; break;
+                case 7: formatType = "STL";    formatExtension = "stl"; break;
+            }
+        }
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtITAPS_CWriter destructor
@@ -155,99 +171,109 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     int i;
 
-    //
-    // Use sub-routines to do the mesh-type specific writes.
-    //
-    switch (ds->GetDataObjectType())
-    {
-       case VTK_UNSTRUCTURED_GRID:
-         break;
-
-       case VTK_STRUCTURED_GRID:
-         break;
-
-       case VTK_RECTILINEAR_GRID:
-         break;
-
-       case VTK_POLY_DATA:
-         break;
-
-       default:
-         EXCEPTION0(ImproperUseException);
-    }
-
     char dummyStr[32];
     iMesh_Instance itapsMesh;
     iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, 0);
+    CheckITAPSError(itapsMesh, iMesh_newMesh, NoL);
 
     iBase_EntitySetHandle rootSet;
     iMesh_getRootSet(itapsMesh, &rootSet, &itapsError);
+    CheckITAPSError(itapsMesh, iMesh_getRootSet, NoL);
 
-    // Create the entity set representing this chunk 
-    iBase_EntitySetHandle chunkSet;
-    iMesh_createEntSet(itapsMesh, 0, &chunkSet, &itapsError);
+    try {
 
-    // Add the nodes of this mesh as vertices of the iMesh instance.
-    // Note that vertices can only ever be created or live in the instance
-    // itself and not in entity sets of the instance. Though, I think we
-    // can create 'links' to vertices from a given entity set using 'add'
-    // method(s). We should really use the 'Arr' versions of this method
-    // but initial coding is simplest to use individual entity methods.
-    //
-    // In fact, it would appear as though everything is, by fiat, created
-    // in the iMesh instance itself (root set), and then can be 'moved' by
-    // adding to another set and removing from root?
-    int npts = ds->GetNumberOfPoints(); 
-    iBase_EntityHandle *ptHdls = new iBase_EntityHandle[npts];
-    for (i = 0; i < npts; i++)
-    {
-        double pt[3];
-        ds->GetPoint(i, pt);
-
-        // create initial Vtx entity
-        iMesh_createVtx(itapsMesh, pt[0], pt[1], pt[2], &ptHdls[i], &itapsError);
-
-        // add Vtx entity to chunkSet
-        //iMesh_addEntToSet(itapsMesh, ptHdls[i], &chunkSet, &itapsError);
-
-        // remove Vtx entity from root set
-        //iMesh_rmvEntFromSet(itapsMesh, ptHdls[i], &rootSet, &itapsError); 
+        // Create the entity set representing this chunk 
+        iBase_EntitySetHandle chunkSet;
+        iMesh_createEntSet(itapsMesh, 0, &chunkSet, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_createEntSet, NoL);
+    
+        // Add the nodes of this mesh as vertices of the iMesh instance.
+        // Note that vertices can only ever be created or live in the instance
+        // itself and not in entity sets of the instance. Though, I think we
+        // can create 'links' to vertices from a given entity set using 'add'
+        // method(s). We should really use the 'Arr' versions of this method
+        // but initial coding is simplest to use individual entity methods.
+        //
+        // In fact, it would appear as though everything is, by fiat, created
+        // in the iMesh instance itself (root set), and then can be 'moved' by
+        // adding to another set and removing from root?
+        int npts = ds->GetNumberOfPoints(); 
+        iBase_EntityHandle *ptHdls = new iBase_EntityHandle[npts];
+        for (i = 0; i < npts; i++)
+        {
+            double pt[3];
+            ds->GetPoint(i, pt);
+    
+            // create initial Vtx entity
+            iMesh_createVtx(itapsMesh, pt[0], pt[1], pt[2], &ptHdls[i], &itapsError);
+            if (i<5) CheckITAPSError(itapsMesh, iMesh_createVtx, NoL);
+    
+            // add Vtx entity to chunkSet
+            //iMesh_addEntToSet(itapsMesh, ptHdls[i], &chunkSet, &itapsError);
+            //if (i<5) CheckITAPSError(itapsMesh, iMesh_addEntToSet, NoL);
+    
+            // remove Vtx entity from root set
+            //iMesh_rmvEntFromSet(itapsMesh, ptHdls[i], &rootSet, &itapsError); 
+            //if (i<5) CheckITAPSError(itapsMesh, iMesh_rmvEntFromSet, NoL);
+        }
+    
+        // add just created Vtx entites to chunkSet
+        iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, &chunkSet, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
+    
+        // remove just created Vtx entities from rootSet, ok?
+        //iMesh_rmvEntArrFromSet(itapsMesh, ptHdls, npts, &rootSet, &itapsError);
+        //CheckITAPSError(itapsMesh, iMesh_rmvEntArrFromSet, NoL);
+    
+        int ncells = ds->GetNumberOfCells();
+        iBase_EntityHandle *znHdls = new iBase_EntityHandle[ncells];
+        for (i = 0; i < ncells; i++)
+        {
+            vtkCell *theCell = ds->GetCell(i);
+    
+            int status;
+            int topo = VTKZoneTypeToITAPSEntityTopology(theCell->GetCellType());
+            int ncellPts = theCell->GetNumberOfPoints();
+            iBase_EntityHandle *cellPtEnts = new iBase_EntityHandle[ncellPts];
+            for (int j = 0; j < ncellPts; j++)
+                cellPtEnts[j] = ptHdls[theCell->GetPointId(j)];
+    
+            iMesh_createEnt(itapsMesh, topo, cellPtEnts, ncellPts, &znHdls[i], &status, &itapsError);
+            if (i<5) CheckITAPSError(itapsMesh, iMesh_createEnt, NoL);
+        }
+    
+        // add just created cell entites to chunkSet
+        iMesh_addEntArrToSet(itapsMesh, znHdls, ncells, &chunkSet, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
+    
+        // remove just created cell entities from rootSet, ok?
+        //iMesh_rmvEntArrFromSet(itapsMesh, znHdls, ncells, &rootSet, &itapsError);
+        //CheckITAPSError(itapsMesh, iMesh_rmvEntArrFromSet, NoL);
+    
+        // save the file
+        string fname = dir + stem;
+        char filename[1024];
+        sprintf(filename, "%s.%d.%s", fname.c_str(), chunk, formatExtension.c_str());
+        iMesh_save(itapsMesh, rootSet, filename, formatType.c_str(), &itapsError,
+            strlen(filename), formatType.size());
+        CheckITAPSError(itapsMesh, iMesh_save, NoL);
     }
-
-    // add just created Vtx entites to chunkSet
-    iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, &chunkSet, &itapsError);
-
-    // remove just created Vtx entities from rootSet, ok?
-    iMesh_rmvEntArrFromSet(itapsMesh, ptHdls, npts, &rootSet, &itapsError);
-
-    int ncells = ds->GetNumberOfCells();
-    iBase_EntityHandle *znHdls = new iBase_EntityHandle[ncells];
-    for (i = 0; i < ncells; i++)
+    catch (iBase_Error TErr)
     {
-        vtkCell *theCell = ds->GetCell(i);
-
-        int status;
-        int topo = VTKZoneTypeToITAPSEntityTopology(theCell->GetCellType());
-        int ncellPts = theCell->GetNumberOfPoints();
-        iBase_EntityHandle *cellPtEnts = new iBase_EntityHandle[ncellPts];
-        for (int j = 0; j < ncellPts; j++)
-            cellPtEnts[j] = ptHdls[theCell->GetPointId(j)];
-
-        iMesh_createEnt(itapsMesh, topo, cellPtEnts, ncellPts, &znHdls[i], &status, &itapsError);
+        char msg[512];
+        char desc[256];
+        desc[0] = '\0';
+        int tmpError = itapsError;
+#ifdef ITAPS_MOAB
+        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
+#elif ITAPS_GRUMMP
+#endif
+        SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
+            "\nUnable to open file!", tmpError, desc);
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
     }
-
-    // add just created cell entites to chunkSet
-    iMesh_addEntArrToSet(itapsMesh, znHdls, ncells, &chunkSet, &itapsError);
-
-    // remove just created cell entities from rootSet, ok?
-    iMesh_rmvEntArrFromSet(itapsMesh, znHdls, ncells, &rootSet, &itapsError);
-
-    // save the file
-    string fname = dir + stem;
-    char filename[1024];
-    sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
-    iMesh_save(itapsMesh, rootSet, filename, 0, &itapsError, strlen(filename), 0);
-
+funcEnd: ;
 }
 
 

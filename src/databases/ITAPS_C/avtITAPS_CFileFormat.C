@@ -200,8 +200,8 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // ok, try loading the mesh.
     try
     {
-        iMesh_load(itapsMesh, rootSet, tmpFileName.c_str(), dummyStr, &itapsError,
-            tmpFileName.length(), 0);
+        iMesh_load(itapsMesh, rootSet, vmeshFileName.c_str(), dummyStr, &itapsError,
+            vmeshFileName.length(), 0);
         CheckITAPSError(itapsMesh, iMesh_load, NoL);
 
         // determine spatial and topological dimensions of mesh
