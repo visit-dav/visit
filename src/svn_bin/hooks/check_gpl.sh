@@ -10,6 +10,11 @@
 #
 #   Mark C. Miller, Tue Dec  2 16:01:01 PST 2008
 #   Added aclocal.m4 th permitted cases.
+#
+#   
+#   Kathleen Bonnell, Fri Dec  5 08:05:54 PST 2008
+#   Added qt includes in windowsbuild to permitted cases.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -61,6 +66,9 @@ for f in ${files} ; do
             continue
             ;;
         *src/aclocal.m4) 
+            continue
+            ;;
+        *windowsbuild/include/qt/*) 
             continue
             ;;
         *src/svn_bin/hooks/check_gpl.sh) 
