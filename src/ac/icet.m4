@@ -59,6 +59,9 @@ dnl
 dnl    Tom Fogal, Mon Aug  4 10:52:41 EDT 2008
 dnl    Don't force USE_MGL_NAMESPACE; not required, and may do strange things
 dnl    in the HW rendering case.
+dnl
+dnl    Tom Fogal, Fri Dec  5 09:14:33 MST 2008
+dnl    Add the ICET_ENABLE variable as a synonym for --enable-icet.
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
@@ -86,6 +89,9 @@ ICET_LIBS=
 ax_ICET_LIB=
 ax_ICET_LIB_MPI=
 ax_ICET_LIB_STRATEGIES=
+if test -n "${ICET_ENABLE}" ; then
+    enable_icet="yes"
+fi
 
 ])
 
