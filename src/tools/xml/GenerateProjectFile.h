@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#ifndef GENERATE_PROJECTIFLE_H
+#ifndef GENERATE_PROJECTFILE_H
 #define GENERATE_PROJECTFILE_H
 #include <QTextStream>
 
@@ -47,6 +47,9 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <shlwapi.h>
+#include <iostream>
+//using std::cerr;
+//using std::endl;
 #endif
 
 // ****************************************************************************
@@ -208,8 +211,8 @@ protected:
         regkey.sprintf("VISIT%s", VERSION);
         if (*keyval == NULL)
             *keyval = new unsigned char[500];
-        if(RegOpenKeyEx(which_root, regkey.latin1(), 0, KEY_QUERY_VALUE, &hkey)
-               == ERROR_SUCCESS)
+        if(RegOpenKeyEx(which_root, regkey.toStdString().c_str(), 0, 
+                        KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
         {
             DWORD keyType, strSize = 500;
             if(RegQueryValueEx(hkey, key, NULL, &keyType, *keyval, &strSize) 
@@ -401,7 +404,8 @@ protected:
         withinDevDir = false;
         if (!publicVisIt)
         {
-            if (fullCurrentDir.contains(projectDir, false) > 0)
+            if (fullCurrentDir.contains(QString(projectDir), 
+                                        Qt::CaseInsensitive) > 0)
             {
                 withinDevDir = true;
             }
@@ -502,7 +506,7 @@ protected:
          
         if (retval.length() > 0)
         {
-            if (fullVisItDir.contains(retval, false) > 0)
+            if (fullVisItDir.contains(retval, Qt::CaseInsensitive) > 0)
                 publicVisIt = false;
             else
                 publicVisIt = true;

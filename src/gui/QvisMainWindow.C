@@ -2416,7 +2416,7 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
 bool
 QvisMainWindow::GetShowSelectedFiles() const
 {
-    filePanel->GetShowSelectedFiles();
+    return filePanel->GetShowSelectedFiles();
 }
 
 // ****************************************************************************
@@ -2436,7 +2436,7 @@ QvisMainWindow::GetShowSelectedFiles() const
 bool
 QvisMainWindow::GetAllowFileSelectionChange() const
 {
-    filePanel->GetAllowFileSelectionChange();
+    return filePanel->GetAllowFileSelectionChange();
 }
 
 // ****************************************************************************

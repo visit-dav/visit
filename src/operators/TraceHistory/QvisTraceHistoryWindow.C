@@ -41,14 +41,13 @@
 #include <TraceHistoryAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+#include <QCheckBox.h>
+#include <QLabel.h>
+#include <QLayout.h>
+#include <QLineEdit.h>
+#include <QSpinBox.h>
+#include <QButtonGroup.h>
+#include <QRadioButton.h>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>

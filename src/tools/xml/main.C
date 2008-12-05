@@ -1111,12 +1111,12 @@ ProcessFile(QString file)
             if (GetModuleFileName(NULL, tmp, 100) != 0)
             {
                 fullVisItDir = tmp;
-                int lastslash = fullVisItDir.findRev("\\");
+                int lastslash = fullVisItDir.lastIndexOf("\\");
                 if (lastslash >= 0)
                     fullVisItDir = fullVisItDir.left(lastslash+1);
             }
             // find full path to file
-            if (GetFullPathName(file, 100, tmp, NULL) > 0)
+            if (GetFullPathName(file.toStdString().c_str(), 100, tmp, NULL) > 0)
             {
                 fullCurrentDir = tmp;
             }

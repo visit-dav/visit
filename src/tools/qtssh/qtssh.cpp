@@ -32,7 +32,7 @@ graphicalGetUsername(const char *host)
 {
     bool okay = ViewerChangeUsernameWindow::changeUsername(host);
     if (okay)
-        return ViewerChangeUsernameWindow::getUsername();
+        return ViewerChangeUsernameWindow::getUsername().c_str();
     else
         return NULL;
 }
