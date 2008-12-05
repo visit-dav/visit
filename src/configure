@@ -2499,9 +2499,16 @@ ICET_LIBS=
 ax_ICET_LIB=
 ax_ICET_LIB_MPI=
 ax_ICET_LIB_STRATEGIES=
+echo "$as_me:$LINENO: checking if IceT should be used" >&5
+echo $ECHO_N "checking if IceT should be used... $ECHO_C" >&6
 if test -n "${ICET_ENABLE}" ; then
     enable_icet="yes"
 fi
+if test -z "${enable_icet}" ; then
+    enable_icet="no"
+fi
+echo "$as_me:$LINENO: result: $enable_icet" >&5
+echo "${ECHO_T}$enable_icet" >&6
 
 
 if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
@@ -5993,7 +6000,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5996:" \
+echo "$as_me:6003:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
