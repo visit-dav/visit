@@ -73,6 +73,9 @@ using std::vector;
 //    I added the ability to read atom files, which required being able to
 //    read multiple files to get all the data.
 //
+//    Eric Brugger, Fri Dec  5 16:37:44 PST 2008
+//    I enhanced the reader to read ascii atom files.
+//
 // ****************************************************************************
 
 class DDCMDHeader
@@ -83,6 +86,7 @@ class DDCMDHeader
 
     inline unsigned int    GetHeaderLength() const { return headerLength; };
     inline bool            GetCGridFile() const { return cgridFile; };
+    inline char           *GetDataType() const { return dataType; };
     inline unsigned int    GetLRec() const { return lRec; };
     inline unsigned int    GetNRecord() const { return nRecord; };
     inline unsigned int    GetNFiles() const { return nFiles; };
@@ -107,6 +111,7 @@ class DDCMDHeader
   private:
     unsigned int           headerLength;
     bool                   cgridFile;
+    char                  *dataType;
     unsigned int           lRec, nRecord, nFiles, nFields, swap;
     double                 hMatrix[9];
     int                    loop;
@@ -191,6 +196,7 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     int                    labelOffset, iSpeciesOffset;
     int                    labelSize, iSpeciesSize;
     bool                   labelUnsigned, iSpeciesUnsigned;
+    int                    groupOffset, speciesOffset, typeOffset;
     int                    pinfoOffset, xOffset, yOffset, zOffset;
     int                    pinfoSize, xSize, ySize, zSize;
     char                   pinfoType, xType, yType, zType;
@@ -220,6 +226,8 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     void                   DetermineBlockDecomposition();
     void                   ExchangeProcessorData(const DDCMDHeader *);
     void                   CopyExchangeDataToBlocks(const DDCMDHeader *);
+    void                   CopyAsciiDataToBlocks(const DDCMDHeader *);
+    void                   CopyBinaryDataToBlocks(const DDCMDHeader *);
     void                   CopyDataToBlocks(const DDCMDHeader *);
     void                   ReadProcessorChunk(const DDCMDHeader *,
                                const char *);

@@ -90,6 +90,10 @@ using     std::max;
 //  Programmer: brugger
 //  Creation:   Thu Nov 20 10:44:45 PST 2008
 //
+//  Modifications:
+//    Eric Brugger, Fri Dec  5 16:39:53 PST 2008
+//    I enhanced the reader to read ascii atom files.
+//
 // ****************************************************************************
 
 DDCMDHeader::DDCMDHeader(const char *fname, const char *subname)
@@ -139,6 +143,7 @@ DDCMDHeader::DDCMDHeader(const char *fname, const char *subname)
     obj = (OBJECT*) malloc(sizeof(OBJECT));
     object_lineparse(header, obj);
 
+    object_get(obj, (char*)"datatype", &dataType, STRING, 1, (char*)"NONE");
     object_get(obj, (char*)"lrec", &lRec, INT, 1, (char*)"16");
     object_get(obj, (char*)"endian_key", &endianKey, INT, 1, (char*)"4");
     object_get(obj, (char*)"nrecord", &nRecord, INT, 1, (char*)"1");
@@ -147,9 +152,19 @@ DDCMDHeader::DDCMDHeader(const char *fname, const char *subname)
     object_getv(obj, (char*)"field_names", (void **)&fieldNames, STRING);
     object_getv(obj, (char*)"field_types", (void **)&fieldTypes, STRING);
     fieldSizes = (unsigned*) malloc(nFields*sizeof(int));
-    for (i = 0; i < nFields; i++)
+    if (strcmp(dataType, "FIXRECORDBINARY") == 0)
     {
-        fieldSizes[i] = atoi(fieldTypes[i] + 1);
+        for (i = 0; i < nFields; i++)
+        {
+            fieldSizes[i] = atoi(fieldTypes[i] + 1);
+        }
+    }
+    else
+    {
+        for (i = 0; i < nFields; i++)
+        {
+            fieldSizes[i] = 1;
+        }
     }
 
     object_get(obj, (char*)"h", &hMatrix, DOUBLE, 9, (char*)"1000.0");
@@ -185,8 +200,8 @@ DDCMDHeader::DDCMDHeader(const char *fname, const char *subname)
     //
     // Print out the contents of the header to the debug logs.
     //
-    debug1 << "nRecord=" << nRecord << ",nFields=" << nFields
-           << ",lRec=" << lRec << endl;
+    debug1 << "dataType=" << dataType << ",nRecord=" << nRecord
+           << ",nFields=" << nFields << ",lRec=" << lRec << endl;
     debug1 << "swap=" << swap << ",loop=" << loop << ",time=" << time << endl;
     debug1 << "fieldSizes=";
     for (int i = 0; i < nFields; i++)
@@ -802,21 +817,21 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header)
 
 
 // ****************************************************************************
-//  Method: avtDDCMDFileFormat::CopyDataToBlocks
+//  Method: avtDDCMDFileFormat::CopyAsciiDataToBlocks
 //
 //  Purpose:
-//      Copy the data read from the files into contiguous blocks.
+//      Copy the ascii data read from the files into contiguous blocks.
 //
 //  Arguments:
 //      header      The header data for the current file.
 //
 //  Programmer: Eric Brugger
-//  Creation:   Thu Nov 20 10:44:45 PST 2008
+//  Creation:   Fri Dec  5 16:39:53 PST 2008
 //
 // ****************************************************************************
 
 void
-avtDDCMDFileFormat::CopyDataToBlocks(const DDCMDHeader *header)
+avtDDCMDFileFormat::CopyAsciiDataToBlocks(const DDCMDHeader *header)
 {
 #ifdef PARALLEL
     int rank = PAR_Rank();
@@ -824,27 +839,121 @@ avtDDCMDFileFormat::CopyDataToBlocks(const DDCMDHeader *header)
     int rank = 0;
 #endif
 
-    unsigned int lRec     = header->GetLRec();
-    unsigned int nFields  = header->GetNFields();
-    int          swap     = header->GetSwap();
+    unsigned int   lRec       = header->GetLRec();
+    unsigned int   nFields    = header->GetNFields();
+    int            swap       = header->GetSwap();
     char         **fieldTypes = header->GetFieldTypes();
     unsigned int  *fieldSizes = header->GetFieldSizes();
 
     nPoints = nRecordsList[rank];
 
-    //
-    // Initialize the storage for the block data.
-    //
-    if (pinfoOffset != -1)
+    char *data = readProcessorData;
+
+    int nSpecies = header->GetNSpecies();
+    int nGroups  = header->GetNGroups();
+    int nTypes   = header->GetNTypes();
+    char **speciesNames = header->GetSpeciesNames();
+    char **groupNames   = header->GetGroupNames();
+    char **typeNames    = header->GetTypeNames();
+
+    char **recOffsets = new char*[nFields];
+    for (int i = 0; i < nPoints; i++)
     {
-        coordsBlock = new float[nPoints*3];
-        pinfoBlock = new unsigned[nPoints];
+        //
+        // Determine the start of each field.
+        //
+        char *rec = data;
+        for (int j = 0; j < nFields; j++)
+        {
+             while (isspace(*rec))
+                 rec++;
+             recOffsets[j] = rec;
+             while (!isspace(*rec))
+                 rec++;
+             rec[0] = '\0';
+             rec++;
+        }
+
+        //
+        // Copy the pinfo and coordinate data.
+        //
+        if (groupOffset != -1)
+        {
+            int iGroup = 0;
+            while (iGroup < nGroups &&
+                   strcmp(recOffsets[groupOffset], groupNames[iGroup]))
+                iGroup++;
+            int iSpecies = 0;
+            while (iSpecies < nSpecies &&
+                   strcmp(recOffsets[speciesOffset], speciesNames[iSpecies]))
+                iSpecies++;
+            int iType = 0;
+            while (iType < nTypes &&
+                   strcmp(recOffsets[typeOffset], typeNames[iType]))
+                iType++;
+            pinfoBlock[i] = iGroup * nSpecies * nTypes +
+                            iSpecies * nTypes + iType;
+
+            coordsBlock[i*3]   = strtof(recOffsets[xOffset], NULL) / coordsScale;
+            coordsBlock[i*3+1] = strtof(recOffsets[yOffset], NULL) / coordsScale;
+            coordsBlock[i*3+2] = strtof(recOffsets[zOffset], NULL) / coordsScale;
+        }
+
+        //
+        // Copy the variable information.
+        //
+        float **vars = varValues;
+        for (int j = 0; j < nVars; j++)
+        {
+            float *fvar = vars[j];
+            switch (varTypes[j])
+            {
+              case 'f':
+                fvar[i] = strtof(recOffsets[varOffsets[j]], NULL);
+                break;
+              case 'u':
+                fvar[i] = float(strtol(recOffsets[varOffsets[j]], NULL, 10));
+                break;
+            }
+        }
+
+        data += lRec;
     }
-    varValues = new float*[nVars];
-    for (int i = 0; i < nVars; i++)
-    {
-        varValues[i] = new float[nPoints];
-    }
+
+    delete [] recOffsets;
+}
+
+
+// ****************************************************************************
+//  Method: avtDDCMDFileFormat::CopyBinaryDataToBlocks
+//
+//  Purpose:
+//      Copy the binary data read from the files into contiguous blocks.
+//
+//  Arguments:
+//      header      The header data for the current file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Dec  5 16:39:53 PST 2008
+//
+// ****************************************************************************
+
+void
+avtDDCMDFileFormat::CopyBinaryDataToBlocks(const DDCMDHeader *header)
+{
+#ifdef PARALLEL
+    int rank = PAR_Rank();
+#else
+    int rank = 0;
+#endif
+
+    unsigned int   lRec       = header->GetLRec();
+    unsigned int   nFields    = header->GetNFields();
+    int            swap       = header->GetSwap();
+    char         **fieldTypes = header->GetFieldTypes();
+    unsigned int  *fieldSizes = header->GetFieldSizes();
+
+    nPoints = nRecordsList[rank];
 
     char *data = readProcessorData;
 
@@ -910,7 +1019,68 @@ avtDDCMDFileFormat::CopyDataToBlocks(const DDCMDHeader *header)
 
         data += lRec;
     }
+}
 
+
+// ****************************************************************************
+//  Method: avtDDCMDFileFormat::CopyDataToBlocks
+//
+//  Purpose:
+//      Copy the data read from the files into contiguous blocks.
+//
+//  Arguments:
+//      header      The header data for the current file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Nov 20 10:44:45 PST 2008
+//
+//  Modifications:
+//    Eric Brugger, Fri Dec  5 16:39:53 PST 2008
+//    I enhanced the reader to read ascii atom files.
+//
+// ****************************************************************************
+
+void
+avtDDCMDFileFormat::CopyDataToBlocks(const DDCMDHeader *header)
+{
+#ifdef PARALLEL
+    int rank = PAR_Rank();
+#else
+    int rank = 0;
+#endif
+
+    char          *dataType   = header->GetDataType();
+
+    nPoints = nRecordsList[rank];
+
+    //
+    // Check that the data type is valid.
+    //
+    if (strcmp(dataType, "FIXRECORDBINARY") != 0 &&
+        strcmp(dataType, "FIXRECORDASCII") != 0)
+    {
+        debug1 << "Invalid data type: dataType=" << dataType << endl;
+    }
+
+    //
+    // Initialize the storage for the block data.
+    //
+    if (pinfoOffset != -1 || groupOffset != -1)
+    {
+        coordsBlock = new float[nPoints*3];
+        pinfoBlock = new unsigned[nPoints];
+    }
+    varValues = new float*[nVars];
+    for (int i = 0; i < nVars; i++)
+    {
+        varValues[i] = new float[nPoints];
+    }
+
+    if (strcmp(dataType, "FIXRECORDASCII") == 0)
+        CopyAsciiDataToBlocks(header);
+    else if (strcmp(dataType, "FIXRECORDBINARY") == 0)
+        CopyBinaryDataToBlocks(header);
+        
     //
     // Free memory.
     //
@@ -1400,6 +1570,10 @@ avtDDCMDFileFormat::ParseCGridHeader(const DDCMDHeader *header)
 //  Programmer: Eric Brugger
 //  Creation:   Thu Nov 20 10:44:45 PST 2008
 //
+//  Modifications:
+//    Eric Brugger, Fri Dec  5 16:39:53 PST 2008
+//    I enhanced the reader to read ascii atom files.
+//
 // ****************************************************************************
 
 void
@@ -1413,10 +1587,13 @@ avtDDCMDFileFormat::ParseAtomHeader(const DDCMDHeader *header)
     //
     // Determine the variables to plot.
     //
-    pinfoOffset = -1;
-    xOffset = -1;
-    yOffset = -1;
-    zOffset = -1;
+    groupOffset   = -1;
+    speciesOffset = -1;
+    typeOffset    = -1;
+    pinfoOffset   = -1;
+    xOffset       = -1;
+    yOffset       = -1;
+    zOffset       = -1;
     varNames   = new string[nFields];
     varOffsets = new int[nFields];
     varSizes   = new int[nFields];
@@ -1429,7 +1606,22 @@ avtDDCMDFileFormat::ParseAtomHeader(const DDCMDHeader *header)
     {
         if (strcmp(fieldNames[i], "checksum") != 0)
         {
-            if (strcmp(fieldNames[i], "pinfo") == 0)
+            if (strcmp(fieldNames[i], "class") == 0)
+            {
+                // Class maps to type.
+                typeOffset = offset;
+            }
+            else if (strcmp(fieldNames[i], "type") == 0)
+            {
+                // Type maps to species.
+                speciesOffset = offset;
+            }
+            else if (strcmp(fieldNames[i], "group") == 0)
+            {
+                // Group maps to group.
+                groupOffset = offset;
+            }
+            else if (strcmp(fieldNames[i], "pinfo") == 0)
             {
                 pinfoOffset = offset;
                 pinfoSize   = fieldSizes[i];
