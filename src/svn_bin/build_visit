@@ -466,6 +466,9 @@
 #     Cyrus Harrison, Tue Dec  2 13:44:29 PST 2008
 #     Stopped creating symlink of szip static lib in hdf5 install.
 #
+#     Tom Fogal, Sat Dec  6 21:27:55 PST 2008
+#     A silo path variable was missing "silo".
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -6953,7 +6956,7 @@ function build_hostconf
         echo "## Silo" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-"DEFAULT_SILO_LIBLOC=\$VISITHOME/$SILO_VERSION/$VISITARCH" \
+"DEFAULT_SILO_LIBLOC=\$VISITHOME/silo/$SILO_VERSION/$VISITARCH" \
         >> $HOSTCONF
         echo \
 "DEFAULT_SILO_LIBDEP=-L$DEFAULT_HDF5_LIBLOC,-lhdf5,$DEFAULT_HDF5_LIBDEP" \
