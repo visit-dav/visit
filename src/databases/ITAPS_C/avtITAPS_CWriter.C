@@ -51,8 +51,11 @@
 #include <iMesh.h>
 
 #include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkCellType.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
 #include <vtkType.h>
 
 #include <map>
@@ -156,32 +159,27 @@ avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
 }
 
 // ****************************************************************************
-//  Method: avtITAPS_CWriter::WriteChunk
+//  Function: WriteMesh 
 //
-//  Purpose:
-//      This writes out one chunk of an avtDataset.
+//  Purpose: Builds up the mesh description in iMesh. Note, I/O doesn't occur
+//  until iMesh_save is called.
 //
 //  Programmer: Mark C. Miller 
-//  Creation:   November 20, 2008 
+//  Creation:   December 1, 2008 
 //
 // ****************************************************************************
-
-void
-avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
+static void
+WriteMesh(vtkDataSet *ds, int chunk,
+    iMesh_Instance itapsMesh, iBase_EntitySetHandle rootSet,
+    iBase_EntityHandle **pntHdls, iBase_EntityHandle **cellHdls)
 {
-    int i;
+    int i,j;
 
-    char dummyStr[32];
-    iMesh_Instance itapsMesh;
-    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, 0);
-    CheckITAPSError(itapsMesh, iMesh_newMesh, NoL);
+    *pntHdls = 0;
+    *cellHdls = 0;
 
-    iBase_EntitySetHandle rootSet;
-    iMesh_getRootSet(itapsMesh, &rootSet, &itapsError);
-    CheckITAPSError(itapsMesh, iMesh_getRootSet, NoL);
-
-    try {
-
+    try
+    {
         // Create the entity set representing this chunk 
         iBase_EntitySetHandle chunkSet;
         iMesh_createEntSet(itapsMesh, 0, &chunkSet, &itapsError);
@@ -207,15 +205,8 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
             // create initial Vtx entity
             iMesh_createVtx(itapsMesh, pt[0], pt[1], pt[2], &ptHdls[i], &itapsError);
             if (i<5) CheckITAPSError(itapsMesh, iMesh_createVtx, NoL);
-    
-            // add Vtx entity to chunkSet
-            //iMesh_addEntToSet(itapsMesh, ptHdls[i], &chunkSet, &itapsError);
-            //if (i<5) CheckITAPSError(itapsMesh, iMesh_addEntToSet, NoL);
-    
-            // remove Vtx entity from root set
-            //iMesh_rmvEntFromSet(itapsMesh, ptHdls[i], &rootSet, &itapsError); 
-            //if (i<5) CheckITAPSError(itapsMesh, iMesh_rmvEntFromSet, NoL);
         }
+        *pntHdls = ptHdls;
     
         // add just created Vtx entites to chunkSet
         iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, &chunkSet, &itapsError);
@@ -241,6 +232,7 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
             iMesh_createEnt(itapsMesh, topo, cellPtEnts, ncellPts, &znHdls[i], &status, &itapsError);
             if (i<5) CheckITAPSError(itapsMesh, iMesh_createEnt, NoL);
         }
+        *cellHdls = znHdls;
     
         // add just created cell entites to chunkSet
         iMesh_addEntArrToSet(itapsMesh, znHdls, ncells, &chunkSet, &itapsError);
@@ -249,7 +241,300 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
         // remove just created cell entities from rootSet, ok?
         //iMesh_rmvEntArrFromSet(itapsMesh, znHdls, ncells, &rootSet, &itapsError);
         //CheckITAPSError(itapsMesh, iMesh_rmvEntArrFromSet, NoL);
+
+    }
+    catch (iBase_Error TErr)
+    {
+        char msg[512];
+        char desc[256];
+        desc[0] = '\0';
+        int tmpError = itapsError;
+#ifdef ITAPS_MOAB
+        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
+#elif ITAPS_GRUMMP
+#endif
+        SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
+            "\nUnable to open file!", tmpError, desc);
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
+    }
+funcEnd: ;
+}
+
+// ****************************************************************************
+//  Function: vtkDataTypeToITAPSTagType 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 1, 2008 
+//
+// ****************************************************************************
+static int
+vtkDataTypeToITAPSTagType(int t)
+{
+    switch (t)
+    {
+        case VTK_CHAR:           
+        case VTK_UNSIGNED_CHAR:  return iBase_BYTES;
+
+        case VTK_SHORT:
+        case VTK_UNSIGNED_SHORT:
+        case VTK_INT:
+        case VTK_UNSIGNED_INT:
+        case VTK_LONG:
+        case VTK_UNSIGNED_LONG:
+        case VTK_ID_TYPE:        return iBase_INTEGER;
+
+        case VTK_FLOAT:          
+        case VTK_DOUBLE:         return iBase_DOUBLE;
+    }
+    return iBase_BYTES;
+}
+
+// ****************************************************************************
+//  Function: ConvertTypeAndStorageOrder
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 6, 2008 
+//
+// ****************************************************************************
+template <class iT, class oT>
+static void ConvertTypeAndStorageOrder(const iT *const ibuf, int npts, int ncomps, int sorder, oT *obuf)
+{
+    int i, j;
+    if (sorder == iBase_INTERLEAVED)
+    {
+        for (i = 0; i < npts; i++)
+        {
+            for (j = 0; j < ncomps; j++)
+            {
+                obuf[i*ncomps+j] = (oT) ibuf[i*ncomps+j];
+            }
+        }
+    }
+    else
+    {
+        for (j = 0; j < ncomps; j++)
+        {
+            for (i = 0; i < npts; i++)
+            {
+                obuf[j*ncomps+i] = (oT) ibuf[i*ncomps+j];
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Function: ConvertTypeAndStorageOrder
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 5, 2008 
+//
+// ****************************************************************************
+template <class T>
+static void ConvertTypeAndStorageOrder(vtkDataArray *arr, int sorder, T **buf) 
+{
+    int npts = arr->GetNumberOfTuples();
+    int ncomps = arr->GetNumberOfComponents();
+    void *p = arr->GetVoidPointer(0);
+    T *newbuf = new T[npts*ncomps];
+
+    switch (arr->GetDataType())
+    {
+        case VTK_CHAR: ConvertTypeAndStorageOrder((char*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_UNSIGNED_CHAR:ConvertTypeAndStorageOrder((unsigned char*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_SHORT: ConvertTypeAndStorageOrder((short*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_UNSIGNED_SHORT: ConvertTypeAndStorageOrder((unsigned short*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_INT: ConvertTypeAndStorageOrder((int*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_UNSIGNED_INT: ConvertTypeAndStorageOrder((unsigned int*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_LONG: ConvertTypeAndStorageOrder((long*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_UNSIGNED_LONG: ConvertTypeAndStorageOrder((unsigned long*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_ID_TYPE: ConvertTypeAndStorageOrder((vtkIdType*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_FLOAT:  ConvertTypeAndStorageOrder((float*) p, npts, ncomps, sorder, newbuf); break;
+        case VTK_DOUBLE: ConvertTypeAndStorageOrder((double*) p, npts, ncomps, sorder, newbuf); break;
+    }
+
+    *buf = newbuf;
+}
+
+// ****************************************************************************
+//  Function: ConvertTypeAndStorageOrder
+//
+//  Purpose: Iterate over all point and cell variables, skipping VisIt
+//  'internal' variables and build up tags on the appropriate entities in
+//  iMesh.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 5, 2008 
+//
+// ****************************************************************************
+static void
+WriteVariables(vtkDataSet *ds, int chunk,
+    iMesh_Instance itapsMesh, iBase_EntityHandle rootSet,
+    iBase_EntityHandle *ptHdls, iBase_EntityHandle *clHdls)
+{
+    try
+    {
+        int sorder;
+        iMesh_getDfltStorage(itapsMesh, &sorder, &itapsError);
+
+        for (int pass = 0; pass < 2; pass++)
+        {
+            vtkPointData *pd = 0;
+            vtkCellData *cd = 0;
     
+            if (pass == 0)
+               pd = ds->GetPointData();
+            else
+               cd = ds->GetCellData();
+    
+            iBase_EntityHandle *eHdls = pd ? ptHdls : clHdls;
+            int narrays = pd ? pd->GetNumberOfArrays() : cd->GetNumberOfArrays();
+            int nents = pd ? ds->GetNumberOfPoints() : ds->GetNumberOfCells();
+    
+            for (int i = 0 ; i < narrays ; i++)
+            {
+                vtkDataArray *arr = pd ? pd->GetArray(i) : cd->GetArray(i);
+        
+                // ignore internal VisIt data
+                if (strstr(arr->GetName(), "vtk") != NULL)
+                    continue;
+                if (strstr(arr->GetName(), "avt") != NULL)
+                    continue;
+    
+                int npts = arr->GetNumberOfTuples();
+                int ncomps = arr->GetNumberOfComponents();
+                int iType = vtkDataTypeToITAPSTagType(arr->GetDataType());
+                iBase_TagHandle varTag;
+                iMesh_createTag(itapsMesh, arr->GetName(), ncomps, iType, &varTag,
+                    &itapsError, strlen(arr->GetName()));
+                CheckITAPSError(itapsMesh, iMesh_createTag, NoL);
+
+                switch (iType)
+                {
+                    case iBase_DOUBLE:
+                    {
+                        if (arr->GetDataType() == VTK_DOUBLE && sorder == iBase_INTERLEAVED)
+                        {
+                            // Fastrack because in this case iMesh can digest VTK-native
+                            iMesh_setDblArrData(itapsMesh, eHdls, nents, varTag,
+                                (double *) arr->GetVoidPointer(0), npts*ncomps, &itapsError);
+                            CheckITAPSError(itapsMesh, iMesh_setDblArrData, NoL);
+                        }
+                        else
+                        {
+                            double *buf;
+                            ConvertTypeAndStorageOrder(arr, sorder, &buf);
+                            iMesh_setDblArrData(itapsMesh, eHdls, nents, varTag, buf,
+                                npts*ncomps, &itapsError);
+                            delete [] buf;
+                            CheckITAPSError(itapsMesh, iMesh_setDblArrData, NoL);
+                        }
+                        break;
+                    }
+                    case iBase_INTEGER:
+                    {
+                        if (arr->GetDataType() == VTK_INT && sorder == iBase_INTERLEAVED)
+                        {
+                            // Fastrack because in this case iMesh can digest VTK-native
+                            iMesh_setIntArrData(itapsMesh, eHdls, nents, varTag,
+                                (int *) arr->GetVoidPointer(0), npts*ncomps, &itapsError);
+                            CheckITAPSError(itapsMesh, iMesh_setIntArrData, NoL);
+                        }
+                        else
+                        {
+                            int *buf;
+                            ConvertTypeAndStorageOrder(arr, sorder, &buf);
+                            iMesh_setIntArrData(itapsMesh, eHdls, nents, varTag, buf,
+                                npts*ncomps, &itapsError);
+                            delete [] buf;
+                            CheckITAPSError(itapsMesh, iMesh_setIntArrData, NoL);
+                        }
+                        break;
+                    }
+                    case iBase_BYTES:
+                    {
+                        if (arr->GetDataType() == VTK_CHAR && sorder == iBase_INTERLEAVED)
+                        {
+                            // Fastrack because in this case iMesh can digest VTK-native
+                            iMesh_setArrData(itapsMesh, eHdls, nents, varTag,
+                                (char *) arr->GetVoidPointer(0), npts*ncomps, &itapsError);
+                            CheckITAPSError(itapsMesh, iMesh_setArrData, NoL);
+                        }
+                        else
+                        {
+                            char *buf;
+                            ConvertTypeAndStorageOrder(arr, sorder, &buf);
+                            iMesh_setArrData(itapsMesh, eHdls, nents, varTag, buf,
+                                npts*ncomps, &itapsError);
+                            delete [] buf;
+                            CheckITAPSError(itapsMesh, iMesh_setArrData, NoL);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    catch (iBase_Error TErr)
+    {
+        char msg[512];
+        char desc[256];
+        desc[0] = '\0';
+        int tmpError = itapsError;
+#ifdef ITAPS_MOAB
+        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
+#elif ITAPS_GRUMMP
+#endif
+        SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
+            "\nUnable to open file!", tmpError, desc);
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
+    }
+funcEnd: ;
+}
+
+
+// ****************************************************************************
+//  Method: avtITAPS_CWriter::WriteChunk
+//
+//  Purpose:
+//      This writes out one chunk of an avtDataset.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 20, 2008 
+//
+// ****************************************************************************
+
+void
+avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
+{
+    int i;
+
+    char dummyStr[32];
+    iMesh_Instance itapsMesh;
+    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, 0);
+    CheckITAPSError(itapsMesh, iMesh_newMesh, NoL);
+
+    iBase_EntitySetHandle rootSet;
+    iMesh_getRootSet(itapsMesh, &rootSet, &itapsError);
+    CheckITAPSError(itapsMesh, iMesh_getRootSet, NoL);
+
+    // Create mesh description in iMesh instance
+    iBase_EntityHandle *ptHdls, *clHdls;
+    WriteMesh(ds, chunk, itapsMesh, rootSet, &ptHdls, &clHdls);
+
+    // Create variables (tags) in iMesh instance
+    WriteVariables(ds, chunk, itapsMesh, rootSet, ptHdls, clHdls);
+
+    if (ptHdls)
+        delete [] ptHdls;
+    if (clHdls)
+        delete [] clHdls;
+
+    // Ok, write the iMesh instance to a file
+    try
+    {
+
         // save the file
         string fname = dir + stem;
         char filename[1024];
@@ -257,6 +542,7 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
         iMesh_save(itapsMesh, rootSet, filename, formatType.c_str(), &itapsError,
             strlen(filename), formatType.size());
         CheckITAPSError(itapsMesh, iMesh_save, NoL);
+
     }
     catch (iBase_Error TErr)
     {
