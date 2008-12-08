@@ -28,6 +28,7 @@
 <li>The host profiles for LLNL's juno system have been corrected to handle node names with 4 digits.</li>
 <li>The source code was modified so that VisIt would compile with the gcc 4.3.x compilers.</li>
 <li>A bug was fixed with VisIt's configure script where the configuration switch --with-hdf5 would attempt to locate the hdf5 library even if it was not requested or even specifically disabled.</li>
+<li>A bug was fixed with the reading of curves from the "Ultra" format.  Previously, for a multi-curve file, if curve N+1's first point was the same as curve N's last point, then curve N+1's first point was being incorrectly discarded.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.11.0.html">VisIt 1.11.0 Release Notes</a>.</p>

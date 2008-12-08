@@ -290,6 +290,12 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Deal with possible exception during INVALID_POINT_WARNING. Fix
 //    lack of suppression of more than 5 lines of errors. Fix possible
 //    reference to array index -1 when xl.size() or yl.size()==0
+//
+//    Hank Childs, Mon Dec  8 13:51:16 PST 2008
+//    For files with multiple curves, we were incorrectly throwing away
+//    the first point of curve N+1 if it was identical to the last point
+//    of curve N.
+//
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
@@ -349,6 +355,7 @@ avtCurve2DFileFormat::ReadFile(void)
     curveTime = INVALID_TIME;
     curveCycle = INVALID_CYCLE;
     CurveToken lastt = VALID_POINT;
+    bool justStartedNewCurve = false;
     float lastx;
     while (!ifile.eof())
     {
@@ -373,7 +380,8 @@ avtCurve2DFileFormat::ReadFile(void)
             {
                 if (x == xl[len-1] && y == yl[len-1])
                 {
-                    shouldAddPoint = false;
+                    if (justStartedNewCurve == false)
+                        shouldAddPoint = false;
                 }
             }
             if (shouldAddPoint)
@@ -382,6 +390,7 @@ avtCurve2DFileFormat::ReadFile(void)
                 yl.push_back(y);
                 breakpoint_following.push_back(false);
                 useCentering = AVT_NODECENT;
+                justStartedNewCurve = false;
             }
             break;
           }
@@ -420,6 +429,7 @@ avtCurve2DFileFormat::ReadFile(void)
             }
             centering.push_back(useCentering);
             cutoff.push_back(xl.size());
+            justStartedNewCurve = true;
             break;
           }
           case WHITESPACE:
