@@ -17,6 +17,9 @@
 #   Mark C. Miller, Tue Nov 18 18:22:40 PST 2008
 #   Fixed typo in logic involving || for $m4_file
 #
+#   Mark C. Miller, Mon Dec  8 12:51:21 PST 2008
+#   Fixed typo in logic involving && for $m4_file
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -60,7 +63,7 @@ if test -n "$theConfigureDotInFile" || test -n "$m4_file"; then
         exit 1
     fi
 elif test -n "$theConfigureFile"; then
-    if test -z "$theConfigureDotInFile" && -z "$m4_file" ; then
+    if test -z "$theConfigureDotInFile" && test -z "$m4_file" ; then
         log "Attempt to update \"configure\" without also updating \"configure.in\""
         exit 1
     fi
