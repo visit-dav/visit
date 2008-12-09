@@ -253,6 +253,10 @@
 #    Mark C. Miller, Tue Aug  5 16:31:43 PDT 2008
 #    Increased default time limit for a given .py file test from 300 to
 #    600 seconds.
+#
+#    Mark C. Miller, Mon Dec  8 23:36:31 PST 2008
+#    I added logic to provide useful error messages when it looks like the
+#    test ran 'ok' but developer negected to call Exit() from .py file.
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -1036,6 +1040,18 @@ for t in $testcases; do
         if test "$quiet" = "0"; then
             echo -e ">> Passed with partial skips in test file: $t"
         fi
+    elif test "$error" = "0"; then
+        echo -e "    $name:\tfailed, exit(0)" >> summary
+        anyerror=1
+        echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - exit(0)</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> exit(0) when running test file: $t"
+            if test ! `grep -q 'Exit()' $t`; then
+                echo -e ">> Did you forget to call 'Exit()' in $t"
+            fi
+        fi
+        # Since VisIt terminated, the test page must not have been completed. Complete it here.
+        echo -e " <tr><td colspan=6 align=center bgcolor=\"#ff0000\"><font color=\"#ffffff\"><b>Test exit(0)</b></font></td></tr></table></body></html>" >> html/${category}_${base}.html
     else
         echo -e "    $name:\tfailed, VisIt crashed" >> summary
         anyerror=1
