@@ -5728,7 +5728,7 @@ QvisGUIApplication::ReadFromViewer(int)
             cerr << "VisIt's viewer exited abnormally! Aborting the Graphical "
                  << "User Interface. VisIt's developers may be reached via "
                  << "the visit-users mailing list.  Please see:" << std::endl
-                 << "        https://wci.llnl.gov/codes/visit/FAQ.html#1"
+                 << "        http://visit.llnl.gov/FAQ.html#1"
                  << endl;
             viewerIsAlive = false;
 
