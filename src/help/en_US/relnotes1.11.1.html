@@ -22,6 +22,8 @@
 <li>The help files have been made available once again for the windows platform.</li>
 <li>The 'change username' option in the password window on Windows no longer crashes.</li>
 <li>Silex no longer crashes on start up on Windows.</li>
+<li>A bug was fixed with the reading of curves with the Ultra file format reader. Previously, for a multi-curve file, if curve N+1's first point was the same as curve N's last point, then curve N+1's first point was being incorrectly discarded.</li>
+<li>A bug was corrected with the Enzo file format reader, where the expressions for velocity and particle_velocity were defined incorrectly.</li>
 <li>The Nek file format reader can now read meta-data for files larger than 2GB.</li>
 <li>The DDCMD file format reader was enhanced to read ascii and binary format atom files.</li>
 <li>Host profiles for LLNL's alastor system have been added.</li>
@@ -29,7 +31,7 @@
 <li>The host profiles for LLNL's juno system have been corrected to handle node names with 4 digits.</li>
 <li>The source code was modified so that VisIt would compile with the gcc 4.3.x compilers.</li>
 <li>A bug was fixed with VisIt's configure script where the configuration switch --with-hdf5 would attempt to locate the hdf5 library even if it was not requested or even specifically disabled.</li>
-<li>A bug was fixed with the reading of curves from the "Ultra" format.  Previously, for a multi-curve file, if curve N+1's first point was the same as curve N's last point, then curve N+1's first point was being incorrectly discarded.</li>
+<li>The file depcomp was added to the binary distributions so that plugins could be built against the binary distributions.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.11.0.html">VisIt 1.11.0 Release Notes</a>.</p>
