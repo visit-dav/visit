@@ -40,6 +40,18 @@
 #include <QvisVolumePlotWindow.h>
 #ifdef HAVE_LIBSLIVR
 #   include <QvisCMap2Widget.h>
+#else
+// We need to have a pointer to a QvisCMap2Widget object in the QvisVolumeWindow
+// object all the time, even when we don't use it. That makes the object size
+// consistent in the moc data and the real object. When we don't want the real
+// widget, use this dummy class.
+class QvisCMap2Widget
+{
+public:
+    QvisCMap2Widget() : a(0) { }
+    ~QvisCMap2Widget() { }
+    int a;
+};
 #endif
 #include <QApplication>
 #include <QComboBox>
