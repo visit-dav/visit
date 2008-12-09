@@ -1041,9 +1041,9 @@ for t in $testcases; do
             echo -e ">> Passed with partial skips in test file: $t"
         fi
     elif test "$error" = "0"; then
-        echo -e "    $name:\tfailed, exit(0)" >> summary
+        echo -e "    $name:\tfailed, exit(0) unknown" >> summary
         anyerror=1
-        echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - exit(0)</b></i></td>" >> html/index.html
+        echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - exit(0) unknown</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> exit(0) when running test file: $t"
             if test ! `grep -q 'Exit()' $t`; then
@@ -1051,16 +1051,16 @@ for t in $testcases; do
             fi
         fi
         # Since VisIt terminated, the test page must not have been completed. Complete it here.
-        echo -e " <tr><td colspan=6 align=center bgcolor=\"#ff0000\"><font color=\"#ffffff\"><b>Test exit(0)</b></font></td></tr></table></body></html>" >> html/${category}_${base}.html
+        echo -e " <tr><td colspan=6 align=center bgcolor=\"#ff0000\"><font color=\"#ffffff\"><b>exit(0) unknown</b></font></td></tr></table></body></html>" >> html/${category}_${base}.html
     else
-        echo -e "    $name:\tfailed, VisIt crashed" >> summary
+        echo -e "    $name:\tfailed, exit($error), assumed crashed" >> summary
         anyerror=1
-        echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - VisIt Crashed</b></i></td>" >> html/index.html
+        echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - exit($error) - Crashed?</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Crash when running test file: $t"
         fi
         # Since VisIt crashed, the test page must not have been completed. Complete it here.
-        echo -e " <tr><td colspan=6 align=center bgcolor=\"#ff0000\"><font color=\"#ffffff\"><b>Test crashed!</b></font></td></tr></table></body></html>" >> html/${category}_${base}.html
+        echo -e " <tr><td colspan=6 align=center bgcolor=\"#ff0000\"><font color=\"#ffffff\"><b>exit($error) crashed?</b></font></td></tr></table></body></html>" >> html/${category}_${base}.html
     fi
 
     #
