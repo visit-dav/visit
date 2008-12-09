@@ -1,8 +1,14 @@
 #!/bin/sh
 
+# Modifications:
+#   Mark C. Miller, Tue Dec  9 00:19:04 PST 2008
+#   Obtain list of changed files via FLIST ($3) argument and loop
+#   over them via 'read' sh builtin method.
+
 PROPERTY="VisIt:VersionSpecificLogic"
 REPOS="$1"
 TXN="$2"
+FLIST="$3"
 
 function log()
 {
@@ -18,8 +24,7 @@ if [ -z "${TXN}" ]; then
     exit 1
 fi
 
-files=`${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}'`
-for f in ${files} ; do
+while read f; do
     # It ends up with some WS chars if we don't sed those out, thus making it
     # a non-zero string..
     trunk=`echo "${f}" | grep "trunk" | /bin/sed s/\ //g`
@@ -40,7 +45,7 @@ for f in ${files} ; do
         log "7. svn commit -m restoring property ${f}"
         exit 1
     fi
-done
+done < $FLIST
 
 # all is well!
 exit 0

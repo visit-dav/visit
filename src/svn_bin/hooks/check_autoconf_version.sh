@@ -20,9 +20,13 @@
 #   Mark C. Miller, Mon Dec  8 12:51:21 PST 2008
 #   Fixed typo in logic involving && for $m4_file
 #
+#   Mark C. Miller, Tue Dec  9 00:19:04 PST 2008
+#   Obtain list of changed files via FLIST ($3) argument and loop
+#   over them via 'read' sh builtin method.
 ##############################################################################
 REPOS="$1"
 TXN="$2"
+FLIST="$3"
 
 function log()
 {
@@ -38,11 +42,10 @@ if [ -z "${TXN}" ]; then
     exit 1
 fi
 
-files=`${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}'`
 theConfigureFile=""
 theConfigureDotInFile=""
 m4_file=""
-for f in ${files} ; do
+while read f; do
     case ${f} in
         *src/configure.in)
             theConfigureDotInFile=$f
@@ -54,7 +57,7 @@ for f in ${files} ; do
             theConfigureFile=$f
             ;;
     esac
-done
+done < $FLIST
 
 # Check that both configure.in and configure are getting updated
 if test -n "$theConfigureDotInFile" || test -n "$m4_file"; then
