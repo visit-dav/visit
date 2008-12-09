@@ -7,12 +7,18 @@
 # Programmer: Mark C. Miller
 # Created:    April 30, 2008
 #
-#      Mark Miller, Mon Jun 23 17:07:38 PDT 2008
-#      Added docs/website to skip
+# Modifications:
 #
+#   Mark Miller, Mon Jun 23 17:07:38 PDT 2008
+#   Added docs/website to skip
+#
+#   Mark C. Miller, Tue Dec  9 00:19:04 PST 2008
+#   Obtain list of changed files via FLIST ($3) argument and loop
+#   over them via 'read' sh builtin method.
 ##############################################################################
 REPOS="$1"
 TXN="$2"
+FLIST="$3"
 
 function log()
 {
@@ -37,8 +43,7 @@ if test -n "$TMPDIR"; then
 fi
 echo -e '\r' > $ctrlCharFile
 
-files=`${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}'`
-for f in ${files} ; do
+while read f; do
 
     #
     # Only do this check for files svn thinks are 'text' files
@@ -118,7 +123,10 @@ for f in ${files} ; do
         rm -f $ctrlCharFile
         exit 1
     fi
-done
+
+done < $FLIST
+
+# clean up
 rm -f $ctrlCharFile
 
 # all is well!

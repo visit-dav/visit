@@ -11,19 +11,23 @@
 # All pre-commit scripts take REPOSITORY_PATH and TRANSACTION_ID as arguments,
 # in that order.  See the subversion redbook for more information.
 #
-
 REPOS="$1"
 TXN="$2"
+FLIST=/tmp/visit_svn_pre_commit_changed_files_${TXN}.txt
+if test -n "$TMPDIR"; then
+    FLIST=$TMPDIR/visit_svn_pre_commit_changed_files_${TXN}.txt
+fi
 
 #
-# Set some env variables used by the scripts
+# Set some env variables common to many hook scripts
 #
 source ${REPOS}/hooks/hook_vars.sh
+
 
 function runhook_sh()
 {
    TEST="$@"
-   sh ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
+   sh ${REPOS}/hooks/${TEST} ${REPOS} ${TXN} ${FLIST}
    if [ $? != 0 ]; then
       exit 1
    fi
@@ -31,11 +35,16 @@ function runhook_sh()
 function runhook_py()
 {
    TEST="$@"
-   /usr/bin/python ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
+   /usr/bin/python ${REPOS}/hooks/${TEST} ${REPOS} ${TXN} ${FLIST}
    if [ $? != 0 ]; then
       exit 1
    fi
 }
+
+#
+# Populate ${FLIST} file with list of files changed in this commit 
+#
+${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}' > ${FLIST}
 
 # Unfortunately we want something more warning-esque, which isn't quite
 # possible with subversion's hooks.
@@ -59,6 +68,9 @@ runhook_sh "check_pound_warning.sh"
 
 # Check for GPL text
 runhook_sh "check_gpl.sh"
+
+# Clean up
+${RM} -f ${FLIST}
 
 # All checks passed, so allow the commit.
 exit 0
