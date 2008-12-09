@@ -934,6 +934,10 @@ avtEnzoFileFormat::FreeUpResources(void)
 //    Brad Whitlock, Mon Apr 3 11:07:11 PDT 2006
 //    Added tracer particle support.
 //
+//    Mark C. Miller, Mon Dec  8 22:20:35 PST 2008
+//    Fixed obvious typo in particle velocity expression and made attempt
+//    (without test data in hand) to ensure expressions get specified
+//    correctly on 2D meshes.
 // ****************************************************************************
 
 void
@@ -1043,12 +1047,18 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Add Expressions
     Expression vel;
     vel.SetName("velocity");
-    vel.SetDefinition("{<x-velocity>,<y-velocity>,<z-velocity>}");
+    if (dimension == 2)
+        vel.SetDefinition("{<x-velocity>,<y-velocity>}");
+    else
+        vel.SetDefinition("{<x-velocity>,<y-velocity>,<z-velocity>}");
     vel.SetType(Expression::VectorMeshVar);
 
     Expression pvel;
     pvel.SetName("particle_velocity");
-    pvel.SetDefinition("{particle_velocity_x,particle_velocity_x,particle_velocity_x}");
+    if (dimension == 2)
+        pvel.SetDefinition("{particle_velocity_x,particle_velocity_y}");
+    else
+        pvel.SetDefinition("{particle_velocity_x,particle_velocity_y,particle_velocity_z}");
     pvel.SetType(Expression::VectorMeshVar);
 
     md->AddExpression(&vel);
