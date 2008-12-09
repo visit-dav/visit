@@ -18,12 +18,13 @@
 <li>A bug was fixed where scalable rendering (the parallel rendering mode) would leave out portions of the data set under a variety of conditions, including zooming in too far or clipping away part of the data set.</li>
 <li>A bug was fixed where a slice that lay between two, flat domain boundaries could lead to a double contribution (one from each boundary).  The images from VisIt were basically unaffected, but integrations (Weighted Variable Sums) and 2D area queries were double counting.</li>
 <li>A bug was fixed where index selecting a multi-block mesh when "Use Whole Collection" was set would index select the mesh on a per-block basis, instead of across the entire mesh. It now index selects across the entire mesh in that situation.</li>
-<li>A bug was fixed with the Windows installer so that it correctly set the chosen network configuration files.<li>
+<li>A bug was fixed with the Windows installer so that it correctly set the chosen network configuration files.</li>
 <li>The help files have been made available once again for the windows platform.</li>
 <li>The 'change username' option in the password window on Windows no longer crashes.</li>
 <li>Silex no longer crashes on start up on Windows.</li>
 <li>The Nek file format reader can now read meta-data for files larger than 2GB.</li>
 <li>The DDCMD file format reader was enhanced to read ascii and binary format atom files.</li>
+<li>Host profiles for LLNL's alastor system have been added.</li>
 <li>Host profiles for LLNL's hera system have been added.</li>
 <li>The host profiles for LLNL's juno system have been corrected to handle node names with 4 digits.</li>
 <li>The source code was modified so that VisIt would compile with the gcc 4.3.x compilers.</li>
