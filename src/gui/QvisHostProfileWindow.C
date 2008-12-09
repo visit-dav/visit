@@ -943,6 +943,9 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Cyrus Harrison, Tue Dec  9 14:36:08 PST 2008
+//    Fixed Qt4 porting bugs.
+//
 // ****************************************************************************
 
 void
@@ -994,15 +997,15 @@ QvisHostProfileWindow::UpdateProfileList()
     
     // Find a list of hosts that need a tab and do not have one.
     QStringList additional;
-    
     for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         QString host(profiles->operator[](i).GetHost().c_str());
-        if(!hostTabMap.contains(host))
+        
+        // make sure the host is not in our current hostTabMap
+        // and not already in our additional list
+        if(!hostTabMap.contains(host) && !additional.contains(host))
             additional.append(host);
     }
-    
-    
         
     // If there are any tabs to be added, try and use tabs already in
     // the widget. If none are available, create new tabs.
@@ -1190,6 +1193,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Cyrus Harrison, Tue Dec  9 14:55:27 PST 2008
+//    Finished Qt4 Port todo.
+//
 // ****************************************************************************
 
 void
@@ -1245,10 +1251,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
     {
         profileName->setText("");
         hostName->setEditText("");
-        //hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str()); TODO
+        hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str());
         hostAliases->setText("");
         userName->setText("");
-        //userName->setText(GetViewerProxy()->GetLocalUserName().c_str()); TODO
+        userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         numProcessors->setValue(1);
         timeout->setValue(60*4);   // 4 hour default
         
@@ -1296,7 +1302,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
         if(current.GetUserName() == "notset")
         {
             userName->setText("username");
-            //userName->setText(GetViewerProxy()->GetLocalUserName().c_str()); TODO
+            userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         }
         else
             userName->setText(current.GetUserName().c_str());
@@ -1483,6 +1489,9 @@ QvisHostProfileWindow::UpdateActiveProfile()
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Cyrus Harrison, Tue Dec  9 14:55:00 PST 2008
+//    Finished Qt4 port todo.
+//
 // ****************************************************************************
 
 void
@@ -1494,8 +1503,10 @@ QvisHostProfileWindow::ReplaceLocalHost()
     {
         HostProfile &current = profiles->operator[](i);
         if(current.GetHost() == lh)
+        {
             current.SetHost("localhost");
-            //current.SetHost(GetViewerProxy()->GetLocalHostName()); TODO
+            current.SetHost(GetViewerProxy()->GetLocalHostName()); 
+        }
     }
 }
 
@@ -1704,6 +1715,9 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Cyrus Harrison, Tue Dec  9 14:55:27 PST 2008
+//    Finished Qt4 Port todo.
+//
 // ****************************************************************************
 bool
 QvisHostProfileWindow::GetCurrentValues(int which_widget)
@@ -1755,7 +1769,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             std::string newHost(temp.toStdString());
             if(newHost == "localhost")
             {
-                // newHost = GetViewerProxy()->GetLocalHostName(); TODO
+                newHost = GetViewerProxy()->GetLocalHostName(); 
                 hostName->setEditText(newHost.c_str());
             }
             if (newHost != current.GetHost())
@@ -2139,6 +2153,10 @@ QvisHostProfileWindow::apply()
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//
+//    Cyrus Harrison, Tue Dec  9 14:55:27 PST 2008
+//    Finished Qt4 Port todo.
+//
 // ****************************************************************************
 
 void
@@ -2159,10 +2177,10 @@ QvisHostProfileWindow::newProfile()
     {
         // Set the default user name.
         temp.SetUserName("username");
-        //temp.SetUserName(GetViewerProxy()->GetLocalUserName()); TODO
+        temp.SetUserName(GetViewerProxy()->GetLocalUserName()); 
         // Set the default host name.
         temp.SetHost("localhost");
-        //temp.SetHost(GetViewerProxy()->GetLocalHostName()); TODO
+        temp.SetHost(GetViewerProxy()->GetLocalHostName());
         // Make the first created profile active.
         temp.SetActive(true);
     }
