@@ -126,6 +126,13 @@ typedef int WidgetID;
 //    Tom Fogal, Fri Sep 19 11:17:37 MDT 2008
 //    Don't use the CMap2D widget without SLIVR.
 //
+//    Brad Whitlock, Tue Dec 9 14:41:37 PST 2008
+//    Always include a pointer to the QvisCMap2Widget widget or else moc
+//    gets the object size confused. We forward declare QvisCMap2Widget
+//    and use a dummy class if we don't end up needing it. If we don't do 
+//    this, we get weird memory errors when deleting the window when
+//    SLIVR is enabled.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -204,9 +211,7 @@ private:
     bool                     showColorsInAlphaWidget;
 
     // Widgets and layouts.
-#ifdef HAVE_LIBSLIVR
     QvisCMap2Widget          *transferFunc2D;
-#endif
     QGroupBox                *colorWidgetGroup;
     QCheckBox                *smoothCheckBox;
     QCheckBox                *equalCheckBox;
