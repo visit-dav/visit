@@ -17,6 +17,10 @@
 #   Mark C. Miller, Tue Dec  9 00:19:04 PST 2008
 #   Obtain list of changed files via FLIST ($3) argument and loop
 #   over them via 'read' sh builtin method.
+#
+#   Eric Brugger, Tue Dec  9 17:58:52 PST 2008
+#   Added docs/WebSite/new.html to the list of permitted cases.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -74,6 +78,9 @@ while read f; do
             continue
             ;;
         *src/svn_bin/hooks/check_gpl.sh) 
+            continue
+            ;;
+        *docs/WebSite/new.html)
             continue
             ;;
     esac
