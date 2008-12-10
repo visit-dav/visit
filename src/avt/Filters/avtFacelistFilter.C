@@ -758,6 +758,9 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
 //    Change memory management, since inheritance from SIMODataTreeIterator,
 //    means that we can no longer access "ManageMemory".
 //
+//    Hank Childs, Wed Dec 10 10:03:46 PST 2008
+//    Add support for quadratic elements.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -879,13 +882,38 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
         vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) in_ds;
         int ncells = ug->GetNumberOfCells();
         out_ds->Allocate(ncells);
-        vtkIdList *idlist = vtkIdList::New();
+        vtkIdList *idlist     = vtkIdList::New();
+        vtkIdList *idlist_cor = vtkIdList::New();
         for (int i = 0 ; i < ncells ; i++)
         {
             ug->GetCellPoints(i, idlist);
-            out_ds->InsertNextCell(ug->GetCellType(i), idlist);
+            vtkIdList *idlist_to_use = idlist;
+            int cellType = ug->GetCellType(i);
+            // We really should be triangulating these...
+            if (cellType == VTK_QUADRATIC_TRIANGLE)
+            {
+                idlist_cor->SetNumberOfIds(3);
+                idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(1));
+                idlist_cor->SetId(2, idlist->GetId(2));
+                idlist_to_use = idlist_cor;
+                cellType = VTK_TRIANGLE; 
+            }
+            else if (cellType == VTK_QUADRATIC_QUAD)
+            {
+                idlist_cor->SetNumberOfIds(4);
+                idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(1));
+                idlist_cor->SetId(2, idlist->GetId(2));
+                idlist_cor->SetId(3, idlist->GetId(3));
+                idlist_to_use = idlist_cor;
+                cellType = VTK_QUAD; 
+            }
+
+            out_ds->InsertNextCell(cellType, idlist_to_use);
         }
         idlist->Delete();
+        idlist_cor->Delete();
     }
 
     return out_ds;
