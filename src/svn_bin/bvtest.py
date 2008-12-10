@@ -23,7 +23,7 @@
 #
 # *****************************************************************************
 
-import sys,os,time,socket
+import sys,os,time,socket,subprocess
 
 def sexe(cmd):
     """
@@ -32,13 +32,20 @@ def sexe(cmd):
     sys.stderr.write("[exe:%s]\n" % cmd)
     os.system(cmd)
 
+def sub_pipe(cmd):
+    """
+    Execute a shell command and return the result as string.
+    """
+    proc = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+    res = proc.communicate()[0]
+    return res.strip()
+    
 def current_time():
     """
     Helper to return a human readble string /w the current time.
     """
     return time.strftime("%Y-%m-%d %H:%M:%S")
-    #time.asctime(time.gmtime())
-
+    
 class BuildResult(object):
     """
     Class that holds the results for an attemped build of a library.
@@ -73,15 +80,17 @@ class BuildTest(object):
         self.bvexe = bvexe
         self.mode = mode
         self.host = socket.gethostname()
+        self.user = os.environ['USER']
+        self.arch = self.__get_arch()
         self.start_time = None
         self.end_time   = None
         self.results    = []
-    
+
     def execute(self):
         self.start_time = current_time()
         self.results    = self.build_libs(self.libcmds)
         self.end_time   = current_time()
-    
+
     def build_lib(self,libcmd):
         """
         Build a library using build_visit and return a BuildResult.
@@ -101,18 +110,19 @@ class BuildTest(object):
         if self.__check_build(lib):
             bresult = "success"
         return BuildResult(lib,libcmd,lfile,bstart,bend,bresult)
-   
+
     def build_libs(self,libcmds):
         """
         Build a collection of libraries using build_visit and return a BuildResult for each.
         """
         return [ self.build_lib(libcmd) for libcmd in libcmds ]
-        
-            
+
     def result_xml(self):
         res  = '<?xml version="1.0"?>\n'
-        res += '<?xml-stylesheet type="text/xsl" href="bvtest.xsl"?>'
+        res += '<?xml-stylesheet type="text/xsl" href="bvtest.xsl"?>\n'
         info  = 'host="%s" '  % self.host
+        info += 'user="%s" '  % self.user
+        info += 'arch="%s" '  % self.arch
         info += 'odir="%s" '  % self.odir
         info += 'libs="%s" '  % str(self.libcmds)
         info += 'start="%s" ' % self.start_time
@@ -124,7 +134,7 @@ class BuildTest(object):
         res +="  </results>\n"
         res +="</bvtest>\n"
         return res
-        
+
     def __log_file_name(self,lib):
         """
         Construct the output log file name.
@@ -133,7 +143,7 @@ class BuildTest(object):
             return  "%s/bv_log_%s.txt" % (self.odir,lib)
         else:
             return "bv_log_%s.txt" % (lib)
-    
+
     def __build_visit_command(self,libs):
         """
         Construct the proper build_visit command.
@@ -165,7 +175,6 @@ class BuildTest(object):
         except:
             return False
 
-    
     def __parse_libcmd(self,vstr):
         """
         Parses two simple build command types:
@@ -183,8 +192,26 @@ class BuildTest(object):
         else:
             res.append(vstr)
         return res
-    
-    
+
+    def __get_arch(self):
+        """
+        Helper to return a human readable string describing the current platform.
+        """
+        opsys = sub_pipe("uname -s").lower()
+        proc = sub_pipe("uname -p")
+        comp = "gcc"
+        comp_ver = ""
+        # use gcc everwhere except AIX
+        if opsys == "aix":
+            comp = "xlc"
+        # get gcc version
+        if comp == "gcc": 
+            res = sub_pipe("gcc -v 2>&1")
+            tok = res[res.find("gcc version")+len("gcc version"):].split()
+            if len(tok) > 0:
+                comp_ver = tok[0]
+        return "%s-%s-%s-%s" % (opsys,proc,comp,comp_ver)
+
 def main():
     """
     Main driver routine.

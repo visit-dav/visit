@@ -14,6 +14,8 @@
         </tr>
         
         <tr><td class="rh">Host</td> <td colspan="5"><xsl:value-of select="@host"/></td></tr>
+        <tr><td class="rh">User</td> <td colspan="5"><xsl:value-of select="@user"/></td></tr>
+        <tr><td class="rh">Arch</td> <td colspan="5"><xsl:value-of select="@arch"/></td></tr>
         <tr><td class="rh">Libraries</td><td colspan="5"><xsl:value-of select="@libs"/></td></tr>
         <tr><td class="rh">Start</td> <td colspan="5"><xsl:value-of select="@start"/></td></tr>
         <tr><td class="rh">End</td> <td colspan="5"><xsl:value-of select="@end"/></td></tr>
