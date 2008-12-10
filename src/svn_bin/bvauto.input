@@ -1,2 +1,4 @@
-szip
+python
+cmake
 hdf4
+silo:szip,hdf5
