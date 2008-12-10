@@ -41,8 +41,8 @@
 #       current directory.  If it does not locate these libraries, it will
 #       try to download them.
 #       You must have:
-#          Qt		qt-x11-opensource-4.3.3.tar.gz
-#                    or qt-mac-opensource-4.3.3.tar.gz (Mac)
+#          Qt		qt-x11-opensource-4.4.3.tar.gz
+#                    or qt-mac-opensource-4.4.3.tar.gz (Mac)
 #          Mesa         MesaLib-6.4.2.tar.gz
 #                    or Mesa-5.0-mangled.tar.gz (Linux)
 #          Python	Python-2.5.tgz
