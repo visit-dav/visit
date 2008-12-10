@@ -44,18 +44,11 @@ function error()
     exit 1
 }
 
-if test "x${REPOS}" = "x"; then
-    error "Repository path not set in $0."
-fi
-if test "x${REV}" = "x"; then
-    error "Revision number not set in $0."
-fi
-
-author=`${SVNLOOK} author -r${REV} ${REPOS}`
-${SVNLOOK} cat ${REPOS} ${SCRIPTFILE} > ${TMPFILE}
+author=`svnlook author -r${REV} ${REPOS}`
+svnlook cat ${REPOS} ${SCRIPTFILE} > ${TMPFILE}
 if test "x$?" = "x1"; then
     error "email script does not exist in repository."
 fi
-address=`${SH} ${TMPFILE} $author`
-${RM} -f ${TMPFILE}
+address=`sh ${TMPFILE} $author`
+rm -f ${TMPFILE}
 /bin/echo "${address}"

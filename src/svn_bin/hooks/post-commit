@@ -9,9 +9,20 @@ REV="$2"
 #
 # Set some env variables used by the scripts
 #
-source ${REPOS}/hooks/hook_vars.sh
+source ${REPOS}/hooks/hook_common.sh
 
-hadError=0
+#
+# Check that we have valid input parameters
+#
+if test -z "${REPOS}"; then
+    log "Repository path not set in $0."
+    exit 1
+fi
+if test -z "${REV}"; then
+    log "Revision number not set in $0."
+    exit 1
+fi
+
 function run_sh()
 {
    SCRIPT="$@"

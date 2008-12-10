@@ -31,44 +31,35 @@
 #   Mark C. Miller, Tue Dec  9 00:19:04 PST 2008
 #   Obtain list of changed files via FLIST ($3) argument and loop
 #   over them via 'read' sh builtin method.
+#
+#   Mark C. Miller, Tue Dec  9 23:09:46 PST 2008
+#   Eliminated several svnlook cat commands and improved performance and
+#   logic in counting tabs in files. Re-factored a lot skipping logic to
+#   hook_common.sh
 ##############################################################################
 REPOS="$1"
 TXN="$2"
 FLIST="$3"
 
-function log()
-{
-    echo "$@" 1>&2
-}
-
-if [ -z "${REPOS}" ]; then
-    log "Repository path not given, bailing out."
-    exit 1
-fi
-if [ -z "${TXN}" ]; then
-    log "Transaction ID not given, bailing out."
-    exit 1
-fi
-
-while read f; do
+while read fline; do
 
     #
-    # Only do this check for files svn thinks are 'text' files
+    # Get file 'svnlook' status and name
     #
-    hasMimeTypeProp=`${SVNLOOK} proplist -t $TXN $REPOS $f | grep mime-type`
-    if test -n "$hasMimeTypeProp"; then
-        mimeTypeProp=`${SVNLOOK} propget -t $TXN $REPOS svn:mime-type $f`
-        if test -n "$mimeTypeProp"; then
-            if test -z "`echo $mimeTypeProp | grep ^text/`"; then
-                continue
-            fi
-        fi
+    fstat=`echo $fline | tr -s ' ' | cut -d' ' -f1`
+    fname=`echo $fline | tr -s ' ' | cut -d' ' -f2`
+
+    #
+    # Skip common cases of deletions, dirs, non-text files
+    #
+    if eval "test HandleCommonSkipCases $fstat $fname"; then
+        continue
     fi
 
     #
-    # Filter out cases of files we permit tabs in.
+    # Filter out other cases HandleCommonSkipCases doesn't catch
     #
-    case $f in
+    case $fname in
         *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln)
             continue
             ;;
@@ -83,36 +74,40 @@ while read f; do
             ;;
     esac
 
-    # check if the file we're trying to commit has tabs
-    ${SVNLOOK} cat -t $TXN $REPOS $f | grep -q '	' 1>/dev/null 2>&1
-    commitFileHasTabs=$?
+    # Count number of tabs in file we're committing.
+    # The -c -d flags on tr here cause deletion of every character
+    # that is NOT a tab. What is left over is tab characters and we
+    # simply count them with wc.
+    commitFileTabCount=`svnlook cat -t $TXN $REPOS $fname | tr -c -d '\t' | wc -m`
 
-    # If the file we're committing has tabs, next check its predecessor
-    # on the trunk.
-    if test $commitFileHasTabs -eq 0; then
+    #
+    # If the file we're committing has tabs, we have some additional
+    # work to do to ensure we are NOT adding tabs.
+    #
+    if test $commitFileTabCount -gt 0; then
 
-        fileLineCount=`${SVNLOOK} cat $REPOS $f | wc -l`
-        if test $fileLineCount -gt 0; then
-            ${SVNLOOK} cat $REPOS $f | grep -q '	'
-            repoFileHasTabs=$?
-            if test $repoFileHasTabs -eq 0; then
-                commitFileWordCount1=`${SVNLOOK} cat -t $TXN $REPOS $f | wc -l`
-                commitFileWordCount2=`${SVNLOOK} cat -t $TXN $REPOS $f | tr '\t' '\n' | wc -l`
-                commitFileTabCount=`expr $commitFileWordCount2 - $commitFileWordCount1`
-                repoFileWordCount1=`${SVNLOOK} cat $REPOS $f | wc -l`
-                repoFileWordCount2=`${SVNLOOK} cat $REPOS $f | tr '\t' '\n' | wc -l`
-                repoFileTabCount=`expr $repoFileWordCount2 - $repoFileWordCount1`
-                if test $commitFileTabCount -gt $repoFileTabCount; then
-                    log "In a file you are commiting, \"$f\", you have increased "
-                    log "the number of tabs from $repoFileTabCount to $commitFileTabCount."
-                    exit 1
-                fi
-            else
-                log "A file you are commiting, \"$f\", has tabs"
-                exit 1
-            fi
+        #
+        # If this file is being added, it is a new file. So, the existence
+        # of ANY tabs is an error.
+        #
+        if test $fstat = A; then
+            log "A file you are adding, \"$fname\", has tabs"
+            exit 1
         fi
-    fi
+
+        #
+        # Since the file is NOT being added, just check to make sure the
+        # number of tabs in the file as it already exists in the repo is
+        # not less than the number of tabs in the file being committed.
+        #
+        repoFileTabCount=`svnlook cat $REPOS $fname | tr -c -d '\t' | wc -m`
+        if test $commitFileTabCount -gt $repoFileTabCount; then
+            log "In a file you are commiting, \"$fname\", you have increased "
+            log "the number of tabs from $repoFileTabCount to $commitFileTabCount."
+            exit 1
+        fi
+
+    fi # if test $commitFileTabCount -gt 0
 
 done < $FLIST
 
