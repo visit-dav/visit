@@ -43,7 +43,7 @@ function HandleCommonSkipCases()
     # Skip deletions (D) or just changes in props (_U)
     #
     if test $1 = D || test $1 = _U; then
-        return 0;
+        return 0
     fi
 
     #
@@ -52,7 +52,7 @@ function HandleCommonSkipCases()
     # is a slash.
     #
     if test ${2:${#2}-1:1} = /; then
-        return 0;
+        return 0
     fi
 
     #
