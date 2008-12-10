@@ -14,22 +14,7 @@
 REPOS=$1
 REV=$2
 
-# Error.  Really an error is the same as a message (since this is post-commit,
-# we really can't give an error), but this documents it more clearly.
-function error()
-{
-    echo $@ 1>&2
-    exit 1
-}
-
-if test "x${REPOS}" = "x"; then
-    error "Repository path not set in $0."
-fi
-if test "x${REV}" = "x"; then
-    error "Revision number not set in $0."
-fi
-
-files=`${SVNLOOK} changed -r ${REV} ${REPOS} | ${AWK} '{print $2}'`
+files=`svnlook changed -r ${REV} ${REPOS} | awk '{print $2}'`
 state_files=""
 for fn in ${files} ; do
     case ${fn} in

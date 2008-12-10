@@ -11,40 +11,74 @@
 # All pre-commit scripts take REPOSITORY_PATH and TRANSACTION_ID as arguments,
 # in that order.  See the subversion redbook for more information.
 #
+# Modifications:
+#   Mark C. Miller, Tue Dec  9 17:44:24 PST 2008
+#   Removed AWK for $2 from svnlook changed output in FLIST
+#   Added code to remove FLIST file in case of early exit
+#
+#   Mark C. Miller, Tue Dec  9 23:03:23 PST 2008
+#   Re-factored a lot of code common to hooks to hook_common.sh
+#   Re-organized this file a bit. Changed initial svnlook changed
+#   command here, to output BOTH file status chars and file names
+#   to the FLIST file. Removed check_gpl.sh hook.
+#
+
+#
+# Set input parameters
+#
 REPOS="$1"
 TXN="$2"
+
+#
+# Construct temp. file name to be populated with information
+# from this commit.
+#
 FLIST=/tmp/visit_svn_pre_commit_changed_files_${TXN}.txt
 if test -n "$TMPDIR"; then
     FLIST=$TMPDIR/visit_svn_pre_commit_changed_files_${TXN}.txt
 fi
 
 #
-# Set some env variables common to many hook scripts
+# Setup variables/functions common to many hook scripts
 #
-source ${REPOS}/hooks/hook_vars.sh
+source ${REPOS}/hooks/hook_common.sh
 
+#
+# Check that we have valid input parameters
+#
+if [ -z "${REPOS}" ]; then
+    log "Repository path not given, bailing out."
+    exit 1
+fi
+if [ -z "${TXN}" ]; then
+    log "Transaction ID not given, bailing out."
+    exit 1
+fi
 
 function runhook_sh()
 {
    TEST="$@"
    sh ${REPOS}/hooks/${TEST} ${REPOS} ${TXN} ${FLIST}
    if [ $? != 0 ]; then
+      rm -f ${FLIST}
       exit 1
    fi
 }
 function runhook_py()
 {
    TEST="$@"
-   /usr/bin/python ${REPOS}/hooks/${TEST} ${REPOS} ${TXN} ${FLIST}
+   python ${REPOS}/hooks/${TEST} ${REPOS} ${TXN} ${FLIST}
    if [ $? != 0 ]; then
+      rm -f ${FLIST}
       exit 1
    fi
 }
 
 #
-# Populate ${FLIST} file with list of files changed in this commit 
+# Populate ${FLIST} file with list of files being changed (and
+# their status chars) in this commit.
 #
-${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}' > ${FLIST}
+svnlook changed -t $TXN $REPOS > ${FLIST}
 
 # Unfortunately we want something more warning-esque, which isn't quite
 # possible with subversion's hooks.
@@ -66,11 +100,8 @@ runhook_sh "check_dos.sh"
 # Check for #warning compiler directives
 runhook_sh "check_pound_warning.sh"
 
-# Check for GPL text
-runhook_sh "check_gpl.sh"
-
 # Clean up
-${RM} -f ${FLIST}
+rm -f ${FLIST}
 
 # All checks passed, so allow the commit.
 exit 0
