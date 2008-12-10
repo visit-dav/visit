@@ -42,7 +42,6 @@ function HandleCommonSkipCases()
     #
     # Skip deletions (D) or just changes in props (_U)
     #
-    log "got here"
     if test $1 = D || test $1 = _U; then
         return 0
     fi

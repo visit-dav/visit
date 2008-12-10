@@ -48,7 +48,7 @@ while read fline; do
     #
     # Skip common cases of deletions, dirs, non-text files
     #
-    if eval "test HandleCommonSkipCases $fstat $fname"; then
+    if `HandleCommonSkipCases $fstat $fname`; then
         continue
     fi
 
