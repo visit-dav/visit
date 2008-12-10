@@ -139,10 +139,7 @@ class BuildTest(object):
         """
         Construct the output log file name.
         """
-        if self.odir != "":
-            return  "%s/bv_log_%s.txt" % (self.odir,lib)
-        else:
-            return "bv_log_%s.txt" % (lib)
+        return "bv_log_%s.txt" % (lib)
 
     def __build_visit_command(self,libs):
         """
