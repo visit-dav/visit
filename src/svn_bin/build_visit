@@ -469,6 +469,12 @@
 #     Tom Fogal, Sat Dec  6 21:27:55 PST 2008
 #     A silo path variable was missing "silo".
 #
+#     Mark C. Miller, Thu Dec 11 08:38:41 PST 2008
+#     Made the auto-generated config-site file a little more portable by
+#     creating a VISITARCH variable in the file and using \$VISITARCH
+#     everywhere to refer to that variable in the config-site file and not
+#     the shell variable defined in build_visit.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -6756,39 +6762,40 @@ function build_hostconf
     echo "## Set the VISITHOME environment variable." >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "VISITHOME=$VISITDIR" >> $HOSTCONF
+    echo "VISITARCH=$VISITARCH" >> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo \
 "## Specify the location of the mesa include files and libraries." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "MESA=\$VISITHOME/mesa/$MESA_VERSION/$VISITARCH" >> $HOSTCONF
+    echo "MESA=\$VISITHOME/mesa/$MESA_VERSION/\$VISITARCH" >> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo \
 "## Specify the location of the vtk include files and libraries." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "VTK=\$VISITHOME/vtk/$VTK_VERSION/$VISITARCH" >> $HOSTCONF
+    echo "VTK=\$VISITHOME/vtk/$VTK_VERSION/\$VISITARCH" >> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo \
 "## Specify the location of cmake." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "DEFAULT_CMAKE=\$VISITHOME/cmake/$CMAKE_VERSION/$VISITARCH/bin/cmake" \
+    echo "DEFAULT_CMAKE=\$VISITHOME/cmake/$CMAKE_VERSION/\$VISITARCH/bin/cmake" \
 >> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo \
 "## Specify the location of the qt include files and libraries." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "QT_BIN=\$VISITHOME/qt/$QT_VERSION/$VISITARCH/bin" >> $HOSTCONF
-    echo "QT_INCLUDE=\$VISITHOME/qt/$QT_VERSION/$VISITARCH/include" >> $HOSTCONF
-    echo "QT_LIB=\$VISITHOME/qt/$QT_VERSION/$VISITARCH/lib" >> $HOSTCONF
+    echo "QT_BIN=\$VISITHOME/qt/$QT_VERSION/\$VISITARCH/bin" >> $HOSTCONF
+    echo "QT_INCLUDE=\$VISITHOME/qt/$QT_VERSION/\$VISITARCH/include" >> $HOSTCONF
+    echo "QT_LIB=\$VISITHOME/qt/$QT_VERSION/\$VISITARCH/lib" >> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo \
 "## Specify the location of the python include and libraries." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "PYDIR=\$VISITHOME/python/$PYTHON_VERSION/$VISITARCH" >> $HOSTCONF
+    echo "PYDIR=\$VISITHOME/python/$PYTHON_VERSION/\$VISITARCH" >> $HOSTCONF
     echo "PYVERSION=python$PYTHON_VERSION" >> $HOSTCONF
     echo >> $HOSTCONF
     echo >> $HOSTCONF
@@ -6813,16 +6820,16 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
         echo \
-"DEFAULT_BOXLIB2D_INCLUDE=\$VISITHOME/boxlib/$VISITARCH/include/2D" \
+"DEFAULT_BOXLIB2D_INCLUDE=\$VISITHOME/boxlib/\$VISITARCH/include/2D" \
         >> $HOSTCONF
         echo \
-"DEFAULT_BOXLIB2D_LIBS=\$VISITHOME/boxlib/$VISITARCH/lib" \
+"DEFAULT_BOXLIB2D_LIBS=\$VISITHOME/boxlib/\$VISITARCH/lib" \
         >> $HOSTCONF
         echo \
-"DEFAULT_BOXLIB3D_INCLUDE=\$VISITHOME/boxlib/$VISITARCH/include/3D" \
+"DEFAULT_BOXLIB3D_INCLUDE=\$VISITHOME/boxlib/\$VISITARCH/include/3D" \
         >> $HOSTCONF
         echo \
-"DEFAULT_BOXLIB3D_LIBS=\$VISITHOME/boxlib/$VISITARCH/lib" \
+"DEFAULT_BOXLIB3D_LIBS=\$VISITHOME/boxlib/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -6831,10 +6838,10 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_CFITSIO" == "yes" ]] ; then
         echo \
-"DEFAULT_CFITSIO_INCLUDE=\$VISITHOME/cfitsio/$CFITSIO_VERSION/$VISITARCH/include" \
+"DEFAULT_CFITSIO_INCLUDE=\$VISITHOME/cfitsio/$CFITSIO_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_CFITSIO_LIB=\$VISITHOME/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib" \
+"DEFAULT_CFITSIO_LIB=\$VISITHOME/cfitsio/$CFITSIO_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -6843,10 +6850,10 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_CGNS" == "yes" ]] ; then
         echo \
-"DEFAULT_CGNS_INCLUDE=\$VISITHOME/cgns/$CGNS_VERSION/$VISITARCH/include" \
+"DEFAULT_CGNS_INCLUDE=\$VISITHOME/cgns/$CGNS_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_CGNS_LIB=\$VISITHOME/cgns/$CGNS_VERSION/$VISITARCH/lib" \
+"DEFAULT_CGNS_LIB=\$VISITHOME/cgns/$CGNS_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -6855,10 +6862,10 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_EXODUS" == "yes" ]] ; then
         echo \
-"DEFAULT_EXODUS_INCLUDES=\$VISITHOME/exodus/$EXODUS_VERSION/$VISITARCH/inc" \
+"DEFAULT_EXODUS_INCLUDES=\$VISITHOME/exodus/$EXODUS_VERSION/\$VISITARCH/inc" \
         >> $HOSTCONF
         echo \
-"DEFAULT_EXODUS_LIBRARY=\$VISITHOME/exodus/$EXODUS_VERSION/$VISITARCH/lib" \
+"DEFAULT_EXODUS_LIBRARY=\$VISITHOME/exodus/$EXODUS_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -6867,10 +6874,10 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_GDAL" == "yes" ]] ; then
         echo \
-"DEFAULT_GDAL_INCLUDE=\$VISITHOME/gdal/$GDAL_VERSION/$VISITARCH/include" \
+"DEFAULT_GDAL_INCLUDE=\$VISITHOME/gdal/$GDAL_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_GDAL_LIB=\$VISITHOME/gdal/$GDAL_VERSION/$VISITARCH/lib" \
+"DEFAULT_GDAL_LIB=\$VISITHOME/gdal/$GDAL_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -6879,10 +6886,10 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_H5PART" == "yes" ]] ; then
         echo \
-"DEFAULT_H5PART_INCLUDE=\$VISITHOME/h5part/$H5PART_VERSION/$VISITARCH/include" \
+"DEFAULT_H5PART_INCLUDE=\$VISITHOME/h5part/$H5PART_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_H5PART_LIB=\$VISITHOME/h5part/$H5PART_VERSION/$VISITARCH/lib" \
+"DEFAULT_H5PART_LIB=\$VISITHOME/h5part/$H5PART_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -6891,10 +6898,10 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_HDF4" == "yes" ]] ; then
         echo \
-"DEFAULT_HDF4_FLAGS=\$VISITHOME/hdf4/$HDF4_VERSION/$VISITARCH/include" \
+"DEFAULT_HDF4_FLAGS=\$VISITHOME/hdf4/$HDF4_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_HDF4_LIBS=\$VISITHOME/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
+"DEFAULT_HDF4_LIBS=\$VISITHOME/hdf4/$HDF4_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -6903,11 +6910,11 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_HDF5" == "yes" ]] ; then
         echo \
-"DEFAULT_HDF5_LIBLOC=\$VISITHOME/hdf5/$HDF5_VERSION/$VISITARCH" \
+"DEFAULT_HDF5_LIBLOC=\$VISITHOME/hdf5/$HDF5_VERSION/\$VISITARCH" \
         >> $HOSTCONF
         if [[ "$DO_SZIP" == "yes" ]] ; then
             echo \
-"DEFAULT_HDF5_LIBDEP=-L\$VISITHOME/szip/$SZIP_VERSION/$VISITARCH/lib,-lsz" \
+"DEFAULT_HDF5_LIBDEP=-L\$VISITHOME/szip/$SZIP_VERSION/\$VISITARCH/lib,-lsz" \
             >> $HOSTCONF
         fi
     fi
@@ -6917,7 +6924,7 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_MILI" == "yes" ]] ; then
         echo \
-"DEFAULT_MILI_DIR=\$VISITHOME/mili/$MILI_VERSION/$VISITARCH" \
+"DEFAULT_MILI_DIR=\$VISITHOME/mili/$MILI_VERSION/\$VISITARCH" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -6926,10 +6933,10 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_NETCDF" == "yes" ]] ; then
         echo \
-"DEFAULT_NETCDF_INCLUDE=\$VISITHOME/netcdf/$NETCDF_VERSION/$VISITARCH/include" \
+"DEFAULT_NETCDF_INCLUDE=\$VISITHOME/netcdf/$NETCDF_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_NETCDF_LIB=\$VISITHOME/netcdf/$NETCDF_VERSION/$VISITARCH/lib" \
+"DEFAULT_NETCDF_LIB=\$VISITHOME/netcdf/$NETCDF_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo "##" >> $HOSTCONF
@@ -6937,7 +6944,7 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_SZIP" == "yes" ]] ; then
         echo \
-"DEFAULT_SZIP_LIB=\$VISITHOME/szip/$SZIP_VERSION/$VISITARCH/lib" \
+"DEFAULT_SZIP_LIB=\$VISITHOME/szip/$SZIP_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo "##" >> $HOSTCONF
@@ -6945,10 +6952,10 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_CCMIO" == "yes" ]] ; then
         echo \
-"DEFAULT_CCMIO_INCLUDE=\$VISITHOME/ccmio/$CCMIO_VERSION/$VISITARCH/include" \
+"DEFAULT_CCMIO_INCLUDE=\$VISITHOME/ccmio/$CCMIO_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_CCMIO_LIB=\$VISITHOME/ccmio/$CCMIO_VERSION/$VISITARCH/lib" \
+"DEFAULT_CCMIO_LIB=\$VISITHOME/ccmio/$CCMIO_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     if [[ "$DO_SILO" == "yes" ]] ; then
@@ -6956,7 +6963,7 @@ function build_hostconf
         echo "## Silo" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-"DEFAULT_SILO_LIBLOC=\$VISITHOME/silo/$SILO_VERSION/$VISITARCH" \
+"DEFAULT_SILO_LIBLOC=\$VISITHOME/silo/$SILO_VERSION/\$VISITARCH" \
         >> $HOSTCONF
         echo \
 "DEFAULT_SILO_LIBDEP=-L$DEFAULT_HDF5_LIBLOC,-lhdf5,$DEFAULT_HDF5_LIBDEP" \
@@ -6964,23 +6971,23 @@ function build_hostconf
     fi
     if [[ "$DO_VISUS" == "yes" ]] ; then
         echo \
-"DEFAULT_VISUS_INCLUDE=\$VISITHOME/visus/$VISUS_VERSION/$VISITARCH/include" \
+"DEFAULT_VISUS_INCLUDE=\$VISITHOME/visus/$VISUS_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_VISUS_LIB=\$VISITHOME/visus/$VISUS_VERSION/$VISITARCH/lib" \
+"DEFAULT_VISUS_LIB=\$VISITHOME/visus/$VISUS_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     if [[ "$DO_TCMALLOC" == "yes" ]] ; then
         echo \
-"DEFAULT_TCMALLOC_DIR=\$VISITHOME/google-perftools/$TCMALLOC_VERSION/$VISITARCH/lib" \
+"DEFAULT_TCMALLOC_DIR=\$VISITHOME/google-perftools/$TCMALLOC_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     if [[ "$DO_ITAPS" == "yes" ]] ; then
         echo \
-"DEFAULT_ITAPS_INCLUDE=\$VISITHOME/itaps/$ITAPS_VERSION/$VISITARCH/include" \
+"DEFAULT_ITAPS_INCLUDE=\$VISITHOME/itaps/$ITAPS_VERSION/\$VISITARCH/include" \
         >> $HOSTCONF
         echo \
-"DEFAULT_ITAPS_LIB=\$VISITHOME/itaps/$ITAPS_VERSION/$VISITARCH/lib" \
+"DEFAULT_ITAPS_LIB=\$VISITHOME/itaps/$ITAPS_VERSION/\$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
