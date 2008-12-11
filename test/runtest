@@ -1057,7 +1057,7 @@ for t in $testcases; do
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - exit($error) - Crashed?</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
-            echo -e ">> Crash when running test file: $t"
+            echo -e ">> exit($error) when running test file: $t, assuming crashed"
         fi
         # Since VisIt crashed, the test page must not have been completed. Complete it here.
         echo -e " <tr><td colspan=6 align=center bgcolor=\"#ff0000\"><font color=\"#ffffff\"><b>exit($error) crashed?</b></font></td></tr></table></body></html>" >> html/${category}_${base}.html
