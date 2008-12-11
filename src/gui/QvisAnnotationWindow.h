@@ -175,7 +175,7 @@ private slots:
     virtual void reset();
 
     // General option slots
-    void tabSelected(const QString &tabLabel);
+    void tabSelected(int);
     void userInfoChecked(bool val);
     void userInfoFontChanged(const FontAttributes &);
     void databaseInfoChecked(bool val);

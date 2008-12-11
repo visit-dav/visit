@@ -918,9 +918,9 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 
 QvisGUIApplication::~QvisGUIApplication()
 {
+    int i;
 #if !defined(_WIN32) && !defined(__APPLE__)
     // Delete the windows.
-    int i;
     for(WindowBaseMap::iterator pos = otherWindows.begin();
         pos != otherWindows.end(); ++pos)
     {
@@ -977,8 +977,10 @@ QvisGUIApplication::~QvisGUIApplication()
 
     // Delete the args for QT
     for (i = 0 ; i < qt_argc ; i++)
+    {
         if (qt_argv[i])
             free(qt_argv[i]);
+    }
     delete [] qt_argv;
 
     // Delete the printer object.

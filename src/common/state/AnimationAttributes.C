@@ -40,6 +40,44 @@
 #include <DataNode.h>
 
 //
+// Enum conversion methods for AnimationAttributes::AnimationMode
+//
+
+static const char *AnimationMode_strings[] = {
+"ReversePlayMode", "StopMode", "PlayMode"
+};
+
+std::string
+AnimationAttributes::AnimationMode_ToString(AnimationAttributes::AnimationMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return AnimationMode_strings[index];
+}
+
+std::string
+AnimationAttributes::AnimationMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return AnimationMode_strings[index];
+}
+
+bool
+AnimationAttributes::AnimationMode_FromString(const std::string &s, AnimationAttributes::AnimationMode &val)
+{
+    val = AnimationAttributes::ReversePlayMode;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == AnimationMode_strings[i])
+        {
+            val = (AnimationMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for AnimationAttributes::PlaybackMode
 //
 
@@ -78,7 +116,7 @@ AnimationAttributes::PlaybackMode_FromString(const std::string &s, AnimationAttr
 }
 
 // Type map format string
-const char *AnimationAttributes::TypeMapFormatString = "bii";
+const char *AnimationAttributes::TypeMapFormatString = "ibiii";
 
 // ****************************************************************************
 // Method: AnimationAttributes::AnimationAttributes
@@ -98,7 +136,9 @@ const char *AnimationAttributes::TypeMapFormatString = "bii";
 AnimationAttributes::AnimationAttributes() : 
     AttributeSubject(AnimationAttributes::TypeMapFormatString)
 {
+    animationMode = StopMode;
     pipelineCachingMode = false;
+    frameIncrement = 1;
     timeout = 1;
     playbackMode = Looping;
 }
@@ -121,7 +161,9 @@ AnimationAttributes::AnimationAttributes() :
 AnimationAttributes::AnimationAttributes(const AnimationAttributes &obj) : 
     AttributeSubject(AnimationAttributes::TypeMapFormatString)
 {
+    animationMode = obj.animationMode;
     pipelineCachingMode = obj.pipelineCachingMode;
+    frameIncrement = obj.frameIncrement;
     timeout = obj.timeout;
     playbackMode = obj.playbackMode;
 
@@ -167,7 +209,9 @@ AnimationAttributes&
 AnimationAttributes::operator = (const AnimationAttributes &obj)
 {
     if (this == &obj) return *this;
+    animationMode = obj.animationMode;
     pipelineCachingMode = obj.pipelineCachingMode;
+    frameIncrement = obj.frameIncrement;
     timeout = obj.timeout;
     playbackMode = obj.playbackMode;
 
@@ -194,7 +238,9 @@ bool
 AnimationAttributes::operator == (const AnimationAttributes &obj) const
 {
     // Create the return value
-    return ((pipelineCachingMode == obj.pipelineCachingMode) &&
+    return ((animationMode == obj.animationMode) &&
+            (pipelineCachingMode == obj.pipelineCachingMode) &&
+            (frameIncrement == obj.frameIncrement) &&
             (timeout == obj.timeout) &&
             (playbackMode == obj.playbackMode));
 }
@@ -340,7 +386,9 @@ AnimationAttributes::NewInstance(bool copy) const
 void
 AnimationAttributes::SelectAll()
 {
+    Select(ID_animationMode,       (void *)&animationMode);
     Select(ID_pipelineCachingMode, (void *)&pipelineCachingMode);
+    Select(ID_frameIncrement,      (void *)&frameIncrement);
     Select(ID_timeout,             (void *)&timeout);
     Select(ID_playbackMode,        (void *)&playbackMode);
 }
@@ -375,10 +423,22 @@ AnimationAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     // Create a node for AnimationAttributes.
     DataNode *node = new DataNode("AnimationAttributes");
 
+    if(completeSave || !FieldsEqual(ID_animationMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("animationMode", AnimationMode_ToString(animationMode)));
+    }
+
     if(completeSave || !FieldsEqual(ID_pipelineCachingMode, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("pipelineCachingMode", pipelineCachingMode));
+    }
+
+    if(completeSave || !FieldsEqual(ID_frameIncrement, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("frameIncrement", frameIncrement));
     }
 
     if(completeSave || !FieldsEqual(ID_timeout, &defaultObject))
@@ -429,8 +489,26 @@ AnimationAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("animationMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetAnimationMode(AnimationMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            AnimationMode value;
+            if(AnimationMode_FromString(node->AsString(), value))
+                SetAnimationMode(value);
+        }
+    }
     if((node = searchNode->GetNode("pipelineCachingMode")) != 0)
         SetPipelineCachingMode(node->AsBool());
+    if((node = searchNode->GetNode("frameIncrement")) != 0)
+        SetFrameIncrement(node->AsInt());
     if((node = searchNode->GetNode("timeout")) != 0)
         SetTimeout(node->AsInt());
     if((node = searchNode->GetNode("playbackMode")) != 0)
@@ -456,10 +534,24 @@ AnimationAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
+AnimationAttributes::SetAnimationMode(AnimationAttributes::AnimationMode animationMode_)
+{
+    animationMode = animationMode_;
+    Select(ID_animationMode, (void *)&animationMode);
+}
+
+void
 AnimationAttributes::SetPipelineCachingMode(bool pipelineCachingMode_)
 {
     pipelineCachingMode = pipelineCachingMode_;
     Select(ID_pipelineCachingMode, (void *)&pipelineCachingMode);
+}
+
+void
+AnimationAttributes::SetFrameIncrement(int frameIncrement_)
+{
+    frameIncrement = frameIncrement_;
+    Select(ID_frameIncrement, (void *)&frameIncrement);
 }
 
 void
@@ -480,10 +572,22 @@ AnimationAttributes::SetPlaybackMode(AnimationAttributes::PlaybackMode playbackM
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
+AnimationAttributes::AnimationMode
+AnimationAttributes::GetAnimationMode() const
+{
+    return AnimationMode(animationMode);
+}
+
 bool
 AnimationAttributes::GetPipelineCachingMode() const
 {
     return pipelineCachingMode;
+}
+
+int
+AnimationAttributes::GetFrameIncrement() const
+{
+    return frameIncrement;
 }
 
 int
@@ -522,7 +626,9 @@ AnimationAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_animationMode:       return "animationMode";
     case ID_pipelineCachingMode: return "pipelineCachingMode";
+    case ID_frameIncrement:      return "frameIncrement";
     case ID_timeout:             return "timeout";
     case ID_playbackMode:        return "playbackMode";
     default:  return "invalid index";
@@ -549,7 +655,9 @@ AnimationAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_animationMode:       return FieldType_enum;
     case ID_pipelineCachingMode: return FieldType_bool;
+    case ID_frameIncrement:      return FieldType_int;
     case ID_timeout:             return FieldType_int;
     case ID_playbackMode:        return FieldType_enum;
     default:  return FieldType_unknown;
@@ -576,7 +684,9 @@ AnimationAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_animationMode:       return "enum";
     case ID_pipelineCachingMode: return "bool";
+    case ID_frameIncrement:      return "int";
     case ID_timeout:             return "int";
     case ID_playbackMode:        return "enum";
     default:  return "invalid index";
@@ -605,9 +715,19 @@ AnimationAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_animationMode:
+        {  // new scope
+        retval = (animationMode == obj.animationMode);
+        }
+        break;
     case ID_pipelineCachingMode:
         {  // new scope
         retval = (pipelineCachingMode == obj.pipelineCachingMode);
+        }
+        break;
+    case ID_frameIncrement:
+        {  // new scope
+        retval = (frameIncrement == obj.frameIncrement);
         }
         break;
     case ID_timeout:

@@ -1,12 +1,23 @@
 <?xml version="1.0"?>
   <Attribute name="AnimationAttributes" purpose="This class contains the animation attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnimationAttributes.code">
+    <Enum name="AnimationMode">
+      ReversePlayMode
+      StopMode
+      PlayMode
+    </Enum>
     <Enum name="PlaybackMode">
       Looping
       PlayOnce
       Swing
     </Enum>
+    <Field name="animationMode" label="Animation mode" type="enum" subtype="AnimationMode">
+      StopMode
+    </Field>
     <Field name="pipelineCachingMode" label="pipelineCachingMode" type="bool">
       false
+    </Field>
+    <Field name="frameIncrement" label="Frame increment" type="int">
+      1
     </Field>
     <Field name="timeout" label="timeout" type="int">
       1

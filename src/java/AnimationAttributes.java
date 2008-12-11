@@ -57,6 +57,10 @@ package llnl.visit;
 public class AnimationAttributes extends AttributeSubject
 {
     // Enum values
+    public final static int ANIMATIONMODE_REVERSEPLAYMODE = 0;
+    public final static int ANIMATIONMODE_STOPMODE = 1;
+    public final static int ANIMATIONMODE_PLAYMODE = 2;
+
     public final static int PLAYBACKMODE_LOOPING = 0;
     public final static int PLAYBACKMODE_PLAYONCE = 1;
     public final static int PLAYBACKMODE_SWING = 2;
@@ -64,18 +68,22 @@ public class AnimationAttributes extends AttributeSubject
 
     public AnimationAttributes()
     {
-        super(3);
+        super(5);
 
+        animationMode = ANIMATIONMODE_STOPMODE;
         pipelineCachingMode = false;
+        frameIncrement = 1;
         timeout = 1;
         playbackMode = PLAYBACKMODE_LOOPING;
     }
 
     public AnimationAttributes(AnimationAttributes obj)
     {
-        super(3);
+        super(5);
 
+        animationMode = obj.animationMode;
         pipelineCachingMode = obj.pipelineCachingMode;
+        frameIncrement = obj.frameIncrement;
         timeout = obj.timeout;
         playbackMode = obj.playbackMode;
 
@@ -85,32 +93,48 @@ public class AnimationAttributes extends AttributeSubject
     public boolean equals(AnimationAttributes obj)
     {
         // Create the return value
-        return ((pipelineCachingMode == obj.pipelineCachingMode) &&
+        return ((animationMode == obj.animationMode) &&
+                (pipelineCachingMode == obj.pipelineCachingMode) &&
+                (frameIncrement == obj.frameIncrement) &&
                 (timeout == obj.timeout) &&
                 (playbackMode == obj.playbackMode));
     }
 
     // Property setting methods
+    public void SetAnimationMode(int animationMode_)
+    {
+        animationMode = animationMode_;
+        Select(0);
+    }
+
     public void SetPipelineCachingMode(boolean pipelineCachingMode_)
     {
         pipelineCachingMode = pipelineCachingMode_;
-        Select(0);
+        Select(1);
+    }
+
+    public void SetFrameIncrement(int frameIncrement_)
+    {
+        frameIncrement = frameIncrement_;
+        Select(2);
     }
 
     public void SetTimeout(int timeout_)
     {
         timeout = timeout_;
-        Select(1);
+        Select(3);
     }
 
     public void SetPlaybackMode(int playbackMode_)
     {
         playbackMode = playbackMode_;
-        Select(2);
+        Select(4);
     }
 
     // Property getting methods
+    public int     GetAnimationMode() { return animationMode; }
     public boolean GetPipelineCachingMode() { return pipelineCachingMode; }
+    public int     GetFrameIncrement() { return frameIncrement; }
     public int     GetTimeout() { return timeout; }
     public int     GetPlaybackMode() { return playbackMode; }
 
@@ -118,10 +142,14 @@ public class AnimationAttributes extends AttributeSubject
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteBool(pipelineCachingMode);
+            buf.WriteInt(animationMode);
         if(WriteSelect(1, buf))
-            buf.WriteInt(timeout);
+            buf.WriteBool(pipelineCachingMode);
         if(WriteSelect(2, buf))
+            buf.WriteInt(frameIncrement);
+        if(WriteSelect(3, buf))
+            buf.WriteInt(timeout);
+        if(WriteSelect(4, buf))
             buf.WriteInt(playbackMode);
     }
 
@@ -133,12 +161,18 @@ public class AnimationAttributes extends AttributeSubject
             switch(index)
             {
             case 0:
-                SetPipelineCachingMode(buf.ReadBool());
+                SetAnimationMode(buf.ReadInt());
                 break;
             case 1:
-                SetTimeout(buf.ReadInt());
+                SetPipelineCachingMode(buf.ReadBool());
                 break;
             case 2:
+                SetFrameIncrement(buf.ReadInt());
+                break;
+            case 3:
+                SetTimeout(buf.ReadInt());
+                break;
+            case 4:
                 SetPlaybackMode(buf.ReadInt());
                 break;
             }
@@ -148,7 +182,16 @@ public class AnimationAttributes extends AttributeSubject
     public String toString(String indent)
     {
         String str = new String();
+        str = str + indent + "animationMode = ";
+        if(animationMode == ANIMATIONMODE_REVERSEPLAYMODE)
+            str = str + "ANIMATIONMODE_REVERSEPLAYMODE";
+        if(animationMode == ANIMATIONMODE_STOPMODE)
+            str = str + "ANIMATIONMODE_STOPMODE";
+        if(animationMode == ANIMATIONMODE_PLAYMODE)
+            str = str + "ANIMATIONMODE_PLAYMODE";
+        str = str + "\n";
         str = str + boolToString("pipelineCachingMode", pipelineCachingMode, indent) + "\n";
+        str = str + intToString("frameIncrement", frameIncrement, indent) + "\n";
         str = str + intToString("timeout", timeout, indent) + "\n";
         str = str + indent + "playbackMode = ";
         if(playbackMode == PLAYBACKMODE_LOOPING)
@@ -163,7 +206,9 @@ public class AnimationAttributes extends AttributeSubject
 
 
     // Attributes
+    private int     animationMode;
     private boolean pipelineCachingMode;
+    private int     frameIncrement;
     private int     timeout;
     private int     playbackMode;
 }

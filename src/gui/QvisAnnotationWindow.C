@@ -330,8 +330,8 @@ QvisAnnotationWindow::CreateWindowContents()
 {
     // Create the tab widget.
     tabs = new QTabWidget(central);
-    connect(tabs, SIGNAL(selected(const QString &)),
-            this, SLOT(tabSelected(const QString &)));
+    connect(tabs, SIGNAL(currentChanged(int)),
+            this, SLOT(tabSelected(int)));
 
     topLayout->addWidget(tabs);    
 
@@ -2090,25 +2090,15 @@ QvisAnnotationWindow::reset()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Dec 11 08:47:47 PST 2008
+//   Qt 4.
+//
 // ****************************************************************************
 
 void
-QvisAnnotationWindow::tabSelected(const QString &tabLabel)
+QvisAnnotationWindow::tabSelected(int index)
 {
-    if(tabLabel == QString(tr("General")))
-        activeTab = 0;
-    else if(tabLabel == QString(tr("2D")))
-        activeTab = 1;
-    else if(tabLabel == QString(tr("3D")))
-        activeTab = 2;
-    else if(tabLabel == QString(tr("Colors")))
-        activeTab = 3;
-    else if(tabLabel == QString(tr("Objects")))
-        activeTab = 4;
-    else
-    {
-        debug1 << "QvisAnnotationWindow::tabSelected: Unsupported tab name. FIX ME!" << endl;
-    }
+    activeTab = index;
 }
 
 // ****************************************************************************
