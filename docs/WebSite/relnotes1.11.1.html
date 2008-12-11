@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<HTML><!-- InstanceBegin template="/Templates/Temp_download.dwt" codeOutsideHTMLIsLocked="false" -->
+<HTML><!-- InstanceBegin template="/Templates/Temp_doc.dwt" codeOutsideHTMLIsLocked="false" -->
 
 <HEAD>
 
 <!-- InstanceBeginEditable name="doctitle" -->
 
-<TITLE>VisIt Source Code</TITLE>
+<TITLE>VisIt Documentation Template</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <meta name="LLNLRandR" content="LLNL-WEB-408633">
 <meta name="review" content="December 2008">
@@ -362,19 +362,19 @@ function MM_initTimelines() { //v4.0
 
     <TD ROWSPAN=2> <A HREF="download.html"
 
-				ONMOUSEOVER="MM_showHideLayers('doc','','hide','dload','','show');MM_timelineStop()"
+				ONMOUSEOVER="MM_showHideLayers('doc','','hide','dload','','show');MM_timelineStop();MM_swapImage('dloadT','','Templates/media_template/dloadT_o.jpg',1)"
 
-				ONMOUSEOUT="MM_timelinePlay('submenu');MM_timelineGoto('submenu','1')"> 
+				ONMOUSEOUT="MM_timelinePlay('submenu');MM_timelineGoto('submenu','1');MM_swapImgRestore()"> 
 
-      <IMG SRC="Templates/media_template/dloadT_here.jpg" ALT="Downloads" NAME="dloadT" WIDTH=131 HEIGHT=92 BORDER=0></A></TD>
+      <IMG SRC="Templates/media_template/dloadT.jpg" ALT="Downloads" NAME="dloadT" WIDTH=131 HEIGHT=92 BORDER=0></A></TD>
 
-    <TD ROWSPAN=2> <A HREF="doc.html"
+    <TD ROWSPAN=2> <A HREF="#"
 
-				ONMOUSEOVER="MM_swapImage('docT','','Templates/media_template/docT_o.jpg',1);MM_showHideLayers('doc','','show','dload','','hide');MM_timelineStop()"
+				ONMOUSEOVER="MM_showHideLayers('doc','','show','dload','','hide');MM_timelineStop()"
 
-				ONMOUSEOUT="MM_swapImgRestore();MM_timelineGoto('submenu','1');MM_timelinePlay('submenu')"> 
+				ONMOUSEOUT="MM_timelineGoto('submenu','1');MM_timelinePlay('submenu')"> 
 
-      <IMG SRC="Templates/media_template/docT.jpg" ALT="Documentation" NAME="docT" WIDTH=129 HEIGHT=92 BORDER=0></A></TD>
+      <IMG SRC="Templates/media_template/docT_here.jpg" ALT="Documentation" NAME="docT" WIDTH=129 HEIGHT=92 BORDER=0></A></TD>
 
     <TD ROWSPAN=2> <A HREF="new.html"
 
@@ -410,324 +410,62 @@ function MM_initTimelines() { //v4.0
 
 <!-- InstanceBeginEditable name="body" -->
 
-<h1><a name="build_visit"></a>Automatically build VisIt with the <em>build_visit</em> script!</h1>
+<h1>VisIt 1.11.1 Release Notes</h1>
 
-<p><a href="1.11.1/build_visit">Download build_visit script here.</a></p>
-
-<table width="100%"  border="0" cellspacing="5" cellpadding="0">
-
-  <tr>
-
-    <td width="69%" valign="top"><p>VisIt can now be built automatically using the <a href="1.11.1/build_visit">build_visit</a> script on many Linux, MacOS X, and AIX platforms <em>(more to come)</em>. The <a href="1.11.1/build_visit">build_visit</a> script takes care of downloading relevant VisIt and 3rd party source code, configuring, and building it all using your C++ compiler. We encourage users to build VisIt using the build_visit script when our binary distributions have trouble running on some systems. We also recommend using the <a href="1.11.1/build_visit">build_visit</a> script on your system if you plan to:</p>
-
-      <ul>
-
-        <li>Modify the VisIt source code. </li>
-
-        <li>Run a parallel compute engine. Building a parallel version of VisIt on your system allows you to configure VisIt so it uses your MPI library, avoiding incompatibilities.</li>
-
-        <li>Create your own VisIt plugins. Building VisIt on your system ensures that it is built with the same C++ compiler that you will use to develop your plugin, minimizing the chance for runtime library incompatibilities.</li>
-
-    </ul></td>
-
-    <td width="31%" valign="top"><a href="media/build_visit.jpg" target="_blank"><img src="media/build_visit_S.jpg" alt="build_visit screen shot" width="181" height="200" border="0"></a> <br>
-     <em>(build_visit screen shot) </em></td>
-
-  </tr>
-
-</table>
-
-<h1><a name="source"></a>VisIt Source Code </h1>
-
-<p> To simplify what has become a very complex procedure, we have developed the <a href="1.11.1/build_visit">build_visit</a> script to automatically download and build VisIt and 3rd party sources on Linux, MacOS X, and AIX platforms. If you would like to build a version of VisIt manually, or for another system, or to modify the source code, you will need to download the VisIt source code and the source code for each library upon which it depends.  After downloading all of the packages, you can build VisIt on a Unix system by following the instructions in the Build Notes.
-
-     For instructions on building VisIt on Windows, see our <a href="FAQ.html#17">FAQ</a>.
-
-    Links to download the Unix source code, the Windows source code, the build notes, the md5 and sha1 checksums, and file sizes are below, organized by release starting with the most recent release. Links to download the third party libraries are at the end. The checksums and file sizes are for checking that the files were properly downloaded if corruption of the files is suspected during the download process.</p>
-
-<center><h1>VisIt 1.11.1</h1></center>
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
 
 <ul>
-
-  <li> <a href="1.11.1/visit1.11.1.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.11.1/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.11.1/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.11.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.11.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.11.1/visit_filesizes">VisIt file sizes</a> </li>
-
+  <li>A bug was fixed where VisIt would crash when saving images in screen
+      capture mode.</li>
+  <li>A bug was fixed where scalable rendering (the parallel rendering mode)
+      would leave out portions of the data set under a variety of conditions,
+      including zooming in too far or clipping away part of the data set.</li>
+  <li>A bug was fixed where a slice that lay between two, flat domain
+      boundaries could lead to a double contribution (one from each boundary).
+      The images from VisIt were basically unaffected, but integrations
+      (Weighted Variable Sums) and2D area queries were double counting.</li>
+  <li>A bug was fixed where index selecting a multi-block mesh when "Use
+      Whole Collection" was set would index select the mesh on a per-block
+      basis, instead ofacross the entire mesh. It now index selects across
+      the entire mesh in that situation.</li>
+  <li>A bug was fixed where the GUI would crash on exit on some platforms
+      after having opened the Volume plot attributes window.</li>
+  <li>A bug was fixed with the Windows installer so that it correctly set
+      the chosen network configuration files.</li>
+  <li>The help files have been made available once again for the windows
+      platform.</li>
+  <li>The 'change username' option in the password window on Windows no
+      longer crashes.</li>
+  <li>Silex no longer crashes on start up on Windows.</li>
+  <li>A bug was fixed with the reading of curves with the Ultra file format
+      reader. Previously, for a multi-curve file, if curve N+1's first point
+      was the same as curve N's last point, then curve N+1's first point was
+      being incorrectly discarded.</li>
+  <li>A bug was corrected with the Enzo file format reader, where the
+      expressions for velocity and particle_velocity were defined
+      incorrectly.</li>
+  <li>The Nek file format reader can now read meta-data for files larger
+      than 2GB.</li>
+  <li>The DDCMD file format reader was enhanced to read ascii and binary
+      format atom files.</li>
+  <li>Host profiles for LLNL's hera system have been added.</li>
+  <li>The host profiles for LLNL's juno system have been corrected to handle
+      node names with 4 digits.</li>
+  <li>The source code was modified so that VisIt would compile with the gcc
+      4.3.x compilers.</li>
+  <li>A bug was fixed with VisIt's configure script where the configuration
+      switch --with-hdf5 would attempt to locate the hdf5 library even if it
+      was not requested or even specifically disabled.</li>
+  <li>The file depcomp was added to the binary distributions so that plugins
+      could be built against the binary distributions.</li>
 </ul>
-
-<center><h1>VisIt 1.11.0</h1></center>
-
-<ul>
-
-  <li> <a href="1.11.0/visit1.11.0.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.11.0/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.11.0/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.11.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.11.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.11.0/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.10.0</h1></center>
-
-<ul>
-
-  <li> <a href="1.10.0/visit1.10.0.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.10.0/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.10.0/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.10.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.10.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.10.0/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.9.1</h1></center>
-
-<ul>
-
-  <li> <a href="1.9.1/visit1.9.1.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.9.1/visitdev1.9.1.exe">VisIt Windows sources</a> </li>
-
-  <li> <a href="1.9.1/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.9.1/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.9.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.9.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.9.1/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.9.0</h1></center>
-
-<ul>
-
-  <li> <a href="1.9.0/visit1.9.0.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.9.0/visitdev1.9.0.exe">VisIt Windows sources</a> </li>
-
-  <li> <a href="1.9.0/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.9.0/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.9.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.9.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.9.0/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.8.1</h1></center>
-
-<ul>
-
-  <li> <a href="1.8.1/visit1.8.1.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.8.1/visitdev1.8.1.exe">VisIt Windows sources</a> </li>
-
-  <li> <a href="1.8.1/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.8.1/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.8.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.8.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.8.1/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.8.0</h1></center>
-
-<ul>
-
-  <li> <a href="1.8.0/visit1.8.0.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.8.0/visitdev1.8.0.exe">VisIt Windows sources</a> </li>
-
-  <li> <a href="1.8.0/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.8.0/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.8.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.8.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.8.0/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.7.1</h1></center>
-
-<ul>
-
-  <li> <a href="1.7.1/visit1.7.1.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.7.1/visitdev1.7.1.exe">VisIt Windows sources</a> </li>
-
-  <li> <a href="1.7.1/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.7.1/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.7.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.7.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.7.1/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.7</h1></center>
-
-<ul>
-
-  <li> <a href="1.7/visit1.7.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.7/visitdev1.7.exe">VisIt Windows sources</a> </li>
-
-  <li> <a href="1.7/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.7/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.7/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.7/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.7/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.6.1</h1></center>
-
-<ul>
-
-  <li> <a href="1.6.1/visit070702.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.6.1/visitdev1.6.1.exe">VisIt Windows sources</a> </li>
-
-  <li> <a href="1.6.1/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.6.1/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.6.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.6.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.6.1/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt 1.6</h1></center>
-
-<ul>
-
-  <li> <a href="1.6/visit070330.tar.gz">VisIt sources</a> </li>
-
-  <li> <a href="1.6/visitdev1.6.exe">VisIt Windows sources</a> </li>
-
-  <li> <a href="1.6/BUILD_NOTES">VisIt build notes</a> </li>
-
-  <li> <a href="1.6/BUILD_NOTES_MacOSX">VisIt Mac build notes</a> </li>
-
-  <li> <a href="1.6/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.6/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.6/visit_filesizes">VisIt file sizes</a> </li>
-
-</ul>
-
-<center><h1>VisIt Third Party Libraries</h1></center>
-
-<ul>
-
-  <li> <a href="1.11.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-
-  <li> <a href="1.11.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-
-  <li> <a href="1.11.1/visit_filesizes">VisIt file sizes</a> </li>
-
-  <li> <a href="3rd_party/boxlib.tar.gz">Boxlib 2.5 sources</a> </li>
-
-  <li> <a href="3rd_party/libccmio-2.6.1.tar.gz">CCMIO 2.6.1 sources</a> </li>
-
-  <li> <a href="3rd_party/cfitsio3006.tar.gz">CFITSIO 3006 sources</a> </li>
-
-  <li> <a href="3rd_party/cgnslib_2.4-3.tar.gz">CGNS 2.4-3 sources</a> </li>
-
-  <li> <a href="3rd_party/cmake-2.2.3.tar.gz">CMake 2.2.3 sources</a> </li>
-
-  <li> <a href="3rd_party/cmake-2.4.5.tar.gz">CMake 2.4.5 sources</a> </li>
-
-  <li> <a href="3rd_party/exodusii-4.46.tar.gz">ExodusII 4.46 sources</a> </li>
-
-  <li> <a href="3rd_party/gdal-1.3.2.tar.gz">GDAL 1.3.2 sources</a> </li>
-
-  <li> <a href="3rd_party/H5Part-20070711.tar.gz">H5Part 1.3.3 sources</a> </li>
-
-  <li> <a href="3rd_party/HDF4.2r1.tar.gz">HDF4 2.4.1 sources</a> </li>
-
-  <li> <a href="3rd_party/hdf5-1.6.5.tar.gz">HDF5 1.6.5 sources</a> </li>
-
-  <li> <a href="3rd_party/hdf5-1.8.1.tar.gz">HDF5 1.8.1 sources</a> </li>
-
-  <li> <a href="3rd_party/Mesa-5.0-mangled.tar.gz">Mesa 5.0 sources</a> </li>
-
-  <li> <a href="3rd_party/MesaLib-6.4.2.tar.gz">Mesa 6.4.2 sources</a> </li>
-
-  <li> <a href="3rd_party/netcdf.tar.gz">NetCDF 3.6.0 sources</a> </li>
-
-  <li> <a href="3rd_party/Imaging-1.1.6.tar.gz">PIL 1.1.6 sources</a> </li>
-
-  <li> <a href="3rd_party/Python-2.5.tgz">Python 2.5 sources</a> </li>
-
-  <li> <a href="3rd_party/qt-mac-free-3.3.8.tar.gz">Qt Mac 3.3.8 sources</a> </li>
-
-  <li> <a href="3rd_party/qt-x11-free-3.3.2.tar.gz">Qt X11 3.3.2 sources</a> </li>
-
-  <li> <a href="3rd_party/qt-x11-free-3.3.8.tar.gz">Qt X11 3.3.8 sources</a> </li>
-
-  <li> <a href="3rd_party/silo060605.sh">Silo060605 sources</a> </li>
-
-  <li> <a href="3rd_party/silo-4.6.1.tar.gz">Silo 4.6.1 sources</a> </li>
-
-  <li> <a href="3rd_party/silo-4.6.2.tar.gz">Silo 4.6.2 sources</a> </li>
-
-  <li> <a href="3rd_party/szip-2.1.tar.gz">SZIP 2.1 sources</a> </li>
-
-  <li> <a href="3rd_party/vtk-5.0.0c.tar.gz">VTK 5.0.0c sources</a> </li>
-
-</ul>
-
-<p>&nbsp;</p>
 
 <!-- InstanceEndEditable -->
 
 <div align="center"> 
 
-  <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | Source Code | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
+  <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
 
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
 
