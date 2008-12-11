@@ -475,6 +475,10 @@
 #     everywhere to refer to that variable in the config-site file and not
 #     the shell variable defined in build_visit.
 #
+#     Sean Ahern, Thu Dec 11 16:02:54 EST 2008
+#     Modified the variables in the auto-generated config-site file for
+#     Silo-HDF5 dependency.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -6965,9 +6969,9 @@ function build_hostconf
         echo \
 "DEFAULT_SILO_LIBLOC=\$VISITHOME/silo/$SILO_VERSION/\$VISITARCH" \
         >> $HOSTCONF
-        echo \
-"DEFAULT_SILO_LIBDEP=-L$DEFAULT_HDF5_LIBLOC,-lhdf5,$DEFAULT_HDF5_LIBDEP" \
-        >> $HOSTCONF
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            echo "DEFAULT_SILO_LIBDEP=-L\$DEFAULT_HDF5_LIBLOC/lib,-lhdf5,\$DEFAULT_HDF5_LIBDEP" >> $HOSTCONF
+        fi
     fi
     if [[ "$DO_VISUS" == "yes" ]] ; then
         echo \
