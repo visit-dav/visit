@@ -46,6 +46,7 @@
 #include <ViewerBase.h>
 #include <avtTypes.h>
 #include <avtSILRestriction.h>
+#include <AnimationAttributes.h>
 #include <EngineKey.h>
 #include <string>
 #include <map>
@@ -288,7 +289,10 @@ typedef std::map<std::string, int> StringIntMap;
 //    Added a returnDefault bool argument to GetDefaultSILRestriction. Removed
 //    followsTime from the ViewerPlotListElement because it's not necessary.
 //    Added inheritSILRestriction bool argument to AddPlot.
-//   
+//
+//    Brad Whitlock, Wed Dec 10 14:52:46 PST 2008
+//    I made it use an animation attributes object.
+//
 // ****************************************************************************
 
 
@@ -305,9 +309,6 @@ class VIEWER_API ViewerPlotList : public ViewerBase
 {
     Q_OBJECT
 public:
-    typedef enum {PlayMode, StopMode, ReversePlayMode} AnimationMode;
-    typedef enum {Looping, PlayOnce, Swing}            PlaybackMode;
-
     ViewerPlotList(ViewerWindow *const viewerWindow);
     virtual ~ViewerPlotList();
 
@@ -331,10 +332,9 @@ public:
     void BackwardStep();
     void SetTimeSliderState(int state);
     void UpdateFrame(bool updatePlotStates = true);
-    void SetAnimationMode(AnimationMode);
-    AnimationMode GetAnimationMode() const;
-    void SetPlaybackMode(PlaybackMode);
-    PlaybackMode GetPlaybackMode() const;
+
+    void SetAnimationAttributes(const AnimationAttributes &);
+    const AnimationAttributes &GetAnimationAttributes() const;
 
     void ActivateSource(const std::string &database, const EngineKey &ek);
     void SetHostDatabaseName(const std::string &database);
@@ -437,8 +437,6 @@ public:
     void HandleTool(const avtToolInterface &ti, bool applyToAll = false);
     bool InitializeTool(avtToolInterface &ti);
 
-    void SetPipelineCaching(bool);
-    bool GetPipelineCaching() const;
     void ClearPipelines();
 
     void StartPick(const bool, const bool);
@@ -504,8 +502,9 @@ public:
 
     std::string            activeTimeSlider;
     StringIntMap           timeSliders;
-    AnimationMode          animationMode;
-    PlaybackMode           playbackMode;
+    AnimationAttributes    animationAtts;
+//    AnimationMode          animationMode;
+//    PlaybackMode           playbackMode;
 
     ScaleMode              xScaleMode;
     ScaleMode              yScaleMode;
@@ -514,8 +513,6 @@ public:
     bool                   keyframeMode;
     bool                   nKeyframesWasUserSet;
     int                    nKeyframes;
-
-    bool                   pipelineCaching;
 
     ViewerPlotListElement *plots;
     int                    nPlots;

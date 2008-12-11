@@ -321,7 +321,7 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     toolbar = new ViewerToolbar(this);
 
     plotList = new ViewerPlotList(this);
-    SetAnimationAttributes(ViewerWindowManager::GetAnimationClientAtts());
+    plotList->SetAnimationAttributes(*ViewerWindowManager::GetAnimationClientAtts());
 
     //
     // Callbacks to show the menu when the right mouse button is
@@ -3265,75 +3265,6 @@ ViewerWindow::RedoViewEnabled() const
     else if(GetWindowMode() == WINMODE_AXISARRAY)
         retval = redoViewStack.HasViewAxisArrays();
     return retval;
-}
-
-// ****************************************************************************
-//  Method: ViewerWindow::SetAnimationAttributes
-//
-//  Purpose: 
-//    Set the animation attributes of the window.
-//
-//  Arguments:
-//    atts      The animation attributes for this window. 
-//
-//  Programmer: Eric Brugger
-//  Creation:   November 21, 2001 
-//
-//  Modifications:
-//    Brad Whitlock, Tue Oct 7 11:32:18 PDT 2003
-//    Added playbackMode.
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnimationAttributes(const AnimationAttributes *atts)
-{
-    // Set the pipeline caching flag.
-    GetPlotList()->SetPipelineCaching(atts->GetPipelineCachingMode());
-    // Set the animation's playback style.
-    if(atts->GetPlaybackMode() == AnimationAttributes::Looping)
-        GetPlotList()->SetPlaybackMode(ViewerPlotList::Looping);
-    else if(atts->GetPlaybackMode() == AnimationAttributes::PlayOnce)
-        GetPlotList()->SetPlaybackMode(ViewerPlotList::PlayOnce);
-    else if(atts->GetPlaybackMode() == AnimationAttributes::Swing)
-        GetPlotList()->SetPlaybackMode(ViewerPlotList::Swing);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetAnimationAttributes
-//
-// Purpose: 
-//   Returns a pointer to the VisWindow's animation attributes.
-//
-// Note:       Note that the pointer returned by this method cannot be used
-//             to set attributes of the annotation attributes.
-//
-// Programmer: Eric Brugger
-// Creation:   November 21, 2001
-//
-// Modifications:
-//   Brad Whitlock, Tue Oct 7 11:31:16 PDT 2003
-//   Added playbackMode.
-//
-// ****************************************************************************
-
-static AnimationAttributes animationAttributes;
-
-const AnimationAttributes *
-ViewerWindow::GetAnimationAttributes() const
-{
-    // Set the caching mode.
-    animationAttributes.SetPipelineCachingMode(
-        GetPlotList()->GetPipelineCaching());
-    // Set the playback mode.
-    if(GetPlotList()->GetPlaybackMode() == ViewerPlotList::Looping)
-        animationAttributes.SetPlaybackMode(AnimationAttributes::Looping);
-    else if(GetPlotList()->GetPlaybackMode() == ViewerPlotList::PlayOnce)
-        animationAttributes.SetPlaybackMode(AnimationAttributes::PlayOnce);
-    else if(GetPlotList()->GetPlaybackMode() == ViewerPlotList::Swing)
-        animationAttributes.SetPlaybackMode(AnimationAttributes::Swing);
-
-    return &animationAttributes;
 }
 
 // ****************************************************************************
@@ -8202,6 +8133,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Wed Feb 13 14:02:15 PST 2008
 //   Added configVersion so we can let the objects process older versions.
 //
+//   Brad Whitlock, Wed Dec 10 15:24:21 PST 2008
+//   I removed code to handle ancient session files.
+//
 // ****************************************************************************
 
 void
@@ -8247,102 +8181,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         plots.push_back(j);
     GetPlotList()->SetActivePlots(plots, tmp, tmp, false);
     GetPlotList()->DeleteActivePlots();
-
-    ////////////////////// Reformat pre 1.3 session files /////////////////////
-    //
-    // If we find a ViewerAnimation, reparent its ViewerPlotList to the
-    // windowNode so old config files will still work. This should be removed
-    // in the future as configs with the now defunct ViewerAnimation become
-    // less common.
-    //
-    DataNode *vaNode = windowNode->GetNode("ViewerAnimation");
-    if(vaNode != 0)
-    {
-        debug1 << "***\n*** Converting the session file from pre 1.3 version.\n***\n";
-        DataNode *vplNode = vaNode->GetNode("ViewerPlotList");
-        // Remove the plot list node from the animation node without
-        // deleting it. Then reparent it in the window node.
-        vaNode->RemoveNode("ViewerPlotList", false);
-        windowNode->AddNode(vplNode);
-
-        // Add a few things from the animation node to the viewer plot
-        // list node.
-        DataNode *aNode;
-        if((aNode = vaNode->GetNode("pipelineCaching")) != 0)
-            vplNode->AddNode(new DataNode("pipelineCaching", aNode->AsBool()));
-        if((aNode = vaNode->GetNode("playbackMode")) != 0)
-        {
-            if(aNode->GetNodeType() == INT_NODE)
-                vplNode->AddNode(new DataNode("playbackMode", aNode->AsInt()));
-            else if(aNode->GetNodeType() == STRING_NODE)
-                vplNode->AddNode(new DataNode("playbackMode", aNode->AsString()));
-        }
-        //
-        // Get the curFrame and nFrames out of the ViewerAnimation and try
-        // to put it into the plots in the ViewerPlotList.
-        //
-        int curFrame = -1;
-        int nFrames = -1;
-        if((aNode = vaNode->GetNode("curFrame")) != 0)
-            curFrame = aNode->AsInt();
-        if((aNode = vaNode->GetNode("nFrames")) != 0)
-            nFrames = aNode->AsInt();
-        if(nFrames != -1 && curFrame != -1 &&
-           curFrame >= 0 && curFrame < nFrames)
-        {
-            DataNode *hostNode = vplNode->GetNode("hostName");
-            DataNode *databaseNode = vplNode->GetNode("databaseName");
-            DataNode *kfModeNode = vplNode->GetNode("keyframeMode");
-
-            //
-            // Determine whether the plot list is in keyframe mode.
-            //
-            bool kfMode = false;
-            if(kfModeNode != 0)
-                kfMode = kfModeNode->AsBool();
-
-            if(kfMode)
-            {
-                //
-                // We're in keyframe mode so set the number of keyframes and add a
-                // keyframing time slider.
-                //
-                vplNode->AddNode(new DataNode("nKeyframes", nFrames));
-                DataNode *tsNode = new DataNode("timeSliders");
-                tsNode->AddNode(new DataNode(KF_TIME_SLIDER, curFrame));
-                vplNode->AddNode(tsNode);
-                vplNode->AddNode(new DataNode("activeTimeSlider",
-                    std::string(KF_TIME_SLIDER)));
-                debug3 << "Created a time slider (" << KF_TIME_SLIDER
-                       << ") at state" << curFrame << " for old session file." << endl;
-            }
-            else if(hostNode != 0 && databaseNode != 0)
-            {
-                //
-                // We're not in keyframing mode so create a time slider for the
-                // active source.
-                //
-                std::string tsHost(hostNode->AsString());
-                std::string tsDB(databaseNode->AsString());
-                std::string tsName(ViewerFileServer::Instance()->
-                    ComposeDatabaseName(tsHost, tsDB));
-
-                //
-                // If the database has multiple time states then add a time
-                // slider for it in the ViewerPlotList.
-                //
-                DataNode *tsNode = new DataNode("timeSliders");
-                tsNode->AddNode(new DataNode(tsName, curFrame));
-                vplNode->AddNode(tsNode);
-                vplNode->AddNode(new DataNode("activeTimeSlider", tsName));
-                debug3 << "Created a time slider (" << tsName.c_str()
-                       << ") at state" << curFrame << " for old session file." << endl;
-            }
-        }
-        // Remove the ViewerAnimation node.
-        windowNode->RemoveNode("ViewerAnimation");
-    }
-    ///////////////// Done reformatting pre 1.3 session files /////////////////
 
     //
     // Read in the plot list.

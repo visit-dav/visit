@@ -109,8 +109,8 @@ AnimationReversePlayAction::Enabled() const
 bool
 AnimationReversePlayAction::Checked() const
 {
-    return (window->GetPlotList()->GetAnimationMode() ==
-            ViewerPlotList::ReversePlayMode);
+    return (window->GetPlotList()->GetAnimationAttributes().GetAnimationMode() ==
+            AnimationAttributes::ReversePlayMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -140,8 +140,8 @@ AnimationStopAction::Enabled() const
 bool
 AnimationStopAction::Checked() const
 {
-    return (window->GetPlotList()->GetAnimationMode() ==
-            ViewerPlotList::StopMode);
+    return (window->GetPlotList()->GetAnimationAttributes().GetAnimationMode() ==
+            AnimationAttributes::StopMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,8 +171,8 @@ AnimationPlayAction::Enabled() const
 bool
 AnimationPlayAction::Checked() const
 {
-    return (window->GetPlotList()->GetAnimationMode() ==
-            ViewerPlotList::PlayMode);
+    return (window->GetPlotList()->GetAnimationAttributes().GetAnimationMode() ==
+            AnimationAttributes::PlayMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

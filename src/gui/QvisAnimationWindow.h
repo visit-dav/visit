@@ -47,6 +47,7 @@ class AnimationAttributes;
 class QButtonGroup;
 class QCheckBox;
 class QSlider;
+class QSpinBox;
 
 // ****************************************************************************
 // Class: QvisAnimationWindow
@@ -66,6 +67,9 @@ class QSlider;
 //
 //   Brad Whitlock, Wed Apr  9 10:59:35 PDT 2008
 //   QString for caption, shortName.
+//
+//   Brad Whitlock, Wed Dec 10 16:29:45 PST 2008
+//   I added a spinbox for animation frame increment.
 //
 // ****************************************************************************
 
@@ -87,12 +91,14 @@ private slots:
     void pipelineCachingToggled(bool val);
     void playbackModeChanged(int val);
     void timeoutChanged(int);
+    void incrementChanged(int);
 private:
     AnimationAttributes *animationAtts;
 
     QCheckBox    *pipelineCachingToggle;
     QSlider      *timeoutSlider;
     QButtonGroup *playbackModeButtonGroup;
+    QSpinBox     *animationIncrement;
 };
 
 #endif

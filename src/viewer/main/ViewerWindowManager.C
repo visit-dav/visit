@@ -2030,6 +2030,9 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    Brad Whitlock, Wed Apr 30 09:50:48 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Wed Dec 10 14:50:55 PST 2008
+//    Get animation attributes directly from the plot list.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -2069,7 +2072,7 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
         }
         else
         {
-            if (windows[index]->GetAnimationAttributes()->GetPipelineCachingMode())
+            if (windows[index]->GetPlotList()->GetAnimationAttributes().GetPipelineCachingMode())
             {
                 Warning(tr("Currently, you cannot use non-screen-capture mode saves "
                     "when you have animation caching turned on. Either turn off "
@@ -3607,6 +3610,9 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
 //   Brad Whitlock, Wed Mar 16 17:34:38 PST 2005
 //   Made it use GetTimeLockedWindowIndices.
 //
+//   Brad Whitlock, Wed Dec 10 16:21:10 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -3681,10 +3687,9 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
                 }
                 
                 windows[index]->SetMergeViewLimits(true);
-                // Copy the animation mode.
-                ViewerPlotList::AnimationMode mode = 
-                    fromPL->GetAnimationMode();
-                windows[index]->GetPlotList()->SetAnimationMode(mode);
+                // Copy the animation atts.
+                windows[index]->GetPlotList()->SetAnimationAttributes(
+                    fromPL->GetAnimationAttributes());
             }
 
             // We likely changed time sliders so update them.
@@ -4683,19 +4688,22 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
 //  Programmer: Eric Brugger
 //  Creation:   November 21, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Dec 10 14:51:29 PST 2008
+//    Get the animation attributes directly from the plot list.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::UpdateAnimationAtts()
 {
     ViewerWindow *win = windows[activeWindow];
-    const AnimationAttributes *winAtts = win->GetAnimationAttributes();
 
     //
     // Copy the window's animation attributes to the client annotation
     // attributes and notify the client.
     //
-    *animationClientAtts = *winAtts;
+    *animationClientAtts = win->GetPlotList()->GetAnimationAttributes();
     animationClientAtts->Notify();
 }
 
@@ -5209,13 +5217,16 @@ ViewerWindowManager::GetAnimationClientAtts()
 //    Brad Whitlock, Mon Oct 6 17:04:24 PST 2003
 //    Made it use SetAnimationAttributes.
 //
+//    Brad Whitlock, Wed Dec 10 14:47:56 PST 2008
+//    Set the animation attributes directly into the plot list.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::SetAnimationAttsFromClient()
 {
     // Set the animation attributes using the animationClientAtts.
-    windows[activeWindow]->SetAnimationAttributes(animationClientAtts);
+    windows[activeWindow]->GetPlotList()->SetAnimationAttributes(*GetAnimationClientAtts());
 
     UpdateAnimationTimer();
 }
@@ -5783,6 +5794,9 @@ ViewerWindowManager::SynchronizeTimeLockedWindows(int windowIndex, int state)
 //   Offload work of synchronizing time locked windows to the new method
 //   SynchronizeTimeLockedWindows.  
 //
+//   Brad Whitlock, Wed Dec 10 15:37:01 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -5795,8 +5809,10 @@ ViewerWindowManager::NextFrame(int windowIndex)
     if(windows[index] != 0)
     {
         // Advance one frame for the active window first.
-        windows[index]->GetPlotList()->SetAnimationMode(
-            ViewerPlotList::StopMode);
+        AnimationAttributes a;
+        a = windows[index]->GetPlotList()->GetAnimationAttributes();
+        a.SetAnimationMode(AnimationAttributes::StopMode);
+        windows[index]->GetPlotList()->SetAnimationAttributes(a);
         ViewerPlotList *activePL = windows[index]->GetPlotList();
         activePL->ForwardStep();
 
@@ -5843,6 +5859,9 @@ ViewerWindowManager::NextFrame(int windowIndex)
 //   Offload work of synchronizing time locked windows to the new method
 //   SynchronizeTimeLockedWindows.  
 //
+//   Brad Whitlock, Wed Dec 10 15:37:01 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -5855,8 +5874,10 @@ ViewerWindowManager::PrevFrame(int windowIndex)
     if(windows[index] != 0)
     {
         // Back up one frame for the active window first.
-        windows[index]->GetPlotList()->SetAnimationMode(
-            ViewerPlotList::StopMode);
+        AnimationAttributes a;
+        a = windows[index]->GetPlotList()->GetAnimationAttributes();
+        a.SetAnimationMode(AnimationAttributes::StopMode);
+        windows[index]->GetPlotList()->SetAnimationAttributes(a);
         ViewerPlotList *activePL = windows[index]->GetPlotList();
         activePL->BackwardStep();
 
@@ -5899,6 +5920,9 @@ ViewerWindowManager::PrevFrame(int windowIndex)
 //   Brad Whitlock, Mon Jan 26 09:58:20 PDT 2004
 //   I changed how animation is done.
 //
+//   Brad Whitlock, Wed Dec 10 15:37:01 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -5911,8 +5935,10 @@ ViewerWindowManager::Stop(int windowIndex)
     if(windows[index] != 0)
     {
         // Stop animation for the active window first.
-        windows[index]->GetPlotList()->SetAnimationMode(
-            ViewerPlotList::StopMode);
+        AnimationAttributes a;
+        a = windows[index]->GetPlotList()->GetAnimationAttributes();
+        a.SetAnimationMode(AnimationAttributes::StopMode);
+        windows[index]->GetPlotList()->SetAnimationAttributes(a);
 
         // If the active window is time-locked, update the other windows that are
         // also time locked.
@@ -5924,8 +5950,9 @@ ViewerWindowManager::Stop(int windowIndex)
                 {
                     if(windows[i]->GetTimeLock())
                     {
-                        windows[i]->GetPlotList()->SetAnimationMode(
-                            ViewerPlotList::StopMode);
+                        a = windows[i]->GetPlotList()->GetAnimationAttributes();
+                        a.SetAnimationMode(AnimationAttributes::StopMode);
+                        windows[i]->GetPlotList()->SetAnimationAttributes(a);
                     }
                 }
             }
@@ -5960,6 +5987,9 @@ ViewerWindowManager::Stop(int windowIndex)
 //   Brad Whitlock, Mon Jan 26 22:46:27 PST 2004
 //   I changed how animation works.
 //
+//   Brad Whitlock, Wed Dec 10 15:37:01 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -5972,7 +6002,10 @@ ViewerWindowManager::Play(int windowIndex)
     if(windows[index] != 0)
     {
         // Start forward animation for the active window first.
-        windows[index]->GetPlotList()->SetAnimationMode(ViewerPlotList::PlayMode);
+        AnimationAttributes a;
+        a = windows[index]->GetPlotList()->GetAnimationAttributes();
+        a.SetAnimationMode(AnimationAttributes::PlayMode);
+        windows[index]->GetPlotList()->SetAnimationAttributes(a);
 
         // If the active window is time-locked, update the other windows that are
         // also time locked.
@@ -5984,8 +6017,9 @@ ViewerWindowManager::Play(int windowIndex)
                 {
                     if(windows[i]->GetTimeLock())
                     {
-                        windows[i]->GetPlotList()->SetAnimationMode(
-                            ViewerPlotList::PlayMode);
+                        a = windows[i]->GetPlotList()->GetAnimationAttributes();
+                        a.SetAnimationMode(AnimationAttributes::PlayMode);
+                        windows[i]->GetPlotList()->SetAnimationAttributes(a);
                     }
                 }
             }
@@ -6020,6 +6054,9 @@ ViewerWindowManager::Play(int windowIndex)
 //   Brad Whitlock, Mon Jan 26 22:48:30 PST 2004
 //   I changed how animation works.
 //
+//   Brad Whitlock, Wed Dec 10 15:37:01 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -6032,8 +6069,10 @@ ViewerWindowManager::ReversePlay(int windowIndex)
     if(windows[index] != 0)
     {
         // Start forward animation for the active window first.
-        windows[index]->GetPlotList()->SetAnimationMode(
-            ViewerPlotList::ReversePlayMode);
+        AnimationAttributes a;
+        a = windows[index]->GetPlotList()->GetAnimationAttributes();
+        a.SetAnimationMode(AnimationAttributes::ReversePlayMode);
+        windows[index]->GetPlotList()->SetAnimationAttributes(a);
 
         // If the active window is time-locked, update the other windows
         // that are also time locked.
@@ -6045,8 +6084,9 @@ ViewerWindowManager::ReversePlay(int windowIndex)
                 {
                     if(windows[i]->GetTimeLock())
                     {
-                        windows[i]->GetPlotList()->SetAnimationMode(
-                            ViewerPlotList::ReversePlayMode);
+                        a = windows[i]->GetPlotList()->GetAnimationAttributes();
+                        a.SetAnimationMode(AnimationAttributes::ReversePlayMode);
+                        windows[i]->GetPlotList()->SetAnimationAttributes(a);
                     }
                 }
             }
@@ -7314,6 +7354,9 @@ ViewerWindowManager::GetWindowInformation()
 //   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //   Added new axis array window mode.
 //
+//   Brad Whitlock, Wed Dec 10 16:23:16 PST 2008
+//   Update the AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -7364,12 +7407,17 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
         {
             windowInfo->SetTimeSliderCurrentStates(timeSliderCurrentStates);
 
-            if (plotList->GetAnimationMode() == ViewerPlotList::PlayMode)
+            AnimationAttributes::AnimationMode m;
+            m = plotList->GetAnimationAttributes().GetAnimationMode();
+            if (m == AnimationAttributes::PlayMode)
                 windowInfo->SetAnimationMode(3);
-            else if (plotList->GetAnimationMode() == ViewerPlotList::ReversePlayMode)
+            else if (m == AnimationAttributes::ReversePlayMode)
                 windowInfo->SetAnimationMode(1);
             else
                 windowInfo->SetAnimationMode(2);
+
+            // Update the client animation atts too.
+            UpdateAnimationAtts();
         }
 
         //
@@ -8226,6 +8274,9 @@ ViewerWindowManager::ToolCallback(const avtToolInterface &ti)
 //    Brad Whitlock, Mon Jan 26 09:49:19 PDT 2004
 //    I changed how we check the window for animation.
 //
+//    Brad Whitlock, Wed Dec 10 16:24:29 PST 2008
+//    Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -8246,11 +8297,11 @@ ViewerWindowManager::UpdateAnimationTimer()
         {
             if (windows[i] != NULL && windows[i]->IsVisible())
             {
-                ViewerPlotList::AnimationMode mode =
-                    windows[i]->GetPlotList()->GetAnimationMode();
+                AnimationAttributes::AnimationMode mode =
+                    windows[i]->GetPlotList()->GetAnimationAttributes().GetAnimationMode();
 
-                if (mode == ViewerPlotList::PlayMode ||
-                    mode == ViewerPlotList::ReversePlayMode)
+                if (mode == AnimationAttributes::PlayMode ||
+                    mode == AnimationAttributes::ReversePlayMode)
                 {
                     playing = true;
                     break;
@@ -8298,6 +8349,9 @@ ViewerWindowManager::UpdateAnimationTimer()
 //   Brad Whitlock, Mon Jan 26 09:48:30 PDT 2004
 //   I changed how animations are stopped.
 //
+//   Brad Whitlock, Wed Dec 10 16:27:15 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -8319,8 +8373,9 @@ ViewerWindowManager::StopTimer()
         {
             if(windows[i] != NULL)
             {
-                windows[i]->GetPlotList()->SetAnimationMode(
-                    ViewerPlotList::StopMode);
+                AnimationAttributes a(windows[i]->GetPlotList()->GetAnimationAttributes());
+                a.SetAnimationMode(AnimationAttributes::StopMode);
+                windows[i]->GetPlotList()->SetAnimationAttributes(a);
                 ++numWindows;
             }
         }
@@ -8376,6 +8431,9 @@ ViewerWindowManager::StopTimer()
 //    I changed how we check for animation since there are now multiple
 //    time sliders that could update.
 //
+//    Brad Whitlock, Wed Dec 10 16:25:10 PST 2008
+//    Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -8397,11 +8455,11 @@ ViewerWindowManager::AnimationCallback()
     {
         if (windows[i] != NULL)
         {
-            ViewerPlotList::AnimationMode mode =
-                windows[i]->GetPlotList()->GetAnimationMode();
+            AnimationAttributes::AnimationMode mode =
+                windows[i]->GetPlotList()->GetAnimationAttributes().GetAnimationMode();
 
-            if (mode == ViewerPlotList::PlayMode ||
-                mode == ViewerPlotList::ReversePlayMode)
+            if (mode == AnimationAttributes::PlayMode ||
+                mode == AnimationAttributes::ReversePlayMode)
             {
                 lastAnimation = i;
                 break;
@@ -8421,15 +8479,15 @@ ViewerWindowManager::AnimationCallback()
     //
     if(windows[lastAnimation] != NULL)
     {
-        ViewerPlotList::AnimationMode mode =
-            windows[lastAnimation]->GetPlotList()->GetAnimationMode();
+        AnimationAttributes::AnimationMode mode =
+            windows[lastAnimation]->GetPlotList()->GetAnimationAttributes().GetAnimationMode();
 
         // Prevent the timer from emitting any signals since the
         // code to handle animation may get back to the Qt event
         // loop which makes it possible to get back here reentrantly.
         timer->blockSignals(true);
 
-        if (mode == ViewerPlotList::PlayMode)
+        if (mode == AnimationAttributes::PlayMode)
         {
             // Change to the next frame in the animation, which will likely
             // cause us to have to read a plot from the compute engine.
@@ -8443,7 +8501,7 @@ ViewerWindowManager::AnimationCallback()
             // the plot from the compute engine.
             viewerSubject->ProcessFromParent();
         }
-        else if(mode == ViewerPlotList::ReversePlayMode)
+        else if(mode == AnimationAttributes::ReversePlayMode)
         {
             // Change to the next frame in the animation, which will likely
             // cause us to have to read a plot from the compute engine.

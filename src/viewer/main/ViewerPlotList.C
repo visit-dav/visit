@@ -138,38 +138,6 @@ static void PthreadCreate(pthread_t *new_thread_ID, const pthread_attr_t *attr,
 static void PthreadAttrInit(pthread_attr_t *attr);
 #endif
 
-//
-// Functions for converting ViewerPlotList::PlaybackMode to/from string.
-//
-
-static const char *PlaybackMode_strings[] = {
-"Looping", "PlayOnce", "Swing"
-};
-
-std::string
-PlaybackMode_ToString(ViewerPlotList::PlaybackMode t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
-    return PlaybackMode_strings[index];
-}
-
-bool
-PlaybackMode_FromString(const std::string &s,
-    ViewerPlotList::PlaybackMode &val)
-{
-    val = ViewerPlotList::Looping;
-    for(int i = 0; i < 3; ++i)
-    {
-        if(s == PlaybackMode_strings[i])
-        {
-            val = (ViewerPlotList::PlaybackMode)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 //  Method: ViewerPlotList constructor
 //
@@ -205,10 +173,14 @@ PlaybackMode_FromString(const std::string &s,
 //    Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007
 //    Added scaleModeSet. 
 //
+//    Brad Whitlock, Wed Dec 10 14:58:10 PST 2008
+//    I moved animation attributes into animationAtts.
+//
 // ****************************************************************************
 
 ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) : 
-    ViewerBase(0), hostDatabaseName(), hostName(), databaseName(), timeSliders()
+    ViewerBase(0), hostDatabaseName(), hostName(), databaseName(), timeSliders(),
+    animationAtts()
 {
     window           = viewerWindow;
     plots            = 0;
@@ -220,13 +192,10 @@ ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) :
     spatialExtentsType = AVT_ORIGINAL_EXTENTS;
 
     activeTimeSlider = "";
-    animationMode = StopMode;
-    playbackMode = Looping;
 
     keyframeMode = false;
     nKeyframesWasUserSet = false;
     nKeyframes = 1;
-    pipelineCaching = false;
     xScaleMode = LINEAR;
     yScaleMode = LINEAR;
     scaleModeSet = false;
@@ -932,63 +901,57 @@ ViewerPlotList::TimeSliderExists(const std::string &ts) const
 // Creation:   Mon Mar 22 15:39:34 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 10 15:05:33 PST 2008
+//   I converted the code to use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::SetNextState(int nextState, int boundary)
 {
-    switch(playbackMode)
+    switch(animationAtts.GetPlaybackMode())
     {
-    case Looping:
+    case AnimationAttributes::Looping:
         // Move to the next frame.
         SetTimeSliderState(nextState);
         break;
-    case PlayOnce:
+    case AnimationAttributes::PlayOnce:
         // If we're playing then make sure we stop on the last frame.
-        if(animationMode == PlayMode)
+        if(animationAtts.GetAnimationMode() == AnimationAttributes::PlayMode)
         {
             if(nextState == boundary)
-                animationMode = StopMode;
+                animationAtts.SetAnimationMode(AnimationAttributes::StopMode);
             else
-            {
                 SetTimeSliderState(nextState);
-            }
         }
-        else if(animationMode == ReversePlayMode)
+        else if(animationAtts.GetAnimationMode() == AnimationAttributes::ReversePlayMode)
         {
             if(nextState == boundary)
-                animationMode = StopMode;
+                animationAtts.SetAnimationMode(AnimationAttributes::StopMode);
             else
-            {
                 SetTimeSliderState(nextState);
-            }
         }
         else
         {
             SetTimeSliderState(nextState);
         }
         break;
-    case Swing:
+    case AnimationAttributes::Swing:
         // If we're playing then make sure that we reverse the play direction
         // on the last frame.
-        if(animationMode == PlayMode)
+        if(animationAtts.GetAnimationMode() == AnimationAttributes::PlayMode)
         {
             if(nextState == boundary)
-                animationMode = ReversePlayMode;
+                animationAtts.SetAnimationMode(AnimationAttributes::ReversePlayMode);
             else
-            {
                 SetTimeSliderState(nextState);
-            }
         }
-        else if(animationMode == ReversePlayMode)
+        else if(animationAtts.GetAnimationMode() == AnimationAttributes::ReversePlayMode)
         {
             if(nextState == boundary)
-                animationMode = PlayMode;
+                animationAtts.SetAnimationMode(AnimationAttributes::PlayMode);
             else
-            {
                 SetTimeSliderState(nextState);
-            }
         }
         else
         {
@@ -1007,7 +970,9 @@ ViewerPlotList::SetNextState(int nextState, int boundary)
 // Creation:   Mon Mar 22 15:42:28 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 10 15:06:13 PST 2008
+//   Make the frame increment adjustable.
+//
 // ****************************************************************************
 
 void
@@ -1022,7 +987,15 @@ ViewerPlotList::ForwardStep()
     if(timeSliderNStates < 2)
         return;
 
-    int nextState = (timeSliderCurrentState + 1) % timeSliderNStates;
+    int nextState;
+    if(animationAtts.GetPlaybackMode() == AnimationAttributes::Swing)
+    {
+        nextState = timeSliderCurrentState + animationAtts.GetFrameIncrement();
+        if(nextState >= timeSliderNStates)
+            nextState = 0;
+    }
+    else
+        nextState = (timeSliderCurrentState + animationAtts.GetFrameIncrement()) % timeSliderNStates;
     SetNextState(nextState, 0);
 }
 
@@ -1036,6 +1009,8 @@ ViewerPlotList::ForwardStep()
 // Creation:   Mon Mar 22 15:42:52 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Wed Dec 10 15:06:13 PST 2008
+//   Make the frame increment adjustable.
 //   
 // ****************************************************************************
 
@@ -1051,7 +1026,20 @@ ViewerPlotList::BackwardStep()
     if(timeSliderNStates < 2)
         return;
 
-    int nextState = (timeSliderCurrentState + timeSliderNStates - 1) % timeSliderNStates;
+    int nextState;
+    if(animationAtts.GetPlaybackMode() == AnimationAttributes::Swing)
+    {
+        nextState = timeSliderCurrentState - animationAtts.GetFrameIncrement();
+        if(nextState < 0)
+            nextState = timeSliderNStates - 1;
+    }
+    else
+    {
+        nextState = (timeSliderCurrentState + 
+                     timeSliderNStates - 
+                     animationAtts.GetFrameIncrement()) % timeSliderNStates;
+    }
+
     SetNextState(nextState, timeSliderNStates - 1);
 }
 
@@ -1194,6 +1182,9 @@ ViewerPlotList::UpdatePlotStates()
 //   Kathleen Bonnell, Thu Feb  3 16:03:32 PST 2005 
 //   Don't clear a plot's actors if it does not follow time. 
 //
+//   Brad Whitlock, Wed Dec 10 15:16:30 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 bool
@@ -1218,7 +1209,7 @@ ViewerPlotList::UpdateSinglePlotState(ViewerPlot *plot)
             {
                 different = true;
 
-                if(!pipelineCaching)
+                if(!animationAtts.GetPipelineCachingMode())
                     plot->ClearCurrentActor();
 
                 //
@@ -1302,7 +1293,7 @@ ViewerPlotList::UpdateSinglePlotState(ViewerPlot *plot)
             // pipeline caching then clear the plot's actor before setting
             // the new state.
             //
-            if (plot->FollowsTime() && different && !pipelineCaching)
+            if (plot->FollowsTime() && different && !animationAtts.GetPipelineCachingMode())
                 plot->ClearCurrentActor();
 
             // Set the new state.
@@ -1327,7 +1318,9 @@ ViewerPlotList::UpdateSinglePlotState(ViewerPlot *plot)
 // Creation:   Mon Mar 22 15:48:29 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 10 15:08:14 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -1365,8 +1358,8 @@ ViewerPlotList::UpdateFrame(bool updatePlotStates)
         // threaded mode. If no additional threads were spawned,
         // we need to update the windows.
         //
-        bool animating = ((animationMode == PlayMode) ||
-                          (animationMode == ReversePlayMode));
+        bool animating = ((animationAtts.GetAnimationMode() == AnimationAttributes::PlayMode) ||
+                          (animationAtts.GetAnimationMode() == AnimationAttributes::ReversePlayMode));
         if(UpdatePlots(animating))
             updateTheWindow = true;
     }
@@ -1383,87 +1376,57 @@ ViewerPlotList::UpdateFrame(bool updatePlotStates)
 }
 
 // ****************************************************************************
-// Method: ViewerPlotList::SetAnimationMode
+// Method: ViewerPlotList::SetAnimationAttributes
 //
 // Purpose: 
-//   Sets the plot list's animation mode.
+//   Set the animation attributes.
 //
 // Arguments:
-//   m : The new animation mode.
+//   a : The new animation attributes.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Mar 22 15:49:57 PST 2004
+// Creation:   Wed Dec 10 15:09:57 PST 2008
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-ViewerPlotList::SetAnimationMode(ViewerPlotList::AnimationMode m)
+ViewerPlotList::SetAnimationAttributes(const AnimationAttributes &a)
 {
-    animationMode = m;
+    AnimationAttributes newAtts(a);
+
+    if (newAtts.GetPipelineCachingMode() && avtCallback::GetNowinMode())
+    {
+        debug1 << "Overriding request to do pipeline caching, since we are in "
+               << "no-win mode." << endl;
+        newAtts.SetPipelineCachingMode(false);
+    }
+    if(!newAtts.GetPipelineCachingMode())
+        ClearPipelines();
+
+    animationAtts = newAtts;
 }
 
 // ****************************************************************************
-// Method: ViewerPlotList::GetAnimationMode
+// Method: ViewerPlotList::GetAnimationAttributes
 //
 // Purpose: 
-//   Gets the plot list's animation mode.
+//   Get the current animation attributes.
 //
-// Returns:    The plot list's animation mode.
+// Returns:    The animation attributes.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Mar 22 15:50:30 PST 2004
+// Creation:   Wed Dec 10 15:10:19 PST 2008
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-ViewerPlotList::AnimationMode
-ViewerPlotList::GetAnimationMode() const
+const AnimationAttributes &
+ViewerPlotList::GetAnimationAttributes() const
 {
-    return animationMode;
-}
-
-// ****************************************************************************
-// Method: ViewerPlotList::SetPlaybackMode
-//
-// Purpose: 
-//   Sets the plot list's playback mode.
-//
-// Arguments:
-//   m : The new playback mode.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 22 15:50:59 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerPlotList::SetPlaybackMode(ViewerPlotList::PlaybackMode m)
-{
-    playbackMode = m;
-}
-
-// ****************************************************************************
-// Method: ViewerPlotList::GetPlaybackMode
-//
-// Purpose: 
-//   Gets the plot list's playback mode.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 22 15:51:20 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-ViewerPlotList::PlaybackMode
-ViewerPlotList::GetPlaybackMode() const
-{
-    return playbackMode;
+    return animationAtts;
 }
 
 // ****************************************************************************
@@ -2896,6 +2859,9 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    Brad Whitlock, Tue Apr 29 15:58:03 PDT 2008
 //    Added tr().
 //
+//    Brad Whitlock, Wed Dec 10 15:12:33 PST 2008
+//    Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -2914,7 +2880,8 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
     //
     // Copy the animation playback mode.
     //
-    playbackMode = pl->GetPlaybackMode();
+    animationAtts = pl->GetAnimationAttributes();
+    animationAtts.SetAnimationMode(AnimationAttributes::StopMode);
 
     //
     // If the plot list being copied is in keyframe mode then put the
@@ -3557,6 +3524,9 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    Jeremy Meredith, Mon Jul 16 17:14:43 EDT 2007
 //    Update DBPluginInfo to follow the host for a selected plot.
 //
+//    Brad Whitlock, Wed Dec 10 15:11:04 PST 2008
+//    Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -3608,7 +3578,7 @@ ViewerPlotList::DeleteActivePlots()
     else
     {
         // If there are no plots, make sure we stop animation.
-        animationMode = StopMode;
+        animationAtts.SetAnimationMode(AnimationAttributes::StopMode);
     }
 
     //
@@ -7491,55 +7461,6 @@ ViewerPlotList::InitializeTool(avtToolInterface &ti)
     return retval;
 }
 
-// ****************************************************************************
-// Method: ViewerPlotList::SetPipelineCaching
-//
-// Purpose: 
-//   Turn pipeline caching on or off.
-//
-// Arguments:
-//   val : Whether we should cache pipelines.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Feb 2 15:09:15 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerPlotList::SetPipelineCaching(bool val)
-{
-    pipelineCaching = val;
-    if(!pipelineCaching)
-        ClearPipelines();
-
-    if (pipelineCaching && avtCallback::GetNowinMode() == true)
-    {
-        debug1 << "Overriding request to do pipeline caching, since we are in "
-               << "no-win mode." << endl;
-        pipelineCaching = false;
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerPlotList::GetPipelineCaching
-//
-// Purpose: 
-//   Returns whether pipeline caching is enabled.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Feb 2 15:09:44 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ViewerPlotList::GetPipelineCaching() const
-{
-    return pipelineCaching;
-}
 
 // ****************************************************************************
 //  Method: ViewerPlotList::ClearPipelines
@@ -8054,6 +7975,9 @@ ViewerPlotList::GetNKeyframesWasUserSet() const
 //   Brad Whitlock, Fri Mar 23 16:02:43 PST 2007
 //   Added code to save the plot name.
 //
+//   Brad Whitlock, Wed Dec 10 15:15:19 PST 2008
+//   Use AnimationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -8166,9 +8090,9 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
     plotlistNode->AddNode(new DataNode("nPlots", numRealPlots));
     plotlistNode->AddNode(new DataNode("keyframeMode", keyframeMode));
     plotlistNode->AddNode(new DataNode("nKeyframes", nKeyframes));
-    plotlistNode->AddNode(new DataNode("pipelineCaching", pipelineCaching));
-    plotlistNode->AddNode(new DataNode("playbackMode",
-        PlaybackMode_ToString(playbackMode)));
+    AnimationAttributes anim(animationAtts);
+    anim.SetAnimationMode(AnimationAttributes::StopMode);
+    anim.CreateNode(plotlistNode, true, true);
 }
 
 // ****************************************************************************
@@ -8217,6 +8141,9 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
 //
 //   Brad Whitlock, Thu Jan 24 11:53:57 PDT 2008
 //   Added another argument to NewPlot().
+//
+//   Brad Whitlock, Wed Dec 10 15:22:22 PST 2008
+//   Use AnimationAttributes.
 //
 // ****************************************************************************
 
@@ -8309,22 +8236,9 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
             nKeyframesWasUserSet = true;
         }
     }
-    if((node = plotlistNode->GetNode("playbackMode")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetPlaybackMode(PlaybackMode(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            PlaybackMode value;
-            if(PlaybackMode_FromString(node->AsString(), value))
-                SetPlaybackMode(value);
-        }
-    }
+
+    // Get the animation attributes.
+    animationAtts.SetFromNode(plotlistNode);
 
     //
     // Set the time slider state for each of the time sliders. They are
