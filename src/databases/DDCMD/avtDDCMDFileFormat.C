@@ -72,6 +72,12 @@
 #include <avtParallel.h>
 #endif
 
+#if defined(_MSC_VER) || !defined(HAVE_STRTOF) || !defined(HAVE_STRTOF_PROTOTYPE)
+#ifndef strtof
+#define strtof(f1,f2) ((float)strtod(f1,f2))
+#endif
+#endif
+
 using     std::string;
 using     std::vector;
 using     std::min;
