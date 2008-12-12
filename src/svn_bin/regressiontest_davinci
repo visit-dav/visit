@@ -60,6 +60,9 @@
 #
 #    Mark C. Miller, Thu Oct 23 09:50:31 PDT 2008
 #    Found and fixed another issue handling output from wc correctly.
+#
+#    Mark C. Miller, Fri Dec 12 08:14:28 PST 2008
+#    Added code to check for common case of /project/projectdir being down.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -231,6 +234,11 @@ if test $optError -eq 1; then
     echo "        -force            force a test even if no files have changed since last run."
     echo "        -changed          Used to tell this script to issue the 'changed' log message."
     exit 1
+fi
+
+# check that /projectdir is actually there. Sometimes it is down for maint.
+if test ! -d /project/projectdirs/visit
+    checkAndHandleError 1 fatal "/project/projectdirs/visit is down"
 fi
 
 # check connectivity to nersc
