@@ -479,6 +479,9 @@
 #     Modified the variables in the auto-generated config-site file for
 #     Silo-HDF5 dependency.
 #
+#     Cyrus Harrison, Fri Dec 12 14:14:55 PST 2008
+#     Fixed problem with checking if cgns is already built/installed.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -8111,7 +8114,7 @@ fi
 
 cd "$START_DIR"
 if [[ "$DO_CGNS" == "yes" ]] ; then
-    check_if_installed "cgns" "CGNS_VERSION"
+    check_if_installed "cgns" $CGNS_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping CGNS build.  CGNS is already installed."
     else
