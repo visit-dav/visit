@@ -897,6 +897,10 @@ dnl    client simulation. It also prevents the sim writers from having to do
 dnl    very bad things such as using a specific VisIt rpath when linking
 dnl    their codes.
 dnl
+dnl    Hank Childs, Fri Dec 12 16:18:34 PST 2008
+dnl    Move Ice-T to later in the script so that it can benefit from correct
+dnl    definitions of X11 libs and Pthreads.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1227,22 +1231,6 @@ fi
 AC_SUBST(VIEWER_MESA_STUB_CPPFLAGS)
 AC_SUBST(VIEWER_MESA_LIBS)
 AC_SUBST(BUILD_MESA_STUB)
-
-dnl
-dnl IceT check.
-dnl
-AX_ICET_OPTIONS
-if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
-	AC_MSG_ERROR([
-IceT usage requested, but you're not doing a parallel build.  IceT requires
-'--enable-parallel' to be specified.])
-elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
-	AX_CHECK_ICET
-fi
-dnl Always needed: this sets up the object files we'll build, and should
-dnl therefore be called even if IceT is disabled! (to explicitly set it to
-dnl nothing).
-AX_VISIT_ICET
 
 #
 # The check for OpenGL can be disabled with `--disable-ogl'.
@@ -3294,6 +3282,22 @@ fi
 AC_SUBST(PTHREAD_LIB)
 AC_SUBST(PTHREAD_CXXFLAGS)
 
+
+dnl
+dnl IceT check.
+dnl
+AX_ICET_OPTIONS
+if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
+	AC_MSG_ERROR([
+IceT usage requested, but you're not doing a parallel build.  IceT requires
+'--enable-parallel' to be specified.])
+elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
+	AX_CHECK_ICET
+fi
+dnl Always needed: this sets up the object files we'll build, and should
+dnl therefore be called even if IceT is disabled! (to explicitly set it to
+dnl nothing).
+AX_VISIT_ICET
 
 #
 # Do a check to determine the actual limit of an OSMesa
