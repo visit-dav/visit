@@ -71,19 +71,24 @@ AC_ARG_ENABLE([icet],
     [AS_HELP_STRING([--enable-icet],
         [Use the ICE-T parallel image compositor])]
 )
-
+if [[ "$DEFAULT_ICET_INCLUDE" == "" ]] ; then
+   DEFAULT_ICET_INCLUDE="no"
+fi
+if [[ "$DEFAULT_ICET_LIB" == "" ]] ; then
+   DEFAULT_ICET_LIB="no"
+fi
 dnl `with' options to specify header/library locations.
 AC_ARG_WITH([icet-includedir],
     [AS_HELP_STRING([--with-icet-includedir=/path],
         [Directory where ICE-T include files can be found.])],
     [with_icet_includedir=$withval],
-    [with_icet_includedir=no]
+    [with_icet_includedir=$DEFAULT_ICET_INCLUDE]
 )
 AC_ARG_WITH([icet-libdir],
     [AS_HELP_STRING([--with-icet-libdir=/path],
         [Directory where ICE-T libraries can be found.])],
     [with_icet_libdir=$withval],
-    [with_icet_libdir=no]
+    [with_icet_libdir=$DEFAULT_ICET_LIB]
 )
 
 ICET_LIBS=
@@ -95,7 +100,12 @@ if test -n "${ICET_ENABLE}" ; then
     enable_icet="yes"
 fi
 if test -z "${enable_icet}" ; then
-    enable_icet="no"
+   enable_icet="no"
+   if test -n "${DEFAULT_ICET_INCLUDE}" ; then
+      if [[ "$UseParallel" == "yes" ]] ; then
+         enable_icet="yes"
+      fi
+   fi
 fi
 AC_MSG_RESULT([$enable_icet])
 
@@ -161,14 +171,14 @@ some custom LDFLAGS?])],
             dnl
             dnl That's the long way of saying `don't use AX_CHECK_ICET until
             dnl you've checked for / setup Mesa'.
-            [-L$MESA_DIR/lib $MESA_LIBS -lm]
+            [-L$MESA_DIR/lib $MESA_LIBS $X_LIBS -lXext -lm $PTHREAD_LIB]
         )
         AC_CHECK_LIB([icet_mpi], [icetCreateMPICommunicator],
             [ax_ICET_LIB_MPI="-licet_mpi"],
             [AC_MSG_FAILURE([
 --enable-icet was given, but I could not use IceT's MPI wrappers.  Perhaps you
 need to set some custom LDFLAGS?])],
-            [-L$MESA_DIR/lib $MESA_LIBS -lm -licet -lmpi]
+            [-L$MESA_DIR/lib $MESA_LIBS $X_LIBS -lXext -lm $PTHREAD_LIB -licet $MPI_LIBS]
         )
         dnl This is tricky.  We test to make sure it works, but really I don't
         dnl think any of the functions in this library are designed to be
@@ -181,7 +191,7 @@ need to set some custom LDFLAGS?])],
 might mean the library was updated and VisIt's IceT test simply needs to be
 updated, or it might mean your IceT install is not quite right.  You may need
 to set some custom LDFLAGS.])],
-            [-L$MESA_DIR/lib $MESA_LIBS -lm -licet -lmpi]
+            [-L$MESA_DIR/lib $MESA_LIBS $X_LIBS -lXext -lm $PTHREAD_LIB -licet $MPI_LIBS]
         )
         ICET_LIBS="${ax_ICET_LIB} ${ax_ICET_LIB_MPI} ${ax_ICET_LIB_STRATEGIES}"
         PARALLEL_CPPFLAGS="${PARALLEL_CPPFLAGS} -I${ICET_INCLUDEDIR}"
