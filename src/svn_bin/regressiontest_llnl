@@ -162,7 +162,7 @@ checkAndHandleError() {
     # put logfile contents in an email and send it
     rm -rf mailmsg
     cat > mailmsg << EOF
-From: visit@llnl.gov 
+From: visit-developers@ornl.gov 
 Subject: $subjectLeader $emailSubject
 This email was generated from VisIt's Automatic Test Run
 

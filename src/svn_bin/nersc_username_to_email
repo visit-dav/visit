@@ -88,7 +88,7 @@ case $1 in
         emaddr=anderson@cs.ucdavis.edu
         ;;
     *)
-        emaddr=visit@llnl.gov
+        emaddr=visit-developers@ornl.gov
         ;;
 esac
 
