@@ -201,13 +201,17 @@ class BuildTest(object):
         # use gcc everwhere except AIX
         if opsys == "aix":
             comp = "xlc"
+        
+        res = "%s-%s-%s" % (opsys,proc,comp)
         # get gcc version
         if comp == "gcc": 
-            res = sub_pipe("gcc -v 2>&1")
-            tok = res[res.find("gcc version")+len("gcc version"):].split()
+            sub_res = sub_pipe("gcc -v 2>&1")
+            tok = sub_res[sub_res.find("gcc version")+len("gcc version"):].split()
             if len(tok) > 0:
                 comp_ver = tok[0]
-        return "%s-%s-%s-%s" % (opsys,proc,comp,comp_ver)
+        if comp_ver !="":
+            res += "-%s" % comp_ver;
+        return res
 
 def main():
     """
