@@ -193,7 +193,7 @@ logrecipients="miller childs"
 testmodes="serial parallel"
 
 # build error message
-msghdr_build="From: visit@llnl.gov\n\
+msghdr_build="From: visit-developers@ornl.gov\n\
 Subject: failed nightly build\n\
 \n\
 This is an automated error message: \n\
@@ -204,7 +204,7 @@ msgftr_build="\n\n------ build log follows ------\n\n"
 
 
 # regression error message
-msghdr_testfailed="From: visit@llnl.gov\n\
+msghdr_testfailed="From: visit-developers@ornl.gov\n\
 Subject: failed regression test\n\
 \n\
 Results posted at http://alderaan.llnl.gov/visit/\
@@ -213,7 +213,7 @@ This is an automated error message: \n\
 \n\
 The VisIt regression test failed during an automatic run\n"
 
-msghdr_testpassed="From: visit@llnl.gov\n\
+msghdr_testpassed="From: visit-developers@ornl.gov\n\
 Subject: passed regression test\n\
 \n\
 Results posted at http://alderaan.llnl.gov/visit/\
@@ -222,7 +222,7 @@ This is an automated message: \n\
 \n\
 The VisIt regression test passed the automatic run\n"
 
-msghdr_partialpass="From: visit@llnl.gov\n\
+msghdr_partialpass="From: visit-developers@ornl.gov\n\
 Subject: partially passed regression test\n\
 \n\
 Results posted at http://alderaan.llnl.gov/visit/\
