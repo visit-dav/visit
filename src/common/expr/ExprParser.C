@@ -152,6 +152,10 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 //    Jeremy Meredith, Wed Jul 23 11:20:17 EDT 2008
 //    Allow backslashes in paths for better windows support.
 //
+//    Jeremy Meredith, Mon Dec 15 14:30:57 EST 2008
+//    Allow unary minus to get integrated directly into float and int
+//    constants.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::ApplyRule(const Symbol           &sym,
@@ -214,9 +218,28 @@ ExprParser::ApplyRule(const Symbol           &sym,
                                             ((IntegerConst*)T[2])->GetValue());
             break;
         case 7:
-            node = factory->CreateUnaryExpr(p,
-                                            ((Character*)T[0])->GetVal(),
-                                            (ExprNode*)(E[1]));
+            // We can be a little smart and condense "-int" or "-float"
+            // into a single constant here.
+            if (((Character*)T[0])->GetVal() == '-' &&
+                E[1]->GetTypeName() == "IntegerConst")
+            {
+                ConstExpr *c = dynamic_cast<ConstExpr*>(E[1]);
+                int v = dynamic_cast<IntegerConstExpr*>(c)->GetValue();
+                node = factory->CreateIntegerConstExpr(p,-v);
+            }
+            else if (((Character*)T[0])->GetVal() == '-' &&
+                     E[1]->GetTypeName() == "FloatConst")
+            {
+                ConstExpr *c = dynamic_cast<ConstExpr*>(E[1]);
+                float v = dynamic_cast<FloatConstExpr*>(c)->GetValue();
+                node = factory->CreateFloatConstExpr(p,-v);
+            }
+            else
+            {
+                node = factory->CreateUnaryExpr(p,
+                                                ((Character*)T[0])->GetVal(),
+                                                (ExprNode*)(E[1]));
+            }
 
             break;
         case 8:
