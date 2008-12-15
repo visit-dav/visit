@@ -2059,7 +2059,7 @@ function check_variables
 #                          Function 3, build_mesa                             #
 # *************************************************************************** #
 
-function apply_mesa_642_patch
+function apply_mesa_642_patch_general
 {
     patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/default Mesa-6.4.2/configs/default
@@ -2461,7 +2461,7 @@ EOF
 
 function apply_mesa_642_patch
 {
-   apply_mesa_642_patch
+   apply_mesa_642_patch_general
    if [[ $? != 0 ]] ; then
        return 1
    fi
