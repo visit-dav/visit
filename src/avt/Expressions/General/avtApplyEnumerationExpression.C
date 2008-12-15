@@ -185,6 +185,11 @@ avtApplyEnumerationExpression::DeriveVariable(vtkDataSet *in_ds)
 //    Jeremy Meredith, Mon Dec 15 12:52:34 EST 2008
 //    Account for negative values in the enumeration list.
 //
+//    Jeremy Meredith, Mon Dec 15 14:31:42 EST 2008
+//    Moved the accounting for unary minus into the parser itself, so
+//    I removed the check for it in here.  The new fix/optimization
+//    should apply to all expressions now.
+//
 // ****************************************************************************
 
 void
@@ -223,30 +228,15 @@ avtApplyEnumerationExpression::ProcessArguments(ArgsExpr *args,
         }
 
         ExprNode *item = (*elems)[i]->GetItem();
-
-        // We interpret negative values as unary minus + positive value.
-        // So keep inspecting down here.
-        double scale = +1;
-        while (item->GetTypeName() == "Unary")
-        {
-            UnaryExpr *u = dynamic_cast<UnaryExpr*>(item);
-            if (u->GetOp() != '-')
-                EXCEPTION2(ExpressionException, outputVariableName,
-                           "got an unexpected unary operator "
-                           "which wasn't '-'.");
-            scale *= -1;
-            item = u->GetExpr();
-        }
-               
         if (item->GetTypeName() == "FloatConst")
         {
             ConstExpr *c = dynamic_cast<ConstExpr*>(item);
-            enumeratedValues[i] = scale * dynamic_cast<FloatConstExpr*>(c)->GetValue();
+            enumeratedValues[i] = dynamic_cast<FloatConstExpr*>(c)->GetValue();
         }
         else if (item->GetTypeName() == "IntegerConst")
         {
             ConstExpr *c = dynamic_cast<ConstExpr*>(item);
-            enumeratedValues[i] = scale * dynamic_cast<IntegerConstExpr*>(c)->GetValue();
+            enumeratedValues[i] = dynamic_cast<IntegerConstExpr*>(c)->GetValue();
         }
         else 
         {
