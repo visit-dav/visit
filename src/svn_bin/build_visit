@@ -483,6 +483,12 @@
 #     Cyrus Harrison, Fri Dec 12 14:14:55 PST 2008
 #     Fixed problem with checking if cgns is already built/installed.
 #
+#     Cyrus Harrison, Fri Dec 12 14:14:55 PST 2008
+#     Changed version of google-perftools to 0.97 (from 0.98). 
+#     0.97 is the version already in our repo and I verified it was the 
+#     version Hank integrated into VisIt. 
+#
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -847,10 +853,10 @@ export VISUS_VERSION=${VISUS_VERSION-"1.0.0"}
 export VISUS_COMPATIBILITY_VERSION=${VISUS_COMPATIBILITY_VERSION-"1.0"}
 export VISUS_BUILD_DIR=${VISUS_BUILD_DIR-"visus"}
 
-export TCMALLOC_FILE=${TCMALLOC_FILE-"google-perftools-0.98.tar.gz"}
-export TCMALLOC_VERSION=${TCMALLOC_VERSION-"0.98"}
-export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION-"0.98"}
-export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR-"google-perftools-0.98"}
+export TCMALLOC_FILE=${TCMALLOC_FILE-"google-perftools-0.97.tar.gz"}
+export TCMALLOC_VERSION=${TCMALLOC_VERSION-"0.97"}
+export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION-"0.97"}
+export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR-"google-perftools-0.97"}
 
 export ICET_FILE=${ICET_FILE-"IceT-0-5-4.tar.gz"}
 export ICET_VERSION=${ICET_VERSION-"0.5.4"}
