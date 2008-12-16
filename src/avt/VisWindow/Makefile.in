@@ -154,6 +154,9 @@
 #    Jeremy Meredith, Tue Apr 22 14:30:44 EDT 2008
 #    Removed Extents tool.  (Supplanted by axis restriction tool.)
 #
+#    Eric Brugger, Tue Dec  9 14:05:30 PST 2008
+#    Added VisWinAxesParallel.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -173,6 +176,7 @@ Colleagues_src= \
   Colleagues/VisWinInteractions.C \
   Colleagues/VisWinLegends.C \
   Colleagues/VisWinLighting.C \
+  Colleagues/VisWinAxesParallel.C \
   Colleagues/VisWinPathTracker.C \
   Colleagues/VisWinPlots.C \
   Colleagues/VisWinQuery.C \

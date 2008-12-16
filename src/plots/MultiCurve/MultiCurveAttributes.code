@@ -1,0 +1,261 @@
+Function: EnlargeMultiColor
+Declaration: void EnlargeMultiColor(int newSize);
+Definition:
+// ****************************************************************************
+// Method: MultiCurveAttributes::EnlargeMultiColor
+//
+// Purpose:
+//   Enlarges the multiColor vector to the new size.
+//
+// Arguments:
+//   newSize    The new size of the color vector.
+//
+// Programmer: Eric Brugger
+// Creation:   December 9, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+MultiCurveAttributes::EnlargeMultiColor(int newSize)
+{
+    // Add any colors that are needed to the end of the vector to ensure
+    // we have the right number of elements in the vector.
+    if(newSize > 0)
+    {
+        unsigned char *rgb = new unsigned char[newSize * 4];
+
+        // If it's a discrete color table, just use the colors of
+        // the control points. Otherwise, sample the color table.
+        if(defaultPalette.GetDiscreteFlag())
+        {
+            int nColors = defaultPalette.GetNumControlPoints();
+            for(int i = 0, index = 0; i < newSize; ++i, index += 4)
+            {
+                int j = i % nColors;
+                const ColorControlPoint &ccp = defaultPalette.operator[](j);
+                const unsigned char *c = ccp.GetColors();
+                rgb[index] = c[0];
+                rgb[index+1] = c[1];
+                rgb[index+2] = c[2];
+                rgb[index+3] = c[3];
+            }
+        }
+        else
+        {
+            defaultPalette.GetColors(rgb, newSize);
+        }
+
+        bool modified = false;
+        for(int i = 0; i < newSize; ++i)
+        {
+            int j = i * 4;
+            if(i < multiColor.GetNumColors())
+            {
+                if(!ColorIsChanged(i))
+                {
+                    ColorAttribute &ca = multiColor.GetColors(i);
+                    ca.SetRgba(int(rgb[j]), int(rgb[j+1]), int(rgb[j+2]),int(rgb[j+3]));
+                }
+            }
+            else
+            {
+                multiColor.AddColors(ColorAttribute(rgb[j],
+                                                    rgb[j+1],
+                                                    rgb[j+2],
+                                                    rgb[j+3]));
+            }
+            modified = true;
+        }
+        delete [] rgb;
+
+        // If the multiColor vector was modified, select it.
+        if(modified)
+            SelectMultiColor();
+    }
+}
+
+Function: ColorIsChanged
+Declaration: bool ColorIsChanged(int index) const;
+Definition:
+// ****************************************************************************
+// Method: MultiCurveAttributes::ColorIsChanged
+//
+// Purpose:
+//   Returns whether or not a color has been modified.
+//
+// Arguments:
+//   index      A color index.
+//
+// Programmer: Eric Brugger
+// Creation:   December 9, 2008
+//
+// Modifications:
+//
+// ***************************************************************************
+bool
+MultiCurveAttributes::ColorIsChanged(int index) const
+{
+    size_t i = 0;
+    for(; i < changedColors.size(); ++i)
+    {
+        if(changedColors[i] == ((unsigned char)index))
+            break;
+    }
+
+    return (i < changedColors.size());
+}
+
+Function: MarkColorAsChanged
+Declaration: void MarkColorAsChanged(int index);
+Definition:
+// ****************************************************************************
+// Method: MultiCurveAttributes::MarkColorAsChanged
+//
+// Purpose:
+//   Marks a color as having been modified.
+//
+// Arguments:
+//   index      A color index.
+//
+// Programmer: Eric Brugger
+// Creation:   December 9, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+MultiCurveAttributes::MarkColorAsChanged(int index)
+{
+    if(!ColorIsChanged(index))
+    {
+        changedColors.push_back(((unsigned char)index));
+        SelectChangedColors();
+    }
+}
+
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const MultiCurveAttributes &) const;
+Definition:
+// ****************************************************************************
+// Method: MultiCurveAttributes::ChangesRequireRecalculation
+//
+// Purpose:
+//   Returns a boolean indicating if the changes to the attributes require
+//   a pipeline re-execution.
+//
+// Arguments:
+//   obj        The new attributes.
+//
+// Programmer: Eric Brugger
+// Creation:   December 9, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &obj) const
+{
+    if (markerVariable != obj.markerVariable)
+        return true;
+
+    return false;
+}
+
+Target: xml2info
+Function: MultiCurveViewerPluginInfo::InitializeGlobalObjects
+Declaration: static void InitializeGlobalObjects();
+Definition:
+// ****************************************************************************
+// Method:  MultiCurveViewerPluginInfo::InitializeGlobalObjects
+//
+// Purpose:
+//   Initialize the plot atts.
+//
+// Programmer: Eric Brugger
+// Creation:   December 9, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+MultiCurveViewerPluginInfo::InitializeGlobalObjects()
+{
+    MultiCurveViewerPluginInfo::clientAtts  = new MultiCurveAttributes;
+    MultiCurveViewerPluginInfo::defaultAtts = new MultiCurveAttributes;
+
+    InitializeDefaultPalette(clientAtts);
+    InitializeDefaultPalette(defaultAtts);
+}
+
+Function: MultiCurveViewerPluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Definition:
+// ****************************************************************************
+// Method: MultiCurveViewerPluginInfo::InitializePlotAtts
+//
+// Purpose:
+//   Initialize the plot attributes to the default attributes.
+//
+// Arguments:
+//   atts       The attribute subject to initialize.
+//   plot       The viewer plot whose attributes are getting initialized.
+//
+// Programmer: Eric Brugger
+// Creation:   December 9, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+MultiCurveViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    ViewerPlot *)
+{
+    MultiCurveAttributes *multiCurve = (MultiCurveAttributes *)atts;
+    *multiCurve = *defaultAtts;
+
+    // Set the defaultPalette for the plot.
+    InitializeDefaultPalette(multiCurve);
+}
+
+Function: MultiCurveViewerPluginInfo::InitializeDefaultPalette
+Declaration: static void InitializeDefaultPalette(MultiCurveAttributes *);
+Definition:
+// ****************************************************************************
+// Method: MultiCurveViewerPluginInfo::InitializeDefaultPalette
+//
+// Purpose:
+//   Initializes the default palette in the multiCurve attributes using the
+//   default discrete color table.
+//
+// Arguments:
+//   multiCurve The MultiCurveAttributes to initialize.
+//
+// Programmer: Eric Brugger
+// Creation:   December 9, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <avtColorTables.h>
+#include <ColorTableAttributes.h>
+void
+MultiCurveViewerPluginInfo::InitializeDefaultPalette(
+    MultiCurveAttributes *multiCurve)
+{
+    // Copy over the multiCurve's defaultPalette with the default discrete
+    // color table from avtColorTable.
+    if (multiCurve->GetColorType() != MultiCurveAttributes::ColorByMultipleColors ||
+        multiCurve->GetDefaultPalette().GetNumControlPoints() < 1)
+    {
+        avtColorTables *ct = avtColorTables::Instance();
+        ColorTableAttributes *ctAtts = ct->GetColorTables();
+        int i = ctAtts->GetColorTableIndex(ct->GetDefaultDiscreteColorTable());
+        if(i != -1)
+        {
+            multiCurve->SetDefaultPalette(ctAtts->operator[](i));
+        }
+    }
+}

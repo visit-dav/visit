@@ -281,12 +281,16 @@ VisitLineTool::Disable()
 //    Jeremy Meredith, Thu Jan 31 14:36:26 EST 2008
 //    Disabled for AxisArray window mode.
 //
+//    Eric Brugger, Tue Dec  9 14:02:23 PST 2008
+//    Disabled for AxisParallel window mode.
+//
 // ****************************************************************************
 
 bool
 VisitLineTool::IsAvailable() const
 {
-    return proxy.GetMode() != WINMODE_AXISARRAY && proxy.HasPlots();
+    return proxy.GetMode() != WINMODE_AXISARRAY &&
+           proxy.GetMode() != WINMODE_AXISPARALLEL && proxy.HasPlots();
 }
 
 // ****************************************************************************

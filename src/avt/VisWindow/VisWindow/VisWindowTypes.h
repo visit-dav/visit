@@ -58,6 +58,9 @@
 //    Gunther H. Weber, Wed Mar 19 16:06:04 PDT 2008
 //    Added SPREADSHEET_PICK to INTERACTION_MODE
 //
+//    Eric Brugger, Tue Dec  9 14:32:10 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ************************************************************************* //
 
 
@@ -80,11 +83,12 @@ typedef enum
 
 typedef enum
 {
-    WINMODE_2D          = 0,
-    WINMODE_3D,        /* 1 */
-    WINMODE_CURVE,     /* 2 */
-    WINMODE_AXISARRAY, /* 3 */
-    WINMODE_NONE       /* 4 */
+    WINMODE_2D            = 0,
+    WINMODE_3D,           /* 1 */
+    WINMODE_CURVE,        /* 2 */
+    WINMODE_AXISARRAY,    /* 3 */
+    WINMODE_AXISPARALLEL, /* 4 */
+    WINMODE_NONE          /* 5 */
 }  WINDOW_MODE;
 
 typedef enum {
@@ -170,6 +174,10 @@ VISWINDOW_API bool        INTERACTION_MODE_FromString(const std::string &,
 //  Programmer: Hank Childs
 //  Creation:   June 9, 2000
 //
+//  Modifications:
+//    Eric Brugger, Tue Dec  9 14:32:10 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 inline bool
@@ -178,7 +186,8 @@ ValidMode(WINDOW_MODE mode)
     if (mode == WINMODE_2D ||
         mode == WINMODE_3D ||
         mode == WINMODE_CURVE ||
-        mode == WINMODE_AXISARRAY)
+        mode == WINMODE_AXISARRAY ||
+        mode == WINMODE_AXISPARALLEL)
     {
         return true;
     }

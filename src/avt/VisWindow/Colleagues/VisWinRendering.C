@@ -364,6 +364,9 @@ VisWinRendering::GetForeground(void)
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode.
 //
+//    Eric Brugger, Tue Dec  9 14:19:59 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 void
@@ -371,7 +374,8 @@ VisWinRendering::SetViewport(double vl, double vb, double vr, double vt)
 {
     if (mediator.GetMode() == WINMODE_2D ||
         mediator.GetMode() == WINMODE_CURVE ||
-        mediator.GetMode() == WINMODE_AXISARRAY)
+        mediator.GetMode() == WINMODE_AXISARRAY ||
+        mediator.GetMode() == WINMODE_AXISPARALLEL)
     {
         canvas->SetViewport(vl, vb, vr, vt);
         canvas->ComputeAspect();
@@ -565,6 +569,59 @@ VisWinRendering::StartAxisArrayMode(void)
 
 void
 VisWinRendering::StopAxisArrayMode(void)
+{
+    //
+    // We made the canvas' viewport when we entered 2D mode.  Make it be the
+    // whole screen again.
+    //
+    canvas->SetViewport(0., 0., 1., 1.);
+    canvas->ComputeAspect();
+}
+
+// ****************************************************************************
+//  Method: VisWinRendering::StartAxisParallelMode
+//
+//  Purpose:
+//      Puts the rendering module in AxisParallel mode.  This means that the 
+//      camera should have orthographic projection.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 9, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::StartAxisParallelMode(void)
+{
+    //
+    // The canvas should now be snapped to a smaller viewport.
+    //
+    double vport[4];
+    mediator.GetViewport(vport);
+    canvas->SetViewport(vport);
+    canvas->ComputeAspect();
+}
+
+
+// ****************************************************************************
+//  Method: VisWinRendering::StopAxisParallelMode
+//
+//  Purpose:
+//      Takes the rendering module out of AxisParallel mode.  This means that
+//      the camera should be put in perspective projection mode if it was in
+//      that mode previously.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 9, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::StopAxisParallelMode(void)
 {
     //
     // We made the canvas' viewport when we entered 2D mode.  Make it be the
@@ -827,6 +884,9 @@ VisWinRendering::Realize(void)
 //     Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //     Added new AxisArray window mode.
 //
+//     Eric Brugger, Tue Dec  9 14:19:59 PST 2008
+//     Added the AxisParallel window mode.
+//
 // ****************************************************************************
 void
 VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
@@ -859,6 +919,13 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
             haveViewport = true;
         }
         else if (mediator.GetMode() == WINMODE_AXISARRAY)
+        {
+            VisWindow *vw = mediator;
+            avtViewAxisArray v = vw->GetViewAxisArray();
+            v.GetViewport(viewPort);
+            haveViewport = true;
+        }
+        else if (mediator.GetMode() == WINMODE_AXISPARALLEL)
         {
             VisWindow *vw = mediator;
             avtViewAxisArray v = vw->GetViewAxisArray();

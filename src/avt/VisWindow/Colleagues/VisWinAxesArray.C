@@ -131,7 +131,7 @@ VisWinAxesArray::~VisWinAxesArray()
 
 
 // ****************************************************************************
-//  Method: VisWinAxesArray::StartCurveMode
+//  Method: VisWinAxesArray::StartAxisArrayMode
 //
 //  Purpose:
 //      Adds the axes to the window.  The axes are added to the background
@@ -155,7 +155,7 @@ VisWinAxesArray::StartAxisArrayMode(void)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesArray::StopCurveMode
+//  Method: VisWinAxesArray::StopAxisArrayMode
 //
 //  Purpose:
 //      Removes the axes from the window.  The axes are removed from the

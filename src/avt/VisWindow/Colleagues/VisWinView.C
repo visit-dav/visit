@@ -167,6 +167,9 @@ VisWinView::SetViewInfo(const avtViewInfo &vI)
 //    This seems to be difficult to trigger, so I simply made the AxesArray
 //    window mode behave the same as the 2D and Curve modes.
 //
+//    Eric Brugger, Tue Dec  9 14:18:24 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 void
@@ -177,7 +180,8 @@ VisWinView::ResetView(void)
 
     if (mediator.GetMode() == WINMODE_2D ||
         mediator.GetMode() == WINMODE_CURVE ||
-        mediator.GetMode() == WINMODE_AXISARRAY)
+        mediator.GetMode() == WINMODE_AXISARRAY ||
+        mediator.GetMode() == WINMODE_AXISPARALLEL)
     {
         vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
         double x_diff = fabs(bounds[0] - bounds[1]);
@@ -396,6 +400,56 @@ VisWinView::StartAxisArrayMode(void)
 
 void
 VisWinView::StopAxisArrayMode(void)
+{
+    vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
+    if (!viewInfo.orthographic)
+    {
+        camera->SetParallelProjection(0);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinView::StartAxisParallelMode
+//
+//  Purpose:
+//    Takes the camera out of perspective projection because it doesn't make
+//    sense for AxisParallel.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 9, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinView::StartAxisParallelMode(void)
+{
+    vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
+    if (!viewInfo.orthographic)
+    {
+        camera->SetParallelProjection(1);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinView::StopAxisParallelMode
+//
+//  Purpose:
+//    Takes the camera back into perspective projection if it should be, but
+//    we disabled it for AxisParallel mode.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 9, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinView::StopAxisParallelMode(void)
 {
     vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
     if (!viewInfo.orthographic)

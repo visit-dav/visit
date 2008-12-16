@@ -37,76 +37,48 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           NavigateAxisArray.h                             //
+//                       avtMultiCurveLabelMapper.h                          //
 // ************************************************************************* //
 
-#ifndef NAVIGATE_AXIS_ARRAY_H
-#define NAVIGATE_AXIS_ARRAY_H
-#include <viswindow_exports.h>
+#ifndef AVT_MULTI_CURVE_LABEL_MAPPER_H
+#define AVT_MULTI_CURVE_LABEL_MAPPER_H
+#include <plotter_exports.h>
 
 
-#include <VisitInteractor.h>
+#include <avtDecorationsMapper.h>
 
-
-class VisWindowInteractorProxy;
+class     vtkDataSet;
 
 
 // ****************************************************************************
-//  Class: NavigateAxisArray
+//  Class: avtMultiCurveLabelMapper
 //
 //  Purpose:
-//      Defines what Visit's AxisArray Navigation interaction should look like.
+//      A mapper for labels for the multi curve plot.  This extends the
+//      functionality of a decorations mapper by mapping label-glyphs onto
+//      dataset.
 //
-//  Programmer: Jeremy Meredith
-//  Creation:   January 29, 2008
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Feb  7 17:58:11 EST 2008
-//    Added support for toggling horizontal snap-to-grid.
-//
-//    Eric Brugger, Tue Dec  9 14:48:50 PST 2008
-//    Added an axis orientation, which interchanges the horizontal and
-//    vertical zooming.
+//  Programmer: Eric Brugger
+//  Creation:   December 12, 2008
 //
 // ****************************************************************************
 
-class VISWINDOW_API NavigateAxisArray : public VisitInteractor
+class PLOTTER_API  avtMultiCurveLabelMapper : public avtDecorationsMapper
 {
   public:
-                        NavigateAxisArray(VisWindowInteractorProxy &);
- 
-    virtual void        OnTimer(void);
+                               avtMultiCurveLabelMapper();
+    virtual                   ~avtMultiCurveLabelMapper();
 
-    virtual void        StartLeftButtonAction();
-    virtual void        EndLeftButtonAction();
-    virtual void        StartMiddleButtonAction();
-    virtual void        EndMiddleButtonAction();
-    virtual void        OnMouseWheelForward();
-    virtual void        OnMouseWheelBackward();
+    void                       SetScale(double);
+    void                       SetLabelVisibility(bool);
 
-    enum AxisOrientation
-    {
-        Horizontal,
-        Vertical
-    };
-    void                SetAxisOrientation(const AxisOrientation orientation);
+  protected:
+    bool                       labelVis;
+    double                     scale;
 
-  private:
-    void                PanCamera(const int x, const int y, bool snap_horiz);
-    void                ZoomCamera(const int x, const int y);
-    void                ZoomHorizontal(double f);
-    void                ZoomHorizontalFixed(double f);
-    void                ZoomVertical(double f);
-    void                ZoomVerticalFixed(double f);
-
-    bool                shouldSnap;
-    bool                shiftKeyDown;
-    bool                controlKeyDown;
-
-    AxisOrientation     axisOrientation;
+    virtual void               CustomizeMappers(void);
+    virtual void               SetDatasetInput(vtkDataSet *, int);
 };
 
 
 #endif
-
-

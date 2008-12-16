@@ -115,6 +115,9 @@ class     ColorAttribute;
 //    Jeremy Meredith, Mon Jan 28 17:09:12 EST 2008
 //    Added AxisArray mode.
 //
+//    Eric Brugger, Tue Dec  9 14:25:37 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -138,10 +141,12 @@ class VISWINDOW_API VisWinColleague
     virtual void              Start3DMode(void)    {;};
     virtual void              StartCurveMode(void) {;};
     virtual void              StartAxisArrayMode(void) {;};
+    virtual void              StartAxisParallelMode(void) {;};
     virtual void              Stop2DMode(void)     {;};
     virtual void              Stop3DMode(void)     {;};
     virtual void              StopCurveMode(void)  {;};
     virtual void              StopAxisArrayMode(void)  {;};
+    virtual void              StopAxisParallelMode(void) {;};
 
     virtual void              EnableUpdates(void)  {;};
     virtual void              DisableUpdates(void) {;};

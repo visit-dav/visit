@@ -1090,6 +1090,9 @@ ViewerWindow::GetToolName(int index) const
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 void
@@ -1112,6 +1115,7 @@ ViewerWindow::RecenterView()
         RecenterView3d(limits);
         break;
       case WINMODE_AXISARRAY:
+      case WINMODE_AXISPARALLEL:
         GetExtents(2, limits);
         RecenterViewAxisArray(limits);
         break;
@@ -1157,6 +1161,9 @@ ViewerWindow::RecenterView()
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 void
@@ -1191,6 +1198,7 @@ ViewerWindow::ResetView()
         ResetView3d();
         break;
       case WINMODE_AXISARRAY:
+      case WINMODE_AXISPARALLEL:
         ResetViewAxisArray();
         break;
       default:
@@ -2604,6 +2612,9 @@ ViewerWindow::SendDeleteMessage()
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 void
@@ -2625,6 +2636,7 @@ ViewerWindow::UpdateView(const WINDOW_MODE mode, const double *limits)
         UpdateView3d(limits);
         break;
       case WINMODE_AXISARRAY:
+      case WINMODE_AXISPARALLEL:
         UpdateViewAxisArray(limits);
         break;
       default:
@@ -2998,6 +3010,9 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 //   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //   Added new axis array window mode.
 //
+//   Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//   Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 void
@@ -3036,7 +3051,8 @@ ViewerWindow::UpdateCameraView()
             view3d.SetFromView3DAttributes(curView3D);
             visWindow->SetView3D(view3d);
         }
-        else if (visWindow->GetWindowMode() == WINMODE_AXISARRAY)
+        else if (visWindow->GetWindowMode() == WINMODE_AXISARRAY ||
+                 visWindow->GetWindowMode() == WINMODE_AXISPARALLEL)
         {
             viewAxisArrayAtts->GetAtts(curIndex, curViewAxisArray);
             avtViewAxisArray viewAxisArray;
@@ -3056,9 +3072,11 @@ ViewerWindow::UpdateCameraView()
 // Creation:   Tue Mar 7 17:50:44 PST 2006
 //
 // Modifications:
-//   
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
+//
+//    Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//    Added the AxisParallel window mode.
 //
 // ****************************************************************************
 
@@ -3107,7 +3125,8 @@ ViewerWindow::UndoView()
             SetView3D(view);
         }
     }
-    else if(GetWindowMode() == WINMODE_AXISARRAY)
+    else if(GetWindowMode() == WINMODE_AXISARRAY ||
+            GetWindowMode() == WINMODE_AXISPARALLEL)
     {
         avtViewAxisArray view;
 
@@ -3135,6 +3154,9 @@ ViewerWindow::UndoView()
 // Modifications:
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
+//
+//    Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//    Added the AxisParallel window mode.
 //
 // ****************************************************************************
 
@@ -3168,7 +3190,8 @@ ViewerWindow::RedoView()
             SetView3D(view);
         }
     }
-    else if(GetWindowMode() == WINMODE_AXISARRAY)
+    else if(GetWindowMode() == WINMODE_AXISARRAY ||
+            GetWindowMode() == WINMODE_AXISPARALLEL)
     {
         avtViewAxisArray view;
         if(redoViewStack.PopViewAxisArray(view))
@@ -3192,6 +3215,9 @@ ViewerWindow::RedoView()
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //   
+//    Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 void
@@ -3203,7 +3229,8 @@ ViewerWindow::PushCurrentViews()
         undoViewStack.PushView2D(GetView2D());
     else if(GetWindowMode() == WINMODE_3D)
         undoViewStack.PushView3D(GetView3D());
-    else if(GetWindowMode() == WINMODE_AXISARRAY)
+    else if(GetWindowMode() == WINMODE_AXISARRAY ||
+            GetWindowMode() == WINMODE_AXISPARALLEL)
         undoViewStack.PushViewAxisArray(GetViewAxisArray());
 }
 
@@ -3220,6 +3247,9 @@ ViewerWindow::PushCurrentViews()
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //   
+//    Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 bool
@@ -3232,7 +3262,8 @@ ViewerWindow::UndoViewEnabled() const
         retval = undoViewStack.HasView2Ds();
     else if(GetWindowMode() == WINMODE_3D)
         retval = undoViewStack.HasView3Ds();
-    else if(GetWindowMode() == WINMODE_AXISARRAY)
+    else if(GetWindowMode() == WINMODE_AXISARRAY ||
+            GetWindowMode() == WINMODE_AXISPARALLEL)
         retval = undoViewStack.HasViewAxisArrays();
     return retval;
 }
@@ -3250,6 +3281,9 @@ ViewerWindow::UndoViewEnabled() const
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //   
+//    Eric Brugger, Tue Dec  9 16:21:46 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 bool
@@ -3262,7 +3296,8 @@ ViewerWindow::RedoViewEnabled() const
         retval = redoViewStack.HasView2Ds();
     else if(GetWindowMode() == WINMODE_3D)
         retval = redoViewStack.HasView3Ds();
-    else if(GetWindowMode() == WINMODE_AXISARRAY)
+    else if(GetWindowMode() == WINMODE_AXISARRAY ||
+            GetWindowMode() == WINMODE_AXISPARALLEL)
         retval = redoViewStack.HasViewAxisArrays();
     return retval;
 }

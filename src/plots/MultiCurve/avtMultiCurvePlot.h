@@ -37,76 +37,67 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           NavigateAxisArray.h                             //
+//                              avtMultiCurvePlot.h                          //
 // ************************************************************************* //
 
-#ifndef NAVIGATE_AXIS_ARRAY_H
-#define NAVIGATE_AXIS_ARRAY_H
-#include <viswindow_exports.h>
+#ifndef AVT_MultiCurve_PLOT_H
+#define AVT_MultiCurve_PLOT_H
 
 
-#include <VisitInteractor.h>
+#include <avtPlot.h>
 
+#include <MultiCurveAttributes.h>
 
-class VisWindowInteractorProxy;
+class     avtLevelsMapper;
+class     avtLookupTable;
+class     avtMultiCurveFilter;
+class     avtMultiCurveLabelMapper;
 
 
 // ****************************************************************************
-//  Class: NavigateAxisArray
+//  Class:  avtMultiCurvePlot
 //
 //  Purpose:
-//      Defines what Visit's AxisArray Navigation interaction should look like.
+//      A concrete type of avtPlot, this is the MultiCurve plot.
 //
-//  Programmer: Jeremy Meredith
-//  Creation:   January 29, 2008
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Feb  7 17:58:11 EST 2008
-//    Added support for toggling horizontal snap-to-grid.
-//
-//    Eric Brugger, Tue Dec  9 14:48:50 PST 2008
-//    Added an axis orientation, which interchanges the horizontal and
-//    vertical zooming.
+//  Programmer: xml2avt
+//  Creation:   omitted
 //
 // ****************************************************************************
 
-class VISWINDOW_API NavigateAxisArray : public VisitInteractor
+class avtMultiCurvePlot : public avtSurfaceDataPlot
 {
   public:
-                        NavigateAxisArray(VisWindowInteractorProxy &);
- 
-    virtual void        OnTimer(void);
+                                avtMultiCurvePlot();
+    virtual                    ~avtMultiCurvePlot();
 
-    virtual void        StartLeftButtonAction();
-    virtual void        EndLeftButtonAction();
-    virtual void        StartMiddleButtonAction();
-    virtual void        EndMiddleButtonAction();
-    virtual void        OnMouseWheelForward();
-    virtual void        OnMouseWheelBackward();
+    virtual const char         *GetName(void) { return "MultiCurvePlot"; };
 
-    enum AxisOrientation
-    {
-        Horizontal,
-        Vertical
-    };
-    void                SetAxisOrientation(const AxisOrientation orientation);
+    static avtPlot             *Create();
 
-  private:
-    void                PanCamera(const int x, const int y, bool snap_horiz);
-    void                ZoomCamera(const int x, const int y);
-    void                ZoomHorizontal(double f);
-    void                ZoomHorizontalFixed(double f);
-    void                ZoomVertical(double f);
-    void                ZoomVerticalFixed(double f);
+    virtual void                SetAtts(const AttributeGroup*);
+    void                        SetLineWidth(int);
+    void                        SetLineStyle(int);
 
-    bool                shouldSnap;
-    bool                shiftKeyDown;
-    bool                controlKeyDown;
+  protected:
+    MultiCurveAttributes        atts;
 
-    AxisOrientation     axisOrientation;
+    avtMultiCurveFilter        *MultiCurveFilter;
+
+    avtLevelsMapper            *levelsMapper;
+    avtMultiCurveLabelMapper   *decoMapper;
+    avtLookupTable             *avtLUT;
+
+    virtual avtMapper          *GetMapper(void);
+    virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
+    virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
+    virtual void                CustomizeBehavior(void);
+    virtual void                CustomizeMapper(avtDataObjectInformation &);
+
+    virtual avtLegend_p         GetLegend(void) { return NULL; };
+    virtual avtDecorationsMapper *GetDecorationsMapper(void);
+    virtual avtContract_p       EnhanceSpecification(avtContract_p);
 };
 
 
 #endif
-
-
