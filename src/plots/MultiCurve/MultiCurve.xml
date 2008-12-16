@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+  <Plugin name="MultiCurve" type="plot" label="MultiCurve" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar">
+    <Files components="V">
+      avtMultiCurveFilter.C
+      avtMultiCurveLabelMapper.C
+    </Files>
+    <Files components="E">
+      avtMultiCurveFilter.C
+      avtMultiCurveLabelMapper.C
+    </Files>
+    <Attribute name="MultiCurveAttributes" purpose="This class contains the plot attributes for the MultiCurve plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MultiCurveAttributes.code">
+      <Enum name="ColoringMethod">
+        ColorBySingleColor
+        ColorByMultipleColors
+      </Enum>
+      <Field name="defaultPalette" label="Default palette" type="att" subtype="ColorControlPointList" ignoreeq="true">
+      </Field>
+      <Field name="changedColors" label="Changed colors" type="ucharVector" ignoreeq="true">
+      </Field>
+      <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
+        ColorByMultipleColors
+      </Field>
+      <Field name="singleColor" label="singleColor" type="color">
+        255
+        0
+        0
+        255
+      </Field>
+      <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
+      </Field>
+      <Field name="lineStyle" label="Line Style" type="linestyle">
+        0
+      </Field>
+      <Field name="lineWidth" label="Line Width" type="linewidth">
+        0
+      </Field>
+      <Field name="displayMarkers" label="Display markers" type="bool">
+        true
+      </Field>
+      <Field name="markerVariable" label="Marker variable" type="variablename" vartypes="01000000000">
+        default
+      </Field>
+      <Function name="EnlargeMultiColor" user="true" member="true">
+      </Function>
+      <Function name="ColorIsChanged" user="true" member="true">
+      </Function>
+      <Function name="MarkColorAsChanged" user="true" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="MultiCurveViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
+      </Function>
+      <Function name="MultiCurveViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="MultiCurveViewerPluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
+      </Function>
+      <Include file="source" quoted="false">
+        ColorControlPoint.h
+      </Include>
+    </Attribute>
+  </Plugin>

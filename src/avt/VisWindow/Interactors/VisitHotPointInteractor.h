@@ -101,6 +101,9 @@ class ZoomAxisArray;
 //    Jeremy Meredith, Mon Feb  4 13:24:08 EST 2008
 //    Added zoom interactor for AxisArray mode.
 //
+//    Eric Brugger, Tue Dec  9 14:44:12 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitHotPointInteractor : public VisitInteractor
@@ -130,10 +133,12 @@ public:
     void              Start3DMode(INTERACTION_MODE mode);
     void              StartCurveMode(INTERACTION_MODE mode);
     void              StartAxisArrayMode(INTERACTION_MODE mode);
+    void              StartAxisParallelMode(INTERACTION_MODE mode);
     void              Stop2DMode();
     void              Stop3DMode();
     void              StopCurveMode();
     void              StopAxisArrayMode();
+    void              StopAxisParallelMode();
 private:
     VisitInteractor  *currentInteractor;
 

@@ -38,6 +38,7 @@
 
 #include <avtLabelActor.h>
 
+#include <vtkCellArray.h>
 #include <vtkFollower.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
@@ -219,6 +220,104 @@ void avtLabelActor::SetDesignator(const char *l)
 
     labelMapper->Delete();
     vecText->Delete();
+}
+
+
+// ****************************************************************************
+//  Method:  avtLabelActor::SetMarker
+//
+//  Purpose:  Sets the marker for this actor. 
+//
+//  Arguments:
+//    index   The index of the marker.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    December 9, 2008 
+//
+// ****************************************************************************
+
+void avtLabelActor::SetMarker(const int index)
+{
+    //
+    // Create the poly data for the marker.
+    //
+    vtkPoints *points = vtkPoints::New();
+    vtkCellArray *lines = vtkCellArray::New();
+
+    double xLine[3];
+    vtkIdType vtkPointIDs[2];
+
+    xLine[2] = 0.;
+    switch (index)
+    {
+      //
+      // An 'X'.
+      //
+      case 0:
+        xLine[0] = -0.5;
+        xLine[1] = -0.5;
+        points->InsertNextPoint(xLine);
+        xLine[0] =  0.5;
+        xLine[1] =  0.5;
+        points->InsertNextPoint(xLine);
+        xLine[0] =  0.5;
+        xLine[1] = -0.5;
+        points->InsertNextPoint(xLine);
+        xLine[0] = -0.5;
+        xLine[1] =  0.5;
+        points->InsertNextPoint(xLine);
+
+        vtkPointIDs[0] = 0;
+        vtkPointIDs[1] = 1;
+        lines->InsertNextCell(2, vtkPointIDs);
+        vtkPointIDs[0] = 2;
+        vtkPointIDs[1] = 3;
+        lines->InsertNextCell(2, vtkPointIDs);
+        break;
+
+      case 1:
+        //
+        // A cirle.
+        //
+        for (int k = 0; k < 12; k++)
+        {
+            //
+            // The magic number 0.52359878 = 2 * pi / 12.
+            //
+            xLine[0] = sin(0.52359878 * double(k)) * 0.3;
+            xLine[1] = cos(0.52359878 * double(k)) * 0.3;
+            points->InsertNextPoint(xLine);
+        }
+
+        for (int k = 0; k < 12 - 1; k++)
+        {
+            vtkPointIDs[0] = k;
+            vtkPointIDs[1] = k + 1;
+            lines->InsertNextCell(2, vtkPointIDs);
+        }
+        vtkPointIDs[0] = 11;
+        vtkPointIDs[1] = 0;
+        lines->InsertNextCell(2, vtkPointIDs);
+        break;
+    }
+
+    vtkPolyData *polyData =  vtkPolyData::New();
+
+    polyData->SetLines(lines);
+    polyData->SetPoints(points);
+    lines->Delete();
+    points->Delete();
+
+    //
+    // Create the actor.
+    //
+    vtkPolyDataMapper *labelMapper = vtkPolyDataMapper::New();
+    labelMapper->SetInput(polyData);
+
+    labelActor->SetMapper(labelMapper);
+
+    labelMapper->Delete();
+    polyData->Delete();
 }
 
 

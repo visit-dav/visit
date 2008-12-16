@@ -36,69 +36,25 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                              avtLabelActor.h                              //
-// ************************************************************************* //
+#ifndef PY_MULTICURVEATTRIBUTES_H
+#define PY_MULTICURVEATTRIBUTES_H
+#include <Python.h>
+#include <MultiCurveAttributes.h>
 
-
-#ifndef AVT_LABEL_ACTOR_H
-#define AVT_LABEL_ACTOR_H
-#include <plotter_exports.h>
-#include <visitstream.h>
-#include <ref_ptr.h>
-
-class vtkFollower;
-class vtkPolyDataMapper;
-class vtkRenderer;
-
-
-// ****************************************************************************
-//  Class:  avtLabelActor
 //
-//  Purpose:  Responsible for creating label actors used in decorations. 
+// Functions exposed to the VisIt module.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    July 12, 2002 
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Jul 19 08:39:04 PDT 2002
-//    Add ComputeScaleFactor.
-//
-//    Eric Brugger, Tue Dec  9 16:16:49 PST 2008
-//    Added the ability to display a marker instead of a text string.
-//
-// ****************************************************************************
-
-class PLOTTER_API avtLabelActor
-{
-  public:
-                       avtLabelActor();
-    virtual           ~avtLabelActor();
-
-    void               Add(vtkRenderer *ren);
-    void               Remove();
-    void               Hide();
-    void               UnHide();
-
-    void               SetAttachmentPoint(const double newPos[3]);
-    const double *     GetAttachmentPoint() { return attach; };
-    void               SetScale(double);
-    void               SetDesignator(const char *l);
-    void               SetMarker(const int index);
-    void               SetForegroundColor(double fgr, double fgg, double fgb);
-    void               SetForegroundColor(double fg[3]);
-    void               Shift(const double vec[3]);
-    double             ComputeScaleFactor();
-
-  protected:
-    double             attach[3];
-    vtkFollower       *labelActor;
-
-    vtkRenderer       *renderer; 
-
-  private:
-};
-
-typedef ref_ptr<avtLabelActor> avtLabelActor_p;
+void           PyMultiCurveAttributes_StartUp(MultiCurveAttributes *subj, void *data);
+void           PyMultiCurveAttributes_CloseDown();
+PyMethodDef *   PyMultiCurveAttributes_GetMethodTable(int *nMethods);
+bool           PyMultiCurveAttributes_Check(PyObject *obj);
+MultiCurveAttributes *  PyMultiCurveAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyMultiCurveAttributes_New();
+PyObject *      PyMultiCurveAttributes_Wrap(const MultiCurveAttributes *attr);
+void           PyMultiCurveAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyMultiCurveAttributes_SetDefaults(const MultiCurveAttributes *atts);
+std::string    PyMultiCurveAttributes_GetLogString();
+std::string    PyMultiCurveAttributes_ToString(const MultiCurveAttributes *, const char *);
 
 #endif
+

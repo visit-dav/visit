@@ -87,6 +87,9 @@ class VisitHotPointInteractor;
 //     Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //     Added new AxisArray window mode.
 //
+//     Eric Brugger, Tue Dec  9 14:17:09 PST 2008
+//     Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinInteractions : public VisWinColleague
@@ -113,6 +116,8 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     virtual void             StopCurveMode();
     virtual void             StartAxisArrayMode();
     virtual void             StopAxisArrayMode();
+    virtual void             StartAxisParallelMode();
+    virtual void             StopAxisParallelMode();
 
     virtual void             NoPlots();
     virtual void             HasPlots();

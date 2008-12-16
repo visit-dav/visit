@@ -37,76 +37,49 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           NavigateAxisArray.h                             //
+//                           avtMultiCurveFilter.h                           //
 // ************************************************************************* //
 
-#ifndef NAVIGATE_AXIS_ARRAY_H
-#define NAVIGATE_AXIS_ARRAY_H
-#include <viswindow_exports.h>
+#ifndef AVT_MultiCurve_FILTER_H
+#define AVT_MultiCurve_FILTER_H
 
 
-#include <VisitInteractor.h>
-
-
-class VisWindowInteractorProxy;
+#include <avtDataTreeIterator.h>
+#include <MultiCurveAttributes.h>
 
 
 // ****************************************************************************
-//  Class: NavigateAxisArray
+//  Class: avtMultiCurveFilter
 //
 //  Purpose:
-//      Defines what Visit's AxisArray Navigation interaction should look like.
+//      This operator is the implied operator associated with a MultiCurve
+//      plot.
 //
-//  Programmer: Jeremy Meredith
-//  Creation:   January 29, 2008
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Feb  7 17:58:11 EST 2008
-//    Added support for toggling horizontal snap-to-grid.
-//
-//    Eric Brugger, Tue Dec  9 14:48:50 PST 2008
-//    Added an axis orientation, which interchanges the horizontal and
-//    vertical zooming.
+//  Programmer: xml2avt
+//  Creation:   omitted
 //
 // ****************************************************************************
 
-class VISWINDOW_API NavigateAxisArray : public VisitInteractor
+class avtMultiCurveFilter : public avtSIMODataTreeIterator
 {
   public:
-                        NavigateAxisArray(VisWindowInteractorProxy &);
- 
-    virtual void        OnTimer(void);
+                              avtMultiCurveFilter(MultiCurveAttributes &);
+    virtual                  ~avtMultiCurveFilter();
 
-    virtual void        StartLeftButtonAction();
-    virtual void        EndLeftButtonAction();
-    virtual void        StartMiddleButtonAction();
-    virtual void        EndMiddleButtonAction();
-    virtual void        OnMouseWheelForward();
-    virtual void        OnMouseWheelBackward();
+    virtual const char       *GetType(void)   { return "avtMultiCurveFilter"; };
+    virtual const char       *GetDescription(void)
+                                  { return "Performing MultiCurve"; };
 
-    enum AxisOrientation
-    {
-        Horizontal,
-        Vertical
-    };
-    void                SetAxisOrientation(const AxisOrientation orientation);
+    void                      SetAttributes(const MultiCurveAttributes &);
 
-  private:
-    void                PanCamera(const int x, const int y, bool snap_horiz);
-    void                ZoomCamera(const int x, const int y);
-    void                ZoomHorizontal(double f);
-    void                ZoomHorizontalFixed(double f);
-    void                ZoomVertical(double f);
-    void                ZoomVerticalFixed(double f);
+  protected:
+    MultiCurveAttributes      atts;
 
-    bool                shouldSnap;
-    bool                shiftKeyDown;
-    bool                controlKeyDown;
+    virtual avtDataTree_p     ExecuteDataTree(vtkDataSet *, int, std::string);
 
-    AxisOrientation     axisOrientation;
+    virtual void              PreExecute(void);
+    virtual void              PostExecute(void);
 };
 
 
 #endif
-
-

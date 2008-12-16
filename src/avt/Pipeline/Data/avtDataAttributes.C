@@ -459,6 +459,9 @@ avtDataAttributes::DestructSelf(void)
 //    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
 //    Added component extents for array variables.
 //
+//    Eric Brugger, Tue Dec  9 16:19:10 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 void
@@ -542,6 +545,9 @@ avtDataAttributes::Print(ostream &out)
         break;
       case WINMODE_AXISARRAY:
         out << "The window mode is axis-array" << endl;
+        break;
+      case WINMODE_AXISPARALLEL:
+        out << "The window mode is axis-parallel" << endl;
         break;
       case WINMODE_NONE:
         out << "The window mode is none" << endl;

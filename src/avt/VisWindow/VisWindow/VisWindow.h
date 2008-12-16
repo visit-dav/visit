@@ -79,6 +79,7 @@ class VisWinAnnotations;
 class VisWinAxes;
 class VisWinAxes3D;
 class VisWinAxesArray;
+class VisWinAxesParallel;
 class VisWinBackground;
 class VisWinColleague;
 class VisWinFrame;
@@ -396,6 +397,9 @@ class VisitInteractor;
 //    Tom Fogal, Sun Jul 27 01:21:06 EDT 2008
 //    Add interface for ScreenRender.
 //
+//    Eric Brugger, Tue Dec  9 14:30:53 PST 2008
+//    Added the AxisParallel window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -637,6 +641,7 @@ protected:
     VisWinAxes3D                      *axes3D;
     VisWinFrame                       *frame;
     VisWinAxesArray                   *axesArray;
+    VisWinAxesParallel                *axesParallel;
     VisWinInteractions                *interactions;
     VisWinLegends                     *legends;
     VisWinLighting                    *lighting;
@@ -696,10 +701,12 @@ protected:
     void                 Start3DMode();
     void                 StartCurveMode();
     void                 StartAxisArrayMode();
+    void                 StartAxisParallelMode();
     void                 Stop2DMode();
     void                 Stop3DMode();
     void                 StopCurveMode();
     void                 StopAxisArrayMode();
+    void                 StopAxisParallelMode();
     void                 UpdatePlotList(std::vector<avtActor_p> &);
 
     void                 HasPlots(bool);
@@ -724,6 +731,7 @@ protected:
     void                 UpdateAxes2D(void);
     void                 UpdateAxes3D(void);
     void                 UpdateAxesArray(void);
+    void                 UpdateAxesParallel(void);
     void                 UpdateTextAnnotations(void);
 
     void                 MotionBegin(void);
