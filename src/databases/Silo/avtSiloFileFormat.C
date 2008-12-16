@@ -5024,6 +5024,9 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 //    Added code to remove values from the array for arb. zones that have
 //    been removed
 //
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 vtkDataArray *
@@ -5053,10 +5056,10 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
     // understand
     //
     float *vals[3];
-    vals[0] = uv->vals[0];
-    vals[1] = uv->vals[1];
+    vals[0] = (float*) uv->vals[0];
+    vals[1] = (float*) uv->vals[1];
     if (uv->nvals == 3)
-       vals[2] = uv->vals[2];
+       vals[2] = (float*) uv->vals[2];
     int numSkipped = 0;
     if (uv->centering == DB_ZONECENT && metadata != NULL)
     {
@@ -5071,12 +5074,12 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
                 vals[2] = new float[uv->nels - numSkipped];
 
             RemoveValuesForSkippedZones(zonesRangesToSkip,
-                uv->vals[0], uv->nels, vals[0]);
+                ((float**)uv->vals)[0], uv->nels, vals[0]);
             RemoveValuesForSkippedZones(zonesRangesToSkip,
-                uv->vals[1], uv->nels, vals[1]);
+                ((float**)uv->vals)[1], uv->nels, vals[1]);
             if (uv->nvals == 3)
                 RemoveValuesForSkippedZones(zonesRangesToSkip,
-                    uv->vals[2], uv->nels, vals[2]);
+                    ((float**)uv->vals)[2], uv->nels, vals[2]);
         }
     }
 
@@ -5125,6 +5128,10 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added support for double precision quad vars (for testing xform mngr)
+//
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 vtkDataArray *
@@ -5168,8 +5175,8 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
     {
         for (int i = 0 ; i < qv->nels ; i++)
         {
-            float v3 = (qv->nvals == 3 ? qv->vals[2][i] : 0.);
-            vectors->SetTuple3(i, qv->vals[0][i], qv->vals[1][i], v3);
+            float v3 = (qv->nvals == 3 ? ((float**)qv->vals)[2][i] : 0.);
+            vectors->SetTuple3(i, ((float**)qv->vals)[0][i], ((float**)qv->vals)[1][i], v3);
         }
     }
 
@@ -5199,6 +5206,9 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
 //    I modified the routine to use nvals as the number of components in
 //    the variable.
 //
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 vtkDataArray *
@@ -5224,8 +5234,8 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
     vectors->SetNumberOfTuples(mv->nels);
     for (int i = 0 ; i < mv->nels ; i++)
     {
-        float v3 = (mv->nvals == 3 ? mv->vals[2][i] : 0.);
-        vectors->SetTuple3(i, mv->vals[0][i], mv->vals[1][i], v3);
+        float v3 = (mv->nvals == 3 ? ((float**)mv->vals)[2][i] : 0.);
+        vectors->SetTuple3(i, ((float**)mv->vals)[0][i], ((float**)mv->vals)[1][i], v3);
     }
 
     DBFreeMeshvar(mv);
@@ -5467,6 +5477,9 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
 //    Added code to remove values from array for arb. zones that were
 //    removed from the mesh
 //
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 vtkDataArray *
@@ -5505,7 +5518,7 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
             scalars->SetNumberOfTuples(uv->nels - numSkipped);
             float *ptr = (float *) scalars->GetVoidPointer(0);
             RemoveValuesForSkippedZones(zonesRangesToSkip,
-                uv->vals[0], uv->nels, ptr);
+                ((float**)uv->vals)[0], uv->nels, ptr);
             arrayWasRemapped = true;
         }
     }
@@ -5523,7 +5536,7 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
 
     if (uv->mixvals != NULL && uv->mixvals[0] != NULL)
     {
-        avtMixedVariable *mv = new avtMixedVariable(uv->mixvals[0], uv->mixlen,
+        avtMixedVariable *mv = new avtMixedVariable(((float**)uv->mixvals)[0], uv->mixlen,
                                                     tvn);
         void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
         cache->CacheVoidRef(tvn, AUXILIARY_DATA_MIXED_VARIABLE, timestep, 
@@ -5584,6 +5597,10 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
 //    Mark C. Miller, Tue Nov 18 18:12:54 PST 2008
 //    Add some additional datatypes to test behavior for non-4-byte sized
 //    types.
+//
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 template <class T>
@@ -5665,7 +5682,7 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
 
     if (qv->mixvals != NULL && qv->mixvals[0] != NULL)
     {
-        avtMixedVariable *mv = new avtMixedVariable(qv->mixvals[0], qv->mixlen,
+        avtMixedVariable *mv = new avtMixedVariable(((float**)qv->mixvals)[0], qv->mixlen,
                                                     tvn);
         void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
         cache->CacheVoidRef(tvn, AUXILIARY_DATA_MIXED_VARIABLE, timestep, 
@@ -5856,6 +5873,9 @@ avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
 //    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
 //    Added support for "EMPTY" domains in multi-objects.
 //
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 vtkDataSet *
@@ -5892,11 +5912,11 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     int nnodes = um->nnodes;
     bool dim3 = (um->coords[2] != NULL ? true : false);
     float *tmp = pts;
-    const float *coords0 = um->coords[0];
-    const float *coords1 = um->coords[1];
+    const float *coords0 = (float*) um->coords[0];
+    const float *coords1 = (float*) um->coords[1];
     if (dim3)
     {
-        const float *coords2 = um->coords[2];
+        const float *coords2 = (float*) um->coords[2];
         for (int i = 0 ; i < nnodes ; i++)
         {
             *tmp++ = *coords0++;
@@ -6781,6 +6801,9 @@ avtSiloFileFormat::VerifyQuadmesh(DBquadmesh *qm, const char *meshname)
 //    Kathleen Bonnell, Mon Jul 14 14:55:48 PDT 2008
 //    Specify curves as 1D rectilinear grids with yvalues stored in point data.
 //
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 vtkDataSet *
@@ -6816,8 +6839,8 @@ avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
         yv->SetName(curvename);
         for (i = 0 ; i < cur->npts; i++)
         {
-            xc->SetValue(i, cur->x[i]);
-            yv->SetValue(i, cur->y[i]);
+            xc->SetValue(i, ((float*)cur->x)[i]);
+            yv->SetValue(i, ((float*)cur->y)[i]);
         }
         rg->GetPointData()->SetScalars(yv);
         yv->Delete();
@@ -6832,8 +6855,8 @@ avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
         yv->SetName(curvename);
         for (i = 0 ; i < cur->npts; i++)
         {
-            xc->SetValue(i, cur->x[i]);
-            yv->SetValue(i, cur->y[i]);
+            xc->SetValue(i, ((double*)cur->x)[i]);
+            yv->SetValue(i, ((double*)cur->y)[i]);
         }
         rg->GetPointData()->SetScalars(yv);
         yv->Delete();
@@ -6918,6 +6941,9 @@ avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
 //    Use vtkFloatArray instead of vtkScalars for rgrid coordinates in
 //    order to match VTK 4.0 API.
 //
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 vtkDataSet *
@@ -6943,7 +6969,7 @@ avtSiloFileFormat::CreateRectilinearMesh(DBquadmesh *qm)
             coords[i]->SetNumberOfTuples(dims[i]);
             for (j = 0 ; j < dims[i] ; j++)
             {
-                coords[i]->SetComponent(j, 0, qm->coords[i][j]);
+                coords[i]->SetComponent(j, 0, ((float**)qm->coords)[i][j]);
             }
         }
         else
@@ -7266,6 +7292,9 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
 //    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
 //    Added support for "EMPTY" domains in multi-objects.
 //
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 vtkDataSet *
@@ -7307,7 +7336,7 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
         {
             for (j = 0 ; j < pm->nels ; j++)
             {
-                *tmp = pm->coords[i][j];
+                *tmp = ((float**)pm->coords)[i][j];
                 tmp += 3;
             }
         }
@@ -8812,6 +8841,9 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    limit to 256 + room for the material number - to safely handle valid 
 //    silo material names. This resolves '8257.
 //
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 avtMaterial *
@@ -8905,7 +8937,7 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
                                        silomat->mix_mat,
                                        silomat->mix_next,
                                        silomat->mix_zone,
-                                       silomat->mix_vf,
+                                       (float*)silomat->mix_vf,
                                        dom_string
 #ifdef DBOPT_ALLOWMAT0
                                        ,silomat->allowmat0
@@ -8940,6 +8972,9 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
 //  Creation:     December 13, 2001
 //
 //  Modifications:
+//    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
+//    Added casts to deal with new Silo API where datatype'd pointers
+//    have been changed from float* to void*.
 // ****************************************************************************
 
 avtSpecies *
@@ -8959,7 +8994,7 @@ avtSiloFileFormat::CalcSpecies(DBfile *dbfile, char *specname)
                                       silospec->mixlen,
                                       silospec->mix_speclist,
                                       silospec->nspecies_mf,
-                                      silospec->species_mf);
+                                      (float*)silospec->species_mf);
 
     DBFreeMatspecies(silospec);
 
