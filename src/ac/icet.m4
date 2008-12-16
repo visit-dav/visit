@@ -63,6 +63,9 @@ dnl
 dnl    Tom Fogal, Fri Dec  5 09:14:33 MST 2008
 dnl    Add the ICET_ENABLE variable as a synonym for --enable-icet.
 dnl    Make sure there is always a message about IceT status.
+dnl
+dnl    Tom Fogal, Mon Dec 15 15:14:50 MST 2008
+dnl    Small cleanups.  Try to use AS_IF instead of if, etc.
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
@@ -71,12 +74,11 @@ AC_ARG_ENABLE([icet],
     [AS_HELP_STRING([--enable-icet],
         [Use the ICE-T parallel image compositor])]
 )
-if [[ "$DEFAULT_ICET_INCLUDE" == "" ]] ; then
-   DEFAULT_ICET_INCLUDE="no"
-fi
-if [[ "$DEFAULT_ICET_LIB" == "" ]] ; then
-   DEFAULT_ICET_LIB="no"
-fi
+
+dnl Default to `no' if they aren't set.
+AS_IF([test -z "${DEFAULT_ICET_INCLUDE}"], [DEFAULT_ICET_INCLUDE="no"])
+AS_IF([test -z "${DEFAULT_ICET_LIB}"],     [DEFAULT_ICET_LIB="no"])
+
 dnl `with' options to specify header/library locations.
 AC_ARG_WITH([icet-includedir],
     [AS_HELP_STRING([--with-icet-includedir=/path],
@@ -91,26 +93,31 @@ AC_ARG_WITH([icet-libdir],
     [with_icet_libdir=$DEFAULT_ICET_LIB]
 )
 
+AC_MSG_CHECKING([if IceT should be used])
+
+# Allow enabling IceT through a config site variable.
+AS_IF([test -n "${ICET_ENABLE}" -o -n "${DEFAULT_ICET_INCLUDE}"],
+    [enable_icet="yes"],
+    [enable_icet="no"]
+)
+
+# Check to make sure they aren't doing something weird.
+AS_IF([test "x${enable_icet}" = "yes" -a \
+        \( -z "${UseParallel}" -o "x${UseParallel}" = "xno" \)],
+    [
+    AC_MSG_ERROR([IceT usage requested, but you're not doing a parallel
+build. IceT requires '--enable-parallel' to be specified.])
+    ]
+)
+
+AC_MSG_RESULT([$enable_icet])
+
+]) dnl end of AX_ICET_OPTIONS.
+
 ICET_LIBS=
 ax_ICET_LIB=
 ax_ICET_LIB_MPI=
 ax_ICET_LIB_STRATEGIES=
-AC_MSG_CHECKING([if IceT should be used])
-if test -n "${ICET_ENABLE}" ; then
-    enable_icet="yes"
-fi
-if test -z "${enable_icet}" ; then
-   enable_icet="no"
-   if test -n "${DEFAULT_ICET_INCLUDE}" ; then
-      if [[ "$UseParallel" == "yes" ]] ; then
-         enable_icet="yes"
-      fi
-   fi
-fi
-AC_MSG_RESULT([$enable_icet])
-
-])
-
 dnl Make sure we can find/use the IceT libary specified.
 dnl You can set ICET_INCLUDEDIR and ICET_LIBDIR to setup paths sans
 dnl ./configure's --with-icet options, but (if specified) --with-icet options
@@ -198,8 +205,8 @@ to set some custom LDFLAGS.])],
         AC_SUBST(ICET_CXXFLAGS)
         AC_SUBST(ICET_LDFLAGS)
         AC_SUBST(ICET_LIBS)
-        LDFLAGS=${ax_save_LDFLAGS}
-        CXXFLAGS=${ax_save_CXXFLAGS}
+        LDFLAGS="${ax_save_LDFLAGS}"
+        CXXFLAGS="${ax_save_CXXFLAGS}"
         AC_LANG_POP([C++])
         ax_have_icet=1
     ],
