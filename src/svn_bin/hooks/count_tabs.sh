@@ -68,6 +68,9 @@ while read fline; do
         *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake)
             continue
             ;;
+        *.tcl)
+            continue
+            ;;
         */src/configure)
             continue
             ;;
