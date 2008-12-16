@@ -92,7 +92,7 @@ svnlook changed -t $TXN $REPOS > ${FLIST}
 runhook_sh "check_autoconf_version.sh"
 
 # Check that we're not adding tabs to files
-runhook_sh "count_tabs.sh"
+#runhook_sh "count_tabs.sh"
 
 # Check for possible dos file format
 runhook_sh "check_dos.sh"
