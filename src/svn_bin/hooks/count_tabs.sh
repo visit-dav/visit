@@ -36,6 +36,11 @@
 #   Eliminated several svnlook cat commands and improved performance and
 #   logic in counting tabs in files. Re-factored a lot skipping logic to
 #   hook_common.sh
+#
+#   Cyrus Harrison, Tue Dec 16 14:42:52 PST 2008
+#   Added *.cmake files to the list of files we permit tabs in.
+#
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -60,7 +65,7 @@ while read fline; do
     # Filter out other cases HandleCommonSkipCases doesn't catch
     #
     case $fname in
-        *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln)
+        *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake)
             continue
             ;;
         */src/configure)
