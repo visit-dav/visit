@@ -957,7 +957,7 @@ cp $VisItDir/exe/gui           $bindir/gui
 cp $VisItDir/exe/mdserver      $bindir/mdserver
 cp $VisItDir/exe/vcl           $bindir/vcl
 cp $VisItDir/exe/viewer        $bindir/viewer
-cp $VisItDir/exe/depcomp       $bindir/depcomp
+cp $VisItDir/bin/depcomp       $bindir/depcomp
 # copy qt's moc, too
 cp $VisItDir/bin/moc           $bindir/moc
 # copy the xml plugin creation tools
