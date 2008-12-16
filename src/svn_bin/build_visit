@@ -488,6 +488,10 @@
 #     0.97 is the version already in our repo and I verified it was the 
 #     version Hank integrated into VisIt. 
 #
+#     Tom Fogal, Mon Dec 15 16:21:47 MST 2008
+#     Cleanups for the IceT macro: handle multiple options in PAR_INCLUDE,
+#     enable verbose makefiles so debugging IceT issues is possible, and
+#     install IceT instead of copying libraries manually.
 #
 # *****************************************************************************
 #
@@ -6766,6 +6770,19 @@ function build_tcmalloc
     cp .libs/libtcmalloc.so* $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
 }
 
+# `car' returns the head of a list.
+function car
+{
+    # Is there really no better way to do this?
+    first=0
+    for str in "${@}" ; do
+        if test ${first} -eq 0; then
+            echo "${str}"
+            return 0
+        fi
+        first=1
+    done
+}
 
 # *************************************************************************** #
 #                           Function 8.13, build_icet                         #
@@ -6779,13 +6796,32 @@ function build_icet
        warn "Giving Up!"
        return 1
     fi
-    PAR_INCLUDE_DIR=${PAR_INCLUDE#-I}
-    if [[ ! -d $PAR_INCLUDE_DIR ]] ; then
-       warn "Unable to located the directory with MPI includes.  Attempted to "
-       warn "do this by stripping off -I from the PAR_INCLUDE env var, but that "
-       warn "did not produce a valid directory"
-       warn "Giving Up!"
-       return 1
+
+    # IceT's CMake config doesn't take the compiler options, but rather the
+    # paths to certain files, and then it tries to build all of the appropriate
+    # options itself.  Since we only have the former, we need to guess at the
+    # latter.
+    # Our current guess is to take the first substring in PAR_INCLUDE, assume
+    # it's the appropriate -I option, and use it with the "-I" removed.  This
+    # is certainly not ideal -- for example, it will break if the user's
+    # MPI setup requires multiple include directories.
+
+    # split string at space, grab the front/first string in it.
+    b_it_par_include_first=$(car ${PAR_INCLUDE})
+    PAR_INCLUDE_DIR=${b_it_par_include_first#-I}
+    if test -z "${PAR_INCLUDE_DIR}"  ; then
+        if test -n "${PAR_INCLUDE}" ; then
+            warn "First string in PAR_INCLUDE: ${b_it_par_include_first}"
+            warn "That string with leading -I removed: ${PAR_INCLUDE_DIR}"
+        fi
+        warn "Could not determine the MPI include information which is "
+              "needed to compile IceT."
+        if test -n "${PAR_INCLUDE}" ; then
+            error "Please specify the required include (`-I' option) first!"
+        else
+            error "You need to specify the PAR_INCLUDE variable.  On many "
+                  " systems, the output of `mpicxx -showme' is good enough."
+        fi
     fi
 
     #
@@ -6809,13 +6845,15 @@ function build_icet
     cd $ICET_BUILD_DIR
     touch fakempi.so
     ${CMAKE_BIN} \
-         -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-         -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
-         -DCMAKE_C_FLAGS:STRING="-DUSE_MGL_NAMESPACE ${C_OPT_FLAGS}"\
-         -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
-         -DMPI_LIBRARY:FILEPATH="./fakempi.so"\
-         -DBUILD_TESTING:BOOL=0\
-         .
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
+        -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DCMAKE_C_FLAGS:STRING="-DUSE_MGL_NAMESPACE ${C_OPT_FLAGS}"\
+        -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
+        -DMPI_LIBRARY:FILEPATH="./fakempi.so"\
+        -DBUILD_TESTING:BOOL=OFF\
+        .
     rm fakempi.so
 
     if [[ $? != 0 ]] ; then
@@ -6835,15 +6873,7 @@ function build_icet
 
     info "Installing Ice-T . . ."
 
-    mkdir $VISITDIR/icet
-    mkdir $VISITDIR/icet/${ICET_VERSION}
-    mkdir $VISITDIR/icet/${ICET_VERSION}/$VISITARCH
-    mkdir $VISITDIR/icet/${ICET_VERSION}/$VISITARCH/lib
-    mkdir $VISITDIR/icet/${ICET_VERSION}/$VISITARCH/include
-    cd src/include
-    cp -R  *.h GL  $VISITDIR/icet/${ICET_VERSION}/$VISITARCH/include
-    cd ../../bin
-    cp *.a $VISITDIR/icet/${ICET_VERSION}/$VISITARCH/lib
+    $MAKE install
 
     return 0
 }
