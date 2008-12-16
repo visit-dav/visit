@@ -95,10 +95,10 @@ runhook_sh "check_autoconf_version.sh"
 #runhook_sh "count_tabs.sh"
 
 # Check for possible dos file format
-runhook_sh "check_dos.sh"
+#runhook_sh "check_dos.sh"
 
 # Check for #warning compiler directives
-runhook_sh "check_pound_warning.sh"
+#runhook_sh "check_pound_warning.sh"
 
 # Clean up
 rm -f ${FLIST}
