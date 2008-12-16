@@ -2808,6 +2808,9 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Disconnect the data set source, so we have less VTK objects lying
 //    around, waiting for garbage collection.
 //
+//    Hank Childs, Mon Dec 15 18:22:54 CST 2008
+//    Add domain information when we cache.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2910,7 +2913,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     vtkDataSet *rv = (vtkDataSet *) mesh->NewInstance();
     rv->CopyStructure(mesh);
     if (Interface->CanCacheVariable(real_meshname))
-        cache.AddObjectPointerPair(rv, mesh);
+        cache.AddObjectPointerPair(rv, mesh, domain);
 
     //
     // There are some mesh variables that we want to copy over -- namely

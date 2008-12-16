@@ -57,6 +57,12 @@ class   vtkObject;
 
 #define HASH_SIZE 25
 
+typedef struct
+{ 
+   vtkObject  *obj;
+   int         domain;
+}  ObjectDomainPair;
+
 
 // ****************************************************************************
 //  Class: avtVariableCache
@@ -118,6 +124,10 @@ class   vtkObject;
 //    OneDomain's GetItem method. Const qualified some methods that it made
 //    sense to.
 //
+//    Hank Childs, Mon Dec 15 18:38:35 CST 2008
+//    Store the data set's domain in the objectDomainPointer.  This allows us
+//    to avoid an O(n^2) algorithm.
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -173,7 +183,7 @@ class DATABASE_API avtVariableCache
 
     // functions to help transform manager find items in cache
     void                   AddObjectPointerPair(vtkObject *o1,
-                                                vtkObject *o2);
+                                                vtkObject *o2, int domain);
     bool                   RemoveObjectPointerPair(vtkObject *o1);
     vtkObject             *FindObjectPointerPair(vtkObject *o1) const;
     
@@ -268,7 +278,7 @@ class DATABASE_API avtVariableCache
     std::vector<OneVar *>            vtkVars;
     std::vector<OneVar *>            voidRefVars;
 
-    std::map<vtkObject*, vtkObject*> objectPointerMap;
+    std::map<vtkObject*, ObjectDomainPair> objectPointerMap;
     
     static bool                      vtkDebugMode;
 };
