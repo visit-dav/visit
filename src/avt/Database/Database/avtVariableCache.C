@@ -47,6 +47,7 @@
 #include <avtVariableCache.h>
 
 #include <ImproperUseException.h>
+#include <TimingsManager.h>
 
 using std::string;
 using std::vector;
@@ -292,6 +293,12 @@ avtVariableCache::CacheVTKObject(const char *name, const char *type,
 //    Mark C. Miller, Tue May 20 22:08:49 PDT 2008
 //    Removed formal arg 'int dom' because the function no longer uses it.
 //
+//    Hank Childs, Mon Dec 15 15:56:58 CST 2008
+//    Remove comparison of VTK objects using "MTime".  This causes extra 
+//    VTK overhead (a timing issue) and also isn't guaranteed to give a VTK 
+//    object a unique identifier (because they may share references to a 
+//    single VTK object).
+//
 // ****************************************************************************
 
 bool avtVariableCache::OneDomain::GetItem(avtCachableItem *theItem) const
@@ -303,7 +310,7 @@ bool avtVariableCache::OneDomain::GetItem(avtCachableItem *theItem) const
         avtCachedVTKObject *theObj = (avtCachedVTKObject *) theItem;
         vtkObject *thisVTKObject = thisObj->GetVTKObject();
         vtkObject *theVTKObject = theObj->GetVTKObject();
-        if (thisVTKObject->GetMTime() == theVTKObject->GetMTime())
+        if (thisVTKObject == theVTKObject)
         {
             return true;
         }
@@ -704,20 +711,25 @@ avtVariableCache::CacheVoidRef(const char *name, const char *type,
 //    itemsToRemove to just store keys. After an operation modifies the map
 //    object the iterators point at, there is no guarentee the stored
 //    iterators will still be valid.
+//
+//    Hank Childs, Mon Dec 15 15:56:58 CST 2008
+//    Add timings statement.  Also add logic to use the domain portion of
+//    the ObjectDomainPair in the objectPointerMap.  This domain portion allows
+//    for an O(n^2) search to be avoided.
+//
 // ****************************************************************************
 
 void
 avtVariableCache::ClearTimestep(int ts)
 {
+    int t1 = visitTimer->StartTimer();
     // clear out objectPointerMap items *before* vtkVars and voidRefVars
     std::vector<vtkObject*> itemsToRemove;
-    std::map<vtkObject*,vtkObject*>::iterator it;
+    std::map<vtkObject*,ObjectDomainPair>::iterator it;
     for (it = objectPointerMap.begin(); it != objectPointerMap.end(); it++)
     {
         int objts = -1;
-        const int allDomains = -1;
-
-        if (GetVTKObjectKey(0, 0, &objts, allDomains, 0, it->second) && objts == ts)
+        if (GetVTKObjectKey(0, 0, &objts, it->second.domain, 0, it->second.obj) && objts == ts)
         {
             itemsToRemove.push_back(it->first);
         }
@@ -734,6 +746,7 @@ avtVariableCache::ClearTimestep(int ts)
     {
         voidRefVars[i]->ClearTimestep(ts);
     }
+    visitTimer->StopTimer(t1, "Clearing time step");
 }
 
 // ****************************************************************************
@@ -1526,12 +1539,20 @@ avtVariableCache::OneDomain::Print(ostream &out, int indent)
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 //
+//  Modifications:
+//  
+//    Hank Childs, Mon Dec 15 18:21:41 CST 2008
+//    Cache the domain as well, since it is a performance problem not to.
+//
 // ****************************************************************************
 void
 avtVariableCache::AddObjectPointerPair(
-    vtkObject *o1, vtkObject *o2)
+    vtkObject *o1, vtkObject *o2, int dom)
 {
-    objectPointerMap[o1] = o2;
+    ObjectDomainPair pair;
+    pair.obj = o2;
+    pair.domain = dom;
+    objectPointerMap[o1] = pair;
 };
 
 // ****************************************************************************
@@ -1543,11 +1564,16 @@ avtVariableCache::AddObjectPointerPair(
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Dec 15 18:27:17 CST 2008
+//    Change types in map iterator.
+//
 // ****************************************************************************
 bool
 avtVariableCache::RemoveObjectPointerPair(vtkObject *o1)
 {
-    std::map<vtkObject*,vtkObject*>::iterator it =
+    std::map<vtkObject*,ObjectDomainPair>::iterator it =
         objectPointerMap.find(o1);
     if (it != objectPointerMap.end())
     {
@@ -1566,14 +1592,19 @@ avtVariableCache::RemoveObjectPointerPair(vtkObject *o1)
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Dec 15 18:27:17 CST 2008
+//    Change types in map iterator.
+//
 // ****************************************************************************
 vtkObject*
 avtVariableCache::FindObjectPointerPair(vtkObject *o1) const
 {
-    std::map<vtkObject*,vtkObject*>::const_iterator it =
+    std::map<vtkObject*,ObjectDomainPair>::const_iterator it =
         objectPointerMap.find(o1);
     if (it != objectPointerMap.end())
-        return it->second;
+        return it->second.obj;
     return 0;
 }
 
