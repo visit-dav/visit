@@ -1,0 +1,124 @@
+#                         Copyright (c) 2000 - 2008
+#                  Lawrence Livermore National Security, LLC
+#            Produced at the Lawrence Livermore National Laboratory
+#                              LLNL-CODE-400124
+#                            All rights reserved.
+#
+# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at https://visit.llnl.gov/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided  that the following conditions are met:
+#
+# - Redistributions of  source code  must retain  the above  copyright notice,
+#   this list of conditions and the disclaimer below.
+# - Redistributions in binary form must  reproduce the above copyright notice,
+#   this  list of  conditions  and  the  disclaimer  (as noted below)  in  the
+#   documentation and/or other materials provided with the distribution.
+# - Neither the name of the LLNS/LLNL nor the names of its contributors may be
+#   used to endorse  or promote products  derived from  this software  without
+#   specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE  COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES,  INCLUDING, BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES  OF MERCHANTABILITY AND FITNESS FOR  A PARTICULAR PURPOSE
+# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+# DIRECT,  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL  DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF  LIABILITY, WHETHER IN CONTRACT, STRICT  LIABILITY, OR TORT
+# (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN ANY  WAY OUT OF  THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Modifications:
+#   Brad Whitlock, Fri Oct 10 15:05:43 PST 2008
+#   I updated slivr.
+#
+##############################################################################
+
+
+##
+## Programs and options...
+##
+@SET_MAKE@
+@VARIABLES@
+
+TUVOK_SRCS = \
+./Tuvok/3rdParty/GLEW/glew.c \
+./Tuvok/Basics/SystemInfo.cpp \
+./Tuvok/Basics/SysTools.cpp \
+./Tuvok/Basics/MathTools.cpp \
+./Tuvok/Basics/ArcBall.cpp \
+./Tuvok/Basics/Checksums/MD5.cpp \
+./Tuvok/IO/KeyValueFileParser.cpp \
+./Tuvok/IO/TransferFunction1D.cpp \
+./Tuvok/IO/TransferFunction2D.cpp \
+./Tuvok/IO/VolumeDataset.cpp \
+./Tuvok/IO/IOManager.cpp \
+./Tuvok/IO/DirectoryParser.cpp \
+./Tuvok/IO/DICOM/DICOMParser.cpp \
+./Tuvok/IO/Images/ImageParser.cpp \
+./Tuvok/IO/UVF/DataBlock.cpp \
+./Tuvok/IO/UVF/GlobalHeader.cpp \
+./Tuvok/IO/UVF/KeyValuePairDataBlock.cpp \
+./Tuvok/IO/UVF/LargeRAWFile.cpp \
+./Tuvok/IO/UVF/RasterDataBlock.cpp \
+./Tuvok/IO/UVF/UVF.cpp \
+./Tuvok/IO/UVF/UVFTables.cpp \
+./Tuvok/IO/UVF/Histogram1DDataBlock.cpp \
+./Tuvok/IO/UVF/Histogram2DDataBlock.cpp \
+./Tuvok/IO/UVF/MaxMinDataBlock.cpp \
+./Tuvok/Controller/MasterController.cpp \
+./Tuvok/DebugOut/TextfileOut.cpp \
+./Tuvok/DebugOut/ConsoleOut.cpp \
+./Tuvok/DebugOut/MultiplexOut.cpp \
+./Tuvok/Renderer/CullingLOD.cpp \
+./Tuvok/Renderer/GLFrameCapture.cpp \
+./Tuvok/Renderer/GLSLProgram.cpp \
+./Tuvok/Renderer/GLTexture.cpp \
+./Tuvok/Renderer/GLTexture1D.cpp \
+./Tuvok/Renderer/GLTexture2D.cpp \
+./Tuvok/Renderer/GLTexture3D.cpp \
+./Tuvok/Renderer/GLRenderer.cpp \
+./Tuvok/Renderer/AbstrRenderer.cpp \
+./Tuvok/Renderer/GLRaycaster.cpp \
+./Tuvok/Renderer/GLSBVR.cpp \
+./Tuvok/Renderer/GPUMemMan/GPUMemMan.cpp \
+./Tuvok/Renderer/GPUMemMan/GPUMemManDataStructs.cpp \
+./Tuvok/Renderer/SBVRGeogen.cpp \
+./Tuvok/Renderer/GLFBOTex.cpp
+
+CXXFLAGS += $(QT_CXXFLAGS) -I./Tuvok
+TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
+##.cpp.o:
+##	g++ $(TUVOK_SRCS) -c $< $(CXXFLAGS)
+
+##
+## Standard targets...
+##
+all: message Tuvok
+
+clean:
+##	$(RM) -rf slivr
+##	$(RM) -rf $(TOPDIR)/include/slivr
+##	$(RM) -rf $(TOPDIR)/lib/slivr
+##	$(RM) $(TOPDIR)/lib/libslivrG.@SHLIB_SOEXT@
+##	$(RM) $(TOPDIR)/lib/libslivrV.@SHLIB_SOEXT@
+##	$(RM) -rf *.o
+
+Tuvok: $(TUVOK_OBJS)
+	g++ -shared -fPIC -o $(TOPDIR)/lib/libTuvok.so $(TUVOK_OBJS)
+	ln -sf $(TOPDIR)/third_party_builtin/Tuvok/Tuvok $(TOPDIR)/include/Tuvok
+
+##
+## Other targets
+##
+message:
+	@echo
+	@echo "****************************************************************************"
+	@echo "*** Building Tuvok (libTuvok)"
+	@echo "****************************************************************************"
+
+@TARGETS@

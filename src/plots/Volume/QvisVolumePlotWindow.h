@@ -67,6 +67,7 @@ class QvisScribbleOpacityBar;
 class QvisSpectrumBar;
 class QvisVariableButton;
 class QvisCMap2Widget;
+class TransferFunction2D;
 typedef int WidgetID;
 
 // ****************************************************************************
@@ -132,6 +133,9 @@ typedef int WidgetID;
 //    and use a dummy class if we don't end up needing it. If we don't do 
 //    this, we get weird memory errors when deleting the window when
 //    SLIVR is enabled.
+//
+//    Josh Stratton, Wed Dec 17 12:30:01 MST 2008
+//    Added handles for Tuvok's controls
 //
 // ****************************************************************************
 

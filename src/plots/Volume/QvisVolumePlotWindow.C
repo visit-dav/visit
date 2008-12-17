@@ -314,16 +314,19 @@ void
 QvisVolumePlotWindow::CreateColorGroup(int maxWidth)
 {
 #ifdef HAVE_LIBSLIVR
-    // Add the 2D transfer function widget
+    // Add the 2D transfer function widget (SLIVR)
     transferFunc2D = new QvisCMap2Widget(central);
     connect(transferFunc2D, SIGNAL(widgetListChanged()),
             this, SLOT(updateTransferFunc2D()));
     connect(transferFunc2D, SIGNAL(widgetChanged(WidgetID)),
             this, SLOT(updateTransferFunc2D(WidgetID))); 
-    
+
+
+
     //    transferFunc2D->setTitle("2D Transfer Function");
     topLayout->addWidget(transferFunc2D);
 #endif
+
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
@@ -642,6 +645,7 @@ QvisVolumePlotWindow::CreateOptions(int maxWidth)
     rendererTypesComboBox->addItem(tr("3D Texturing"));
     rendererTypesComboBox->addItem(tr("Ray casting: compositing"));
     rendererTypesComboBox->addItem(tr("Ray casting: integration (grey scale)"));
+    rendererTypesComboBox->addItem(tr("Tuvok Volume Renderer"));
 #ifdef HAVE_LIBSLIVR
     rendererTypesComboBox->addItem(tr("SCI, University of Utah (SLIVR)"));
 #endif
@@ -854,6 +858,9 @@ QvisVolumePlotWindow::CreateOptions(int maxWidth)
 //
 //   Tom Fogal, Fri Sep 19 11:05:44 MDT 2008
 //   Use SLIVR_ONLY to conditionally enable 2D transfer function widgets.
+//
+//   Josh Stratton, Mon Dec 15 13:01:07 MST 2008
+//   Added support for Tuvok rendering mode.
 //
 // ****************************************************************************
 
@@ -1087,6 +1094,34 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 rendererSamples->setEnabled(false);
 #endif
             }
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::Tuvok)
+            {
+                SLIVR_ONLY(transferFunc2D->hide());
+                colorWidgetGroup->show();
+                opacityWidgetGroup->show();
+                colorWidgetGroup->setEnabled(true);
+                opacityWidgetGroup->setEnabled(true);
+                lightingToggle->setEnabled(true);
+                centeredDiffButton->setEnabled(true);
+                sobelButton->setEnabled(true);
+                rendererTypesComboBox->setCurrentIndex(4);
+                num3DSlicesLabel->setEnabled(true);
+                num3DSlices->setEnabled(true);
+                resampleTargetLabel->setEnabled(true);
+                resampleTarget->setEnabled(true);
+                resampleTargetSlider->setEnabled(true);
+                samplesPerRayLabel->setEnabled(false);
+                samplesPerRay->setEnabled(false);
+                rasterizationButton->setEnabled(false);
+                kernelButton->setEnabled(false);
+                oneDimButton->setEnabled(false);
+                twoDimButton->setEnabled(false);
+#ifdef HAVE_LIBSLIVR
+                rendererSamplesLabel->setEnabled(false);
+                rendererSamplesSlider->setEnabled(false);
+                rendererSamples->setEnabled(false);
+#endif
+            }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::SLIVR)
             {
                 lightingToggle->setEnabled(true);
@@ -1095,7 +1130,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 oneDimButton->setEnabled(true);
                 twoDimButton->setEnabled(true);
 #ifdef HAVE_LIBSLIVR
-                rendererTypesComboBox->setCurrentIndex(4);
+                rendererTypesComboBox->setCurrentIndex(5);
                 num3DSlicesLabel->setEnabled(false);
                 num3DSlices->setEnabled(false);
                 rendererSamplesLabel->setEnabled(true);
@@ -2696,6 +2731,9 @@ QvisVolumePlotWindow::samplingTypeChanged(int val)
 //    Brad Whitlock, Thu Jan 10 14:38:21 PST 2008
 //    Added SLIVR support.
 //
+//    Josh Stratton, Mon Dec 15 13:01:07 MST 2008
+//    Added Tuvok support.
+//
 // ****************************************************************************
 void
 QvisVolumePlotWindow::rendererTypeChanged(int val)
@@ -2715,6 +2753,9 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
         volumeAtts->SetRendererType(VolumeAttributes::RayCastingIntegration);
         break;
       case 4:
+        volumeAtts->SetRendererType(VolumeAttributes::Tuvok);
+        break;
+      case 5:
 #ifdef HAVE_LIBSLIVR
         volumeAtts->SetRendererType(VolumeAttributes::SLIVR);
 #else

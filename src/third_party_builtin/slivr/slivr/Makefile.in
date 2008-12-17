@@ -59,7 +59,11 @@ clean:
 	$(RM) $(TOPDIR)/lib/libslivrV.@SHLIB_SOEXT@
 
 SLIVRConfig.cmake.in:
+<<<<<<< .mine
+	gunzip < slivr-rev-125.tar.gz | tar xvf - > /dev/null
+=======
 	gunzip < slivr-rev-132.tar.gz | tar xvf - > /dev/null
+>>>>>>> .r5835
 	cp slivr/SLIVRConfig.cmake.in .
 
 slivr: SLIVRConfig.cmake.in

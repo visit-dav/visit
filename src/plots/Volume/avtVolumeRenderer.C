@@ -55,6 +55,7 @@
 #include <avtMesaSplattingVolumeRenderer.h>
 #include <avtOpenGL3DTextureVolumeRenderer.h>
 #include <avtMesa3DTextureVolumeRenderer.h>
+#include <avtOpenGLTuvokVolumeRenderer.h>
 #ifdef HAVE_LIBSLIVR
 #include <avtOpenGLSLIVRVolumeRenderer.h>
 #include <sys/types.h>
@@ -271,6 +272,14 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
                     "offscreen rendering. VisIt is reverting to 3D texturing.");
             }
 #endif
+            else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
+            {
+              // Tuvok may work fine in Mesa but for now use previous texture slicer 
+                rendererImplementation = new avtMesa3DTextureVolumeRenderer;
+                avtCallback::IssueWarning("Tuvok is not currently supported for "
+                    "offscreen rendering. VisIt is reverting to 3D texturing.");
+
+            }
             else // it == VolumeAttributes::Texture3D
                 rendererImplementation = new avtMesa3DTextureVolumeRenderer;
         }
@@ -282,6 +291,8 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
             else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
                 rendererImplementation = new avtOpenGLSLIVRVolumeRenderer;
 #endif
+            else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
+                rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
             else // it == VolumeAttributes::Texture3D
                 rendererImplementation = new avtOpenGL3DTextureVolumeRenderer;
         }

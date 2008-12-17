@@ -901,6 +901,9 @@ dnl    Hank Childs, Fri Dec 12 16:18:34 PST 2008
 dnl    Move Ice-T to later in the script so that it can benefit from correct
 dnl    definitions of X11 libs and Pthreads.
 dnl
+dnl    Josh Stratton, Tue Dec 16 11:03:21 MST 2008
+dnl    Added Tuvok the the 3rd-party builtin libraries
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2006,6 +2009,16 @@ AC_TRY_COMPILE([#include <sys/types.h>
 # are needed.  The libraries are added to the beginning of `LIBS'.
 #
 AC_CHECK_LIB(m, main)
+
+# Handle Tuvok
+#
+BUILD_TUVOK="Tuvok"
+TUVOK_LIB="-lTuvok"
+TUVOK_INCLUDE = "-I$""(TOPDIR)/include/Tuvok"
+# not sure if the following is necessary
+AC_SUBST(BUILD_TUVOK)
+AC_SUBST(TUVOK_INCLUDE)
+AC_SUBST(TUVOK_LIB) # primarily for mac pre-binding
 
 #
 # Handle zlib. By default, we try to find a zlib because VisIt can
@@ -3984,7 +3997,8 @@ THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/slivr/slivr/Makefile
                            third_party_builtin/slivr/teem/Makefile
                            third_party_builtin/bow/Makefile
-                           third_party_builtin/cognomen/Makefile"
+                           third_party_builtin/cognomen/Makefile
+                           third_party_builtin/Tuvok/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile
