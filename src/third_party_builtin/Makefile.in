@@ -61,8 +61,8 @@
 @DIRTARGETS@
 
 SUBDIRS=@BUILD_MESA_STUB@ @BUILD_ZLIB@ @BUILD_GLEW@ @BUILD_BILIB@ \
-    @BUILD_SLIVR@ @BUILD_COGNOMEN@ bow
-ALLSUBDIRS=mesa_stub zlib glew bilib slivr bow cognomen
+    @BUILD_SLIVR@ @BUILD_COGNOMEN@ @BUILD_TUVOK@ bow
+ALLSUBDIRS=mesa_stub zlib glew bilib slivr bow cognomen Tuvok
 
 message:
 	@echo

@@ -4,17 +4,21 @@
       $(SLIVR_INCLUDE)
       $(GLEW_INCLUDE)
     </CXXFLAGS>
+    <LDFLAGS>
+      $(TUVOK_LIB)
+    </LDFLAGS>
+    <Files components="G">
+      $(SLIVR_GUI_IMPL)
+      TransferFunctionWidget.C
+    </Files>
     <LIBS components="G">
+      $(TUVOK_LIB)
       $(QT_OPENGL_LIB)
       $(SLIVR_LIBS)
       $(GLEW_LIBS)
       $(GL_LIBS)
       -lGLU
     </LIBS>
-    <Files components="G">
-      $(SLIVR_GUI_IMPL)
-      TransferFunctionWidget.C
-    </Files>
     <Files components="S">
       TransferFunctionWidget.C
     </Files>
@@ -26,10 +30,12 @@
       avtOpenGL3DTextureVolumeRenderer.C
       avtMesa3DTextureVolumeRenderer.C
       avtOpenGLSLIVRVolumeRenderer.C
+      avtOpenGLTuvokVolumeRenderer.C
       BoundingBoxContourer.C
       TransferFunctionWidget.C
     </Files>
     <LIBS components="V">
+      $(TUVOK_LIB)
       $(SLIVR_LIBS)
       $(GLEW_LIBS)
       $(GL_LIBS)
@@ -43,10 +49,12 @@
       avtOpenGL3DTextureVolumeRenderer.C
       avtMesa3DTextureVolumeRenderer.C
       avtOpenGLSLIVRVolumeRenderer.C
+      avtOpenGLTuvokVolumeRenderer.C
       BoundingBoxContourer.C
       TransferFunctionWidget.C
     </Files>
     <LIBS components="E">
+      $(TUVOK_LIB)
       $(SLIVR_LIBS)
       $(GLEW_LIBS)
       $(GL_LIBS)
@@ -65,6 +73,7 @@
         RayCasting
         RayCastingIntegration
         SLIVR
+        Tuvok
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences

@@ -68,7 +68,8 @@ public:
         Texture3D,
         RayCasting,
         RayCastingIntegration,
-        SLIVR
+        SLIVR,
+        Tuvok
     };
     enum GradientType
     {
