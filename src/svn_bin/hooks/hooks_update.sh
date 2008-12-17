@@ -13,6 +13,7 @@
 #   Changed name of hook_vars file to hook_common as it includes more than
 #   variable definitions now. Replaced refs to commands via ${<VARNAME>}
 #   method to just the commands themselves.
+#
 ##############################################################################
 
 REPOS="$1"
