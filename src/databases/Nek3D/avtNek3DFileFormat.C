@@ -1763,10 +1763,14 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
     char *meshfilename = new char[ fileTemplate.size() + 64 ];
 
     int ii;
+    iTimestepsWithMesh.push_back(iFirstTimestep);
     for (ii = 0 ; ii < iNumTimesteps ; ii++)
     {
         t = 0.0;
         c = 0;
+        aTimes[ii] = t;
+        aCycles[ii] = c;
+        continue;
 
         GetFileName(iFirstTimestep+ii, 0, meshfilename, fileTemplate.size() + 64);
         f.open(meshfilename);
@@ -2334,9 +2338,10 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int timestep,
                 if (isPressure)
                     varIndex = (bHasVelocity ? iDim : 0); 
                 else if (isTemperature)
-                    varIndex = (bHasVelocity ? iDim : 0) + (bHasPressure ? iDim : 0);
+                    varIndex = (bHasVelocity ? iDim : 0) + (bHasPressure ? 1 : 0);
                 else
-                    varIndex = (bHasVelocity ? iDim : 0) + (bHasPressure ? iDim : 0) + sComp;
+                    varIndex = (bHasVelocity ? iDim : 0) + (bHasPressure ? 1 : 0) + 
+                               (bHasTemperature ? 1 : 0) + sComp;
                 int64_t offsetForDE = varIndex*2*sizeof(float)*aBlocksPerFile[ii];
                 f.seekg(iFileSizeWithoutMetaData+iBBSize+offsetForDE, std::ios_base::beg);
                 f.read( (char *)(bounds + nPrecedingBlocks*2), aBlocksPerFile[ii]*2*sizeof(float) );
