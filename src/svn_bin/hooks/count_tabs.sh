@@ -40,7 +40,6 @@
 #   Cyrus Harrison, Tue Dec 16 14:42:52 PST 2008
 #   Added *.cmake files to the list of files we permit tabs in.
 #
-#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
