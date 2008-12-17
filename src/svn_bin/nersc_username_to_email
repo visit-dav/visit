@@ -23,6 +23,9 @@
 #    John C. Anderson, Thu Sep 11 12:27:08 PDT 2008
 #    Added case for userid "jcanders".
 #
+#    Dave Semeraro, Tuesday December 9 13:26:45 CST 2008
+#    Added case for userid "semeraro".
+#
 # *****************************************************************************
 
 
@@ -86,6 +89,10 @@ case $1 in
     # John C. Anderson, UC Davis / LLNL
     "jcanders")
         emaddr=anderson@cs.ucdavis.edu
+        ;;
+    # Dave Semeraro, NCSA / University of Illinois
+    "semeraro")
+        emaddr=semeraro@ncsa.uiuc.edu
         ;;
     *)
         emaddr=visit-developers@ornl.gov
