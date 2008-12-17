@@ -2014,6 +2014,37 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 //      Get the auxiliary data.  Originally implemented to return spatial 
 //      extents.
 //
+//  Notes:
+//     In the Nek3D file, if there is meta-data, it is stored at the end of 
+//     the file as:
+//        [element 1 X min, max]
+//        [element 1 Y min, max]
+//        [element 1 Z min, max]
+//        ..
+//        [element N X min, max]
+//        [element N Y min, max]
+//        [element N Z min, max]
+//        [element 1 U min, max]
+//        [element 1 V min, max]
+//        [element 1 W min, max]
+//        ..
+//        [element N U min, max]
+//        [element N V min, max]
+//        [element N W min, max]
+//        [element 1 P min, max]
+//        ..
+//        [element N P min, max]
+//        [element 1 T min, max]
+//        ..
+//        [element N T min, max]
+//        [element 1 S1 min, max]
+//        ..
+//        [element N S1 min, max]
+//        ..
+//        [element 1 Sk min, max]
+//        ..
+//        [element N Sk min, max]
+//
 //  Programmer: Dave Bremer
 //  Creation:   Wed Apr 23 18:12:50 PDT 2008
 //
@@ -2027,10 +2058,13 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 //    Fixed a bug with block numbering.  When USE_SIMPLE_BLOCK_NUMBERING
 //    was on, the spatial bounds were matched to the wrong blocks.
 //
+//    Hank Childs, Wed Dec 17 13:23:04 CST 2008
+//    Add preliminary support for data extents meta-data.
+//
 // ****************************************************************************
 
 void *
-avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/, 
+avtNek3DFileFormat::GetAuxiliaryData(const char *var, int timestep,
                                      int  /*domain*/, const char *type, void *,
                                      DestructorFunction &df)
 {
@@ -2086,7 +2120,7 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
             }
             f.seekg( 0, std::ios_base::end );
             int64_t iFileSize = f.tellg();
-            if (iFileSize != iFileSizeWithoutMetaData+iMDSize)
+            if (iFileSize < iFileSizeWithoutMetaData+iMDSize)
             {
                 errorReadingData = 1;
                 break;
@@ -2157,6 +2191,191 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
             b[3] = (double)bounds[ii*6+3];
             b[4] = (double)bounds[ii*6+4];
             b[5] = (double)bounds[ii*6+5];
+            itree->AddElement(ii, b);
+        }
+        itree->Calculate(true);
+        delete[] bounds;
+
+        rv = (void *) itree;
+        df = avtIntervalTree::Destruct;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)
+    {
+        bool foundVar = false;
+        bool isVelocity = false;
+        int  velocityComp = -1;
+        bool isPressure = false;
+        bool isTemperature = false;
+        bool isSField = false;
+        int  sComp = -1;
+        int numVars = 0;
+        if (bHasPressure)
+        {
+            if (strcmp(var, "pressure") == 0)
+                isPressure = true;
+            numVars++;
+        }
+        if (bHasTemperature)
+        {
+            if (strcmp(var, "temperature") == 0)
+                isTemperature = true;
+            numVars++;
+        }
+        if (bHasVelocity)
+        {
+            if (strcmp(var, "x_velocity") == 0)
+            {
+                isVelocity = true;
+                velocityComp = 0;
+            }
+            if (strcmp(var, "y_velocity") == 0)
+            {
+                isVelocity = true;
+                velocityComp = 1;
+            }
+            if (strcmp(var, "z_velocity") == 0)
+            {
+                isVelocity = true;
+                velocityComp = 2;
+            }
+            numVars += iDim;
+        }
+        numVars += iNumSFields;
+        for (int ss = 0; ss < iNumSFields; ss++)
+        {
+            char sfieldname[256];
+            sprintf(sfieldname, "s%d", ss);
+            if (strcmp(var, sfieldname) == 0)
+            {
+                isSField = true;
+                sComp = ss;
+            }
+        }
+
+        if (!isVelocity && !isPressure && !isTemperature && !isSField)
+        {
+            EXCEPTION1(InvalidVariableException, var);
+        }
+
+        if (!bBinary || !bParFormat)
+            return NULL;
+
+        int nFloatsPerDomain = 0, d1, d2, d3;
+        GetDomainSizeAndVarOffset(timestep, NULL, 
+                                  nFloatsPerDomain, d1, d2, d3 );
+    
+        int iRank = 0, nProcs = 1;
+#ifdef PARALLEL
+        MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
+        MPI_Comm_size(VISIT_MPI_COMM, &nProcs);
+#endif
+    
+        ifstream f;
+        int ii, jj;
+
+        int errorReadingData = 0;
+
+        char  *blockfilename = new char[ fileTemplate.size() + 64 ];
+
+        float *bounds = new float[iNumBlocks*2];
+        for (ii = 0; ii < iNumBlocks*2; ii++)
+            bounds[ii] = 0.0f;
+
+        for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
+        {
+            int64_t iFileSizeWithoutMetaData = 136 
+                    + sizeof(int)*aBlocksPerFile[ii] 
+                    + ((int64_t)nFloatsPerDomain)*sizeof(float)*((int64_t)aBlocksPerFile[ii]);
+    
+            int64_t iBBSize = 2*iDim * sizeof(float) * aBlocksPerFile[ii];
+            int64_t iDESize = 2 * sizeof(float) * aBlocksPerFile[ii] * numVars;
+            int64_t iMDSize = iBBSize + iDESize;
+
+            GetFileName(timestep, ii, blockfilename, fileTemplate.size() + 64);
+            f.open(blockfilename);
+            if (!f.is_open())
+            {
+                errorReadingData = 1;
+                break;
+            }
+            f.seekg( 0, std::ios_base::end );
+            int64_t iFileSize = f.tellg();
+            if (iFileSize != iFileSizeWithoutMetaData+iMDSize)
+            {
+                iBBSize = 0;
+                iMDSize = iDESize;
+                if (iFileSize != iFileSizeWithoutMetaData+iMDSize)
+                {
+                    errorReadingData = 1;
+                    break;
+                }
+            }
+
+#ifdef USE_SIMPLE_BLOCK_NUMBERING
+            int nPrecedingBlocks = 0;
+            for (jj = 0; jj < ii; jj++)
+                nPrecedingBlocks += aBlocksPerFile[jj];
+
+            if (isVelocity)
+            {
+                f.seekg(iFileSizeWithoutMetaData+iBBSize, std::ios_base::beg);
+                float *tmp = new float[aBlocksPerFile[ii]*6];
+                f.read( (char *)(tmp), aBlocksPerFile[ii]*6*sizeof(float) );
+                for (int jj = 0 ; jj < aBlocksPerFile[ii] ; jj++)
+                {
+                    bounds[nPrecedingBlocks*2 + 2*jj] = tmp[6*jj+2*velocityComp];
+                    bounds[nPrecedingBlocks*2 + 2*jj+1] = tmp[6*jj+2*velocityComp+1];
+                }
+                delete [] tmp;
+            }
+            else
+            {
+                int varIndex = -1;
+                if (isPressure)
+                    varIndex = (bHasVelocity ? iDim : 0); 
+                else if (isTemperature)
+                    varIndex = (bHasVelocity ? iDim : 0) + (bHasPressure ? iDim : 0);
+                else
+                    varIndex = (bHasVelocity ? iDim : 0) + (bHasPressure ? iDim : 0) + sComp;
+                int64_t offsetForDE = varIndex*2*sizeof(float)*aBlocksPerFile[ii];
+                f.seekg(iFileSizeWithoutMetaData+iBBSize+offsetForDE, std::ios_base::beg);
+                f.read( (char *)(bounds + nPrecedingBlocks*2), aBlocksPerFile[ii]*2*sizeof(float) );
+            }
+
+            if (bSwapEndian)
+                ByteSwap32(bounds + nPrecedingBlocks*2, aBlocksPerFile[ii]*2);
+#else
+          IMPLEMENT THIS LATER!
+#endif
+            f.close();
+        }
+        delete[] blockfilename;
+
+#ifdef PARALLEL
+        //See if any proc had a read error.
+        int  anyErrorReadingData = 0;
+        MPI_Allreduce(&errorReadingData, &anyErrorReadingData, 1, 
+                      MPI_INT, MPI_BOR, VISIT_MPI_COMM);
+        errorReadingData = anyErrorReadingData;
+#endif
+        if (errorReadingData)
+            return NULL;
+
+#ifdef PARALLEL
+        float *mergedBounds = new float[iNumBlocks*2];
+    
+        MPI_Allreduce(bounds, mergedBounds, iNumBlocks*2, 
+                      MPI_FLOAT, MPI_SUM, VISIT_MPI_COMM);
+        delete[] bounds;
+        bounds = mergedBounds;
+#endif
+        avtIntervalTree *itree = new avtIntervalTree(iNumBlocks, 1);
+
+        for (ii = 0; ii < iNumBlocks; ii++)
+        {
+            double b[2];
+            b[0] = (double)bounds[ii*2];
+            b[1] = (double)bounds[ii*2+1];
             itree->AddElement(ii, b);
         }
         itree->Calculate(true);
