@@ -10493,7 +10493,6 @@ if test "${enable_icet+set}" = set; then
   enableval="$enable_icet"
 
 fi;
-
 if test -z "${DEFAULT_ICET_INCLUDE}"; then
   DEFAULT_ICET_INCLUDE="no"
 fi
@@ -10526,7 +10525,7 @@ echo "$as_me:$LINENO: checking if IceT should be used" >&5
 echo $ECHO_N "checking if IceT should be used... $ECHO_C" >&6
 
 # Allow enabling IceT through a config site variable.
-if test -n "${ICET_ENABLE}" -o -n "${DEFAULT_ICET_INCLUDE}"; then
+if test -n "${ICET_ENABLE}" -o "x${DEFAULT_ICET_INCLUDE}" != "xno"; then
   enable_icet="yes"
 else
   enable_icet="no"
