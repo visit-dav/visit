@@ -134,6 +134,9 @@
 //    Brad Whitlock, Tue Nov 18 16:16:37 PST 2008
 //    Qt 4.
 //
+//    Kathleen Bonnell, Wed Dec 17 15:23:05 MST 2008
+//    Change qt includes/libs to match QT 4.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin : public Plugin
@@ -163,6 +166,7 @@ protected:
     QString binBase;
     QString libBase;
     QString visitIncludes;
+    QString qtBase; 
     QString tpIncludes;
     QString tpLibs;
     QString tpLibDir;
@@ -810,9 +814,18 @@ protected:
                             pluginBase + "\\viewer\\proxy;" +
                             pluginBase + "\\viewer\\rpc;" +
                             pluginBase + "\\winutil"; 
-            tpIncludes = "$(QTDIR)\\include";
-            tpLibs = " $(QTLIB)";
-            tpLibDir = "$(QTDIR)\\lib";
+            if (version7)
+            {
+                qtBase = "..\\..\\include\\qt";
+                tpIncludes = qtBase + ";" +
+                             qtBase + "\\QtCore;" + 
+                             qtBase + "\\QtGui;" ;
+            }
+            else
+            {
+                tpIncludes = "";
+            }
+            tpLibs = " QtCore4.lib QtGui4.lib";
             WritePlotProject_G(out, version7);
             f->close();
         }
@@ -872,9 +885,13 @@ protected:
             ThirdParty(tpLibs, tpIncludes, tpPreProc, version7);
             if (tpIncludes.length() > 0)
                 tpIncludes += ";";
-            tpIncludes += "$(QTDIR)\\include";
-            tpLibs += " $(QTLIB)";
-            tpLibDir = "$(QTDIR)\\lib";
+            if (version7)
+            {
+                qtBase = "..\\..\\include\\qt";
+                tpIncludes += (qtBase + ";" +
+                             qtBase + "\\QtCore;" );
+            }
+            tpLibs += " QtCore4.lib";
             WritePlotProject_V(out, version7);
             f->close();
         }
@@ -1146,9 +1163,14 @@ protected:
                             pluginBase + "\\viewer\\proxy;" +
                             pluginBase + "\\viewer\\rpc;" +
                             pluginBase + "\\winutil" ;
-            tpIncludes ="$(QTDIR)\\include";
-            tpLibs =" $(QTLIB)";
-            tpLibDir ="$(QTDIR)\\lib";
+            if (version7)
+            {
+                qtBase = "..\\..\\include\\qt";
+                tpIncludes = qtBase + ";" +
+                             qtBase + "\\QtCore;" + 
+                             qtBase + "\\QtGui;" ;
+            }
+            tpLibs = " QtCore4.lib QtGui4.lib";
             WriteOperatorProject_G(out, version7);
             f->close();
         }
@@ -1207,9 +1229,13 @@ protected:
             ThirdParty(tpLibs, tpIncludes, tpPreProc, version7);
             if (tpIncludes.length() > 0)
                 tpIncludes += ";";
-            tpIncludes += "$(QTDIR)\\include";
-            tpLibs += " $(QTLIB)";
-            tpLibDir = "$(QTDIR)\\lib";
+            if (version7)
+            {
+                qtBase = "..\\..\\include\\qt";
+                tpIncludes += (qtBase + ";" +
+                             qtBase + "\\QtCore;") ;
+            }
+            tpLibs += " QtCore4.lib QtGui4.lib";
             WriteOperatorProject_V(out, version7);
             f->close();
         }
