@@ -66,15 +66,17 @@ dnl    Make sure there is always a message about IceT status.
 dnl
 dnl    Tom Fogal, Mon Dec 15 15:14:50 MST 2008
 dnl    Small cleanups.  Try to use AS_IF instead of if, etc.
+dnl
+dnl    Tom Fogal, Tue Dec 16 19:53:23 MST 2008
+dnl    Fix test for enabling IceT via host confs.
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
 AC_DEFUN([AX_ICET_OPTIONS], [
 AC_ARG_ENABLE([icet],
     [AS_HELP_STRING([--enable-icet],
-        [Use the ICE-T parallel image compositor])]
+                    [Use the ICE-T parallel image compositor])]
 )
-
 dnl Default to `no' if they aren't set.
 AS_IF([test -z "${DEFAULT_ICET_INCLUDE}"], [DEFAULT_ICET_INCLUDE="no"])
 AS_IF([test -z "${DEFAULT_ICET_LIB}"],     [DEFAULT_ICET_LIB="no"])
@@ -96,7 +98,7 @@ AC_ARG_WITH([icet-libdir],
 AC_MSG_CHECKING([if IceT should be used])
 
 # Allow enabling IceT through a config site variable.
-AS_IF([test -n "${ICET_ENABLE}" -o -n "${DEFAULT_ICET_INCLUDE}"],
+AS_IF([test -n "${ICET_ENABLE}" -o "x${DEFAULT_ICET_INCLUDE}" != "xno"],
     [enable_icet="yes"],
     [enable_icet="no"]
 )
