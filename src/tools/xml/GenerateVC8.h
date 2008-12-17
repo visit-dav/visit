@@ -57,10 +57,16 @@
 //    Brad Whitlock, Tue Nov 18 16:16:59 PST 2008
 //    Qt 4.
 //
+//    Kathleen Bonnell, Wed Dec 17 15:27:19 MST 2008
+//    Update moc location to reflect use of QT 4.  Remove unnecessary blocks.
+//    Temporarily prevent creation of Purify configurations.
+//
 // ****************************************************************************
     void WriteProject_TOP_LEVEL_Version8(QTextStream &out)
     {
         QString configs[] = {"Release", "Debug", "Purify"};
+        // for now, don't create purify
+        int nConfigs =2;
 
         out << "<?xml version=\"1.0\" encoding=\"Windows-1252\"?>" << Endl;
         out << "<VisualStudioProject" << Endl;
@@ -77,7 +83,7 @@
         out << "\t<ToolFiles>" << Endl;
         out << "\t</ToolFiles>" << Endl;
         out << "\t<Configurations>" << Endl;
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < nConfigs; i++)
         {
             out << "\t\t<Configuration" << Endl;
             out << "\t\t\tName=\"" << configs[i] << "|Win32\"" << Endl;
@@ -85,11 +91,6 @@
             out << "\t\t\tIntermediateDirectory=\".\\" << configs[i] 
                 << "\"" << Endl;
             out << "\t\t\tConfigurationType=\"10\"" << Endl;
-            out << "\t\t\tInheritedPropertySheets=\""
-                << "$(VCInstallDir)VCProjectDefaults\\UpgradeFromVC71.vsprops;"
-                << "..\\NO_SEC_DEP.vsprops;" 
-                << "..\\VisItIncludePaths.vsprops;"
-                << "..\\VisItLibPaths.vsprops\"" << Endl;
             out << "\t\t\tUseOfMFC=\"0\"" << Endl;
             out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"false\">" << Endl;
             out << "\t\t\t<Tool" << Endl;
@@ -126,6 +127,8 @@
         QString solutionKey(CreateKey());
         vector<QString> keys;
         QString configs[] = {"Release", "Debug" , "Purify"};
+        // for now, don't create purify
+        int nConfigs =2;
 
         size_t i;
         for(i = 0; i < projects.size(); ++i)
@@ -167,7 +170,7 @@
     
         for(i = 0; i < keys.size(); ++i)
         {
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < nConfigs; j++)
             {
                 out << "\t\t" << keys[i] << "." << configs[j] << "|Win32"
                     << ".ActiveCfg = " << configs[j] << "|Win32" << Endl;
@@ -190,9 +193,11 @@
         const char *suffix = (pluginComponent == 'E') ? "_ser" : "";
 
         QString configs[] = {"Release", "Debug", "Purify"};
-        QString debug[] = {"NDEBUG", "_DEBUG", "_DEBUG"};
+        // for now, don't create purify
+        int nConfigs =2;
+        QString debug[] = {"NDEBUG", "", ""};
         int optims[] = {2, 0, 0};
-        int rtl[] = {2, 3, 3};
+        int rtl[] = {2, 2, 2};
         int brc[] = {0, 3, 0};
         int dif[] = {0, 4, 3};
         int li[] = {1, 2, 1};
@@ -215,7 +220,7 @@
         out << "\t<ToolFiles>" << Endl;
         out << "\t</ToolFiles>" << Endl;
         out << "\t<Configurations>" << Endl;
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < nConfigs; ++j)
         {
             out << "\t\t<Configuration" << Endl;
             out << "\t\t\tName=\"" << configs[j] << "|Win32\"" << Endl;
@@ -228,7 +233,10 @@
                 << "$(VCInstallDir)VCProjectDefaults\\UpgradeFromVC71.vsprops;"
                 << "..\\NO_SEC_DEP.vsprops;" 
                 << "..\\VisItIncludePaths.vsprops;"
-                << "..\\VisItLibPaths.vsprops\"" << Endl;
+                << "..\\VisItLibPaths.vsprops" ;
+            if (pluginComponent == 'G' || pluginComponent == 'V')
+                out << ";..\\QtIncludePaths.vsprops" ;
+            out << "\"" << Endl;
             out << "\t\t\tUseOfMFC=\"0\"" << Endl;
             out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"false\"" << Endl;
             out << "\t\t\tCharacterSet=\"2\"" << Endl;
@@ -253,8 +261,8 @@
             out << "\t\t\t\tSuppressStartupBanner=\"true\"" << Endl;
             out << "\t\t\t\tTargetEnvironment=\"1\"" << Endl;
             out << "\t\t\t\tTypeLibraryName=\".\\" << configs[j] << "\\" 
-                << name << pluginComponent << "\\lib" << pluginComponent
-                << name << pType << ".tlb\"" << Endl;
+                << name << pluginComponent << "\\" 
+                << name << pluginComponent << ".tlb\"" << Endl;
             out << "\t\t\t\tHeaderFileName=\"\"" << Endl;
             out << "\t\t\t/>" << Endl;
             out << "\t\t\t<Tool" << Endl;
@@ -269,11 +277,13 @@
             out << ";" << tpIncludes
                 << "\"" << Endl;
             out << "\t\t\t\tPreprocessorDefinitions=\""
-                << preproc  << ";" << debug[j]
-                << ";GENERAL_PLUGIN_EXPORTS";
+                << preproc;
+            if (debug[j] != "")
+                out << ";" << debug[j];
+            out << ";GENERAL_PLUGIN_EXPORTS";
             if (exports != "")
                 out << ";" << exports;
-            if (pluginComponent = 'E'  && hasEngineSpecificCode)
+            if (pluginComponent == 'E'  && hasEngineSpecificCode)
                 out << ";ENGINE";
             out << "\"" << Endl;
             if (configs[j] == "Release")
@@ -330,8 +340,9 @@
                 << pType << suffix << ".dll\"" << Endl;
             out << "\t\t\t\tLinkIncremental=\"" << li[j] << "\"" << Endl;
             out << "\t\t\t\tSuppressStartupBanner=\"true\"" << Endl;
-            out << "\t\t\t\tAdditionalLibraryDirectories=\"" << tpLibDir;
-            out << "\"" << Endl;
+            if (tpLibDir.length() > 0)
+                out << "\t\t\t\tAdditionalLibraryDirectories=\"" << tpLibDir
+                    << "\"" << Endl;
             if (configs[j] != "Release")
                 out << "\t\t\t\tGenerateDebugInformation=\"true\""  << Endl;
             out << "\t\t\t\tProgramDatabaseFile=\".\\" << configs[j] << "\\" 
@@ -396,21 +407,13 @@
                 << "\\" << name << "\\" << srcFiles[i] << "\"" << Endl;
 #endif
             out << "\t\t\t\t>" << Endl;
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < nConfigs; j++)
             {
                 out << "\t\t\t\t<FileConfiguration" << Endl;
                 out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\"" << Endl;
                 out << "\t\t\t\t\t>" << Endl;
                 out << "\t\t\t\t\t<Tool" << Endl;
                 out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << Endl;
-                out << "\t\t\t\t\t\tOptimization=\"" << optims[j] 
-                    << "\"" << Endl;
-                out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" 
-                    << Endl;
-                if (configs[j] == "Debug")
-                    out << "\t\t\t\t\t\tBasicRuntimeChecks=\"3\"" << Endl;
-                else if (configs[j] == "Purify")
-                    out << "\t\t\t\t\t\tBasicRuntimeChecks=\"0\"" << Endl;
                 out << "\t\t\t\t\t\tCompileAs=\"2\"" << Endl;
                 out << "\t\t\t\t\t/>" << Endl;
                 out << "\t\t\t\t</FileConfiguration>" << Endl;
@@ -445,7 +448,7 @@
                     << "\\" << name << "\\" << hdrFiles[i] << "\"" << Endl;
 #endif
                 out << "\t\t\t\t>" << Endl;
-                for (int j = 0; j < 3; j++)
+                for (int j = 0; j < nConfigs; j++)
                 {
                     out << "\t\t\t\t<FileConfiguration" << Endl;
                     out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\"" 
@@ -455,7 +458,8 @@
                     out << "\t\t\t\t\t\tName=\"VCCustomBuildTool\"" << Endl;
                     out << "\t\t\t\t\t\tDescription=\"Moc&apos;ing " 
                         << hdrFiles[i] << " ...\"" << Endl;
-                    out << "\t\t\t\t\t\tCommandLine=\"$(QTDIR)\\bin\\moc.exe "
+                    out << "\t\t\t\t\t\tCommandLine="
+                        << "\"..\\..\\bin\\MSVC8.Net\\ThirdParty\\moc.exe "
                         << pluginBase;
                     if (withinDevDir)
                         out << "\\" << pluginType << "\\" << name;
@@ -464,7 +468,8 @@
                         out << "\\" << pluginType << "\\" << name;
                     out << "\\" << mocFiles[i] << "\"" << Endl;
                     out << "\t\t\t\t\t\tAdditionalDependencies="
-                        << "\"$(QTDIR)\\bin\\moc.exe\"" << Endl;
+                        << "\"..\\..\\bin\\MSVC8.Net\\ThirdParty\\moc.exe\"" 
+                        << Endl;
                     out << "\t\t\t\t\t\tOutputs=\"" << pluginBase;
                     if (withinDevDir)
                         out << "\\" << pluginType << "\\" << name;
@@ -477,7 +482,7 @@
             out << "\t\t</Filter>" << Endl;
             out << "\t\t<Filter" << Endl;
             out << "\t\t\tName=\"Generated MOC Files\"" << Endl;
-            out << "\t\t\tFilter=\"\"" << Endl;
+            out << "\t\t\tFilter=\"*_moc.C\"" << Endl;
             out << "\t\t\t>" << Endl;
     
             for(size_t i = 0; i < mocFiles.size(); ++i)
@@ -499,7 +504,7 @@
                     << "\\" << name << "\\" << mocFiles[i] << "\"" << Endl;
 #endif
                 out << "\t\t\t\t>" << Endl;
-                for (int j = 0; j < 3; j++)
+                for (int j = 0; j < nConfigs; j++)
                 {
                     out << "\t\t\t\t<FileConfiguration" << Endl;
                     out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\""
@@ -534,6 +539,8 @@
         QString pluginDefs = "";
         char *pluginSuffix = "Database";
         QString configs[] = {"Release", "Debug", "Purify"};
+        // for now, don't create purify
+        int nConfigs =2;
         int optims[] = {2, 0, 0};
         int brc[] = {0, 3, 0};
 
@@ -568,11 +575,11 @@
         out << "\t</ToolFiles>" << Endl;
         out << "\t<Configurations>" << Endl;
         {
-        QString debug[] = {"NDEBUG", "_DEBUG", "_DEBUG"};
-        int rtl[] = {2, 3, 3};
+        QString debug[] = {"NDEBUG", "", ""};
+        int rtl[] = {2, 2, 2};
         int li[] = {1, 2, 1};
         int dif[] = {0, 4, 3};
-        for (int i = 0; i < 3; ++i)
+        for (int i = 0; i < nConfigs; ++i)
         {
             out << "\t\t<Configuration" << Endl;
             out << "\t\t\tName=\""<< configs[i]<< "|Win32\"" << Endl;
@@ -605,8 +612,8 @@
             out << "\t\t\t\tSuppressStartupBanner=\"true\"" << Endl;
             out << "\t\t\t\tTargetEnvironment=\"1\"" << Endl;
             out << "\t\t\t\tTypeLibraryName=\".\\" << configs[i] << "\\" 
-                << name << pluginComponent << "\\lib" << pluginComponent
-                << name << ".tlb\"" << Endl;
+                << name << pluginComponent << "\\" 
+                << name << pluginComponent << ".tlb\"" << Endl;
             out << "\t\t\t\tHeaderFileName=\"\"" << Endl;
             out << "\t\t\t/>" << Endl;
             out << "\t\t\t<Tool" << Endl;
@@ -622,9 +629,10 @@
                 out << tpIncludes;
             out << "\"" << Endl;
             out << "\t\t\t\tPreprocessorDefinitions=\""
-                << preproc
-                << ";" << debug[i] << ";"
-                << pluginDefs;
+                << preproc;
+            if (debug[i] != "")
+                out << ";" << debug[i];
+            out << ";" << pluginDefs;
             if (pluginComponent != 'I')
                out << tpPreproc;
             out << "\"" << Endl;
@@ -690,7 +698,6 @@
                 << pluginSuffix << ".dll\"" << Endl;
             out << "\t\t\t\tLinkIncremental=\"" << li[i] << "\"" << Endl;
             out << "\t\t\t\tSuppressStartupBanner=\"true\"" << Endl;
-            out << "\t\t\t\tAdditionalLibraryDirectories=\"\"" << Endl;
             if (configs[i] != "Release")
                 out << "\t\t\t\tGenerateDebugInformation=\"true\"" << Endl;
             out << "\t\t\t\tProgramDatabaseFile=\".\\" << configs[i] 
@@ -755,20 +762,13 @@
 #endif
             out << "\t\t\t\t>" << Endl;
 
-            for (int j = 0; j < 3; ++j)
+            for (int j = 0; j < nConfigs; ++j)
             {
                 out << "\t\t\t\t<FileConfiguration" << Endl;
                 out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\"" << Endl;
                 out << "\t\t\t\t\t>" << Endl;
                 out << "\t\t\t\t\t<Tool" << Endl;
                 out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << Endl;
-                out << "\t\t\t\t\t\tOptimization=\"" << optims[j] 
-                    << "\"" << Endl;
-                out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" 
-                    << Endl;
-                if (configs[j] != "Release")
-                    out << "\t\t\t\t\t\tBasicRuntimeChecks=\"" << brc[j] 
-                        << "\"" << Endl;
                 out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << Endl;
                 out << "\t\t\t\t</FileConfiguration>" << Endl;
             }

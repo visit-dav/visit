@@ -42,9 +42,6 @@
 
 #ifndef AVT_MULTI_CURVE_LABEL_MAPPER_H
 #define AVT_MULTI_CURVE_LABEL_MAPPER_H
-#include <plotter_exports.h>
-
-
 #include <avtDecorationsMapper.h>
 
 class     vtkDataSet;
@@ -63,7 +60,7 @@ class     vtkDataSet;
 //
 // ****************************************************************************
 
-class PLOTTER_API  avtMultiCurveLabelMapper : public avtDecorationsMapper
+class avtMultiCurveLabelMapper : public avtDecorationsMapper
 {
   public:
                                avtMultiCurveLabelMapper();

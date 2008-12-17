@@ -64,6 +64,9 @@
 //    Brad Whitlock, Tue Nov 18 16:16:49 PST 2008
 //    Qt 4.
 //
+//    Kathleen Bonnell, Wed Dec 17 15:25:45 MST 2008
+//    Update moc location to reflect QT 4, Remove unnecessary blocks. 
+//
 // ****************************************************************************
 
     void WriteProject_TOP_LEVEL_Version7(QTextStream &out)
@@ -365,14 +368,6 @@
                 out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\">" << Endl;
                 out << "\t\t\t\t\t<Tool" << Endl;
                 out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << Endl;
-                out << "\t\t\t\t\t\tOptimization=\"" << optims[j] 
-                    << "\"" << Endl;
-                out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" 
-                    << Endl;
-                if (configs[j] == "Debug")
-                    out << "\t\t\t\t\t\tBasicRuntimeChecks=\"3\"" << Endl;
-                else if (configs[j] == "Purify")
-                    out << "\t\t\t\t\t\tBasicRuntimeChecks=\"0\"" << Endl;
                 out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << Endl;
                 out << "\t\t\t\t</FileConfiguration>" << Endl;
             }
@@ -408,12 +403,14 @@
                 for (int j = 0; j < 3; j++)
                 {
                     out << "\t\t\t\t<FileConfiguration" << Endl;
-                    out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\">" << Endl;
+                    out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\">" 
+                        << Endl;
                     out << "\t\t\t\t\t<Tool" << Endl;
                     out << "\t\t\t\t\t\tName=\"VCCustomBuildTool\"" << Endl;
                     out << "\t\t\t\t\t\tDescription=\"Moc&apos;ing " 
                         << hdrFiles[i] << " ...\"" << Endl;
-                    out << "\t\t\t\t\t\tCommandLine=\"$(QTDIR)\\bin\\moc.exe "
+                    out << "\t\t\t\t\t\tCommandLine="
+                        << "\"..\\..\\bin\\MSVC7.Net\\ThirdParty\\moc.exe "
                         << pluginBase;
                     if (withinDevDir)
                         out << "\\" << pluginType << "\\" << name;
@@ -422,7 +419,8 @@
                         out << "\\" << pluginType << "\\" << name;
                     out << "\\" << mocFiles[i] << "\"" << Endl;
                     out << "\t\t\t\t\t\tAdditionalDependencies="
-                        << "\"$(QTDIR)\\bin\\moc.exe\"" << Endl;
+                        << "\"..\\..\\bin\\MSVC7.Net\\ThirdParty\\moc.exe\"" 
+                        << Endl;
                     out << "\t\t\t\t\t\tOutputs=\"" << pluginBase;
                     if (withinDevDir)
                         out << "\\" << pluginType << "\\" << name;
@@ -695,13 +693,6 @@
                 out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\">" << Endl;
                 out << "\t\t\t\t\t<Tool" << Endl;
                 out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << Endl;
-                out << "\t\t\t\t\t\tOptimization=\"" << optims[j] 
-                    << "\"" << Endl;
-                out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" 
-                    << Endl;
-                if (configs[j] != "Release")
-                    out << "\t\t\t\t\t\tBasicRuntimeChecks=\"" << brc[j] 
-                        << "\"" << Endl;
                 out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << Endl;
                 out << "\t\t\t\t</FileConfiguration>" << Endl;
             }
