@@ -3740,6 +3740,12 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
 //    Cyrus Harrison, Fri Jul 20 09:28:40 PDT 2007
 //    Fixed typos (Decomp_Pack vs [correct] Decomp_pack)
 //
+//    Jeremy Meredith, Thu Dec 18 12:15:02 EST 2008
+//    Recoded the section to read the non-packed representation so that it
+//    reads variables in the Domain_%d subdirectories directly; DBSetDir
+//    became very slow on some files with lots of domains, but reading
+//    the variables directly seemed to avoid these speed issues.
+//
 // ****************************************************************************
 
 
@@ -3787,32 +3793,31 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
         for (int j = 0 ; j < ndomains ; j++)
         {
             char dirname[256];
-            if (j > 0)
-                sprintf(dirname, "../Domain_%d", j);
-            else
-                sprintf(dirname, "Domain_%d", j);
-            if (DBSetDir(dbfile, dirname))
+            sprintf(dirname, "Domain_%d", j);
+            if (!DBInqVarExists(dbfile, dirname))
             {
                 ndomains = -1;
                 numGroups = -1;
                 break;
             }
 
+            char varname[256];
             if (needConnectivityInfo)
             {
-                DBReadVar(dbfile, "Extents", &extents[j*6]);
-                DBReadVar(dbfile, "NumNeighbors", &nneighbors[j]);
+                sprintf(varname, "Domain_%d/Extents", j);
+                DBReadVar(dbfile, varname, &extents[j*6]);
+                sprintf(varname, "Domain_%d/NumNeighbors", j);
+                DBReadVar(dbfile, varname, &nneighbors[j]);
                 lneighbors += nneighbors[j] * 11;
             }
 
             if (needGroupInfo)
             {
-                DBReadVar(dbfile, "BlockNum", &(groupIds[j]));
+                sprintf(varname, "Domain_%d/BlockNum", j);
+                DBReadVar(dbfile, varname, &(groupIds[j]));
             }
 
-    }
-
-        DBSetDir(dbfile, "..");
+        }
 
         if (needConnectivityInfo)
         {
@@ -9224,16 +9229,27 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 //    Jeremy Meredith, Tue Sep 13 16:00:16 PDT 2005
 //    Changed domainDirs to a set to ensure log(n) access times.
 //
+//    Jeremy Meredith, Thu Dec 18 12:17:40 EST 2008
+//    Avoid descending through the top-level decomposition directories.
+//    In that convention, there will be no mesh variables in those trees,
+//    but in files with many domains, walking that subtree can be very slow.
+//    Also, re-use the count of dirname in domainDirs; don't check twice.
+//
 // ****************************************************************************
 
 bool
 avtSiloFileFormat::ShouldGoToDir(const char *dirname)
 {
-    if (domainDirs.count(dirname) == 0)
+    bool shouldGo = (domainDirs.count(dirname) == 0);
+    if (shouldGo)
         debug5 << "Deciding to go into dir \"" << dirname << "\"" << endl;
     else
         debug5 << "Skipping dir \"" << dirname << "\"" << endl;
-    return (domainDirs.count(dirname) == 0);
+    if (strcmp(dirname, "/Decomposition") == 0)
+        shouldGo = false;
+    if (strcmp(dirname, "/Global") == 0)
+        shouldGo = false;
+    return (shouldGo);
 }
 
 
