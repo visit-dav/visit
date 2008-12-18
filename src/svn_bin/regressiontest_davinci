@@ -237,7 +237,7 @@ if test $optError -eq 1; then
 fi
 
 # check that /projectdir is actually there. Sometimes it is down for maint.
-if test ! -d /project/projectdirs/visit
+if test ! -d /project/projectdirs/visit; then
     checkAndHandleError 1 fatal "/project/projectdirs/visit is down"
 fi
 
