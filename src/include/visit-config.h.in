@@ -220,6 +220,9 @@
 /* Define USE_PTY if we want to use PTYs. */
 #undef USE_PTY
 
+/* Define to enable Tuvok-based code */
+#undef USE_TUVOK
+
 /* VisIt version */
 #undef VERSION
 
