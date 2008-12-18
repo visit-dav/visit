@@ -35,19 +35,21 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
 // ************************************************************************* //
 //                     avtOpenGLTuvokVolumeRenderer.h                        //
 // ************************************************************************* //
-
 #ifndef AVT_OPEN_GL_TUVOK_VOLUME_RENDERER_H
 #define AVT_OPEN_GL_TUVOK_VOLUME_RENDERER_H
+
+#include <visit-config.h>
 
 #include <avtVolumeRendererImplementation.h>
 
 #include <VolumeAttributes.h>
 #include <LightList.h>
-#include <Tuvok/Controller/MasterController.h>
+#ifdef USE_TUVOK
+#   include <Tuvok/Controller/MasterController.h>
+#endif
 
 // ****************************************************************************
 //  Class: avtOpenGLTuvokVolumeRenderer
@@ -57,7 +59,7 @@
 //      originally written by Jens Krueger
 //
 //  Programmer: Josh Stratton
-//  Creation:   Mon Dec 15 11:48:33 MST 2008
+//  Creation:   Thu Dec 18 09:58:53 MST 2008
 //
 //  Modifications:
 //
@@ -80,16 +82,8 @@ class avtOpenGLTuvokVolumeRenderer : public avtVolumeRendererImplementation
                                    float *gx, float *gy, float *gz, float *gmn,
                                    bool reducedDetail);
 
+#ifdef USE_TUVOK
     MasterController        controller;
-    /*
-    unsigned char          *volumetex;
-    unsigned int            volumetexId;
-    VolumeAttributes        oldAtts;
-    LightList               oldLights;
-    */
-};
-
-
 #endif
-
-
+};
+#endif
