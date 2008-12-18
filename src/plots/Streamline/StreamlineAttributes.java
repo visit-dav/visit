@@ -90,6 +90,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
+    public final static int STREAMLINEALGORITHMTYPE_MASTERSLAVE = 2;
 
 
     public StreamlineAttributes()
@@ -872,6 +873,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "STREAMLINEALGORITHMTYPE_LOADONDEMAND";
         if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS)
             str = str + "STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS";
+        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_MASTERSLAVE)
+            str = str + "STREAMLINEALGORITHMTYPE_MASTERSLAVE";
         str = str + "\n";
         str = str + intToString("maxStreamlineProcessCount", maxStreamlineProcessCount, indent) + "\n";
         str = str + intToString("maxDomainCacheSize", maxDomainCacheSize, indent) + "\n";

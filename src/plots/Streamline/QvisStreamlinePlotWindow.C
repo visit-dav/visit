@@ -437,6 +437,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     slAlgo = new QComboBox(algoGrp);
     slAlgo->addItem(tr("Streamlines"));
     slAlgo->addItem(tr("Domains"));
+    slAlgo->addItem(tr("Streamlines and Domains"));
     connect(slAlgo, SIGNAL(activated(int)),
             this, SLOT(streamlineAlgorithmChanged(int)));
     algoGLayout->addWidget( slAlgoLabel, 1,0);
@@ -1023,6 +1024,7 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 {
     bool useLoadOnDemand = streamAtts->GetStreamlineAlgorithmType() == StreamlineAttributes::LoadOnDemand;
     bool useStaticDomains = streamAtts->GetStreamlineAlgorithmType() == StreamlineAttributes::ParallelStaticDomains;
+    bool useMasterSlave = streamAtts->GetStreamlineAlgorithmType() == StreamlineAttributes::MasterSlave;
     
     //Turn off everything.
     maxDomainCacheLabel->hide();
@@ -1037,6 +1039,13 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
     }
     else if ( useStaticDomains )
     {
+        maxSLCountLabel->show();
+        maxSLCount->show();
+    }
+    else if (useMasterSlave)
+    {
+        maxDomainCacheLabel->show();
+        maxDomainCache->show();
         maxSLCountLabel->show();
         maxSLCount->show();
     }

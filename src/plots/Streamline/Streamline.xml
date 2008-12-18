@@ -41,6 +41,7 @@
       <Enum name="StreamlineAlgorithmType">
         LoadOnDemand
         ParallelStaticDomains
+        MasterSlave
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
