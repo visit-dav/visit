@@ -62,6 +62,8 @@ class vtkPolyData;
 class vtkRibbonFilter;
 class vtkAppendPolyData;
 
+class SlaveInfo;
+
 #define STREAMLINE_SOURCE_POINT      0
 #define STREAMLINE_SOURCE_LINE       1
 #define STREAMLINE_SOURCE_PLANE      2
@@ -87,6 +89,7 @@ class vtkAppendPolyData;
 
 #define STREAMLINE_STAGED_LOAD_ONDEMAND 0
 #define STREAMLINE_PARALLEL_STATIC_DOMAINS 1
+#define STREAMLINE_MASTER_SLAVE 2
 
 class pt3d
 {
@@ -215,6 +218,9 @@ class avtStreamlineWrapper
 //   Hank Childs, Tue Dec  2 13:53:49 PST 2008
 //   Made CreateStreamlineOutput be a pure virtual function.
 //
+//   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
+//   Add 3 point density vars. Add masterSlave algorithm.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -261,7 +267,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     double radius;
     int    displayMethod;
     bool   showStart;
-    int    pointDensity;
+    int    pointDensity1, pointDensity2, pointDensity3;
     int    streamlineDirection;
     int    coloringMethod;
     int    dataSpatialDimension;
@@ -276,11 +282,11 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     std::map<int, vtkVisItCellLocator*> domainToCellLocatorMap;
 
     int numDomainsLoaded, numSLCommunicated, numStatusCommunicated, 
-        numIntegrationSteps, numIterations, numBytesSent;
+        numIntegrationSteps, numIterations, numBytesSent, numBusyLoopIterations;
     int maxSLCommunications, totalMaxSLCommunications;
     int totalNumDomainsLoaded, totalNumSLCommunicated, 
         totalNumStatusCommunicated, totalNumIntegrationSteps, 
-        totalNumIterations, totalNumBytesSent;
+        totalNumIterations, totalNumBytesSent, totalNumBusyLoopIterations;
     bool haveGhostZones;
 #ifdef PARALLEL
     int rank, nProcs;
@@ -291,6 +297,9 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     std::vector<int> allSLCounts;
 
     std::vector<MPI_Request>  statusRecvRequests, slRecvRequests;
+    int                       statusMsgSz;
+    std::vector<SlaveInfo>    slaveInfo;
+    vector<int>               slDomCnts, domLoaded;
 #endif
 
     // Various starting locations for streamlines.
@@ -305,15 +314,35 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     int                       numSeedPts;
     double                    totalTime, wallTime;
     double                    integrationTime, communicationTime, 
-                              IOTime, sortTime;
+                              IOTime, sortTime, sleepTime;
     float                     totalIOTime, totalIntegrationTime, totalCommTime, 
-                              totalTotalTime, totalSortTime;
-    float                     minMaxIOTime[2], minMaxIntegrationTime[2], 
-                              minMaxCommTime[2], minMaxTotalTime[2], 
-                              minMaxSortTime[2];
-    int                       minMaxNumDomains[2], minMaxNumSLComm[2],
-                              minMaxNumStatusComm[2], minMaxNumIntSteps[2], 
-                              minMaxNumIterations[2], minMaxNumBytesSent[2];
+                              totalTotalTime, totalSortTime, totalSleepTime;
+    //Statistics.
+    typedef struct SLStatistics
+    {
+        float min, max, mean, sigma, total;
+        float value;
+    } SLStatistics;
+
+    SLStatistics              IOTimeStats, integrationTimeStats, commTimeStats,
+                              totalTimeStats, sleepTimeStats, sortTimeStats,
+                              loadDomStats, statusCommStats, slCommStats, bytesSentStats,
+                              iterationStats, intStepStats, busyLoopStats;
+
+    /*
+    float                     minMaxIOTime[2], meanIOTime, stdDevIOTime,
+                              minMaxIntegrationTime[2], meanIntTime, stdDevIntTime,
+                              minMaxCommTime[2], meanCommTime, stdDevCommTime,
+                              minMaxTotalTime[2], meanTotalTime, stdDevTotalTime,
+                              minMaxSortTime[2], meanSortTime, stdDevSortTime,
+                              minMaxSleepTime[2],meanSleepTime, stdDevSleepTime;
+    
+    int                       minMaxNumDomains[2],minMaxNumSLComm[2], minMaxNumStatusComm[2],
+                              minMaxNumIntSteps[2], minMaxNumIterations[2],minMaxNumBytesSent[2],
+                              minMaxNumBusyLoopIterations[2];
+    float                     meanNumDomains, stdDevNumDomains, meanNumSLComm, stdDevSLComm,
+    meanStatusComm, stdDevStatusComm;
+    */
 
     double                    gatherTime1, gatherTime2, asyncSLTime, 
                               asyncTermTime, asyncSendCleanupTime;
@@ -338,12 +367,14 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
 
     void                      GetSeedPoints(
                                    std::vector<avtStreamlineWrapper *> &pts);
-    void                      IntegrateStreamline(avtStreamlineWrapper *slSeg);
+    void                      IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps=-1);
     avtIVPSolver::Result      IntegrateDomain(avtStreamlineWrapper *slSeg, 
-                                              vtkDataSet *ds, double *extents);
+                                              vtkDataSet *ds,
+                                              double *extents,
+                                              int maxSteps=-1);
     virtual void              CreateStreamlineOutput( 
-                                   vector<avtStreamlineWrapper *> &streamlines)
-                                  = 0;
+                                                     vector<avtStreamlineWrapper *> &streamlines)
+                                                    = 0;
 
     void                      ReportStatistics(
                                   vector<avtStreamlineWrapper *> &streamlines);
@@ -352,7 +383,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
 
     virtual void              LoadOnDemand(
                                    std::vector<avtStreamlineWrapper *> &sdpts);
-       virtual void           StagedLoadOnDemand(
+    virtual void              StagedLoadOnDemand(
                                    std::vector<avtStreamlineWrapper *> &sdpts);
     virtual void              ParallelBalancedStaticDomains(
                                    std::vector<avtStreamlineWrapper *> &sdpts,
@@ -361,7 +392,22 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
                                    bool loadOnDemand = false );
     virtual void              AsyncStaticDomains( 
                                    std::vector<avtStreamlineWrapper *> &sdpts );
-    
+    virtual void              MasterSlave(
+                                    std::vector<avtStreamlineWrapper *> &sdpts);
+    virtual void             UpdateStatus(vector<avtStreamlineWrapper *> &streamlines,
+                                          vector<vector<int> > &status);
+    virtual void             PrintStatus();
+    virtual void             Case1(vector<avtStreamlineWrapper *> &streamlines );
+    virtual void             Case2(vector<avtStreamlineWrapper *> &streamlines );
+    virtual void             Case3(vector<avtStreamlineWrapper *> &streamlines,
+                                   int overloadFactor,
+                                   int NDomainFactor);
+    virtual void             Case4(vector<avtStreamlineWrapper *> &streamlines,
+                                   int oobThreshold);
+    virtual void              FindSlackers(std::vector<int> &slackers,
+                                           int oobFactor=-1,
+                                           int sortMethod=0,
+                                           bool checkJustUpdated=false);
     /*
     virtual void              AsynchronousParallelStaticDomains(
                                    std::vector<pt3d> &seedpoints);
@@ -387,12 +433,24 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     virtual bool              AsyncExchangeStreamlines( 
                                std::vector<avtStreamlineWrapper *> &streamlines,
                                std::vector< 
-                                    std::vector< avtStreamlineWrapper *> > &);
+                               std::vector< avtStreamlineWrapper *> > &,
+                               int &earlyTerminations);
 
-    virtual void              AsyncExchangeStatus(int numTerminated, 
-                                  int &otherTerminates, bool recvBalanceInfo, 
-                                  bool sendBalanceInfo=false, int slCount=0);
+    virtual void              AsyncExchangeStatus(int numTerminated,
+                                                  int &otherTerminates,
+                                                  bool recvBalanceInfo,
+                                                  bool sendBalanceInfo=false,
+                                                  int slCount=0);
 
+    virtual void              AsyncSendStatus2(int master,
+                                               int numTerminated,
+                                               std::vector<int> &status);
+    virtual bool              AsyncRecvStatus2(int &numTerminated,
+                                               std::vector< std::vector<int> > &slaveStatus);
+    virtual bool              AsyncRecvMasterMsg(std::vector< std::vector<int> > &balanceInfo);
+    virtual void              AsyncSendSlaveMsgs(int dst, int msg, std::vector<int> &info);
+    virtual void              AsyncSendSlaveMsgs(int msg, std::vector<int> &info);
+    
     virtual void              FigureOutBalancing( 
                                  std::vector<avtStreamlineWrapper *> &slines, 
                                  float loadFactor );
@@ -422,7 +480,8 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
 
     virtual void              PrintLoadBalanceInfo();
     virtual int               AsyncRecvStreamlines(
-                                  std::vector<avtStreamlineWrapper *> &slines);
+                                    std::vector<avtStreamlineWrapper *> &slines,
+                                    int &earlyTerminations );
     virtual void              AsyncRecvs(
                                 std::vector<avtStreamlineWrapper *> &slines, 
                                 bool blockingWait, int *numSLs, int *numTerm );
@@ -441,6 +500,9 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
 
     void                      InitStatistics();
     void                      FinalizeStatistics();
+    void                      ComputeStatistics( float val,
+                                                 SLStatistics &stats,
+                                                 bool skipMaster=false);
 };
 
 

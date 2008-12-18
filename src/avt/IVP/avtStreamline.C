@@ -132,12 +132,17 @@ avtStreamline::~avtStreamline()
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Changed how distanced based termination is computed.
 //
+//    Dave Pugmire, Wed Dec  3 08:33:42 EST 2008
+//    Added maxSteps argument to optionally control how many integration steps
+//    are taken.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
 avtStreamline::Advance(const avtIVPField* field,
                        bool timeMode,
                        double end,
+                       int maxSteps,
                        bool vorticity,
                        bool haveGhostZones,
                        double *extents)
@@ -162,9 +167,11 @@ avtStreamline::Advance(const avtIVPField* field,
     }
     
     if (tEnd < TMin())
-        return DoAdvance(_ivp_bwd, field, tEnd, dEnd, timeMode, haveGhostZones, extents);
+        return DoAdvance(_ivp_bwd, field, tEnd, dEnd, timeMode,
+                         maxSteps, haveGhostZones, extents);
     else if (tEnd > TMax())
-        return DoAdvance(_ivp_fwd, field, tEnd, dEnd, timeMode, haveGhostZones, extents);
+        return DoAdvance(_ivp_fwd, field, tEnd, dEnd, timeMode,
+                         maxSteps, haveGhostZones, extents);
     
     return avtIVPSolver::OK;
 }
@@ -196,6 +203,10 @@ avtStreamline::Advance(const avtIVPField* field,
 //    Fixed a memory leak. If the solver step fails, delete the avtIVPStep
 //    before continuing.
 //
+//    Dave Pugmire, Wed Dec  3 08:33:42 EST 2008
+//    Added maxSteps argument to optionally control how many integration steps
+//    are taken.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -204,6 +215,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                          double tEnd,
                          double dEnd,
                          bool timeMode,
+                         int maxSteps,
                          bool haveGhostZones,
                          double *extents)
 {
@@ -217,6 +229,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
         return avtIVPSolver::OUTSIDE_DOMAIN;
     }
     
+    int numSteps = 0;
     while (1)
     {
         // record state for later restore, if needed
@@ -228,12 +241,13 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 
         try
         {
-            debug1<< "Step( t= "<<tEnd<<", d= "<<dEnd<<" );\n";
+            //debug1<< "Step( t= "<<tEnd<<", d= "<<dEnd<<" );\n";
             result = ivp->Step(field, timeMode, tEnd, dEnd, step);
+            numSteps++;
         }
         catch( avtIVPField::Undefined& )
         {
-            debug1<<ivp->GetCurrentY()<<" not in domain\n";
+            //debug1<<ivp->GetCurrentY()<<" not in domain\n";
             // integrator left the domain, retry with smaller step
             // if step size is below given minimum, give up
 
@@ -288,6 +302,12 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                 {
                     break;
                 }
+            }
+            
+            // Max steps reached. Bail out.
+            if (maxSteps != -1 && numSteps >= maxSteps)
+            {
+                break;
             }
         }
         else

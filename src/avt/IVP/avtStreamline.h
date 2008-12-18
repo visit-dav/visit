@@ -86,6 +86,10 @@
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Chagned how distanced based termination is computed.
 //
+//    Dave Pugmire, Wed Dec  3 08:33:42 EST 2008
+//    Added maxSteps argument to Advance() to optionally control how many
+//    integration steps are taken.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -105,6 +109,7 @@ class IVP_API avtStreamline
     avtIVPSolver::Result Advance(const avtIVPField* field,
                                  bool timeMode,
                                  double end,
+                                 int  maxSteps=-1,
                                  bool vorticity=false,
                                  bool haveGhostZones=false,
                                  double *extents=NULL);
@@ -140,6 +145,7 @@ class IVP_API avtStreamline
                                    double tEnd,
                                    double dEnd,
                                    bool timeMode,
+                                   int maxSteps=-1,
                                    bool haveGhostZones=false,
                                    double *extents=NULL);
 
