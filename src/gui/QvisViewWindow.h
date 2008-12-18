@@ -124,6 +124,9 @@ class QPushButton;
 //   Brad Whitlock, Wed Apr  9 11:02:38 PDT 2008
 //   QString for caption, shortName.
 //
+//   Cyrus Harrison, Thu Dec 18 09:36:57 PST 2008
+//   Changed argument for tabSelected slot to an integer for Qt4.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -205,7 +208,7 @@ private slots:
     void resetView();
     void recenterView();
     void undoView();
-    void tabSelected(const QString &);
+    void tabSelected(int);
 private:
     void ParseViewCommands(const char *str);
     void Pan(double panx, double pany);

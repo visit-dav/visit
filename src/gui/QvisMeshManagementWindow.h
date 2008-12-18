@@ -76,6 +76,9 @@ class QVBox;
 //   Cyrus Harrison, Wed Jul  2 11:16:25 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Cyrus Harrison, Thu Dec 18 09:29:37 PST 2008
+//   Removed tabSelected slot b/c it was an empty method.
+//
 // ****************************************************************************
 
 class GUI_API QvisMeshManagementWindow : public QvisPostableWindowObserver
@@ -101,7 +104,6 @@ private slots:
     void processSmallestZoneText(const QString &);
     void processFlatEnoughText();
     void processFlatEnoughText(const QString &);
-    void tabSelected(const QString &tabLabel);
     void renderCSGDirectChanged(bool);
     void discretizeBoundaryOnlyChanged(bool);
     void discretizationModeChanged(int);
