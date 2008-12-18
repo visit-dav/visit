@@ -65,6 +65,10 @@ exec perl -x $0 ${1+"$@"};
 #    Sean Ahern, Mon Aug  4 10:55:39 EDT 2008
 #    Changed how we run perl.
 #
+#    Jeremy Meredith, Thu Dec 18 15:18:10 EST 2008
+#    Quote the $visitdir string by adding backslashes to special
+#    characters before passing it into a regular expression.
+#
 ###############################################################################
 
 
@@ -288,8 +292,9 @@ if (-d "$visitdir/exe")
 else
 {
     # look for the version-specific visit script to determine viable versions
-    @exe = <$visitdir/*/bin/internallauncher>;
-    @exeversions = map {m|^$visitdir/(.*?)/|; $_ = $1;} @exe;
+    $visitdirquoted = quote_string($visitdir);
+    @exe = <$visitdirquoted/*/bin/internallauncher>;
+    @exeversions = map {m|^$visitdirquoted/(.*?)/|; $_ = $1;} @exe;
     $current_version = readlink("$visitdir/current");
     $beta_version    = readlink("$visitdir/beta");
 
@@ -405,3 +410,14 @@ $ENV{VISITDIR}     = $visitdir;
 # -----------------------------------------------------------------------------
 @visitcmd = ("${visitdir}/bin/internallauncher", @visitargs);
 exec @visitcmd or die "Can't execute visit launcher script: $!\n";
+
+
+# -----------------------------------------------------------------------------
+#                          Helper functions
+# -----------------------------------------------------------------------------
+sub quote_string
+{
+    my ($str) = @_;
+    $str =~ s/([\+\{\}\(\)])/\\$1/g;
+    return $str;
+}
