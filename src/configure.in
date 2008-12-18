@@ -2010,15 +2010,10 @@ AC_TRY_COMPILE([#include <sys/types.h>
 #
 AC_CHECK_LIB(m, main)
 
-# Handle Tuvok
 #
-BUILD_TUVOK="Tuvok"
-TUVOK_LIB="-lTuvok"
-TUVOK_INCLUDE = "-I$""(TOPDIR)/include/Tuvok"
-# not sure if the following is necessary
-AC_SUBST(BUILD_TUVOK)
-AC_SUBST(TUVOK_INCLUDE)
-AC_SUBST(TUVOK_LIB) # primarily for mac pre-binding
+# Check if the user wants to use Tuvok
+#
+AX_TUVOK
 
 #
 # Handle zlib. By default, we try to find a zlib because VisIt can
