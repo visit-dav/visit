@@ -102,7 +102,8 @@ public:
     enum StreamlineAlgorithmType
     {
         LoadOnDemand,
-        ParallelStaticDomains
+        ParallelStaticDomains,
+        MasterSlave
     };
 
     StreamlineAttributes();

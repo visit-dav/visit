@@ -277,20 +277,21 @@ StreamlineAttributes::IntegrationType_FromString(const std::string &s, Streamlin
 //
 
 static const char *StreamlineAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains"};
+"LoadOnDemand", "ParallelStaticDomains", "MasterSlave"
+};
 
 std::string
 StreamlineAttributes::StreamlineAlgorithmType_ToString(StreamlineAttributes::StreamlineAlgorithmType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return StreamlineAlgorithmType_strings[index];
 }
 
 std::string
 StreamlineAttributes::StreamlineAlgorithmType_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return StreamlineAlgorithmType_strings[index];
 }
 
@@ -298,7 +299,7 @@ bool
 StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, StreamlineAttributes::StreamlineAlgorithmType &val)
 {
     val = StreamlineAttributes::LoadOnDemand;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == StreamlineAlgorithmType_strings[i])
         {
@@ -1335,7 +1336,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetStreamlineAlgorithmType(StreamlineAlgorithmType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
