@@ -3716,7 +3716,7 @@ function build_silo
        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
        WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
-       SILO_LINK_OPT="-L$HDF5LIB -lhdf5"
+       SILO_LINK_OPT="-L$HDF5LIB -lhdf5 -lz"
     else
        WITHHDF5ARG="--without-hdf5"
     fi
@@ -3784,7 +3784,7 @@ function build_silo
             SILO_H5="h5"
         fi
         ar x ../src/.libs/libsilo${SILO_H5}.a
-        $C_COMPILER -dynamiclib -o libsilo${SILO_H5}.${SO_EXT} *.o \
+        $CXX_COMPILER -dynamiclib -o libsilo${SILO_H5}.${SO_EXT} *.o \
            -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libsilo${SILO_H5}.${SO_EXT} \
            -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
