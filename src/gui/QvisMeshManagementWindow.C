@@ -134,6 +134,11 @@ QvisMeshManagementWindow::~QvisMeshManagementWindow()
 //   Cyrus Harrison, Wed Jul  2 11:16:25 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Cyrus Harrison, Thu Dec 18 09:28:16 PST 2008
+//   Removed "selected" signal connection for the tab widget and the 
+//   tabSelected slot. This signal does not exist in Qt4 & the slot code 
+//   was empty.
+//   
 // ****************************************************************************
 
 void
@@ -141,8 +146,6 @@ QvisMeshManagementWindow::CreateWindowContents()
 {
 
     tabs = new QTabWidget(central);
-    connect(tabs, SIGNAL(selected(const QString &)),
-            this, SLOT(tabSelected(const QString &)));
     topLayout->setSpacing(5);
     topLayout->addWidget(tabs);
 
@@ -452,10 +455,6 @@ QvisMeshManagementWindow::reset()
     GetViewerMethods()->ResetMeshManagementAttributes();
 }
 
-void
-QvisMeshManagementWindow::tabSelected(const QString &tabLabel)
-{
-}
 
 void
 QvisMeshManagementWindow::renderCSGDirectChanged(bool val)

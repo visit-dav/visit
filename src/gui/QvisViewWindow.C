@@ -216,6 +216,10 @@ QvisViewWindow::~QvisViewWindow()
 //   Brad Whitlock, Wed Jun 18 13:44:44 PDT 2008
 //   Qt 4.
 //
+//   Cyrus Harrison, Thu Dec 18 09:36:57 PST 2008
+//   Changed the signal used and the argument for tabSelected slot to 
+//   an integer for Qt4.
+//
 // ****************************************************************************
 
 void
@@ -223,8 +227,8 @@ QvisViewWindow::CreateWindowContents()
 {
     // Group the options into curve, 2d, 3d and advanced tabs.
     tabs = new QTabWidget(central);
-    connect(tabs, SIGNAL(selected(const QString &)),
-            this, SLOT(tabSelected(const QString &)));
+    connect(tabs, SIGNAL(currentChanged(int)),
+            this, SLOT(tabSelected(int)));
     topLayout->setSpacing(5);
     topLayout->addWidget(tabs);
 
@@ -2229,20 +2233,16 @@ QvisViewWindow::processCommandText()
 // Modifications:
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I added support for curve views.
+//
+//   Cyrus Harrison, Thu Dec 18 09:35:25 PST 2008
+//   Changed input argument to tab index instead of tab name for Qt4.
 //   
 // ****************************************************************************
 
 void
-QvisViewWindow::tabSelected(const QString &tabLabel)
+QvisViewWindow::tabSelected(int index)
 {
-    if(tabLabel == QString("Curve view"))
-        activeTab = 0;
-    else if(tabLabel == QString("2D view"))
-        activeTab = 1;
-    else if(tabLabel == QString("3D view"))
-        activeTab = 2;
-    else
-        activeTab = 3;
+    activeTab = index;
     activeTabSetBySlot = true;
 }
 
