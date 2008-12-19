@@ -1386,6 +1386,10 @@ avtConnComponentsExpression::UnionFind::Find(int label)
 //  Programmer: Cyrus Harrison
 //  Creation:   January  23, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Dec 18 16:14:19 PST 2008
+//    Fixed typo with the first rank test.
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::UnionFind::Union(int label_x, int label_y)
@@ -1400,7 +1404,7 @@ avtConnComponentsExpression::UnionFind::Union(int label_x, int label_y)
     int find_y = Find(label_y);
 
     // set parent based on which has higher rank
-    if(ranks[find_x] > ranks[find_x])
+    if(ranks[find_x] > ranks[find_y])
     {
         parents[find_y] = find_x;
     }
