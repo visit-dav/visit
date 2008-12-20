@@ -4683,13 +4683,33 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
 }
 
 // ****************************************************************************
+//  Function: compare_node_ids
+//
+//  Purpose: Callback for qsort calls to sort vector of nodes of a face. 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 19, 2008 
+// ****************************************************************************
+static int
+compare_node_ids(const void *a, const void *b)
+{
+    int *ia = (int *) a;
+    int *ib = (int *) b;
+    if (*ia < *ib)
+        return -1;
+    else if (*ia > *ib)
+        return 1;
+    else return 0;
+}
+
+// ****************************************************************************
 //  Function: compare_ev_pair 
 //
 //  Purpose: Callback for qsort calls to sort vector of elemid/elemvalue 
 //           meshes
 //
 //  Programmer: Mark C. Miller 
-//  Creation:   December 12, 2008 
+//  Creation:   December 19, 2008 
 // ****************************************************************************
 
 typedef struct {int id; int val;} ev_pair_t;
@@ -4724,7 +4744,11 @@ compare_ev_pair(const void *a, const void *b)
 //  screwing up the faceIdx or edgeIdx value.
 //
 //  Programmer: Mark C. Miller 
-//  Creation:   December 12, 2008 
+//  Creation:   December 19, 2008 
+//
+//  Modifications:
+//    Mark C. Miller, Sat Dec 20 08:31:29 PST 2008
+//    Added 3D code.
 // ****************************************************************************
 
 static void
@@ -4857,6 +4881,221 @@ PaintNodesForAnnotIntFacelist(float *ptr,
     }
     else // 3D case
     {
+        map<int, map<int, map<int, map<int,bool> > > > previouslySeenFacesMap;
+
+        int faceIdx = 0;
+        int nlIdx = 0;
+        int elemIdx = 0;
+        for (int seg = 0; seg < zl->nshapes; seg++)
+        {
+            for (int zn = 0; zn < zl->shapecnt[seg]; zn++)
+            {
+                //
+                // For each zone we build a tiny list of its faces where
+                // each face is represented by 4 node ids from the zonelist's
+                // nodelist. For tris, the last id is set to -1. The face
+                // and node orders represented below are taken directly from
+                // the Silo user's manual.
+                //
+                int nfaces = 0;
+                int face[6][4];
+                switch (zl->shapetype[seg])
+                {
+                    case DB_ZONETYPE_TET:
+                    {
+                        face[0][0] = zl->nodelist[nlIdx+0];
+                        face[0][1] = zl->nodelist[nlIdx+1];
+                        face[0][2] = zl->nodelist[nlIdx+2];
+                        face[0][3] = -1;
+                        face[1][0] = zl->nodelist[nlIdx+0];
+                        face[1][1] = zl->nodelist[nlIdx+2];
+                        face[1][2] = zl->nodelist[nlIdx+3];
+                        face[1][3] = -1;
+                        face[2][0] = zl->nodelist[nlIdx+0];
+                        face[2][1] = zl->nodelist[nlIdx+3];
+                        face[2][2] = zl->nodelist[nlIdx+1];
+                        face[2][3] = -1;
+                        face[3][0] = zl->nodelist[nlIdx+1];
+                        face[3][1] = zl->nodelist[nlIdx+3];
+                        face[3][2] = zl->nodelist[nlIdx+2];
+                        face[3][3] = -1;
+                        nfaces = 4;
+                    }
+                    case DB_ZONETYPE_PYRAMID:
+                    {
+                        face[0][0] = zl->nodelist[nlIdx+0];
+                        face[0][1] = zl->nodelist[nlIdx+1];
+                        face[0][2] = zl->nodelist[nlIdx+2];
+                        face[0][3] = zl->nodelist[nlIdx+3];
+                        face[1][0] = zl->nodelist[nlIdx+0];
+                        face[1][1] = zl->nodelist[nlIdx+3];
+                        face[1][2] = zl->nodelist[nlIdx+4];
+                        face[1][3] = -1;
+                        face[2][0] = zl->nodelist[nlIdx+0];
+                        face[2][1] = zl->nodelist[nlIdx+4];
+                        face[2][2] = zl->nodelist[nlIdx+1];
+                        face[2][3] = -1;
+                        face[3][0] = zl->nodelist[nlIdx+1];
+                        face[3][1] = zl->nodelist[nlIdx+4];
+                        face[3][2] = zl->nodelist[nlIdx+2];
+                        face[3][3] = -1;
+                        face[4][0] = zl->nodelist[nlIdx+2];
+                        face[4][1] = zl->nodelist[nlIdx+4];
+                        face[4][2] = zl->nodelist[nlIdx+3];
+                        face[4][3] = -1;
+                        nfaces = 5;
+                    }
+                    case DB_ZONETYPE_PRISM:
+                    {
+                        face[0][0] = zl->nodelist[nlIdx+0];
+                        face[0][1] = zl->nodelist[nlIdx+1];
+                        face[0][2] = zl->nodelist[nlIdx+2];
+                        face[0][3] = zl->nodelist[nlIdx+3];
+                        face[1][0] = zl->nodelist[nlIdx+0];
+                        face[1][1] = zl->nodelist[nlIdx+3];
+                        face[1][2] = zl->nodelist[nlIdx+4];
+                        face[1][3] = -1;
+                        face[2][0] = zl->nodelist[nlIdx+0];
+                        face[2][1] = zl->nodelist[nlIdx+4];
+                        face[2][2] = zl->nodelist[nlIdx+5];
+                        face[2][3] = zl->nodelist[nlIdx+1];
+                        face[3][0] = zl->nodelist[nlIdx+1];
+                        face[3][1] = zl->nodelist[nlIdx+5];
+                        face[3][2] = zl->nodelist[nlIdx+2];
+                        face[3][3] = -1;
+                        face[4][0] = zl->nodelist[nlIdx+2];
+                        face[4][1] = zl->nodelist[nlIdx+5];
+                        face[4][2] = zl->nodelist[nlIdx+4];
+                        face[4][3] = zl->nodelist[nlIdx+3];
+                        nfaces = 5;
+                    }
+                    case DB_ZONETYPE_HEX:
+                    {
+                        face[0][0] = zl->nodelist[nlIdx+0];
+                        face[0][1] = zl->nodelist[nlIdx+1];
+                        face[0][2] = zl->nodelist[nlIdx+5];
+                        face[0][3] = zl->nodelist[nlIdx+4];
+                        face[1][0] = zl->nodelist[nlIdx+0];
+                        face[1][1] = zl->nodelist[nlIdx+3];
+                        face[1][2] = zl->nodelist[nlIdx+2];
+                        face[1][3] = zl->nodelist[nlIdx+1];
+                        face[2][0] = zl->nodelist[nlIdx+0];
+                        face[2][1] = zl->nodelist[nlIdx+4];
+                        face[2][2] = zl->nodelist[nlIdx+7];
+                        face[2][3] = zl->nodelist[nlIdx+3];
+                        face[3][0] = zl->nodelist[nlIdx+1];
+                        face[3][1] = zl->nodelist[nlIdx+2];
+                        face[3][2] = zl->nodelist[nlIdx+6];
+                        face[3][3] = zl->nodelist[nlIdx+5]; 
+                        face[4][0] = zl->nodelist[nlIdx+2];
+                        face[4][1] = zl->nodelist[nlIdx+3];
+                        face[4][2] = zl->nodelist[nlIdx+7];
+                        face[4][3] = zl->nodelist[nlIdx+6];
+                        face[5][0] = zl->nodelist[nlIdx+4];
+                        face[5][1] = zl->nodelist[nlIdx+5];
+                        face[5][2] = zl->nodelist[nlIdx+6];
+                        face[5][3] = zl->nodelist[nlIdx+7];
+                        nfaces = 6;
+                    }
+                }
+                nlIdx += zl->shapesize[seg];
+            
+                for (int i = 0; i < nfaces; i++)
+                {
+                    bool unseenFace = false;
+
+                    // Ensure list of nodes for face is in sorted order
+                    // so that when we lookup an face in the previouslySeenEdgesMap
+                    // we do it consistently with lowest node id first.
+                    qsort(face[i], 4, sizeof(int), compare_node_ids);
+
+                    // Do a find on node id 0 of the face.
+                    map<int, map<int, map<int, map<int, bool> > > >::iterator f0it =
+                        previouslySeenFacesMap.find(face[i][0]);
+
+                    if (f0it == previouslySeenFacesMap.end())
+                        unseenFace = true;
+                    else
+                    {
+                        // Do a find on node id 1 of the face.
+                        map<int, map<int, map<int, bool> > >::iterator f1it =
+                            f0it->second.find(face[i][1]);
+                        if (f1it == f0it->second.end())
+                            unseenFace = true;
+                        else
+                        {
+                            // Do a find on node id 2 of the face.
+                            map<int, map<int, bool> >::iterator f2it =
+                                f1it->second.find(face[i][2]);
+                            if (f2it == f1it->second.end())
+                                unseenFace = true;
+                            else
+                            {
+                                // Do a find on node id 3 of the face.
+                                map<int, bool>::iterator f3it =
+                                    f2it->second.find(face[i][3]);
+                                if (f3it == f2it->second.end())
+                                    unseenFace = true;
+                                else
+                                {
+                                    //
+                                    // Since we know we'll only ever see any given face at most
+                                    // twice, when we arrive here, we know we're seeing it for
+                                    // the second time and we can safely erase it, reducing
+                                    // storage a bit as we go. In theory, this would reduce by
+                                    // half the average storage requirement of the map.
+                                    f2it->second.erase(f3it);
+                                    if (f2it->second.size() == 0)
+                                    {
+                                        f1it->second.erase(f2it);
+                                        if (f1it->second.size() == 0)
+                                        {
+                                            f0it->second.erase(f1it);
+                                            if (f0it->second.size() == 0)
+                                                previouslySeenFacesMap.erase(f0it);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (unseenFace)
+                    {
+                        previouslySeenFacesMap[face[i][0]][face[i][1]]
+                            [face[i][2]][face[i][3]] = true;
+
+                        //
+                        // If the face id of the current face (faceIdx) is the
+                        // same as the current one in the list we are here to paint,
+                        // then paint it.
+                        //
+                        if (faceIdx == elemidv[elemIdx].id)
+                        {
+                            UpdateNodelistEntry(ptr, face[i][0], elemidv[elemIdx].val,
+                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                            UpdateNodelistEntry(ptr, face[i][1], elemidv[elemIdx].val,
+                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                            UpdateNodelistEntry(ptr, face[i][2], elemidv[elemIdx].val,
+                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                            if (face[i][3] != -1)
+                                UpdateNodelistEntry(ptr, face[i][3], elemidv[elemIdx].val,
+                                    -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                            elemIdx++;
+
+                            //
+                            // If we've reached the end of the list of face ids we
+                            // are here to paint, then we are done.
+                            //
+                            if (elemIdx >= elemidv.size())
+                                return;
+                        }
+
+                        faceIdx++;
+                    }
+                }
+            }
+        }
     }
 }
 
