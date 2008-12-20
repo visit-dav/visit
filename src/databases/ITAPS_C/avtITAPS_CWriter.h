@@ -89,7 +89,7 @@ class avtITAPS_CWriter : public virtual avtDatabaseWriter
   private:
     string         stem;
     string         dir;
-    string         formatType;
+    string         saveOptions;
     string         formatExtension;
     int            nblocks;
 };
