@@ -238,6 +238,10 @@ avtVolumeFilter::Execute(void)
 //    Hank Childs, Sat Aug 30 10:51:40 PDT 2008
 //    Turn on shading.
 //
+//    Hank Childs, Fri Dec 19 15:42:39 PST 2008
+//    Fix an indexing problem with kernel based sampling combined with
+//    lighting.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -456,7 +460,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     if (atts.GetSampling() == VolumeAttributes::KernelBased)
     {
         software->SetKernelBasedSampling(true);
-        compositeRF->SetWeightVariableIndex(vl.nvars);
+        compositeRF->SetWeightVariableIndex(count);
     }
     
     if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
