@@ -244,6 +244,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     int                   dontForceSingle; // used primarily for testing
     bool                  ignoreSpatialExtents;
     bool                  ignoreDataExtents;
+    bool                  searchForAnnotInt;
     bool                  readGlobalInfo;
     bool                  connectivityIsTimeVarying;
     bool                  hasDisjointElements;
@@ -283,6 +284,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     map<int, vector<int> >          nlBlockToWindowsMap;
     vector<vector<int> >            pascalsTriangleMap;
     int                             numNodeLists;
+    int                             maxAnnotIntLists;
 
     DBfile               *GetFile(int);
     DBfile               *OpenFile(int, bool skipGlobalInfo = false);
@@ -300,6 +302,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                           const DBmultimesh *const mm, DBfile *dbfile);
 
     vtkDataArray         *GetNodelistsVar(int);
+    vtkDataArray         *GetAnnotIntNodelistsVar(int, string);
     vtkDataArray         *GetQuadVar(DBfile *, const char *, const char *,int);
     vtkDataArray         *GetUcdVar(DBfile *, const char *, const char *, int);
     vtkDataArray         *GetPointVar(DBfile *, const char *);
@@ -372,6 +375,12 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     void                  AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
                               string meshname);
+
+    void                  GetMeshHelper(int *domain, const char *m, DBmultimesh **mm, int *type,
+                              DBfile **_domain_file, char **_directory_mesh,
+                              bool *_allocated_directory_mesh);
+    void                  AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
+                              string meshname, DBmultimesh *mm);
 
     DBmultimesh          *GetMultimesh(const char *path, const char *name);
     DBmultimesh          *QueryMultimesh(const char *path, const char *name);

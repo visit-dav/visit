@@ -74,6 +74,7 @@ GetSiloReadOptions(void)
     rv->SetBool("Force Single", true);
     rv->SetBool("Ignore Spatial Extents", false);
     rv->SetBool("Ignore Data Extents", false);
+    rv->SetBool("Search For ANNOTATION_INT (!!Slow!!)", false);
     return rv;
 }
 
