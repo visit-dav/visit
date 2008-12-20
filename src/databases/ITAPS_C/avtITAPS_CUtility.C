@@ -137,11 +137,7 @@ string
 avtITAPS_CUtility::VisIt_iMesh_getTagName(iMesh_Instance theMesh, iBase_TagHandle theTag)
 {
     static char tmpName[256];
-#ifdef ITAPS_MOAB
     iMesh_getTagName(theMesh, theTag, tmpName, &itapsError, sizeof(tmpName));
-#elif ITAPS_GRUMMP
-    iMesh_getTagName(theMesh, theTag, tmpName, sizeof(tmpName), &itapsError);
-#endif
     return string(tmpName);
 }
 

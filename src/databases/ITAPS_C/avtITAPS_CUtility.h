@@ -78,7 +78,7 @@ using std::vector;
 //    to debug4 also.
 //
 // ****************************************************************************
-#ifdef ITAPS_MOAB
+#if !defined(ITAPS_GRUMMP)
 #define CheckITAPSError2(IMI, ERR, FN, ARGS, THELINE, THEFILE)                                  \
     if (ERR != 0)                                                                               \
     {                                                                                           \

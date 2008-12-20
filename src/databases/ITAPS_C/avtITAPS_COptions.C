@@ -95,6 +95,8 @@ DBOptionsAttributes *
 GetITAPS_CWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+
+#ifdef ITAPS_MOAB
     rv->SetEnum("Format", 0);
     vector<string> formats;
     formats.push_back("MOAB");   // 0
@@ -106,5 +108,7 @@ GetITAPS_CWriteOptions(void)
     formats.push_back("GMSH");   // 6
     formats.push_back("STL");    // 7
     rv->SetEnumStrings("Format", formats);
+#endif
+
     return rv;
 }

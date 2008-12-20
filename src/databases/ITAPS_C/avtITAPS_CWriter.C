@@ -55,6 +55,7 @@
 #include <vtkCellType.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+//#include <vtkDelaunay3D.h>
 #include <vtkPointData.h>
 #include <vtkType.h>
 
@@ -77,9 +78,9 @@ using namespace avtITAPS_CUtility;
 
 avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
 {
-    formatType = "MOAB";
+#if defined(ITAPS_MOAB)
+    saveOptions = "MOAB";
     formatExtension = "h5m";
-
     for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
     {
         if (dbopts->GetName(i) == "Format")
@@ -87,16 +88,21 @@ avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
             switch (dbopts->GetEnum("Format"))
             {
                 case 0: break; // default case 
-                case 1: formatType = "EXODUS"; formatExtension = "exoII"; break;
-                case 2: formatType = "VTK";    formatExtension = "vtk"; break;
-                case 3: formatType = "SLAC";   formatExtension = "slac"; break;
-                case 4: formatType = "GMV";    formatExtension = "gmv"; break;
-                case 5: formatType = "ANSYS";  formatExtension = "ans"; break;
-                case 6: formatType = "GMSH";   formatExtension = "gmsh"; break;
-                case 7: formatType = "STL";    formatExtension = "stl"; break;
+                case 1: saveOptions = "EXODUS"; formatExtension = "exoII"; break;
+                case 2: saveOptions = "VTK";    formatExtension = "vtk"; break;
+                case 3: saveOptions = "SLAC";   formatExtension = "slac"; break;
+                case 4: saveOptions = "GMV";    formatExtension = "gmv"; break;
+                case 5: saveOptions = "ANSYS";  formatExtension = "ans"; break;
+                case 6: saveOptions = "GMSH";   formatExtension = "gmsh"; break;
+                case 7: saveOptions = "STL";    formatExtension = "stl"; break;
             }
         }
     }
+#elif defined(ITAPS_GRUMMP)
+    formatExtension = ""; // grummp seems to append '.vmesh' always
+#else
+    formatExtension = "unk";
+#endif
 }
 
 // ****************************************************************************
@@ -169,14 +175,24 @@ avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 // ****************************************************************************
 static void
-WriteMesh(vtkDataSet *ds, int chunk,
+WriteMesh(vtkDataSet *_ds, int chunk,
     iMesh_Instance itapsMesh, iBase_EntitySetHandle rootSet,
     iBase_EntityHandle **pntHdls, iBase_EntityHandle **cellHdls)
 {
     int i,j;
+    vtkDataSet *ds = _ds;
 
     *pntHdls = 0;
     *cellHdls = 0;
+
+//#if defined(ITAPS_GRUMMP)
+#if 0
+    vtkDelaunay3D *d3d = vtkDelaunay3D::New();
+    d3d->SetInput(_ds);
+    d3d->Update();
+    ds = (vtkDataSet*) d3d->GetOutput();
+//#warning FREE SOME STUFF HERE
+#endif
 
     try
     {
@@ -249,9 +265,8 @@ WriteMesh(vtkDataSet *ds, int chunk,
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#ifdef ITAPS_MOAB
+#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#elif ITAPS_GRUMMP
 #endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);
@@ -481,9 +496,8 @@ WriteVariables(vtkDataSet *ds, int chunk,
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#ifdef ITAPS_MOAB
+#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#elif ITAPS_GRUMMP
 #endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);
@@ -538,9 +552,12 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
         // save the file
         string fname = dir + stem;
         char filename[1024];
-        sprintf(filename, "%s.%d.%s", fname.c_str(), chunk, formatExtension.c_str());
-        iMesh_save(itapsMesh, rootSet, filename, formatType.c_str(), &itapsError,
-            strlen(filename), formatType.size());
+        if (formatExtension != "")
+            sprintf(filename, "%s.%d.%s", fname.c_str(), chunk, formatExtension.c_str());
+        else
+            sprintf(filename, "%s.%d", fname.c_str(), chunk);
+        iMesh_save(itapsMesh, rootSet, filename, saveOptions.c_str(), &itapsError,
+            strlen(filename), saveOptions.size());
         CheckITAPSError(itapsMesh, iMesh_save, NoL);
 
     }
@@ -550,9 +567,8 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#ifdef ITAPS_MOAB
+#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#elif ITAPS_GRUMMP
 #endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);

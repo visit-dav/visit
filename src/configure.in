@@ -904,6 +904,9 @@ dnl
 dnl    Josh Stratton, Tue Dec 16 11:03:21 MST 2008
 dnl    Added Tuvok the the 3rd-party builtin libraries
 dnl
+dnl    Mark C. Miller, Sat Dec 20 07:38:09 PST 2008
+dnl    Added logic to specify itaps impl in CPPFLAGS when building itaps
+dnl    plugin.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2821,8 +2824,8 @@ if test -n "$with_itaps_impls" && test with_itaps_impls != "no"; then
         # <CXXFLAGS> and </CXXFLAGS> on the same line.
         #
         sed -i -e "s%<Extensions>\(.*\)</Extensions>%<Extensions>${impl_exts}</Extensions>%" databases/$impl_name/$impl_name.xml
-        sed -i -e "s%<CXXFLAGS>\(.*\)</CXXFLAGS>%<CXXFLAGS>$\(ITAPS_C${itaps_impl_id}_INCLUDE)</CXXFLAGS>%" databases/$impl_name/$impl_name.xml
-        sed -i -e "s%<LIBS>\(.*\)</LIBS>%<LIBS>$\(ITAPS_C${itaps_impl_id}_LIB)</LIBS>%" databases/$impl_name/$impl_name.xml
+        sed -i -e "s%<CXXFLAGS>\(.*\)</CXXFLAGS>%<CXXFLAGS>-D${impl_name} $\(ITAPS_C${itaps_impl_id}_INCLUDE\)</CXXFLAGS>%" databases/$impl_name/$impl_name.xml
+        sed -i -e "s%<LIBS>\(.*\)</LIBS>%<LIBS>$\(ITAPS_C${itaps_impl_id}_LIB\)</LIBS>%" databases/$impl_name/$impl_name.xml
 
         #
         # Fix the extensions in the PluginInfo.C file
