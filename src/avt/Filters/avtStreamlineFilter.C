@@ -92,6 +92,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <ParsingExprList.h>
 
 #ifdef PARALLEL
+#include <time.h> // needed for nanosleep
 #include <mpi.h>
 #endif
 
@@ -6009,6 +6010,8 @@ avtStreamlineFilter::Case4( vector<avtStreamlineWrapper *> &streamlines,
 //
 //  Modifications:
 //
+//    Mark C. Miller, Sat Dec 20 01:09:55 PST 2008
+//    Replaced calls to usleep() with nanosleep().
 //
 // ****************************************************************************
 
@@ -6083,7 +6086,11 @@ avtStreamlineFilter::MasterSlave(std::vector<avtStreamlineWrapper *> &seedpoints
                 debug1<<"Nothing to do: "<<totalNumActiveStreamlines<<endl;
                 int sleepTimer = visitTimer->StartTimer();              
                 if (doSleeping)
-                    usleep(MSleep);
+                {
+                    struct timespec ts = {0, MSleep*1000};
+                    nanosleep(&ts, 0);
+                }
+
                 sleepTime += visitTimer->StopTimer(sleepTimer, "SleepTimer");           
                 
                 numBusyLoopIterations++;
@@ -6206,7 +6213,10 @@ avtStreamlineFilter::MasterSlave(std::vector<avtStreamlineWrapper *> &seedpoints
                 {
                     int sleepTimer = visitTimer->StartTimer();          
                     if (doSleeping)
-                        usleep(SSleep);
+                    {
+                        struct timespec ts = {0, SSleep * 1000};
+                        nanosleep(&ts, 0);
+                    }
                     sleepTime += visitTimer->StopTimer(sleepTimer, "SleepTimer");                                   
                     break;
                 }
