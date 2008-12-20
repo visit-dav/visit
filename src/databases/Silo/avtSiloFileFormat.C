@@ -102,6 +102,7 @@
 #include <visit-config.h>
 
 #include <snprintf.h>
+#include <stdlib.h> // for qsort
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -213,9 +214,11 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     //
     dontForceSingle = 0;
     numNodeLists = 0;
+    maxAnnotIntLists = 0;
     tocIndex = 0; 
     ignoreSpatialExtents = false;
     ignoreDataExtents = false;
+    searchForAnnotInt = false;
     readGlobalInfo = false;
     connectivityIsTimeVarying = false;
     groupInfo.haveGroups = false;
@@ -238,6 +241,8 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
             ignoreSpatialExtents = rdatts->GetBool("Ignore Spatial Extents");
         else if (rdatts->GetName(i) == "Ignore Data Extents")
             ignoreDataExtents = rdatts->GetBool("Ignore Data Extents");
+        else if (rdatts->GetName(i) == "Search For ANNOTATION_INT (!!Slow!!)")
+            searchForAnnotInt = rdatts->GetBool("Search For ANNOTATION_INT (!!Slow!!)");
         else
             debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
     }
@@ -1702,10 +1707,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         if (num_amr_groups > 0)
             md->AddGroupInformation(num_amr_groups, mm?mm->nblocks:0, amr_group_ids);
 
-        // Store off the important info about this multimesh
-        // so we can match other multi-objects to it later
-        StoreMultimeshInfo(dirname, i, name_w_dir, meshnum, mm);
-
         //
         // Handle special case for enumerated scalar rep for nodelists
         //
@@ -1715,6 +1716,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             haveAddedNodelistEnumerations[name_w_dir] = true;
             AddNodelistEnumerations(dbfile, md, name_w_dir);
         }
+        else if (searchForAnnotInt)
+        {
+            AddAnnotIntNodelistEnumerations(dbfile, md, name_w_dir, mm);
+        }
+
+        // Store off the important info about this multimesh
+        // so we can match other multi-objects to it later
+        StoreMultimeshInfo(dirname, i, name_w_dir, meshnum, mm);
 
         delete [] name_w_dir;
     }
@@ -3193,6 +3202,9 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
             }
         }
     }
+    BroadcastInt(maxAnnotIntLists);
+    if (maxAnnotIntLists > 0)
+        avtScalarMetaData::BuildEnumNChooseRMap(maxAnnotIntLists, maxCoincidentNodelists, pascalsTriangleMap);
     
     //
     // Broadcast Group Info
@@ -4455,6 +4467,52 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
     }
 }
 
+// ****************************************************************************
+//  Function: UpdateNodelistEntry
+//
+//  Purpose: Re-factorization of code used to paint a single value into a
+//           nodelist 'variable' 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 19, 2008 
+//
+// ****************************************************************************
+static void
+UpdateNodelistEntry(float *ptr, int nodeId, int val, float uval,
+    int numLists, const vector<vector<int> > &pascalsTriangleMap)
+{
+#ifdef USE_BIT_MASK_FOR_NODELIST_ENUMS
+    if (ptr[nodeId] == uval)
+    {
+        // If the value at this node is uninitialized, set it to val
+        ptr[nodeId] = 1<<val;
+    }
+    else
+    {
+        int curval = int(ptr[nodeId]);
+        curval |= (1<<val);
+        ptr[nodeId] = curval;
+    }
+#else
+    if (ptr[nodeId] == uval)
+    {
+        // If the value at this node is uninitialized, set it to val
+        ptr[nodeId] = (float) val;
+    }
+    else
+    {
+        // Otherwise, we've already got a value at this node.
+        // We need to obtain a new value that represents all
+        // the sets this node is already in plus the new one
+        // we're adding. Use avtScalarMetaData helper method
+        // to do it.
+        double curval = ptr[nodeId];
+        avtScalarMetaData::UpdateValByInsertingDigit(&curval,
+            numLists, maxCoincidentNodelists, pascalsTriangleMap, val);
+        ptr[nodeId] = float(curval);
+    }
+#endif
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetNodelistsVar
@@ -4615,40 +4673,357 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
             for (int yi = isec[2]; yi <= isec[3]; yi++)
             {
                 for (int xi = isec[0]; xi <= isec[1]; xi++)
+                    UpdateNodelistEntry(ptr, zi*nxy + yi*dims[0] + xi,
+                        val, -1.0, numNodeLists, pascalsTriangleMap);
+            }
+        }
+    }
+
+    return nlvar;
+}
+
+// ****************************************************************************
+//  Function: compare_ev_pair 
+//
+//  Purpose: Callback for qsort calls to sort vector of elemid/elemvalue 
+//           meshes
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 12, 2008 
+// ****************************************************************************
+
+typedef struct {int id; int val;} ev_pair_t;
+static int
+compare_ev_pair(const void *a, const void *b)
+{
+    ev_pair_t *eva = (ev_pair_t *) a;
+    ev_pair_t *evb = (ev_pair_t *) b;
+    if (eva->id < evb->id)
+        return -1;
+    else if (eva->id > evb->id)
+        return 1;
+    else return 0;
+}
+
+//
+// ****************************************************************************
+//  Function: PaintNodesForAnnotIntFacelist 
+//
+//  Purpose: Traverse a zonelist in edge- or face-centered order and paint
+//           values into node-centered variable on nodes associated with
+//           specific edges or faces.
+//
+//  We iterate over the zones in the zonelist. For each zone, we iterate over its
+//  faces (3D) or edges (2D). In 2D, each edge is represented by 2 integer node ids.
+//  In 3D, each face (tri or quad) is represented by 4 integer node ids. As we iterate,
+//  we update the faceIdx or edgeIdx indicating the identifier for the next edge or
+//  face we find. Whenever that identifier is equal to the identifier in the list of
+//  edges or faces we are looking for (in elemidv), we paint data onto the nodes
+//  associated with that edge or face. We use a multi level map to keep track of
+//  faces or edges we've already seen so we don't wind up counting them twice and
+//  screwing up the faceIdx or edgeIdx value.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 12, 2008 
+// ****************************************************************************
+
+static void
+PaintNodesForAnnotIntFacelist(float *ptr,
+    const vector<ev_pair_t> &elemidv, DBucdmesh *um,
+    int maxAnnotIntLists,
+    const vector<vector<int> > &pascalsTriangleMap)
+{
+    DBzonelist *zl = um->zones;
+
+    if (um->ndims == 2)
+    {
+        map<int, map<int, bool> > previouslySeenEdgesMap;
+
+        int edgeIdx = 0;
+        int nlIdx = 0;
+        int elemIdx = 0;
+        for (int seg = 0; seg < zl->nshapes; seg++)
+        {
+            for (int zn = 0; zn < zl->shapecnt[seg]; zn++)
+            {
+                //
+                // For each zone we build a tiny list of its edges where
+                // each edge is represented by 2 node ids in the zonelist's
+                // nodelist. Note that we are using counterclockwise order
+                // which is consistent with right-hand-rule for normal towards
+                // the eye-point and is also consistent with Silo user's 
+                // manual for 2D meshes. 
+                //
+                int nedges = 0;
+                int edge[4][2];
+                switch (zl->shapetype[seg])
                 {
-#ifdef USE_BIT_MASK_FOR_NODELIST_ENUMS
-                    if (ptr[zi*nxy + yi*dims[0] + xi] == -1.0)
-                        ptr[zi*nxy + yi*dims[0] + xi] = 1<<val;
+                    case DB_ZONETYPE_TRIANGLE:
+                    {
+                        edge[0][0] = zl->nodelist[nlIdx+0];
+                        edge[0][1] = zl->nodelist[nlIdx+1];
+                        edge[1][0] = zl->nodelist[nlIdx+1];
+                        edge[1][1] = zl->nodelist[nlIdx+2];
+                        edge[2][0] = zl->nodelist[nlIdx+2];
+                        edge[2][1] = zl->nodelist[nlIdx+0];
+                        nedges = 3;
+                    }
+                    case DB_ZONETYPE_QUAD:
+                    {
+                        edge[0][0] = zl->nodelist[nlIdx+0];
+                        edge[0][1] = zl->nodelist[nlIdx+1];
+                        edge[1][0] = zl->nodelist[nlIdx+1];
+                        edge[1][1] = zl->nodelist[nlIdx+2];
+                        edge[2][0] = zl->nodelist[nlIdx+2];
+                        edge[2][1] = zl->nodelist[nlIdx+3];
+                        edge[3][0] = zl->nodelist[nlIdx+3];
+                        edge[3][1] = zl->nodelist[nlIdx+0];
+                        nedges = 4;
+                    }
+                }
+                nlIdx += zl->shapesize[seg];
+            
+                for (int i = 0; i < nedges; i++)
+                {
+                    bool unseenEdge = false;
+
+                    // Ensure list of nodes for edge is in sorted order
+                    // so that when we lookup an edge in the previouslySeenEdgesMap
+                    // we do it consistently with lowest node id first.
+                    if (edge[i][0] > edge[i][1])
+                    {
+                        int tmp = edge[i][0];
+                        edge[i][0] = edge[i][1];
+                        edge[i][1] = tmp;
+                    }
+
+                    // Do a find on node id 0 of the edge.
+                    map<int, map<int, bool> >::iterator e0it =
+                        previouslySeenEdgesMap.find(edge[i][0]);
+
+                    if (e0it == previouslySeenEdgesMap.end())
+                        unseenEdge = true;
                     else
                     {
-                        int curval = int(ptr[zi*nxy + yi*dims[0] + xi]);
-                        curval |= (1<<val);
-                        ptr[zi*nxy + yi*dims[0] + xi] = curval;
+                        // Do a find on node id 1 of the edge.
+                        map<int, bool>::iterator e1it =
+                            e0it->second.find(edge[i][1]);
+                        if (e1it == e0it->second.end())
+                            unseenEdge = true;
+                        else
+                        {
+                            //
+                            // Since we know we'll only ever see any given edge at most
+                            // twice, when we arrive here, we know we're seeing it for
+                            // the second time and we can safely erase it, reducing
+                            // storage a bit as we go. In theory, this would reduce by
+                            // half the average storage requirement of the map.
+                            e0it->second.erase(e1it);
+                            if (e0it->second.size() == 0)
+                                previouslySeenEdgesMap.erase(e0it);
+                        }
                     }
-#else
-                    if (ptr[zi*nxy + yi*dims[0] + xi] == -1.0)
+
+                    if (unseenEdge)
                     {
-                        // If the value at this node is uninitialized, set it to
-                        // this nodeset's id
-                        ptr[zi*nxy + yi*dims[0] + xi] = (float) val;
+                        previouslySeenEdgesMap[edge[i][0]][edge[i][1]] = true;
+
+                        //
+                        // If the edge id of the current edge (edgeIdx) is the
+                        // same as the current one in the list we are here to paint,
+                        // then paint it.
+                        //
+                        if (edgeIdx == elemidv[elemIdx].id)
+                        {
+                            UpdateNodelistEntry(ptr, edge[i][0], elemidv[elemIdx].val,
+                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                            UpdateNodelistEntry(ptr, edge[i][1], elemidv[elemIdx].val,
+                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                            elemIdx++;
+
+                            //
+                            // If we've reached the end of the list of edge ids we
+                            // are here to paint, then we are done.
+                            //
+                            if (elemIdx >= elemidv.size())
+                                return;
+                        }
+
+                        edgeIdx++;
                     }
-                    else
-                    {
-                        // Otherwise, we've already got a value at this node.
-                        // We need to obtain a new value that represents all
-                        // the sets this node is already in plus the new one
-                        // we're adding. Use avtScalarMetaData helper method
-                        // to do it.
-                        double curval = ptr[zi*nxy + yi*dims[0] + xi];
-                        avtScalarMetaData::UpdateValByInsertingDigit(&curval,
-                            numNodeLists, maxCoincidentNodelists, pascalsTriangleMap, val);
-                        ptr[zi*nxy + yi*dims[0] + xi] = float(curval);
-                    }
-#endif
                 }
             }
         }
     }
+    else // 3D case
+    {
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetAnnotIntNodelistsVar
+//
+//  Purpose: Return scalar variable representing (enumerated scalar) nodelists 
+//           meshes based on contents of ANNOTATION_INT object.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 18, 2008 
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
+{
+    int i;
+    vtkDataArray *nlvar = 0;
+    string meshName = metadata->MeshForVar(listsname);
+
+    //
+    // Look up the mesh in the cache.
+    //
+    vtkDataSet *ds = (vtkDataSet *) cache->GetVTKObject(meshName.c_str(),
+                                            avtVariableCache::DATASET_NAME,
+                                            timestep, domain, "_all");
+    if (ds == 0)
+    {
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+            "paint \"%s\" variable", meshName.c_str(), domain, listsname.c_str());
+        EXCEPTION1(InvalidVariableException, msg);
+    }
+
+    debug5 << "Generating " << listsname << " variable for domain " << domain << endl;
+
+    //
+    // Initialize the return variable array with exlude value
+    //
+    int npts = ds->GetNumberOfPoints();
+    nlvar = vtkFloatArray::New();
+    nlvar->SetNumberOfTuples(npts);
+    float *ptr = (float *) nlvar->GetVoidPointer(0);
+    for (i = 0; i < npts; i++)
+        ptr[i] = -1.0; // always exclude value 
+
+    //
+    // Try to get the ANNOTATION_INT object. In theory, this could fail on a
+    // domain for which no annotation's were defined. Use the GetMeshHelper
+    // function to get the correct file to query for ANNOTATION_INT object.
+    //
+    DBfile *domain_file = GetFile(tocIndex);
+    GetMeshHelper(&domain, meshName.c_str(), 0, 0, &domain_file, 0, 0);
+    DBcompoundarray *ai = DBGetCompoundarray(domain_file, "ANNOTATION_INT"); 
+    if (ai == 0)
+        return nlvar;
+
+    //
+    // Using scalar metadata, determine the 'value' to be associated with
+    // each list name we find in the ANNOTATION_INT object.
+    //
+    const avtScalarMetaData *smd = metadata->GetScalar(listsname);
+    map<string, int> nameToValMap;
+    for (i = 0; i < smd->enumNames.size(); i++)
+        nameToValMap[smd->enumNames[i]] = (int) smd->enumRanges[2*i];
+
+    //
+    // As we iterate over this compound array's members, we need to
+    // take care that we inspect only the '_node' named ones if we're
+    // here to handle an AnnotInt_Nodelist object and the '_face' ones
+    // if we're here to handle an AnnotInt_Facelist object. This loop
+    // gathers all the node/face ids to be painted along with the values
+    // to paint into elemidv vector.
+    //
+    int elemoff = 0;
+    int *elemvals = (int *) ai->values;
+    vector<ev_pair_t> elemidv;
+    for (i = 0; i < ai->nelems; i++)
+    {
+        int len = strlen(ai->elemnames[i]);
+        if (listsname == "AnnotInt_Nodelists" && 
+            strncmp("_node",&(ai->elemnames[i][len-5]),5) == 0)
+        {
+            for (int j = 0; j < ai->elemlengths[i]; j++)
+            {
+                ev_pair_t idv = {elemvals[elemoff+j],
+                                 nameToValMap[string(ai->elemnames[i],0,len-5)]};
+                elemidv.push_back(idv);
+            }
+        }
+        else if (listsname == "AnnotInt_Facelists" && 
+            strncmp("_face",&(ai->elemnames[i][len-5]),5) == 0)
+        {
+            for (int j = 0; j < ai->elemlengths[i]; j++)
+            {
+                ev_pair_t idv = {elemvals[elemoff+j],
+                                 nameToValMap[string(ai->elemnames[i],0,len-5)]};
+                elemidv.push_back(idv);
+            }
+        }
+
+        elemoff += ai->elemlengths[i];
+    }
+
+    //
+    // If we're here for nodelists, then the elemidv already contains the
+    // node ids we need to paint enum values onto. So, just iterate over
+    // those nodes and set their values accordingly.
+    //
+    if (listsname == "AnnotInt_Nodelists")
+    {
+        for (i = 0; i < elemidv.size(); i++)
+            UpdateNodelistEntry(ptr, elemidv[i].id, elemidv[i].val,
+                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+    }
+    else
+    {
+
+        //
+        // If we're in this block, we must be here for facelists. So, we now
+        // need to read and traverse the mesh's zonelist structure, enumerating
+        // faces so we can determine which nodes we need to paint values onto.
+        //
+
+        //
+        // Use mesh helper func. to determine file and mesh object name. 
+        //
+        int type;
+        char   *directory_mesh = NULL;
+        bool allocated_directory_mesh = false;
+        DBmultimesh *mm;
+        DBfile *dbfile = GetFile(tocIndex);
+        DBfile *domain_file = dbfile;
+        GetMeshHelper(&domain, meshName.c_str(), &mm, &type, &domain_file, &directory_mesh,
+            &allocated_directory_mesh);
+
+        //
+        // Read the mesh header and just the zonelist for it.
+        //
+        long oldMask = DBSetDataReadMask(DBUMZonelist);
+        DBucdmesh  *um = DBGetUcdmesh(domain_file, directory_mesh);
+        DBSetDataReadMask(oldMask);
+        if (allocated_directory_mesh)
+            delete [] directory_mesh;
+        if (um == NULL)
+        {
+            char msg[256];
+            SNPRINTF(msg, sizeof(msg), "DBGetUcdmesh() failed for \"%s\" for domain %d to "
+                "paint \"%s\" variable", meshName.c_str(), domain, listsname.c_str());
+            EXCEPTION1(InvalidVariableException, msg);
+        }
+
+        //
+        // Call the method that traverses the zonelist, enumerating faces and then
+        // for each face specified in elemids, paint values onto the nodes. We
+        // need to sort the elemidv data in increasing face id first because the
+        // method we're calling is written to assume that.
+        //
+        qsort(&elemidv[0], elemidv.size(), sizeof(ev_pair_t), compare_ev_pair);
+        PaintNodesForAnnotIntFacelist(ptr, elemidv, um, maxAnnotIntLists,
+            pascalsTriangleMap);
+
+        DBFreeUcdmesh(um);
+    }
+
+    DBFreeCompoundarray(ai);
 
     return nlvar;
 }
@@ -4717,6 +5092,16 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     if (codeNameGuess == "BlockStructured" && string(v) == "Nodelists")
     {
         vtkDataArray *nlvar = GetNodelistsVar(domain);
+        if (nlvar != 0)
+            return nlvar;
+    }
+
+    //
+    // Handle possible special case of annot int nodelists
+    //
+    if (string(v) == "AnnotInt_Nodelists" || string(v) == "AnnotInt_Facelists")
+    {
+        vtkDataArray *nlvar = GetAnnotIntNodelistsVar(domain, v);
         if (nlvar != 0)
             return nlvar;
     }
@@ -5255,61 +5640,16 @@ avtSiloFileFormat::GetCsgVectorVar(DBfile *dbfile, const char *vname)
     return 0;
 }
 
-// ****************************************************************************
-//  Method: avtSiloFileFormat::GetMesh
-//
-//  Purpose:
-//      Gets the mesh and converts it to a vtkDataSet object.
-//
-//  Arguments:
-//      domain   The domain to fetch.
-//      m        The name of the mesh to fetch.
-//
-//  Returns:     The mesh as a vtkDataSet.
-//
-//  Programmer:  Hank Childs
-//  Creation:    November 1, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
-//    Moved code from avtSiloTimeStep, made it work with Silo objects
-//    distributed across multiple files.
-//
-//    Hank Childs, Wed Jan 14 11:20:18 PST 2004
-//    Make use of cached multimeshes if available.
-//
-//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
-//    Changed call to OpenFile() to GetFile()
-//
-//    Kathleen Bonnell, Tue Feb  8 17:00:46 PST 2005 
-//    Added domain to args for GetQuadMesh. 
-//
-//    Mark C. Miller, Mon Feb 14 20:28:47 PST 2005
-//    Added test for DB_QUAD_CURV/RECT for valid type
-//
-//    Mark C. Miller, Thu Mar  2 00:03:40 PST 2006
-//    Added support for curves
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added code convert domain id for CSG meshes; no-op for other meshes.
-//
-//    Mark C. Miller, Tue Aug 28 19:17:44 PDT 2007
-//    Made it deal with case where multimesh and blocks are all in same
-//    dir in the file. In this case, the location return had to be constructed
-//    and allocated. So, needed to add bool indicating that.
-//
-//    Mark C. Miller, Tue Nov 18 18:11:56 PST 2008
-//    Added support for mesh region grouping trees being used to spedify
-//    AMR representation in Silo.
-// ****************************************************************************
-
-vtkDataSet *
-avtSiloFileFormat::GetMesh(int domain, const char *m)
+void
+avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
+    int *_type, DBfile **_domain_file, char **_directory_mesh,
+    bool *_allocated_directory_mesh)
 {
     // for CSG meshes, each domain is a csgregion and a group of regions
     // forms a visit "domain". So, we need to re-map the domain id
+    int domain = *_domain;
     metadata->ConvertCSGDomainToBlockAndRegion(m, &domain, 0);
+    *_domain = domain;
 
     debug5 << "Reading in domain " << domain << ", mesh " << m << endl;
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
@@ -5393,6 +5733,83 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     DetermineFileAndDirectory(meshLocation, domain_file, meshDirname, directory_mesh,
         &allocated_directory_mesh);
 
+    if (_mm) *_mm = mm;
+    if (_type) *_type = type;
+    if (_domain_file) *_domain_file = domain_file;
+    if (_directory_mesh) *_directory_mesh = directory_mesh;
+    if (_allocated_directory_mesh)
+    {
+        *_allocated_directory_mesh = allocated_directory_mesh;
+    }
+    else
+    {
+        if (allocated_directory_mesh)
+            delete [] directory_mesh;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMesh
+//
+//  Purpose:
+//      Gets the mesh and converts it to a vtkDataSet object.
+//
+//  Arguments:
+//      domain   The domain to fetch.
+//      m        The name of the mesh to fetch.
+//
+//  Returns:     The mesh as a vtkDataSet.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, made it work with Silo objects
+//    distributed across multiple files.
+//
+//    Hank Childs, Wed Jan 14 11:20:18 PST 2004
+//    Make use of cached multimeshes if available.
+//
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
+//    Kathleen Bonnell, Tue Feb  8 17:00:46 PST 2005 
+//    Added domain to args for GetQuadMesh. 
+//
+//    Mark C. Miller, Mon Feb 14 20:28:47 PST 2005
+//    Added test for DB_QUAD_CURV/RECT for valid type
+//
+//    Mark C. Miller, Thu Mar  2 00:03:40 PST 2006
+//    Added support for curves
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code convert domain id for CSG meshes; no-op for other meshes.
+//
+//    Mark C. Miller, Tue Aug 28 19:17:44 PDT 2007
+//    Made it deal with case where multimesh and blocks are all in same
+//    dir in the file. In this case, the location return had to be constructed
+//    and allocated. So, needed to add bool indicating that.
+//
+//    Mark C. Miller, Tue Nov 18 18:11:56 PST 2008
+//    Added support for mesh region grouping trees being used to spedify
+//    AMR representation in Silo.
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::GetMesh(int domain, const char *m)
+{ 
+    int type;
+    char   *directory_mesh = NULL;
+    bool allocated_directory_mesh;
+    DBmultimesh *mm;
+    DBfile *dbfile = GetFile(tocIndex);
+    DBfile *domain_file = dbfile;
+
+    GetMeshHelper(&domain, m, &mm, &type, &domain_file, &directory_mesh,
+        &allocated_directory_mesh);
+
     //
     // We only need to worry about quadmeshes, ucdmeshes, and pointmeshes,
     // since we have reduced the multimesh case to one of those.
@@ -5431,7 +5848,6 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     // This may be leaked if an exception is thrown after it is allocated.
     // I'll live.
     //
-    delete [] meshLocation;
     if (allocated_directory_mesh)
         delete [] directory_mesh;
 
@@ -10417,6 +10833,116 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
     // Build the pascal triangle map for updating nodelist variable values
     //
     avtScalarMetaData::BuildEnumNChooseRMap(numNodeLists, maxCoincidentNodelists, pascalsTriangleMap);
+}
+
+// ****************************************************************************
+//  Method: AddAnnotIntNodelistEnumerations
+//
+//  Purpose: Add ANNOTATION_INT node list enumerations  
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 18, 2008 
+//
+// ****************************************************************************
+void
+avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
+    string meshname, DBmultimesh *mm)
+{
+    //
+    // This is expensive as it will wind up iterating over all subfiles.
+    // But, we have no choice. Fortunately, we ONLY get here if the user
+    // explicitly set the read option that controls it. We also make use
+    // of the fact that DetermineFileAndDirectory, will wind up opening
+    // each unique silo file only once. Otherwise, we'd have to make this
+    // loop smart. We do this so we can collect up all the names of all
+    // the different nodelist objects.
+    //
+    map<string,int> arr_names;
+    bool haveFaceLists = false;
+    bool haveNodeLists = false;
+    for (int i = 0; i < mm->nblocks; i++)
+    {
+        char *realvar;
+        DBfile *correctFile;
+        DetermineFileAndDirectory(mm->meshnames[i], correctFile,
+                                          0, realvar);
+
+        DBcompoundarray *ai = DBGetCompoundarray(correctFile, "ANNOTATION_INT");
+        if (ai)
+        {
+            debug5 << "Found ANNOTATION_INT object for block " << i << endl;
+            for (int j = 0; j < ai->nelems; j++)
+            {
+                arr_names[ai->elemnames[j]] = 1;
+                int len = strlen(ai->elemnames[j]);
+                if (strncmp("_face",&(ai->elemnames[j][len-5]),5) == 0)
+                    haveFaceLists = true;
+                else if (strncmp("_node",&(ai->elemnames[j][len-5]),5) == 0)
+                    haveNodeLists = true;
+            }
+            DBFreeCompoundarray(ai);
+        }
+    }
+
+    //
+    // If we didn't find anything, we're done.
+    //
+    if (!haveNodeLists && !haveFaceLists)
+        return;
+
+    //
+    // Populate the enumeration names. This is a two pass loop;
+    // first for nodelists, second for facelists.
+    //
+    for (int pass = 0; pass < 2; pass++)
+    {
+        if ((pass == 0 && !haveNodeLists) || (pass == 1 && !haveFaceLists))
+            continue;
+
+        avtScalarMetaData *smd = new avtScalarMetaData(
+            pass == 0 ? "AnnotInt_Nodelists" : "AnnotInt_Facelists",
+            meshname, AVT_NODECENT);
+
+        map<string, int>::const_iterator it;
+        int j = 0;
+        for (it = arr_names.begin(); it != arr_names.end(); it++)
+        {
+            int len = strlen(it->first.c_str());
+            if (strncmp(pass==0?"_node":"_face",&(it->first.c_str()[len-5]),5) == 0)
+            {
+                smd->AddEnumNameValue(string(it->first,0,len-5), j++);
+                debug5 << "Adding \"" << string(it->first,0,len-5) << "\"," << j << " to" <<
+                    (pass == 0 ? " nodelist " : " zonelist ") << "enumeration" << endl;
+            }
+        }
+
+        if (pass == 0)
+            maxAnnotIntLists = smd->enumNames.size();
+        else
+        {
+            if (smd->enumNames.size() > maxAnnotIntLists)
+                maxAnnotIntLists = smd->enumNames.size();
+        }
+
+#ifdef USE_BIT_MASK_FOR_NODELIST_ENUMS
+        smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
+#else
+        smd->SetEnumerationType(avtScalarMetaData::ByNChooseR);
+        smd->SetEnumNChooseRN(numNodeLists);
+        smd->SetEnumNChooseRMaxR(maxCoincidentNodelists);
+#endif
+        smd->hideFromGUI = true;
+        
+        // record the always exclude value as -1
+        smd->SetEnumAlwaysExcludeValue(-1.0);
+        smd->SetEnumPartialCellMode(avtScalarMetaData::Dissect);
+        md->Add(smd);
+    }
+
+    //
+    // Build the pascal triangle map for updating nodelist variable values
+    //
+    avtScalarMetaData::BuildEnumNChooseRMap(maxAnnotIntLists, maxCoincidentNodelists, pascalsTriangleMap);
 }
 
 // ****************************************************************************
