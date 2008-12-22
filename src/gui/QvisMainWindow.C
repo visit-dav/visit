@@ -1418,8 +1418,11 @@ QvisMainWindow::UpdateWindowList(bool doList)
 //   Brad Whitlock, Wed May 21 07:46:24 PDT 2003
 //   I added fullframe mode.
 //
-//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Hank Childs, Mon Dec 22 10:00:34 PST 2008
+//   Increment a counter so the menus get enabled.
 //
 // ****************************************************************************
 
@@ -1448,6 +1451,7 @@ QvisMainWindow::UpdateWindowMenu(bool updateNumbers)
                 QString str;
                 str.sprintf("%d", indices[j]);
                 copyPopup[i]->addAction(tr("Window ") + str);
+                n++;
             }
             copyPopup[i]->setEnabled(n > 0);
             //topCopyPopup->setItemEnabled(i, n > 0);
