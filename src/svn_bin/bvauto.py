@@ -11,6 +11,12 @@
 #   Results:
 #       Executes build tests and updates build summary results in result_dir.
 # 
+#
+#   Modifications:
+#     Cyrus Harrison, Mon Dec 22 15:58:32 PST 2008
+#     Changed links in index page to use relative paths & added failure listing
+#     to breakdown on index page.
+#      
 # *****************************************************************************
 
 import sys,os,time,datetime,glob,socket
@@ -108,18 +114,32 @@ def parse_tests(input_file):
 def analyze_result(rfile):
     """
     Checks a result file for host, architecture, and success.
+    Loads the xml element tree module, a requirement for scanning
+    result xml files to build the result index. This is module is in python
+    2.5 - this function will die if there are problems loading it.
     """
-    data = open(rfile).read()
-    # get host, arch and result color
-    host = data[data.find('host="')+len('host="'):]
-    host = host[:host.find('"')]
-    arch = data[data.find('arch="')+len('arch="'):]
-    arch = arch[:arch.find('"')]
-    if data.find("failure") >=0:
-        result = "red"
-    else:
-        result = "green"
-    return host,arch,result
+    try:
+        import xml.etree.ElementTree as etree
+    except:
+        print "<Error: Could not load  xml.etree.ElementTree module. ",
+        print "bvauto.py requires Python Version >= 2.5>"
+        sys.exit(-1)
+    et = etree.parse(rfile)
+    et = et.getroot()
+    # -bvtest
+    # --results
+    # ---[build_result]
+    # ----lib & result
+    host = et.attrib["host"]
+    arch = et.attrib["arch"]
+    flist = []
+    et = et.find("results")
+    children = et.findall("build_result")
+    for child in children:
+        result = child.find("result").text
+        if result != "success":
+            flist.append(child.find("lib").text)        
+    return host,arch,flist
 
 def reindex_results(result_root,result_group):
     """
@@ -138,21 +158,31 @@ def reindex_results(result_root,result_group):
     res += '<link rel="stylesheet" type="text/css" href="bvtest.css" title="Style">\n'
     res += "</head>\n"
     res += '<table class="wikitable">\n'
-    res +='<tr><td colspan=3><b>bvauto results: updated %s</b></td></tr>\n' % get_current_time()
+    res +='<tr><td colspan=4><b>bvauto results: updated %s</b></td></tr>\n' % get_current_time()
     if len(rdirs) == 0:
-        res += '<tr class="red"><td>No results?</td></tr>\n'
+        res += '<tr class="red"><td colspan=4>No results?</td></tr>\n'
     cdate = ""
     for r in rdirs:
-        host,arch,rval = analyze_result(r)
-        # date is currently between 3th & 3th "."
+        host,arch,flist = analyze_result(r)
+        # date is currently between 3th & 4th "."
         rfile = r[r.rfind("/")+1:]
+        # make sure the link is relative
+        rrel  = r[len(result_root)+1:]
         rdate = rfile.split(".")[3]
         if cdate != rdate:
             cdate = rdate
-            res += '<tr class="rh"><td colspan=3>%s</td></tr>\n' % cdate
-        res += '<tr class="%s">' % rval 
+            res += '<tr class="rh"><td colspan=4>%s</td></tr>\n' % cdate
+        if len(flist) == 0:
+            res += '<tr class="green">'
+            test_result_txt= "[no failures]"
+        else:
+            res += '<tr class="red">'
+            test_result_txt = ""
+            for f in flist:
+                test_result_txt += f + "<br>\n"
         res += '<td>%s</td><td>%s</td>' % (host,arch)
-        res += '<td><a href="%s">%s</a></td></tr>\n' %(r,rfile)
+        res += '<td>%s</td>' % test_result_txt
+        res += '<td><a href="%s">%s</a></td></tr>\n' %(rrel,rfile)
     res +="</table>\n"
     res+="</html>\n"
     f = open("%s/index.html" % result_root,"w")
