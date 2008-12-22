@@ -1552,6 +1552,9 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 //   Brad Whitlock, Wed Jun 18 15:28:28 PDT 2008
 //   Rewrote using utility methods.
 //
+//   Hank Childs, Mon Dec 22 09:22:38 PST 2008
+//   Fix problem where up vector and view angle were accidentally merged.
+//
 // ****************************************************************************
 
 void
@@ -1590,8 +1593,22 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
     // Do the up vector values.
     if(which_widget == View3DAttributes::ID_viewUp || doAll)
     {
+        double v[3];
+        if(LineEditGetDoubles(upvectorLineEdit, v, 3))
+            view3d->SetViewUp(v);
+        else
+        {
+            ResettingError(tr("up vector"),
+                           DoublesToQString(view3d->GetViewUp(), 3));
+            view3d->SetViewUp(view3d->GetViewUp());
+        }
+    }
+
+    // Do the view angle values.
+    if(which_widget == View3DAttributes::ID_viewAngle || doAll)
+    {
         double v;
-        if(LineEditGetDouble(upvectorLineEdit, v))
+        if(LineEditGetDouble(viewAngleLineEdit, v))
             view3d->SetViewAngle(v);
         else
         {
