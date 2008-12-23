@@ -16,7 +16,6 @@ bool
 PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
 {
     bool retval = false;
-
     if(TypeName() == atts->TypeName())
     {
         // Call assignment operator.
@@ -29,13 +28,20 @@ PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
         const PointAttributes *p = (PointAttributes *)atts;
         SetPointSource(p->GetPoint());
         retval = true;
-    } 
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        const Line *line = (const Line *)atts;
+        SetLineSourceStart(line->GetPoint1());
+        SetLineSourceEnd(line->GetPoint2());
+        retval = true;
+    }
     else if(atts->TypeName() == "PlaneAttributes")
     {
         const PlaneAttributes *plane = (const PlaneAttributes *)atts;
-        SetPlaneOrigin(plane->GetOrigin());
-        SetPlaneNormal(plane->GetNormal());
-        SetPlaneUpAxis(plane->GetUpAxis());
+        SetPlaneSourcePoint(plane->GetOrigin());
+        SetPlaneSourceNormal(plane->GetNormal());
+        SetPlaneSourceUpVec(plane->GetUpAxis());
         retval = true;
     }
     return retval;
@@ -59,26 +65,31 @@ AttributeSubject *
 PoincareAttributes::CreateCompatible(const std::string &tname) const
 {
     AttributeSubject *retval = 0;
-
-    if(TypeName() == tname)
+    if (TypeName() == tname)
     {
         retval = new PoincareAttributes(*this);
     }
-    else if(tname == "PointAttributes")
+    else if (tname == "PointAttributes")
     {
         PointAttributes *p = new PointAttributes;
         p->SetPoint(GetPointSource());
         retval = p;
     }
-    else if(tname == "PlaneAttributes")
+    else if (tname == "Line")
+    {
+        Line *l = new Line;
+        l->SetPoint1(GetLineSourceStart());
+        l->SetPoint2(GetLineSourceEnd());
+        retval = l;
+    }
+    else if (tname == "PlaneAttributes")
     {
         PlaneAttributes *p = new PlaneAttributes;
-        p->SetOrigin(GetPlaneOrigin());
-        p->SetNormal(GetPlaneNormal());
-        p->SetUpAxis(GetPlaneUpAxis());
+        p->SetOrigin(GetPlaneSourcePoint());
+        p->SetNormal(GetPlaneSourceNormal());
+        p->SetUpAxis(GetPlaneSourceUpVec());
         retval = p;
     }
-    
     return retval;
 }
 

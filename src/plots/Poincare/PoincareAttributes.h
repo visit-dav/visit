@@ -74,6 +74,12 @@ public:
         Distance,
         Time
     };
+    enum SourceType
+    {
+        PointSource,
+        LineSource,
+        PlaneSource
+    };
 
     PoincareAttributes();
     PoincareAttributes(const PoincareAttributes &obj);
@@ -91,39 +97,64 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectPointSource();
-    void SelectPlaneOrigin();
-    void SelectPlaneNormal();
-    void SelectPlaneUpAxis();
+    void SelectLineSourceStart();
+    void SelectLineSourceEnd();
+    void SelectPlaneSourcePoint();
+    void SelectPlaneSourceNormal();
+    void SelectPlaneSourceUpVec();
+    void SelectClipPlaneOrigin();
+    void SelectClipPlaneNormal();
     void SelectColorTableName();
     void SelectSingleColor();
 
     // Property setting methods
-    void SetMaxStepLength(double maxStepLength_);
     void SetTermination(double termination_);
+    void SetTerminationType(TerminationType terminationType_);
+    void SetStreamlineSource(SourceType streamlineSource_);
+    void SetShowStreamlines(bool showStreamlines_);
+    void SetShowPoints(bool showPoints_);
+    void SetPointDensity(int pointDensity_);
+    void SetSourceRadius(double sourceRadius_);
     void SetPointSource(const double *pointSource_);
-    void SetPlaneOrigin(const double *planeOrigin_);
-    void SetPlaneNormal(const double *planeNormal_);
-    void SetPlaneUpAxis(const double *planeUpAxis_);
+    void SetLineSourceStart(const double *lineSourceStart_);
+    void SetLineSourceEnd(const double *lineSourceEnd_);
+    void SetPlaneSourcePoint(const double *planeSourcePoint_);
+    void SetPlaneSourceNormal(const double *planeSourceNormal_);
+    void SetPlaneSourceUpVec(const double *planeSourceUpVec_);
+    void SetClipPlaneOrigin(const double *clipPlaneOrigin_);
+    void SetClipPlaneNormal(const double *clipPlaneNormal_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
-    void SetTerminationType(TerminationType terminationType_);
-    void SetIntegrationType(int integrationType_);
+    void SetMaxStepLength(double maxStepLength_);
 
     // Property getting methods
-    double               GetMaxStepLength() const;
     double               GetTermination() const;
+    TerminationType      GetTerminationType() const;
+    SourceType           GetStreamlineSource() const;
+    bool                 GetShowStreamlines() const;
+    bool                 GetShowPoints() const;
+    int                  GetPointDensity() const;
+    double               GetSourceRadius() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
-    const double         *GetPlaneOrigin() const;
-          double         *GetPlaneOrigin();
-    const double         *GetPlaneNormal() const;
-          double         *GetPlaneNormal();
-    const double         *GetPlaneUpAxis() const;
-          double         *GetPlaneUpAxis();
+    const double         *GetLineSourceStart() const;
+          double         *GetLineSourceStart();
+    const double         *GetLineSourceEnd() const;
+          double         *GetLineSourceEnd();
+    const double         *GetPlaneSourcePoint() const;
+          double         *GetPlaneSourcePoint();
+    const double         *GetPlaneSourceNormal() const;
+          double         *GetPlaneSourceNormal();
+    const double         *GetPlaneSourceUpVec() const;
+          double         *GetPlaneSourceUpVec();
+    const double         *GetClipPlaneOrigin() const;
+          double         *GetClipPlaneOrigin();
+    const double         *GetClipPlaneNormal() const;
+          double         *GetClipPlaneNormal();
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
     const ColorAttribute &GetSingleColor() const;
@@ -132,8 +163,7 @@ public:
     bool                 GetLightingFlag() const;
     double               GetRelTol() const;
     double               GetAbsTol() const;
-    TerminationType      GetTerminationType() const;
-    int                  GetIntegrationType() const;
+    double               GetMaxStepLength() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -150,6 +180,11 @@ public:
 protected:
     static std::string TerminationType_ToString(int);
 public:
+    static std::string SourceType_ToString(SourceType);
+    static bool SourceType_FromString(const std::string &, SourceType &);
+protected:
+    static std::string SourceType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -160,37 +195,53 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_maxStepLength = 0,
-        ID_termination,
+        ID_termination = 0,
+        ID_terminationType,
+        ID_streamlineSource,
+        ID_showStreamlines,
+        ID_showPoints,
+        ID_pointDensity,
+        ID_sourceRadius,
         ID_pointSource,
-        ID_planeOrigin,
-        ID_planeNormal,
-        ID_planeUpAxis,
+        ID_lineSourceStart,
+        ID_lineSourceEnd,
+        ID_planeSourcePoint,
+        ID_planeSourceNormal,
+        ID_planeSourceUpVec,
+        ID_clipPlaneOrigin,
+        ID_clipPlaneNormal,
         ID_colorTableName,
         ID_singleColor,
         ID_legendFlag,
         ID_lightingFlag,
         ID_relTol,
         ID_absTol,
-        ID_terminationType,
-        ID_integrationType
+        ID_maxStepLength
     };
 
 private:
-    double         maxStepLength;
     double         termination;
+    int            terminationType;
+    int            streamlineSource;
+    bool           showStreamlines;
+    bool           showPoints;
+    int            pointDensity;
+    double         sourceRadius;
     double         pointSource[3];
-    double         planeOrigin[3];
-    double         planeNormal[3];
-    double         planeUpAxis[3];
+    double         lineSourceStart[3];
+    double         lineSourceEnd[3];
+    double         planeSourcePoint[3];
+    double         planeSourceNormal[3];
+    double         planeSourceUpVec[3];
+    double         clipPlaneOrigin[3];
+    double         clipPlaneNormal[3];
     std::string    colorTableName;
     ColorAttribute singleColor;
     bool           legendFlag;
     bool           lightingFlag;
     double         relTol;
     double         absTol;
-    int            terminationType;
-    int            integrationType;
+    double         maxStepLength;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

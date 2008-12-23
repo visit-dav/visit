@@ -49,11 +49,9 @@
 
 #include <PoincareAttributes.h>
 
-class     avtPoincareFilter;
 class     avtLookupTable;
 class     avtVariableLegend;
 class     avtVariableMapper;
-class     avtStreamlineFilter;
 class     avtPoincareFilter;
 
 // ****************************************************************************
@@ -87,15 +85,18 @@ class avtPoincarePlot : public avtLineDataPlot
     avtLegend_p                 varLegendRefPtr;
     avtLookupTable             *avtLUT;
     avtPoincareFilter          *poincareFilter;
-    avtStreamlineFilter        *streamlineFilter;
 
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);
     virtual void                CustomizeMapper(avtDataObjectInformation &);
+    virtual avtContract_p       EnhanceSpecification(avtContract_p in_contract);
 
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; }
+    void                        SetLegend(bool legendOn);
+    void                        SetLegendRanges();
+
 };
 
 

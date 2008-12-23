@@ -46,7 +46,6 @@
 #include <avtLookupTable.h>
 #include <avtVariableLegend.h>
 #include <avtVariableMapper.h>
-#include <avtStreamlineFilter.h>
 #include <avtPoincareFilter.h>
 
 // ****************************************************************************
@@ -61,15 +60,13 @@ avtPoincarePlot::avtPoincarePlot()
 {
 #ifdef ENGINE
     poincareFilter = new avtPoincareFilter;
-    streamlineFilter = new avtStreamlineFilter;
-    poincareFilter = new avtPoincareFilter;
 #endif
     avtLUT = new avtLookupTable; 
     varMapper = new avtVariableMapper;
     varMapper->SetLookupTable(avtLUT->GetLookupTable());
 
     varLegend = new avtVariableLegend;
-    varLegend->SetTitle("Streamline");
+    varLegend->SetTitle("Poincare");
 
     //
     // This is to allow the legend to be reference counted so the behavior can
@@ -93,16 +90,6 @@ avtPoincarePlot::~avtPoincarePlot()
 {
 #ifdef ENGINE
     if (poincareFilter != NULL)
-    {
-        delete poincareFilter;
-        poincareFilter = NULL;
-    }
-    if (streamlineFilter != NULL)
-    {
-        delete streamlineFilter;
-        streamlineFilter = NULL;
-    }
-    if (poincareFilter != NULL )
     {
         delete poincareFilter;
         poincareFilter = NULL;
@@ -186,10 +173,7 @@ avtDataObject_p
 avtPoincarePlot::ApplyOperators(avtDataObject_p input)
 {
 #ifdef ENGINE
-    cout<<"ApplyOperators\n";
-    streamlineFilter->SetInput(input);
-
-    poincareFilter->SetInput(streamlineFilter->GetOutput());
+    poincareFilter->SetInput(input);
     avtDataObject_p dob = poincareFilter->GetOutput();
     return dob;
 #else
@@ -217,9 +201,6 @@ avtPoincarePlot::ApplyOperators(avtDataObject_p input)
 avtDataObject_p
 avtPoincarePlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    cout<<"ApplyRenderingTransformation\n";
-    //    PoincareFilter->SetInput(input);
-    //    return PoincareFilter->GetOutput();
     return input;
 }
 
@@ -239,8 +220,9 @@ avtPoincarePlot::ApplyRenderingTransformation(avtDataObject_p input)
 void
 avtPoincarePlot::CustomizeBehavior(void)
 {
-    cout<<"CustomizeBehavior\n";
-    //behavior->SetShiftFactor(0.6);
+    SetLegendRanges();
+    behavior->SetLegend(varLegendRefPtr);
+    behavior->SetShiftFactor(0.3);
 }
 
 
@@ -262,17 +244,34 @@ avtPoincarePlot::CustomizeBehavior(void)
 void
 avtPoincarePlot::CustomizeMapper(avtDataObjectInformation &doi)
 {
-/* Example of usage.
-    int dim = doi.GetAttributes().GetCurrentSpatialDimension();
-    if (dim == 2)
-    {
-    }
-    else
-    {
-    }
- */
 }
 
+// ****************************************************************************
+//  Method: avtPoincarePlot::EnhanceSpecification
+//
+//  Purpose:
+//      Modifies the contract to tell it we want the "colorVar" to be the 
+//      primary variable for the pipeline.  If we don't do that, the primary
+//      variable will be some vector variable and it will confuse our mapper.
+//      The only reason that this works is that the poincare filter 
+//      understands the colorVar trick and produces that variable.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Fri Nov  7 13:22:17 EST 2008
+//
+// ****************************************************************************
+
+avtContract_p
+avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
+{
+    avtDataRequest_p in_dr = in_contract->GetDataRequest();
+    const char *var = in_dr->GetVariable();
+    avtDataRequest_p out_dr = new avtDataRequest(in_dr, "colorVar");
+    out_dr->AddSecondaryVariable(var);
+    out_dr->SetOriginalVariable(var);
+    avtContract_p out_contract = new avtContract(in_contract, out_dr);
+    return out_contract;
+}
 
 // ****************************************************************************
 //  Method: avtPoincarePlot::SetAtts
@@ -291,7 +290,6 @@ avtPoincarePlot::CustomizeMapper(avtDataObjectInformation &doi)
 void
 avtPoincarePlot::SetAtts(const AttributeGroup *a)
 {
-    cout <<"SetAtts\n";
     const PoincareAttributes *newAtts = (const PoincareAttributes *)a;
 
     //needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
@@ -301,25 +299,119 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     debug1<<"avtPoincarePlot::SetAtts()"<<endl;
 
     // Set the streamline attributes.
-    streamlineFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORLAND_PRINCE);
-    streamlineFilter->SetStreamlineAlgorithm(STREAMLINE_STAGED_LOAD_ONDEMAND,
+    poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORLAND_PRINCE);
+    poincareFilter->SetStreamlineAlgorithm(STREAMLINE_STAGED_LOAD_ONDEMAND,
                                              10, 3);
-    streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
-    streamlineFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
-    streamlineFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
+    poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
+    poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
+    if (atts.GetTerminationType() == PoincareAttributes::Distance)
+        poincareFilter->SetTermination(STREAMLINE_TERMINATE_DISTANCE, atts.GetTermination());
+    else if (atts.GetTerminationType() == PoincareAttributes::Time)
+        poincareFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
 
-    streamlineFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
-    streamlineFilter->SetShowStart(false);
-    streamlineFilter->SetRadius(0.0);
-    streamlineFilter->SetPointDensity(0);
-    streamlineFilter->SetStreamlineDirection(0);
+    poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
+    poincareFilter->SetShowStart(false);
+    poincareFilter->SetRadius(atts.GetSourceRadius());
+    poincareFilter->SetPointDensity(atts.GetPointDensity());
+    poincareFilter->SetStreamlineDirection(0);
+    poincareFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
 
-    streamlineFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
-    streamlineFilter->SetPointSource(atts.GetPointSource());
-    streamlineFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
+    switch (atts.GetStreamlineSource())
+    {
+      case PoincareAttributes::PointSource:
+        poincareFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
+        poincareFilter->SetPointSource(atts.GetPointSource());
+        break;
 
-    // Set the slicer attributes.
-    
-    // Set the poincareFilter attributes.
+      case PoincareAttributes::LineSource:
+        poincareFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
+        poincareFilter->SetLineSource(atts.GetLineSourceStart(), atts.GetLineSourceEnd());
+        break;
+
+      case PoincareAttributes::PlaneSource:
+        poincareFilter->SetSourceType(STREAMLINE_SOURCE_PLANE);
+        poincareFilter->SetPlaneSource(atts.GetPlaneSourcePoint(),
+                                       atts.GetPlaneSourceNormal(),
+                                       atts.GetPlaneSourceUpVec(),
+                                       atts.GetSourceRadius());
+        break;
+    }
+
+    poincareFilter->SetShowStreamlines(atts.GetShowStreamlines());
+    poincareFilter->SetShowPoints(atts.GetShowPoints());
+    poincareFilter->SetClipPlane(atts.GetClipPlaneOrigin(), atts.GetClipPlaneNormal());
 #endif
+
+    //SetLighting(atts.GetLightingFlag());
+    varMapper->TurnLightingOn();
+    varMapper->SetSpecularIsInappropriate(false);
+    SetColorTable(atts.GetColorTableName().c_str());
+    varLegend->SetColorBarVisibility(1);
+    SetLegend(atts.GetLegendFlag());
+}
+
+// ****************************************************************************
+//  Method: avtPoincarePlot::SetLegend
+//
+//  Purpose:
+//    Turns the legend on or off.
+//
+//  Arguments:
+//    legendOn  : true if the legend should be turned on, false otherwise.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Fri Nov  7 13:29:26 EST 2008
+//
+// ****************************************************************************
+
+void
+avtPoincarePlot::SetLegend(bool legendOn)
+{
+    if (legendOn)
+    {
+        // Set scaling.
+        varLegend->LegendOn();
+        varLegend->SetLookupTable(avtLUT->GetLookupTable());
+        varLegend->SetScaling();
+        varMapper->SetLookupTable(avtLUT->GetLookupTable());
+
+        //
+        //  Retrieve the actual range of the data
+        //
+        varMapper->SetMin(0.);
+        varMapper->SetMaxOff();
+        varMapper->SetLimitsMode(0);
+        SetLegendRanges();
+    }
+    else
+        varLegend->LegendOff();
+}
+
+// ****************************************************************************
+// Method: avtPoincarePlot::SetLegendRanges
+//
+// Purpose: 
+//   Sets the range to use for the legend.
+//
+// Programmer: Dave Pugmire
+// Creation:   Fri Nov  7 13:31:08 EST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPoincarePlot::SetLegendRanges()
+{
+    double min, max;
+    varMapper->GetVarRange(min, max);
+
+    if (max < 0.)
+        max = 0.;
+
+    //
+    // Set the range for the legend's text and colors.
+    //
+    varLegend->SetVarRange(0., max);
+    varLegend->SetRange(0., max);
 }
