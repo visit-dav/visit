@@ -44,8 +44,7 @@
 #define AVT_Poincare_FILTER_H
 
 
-#include <avtDataTreeIterator.h>
-
+#include <avtStreamlineFilter.h>
 
 // ****************************************************************************
 //  Class: avtPoincareFilter
@@ -58,7 +57,7 @@
 //
 // ****************************************************************************
 
-class avtPoincareFilter : public avtDataTreeIterator
+class avtPoincareFilter : public avtStreamlineFilter
 {
   public:
     avtPoincareFilter();
@@ -68,9 +67,35 @@ class avtPoincareFilter : public avtDataTreeIterator
     virtual const char       *GetDescription(void)
                                   { return "Performing Poincare"; };
 
+    void                      SetShowStreamlines( bool v ) {showStreamlines=v;}
+    void                      SetShowPoints( bool v ) {showPoints=v;}
+    void                      SetClipPlane( const double *pt, const double *norm );
+
   protected:
-    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    // Streamline overides.
+    virtual void              Execute(void);
+    virtual void              PreExecute(void);
+    virtual void              PostExecute(void);
+    virtual avtContract_p     ModifyContract(avtContract_p);
     virtual void              UpdateDataObjectInfo(void);
+    virtual void              CreateStreamlineOutput( 
+                                   vector<avtStreamlineWrapper *> &streamlines);
+
+    // Poincare filter methods.
+    void                      GetFieldlineProperties( std::vector<avtVector> &points,
+                                                      unsigned int maxWinding,
+                                                      unsigned int &winding,
+                                                      unsigned int &twist,
+                                                      unsigned int &island );
+    void                      GeneratePoincarePoints(
+                                   vector<avtStreamlineWrapper*> &streamlines);
+    void                      ClassifyPoincarePoints();
+    vtkPolyData               *CreatePoincareOutput();
+
+    bool                      showStreamlines, showPoints;
+    avtVector                 clipPlanePt, clipPlaneN;
+    std::vector< std::vector<avtVector> > poincarePts;
+    std::vector< std::vector<int> > poincareClassification;
 };
 
 

@@ -4,6 +4,9 @@
     </Files>
     <Files components="E">
       avtPoincareFilter.C
+      StreamlineAnalyzerLib.C
+      Point.C
+      Vector.C
     </Files>
     <Attribute name="PoincareAttributes" purpose="Attributes for the Poincare plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Poincare.code">
       <Enum name="ColoringMethod">
@@ -18,31 +21,70 @@
         Distance
         Time
       </Enum>
-      <Field name="maxStepLength" label="maximum step length" type="double">
-        0.100000
-      </Field>
+      <Enum name="SourceType">
+        PointSource
+        LineSource
+        PlaneSource
+      </Enum>
       <Field name="termination" label="Termination" type="double">
         10.000000
       </Field>
-      <Field name="pointSource" label="Starting point" type="doubleArray" length="3">
+      <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
+        Time
+      </Field>
+      <Field name="streamlineSource" label="Streamline Source" type="enum" subtype="SourceType">
+      </Field>
+      <Field name="showStreamlines" label="Show Streamlines" type="bool">
+        true
+      </Field>
+      <Field name="showPoints" label="Show Points" type="bool">
+        true
+      </Field>
+      <Field name="pointDensity" label="Point Density" type="int" enabler="streamlineSource:LineSource,PlaneSource">
+        1
+      </Field>
+      <Field name="sourceRadius" label="Source Radius" type="double" enabler="streamlineSource:PlaneSource">
+        1.000000
+      </Field>
+      <Field name="pointSource" label="Point Source" type="doubleArray" length="3" enabler="streamlineSource:PointSource">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3">
+      <Field name="lineSourceStart" label="Line Point Start" type="doubleArray" length="3" enabler="streamlineSource:LineSource">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3">
+      <Field name="lineSourceEnd" label="Line Point End" type="doubleArray" length="3" enabler="streamlineSource:LineSource">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeSourcePoint" label="Plane Source Point" type="doubleArray" length="3" enabler="streamlineSource:PlaneSource">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeSourceNormal" label="Plane Source Normal" type="doubleArray" length="3" enabler="streamlineSource:PlaneSource">
         0.000000
         0.000000
         1.000000
       </Field>
-      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3">
+      <Field name="planeSourceUpVec" label="Plane Source Up Vec" type="doubleArray" length="3" enabler="streamlineSource:PlaneSource">
         0.000000
         1.000000
         0.000000
+      </Field>
+      <Field name="clipPlaneOrigin" label="Clip Plane Origin" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="clipPlaneNormal" label="Clip Plane Normal" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        1.000000
       </Field>
       <Field name="colorTableName" label="Color table" type="colortable">
         Default
@@ -65,10 +107,8 @@
       <Field name="absTol" label="abs. tolerance" type="double">
         0.000010
       </Field>
-      <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
-        Distance
-      </Field>
-      <Field name="integrationType" label="Integration type" type="int">
+      <Field name="maxStepLength" label="maximum step length" type="double">
+        0.100000
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
@@ -79,6 +119,9 @@
       </Include>
       <Include file="source" quoted="false">
         PointAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        Line.h
       </Include>
     </Attribute>
   </Plugin>
