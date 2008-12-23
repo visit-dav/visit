@@ -329,21 +329,6 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
                               loadDomStats, statusCommStats, slCommStats, bytesSentStats,
                               iterationStats, intStepStats, busyLoopStats;
 
-    /*
-    float                     minMaxIOTime[2], meanIOTime, stdDevIOTime,
-                              minMaxIntegrationTime[2], meanIntTime, stdDevIntTime,
-                              minMaxCommTime[2], meanCommTime, stdDevCommTime,
-                              minMaxTotalTime[2], meanTotalTime, stdDevTotalTime,
-                              minMaxSortTime[2], meanSortTime, stdDevSortTime,
-                              minMaxSleepTime[2],meanSleepTime, stdDevSleepTime;
-    
-    int                       minMaxNumDomains[2],minMaxNumSLComm[2], minMaxNumStatusComm[2],
-                              minMaxNumIntSteps[2], minMaxNumIterations[2],minMaxNumBytesSent[2],
-                              minMaxNumBusyLoopIterations[2];
-    float                     meanNumDomains, stdDevNumDomains, meanNumSLComm, stdDevSLComm,
-    meanStatusComm, stdDevStatusComm;
-    */
-
     double                    gatherTime1, gatherTime2, asyncSLTime, 
                               asyncTermTime, asyncSendCleanupTime;
     void                      ReportTimings();
@@ -380,9 +365,6 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
                                   vector<avtStreamlineWrapper *> &streamlines);
 
     //Streamline techniques.
-
-    virtual void              LoadOnDemand(
-                                   std::vector<avtStreamlineWrapper *> &sdpts);
     virtual void              StagedLoadOnDemand(
                                    std::vector<avtStreamlineWrapper *> &sdpts);
     virtual void              ParallelBalancedStaticDomains(

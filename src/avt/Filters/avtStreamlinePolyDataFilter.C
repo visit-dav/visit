@@ -74,6 +74,9 @@
 //   allow other modules (Poincare) to inherit from avtStreamlineFilter and
 //   use its parallel-aware goodness.
 //
+//   Dave Pugmire, Tue Dec 23 13:52:42 EST 2008
+//   Removed ReportStatistics from this method.
+//
 // ****************************************************************************
 
 void
@@ -240,7 +243,6 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
     outPD->SetSource(NULL);
     append->Delete();
 
-    ReportStatistics(streamlines);
     avtDataTree *dt = new avtDataTree(outPD, 0);
     SetOutputDataTree(dt);
 }
