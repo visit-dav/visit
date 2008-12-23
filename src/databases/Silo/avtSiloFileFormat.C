@@ -11082,6 +11082,10 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
 //  Programmer: Mark C. Miller 
 //  Creation:   December 18, 2008 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Dec 23 11:12:31 PST 2008
+//    Fixed wrong parameter based to setting of NChoosR min/max values.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
@@ -11167,7 +11171,7 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
         smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
 #else
         smd->SetEnumerationType(avtScalarMetaData::ByNChooseR);
-        smd->SetEnumNChooseRN(numNodeLists);
+        smd->SetEnumNChooseRN(maxAnnotIntLists);
         smd->SetEnumNChooseRMaxR(maxCoincidentNodelists);
 #endif
         smd->hideFromGUI = true;
