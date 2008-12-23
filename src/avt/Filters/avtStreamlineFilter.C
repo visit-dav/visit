@@ -1773,68 +1773,6 @@ avtStreamlineFilter::ReportStatistics(
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::LoadOnDemand
-//
-//  Purpose:
-//      Calculates a streamline with LoadOnDemand algorithm.
-//      For each seed point, it calculates the streamline, integrating and 
-//      loading domains until the streamline terminates.
-//      The parallel version just segments the points into groups, one for each
-//      processor.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   March 4, 2008
-//
-// ****************************************************************************
-
-void
-avtStreamlineFilter::LoadOnDemand(
-                               std::vector<avtStreamlineWrapper *> &seedpoints)
-{
-    debug1 << "avtStreamlineFilter::LoadOnDemand()\n";
-    int numSeedPoints = seedpoints.size();
-
-    cout << "We have " << numSeedPoints << " seed points\n";
-    int i0 = 0, i1 = numSeedPoints;
-
-#ifdef PARALLEL
-    int nPts = numSeedPoints/nProcs;
-
-    i0 = rank * nPts;
-    i1 = i0 + nPts;
-    // Last processor will get the slack.
-    if (rank == nProcs-1)
-        i1 = numSeedPoints;
-#endif
-    debug1 << "My idx: " << i0 << " to " << i1 << endl;
-
-    // For each of my seed points, integrate it to completion.
-    vector<avtStreamlineWrapper *> allStreamlines;
-    for (int i = i0; i < i1; i++)
-    {
-        debug1 << "Seed point : " << i << endl;
-        avtStreamlineWrapper *slSeg = seedpoints[i];
-        
-        //FIX THIS
-        EXCEPTION0(ImproperUseException);
-        IntegrateStreamline(slSeg);
-        
-        allStreamlines.push_back(slSeg);
-    }
-
-    // Create streamline output.
-    CreateStreamlineOutput(allStreamlines);
-
-    // clean up.
-    for (int i = 0; i < allStreamlines.size(); i++)
-    {
-        avtStreamlineWrapper *slSeg = (avtStreamlineWrapper*)allStreamlines[i];
-        delete slSeg;
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtStreamlineFilter::Initialize
 //
 //  Modifications:
@@ -2188,7 +2126,6 @@ avtStreamlineFilter::AsynchronousParallelStaticDomains(
         }
     }
     debug1 << "My seedpoints: " << streamlines.size() << endl;
-    vector<avtStreamlineWrapper *> terminatedStreamlines;
 
     // MPI communications
     const int StreamlineXferReqTag = 42000;
@@ -2488,6 +2425,7 @@ avtStreamlineFilter::AsynchronousParallelStaticDomains(
     // Create output
     debug1 << "Make output: " << terminatedStreamlines.size() << endl;
     CreateStreamlineOutput(terminatedStreamlines);
+    ReportStatistics(terminatedStreamlines);
 
     for (int i = 0; i < terminatedStreamlines.size(); i++)
     {
@@ -2827,7 +2765,6 @@ avtStreamlineFilter::OLD_ParallelBalancedStaticDomains(std::vector<pt3d> &allSee
     }
     debug1 << "My seedpoints: " << streamlines.size() << endl;
 
-    vector<avtStreamlineWrapper *> terminatedStreamlines;
     vector< vector< avtStreamlineWrapper *> > distributeStreamlines;
     distributeStreamlines.resize(nProcs);
     int *cnts = new int[nProcs], *gather = new int[nProcs*nProcs];
@@ -2907,6 +2844,7 @@ avtStreamlineFilter::OLD_ParallelBalancedStaticDomains(std::vector<pt3d> &allSee
 
     debug1 << "Make output: " << terminatedStreamlines.size() << endl;
     CreateStreamlineOutput(terminatedStreamlines);
+    ReportStatistics(terminatedStreamlines);
 
     delete [] cnts;
     delete [] gather;
@@ -2938,6 +2876,9 @@ avtStreamlineFilter::OLD_ParallelBalancedStaticDomains(std::vector<pt3d> &allSee
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Add early terminations flag.
 //
+//   Dave Pugmire, Tue Dec 23 13:52:42 EST 2008
+//   Moved ReportStatistics to this method.
+//
 // ****************************************************************************
 
 void
@@ -2951,7 +2892,7 @@ avtStreamlineFilter::AsyncStaticDomains(
 
     allSLCounts.resize(nProcs,0);
     //Get "my" seed points.
-    vector<avtStreamlineWrapper *> streamlines;
+    vector<avtStreamlineWrapper *> streamlines, terminatedStreamlines;
     int numTerminated = 0;
 
     for (int i = 0; i < allSeedpoints.size(); i++)
@@ -2980,8 +2921,6 @@ avtStreamlineFilter::AsyncStaticDomains(
     for (int i = 0; i < numDomains; i++)
         if (rank == DomainToRank(i))
             GetDomain(i);
-
-    vector<avtStreamlineWrapper *> terminatedStreamlines;
 
     // Init asynchronous stuff.
     InitRequests();
@@ -3121,6 +3060,8 @@ avtStreamlineFilter::AsyncStaticDomains(
     debug1 << "Make output: " << terminatedStreamlines.size() << endl;
     
     CreateStreamlineOutput(terminatedStreamlines);
+    ReportStatistics(terminatedStreamlines);
+
     for (int i = 0; i < terminatedStreamlines.size(); i++)
         delete terminatedStreamlines[i];
 #endif
@@ -3151,6 +3092,7 @@ avtStreamlineFilter::ParallelBalancedStaticDomains(
 {
     return AsyncStaticDomains(allSeedpoints);
 
+#if 0
     debug1 << "avtStreamlineFilter::ParallelBalancedStaticDomains()\n";
 #ifdef PARALLEL
     int totalNumActiveStreamlines = allSeedpoints.size();
@@ -3181,8 +3123,6 @@ avtStreamlineFilter::ParallelBalancedStaticDomains(
     for (int i = 0; i < numDomains; i++)
         if (rank == DomainToRank(i))
             GetDomain(i);
-
-    vector<avtStreamlineWrapper *> terminatedStreamlines;
 
     // Init asynchronous stuff.
     if (asynchronous)
@@ -3398,9 +3338,13 @@ avtStreamlineFilter::ParallelBalancedStaticDomains(
     debug1 << "Make output: " << terminatedStreamlines.size() << endl;
     
     CreateStreamlineOutput(terminatedStreamlines);
+    ReportStatistics(terminatedStreamlines);
+
     for (int i = 0; i < terminatedStreamlines.size(); i++)
         delete terminatedStreamlines[i];
 #endif
+#endif
+
 }
 
 
@@ -4724,7 +4668,6 @@ avtStreamlineFilter::ParallelBalancedLoadOnDemand(
     }
     debug1 << "My seedpoints: " << streamlines.size() << endl;
 
-    vector<avtStreamlineWrapper *> terminatedStreamlines;
     vector< vector< avtStreamlineWrapper *> > distributeStreamlines;
     distributeStreamlines.resize(nProcs);
     int *cnts = new int[nProcs], *gather = new int[nProcs*nProcs];
@@ -4809,6 +4752,7 @@ avtStreamlineFilter::ParallelBalancedLoadOnDemand(
 
     debug1 << "Make output: " << terminatedStreamlines.size() << endl;
     CreateStreamlineOutput(terminatedStreamlines);
+    ReportStatistics(terminatedStreamlines);
 
     delete [] cnts;
     delete [] gather;
@@ -4914,7 +4858,7 @@ avtStreamlineFilter::StagedLoadOnDemand(
           << numDomains << " domains.\n";
 
     //Get all the streamlines.
-    vector<avtStreamlineWrapper *> terminatedStreamlines, inactiveStreamlines;
+    vector<avtStreamlineWrapper *> inactiveStreamlines, terminatedStreamlines;
 
     for (int i = i0; i < i1; i++)
     {
@@ -5009,6 +4953,7 @@ avtStreamlineFilter::StagedLoadOnDemand(
 
     // All done, make the output.
     CreateStreamlineOutput(terminatedStreamlines);
+    ReportStatistics(terminatedStreamlines);
     for (int i = 0; i < terminatedStreamlines.size(); i++)
     {
         avtStreamlineWrapper *slSeg = 
@@ -6312,6 +6257,8 @@ avtStreamlineFilter::MasterSlave(std::vector<avtStreamlineWrapper *> &seedpoints
     debug1<<rank<<": I am done: "<<terminatedStreamlines.size()<<endl;
     // All done, make the output.
     CreateStreamlineOutput(terminatedStreamlines);
+    ReportStatistics(terminatedStreamlines);
+
     for (int i = 0; i < terminatedStreamlines.size(); i++)
     {
         avtStreamlineWrapper *slSeg = 
