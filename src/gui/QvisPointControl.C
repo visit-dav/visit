@@ -579,11 +579,14 @@ void QvisPointControl::SetPointSizeVar(QString &var)
 //   Cyrus Harrison, Tue Jul  8 09:58:45 PDT 2008
 //   Initial Qt4 Port
 //
+//   Hank Childs, Tue Dec 23 17:34:19 PST 2008
+//   Change limit from >3 to >4, since 4 now corresponds to Sphere.
+//
 // ****************************************************************************
 
 void QvisPointControl::SetPointType(int type)
 {
-    if (type < 0 || type > 3)
+    if (type < 0 || type > 4)
         return;
 
     typeComboBox->blockSignals(true);
