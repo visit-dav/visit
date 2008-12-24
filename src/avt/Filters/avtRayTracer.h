@@ -49,6 +49,7 @@
 #include <avtViewInfo.h>
 
 class   avtRayFunction;
+class   vtkMatrix4x4;
 
 
 // ****************************************************************************
@@ -87,6 +88,9 @@ class   avtRayFunction;
 //
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
+//
+//    Hank Childs, Wed Dec 24 14:17:03 PST 2008
+//    Add method TightenClippingPlanes.
 //
 // ****************************************************************************
 
@@ -134,10 +138,12 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     avtImage_p            opaqueImage;
 
     virtual void          Execute(void);
-    virtual avtContract_p
-                          ModifyContract(avtContract_p);
+    virtual avtContract_p ModifyContract(avtContract_p);
     static int            GetNumberOfDivisions(int, int, int);
     virtual bool          FilterUnderstandsTransformedRectMesh();
+    void                  TightenClippingPlanes(const avtViewInfo &view,
+                                                vtkMatrix4x4 *,
+                                                double &, double &);
 };
 
 
