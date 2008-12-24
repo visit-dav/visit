@@ -84,6 +84,10 @@ bool   HexIntersectsImageCube(const float [8][3]);
 //    Hank Childs, Fri Nov 19 13:41:56 PST 2004
 //    Initialize passThruRectilinear.
 //
+//    Hank Childs, Wed Dec 24 13:28:16 PST 2008
+//    Remove tightenClippingPlanes, as this functionality has been moved to
+//    avtRayTracer.
+//
 // ****************************************************************************
 
 avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
@@ -94,7 +98,6 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
     scale[2] = 1.;
     aspect   = asp;
 
-    tightenClippingPlanes = false;
     passThruRectilinear = false;
 
     view = vi;
@@ -121,6 +124,10 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
 //    Hank Childs, Fri Nov 19 13:41:56 PST 2004
 //    Initialize passThruRectilinear.
 //
+//    Hank Childs, Wed Dec 24 13:28:16 PST 2008
+//    Remove tightenClippingPlanes, as this functionality has been moved to
+//    avtRayTracer.
+//
 // ****************************************************************************
 
 avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
@@ -131,7 +138,6 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
     scale[2] = s[2];
     aspect   = 1.;
 
-    tightenClippingPlanes = false;
     passThruRectilinear = false;
 
     view = vi;
@@ -707,176 +713,6 @@ void
 avtWorldSpaceToImageSpaceTransform::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
-}
-
-
-// ****************************************************************************
-//  Method: avtWorldSpaceToImageSpaceTransform::PreExecute
-//
-//  Purpose:
-//      This is called right before Execute is called.  This is the first
-//      time that we have access to the whole dataset. 
-//      See if we should tighten the clipping planes by looking at the
-//      bounding box of the dataset (if appropriate).
-//
-//  Programmer: Hank Childs
-//  Creation:   January 1, 2002
-//
-// ****************************************************************************
-
-void
-avtWorldSpaceToImageSpaceTransform::PreExecute(void)
-{
-    avtTransform::PreExecute();
-
-    if (!tightenClippingPlanes)
-    {
-        //
-        // Nothing for us to do.
-        //
-        return;
-    }
-
-    double dbounds[6];
-    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-    avtExtents *exts = datts.GetEffectiveSpatialExtents();
-    if (exts->HasExtents())
-    {
-        exts->CopyTo(dbounds);
-    }
-    else
-    {
-        GetSpatialExtents(dbounds);
-    }
-
-    //
-    // Multiply our current transform by each of the points in the bounding
-    // box, keeping track of the furthest and closest point.
-    //
-    double nearest     =  1.;
-    int    nearestInd  = -1;
-    double farthest    =  0.;
-    int    farthestInd = -1;
-    for (int i = 0 ; i < 8 ; i++)
-    {
-        double pt[4];
-        pt[0] = (i & 1 ? dbounds[1] : dbounds[0]);
-        pt[1] = (i & 2 ? dbounds[3] : dbounds[2]);
-        pt[2] = (i & 4 ? dbounds[5] : dbounds[4]);
-        pt[3] = 1.;
-        
-        double outpt[4];
-        transform->MultiplyPoint(pt, outpt);
-
-        if (outpt[2] > farthest)
-        {
-            farthestInd = i;
-            farthest    = outpt[2];
-        }
-        if (outpt[2] < nearest)
-        {
-            nearestInd = i;
-            nearest    = outpt[2];
-        }
-    }
-
-    bool resetNearest = true;
-    if (nearestInd == -1 || nearest <= 0.)
-    {
-        resetNearest = false;
-    }
-
-    double vecFromCameraToPlaneX = view.focus[0] - view.camera[0];
-    double vecFromCameraToPlaneY = view.focus[1] - view.camera[1];
-    double vecFromCameraToPlaneZ = view.focus[2] - view.camera[2];
-    double vecMag = (vecFromCameraToPlaneX*vecFromCameraToPlaneX)
-                  + (vecFromCameraToPlaneY*vecFromCameraToPlaneY)
-                  + (vecFromCameraToPlaneZ*vecFromCameraToPlaneZ);
-    vecMag = sqrt(vecMag);
-
-    if (resetNearest)
-    {
-        double X = (nearestInd & 1 ? dbounds[1] : dbounds[0]);
-        double Y = (nearestInd & 2 ? dbounds[3] : dbounds[2]);
-        double Z = (nearestInd & 4 ? dbounds[5] : dbounds[4]);
-
-        //
-        // My best attempt at explaining what is going on is below is the
-        // "farthest" case.
-        //
-        double vecFromCameraToNearestX = X - view.camera[0];
-        double vecFromCameraToNearestY = Y - view.camera[1];
-        double vecFromCameraToNearestZ = Z - view.camera[2];
-
-        double dot = vecFromCameraToPlaneX*vecFromCameraToNearestX
-                   + vecFromCameraToPlaneY*vecFromCameraToNearestY
-                   + vecFromCameraToPlaneZ*vecFromCameraToNearestZ;
-
-        double newNearest = dot / vecMag;
-        newNearest = newNearest - (view.farPlane-newNearest)*0.01; // fudge
-        if (newNearest > view.nearPlane)
-        {
-            view.nearPlane = newNearest;
-        }
-        else
-        {
-            resetNearest = false;
-        }
-    }
-
-    bool resetFarthest = true;
-    if (farthestInd == -1 || farthest >= 1.)
-    {
-        resetFarthest = false;
-    }
-
-    if (resetFarthest)
-    {
-        double X = (farthestInd & 1 ? dbounds[1] : dbounds[0]);
-        double Y = (farthestInd & 2 ? dbounds[3] : dbounds[2]);
-        double Z = (farthestInd & 4 ? dbounds[5] : dbounds[4]);
-
-        double vecFromCameraToFarthestX = X - view.camera[0];
-        double vecFromCameraToFarthestY = Y - view.camera[1];
-        double vecFromCameraToFarthestZ = Z - view.camera[2];
-
-        //
-        // We are now constructing the dot product of our two vectors.  Note
-        // That this will give us cosine of their angles times the magnitude
-        // of the camera-to-plane vector times the magnitude of the
-        // camera-to-farthest vector.  We want the magnitude of a new vector,
-        // the camera-to-closest-point-on-plane-vector.  That vector will
-        // lie along the same vector as the camera-to-plane and it forms
-        // a triangle with the camera-to-farthest-vector.  Then we have the
-        // same angle between them and we can re-use the cosine we calculate.
-        //
-        double dot = vecFromCameraToPlaneX*vecFromCameraToFarthestX
-                   + vecFromCameraToPlaneY*vecFromCameraToFarthestY
-                   + vecFromCameraToPlaneZ*vecFromCameraToFarthestZ;
-
-        //
-        // dot = cos X * mag(A) * mag(B)
-        // We know cos X = mag(C) / mag(A)   C = adjacent, A = hyp.
-        // Then mag(C) = cos X * mag(A).
-        // So mag(C) = dot / mag(B).
-        //
-        double newFarthest = dot / vecMag;
-
-        newFarthest = newFarthest + (newFarthest-view.nearPlane)*0.01; // fudge
-        if (newFarthest < view.farPlane)
-        {
-            view.farPlane = newFarthest;
-        }
-        else
-        {
-            resetFarthest = false;
-        }
-    }
-
-    if (resetNearest || resetFarthest)
-    {
-        CalculateTransform(view, transform, scale, aspect);
-    }
 }
 
 
