@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkOBJReader.cxx,v $
+  Module:    $RCSfile: vtkVisItOBJReader.cxx,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,7 +12,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkOBJReader.h"
+#include "vtkVisItOBJReader.h"
 #include <InvalidFilesException.h>
 
 #include "vtkCellArray.h"
@@ -23,19 +23,19 @@
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
 
-vtkCxxRevisionMacro(vtkOBJReader, "$Revision: 1.27 $");
-vtkStandardNewMacro(vtkOBJReader);
+vtkCxxRevisionMacro(vtkVisItOBJReader, "$Revision: 1.27 $");
+vtkStandardNewMacro(vtkVisItOBJReader);
 
 // Description:
 // Instantiate object with NULL filename.
-vtkOBJReader::vtkOBJReader()
+vtkVisItOBJReader::vtkVisItOBJReader()
 {
   this->FileName = NULL;
 
   this->SetNumberOfInputPorts(0);
 }
 
-vtkOBJReader::~vtkOBJReader()
+vtkVisItOBJReader::~vtkVisItOBJReader()
 {
   if (this->FileName)
     {
@@ -94,7 +94,7 @@ int is_whitespace(char c)
     return 0;
 }
 
-int vtkOBJReader::RequestData(
+int vtkVisItOBJReader::RequestData(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
@@ -142,7 +142,7 @@ int vtkOBJReader::RequestData(
 
   { // (make a local scope section to emphasise that the variables below are only used here)
 
-  const int MAX_LINE=1024;
+  const int MAX_LINE=8192;
   char line[MAX_LINE],*pChar;
   float xyz[3];
   int iVert,iTCoord,iNormal;
@@ -422,7 +422,7 @@ int vtkOBJReader::RequestData(
   return 1;
 }
 
-void vtkOBJReader::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItOBJReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 

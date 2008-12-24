@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkOBJReader.h,v $
+  Module:    $RCSfile: vtkVisItOBJReader.h,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,23 +12,23 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkOBJReader - read Wavefront .obj files
+// .NAME vtkVisItOBJReader - read Wavefront .obj files
 // .SECTION Description
-// vtkOBJReader is a source object that reads Wavefront .obj
+// vtkVisItOBJReader is a source object that reads Wavefront .obj
 // files. The output of this source object is polygonal data.
 // .SECTION See Also
-// vtkOBJImporter
+// vtkVisItOBJImporter
 
-#ifndef __vtkOBJReader_h
-#define __vtkOBJReader_h
+#ifndef __vtkVisItOBJReader_h
+#define __vtkVisItOBJReader_h
 
 #include "vtkPolyDataAlgorithm.h"
 
-class vtkOBJReader : public vtkPolyDataAlgorithm 
+class vtkVisItOBJReader : public vtkPolyDataAlgorithm 
 {
 public:
-  static vtkOBJReader *New();
-  vtkTypeRevisionMacro(vtkOBJReader,vtkPolyDataAlgorithm);
+  static vtkVisItOBJReader *New();
+  vtkTypeRevisionMacro(vtkVisItOBJReader,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -37,15 +37,15 @@ public:
   vtkGetStringMacro(FileName);
 
 protected:
-  vtkOBJReader();
-  ~vtkOBJReader();
+  vtkVisItOBJReader();
+  ~vtkVisItOBJReader();
   
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
 
   char *FileName;
 private:
-  vtkOBJReader(const vtkOBJReader&);  // Not implemented.
-  void operator=(const vtkOBJReader&);  // Not implemented.
+  vtkVisItOBJReader(const vtkVisItOBJReader&);  // Not implemented.
+  void operator=(const vtkVisItOBJReader&);  // Not implemented.
 };
 
 #endif
