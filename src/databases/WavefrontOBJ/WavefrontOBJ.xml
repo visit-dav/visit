@@ -3,10 +3,10 @@
     <Extensions> obj </Extensions>
     <Files components="M">
         avtWavefrontOBJFileFormat.C
-        vtkOBJReader.C
+        vtkVisItOBJReader.C
     </Files>
     <Files components="E">
         avtWavefrontOBJFileFormat.C
-        vtkOBJReader.C
+        vtkVisItOBJReader.C
     </Files>
   </Plugin>

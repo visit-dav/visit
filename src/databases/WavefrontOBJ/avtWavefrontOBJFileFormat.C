@@ -45,7 +45,7 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkOBJReader.h>
+#include <vtkVisItOBJReader.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -120,6 +120,11 @@ avtWavefrontOBJFileFormat::~avtWavefrontOBJFileFormat()
 //    Remove call to SetSource(NULL) as it now removes information necessary
 //    for the dataset. 
 //
+//    Eric Brugger, Wed Dec 24 08:00:23 PST 2008
+//    I replaced vtkOBJReader with vtkVisItOBJReader so that the engine
+//    would load the one defined in this plugin, rather than the one in the
+//    vtk library.
+//
 // ****************************************************************************
 
 void
@@ -140,7 +145,7 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
     //
     // Create a file reader and set our dataset to be its output.
     //
-    vtkOBJReader *reader = vtkOBJReader::New();
+    vtkVisItOBJReader *reader = vtkVisItOBJReader::New();
     reader->SetFileName(filename);
     dataset = reader->GetOutput();
     dataset->Register(NULL);
