@@ -349,6 +349,10 @@ avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 //    have data, since that is now handled by the avtSamplePointExtractor's
 //    base class.
 //
+//    Hank Childs, Wed Dec 24 09:46:56 PST 2008
+//    Add code to convert the z-buffer of the background to the w-buffer.
+//    This is being done so the samples lie more evenly.
+//
 // ****************************************************************************
 
 void
@@ -421,6 +425,27 @@ avtRayTracer::Execute(void)
     if (*opaqueImage != NULL)
     {
         rc.InsertOpaqueImage(opaqueImage);
+        bool convertToWBuffer = !view.orthographic;
+        if (convertToWBuffer)
+        {
+            float *opaqueImageZB  = opaqueImage->GetImage().GetZBuffer();
+            const int numpixels = screen[0]*screen[1];
+            double fp = view.farPlane;
+            double np = view.nearPlane;
+            for (int p = 0 ; p < numpixels ; p++)
+            {
+                // We want the value to be between -1 and 1.
+                double val = 2*opaqueImageZB[p]-1.0;
+
+                // Map to actual distance from camera.
+                val = (-2*fp*np)
+                         / ((val*(fp-np)) - (fp+np));
+
+                // Now normalize based on near and far.
+                val = (val - np) / (fp-np);
+                opaqueImageZB[p] = val;
+            }
+        }
     }
     rc.SetInput(samples);
     avtImage_p image = rc.GetTypedOutput();

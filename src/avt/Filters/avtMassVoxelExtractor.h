@@ -82,6 +82,10 @@ class     vtkMatrix4x4;
 //    Hank Childs, Wed Aug 27 11:24:53 PDT 2008
 //    Add support for non-floats.
 //
+//    Hank Childs, Wed Dec 24 11:24:47 PST 2008
+//    Remove data member ProportionSpaceToZBufferSpace, as we now do our
+//    sampling in even intervals (wbuffer).
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
@@ -107,7 +111,6 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     double           aspect;
     double           cur_clip_range[2];
     vtkMatrix4x4    *view_to_world_transform;
-    float           *ProportionSpaceToZBufferSpace;
 
     float           *X;
     float           *Y;
