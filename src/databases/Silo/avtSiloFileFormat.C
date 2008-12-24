@@ -5879,6 +5879,21 @@ avtSiloFileFormat::GetCsgVectorVar(DBfile *dbfile, const char *vname)
     return 0;
 }
 
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMeshHelper
+//
+//  Purpose: Preliminary work involved in getting a mesh, refactored here to
+//     support access to this functionality from multiple routines other than
+//     just GetMesh().
+//
+//  Created: Tue Dec 23 22:17:53 PST 2008
+//  Programmer: Mark C. Miller
+//
+//  Modifications:
+//    Mark C. Miller, Wed Dec 24 01:39:04 PST 2008
+//    Added this missing function pre-amble. Added missing delete of
+//    meshLocation.
+// ****************************************************************************
 void
 avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
     int *_type, DBfile **_domain_file, char **_directory_mesh,
@@ -5985,6 +6000,8 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
         if (allocated_directory_mesh)
             delete [] directory_mesh;
     }
+
+    delete [] meshLocation;
 }
 
 // ****************************************************************************
