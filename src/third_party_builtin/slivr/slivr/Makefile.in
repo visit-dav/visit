@@ -50,7 +50,7 @@
 @VARIABLES@
 
 SLIVR_IS_EXTRACTED=slivr-extracted
-SLIVR_TARBALL=slivr-r142.tar.gz
+SLIVR_TARBALL=slivr-r141.tar.gz
 
 ##
 ## Standard targets...
