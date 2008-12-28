@@ -467,6 +467,9 @@
 #     Tom Fogal, Sat Dec  6 21:27:55 PST 2008
 #     A silo path variable was missing "silo".
 #
+#     Tom Fogal, Mon Dec  8 22:46:17 MST 2008
+#     Quoted compiler flags given to VTK.
+#
 #     Mark C. Miller, Thu Dec 11 08:38:41 PST 2008
 #     Made the auto-generated config-site file a little more portable by
 #     creating a VISITARCH variable in the file and using \$VISITARCH
@@ -3257,9 +3260,9 @@ function build_vtk
         -DUSE_ANSI_STD_LIB:BOOL=ON\
         -DVTK_USE_MANGLED_MESA:BOOL=ON\
         -DVTK_USE_HYBRID:BOOL=ON\
-        -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
+        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
         -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -3274,9 +3277,9 @@ function build_vtk
         -DUSE_ANSI_STD_LIB:BOOL=ON\
         -DVTK_USE_MANGLED_MESA:BOOL=ON\
         -DVTK_USE_HYBRID:BOOL=ON\
-        -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS} -LANG:std -64\
+        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS} -LANG:std -64"\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}" \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
         -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
@@ -3293,9 +3296,9 @@ function build_vtk
         -DUSE_ANSI_STD_LIB:BOOL=ON\
         -DVTK_USE_MANGLED_MESA:BOOL=ON\
         -DVTK_USE_HYBRID:BOOL=ON\
-        -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
+        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
