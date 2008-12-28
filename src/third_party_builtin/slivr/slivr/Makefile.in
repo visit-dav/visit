@@ -40,6 +40,9 @@
 #   Updated the SLIVR tarball to get fixes for recent compilers.
 #   Use PHONY for slivr, so that it is always built.
 #
+#   Tom Fogal, Sat Dec 27 21:46:28 MST 2008
+#   Pass VisIt's compilation flags to SLIVRs configuration.
+#
 ##############################################################################
 
 
@@ -74,7 +77,19 @@ $(SLIVR_IS_EXTRACTED):
 	touch $(SLIVR_IS_EXTRACTED)
 
 slivr: $(SLIVR_IS_EXTRACTED)
-	cd slivr && $(CMAKE) -D CMAKE_C_COMPILER:FILEPATH=$(CC) -D CMAKE_CXX_COMPILER:FILEPATH=$(CXX) -D BUILD_SHARED_LIBS:STRING=ON -D GLEW_INCLUDE:STRING=$(TOPDIR)/include/glew -D GLEW_LIBRARY:STRING=$(TOPDIR)/lib -D TEEM_DIR:STRING=$(TOPDIR)/lib/TEEM-1.9 -D CMAKE_INSTALL_PREFIX:PATH=$(TOPDIR) @SLIVR_CMAKE_SHARED_LINKER_FLAGS@ .
+	cd slivr && \
+		$(CMAKE) \
+		-D CMAKE_C_COMPILER:FILEPATH=$(CC) \
+		-D CMAKE_CXX_COMPILER:FILEPATH=$(CXX) \
+		-D CMAKE_C_FLAGS:STRING="$(CFLAGS)" \
+		-D CMAKE_CXX_FLAGS:STRING="$(CXXFLAGS)" \
+		-D BUILD_SHARED_LIBS:STRING=ON \
+		-D GLEW_INCLUDE:STRING=$(TOPDIR)/include/glew \
+		-D GLEW_LIBRARY:STRING=$(TOPDIR)/lib \
+		-D TEEM_DIR:STRING=$(TOPDIR)/lib/TEEM-1.9 \
+		-D CMAKE_INSTALL_PREFIX:PATH=$(TOPDIR) \
+		@SLIVR_CMAKE_SHARED_LINKER_FLAGS@ \
+		.
 	cd slivr && $(MAKE)
 	cd slivr && $(MAKE) install
 
