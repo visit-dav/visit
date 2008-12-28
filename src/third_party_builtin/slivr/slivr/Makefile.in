@@ -36,6 +36,10 @@
 #   Brad Whitlock, Fri Oct 10 15:05:43 PST 2008
 #   I updated slivr.
 #
+#   Tom Fogal, Sat Dec 27 19:48:59 MST 2008
+#   Updated the SLIVR tarball to get fixes for recent compilers.
+#   Use PHONY for slivr, so that it is always built.
+#
 ##############################################################################
 
 
@@ -45,12 +49,19 @@
 @SET_MAKE@
 @VARIABLES@
 
+SLIVR_IS_EXTRACTED=slivr-extracted
+SLIVR_TARBALL=slivr-r142.tar.gz
+
 ##
 ## Standard targets...
 ##
 all: message slivr
 
 clean:
+	$(RM) $(SLIVR_IS_EXTRACTED)
+	# Next line is temporary: should remove eventually, but it will make sure
+	# developers don't get `dead files' in their tree.
+	#  -- Sat Dec 27 19:52:55 MST 2008
 	$(RM) SLIVRConfig.cmake.in
 	$(RM) -rf slivr
 	$(RM) -rf $(TOPDIR)/include/slivr
@@ -58,14 +69,16 @@ clean:
 	$(RM) $(TOPDIR)/lib/libslivrG.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libslivrV.@SHLIB_SOEXT@
 
-SLIVRConfig.cmake.in:
-	gunzip < slivr-rev-132.tar.gz | tar xvf - > /dev/null
-	cp slivr/SLIVRConfig.cmake.in .
+$(SLIVR_IS_EXTRACTED):
+	gunzip < $(SLIVR_TARBALL) | tar xvf - > /dev/null
+	touch $(SLIVR_IS_EXTRACTED)
 
-slivr: SLIVRConfig.cmake.in
+slivr: $(SLIVR_IS_EXTRACTED)
 	cd slivr && $(CMAKE) -D CMAKE_C_COMPILER:FILEPATH=$(CC) -D CMAKE_CXX_COMPILER:FILEPATH=$(CXX) -D BUILD_SHARED_LIBS:STRING=ON -D GLEW_INCLUDE:STRING=$(TOPDIR)/include/glew -D GLEW_LIBRARY:STRING=$(TOPDIR)/lib -D TEEM_DIR:STRING=$(TOPDIR)/lib/TEEM-1.9 -D CMAKE_INSTALL_PREFIX:PATH=$(TOPDIR) @SLIVR_CMAKE_SHARED_LINKER_FLAGS@ .
 	cd slivr && $(MAKE)
 	cd slivr && $(MAKE) install
+
+.PHONY: slivr
 
 ##
 ## Other targets
