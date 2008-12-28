@@ -1137,6 +1137,10 @@ VariableMenuPopulator::AddVars(VariableMenuPopulator::VariableList &to,
 // Creation:   Thu Aug 5 14:45:02 PST 2004
 //
 // Modifications:
+//
+//   Tom Fogal, Sat Dec 27 20:58:05 MST 2008
+//   Initialize variable so that it is a non-singular iterator, and can
+//   therefore always be copied.
 //   
 // ****************************************************************************
 
@@ -1145,6 +1149,7 @@ VariableMenuPopulator::VariableList::VariableList() : sortedVariables(),
 {
     sorted = true;
     unsortedVariableIndex = -1;
+    sortedVariablesIterator = sortedVariables.end();
 }
 
 VariableMenuPopulator::VariableList::VariableList(const VariableMenuPopulator::VariableList &obj) : 
