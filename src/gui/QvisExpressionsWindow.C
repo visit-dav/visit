@@ -143,6 +143,9 @@
 //    Renamed smallest_angle to minimum_angle and largest_angle to
 //    maximum_angle.
 //
+//    Hank Childs, Mon Dec 29 11:56:50 PST 2008
+//    Added dominant_mat.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -273,6 +276,7 @@ const char *expr_array[] = {
 };
 
 const char *expr_materials[] = {
+    "dominant_mat",
     "materror",
     "matvf",
     "nmats",

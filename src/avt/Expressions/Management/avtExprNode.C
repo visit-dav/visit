@@ -90,6 +90,7 @@
 #include <avtNeighborExpression.h>
 #include <avtNodeDegreeExpression.h>
 #include <avtNormalizeExpression.h>
+#include <avtDominantMaterialExpression.h>
 #include <avtMatvfExpression.h>
 #include <avtMIRvfExpression.h>
 #include <avtMatErrorExpression.h>
@@ -512,6 +513,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Kathleen Bonnell, Tue Nov 18 08:10:04 PST 2008
 //    Added curve_cmfe.
 //
+//    Hank Childs, Mon Dec 29 13:57:53 PST 2008
+//    Added dominant_mat.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -581,6 +585,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtPerMaterialValueExpression();
     if (functionName == "specmf")
         return new avtSpecMFExpression();
+    if (functionName == "dominant_mat")
+        return new avtDominantMaterialExpression();
     if (functionName == "nmats")
         return new avtNMatsExpression();
     if (functionName == "zonetype")
