@@ -159,6 +159,9 @@ avtCompositeRF::~avtCompositeRF()
 //    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
 //    Add support for shading that actually works.
 //
+//    Hank Childs, Mon Dec 29 09:22:47 PST 2008
+//    Fix composite to be a true integration.
+//
 // ****************************************************************************
 
 void
@@ -197,6 +200,9 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     trgb[1] = 0.;
     trgb[2] = 0.;
     int z;
+    double distanceToReachFullOpacity = 1./250.;
+    double distanceCoveredPerSample = 1./maxSample;
+    double oneSamplesContribution = distanceCoveredPerSample/distanceToReachFullOpacity;
     for (z = 0 ; z < maxSample ; z++)
     {
         if (validSample[z])
@@ -216,10 +222,8 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                     if (weight[z] < min_weight)
                         tableOpac *= weight[z]*min_weight_denom;
                 }
-                double numberOfSamplesToReachFullOpacity = 1;
-                double samplesOpacity = tableOpac / 
-                                             numberOfSamplesToReachFullOpacity;
-                samplesOpacity = samplesOpacity*samplesOpacity;
+                double samplesOpacity = tableOpac * oneSamplesContribution;
+                samplesOpacity = (samplesOpacity > 1. ? 1. : samplesOpacity);
 
                 unsigned char rgb[3] = { color.R, color.G, color.B };
                 lighting->AddLighting(z, ray, rgb);
