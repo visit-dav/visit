@@ -5893,6 +5893,17 @@ avtSiloFileFormat::GetCsgVectorVar(DBfile *dbfile, const char *vname)
 //    Mark C. Miller, Wed Dec 24 01:39:04 PST 2008
 //    Added this missing function pre-amble. Added missing delete of
 //    meshLocation.
+//
+//    Jeremy Meredith, Mon Dec 29 16:57:31 EST 2008
+//    Can't delete meshLocation here because it's used after the function
+//    returns in most cases.  Alas, can't defer to caller, because caller
+//    doesn't necessarily have a pointer to meshLocation (i.e. 
+//    directory_mesh might point to meshlocation+N, so even if you
+//    didn't allocate directory_mesh, you can't delete it in the caller
+//    by deleting directory_mesh -- it's not the same chunk of memory
+//    in all cases).  The only safe way around this is to always copy,
+//    then let the caller always delete.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
@@ -5990,17 +6001,37 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
     if (_mm) *_mm = mm;
     if (_type) *_type = type;
     if (_domain_file) *_domain_file = domain_file;
-    if (_directory_mesh) *_directory_mesh = directory_mesh;
-    if (_allocated_directory_mesh)
+    if (_directory_mesh && _allocated_directory_mesh)
     {
-        *_allocated_directory_mesh = allocated_directory_mesh;
+        // If it's already been allocated, don't bother making
+        // an additional copy.
+        if (allocated_directory_mesh)
+            *_directory_mesh = directory_mesh;
+        else
+            *_directory_mesh = CXX_strdup(directory_mesh);
+        // But always make a copy now; we're about to lose
+        // our only pointer the chunk of memory containing
+        // it, so if we don't make a copy then we can't
+        // delete it now and we'll leak it.
+        *_allocated_directory_mesh = true;
     }
     else
     {
+        // Caller didn't ask for this info, so free the
+        // memory without passing it back to the caller.
         if (allocated_directory_mesh)
             delete [] directory_mesh;
+        // Just in case caller put a non-null value
+        // for one of these pointers, put the appropriate
+        // NULL/false response in that return value.
+        if (_allocated_directory_mesh)
+            *_allocated_directory_mesh = false;
+        if (_directory_mesh)
+            *_directory_mesh = NULL;
     }
 
+    // We've now made a copy of any important chunk of this
+    // memory, so it's safe to delete it now.
     delete [] meshLocation;
 }
 
