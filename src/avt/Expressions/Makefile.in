@@ -229,6 +229,9 @@
 #   Kathleen Bonnell, Tue Nov 18 08:01:45 PST 2008
 #   Added avtCurveCMFEExpression.
 #
+#   Hank Childs, Mon Dec 29 11:52:35 PST 2008
+#   Added avtDominantMaterialExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -305,6 +308,7 @@ General_src= \
   General/avtDegreeExpression.C \
   General/avtDivergenceExpression.C \
   General/avtDistanceToBestFitLineExpression.C \
+  General/avtDominantMaterialExpression.C \
   General/avtExpressionComponentMacro.C \
   General/avtExternalNodeExpression.C \
   General/avtGradientExpression.C \
