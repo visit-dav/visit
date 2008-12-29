@@ -79,7 +79,8 @@ enhancements and bug-fixes that were added to this release.</p>
       various history data arrays into streak plot datasets that VisIt can
       visualize. For more information on the streak scheme file, see...(later).
   </li>
-  <li></li>
+  <li>VisIt's Nek reader now serves up per-domain data ranges, which optimizes 
+      operations like contouring and thresholding.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -89,9 +90,16 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.0</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>VisIt's ray casting volume rendering mode has been overhauled.
+  <ul>
+    <li>The result is now more accurate, that is more like a true integration.  One nice by-product is that the picture should look substantially the same regardless of the number of samples, where, previously, volumes would get "thicker" when the number of samples increased.</li>
+    <li>The samples now "count" for more, meaning that 500 samples per ray is now a "large" number of samples.</li>
+    <li>Note that your old transfer functions will no longer produce the same pictures.  
+        We apologize for any inconvenience this may cause and made the decision to make this 
+        interface change because we felt the result was an easier to use and more accurate volume renderer.</li>
+  </ul></li>
+  <li>The Pseudocolor plot can now correctly restore settings related to glyph types for point meshes, specifically the Sphere glyph type, which was previously not being restored correctly.</li>
+  <li>A bug was fixed where ray casting volume rendering using both kernel based sampling and lighting would produce incorrect pictures.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -140,7 +148,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li></li>
   <li></li>
   <li></li>
-  <li></li>
+  <li>You can now make plots of 2D data sets that have 2D quadratic elements (these elements will still be linearized).</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -158,7 +166,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 2.0</font></b></p>
 <ul>
   <li>VisIt's user interface has been ported to Qt4.</li>
-  <li></li>
+  <li>It is now easier to integrate Ice-T into VisIt, in terms of build_visit and configure. Testing showed that this library made a substantial speedup with parallel rendering and is worth the compile-time effort.</li>
   <li></li>
   <li></li>
   <li></li>
