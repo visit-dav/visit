@@ -2068,6 +2068,10 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 //    Hank Childs, Mon Dec 29 18:19:51 CST 2008
 //    Fix off-by-one error with interval trees for the s-fields.
 //
+//    Hank Childs, Tue Dec 30 10:50:46 PST 2008
+//    Don't be so quick to declare an error condition when we can't decide
+//    what variable is being requested.
+//
 // ****************************************************************************
 
 void *
@@ -2262,7 +2266,7 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int timestep,
 
         if (!isVelocity && !isPressure && !isTemperature && !isSField)
         {
-            EXCEPTION1(InvalidVariableException, var);
+            return NULL;
         }
 
         if (!bBinary || !bParFormat)
