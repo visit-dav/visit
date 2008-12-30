@@ -3758,6 +3758,11 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
 //    became very slow on some files with lots of domains, but reading
 //    the variables directly seemed to avoid these speed issues.
 //
+//    Jeremy Meredith, Tue Dec 30 15:54:04 EST 2008
+//    DBInqVarExists turned out to be an unreliable test for the existence
+//    of a directory.  Instead, just skip the test entirely and bail if
+//    there's an error.
+//
 // ****************************************************************************
 
 
@@ -3804,31 +3809,31 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
         debug1 << "avtSiloFileFormat: using standard connectivity info" <<endl;
         for (int j = 0 ; j < ndomains ; j++)
         {
-            char dirname[256];
-            sprintf(dirname, "Domain_%d", j);
-            if (!DBInqVarExists(dbfile, dirname))
-            {
-                ndomains = -1;
-                numGroups = -1;
-                break;
-            }
-
+            bool err = false;
             char varname[256];
             if (needConnectivityInfo)
             {
                 sprintf(varname, "Domain_%d/Extents", j);
-                DBReadVar(dbfile, varname, &extents[j*6]);
+                err |= DBReadVar(dbfile, varname, &extents[j*6]) != 0;
+
                 sprintf(varname, "Domain_%d/NumNeighbors", j);
-                DBReadVar(dbfile, varname, &nneighbors[j]);
+                err |= DBReadVar(dbfile, varname, &nneighbors[j]) != 0;
+
                 lneighbors += nneighbors[j] * 11;
             }
 
             if (needGroupInfo)
             {
                 sprintf(varname, "Domain_%d/BlockNum", j);
-                DBReadVar(dbfile, varname, &(groupIds[j]));
+                err |= DBReadVar(dbfile, varname, &(groupIds[j])) != 0;
             }
 
+            if (err)
+            {
+                ndomains = -1;
+                numGroups = -1;
+                break;
+            }
         }
 
         if (needConnectivityInfo)
