@@ -128,6 +128,8 @@ vtkOpenGLRectilinearGridMapper::vtkOpenGLRectilinearGridMapper()
 #ifndef VTK_IMPLEMENT_MESA_CXX
   this->GLEW_initialized = false;
 #endif
+
+  this->LastOpacity = -1;
 }
 
 // Destructor (don't call ReleaseGraphicsResources() since it is virtual
@@ -815,8 +817,18 @@ vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport(double opacity)
         LUT->Delete();
     }
 
+    if (opacity != this->LastOpacity)
+    {
+       // VTK can get confused about whether or not the opacities are
+       // correct (... and incorrectly re-use cached objects when they
+       // have the wrong transparency).  So remove the cached Colors here.
+       if (this->Colors != NULL)
+           this->Colors->Delete();
+       this->Colors = NULL;
+    }
     // sets this->Colors as side effect
     this->MapScalars(opacity);
+    this->LastOpacity = opacity;
 
     if(saveColors)
     {

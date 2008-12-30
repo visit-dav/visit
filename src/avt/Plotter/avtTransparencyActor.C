@@ -581,16 +581,21 @@ avtTransparencyActor::VisibilityOn(void)
 //    Make sure that the transparent geometry gets turned off when we render
 //    something 2D.
 //    
-//    Hank Childs, Mon Dec 29 14:53:14 PST 2008
-//    Make sure to set up the properties of 2D geometry before the early 
-//    return.  (We were returning too early, which was causing the data set
-//    to not be transparified correctly.)
-//
 // ****************************************************************************
 
 void
 avtTransparencyActor::PrepareForRender(vtkCamera *cam)
 {
+    // if this is a 2D plot, we don't need to sort anything
+    if (is2Dimensional)
+    {
+        if (!TransparenciesExist())
+        {
+            myActor->SetVisibility(0);
+        }
+        return;
+    }
+
     //
     // Determine if our poly-data input is up-to-date.
     //
@@ -623,16 +628,6 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
     if (needToRecalculate)
     {
         SetUpActor();
-    }
-
-    // if this is a 2D plot, we don't need to sort anything
-    if (is2Dimensional)
-    {
-        if (!TransparenciesExist())
-        {
-            myActor->SetVisibility(0);
-        }
-        return;
     }
 
     // If we are in parallel, then an axis sort won't help us because it
