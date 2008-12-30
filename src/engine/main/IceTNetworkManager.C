@@ -258,6 +258,7 @@ avtDataObjectWriter_p
 IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
                            int annotMode, int windowID, bool leftEye)
 {
+    int t0 = visitTimer->StartTimer();
     DataNetwork *origWorkingNet = workingNet;
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
@@ -389,6 +390,7 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
     ENDTRY
 
     workingNet = origWorkingNet;
+    visitTimer->StopTimer(t0, "Ice-T Render");
 }
 
 // ****************************************************************************
@@ -537,6 +539,10 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 //    Tom Fogal, Mon Sep  1 14:21:46 EDT 2008
 //    Removed asserts / dependence on NDEBUG.
 //
+//    Hank Childs, Mon Dec 29 18:24:05 CST 2008
+//    Make an image have 3 components, not 4, since 3 is better supported
+//    throughout VisIt (including saving TIFFs).
+//
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::Readback(const VisWindow * const viswin,
@@ -584,11 +590,19 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
     // components and reallocate the data; unfortunately this means we do an
     // allocate in NewImage and then immediately throw it away when doing an
     // allocate here.
-    image->SetNumberOfScalarComponents(4);
+    image->SetNumberOfScalarComponents(3);
     image->AllocateScalars();
     {
-        void *img_pix = image->GetScalarPointer();
-        memcpy(img_pix, pixels, width*height*4);
+        unsigned char *img_pix = (unsigned char *) image->GetScalarPointer();
+        const int numPix = width*height;
+        for (int i = 0 ; i < numPix ; i++)
+        {
+            *img_pix++ = *pixels++;
+            *img_pix++ = *pixels++;
+            *img_pix++ = *pixels++;
+            pixels++; // Alpha
+        }
+        //memcpy(img_pix, pixels, width*height*4);
     }
     float *visit_depth_buffer = NULL;
 
