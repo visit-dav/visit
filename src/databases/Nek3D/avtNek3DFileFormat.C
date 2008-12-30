@@ -2065,6 +2065,9 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 //    Hank Childs, Wed Dec 17 13:23:04 CST 2008
 //    Add preliminary support for data extents meta-data.
 //
+//    Hank Childs, Mon Dec 29 18:19:51 CST 2008
+//    Fix off-by-one error with interval trees for the s-fields.
+//
 // ****************************************************************************
 
 void *
@@ -2072,6 +2075,7 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int timestep,
                                      int  /*domain*/, const char *type, void *,
                                      DestructorFunction &df)
 {
+    int t1 = visitTimer->StartTimer();
     void *rv = NULL;
 
     if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
@@ -2248,7 +2252,7 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int timestep,
         for (int ss = 0; ss < iNumSFields; ss++)
         {
             char sfieldname[256];
-            sprintf(sfieldname, "s%d", ss);
+            sprintf(sfieldname, "s%d", ss+1);
             if (strcmp(var, sfieldname) == 0)
             {
                 isSField = true;
@@ -2390,6 +2394,7 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int timestep,
         df = avtIntervalTree::Destruct;
     }
 
+    visitTimer->StopTimer(t1, "Building interval tree");
     return rv;
 }
 
