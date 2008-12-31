@@ -574,6 +574,10 @@ vtkQtRenderWindow::GetGenericContext()
 //
 // Modifications:
 //   
+//    Hank Childs, Wed Dec 31 14:47:52 PST 2008
+//    Add a call to set window title.  setAccessibleName was sufficient for Qt3
+//    but Qt4 requires the setWindowTitle call as well.
+//
 // ****************************************************************************
 
 void
@@ -591,6 +595,7 @@ vtkQtRenderWindow::SetWindowName(const char *name)
         this->WindowName = new char[len + 1];
         strcpy(this->WindowName, name);
         setAccessibleName(this->WindowName); // IS this right?
+        setWindowTitle(this->WindowName);
     }
 }
 
