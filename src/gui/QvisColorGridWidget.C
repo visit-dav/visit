@@ -467,6 +467,9 @@ QvisColorGridWidget::mousePressEvent(QMouseEvent *e)
 //   Jeremy Meredith, Wed Dec 31 16:13:07 EST 2008
 //   Added ability to show index hints (defaults to off).
 //
+//   Jeremy Meredith, Wed Dec 31 16:39:50 EST 2008
+//   Choose B/W foreground text color based on approx palette color intensity.
+//
 // ****************************************************************************
 
 void
@@ -485,7 +488,12 @@ QvisColorGridWidget::drawItem(QPainter &paint, int index)
 
         if (showIndexHints)
         {
-            paint.setPen(palette().color(QPalette::WindowText));
+            if (.3*paletteColors[index].redF()   + 
+                .5*paletteColors[index].greenF() +
+                .2*paletteColors[index].blueF()    < .3)
+                paint.setPen(QColor(255,255,255));
+            else
+                paint.setPen(QColor(0,0,0));
             char txt[100];
             if (numGridSquares == MAX_ELEMENT_NUMBER &&
                 index < MAX_ELEMENT_NUMBER)
