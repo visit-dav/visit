@@ -42,6 +42,8 @@
 #include <QMouseEvent>
 #include <QPainter>
 
+#include "AtomicProperties.h"
+
 // ****************************************************************************
 // Method: QvisColorGridWidget::QvisColorGridWidget
 //
@@ -63,12 +65,16 @@
 //   Brad Whitlock, Mon Jun  2 16:41:02 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Wed Dec 31 16:13:07 EST 2008
+//   Added ability to show index hints (defaults to off).
+//
 // ****************************************************************************
 
 QvisColorGridWidget::QvisColorGridWidget(QWidget *parent, Qt::WindowFlags f) :
     QvisGridWidget(parent, f)
 {
     paletteColors = 0;
+    showIndexHints = false;
 
     // Set the default size policy.
     setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
@@ -458,6 +464,9 @@ QvisColorGridWidget::mousePressEvent(QMouseEvent *e)
 //   Brad Whitlock, Mon Jun  2 17:01:41 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Wed Dec 31 16:13:07 EST 2008
+//   Added ability to show index hints (defaults to off).
+//
 // ****************************************************************************
 
 void
@@ -473,6 +482,20 @@ QvisColorGridWidget::drawItem(QPainter &paint, int index)
         paint.drawRect(x, y, boxWidth-1, boxHeight-1);
         paint.fillRect(x + 1, y + 1, boxWidth - 2, boxHeight - 2,
                        paletteColors[index]);
+
+        if (showIndexHints)
+        {
+            paint.setPen(palette().color(QPalette::WindowText));
+            char txt[100];
+            if (numGridSquares == MAX_ELEMENT_NUMBER &&
+                index < MAX_ELEMENT_NUMBER)
+                sprintf(txt,"%s",element_names[index]);
+            else
+                sprintf(txt,"%d",index);
+            paint.drawText(QRect(x,y,boxWidth,boxHeight),
+                           Qt::AlignHCenter | Qt::AlignVCenter,
+                           txt);
+        }
     }
 }
 
@@ -495,4 +518,22 @@ QvisColorGridWidget::emitSelection()
     int row, column;
     getRowColumnFromIndex(currentSelectedItem, row, column);
     emit selectedColor(paletteColors[currentSelectedItem], row, column);
+}
+
+
+// ****************************************************************************
+//  Method:  QvisColorGridWidget::setShowIndexHints
+//
+//  Purpose:
+//    Toggle whether index hints are shown.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    December 31, 2008
+//
+// ****************************************************************************
+void
+QvisColorGridWidget::setShowIndexHints(bool val)
+{
+    showIndexHints = val;
+    update();
 }
