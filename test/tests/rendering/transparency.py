@@ -34,6 +34,9 @@
 #   Test transparency after scaling ('7879) ... that the scale factor in the
 #   transparency actor gets set back to 1.
 #
+#   Hank Childs, Wed Dec 31 10:21:31 PST 2008
+#   Add a test for multi-block rectilinear grids.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -132,5 +135,15 @@ pcAtts.opacity = 0.75
 SetPlotOptions(pcAtts)
 DrawPlots()
 Test("transparency_11")
+
+DeleteAllPlots()
+OpenDatabase("../data/multi_rect2d.silo")
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+ResetView()
+Test("transparency_12")
+pcAtts.opacity = 0.25
+SetPlotOptions(pcAtts)
+Test("transparency_13")
 
 Exit()
