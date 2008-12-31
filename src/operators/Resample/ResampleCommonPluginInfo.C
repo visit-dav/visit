@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ResamplePluginInfo.h>
-#include <ResamplePluginAttributes.h>
+#include <ResampleAttributes.h>
 
 // ****************************************************************************
 //  Method: ResampleCommonPluginInfo::AllocAttributes
@@ -59,7 +59,7 @@
 AttributeSubject *
 ResampleCommonPluginInfo::AllocAttributes()
 {
-    return new ResamplePluginAttributes;
+    return new ResampleAttributes;
 }
 
 // ****************************************************************************
@@ -81,5 +81,5 @@ void
 ResampleCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {
-    *((ResamplePluginAttributes *) to) = *((ResamplePluginAttributes *) from);
+    *((ResampleAttributes *) to) = *((ResampleAttributes *) from);
 }

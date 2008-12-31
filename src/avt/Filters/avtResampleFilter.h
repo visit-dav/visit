@@ -47,7 +47,7 @@
 
 #include <avtDatasetToDatasetFilter.h>
 
-#include <ResampleAttributes.h>
+#include <InternalResampleAttributes.h>
 
 
 // ****************************************************************************
@@ -76,6 +76,9 @@
 //    Hank Childs, Fri Jun  1 16:17:51 PDT 2007
 //    Added support for cell-centered output.
 //
+//    Hank Childs, Wed Dec 31 13:45:03 PST 2008
+//    Change name of attributes from ResampleAtts to InternalResampleAtts.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
@@ -93,7 +96,7 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
                                 { cellCenteredOutput = doIt; };
 
   protected:
-    ResampleAttributes    atts;
+    InternalResampleAttributes atts;
     char                 *primaryVariable;
     int                   selID;
     bool                  cellCenteredOutput;

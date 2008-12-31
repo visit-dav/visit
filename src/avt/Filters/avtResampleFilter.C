@@ -101,7 +101,7 @@ static vtkDataArray        *GetCoordinates(float, float, int, int, int);
 
 avtResampleFilter::avtResampleFilter(const AttributeGroup *a)
 {
-    atts = *(ResampleAttributes*)a;
+    atts = *(InternalResampleAttributes*)a;
     primaryVariable = NULL;
     selID = -1;
     cellCenteredOutput = false;

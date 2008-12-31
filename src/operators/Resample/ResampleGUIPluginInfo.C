@@ -41,8 +41,8 @@
 // ************************************************************************* //
 
 #include <ResamplePluginInfo.h>
-#include <ResamplePluginAttributes.h>
-#include <qapplication.h>
+#include <ResampleAttributes.h>
+#include <QApplication>
 #include <QvisResampleWindow.h>
 
 #if defined(__APPLE__)
@@ -106,7 +106,7 @@ QvisPostableWindowObserver *
 ResampleGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject *attr,
     const QString &caption, const QString &shortName, QvisNotepadArea *notepad)
 {
-    return new QvisResampleWindow(type, (ResamplePluginAttributes *)attr,
+    return new QvisResampleWindow(type, (ResampleAttributes *)attr,
         caption, shortName, notepad);
 }
 

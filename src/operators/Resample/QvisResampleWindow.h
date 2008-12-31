@@ -42,7 +42,7 @@
 #include <QvisOperatorWindow.h>
 #include <AttributeSubject.h>
 
-class ResamplePluginAttributes;
+class ResampleAttributes;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
@@ -69,6 +69,9 @@ class QvisVariableButton;
 //
 // Modifications:
 //   
+//    Hank Childs, Wed Dec 31 14:26:57 PST 2008
+//    Renamed ResamplePluginAttributes to ResampleAttributes.
+//
 // ****************************************************************************
 
 class QvisResampleWindow : public QvisOperatorWindow
@@ -76,7 +79,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     Q_OBJECT
   public:
     QvisResampleWindow(const int type,
-                         ResamplePluginAttributes *subj,
+                         ResampleAttributes *subj,
                          const QString &caption = QString::null,
                          const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
@@ -130,7 +133,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     QLabel *tieResolverVariableLabel;
     QLabel *defaultValueLabel;
 
-    ResamplePluginAttributes *atts;
+    ResampleAttributes *atts;
 };
 
 

@@ -290,6 +290,9 @@
 #    Jeremy Meredith, Tue Nov 18 16:01:50 EST 2008
 #    Added AxesArray.
 #
+#    Hank Childs, Wed Dec 31 13:41:48 PST 2008
+#    Rename ResampleAttributes as InternalResampleAttributes.
+#
 ##############################################################################
 
 ##
@@ -353,6 +356,7 @@ SRC=    AnimationAttributes.C \
         HostProfile.C \
         HostProfileList.C \
         InteractorAttributes.C \
+        InternalResampleAttributes.C \
         KeepAliveRPC.C \
         KeyframeAttributes.C \
         LightAttributes.C \
@@ -384,7 +388,6 @@ SRC=    AnimationAttributes.C \
         QueryOverTimeAttributes.C \
         QuitRPC.C \
         RenderingAttributes.C \
-        ResampleAttributes.C \
         SaveWindowAttributes.C \
         SILArrayAttributes.C \
         SILAttributes.C \

@@ -32,7 +32,7 @@ Function: SetValue1
 Declaration: virtual bool SetValue(const std::string &name, const double &value);
 Definition:
 bool
-ResamplePluginAttributes::SetValue(const std::string &name, const double &value)
+ResampleAttributes::SetValue(const std::string &name, const double &value)
 {
     int index = FieldNameToIndex(name);
     bool retval = true;
