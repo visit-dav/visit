@@ -310,6 +310,10 @@
 //    Made the Mac use Command-Q to quit, just like other Mac applications.
 //    I had to move Query and Query-over-time to use 'Y' instead.
 //
+//    Sean Ahern, Wed Dec 31 11:37:18 EST 2008
+//    Moved the Help menu to the end of the menubar, but only for the Mac.
+//    This is to meet Macintosh application guidelines.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -659,29 +663,13 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     spinModeAct = winPopup->addAction(tr("Spin"),
                                      this, SLOT(toggleSpinMode()));
     
-    //
+#if not defined(Q_WS_MACX)
+    // We put the Help menu here on all platforms other than the Mac.  The Mac
+    // help menu is done lower down.
+
     // Add the Help menu
-    //
-    menuBar()->addSeparator();
-    helpPopup = menuBar()->addMenu(tr("&Help"));
-
-    helpPopup->addAction(tr("About . . ."),
-                         this, SIGNAL(activateAboutWindow()));
-
-    helpPopup->addAction(tr("Copyright . . ."),
-                         this, SIGNAL(activateCopyrightWindow()));
-
-    helpPopup->addAction(tr("Help . . ."),
-                         this, SIGNAL(activateHelpWindow()),
-                         QKeySequence(Qt::Key_F1));
-
-    helpPopup->addAction(tr("Release notes . . ."),
-                         this, SIGNAL(activateReleaseNotesWindow()));
-
-    helpPopup->addSeparator();
-    
-    updateVisItAct = helpPopup->addAction(tr("Check for new version . . ."),
-                                          this, SIGNAL(updateVisIt()));
+    AddHelpMenu();
+#endif
 
     // Make a central widget to contain the other widgets
     splitter = new QSplitter(this);
@@ -709,6 +697,14 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
     plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
     globalAreaWidget->layout()->addWidget(plotManager);
+
+#if defined(Q_WS_MACX)
+    // Mac OS X application guidelines require the Help menu to be the last
+    // one on the menu bar.
+
+    // Add the Help menu
+    AddHelpMenu();
+#endif
     
     // Adjust splitter sizes and whether the notepad is visible.
     QList<int> splitterSizes;
@@ -775,6 +771,46 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     move(QPoint(100,100));
 #endif
 }
+
+
+// ****************************************************************************
+// Method: QvisMainWindow::AddHelpMenu
+//
+// Purpose: 
+//   Creates the Help menu on the menubar.
+//
+// Programmer: Sean Ahern
+// Creation:   Wed Dec 31 11:28:51 EST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::AddHelpMenu(void)
+{
+    menuBar()->addSeparator();
+    helpPopup = menuBar()->addMenu(tr("&Help"));
+
+    helpPopup->addAction(tr("About . . ."),
+                         this, SIGNAL(activateAboutWindow()));
+
+    helpPopup->addAction(tr("Copyright . . ."),
+                         this, SIGNAL(activateCopyrightWindow()));
+
+    helpPopup->addAction(tr("Help . . ."),
+                         this, SIGNAL(activateHelpWindow()),
+                         QKeySequence(Qt::Key_F1));
+
+    helpPopup->addAction(tr("Release notes . . ."),
+                         this, SIGNAL(activateReleaseNotesWindow()));
+
+    helpPopup->addSeparator();
+    
+    updateVisItAct = helpPopup->addAction(tr("Check for new version . . ."),
+                                          this, SIGNAL(updateVisIt()));
+}
+
 
 // ****************************************************************************
 // Method: QvisMainWindow::~QvisMainWindow

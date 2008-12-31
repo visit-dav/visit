@@ -204,8 +204,11 @@ class WindowInformation;
 //   Brad Whitlock, Thu Jan 31 10:36:22 PST 2008
 //   Added saveCrashRecoveryFile.
 //
-//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Sean Ahern, Wed Dec 31 11:30:16 EST 2008
+//   Moved the help menu creation to a separate method.
 //
 // ****************************************************************************
 
@@ -354,6 +357,8 @@ private:
     void UpdateWindowList(bool doList);
     void UpdateWindowMenu(bool updateWindowNums);
     void UpdateCrashRecoveryTimer();
+    void AddHelpMenu(void);
+
 private:
     QSplitter                 *splitter;
     QBoxLayout                *topLayout;
