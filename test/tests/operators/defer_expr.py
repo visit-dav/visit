@@ -25,6 +25,9 @@
 #    Allow the vector plot to show all vectors (even ones not from
 #    from original cells/nodes) to match the old behavior.
 #
+#    Hank Childs, Wed Dec 31 14:32:34 PST 2008
+#    Rename ResamplePluginAtts to ResampleAtts.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -180,7 +183,7 @@ SetOperatorOptions(d)
 Test("defer_expr_10")
 
 DeleteAllPlots()
-r = ResamplePluginAttributes()
+r = ResampleAttributes()
 r.samplesX = 50
 r.samplesY = 50
 r.samplesZ = 50

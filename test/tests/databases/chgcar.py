@@ -16,6 +16,9 @@
 #    labels chosen was varying based on serial vs parallel
 #    (which is fine, but doesn't help for regression testing).
 #
+#    Hank Childs, Wed Dec 31 14:32:34 PST 2008
+#    Rename ResamplePluginAtts to ResampleAtts.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -36,19 +39,19 @@ Test("chgcar_02")
 ReplaceDatabase("../data/CHGCAR")
 
 AddOperator("Resample")
-ResamplePluginAtts = ResamplePluginAttributes()
-ResamplePluginAtts.useExtents = 0
-ResamplePluginAtts.startX = 1
-ResamplePluginAtts.endX = 6
-ResamplePluginAtts.samplesX = 80
-ResamplePluginAtts.startY = -2
-ResamplePluginAtts.endY = 4
-ResamplePluginAtts.samplesY = 80
-ResamplePluginAtts.is3D = 1
-ResamplePluginAtts.startZ = 1
-ResamplePluginAtts.endZ = 6
-ResamplePluginAtts.samplesZ = 80
-SetOperatorOptions(ResamplePluginAtts)
+ResampleAtts = ResampleAttributes()
+ResampleAtts.useExtents = 0
+ResampleAtts.startX = 1
+ResampleAtts.endX = 6
+ResampleAtts.samplesX = 80
+ResampleAtts.startY = -2
+ResampleAtts.endY = 4
+ResampleAtts.samplesY = 80
+ResampleAtts.is3D = 1
+ResampleAtts.startZ = 1
+ResampleAtts.endZ = 6
+ResampleAtts.samplesZ = 80
+SetOperatorOptions(ResampleAtts)
 
 Test("chgcar_03")
 ReplaceDatabase("../data/CHGCAR.vtk")
