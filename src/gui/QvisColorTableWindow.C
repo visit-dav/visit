@@ -167,6 +167,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
 //
+//   Jeremy Meredith, Wed Dec 31 16:11:50 EST 2008
+//   Added show index hints checkbox for discrete color tables.
+//
 // ****************************************************************************
 
 void
@@ -311,6 +314,7 @@ QvisColorTableWindow::CreateWindowContents()
     }
     discreteColors->setPaletteColors(tmpColors, DEFAULT_DISCRETE_NCOLORS, DEFAULT_DISCRETE_COLS);
     discreteColors->setFrame(false);
+    discreteColors->setShowIndexHints(false);
     discreteColors->setBoxSize(16);
     discreteColors->setBoxPadding(8);
     discreteColors->setSelectedIndex(0);
@@ -320,6 +324,14 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(chooseDiscreteColor(const QColor &, int, int, const QPoint &)));
     delete [] tmpColors;
     innerColorLayout->addWidget(discreteColors, 100);
+
+    // Add a check box for index hinting
+    showIndexHintsCheckBox = new QCheckBox(tr("Show index hints"), colorWidgetGroup);
+    showIndexHintsCheckBox->setChecked(false);
+    connect(showIndexHintsCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(showIndexHintsToggled(bool)));
+    innerColorLayout->addWidget(showIndexHintsCheckBox);
+
 
     // Create the discrete color table sliders, text fields.
     QGridLayout *discreteLayout = new QGridLayout();
@@ -488,6 +500,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
 //
+//   Jeremy Meredith, Wed Dec 31 16:01:40 EST 2008
+//   Avoid use of temporaries that was referencing freed memory.
+//
 // ****************************************************************************
 
 void
@@ -504,8 +519,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
     //
     int nct = 3;
     bool invalidCt = true;
-    const char *ctNames[4] = {0,0,0,0};
-    ctNames[0] = currentColorTable.toStdString().c_str();
+    QString ctNames[4];
+    ctNames[0] = currentColorTable;
     ctNames[1] = colorAtts->GetActiveContinuous().c_str();
     ctNames[2] = colorAtts->GetActiveDiscrete().c_str();
     if(colorAtts->GetNames().size() > 0)
@@ -515,9 +530,9 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
     }
     for(int c = 0; c < nct && invalidCt; ++c)
     {
-        if(colorAtts->GetColorTableIndex(ctNames[c]) != -1)
+        if(colorAtts->GetColorTableIndex(ctNames[c].toStdString()) != -1)
         {
-            currentColorTable = QString(ctNames[c]);
+            currentColorTable = ctNames[c];
             invalidCt = false;
         }
         else
@@ -591,6 +606,9 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
 //
+//   Jeremy Meredith, Wed Dec 31 16:11:50 EST 2008
+//   Added show index hints checkbox for discrete color tables.
+//
 // ****************************************************************************
 
 void
@@ -609,6 +627,7 @@ QvisColorTableWindow::UpdateEditor()
             alignPointButton->hide();
 
             discreteColors->show();
+            showIndexHintsCheckBox->show();
         }
         else
         {
@@ -620,6 +639,7 @@ QvisColorTableWindow::UpdateEditor()
             alignPointButton->show();
 
             discreteColors->hide();
+            showIndexHintsCheckBox->hide();
         }
 
         colorTableTypeGroup->blockSignals(true);
@@ -1436,6 +1456,26 @@ QvisColorTableWindow::smoothToggled(bool)
         colorAtts->SelectColorTables();
         Apply();
     }
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::showIndexHintsToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the window's 
+//   show index hints toggle is clicked.
+//
+// Programmer: Jeremy Meredith
+// Creation:   December 31, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisColorTableWindow::showIndexHintsToggled(bool val)
+{
+    discreteColors->setShowIndexHints(val);
 }
 
 // ****************************************************************************

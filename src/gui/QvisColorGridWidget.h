@@ -75,6 +75,10 @@ class QPainter;
 //   Brad Whitlock, Tue Jun  3 10:26:51 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Wed Dec 31 15:27:54 EST 2008
+//   Added support for showing hints such as the color index or an
+//   element name (if we're working with an atomic color table).
+//
 // ****************************************************************************
 
 class GUI_API QvisColorGridWidget : public QvisGridWidget
@@ -92,6 +96,7 @@ public:
     bool   containsColor(const QColor &color) const;
     void   setPaletteColor(const QColor &c, int index);
     virtual void drawItem(QPainter &paint, int index);
+    void   setShowIndexHints(bool val);
 
 signals:
     void selectedColor(const QColor &c);
@@ -104,6 +109,7 @@ protected:
 
     virtual void emitSelection();
 private:
+    bool     showIndexHints;
     QColor  *paletteColors;
 };
 

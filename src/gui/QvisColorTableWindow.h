@@ -93,6 +93,10 @@ class QvisColorGridWidget;
 //   Brad Whitlock, Wed Apr  9 11:58:57 PDT 2008
 //   QString for caption, shortName.
 //
+//   Jeremy Meredith, Wed Dec 31 15:27:54 EST 2008
+//   Added support for showing hints such as the color index or an
+//   element name (if we're working with an atomic color table).
+//
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -149,6 +153,7 @@ private slots:
     void deleteColorTable();
     void exportColorTable();
     void highlightColorTable(int index);
+    void showIndexHintsToggled(bool val);
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
@@ -184,6 +189,7 @@ private:
 //    QPushButton              *addPointButton;
 //    QPushButton              *rmPointButton;
     QPushButton              *alignPointButton;
+    QCheckBox                *showIndexHintsCheckBox;
 
     QvisColorGridWidget      *discreteColors;
     QLabel                   *componentLabels[3];
