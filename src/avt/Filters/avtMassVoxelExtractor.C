@@ -841,6 +841,12 @@ avtMassVoxelExtractor::GridOnPlusSideOfPlane(const float *origin,
 //    Change the logic for perspective projections to account for w-buffering
 //    (that is, even sampling in space).
 //
+//    Hank Childs, Wed Dec 31 09:08:50 PST 2008
+//    For the case where the segment intersects the volume one time, return
+//    that the entire segment should be examined, as it is probably more
+//    likely that we have floating point error than we have intersected a
+//    corner of the data set.
+//
 // ****************************************************************************
 
 bool
@@ -966,8 +972,6 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
     }
 
     if (num_hits == 0)
-        return false;
-    if (num_hits == 1) // hit one corner of dataset.
         return false;
 
     //
