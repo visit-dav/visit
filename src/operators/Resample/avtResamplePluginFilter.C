@@ -44,7 +44,7 @@
 #include <avtExtents.h>
 
 #include <avtResampleFilter.h>
-#include <ResampleAttributes.h>
+#include <InternalResampleAttributes.h>
 
 // ****************************************************************************
 //  Method: avtResamplePluginFilter constructor
@@ -115,12 +115,16 @@ avtResamplePluginFilter::Create()
 //    Sean Ahern, Wed Jan  2 16:01:48 EST 2008
 //    Added support for specifying that the whole extents should be used.
 //
+//    Hank Childs, Wed Dec 31 13:48:13 PST 2008
+//    Rename ResampleAtts to InternalResampleAtts, ResamplePluginAtts to
+//    just ResampleAtts.
+//
 // ****************************************************************************
 
 void
 avtResamplePluginFilter::SetAtts(const AttributeGroup *a)
 {
-    atts = *(const ResamplePluginAttributes*)a;
+    atts = *(const ResampleAttributes*)a;
 
     //
     // Construct a new resample filter based on these attributes.
@@ -130,7 +134,7 @@ avtResamplePluginFilter::SetAtts(const AttributeGroup *a)
         delete resampler;
     }
 
-    ResampleAttributes res_atts;
+    InternalResampleAttributes res_atts;
     res_atts.SetDefaultVal(atts.GetDefaultValue());
     res_atts.SetUseTargetVal(false);
     res_atts.SetWidth(atts.GetSamplesX());
@@ -156,9 +160,9 @@ avtResamplePluginFilter::SetAtts(const AttributeGroup *a)
     }
 
     res_atts.SetUseArbitrator(atts.GetTieResolver() 
-                           != ResamplePluginAttributes::random);
+                           != ResampleAttributes::random);
     res_atts.SetArbitratorLessThan(atts.GetTieResolver() 
-                                   != ResamplePluginAttributes::smallest);
+                                   != ResampleAttributes::smallest);
     res_atts.SetArbitratorVarName(atts.GetTieResolverVariable());
     
     res_atts.SetDistributedResample(atts.GetDistributedResample());
@@ -181,7 +185,7 @@ avtResamplePluginFilter::SetAtts(const AttributeGroup *a)
 bool
 avtResamplePluginFilter::Equivalent(const AttributeGroup *a)
 {
-    return (atts == *(ResamplePluginAttributes*)a);
+    return (atts == *(ResampleAttributes*)a);
 }
 
 

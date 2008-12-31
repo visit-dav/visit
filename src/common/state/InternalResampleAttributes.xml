@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ResampleAttributes" purpose="This class contains attributes for the resample operator." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="InternalResampleAttributes" purpose="This class contains attributes to specify a resampling." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="useTargetVal" label="useTargetVal" type="bool">
       false
     </Field>

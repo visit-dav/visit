@@ -36,6 +36,7 @@
 #include <HostProfile.h>
 #include <HostProfileList.h>
 #include <InteractorAttributes.h>
+#include <InternalResampleAttributes.h>
 #include <KeepAliveRPC.h>
 #include <KeyframeAttributes.h>
 #include <LightAttributes.h>
@@ -63,7 +64,6 @@
 #include <QueryOverTimeAttributes.h>
 #include <QuitRPC.h>
 #include <RenderingAttributes.h>
-#include <ResampleAttributes.h>
 #include <SILAttributes.h>
 #include <SILMatrixAttributes.h>
 #include <SILRestrictionAttributes.h>
@@ -140,6 +140,9 @@ typedef std::map<std::string, AttributeSubject *> StateObjectMap;
 //
 // Modifications:
 //   
+//    Hank Childs, Wed Dec 31 13:51:24 PST 2008
+//    Rename ResampleAtts as InternalResampleAtts.
+//
 // ****************************************************************************
 
 void
@@ -179,6 +182,7 @@ CreateCommonStateObjects(StateObjectMap &attributes)
     MAKE_OBJECT(HostProfile);
     MAKE_OBJECT(HostProfileList);
     MAKE_OBJECT(InteractorAttributes);
+    MAKE_OBJECT(InternalResampleAttributes);
     MAKE_OBJECT(KeepAliveRPC);
     MAKE_OBJECT(KeyframeAttributes);
     MAKE_OBJECT(LightAttributes);
@@ -206,7 +210,6 @@ CreateCommonStateObjects(StateObjectMap &attributes)
     MAKE_OBJECT(QueryOverTimeAttributes);
     MAKE_OBJECT(QuitRPC);
     MAKE_OBJECT(RenderingAttributes);
-    MAKE_OBJECT(ResampleAttributes);
     MAKE_OBJECT(SILAttributes);
     MAKE_OBJECT(SILMatrixAttributes);
     MAKE_OBJECT(SILRestrictionAttributes);

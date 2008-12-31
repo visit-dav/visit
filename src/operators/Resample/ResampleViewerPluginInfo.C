@@ -41,8 +41,8 @@
 // ************************************************************************* //
 
 #include <ResamplePluginInfo.h>
-#include <qapplication.h>
-#include <ResamplePluginAttributes.h>
+#include <QApplication>
+#include <ResampleAttributes.h>
 
 #if defined(__APPLE__)
 #define GetViewerInfo Resample_GetViewerInfo
@@ -67,8 +67,8 @@ extern "C" ViewerOperatorPluginInfo* GetViewerInfo()
 //
 // Storage for static data elements.
 //
-ResamplePluginAttributes *ResampleViewerPluginInfo::clientAtts = NULL;
-ResamplePluginAttributes *ResampleViewerPluginInfo::defaultAtts = NULL;
+ResampleAttributes *ResampleViewerPluginInfo::clientAtts = NULL;
+ResampleAttributes *ResampleViewerPluginInfo::defaultAtts = NULL;
 
 // ****************************************************************************
 //  Method:  ResampleViewerPluginInfo::InitializeGlobalObjects
@@ -83,8 +83,8 @@ ResamplePluginAttributes *ResampleViewerPluginInfo::defaultAtts = NULL;
 void
 ResampleViewerPluginInfo::InitializeGlobalObjects()
 {
-    ResampleViewerPluginInfo::clientAtts  = new ResamplePluginAttributes;
-    ResampleViewerPluginInfo::defaultAtts = new ResamplePluginAttributes;
+    ResampleViewerPluginInfo::clientAtts  = new ResampleAttributes;
+    ResampleViewerPluginInfo::defaultAtts = new ResampleAttributes;
 }
 
 // ****************************************************************************
@@ -142,7 +142,7 @@ ResampleViewerPluginInfo::GetDefaultAtts()
 void
 ResampleViewerPluginInfo::SetClientAtts(AttributeSubject *atts)
 {
-    *clientAtts = *(ResamplePluginAttributes *)atts;
+    *clientAtts = *(ResampleAttributes *)atts;
     clientAtts->Notify();
 }
 
@@ -163,7 +163,7 @@ ResampleViewerPluginInfo::SetClientAtts(AttributeSubject *atts)
 void
 ResampleViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 {
-    *(ResamplePluginAttributes *)atts = *clientAtts;
+    *(ResampleAttributes *)atts = *clientAtts;
 }
 
 // ****************************************************************************
@@ -189,9 +189,9 @@ ResampleViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                               const bool fromDefault)
 {
     if (fromDefault)
-        *(ResamplePluginAttributes*)atts = *defaultAtts;
+        *(ResampleAttributes*)atts = *defaultAtts;
     else
-        *(ResamplePluginAttributes*)atts = *clientAtts;
+        *(ResampleAttributes*)atts = *clientAtts;
 }
 // ****************************************************************************
 //  Method: ResampleViewerPluginInfo::GetMenuName

@@ -38,7 +38,7 @@
 
 #include "QvisResampleWindow.h"
 
-#include <ResamplePluginAttributes.h>
+#include <ResampleAttributes.h>
 #include <ViewerProxy.h>
 
 #include <QCheckBox>
@@ -76,7 +76,7 @@ using std::string;
 // ****************************************************************************
 
 QvisResampleWindow::QvisResampleWindow(const int type,
-                         ResamplePluginAttributes *subj,
+                         ResampleAttributes *subj,
                          const QString &caption,
                          const QString &shortName,
                          QvisNotepadArea *notepad)
@@ -280,7 +280,7 @@ QvisResampleWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case ResamplePluginAttributes::ID_useExtents:
+          case ResampleAttributes::ID_useExtents:
             if (atts->GetUseExtents() == false)
             {
                 startX->setEnabled(true);
@@ -357,25 +357,25 @@ QvisResampleWindow::UpdateWindow(bool doAll)
             useExtents->setChecked(atts->GetUseExtents());
             useExtents->blockSignals(false);
             break;
-          case ResamplePluginAttributes::ID_startX:
+          case ResampleAttributes::ID_startX:
             startX->setText(DoubleToQString(atts->GetStartX()));
             break;
-          case ResamplePluginAttributes::ID_endX:
+          case ResampleAttributes::ID_endX:
             endX->setText(DoubleToQString(atts->GetEndX()));
             break;
-          case ResamplePluginAttributes::ID_samplesX:
+          case ResampleAttributes::ID_samplesX:
             samplesX->setText(IntToQString(atts->GetSamplesX()));
             break;
-          case ResamplePluginAttributes::ID_startY:
+          case ResampleAttributes::ID_startY:
             startY->setText(DoubleToQString(atts->GetStartY()));
             break;
-          case ResamplePluginAttributes::ID_endY:
+          case ResampleAttributes::ID_endY:
             endY->setText(DoubleToQString(atts->GetEndY()));
             break;
-          case ResamplePluginAttributes::ID_samplesY:
+          case ResampleAttributes::ID_samplesY:
             samplesY->setText(IntToQString(atts->GetSamplesY()));
             break;
-          case ResamplePluginAttributes::ID_is3D:
+          case ResampleAttributes::ID_is3D:
             if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 startZ->setEnabled(true);
@@ -416,17 +416,17 @@ QvisResampleWindow::UpdateWindow(bool doAll)
             is3D->setChecked(atts->GetIs3D());
             is3D->blockSignals(false);
             break;
-          case ResamplePluginAttributes::ID_startZ:
+          case ResampleAttributes::ID_startZ:
             startZ->setText(DoubleToQString(atts->GetStartZ()));
             break;
-          case ResamplePluginAttributes::ID_endZ:
+          case ResampleAttributes::ID_endZ:
             endZ->setText(DoubleToQString(atts->GetEndZ()));
             break;
-          case ResamplePluginAttributes::ID_samplesZ:
+          case ResampleAttributes::ID_samplesZ:
             samplesZ->setText(IntToQString(atts->GetSamplesZ()));
             break;
-          case ResamplePluginAttributes::ID_tieResolver:
-            if (atts->GetTieResolver() == ResamplePluginAttributes::smallest || atts->GetTieResolver() == ResamplePluginAttributes::largest)
+          case ResampleAttributes::ID_tieResolver:
+            if (atts->GetTieResolver() == ResampleAttributes::smallest || atts->GetTieResolver() == ResampleAttributes::largest)
             {
                 tieResolverVariable->setEnabled(true);
                 if(tieResolverVariableLabel)
@@ -443,15 +443,15 @@ QvisResampleWindow::UpdateWindow(bool doAll)
                 tieResolver->button((int)atts->GetTieResolver())->setChecked(true);
             tieResolver->blockSignals(false);
             break;
-          case ResamplePluginAttributes::ID_tieResolverVariable:
+          case ResampleAttributes::ID_tieResolverVariable:
             tieResolverVariable->blockSignals(true);
             tieResolverVariable->setText(QString(atts->GetTieResolverVariable().c_str()));
             tieResolverVariable->blockSignals(false);
             break;
-          case ResamplePluginAttributes::ID_defaultValue:
+          case ResampleAttributes::ID_defaultValue:
             defaultValue->setText(DoubleToQString(atts->GetDefaultValue()));
             break;
-          case ResamplePluginAttributes::ID_distributedResample:
+          case ResampleAttributes::ID_distributedResample:
             distributedResample->blockSignals(true);
             distributedResample->setChecked(atts->GetDistributedResample());
             distributedResample->blockSignals(false);
@@ -486,7 +486,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
 
     // Do startX
     if(atts->GetUseExtents() == false && 
-       (which_widget == ResamplePluginAttributes::ID_startX || doAll))
+       (which_widget == ResampleAttributes::ID_startX || doAll))
     {
         double val;
         if(LineEditGetDouble(startX, val))
@@ -501,7 +501,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
 
     // Do endX
     if(atts->GetUseExtents() == false && 
-      (which_widget == ResamplePluginAttributes::ID_endX || doAll))
+      (which_widget == ResampleAttributes::ID_endX || doAll))
     {
         double val;
         if(LineEditGetDouble(endX, val))
@@ -515,7 +515,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do samplesX
-    if(which_widget == ResamplePluginAttributes::ID_samplesX || doAll)
+    if(which_widget == ResampleAttributes::ID_samplesX || doAll)
     {
         int val;
         if(LineEditGetInt(samplesX, val))
@@ -530,7 +530,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
 
     // Do startY
     if(atts->GetUseExtents() == false && 
-       (which_widget == ResamplePluginAttributes::ID_startY || doAll))
+       (which_widget == ResampleAttributes::ID_startY || doAll))
     {
         double val;
         if(LineEditGetDouble(startY, val))
@@ -545,7 +545,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
 
     // Do endY
     if(atts->GetUseExtents() == false && 
-       (which_widget == ResamplePluginAttributes::ID_endY || doAll))
+       (which_widget == ResampleAttributes::ID_endY || doAll))
     {
         double val;
         if(LineEditGetDouble(endY, val))
@@ -559,7 +559,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do samplesY
-    if(which_widget == ResamplePluginAttributes::ID_samplesY || doAll)
+    if(which_widget == ResampleAttributes::ID_samplesY || doAll)
     {
         int val;
         if(LineEditGetInt(samplesY, val))
@@ -574,7 +574,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
 
     // Do startZ
     if(atts->GetUseExtents() == false && 
-        (which_widget == ResamplePluginAttributes::ID_startZ || doAll))
+        (which_widget == ResampleAttributes::ID_startZ || doAll))
     {
         double val;
         if(LineEditGetDouble(startZ, val))
@@ -589,7 +589,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
 
     // Do endZ
     if(atts->GetUseExtents() == false && 
-       (which_widget == ResamplePluginAttributes::ID_endZ || doAll))
+       (which_widget == ResampleAttributes::ID_endZ || doAll))
     {
         double val;
         if(LineEditGetDouble(endZ, val))
@@ -603,7 +603,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do samplesZ
-    if(which_widget == ResamplePluginAttributes::ID_samplesZ || doAll)
+    if(which_widget == ResampleAttributes::ID_samplesZ || doAll)
     {
         int val;
         if(LineEditGetInt(samplesZ, val))
@@ -617,7 +617,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do defaultValue
-    if(which_widget == ResamplePluginAttributes::ID_defaultValue || doAll)
+    if(which_widget == ResampleAttributes::ID_defaultValue || doAll)
     {
         double val;
         if(LineEditGetDouble(defaultValue, val))
@@ -649,7 +649,7 @@ QvisResampleWindow::useExtentsChanged(bool val)
 void
 QvisResampleWindow::startXProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_startX);
+    GetCurrentValues(ResampleAttributes::ID_startX);
     Apply();
 }
 
@@ -657,7 +657,7 @@ QvisResampleWindow::startXProcessText()
 void
 QvisResampleWindow::endXProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_endX);
+    GetCurrentValues(ResampleAttributes::ID_endX);
     Apply();
 }
 
@@ -665,7 +665,7 @@ QvisResampleWindow::endXProcessText()
 void
 QvisResampleWindow::samplesXProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_samplesX);
+    GetCurrentValues(ResampleAttributes::ID_samplesX);
     Apply();
 }
 
@@ -673,7 +673,7 @@ QvisResampleWindow::samplesXProcessText()
 void
 QvisResampleWindow::startYProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_startY);
+    GetCurrentValues(ResampleAttributes::ID_startY);
     Apply();
 }
 
@@ -681,7 +681,7 @@ QvisResampleWindow::startYProcessText()
 void
 QvisResampleWindow::endYProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_endY);
+    GetCurrentValues(ResampleAttributes::ID_endY);
     Apply();
 }
 
@@ -689,7 +689,7 @@ QvisResampleWindow::endYProcessText()
 void
 QvisResampleWindow::samplesYProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_samplesY);
+    GetCurrentValues(ResampleAttributes::ID_samplesY);
     Apply();
 }
 
@@ -705,7 +705,7 @@ QvisResampleWindow::is3DChanged(bool val)
 void
 QvisResampleWindow::startZProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_startZ);
+    GetCurrentValues(ResampleAttributes::ID_startZ);
     Apply();
 }
 
@@ -713,7 +713,7 @@ QvisResampleWindow::startZProcessText()
 void
 QvisResampleWindow::endZProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_endZ);
+    GetCurrentValues(ResampleAttributes::ID_endZ);
     Apply();
 }
 
@@ -721,7 +721,7 @@ QvisResampleWindow::endZProcessText()
 void
 QvisResampleWindow::samplesZProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_samplesZ);
+    GetCurrentValues(ResampleAttributes::ID_samplesZ);
     Apply();
 }
 
@@ -731,7 +731,7 @@ QvisResampleWindow::tieResolverChanged(int val)
 {
     if(val != atts->GetTieResolver())
     {
-        atts->SetTieResolver(ResamplePluginAttributes::TieResolver(val));
+        atts->SetTieResolver(ResampleAttributes::TieResolver(val));
         Apply();
     }
 }
@@ -749,7 +749,7 @@ QvisResampleWindow::tieResolverVariableChanged(const QString &varName)
 void
 QvisResampleWindow::defaultValueProcessText()
 {
-    GetCurrentValues(ResamplePluginAttributes::ID_defaultValue);
+    GetCurrentValues(ResampleAttributes::ID_defaultValue);
     Apply();
 }
 

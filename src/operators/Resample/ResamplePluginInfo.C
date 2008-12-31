@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ResamplePluginInfo.h>
-#include <ResamplePluginAttributes.h>
+#include <ResampleAttributes.h>
 
 #include <visit-config.h>
 #if defined(__APPLE__)

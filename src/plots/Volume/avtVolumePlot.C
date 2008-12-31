@@ -503,6 +503,9 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //    Hank Childs, Mon Sep 11 14:50:28 PDT 2006
 //    Added support for the integration ray function.
 //
+//    Hank Childs, Wed Dec 31 13:47:37 PST 2008
+//    Renamed ResampleAtts to InternalResampleAtts.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -533,7 +536,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
     else
     {
-        ResampleAttributes resampleAtts;
+        InternalResampleAttributes resampleAtts;
         resampleAtts.SetTargetVal(atts.GetResampleTarget());
         resampleAtts.SetUseTargetVal(true);
         resampleAtts.SetPrefersPowersOfTwo(

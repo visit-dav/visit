@@ -221,6 +221,9 @@ avtLocalizedCompactnessFactorQuery::Execute(vtkDataSet *ds, const int dom)
 //    Hank Childs, Mon May 22 15:44:46 PDT 2006
 //    Make the resample region be only the region where there is actually data.
 //
+//    Hank Childs, Wed Dec 31 13:46:14 PST 2008
+//    Change the ResampleAtts to InternalResampleAtts.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -243,7 +246,7 @@ avtLocalizedCompactnessFactorQuery::ApplyFilters(avtDataObject_p inData)
     ccf.SetOutputVariableName("is_material");
     dob = ccf.GetOutput();
    
-    ResampleAttributes res_atts;
+    InternalResampleAttributes res_atts;
     res_atts.SetDefaultVal(0.);
     bool is2D = (dob->GetInfo().GetAttributes().GetSpatialDimension() < 3);
     int res = (is2D ? 250000 : 2000000);

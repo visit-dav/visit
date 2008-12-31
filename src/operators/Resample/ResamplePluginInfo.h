@@ -45,7 +45,7 @@
 #include <OperatorPluginInfo.h>
 #include <operator_plugin_exports.h>
 
-class ResamplePluginAttributes;
+class ResampleAttributes;
 
 // ****************************************************************************
 //  Class: ResamplePluginInfo
@@ -102,8 +102,8 @@ class ResampleViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
 
     static void InitializeGlobalObjects();
   private:
-    static ResamplePluginAttributes *defaultAtts;
-    static ResamplePluginAttributes *clientAtts;
+    static ResampleAttributes *defaultAtts;
+    static ResampleAttributes *clientAtts;
 };
 
 class ResampleEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual ResampleCommonPluginInfo

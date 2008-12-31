@@ -40,7 +40,7 @@
 //                        ResampleScriptingPluginInfo.C
 // ************************************************************************* //
 #include <ResamplePluginInfo.h>
-#include <PyResamplePluginAttributes.h>
+#include <PyResampleAttributes.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Resample_GetScriptingInfo
@@ -82,7 +82,7 @@ void
 ResampleScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
     void *data)
 {
-    PyResamplePluginAttributes_StartUp((ResamplePluginAttributes *)subj, data);
+    PyResampleAttributes_StartUp((ResampleAttributes *)subj, data);
 }
 
 // ****************************************************************************
@@ -107,7 +107,7 @@ ResampleScriptingPluginInfo::InitializePlugin(AttributeSubject *subj,
 void *
 ResampleScriptingPluginInfo::GetMethodTable(int *nMethods)
 {
-    return PyResamplePluginAttributes_GetMethodTable(nMethods);
+    return PyResampleAttributes_GetMethodTable(nMethods);
 }
 
 // ****************************************************************************
@@ -129,7 +129,7 @@ ResampleScriptingPluginInfo::GetMethodTable(int *nMethods)
 bool
 ResampleScriptingPluginInfo::TypesMatch(void *pyobject)
 {
-    return PyResamplePluginAttributes_Check((PyObject *)pyobject);
+    return PyResampleAttributes_Check((PyObject *)pyobject);
 }
 
 // ****************************************************************************
@@ -151,7 +151,7 @@ ResampleScriptingPluginInfo::TypesMatch(void *pyobject)
 char *
 ResampleScriptingPluginInfo::GetLogString()
 {
-    std::string s(PyResamplePluginAttributes_GetLogString());
+    std::string s(PyResampleAttributes_GetLogString());
     char *v = new char[s.size() + 1];
     strcpy(v, s.c_str());
     return v;
@@ -176,5 +176,5 @@ ResampleScriptingPluginInfo::GetLogString()
 void
 ResampleScriptingPluginInfo::SetDefaults(const AttributeSubject *atts)
 {
-    PyResamplePluginAttributes_SetDefaults((const ResamplePluginAttributes *)atts);
+    PyResampleAttributes_SetDefaults((const ResampleAttributes *)atts);
 }
