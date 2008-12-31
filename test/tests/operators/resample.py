@@ -12,6 +12,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Wed Dec 31 14:32:34 PST 2008
+#    Rename ResamplePluginAtts to ResampleAtts.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -19,7 +22,7 @@ OpenDatabase("../data/noise.silo")
 AddPlot("Pseudocolor", "PointVar")
 AddOperator("Resample")
 
-resample = ResamplePluginAttributes()
+resample = ResampleAttributes()
 resample.samplesX = 5
 resample.samplesY = 6
 resample.samplesZ = 7
@@ -36,7 +39,7 @@ SetView3D(bigView)
 
 Test("ops_resampleop_noise_point_small")
 
-resample = ResamplePluginAttributes()
+resample = ResampleAttributes()
 resample.samplesX = 20
 resample.samplesY = 30
 resample.samplesZ = 40
@@ -44,7 +47,7 @@ SetOperatorOptions(resample)
 
 Test("ops_resampleop_noise_point_large")
 
-resample = ResamplePluginAttributes()
+resample = ResampleAttributes()
 resample.startX = 5.25
 resample.endX = 9.57
 resample.samplesX = 10
@@ -80,7 +83,7 @@ DeleteAllPlots()
 AddPlot("Pseudocolor", "hardyglobal")
 AddOperator("Resample")
 
-resample = ResamplePluginAttributes()
+resample = ResampleAttributes()
 resample.samplesX = 3
 resample.samplesY = 3
 resample.samplesZ = 3
@@ -97,7 +100,7 @@ OpenDatabase("../data/curv2d.silo")
 AddPlot("Pseudocolor", "v")
 AddOperator("Resample")
 
-resample = ResamplePluginAttributes()
+resample = ResampleAttributes()
 resample.samplesX = 10
 resample.samplesY = 20
 resample.is3D = 0
