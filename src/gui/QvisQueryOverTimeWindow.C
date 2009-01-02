@@ -67,6 +67,11 @@ using std::string;
 //   Brad Whitlock, Wed Apr  9 11:32:57 PDT 2008
 //   QString for caption, shortName.
 //
+//   Jeremy Meredith, Fri Jan  2 17:20:03 EST 2009
+//   The base class postable window observer now defaults
+//   to having load/save buttons, but to be consistent with
+//   most control windows, we don't want them here.
+//
 // ****************************************************************************
 
 QvisQueryOverTimeWindow::QvisQueryOverTimeWindow(
@@ -74,7 +79,8 @@ QvisQueryOverTimeWindow::QvisQueryOverTimeWindow(
                          const QString &caption,
                          const QString &shortName,
                          QvisNotepadArea *notepad)
-    : QvisPostableWindowObserver(subj, caption, shortName, notepad)
+    : QvisPostableWindowObserver(subj, caption, shortName, notepad,
+                                 QvisPostableWindowObserver::AllExtraButtons)
 {
     atts = subj;
 }
