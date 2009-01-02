@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -36,71 +36,43 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_POSTABLE_WINDOW_OBSERVER_H
-#define QVIS_POSTABLE_WINDOW_OBSERVER_H
-#include <gui_exports.h>
-#include <QvisPostableWindowSimpleObserver.h>
+#ifndef SINGLE_ATTRIBUTE_MANAGER_H
+#define SINGLE_ATTRIBUTE_MANAGER_H
+#include <ConfigManager.h>
+#include <AttributeGroup.h>
+#include <string>
+
+class DataNode;
 
 // ****************************************************************************
-// Class: QvisPostableWindowObserver
+// Class: SingleAttributeConfigManager
 //
 // Purpose:
-//   This is the base class for postable windows that observe state
-//   objects and update themselves when the state objects change.
-//   This class also has an Apply button in addition to Post and
-//   Dismiss buttons.
+//   Reads and writes single attributes to/from files.
 //
 // Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Jul 28 17:06:56 PST 2000
+// Programmer: Jeremy Meredith
+// Creation:   January  2, 2009
 //
 // Modifications:
-//   Brad Whitlock, Mon Feb 12 13:44:14 PST 2001
-//   Added the "extra_" argument to the contructor.
-//
-//   Brad Whitlock, Wed May 2 11:32:41 PDT 2001
-//   Replaced extra argument with buttonCombination.
-//
-//   Brad Whitlock, Thu Aug 23 8:31:23 PDT 2001
-//   Added a private slot function to help with make default.
-//
-//   Brad Whitlock, Fri Feb 15 11:17:34 PDT 2002
-//   Changed the protection on some of the methods.
-//
-//   Brad Whitlock, Fri Nov 7 16:10:58 PST 2003
-//   I made it inherit from QvisPostableWindowSimpleObserver and I moved
-//   some of the functionality there too.
-//
-//   Brad Whitlock, Wed Apr  9 10:48:01 PDT 2008
-//   QString for caption and shortName.
-//
-//   Jeremy Meredith, Fri Jan  2 17:12:56 EST 2009
-//   Added support for Load/Save on this window's sole subject.
 //
 // ****************************************************************************
 
-class GUI_API QvisPostableWindowObserver : public QvisPostableWindowSimpleObserver
+class STATE_API SingleAttributeConfigManager : public ConfigManager
 {
-    Q_OBJECT
 public:
-    QvisPostableWindowObserver(Subject *subj,
-                               const QString &caption = QString::null,
-                               const QString &shortName = QString::null,
-                               QvisNotepadArea *notepad = 0,
-                               int buttonCombo = AllExtraButtonsAndLoadSave,
-                               bool stretch = true);
-    virtual ~QvisPostableWindowObserver();
+    SingleAttributeConfigManager(AttributeGroup*);
+    virtual ~SingleAttributeConfigManager();
 
-    virtual void SubjectRemoved(Subject *TheRemovedSubject);
+    bool              Export(const std::string &filename);
+    bool              Import(const std::string &filename);
 
-public slots:
-    virtual void apply();
-    virtual void loadSubject();
-    virtual void saveSubject();
+    virtual bool      WriteConfigFile(const char *filename);
+    virtual DataNode *ReadConfigFile(const char *filename);
 protected:
-    virtual void CreateWindowContents() = 0;
-    Subject *subject;
+private:
+    AttributeGroup *attribute;
 };
 
 #endif

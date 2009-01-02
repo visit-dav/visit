@@ -69,12 +69,15 @@
 //   Brad Whitlock, Wed Apr  9 12:48:10 PDT 2008
 //   QString for caption, shortName.
 //
+//   Jeremy Meredith, Fri Jan  2 17:18:13 EST 2009
+//   Added Load and Save button support.
+//
 // ****************************************************************************
 
 QvisOperatorWindow::QvisOperatorWindow(const int type, Subject *subj,
     const QString &caption, const QString &shortName, QvisNotepadArea *notepad,
     bool stretch) : QvisPostableWindowObserver(subj, caption, shortName,
-    notepad, QvisPostableWindowObserver::AllExtraButtons, stretch)
+    notepad, QvisPostableWindowObserver::AllExtraButtonsAndLoadSave, stretch)
 {
     operatorType = type;
 }

@@ -75,6 +75,8 @@
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//    Jeremy Meredith, Fri Jan  2 17:26:04 EST 2009
+//    Added Load/Save buttons.  (Other plot windows get this by default.)
 //   
 // ****************************************************************************
 
@@ -82,7 +84,7 @@ QvisFilledBoundaryPlotWindow::QvisFilledBoundaryPlotWindow(const int type,
     FilledBoundaryAttributes *boundaryAtts_, const QString &caption,
     const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(boundaryAtts_, caption, shortName, notepad,
-                               QvisPostableWindowObserver::AllExtraButtons,
+                               QvisPostableWindowObserver::AllExtraButtonsAndLoadSave,
                                false)
 {
     plotType     = type;

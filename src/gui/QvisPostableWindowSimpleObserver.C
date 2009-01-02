@@ -52,6 +52,10 @@ const int QvisPostableWindowSimpleObserver::MakeDefaultButton = 2;
 const int QvisPostableWindowSimpleObserver::ResetButton       = 4;
 const int QvisPostableWindowSimpleObserver::AllExtraButtons   = 7;
 
+const int QvisPostableWindowSimpleObserver::LoadButton                 = 8;
+const int QvisPostableWindowSimpleObserver::SaveButton                 = 16;
+const int QvisPostableWindowSimpleObserver::AllExtraButtonsAndLoadSave = 31;
+
 // ****************************************************************************
 // Method: QvisPostableWindowSimpleObserver::QvisPostableWindowSimpleObserver
 //
@@ -205,6 +209,10 @@ QvisPostableWindowSimpleObserver::SelectedSubject()
 //   Brad Whitlock, Fri Jun  6 10:50:39 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Fri Jan  2 17:05:57 EST 2009
+//   Added Load/Save button support.  Put them in between the
+//   Make Default and Reset buttons for now.
+//
 // ****************************************************************************
 
 void
@@ -251,8 +259,6 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
 
     // Create a button layout and the buttons.
     vLayout->addSpacing(10);
-    int nrows = ((buttonCombination & MakeDefaultButton) ||
-                 (buttonCombination & ResetButton)) ? 2 : 1;
     QGridLayout *buttonLayout = new QGridLayout(0);
     vLayout->addLayout(buttonLayout);
     buttonLayout->setColumnStretch(1, 50);
@@ -270,8 +276,23 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     {
         QPushButton *resetButton = new QPushButton(tr("Reset"), topCentral);
         connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
-        buttonLayout->addWidget(resetButton, 0, 3);
+        buttonLayout->addWidget(resetButton, 0, 4);
     }
+
+    if(buttonCombination & LoadButton)
+    {
+        QPushButton *loadButton = new QPushButton(tr("Load"),
+            topCentral);
+        connect(loadButton, SIGNAL(clicked()), this, SLOT(loadSubject()));
+        buttonLayout->addWidget(loadButton, 0, 2);
+    }
+    if(buttonCombination & SaveButton)
+    {
+        QPushButton *saveButton = new QPushButton(tr("Save"), topCentral);
+        connect(saveButton, SIGNAL(clicked()), this, SLOT(saveSubject()));
+        buttonLayout->addWidget(saveButton, 0, 3);
+    }
+
     if(buttonCombination & ApplyButton)
     {
         QPushButton *applyButton = new QPushButton(tr("Apply"), topCentral);
@@ -294,10 +315,10 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     }
     else
         postButton->setEnabled(false);
-    buttonLayout->addWidget(postButton, 1, 2);
+    buttonLayout->addWidget(postButton, 1, 3);
     QPushButton *dismissButton = new QPushButton(tr("Dismiss"), topCentral);
     connect(dismissButton, SIGNAL(clicked()), this, SLOT(hide()));
-    buttonLayout->addWidget(dismissButton, 1, 3);
+    buttonLayout->addWidget(dismissButton, 1, 4);
     if(notepad != 0 && stretchWindow)
         vLayout->addStretch(0);
 
@@ -414,6 +435,46 @@ QvisPostableWindowSimpleObserver::makeDefault()
 
 void
 QvisPostableWindowSimpleObserver::reset()
+{
+    // override in derived class.
+}
+
+// ****************************************************************************
+//  Method:  QvisPostableWindowSimpleObserver::loadSubject
+//
+//  Purpose:
+//    Load the window's subject from a file.  This is empty
+//    because this derived class doesn't have a sole subject.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  2, 2009
+//
+// ****************************************************************************
+void
+QvisPostableWindowSimpleObserver::loadSubject()
+{
+    // override in derived class.
+}
+
+// ****************************************************************************
+//  Method:  QvisPostableWindowSimpleObserver::saveSubject
+//
+//  Purpose:
+//    Save the window's subject to a file.  This is empty
+//    because this derived class doesn't have a sole subject.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  2, 2009
+//
+// ****************************************************************************
+void
+QvisPostableWindowSimpleObserver::saveSubject()
 {
     // override in derived class.
 }

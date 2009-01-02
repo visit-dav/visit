@@ -293,6 +293,10 @@
 #    Hank Childs, Wed Dec 31 13:41:48 PST 2008
 #    Rename ResampleAttributes as InternalResampleAttributes.
 #
+#    Jeremy Meredith, Fri Jan  2 17:20:52 EST 2009
+#    Added SingleAttributeConfigManager.  This class simplifies
+#    reading/writing single attribute groups.
+#
 ##############################################################################
 
 ##
@@ -396,6 +400,7 @@ SRC=    AnimationAttributes.C \
         SimilarityTransformAttributes.C \
         SimpleObserver.C \
         SimulationCommand.C \
+        SingleAttributeConfigManager.C \
         SphereAttributes.C \
         StatusAttributes.C \
         Subject.C \
