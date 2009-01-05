@@ -119,6 +119,7 @@ extern const char *visit_HideActivePlots_doc;
 extern const char *visit_HideToolbars_doc;
 extern const char *visit_IconifyAllWindows_doc;
 extern const char *visit_InvertBackgroundColor_doc;
+extern const char *visit_LoadSaveAttribute_doc;
 extern const char *visit_Lineout_doc;
 extern const char *visit_List_doc;
 extern const char *visit_ListPlots_doc;
