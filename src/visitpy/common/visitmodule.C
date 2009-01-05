@@ -77,6 +77,7 @@
 #include <DebugStream.h>
 #include <StringHelpers.h>
 #include <Logging.h>
+#include <SingleAttributeConfigManager.h>
 
 //
 // State object include files.
@@ -9514,6 +9515,117 @@ visit_GetPipelineCachingMode(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+//  Method:  visit_LoadAttribute
+//
+//  Purpose:
+//    Loads a single attribute from an XML file.
+//
+//  Note:  this is not exactly type-safe!  We make some attempt to check
+//         that the name of its type ends in "Attributes", but if that's
+//         not a sufficiently strict check, it can crash.  That check is
+//         also not quite right, because not all AttributeSubjects end
+//         in "Attributes", but since all the plot and operator ones do,
+//         it's not too bad.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  5, 2009
+//
+// ****************************************************************************
+
+// We don't have a python abstraction of a generic attribute
+// subject, but they all follow this pattern, so we'll fake it.
+struct GenericAttributeSubjectObject
+{
+    PyObject_HEAD
+    AttributeSubject *data;
+    bool  owns;
+};
+
+STATIC PyObject *
+visit_LoadAttribute(PyObject *self, PyObject *args)
+{
+    char *filename;
+    PyObject *attobj;
+    if (!PyArg_ParseTuple(args, "sO", &filename, &attobj))
+        return NULL;
+
+    const char *objtypename = attobj->ob_type->tp_name;
+    if (strlen(objtypename) <= 10 ||
+        strcmp(objtypename+(strlen(objtypename)-10), "Attributes") != 0)
+    {
+        VisItErrorFunc("Unceremoniously refusing to load into an object "
+                       "whose type name does not end in 'Attributes'.  "
+                       "If this check is incorrect, please contact a "
+                       "developer.");
+        return NULL;
+        
+    }
+
+    AttributeSubject *as =
+        reinterpret_cast<GenericAttributeSubjectObject*>(attobj)->data;
+
+    if (!as || !filename)
+        return NULL;
+        
+    SingleAttributeConfigManager mgr(as);
+    mgr.Import(filename);
+    as->SelectAll();
+    as->Notify();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+//  Method:  visit_LoadAttribute
+//
+//  Purpose:
+//    Loads a single attribute from an XML file.
+//
+//  Note:  this is not exactly type-safe!  We make some attempt to check
+//         that the name of its type ends in "Attributes", but if that's
+//         not a sufficiently strict check, it can crash.  That check is
+//         also not quite right, because not all AttributeSubjects end
+//         in "Attributes", but since all the plot and operator ones do,
+//         it's not too bad.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  5, 2009
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SaveAttribute(PyObject *self, PyObject *args)
+{
+    char *filename;
+    PyObject *attobj;
+    if (!PyArg_ParseTuple(args, "sO", &filename, &attobj))
+        return NULL;
+
+    const char *objtypename = attobj->ob_type->tp_name;
+    if (strlen(objtypename) <= 10 ||
+        strcmp(objtypename+(strlen(objtypename)-10), "Attributes") != 0)
+    {
+        VisItErrorFunc("Unceremoniously refusing to load into an object "
+                       "whose type name does not end in 'Attributes'.  "
+                       "If this check is incorrect, please contact a "
+                       "developer.");
+        return NULL;
+        
+    }
+
+    AttributeSubject *as =
+        reinterpret_cast<GenericAttributeSubjectObject*>(attobj)->data;
+
+    if (!as || !filename)
+        return NULL;
+        
+    SingleAttributeConfigManager mgr(as);
+    mgr.Export(filename);
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SetLight
 //
 // Purpose: 
@@ -13325,6 +13437,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Fri Feb 15 11:21:24 PST 2008
 //   Added GetPlotOptions, GetOperatorOptions.
 //
+//   Jeremy Meredith, Mon Jan  5 10:21:05 EST 2009
+//   Added LoadAttribute, SaveAttribute
+//
 // ****************************************************************************
 
 static void
@@ -13726,6 +13841,9 @@ AddDefaultMethods()
     AddMethod("GetCallbackNames", visit_GetCallbackNames, visit_GetCallbackNames_doc);
     AddMethod("RegisterCallback", visit_RegisterCallback, visit_RegisterCallback_doc);
     AddMethod("GetCallbackArgumentCount", visit_GetCallbackArgumentCount, NULL/*DOCUMENT ME*/);
+
+    AddMethod("LoadAttribute", visit_LoadAttribute, visit_LoadSaveAttribute_doc);
+    AddMethod("SaveAttribute", visit_SaveAttribute, visit_LoadSaveAttribute_doc);
 
     //
     // Lighting
