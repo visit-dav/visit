@@ -14,14 +14,14 @@
 #  Date:       Thu Mar 25 08:34:37 PDT 2004
 #
 #  Modifications:
+#    Brad Whitlock, Tue Jan 6 09:17:15 PDT 2009
+#    I removed support for pre-1.3 session files.
 #
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-RestoreSession("tests/session/selection-pre1.3.session", 0)
-Test("selection_00")
 
-RestoreSession("tests/session/selection-post1.3.session", 0)
-Test("selection_01")
+RestoreSession("tests/session/selection.session", 0)
+Test("selection_00")
 
 Exit()
