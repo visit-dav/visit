@@ -77,8 +77,10 @@ using std::vector;
 //    Made it dribble information of functions that completed succesfully
 //    to debug4 also.
 //
+//    Mark C. Miller, Tue Jan  6 18:55:39 PST 2009
+//    Removed separate implementation for GRUMMP now that GRUMMP supports
+//    getDescription method correctly.
 // ****************************************************************************
-#if !defined(ITAPS_GRUMMP)
 #define CheckITAPSError2(IMI, ERR, FN, ARGS, THELINE, THEFILE)                                  \
     if (ERR != 0)                                                                               \
     {                                                                                           \
@@ -112,37 +114,6 @@ using std::vector;
         debug4 << "Made it past call to \"" << #FN << "\" at line "                             \
                << THELINE << " in file " << THEFILE << endl;                                    \
     }
-#else
-#define CheckITAPSError2(IMI, ERR, FN, ARGS, THELINE, THEFILE)                                  \
-    if (ERR != 0)                                                                               \
-    {                                                                                           \
-        char msg[1024];                                                                         \
-        SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) after call to \"%s\""          \
-            "at line %d in file \"%s\"\nThe description is not available\n",                    \
-            ERR, #FN, THELINE, THEFILE);                                                        \
-        if (messageCounts.find(msg) == messageCounts.end())                                     \
-            messageCounts[msg] = 1;                                                             \
-        else                                                                                    \
-            messageCounts[msg]++;                                                               \
-        if (messageCounts[msg] < 6)                                                             \
-        {                                                                                       \
-            if (!avtCallback::IssueWarning(msg))                                                \
-                cerr << msg << endl;                                                            \
-        }                                                                                       \
-        else if (messageCounts[msg] == 6)                                                       \
-        {                                                                                       \
-            if (!avtCallback::IssueWarning(supressMessage))                                     \
-                cerr << supressMessage << endl;                                                 \
-        }                                                                                       \
-        ITAPSErrorCleanupHelper ARGS;                                                           \
-        goto funcEnd;                                                                           \
-    }                                                                                           \
-    else                                                                                        \
-    {                                                                                           \
-        debug4 << "Made it past call to \"" << #FN << "\" at line "                             \
-               << THELINE << " in file " << THEFILE << endl;                                    \
-    }
-#endif
 
 #define CheckITAPSError(IMI, FN, ARGS) CheckITAPSError2(IMI, itapsError, FN, ARGS, __LINE__, __FILE__)
 

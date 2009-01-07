@@ -175,7 +175,5 @@ ITAPS_CGeneralPluginInfo::GetDfltExtsFromGen() const
 {
     std::vector<std::string> defaultExtensions;
     defaultExtensions.push_back("cub");
-    defaultExtensions.push_back("vmesh");
-
     return defaultExtensions;
 }

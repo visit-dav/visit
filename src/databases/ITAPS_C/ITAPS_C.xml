@@ -3,7 +3,7 @@
 <!-- The following 3 lines for Extensions CXXFLAGS, LIBS
      must be formatted as single lines so that configure
      can perform the necessary sed substitutions. -->
-    <Extensions> cub vmesh </Extensions>
+    <Extensions> cub </Extensions>
     <CXXFLAGS> -DITAPS_C $(ITAPS_C_INCLUDE) </CXXFLAGS>
     <LIBS> $(ITAPS_C_LIB) </LIBS>
     <Files components="M">
