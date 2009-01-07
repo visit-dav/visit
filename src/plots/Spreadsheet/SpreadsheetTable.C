@@ -934,7 +934,7 @@ SpreadsheetTable::selectedCellsAsText() const
             if(selectionModel()->isSelected(index))
             {
                 txt += model()->data(index, Qt::DisplayRole).toString();
-                if(col < col < model()->columnCount())
+                if(col < model()->columnCount())
                     txt += " ";
                 lineHasText = true;
             }
