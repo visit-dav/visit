@@ -1177,6 +1177,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    meshes in Silo files. Also, added support for newer versions of Silo
 //    in which multivars directly indicate the multimesh they are defined
 //    on instead of our plugin having to work really hard to make a good guess.
+//
+//    Mark C. Miller, Tue Jan  6 22:11:33 PST 2009
+//    Added support for explicit specification of topological dimension of a
+//    ucd mesh from the database via the DBOPT_TOPO_DIM option.
 // ****************************************************************************
 
 void
@@ -1509,7 +1513,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     break;
                 }
                 ndims = um->ndims;
-                tdims = ndims; 
+                tdims = ndims;
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,1)
+                if (um->topo_dim != -1)
+                    tdims = um->topo_dim;
+#endif
                 cellOrigin = um->origin;
                 if (um->units[0] != NULL)
                     xUnits = um->units[0];
@@ -1858,9 +1866,16 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             extents_to_use = extents;
         }
 
+        // Handle data-specified topological dimension if its available
+        int tdims = um->ndims;
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,1)
+        if (um->topo_dim != -1)
+            tdims = um->topo_dim;
+#endif
+
         char *name_w_dir = GenerateName(dirname, ucdmesh_names[i], topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
-                            1, 0, um->origin, 0, um->ndims, um->ndims,
+                            1, 0, um->origin, 0, um->ndims, tdims,
                             AVT_UNSTRUCTURED_MESH);
         if (um->units[0] != NULL)
            mmd->xUnits = um->units[0];
