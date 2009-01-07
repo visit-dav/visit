@@ -58,7 +58,9 @@
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkPoints.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkCellTypes.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
@@ -280,10 +282,10 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         float *newBuf = (float*) newArr->GetVoidPointer(0);
         void *oldBuf = oldArr->GetVoidPointer(0);
 
-        debug5 << "avtTransformManager: Converting vktDataArray, ";
+        debug1 << "avtTransformManager: Converting vktDataArray, ";
         if (oldArr->GetName() != NULL)
-               debug5 << "\"" << oldArr->GetName() << "\", ";
-        debug5 << "with " << numTuples << " tuples and "
+               debug1 << "\"" << oldArr->GetName() << "\", ";
+        debug1 << "with " << numTuples << " tuples and "
                << numComponents << " components from type \""
                << DataArrayTypeName(oldArr) << "\" to \"float\"" << endl;
 
@@ -722,14 +724,14 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                 }
                 else
                 {
-                    debug5 << "avtTransformManager: dataset is not in generic db's cache" << endl;
+                    debug1 << "avtTransformManager: dataset is not in generic db's cache" << endl;
                     rv = 0;
                 }
 
                 bool needDelete = false;
                 if (!rv)
                 {
-                    debug5 << "avtTransformManager: Converting data set from native to float" << endl;
+                    debug1 << "avtTransformManager: Converting data set from native to float" << endl;
                     rv = ConvertDataSetToFloat(ds);
                     needDelete = true;
                     if (objectWasCachedInGenericDB[ds])
@@ -777,12 +779,12 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                     if (objectWasCachedInGenericDB[da])
                         newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
                     else
-                        debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
+                        debug1 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
 
                     bool needDelete = false;
                     if (!newda)
                     {
-                        debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
+                        debug1 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
                         newda = ConvertDataArrayToFloat(da);
                         needDelete = true;
                         if (objectWasCachedInGenericDB[da])
@@ -804,7 +806,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             }
             else if (pass == 1)
             {
-                debug5 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
+                debug1 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
                 if (IsInternalAVTArray(da))
                     rv->GetCellData()->AddArray(da);
                 else
@@ -843,12 +845,12 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                     if (objectWasCachedInGenericDB[da])
                         newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
                     else
-                        debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
+                        debug1 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
 
                     bool needDelete = false;
                     if (!newda)
                     {
-                        debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
+                        debug1 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
                         newda = ConvertDataArrayToFloat(da);
                         needDelete = true;
                         if (objectWasCachedInGenericDB[da])
@@ -857,7 +859,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                         }
                         else
                         {
-                            debug5 << "Not caching this array" << endl;
+                            debug1 << "Not caching this array" << endl;
                         }
                     }
                     if (pd->GetScalars() == da)
@@ -875,7 +877,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             }
             else if (pass == 1)
             {
-                debug5 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
+                debug1 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
                 if (IsInternalAVTArray(da))
                     rv->GetPointData()->AddArray(da);
                 else
@@ -949,7 +951,7 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
             int csgdom = dom, csgreg;
             md->ConvertCSGDomainToBlockAndRegion(vname, &csgdom, &csgreg);
 
-	    debug5 << "Preparing to obtain CSG discretized grid for "
+	    debug1 << "Preparing to obtain CSG discretized grid for "
 	           << ", dom=" << dom
 		   << ", csgdom=" << csgdom
 		   << ", csgreg=" << csgreg
@@ -969,11 +971,11 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
                     (olddataRequest->FlatTol() != dataRequest->FlatTol()) ||
                     (olddataRequest->DiscMode() != dataRequest->DiscMode()))
                     dgrid = 0;
-	        debug5 << "Found discretized CSG grid in cache" << endl;
+	        debug1 << "Found discretized CSG grid in cache" << endl;
             }
             if (!dgrid)
             {
-	        debug5 << "No discretized CSG grid in cache. Computing a disrcetization..." << endl;
+	        debug1 << "No discretized CSG grid in cache. Computing a disrcetization..." << endl;
 
                 vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(ds);
                 const double *bnds = csgmesh->GetBounds();
@@ -1030,7 +1032,7 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
                     vector<int> mapvals;
                     for (int j = 0; j < rv->GetNumberOfCells(); j++)
                         mapvals.push_back(csgreg);
-		    debug5 << "Mapping array \"" << da->GetName() << "\" to the discretized CSG mesh" << endl;
+		    debug1 << "Mapping array \"" << da->GetName() << "\" to the discretized CSG mesh" << endl;
                     newda = BuildMappedArray(da, mapvals);
                     if (newda)
                     {
@@ -1164,6 +1166,70 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
 }
 
 // ****************************************************************************
+//  Method: AddVertexCellsToPointsOnlyDataset
+//
+//  Purpose: Add VTK_VERTEX cells to a vtkPoints dataset that has only points
+//  and no cells.
+//
+//  Programmer: Mark C. Miller, Wed Jan  7 09:35:22 PST 2009
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtTransformManager::AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds)
+{
+    int doType = ds->GetDataObjectType();
+
+    if (doType != VTK_POLY_DATA && 
+        doType != VTK_UNSTRUCTURED_GRID)
+        return ds; // no-op
+
+    if (ds->GetNumberOfPoints() == 0)
+        return ds; // no-op
+
+    if (ds->GetNumberOfCells() != 0)
+        return ds; // no-op
+
+    debug1 << "avtTransformManager: Adding " << ds->GetNumberOfPoints() << " VTK_VERTEX cells" << endl;
+    debug1 << "to a dataset that consists solely of points but no cells." << endl;
+
+    //
+    // The only way to arrive here is if we have non-zero number of points
+    // but zero cells. So, we can add vertex cells.
+    //
+    int i;
+    vtkIdType onevertex[1];
+    if (doType == VTK_POLY_DATA)
+    {
+        vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
+        pd->Allocate(ds->GetNumberOfPoints());
+        for (i = 0; i < ds->GetNumberOfPoints(); i++)
+        {
+            onevertex[0] = i;
+            pd->InsertNextCell(VTK_VERTEX, 1, onevertex);
+        }
+
+    }
+    else // must be VTK_UNSTRUCTURED_GRID
+    {
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::SafeDownCast(ds);
+        ugrid->Allocate(ds->GetNumberOfPoints());
+        for (i = 0; i < ds->GetNumberOfPoints(); i++)
+        {
+            onevertex[0] = i;
+            ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
+        }
+    }
+
+    //
+    // Note, we're returning the original pointer here. So, transform manager
+    // will NOT think we've done any work on it. In fact, we have 'transformed'
+    // it in place. This should be harmless.
+    //
+    return ds;
+}
+
+// ****************************************************************************
 //  Method: TransformDataset
 //
 //  Purpose: This is a the main entry point to transformation manager to
@@ -1208,6 +1274,9 @@ avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
         TRY
         {
             ds = CSGToDiscrete(md, d_spec, ds, domains[i]);
+
+            // Handle vtkPoints datasets that have points but no cells
+            ds = AddVertexCellsToPointsOnlyDataset(ds);
 
             //ds = HangingToConforming(md, d_spec, ds);
 
