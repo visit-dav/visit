@@ -249,6 +249,9 @@
 #    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
 #    Remove avtGradients.
 #
+#    Hank Childs, Mon Jan  5 13:25:54 CST 2009
+#    Added avtIsolevelsSelection and avtPlaneSelection.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -289,6 +292,7 @@ Data_src= \
   Data/avtImageRepresentation.C \
   Data/avtIntegrationRF.C \
   Data/avtIntervalTree.C \
+  Data/avtIsolevelsSelection.C \
   Data/avtLightingModel.C \
   Data/avtLogicalSelection.C \
   Data/avtMIPRangeRF.C \
@@ -301,6 +305,7 @@ Data_src= \
   Data/avtOpacityMapSamplePointArbitrator.C \
   Data/avtPhong.C \
   Data/avtPixelizer.C \
+  Data/avtPlaneSelection.C \
   Data/avtPointAttribute.C \
   Data/avtPointExtractor.C \
   Data/avtPyramidExtractor.C \

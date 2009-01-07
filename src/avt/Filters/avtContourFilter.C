@@ -59,6 +59,7 @@
 
 #include <avtExtents.h>
 #include <avtIntervalTree.h>
+#include <avtIsolevelsSelection.h>
 #include <avtMetaData.h>
 
 #include <DebugStream.h>
@@ -236,23 +237,26 @@ avtContourFilter::~avtContourFilter()
 //    Hank Childs, Fri Nov 14 09:05:04 PST 2008
 //    Make sure ghost data is not requested if we ultimately want ghost nodes.
 //
+//    Hank Childs, Mon Jan  5 15:18:09 CST 2009
+//    Add a data selection.
+//
 // ****************************************************************************
 
 avtContract_p
-avtContourFilter::ModifyContract(avtContract_p in_spec)
+avtContourFilter::ModifyContract(avtContract_p in_contract)
 {
     int  i, j;
 
-    avtContract_p spec = new avtContract(in_spec);
-
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
-        spec->GetDataRequest()->SetNeedValidFaceConnectivity(true);
+    avtContract_p contract = new avtContract(in_contract);
 
     const char *varname = NULL;
     if (atts.GetVariable() != "default")
         varname = atts.GetVariable().c_str();
     else 
-        varname = spec->GetDataRequest()->GetVariable();
+        varname = contract->GetDataRequest()->GetVariable();
+
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
+        contract->GetDataRequest()->SetNeedValidFaceConnectivity(true);
 
     //
     // We will need the ghost zones so that we can interpolate along domain
@@ -264,9 +268,9 @@ avtContourFilter::ModifyContract(avtContract_p in_spec)
         in_atts.GetCentering(varname) == AVT_NODECENT)
         skipGhost = true;
     if (!skipGhost)
-        spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
-    else if (spec->GetDataRequest()->GetDesiredGhostDataType() == GHOST_NODE_DATA)
-        spec->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
+        contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    else if (contract->GetDataRequest()->GetDesiredGhostDataType() == GHOST_NODE_DATA)
+        contract->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
 
     //
     // Get the interval tree of data extents.
@@ -303,16 +307,26 @@ avtContourFilter::ModifyContract(avtContract_p in_spec)
             SetIsoValues(extents[0], extents[1]);
         else
         {
-            spec->NoStreaming();
-            return spec;
+            contract->NoStreaming();
+            return contract;
         }
     }
+
+    //
+    // Tell the file format reader that we will be extracting isolevels,
+    // in case it can limit its reads to only the domains/elements that
+    // cross the isolevel.
+    //
+    avtIsolevelsSelection *sel = new avtIsolevelsSelection;
+    sel->SetVariable(varname);
+    sel->SetIsolevels(isoValues);
+    contract->GetDataRequest()->AddDataSelection(sel);
 
     if (it == NULL)
     {
         debug5 << "Cannot use interval tree for contour filter, no "
                << "interval tree exists." << endl;
-        return spec;
+        return contract;
     }
 
     //
@@ -360,9 +374,9 @@ avtContourFilter::ModifyContract(avtContract_p in_spec)
         if (useList[i])
             list.push_back(i);
 
-    spec->GetDataRequest()->GetRestriction()->RestrictDomains(list);
+    contract->GetDataRequest()->GetRestriction()->RestrictDomains(list);
 
-    return spec;
+    return contract;
 }
 
 
