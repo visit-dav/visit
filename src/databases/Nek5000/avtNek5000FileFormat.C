@@ -1141,7 +1141,7 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
         key.element = element;
         key.timestep = timestep;
     
-        std::map<PointerKey, float *>::iterator it;
+        std::map<PointerKey, float *, KeyCompare>::iterator it;
         it = cachedData.find(key);
         float *pts = NULL;
         if (it == cachedData.end())
@@ -1466,7 +1466,7 @@ avtNek5000FileFormat::GetVar(int timestep, int domain, const char *varname)
         key.element = element;
         key.timestep = timestep;
     
-        std::map<PointerKey, float *>::iterator it;
+        std::map<PointerKey, float *, KeyCompare>::iterator it;
         it = cachedData.find(key);
         float *v = NULL;
         if (it == cachedData.end())
@@ -1678,7 +1678,7 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
         key.element = element;
         key.timestep = timestep;
     
-        std::map<PointerKey, float *>::iterator it;
+        std::map<PointerKey, float *, KeyCompare>::iterator it;
         it = cachedData.find(key);
         float *v = NULL;
         if (it == cachedData.end())
@@ -2581,7 +2581,7 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
     key.var = var;
     key.element = -1;
     key.timestep = timestep;
-    std::map<PointerKey,avtIntervalTree*>::const_iterator fit = dataExtents.find(key);
+    std::map<PointerKey,avtIntervalTree*, KeyCompare>::const_iterator fit = dataExtents.find(key);
     if (fit != dataExtents.end())
         return fit->second;
 
