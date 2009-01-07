@@ -111,6 +111,8 @@ class DATABASE_API avtTransformManager
     vtkDataSet                *CSGToDiscrete(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int);
+    vtkDataSet                *AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds);
+
     avtVariableCache           cache;
     avtVariableCache          *gdbCache;
 };
