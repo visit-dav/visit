@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Plugin name="Nek5000" type="database" label="Nek5000" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <Extensions>
+      nek3d
+      nek2d
+      nek5k
+      nek5000
+      nek
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

@@ -325,6 +325,9 @@
 #   Brad Whitlock, Wed Oct 29 15:13:15 PDT 2008
 #   Added Ralph Bruckschen's Gadget 2.0 reader.
 #
+#   Hank Childs, Mon Jan  5 12:09:16 CST 2009
+#   Add Nek5000 reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -393,6 +396,7 @@ REQUIRED=\
  MM5 \
  NASTRAN \
  Nek3D \
+ Nek5000 \
  OpenFOAM \
  OVERFLOW \
  PATRAN \

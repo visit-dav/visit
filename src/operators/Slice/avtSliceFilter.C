@@ -64,6 +64,7 @@
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
+#include <avtPlaneSelection.h>
 #include <avtSpatialBoxSelection.h>
 #include <avtOriginatingSource.h>
 
@@ -447,6 +448,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Making streaming be always disabled, because of the collective communication
 //    in PreExecute.
 //
+//    Hank Childs, Mon Jan  5 15:41:16 CST 2009
+//    Add a data selection.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -547,6 +551,7 @@ avtSliceFilter::ModifyContract(avtContract_p contract)
     //
     if (! GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
         return rv;
+
     avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
     if (it == NULL)
     {
@@ -584,6 +589,16 @@ avtSliceFilter::ModifyContract(avtContract_p contract)
         vector<int> domains;
         it->GetElementsList(normal, tmpD, domains);
         rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
+
+        //
+        // Tell the file format reader that we will be slicing,
+        // in case it can limit its reads to only the domains/elements that
+        // intersect the plane.
+        //
+        avtPlaneSelection *sel = new avtPlaneSelection;
+        sel->SetNormal(normal);
+        sel->SetOrigin(origin);
+        rv->GetDataRequest()->AddDataSelection(sel);
     }
 
     return rv;
