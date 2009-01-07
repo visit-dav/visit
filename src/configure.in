@@ -2830,11 +2830,11 @@ if test -n "$with_itaps_impls" && test with_itaps_impls != "no"; then
         #
         # Fix the extensions in the PluginInfo.C file
         #
-        sed -i -e "s%defaultExtensions.push_back(\(.*\));%defaultExtensions.push_back(\"itaps_foo\");%" databases/$impl_name/${impl_name}PluginInfo.C
+
+        sed -i -e "/defaultExtensions.push_back/d" databases/$impl_name/${impl_name}PluginInfo.C
         for ext in $impl_exts; do
-            sed -i -e "1,/defaultExtensions.push_back/s%defaultExtensions.push_back(\"itaps_foo\");%defaultExtensions.push_back(\"${ext}\");%" databases/$impl_name/${impl_name}PluginInfo.C
+            sed -i -e "/return defaultExtensions;/i \ \ \ \ defaultExtensions.push_back(\"${ext}\");" databases/$impl_name/${impl_name}PluginInfo.C
         done
-        sed -i -e "/defaultExtensions.push_back(\"itaps_foo\");/d" databases/$impl_name/${impl_name}PluginInfo.C
 
         #
         # Make a warning file

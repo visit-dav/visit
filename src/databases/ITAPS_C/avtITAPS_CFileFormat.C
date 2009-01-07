@@ -173,6 +173,8 @@ avtITAPS_CFileFormat::FreeUpResources(void)
 //    Mark C. Miller, Tue Apr 22 21:45:41 PDT 2008
 //    Big changes to support MOAB's subsets
 //
+//    Mark C. Miller, Tue Jan  6 18:48:22 PST 2009
+//    Added check for has_data==0 in loop to find tags (variables) centering.
 // ****************************************************************************
 
 void
@@ -364,6 +366,8 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             CheckITAPSError(itapsMesh, iMesh_getNextEntIter, NoL);
             iMesh_endEntIter(itapsMesh, entIt, &itapsError);
             CheckITAPSError(itapsMesh, iMesh_endEntIter, NoL);
+            if (!has_data)
+                continue;
 
             // get all the tags defined on this one entity
             iBase_TagHandle *tagsOnOneEntity = 0; int tagsOnOneEntity_allocated = 0;

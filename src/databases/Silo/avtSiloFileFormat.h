@@ -206,6 +206,8 @@ typedef struct
 //    Added FindDecomposedMeshType() to help with creating the correct type of
 //    domain boundries object in GetConnectivityAndGroupInformation.
 //
+//    Mark C. Miller, Tue Dec 23 22:14:30 PST 2008
+//    Added support for ANNOTATION_INT nodelists (special case)
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat

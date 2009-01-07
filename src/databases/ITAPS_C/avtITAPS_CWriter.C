@@ -55,9 +55,13 @@
 #include <vtkCellType.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-//#include <vtkDelaunay3D.h>
 #include <vtkPointData.h>
 #include <vtkType.h>
+
+#if defined(ITAPS_GRUMMP)
+#include <stdlib.h>
+#include <vtkDataSetTriangleFilter.h>
+#endif
 
 #include <map>
 #include <string>
@@ -111,10 +115,15 @@ avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
 //  Programmer: Mark C. Miller 
 //  Creation:   November 20, 2008 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Jan  6 18:50:17 PST 2009
+//    Added call to clear static variable holding message counts.
+//
 // ****************************************************************************
 
 avtITAPS_CWriter::~avtITAPS_CWriter()
 {
+    messageCounts.clear();
 }
 
 
@@ -164,6 +173,29 @@ avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
 }
 
+#if defined(ITAPS_GRUMMP)
+// ****************************************************************************
+//  Function: compare_ehs
+//
+//  Purpose: comparison method for entity handles for use in qsort().
+//  This assumes iBase_EntityHandle data type supports <, > == operators.
+//
+//  Programmer: Mark C. Miller, Tue Jan  6 18:51:18 PST 2009
+//
+// ****************************************************************************
+static int compare_ehs(const void *a, const void *b)
+{
+    iBase_EntityHandle *eha = (iBase_EntityHandle *) a;
+    iBase_EntityHandle *ehb = (iBase_EntityHandle *) b;
+    if (eha < ehb)
+        return -1;
+    else if (eha > ehb)
+        return 1;
+    else
+        return 0;
+}
+#endif
+
 // ****************************************************************************
 //  Function: WriteMesh 
 //
@@ -172,6 +204,11 @@ avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   December 1, 2008 
+//
+//  Modifications:
+//    Mark C. Miller, Tue Jan  6 18:51:58 PST 2009
+//    Added tet conversion for GRUMMP. Removed conditional compilation for
+//    getDescription calls since those work in most recent GRUMMP.
 //
 // ****************************************************************************
 static void
@@ -185,22 +222,19 @@ WriteMesh(vtkDataSet *_ds, int chunk,
     *pntHdls = 0;
     *cellHdls = 0;
 
-//#if defined(ITAPS_GRUMMP)
-#if 0
-    vtkDelaunay3D *d3d = vtkDelaunay3D::New();
-    d3d->SetInput(_ds);
-    d3d->Update();
-    ds = (vtkDataSet*) d3d->GetOutput();
-//#warning FREE SOME STUFF HERE
+#if defined(ITAPS_GRUMMP)
+    debug5 << "Converting mesh to simplexes..." << endl;
+    debug5 << "    " << _ds->GetNumberOfPoints() << " points, " << _ds->GetNumberOfCells() << " cells ==> ";
+    vtkDataSetTriangleFilter *tf = vtkDataSetTriangleFilter::New();
+    tf->SetInput(_ds);
+    tf->Update();
+    ds = (vtkDataSet*) tf->GetOutput();
+    ds->Register(NULL);
+    debug5 << ds->GetNumberOfPoints() << " points, " << ds->GetNumberOfCells() << " cells." << endl;
 #endif
 
     try
     {
-        // Create the entity set representing this chunk 
-        iBase_EntitySetHandle chunkSet;
-        iMesh_createEntSet(itapsMesh, 0, &chunkSet, &itapsError);
-        CheckITAPSError(itapsMesh, iMesh_createEntSet, NoL);
-    
         // Add the nodes of this mesh as vertices of the iMesh instance.
         // Note that vertices can only ever be created or live in the instance
         // itself and not in entity sets of the instance. Though, I think we
@@ -224,6 +258,16 @@ WriteMesh(vtkDataSet *_ds, int chunk,
         }
         *pntHdls = ptHdls;
     
+        //
+        // Create the entity set representing this chunk. GRUMMP will not 
+        // permit this call PRIOR to creating ANY entities. So, it had to be
+        // moved here from where it was originally at the beginning of the 
+        // try... statement.
+        //
+        iBase_EntitySetHandle chunkSet;
+        iMesh_createEntSet(itapsMesh, 0, &chunkSet, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_createEntSet, NoL);
+    
         // add just created Vtx entites to chunkSet
         iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, &chunkSet, &itapsError);
         CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
@@ -234,19 +278,94 @@ WriteMesh(vtkDataSet *_ds, int chunk,
     
         int ncells = ds->GetNumberOfCells();
         iBase_EntityHandle *znHdls = new iBase_EntityHandle[ncells];
+        map<iBase_EntityHandle, map<iBase_EntityHandle, map<iBase_EntityHandle, iBase_EntityHandle> > > dupFacesMap;
         for (i = 0; i < ncells; i++)
         {
             vtkCell *theCell = ds->GetCell(i);
     
-            int status;
+            int j, status;
             int topo = VTKZoneTypeToITAPSEntityTopology(theCell->GetCellType());
             int ncellPts = theCell->GetNumberOfPoints();
             iBase_EntityHandle *cellPtEnts = new iBase_EntityHandle[ncellPts];
-            for (int j = 0; j < ncellPts; j++)
+            for (j = 0; j < ncellPts; j++)
                 cellPtEnts[j] = ptHdls[theCell->GetPointId(j)];
-    
-            iMesh_createEnt(itapsMesh, topo, cellPtEnts, ncellPts, &znHdls[i], &status, &itapsError);
+
+            iBase_EntityHandle *lo_ents = cellPtEnts;
+            int lo_ent_cnt = ncellPts;
+
+#if defined(ITAPS_GRUMMP)
+            //
+            // A few problems here. We may not be handling 2D case correctly.
+            // will iMesh_createEnt prevent from creating duplicate entities?
+            // For GRUMMP, we can create 3D ents only in terms of 2D faces.
+            // However, MOAB permits creation of 3D ents from 0D verts. Finally,
+            // in 3D, GRUMMP understans ONLY tets. In 2D, GRUMMP understands
+            // tris and quads.
+            //
+            iBase_EntityHandle faceEnts[4];
+            lo_ents = faceEnts;
+            lo_ent_cnt = 4;
+            for (j = 0; j < 4; j++)
+            {
+                iBase_EntityHandle facePtEnts[3];
+                for (int k = 0; k < 3; k++)
+                    facePtEnts[k] = cellPtEnts[(j+k)%4];
+
+                //
+                // To ensure we don't wind up creating duplicate faces, we maintain
+                // a 3-level map (one for each node of a triangular face) of faces
+                // we've seen before. We search this map using a sorted list of
+                // entity handles representing the nodes of the face. This implies
+                // that the data type iBase_EntityHandle supports <, > and == operators.
+                // Also, we use the fact that the order of nodes over a triangular face
+                // should NOT matter to GRUMMP here so that the we needn't worry that
+                // calling qsort will somehow corrupt the representation of the face.
+                // For quads, this will be a different story.
+                //
+                qsort(facePtEnts, 3, sizeof(facePtEnts[0]), compare_ehs);
+                bool newFace = false;
+                map<iBase_EntityHandle, map<iBase_EntityHandle, map<iBase_EntityHandle, iBase_EntityHandle> > >::iterator f0it =
+                    dupFacesMap.find(facePtEnts[0]);
+                if (f0it == dupFacesMap.end())
+                    newFace = true;
+                else
+                {
+                    map<iBase_EntityHandle, map<iBase_EntityHandle, iBase_EntityHandle> >::iterator f1it =
+                        f0it->second.find(facePtEnts[1]);
+                    if (f1it == f0it->second.end())
+                        newFace = true;
+                    else
+                    {
+                        map<iBase_EntityHandle, iBase_EntityHandle>::iterator f2it =
+                            f1it->second.find(facePtEnts[2]);
+                        if (f2it == f1it->second.end())
+                            newFace = true;
+                        else
+                        {
+                            faceEnts[j] = f2it->second;
+                            f1it->second.erase(f2it);
+                            if (f1it->second.size() == 0)
+                            {
+                                f0it->second.erase(f1it);
+                                if (f0it->second.size() == 0)
+                                    dupFacesMap.erase(f0it);
+                            }
+                        }
+                    }
+                }
+
+                if (newFace)
+                { 
+                    iMesh_createEnt(itapsMesh, iMesh_TRIANGLE, facePtEnts, 3, &faceEnts[j], &status, &itapsError);
+                    if (i<5) CheckITAPSError(itapsMesh, iMesh_createEnt, NoL);
+                    dupFacesMap[facePtEnts[0]][facePtEnts[1]][facePtEnts[2]] = faceEnts[j];
+                }
+            }
+#endif
+
+            iMesh_createEnt(itapsMesh, topo, lo_ents, lo_ent_cnt, &znHdls[i], &status, &itapsError);
             if (i<5) CheckITAPSError(itapsMesh, iMesh_createEnt, NoL);
+
         }
         *cellHdls = znHdls;
     
@@ -265,14 +384,18 @@ WriteMesh(vtkDataSet *_ds, int chunk,
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
     }
+
+#if defined(ITAPS_GRUMMP)
+    // Since we converted to tets, creating a new dataset, we need to delete it.
+    ds->Delete();
+#endif
+
 funcEnd: ;
 }
 
@@ -381,6 +504,11 @@ static void ConvertTypeAndStorageOrder(vtkDataArray *arr, int sorder, T **buf)
 //  Programmer: Mark C. Miller 
 //  Creation:   December 5, 2008 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Jan  6 18:53:09 PST 2009
+//    Fixed off by one error in string length passed for array names. It was
+//    failing to include the terminating null character. Removed conditional
+//    compilation for getDescription as that now works in most recent GRUMMP.
 // ****************************************************************************
 static void
 WriteVariables(vtkDataSet *ds, int chunk,
@@ -421,7 +549,7 @@ WriteVariables(vtkDataSet *ds, int chunk,
                 int iType = vtkDataTypeToITAPSTagType(arr->GetDataType());
                 iBase_TagHandle varTag;
                 iMesh_createTag(itapsMesh, arr->GetName(), ncomps, iType, &varTag,
-                    &itapsError, strlen(arr->GetName()));
+                    &itapsError, strlen(arr->GetName())+1);
                 CheckITAPSError(itapsMesh, iMesh_createTag, NoL);
 
                 switch (iType)
@@ -496,9 +624,7 @@ WriteVariables(vtkDataSet *ds, int chunk,
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);
         if (!avtCallback::IssueWarning(msg))
@@ -517,6 +643,11 @@ funcEnd: ;
 //  Programmer: Mark C. Miller 
 //  Creation:   November 20, 2008 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Jan  6 18:53:09 PST 2009
+//    Fixed off by one error in string length passed for array names. It was
+//    failing to include the terminating null character. Removed conditional
+//    compilation for getDescription as that now works in most recent GRUMMP.
 // ****************************************************************************
 
 void
@@ -557,7 +688,7 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
         else
             sprintf(filename, "%s.%d", fname.c_str(), chunk);
         iMesh_save(itapsMesh, rootSet, filename, saveOptions.c_str(), &itapsError,
-            strlen(filename), saveOptions.size());
+            strlen(filename)+1, saveOptions.size());
         CheckITAPSError(itapsMesh, iMesh_save, NoL);
 
     }
@@ -567,9 +698,7 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);
         if (!avtCallback::IssueWarning(msg))
