@@ -576,6 +576,9 @@ avtContourFilter::PreExecute(void)
 //    Hank Childs, Fri Nov 14 09:03:58 PST 2008
 //    Remove ghost nodes, as they will make a bad picture.
 //
+//    Hank Childs, Wed Jan  7 16:03:29 CST 2009
+//    Only use a scalar tree if we have multiple isolevels.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -652,14 +655,18 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     // which could lead to a divide-by-0 when calculating progress.
     //
     int nLevels = isoValues.size();
+    bool useScalarTree = (nLevels > 1);
     int total = 4*nLevels+2;
     UpdateProgress(current_node*total + nLevels+1, total*nnodes);
 
     vtkVisItScalarTree *tree = vtkVisItScalarTree::New();
-    tree->SetDataSet(toBeContoured);
-    int id0 = visitTimer->StartTimer();
-    tree->BuildTree();
-    visitTimer->StopTimer(id0, "Building scalar tree");
+    if (useScalarTree)
+    {
+         tree->SetDataSet(toBeContoured);
+         int id0 = visitTimer->StartTimer();
+         tree->BuildTree();
+         visitTimer->StopTimer(id0, "Building scalar tree");
+    }
 
     UpdateProgress(current_node*total + 2*nLevels+2, total*nnodes);
 
@@ -672,18 +679,24 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     for (i = 0 ; i < isoValues.size() ; i++)
     {
         std::vector<int> list;
-        int id1 = visitTimer->StartTimer();
-        tree->GetCellList(isoValues[i], list);
-        visitTimer->StopTimer(id1, "Getting cell list");
+        if (useScalarTree)
+        {
+            int id1 = visitTimer->StartTimer();
+            tree->GetCellList(isoValues[i], list);
+            visitTimer->StopTimer(id1, "Getting cell list");
+        }
         int id2 = visitTimer->StartTimer();
         cf->SetIsovalue(isoValues[i]);
         int *list2 = NULL;
-        int emptylist[1] = { 0 };
-        if (list.size() <= 0)
-            list2 = emptylist;
-        else
-            list2 = &(list[0]);
-        cf->SetCellList(list2, list.size());
+        if (useScalarTree)
+        {
+            int emptylist[1] = { 0 };
+            if (list.size() <= 0)
+                list2 = emptylist;
+            else
+                list2 = &(list[0]);
+            cf->SetCellList(list2, list.size());
+         }
 
         output->Update();
         if (output->GetNumberOfCells() == 0)
