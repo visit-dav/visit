@@ -191,6 +191,9 @@ avtMeshFilter::~avtMeshFilter()
 //    Jeremy Meredith, Tue Oct 14 15:09:12 EDT 2008
 //    Made various optimizations for regular grids.
 //
+//    Hank Childs, Thu Jan  8 11:29:28 CST 2009
+//    Fix two problem sized memory leaks.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -286,7 +289,6 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         geo->Update();
         revisedInput3 = geo->GetOutput()->NewInstance();
         revisedInput3->ShallowCopy(geo->GetOutput());
-        revisedInput3->Register(NULL);
         geo->Delete();
     }
     else
@@ -372,6 +374,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
             vtkPolyData *outPoly = vtkPolyData::New();
             outPoly->ShallowCopy(append->GetOutput());
             rv = new avtDataTree(outPoly, dom, lab);
+            outPoly->Delete();
             append->Delete();
         }
         else  
