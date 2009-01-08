@@ -1107,8 +1107,12 @@ avtMeshPlot::Equivalent(const AttributeGroup *a)
 //  Creation:   September 12, 2002
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Tue Nov  2 10:58:26 PST 2004
 //    Removed glyphPoints.
+//
+//    Hank Childs, Thu Jan  8 11:18:13 CST 2009
+//    Release data from the smooth filter.
 //
 // ****************************************************************************
  
@@ -1124,6 +1128,10 @@ avtMeshPlot::ReleaseData(void)
     if (ghostAndFaceFilter != NULL)
     {
         ghostAndFaceFilter->ReleaseData();
+    }
+    if (smooth != NULL)
+    {
+        smooth->ReleaseData();
     }
 }
 
