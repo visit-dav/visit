@@ -1142,6 +1142,9 @@ avtNek5000FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ti
 //    Change routine to assemble an unstructured mesh from the many curvilinear 
 //    grids being read in.
 //
+//    Hank Childs, Thu Jan  8 10:58:15 CST 2009
+//    Fix a memory leak of non-cachable elements.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1152,6 +1155,7 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
     int t1 = visitTimer->StartTimer();
     const int num_elements = myElementList.size();
     vector<float *> ptlist(num_elements);
+    vector<bool> shouldDelete(num_elements, false);
     for (i = 0 ; i < num_elements ; i++)
     {
         int element  = myElementList[i];
@@ -1171,6 +1175,8 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
             // Only cache the elements that are likely to occur on this proc.
             if (cachableElementMin <= element && element < cachableElementMax)
                 cachedData.insert(std::pair<PointerKey, float *>(key, pts));
+            else
+                shouldDelete[i] = true;
         }
         else
             pts = it->second;
@@ -1190,6 +1196,8 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
     {
         memcpy(pts_ptr, ptlist[i], pts_per_element*3*sizeof(float));
         pts_ptr += pts_per_element*3;
+        if (shouldDelete[i])
+            delete [] ptlist[i];
     }
     ugrid->SetPoints(pts);
     pts->Delete();
@@ -1461,6 +1469,11 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
 //  Programmer: Hank Childs
 //  Creation:   December 19, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jan  8 10:58:15 CST 2009
+//    Fix a memory leak of non-cachable elements.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1481,6 +1494,7 @@ avtNek5000FileFormat::GetVar(int timestep, int domain, const char *varname)
     for (int i = 0 ; i < num_elements ; i++)
     {
         int element = myElementList[i];
+        bool canCache = (cachableElementMin <= element && element < cachableElementMax);
 
         PointerKey key;
         key.var = varname;
@@ -1490,16 +1504,21 @@ avtNek5000FileFormat::GetVar(int timestep, int domain, const char *varname)
         std::map<PointerKey, float *, KeyCompare>::iterator it;
         it = cachedData.find(key);
         float *v = NULL;
+        bool shouldDelete = false;
         if (it == cachedData.end())
         {
             v = ReadVar(timestep, element, varname);
             // Only cache the elements that are likely to occur on this proc.
-            if (cachableElementMin <= element && element < cachableElementMax)
+            if (canCache)
                 cachedData.insert(std::pair<PointerKey, float *>(key, v));
+            else
+                shouldDelete = true;
         }
         else
             v = it->second;
         memcpy(varptr, v, pts_per_element*sizeof(float));
+        if (shouldDelete)
+            delete [] v;
         varptr += pts_per_element;
     }
 
@@ -1669,6 +1688,11 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
 //  Programmer: Hank Childs
 //  Creation:   January 5, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jan  8 10:58:15 CST 2009
+//    Fix a memory leak of non-cachable elements.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1702,17 +1726,22 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
         std::map<PointerKey, float *, KeyCompare>::iterator it;
         it = cachedData.find(key);
         float *v = NULL;
+        bool shouldDelete = false;
         if (it == cachedData.end())
         {
             v = ReadVar(timestep, element, varname);
             // Only cache the elements that are likely to occur on this proc.
             if (cachableElementMin <= element && element < cachableElementMax)
                 cachedData.insert(std::pair<PointerKey, float *>(key, v));
+            else
+                shouldDelete = true;
         }
         else
             v = it->second;
         memcpy(varptr, v, 3*pts_per_element*sizeof(float));
         varptr += pts_per_element;
+        if (shouldDelete)
+            delete [] v;
     }
 
     visitTimer->StopTimer(t1, "Reading variable from file");
