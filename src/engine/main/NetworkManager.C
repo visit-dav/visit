@@ -4317,6 +4317,11 @@ OnlyRootNodeHasData(avtImage_p &img)
 //  Programmer: Tom Fogal
 //  Creation:   October 24, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jan  8 15:23:44 CST 2009
+//    Fix memory leak.
+//
 // ****************************************************************************
 static void
 BroadcastImage(avtImage_p &img, bool send_zbuf, int root)
@@ -4368,6 +4373,8 @@ BroadcastImage(avtImage_p &img, bool send_zbuf, int root)
         img->Update(conv.GetGeneralContract());
         img->SetSource(NULL);
         image->Delete();
+        delete [] zb;
+        delete [] data;
     }
 #endif
 }
