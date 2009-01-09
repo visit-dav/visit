@@ -1087,7 +1087,9 @@ ViewerConnectionPrinter::~ViewerConnectionPrinter()
 // Creation:   Wed Nov 21 15:23:52 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 9 15:13:01 PST 2009
+//   Catch the rest of the possible exceptions.
+//
 // ****************************************************************************
 
 void
@@ -1110,6 +1112,10 @@ ViewerConnectionPrinter::HandleRead(int)
     CATCH(LostConnectionException)
     {
         debug1 << "Lost connection in ViewerConnectionPrinter::HandleRead" << endl;
+    }
+    CATCHALL(...)
+    {
+        ; // nothing
     }
     ENDTRY
 }

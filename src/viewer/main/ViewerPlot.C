@@ -5426,20 +5426,31 @@ ViewerPlot::AlternateDisplayUpdatePlotAttributes()
 // Creation:   Fri Feb 23 15:15:52 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Fri Jan 9 15:07:35 PST 2009
+//   Added exception handling to prevent exceptions from being propagated into
+//   the Qt event loop.
 //   
 // ****************************************************************************
 
 void
 ViewerPlot::emitAlternateDisplayChangedPlotAttributes()
 {
-    // Make sure that the current plot attributes get put into the plotAtts.
-    updateFromAlternateDisplay = true;
-    SetPlotAtts(curPlotAtts);
-    updateFromAlternateDisplay = false;
+    TRY
+    {
+        // Make sure that the current plot attributes get put into the plotAtts.
+        updateFromAlternateDisplay = true;
+        SetPlotAtts(curPlotAtts);
+        updateFromAlternateDisplay = false;
 
-    // Tell ViewerSubject that the plot atts changed so it can make the plot be the
-    // active plot and have it send the updated plot attributes to the clients.
-    emit AlternateDisplayChangedPlotAttributes(this);
+        // Tell ViewerSubject that the plot atts changed so it can make the plot be the
+        // active plot and have it send the updated plot attributes to the clients.
+        emit AlternateDisplayChangedPlotAttributes(this);
+    }
+    CATCHALL(...)
+    {
+        ; // nothing
+    }
+    ENDTRY
 }
 
 // ****************************************************************************

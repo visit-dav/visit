@@ -466,6 +466,9 @@ ViewerClientConnection::BroadcastToClient(AttributeSubject *src)
 // Creation:   Tue May 31 13:46:34 PST 2005
 //
 // Modifications:
+//    Brad Whitlock, Fri Jan 9 14:47:07 PST 2009
+//    Added exception handling code so exceptions cannot get back into the
+//    Qt event loop.
 //   
 // ****************************************************************************
 
@@ -486,6 +489,10 @@ ViewerClientConnection::ReadFromClientAndProcess(int)
     {
         // Emit a signal so the viewer can delete this dead connection.
         emit DisconnectClient(this);
+    }
+    CATCHALL(...)
+    {
+        ; // nothing
     }
     ENDTRY
 }

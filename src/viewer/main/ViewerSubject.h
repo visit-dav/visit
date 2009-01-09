@@ -543,6 +543,7 @@ private:
     DataNode *CreateAttributesDataNode(const avtDefaultPlotMetaData *) const;
 
     // RPC handler methods.
+    void HandleViewerRPCEx();
     void Close();
     void ConnectToMetaDataServer();
     void IconifyAllWindows();
@@ -699,7 +700,6 @@ private slots:
     void ReadFromSimulationAndProcess(int);
 
     void ConnectWindow(ViewerWindow *win);
-    void DisconnectWindow(ViewerWindow *win);
 
     void ToggleMaintainViewMode(int windowIndex = -1);
     void ToggleMaintainDataMode(int windowIndex = -1);

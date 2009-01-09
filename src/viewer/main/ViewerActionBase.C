@@ -225,35 +225,47 @@ ViewerActionBase::Activate()
 //   Brad Whitlock, Thu Apr 14 16:16:11 PST 2005
 //   I added code to postpone the action's viewer rpc.
 //
+//   Brad Whitlock, Fri Jan 9 15:07:35 PST 2009
+//   Added exception handling to prevent exceptions from being propagated into
+//   the Qt event loop.
+//
 // ****************************************************************************
 
 void
 ViewerActionBase::Activate(bool interactive)
 {
-    if(interactive)
+    TRY
     {
-        // Allow the action to store values in the args object.      
-        Setup();
+        if(interactive)
+        {
+            // Allow the action to store values in the args object.      
+            Setup();
 
-        // Postpone the action until it is safe to execute it by scheduling it
-        // with the ViewerSubject. By always scheduling interactive actions
-        // in this way, we make it safe to handle them with other input that
-        // came in from the client.
-        args.SetRPCType(rpcType);
-        viewerSubject->PostponeAction(this);
+            // Postpone the action until it is safe to execute it by scheduling it
+            // with the ViewerSubject. By always scheduling interactive actions
+            // in this way, we make it safe to handle them with other input that
+            // came in from the client.
+            args.SetRPCType(rpcType);
+            viewerSubject->PostponeAction(this);
+        }
+        else
+        {
+            // Before handling the action, do this.
+            PreExecute();
+
+            // Handle the action
+            Execute();
+
+            // Tell the action manager to update all of the actions.
+            window->GetActionManager()->Update();
+        }
+
+        // Hide the menu since we're done with the action.
+        window->HideMenu();
     }
-    else
+    CATCHALL(...)
     {
-        // Before handling the action, do this.
-        PreExecute();
-
-        // Handle the action
-        Execute();
-
-        // Tell the action manager to update all of the actions.
-        window->GetActionManager()->Update();
+        ; // nothing
     }
-
-    // Hide the menu since we're done with the action.
-    window->HideMenu();
+    ENDTRY
 }

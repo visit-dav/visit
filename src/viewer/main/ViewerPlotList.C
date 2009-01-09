@@ -8834,64 +8834,75 @@ ViewerPlotList::SetFullFrameScaling(bool useScale, double *scale)
 // Creation:   Wed Feb 14 11:58:39 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 9 15:07:35 PST 2009
+//   Added exception handling to prevent exceptions from being propagated into
+//   the Qt event loop.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::AlternateDisplayChangedPlotAttributes(ViewerPlot *plot)
 {
-    // Determine the plot index.
-    int activePlotCount = 0;
-    int activePlotIndex = -1;
-    int plotIndex = -1;
-    for (int i = 0; i < nPlots; i++)
+    TRY
     {
-        if(plots[i].active)
+        // Determine the plot index.
+        int activePlotCount = 0;
+        int activePlotIndex = -1;
+        int plotIndex = -1;
+        for (int i = 0; i < nPlots; i++)
         {
-            activePlotCount++;
-            activePlotIndex = i;
+            if(plots[i].active)
+            {
+                activePlotCount++;
+                activePlotIndex = i;
+            }
+            if (plots[i].plot == plot)
+                plotIndex = i;
         }
-        if (plots[i].plot == plot)
-            plotIndex = i;
-    }
  
-    if(plotIndex != -1 &&
-       (activePlotCount > 1 || plotIndex != activePlotIndex))
-    {
-        // If we found the plot in the list then make it be the
-        // selected plot so its attributes will be sent to the
-        // clients.
-        intVector selectedPlots;
-        selectedPlots.push_back(plotIndex);
-        GetViewerMethods()->SetActivePlots(selectedPlots);
-    }
-
-    if(plot->AlternateDisplayAllowClientUpdates())
-    {
-        //
-        // If we're allowing updates to go back to the client spontaneously
-        // caused by actions in the alternate display then send back the
-        // attributes now and then perform a SetPlotOptions RPC so this can
-        // all be logged in the clients.
-        //
-        // This path can be slower for continuous actions such as sliders
-        // so try not to take this path in such cases.
-        //
-        ViewerPlotFactory *plotFactory = viewerSubject->GetPlotFactory();
-        AttributeSubject *cAtts = plotFactory->GetClientAtts(plot->GetType());
-        if(cAtts->CopyAttributes(plot->GetPlotAtts()))
+        if(plotIndex != -1 &&
+           (activePlotCount > 1 || plotIndex != activePlotIndex))
         {
-            cAtts->Notify();
-            GetViewerMethods()->SetPlotOptions(plot->GetType());
+            // If we found the plot in the list then make it be the
+            // selected plot so its attributes will be sent to the
+            // clients.
+            intVector selectedPlots;
+            selectedPlots.push_back(plotIndex);
+            GetViewerMethods()->SetActivePlots(selectedPlots);
+        }
+
+        if(plot->AlternateDisplayAllowClientUpdates())
+        {
+            //
+            // If we're allowing updates to go back to the client spontaneously
+            // caused by actions in the alternate display then send back the
+            // attributes now and then perform a SetPlotOptions RPC so this can
+            // all be logged in the clients.
+            //
+            // This path can be slower for continuous actions such as sliders
+            // so try not to take this path in such cases.
+            //
+            ViewerPlotFactory *plotFactory = viewerSubject->GetPlotFactory();
+            AttributeSubject *cAtts = plotFactory->GetClientAtts(plot->GetType());
+            if(cAtts->CopyAttributes(plot->GetPlotAtts()))
+            {
+                cAtts->Notify();
+                GetViewerMethods()->SetPlotOptions(plot->GetType());
+            }
+        }
+        else
+        {
+            // This path does not send plot attributes back to the client but
+            // it is a much faster way to make the alternate display update
+            // a window.
+            UpdateFrame();
         }
     }
-    else
+    CATCHALL(...)
     {
-        // This path does not send plot attributes back to the client but
-        // it is a much faster way to make the alternate display update
-        // a window.
-        UpdateFrame();
+        ; //nothing
     }
+    ENDTRY
 }
 
 // ****************************************************************************
