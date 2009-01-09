@@ -621,6 +621,9 @@ QvisClipWindow::UpdateWindow(bool doAll)
 //   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
 //   Qt4 Port.
 //
+//   Hank Childs, Fri Jan  9 15:10:11 PST 2009
+//   Fix typo in Qt4 port.
+//
 // ****************************************************************************
 
 void
@@ -649,7 +652,7 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         // get from planeGroupWidget
         double val[3];
         if(plane2Group->GetOrigin(val))
-            atts->SetPlane1Origin(val);
+            atts->SetPlane2Origin(val);
         else
         {
             ResettingError(tr("Plane 2 Origin"),
@@ -720,7 +723,7 @@ QvisClipWindow::GetCurrentValues(int which_widget)
 
     }
 
- // Do center
+    // Do center
     if(which_widget == ClipAttributes::ID_center || doAll)
     {
         double val[3];
