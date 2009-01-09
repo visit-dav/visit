@@ -639,13 +639,25 @@ ViewerMultipleAction::UpdateConstruction()
 //   Brad Whitlock, Tue Aug 5 23:05:34 PST 2008
 //   Changed the implementation.
 //
+//   Brad Whitlock, Fri Jan 9 15:07:35 PST 2009
+//   Added exception handling to prevent exceptions from being propagated into
+//   the Qt event loop.
+//
 // ****************************************************************************
 
 void
 ViewerMultipleAction::ActivateHelper(QAction *a)
 {
-    activeAction = action->actions().indexOf(a);
-    toggled = a->isChecked();
-    Activate();
+    TRY
+    {
+        activeAction = action->actions().indexOf(a);
+        toggled = a->isChecked();
+        Activate();
+    }
+    CATCHALL(...)
+    {
+        ; // nothing
+    }
+    ENDTRY
 }
 

@@ -8434,6 +8434,10 @@ ViewerWindowManager::StopTimer()
 //    Brad Whitlock, Wed Dec 10 16:25:10 PST 2008
 //    Use AnimationAttributes.
 //
+//    Brad Whitlock, Fri Jan 9 15:05:09 PST 2009
+//    Added code to make sure that exceptions do not get propagated into the
+//    Qt event loop.
+//
 // ****************************************************************************
 
 void
@@ -8487,34 +8491,42 @@ ViewerWindowManager::AnimationCallback()
         // loop which makes it possible to get back here reentrantly.
         timer->blockSignals(true);
 
-        if (mode == AnimationAttributes::PlayMode)
+        TRY
         {
-            // Change to the next frame in the animation, which will likely
-            // cause us to have to read a plot from the compute engine.
-            windows[lastAnimation]->GetPlotList()->ForwardStep();
+            if (mode == AnimationAttributes::PlayMode)
+            {
+                // Change to the next frame in the animation, which will likely
+                // cause us to have to read a plot from the compute engine.
+                windows[lastAnimation]->GetPlotList()->ForwardStep();
 
-            // Send new window information to the client if we're animating
-            // the active window.
-            UpdateWindowInformation(WINDOWINFO_ANIMATION, lastAnimation);
+                // Send new window information to the client if we're animating
+                // the active window.
+                UpdateWindowInformation(WINDOWINFO_ANIMATION, lastAnimation);
 
-            // Process any client input that we had to ignore while reading
-            // the plot from the compute engine.
-            viewerSubject->ProcessFromParent();
+                // Process any client input that we had to ignore while reading
+                // the plot from the compute engine.
+                viewerSubject->ProcessFromParent();
+            }
+            else if(mode == AnimationAttributes::ReversePlayMode)
+            {
+                // Change to the next frame in the animation, which will likely
+                // cause us to have to read a plot from the compute engine.
+                windows[lastAnimation]->GetPlotList()->BackwardStep();
+
+                // Send new window information to the client if we're animating
+                // the active window.
+                UpdateWindowInformation(WINDOWINFO_ANIMATION, lastAnimation);
+
+                // Process any client input that we had to ignore while reading
+                // the plot from the compute engine.
+                viewerSubject->ProcessFromParent();
+            }
         }
-        else if(mode == AnimationAttributes::ReversePlayMode)
+        CATCHALL(...)
         {
-            // Change to the next frame in the animation, which will likely
-            // cause us to have to read a plot from the compute engine.
-            windows[lastAnimation]->GetPlotList()->BackwardStep();
-
-            // Send new window information to the client if we're animating
-            // the active window.
-            UpdateWindowInformation(WINDOWINFO_ANIMATION, lastAnimation);
-
-            // Process any client input that we had to ignore while reading
-            // the plot from the compute engine.
-            viewerSubject->ProcessFromParent();
+            ; // nothing
         }
+        ENDTRY 
 
         // Start the timer up again.
         timer->blockSignals(false);

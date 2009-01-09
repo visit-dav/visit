@@ -69,8 +69,6 @@ ViewerAction::ViewerAction(ViewerWindow *win) :
     action = new QAction(0);
     connect(action, SIGNAL(triggered()),
             this, SLOT(Activate()));
-    connect(action, SIGNAL(toggled(bool)),
-            this, SLOT(HandleToggle(bool)));
 }
 
 // ****************************************************************************
@@ -294,22 +292,4 @@ ViewerAction::RemoveFromToolbar(QToolBar *toolbar)
     // simplest case
     if(!action->icon().isNull())
         toolbar->removeAction(action);
-}
-
-// ****************************************************************************
-// Method: ViewerAction::HandleToggle
-//
-// Purpose: 
-//   Called when the button is toggled.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Feb 5 17:03:29 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerAction::HandleToggle(bool)
-{
 }

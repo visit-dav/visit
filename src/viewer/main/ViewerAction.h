@@ -99,8 +99,6 @@ public:
     virtual void SetToolTip(const QString &text);
     virtual void SetIcon(const QIcon &icons);
     virtual void SetToggleAction(bool val);
-protected slots:
-    virtual void HandleToggle(bool);
 protected:
     QAction *action;
 };
