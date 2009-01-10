@@ -670,6 +670,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Sean Ahern, Wed Sep 10 13:04:41 EDT 2008
 //    Refined the recenter so that it always asks for nodal centering.
 //
+//    Hank Childs, Fri Jan  9 17:01:39 PST 2009
+//    Use the fast gradient as we don't care as much about accuracy.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -753,11 +756,12 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         char exprDef[512];
         if (atts.GetSmoothData())
         {
-            SNPRINTF(exprDef, 512, "gradient(recenter(<%s>, \"nodal\"))", primaryVariable);
+            SNPRINTF(exprDef, 512, "gradient(recenter(<%s>, \"nodal\"), \"fast\")", 
+                                   primaryVariable);
         }
         else
         {
-            SNPRINTF(exprDef, 512, "gradient(<%s>)", primaryVariable);
+            SNPRINTF(exprDef, 512, "gradient(<%s>, \"fast\")", primaryVariable);
         }
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
 

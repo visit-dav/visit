@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtGradientExpression.C                           //
+//                          avtGradientExpression.C                          //
 // ************************************************************************* //
 
 #include <avtGradientExpression.h>
@@ -127,10 +127,16 @@ avtGradientExpression::~avtGradientExpression()
 //  Programmer:   Cyrus Harrison
 //  Creation:     August 8, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan  9 15:59:41 PST 2009
+//    Added support for the fast gradient.
+//
 // ****************************************************************************
+
 void
 avtGradientExpression::ProcessArguments(ArgsExpr *args,
-                                    ExprPipelineState *state)
+                                        ExprPipelineState *state)
 {
     // get the argument list and # of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
@@ -145,7 +151,8 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
                    " The algo parameter is optional "
                    "and specifies which gradient algorithm is used.\n"
                    "Valid Options:\n"
-                   " type: 0,1,2 or \"sample\",\"logical\",\"nzqh\"\n"
+                   " type: 0,1,2,3 or \"sample\",\"logical\","
+                   "\"nzqh\",\"fast\"\n"
                    "(Default: algo = sample)");
     }
 
@@ -162,6 +169,7 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
     //  logical (1) - calc on logical mesh
     //  nzqh    (2) - nodal to zonal logical gradient for strucuted grids made
     //                of quadrilaterals or hexahedrons
+    //  fast    (3) - fast calculation used for ray casting
     // Default: sample
 
     if (nargs > 1 )
@@ -176,12 +184,12 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
             gradientAlgo =
                        dynamic_cast<IntegerConstExpr*>(second_tree)->GetValue();
 
-            if(gradientAlgo < 0 || gradientAlgo > 2)
+            if(gradientAlgo < 0 || gradientAlgo > 3)
             {
 
                 EXCEPTION2(ExpressionException, outputVariableName,
                 "avtGradientExpression: Invalid second argument.\n"
-                " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
+                " Valid options are: 0,1,2,3 or \"sample\",\"logical\",\"nzqh\",\"fast\"");
 
             }
         }
@@ -197,11 +205,13 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
                 gradientAlgo= LOGICAL;
             else if(sval == "nzqh")
                 gradientAlgo= NODAL_TO_ZONAL_QUAD_HEX;
+            else if(sval == "fast")
+                gradientAlgo= FAST;
             else
             {
                 EXCEPTION2(ExpressionException, outputVariableName,
                 "avtGradientExpression: Invalid second argument.\n"
-                " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
+                " Valid options are: 0,1,2,3 or \"sample\",\"logical\",\"nzqh\",\"fast\"");
             }
         }
         else // invalid arg type
@@ -210,12 +220,11 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
             EXCEPTION2(ExpressionException, outputVariableName,
             "avtGradientExpression: Expects an integer or string second "
             "argument.\n"
-            " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
+            " Valid options are: 0,1,2,3 or \"sample\",\"logical\",\"nzqh\",\"fast\"");
         }
     }
 
     debug5 << "avtGradientExpression: Gradient Algo = " << gradientAlgo << endl;
-
 }
 
 
@@ -285,6 +294,9 @@ avtGradientExpression::PreExecute(void)
 //    Cyrus Harrison, Wed Aug  8 11:20:14 PDT 2007
 //    Add support for nzqh gradient
 //
+//    Hank Childs, Fri Jan  9 15:59:41 PST 2009
+//    Add support for fast gradients.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -319,7 +331,7 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
 
         return LogicalGradient((vtkStructuredGrid *) in_ds);
     }
-    else if(gradientAlgo == NODAL_TO_ZONAL_QUAD_HEX)
+    else if (gradientAlgo == NODAL_TO_ZONAL_QUAD_HEX)
     {
         if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID)
         {
@@ -341,11 +353,14 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
             return rv;
         }
 
-        // recenter to nodal if necessary
-
-
         return NodalToZonalQuadHexGrad((vtkStructuredGrid *) in_ds);
-
+    }
+    else if (gradientAlgo == FAST)
+    {
+        vtkDataArray *rv = FastGradient(in_ds);
+        if (rv != NULL)
+            return rv;
+        // else fall thru to normal gradient processing.
     }
 
     vtkDataArray *scalarValues = in_ds->GetPointData()->GetScalars();
@@ -1218,7 +1233,7 @@ avtGradientExpression::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
                            "avtGradientExpression: 3D NZQH Graident "
                            " only supports hexahedral cells.");
 
-            for( i = 0; i < ncells; i++)
+            for (i = 0; i < ncells; i++)
             {
                 CalculateNodalToZonalHexGrad(in_ds,val,i,res_vals);
                 res_vec->SetTuple(i, res_vals);
@@ -1404,7 +1419,7 @@ avtGradientExpression::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
     ids[7] = cids->GetId(4);
 
 
-    for( i = 0; i< 8; i++)
+    for (i = 0; i< 8; i++)
     {
         int     id = ids[i];
         double *pt_val = ds->GetPoint(id);
@@ -1453,6 +1468,61 @@ avtGradientExpression::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
 }
 
 
+// ****************************************************************************
+//  Method: avtGradientExpression::FastGradient
+//
+//  Purpose:
+//      This gradient is basically for ray casted volume rendering.  The idea
+//      is to do anything possible to speed it up.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 9, 2009
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGradientExpression::FastGradient(vtkDataSet *in_ds)
+{
+    int  i;
+
+    vtkDataArray *arr = in_ds->GetPointData()->GetScalars();
+    if (arr == NULL)
+        // Only point-centered supported in this method (at this time)
+        return NULL;
+
+    bool allHexes = true;
+    int ncells = in_ds->GetNumberOfCells();
+    for (i = 0 ; i < ncells ; i++)
+        if (in_ds->GetCellType(i) != VTK_HEXAHEDRON)
+            allHexes = false;
+    if (!allHexes)
+        return NULL;
+
+    vtkFloatArray *cellGrad = vtkFloatArray::New();
+    cellGrad->SetNumberOfComponents(3);
+    cellGrad->SetNumberOfTuples(ncells);
+    cellGrad->SetName("tmpGrad");
+    for (i = 0; i < ncells; i++)
+    {
+        double grad[3];
+        CalculateNodalToZonalHexGrad(in_ds,arr,i,grad);
+        cellGrad->SetTuple(i, grad);
+    }
+
+    vtkDataSet *new_ds = (vtkDataSet*) in_ds->NewInstance();
+    new_ds->CopyStructure(in_ds);
+    new_ds->GetCellData()->AddArray(cellGrad);
+    vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
+    cd2pd->SetInput(new_ds);
+    cd2pd->Update();
+    vtkDataArray *rv = cd2pd->GetOutput()->GetPointData()->GetArray("tmpGrad");
+    rv->Register(NULL);
+    new_ds->Delete();
+    cd2pd->Delete();
+    cellGrad->Delete();
+
+    return rv;
+}
 
 
 // ****************************************************************************
