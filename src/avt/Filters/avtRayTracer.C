@@ -359,6 +359,10 @@ avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 //    Automatically tighten the clipping planes so we utilize our samples
 //    more effectively.
 //
+//    Hank Childs, Fri Jan  9 14:17:10 PST 2009
+//    Have each ray be randomly jittered forward or backwards along its
+//    direction.
+//
 // ****************************************************************************
 
 void
@@ -402,6 +406,7 @@ avtRayTracer::Execute(void)
     avtSamplePointExtractor extractor(screen[0], screen[1], samplesPerRay);
     extractor.SetKernelBasedSampling(kernelBasedSampling);
     extractor.RegisterRayFunction(rayfoo);
+    extractor.SetJittering(true);
     extractor.SetInput(trans.GetOutput());
 
     //

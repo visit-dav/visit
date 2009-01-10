@@ -132,9 +132,9 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     int             *ind_buffer;
     bool            *valid_sample;
 
-    // We repeaated divide by the term (X[i+1]-X[i]).  In the interest of
+    // We repeatedly divide by the term (X[i+1]-X[i]).  In the interest of
     // performance, cache the term 1./(X[i+1]-X[i]) and use that for faster
-    // multiplication.  This speed up total performance by about 5%.
+    // multiplication.  This sped up total performance by about 5%.
     float           *divisors_X;
     float           *divisors_Y;
     float           *divisors_Z;
