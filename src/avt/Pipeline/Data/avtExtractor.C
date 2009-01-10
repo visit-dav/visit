@@ -75,6 +75,9 @@ const float  avtExtractor::FRUSTUM_MAX_Z = +1.;
 //    Hank Childs, Sat Jan 29 18:49:00 PST 2005
 //    Added checks for degenerate volumes.
 //
+//    Hank Childs, Fri Jan  9 14:04:09 PST 2009
+//    Initialize new data member for jittering.
+//
 // ****************************************************************************
 
 avtExtractor::avtExtractor(int w, int h, int d, avtVolume *vol,avtCellList *cl)
@@ -101,6 +104,7 @@ avtExtractor::avtExtractor(int w, int h, int d, avtVolume *vol,avtCellList *cl)
     else
         z_step = 0;
     sendCellsMode = false;
+    jitter        = false;
     tmpSampleList = new float[depth][AVT_VARIABLE_LIMIT];
 }
 
@@ -349,6 +353,9 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
 //    Call virtual method StoreRay to store the values.  This allows derived
 //    types to override the behavior.
 //
+//    Hank Childs, Fri Jan  9 14:08:40 PST 2009
+//    Add support for jittering.
+//
 // ****************************************************************************
 
 void
@@ -367,6 +374,14 @@ avtExtractor::ExtractLine(int xi, int yi, float z1, float z2,
         {
             t = v1[j]; v1[j] = v2[j]; v2[j] = t;
         }
+    }
+
+    if (jitter)
+    {
+        int reliable_random_number = (13*xi*yi + 14*xi*xi + 79*yi*yi + 247*xi + 779*yi)%513;
+        double jitterFactor = (1.0/depth) * ((reliable_random_number-256) / (256.0));
+        z1 += jitterFactor;
+        z2 += jitterFactor;
     }
 
     //

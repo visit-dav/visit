@@ -612,6 +612,9 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
 //    Jeremy Meredith, Fri Feb  9 14:00:51 EST 2007
 //    Flip back across the x axis if pretendGridsAreInWorldSpace is set.
 //
+//    Hank Childs, Fri Jan  9 14:07:49 PST 2009
+//    Add support for jittering.
+//
 // ****************************************************************************
 
 void
@@ -655,6 +658,22 @@ avtMassVoxelExtractor::GetSegment(int w, int h, float *origin, float *terminus)
         terminus[0] /= terminus[3];
         terminus[1] /= terminus[3];
         terminus[2] /= terminus[3];
+    }
+
+    if (jitter)
+    {
+        int reliable_random_number = (13*w*h + 14*w*w + 79*h*h + 247*w + 779*h)%513;
+        double jitter = (1.0/depth) * ((reliable_random_number-256) / (256.0));
+        double dir[3];
+        dir[0] = (terminus[0] - origin[0])*jitter;
+        dir[1] = (terminus[1] - origin[1])*jitter;
+        dir[2] = (terminus[2] - origin[2])*jitter;
+        origin[0] += dir[0];
+        origin[1] += dir[1];
+        origin[2] += dir[2];
+        terminus[0] += dir[0];
+        terminus[1] += dir[1];
+        terminus[2] += dir[2];
     }
 }
 
