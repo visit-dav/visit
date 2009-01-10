@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtGradientExpression.h                           //
+//                             avtGradientExpression.h                       //
 // ************************************************************************* //
 
 #ifndef AVT_GRADIENT_FILTER_H
@@ -83,13 +83,18 @@ class     vtkStructuredGrid;
 //    Cyrus Harrison, Tue Apr  1 11:06:28 PDT 2008
 //    Added IsPointVariable() to deal with NZQH centering change.
 //
+//    Hank Childs, Fri Jan  9 17:56:00 CST 2009
+//    Addded the approximate gradient option, to be used with ray casted
+//    volume rendering.
+//
 // ****************************************************************************
 
 typedef enum
 {
     SAMPLE  =  0,
     LOGICAL , /* 1 */
-    NODAL_TO_ZONAL_QUAD_HEX /* 2 */
+    NODAL_TO_ZONAL_QUAD_HEX, /* 2 */
+    FAST /* 3 */
 } GradientAlgorithmType;
 
 
@@ -127,6 +132,7 @@ class EXPRESSION_API avtGradientExpression : public avtSingleInputExpressionFilt
     vtkDataArray             *LogicalGradient(vtkStructuredGrid *);
     
     vtkDataArray             *NodalToZonalQuadHexGrad(vtkStructuredGrid *);
+    vtkDataArray             *FastGradient(vtkDataSet *);
     void                      CalculateNodalToZonalQuadGrad(vtkDataSet *,
                                                             vtkDataArray *,
                                                             int ,
