@@ -1173,12 +1173,15 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
 //
 //  Programmer: Mark C. Miller, Wed Jan  7 09:35:22 PST 2009
 //
+//  Modifications:
+//    Mark C. Miller, Tue Jan 13 10:50:19 PST 2009
+//    Added logic to examine cell/pt data arrays too.
 // ****************************************************************************
 
 vtkDataSet *
 avtTransformManager::AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds)
 {
-    int doType = ds->GetDataObjectType();
+    int i, doType = ds->GetDataObjectType();
 
     if (doType != VTK_POLY_DATA && 
         doType != VTK_UNSTRUCTURED_GRID)
@@ -1190,6 +1193,31 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds)
     if (ds->GetNumberOfCells() != 0)
         return ds; // no-op
 
+    if ((ds->GetCellData() == 0 || ds->GetCellData()->GetNumberOfArrays() == 0) &&
+        (ds->GetPointData() == 0 || ds->GetPointData()->GetNumberOfArrays() == 0))
+        return ds; // no-op
+
+    bool hasEmptyCellDataArrays = true;
+    for (i = 0; i < ds->GetCellData()->GetNumberOfArrays(); i++)
+    {
+        if (ds->GetCellData()->GetArray(i)->GetNumberOfTuples() == ds->GetNumberOfPoints())
+        {
+            hasEmptyCellDataArrays = false;
+            break;
+        }
+    }
+    bool hasEmptyPointDataArrays = true;
+    for (i = 0; i < ds->GetPointData()->GetNumberOfArrays(); i++)
+    {
+        if (ds->GetPointData()->GetArray(i)->GetNumberOfTuples() == ds->GetNumberOfPoints())
+        {
+            hasEmptyPointDataArrays = false;
+            break;
+        }
+    }
+    if (hasEmptyCellDataArrays && hasEmptyPointDataArrays)
+        return ds; // no-op
+
     debug1 << "avtTransformManager: Adding " << ds->GetNumberOfPoints() << " VTK_VERTEX cells" << endl;
     debug1 << "to a dataset that consists solely of points but no cells." << endl;
 
@@ -1197,7 +1225,6 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds)
     // The only way to arrive here is if we have non-zero number of points
     // but zero cells. So, we can add vertex cells.
     //
-    int i;
     vtkIdType onevertex[1];
     if (doType == VTK_POLY_DATA)
     {
