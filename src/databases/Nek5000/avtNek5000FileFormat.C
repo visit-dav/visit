@@ -780,8 +780,6 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
 }
 
 
-
-
 // ****************************************************************************
 //  Method: avtNek5000FileFormat::ReadBlockLocations
 //
@@ -1691,6 +1689,9 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
 //    Hank Childs, Thu Jan  8 10:58:15 CST 2009
 //    Fix a memory leak of non-cachable elements.
 //
+//    Hank Childs, Tue Jan 13 17:58:15 CST 2009
+//    Fix serious problems with this routine (must have been untested before).
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1727,7 +1728,7 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
         bool shouldDelete = false;
         if (it == cachedData.end())
         {
-            v = ReadVar(timestep, element, varname);
+            v = ReadVelocity(timestep, element);
             // Only cache the elements that are likely to occur on this proc.
             if (cachableElementMin <= element && element < cachableElementMax)
                 cachedData.insert(std::pair<PointerKey, float *>(key, v));
@@ -1737,7 +1738,7 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
         else
             v = it->second;
         memcpy(varptr, v, 3*pts_per_element*sizeof(float));
-        varptr += pts_per_element;
+        varptr += 3*pts_per_element;
         if (shouldDelete)
             delete [] v;
     }
@@ -1748,12 +1749,10 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
 
 
 // ****************************************************************************
-//  Method: avtNek5000FileFormat::GetVectorVar
+//  Method: avtNek5000FileFormat::ReadVelocity
 //
 //  Purpose:
-//      Gets a vector variable associated with this file.  Although VTK has
-//      support for many different types, the best bet is vtkFloatArray, since
-//      that is supported everywhere through VisIt.
+//      Does the actual reading from the file into a float array.
 //
 //  Arguments:
 //      timestate  The index of the timestate.  If GetNTimesteps returned
