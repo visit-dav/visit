@@ -363,6 +363,9 @@ avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 //    Have each ray be randomly jittered forward or backwards along its
 //    direction.
 //
+//    Hank Childs, Tue Jan 13 14:26:44 PST 2009
+//    Fix oversight where parallel volume rendering was not being jittered.
+//
 // ****************************************************************************
 
 void
@@ -435,6 +438,7 @@ avtRayTracer::Execute(void)
     //
     avtSamplePointCommunicator sampleCommunicator;
     sampleCommunicator.SetInput(extractor.GetOutput());
+    sampleCommunicator.SetJittering(true);
 
     samples = sampleCommunicator.GetOutput();
 #endif
