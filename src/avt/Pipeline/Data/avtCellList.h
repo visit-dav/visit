@@ -122,6 +122,8 @@ class PIPELINE_API avtCellList
 
     void                     Restrict(int, int, int, int);
 
+    void                     SetJittering(bool j) { jittering = j; };
+
   protected:
     avtSerializedCell      **celllist;
     int                      celllistI;
@@ -131,6 +133,8 @@ class PIPELINE_API avtCellList
     bool                     useRestriction;
     int                      minWidth, maxWidth;
     int                      minHeight, maxHeight;
+
+    bool                     jittering;
 
     char                    *Serialize(const float (*)[3], 
                                        const float (*)[AVT_VARIABLE_LIMIT],int);

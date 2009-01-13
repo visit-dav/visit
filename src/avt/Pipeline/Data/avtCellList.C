@@ -69,6 +69,9 @@
 //    Hank Childs, Fri Jan 27 14:51:58 PST 2006
 //    Initialized useRestriction.
 //
+//    Hank Childs, Tue Jan 13 14:29:36 PST 2009
+//    Initialize jittering.
+//
 // ****************************************************************************
 
 avtCellList::avtCellList(int nv)
@@ -82,6 +85,7 @@ avtCellList::avtCellList(int nv)
     maxWidth  = -1;
     minHeight = -1;
     maxHeight = -1;
+    jittering = false;
 }
 
 
@@ -527,6 +531,9 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
 //    Hank Childs, Thu Feb 21 16:22:05 PST 2008
 //    Initialize npts in case extraction fails.
 //
+//    Hank Childs, Tue Jan 13 14:30:29 PST 2009
+//    Propagate jittering value.
+//
 // ****************************************************************************
 
 void
@@ -550,10 +557,15 @@ avtCellList::ExtractCells(const char * const *msgs, const int *lens, int np,
     int   depth  = vol->GetVolumeDepth();
 
     avtHexahedronExtractor hexExtractor(width, height, depth, vol, this);
+    hexExtractor.SetJittering(jittering);
     avtPointExtractor pointExtractor(width, height, depth, vol, this);
+    pointExtractor.SetJittering(jittering);
     avtPyramidExtractor pyrExtractor(width, height, depth, vol, this);
+    pyrExtractor.SetJittering(jittering);
     avtTetrahedronExtractor tetExtractor(width, height, depth, vol, this);
+    tetExtractor.SetJittering(jittering);
     avtWedgeExtractor wedgeExtractor(width, height, depth, vol, this);
+    wedgeExtractor.SetJittering(jittering);
 
     if (useRestriction)
     {
