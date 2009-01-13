@@ -309,8 +309,6 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename)
 }
 
 
-
-
 // ****************************************************************************
 //  Method: avtNek5000FileFormat::ParseNekFileHeader
 //
@@ -1351,7 +1349,7 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
         if (bParFormat)
             iCurrMeshProc = aBlockLocs[element*2];
 
-        GetFileName(iTimestepsWithMesh[0], iCurrMeshProc, 
+        GetFileName(timestepToUseForMesh, iCurrMeshProc, 
                     meshfilename, fileTemplate.size() + 64);
 
         if (curOpenMeshFile != meshfilename)
@@ -1374,7 +1372,7 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
         element = aBlockLocs[element*2 + 1];
 
     int nFloatsInDomain = 0, d1, d2, d3;
-    GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, 
+    GetDomainSizeAndVarOffset(timestepToUseForMesh, NULL, nFloatsInDomain, 
                               d1, d2, d3);
 
     int64_t iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrMeshProc]*sizeof(int) : 0);
@@ -2057,16 +2055,25 @@ avtNek5000FileFormat::GetFileName(int timestep, int pardir, char *outFileName, i
 //
 //    Dave Bremer, Mon Jun 16 18:22:43 PDT 2008
 //    Small change to be more robust about finding the location of the field tags.
+//
+//    Hank Childs, Mon Jan 12 18:09:54 CST 2009
+//    Overhauled method to only read the current time slice.
+//
 // ****************************************************************************
 
 void
 avtNek5000FileFormat::UpdateCyclesAndTimes()
 {
-    if (aCycles.size() > 0)
-        return;
+    if (aTimes.size() != iNumTimesteps)
+    {
+        aTimes.resize(iNumTimesteps);
+        aCycles.resize(iNumTimesteps);
+        iTimestepsWithMesh.resize(iNumTimesteps, false);
+        readTimeInfoFor.resize(iNumTimesteps, false);
+    }
 
-    aTimes.resize(iNumTimesteps);
-    aCycles.resize(iNumTimesteps);
+    if (readTimeInfoFor[curTimestep] == true)
+        return;
 
     ifstream f;
     char dummy[64];
@@ -2075,52 +2082,49 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
     string v;
     char *meshfilename = new char[ fileTemplate.size() + 64 ];
 
-    int ii;
-    iTimestepsWithMesh.push_back(iFirstTimestep);
-    for (ii = 0 ; ii < iNumTimesteps ; ii++)
+    t = 0.0;
+    c = 0;
+
+    GetFileName(curTimestep, 0, meshfilename, fileTemplate.size() + 64);
+    f.open(meshfilename);
+
+    if (!bParFormat)
     {
-        t = 0.0;
-        c = 0;
-        aTimes[ii] = t;
-        aCycles[ii] = c;
-        continue;
-
-        GetFileName(iFirstTimestep+ii, 0, meshfilename, fileTemplate.size() + 64);
-        f.open(meshfilename);
-
-        if (!bParFormat)
-        {
-            f >> dummy >> dummy >> dummy >> dummy >> t >> c >> v;  //skip #blocks and block size
-        }
-        else
-        {
-            f >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
-            f >> t >> c >> dummy;
-
-            //I do this to skip the num directories token, because it may abut 
-            //the field tags without a whitespace separator.
-            while (f.peek() == ' ')
-                f.get();
-            while (f.peek() >= '0' && f.peek() <= '9')
-                f.get();
-            
-            char tmpTags[32];
-            f.read(tmpTags, 32);
-            tmpTags[31] = '\0';
-
-            v = tmpTags;
-        }
-        f.close();
-
-        aTimes[ii] = t;
-        aCycles[ii] = c;
-
-        // If this file contains a mesh, the first variable codes after the 
-        // cycle number will be X Y
-        if (v.find("X") != std::string::npos)
-            iTimestepsWithMesh.push_back(iFirstTimestep+ii);
+        f >> dummy >> dummy >> dummy >> dummy >> t >> c >> v;  //skip #blocks and block size
     }
+    else
+    {
+        f >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
+        f >> t >> c >> dummy;
+
+        //I do this to skip the num directories token, because it may abut 
+        //the field tags without a whitespace separator.
+        while (f.peek() == ' ')
+            f.get();
+        while (f.peek() >= '0' && f.peek() <= '9')
+            f.get();
+            
+        char tmpTags[32];
+        f.read(tmpTags, 32);
+        tmpTags[31] = '\0';
+
+        v = tmpTags;
+    }
+    f.close();
+
+    aTimes[curTimestep] = t;
+    metadata->SetTime(curTimestep, t);
+    metadata->SetTimeIsAccurate(true, curTimestep);
+    aCycles[curTimestep] = c;
+    metadata->SetCycle(curTimestep, c);
+    metadata->SetCycleIsAccurate(true, curTimestep);
+
+    // If this file contains a mesh, the first variable codes after the 
+    // cycle number will be X Y
+    if (v.find("X") != std::string::npos)
+        iTimestepsWithMesh[curTimestep] = true;
     delete[] meshfilename;
+    readTimeInfoFor[curTimestep] = true;
 }
 
 
@@ -2141,6 +2145,10 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
 //    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
 //    Moved some size computations to FindAsciiDataStart, to deal with 
 //    windows-style CRLF
+//
+//    Hank Childs, Mon Jan 12 18:09:54 CST 2009
+//    Modify test for determining if a mesh is present.
+//
 // ****************************************************************************
 
 void
@@ -2155,14 +2163,8 @@ avtNek5000FileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
 
     UpdateCyclesAndTimes();   //Needs to call this to update iTimestepsWithMesh
 
-    for (ii = 0 ; ii < iTimestepsWithMesh.size() ; ii++)
-    {
-        if (iTimestepsWithMesh[ii] == iTimestep)
-        {
-            outTimestepHasMesh = 1;
-            break;
-        }
-    }
+    if (iTimestepsWithMesh[iTimestep] == true)
+        outTimestepHasMesh = 1;
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
 
     int nFloatsPerSample = 0;

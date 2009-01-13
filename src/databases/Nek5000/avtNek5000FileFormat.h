@@ -123,6 +123,9 @@ class KeyCompare {
 //    grids.  Also rename class to Nek5000, since that is the official code
 //    name.
 //
+//    Hank Childs, Mon Jan 12 13:13:10 CST 2009
+//    Add data member for what time slice we've read time info for.
+//
 // ****************************************************************************
 
 class avtNek5000FileFormat : public avtMTMDFileFormat
@@ -187,7 +190,8 @@ class avtNek5000FileFormat : public avtMTMDFileFormat
     // computed on demand
     std::vector<int>     aCycles;
     std::vector<double>  aTimes;
-    std::vector<int>     iTimestepsWithMesh;
+    std::vector<bool>    readTimeInfoFor;
+    std::vector<bool>    iTimestepsWithMesh;
     int                  curTimestep;
     int                  timestepToUseForMesh;
 
