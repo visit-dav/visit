@@ -3283,7 +3283,8 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_COMMAND:
         // Create the command window.
-        win = new QvisCommandWindow(windowNames[i], tr("Command"));
+        win = new QvisCommandWindow(windowNames[i], tr("Command"),
+                                    mainWin->GetNotepad());
         connect(win, SIGNAL(runCommand(const QString &)),
                 this, SLOT(Interpret(const QString &)));
         break;
@@ -3302,7 +3303,8 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_MACRO:
         // Create the macro window.
-        win = new QvisMacroWindow(windowNames[i], tr("Macros"));
+        win = new QvisMacroWindow(windowNames[i], tr("Macros"),
+                                  mainWin->GetNotepad());
         connect(win, SIGNAL(runCommand(const QString &)),
                 this, SLOT(Interpret(const QString &)));
         break;
