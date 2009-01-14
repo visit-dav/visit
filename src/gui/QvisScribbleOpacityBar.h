@@ -62,13 +62,16 @@ class QPixmap;
 //     Brad Whitlock, Wed Jun  4 09:19:29 PDT 2008
 //     Qt 4.
 //
+//     Brad Whitlock, Thu Dec 18 14:10:55 PST 2008
+//     I changed the drawOpacities method.
+//
 // ****************************************************************************
 
 class GUI_API QvisScribbleOpacityBar : public QvisAbstractOpacityBar
 {
     Q_OBJECT
 public:
-    QvisScribbleOpacityBar(QWidget *parent=NULL);
+    QvisScribbleOpacityBar(QWidget *parent);
     ~QvisScribbleOpacityBar();
     float *getRawOpacities(int);
     void   setRawOpacities(int,float*);
@@ -89,7 +92,7 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent*);
     void setValue(float,float);
     void setValues(int,int,int,int);
-    virtual void drawOpacities(int,int);
+    virtual void drawOpacities();
 
 private:
     int nvalues;

@@ -35,72 +35,40 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef VTK_SKEW_H
+#define VTK_SKEW_H
+#include <math.h>
 
-#ifndef QvisAbstractOpacityBar_H
-#define QvisAbstractOpacityBar_H
-#include <gui_exports.h>
+//
+// Define skew and inverse skew in one place.
+//
 
-#include <QFrame>
-class QImage;
-class ColorControlPointList;
-
-// ****************************************************************************
-//  Class:  QvisAbstractOpacityBar
-//
-//  Purpose:
-//    Abstract base for an opacity map editor
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    January 30, 2001
-//
-//  Modifications:
-//    Gunther Weber, Fri Apr  6 16:04:52 PDT 2007
-//    Added support for painting in the color spectrum.
-//
-//    Brad Whitlock, Fri May 30 09:32:22 PDT 2008
-//    Qt 4.
-//
-//    Brad Whitlock, Thu Dec 18 10:55:02 PST 2008
-//    I added histogram textures.
-//
-// ****************************************************************************
-
-class GUI_API QvisAbstractOpacityBar : public QFrame
+template <class T>
+inline T
+vtkSkewValue(T val, T min, T max, T factor)
 {
-    Q_OBJECT
-public:
-                   QvisAbstractOpacityBar(QWidget *parent=NULL);
-    virtual       ~QvisAbstractOpacityBar();
-    virtual float *getRawOpacities(int) = 0;
-    void           setBackgroundColorControlPoints(const ColorControlPointList *ccp);
+    if (factor <= 0 || factor == 1. || min == max) 
+        return val;
 
-    void           setHistogramTexture(const float *t, int ts);
+    T range = max - min; 
+    T k = range / (factor - 1.);
+    T t = (val - min) / range;
+    T rv =  k * ((T)exp(t * (T)log(factor)) -1.) + min;
+    return rv;
+}
 
-signals:
-    void           mouseReleased();
+template <class T>
+inline T
+vtkInverseSkewValue(T val, T min, T max, T factor)
+{
+    if (factor <= 0 || factor == 1. || min == max) 
+        return val;
 
-protected:
-    int            val2x(float);
-    float          x2val(int);
-    int            val2y(float);
-    float          y2val(int);
-
-    void           drawColorBackground();
-    void           drawFilledCurve(float *curve, int nc, const QColor &cc, float opac);
-    void           imageDirty();
-
-    virtual void   paintEvent(QPaintEvent*);
-    virtual void   resizeEvent(QResizeEvent*);
-    virtual void   drawOpacities() = 0;
-
-    QImage        *image;
-    const ColorControlPointList
-                  *backgroundColorControlPoints;
-    float         *histTexture;
-    int            histTextureSize;
-
-private:
-    bool           ensureImageExists(int,int);
-};
+    T rangeDif = max - min;
+    T t = (val - min) / rangeDif;
+    T t2 = (T)log(t * (factor - 1.) + 1.) / (T)log(factor);
+    T rv = t2 * rangeDif + min;
+    return rv;
+}
 
 #endif

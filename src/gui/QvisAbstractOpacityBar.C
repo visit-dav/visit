@@ -47,6 +47,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <ColorControlPointList.h>
 
 // ****************************************************************************
 //  Method:  QvisAbstractOpacityBar::QvisAbstractOpacityBar
@@ -64,6 +65,9 @@
 //    Brad Whitlock, Fri May 30 09:32:57 PDT 2008
 //    Qt 4.
 //
+//    Brad Whitlock, Thu Dec 18 10:56:33 PST 2008
+//    I added histogram textures.
+//
 // ****************************************************************************
 
 QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent)
@@ -79,6 +83,8 @@ QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent)
 
     image = 0;
     backgroundColorControlPoints = 0;
+    histTexture = 0;
+    histTextureSize = 0;
 }
 
 // ****************************************************************************
@@ -94,16 +100,28 @@ QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent)
 //    Brad Whitlock, Thu Feb 14 13:19:19 PST 2002
 //    Deleted pix.
 //
+//    Brad Whitlock, Thu Dec 18 10:56:58 PST 2008
+//    Deleted histTexture.
+//
 // ****************************************************************************
 
 QvisAbstractOpacityBar::~QvisAbstractOpacityBar()
 {
     delete image;
     image = 0;
+    if(histTexture != 0)
+        delete [] histTexture;
+}
+
+void
+QvisAbstractOpacityBar::imageDirty()
+{
+    delete image;
+    image = 0;
 }
 
 // ****************************************************************************
-//  Method:  QvisAbstractOpacityBar::SetBackgroundColorControlPoints
+//  Method:  QvisAbstractOpacityBar::setBackgroundColorControlPoints
 //
 //  Purpose: Set color control points for color transfer function backdrop
 //    
@@ -112,13 +130,59 @@ QvisAbstractOpacityBar::~QvisAbstractOpacityBar()
 //  Creation:    April 5, 2007
 //
 //  Modifications:
+//    Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//    I changed how the image gets invalidated.
 //
 // ****************************************************************************
 
-void QvisAbstractOpacityBar::SetBackgroundColorControlPoints(const ColorControlPointList *ccp)
+void
+QvisAbstractOpacityBar::setBackgroundColorControlPoints(const ColorControlPointList *ccp)
 {
     backgroundColorControlPoints = ccp;
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
+    update();
+}
+
+// ****************************************************************************
+// Method: QvisAbstractOpacityBar::setHistogramTexture
+//
+// Purpose: 
+//   Sets the histogram texture data that we use to draw the histogram curve.
+//
+// Arguments:
+//   t  : The data.
+//   ts : The size of the data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 18 14:10:00 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAbstractOpacityBar::setHistogramTexture(const float *t, int ts)
+{
+    if(t == 0)
+    {
+        if(histTexture != 0)
+            delete [] histTexture;
+        histTexture = 0;
+        histTextureSize = 0;
+    }
+    else
+    {
+        if(ts != histTextureSize)
+        {
+            if(histTexture != 0)
+                delete [] histTexture;
+            histTexture = new float[ts];
+        }
+        histTextureSize = ts;
+        memcpy(histTexture, t, sizeof(float) * histTextureSize);
+    }
+
+    imageDirty();
     update();
 }
 
@@ -207,6 +271,111 @@ QvisAbstractOpacityBar::y2val(int y)
 }
 
 // ****************************************************************************
+// Method: QvisAbstractOpacityBar::drawColorBackground
+//
+// Purpose: 
+//   This method draws the background colors into the image.
+//
+// Note:       Taken from some code the Gunther Weber wrote.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 18 14:07:34 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAbstractOpacityBar::drawColorBackground()
+{
+    int w = contentsRect().width();
+    int h = contentsRect().height();
+    QRgb *bgCols = new QRgb[w];
+    if(backgroundColorControlPoints)
+    {
+        unsigned char *cols = new unsigned char[w*3];
+        backgroundColorControlPoints->GetColors(cols, w);
+        for (int i=0; i < w; ++i)
+            bgCols[i] = QColor(cols[i*3+0], cols[i*3+1], cols[i*3+2]).rgb();
+        delete[] cols;
+    }
+    else 
+    {
+        QColor black(0,   0,   0 );
+        QRgb cb = black.rgb();
+        for (int i=0; i < w; ++i) 
+            bgCols[i] = cb;
+    }
+    for (int y = 0; y < h; y++)
+    {
+        for (int x = 0; x < w; x++)
+            image->setPixel(x,y, bgCols[x]);
+    }
+    delete [] bgCols;
+}
+
+// ****************************************************************************
+// Method: QvisAbstractOpacityBar::drawFilledCurve
+//
+// Purpose: 
+//   This method draws a filled curve into the image, blending the pixels if
+//   necessary.
+//
+// Arguments: 
+//   curve : The curve to draw.
+//   nc    : The length of the curve array.
+//   cc    : The curve color.
+//   opac  : The curve's opacity. If < 1. then the pixels get blended.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 18 14:08:16 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAbstractOpacityBar::drawFilledCurve(float *curve, int nc, const QColor &cc, float opac)
+{
+    int w = contentsRect().width();
+    int h = contentsRect().height();
+    QRgb CC = cc.rgb();
+    bool blend = opac < 1.;
+
+    for (int x = 0; x < w; x++)
+    {
+        float tx = float(x) / float(w-1);
+        int   cx = int(tx * (nc-1));
+        float yval = curve[cx];
+
+        if(blend)
+        {
+            for (int y = 0; y < h; y++)
+            { 
+                float yval2 = 1 - float(y)/float(h-1);
+                if (yval2 <= yval)
+                {
+                    QRgb p = image->pixel(x, y);
+                    int r = int((1.f - opac)*float(qRed(p))   + opac*float(qRed(CC)));
+                    int g = int((1.f - opac)*float(qGreen(p)) + opac*float(qGreen(CC)));
+                    int b = int((1.f - opac)*float(qBlue(p))  + opac*float(qBlue(CC)));
+                    image->setPixel(x,y, qRgb(r,g,b));
+                }
+            }
+        }
+        else
+        {
+            for (int y = 0; y < h; y++)
+            { 
+                float yval2 = 1 - float(y)/float(h-1);
+                if (yval2 <= yval)
+                    image->setPixel(x, y, CC); 
+            }
+        }
+    }
+}
+
+// ****************************************************************************
 //  Method:  QvisAbstractOpacityBar::paintEvent
 //
 //  Purpose:
@@ -219,6 +388,9 @@ QvisAbstractOpacityBar::y2val(int y)
 //    Brad Whitlock, Wed Jun  4 09:53:23 PDT 2008
 //    Qt 4.
 //
+//    Brad Whitlock, Thu Dec 18 11:07:13 PST 2008
+//    Added code to draw the background and a histogram.
+//
 // ****************************************************************************
 void
 QvisAbstractOpacityBar::paintEvent(QPaintEvent *e)
@@ -228,7 +400,18 @@ QvisAbstractOpacityBar::paintEvent(QPaintEvent *e)
     int w = contentsRect().width();
     int h = contentsRect().height();
     if(ensureImageExists(w, h))
-        drawOpacities(w,h);
+    {
+        drawColorBackground();
+
+        if(histTexture != 0)
+        {
+            if(backgroundColorControlPoints)
+                drawFilledCurve(histTexture, histTextureSize, QColor(0,0,0), 0.8f);
+            else
+                drawFilledCurve(histTexture, histTextureSize, QColor(30,30,30), 1.f);
+        }
+        drawOpacities();
+    }
 
     QPainter p(this);
     QPoint pos(contentsRect().left(),contentsRect().top());
@@ -248,6 +431,9 @@ QvisAbstractOpacityBar::paintEvent(QPaintEvent *e)
 //    Brad Whitlock, Fri Jul 18 15:34:34 PDT 2008
 //    Qt 4.
 //
+//    Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//    I changed how the image gets invalidated.
+//
 // ****************************************************************************
 void
 QvisAbstractOpacityBar::resizeEvent(QResizeEvent*)
@@ -260,9 +446,7 @@ QvisAbstractOpacityBar::resizeEvent(QResizeEvent*)
     int w=contentsRect().width();
     int h=contentsRect().height();
 
-    delete image;
-    image = new QImage(w, h, QImage::Format_RGB32);
-    drawOpacities(w,h);
+    imageDirty();
     update();
 }
 

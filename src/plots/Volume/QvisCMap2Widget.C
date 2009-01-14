@@ -27,71 +27,72 @@
 //   Brad Whitlock, Tue Sep 30 10:36:48 PDT 2008
 //   Qt 4, added tr()'s.
 //
+//   Brad Whitlock, Tue Dec 23 16:55:13 PST 2008
+//   I fixed the layout so it's narrower. I also changed a signal name.
+//
 // ****************************************************************************
 
 QvisCMap2Widget::QvisCMap2Widget(QWidget *parent) : QWidget(parent)
 {
     nameIndex = 0;
 
-    QGridLayout *topLayout = new QGridLayout(this);
+    QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
     topLayout->setMargin(5); 
     cmap2 = new QvisCMap2Display(this);
-    topLayout->addWidget(cmap2, 0, 0, 1, 2);
-    topLayout->setRowStretch(0, 5);
+    topLayout->addWidget(cmap2, 5);
     connect(cmap2, SIGNAL(widgetListChanged()),
             this, SIGNAL(widgetListChanged()));
     connect(cmap2, SIGNAL(widgetListChanged()),
             this, SLOT(updateList()));
     connect(cmap2, SIGNAL(selectWidget(WidgetID)),
-            this, SIGNAL(selectWidget(WidgetID)));
+            this, SIGNAL(selectedWidget(WidgetID)));
     connect(cmap2, SIGNAL(widgetChanged(WidgetID)),
             this, SIGNAL(widgetChanged(WidgetID)));
     connect(cmap2, SIGNAL(widgetChanged(WidgetID)),
             this, SLOT(updateWidget(WidgetID)));
 
-    QLabel *nameLabel = new QLabel(tr("Widgets"), this);
-    topLayout->addWidget(nameLabel, 1, 0);
+    // Widget list group
+    QGroupBox *widgetGroup = new QGroupBox(this);
+    widgetGroup->setTitle(tr("Widget list"));
+    topLayout->addWidget(widgetGroup);
+    QGridLayout *wLayout = new QGridLayout(widgetGroup);
+    wLayout->setSpacing(5);
 
-    names = new QListWidget(this);
+    names = new QListWidget(widgetGroup);
     connect(names, SIGNAL(currentRowChanged(int)),
             this, SLOT(showProperties(int)));
-    topLayout->addWidget(names, 2, 0);
+    wLayout->addWidget(names, 0, 2, 3, 1);
 
-    QHBoxLayout *btnLayout = new QHBoxLayout(0);
-    topLayout->addLayout(btnLayout, 3, 0, 1, 2);
-    btnLayout->setSpacing(5);
-
-    QPushButton *addTriButton = new QPushButton(tr("New triangle"), this);
-    btnLayout->addWidget(addTriButton);
+    QPushButton *addTriButton = new QPushButton(tr("Triangle"), widgetGroup);
+    wLayout->addWidget(addTriButton, 0, 0);
     connect(addTriButton, SIGNAL(clicked()),
             this, SLOT(addNewTriangle()));
 
-    QPushButton *addRectButton = new QPushButton(tr("New rectangle"), this);
-    btnLayout->addWidget(addRectButton);
+    QPushButton *addRectButton = new QPushButton(tr("Rectangle"), widgetGroup);
+    wLayout->addWidget(addRectButton, 0, 1);
     connect(addRectButton, SIGNAL(clicked()),
             this, SLOT(addNewRectangle()));
 
-    QPushButton *addEllipseButton = new QPushButton(tr("New ellipsoid"), this);
-    btnLayout->addWidget(addEllipseButton);
+    QPushButton *addEllipseButton = new QPushButton(tr("Ellipsoid"), widgetGroup);
+    wLayout->addWidget(addEllipseButton, 1, 0);
     connect(addEllipseButton, SIGNAL(clicked()),
             this, SLOT(addNewEllipsoid()));
 
-    QPushButton *addParaboloidButton = new QPushButton(tr("New paraboloid"), this);
-    btnLayout->addWidget(addParaboloidButton);
+    QPushButton *addParaboloidButton = new QPushButton(tr("Paraboloid"), widgetGroup);
+    wLayout->addWidget(addParaboloidButton, 1, 1);
     connect(addParaboloidButton, SIGNAL(clicked()),
             this, SLOT(addNewParaboloid()));
 
-    deleteButton = new QPushButton(tr("Delete"), this);
-    btnLayout->addStretch(1);
-    btnLayout->addWidget(deleteButton);
+    deleteButton = new QPushButton(tr("Delete"), widgetGroup);
+    wLayout->addWidget(deleteButton, 2, 0, 1, 2);
     connect(deleteButton, SIGNAL(clicked()),
             this, SLOT(deleteWidget()));
 
+    // Widget attributes group
     QGroupBox *attsGroup = new QGroupBox(this);
     attsGroup->setTitle(tr("Widget attributes"));
-    topLayout->addWidget(attsGroup, 1, 1, 2, 1);
-    topLayout->setColumnStretch(1, 10);
+    topLayout->addWidget(attsGroup);
     QVBoxLayout *attsInnerTopLayout = new QVBoxLayout(attsGroup);
     attsInnerTopLayout->setMargin(10);
     attsInnerTopLayout->setSpacing(10);
@@ -103,13 +104,13 @@ QvisCMap2Widget::QvisCMap2Widget(QWidget *parent) : QWidget(parent)
     wName = new QLineEdit(attsGroup);
     wName->setEnabled(false); // allow editing name sometime.
     attsLayout->addWidget(new QLabel(tr("Name"), attsGroup), 0, 0);
-    attsLayout->addWidget(wName, 0, 1);
+    attsLayout->addWidget(wName, 0, 1, 1, 2);
 
     sizeLoc = new QLineEdit(attsGroup);
     connect(sizeLoc, SIGNAL(returnPressed()),
             this, SLOT(setSizeLoc()));
     attsLayout->addWidget(new QLabel(tr("Size/Location"), attsGroup), 1, 0);
-    attsLayout->addWidget(sizeLoc, 1, 1);
+    attsLayout->addWidget(sizeLoc, 1, 1, 1, 2);
   
     color = new QvisColorButton(attsGroup);
     connect(color, SIGNAL(selectedColor(const QColor &)),
@@ -120,11 +121,17 @@ QvisCMap2Widget::QvisCMap2Widget(QWidget *parent) : QWidget(parent)
     opacity = new QvisOpacitySlider(attsGroup);
     connect(opacity, SIGNAL(valueChanged(int)),
             this, SLOT(setWidgetOpacity(int)));
-    attsLayout->addWidget(opacity, 3, 1);
+    attsLayout->addWidget(opacity, 2, 2);
+    attsLayout->setColumnStretch(2, 10);
 }
 
 QvisCMap2Widget::~QvisCMap2Widget()
 {
+}
+
+void QvisCMap2Widget::setHistogramTexture(const unsigned char *data, int size)
+{
+    cmap2->setHistogramTexture(data, size);
 }
 
 WidgetID
@@ -151,6 +158,28 @@ QvisCMap2Widget::addRectangleWidget(const QString &wName,
     return cmap2->addRectangleWidget(wName, left_x, left_y, w, h, offset);
 }
 
+WidgetID
+QvisCMap2Widget::addEllipsoidWidget(const QString &wName,
+    float x,
+    float y,
+    float a, 
+    float b,
+    float rot)
+{
+    return cmap2->addEllipsoidWidget(wName, x, y, a, b, rot);
+}
+
+WidgetID
+QvisCMap2Widget::addParaboloidWidget(const QString &wName,
+    float top_x, float top_y,
+    float bottom_x, float bottom_y,
+    float left_x, float left_y,
+    float right_x, float right_y)
+{
+    return cmap2->addParaboloidWidget(wName, top_x, top_y, bottom_x, bottom_y,
+                                      left_x, left_y, right_x, right_y);
+}
+
 int
 QvisCMap2Widget::numWidgets() const
 {
@@ -167,6 +196,12 @@ void
 QvisCMap2Widget::removeWidget(WidgetID id)
 {
     cmap2->removeWidget(id);
+}
+
+void
+QvisCMap2Widget::clear()
+{
+    cmap2->clear();
 }
 
 
@@ -257,6 +292,20 @@ QvisCMap2Widget::getSelectedWidget() const
     return id;
 }
 
+void
+QvisCMap2Widget::selectWidget(WidgetID id)
+{
+    for(int index = 0; index < names->count(); ++index)
+    {
+        if(cmap2->getID(index) == id)
+        {
+            names->setCurrentRow(index);
+            emit selectedWidget(id);
+            break;
+        }
+    }
+}
+
 //
 // Qt slots
 //
@@ -330,11 +379,36 @@ QvisCMap2Widget::updateList()
     deleteButton->setEnabled(numWidgets() > 0);
 }
 
+// ****************************************************************************
+// Method: QvisCMap2Widget::selectLastItem
+//
+// Purpose: 
+//   This slot selects the last item (if there is one) and that causes the
+//   widgets to show properties for the current widget.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 25 13:55:08 PDT 2008
+//
+// Modifications:
+//   Brad Whitlock, Tue Dec 16 14:26:50 PST 2008
+//   I fixed a crash and added code to set the enabled state for widgets.
+//
+// ****************************************************************************
+
 void
 QvisCMap2Widget::selectLastItem()
 {
-    names->setCurrentItem(names->item(names->count()-1));
-    names->item(names->count()-1)->setSelected(true);
+    bool e = false;
+    if(names->count() > 0)
+    {
+        names->setCurrentItem(names->item(names->count()-1));
+        names->item(names->count()-1)->setSelected(true);
+        e = true;
+    }
+
+    sizeLoc->setEnabled(e);
+    color->setEnabled(e);
+    opacity->setEnabled(e);
 }
 
 void
@@ -394,6 +468,11 @@ QvisCMap2Widget::updateWidget(WidgetID id)
     opacity->setValue((int)(100. * cmap2->getAlpha(id)));
     opacity->blockSignals(false);
     opacity->setGradientColor(cmap2->getColor(id));
+
+    bool e = (id != QvisCMap2Display::WIDGET_NOT_FOUND);
+    sizeLoc->setEnabled(e);
+    color->setEnabled(e);
+    opacity->setEnabled(e);
 }
 
 void

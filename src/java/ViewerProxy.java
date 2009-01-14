@@ -245,6 +245,9 @@ import java.util.prefs.BackingStoreException;
 //   are now located in ViewerState. Viewer rpc's are now located in
 //   ViewerMethods. Added JavaDoc comments.
 //
+//   Brad Whitlock, Fri Jan  9 15:53:40 PST 2009
+//   I added code to skip the plot info atts for each plot plugin -- for now.
+//
 // ****************************************************************************
 /**
  * ViewerProxy is the main class that users of the Java VisIt Interface need to
@@ -845,6 +848,9 @@ public class ViewerProxy implements SimpleObserver
                      xfer.Add((AttributeSubject)p);
                  else
                      xfer.AddDummy();
+
+                 // Add a dummy for now to skip the plot info atts.
+                 xfer.AddDummy();
             }
 
             // Try loading the operator plugins. If they can all be loaded,

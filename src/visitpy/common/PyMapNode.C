@@ -66,14 +66,14 @@
 PyObject *
 PyMapNode_Wrap(const MapNode &node)
 {
-    if(node.Type() == EMPTY_TYPE && node.GetNumEntries() == 0)
+    if(node.Type() == MapNode::EMPTY_TYPE && node.GetNumEntries() == 0)
     {
         Py_INCREF(Py_None);
         return Py_None;
     }
     
     // must be a variant, use variant helper
-    if(node.Type() != EMPTY_TYPE)
+    if(node.Type() != MapNode::EMPTY_TYPE)
     {
         return PyVariant_Wrap(node);
     }

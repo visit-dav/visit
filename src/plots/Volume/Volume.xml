@@ -10,6 +10,7 @@
     <Files components="G">
       $(SLIVR_GUI_IMPL)
       TransferFunctionWidget.C
+      VolumeRLEFunctions.C
     </Files>
     <LIBS components="G">
       $(TUVOK_LIB)
@@ -23,8 +24,11 @@
       TransferFunctionWidget.C
     </Files>
     <Files components="V">
+      VolumeFunctions.C
+      VolumeRLEFunctions.C
       avtVolumeRenderer.C
       avtVolumeFilter.C
+      avtLowerResolutionVolumeFilter.C
       avtOpenGLSplattingVolumeRenderer.C
       avtMesaSplattingVolumeRenderer.C
       avtOpenGL3DTextureVolumeRenderer.C
@@ -42,8 +46,11 @@
       -lGLU
     </LIBS>
     <Files components="E">
+      VolumeFunctions.C
+      VolumeRLEFunctions.C
       avtVolumeRenderer.C
       avtVolumeFilter.C
+      avtLowerResolutionVolumeFilter.C
       avtOpenGLSplattingVolumeRenderer.C
       avtMesaSplattingVolumeRenderer.C
       avtOpenGL3DTextureVolumeRenderer.C
@@ -163,10 +170,10 @@
       <Field name="rendererSamples" label="Render samples" type="float" enabler="rendererType:SLIVR">
         3.000000
       </Field>
-      <Field name="TransferFunctionWidgetList" label="Transfer function widget list" type="attVector" subtype="TransferFunctionWidget">
+      <Field name="transferFunction2DWidgets" label="Transfer function widget list" type="attVector" subtype="TransferFunctionWidget">
       </Field>
       <Field name="transferFunctionDim" label="Dimension of the transfer function" type="int">
-        0
+        1
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
@@ -191,6 +198,10 @@
       <Function name="AnyNonTransferFunctionMembersAreDifferent" user="true" member="true">
       </Function>
       <Function name="VolumeAttributes_SetFreeformOpacity" user="false" member="true">
+      </Function>
+      <Function name="SetRendererType" user="false" member="true">
+      </Function>
+      <Function name="SetTransferFunctionDim" user="false" member="true">
       </Function>
       <Include file="source" quoted="false">
         ColorControlPoint.h

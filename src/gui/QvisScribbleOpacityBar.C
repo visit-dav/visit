@@ -123,64 +123,19 @@ QvisScribbleOpacityBar::~QvisScribbleOpacityBar()
 //    Brad Whitlock, Wed Jun  4 09:55:53 PDT 2008
 //    Qt 4.
 //
+//    Brad Whitlock, Thu Dec 18 11:45:20 PST 2008
+//    I rewrote the method so it uses drawFilledCurve.
+//
 // ****************************************************************************
 
 void
-QvisScribbleOpacityBar::drawOpacities(int w,int h)
+QvisScribbleOpacityBar::drawOpacities()
 {
-    ensureImageExists(w, h);
-
-    if (w != nvalues)
-    {
-        int nvalues2 = w;
-        float *values2 = new float[nvalues2];
-        if (nvalues2 > nvalues)
-        {
-            for (int i=0; i<nvalues2; i++)
-                values2[i] = values[(i * nvalues) / nvalues2];
-        }
-        else
-        {
-            for (int i=0; i<nvalues; i++)
-                values2[(i * nvalues2) / nvalues] = values[i];
-        }
-        delete[] values;
-        values = values2;
-        nvalues = nvalues2;
-    }
-
-    QRgb *bgCols = new QRgb[w];
-    if (backgroundColorControlPoints)
-    {
-        unsigned char *cols = new unsigned char[w*3];
-        backgroundColorControlPoints->GetColors(cols, w);
-        for (int i=0; i < w; ++i)
-            bgCols[i] = QColor(cols[i*3+0], cols[i*3+1], cols[i*3+2]).rgb();
-        delete[] cols;
-    }
-    else 
-    {
-        QColor black(0,   0,   0 );
-        QRgb cb = black.rgb();
-        for (int i=0; i < w; ++i) 
-            bgCols[i] = cb;
-    }
-
     QColor white(255, 255, 255 );
-    QRgb cw = white.rgb();
-    for (int x = 0; x < w; x++)
-    {
-        float yval = values[x];
-        for (int y = 0; y < h; y++)
-        {
-            float yval2 = 1 - float(y)/float(h-1);
-            if (yval2 < yval)
-                image->setPixel(x,y, cw); 
-            else
-                image->setPixel(x,y, bgCols[x]);
-       }
-    }
-    delete[] bgCols;
+    if(histTexture != 0)
+        drawFilledCurve(values, nvalues, white, 0.7f);
+    else
+        drawFilledCurve(values, nvalues, white, 1.f);
 }
 
 
@@ -208,6 +163,7 @@ QvisScribbleOpacityBar::mousePressEvent(QMouseEvent *e)
     lasty = y;
     mousedown = true;
 
+    imageDirty();
     update();
 }
 
@@ -239,6 +195,7 @@ QvisScribbleOpacityBar::mouseMoveEvent(QMouseEvent *e)
     lastx = x;
     lasty = y;
 
+    imageDirty();
     update();
 }
 
@@ -266,6 +223,7 @@ QvisScribbleOpacityBar::mouseReleaseEvent(QMouseEvent *e)
               x,     y);
     mousedown = false;
 
+    imageDirty();
     update();
 
     emit mouseReleased();
@@ -318,31 +276,16 @@ QvisScribbleOpacityBar::setValues(int x1, int y1, int x2, int y2)
 //    Brad Whitlock, Wed Jun  4 10:24:39 PDT 2008
 //    poke directly into the QImage.
 //
+//    Brad Whitlock, Thu Dec 18 11:46:45 PST 2008
+//    I removed the code to poke into the image.
+//
 // ****************************************************************************
 
 void
 QvisScribbleOpacityBar::setValue(float xval, float yval)
 {
-    int h = contentsRect().height();
     int x = int(xval * float(nvalues-1));
-    QRgb bg = QColor(0,0,0).rgb();
-    if (backgroundColorControlPoints) 
-    {
-        unsigned char *cols = new unsigned char[nvalues*3];
-        backgroundColorControlPoints->GetColors(cols, nvalues);
-        bg = QColor(cols[x*3+0], cols[x*3+1],cols[x*3+2]).rgb();
-        delete[] cols;
-    }
     values[x] = yval;
-    QRgb white = QColor(255,255,255).rgb();
-    for (int i = 0; i < h; i++)
-    {
-        float yval2 = 1 - float(i)/float(h);
-        if (yval2 < yval)
-            image->setPixel(x, i, white);
-        else
-            image->setPixel(x, i, bg);
-    }
 }
 
 
@@ -389,7 +332,11 @@ QvisScribbleOpacityBar::getRawOpacities(int n)
 //    Brad Whitlock, Fri Apr 6 12:27:22 PDT 2001
 //    I added code to emit a valueChanged signal.
 //
+//    Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//    I changed how the image gets invalidated.
+//
 // ****************************************************************************
+
 void
 QvisScribbleOpacityBar::setRawOpacities(int n, float *v)
 {
@@ -404,7 +351,7 @@ QvisScribbleOpacityBar::setRawOpacities(int n, float *v)
             values[(i * nvalues) / n] = v[i];
     }
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 
     // Emit a signal indicating that the values changed.
@@ -422,6 +369,8 @@ QvisScribbleOpacityBar::setRawOpacities(int n, float *v)
 // Creation:   Mon Feb 5 13:41:25 PST 2001
 //
 // Modifications:
+//    Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//    I changed how the image gets invalidated.
 //   
 // ****************************************************************************
 
@@ -432,7 +381,7 @@ QvisScribbleOpacityBar::makeTotallyZero()
     for(int i = 0; i < nvalues; ++i)
         values[i] = 0.;
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 
     // Emit a signal indicating that the values changed.
@@ -449,6 +398,8 @@ QvisScribbleOpacityBar::makeTotallyZero()
 // Creation:   Mon Feb 5 13:42:01 PST 2001
 //
 // Modifications:
+//    Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//    I changed how the image gets invalidated.
 //   
 // ****************************************************************************
 
@@ -459,7 +410,7 @@ QvisScribbleOpacityBar::makeLinearRamp()
     for(int i = 0; i < nvalues; ++i)
         values[i] = float(i) * float(1. / nvalues);
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 
     // Emit a signal indicating that the values changed.
@@ -477,6 +428,8 @@ QvisScribbleOpacityBar::makeLinearRamp()
 // Creation:   Thu Apr  5 15:59:05 PDT 2007
 //
 // Modifications:
+//   Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//   I changed how the image gets invalidated.
 //   
 // ****************************************************************************
 
@@ -487,7 +440,7 @@ QvisScribbleOpacityBar::makeInverseLinearRamp()
     for(int i = 0; i < nvalues; ++i)
         values[i] = float(nvalues - i - 1) * float(1. / nvalues);
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 
     // Emit a signal indicating that the values changed.
@@ -506,6 +459,8 @@ QvisScribbleOpacityBar::makeInverseLinearRamp()
 // Creation:   Mon Feb 5 13:42:35 PST 2001
 //
 // Modifications:
+//   Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//   I changed how the image gets invalidated.
 //   
 // ****************************************************************************
 
@@ -516,7 +471,7 @@ QvisScribbleOpacityBar::makeTotallyOne()
     for(int i = 0; i < nvalues; ++i)
         values[i] = 1.;
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 
     // Emit a signal indicating that the values changed.
@@ -537,6 +492,9 @@ QvisScribbleOpacityBar::makeTotallyOne()
 //   Brad Whitlock, Thu Feb 14 13:07:26 PST 2002
 //   Fixed an ABR.
 //
+//   Brad Whitlock, Thu Dec 18 14:09:40 PST 2008
+//   I changed how the image gets invalidated.
+//
 // ****************************************************************************
 
 void
@@ -552,7 +510,7 @@ QvisScribbleOpacityBar::smoothCurve()
         values[i] = (smooth > 1.) ? 1. : smooth;
     }
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 
     // Emit a signal indicating that the values changed.

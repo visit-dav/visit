@@ -54,6 +54,8 @@
 //  Creation:    December 14, 2007
 //
 //  Modifications:
+//    Brad Whitlock, Tue Jan  6 15:32:50 PST 2009
+//    I added methods so the MapNode can read/write itself using Connection.
 //
 // ****************************************************************************
 
@@ -83,7 +85,9 @@ class STATE_API MapNode : public Variant
     MapNode  &operator=(const doubleVector &);
     MapNode  &operator=(const stringVector &);
     virtual  ~MapNode();
-    
+
+    bool                 operator ==(const MapNode &obj) const;
+
     MapNode             &operator[](const std::string &);
     MapNode             *GetEntry(const std::string &);
     const MapNode       *GetEntry(const std::string &) const;
@@ -93,10 +97,15 @@ class STATE_API MapNode : public Variant
     bool                 HasEntry(const std::string &) const;
     void                 GetEntryNames(stringVector &) const;
     int                  GetNumEntries() const {return entries.size();}
-    
+    void                 Reset();
+
     virtual std::string  ToXML() const;
     virtual XMLNode      ToXMLNode() const;
-    
+
+    int                  CalculateMessageSize(Connection &conn) const;
+    void                 Write(Connection &conn) const;
+    void                 Read(Connection &conn);
+
  private:
     void  SetValue(const XMLNode &);
     std::map<std::string,MapNode> entries;  

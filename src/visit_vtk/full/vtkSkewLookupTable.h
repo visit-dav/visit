@@ -76,6 +76,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Modifications:
 //   Kathleen Bonnell, Fri Feb 15 12:50:15 PST 2002 
 //   Removed SetTableRange methods, deferred implementation to base class.
+//
+//   Brad Whitlock, Fri Dec 19 15:49:14 PST 2008
+//   RemovedSkewTheValue
+//
 // *************************************************************************
 
 class VISIT_VTK_API vtkSkewLookupTable : public vtkLookupTable
@@ -105,7 +109,6 @@ protected:
   vtkSkewLookupTable(int sze=256, int ext=256);
   ~vtkSkewLookupTable(){};
 
-  float SkewTheValue(float val, float min, float max);
   float SkewFactor;
 
 private:

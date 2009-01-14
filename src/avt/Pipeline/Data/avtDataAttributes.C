@@ -163,7 +163,7 @@ using     std::sort;
 //
 // ****************************************************************************
 
-avtDataAttributes::avtDataAttributes()
+avtDataAttributes::avtDataAttributes() : plotInfoAtts()
 {
     trueSpatial               = NULL;
     cumulativeTrueSpatial     = NULL;
@@ -235,7 +235,6 @@ avtDataAttributes::avtDataAttributes()
         }
     }
     rectilinearGridHasTransform = false;
-    plotInfoAtts = NULL;
 }
 
 
@@ -287,6 +286,9 @@ avtDataAttributes::~avtDataAttributes()
 //
 //    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
 //    Added component extents for array variables.
+//
+//    Brad Whitlock, Wed Jan  7 14:04:25 PST 2009
+//    plotInfoAtts is no longer a pointer so no special treatment is needed.
 //
 // ****************************************************************************
 
@@ -364,11 +366,6 @@ avtDataAttributes::DestructSelf(void)
     {
         delete transform;
         transform = NULL;
-    }
-    if (plotInfoAtts != NULL)
-    {
-        delete plotInfoAtts;
-        plotInfoAtts = NULL;
     }
 }
 
@@ -812,10 +809,7 @@ avtDataAttributes::Print(ostream &out)
     }
 
     out << "PlotInfoAttributes: ";
-    if (plotInfoAtts == NULL)
-        out << "Not Set";
-    else 
-        plotInfoAtts->PrintSelf(out);
+    plotInfoAtts.PrintSelf(out);
     out << endl;
 }
 
@@ -945,6 +939,9 @@ avtDataAttributes::Print(ostream &out)
 //    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
 //    Added component extents for array variables.
 //
+//    Brad Whitlock, Wed Jan  7 14:05:50 PST 2009
+//    I changed how plotInfoAtts gets copied.
+//
 // ****************************************************************************
 
 void
@@ -1043,7 +1040,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     rectilinearGridHasTransform = di.rectilinearGridHasTransform;
     for (int k=0; k<16; k++)
         rectilinearGridTransform[k] = di.rectilinearGridTransform[k];
-    SetPlotInfoAtts(di.plotInfoAtts);
+    plotInfoAtts = di.plotInfoAtts;
 }
 
 
@@ -1173,6 +1170,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
 //    Added component extents for array variables.
+//
+//    Brad Whitlock, Wed Jan  7 14:06:31 PST 2009
+//    I changed how plotInfoAtts is handled.
 //
 // ****************************************************************************
 
@@ -1427,7 +1427,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     mirOccurred |= da.mirOccurred;
     canUseOrigZones &= da.canUseOrigZones;
     origElementsRequiredForPick |= da.origElementsRequiredForPick;
-    SetPlotInfoAtts(da.plotInfoAtts);
+    plotInfoAtts = da.plotInfoAtts;
 
     // there's no good answer for unitCellVectors or rectilinearGridTransform
 }
@@ -4576,13 +4576,16 @@ avtDataAttributes::TransformSpatialExtents(avtDataAttributes &outAtts,
 //    Kathleen Bonnell, Mon Nov 27 12:21:47 PST 2006
 //    Removed PlotInfoAtts specific code, call WriteAtts on writer instead.
 //
+//    Brad Whitlock, Wed Jan  7 14:08:14 PST 2009
+//    plotInfoAtts is no longer a pointer.
+//
 // ****************************************************************************
 
 void
 avtDataAttributes::WritePlotInfoAtts(avtDataObjectString &str,
                                      const avtDataObjectWriter *wrtr)
 {
-    wrtr->WriteAtts(str, plotInfoAtts);
+    wrtr->WriteAtts(str, &plotInfoAtts);
 }
 
 
@@ -4602,6 +4605,9 @@ avtDataAttributes::WritePlotInfoAtts(avtDataObjectString &str,
 //    Kathleen Bonnell, Mon Nov 27 12:32:24 PST 2006
 //    Correctly delete plotInfoAtts.
 //
+//    Brad Whitlock, Wed Jan  7 14:08:14 PST 2009
+//    plotInfoAtts is no longer a pointer. I simplified the code.
+//
 // ****************************************************************************
 
 int
@@ -4614,71 +4620,43 @@ avtDataAttributes::ReadPlotInfoAtts(char *input)
 
     if (piaSize == 0)
     {
-        if (plotInfoAtts != NULL)
-        {
-            delete plotInfoAtts;
-            plotInfoAtts = NULL;
-        }
+        // Clear out the plot info atts.
+        plotInfoAtts = PlotInfoAttributes();
         return size;
     }
-    if (plotInfoAtts == NULL)
-    {
-        plotInfoAtts = new PlotInfoAttributes();
-    }
-    unsigned char *b = new unsigned char[piaSize];
-    for (int i = 0; i < piaSize; i++)
-    {
-        b[i] = (unsigned char)input[i];
-    }
-    input += piaSize;
-    size += piaSize;
 
     BufferConnection buf;
-    buf.Append(b, piaSize);
-    plotInfoAtts->Read(buf);
-    delete [] b;
+    buf.Append((unsigned char *)input, piaSize);
+    plotInfoAtts.Read(buf);
+
+    size += piaSize;
 
     return size;
 }
 
-
 // ****************************************************************************
-//  Method: avtDataAttributes::SetPlotInfoAtts
+// Method: avtDataAttributes::AddPlotInformation
 //
-//  Purpose:
-//    Sets the PlotInfoAtts according to the passed argument.
+// Purpose: 
+//   Adds new information to the plot information.
 //
-//  Arguments:
-//    pia       The new plotInfoAtts.
+// Arguments:
+//   key  : The name that will be used to access the data.
+//   info : The new information that we're storing.
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   June 20, 2006
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan  7 14:17:18 PST 2009
 //
-//  Modifications:
-//    Kathleen Bonnell, Mon Nov 27 12:32:24 PST 2006
-//    Delete plotInfoAtts if necessary when pia is NULL.
-//
+// Modifications:
+//   
 // ****************************************************************************
 
 void
-avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
+avtDataAttributes::AddPlotInformation(const std::string &key,
+    const MapNode &info)
 {
-    if (pia == NULL)
-    {
-        if (plotInfoAtts != NULL)
-        {
-            delete plotInfoAtts;
-            plotInfoAtts = NULL;
-        }
-        return;
-    }
-    if (plotInfoAtts == NULL)
-    {
-        plotInfoAtts = new PlotInfoAttributes();
-    }
-    *plotInfoAtts = *pia;
+    plotInfoAtts.GetData()[key] = info;
 }
-
 
 // ****************************************************************************
 //  Method: avtDataAttributes::DebugDump

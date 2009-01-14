@@ -44,6 +44,7 @@
 #include <visitstream.h>
 #include <vectortypes.h>
 #include <VisItException.h>
+#include <MapNode.h>
 
 // Forward declaration
 class AttributeGroup;
@@ -106,6 +107,9 @@ class DataNode;
 //    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
 //    Added FieldType_scalemode. 
 //
+//    Brad Whitlock, Tue Jan  6 13:47:25 PST 2009
+//    I added support for including MapNode objects as fields.
+//
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -137,7 +141,8 @@ public:
         FieldType_att,
         FieldType_attVector,
         FieldType_enum,
-        FieldType_scalemode
+        FieldType_scalemode,
+        FieldType_MapNode
     };
 
 public:
@@ -209,6 +214,8 @@ public:
     virtual bool SetValue(const std::string &name, const stringVector &value);
     virtual bool SetValue(const std::string &name, const boolVector &value);
 
+    virtual bool SetValue(const std::string &name, const MapNode &value);
+
     // Generic methods for getting fields.
     virtual bool GetValue(const std::string &name,  char &value);
     virtual bool GetValue(const std::string &name,  unsigned char &value);
@@ -236,6 +243,8 @@ public:
     virtual bool GetValue(const std::string &name,  doubleVector &value);
     virtual bool GetValue(const std::string &name,  stringVector &value);
     virtual bool GetValue(const std::string &name,  boolVector &value);
+
+    virtual bool GetValue(const std::string &name,  MapNode &value);
 
     static bool VersionLessThan(const char *configVersion, const char *version);
 protected:
@@ -274,6 +283,8 @@ protected:
     void DeclareVectorString();
     void DeclareVectorAttributeGroup();
     void DeclareVectorBool();
+
+    void DeclareMapNode();
 private:
     class STATE_API typeInfo
     {

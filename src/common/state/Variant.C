@@ -37,7 +37,124 @@
 *****************************************************************************/
 
 #include <Variant.h>
+#include <Connection.h>
+
 using namespace std;
+
+// ****************************************************************************
+// Method: LittleEndian
+//
+// Purpose: 
+//   Returns true if the machine is little endian.
+//
+// Returns:    true if the machine is little endian; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jan  5 14:11:32 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+inline bool
+LittleEndian()
+{
+    const int one = 1;
+    unsigned char *ptr = (unsigned char *)&one;
+    return (ptr[0] == 1);
+}
+
+// ****************************************************************************
+// Method: EncodeToString
+//
+// Purpose: 
+//   Encodes an object as a string of bytes in little endian order.
+//
+// Arguments:
+//   buf : The destination string buffer.
+//   val : The object to convert to bytes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jan  5 14:12:06 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+void
+EncodeToString(char *buf, T val)
+{
+    char *dest = buf;
+    unsigned char *ptr = (unsigned char *)&val;
+
+    if(LittleEndian())
+    {
+        for(int i = 0; i < sizeof(T); i++)
+        {
+            sprintf(dest, "%02x", int(ptr[i]));
+            dest += 2;
+        }
+    }
+    else
+    {
+        for(int i = sizeof(T)-1; i >= 0; i--)
+        {
+            sprintf(dest, "%02x", int(ptr[i]));
+            dest += 2;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: DecodeFromString
+//
+// Purpose: 
+//   Decodes an object from a string of little endian bytes encoded by
+//   the EncodeToString function.
+//
+// Arguments:
+//   buf : The string that encodes the object.
+//   val : The destination object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jan  5 14:14:26 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+void
+DecodeFromString(const char *buf, T &val)
+{
+    char hex[3] = {'\0','\0','\0'};
+    unsigned char *dest = (unsigned char *)&val;
+    const char *src = buf;
+    int b;
+
+    if(LittleEndian())
+    {
+        for(int i = 0; i < sizeof(T); i++)
+        {
+            hex[0] = *src++;
+            hex[1] = *src++;
+            sscanf(hex, "%02x", &b);
+            dest[i] = (unsigned char)b;
+        }
+    }
+    else
+    {
+        for(int i = sizeof(T)-1; i >= 0; i--)
+        {
+            hex[0] = *src++;
+            hex[1] = *src++;
+            sscanf(hex, "%02x", &b);
+            dest[i] = (unsigned char)b;
+        }
+    }
+}
+
 
 // static members (needed for const access to unset vars)
 bool                Variant::unsetBool         = false;
@@ -1021,6 +1138,10 @@ Variant::SetValue(const Variant &var)
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 14, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jan  5 14:21:22 PST 2009
+//    Decode float and doubles from byte strings so we preserve the number.
+//
 // ****************************************************************************
 void 
 Variant::SetValue(const XMLNode &node)
@@ -1078,13 +1199,13 @@ Variant::SetValue(const XMLNode &node)
     else if(data_type == FLOAT_TYPE)
     {
         float val;
-        sscanf(txt_val,"%g",&val);
+        DecodeFromString(txt_val, val);
         SetValue(val);
     }
     else if(data_type == DOUBLE_TYPE)
     {
         double val;
-        sscanf(txt_val,"%lg",&val);
+        DecodeFromString(txt_val, val);
         SetValue(val);
     }
     else if(data_type == STRING_TYPE)
@@ -1144,17 +1265,17 @@ Variant::SetValue(const XMLNode &node)
         floatVector &vec = AsFloatVector();
         for(i = 0; i < tokens.size(); i++)
         {
-            sscanf(tokens[i].c_str(),"%g",&val);
+            DecodeFromString(tokens[i].c_str(), val);
             vec.push_back(val);
         }
     }
     else if(data_type == DOUBLE_VECTOR_TYPE)
     {
-        double val = 0.0f;
+        double val = 0.;
         doubleVector &vec = AsDoubleVector();
         for(i = 0; i < tokens.size(); i++)
         {
-            sscanf(tokens[i].c_str(),"%lg",&val);
+            DecodeFromString(tokens[i].c_str(), val);
             vec.push_back(val);
         }
     }
@@ -1516,7 +1637,12 @@ Variant::ToXML(const string &indent) const
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 15, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jan  5 14:17:19 PST 2009
+//    Encode the floats and doubles to preserve accuracy.
+//
 // ****************************************************************************
+
 XMLNode 
 Variant::ToXMLNode() const
 {
@@ -1556,12 +1682,12 @@ Variant::ToXMLNode() const
     }
     else if(dataType == FLOAT_TYPE)
     {
-        sprintf(buff,"%g",*((float *)dataValue));
+        EncodeToString(buff, *((float *)dataValue));
         res_str = buff;
     }
     else if(dataType == DOUBLE_TYPE)
     {
-        sprintf(buff,"%g",*((double *)dataValue));
+        EncodeToString(buff,*((double *)dataValue));
         res_str = buff;
     }
     else if(dataType == STRING_TYPE)
@@ -1618,8 +1744,9 @@ Variant::ToXMLNode() const
         const floatVector &vec = AsFloatVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(buff,"%g ",vec[i]);
+            EncodeToString(buff, vec[i]);
             res_str += buff;
+            res_str += " ";
         }
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
@@ -1627,8 +1754,9 @@ Variant::ToXMLNode() const
         const doubleVector &vec = AsDoubleVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(buff,"%g ",vec[i]);
+            EncodeToString(buff, vec[i]);
             res_str += buff;
+            res_str += " ";
         }
     }
     else if(dataType == STRING_VECTOR_TYPE)
@@ -1995,3 +2123,447 @@ Variant::Cleanup()
     dataValue = NULL;
 }
 
+// ****************************************************************************
+// Method: Variant::operator ==
+//
+// Purpose: 
+//   Comparison operator.
+//
+// Arguments:
+//   obj : The object to be compared.
+//
+// Returns:    True if the object is equal to this object; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan  6 15:17:26 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+Variant::operator ==(const Variant &obj) const
+{
+    // Compare the types
+    if(dataType != obj.dataType)
+        return false;
+
+    // Compare the data
+    bool equal = false;
+    if(dataType == BOOL_TYPE)
+        equal = AsBool() == obj.AsBool();
+    else if(dataType == CHAR_TYPE)
+        equal = AsChar() == obj.AsChar();
+    else if(dataType == UNSIGNED_CHAR_TYPE)
+        equal = AsUnsignedChar() == obj.AsUnsignedChar();
+    else if(dataType == INT_TYPE)
+        equal = AsInt() == obj.AsInt();
+    else if(dataType == LONG_TYPE)
+        equal = AsLong() == obj.AsLong();
+    else if(dataType == FLOAT_TYPE)
+        equal = AsFloat() == obj.AsFloat();
+    else if(dataType == DOUBLE_TYPE)
+        equal = AsDouble() == obj.AsDouble();
+    else if(dataType == STRING_TYPE)
+        equal = AsString() == obj.AsString();
+    else if(dataType == BOOL_VECTOR_TYPE)
+        equal = AsBoolVector() == obj.AsBoolVector();
+    else if(dataType == CHAR_VECTOR_TYPE)
+        equal = AsCharVector() == obj.AsCharVector();
+    else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
+        equal = AsUnsignedCharVector() == obj.AsUnsignedCharVector();
+    else if(dataType == INT_VECTOR_TYPE)
+        equal = AsIntVector() == obj.AsIntVector();
+    else if(dataType == LONG_VECTOR_TYPE)
+        equal = AsLongVector() == obj.AsLongVector();
+    else if(dataType == FLOAT_VECTOR_TYPE)
+        equal = AsFloatVector() == obj.AsFloatVector();
+    else if(dataType == DOUBLE_VECTOR_TYPE)
+        equal = AsDoubleVector() == obj.AsDoubleVector();
+    else if(dataType == STRING_VECTOR_TYPE)
+        equal = AsStringVector() == obj.AsStringVector();
+    else if(dataType == EMPTY_TYPE)
+        equal = true;
+       
+    return equal;
+}
+
+// ****************************************************************************
+// Method: Variant::CalculateMessageSize
+//
+// Purpose: 
+//   Compute the size of the message that contains this object's data.
+//
+// Arguments:
+//   conn : The connection used for the outgoing message.
+//
+// Returns:    The message size.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan  6 15:18:16 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+Variant::CalculateMessageSize(Connection &conn) const
+{
+    int messageSize = 0;
+
+    if(dataType == BOOL_TYPE)
+        messageSize = conn.CharSize(conn.DEST);
+    else if(dataType == CHAR_TYPE)
+        messageSize = conn.CharSize(conn.DEST);
+    else if(dataType == UNSIGNED_CHAR_TYPE)
+        messageSize = conn.CharSize(conn.DEST);
+    else if(dataType == INT_TYPE)
+        messageSize = conn.IntSize(conn.DEST);
+    else if(dataType == LONG_TYPE)
+        messageSize = conn.LongSize(conn.DEST);
+    else if(dataType == FLOAT_TYPE)
+        messageSize = conn.FloatSize(conn.DEST);
+    else if(dataType == DOUBLE_TYPE)
+        messageSize = conn.DoubleSize(conn.DEST);
+    else if(dataType == STRING_TYPE)
+        messageSize = conn.CharSize(conn.DEST) * (AsString().size() + 1);
+    else if(dataType == BOOL_VECTOR_TYPE)
+        messageSize = conn.IntSize(conn.DEST) + 
+                      conn.CharSize(conn.DEST) * AsBoolVector().size();
+    else if(dataType == CHAR_VECTOR_TYPE)
+        messageSize = conn.IntSize(conn.DEST) + 
+                      conn.CharSize(conn.DEST) * AsCharVector().size();
+    else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
+        messageSize = conn.IntSize(conn.DEST) + 
+                      conn.CharSize(conn.DEST) * AsUnsignedCharVector().size();
+    else if(dataType == INT_VECTOR_TYPE)
+        messageSize = conn.IntSize(conn.DEST) + 
+                      conn.IntSize(conn.DEST) * AsIntVector().size();
+    else if(dataType == LONG_VECTOR_TYPE)
+        messageSize = conn.IntSize(conn.DEST) + 
+                      conn.LongSize(conn.DEST) * AsLongVector().size();
+    else if(dataType == FLOAT_VECTOR_TYPE)
+        messageSize = conn.IntSize(conn.DEST) + 
+                      conn.FloatSize(conn.DEST) * AsFloatVector().size();
+    else if(dataType == DOUBLE_VECTOR_TYPE)
+        messageSize = conn.IntSize(conn.DEST) + 
+                      conn.DoubleSize(conn.DEST) * AsDoubleVector().size();
+    else if(dataType == STRING_VECTOR_TYPE)
+    {
+        messageSize = conn.IntSize(conn.DEST);
+        const stringVector &vec = AsStringVector();
+        for(size_t i = 0; i < vec.size(); ++i)
+            messageSize += (conn.CharSize(conn.DEST) * (vec[i].size() + 1));
+    }
+       
+    return messageSize;
+}
+
+// ****************************************************************************
+// Method: Variant::Write
+//
+// Purpose: 
+//   Writes this object's data to the connection.
+//
+// Arguments:
+//   conn : The connection to which we're writing the data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan  6 15:19:10 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Variant::Write(Connection &conn) const
+{
+    if(dataType == BOOL_TYPE)
+    {
+        bool value = *((bool *)dataValue);
+        conn.WriteChar(value ? 1 : 0);
+    }
+    else if(dataType == CHAR_TYPE)
+        conn.WriteChar(*((char *)dataValue));
+    else if(dataType == UNSIGNED_CHAR_TYPE)
+        conn.WriteUnsignedChar(*((unsigned char *)dataValue));
+    else if(dataType == INT_TYPE)
+        conn.WriteInt(*((int *)dataValue));
+    else if(dataType == LONG_TYPE)
+        conn.WriteLong(*((long *)dataValue));
+    else if(dataType == FLOAT_TYPE)
+        conn.WriteFloat(*((float *)dataValue));
+    else if(dataType == DOUBLE_TYPE)
+        conn.WriteDouble(*((double *)dataValue));
+    else if(dataType == STRING_TYPE)
+    {
+        std::string *sptr = (std::string *)dataValue;
+        for(size_t i = 0; i < sptr->size(); ++i)
+            conn.WriteChar(sptr->at(i));
+        conn.WriteChar(0);
+    }
+    else if(dataType == BOOL_VECTOR_TYPE)
+    {
+        const boolVector &vec = AsBoolVector();
+        conn.WriteInt(vec.size());
+        for(size_t i=0;i<vec.size();i++)
+            conn.WriteChar(vec[i]?1:0);
+    }
+    else if(dataType == CHAR_VECTOR_TYPE)
+    {
+        const charVector &vec = AsCharVector();
+        conn.WriteInt(vec.size());
+        for(size_t i=0;i<vec.size();i++)
+            conn.WriteChar(vec[i]);
+    }
+    else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
+    {
+        const unsignedCharVector &vec = AsUnsignedCharVector();
+        conn.WriteInt(vec.size());
+        for(size_t i=0;i<vec.size();i++)
+            conn.WriteUnsignedChar(vec[i]);
+    }
+    else if(dataType == INT_VECTOR_TYPE)
+    {
+        const intVector &vec = AsIntVector();
+        conn.WriteInt(vec.size());
+        for(size_t i=0;i<vec.size();i++)
+            conn.WriteInt(vec[i]);
+    }
+    else if(dataType == LONG_VECTOR_TYPE)
+    {
+        const longVector &vec = AsLongVector();
+        conn.WriteInt(vec.size());
+        for(size_t i=0;i<vec.size();i++)
+            conn.WriteLong(vec[i]);
+    }
+    else if(dataType == FLOAT_VECTOR_TYPE)
+    {
+        const floatVector &vec = AsFloatVector();
+        conn.WriteInt(vec.size());
+        for(size_t i=0;i<vec.size();i++)
+            conn.WriteFloat(vec[i]);
+    }
+    else if(dataType == DOUBLE_VECTOR_TYPE)
+    {
+        const doubleVector &vec = AsDoubleVector();
+        conn.WriteInt(vec.size());
+        for(size_t i=0;i<vec.size();i++)
+            conn.WriteDouble(vec[i]);
+    }
+    else if(dataType == STRING_VECTOR_TYPE)
+    {
+        const stringVector &vec = AsStringVector();
+        stringVector::const_iterator spos;
+
+        conn.WriteInt(vec.size());
+        for(spos = vec.begin(); spos != vec.end(); ++spos)
+            conn.WriteString(*spos);
+    }
+}
+
+// ****************************************************************************
+// Method: Variant::Read
+//
+// Purpose: 
+//   Reads this object's data from the connection.
+//
+// Arguments:
+//   
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan  6 15:19:52 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Variant::Read(Connection &conn)
+{
+    int s;
+
+    if(dataType == BOOL_TYPE)
+    {
+        unsigned char tmp;
+        conn.ReadChar(&tmp);
+        SetValue(tmp==1);
+    }
+    else if(dataType == CHAR_TYPE)
+    {
+        char tmp;
+        conn.ReadChar((unsigned char *)&tmp);
+        SetValue(tmp);
+    }
+    else if(dataType == UNSIGNED_CHAR_TYPE)
+    {
+        unsigned char tmp;
+        conn.ReadUnsignedChar(&tmp);
+        SetValue(tmp);
+    }
+    else if(dataType == INT_TYPE)
+    {
+        int tmp;
+        conn.ReadInt(&tmp);
+        SetValue(tmp);
+    }
+    else if(dataType == LONG_TYPE)
+    {
+        long tmp;
+        conn.ReadLong(&tmp);
+        SetValue(tmp);
+    }
+    else if(dataType == FLOAT_TYPE)
+    {
+        float tmp;
+        conn.ReadFloat(&tmp);
+        SetValue(tmp);
+    }
+    else if(dataType == DOUBLE_TYPE)
+    {
+        double tmp;
+        conn.ReadDouble(&tmp);
+        SetValue(tmp);
+    }
+    else if(dataType == STRING_TYPE)
+    {
+        string tmp;
+        conn.ReadString(tmp);
+        SetValue(tmp);
+    }
+    else if(dataType == BOOL_VECTOR_TYPE)
+    {
+        boolVector &vec = AsBoolVector();
+        conn.ReadInt(&s);
+        vec.clear();
+        if(s > 0)
+        {
+            vec.reserve(s);
+            for(int i=0;i<s;i++)
+            {
+                unsigned char tmp;
+                conn.ReadChar(&tmp);
+                vec.push_back(tmp==1);
+            }
+        }
+    }
+    else if(dataType == CHAR_VECTOR_TYPE)
+    {
+        charVector &vec = AsCharVector();
+        conn.ReadInt(&s);
+        vec.clear();
+        if(s > 0)
+        {
+            vec.reserve(s);
+            for(int i=0;i<s;i++)
+            {
+                char tmp;
+                conn.ReadChar((unsigned char *)&tmp);
+                vec.push_back(tmp);
+            }
+        }
+    }
+    else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
+    {
+        unsignedCharVector &vec = AsUnsignedCharVector();
+        conn.ReadInt(&s);
+        vec.clear();
+        if(s > 0)
+        {
+            vec.reserve(s);
+            for(int i=0;i<s;i++)
+            {
+                unsigned char tmp;
+                conn.ReadUnsignedChar(&tmp);
+                vec.push_back(tmp);
+            }
+        }
+    }
+    else if(dataType == INT_VECTOR_TYPE)
+    {
+        intVector &vec = AsIntVector();
+        conn.ReadInt(&s);
+        vec.clear();
+        if(s > 0)
+        {
+            vec.reserve(s);
+            for(int i=0;i<s;i++)
+            {
+                int tmp;
+                conn.ReadInt(&tmp);
+                vec.push_back(tmp);
+            }
+        }
+    }
+    else if(dataType == LONG_VECTOR_TYPE)
+    {
+        longVector &vec = AsLongVector();
+        conn.ReadInt(&s);
+        vec.clear();
+        if(s > 0)
+        {
+            vec.reserve(s);
+            for(int i=0;i<s;i++)
+            {
+                long tmp;
+                conn.ReadLong(&tmp);
+                vec.push_back(tmp);
+            }
+        }
+    }
+    else if(dataType == FLOAT_VECTOR_TYPE)
+    {
+        floatVector &vec = AsFloatVector();
+        conn.ReadInt(&s);
+        vec.clear();
+        if(s > 0)
+        {
+            vec.reserve(s);
+            for(int i=0;i<s;i++)
+            {
+                float tmp;
+                conn.ReadFloat(&tmp);
+                vec.push_back(tmp);
+            }
+        }
+    }
+    else if(dataType == DOUBLE_VECTOR_TYPE)
+    {
+        doubleVector &vec = AsDoubleVector();
+        conn.ReadInt(&s);
+        vec.clear();
+        if(s > 0)
+        {
+            vec.reserve(s);
+            for(int i=0;i<s;i++)
+            {
+                double tmp;
+                conn.ReadDouble(&tmp);
+                vec.push_back(tmp);
+            }
+        }
+    }
+    else if(dataType == STRING_VECTOR_TYPE)
+    {
+        stringVector &vec = AsStringVector();
+        conn.ReadInt(&s);
+        vec.clear();
+        if(s > 0)
+        {
+            vec.reserve(s);
+            for(int i=0;i<s;i++)
+            {
+                string tmp;
+                conn.ReadString(tmp);
+                vec.push_back(tmp);
+            }
+        }
+    }
+}

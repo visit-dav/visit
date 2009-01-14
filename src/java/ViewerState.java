@@ -52,7 +52,12 @@ import java.util.Vector;
 // Creation:   Fri Feb 22 16:46:56 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan  9 15:49:54 PST 2009
+//   I removed the PlotInfoAttributes from the ViewerState for now. There are
+//   now N of them but they contain MapNode, which we don't have in Java yet
+//   so we'll just skip over the plot info atts in xfer when they come from
+//   the client.
+//
 // ****************************************************************************
 /**
  * ViewerState contains all of the state objects that make up the 
@@ -165,8 +170,6 @@ public class ViewerState
             Register(attsMeshManagementAttributes);
         attsLogRPC = new ViewerRPC();
             Register(attsLogRPC);
-        attsPlotInfoAttributes = new PlotInfoAttributes();
-            Register(attsPlotInfoAttributes);
         attsFileOpenOptions = new FileOpenOptions();
             Register(attsFileOpenOptions);
     }
@@ -221,7 +224,6 @@ public class ViewerState
     public MovieAttributes           GetMovieAttributes() { return attsMovieAttributes; }
     public MeshManagementAttributes  GetMeshManagementAttributes() { return attsMeshManagementAttributes; }
     public ViewerRPC                 GetLogRPC() { return attsLogRPC; }
-    public PlotInfoAttributes        GetPlotInfoAttributes() { return attsPlotInfoAttributes; }
     public FileOpenOptions           GetFileOpenOptions() { return attsFileOpenOptions; }
 
     /**
@@ -255,6 +257,8 @@ public class ViewerState
     {
         ++nPlots;
         objVector.addElement(obj);
+
+        objVector.addElement(new PlotInfoAttributes());
     }
 
     /**
@@ -306,8 +310,20 @@ public class ViewerState
      */
     public AttributeSubject GetPlotAttributes(int n)
     {
-        int idx = objVector.size()-1 - nOperators - nPlots + n;
+        int idx = objVector.size()-1 - nOperators - nPlots*2 + n*2;
         return (AttributeSubject)objVector.elementAt(idx);
+    }
+
+    /**
+     * Return n'th plot information
+     *
+     * @param n Index of the plot information to return.
+     * @return The n'th plot plot information
+     */
+    public PlotInfoAttributes GetPlotInformation(int n)
+    {
+        int idx = objVector.size()-1 - nOperators - nPlots*2 + n*2 + 1;
+        return (PlotInfoAttributes)objVector.elementAt(idx);
     }
 
     /**
@@ -370,7 +386,6 @@ public class ViewerState
     private MovieAttributes          attsMovieAttributes;
     private MeshManagementAttributes attsMeshManagementAttributes;
     private ViewerRPC                attsLogRPC;
-    private PlotInfoAttributes       attsPlotInfoAttributes;
     private FileOpenOptions          attsFileOpenOptions;
 
     private Vector objVector;

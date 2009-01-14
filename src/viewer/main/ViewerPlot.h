@@ -285,6 +285,9 @@ class avtToolInterface;
 //    Brad Whitlock, Tue Apr 29 15:34:48 PDT 2008
 //    Added GetMenuName.
 //
+//    Brad Whitlock, Wed Jan  7 15:32:49 PST 2009
+//    Added UpdatePlotInformation and removed GetPlotInfoAtts.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -482,7 +485,8 @@ class VIEWER_API ViewerPlot : public ViewerBase
     void UpdateDataExtents();
     bool SetFullFrameScaling(bool, double *);
 
-    const PlotInfoAttributes *GetPlotInfoAtts(void);
+    void UpdatePlotInformation() const;
+
     void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm);
     bool CanDoLogViewScaling(WINDOW_MODE wm);
 

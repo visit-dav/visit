@@ -1376,6 +1376,9 @@ ViewerSubject::InitializePluginManagers()
 //   Brad Whitlock, Mon Feb 12 12:04:49 PDT 2007
 //   Changed how plots are registered with ViewerState.
 //
+//   Brad Whitlock, Thu Jan  8 10:18:16 PST 2009
+//   I made sure that the plot info attrbutes also get registered with xfer.
+//
 // ****************************************************************************
 
 void
@@ -1412,8 +1415,10 @@ ViewerSubject::LoadPlotPlugins()
 
         if (attr != 0)
         {
-            xfer.Add(attr);
             GetViewerState()->RegisterPlotAttributes(attr);
+
+            xfer.Add(GetViewerState()->GetPlotAttributes(i));
+            xfer.Add(GetViewerState()->GetPlotInformation(i));
         }
 
         if (defaultAttr != 0)
@@ -7524,6 +7529,9 @@ ViewerSubject::HandleViewerRPC()
 //    Cyrus Harrison, Thu Feb 21 16:12:44 PST 2008
 //    Add SetSuppressMessages
 //
+//    Brad Whitlock, Wed Jan 14 13:58:02 PST 2009
+//    I removed UpdatePlotInfoAtts.
+//
 // ****************************************************************************
 
 void
@@ -7874,9 +7882,6 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::ConstructDDFRPC:
         ConstructDDF();
-        break;
-    case ViewerRPC::UpdatePlotInfoAttsRPC:
-        UpdatePlotInfoAtts();
         break;
     case ViewerRPC::RequestMetaDataRPC:
         HandleRequestMetaData();
@@ -9370,72 +9375,6 @@ ViewerSubject::ResizeWindow()
         GetViewerState()->GetViewerRPC()->GetWindowId()-1,
         GetViewerState()->GetViewerRPC()->GetIntArg1(),
         GetViewerState()->GetViewerRPC()->GetIntArg2());
-}
-
-
-// ****************************************************************************
-// Method: ViewerSubject::UpdatePlotInfoAtts
-//
-// Purpose: 
-//   Retrieve appropriate PlotInfoAttributes.
-//
-// Programmer: Kathleen Bonnell
-// Creation:   June 20, 2006 
-//
-// Modifications:
-//   Brad Whitlock, Mon Feb 12 12:12:43 PDT 2007
-//   I made it use ViewerState.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::UpdatePlotInfoAtts()
-{
-    int winId = GetViewerState()->GetViewerRPC()->GetWindowId() -1;
-    int plotId = GetViewerState()->GetViewerRPC()->GetIntArg1();
-    ViewerWindow *win = NULL;
-    GetViewerState()->GetPlotInfoAttributes()->Reset();
-
-    if (winId < 0)
-    {
-        win = ViewerWindowManager::Instance()->GetActiveWindow();
-    }
-    else 
-    {
-        win = ViewerWindowManager::Instance()->GetWindow(winId);
-    }
-    if (win != NULL)
-    {
-        ViewerPlotList *plist = win->GetPlotList();
-        if (plotId < 0)
-        {
-            intVector ids;
-            plist->GetActivePlotIDs(ids);
-            if (ids.size() > 0)
-                plotId = ids[0];
-        }
-        if (plotId >= 0)
-        {
-            ViewerPlot *plot = plist->GetPlot(plotId);
-            if (plot != NULL)
-            {
-                const PlotInfoAttributes *current = plot->GetPlotInfoAtts();
-                if (current != NULL)
-                {
-                    *GetViewerState()->GetPlotInfoAttributes() = *current;
-                }
-            }
-            else
-            {
-                Warning(tr("Invalid PlotId"));
-            }
-        }
-    }
-    else
-    {
-        Warning(tr("Invalid WindowId"));
-    }
-    GetViewerState()->GetPlotInfoAttributes()->Notify();
 }
 
 // ****************************************************************************

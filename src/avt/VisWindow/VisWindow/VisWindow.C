@@ -2190,45 +2190,6 @@ VisWindow::ClearPlots(void)
 
 
 // ****************************************************************************
-//  Method: VisWindow::GetPlotListIndex
-//
-//  Purpose: If plot identified by name is among the plots for this VisWindow,
-//           returns that plot's index in the window's list of active plots.
-//           Otherwise returns -1.
-//
-//  Programmer: Mark Blair
-//  Creation:   Wed Aug 30 14:09:00 PDT 2006
-//
-// ****************************************************************************
-
-int
-VisWindow::GetPlotListIndex(const char *plotName)
-{
-    return plots->GetPlotListIndex(plotName);
-}
-
-
-// ****************************************************************************
-//  Method: VisWindow::GetPlotInfoAtts
-//
-//  Purpose: If plot identified by name is among the plots for this VisWindow,
-//           returns pointer to any attributes that were pushed by that plot.
-//           Returns NULL if no such plot exists or if no attributes were
-//           pushed by the plot.
-//
-//  Programmer: Mark Blair
-//  Creation:   Wed Oct 25 15:12:55 PDT 2006
-//
-// ****************************************************************************
-
-const PlotInfoAttributes *
-VisWindow::GetPlotInfoAtts(const char *plotName)
-{
-    return plots->GetPlotInfoAtts(plotName);
-}
-
-
-// ****************************************************************************
 //  Method: VisWindow::StartBoundingBox
 //
 //  Purpose:

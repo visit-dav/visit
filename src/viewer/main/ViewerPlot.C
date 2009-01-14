@@ -71,6 +71,7 @@
 #include <ViewerPlotList.h>
 #include <GlobalLineoutAttributes.h>
 #include <ViewerQueryManager.h>
+#include <ViewerState.h>
 #include <ViewerSubject.h>
 #include <ViewerWindowManager.h>
 
@@ -5232,23 +5233,44 @@ ViewerPlot::GetMeshType() const
         return AVT_UNKNOWN_MESH;
 }
 
-
 // ****************************************************************************
-//  Method: ViewerPlot::GetPlotInfoAtts
+// Method: ViewerPlotList::UpdatePlotInformation
 //
-//  Purpose: Return the PlotInfoAttributes for this plot. 
+// Purpose: 
+//   Send the plot information back to the client.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 20, 2006 
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan  8 15:05:14 PST 2009
 //
-//  Modifications:
-//
+// Modifications:
+//   
 // ****************************************************************************
 
-const PlotInfoAttributes *
-ViewerPlot::GetPlotInfoAtts() 
+void
+ViewerPlot::UpdatePlotInformation() const
 {
-    return (*plotList[cacheIndex])->GetPlotInfoAtts();
+    // Let's send the plot info atts too if they are different.
+    PlotInfoAttributes *info = GetViewerState()->GetPlotInformation(GetType());
+    if(info != 0)
+    {
+        bool sendEmpty = false;
+        if(*plotList[cacheIndex] != 0)
+        {
+            if(*info != (*plotList[cacheIndex])->GetPlotInformation())
+            {
+                *info = (*plotList[cacheIndex])->GetPlotInformation();
+                info->Notify(); 
+            }
+        }
+        else
+            sendEmpty = true;
+
+        if(sendEmpty)
+        {
+            info->Reset();
+            info->Notify();
+        }
+    }
 }
 
 // ****************************************************************************

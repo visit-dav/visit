@@ -75,14 +75,14 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectOutputArray();
+    void SelectData();
 
     // Property setting methods
-    void SetOutputArray(const doubleVector &outputArray_);
+    void SetData(const MapNode &data_);
 
     // Property getting methods
-    const doubleVector &GetOutputArray() const;
-          doubleVector &GetOutputArray();
+    const MapNode &GetData() const;
+          MapNode &GetData();
 
 
     // Keyframing methods
@@ -97,11 +97,11 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_outputArray = 0
+        ID_data = 0
     };
 
 private:
-    doubleVector outputArray;
+    MapNode data;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

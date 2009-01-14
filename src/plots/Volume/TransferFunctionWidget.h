@@ -82,20 +82,24 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectName();
     void SelectBaseColor();
     void SelectPosition();
 
     // Property setting methods
     void SetType(WidgetType Type_);
+    void SetName(const std::string &Name_);
     void SetBaseColor(const float *BaseColor_);
     void SetPosition(const float *Position_);
 
     // Property getting methods
-    WidgetType  GetType() const;
-    const float *GetBaseColor() const;
-          float *GetBaseColor();
-    const float *GetPosition() const;
-          float *GetPosition();
+    WidgetType        GetType() const;
+    const std::string &GetName() const;
+          std::string &GetName();
+    const float       *GetBaseColor() const;
+          float       *GetBaseColor();
+    const float       *GetPosition() const;
+          float       *GetPosition();
 
     // Enum conversion functions
     static std::string WidgetType_ToString(WidgetType);
@@ -114,14 +118,16 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_Type = 0,
+        ID_Name,
         ID_BaseColor,
         ID_Position
     };
 
 private:
-    int   Type;
-    float BaseColor[4];
-    float Position[8];
+    int         Type;
+    std::string Name;
+    float       BaseColor[4];
+    float       Position[8];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

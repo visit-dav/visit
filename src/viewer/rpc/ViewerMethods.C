@@ -5072,35 +5072,6 @@ ViewerMethods::SetQueryFloatFormat(const std::string &format)
 }
 
 // ****************************************************************************
-// Method: ViewerMethods::UpdatePlotInfoAtts
-//
-// Purpose: 
-//   Update the plotInfoAttributes from the given plot and window.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   June 20, 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerMethods::UpdatePlotInfoAtts(int plotID, int winID)
-{
-    //
-    // Set the rpc type and arguments.
-    //
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::UpdatePlotInfoAttsRPC);
-    state->GetViewerRPC()->SetWindowId(winID);
-    state->GetViewerRPC()->SetIntArg1(plotID);
-
-    //
-    // Issue the RPC.
-    //
-    state->GetViewerRPC()->Notify();
-}
-
-// ****************************************************************************
 //  Method: ViewerMethods::SetCreateMeshQualityExpressions
 //
 //  Purpose: Tells viewer to turn on/off automatic creation of MeshQuality

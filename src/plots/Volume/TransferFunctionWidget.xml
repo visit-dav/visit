@@ -7,9 +7,25 @@
       Ellipsoid
     </Enum>
     <Field name="Type" label="unnamed1" type="enum" subtype="WidgetType">
+       Rectangle
+    </Field> 
+    <Field name="Name" label="unnamed1" type="string">
+       unnamed
     </Field>
     <Field name="BaseColor" label="Base color" type="floatArray" length="4">
+       1
+       1
+       1
+       1
     </Field>
     <Field name="Position" label="Position" type="floatArray" length="8">
+       0
+       0
+       0
+       0
+       0
+       0
+       0
+       0
     </Field>
   </Attribute>

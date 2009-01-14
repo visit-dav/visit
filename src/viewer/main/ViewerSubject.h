@@ -664,7 +664,6 @@ private:
     void ResizeWindow();
 
     void OpenClient();
-    void UpdatePlotInfoAtts();
 
     void SetDefaultFileOpenOptions();
     void SetSuppressMessages();

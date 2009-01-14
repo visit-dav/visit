@@ -47,22 +47,21 @@
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
 
+#include <ClientInformation.h>
+#include <ClientMethod.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <ParentProcess.h>
+#include <PlotInfoAttributes.h>
+#include <PluginManagerAttributes.h>
 #include <RemoteProcess.h>
+#include <SILRestrictionAttributes.h>
 #include <SocketConnection.h>
 #include <ViewerMethods.h>
 #include <ViewerRPC.h>
 #include <ViewerState.h>
 #include <VisItException.h>
 #include <Xfer.h>
-
-
-#include <ClientInformation.h>
-#include <ClientMethod.h>
-#include <SILRestrictionAttributes.h>
-#include <PluginManagerAttributes.h>
 
 #include <snprintf.h>
 
@@ -633,6 +632,9 @@ ViewerProxy::InitializePlugins(PluginManager::PluginCategory t, const char *plug
 //    Brad Whitlock, Tue Jun 24 11:29:29 PDT 2008
 //    Use the new member plugin managers.
 //
+//    Brad Whitlock, Thu Jan  8 10:23:15 PST 2009
+//    I registered the plot info attributes with xfer.
+//
 // ****************************************************************************
 
 void
@@ -720,7 +722,9 @@ ViewerProxy::LoadPlugins()
             plotPlugins->GetCommonPluginInfo(plotPlugins->GetEnabledID(i));
         AttributeSubject *obj = info->AllocAttributes();
         state->RegisterPlotAttributes(obj);
-        xfer->Add(obj);
+
+        xfer->Add(state->GetPlotAttributes(i));
+        xfer->Add(state->GetPlotInformation(i));
     }
 
     //

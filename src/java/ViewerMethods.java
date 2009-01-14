@@ -3244,23 +3244,6 @@ public class ViewerMethods
     }
 
     /**
-     * Tells the viewer to send back plot information that was created by the specified
-     * plot.
-     *
-     * @param plotID The index of the plot in the plot list (>=0).
-     * @param winID The index of the visualization window that contains the plot (>=1).
-     * @return true on success; false otherwise.
-     */
-    public boolean UpdatePlotInfoAtts(int plotID, int winID)
-    {
-        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_UPDATEPLOTINFOATTSRPC);
-        GetViewerState().GetViewerRPC().SetWindowId(winID);
-        GetViewerState().GetViewerRPC().SetIntArg1(plotID);
-        GetViewerState().GetViewerRPC().Notify();
-        return Synchronize();
-    }
-
-    /**
      * Sets whether VisIt will automatically create mesh quality expressions.
      *
      * @param flag true means that the expressions will be created; false otherwise.

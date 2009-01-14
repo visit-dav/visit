@@ -42,6 +42,8 @@
 #include <vector>
 #include <viewerrpc_exports.h>
 
+class PlotInfoAttributes;
+
 #define VIEWER_BEGIN_FREELY_EXCHANGED_STATE
 
 //
@@ -100,7 +102,6 @@
     VIEWER_REGISTER_OBJECT(MovieAttributes,          MovieAttributes, true)\
     VIEWER_REGISTER_OBJECT(MeshManagementAttributes, MeshManagementAttributes, true)\
     VIEWER_REGISTER_OBJECT(LogRPC                  , ViewerRPC, true)\
-    VIEWER_REGISTER_OBJECT(PlotInfoAttributes,       PlotInfoAttributes, false)\
     VIEWER_REGISTER_OBJECT(FileOpenOptions,          FileOpenOptions, false)
 
 //
@@ -152,11 +153,14 @@ VIEWER_OBJECT_CREATION
 //   so there is now just one place (here) that defines the viewer/client
 //   interface.
 //
+//   Brad Whitlock, Wed Jan  7 14:57:20 PST 2009
+//   I added support for a PlotInfoAttributes for each plot plugin.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerState
 {
-    typedef enum {GeneralState, PlotState, OperatorState} ObjectPurpose;
+    typedef enum {GeneralState, PlotState, PlotInformation, OperatorState} ObjectPurpose;
 
     struct ObjectRecord
     {
@@ -184,12 +188,13 @@ public:
     bool              GetPartialSendFlag(int i) const;
 
     // Plugin related methods.
-    int               GetNumPlotStateObjects() const;
-    int               GetNumOperatorStateObjects() const;
-    AttributeSubject *RegisterPlotAttributes(AttributeSubject *obj);
-    AttributeSubject *RegisterOperatorAttributes(AttributeSubject *obj);
-    AttributeSubject *GetPlotAttributes(int type) const;
-    AttributeSubject *GetOperatorAttributes(int type) const;
+    int                 GetNumPlotStateObjects() const;
+    int                 GetNumOperatorStateObjects() const;
+    AttributeSubject   *RegisterPlotAttributes(AttributeSubject *obj);
+    AttributeSubject   *RegisterOperatorAttributes(AttributeSubject *obj);
+    AttributeSubject   *GetPlotAttributes(int type) const;
+    PlotInfoAttributes *GetPlotInformation(int type) const;
+    AttributeSubject   *GetOperatorAttributes(int type) const;
 
     // State objects with indices less than this number do not automatically get
     // sent to all clients when they update inside the viewer.

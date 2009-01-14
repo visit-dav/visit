@@ -754,7 +754,7 @@ avtBehavior::GetDataExtents(double &dmin, double &dmax)
 
 
 // ****************************************************************************
-//  Method: avtBehavior::GetPlotInfoAtts
+//  Method: avtBehavior::GetPlotInformation
 //
 //  Purpose:
 //
@@ -764,11 +764,13 @@ avtBehavior::GetDataExtents(double &dmin, double &dmax)
 //  Creation:   June 20, 2006 
 //
 //  Modifications:
+//    Brad Whitlock, Wed Jan  7 14:27:47 PST 2009
+//    I changed the method name and return a reference.
 //
 // ****************************************************************************
 
-const PlotInfoAttributes *
-avtBehavior::GetPlotInfoAtts() 
+const PlotInfoAttributes &
+avtBehavior::GetPlotInformation() const
 {
-    return info.GetAttributes().GetPlotInfoAtts();
+    return info.GetAttributes().GetPlotInformation();
 }

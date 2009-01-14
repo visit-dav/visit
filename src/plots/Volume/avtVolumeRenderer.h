@@ -49,7 +49,7 @@
 class vtkDataArray;
 class avtVolumeRendererImplementation;
 
-#define USE_HISTOGRAM 0
+#define USE_HISTOGRAM 1
 
 // ****************************************************************************
 //  Class: avtVolumeRenderer
@@ -78,6 +78,9 @@ class avtVolumeRendererImplementation;
 //    Made this class be a concrete implementation of a custom renderer.
 //    It will chose between actual rendering methods by instantiating an
 //    avtVolumeRendererImplementation at render time.
+//
+//    Brad Whitlock, Mon Dec 15 14:36:29 PST 2008
+//    I removed some methods.
 //
 // ****************************************************************************
 
@@ -111,9 +114,7 @@ class avtVolumeRenderer : public avtCustomRenderer
 
     bool                    reducedDetail;
 
-    bool                    GetScalars(vtkDataSet*,vtkDataArray*&,vtkDataArray *&);
-    void                    GetRange(vtkDataArray *, float &, float &);
-    void                    WriteHistogram(vtkDataSet* ds);
+    bool                    GetScalars(vtkDataSet *ds, vtkDataArray *&d, vtkDataArray *&o);
 };
 
 

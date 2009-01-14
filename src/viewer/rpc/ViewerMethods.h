@@ -106,6 +106,9 @@ class ViewerState;
 //   Brad Whitlock, Thu Jul 24 09:18:11 PDT 2008
 //   Added time state argument to OverlayDatabase.
 //
+//   Brad Whitlock, Wed Jan 14 13:59:09 PST 2009
+//   I removed UpdatePlotInfoAtts.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -365,8 +368,6 @@ public:
     void OpenClient(const std::string &clientName, 
                     const std::string &program,
                     const stringVector &args);
-
-    void UpdatePlotInfoAtts(int winId=-1, int plotId=-1);
 
 private:
     ViewerState *state;

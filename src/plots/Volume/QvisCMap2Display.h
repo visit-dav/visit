@@ -35,6 +35,9 @@ typedef int WidgetID;
 //   Brad Whitlock, Tue Sep 30 09:47:39 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Fri Dec 12 16:50:40 PST 2008
+//   Added setHistogramTexture.
+//
 // ****************************************************************************
 
 class QvisCMap2Display : public QGLWidget
@@ -50,6 +53,7 @@ public:
     virtual QSize sizeHint() const;
     virtual QSizePolicy sizePolicy() const;
 
+    void setHistogramTexture(const unsigned char *data, int size);
 
     WidgetID addTriangleWidget(const QString &wName,
                           float base,  // X-coordinate of bottom point
@@ -85,6 +89,7 @@ public:
     int numWidgets() const;
     WidgetID getID(int index) const;
     void removeWidget(WidgetID id);
+    void clear();
 
     void   setDefaultColor(const QColor &c);
     QColor getDefaultColor() const;
@@ -120,8 +125,9 @@ private:
     WidgetID LookupWidgetId(SLIVR::CM2Widget *) const;
 
     GLuint                          histogram_texture;
+    unsigned char                  *hist_data;
+    int                             hist_size;
     bool                            init_done;
-    bool                            read_histogram;
     std::vector<SLIVR::ColorMap2*>  cmap2;
     SLIVR::CM2Widget               *activeW;
 #ifdef HAVE_LIBSLIVR

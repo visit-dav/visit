@@ -4,15 +4,8 @@ Definition:
 void
 PlotInfoAttributes::PrintSelf(ostream &os)
 {
-    os << "\nOutputArray:  " ;
-    if (outputArray.size() == 0)
-        os << "Not Set.";
-    else 
-    {
-        for (size_t i = 0; i < outputArray.size(); i++)
-            os << outputArray[i] << "  ";
-    }
-    os << "\n";
+    os << "Data:\n" ;
+    os << data.ToXML(); 
 }
 
 
@@ -22,7 +15,8 @@ Definition:
 void
 PlotInfoAttributes::Reset()
 {
-    outputArray.clear();
+    data.Reset();
+    SelectData();
 }
 
 

@@ -43,15 +43,7 @@
 #include <vectortypes.h>
 #include <XMLNode.h>
 
-typedef enum
-{
-    EMPTY_TYPE = 0,
-    BOOL_TYPE, CHAR_TYPE, UNSIGNED_CHAR_TYPE, INT_TYPE, LONG_TYPE, FLOAT_TYPE, 
-    DOUBLE_TYPE, STRING_TYPE, 
-    BOOL_VECTOR_TYPE, CHAR_VECTOR_TYPE, UNSIGNED_CHAR_VECTOR_TYPE, 
-    INT_VECTOR_TYPE, LONG_VECTOR_TYPE, FLOAT_VECTOR_TYPE,
-    DOUBLE_VECTOR_TYPE, STRING_VECTOR_TYPE
-} VariantTypeEnum;
+class Connection;
 
 // ****************************************************************************
 //  Class:  Variant
@@ -63,12 +55,24 @@ typedef enum
 //  Creation:    December 10, 2007
 //
 //  Modifications:
+//    Brad Whitlock, Tue Jan  6 15:16:19 PST 2009
+//    I added methods that let it read/write itself using Connection.
 //
 // ****************************************************************************
 
 class STATE_API Variant
 {
   public:
+    typedef enum
+    {
+        EMPTY_TYPE = 0,
+        BOOL_TYPE, CHAR_TYPE, UNSIGNED_CHAR_TYPE, INT_TYPE, LONG_TYPE, 
+        FLOAT_TYPE, DOUBLE_TYPE, STRING_TYPE, 
+        BOOL_VECTOR_TYPE, CHAR_VECTOR_TYPE, UNSIGNED_CHAR_VECTOR_TYPE, 
+        INT_VECTOR_TYPE, LONG_VECTOR_TYPE, FLOAT_VECTOR_TYPE,
+        DOUBLE_VECTOR_TYPE, STRING_VECTOR_TYPE
+    } VariantTypeEnum;
+
     Variant();
     Variant(const Variant &);
     Variant(const XMLNode &);
@@ -112,7 +116,9 @@ class STATE_API Variant
     Variant                  &operator=(const doubleVector &);
     
     Variant                  &operator=(const stringVector &);
-    
+
+    bool                      operator ==(const Variant &obj) const;
+
     int                       Type()     const { return dataType;}
     std::string               TypeName() const;
     
@@ -177,6 +183,12 @@ class STATE_API Variant
     virtual std::string       ToXML(const std::string &indent="") const;
     virtual XMLNode           ToXMLNode() const;
 
+ protected:
+    void                      Write(Connection &conn) const;
+    void                      Read(Connection &conn);
+    int                       CalculateMessageSize(Connection &conn) const;
+    void                      Init(int);
+
  private:
     static std::string        TypeIDToName(int);
     static int                NameToTypeID(const std::string &);
@@ -203,7 +215,6 @@ class STATE_API Variant
     static doubleVector       unsetDoubleVector;
     static stringVector       unsetStringVector;
     
-    void                      Init(int);
     void                      Cleanup();
 
     int                       dataType;

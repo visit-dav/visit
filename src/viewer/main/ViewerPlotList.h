@@ -293,6 +293,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Wed Dec 10 14:52:46 PST 2008
 //    I made it use an animation attributes object.
 //
+//    Brad Whitlock, Thu Jan  8 15:08:33 PST 2009
+//    I added methods to help deal with the plot information.
+//
 // ****************************************************************************
 
 
@@ -415,6 +418,7 @@ public:
 
     bool NotActivePlotList() const;
     void UpdatePlotAtts(bool=true) const;
+    void UpdatePlotInformation() const;
     void GetPlotAtts(std::vector<std::string> &plotNames,
                      std::vector<const char*> &pluginIDsList,
                      std::vector<EngineKey> &engineKeysList,

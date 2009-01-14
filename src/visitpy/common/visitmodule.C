@@ -8134,66 +8134,59 @@ visit_GetQueryOutputObject(PyObject *self, PyObject *args)
 }
 
 
-
 // ****************************************************************************
-// Function: visit_GetOutputArray
+// Method: visit_GetPlotInformation
 //
-// Purpose:
-//   Returns the output array for the active plot.
+// Purpose: 
+//   Returns a dictionary of information created from the first active plot's
+//   plot info attributes.
 //
-// Notes:      
+// Arguments:
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 20, 2006 
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan  7 10:23:43 PST 2009
 //
 // Modifications:
-//
+//   
 // ****************************************************************************
 
 STATIC PyObject *
-visit_GetOutputArray(PyObject *self, PyObject *args)
+visit_GetPlotInformation(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    int winId = -1;
-    int plotId = -1;
-    if (!PyArg_ParseTuple(args, "i", &plotId))
-    {
-        if (!PyArg_ParseTuple(args, "ii", &plotId, &winId))
-        {
-        }
-        PyErr_Clear();
-    }
-    PyObject *retval;
+    // Synchronize to make sure all plot info atts have arrived.
+    Synchronize();
+
+    PyObject *retval = 0;
     MUTEX_LOCK();
-        GetViewerMethods()->UpdatePlotInfoAtts(plotId, winId);
-    MUTEX_UNLOCK();
-    // Wait until viewer has finished updating the plot Info atts
-    int error = Synchronize();
-    // Retrieve the update plot info atts.
-    PlotInfoAttributes *pia = GetViewerState()->GetPlotInfoAttributes();
-    if (pia == NULL)
-    {
-        retval = PyString_FromString("Plot did not define an output array."); 
-    }
-    else
-    {
-        doubleVector vals = pia->GetOutputArray();
-        if (vals.size() == 0)
-          retval = PyString_FromString("Plot did not define an output array." );
+        int plotType = -1;
+        // Get the active plot's type if we can.
+        const PlotList *pL = GetViewerState()->GetPlotList();
+        for(int i = 0; i < pL->GetNumPlots(); ++i)
+        {
+            const Plot &p = pL->GetPlots(i);
+            if(p.GetActiveFlag())
+            {
+                plotType = p.GetPlotType(); 
+                break;
+            }
+        }
+
+        PlotInfoAttributes *info = GetViewerState()->GetPlotInformation(plotType);
+        if(info != 0)
+            retval = PyMapNode_Wrap(info->GetData());
         else
         {
-            PyObject *tuple = PyTuple_New(vals.size());
-            for(int j = 0; j < vals.size(); ++j)
-            {
-                PyObject *item = PyFloat_FromDouble(vals[j]);
-                if(item == NULL)
-                    continue;
-                PyTuple_SET_ITEM(tuple, j, item);
-            }
-            retval = tuple;
+            retval = Py_None;
+            Py_INCREF(retval);
         }
-    }
+    MUTEX_UNLOCK();
+
     return retval;
 }
 
@@ -13599,8 +13592,8 @@ AddDefaultMethods()
     AddMethod("GetQueryOutputObject", visit_GetQueryOutputObject,
                                                      visit_GetQueryOutput_doc);
     
-    AddMethod("GetOutputArray", visit_GetOutputArray,
-                                                     visit_GetOutputArray_doc);
+    AddMethod("GetPlotInformation", visit_GetPlotInformation,
+                                                     visit_GetPlotInformation_doc);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes,
                                              visit_GetRenderingAttributes_doc);
     AddMethod("GetQueryOverTimeAttributes", visit_GetQueryOverTimeAttributes,
