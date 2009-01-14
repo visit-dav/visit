@@ -1479,7 +1479,7 @@ avtPlot::GetCellCountMultiplierForSRThreshold() const
 
 
 // ****************************************************************************
-//  Method: avtPlot::GetPlotInfoAtts
+//  Method: avtPlot::GetPlotInformation
 //
 //  Purpose: 
 //    Returns the PlotInfoAttributes associated with this plot.
@@ -1488,13 +1488,15 @@ avtPlot::GetCellCountMultiplierForSRThreshold() const
 //  Creation:   June 20, 2006
 //
 //  Modifications:
+//    Brad Whitlock, Wed Jan  7 14:25:06 PST 2009
+//    Return a reference, renamed method.
 //
 // ****************************************************************************
 
-const PlotInfoAttributes *
-avtPlot::GetPlotInfoAtts()
+const PlotInfoAttributes &
+avtPlot::GetPlotInformation() const
 {
-    return behavior->GetPlotInfoAtts();
+    return behavior->GetPlotInformation();
 }
 
 // ****************************************************************************

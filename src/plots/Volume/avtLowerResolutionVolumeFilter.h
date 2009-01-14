@@ -36,71 +36,51 @@
 *
 *****************************************************************************/
 
-#ifndef QvisAbstractOpacityBar_H
-#define QvisAbstractOpacityBar_H
-#include <gui_exports.h>
+// ************************************************************************* //
+//                             avtLowerResolutionVolumeFilter.h              //
+// ************************************************************************* //
 
-#include <QFrame>
-class QImage;
-class ColorControlPointList;
+#ifndef AVT_LOWER_RESOLUTION_VOLUME_FILTER_H
+#define AVT_LOWER_RESOLUTION_VOLUME_FILTER_H
+#include <avtPluginDataTreeIterator.h>
+#include <VolumeAttributes.h>
 
 // ****************************************************************************
-//  Class:  QvisAbstractOpacityBar
+//  Class: avtLowerResolutionVolumeFilter
 //
 //  Purpose:
-//    Abstract base for an opacity map editor
+//      Calculates scaled data and histograms for the resampled volume plots.
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    January 30, 2001
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Dec 15 16:19:01 PST 2008
 //
 //  Modifications:
-//    Gunther Weber, Fri Apr  6 16:04:52 PDT 2007
-//    Added support for painting in the color spectrum.
-//
-//    Brad Whitlock, Fri May 30 09:32:22 PDT 2008
-//    Qt 4.
-//
-//    Brad Whitlock, Thu Dec 18 10:55:02 PST 2008
-//    I added histogram textures.
 //
 // ****************************************************************************
 
-class GUI_API QvisAbstractOpacityBar : public QFrame
+class avtLowerResolutionVolumeFilter : public avtPluginDataTreeIterator
 {
-    Q_OBJECT
-public:
-                   QvisAbstractOpacityBar(QWidget *parent=NULL);
-    virtual       ~QvisAbstractOpacityBar();
-    virtual float *getRawOpacities(int) = 0;
-    void           setBackgroundColorControlPoints(const ColorControlPointList *ccp);
+  public:
+                             avtLowerResolutionVolumeFilter();
+    virtual                 ~avtLowerResolutionVolumeFilter();
 
-    void           setHistogramTexture(const float *t, int ts);
+    virtual void             SetAtts(const AttributeGroup *);
+    virtual const char      *GetType(void) { return "avtLowerResolutionVolumeFilter"; };
+    virtual const char      *GetDescription(void)
+                                  { return "Scaling data, creating histograms"; };
+  protected:
+    VolumeAttributes         atts;
+    float                   *hist;
+    float                   *hist2;
+    int                      hist_size;
 
-signals:
-    void           mouseReleased();
-
-protected:
-    int            val2x(float);
-    float          x2val(int);
-    int            val2y(float);
-    float          y2val(int);
-
-    void           drawColorBackground();
-    void           drawFilledCurve(float *curve, int nc, const QColor &cc, float opac);
-    void           imageDirty();
-
-    virtual void   paintEvent(QPaintEvent*);
-    virtual void   resizeEvent(QResizeEvent*);
-    virtual void   drawOpacities() = 0;
-
-    QImage        *image;
-    const ColorControlPointList
-                  *backgroundColorControlPoints;
-    float         *histTexture;
-    int            histTextureSize;
-
-private:
-    bool           ensureImageExists(int,int);
+    void                     CalculateHistograms(vtkDataSet *ds);
+    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void             PostExecute();
+    virtual bool             FilterUnderstandsTransformedRectMesh();
 };
 
+
 #endif
+
+

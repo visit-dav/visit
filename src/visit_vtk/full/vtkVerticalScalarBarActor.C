@@ -58,6 +58,7 @@
 #include <vtkWindow.h>
 #include <limits.h>
 #include <float.h>
+#include "vtkSkew.h"
 
 #define DefaultNumLabels 5
 
@@ -629,7 +630,8 @@ BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels
           val = min; 
       if (this->UseSkewScaling)
         {
-        val = this->SkewTheValue(val, min, max);
+        // The function we were using was actually the "inverse" skew.
+        val = vtkInverseSkewValue(val, min, max, this->SkewFactor);
         }
       else if (this->UseLogScaling)
         {
@@ -1554,29 +1556,6 @@ void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
 
   // Now do superclass
   this->Superclass::ShallowCopy(prop);
-}
-
-// ****************************************************************************
-//  Modifications:
-//
-//    Kathleen Bonnell, Thu Feb 19 14:10:21 PST 2004 
-//    Removed the scaling portion. 
-//
-// ****************************************************************************
- 
-double
-vtkVerticalScalarBarActor::SkewTheValue(double val, double min, double max)
-{
-  if (this->SkewFactor < 0.) this->SkewFactor = 1.;
-  if (this->SkewFactor == 1.) return val;
-
-  double rangeDif = max - min;
-  double log_skew_inv = 1./(log(this->SkewFactor));
-  double k = (this->SkewFactor -1.) / rangeDif;
-
-  double v2 = log((val - min) * k + 1) * log_skew_inv;
-  double temp  = (rangeDif * v2 + min) ;
-  return temp;
 }
 
 // ****************************************************************************

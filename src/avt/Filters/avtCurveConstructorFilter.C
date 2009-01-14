@@ -52,7 +52,7 @@
 #include <vtkVisItUtility.h>
 #include <InvalidDimensionsException.h>
 #include <NoInputException.h>
-#include <PlotInfoAttributes.h>
+#include <MapNode.h>
 
 #include <DebugStream.h>
 
@@ -547,17 +547,21 @@ avtCurveConstructorFilter::UpdateDataObjectInfo(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 20, 2006 
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jan  6 16:41:18 PST 2009
+//    Store the outputArray into the MapNode data.
+//
 // ****************************************************************************
 
 void
 avtCurveConstructorFilter::PostExecute(void)
 {
-
 #ifdef PARALLEL
     BroadcastDoubleVector(outputArray, PAR_Rank());
 #endif
     PlotInfoAttributes plotInfoAtts ;
-    plotInfoAtts.SetOutputArray(outputArray);
-    GetOutput()->GetInfo().GetAttributes().SetPlotInfoAtts(&plotInfoAtts);
+    MapNode data;
+    data = outputArray;
+    GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curve", data);
 }
 

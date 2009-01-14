@@ -60,6 +60,9 @@ class QPixmap;
 //    Brad Whitlock, Wed Jun  4 10:32:52 PDT 2008
 //    Qt 4.
 //
+//    Brad Whitlock, Thu Dec 18 14:07:00 PST 2008
+//    I changed the drawOpacities method.
+//
 // ****************************************************************************
 
 class GUI_API QvisGaussianOpacityBar : public QvisAbstractOpacityBar
@@ -77,7 +80,7 @@ class GUI_API QvisGaussianOpacityBar : public QvisAbstractOpacityBar
     virtual void  mouseMoveEvent(QMouseEvent*);
     virtual void  mousePressEvent(QMouseEvent*);
     virtual void  mouseReleaseEvent(QMouseEvent*);
-    virtual void  drawOpacities(int,int);
+    virtual void  drawOpacities();
     void          drawControlPoints();
 
   private:

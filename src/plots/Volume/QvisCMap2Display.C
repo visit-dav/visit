@@ -14,8 +14,6 @@
 #include <QPainter>
 #include <QPixmap>
 
-#include <avtVolumeRenderer.h> // just for USE_HISTOGRAM
-
 // ****************************************************************************
 // Class: WidgetRenderer
 //
@@ -29,9 +27,9 @@
 // Creation:   Fri Sep 7 14:52:53 PST 2007
 //
 // Modifications:
-//   Brad Whitlock, Tue Sep 30 11:43:32 PDT 2008
-//   Added code to draw a black quad behind the textured quad to ensure that
-//   the widget background is always black.
+//   Brad Whitlock, Mon Jan 12 16:38:53 PST 2009
+//   I changed the draw method so it does not do anything if there are no
+//   widgets to draw. This seems to fix a problem with drawing the empty widget.
 //
 // ****************************************************************************
 
@@ -55,14 +53,15 @@ public:
 
     void draw()
     {
-        // Make sure that the background is black.
-        glColor3f(0.,0.,0.);
-        glBegin(GL_QUADS);
-        glVertex2f( 0.0,  0.0);
-        glVertex2f( 1.0,  0.0);
-        glVertex2f( 1.0,  1.0);
-        glVertex2f( 0.0,  1.0);
-        glEnd();
+        // Find the number of widgets
+        int nWidgets = 0;
+        for(int c = 0; c < cmap2_.size(); ++c)
+        {
+            std::vector<SLIVR::CM2Widget*> &widgets = cmap2_[c]->widgets();
+            nWidgets += widgets.size();
+        }
+        if(nWidgets < 1)
+            return;
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
@@ -115,9 +114,11 @@ WidgetID QvisCMap2Display::WIDGET_NOT_FOUND = -1;
 QvisCMap2Display::QvisCMap2Display(QWidget *parent) : 
   QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::AlphaChannel), parent), 
   init_done(false), defaultColor(1., 1., 1.), defaultAlpha(0.8), 
-  idToWidget(), nextID(0), read_histogram(true), histogram_texture(0)
+  idToWidget(), nextID(0), histogram_texture(0)
 {
     activeW = 0;
+    hist_data = 0;
+    hist_size = 0;
 
     // Add the widgets to the colormap.
     SLIVR::ColorMap2 *c = new SLIVR::ColorMap2;
@@ -191,6 +192,44 @@ QvisCMap2Display::sizePolicy() const
 }
 
 // ****************************************************************************
+// Method: QvisCMap2Display::setHistogramTexture
+//
+// Purpose: 
+//   Set the histogram texture data.
+//
+// Arguments:
+//   data : The new texture data.
+//   dim  : The size of the new texture data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 12 16:50:53 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCMap2Display::setHistogramTexture(const unsigned char *data, int size)
+{
+    if(hist_data != 0)
+        delete [] hist_data;
+
+    if(data != 0)
+    {
+        hist_data = new unsigned char[size*size];
+        memcpy(hist_data, data, size*size*sizeof(unsigned char));
+        hist_size = size;
+    }
+    else
+    {
+        hist_data = 0;
+        hist_size = 0;
+    }
+
+    update();
+}
+
+// ****************************************************************************
 // Method: QvisCMap2Display::paintGL
 //
 // Purpose: 
@@ -203,6 +242,9 @@ QvisCMap2Display::sizePolicy() const
 //   Josh Stratton, August 2008
 //   Added histogram painting code.
 //
+//   Brad Whitlock, Fri Dec 12 16:42:55 PST 2008
+//   Rewrote histogram painting code.
+//
 // ****************************************************************************
 
 void
@@ -210,26 +252,6 @@ QvisCMap2Display::paintGL()
 {
     // Make a texture from the color map widgets.
     ren->make_colormap();
-
-    if (histogram_texture == 0)
-    {
-        glGenTextures(1, &histogram_texture);
-
-      // initialize texture to no data
-      /* (not working for some reason)
-      QPixmap pix(512,512);
-      QColor bg(255,0,128);
-      pix.fill(bg);
-      QPainter painter(&pix);
-      painter.drawText(10,10,tr("No histogram data"));
-      QImage image = pix.convertToImage();
-      QImage gl_image = QGLWidget::convertToGLFormat(image);
-      glBindTexture(GL_TEXTURE_2D, histogram_texture);
-      glTexImage2D(GL_TEXTURE_2D, 0, 3, 512, 512,
-                   0, GL_RGBA, GL_UNSIGNED_BYTE, gl_image.bits());
-      */
-        read_histogram = true;
-    }
 
     //
     // Draw the background and widgets
@@ -244,62 +266,46 @@ QvisCMap2Display::paintGL()
 
     glDisable(GL_LIGHTING);
 
-    read_histogram = true;
-    if (read_histogram)
+    if(hist_data != 0)
     {
-#if USE_HISTOGRAM
-        FILE* file = fopen("/tmp/histogram.dump", "r");
-        if (file == 0)
+        if(histogram_texture == 0)
+            glGenTextures(1, &histogram_texture);
+
+        // read to a texture
+        glBindTexture(GL_TEXTURE_2D, histogram_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, hist_size, hist_size,
+                     0, GL_LUMINANCE, GL_UNSIGNED_BYTE, hist_data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // draw the texture to the screen
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, histogram_texture);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        glBegin(GL_QUADS);
         {
-        //        debug1 << "Error opening histogram file" << endl;
+          glTexCoord2f(0,0);
+          glVertex2f(0,0);
+          glTexCoord2f(1,0);
+          glVertex2f(1,0);
+          glTexCoord2f(1,1);
+          glVertex2f(1,1);
+          glTexCoord2f(0,1);
+          glVertex2f(0,1);
         }
-        else
-        {
-            int hist_dim;
-
-            // read in histogram size
-            fread(&hist_dim, 1, sizeof(int), file);
-
-            // read in histogram
-            GLfloat *hist = new GLFloat[hist_dim * hist_dim];
-            fread(hist, 1, sizeof(GLfloat)*hist_dim*hist_dim, file);
-
-            float count = 0;
-            for (int i = 0; i < hist_dim*hist_dim; i++)
-                if (hist[i] > 0)
-                    count += 1;
-            count = count / (hist_dim * hist_dim);
-
-            // read to a texture
-            glBindTexture(GL_TEXTURE_2D, histogram_texture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, hist_dim, hist_dim,
-                         0, GL_LUMINANCE, GL_FLOAT, hist);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            delete [] hist;
-
-            fclose(file);
-        }
-#endif
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
     }
-
-    // draw the texture to the screen
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, histogram_texture);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glBegin(GL_QUADS);
+    else
     {
-      glTexCoord2f(0,0);
-      glVertex2f(0,0);
-      glTexCoord2f(1,0);
-      glVertex2f(1,0);
-      glTexCoord2f(1,1);
-      glVertex2f(1,1);
-      glTexCoord2f(0,1);
-      glVertex2f(0,1);
+        glColor3f(0.,0.,0.);
+        glBegin(GL_QUADS);
+        glVertex2f( 0.0,  0.0);
+        glVertex2f( 1.0,  0.0);
+        glVertex2f( 1.0,  1.0);
+        glVertex2f( 0.0,  1.0);
+        glEnd();
     }
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
 
     // Draw the widgets.
     ren->draw();
@@ -881,6 +887,24 @@ QvisCMap2Display::removeWidget(WidgetID id)
         // Tell the world that the widget list changed.
         emit widgetListChanged();
     } 
+}
+
+void
+QvisCMap2Display::clear()
+{
+    for(int c = 0; c < cmap2.size(); ++c)
+    {
+        std::vector<SLIVR::CM2Widget*> &widgets = cmap2[c]->widgets();
+        widgets.clear();
+    }
+    idToWidget.clear();
+
+    // Redraw the widget
+    ren->set_colormap2(cmap2);
+    updateGL();
+
+    // Tell the world that the widget list changed.
+    emit widgetListChanged();   
 }
 
 WidgetID

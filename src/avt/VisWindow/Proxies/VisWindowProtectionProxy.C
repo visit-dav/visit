@@ -489,52 +489,6 @@ VisWindowProtectionProxy::ProxiedHasPlots(bool p)
     viswin->HasPlots(p);
 }
 
-
-// ****************************************************************************
-//  Method: VisWindowProtectionProxy::ProxiedGetPlotListIndex
-//
-//  Purpose: Uses friend access to determine the index of a name-identified
-//           plot in this VisWindow's list of plots.  Returns -1 if the plot
-//           does not exist in the list.
-//
-//  Arguments:
-//      plotName:  Name of the plot whose list index is being queried
-//
-//  Programmer: Mark Blair
-//  Creation:   Wed Aug 30 14:09:00 PDT 2006
-//
-// ****************************************************************************
-
-int
-VisWindowProtectionProxy::ProxiedGetPlotListIndex(const char *plotName)
-{
-    return viswin->GetPlotListIndex(plotName);
-}
-
-
-// ****************************************************************************
-//  Method: VisWindowProtectionProxy::ProxiedGetPlotInfoAtts
-//
-//  Purpose: Uses friend access to retrieve any attributes of a particular plot
-//           that were pushed by that plot if this VisWindow in fact has a plot
-//           of that type.
-//
-//  Arguments:
-//      plotName:  Name (type name) of the plot whose pushed attributes are
-//                 being queried
-//
-//  Programmer: Mark Blair
-//  Creation:   Wed Oct 25 15:12:55 PDT 2006
-//
-// ****************************************************************************
-
-const PlotInfoAttributes *
-VisWindowProtectionProxy::ProxiedGetPlotInfoAtts(const char *plotName)
-{
-    return viswin->GetPlotInfoAtts(plotName);
-}
-
-
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedGetBounds
 //

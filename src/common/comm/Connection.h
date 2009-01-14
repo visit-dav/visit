@@ -40,6 +40,7 @@
 #define CONNECTION_H
 #include <comm_exports.h>
 #include <TypeRepresentation.h>
+#include <string>
 
 // ****************************************************************************
 // Class: Connection
@@ -59,6 +60,9 @@
 //
 //    Brad Whitlock, Wed Mar 20 17:23:43 PST 2002
 //    Added Fill, DirectWrite, DirectRead, NeedsRead, GetDescriptor methods.
+//
+//    Brad Whitlock, Tue Jan  6 15:45:23 PST 2009
+//    I added convenience methods for reading/writing string.
 //
 // ****************************************************************************
 
@@ -92,6 +96,7 @@ public:
     void WriteLong(long val);
     void WriteFloat(float val);
     void WriteDouble(double val);
+    void WriteString(const std::string &);
 
     // We should be able to read into a variable without conversion
     // since conversion takes place on writes to the connection.
@@ -101,6 +106,7 @@ public:
     void ReadLong(long *l);
     void ReadFloat(float *f);
     void ReadDouble(double *d);
+    void ReadString(std::string &);
 
     int CharSize(bool = true);
     int UnsignedCharSize(bool = true);

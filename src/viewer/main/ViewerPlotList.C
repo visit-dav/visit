@@ -77,6 +77,7 @@
 #include <ViewerPlotFactory.h>
 #include <ViewerPlotList.h>
 #include <ViewerQueryManager.h>
+#include <ViewerState.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
 
@@ -1321,6 +1322,9 @@ ViewerPlotList::UpdateSinglePlotState(ViewerPlot *plot)
 //   Brad Whitlock, Wed Dec 10 15:08:14 PST 2008
 //   Use AnimationAttributes.
 //
+//   Brad Whitlock, Thu Jan  8 16:00:43 PST 2009
+//   I added code to update the plot information.
+//
 // ****************************************************************************
 
 void
@@ -1372,6 +1376,7 @@ ViewerPlotList::UpdateFrame(bool updatePlotStates)
         // Update the plot list so that the color changes on the plots.
         //
         UpdatePlotList();
+        UpdatePlotInformation();
     }
 }
 
@@ -6615,6 +6620,65 @@ ViewerPlotList::SetForegroundColor(const double *fg)
     return retval;
 }
 
+// ****************************************************************************
+// Method: ViewerPlotList::UpdatePlotInformation
+//
+// Purpose: 
+//   This method sends plot information back to the clients.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       The same criteria are used to select plots as are used when we
+//             send back plot atts to the client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan  8 15:03:52 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::UpdatePlotInformation() const
+{
+    //
+    // Return if this isn't the active plot list.
+    //
+    if (NotActivePlotList())
+    {
+        debug4 << "Returning from ViewerPlotList::UpdatePlotInformation "
+               << "because the plot list does not belong to the active window."
+               << endl;
+        return;
+    }
+
+    ViewerPlotFactory *plotFactory = viewerSubject->GetPlotFactory();
+    int       nPlotType = plotFactory->GetNPlotTypes();
+    int       *plotCount = new int[nPlotType];
+    memset((void*)plotCount, 0, sizeof(int) * nPlotType);
+
+    for (int i = 0; i < nPlots; i++)
+    {
+        const ViewerPlot *plot = plots[i].plot;
+        int plotType = plot->GetType();
+
+        //
+        // If the plot is within range of the frame and is active, bump
+        // the count and set the plot attributes if this is the first
+        // frame the plot type is encountered.
+        //
+        if (plot->IsInRange() && plots[i].active)
+        {
+            plotCount[plotType]++;
+            if (plotCount[plotType] == 1)
+                plot->UpdatePlotInformation();
+        }
+    }
+
+    delete [] plotCount;
+}
 
 // ****************************************************************************
 //  Method: ViewerPlotList::UpdatePlotAtts
@@ -6649,6 +6713,9 @@ ViewerPlotList::SetForegroundColor(const double *fg)
 //    Brad Whitlock, Wed Feb 2 15:57:27 PST 2005
 //    I made it use the new NotActivePlotList so the check to see if the plot
 //    list belongs to the active window is more isolated.
+//
+//    Brad Whitlock, Wed Jan  7 15:41:39 PST 2009
+//    I added code to update the plot info atts for the selected plots.
 //
 // ****************************************************************************
 
@@ -6687,13 +6754,9 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
     ViewerOperator **operatorForType = new ViewerOperator*[nOperatorType];
 
     for (i = 0; i < nPlotType; i++)
-    {
         plotCount[i] = 0;
-    }
     for (i = 0; i < nOperatorType; i++)
-    {
         operatorForType[i] = 0;
-    }
 
     for (i = 0; i < nPlots; i++)
     {
@@ -6711,6 +6774,7 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
             if (plotCount[plotType] == 1)
             {
                 plot->SetClientAttsFromPlot();
+                plot->UpdatePlotInformation();
             }
 
             // Reset the count array for this plot.
@@ -6802,6 +6866,24 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
         {
             if (plotCount[i] == 0)
                 plotFactory->SetClientAttsFromDefault(i);
+        }
+    }
+
+    //
+    // Send empty plot info atts to plots that did not have an active plot.
+    //
+    for (i = 0; i < nPlotType; i++)
+    {
+        if (plotCount[i] == 0)
+        {
+            // Let's empty out the plot info atts too if they are not 
+            // already empty.
+            PlotInfoAttributes *info = GetViewerState()->GetPlotInformation(i);
+            if(info != 0)
+            {
+                info->Reset();
+                info->Notify();
+            }
         }
     }
 

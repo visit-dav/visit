@@ -78,7 +78,7 @@ TransferFunctionWidget::WidgetType_FromString(const std::string &s, TransferFunc
 }
 
 // Type map format string
-const char *TransferFunctionWidget::TypeMapFormatString = "iFF";
+const char *TransferFunctionWidget::TypeMapFormatString = "isFF";
 
 // ****************************************************************************
 // Method: TransferFunctionWidget::TransferFunctionWidget
@@ -98,6 +98,20 @@ const char *TransferFunctionWidget::TypeMapFormatString = "iFF";
 TransferFunctionWidget::TransferFunctionWidget() : 
     AttributeSubject(TransferFunctionWidget::TypeMapFormatString)
 {
+    Type = Rectangle;
+    Name = "unnamed";
+    BaseColor[0] = 1;
+    BaseColor[1] = 1;
+    BaseColor[2] = 1;
+    BaseColor[3] = 1;
+    Position[0] = 0;
+    Position[1] = 0;
+    Position[2] = 0;
+    Position[3] = 0;
+    Position[4] = 0;
+    Position[5] = 0;
+    Position[6] = 0;
+    Position[7] = 0;
 }
 
 // ****************************************************************************
@@ -120,6 +134,7 @@ TransferFunctionWidget::TransferFunctionWidget(const TransferFunctionWidget &obj
 {
 
     Type = obj.Type;
+    Name = obj.Name;
     for(int i = 0; i < 4; ++i)
         BaseColor[i] = obj.BaseColor[i];
 
@@ -171,6 +186,7 @@ TransferFunctionWidget::operator = (const TransferFunctionWidget &obj)
     if (this == &obj) return *this;
 
     Type = obj.Type;
+    Name = obj.Name;
     for(int i = 0; i < 4; ++i)
         BaseColor[i] = obj.BaseColor[i];
 
@@ -212,6 +228,7 @@ TransferFunctionWidget::operator == (const TransferFunctionWidget &obj) const
 
     // Create the return value
     return ((Type == obj.Type) &&
+            (Name == obj.Name) &&
             BaseColor_equal &&
             Position_equal);
 }
@@ -358,6 +375,7 @@ void
 TransferFunctionWidget::SelectAll()
 {
     Select(ID_Type,      (void *)&Type);
+    Select(ID_Name,      (void *)&Name);
     Select(ID_BaseColor, (void *)BaseColor, 4);
     Select(ID_Position,  (void *)Position, 8);
 }
@@ -371,6 +389,13 @@ TransferFunctionWidget::SetType(TransferFunctionWidget::WidgetType Type_)
 {
     Type = Type_;
     Select(ID_Type, (void *)&Type);
+}
+
+void
+TransferFunctionWidget::SetName(const std::string &Name_)
+{
+    Name = Name_;
+    Select(ID_Name, (void *)&Name);
 }
 
 void
@@ -401,6 +426,18 @@ TransferFunctionWidget::GetType() const
     return WidgetType(Type);
 }
 
+const std::string &
+TransferFunctionWidget::GetName() const
+{
+    return Name;
+}
+
+std::string &
+TransferFunctionWidget::GetName()
+{
+    return Name;
+}
+
 const float *
 TransferFunctionWidget::GetBaseColor() const
 {
@@ -428,6 +465,12 @@ TransferFunctionWidget::GetPosition()
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+TransferFunctionWidget::SelectName()
+{
+    Select(ID_Name, (void *)&Name);
+}
 
 void
 TransferFunctionWidget::SelectBaseColor()
@@ -466,6 +509,7 @@ TransferFunctionWidget::GetFieldName(int index) const
     switch (index)
     {
     case ID_Type:      return "Type";
+    case ID_Name:      return "Name";
     case ID_BaseColor: return "BaseColor";
     case ID_Position:  return "Position";
     default:  return "invalid index";
@@ -493,6 +537,7 @@ TransferFunctionWidget::GetFieldType(int index) const
     switch (index)
     {
     case ID_Type:      return FieldType_enum;
+    case ID_Name:      return FieldType_string;
     case ID_BaseColor: return FieldType_floatArray;
     case ID_Position:  return FieldType_floatArray;
     default:  return FieldType_unknown;
@@ -520,6 +565,7 @@ TransferFunctionWidget::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_Type:      return "enum";
+    case ID_Name:      return "string";
     case ID_BaseColor: return "floatArray";
     case ID_Position:  return "floatArray";
     default:  return "invalid index";
@@ -551,6 +597,11 @@ TransferFunctionWidget::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_Type:
         {  // new scope
         retval = (Type == obj.Type);
+        }
+        break;
+    case ID_Name:
+        {  // new scope
+        retval = (Name == obj.Name);
         }
         break;
     case ID_BaseColor:

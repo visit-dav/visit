@@ -43,9 +43,8 @@
 #include <avtVariableSkewExpression.h>
 
 #include <vtkDataArray.h>
-
 #include <ExpressionException.h>
-
+#include <vtkSkew.h>
 
 // ****************************************************************************
 //  Method: avtVariableSkewExpression constructor
@@ -101,6 +100,9 @@ avtVariableSkewExpression::~avtVariableSkewExpression()
 //  Creation:   March 5, 2005 
 //
 //  Modifications:
+//    Brad Whitlock, Fri Dec 19 15:54:36 PST 2008
+//    I made it use vtkSkewValue so we have all of the skew definitions in
+//    one place.
 //
 // ****************************************************************************
 
@@ -118,7 +120,7 @@ avtVariableSkewExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         {
             double val1 = in1->GetComponent(i, 0);
             double val2 = in2->GetComponent(i, 0);
-            double f = SkewTheValue(val1, r[0], r[1], val2);
+            double f = vtkSkewValue(val1, r[0], r[1], val2);
             out->SetComponent(i, 0, f);
         }
     }
@@ -127,42 +129,4 @@ avtVariableSkewExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         EXCEPTION2(ExpressionException, outputVariableName, "Skew can only be used on scalar " 
                    "variables.");
     }
-}
-
-
-// ****************************************************************************
-//  Method: avtVariableSkewExpression::SkewTheValue
-//
-//  Purpose:
-//    Performs the skew operation on each component,tuple of a data array.
-//
-//  Returns:    The skewed value.
-//
-//  Arguments:
-//    val       The value to be skewed.
-//    min       The minimum of all data values. 
-//    max       The maximum of all data values. 
-//    factor    The skew factor. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 5, 2005 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-double
-avtVariableSkewExpression::SkewTheValue(double val, double min, double max, 
-                                    double factor)
-{
-    if (factor <= 0 || factor == 1. || min == max) 
-        return val;
-
-    double range = max - min; 
-    double rangeInverse = 1. / range;
-    double logSkew = log(factor);
-    double k = range / (factor -1.);
-    double v2 = (val - min) * rangeInverse;
-    double temp =   k * (exp(v2 * logSkew) -1.) + min;
-    return temp;
 }

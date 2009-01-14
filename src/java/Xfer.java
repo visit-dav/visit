@@ -79,8 +79,8 @@ class Xfer implements SimpleObserver, Runnable
 {
     public Xfer()
     {
-        subjects = new AttributeSubject[100];
-        for(int i = 0; i < 100; ++i)
+        subjects = new AttributeSubject[200];
+        for(int i = 0; i < 200; ++i)
             subjects[i] = null;
         nSubjects = 0;
 
@@ -219,7 +219,7 @@ class Xfer implements SimpleObserver, Runnable
         while(ReadHeader())
         {
 //            if(opcode < nSubjects)
-            if(opcode < 100 && subjects[opcode] != null)
+            if(opcode < 200 && subjects[opcode] != null)
             {
                  PrintMessage("Xfer::Process: "+
                               "class="+subjects[opcode].GetClassName()+

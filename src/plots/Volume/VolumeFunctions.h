@@ -35,72 +35,49 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef VOLUME_FUNCTIONS_H
+#define VOLUME_FUNCTIONS_H
+class vtkDataSet;
+class vtkDataArray;
+class vtkRectilinearGrid;
+class VolumeAttributes;
 
-#ifndef QvisAbstractOpacityBar_H
-#define QvisAbstractOpacityBar_H
-#include <gui_exports.h>
-
-#include <QFrame>
-class QImage;
-class ColorControlPointList;
-
-// ****************************************************************************
-//  Class:  QvisAbstractOpacityBar
 //
-//  Purpose:
-//    Abstract base for an opacity map editor
+// These functions are shared between the volume renderer and a filter that
+// does work on the engine.
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    January 30, 2001
-//
-//  Modifications:
-//    Gunther Weber, Fri Apr  6 16:04:52 PDT 2007
-//    Added support for painting in the color spectrum.
-//
-//    Brad Whitlock, Fri May 30 09:32:22 PDT 2008
-//    Qt 4.
-//
-//    Brad Whitlock, Thu Dec 18 10:55:02 PST 2008
-//    I added histogram textures.
-//
-// ****************************************************************************
 
-class GUI_API QvisAbstractOpacityBar : public QFrame
-{
-    Q_OBJECT
-public:
-                   QvisAbstractOpacityBar(QWidget *parent=NULL);
-    virtual       ~QvisAbstractOpacityBar();
-    virtual float *getRawOpacities(int) = 0;
-    void           setBackgroundColorControlPoints(const ColorControlPointList *ccp);
+vtkDataArray *VolumeGetScalar(const VolumeAttributes &atts, vtkDataSet *ds);
 
-    void           setHistogramTexture(const float *t, int ts);
+bool VolumeGetScalars(const VolumeAttributes &atts, vtkDataSet *ds,
+                      vtkDataArray *&data, vtkDataArray *&opac);
 
-signals:
-    void           mouseReleased();
+void VolumeGetRange(vtkDataArray *s, float &min, float &max);
 
-protected:
-    int            val2x(float);
-    float          x2val(int);
-    int            val2y(float);
-    float          y2val(int);
+void VolumeGetVariableExtents(const VolumeAttributes &atts, 
+                              vtkDataArray *data,
+                              float varmin, float varmax, 
+                              float &vmin, float &vmax, float &vsize);
 
-    void           drawColorBackground();
-    void           drawFilledCurve(float *curve, int nc, const QColor &cc, float opac);
-    void           imageDirty();
+void VolumeGetOpacityExtents(const VolumeAttributes &atts, 
+                             vtkDataArray *opac,
+                             float &omin, float &omax, float &osize);
 
-    virtual void   paintEvent(QPaintEvent*);
-    virtual void   resizeEvent(QResizeEvent*);
-    virtual void   drawOpacities() = 0;
+void VolumeCalculateGradient(const VolumeAttributes &atts,
+                             vtkRectilinearGrid  *grid,
+                             vtkDataArray *opac,
+                             float *gx, float *gy, float *gz,
+                             float *gm, float *gmn, 
+                             float ghostval);
 
-    QImage        *image;
-    const ColorControlPointList
-                  *backgroundColorControlPoints;
-    float         *histTexture;
-    int            histTextureSize;
+void VolumeHistograms(const VolumeAttributes &atts, 
+                      vtkDataArray *data, vtkDataArray *gm, 
+                      float *hist, float *hist2, int hist_size);
 
-private:
-    bool           ensureImageExists(int,int);
-};
+void VolumeLogTransform(const VolumeAttributes &atts, 
+                        vtkDataArray *linear, vtkDataArray *log);
+
+void VolumeSkewTransform(const VolumeAttributes &atts, 
+                         vtkDataArray *linear, vtkDataArray *skew);
 
 #endif

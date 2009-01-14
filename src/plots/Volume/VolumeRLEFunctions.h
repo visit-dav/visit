@@ -35,72 +35,12 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef VOLUME_RLE_FUNCTIONS_H
+#define VOLUME_RLE_FUNCTIONS_H
+#include <vectortypes.h>
 
-#ifndef QvisAbstractOpacityBar_H
-#define QvisAbstractOpacityBar_H
-#include <gui_exports.h>
+void VolumeRLECompress(const unsignedCharVector &in, unsignedCharVector &out);
 
-#include <QFrame>
-class QImage;
-class ColorControlPointList;
-
-// ****************************************************************************
-//  Class:  QvisAbstractOpacityBar
-//
-//  Purpose:
-//    Abstract base for an opacity map editor
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    January 30, 2001
-//
-//  Modifications:
-//    Gunther Weber, Fri Apr  6 16:04:52 PDT 2007
-//    Added support for painting in the color spectrum.
-//
-//    Brad Whitlock, Fri May 30 09:32:22 PDT 2008
-//    Qt 4.
-//
-//    Brad Whitlock, Thu Dec 18 10:55:02 PST 2008
-//    I added histogram textures.
-//
-// ****************************************************************************
-
-class GUI_API QvisAbstractOpacityBar : public QFrame
-{
-    Q_OBJECT
-public:
-                   QvisAbstractOpacityBar(QWidget *parent=NULL);
-    virtual       ~QvisAbstractOpacityBar();
-    virtual float *getRawOpacities(int) = 0;
-    void           setBackgroundColorControlPoints(const ColorControlPointList *ccp);
-
-    void           setHistogramTexture(const float *t, int ts);
-
-signals:
-    void           mouseReleased();
-
-protected:
-    int            val2x(float);
-    float          x2val(int);
-    int            val2y(float);
-    float          y2val(int);
-
-    void           drawColorBackground();
-    void           drawFilledCurve(float *curve, int nc, const QColor &cc, float opac);
-    void           imageDirty();
-
-    virtual void   paintEvent(QPaintEvent*);
-    virtual void   resizeEvent(QResizeEvent*);
-    virtual void   drawOpacities() = 0;
-
-    QImage        *image;
-    const ColorControlPointList
-                  *backgroundColorControlPoints;
-    float         *histTexture;
-    int            histTextureSize;
-
-private:
-    bool           ensureImageExists(int,int);
-};
+void VolumeRLEDecompress(const unsignedCharVector &in, unsignedCharVector &out);
 
 #endif

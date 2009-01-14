@@ -59,6 +59,8 @@ class     vtkDataArray;
 //  Creation:   March 2, 2005 
 //
 //  Modifications:
+//    Brad Whitlock, Fri Dec 19 15:55:26 PST 2008
+//    I removed SkewTheValue.
 //
 // ****************************************************************************
 
@@ -75,9 +77,6 @@ class EXPRESSION_API avtVariableSkewExpression : public avtBinaryMathExpression
   protected:
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                  vtkDataArray *out, int ncomponents, int ntuples);
-  private:
-    double           SkewTheValue(double val, double min, double max, 
-                                  double factor);
 };
 
 

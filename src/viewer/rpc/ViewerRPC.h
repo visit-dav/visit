@@ -230,7 +230,6 @@ public:
         MoveAndResizeWindowRPC,
         SetStateLoggingRPC,
         ConstructDDFRPC,
-        UpdatePlotInfoAttsRPC,
         RequestMetaDataRPC,
         SetTreatAllDBsAsTimeVaryingRPC,
         SetCreateMeshQualityExpressionsRPC,

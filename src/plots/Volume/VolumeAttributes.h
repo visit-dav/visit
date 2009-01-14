@@ -107,7 +107,7 @@ public:
     void SelectOpacityControlPoints();
     void SelectOpacityVariable();
     void SelectFreeformOpacity();
-    void SelectTransferFunctionWidgetList();
+    void SelectTransferFunction2DWidgets();
 
     // Property setting methods
     void SetLegendFlag(bool legendFlag_);
@@ -169,8 +169,8 @@ public:
     double                         GetSkewFactor() const;
     SamplingType                   GetSampling() const;
     float                          GetRendererSamples() const;
-    const AttributeGroupVector     &GetTransferFunctionWidgetList() const;
-          AttributeGroupVector     &GetTransferFunctionWidgetList();
+    const AttributeGroupVector     &GetTransferFunction2DWidgets() const;
+          AttributeGroupVector     &GetTransferFunction2DWidgets();
     int                            GetTransferFunctionDim() const;
 
     // Persistence methods
@@ -179,12 +179,12 @@ public:
 
 
     // Attributegroup convenience methods
-    void AddTransferFunctionWidgetList(const TransferFunctionWidget &);
-    void ClearTransferFunctionWidgetLists();
-    void RemoveTransferFunctionWidgetList(int i);
-    int  GetNumTransferFunctionWidgetLists() const;
-    TransferFunctionWidget &GetTransferFunctionWidgetList(int i);
-    const TransferFunctionWidget &GetTransferFunctionWidgetList(int i) const;
+    void AddTransferFunction2DWidgets(const TransferFunctionWidget &);
+    void ClearTransferFunction2DWidgets();
+    void RemoveTransferFunction2DWidgets(int i);
+    int  GetNumTransferFunction2DWidgets() const;
+    TransferFunctionWidget &GetTransferFunction2DWidgets(int i);
+    const TransferFunctionWidget &GetTransferFunction2DWidgets(int i) const;
 
     TransferFunctionWidget &operator [] (int i);
     const TransferFunctionWidget &operator [] (int i) const;
@@ -258,7 +258,7 @@ public:
         ID_skewFactor,
         ID_sampling,
         ID_rendererSamples,
-        ID_TransferFunctionWidgetList,
+        ID_transferFunction2DWidgets,
         ID_transferFunctionDim
     };
 
@@ -291,7 +291,7 @@ private:
     double                   skewFactor;
     int                      sampling;
     float                    rendererSamples;
-    AttributeGroupVector     TransferFunctionWidgetList;
+    AttributeGroupVector     transferFunction2DWidgets;
     int                      transferFunctionDim;
 
     // Static class format string for type map.

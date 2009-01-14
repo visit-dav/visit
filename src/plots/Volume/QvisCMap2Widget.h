@@ -29,6 +29,9 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Tue Sep 30 09:48:58 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Mon Jan 12 14:35:56 PST 2009
+//   I added selectWidget.
+//
 // ****************************************************************************
 
 class QvisCMap2Widget : public QWidget
@@ -37,6 +40,8 @@ class QvisCMap2Widget : public QWidget
 public:
     QvisCMap2Widget(QWidget *parent);
     virtual ~QvisCMap2Widget();
+
+    void setHistogramTexture(const unsigned char *data, int size);
 
     WidgetID addTriangleWidget(const QString &wName,
                           float base,  // X-coordinate of bottom point
@@ -62,16 +67,17 @@ public:
                                 float rot
                                 );
 
-    WidgetID addParaboloidCM2Widget(const QString &wName,
-                                    float top_x, float top_y,
-                                    float bottom_x, float bottom_y,
-                                    float left_x, float left_y,
-                                    float right_x, float right_y
-                                    );
+    WidgetID addParaboloidWidget(const QString &wName,
+                                 float top_x, float top_y,
+                                 float bottom_x, float bottom_y,
+                                 float left_x, float left_y,
+                                 float right_x, float right_y
+                                 );
 
     int numWidgets() const;
     WidgetID getID(int index) const;
     void removeWidget(WidgetID id);
+    void clear();
 
     void   setDefaultColor(const QColor &c);
     QColor getDefaultColor() const;
@@ -89,9 +95,12 @@ public:
     QString getName(WidgetID id) const;
 
     QString getString(WidgetID id) const;
+
+    WidgetID getSelectedWidget() const;
+    void     selectWidget(WidgetID id);
 signals:
     void widgetListChanged();
-    void selectWidget(WidgetID id);
+    void selectedWidget(WidgetID id);
     void widgetChanged(WidgetID id);
 private slots:
     void updateList();
@@ -107,7 +116,6 @@ private slots:
     void setWidgetOpacity(int val);
     void setSizeLoc();
 private:
-    WidgetID getSelectedWidget() const;
     QString newName(const QString &base);
 
     int                nameIndex;

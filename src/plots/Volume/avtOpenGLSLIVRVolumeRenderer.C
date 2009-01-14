@@ -205,7 +205,14 @@ PrintAxisInfo(int axis, const NrrdAxisInfo &info)
 // Modifications:
 //   Josh Stratton, Thu May 15 16:15:08 MDT 2008
 //   Added support for 2D transfer functions
-//   
+// 
+//   Brad Whitlock, Tue Dec 16 11:58:04 PST 2008
+//   I changed how we iterate over the 2d transfer function widgets to fix
+//   a memory error. Fixed cmap2 widget deletion to avoid double deletion. I
+//   also added code to invert the Y value for the rectangle widget so it
+//   would produce seemingly more correct results when compared against the
+//   2D histogram.
+//
 // ****************************************************************************
 
 void
@@ -214,31 +221,12 @@ avtOpenGLSLIVRVolumeRenderer::CreateColormap(const VolumeAttributes &atts, bool 
     // Blow away the 1D transfer function
     if(context->cm != 0)
     {
-#ifdef DEBUG_PRINT
-        cout << "Delete cm" << endl;
-#endif
         delete context->cm;
         context->cm = 0;
     }
     // Blow away the 2D transfer function
     for(int c = 0; c < context->cmap2.size(); ++c)
-    {
-        vector<SLIVR::CM2Widget*> &widgets = context->cmap2[c]->widgets();
-        for(int w = 0; w < widgets.size(); ++w)
-        {
-#ifdef DEBUG_PRINT
-            cout << "Deleting widget " << w << endl;
-#endif
-            delete widgets[w];
-        }
-#ifdef DEBUG_PRINT
-        cout << "Deleting colormap " << c << endl;
-#endif
         delete context->cmap2[c];
-    }
-#ifdef DEBUG_PRINT
-    cout << "Cleared cmap2 " << endl;
-#endif
     context->cmap2.clear();
 
     const float opacityScaling = 0.002;
@@ -248,54 +236,66 @@ avtOpenGLSLIVRVolumeRenderer::CreateColormap(const VolumeAttributes &atts, bool 
     
     if(cmap2D)
     {
-      // Make a ColorMap2 from the nrrd.
+        // Make a ColorMap2 from the plot atts.
+        SLIVR::ColorMap2* mapping = new SLIVR::ColorMap2();
+        for (size_t i = 0; i < atts.GetNumTransferFunction2DWidgets(); i++)
+        {
+            const TransferFunctionWidget &widget = atts.GetTransferFunction2DWidgets(i);
+            const float *color = widget.GetBaseColor();
+            const float *position = widget.GetPosition();
 
-      SLIVR::ColorMap2* mapping = new SLIVR::ColorMap2();
-      // get the widget attributes
-      AttributeGroupVector widgets = atts.GetTransferFunctionWidgetList();
-      for (int i = 0; i < widgets.size(); i++) {
-        TransferFunctionWidget* widget = (TransferFunctionWidget*)(widgets[i]);
-        float* color = widget->GetBaseColor();
-        float* position = widget->GetPosition();
+            if (widget.GetType() == TransferFunctionWidget::Rectangle)
+            {
+#if 1
+                // The rectangle seems does not seem to produce the right values unless we
+                // do this. It could be a bug in SLIVR.
+                float Y = 1. - position[2];
+#else
+                float Y = position[2];
+#endif
+                SLIVR::RectangleCM2Widget *rect = new SLIVR::RectangleCM2Widget(SLIVR::CM2_RECTANGLE_1D, 
+                    position[0], position[1], Y, position[3], position[4]);
+                rect->set_name("Rectangle");
+                rect->set_onState(1);
+                rect->set_color(SLIVR::Color(color[0], color[1], color[2]));
+                rect->set_alpha(color[3]);
+                mapping->widgets().push_back(rect);
+            }
+            else if (widget.GetType() == TransferFunctionWidget::Triangle)
+            {
+                SLIVR::TriangleCM2Widget *tri = new SLIVR::TriangleCM2Widget(
+                    position[0], position[1], position[2], position[3], position[4]);
+                tri->set_name("Triangle");
+                tri->set_onState(1);
+                tri->set_color(SLIVR::Color(color[0], color[1], color[2]));
+                tri->set_alpha(color[3]);
+                mapping->widgets().push_back(tri);
+            }
+            else if (widget.GetType() == TransferFunctionWidget::Paraboloid)
+            {
+                SLIVR::ParaboloidCM2Widget *para = new SLIVR::ParaboloidCM2Widget(
+                    position[0], position[1], position[2], position[3], 
+                    position[4], position[5], position[6], position[7]);
+                para->set_name("Paraboloid");
+                para->set_onState(1);
+                para->set_color(SLIVR::Color(color[0], color[1], color[2]));
+                para->set_alpha(color[3]);
+                mapping->widgets().push_back(para);
+            }
+            else if (widget.GetType() == TransferFunctionWidget::Ellipsoid)
+            {
+                SLIVR::EllipsoidCM2Widget *ellip = new SLIVR::EllipsoidCM2Widget(
+                    position[0], position[1], position[2], position[3],
+                    position[4]);
+                ellip->set_name("Ellipsoid");
+                ellip->set_onState(1);
+                ellip->set_color(SLIVR::Color(color[0], color[1], color[2]));
+                ellip->set_alpha(color[3]);
+                mapping->widgets().push_back(ellip);
+            }
+        }
 
-        if (widget->GetType() == TransferFunctionWidget::Rectangle) {
-          SLIVR::RectangleCM2Widget* rect = new SLIVR::RectangleCM2Widget(SLIVR::CM2_RECTANGLE_1D, position[0
-], position[1], position[2], position[3], position[4]);
-          rect->set_name("Rectangle");
-          rect->set_onState(1);
-          rect->set_color(SLIVR::Color(color[0], color[1], color[2]));
-          rect->set_alpha(color[3]);
-          mapping->widgets().push_back(rect);
-
-        }
-        else if (widget->GetType() == TransferFunctionWidget::Triangle) {
-          SLIVR::TriangleCM2Widget* tri = new SLIVR::TriangleCM2Widget(position[0], position[1], position[2],
- position[3], position[4]);
-          tri->set_name("Triangle");
-          tri->set_onState(1);
-          tri->set_color(SLIVR::Color(color[0], color[1], color[2]));
-          tri->set_alpha(color[3]);
-          mapping->widgets().push_back(tri);
-        }
-        else if (widget->GetType() == TransferFunctionWidget::Paraboloid) {
-          SLIVR::ParaboloidCM2Widget* para = new SLIVR::ParaboloidCM2Widget(position[0], position[1], position[2], position[3], position[4], position[5], position[6], position[7]);
-          para->set_name("Paraboloid");
-          para->set_onState(1);
-          para->set_color(SLIVR::Color(color[0], color[1], color[2]));
-          para->set_alpha(color[3]);
-          mapping->widgets().push_back(para);
-        }
-        else if (widget->GetType() == TransferFunctionWidget::Ellipsoid) {
-          SLIVR::EllipsoidCM2Widget* ellip = new SLIVR::EllipsoidCM2Widget(position[0], position[1], position[2], position[3], position[4]);
-          ellip->set_name("Ellipsoid");
-          ellip->set_onState(1);
-          ellip->set_color(SLIVR::Color(color[0], color[1], color[2]));
-          ellip->set_alpha(color[3]);
-          mapping->widgets().push_back(ellip);
-        }
-      }
-
-      context->cmap2.push_back(mapping);
+        context->cmap2.push_back(mapping);
     }
     else
     {
@@ -362,7 +362,9 @@ avtOpenGLSLIVRVolumeRenderer::OnlyLightingFlagIsDifferent(
 // Creation:   Fri Aug 17 18:04:07 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jan 12 13:51:42 PST 2009
+//   I changed the method back so it uses helper methods.
+//
 // ****************************************************************************
 
 void
@@ -400,224 +402,12 @@ avtOpenGLSLIVRVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
     // Delete context if significant attributes changed
     if (context != 0)
-      CheckContext(context, atts);
-
-    // Change the renderer attributes, or free the context if the changes
-    // are too great.
-    if(oldAtts != atts)
-    {
-        if(context != 0)
-        {
-            for(int i = 0; i < oldAtts.NumAttributes(); ++i)
-                 if(!oldAtts.FieldsEqual(i, &atts))
-                     debug5 << "Field " << i << " differs" << endl;
-
-            if(oldAtts.AnyNonTransferFunctionMembersAreDifferent(atts))
-            {
-                if(OnlyLightingFlagIsDifferent(oldAtts, atts))
-                {
-                    // Only lighting is different.
-                    debug5 << mName << "Set the shading flag" << endl;
-                    context->renderer->set_shading(atts.GetLightingFlag());
-                }
-                else
-                {
-                    // Something besides the transfer function is different so 
-                    // blow away the context
-                    debug5 << mName << "oldAtts != atts, freeing the context." << endl;
-                    FreeContext();
-                }
-            }
-            else // Only transfer function is different
-            {
-                // The transfer function is different so install a new colormap
-                // based on the updated transfer function.
-                debug5 << mName << "Installing new transfer function." << endl;
-
-                bool cmap2d;
-                int dim = atts.GetTransferFunctionDim();
-                if (dim == 0) // 1D transfer function
-                  cmap2d = false;
-                else          // 2D transfer function
-                  cmap2d = true;
-                CreateColormap(atts, cmap2d);
-                if(cmap2d)
-                    context->renderer->set_colormap2(context->cmap2);
-                else
-                    context->renderer->set_colormap1(context->cm);
-            }
-        }
-        oldAtts = atts;
-    }
+        CheckContext(context, atts);
 
     // If the context needs to be created, do so now.
+    CreateContext(grid, data, opac, atts, vmin, vmax, omin, omax, gmn);
     if(context == 0)
-    {
-        debug5 << mName << "Creating new context" << endl;
-        context = new SlivrContext();
-        if(context == 0)
-            return;
-
-        bool opacityDifferent = atts.GetOpacityVariable() != "default";
-
-        // Create the nrrd.
-        size_t size[4];
-        size[0] = grid->GetDimensions()[0];
-        size[1] = grid->GetDimensions()[1];
-        size[2] = grid->GetDimensions()[2];
-        size[3] = opacityDifferent ? 2 : 1;
-        debug5 << mName << "data size: " << size[0] << " " << size[1] << " " << size[2] << endl;
-        context->data = nrrdNew();
-
-        if(opacityDifferent)
-        {
-            debug5 << mName << "Creating nrrd for 2 variables." << endl;
-            // Create uchar versions. Put var1 first then opac as var2.
-            int nvals = size[0]*size[1]*size[2];
-            unsigned char *cdata = new unsigned char[nvals * size[3]];
-            float *dptr[2];
-            dptr[0] = (float *)data->GetVoidPointer(0);
-            dptr[1] = (float *)opac->GetVoidPointer(0);
-            float d = vmax - vmin;
-            float inv_d = 1.f / d;
-            unsigned char *ccdata = cdata;
-            for(int c = 0; c < 2; ++c)
-            {
-                float *fdata = dptr[c];
-                for(int k = 0; k < nvals; ++k)
-                {
-                    if(fdata[k] < NO_DATA)
-                        ccdata[k] = 0;
-                    else
-                    {
-                        float t = (fdata[k] - vmin) * inv_d;
-                        ccdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
-                    }
-                }
-                ccdata += nvals;
-            }
-
-            nrrdWrap_nva(context->data, cdata, nrrdTypeUChar, 
-                4, size);
-
-            // Store the pointer to the data in the nrrd so we can free it later.
-            context->data->ptr = (void*)cdata;
-        }
-        else
-        {
-#ifdef CREATE_UCHAR_NRRD
-            int nvals = size[0]*size[1]*size[2];
-            unsigned char *cdata = new unsigned char[nvals];
-            float *fdata = (float *)data->GetVoidPointer(0);
-            float d = vmax - vmin;
-#ifdef TAKE_ENTRY_ZERO_FOR_NO_DATA
-            float inv_d = 1.f / d;
-            for(int k = 0; k < nvals; ++k)
-            {
-                if(fdata[k] < NO_DATA)
-                    cdata[k] = 0;
-                else
-                {
-                    float t = (fdata[k] - vmin) * inv_d;
-                    cdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
-                }
-            }
-#else
-            for(int k = 0; k < nvals; ++k)
-            {
-                cdata[k] = (unsigned char)(int)((fdata[k] - vmin) * 255. / d);
-            }
-#endif
-            nrrdWrap_nva(context->data, cdata, nrrdTypeUChar, 
-                3, size);
-
-            // Store the pointer to the data in the nrrd so we can free it later.
-            context->data->ptr = (void*)cdata;
-#else
-            nrrdWrap_nva(context->data, data->GetVoidPointer(0), nrrdTypeFloat, 
-                3, size);
-#endif
-        }
-        // Set the data min, max values.
-        context->data->oldMin = vmin;
-        context->data->oldMax = vmax;
-
-        // Wrap the gradient magnitude
-        context->gm_data = nrrdNew();
-        nrrdWrap_nva(context->gm_data, gmn, nrrdTypeFloat, 
-            3, size);
-
-        vtkDataArray *x = grid->GetXCoordinates();
-        vtkDataArray *y = grid->GetYCoordinates();
-        vtkDataArray *z = grid->GetZCoordinates();
-        Nrrd *data[2];
-        data[0] = context->data;
-        data[1] = context->gm_data;
-        for(int i = 0; i < 2; ++i)
-        {
-            // Set spacing.
-            data[i]->axis[0].spacing = 1;
-            data[i]->axis[1].spacing = 1;
-            data[i]->axis[2].spacing = 1;
-
-            // Set the nrrd's axis sizes.
-            data[i]->axis[0].min = x->GetTuple1(0);
-            data[i]->axis[0].max = x->GetTuple1(x->GetNumberOfTuples()-1);
-            data[i]->axis[1].min = y->GetTuple1(0);
-            data[i]->axis[1].max = y->GetTuple1(y->GetNumberOfTuples()-1);
-            data[i]->axis[2].min = z->GetTuple1(0);
-            data[i]->axis[2].max = z->GetTuple1(z->GetNumberOfTuples()-1);
-        }
-
-#ifdef DEBUG_PRINT
-        debug5 << "\ttype=" << context->data->type << endl
-               << "\tdim=" << context->data->dim << endl
-               << "\tspace=" << context->data->space << endl
-               << "\tspaceDim=" << context->data->spaceDim << endl
-               << "\tblockSize=" << context->data->blockSize << endl
-               << "\toldMin=" << context->data->oldMin << endl
-               << "\toldMax=" << context->data->oldMax << endl;
-        debug5 << mName << "xmin=" << context->data->axis[0].min
-               << " xmax=" << context->data->axis[0].max << endl;
-        debug5 << mName << "ymin=" << context->data->axis[1].min
-               << " ymax=" << context->data->axis[1].max << endl;
-        debug5 << mName << "zmin=" << context->data->axis[2].min
-               << " zmax=" << context->data->axis[2].max << endl;
-        debug5 << mName << "Built nrrd" << endl;
-
-        PrintAxisInfo(0, context->data->axis[0]);
-        PrintAxisInfo(1, context->data->axis[1]);
-        PrintAxisInfo(2, context->data->axis[2]);
-#endif
-        // Create the texture.
-        context->tex = new SLIVR::Texture();
-        context->tex->build(context->data, 0, //context->gm_data, 
-            vmin, vmax, 
-            0., 1., // gmin, gmax -- gradient
-            video_card_memory_size());
-        debug5 << mName << "Built texture" << endl;
-
-        // Initialize colors using VisIt's transfer function.
-        bool cmap2d;
-        int dim = atts.GetTransferFunctionDim();
-        if (dim == 0) // 1D transfer function
-          cmap2d = false;
-        else          // 2D transfer function
-          cmap2d = true;
-        CreateColormap(atts, cmap2d);
-        debug5 << mName << "Built colormap" << endl;
-
-        // Create the renderer.
-        int vcm = video_card_memory_size();
-        debug5 << "video_card_memory_size = " << vcm << endl;
-        context->renderer = new SLIVR::VolumeRenderer(context->tex, 
-            context->cm, context->cmap2, context->planes, vcm*1024*1024);
-        context->renderer->set_sampling_rate(samplingRate);
-        context->renderer->set_shading(atts.GetLightingFlag());
-//        context->renderer->set_blend_num_bits(32);
-//        context->renderer->set_mode(SLIVR::VolumeRenderer::MODE_MIP);
-        debug5 << mName << "Built renderer" << endl;
-    }
+        return;
 
     // Render the context.
     debug5 << mName << "Rendering..." << endl;
@@ -717,53 +507,49 @@ void
 avtOpenGLSLIVRVolumeRenderer::CheckContext(SlivrContext* context,
                                            const VolumeAttributes &atts)
 {
-  const char *mName = "avtOpenGLSLIVRVolumeRenderer::CheckContext: ";
+    const char *mName = "avtOpenGLSLIVRVolumeRenderer::CheckContext: ";
 
-  // Change the renderer attributes, or free the context if the changes
-  // are too great.
-  if(oldAtts != atts)
+    // Change the renderer attributes, or free the context if the changes
+    // are too great.
+    if(oldAtts != atts)
     {
-      if(context != 0)
+        if(context != 0)
         {
-          for(int i = 0; i < oldAtts.NumAttributes(); ++i)
-            if(!oldAtts.FieldsEqual(i, &atts))
-              debug5 << "Field " << i << " differs" << endl;
+            for(int i = 0; i < oldAtts.NumAttributes(); ++i)
+                if(!oldAtts.FieldsEqual(i, &atts))
+                    debug5 << "Field " << i << " differs" << endl;
 
-          if(oldAtts.AnyNonTransferFunctionMembersAreDifferent(atts))
+            if(oldAtts.AnyNonTransferFunctionMembersAreDifferent(atts))
             {
-              if(OnlyLightingFlagIsDifferent(oldAtts, atts))
+                if(OnlyLightingFlagIsDifferent(oldAtts, atts))
                 {
-                  // Only lighting is different.
-                  debug5 << mName << "Set the shading flag" << endl;
-                  context->renderer->set_shading(atts.GetLightingFlag());
+                    // Only lighting is different.
+                    debug5 << mName << "Set the shading flag" << endl;
+                    context->renderer->set_shading(atts.GetLightingFlag());
                 }
-              else
+                else
                 {
-                  // Something besides the transfer function is different so 
-                  // blow away the context
-                  debug5 << mName << "oldAtts != atts, freeing the context." << endl;
-                  FreeContext();
+                    // Something besides the transfer function is different so 
+                    // blow away the context
+                    debug5 << mName << "oldAtts != atts, freeing the context." << endl;
+                    FreeContext();
                 }
             }
-          else // Only transfer function is different
+            else // Only transfer function is different
             {
-              // The transfer function is different so install a new colormap
-              // based on the updated transfer function.
-              debug5 << mName << "Installing new transfer function." << endl;
-              bool cmap2d;
-              int dim = atts.GetTransferFunctionDim();
-              if (dim == 0) // 1D transfer function
-                cmap2d = false;
-              else          // 2D transfer function
-                cmap2d = true;
-              CreateColormap(atts, cmap2d);
-              //                if(cmap2d)
-              context->renderer->set_colormap2(context->cmap2);
-              //                else
-              //                    context->renderer->set_colormap1(context->cm);
+                // The transfer function is different so install a new colormap
+                // based on the updated transfer function.
+                debug5 << mName << "Installing new transfer function." << endl;
+                bool cmap2d = (atts.GetTransferFunctionDim() == 2);
+                CreateColormap(atts, cmap2d);
+
+                if(cmap2d)
+                    context->renderer->set_colormap2(context->cmap2);
+                else
+                    context->renderer->set_colormap1(context->cm);
             }
         }
-      oldAtts = atts;
+        oldAtts = atts;
     }
 }
 
@@ -787,177 +573,170 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
                                             float vmin, float vmax, 
                                             float omin, float omax, float *gmn)
 {
-  const char *mName = "avtOpenGLSLIVRVolumeRenderer::CreateContext: ";
+    const char *mName = "avtOpenGLSLIVRVolumeRenderer::CreateContext: ";
 
-  float samplingRate = atts.GetRendererSamples();
+    float samplingRate = atts.GetRendererSamples();
 
-  debug5 << mName << "Creating new context" << endl;
-  SlivrContext* context = new SlivrContext();
-  if(context == 0)
-    return;
+    debug5 << mName << "Creating new context" << endl;
+    context = new SlivrContext();
+    if(context == 0)
+        return;
 
-  bool opacityDifferent = atts.GetOpacityVariable() != "default";
+    bool opacityDifferent = atts.GetOpacityVariable() != "default";
 
-  // Create the nrrd.
-  size_t size[4];
-  size[0] = grid->GetDimensions()[0];
-  size[1] = grid->GetDimensions()[1];
-  size[2] = grid->GetDimensions()[2];
-  size[3] = opacityDifferent ? 2 : 1;
-  debug5 << mName << "data size: " << size[0] << " " << size[1] << " " << size[2] << endl;
-  context->data = nrrdNew();
+    // Create the nrrd.
+    size_t size[4];
+    size[0] = grid->GetDimensions()[0];
+    size[1] = grid->GetDimensions()[1];
+    size[2] = grid->GetDimensions()[2];
+    size[3] = opacityDifferent ? 2 : 1;
+    debug5 << mName << "data size: " << size[0] << " " << size[1] << " " << size[2] << endl;
+    context->data = nrrdNew();
 
-  if(opacityDifferent)
+    if(opacityDifferent)
     {
-      debug5 << mName << "Creating nrrd for 2 variables." << endl;
-      // Create uchar versions. Put var1 first then opac as var2.
-      int nvals = size[0]*size[1]*size[2];
-      unsigned char *cdata = new unsigned char[nvals * size[3]];
-      float *dptr[2];
-      dptr[0] = (float *)data->GetVoidPointer(0);
-      dptr[1] = (float *)opac->GetVoidPointer(0);
-      float d = vmax - vmin;
-      float inv_d = 1.f / d;
-      unsigned char *ccdata = cdata;
-      for(int c = 0; c < 2; ++c)
+        debug5 << mName << "Creating nrrd for 2 variables." << endl;
+        // Create uchar versions. Put var1 first then opac as var2.
+        int nvals = size[0]*size[1]*size[2];
+        unsigned char *cdata = new unsigned char[nvals * size[3]];
+        float *dptr[2];
+        dptr[0] = (float *)data->GetVoidPointer(0);
+        dptr[1] = (float *)opac->GetVoidPointer(0);
+        float d = vmax - vmin;
+        float inv_d = 1.f / d;
+        unsigned char *ccdata = cdata;
+        for(int c = 0; c < 2; ++c)
         {
-          float *fdata = dptr[c];
-          for(int k = 0; k < nvals; ++k)
+            float *fdata = dptr[c];
+            for(int k = 0; k < nvals; ++k)
             {
-              if(fdata[k] < NO_DATA)
-                ccdata[k] = 0;
-              else
+                if(fdata[k] < NO_DATA)
+                    ccdata[k] = 0;
+                else
                 {
-                  float t = (fdata[k] - vmin) * inv_d;
-                  ccdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
+                    float t = (fdata[k] - vmin) * inv_d;
+                    ccdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
                 }
             }
-          ccdata += nvals;
+            ccdata += nvals;
         }
 
-      nrrdWrap_nva(context->data, cdata, nrrdTypeUChar, 
-                   4, size);
+        nrrdWrap_nva(context->data, cdata, nrrdTypeUChar, 
+                     4, size);
 
-      // Store the pointer to the data in the nrrd so we can free it later.
-      context->data->ptr = (void*)cdata;
+        // Store the pointer to the data in the nrrd so we can free it later.
+        context->data->ptr = (void*)cdata;
     }
-  else
+    else
     {
 #ifdef CREATE_UCHAR_NRRD
-      int nvals = size[0]*size[1]*size[2];
-      unsigned char *cdata = new unsigned char[nvals];
-      float *fdata = (float *)data->GetVoidPointer(0);
-      float d = vmax - vmin;
+        int nvals = size[0]*size[1]*size[2];
+        unsigned char *cdata = new unsigned char[nvals];
+        float *fdata = (float *)data->GetVoidPointer(0);
+        float d = vmax - vmin;
 #ifdef TAKE_ENTRY_ZERO_FOR_NO_DATA
-      float inv_d = 1.f / d;
-      for(int k = 0; k < nvals; ++k)
+        float inv_d = 1.f / d;
+        for(int k = 0; k < nvals; ++k)
         {
-          if(fdata[k] < NO_DATA)
-            cdata[k] = 0;
-          else
+            if(fdata[k] < NO_DATA)
+                cdata[k] = 0;
+            else
             {
-              float t = (fdata[k] - vmin) * inv_d;
-              cdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
+                float t = (fdata[k] - vmin) * inv_d;
+                cdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
             }
         }
 #else
-      for(int k = 0; k < nvals; ++k)
+        for(int k = 0; k < nvals; ++k)
         {
-          cdata[k] = (unsigned char)(int)((fdata[k] - vmin) * 255. / d);
+            cdata[k] = (unsigned char)(int)((fdata[k] - vmin) * 255. / d);
         }
 #endif
-      nrrdWrap_nva(context->data, cdata, nrrdTypeUChar, 
-                   3, size);
+        nrrdWrap_nva(context->data, cdata, nrrdTypeUChar, 
+                     3, size);
 
-      // Store the pointer to the data in the nrrd so we can free it later.
-      context->data->ptr = (void*)cdata;
+        // Store the pointer to the data in the nrrd so we can free it later.
+        context->data->ptr = (void*)cdata;
 #else
-      nrrdWrap_nva(context->data, data->GetVoidPointer(0), nrrdTypeFloat, 
-                   3, size);
+        nrrdWrap_nva(context->data, data->GetVoidPointer(0), nrrdTypeFloat, 
+                     3, size);
 #endif
     }
-  // Set the data min, max values.
-  context->data->oldMin = vmin;
-  context->data->oldMax = vmax;
 
-  // Wrap the gradient magnitude
-  context->gm_data = nrrdNew();
-  nrrdWrap_nva(context->gm_data, gmn, nrrdTypeFloat, 
-               3, size);
+    // Set the data min, max values.
+    context->data->oldMin = vmin;
+    context->data->oldMax = vmax;
 
-  vtkDataArray *x = grid->GetXCoordinates();
-  vtkDataArray *y = grid->GetYCoordinates();
-  vtkDataArray *z = grid->GetZCoordinates();
-  Nrrd *ndata[2];
-  ndata[0] = context->data;
-  ndata[1] = context->gm_data;
-  for(int i = 0; i < 2; ++i)
+    // Wrap the gradient magnitude
+    context->gm_data = nrrdNew();
+    nrrdWrap_nva(context->gm_data, gmn, nrrdTypeFloat, 
+                 3, size);
+
+    vtkDataArray *x = grid->GetXCoordinates();
+    vtkDataArray *y = grid->GetYCoordinates();
+    vtkDataArray *z = grid->GetZCoordinates();
+    Nrrd *ndata[2];
+    ndata[0] = context->data;
+    ndata[1] = context->gm_data;
+    for(int i = 0; i < 2; ++i)
     {
-      // Set spacing.
-      ndata[i]->axis[0].spacing = 1;
-      ndata[i]->axis[1].spacing = 1;
-      ndata[i]->axis[2].spacing = 1;
+        // Set spacing.
+        ndata[i]->axis[0].spacing = 1;
+        ndata[i]->axis[1].spacing = 1;
+        ndata[i]->axis[2].spacing = 1;
 
-      // Set the nrrd's axis sizes.
-      ndata[i]->axis[0].min = x->GetTuple1(0);
-      ndata[i]->axis[0].max = x->GetTuple1(x->GetNumberOfTuples()-1);
-      ndata[i]->axis[1].min = y->GetTuple1(0);
-      ndata[i]->axis[1].max = y->GetTuple1(y->GetNumberOfTuples()-1);
-      ndata[i]->axis[2].min = z->GetTuple1(0);
-      ndata[i]->axis[2].max = z->GetTuple1(z->GetNumberOfTuples()-1);
+        // Set the nrrd's axis sizes.
+        ndata[i]->axis[0].min = x->GetTuple1(0);
+        ndata[i]->axis[0].max = x->GetTuple1(x->GetNumberOfTuples()-1);
+        ndata[i]->axis[1].min = y->GetTuple1(0);
+        ndata[i]->axis[1].max = y->GetTuple1(y->GetNumberOfTuples()-1);
+        ndata[i]->axis[2].min = z->GetTuple1(0);
+        ndata[i]->axis[2].max = z->GetTuple1(z->GetNumberOfTuples()-1);
     }
 
 #ifdef DEBUG_PRINT
-  debug5 << "\ttype=" << context->data->type << endl
-         << "\tdim=" << context->data->dim << endl
-         << "\tspace=" << context->data->space << endl
-         << "\tspaceDim=" << context->data->spaceDim << endl
-         << "\tblockSize=" << context->data->blockSize << endl
-         << "\toldMin=" << context->data->oldMin << endl
-         << "\toldMax=" << context->data->oldMax << endl;
-  debug5 << mName << "xmin=" << context->data->axis[0].min
-         << " xmax=" << context->data->axis[0].max << endl;
-  debug5 << mName << "ymin=" << context->data->axis[1].min
-         << " ymax=" << context->data->axis[1].max << endl;
-  debug5 << mName << "zmin=" << context->data->axis[2].min
-         << " zmax=" << context->data->axis[2].max << endl;
-  debug5 << mName << "Built nrrd" << endl;
+    debug5 << "\ttype=" << context->data->type << endl
+           << "\tdim=" << context->data->dim << endl
+           << "\tspace=" << context->data->space << endl
+           << "\tspaceDim=" << context->data->spaceDim << endl
+           << "\tblockSize=" << context->data->blockSize << endl
+           << "\toldMin=" << context->data->oldMin << endl
+           << "\toldMax=" << context->data->oldMax << endl;
+    debug5 << mName << "xmin=" << context->data->axis[0].min
+           << " xmax=" << context->data->axis[0].max << endl;
+    debug5 << mName << "ymin=" << context->data->axis[1].min
+           << " ymax=" << context->data->axis[1].max << endl;
+    debug5 << mName << "zmin=" << context->data->axis[2].min
+           << " zmax=" << context->data->axis[2].max << endl;
+    debug5 << mName << "Built nrrd" << endl;
 
-  PrintAxisInfo(0, context->data->axis[0]);
-  PrintAxisInfo(1, context->data->axis[1]);
-  PrintAxisInfo(2, context->data->axis[2]);
+    PrintAxisInfo(0, context->data->axis[0]);
+    PrintAxisInfo(1, context->data->axis[1]);
+    PrintAxisInfo(2, context->data->axis[2]);
 #endif
-  // Create the texture.
-  context->tex = new SLIVR::Texture();
-  context->tex->build(context->data, 0, //context->gm_data, 
-                      vmin, vmax, 
-                      0., 1., // gmin, gmax -- gradient
-                      video_card_memory_size());
-  debug5 << mName << "Built texture" << endl;
+    // Create the texture.
+    context->tex = new SLIVR::Texture();
+    context->tex->build(context->data, 0, //context->gm_data, 
+                        vmin, vmax, 
+                        0., 1., // gmin, gmax -- gradient
+                        video_card_memory_size());
+    debug5 << mName << "Built texture" << endl;
 
-  // Initialize colors using VisIt's transfer function.
-  bool cmap2d;
-  int dim = atts.GetTransferFunctionDim();
-  if (dim == 0) // 1D transfer function
-    cmap2d = false;
-  else          // 2D transfer function
-    cmap2d = true;
-  CreateColormap(atts, cmap2d);
-  debug5 << mName << "Built colormap" << endl;
+    // Initialize colors using VisIt's transfer function.
+    bool cmap2d = atts.GetTransferFunctionDim()==2;
+    CreateColormap(atts, cmap2d);
+    debug5 << mName << "Built colormap" << endl;
 
-  // Create the renderer.
-  int vcm = video_card_memory_size();
-  debug5 << "video_card_memory_size = " << vcm << endl;
-  context->renderer = new SLIVR::VolumeRenderer(context->tex, 
-                                                0, //context->cm, 
-                                                context->cmap2, context->planes, vcm*1024*1024);
-  context->renderer->set_sampling_rate(samplingRate);
-  context->renderer->set_interactive_rate(1 + samplingRate / 5);
-  context->renderer->set_shading(atts.GetLightingFlag());
-  //      context->renderer->set_interactive_mode(true);
-  //        context->renderer->set_blend_num_bits(32);
-  //        context->renderer->set_mode(SLIVR::VolumeRenderer::MODE_MIP);
-  debug5 << mName << "Built renderer" << endl;
+    // Create the renderer.
+    int vcm = video_card_memory_size();
+    debug5 << "video_card_memory_size = " << vcm << endl;
+
+    context->renderer = new SLIVR::VolumeRenderer(context->tex, 
+        context->cm, context->cmap2, context->planes, vcm*1024*1024);
+    context->renderer->set_sampling_rate(samplingRate);
+    context->renderer->set_shading(atts.GetLightingFlag());
+
+    debug5 << mName << "Built renderer" << endl;
 }
 
 #endif // HAVE_LIBSLIVR

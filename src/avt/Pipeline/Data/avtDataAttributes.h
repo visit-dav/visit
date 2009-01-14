@@ -51,13 +51,12 @@
 #include <vector>
 #include <string>
 #include <avtMatrix.h>
+#include <PlotInfoAttributes.h>
 
 class     avtDataObjectString;
 class     avtDataObjectWriter;
 class     avtExtents;
 class     avtWebpage;
-class     PlotInfoAttributes;
-
 
 // ****************************************************************************
 //  Method: avtDataAttributes
@@ -241,6 +240,10 @@ class     PlotInfoAttributes;
 //    Jeremy Meredith, Thu Feb  7 17:55:39 EST 2008
 //    Added extents that can be associated with individual components of
 //    array variables.
+//
+//    Brad Whitlock, Wed Jan  7 11:25:36 PST 2009
+//    I made PlotInfoAttributes be a non-pointer member since I want it to
+//    always exist so many filters can append to it.
 //
 // ****************************************************************************
 
@@ -503,9 +506,10 @@ class PIPELINE_API avtDataAttributes
     void                     SetRectilinearGridTransform(const double *v)
                    { for (int i=0;i<16;i++) rectilinearGridTransform[i]=v[i]; }
 
-    const PlotInfoAttributes *GetPlotInfoAtts(void) const
+    const PlotInfoAttributes &GetPlotInformation() const
                                    { return plotInfoAtts; };
-    void                     SetPlotInfoAtts(const PlotInfoAttributes *);
+    void                      AddPlotInformation(const std::string &key,
+                                                 const MapNode &info);
 
     void                     DebugDump(avtWebpage *);
 
@@ -595,7 +599,7 @@ class PIPELINE_API avtDataAttributes
 
     std::vector<bool>        selectionsApplied;
 
-    PlotInfoAttributes      *plotInfoAtts;
+    PlotInfoAttributes       plotInfoAtts;
 
     void                     WriteLabels(avtDataObjectString &,
                                          const avtDataObjectWriter *);

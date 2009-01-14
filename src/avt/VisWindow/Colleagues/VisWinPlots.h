@@ -187,6 +187,10 @@ class avtTransparencyActor;
 //    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
 //    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
 //    visual queue for SR mode.
+//
+//    Brad Whitlock, Wed Jan  7 14:38:44 PST 2009
+//    I changed the plot info atts method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -201,9 +205,6 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          ClearPlots(void);
     void                          OrderPlots();
     
-    int                           GetPlotListIndex(const char *plotName);
-    const PlotInfoAttributes     *GetPlotInfoAtts(const char *plotName);
-
     void                          GetBounds(double [6]);
     void                          GetDataRange(double &, double &);
     void                          SetViewExtentsType(avtExtentType);

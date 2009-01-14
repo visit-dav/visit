@@ -400,6 +400,9 @@ class VisitInteractor;
 //    Eric Brugger, Tue Dec  9 14:30:53 PST 2008
 //    Added the AxisParallel window mode.
 //
+//    Brad Whitlock, Wed Jan  7 14:46:25 PST 2009
+//    I removed plot info atts since we can get that information elsewhere.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -412,8 +415,6 @@ public:
     void                 AddPlot(avtActor_p &);
     void                 RemovePlot(avtActor_p &);
     void                 ClearPlots(void);
-    int                  GetPlotListIndex(const char *plotName);
-    const PlotInfoAttributes *GetPlotInfoAtts(const char *plotName);
 
     void                 SetBounds(const double [6]);
     void                 GetBounds(double [6]) const;

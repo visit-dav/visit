@@ -244,6 +244,9 @@ class     WindowAttributes;
 //    Hank Childs, Wed Aug 13 10:36:40 PDT 2008
 //    Add new virtual method "NeedZBufferToCompositeEvenIn2D".
 //
+//    Brad Whitlock, Wed Jan  7 14:24:40 PST 2009
+//    I renamed a method that returns the plot info atts.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -307,7 +310,7 @@ class PLOTTER_API avtPlot
                               *SetOpaqueMeshIsAppropriate(bool)
                                    { return NULL; };
     float                      GetCellCountMultiplierForSRThreshold() const;
-    const PlotInfoAttributes  *GetPlotInfoAtts(); 
+    const PlotInfoAttributes  &GetPlotInformation() const; 
 
     bool                      SetScaleMode(ScaleMode, ScaleMode, WINDOW_MODE);
     bool                      ScaleModeRequiresUpdate(WINDOW_MODE, ScaleMode,

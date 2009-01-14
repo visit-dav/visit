@@ -58,6 +58,7 @@ class avtLookupTable;
 class avtShiftCenteringFilter;
 class avtUserDefinedMapper;
 class avtVolumeFilter;
+class avtLowerResolutionVolumeFilter;
 class avtResampleFilter;
 
 
@@ -103,6 +104,10 @@ class avtResampleFilter;
 //    Remove definition of "CanCacheWriterExternally", as it was leading to
 //    unnecessary pipeline re-executions.
 //
+//    Brad Whitlock, Mon Dec 15 15:58:08 PST 2008
+//    I added a new avtLowerResolutionVolumeFilter that works on the 
+//    resampled data.
+//
 // ****************************************************************************
 
 class
@@ -129,16 +134,17 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual bool        UtilizeRenderingFilters(void) { return false; };
 
   protected:
-    VolumeAttributes         atts;
-    avtVolumeFilter         *volumeFilter;
-    avtResampleFilter       *resampleFilter;
-    avtShiftCenteringFilter *shiftCentering;
-    avtVolumeRenderer_p      renderer;
-    avtUserDefinedMapper    *mapper;
-    avtLookupTable          *avtLUT;
+    VolumeAttributes                atts;
+    avtLowerResolutionVolumeFilter *volumeFilter;
+    avtVolumeFilter                *volumeImageFilter;
+    avtResampleFilter              *resampleFilter;
+    avtShiftCenteringFilter        *shiftCentering;
+    avtVolumeRenderer_p             renderer;
+    avtUserDefinedMapper           *mapper;
+    avtLookupTable                 *avtLUT;
 
-    avtVolumeVariableLegend *varLegend;
-    avtLegend_p              varLegendRefPtr;
+    avtVolumeVariableLegend        *varLegend;
+    avtLegend_p                     varLegendRefPtr;
 
     virtual avtMapper       *GetMapper(void);
     virtual avtDataObject_p  ApplyOperators(avtDataObject_p);
@@ -146,8 +152,7 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual void             CustomizeBehavior(void);
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
     void                     SetLegendOpacities();
-    virtual avtContract_p
-                             EnhanceSpecification(avtContract_p);
+    virtual avtContract_p    EnhanceSpecification(avtContract_p);
 };
 
 

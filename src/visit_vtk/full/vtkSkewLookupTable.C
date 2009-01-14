@@ -42,8 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include "vtkSkewLookupTable.h"
 #include "vtkObjectFactory.h"
-
-
+#include "vtkSkew.h"
 
 // *************************************************************************
 // Modifications:
@@ -61,30 +60,12 @@ vtkSkewLookupTable::vtkSkewLookupTable(int sze, int ext):
    this->SkewFactor = 1.;
 }
 
-
-// Takes the passed value and skews it according to passed min  & max
-// and the SkewFactor. 
-
-float vtkSkewLookupTable::SkewTheValue(float val, float min, float max)
-{
-    if (this->SkewFactor <= 0 || this->SkewFactor == 1.) 
-        return val;
-
-    float range = max - min; 
-    float rangeInverse = 1. / range;
-    float logSkew = log(this->SkewFactor);
-    float k = range / (this->SkewFactor -1.);
-    float v2 = (val - min) * rangeInverse;
-    float temp =   k * (exp(v2 * logSkew) -1.) + min;
-    return temp;
-}
-
-
 // Given a scalar value v, return an rgba color value from lookup table.
 // val is first skewed accoring to the skewFactor
 unsigned char *vtkSkewLookupTable::MapValue(float val)
 {
-  float temp = SkewTheValue(val, this->TableRange[0], this->TableRange[1]);
+  float temp = vtkSkewValue(val, (float)this->TableRange[0], (float)this->TableRange[1],
+                            this->SkewFactor);
   return this->Superclass::MapValue(temp);
 }
 

@@ -47,8 +47,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include <ColorControlPointList.h>
-
 // ****************************************************************************
 //  Method:  QvisGaussianOpacityBar::QvisGaussianOpacityBar
 //
@@ -251,31 +249,17 @@ QvisGaussianOpacityBar::drawControlPoints()
 //    Brad Whitlock, Wed Jun  4 10:38:23 PDT 2008
 //    Draw on an image instead of a pixmap.
 //
+//    Brad Whitlock, Thu Dec 18 12:10:05 PST 2008
+//    I moved some code to the base class.
+//
 // ****************************************************************************
 
 void
-QvisGaussianOpacityBar::drawOpacities(int w,int h)
+QvisGaussianOpacityBar::drawOpacities()
 {
+    int w = contentsRect().width();
+    int h = contentsRect().height();
     float *values = getRawOpacities(w);
-
-    ensureImageExists(w, h);
-
-    QRgb *bgCols = new QRgb[w];
-    if (backgroundColorControlPoints) 
-    {
-        unsigned char *cols = new unsigned char[w*3];
-        backgroundColorControlPoints->GetColors(cols, w);
-        for (int i=0; i < w; ++i) 
-            bgCols[i] = QColor(cols[i*3+0], cols[i*3+1], cols[i*3+2]).rgb();
-        delete[] cols;
-    }
-    else 
-    {
-        QColor black(0,   0,   0 );
-        QRgb cb = black.rgb();
-        for (int i=0; i < w; ++i) 
-            bgCols[i] = cb;
-    }
 
     QColor white(255, 255, 255 );
     QRgb cw = white.rgb();
@@ -288,17 +272,10 @@ QvisGaussianOpacityBar::drawOpacities(int w,int h)
         {
             float yvalc = 1 - float(y)/float(h-1);
             if (yvalc >= qMin(yval1,yval2)-dy && yvalc < qMax(yval1,yval2))
-            {
                 image->setPixel(x,y, cw); 
-            }
-            else
-            {
-                image->setPixel(x,y, bgCols[x]);
-            }
        }
     }
-    delete[] values;
-    delete[] bgCols;
+    delete [] values;
 
     drawControlPoints();
 }
@@ -316,6 +293,9 @@ QvisGaussianOpacityBar::drawOpacities(int w,int h)
 //  Modifications:
 //    Brad Whitlock, Wed Jun  4 10:39:42 PDT 2008
 //    Use update().
+//
+//    Brad Whitlock, Thu Dec 18 14:05:51 PST 2008
+//    I changed how the image gets updated.
 //
 // ****************************************************************************
 
@@ -344,7 +324,7 @@ QvisGaussianOpacityBar::mousePressEvent(QMouseEvent *e)
         mousedown = true;
     }
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 }
 
@@ -368,7 +348,11 @@ QvisGaussianOpacityBar::mousePressEvent(QMouseEvent *e)
 //    Cyrus Harrison, Mon Aug 25 16:26:20 PDT 2008
 //    Fixed build problem on AIX - confusion between float and double literal.
 //
+//    Brad Whitlock, Thu Dec 18 14:05:51 PST 2008
+//    I changed how the image gets updated.
+//
 // ****************************************************************************
+
 void
 QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
 {
@@ -383,7 +367,7 @@ QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
         if (oldGaussian != currentGaussian ||
             oldMode     != currentMode)
         {
-            drawControlPoints();
+            imageDirty(); //drawControlPoints();
             update();
         }
         return;
@@ -431,7 +415,7 @@ QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
     lastx = x;
     lasty = y;
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 }
 
@@ -449,13 +433,17 @@ QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
 //    Brad Whitlock, Wed Jun  4 10:41:07 PDT 2008
 //    Use update().
 //
+//    Brad Whitlock, Thu Dec 18 14:05:51 PST 2008
+//    I changed how the image gets updated.
+//
 // ****************************************************************************
+
 void
 QvisGaussianOpacityBar::mouseReleaseEvent(QMouseEvent *)
 {
     mousedown = false;
 
-    drawOpacities(contentsRect().width(), contentsRect().height());
+    imageDirty();
     update();
 
     emit mouseReleased();
@@ -712,6 +700,10 @@ QvisGaussianOpacityBar::getGaussian(int i,
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Thu Dec 18 14:05:51 PST 2008
+//    I changed how the image gets updated.
+//
 // ****************************************************************************
 void
 QvisGaussianOpacityBar::setAllGaussians(int n, float *gaussdata)
@@ -725,6 +717,7 @@ QvisGaussianOpacityBar::setAllGaussians(int n, float *gaussdata)
                     gaussdata[i*5 + 3],
                     gaussdata[i*5 + 4]);
     }
-    drawOpacities(contentsRect().width(), contentsRect().height());
+
+    imageDirty();
     update();
 }
