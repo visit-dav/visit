@@ -55,7 +55,39 @@
 #    window) in same curve window, and update the curves via the originating
 #    plots time-slider (bug '7002).
 #
+#    Brad Whitlock, Wed Jan 14 16:12:10 PST 2009
+#    I changed the call to GetOutputArray. It's no longer a built-in function
+#    in the CLI.
+#
 # ----------------------------------------------------------------------------
+
+def GetOutputArray(plotID = -1, winID = -1):
+    gInfo = GetGlobalAttributes()
+    oldWin = gInfo.windows[gInfo.activeWindow]
+    # Set the active window
+    if winID != -1:
+        SetActiveWindow(winID)
+
+    # Get the active plots
+    active = []
+    if plotID != -1:
+        pL = GetPlotList()
+        for i in range(pL.GetNumPlots()):
+            if pL.GetPlots(i).activeFlag:
+                active = active + [i]
+        SetActivePlots(plotID)
+
+    pInfo = GetPlotInformation()
+ 
+    # Restore the old active plots
+    if len(active) > 0:
+        SetActivePlots(tuple(active))
+
+    # Restore the old active window
+    if winID != -1:
+        SetActiveWindow(oldWin)
+
+    return pInfo["Curve"]
 
 def InitAnnotation():
     a = AnnotationAttributes()
