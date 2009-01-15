@@ -148,11 +148,18 @@ avtITAPS_CUtility::VTKZoneTypeToITAPSEntityTopology(int vtk_zonetype)
     int imesh_zonetype = -1; 
     switch (vtk_zonetype)
     {
+        // 0D
         case VTK_VERTEX:     imesh_zonetype = iMesh_POINT;         break;
+
+        // 1D
         case VTK_LINE:       imesh_zonetype = iMesh_LINE_SEGMENT;  break;
+
+        // 2D
         case VTK_POLYGON:    imesh_zonetype = iMesh_POLYGON;       break;
         case VTK_TRIANGLE:   imesh_zonetype = iMesh_TRIANGLE;      break;
         case VTK_QUAD:       imesh_zonetype = iMesh_QUADRILATERAL; break;
+
+        // 3D
         case VTK_TETRA:      imesh_zonetype = iMesh_TETRAHEDRON;   break;
         case VTK_PYRAMID:    imesh_zonetype = iMesh_PYRAMID;       break;
         case VTK_WEDGE:      imesh_zonetype = iMesh_PRISM;         break;
@@ -162,19 +169,30 @@ avtITAPS_CUtility::VTKZoneTypeToITAPSEntityTopology(int vtk_zonetype)
     return imesh_zonetype;
 }
 
+// 
+//    Mark C. Miller, Wed Jan 14 17:56:30 PST 2009
+//    Removed extraneous case for VTK_VOXEL, the result of a
+//    bad cut-n-paste.
+//
 int avtITAPS_CUtility::ITAPSEntityTopologyToVTKZoneType(int ttype)
 {
     switch (ttype)
     {
+    // 0D
     case iMesh_POINT:         return VTK_VERTEX;
+
+    // 1D
     case iMesh_LINE_SEGMENT:  return VTK_LINE;
+
+    // 2D
     case iMesh_POLYGON:       return VTK_POLYGON;
     case iMesh_TRIANGLE:      return VTK_TRIANGLE;
     case iMesh_QUADRILATERAL: return VTK_QUAD;
+
+    // 3D
     case iMesh_TETRAHEDRON:   return VTK_TETRA;
     case iMesh_PYRAMID:       return VTK_PYRAMID;
     case iMesh_PRISM:         return VTK_WEDGE;
-    case VTK_VOXEL:
     case iMesh_HEXAHEDRON:    return VTK_HEXAHEDRON;
     }
     return -1;

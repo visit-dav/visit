@@ -64,6 +64,10 @@ class DBOptionsAttributes;
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   November 20, 2008 
+//
+//  Modifications:
+//    Mark C. Miller, Wed Jan 14 17:54:21 PST 2009
+//    Added some bools to control behavior of output to iMesh 
 // ****************************************************************************
 
 class avtITAPS_CWriter : public virtual avtDatabaseWriter
@@ -91,6 +95,9 @@ class avtITAPS_CWriter : public virtual avtDatabaseWriter
     string         dir;
     string         saveOptions;
     string         formatExtension;
+    bool           simplexify;
+    bool           addFacesFor3DEnts;
+    bool           preventDupsToiMesh;
     int            nblocks;
 };
 
