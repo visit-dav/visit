@@ -1808,6 +1808,31 @@ VisWindow::GetWindowSize(int &w, int &h) const
 }
 
 // ****************************************************************************
+// Method: VisWindow::GetCaptureRegion
+//
+// Purpose: 
+//   Returns the capture region ... basically the window size in 3D and the
+//   viewport size (and offset in the larger window) in 2D.
+//
+// Arguments:
+//   wo : A reference to an int that is used to return the width offset.
+//   ho : A reference to an int that is used to return the height offset.
+//   w : A reference to an int that is used to return the window width.
+//   h : A reference to an int that is used to return the window height.
+//   vo : Whether or not this is for a viewported view.
+//
+// Programmer: Hank Childs
+// Creation:   January 14, 2008
+//
+// ****************************************************************************
+
+void
+VisWindow::GetCaptureRegion(int &wo, int &ho, int &w, int &h, bool vo)
+{
+    rendering->GetCaptureRegion(wo, ho, w, h, vo);
+}
+
+// ****************************************************************************
 //  Method: VisWindow::SetLocation
 //
 //  Purpose:

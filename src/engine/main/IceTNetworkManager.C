@@ -253,7 +253,11 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Use MemoMultipass; this fixes a bug which occurs when IceT calls our
 //    render function multiple times on a subset of nodes.
 //
+//    Hank Childs, Thu Jan 15 11:07:53 CST 2009
+//    Changed GetSize call to GetCaptureRegion, since that works for 2D.
+//
 // ****************************************************************************
+
 avtDataObjectWriter_p
 IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
                            int annotMode, int windowID, bool leftEye)
@@ -329,8 +333,13 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
                << " primitives.  Balanced speedup = "
                << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
 
-        int width, height;
-        viswin->GetSize(width, height);
+        int width, height, width_start, height_start;
+        // This basically gets the width and the height.
+        // The distinction is for 2D rendering, where we only want the
+        // width and the height of the viewport.
+        viswin->GetCaptureRegion(width_start, height_start, width, height,
+                                 this->r_mgmt.viewportedMode);
+        
         this->TileLayout(width, height);
 
         CallInitializeProgressCallback(this->RenderingStages(windowID));
@@ -543,17 +552,24 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 //    Make an image have 3 components, not 4, since 3 is better supported
 //    throughout VisIt (including saving TIFFs).
 //
+//    Hank Childs, Thu Jan 15 11:07:53 CST 2009
+//    Changed GetSize call to GetCaptureRegion, since that works for 2D.
+//
 // ****************************************************************************
 avtImage_p
-IceTNetworkManager::Readback(const VisWindow * const viswin,
+IceTNetworkManager::Readback(VisWindow * const viswin,
                              bool readZ) const
 {
     GLboolean have_image;
 
     ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
 
-    int width=-42, height=-42;
-    viswin->GetSize(width, height);
+    int width=-42, height=-42, width_start, height_start;
+    // This basically gets the width and the height.
+    // The distinction is for 2D rendering, where we only want the
+    // width and the height of the viewport.
+    viswin->GetCaptureRegion(width_start, height_start, width, height,
+                             this->r_mgmt.viewportedMode);
 
     GLubyte *pixels = NULL;
     GLuint *depth = NULL;
@@ -638,14 +654,24 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
 //  Programmer: Tom Fogal
 //  Creation:   July 14, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jan 15 11:07:53 CST 2009
+//    Changed GetSize call to GetCaptureRegion, since that works for 2D.
+//
 // ****************************************************************************
 void
 IceTNetworkManager::StopTimer(int windowID)
 {
     char msg[1024];
-    const VisWindow *viswin = this->viswinMap.find(windowID)->second.viswin;
-    int rows,cols;
-    viswin->GetSize(rows, cols);
+    VisWindow *viswin = this->viswinMap.find(windowID)->second.viswin;
+    GLubyte *pixels = NULL;
+    int rows,cols, width_start, height_start;
+    // This basically gets the width and the height.
+    // The distinction is for 2D rendering, where we only want the
+    // width and the height of the viewport.
+    viswin->GetCaptureRegion(width_start, height_start, rows,cols,
+                             this->r_mgmt.viewportedMode);
 
     SNPRINTF(msg, 1023, "IceTNM::Render %d cells %d pixels",
              GetTotalGlobalCellCounts(windowID), rows*cols);
