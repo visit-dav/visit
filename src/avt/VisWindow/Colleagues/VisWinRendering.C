@@ -1247,6 +1247,9 @@ VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
 //    Mark C. Miller, Wed Oct  6 17:50:23 PDT 2004
 //    Added args for viewport only and keeping zbuffer
 //
+//    Hank Childs, Wed Jan 14 17:45:06 CST 2009
+//    Beef up debug message in error condition.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1267,6 +1270,9 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
     capturedImage->GetSize(&iw, &ih);
     if ((iw != w) || (ih != h))
     {
+        debug1 << "Error condition in screen capture save window" << endl;
+        debug1 << "Captured image is " << iw << "x" << ih << endl;
+        debug1 << "But we believe it should be " << w << "x" << h << endl;
         EXCEPTION1(ImproperUseException, "size of image passed for "
             "PostProcessScreenCapture does not match vtkRenderWindow size");
     }

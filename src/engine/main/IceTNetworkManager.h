@@ -89,7 +89,7 @@ class IceTNetworkManager: public NetworkManager
     virtual avtDataObject_p
                        RenderTranslucent(int windowID,
                                          const avtImage_p& input);
-    virtual avtImage_p Readback(const VisWindow * const, bool) const;
+    virtual avtImage_p Readback(VisWindow * const, bool) const;
     virtual void       StopTimer(int windowID);
 
  private:

@@ -403,6 +403,9 @@ class VisitInteractor;
 //    Brad Whitlock, Wed Jan  7 14:46:25 PST 2009
 //    I removed plot info atts since we can get that information elsewhere.
 //
+//    Hank Childs, Wed Jan 14 18:33:27 CST 2009
+//    Added GetCaptureRegion.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -438,6 +441,7 @@ public:
     void                 SetSize(int, int);
     void                 GetSize(int &, int &) const;
     void                 GetWindowSize(int &, int &) const;
+    void                 GetCaptureRegion(int &, int &, int &, int &, bool);
     void                 SetLocation(int, int);
     void                 GetLocation(int &, int &) const;
 
