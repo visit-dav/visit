@@ -62,8 +62,6 @@ class vtkPolyData;
 class vtkRibbonFilter;
 class vtkAppendPolyData;
 
-class SlaveInfo;
-
 #define STREAMLINE_SOURCE_POINT      0
 #define STREAMLINE_SOURCE_LINE       1
 #define STREAMLINE_SOURCE_PLANE      2
@@ -173,6 +171,30 @@ class avtStreamlineWrapper
     int id;
 };
 
+class SlaveInfo
+{
+  public:
+    SlaveInfo( int r, int nDomains );
+    ~SlaveInfo() {}
+
+    void AddSL( int slDomain);
+    void RemoveSL( int dom );
+    void Update( vector<int> &status, bool debug=false );
+    void Reset() { justUpdated = false; }
+
+    void Debug();
+
+    //Member data.
+    bool justUpdated;
+    double balance;
+    int canGive, canAccept, slCount, slLoadedCount, slOOBCount, rank;
+    int domLoadedCount;
+    vector<int> domainCnt;
+    vector<bool> domainLoaded;
+};
+
+
+
 // ****************************************************************************
 // Class: avtStreamlineFilter
 //
@@ -220,6 +242,9 @@ class avtStreamlineWrapper
 //
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Add 3 point density vars. Add masterSlave algorithm.
+//
+//   Dave Pugmire, Thu Jan 15 12:01:30 EST 2009
+//   Add case5 to MasterSlave algorithm.
 //
 // ****************************************************************************
 
@@ -386,10 +411,17 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
                                    int NDomainFactor);
     virtual void             Case4(vector<avtStreamlineWrapper *> &streamlines,
                                    int oobThreshold);
-    virtual void              FindSlackers(std::vector<int> &slackers,
-                                           int oobFactor=-1,
-                                           int sortMethod=0,
-                                           bool checkJustUpdated=false);
+    virtual void             Case5(int overworkThreshold,
+                                   bool domainCheck);
+    virtual void             FindSlackers(std::vector<int> &slackers,
+                                          int oobFactor=-1,
+                                          int sortMethod=0,
+                                          bool checkJustUpdated=false);
+    virtual bool             HandleSlaveMessages(vector<vector<int> > &msgs,
+                                                 vector<avtStreamlineWrapper *> &streamlines,
+                                                 bool &done,
+                                                 int &terminates,
+                                                 int msgSelect=-1);
     /*
     virtual void              AsynchronousParallelStaticDomains(
                                    std::vector<pt3d> &seedpoints);
