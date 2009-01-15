@@ -58,10 +58,8 @@
 #include <vtkPointData.h>
 #include <vtkType.h>
 
-#if defined(ITAPS_GRUMMP)
 #include <stdlib.h>
 #include <vtkDataSetTriangleFilter.h>
-#endif
 
 #include <map>
 #include <string>
@@ -78,13 +76,34 @@ using namespace avtITAPS_CUtility;
 //  Programmer: Mark C. Miller 
 //  Creation:   November 20, 2008 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Jan 14 17:57:46 PST 2009
+//    Added some bools control output behavior
+//
 // ****************************************************************************
 
 avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
 {
+    addFacesFor3DEnts = false;
+    preventDupsToiMesh = false;
+
+#if defined(ITAPS_GRUMMP)
+    simplexify = true;
+#else
+    simplexify = false;
+#endif
+
 #if defined(ITAPS_MOAB)
     saveOptions = "MOAB";
     formatExtension = "h5m";
+#elif defined(ITAPS_GRUMMP)
+    formatExtension = ""; // grummp seems to append '.vmesh' always
+#elif defined(ITAPS_FMDB)
+    formatExtension = "sms";
+#else
+    formatExtension = "unk";
+#endif
+
     for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
     {
         if (dbopts->GetName(i) == "Format")
@@ -101,12 +120,19 @@ avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
                 case 7: saveOptions = "STL";    formatExtension = "stl"; break;
             }
         }
+        else if (dbopts->GetName(i) == "Simplexify")
+        {
+            simplexify = dbopts->GetBool("Simplexify");
+        }
+        else if (dbopts->GetName(i) == "Add faces for 3Dents")
+        {
+            addFacesFor3DEnts = dbopts->GetBool("Add faces for 3Dents");
+        }
+        else if (dbopts->GetName(i) == "Prevent duplicates to iMesh")
+        {
+            preventDupsToiMesh = dbopts->GetBool("Prevent duplicates to iMesh");
+        }
     }
-#elif defined(ITAPS_GRUMMP)
-    formatExtension = ""; // grummp seems to append '.vmesh' always
-#else
-    formatExtension = "unk";
-#endif
 }
 
 // ****************************************************************************
@@ -173,7 +199,6 @@ avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
 }
 
-#if defined(ITAPS_GRUMMP)
 // ****************************************************************************
 //  Function: compare_ehs
 //
@@ -182,6 +207,9 @@ avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //  Programmer: Mark C. Miller, Tue Jan  6 18:51:18 PST 2009
 //
+//  Modifications:
+//    Mark C. Miller, Wed Jan 14 17:58:11 PST 2009
+//    Removed conditional compilation bracketing this func.
 // ****************************************************************************
 static int compare_ehs(const void *a, const void *b)
 {
@@ -194,7 +222,6 @@ static int compare_ehs(const void *a, const void *b)
     else
         return 0;
 }
-#endif
 
 // ****************************************************************************
 //  Function: WriteMesh 
@@ -210,11 +237,18 @@ static int compare_ehs(const void *a, const void *b)
 //    Added tet conversion for GRUMMP. Removed conditional compilation for
 //    getDescription calls since those work in most recent GRUMMP.
 //
+//    Mark C. Miller, Wed Jan 14 17:58:33 PST 2009
+//    Added bool arguments to control behavior. Removed conditional
+//    compilation of simplexification block and made it run-time conditional.
+//    Added code to properly traverse faces of a cell instead of assuming
+//    all cells are tets. Expanded the duplicate faces map to include a 4th
+//    node id.
 // ****************************************************************************
 static void
 WriteMesh(vtkDataSet *_ds, int chunk,
     iMesh_Instance itapsMesh, iBase_EntitySetHandle rootSet,
-    iBase_EntityHandle **pntHdls, iBase_EntityHandle **cellHdls)
+    iBase_EntityHandle **pntHdls, iBase_EntityHandle **cellHdls,
+    bool simplexify, bool addFacesFor3DEnts, bool preventDupsToiMesh)
 {
     int i,j;
     vtkDataSet *ds = _ds;
@@ -222,16 +256,17 @@ WriteMesh(vtkDataSet *_ds, int chunk,
     *pntHdls = 0;
     *cellHdls = 0;
 
-#if defined(ITAPS_GRUMMP)
-    debug5 << "Converting mesh to simplexes..." << endl;
-    debug5 << "    " << _ds->GetNumberOfPoints() << " points, " << _ds->GetNumberOfCells() << " cells ==> ";
-    vtkDataSetTriangleFilter *tf = vtkDataSetTriangleFilter::New();
-    tf->SetInput(_ds);
-    tf->Update();
-    ds = (vtkDataSet*) tf->GetOutput();
-    ds->Register(NULL);
-    debug5 << ds->GetNumberOfPoints() << " points, " << ds->GetNumberOfCells() << " cells." << endl;
-#endif
+    if (simplexify)
+    {
+        debug5 << "Converting mesh to simplexes..." << endl;
+        debug5 << "    " << _ds->GetNumberOfPoints() << " points, " << _ds->GetNumberOfCells() << " cells ==> ";
+        vtkDataSetTriangleFilter *tf = vtkDataSetTriangleFilter::New();
+        tf->SetInput(_ds);
+        tf->Update();
+        ds = (vtkDataSet*) tf->GetOutput();
+        ds->Register(NULL);
+        debug5 << ds->GetNumberOfPoints() << " points, " << ds->GetNumberOfCells() << " cells." << endl;
+    }
 
     try
     {
@@ -278,13 +313,19 @@ WriteMesh(vtkDataSet *_ds, int chunk,
     
         int ncells = ds->GetNumberOfCells();
         iBase_EntityHandle *znHdls = new iBase_EntityHandle[ncells];
-        map<iBase_EntityHandle, map<iBase_EntityHandle, map<iBase_EntityHandle, iBase_EntityHandle> > > dupFacesMap;
+        map<iBase_EntityHandle, map<iBase_EntityHandle, map<iBase_EntityHandle,
+            map<iBase_EntityHandle, iBase_EntityHandle> > > > dupFacesMap;
         for (i = 0; i < ncells; i++)
         {
             vtkCell *theCell = ds->GetCell(i);
     
             int j, status;
-            int topo = VTKZoneTypeToITAPSEntityTopology(theCell->GetCellType());
+            int cellTopo = VTKZoneTypeToITAPSEntityTopology(theCell->GetCellType());
+
+            // We don't need to embue points as entities
+            if (cellTopo == iMesh_POINT)
+                continue; 
+
             int ncellPts = theCell->GetNumberOfPoints();
             iBase_EntityHandle *cellPtEnts = new iBase_EntityHandle[ncellPts];
             for (j = 0; j < ncellPts; j++)
@@ -293,77 +334,97 @@ WriteMesh(vtkDataSet *_ds, int chunk,
             iBase_EntityHandle *lo_ents = cellPtEnts;
             int lo_ent_cnt = ncellPts;
 
-#if defined(ITAPS_GRUMMP)
-            //
-            // A few problems here. We may not be handling 2D case correctly.
-            // will iMesh_createEnt prevent from creating duplicate entities?
-            // For GRUMMP, we can create 3D ents only in terms of 2D faces.
-            // However, MOAB permits creation of 3D ents from 0D verts. Finally,
-            // in 3D, GRUMMP understans ONLY tets. In 2D, GRUMMP understands
-            // tris and quads.
-            //
-            iBase_EntityHandle faceEnts[4];
-            lo_ents = faceEnts;
-            lo_ent_cnt = 4;
-            for (j = 0; j < 4; j++)
+            if (addFacesFor3DEnts && (cellTopo == iMesh_TETRAHEDRON ||
+                                      cellTopo == iMesh_PYRAMID ||
+                                      cellTopo == iMesh_PRISM ||
+                                      cellTopo == iMesh_HEXAHEDRON))
             {
-                iBase_EntityHandle facePtEnts[3];
-                for (int k = 0; k < 3; k++)
-                    facePtEnts[k] = cellPtEnts[(j+k)%4];
-
                 //
-                // To ensure we don't wind up creating duplicate faces, we maintain
-                // a 3-level map (one for each node of a triangular face) of faces
-                // we've seen before. We search this map using a sorted list of
-                // entity handles representing the nodes of the face. This implies
-                // that the data type iBase_EntityHandle supports <, > and == operators.
-                // Also, we use the fact that the order of nodes over a triangular face
-                // should NOT matter to GRUMMP here so that the we needn't worry that
-                // calling qsort will somehow corrupt the representation of the face.
-                // For quads, this will be a different story.
+                // A few problems here. We may not be handling 2D case correctly.
+                // will iMesh_createEnt prevent from creating duplicate entities?
+                // For GRUMMP, we can create 3D ents only in terms of 2D faces.
+                // However, MOAB permits creation of 3D ents from 0D verts. Finally,
+                // in 3D, GRUMMP understans ONLY tets. In 2D, GRUMMP understands
+                // tris and quads.
                 //
-                qsort(facePtEnts, 3, sizeof(facePtEnts[0]), compare_ehs);
-                bool newFace = false;
-                map<iBase_EntityHandle, map<iBase_EntityHandle, map<iBase_EntityHandle, iBase_EntityHandle> > >::iterator f0it =
-                    dupFacesMap.find(facePtEnts[0]);
-                if (f0it == dupFacesMap.end())
-                    newFace = true;
-                else
+                iBase_EntityHandle faceEnts[6]; // For elem. zoo, max of 6 faces.
+                lo_ents = faceEnts;
+                lo_ent_cnt = theCell->GetNumberOfFaces();
+                for (j = 0; j < lo_ent_cnt; j++)
                 {
-                    map<iBase_EntityHandle, map<iBase_EntityHandle, iBase_EntityHandle> >::iterator f1it =
-                        f0it->second.find(facePtEnts[1]);
-                    if (f1it == f0it->second.end())
-                        newFace = true;
-                    else
+                    vtkCell *faceCell = theCell->GetFace(j);
+                    int faceTopo = VTKZoneTypeToITAPSEntityTopology(faceCell->GetCellType());
+                    int k;
+
+                    // These loops populate facePtEnts with 3 or 4 entity handles
+                    // for a triangle or quad face, respectively. In the case of
+                    // a triangle, we summarily set the last entry to the same as
+                    // the first to ensure sorting and map lookup below works. We
+                    // keep a copy of faceEntPointsOrig for the call to iMesh but
+                    // use facePointEnts (which gets sorted) for duplicate lookups.
+                    int nFacePts = faceCell->GetNumberOfPoints();
+                    iBase_EntityHandle facePtEnts[4];
+                    const int nFacePtsMax = sizeof(facePtEnts)/sizeof(facePtEnts[0]);
+                    for (k = 0; k < nFacePts; k++)
+                        facePtEnts[k] = ptHdls[faceCell->GetPointId(k)];
+                    for (k = nFacePts; k < nFacePtsMax; k++)
+                        facePtEnts[k] = ptHdls[faceCell->GetPointId(0)];
+                    iBase_EntityHandle facePtEntsOrig[4];
+                    memcpy(facePtEntsOrig, facePtEnts, sizeof(facePtEntsOrig));
+
+                    bool newFace = true;
+                    if (preventDupsToiMesh)
                     {
-                        map<iBase_EntityHandle, iBase_EntityHandle>::iterator f2it =
-                            f1it->second.find(facePtEnts[2]);
-                        if (f2it == f1it->second.end())
-                            newFace = true;
-                        else
+                        qsort(facePtEnts, nFacePtsMax, sizeof(facePtEnts[0]), compare_ehs);
+                        map<iBase_EntityHandle, map<iBase_EntityHandle, map<iBase_EntityHandle,
+                            map<iBase_EntityHandle, iBase_EntityHandle> > > >::iterator f0it =
+                            dupFacesMap.find(facePtEnts[0]);
+                        if (f0it != dupFacesMap.end())
                         {
-                            faceEnts[j] = f2it->second;
-                            f1it->second.erase(f2it);
-                            if (f1it->second.size() == 0)
+                            map<iBase_EntityHandle, map<iBase_EntityHandle,
+                                map<iBase_EntityHandle, iBase_EntityHandle> > >::iterator f1it =
+                                f0it->second.find(facePtEnts[1]);
+                            if (f1it != f0it->second.end())
                             {
-                                f0it->second.erase(f1it);
-                                if (f0it->second.size() == 0)
-                                    dupFacesMap.erase(f0it);
+                                map<iBase_EntityHandle,
+                                    map<iBase_EntityHandle, iBase_EntityHandle> >::iterator f2it =
+                                    f1it->second.find(facePtEnts[2]);
+                                if (f2it != f1it->second.end())
+                                {
+                                    map<iBase_EntityHandle, iBase_EntityHandle>::iterator f3it =
+                                        f2it->second.find(facePtEnts[3]);
+                                    if (f3it != f2it->second.end())
+                                    {
+                                        newFace = false;
+                                        faceEnts[j] = f3it->second;
+                                        f2it->second.erase(f3it);
+                                        if (f2it->second.size() == 0)
+                                        {
+                                            f1it->second.erase(f2it);
+                                            if (f1it->second.size() == 0)
+                                            {
+                                                f0it->second.erase(f1it);
+                                                if (f0it->second.size() == 0)
+                                                    dupFacesMap.erase(f0it);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
+                    } // if (preventDupsToiMesh)
+
+                    if (newFace)
+                    { 
+                        iMesh_createEnt(itapsMesh, faceTopo, facePtEntsOrig, nFacePts, &faceEnts[j], &status, &itapsError);
+                        if (i<5) CheckITAPSError(itapsMesh, iMesh_createEnt, NoL);
+                        if (preventDupsToiMesh)
+                            dupFacesMap[facePtEnts[0]][facePtEnts[1]][facePtEnts[2]][facePtEnts[3]] = faceEnts[j];
                     }
                 }
-
-                if (newFace)
-                { 
-                    iMesh_createEnt(itapsMesh, iMesh_TRIANGLE, facePtEnts, 3, &faceEnts[j], &status, &itapsError);
-                    if (i<5) CheckITAPSError(itapsMesh, iMesh_createEnt, NoL);
-                    dupFacesMap[facePtEnts[0]][facePtEnts[1]][facePtEnts[2]] = faceEnts[j];
-                }
             }
-#endif
 
-            iMesh_createEnt(itapsMesh, topo, lo_ents, lo_ent_cnt, &znHdls[i], &status, &itapsError);
+            iMesh_createEnt(itapsMesh, cellTopo, lo_ents, lo_ent_cnt, &znHdls[i], &status, &itapsError);
             if (i<5) CheckITAPSError(itapsMesh, iMesh_createEnt, NoL);
 
         }
@@ -391,10 +452,9 @@ WriteMesh(vtkDataSet *_ds, int chunk,
             cerr << msg << endl;
     }
 
-#if defined(ITAPS_GRUMMP)
     // Since we converted to tets, creating a new dataset, we need to delete it.
-    ds->Delete();
-#endif
+    if (simplexify)
+        ds->Delete();
 
 funcEnd: ;
 }
@@ -648,6 +708,9 @@ funcEnd: ;
 //    Fixed off by one error in string length passed for array names. It was
 //    failing to include the terminating null character. Removed conditional
 //    compilation for getDescription as that now works in most recent GRUMMP.
+//
+//    Mark C. Miller, Wed Jan 14 18:00:42 PST 2009
+//    Added bools to call to WriteMesh.
 // ****************************************************************************
 
 void
@@ -666,7 +729,8 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     // Create mesh description in iMesh instance
     iBase_EntityHandle *ptHdls, *clHdls;
-    WriteMesh(ds, chunk, itapsMesh, rootSet, &ptHdls, &clHdls);
+    WriteMesh(ds, chunk, itapsMesh, rootSet, &ptHdls, &clHdls,
+        simplexify, addFacesFor3DEnts, preventDupsToiMesh);
 
     // Create variables (tags) in iMesh instance
     WriteVariables(ds, chunk, itapsMesh, rootSet, ptHdls, clHdls);
