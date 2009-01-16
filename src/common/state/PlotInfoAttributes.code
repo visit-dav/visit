@@ -20,3 +20,14 @@ PlotInfoAttributes::Reset()
 }
 
 
+Function: Merge
+Declaration: void Merge(const PlotInfoAttributes &obj);
+Definition:
+void
+PlotInfoAttributes::Merge(const PlotInfoAttributes &obj)
+{
+    data.Merge(obj.GetData());
+    SelectData();
+}
+
+

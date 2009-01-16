@@ -94,6 +94,7 @@ public:
     // User-defined methods
     void PrintSelf(ostream &os);
     void Reset();
+    void Merge(const PlotInfoAttributes &obj);
 
     // IDs that can be used to identify fields in case statements
     enum {

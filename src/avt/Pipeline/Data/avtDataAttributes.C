@@ -1427,7 +1427,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     mirOccurred |= da.mirOccurred;
     canUseOrigZones &= da.canUseOrigZones;
     origElementsRequiredForPick |= da.origElementsRequiredForPick;
-    plotInfoAtts = da.plotInfoAtts;
+    plotInfoAtts.Merge(da.plotInfoAtts);
 
     // there's no good answer for unitCellVectors or rectilinearGridTransform
 }

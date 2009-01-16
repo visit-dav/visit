@@ -267,13 +267,18 @@ avtLowerResolutionVolumeFilter::ExecuteData(vtkDataSet *ds, int, std::string)
 // Creation:   Thu Dec 18 14:15:14 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 16 13:54:49 PST 2009
+//   Return early if the histogram data does not exist.
+//
 // ****************************************************************************
 
 void
 avtLowerResolutionVolumeFilter::PostExecute()
 {
     StackTimer t("avtLowerResolutionVolumeFilter::PostExecute");
+
+    if(hist == 0 || hist2 == 0)
+        return;
 
     floatVector        h1;
     unsignedCharVector h2;
