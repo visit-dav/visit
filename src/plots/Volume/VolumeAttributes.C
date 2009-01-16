@@ -2050,7 +2050,6 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 bool
 VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
 {
-#if 1
     if (opacityVariable != obj.opacityVariable)
         return true;
 
@@ -2063,6 +2062,11 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // We're in software mode. Any change to the renderer type requires
         // a reexecute.
         if(rendererType != obj.rendererType)
+            return true;
+
+        if (scaling != obj.scaling)
+            return true;
+        if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
             return true;
     }
     else
@@ -2105,24 +2109,6 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
     if (smoothData != obj.smoothData)
         return true;
 
-#else
-    if (opacityVariable != obj.opacityVariable)
-        return true;
-    if (resampleTarget != obj.resampleTarget)
-        return true;
-    if (rendererType != obj.rendererType)
-        return true;
-    if (smoothData != obj.smoothData)
-        return true;
-
-    if (rendererType == VolumeAttributes::RayCasting)
-    {
-        if (scaling != obj.scaling)
-            return true;
-        if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
-            return true;
-    }
-#endif
     return false;
 }
 
