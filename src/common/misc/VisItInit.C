@@ -62,14 +62,21 @@
 static void RemovePrependedDirs(const char *, char *); 
 static char executableName[256];
 static char componentName[256];
+static const char *AVTPREP = "avtprep";
+static const char *CLI = "cli";
+static const char *ENGINE = "engine";
+static const char *GUI = "gui";
+static const char *LAUNCHER = "launcher";
+static const char *MDSERVER = "mdserver";
+static const char *VIEWER = "viewer";
 static const char *const allComponentNames[] = {
-    "avtprep",
-    "cli",
-    "engine",
-    "gui",
-    "launcher",
-    "mdserver",
-    "viewer"
+    AVTPREP,
+    CLI,
+    ENGINE,
+    GUI,
+    LAUNCHER,
+    MDSERVER,
+    VIEWER
 };
 static ErrorFunction errorFunction = NULL;
 static void *errorFunctionArgs = NULL;
@@ -205,6 +212,10 @@ NewHandler(void)
 //    times as when you include multiple VisIt components in a single
 //    executable.
 //
+//    Dave Pugmire, Thu Jan 15 16:35:08 EST 2009
+//    Add support for -debug_engine_rank, limiting debug output to the specified
+//    rank.
+//
 // ****************************************************************************
 
 void
@@ -215,7 +226,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
          return;
     initializeCalled = true;
 
-    int i, debuglevel = 0;
+    int i, debuglevel = 0, engineDebugRank=-1;
 #if defined(_WIN32)
     bool usePid = true;
 #else
@@ -226,6 +237,32 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     bool enableTimings = false;
     for (i=1; i<argc; i++)
     {
+        if (strcmp("-debug_engine_rank", argv[i]) == 0)
+        {
+            engineDebugRank = -1;
+            if (i+1 < argc && isdigit(*(argv[i+1])))
+                engineDebugRank = atoi(argv[i+1]);
+            else
+                cerr<<"Warning: debug engine rank not specified. Igorning.\n";
+            if (engineDebugRank >= n)
+            {
+                cerr<<"Warning: clamping debug engine rank to "<<n-1<<endl;
+                engineDebugRank = n-1;
+            }
+            else if (engineDebugRank < 0)
+            {
+                cerr<<"Warning: clamping debug engine rank to 0\n";
+                engineDebugRank = 0;
+            }
+            if(strip)
+            {
+                striparg(i,2, argc,argv);
+                --i;
+            }
+            else
+                ++i;
+        }
+
         if (strncmp("-debug",argv[i],6) == 0)
         {
 	    if ((strlen(argv[i]) > 7 && IsComponent(&argv[i][7])) ||
@@ -311,6 +348,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     {
         strcpy(progname, progname_wo_dir);
     }
+    
     if (usePid)
     {
 #if defined(_WIN32)
@@ -328,6 +366,13 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     if(vtk_debug && strstr(progname,"engine") != NULL  && debuglevel < 1)
         debuglevel = 1;
 
+    // If debug rank specified, and we are not rank 'r', then turn off debuging.
+    if ((strncmp(progname, ENGINE, strlen(ENGINE)) == 0) &&
+        engineDebugRank != -1 && engineDebugRank != r)
+    {
+        debuglevel = 0;
+    }
+    
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
     DebugStream::Initialize(progname, debuglevel, sigs, clobberVlogs);
