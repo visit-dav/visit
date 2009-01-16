@@ -811,6 +811,9 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 //   Brad Whitlock, Tue Nov 18 15:10:02 PST 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Fri Jan 16 11:14:14 EST 2009
+//   Hide the custom title/units and showGrid settings for the axes.
+//
 // ****************************************************************************
 
 void
@@ -841,7 +844,8 @@ QvisAnnotationWindow::CreateArrayTab()
     pageArrayTabs->addTab(CreateGeneralTabArray(pageArrayTabs), tr("General Array"));
 
     // Add the X-axis page.
-    axesArray[0] = new QvisAxisAttributesWidget(pageArrayTabs, false, true);
+    axesArray[0] = new QvisAxisAttributesWidget(pageArrayTabs, false, true,
+                                                false, false);
     connect(axesArray[0], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(axisChangedArray(const AxisAttributes &)));
     pageArrayTabs->addTab(axesArray[0], tr("Axes"));
