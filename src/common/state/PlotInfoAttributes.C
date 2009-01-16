@@ -465,3 +465,10 @@ PlotInfoAttributes::Reset()
     SelectData();
 }
 
+void
+PlotInfoAttributes::Merge(const PlotInfoAttributes &obj)
+{
+    data.Merge(obj.GetData());
+    SelectData();
+}
+

@@ -57,6 +57,9 @@
 //    Brad Whitlock, Tue Jan  6 15:32:50 PST 2009
 //    I added methods so the MapNode can read/write itself using Connection.
 //
+//    Brad Whitlock, Fri Jan 16 11:36:10 PST 2009
+//    I added a Merge function.
+//
 // ****************************************************************************
 
 class STATE_API MapNode : public Variant
@@ -91,7 +94,8 @@ class STATE_API MapNode : public Variant
     MapNode             &operator[](const std::string &);
     MapNode             *GetEntry(const std::string &);
     const MapNode       *GetEntry(const std::string &) const;
-    
+
+    void                 Merge(const MapNode &);
     
     void                 RemoveEntry(const std::string &);
     bool                 HasEntry(const std::string &) const;

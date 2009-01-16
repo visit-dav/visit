@@ -611,21 +611,92 @@ MapNode::Read(Connection &conn)
             string name;
             conn.ReadString(name);
 
-            // Read the item's data
-#if 0
-            MapNode child;
-            child.Read(conn);
-
-            // Add the item to the mapnode.
-            entries[name] = child;
-#else
             // Implicitly create the item and read its data.
             entries[name].Read(conn);
-#endif
         }
     }
     else
     {
         Variant::Read(conn);
+    }
+}
+
+// ****************************************************************************
+// Method: MapNode::Merge
+//
+// Purpose: 
+//   This method merges 2 MapNodes together so that missing fields from one
+//   MapNode will get added to this MapNode.
+//
+// Arguments:
+//   obj  : The MapNode to add to this MapNode.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 16 12:01:50 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MapNode::Merge(const MapNode &obj)
+{
+    if(this->operator ==(obj))
+        return;
+
+    if(Type() == EMPTY_TYPE)
+    { 
+        if(obj.Type() == EMPTY_TYPE)
+        {
+            map<string,MapNode>::const_iterator itr, itr2;
+            for(itr = obj.entries.begin(); itr != obj.entries.end(); ++itr)
+            {
+                itr2 = entries.find(itr->first);
+                if(itr2 == entries.end())
+                {
+                    // This object does not have the key we looked for so
+                    // let's add the missing key/value pair.
+                    entries[itr->first] = itr->second;
+                }
+                else
+                {
+                    entries[itr->first].Merge(itr->second);
+                }
+            }
+        }
+        else
+        {
+            entries[TypeName()] = obj;
+        }
+    }
+    else
+    {
+        if(obj.Type() == EMPTY_TYPE)
+        {
+            // This is a variant and that is a mapnode
+            MapNode obj2(obj);
+            obj2.Merge(*this);
+            *this = obj2;
+        }
+        else
+        {
+            // Both are variants. Combine into a MapNode
+            MapNode merged;
+            if(Type() == obj.Type())
+            {
+                merged[TypeName() + "0"] = *this;
+                merged[obj.TypeName() + "1"] = obj;
+            }
+            else
+            {
+                merged[TypeName()] = *this;
+                merged[obj.TypeName()] = obj;
+            }
+            *this = merged;
+        }
     }
 }
