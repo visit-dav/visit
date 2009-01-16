@@ -78,10 +78,14 @@
 //   Kathleen Bonnell, Mon Sep 22 18:37:29 PDT 2008 
 //   Allow labelScaling values to be negative. 
 //
+//   Jeremy Meredith, Fri Jan 16 11:12:48 EST 2009
+//   Allow clients to not expose the "ShowGrid" and custom title/units settings
+//
 // ****************************************************************************
 
 QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent, 
-    bool tickEnabled, bool titleEnabled) :
+    bool tickEnabled, bool titleEnabled,
+    bool showGridEnabled, bool customTitleAndUnitsEnabled) :
     QWidget(parent), GUIBase(), atts()
 {
     autoScaling = true;
@@ -114,6 +118,11 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
             this, SLOT(Apply()));
     tLayout->addWidget(customTitle, row, 1);
     ++row;
+    if (!customTitleAndUnitsEnabled)
+    {
+        customTitleToggle->hide();
+        customTitle->hide();
+    }
 
     customUnitsToggle = new QCheckBox(tr("Custom Units"), titleGroup);
     connect(customUnitsToggle, SIGNAL(toggled(bool)),
@@ -124,6 +133,11 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
             this, SLOT(Apply()));
     tLayout->addWidget(customUnits, row, 1);
     ++row;
+    if (!customTitleAndUnitsEnabled)
+    {
+        customUnitsToggle->hide();
+        customUnits->hide();
+    }
 
     QFrame *titleSep = new QFrame(titleGroup);
     titleSep->setFrameStyle(QFrame::HLine + QFrame::Sunken);
@@ -234,6 +248,8 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
             this, SLOT(gridToggled(bool)));
     vbLayout->addWidget(grid);
     vbLayout->addStretch(100);
+    if (!showGridEnabled)
+        grid->hide();
 }
 
 // ****************************************************************************

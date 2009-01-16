@@ -64,6 +64,9 @@ class QvisFontAttributesWidget;
 //   Brad Whitlock, Wed Jun 25 09:59:31 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Fri Jan 16 11:12:48 EST 2009
+//   Allow clients to not expose the "ShowGrid" and custom title/units settings
+//
 // ****************************************************************************
 
 class QvisAxisAttributesWidget : public QWidget, public GUIBase
@@ -71,7 +74,9 @@ class QvisAxisAttributesWidget : public QWidget, public GUIBase
     Q_OBJECT
 public:
     QvisAxisAttributesWidget(QWidget *parent, bool ticksCheckEnabled=true,
-        bool titleCheckEnabled=true);
+                             bool titleCheckEnabled=true,
+                             bool showGridEnabled=true,
+                             bool customTitleAndUnitsEnabled=true);
     virtual ~QvisAxisAttributesWidget();
 
     void setAxisAttributes(const AxisAttributes &);
