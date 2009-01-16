@@ -407,6 +407,9 @@ exec perl -x $0 ${1+"$@"};
 #    Jeremy Meredith, Wed Dec  3 15:52:00 EST 2008
 #    Added a little warning to -sshtunneling.
 #
+#    Dave Pugmire, Thu Jan 15 16:43:07 EST 2009
+#    Add -debug_engine_rank option.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -750,10 +753,13 @@ $fullusage = "$usage
         -debug <level>       Run with <level> levels of output logging.
                              <level> must be between 1 and 5. This will generate
                              debug logs for ALL components.
-        -debug_<compname> <level> Run specified component with <level> of output
+        -debug_<compname> <level>
+                             Run specified component with <level> of output
                              logging. For example, '-debug_mdserver 4' will run
                              the mdserver with level 4 debugging. Multiple
                              '-debug_<compname> <level>' args are allowed.
+        -debug_engine_rank <r>
+                             Restrict debug output to the specified rank.
         -clobber_vlogs       By default, each invokation or restart of a VisIt
                              component will write its debug logs to new files.
                              This flag causes VisIt to overwrite existing debug
