@@ -130,6 +130,7 @@ NetnodeDB::SetDBInfo(std::string _filename, std::string _var, int _time)
 //    Returned the cached output if possible.
 //
 // ****************************************************************************
+
 avtDataObject_p
 NetnodeDB::GetOutput(void)
 {
@@ -180,7 +181,24 @@ NetnodeDB::ReleaseData(void)
 //    Get the final output of a network.  This has the effect of walking up
 //    the line, hooking everything up.
 //
+//  Programmer: Sean Ahern
+//  Creation:   June 26, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 16 14:34:40 PST 2009
+//    If this method has already been called once, then don't set up the
+//    network again.  We probably had it right the first time and subsequent
+//    "settings up" will just get things wrong.  Case in point: ray-traced
+//    volume rendering.  The first execution calculates a gradient.  The 
+//    second (if another plot has been created in between) can wipe out the
+//    data attributes.  So the volume filter will complain that it doesn't
+//    have the gradient, even though it is actually there ... the problem
+//    was that the data atts were overwritten ... which is avoided by not
+//    overwriting them on subsequent times (i.e. this change).
+//
 // ****************************************************************************
+
 avtDataObject_p
 NetnodeFilter::GetOutput(void)
 {
@@ -196,7 +214,8 @@ NetnodeFilter::GetOutput(void)
     }
 #endif
 
-    filter->SetInput(inputNodes[0]->GetOutput());
+    if (*(filter->GetInput()) == NULL)
+        filter->SetInput(inputNodes[0]->GetOutput());
 
     return filter->GetOutput();
 }

@@ -824,6 +824,10 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added support for ignoring bad extents from dbs.
+//
+//    Hank Childs, Fri Jan 16 15:30:15 PST 2009
+//    Store the variable with the working network.
+//
 // ****************************************************************************
 
 void
@@ -854,6 +858,7 @@ NetworkManager::StartNetwork(const string &format,
                                       fileMayHaveUnloadedPlugin,
                                       ignoreExtents);
     workingNet->SetNetDB(netDB);
+    workingNet->SetVariable(leaf);
     netDB->SetDBInfo(filename, leaf, time);
 
     // Put an ExpressionEvaluatorFilter right after the netDB to handle
@@ -1377,7 +1382,11 @@ NetworkManager::CancelNetwork(void)
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Changed workingNet->GetID to workingNet->GetNetID
 //
+//    Hank Childs, Fri Jan 16 14:39:33 PST 2009
+//    Set the proper database info when calling UseNetwork.
+//
 // ****************************************************************************
+
 void
 NetworkManager::UseNetwork(int id)
 {
@@ -1405,6 +1414,11 @@ NetworkManager::UseNetwork(int id)
     }
  
     workingNet = networkCache[id];
+    NetnodeDB *db = workingNet->GetNetDB();
+    int time = workingNet->GetTime();
+    std::string filename = db->GetFilename();
+    std::string var = workingNet->GetVariable();
+    db->SetDBInfo(filename, var, time);
     int pipelineIndex = workingNet->GetContract()->GetPipelineIndex();
     loadBalancer->ResetPipeline(pipelineIndex);
 

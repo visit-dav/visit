@@ -68,7 +68,11 @@ using std::deque;
 //    Brad Whitlock, Wed Mar 21 23:03:25 PST 2007
 //    Initialize plotName.
 //
+//    Hank Childs, Fri Jan 16 14:38:42 PST 2009
+//    Initialize time and var.
+//
 // ****************************************************************************
+
 DataNetwork::DataNetwork(void)
 {
     nid = -1;
@@ -79,6 +83,8 @@ DataNetwork::DataNetwork(void)
     plotActor = NULL;
     clone = false;
     plotName = "";
+    time = -1;
+    var = "";
 }
 
 // ****************************************************************************
@@ -104,6 +110,7 @@ DataNetwork::DataNetwork(void)
 //    Fix memory leak.
 //
 // ****************************************************************************
+
 DataNetwork::~DataNetwork(void)
 {
     // The terminal node has already been freed by this point.
