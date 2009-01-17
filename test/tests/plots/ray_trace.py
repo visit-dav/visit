@@ -169,10 +169,18 @@ SetPlotOptions(vol_atts)
 DrawPlots()
 Test("ray_trace_08")
 
+#
+# There was a bug where adding a new plot with a different variable
+# would cause the ray tracing to fail.  Test that the fix still works.
+#
+AddPlot("Contour", "u")
+DrawPlots()
+Test("ray_trace_09")
+
 # And make sure everything is okay in window #1.
 SetActiveWindow(1)
 SetActivePlots(0)
 DeleteActivePlots()
-Test("ray_trace_09")
+Test("ray_trace_10")
 
 Exit()
