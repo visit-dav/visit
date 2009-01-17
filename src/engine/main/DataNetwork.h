@@ -108,6 +108,9 @@
 //    Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007
 //    Added optional bool arg to GetActor to force rexecution. 
 //
+//    Hank Childs, Fri Jan 16 14:37:33 PST 2009
+//    Add a variable field.
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -127,6 +130,7 @@ public:
     avtDataObject_p GetOutput(void) { return terminalNode->GetOutput(); };
     void SetDataSpec(avtDataRequest_p s) {dataRequest = s;};
     void SetTime(int time_) {time = time_;};
+    void SetVariable(const std::string &v) {var = v;};
 
     virtual void ReleaseData(void);
 
@@ -144,6 +148,7 @@ public:
     void SetNetDB(NetnodeDB *d) { netdb = d; };
     NetnodeDB* GetNetDB(void) { return netdb; };
     virtual int GetTime() {return time;};
+    const std::string &GetVariable() {return var;};
     std::string &GetPlottype(void) { return plottype; };
     std::string &GetPlotName(void) { return plotName; };
     std::vector<Netnode*>       &GetNodeList(void) { return nodeList; }; 
@@ -163,6 +168,7 @@ protected:
     avtPlot_p                   plot;
     std::string                 plottype;
     std::string                 plotName;
+    std::string                 var;
     int                         time;
     bool                        clone;
 };
