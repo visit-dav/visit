@@ -4067,6 +4067,9 @@ VisWindow::UpdateAxes2D()
 //    Jeremy Meredith, Tue Nov 18 16:02:50 EST 2008
 //    Populated with new axesarray settings.
 //
+//    Eric Brugger, Tue Jan 20 12:10:53 PST 2009
+//    Removed the setting of the grid visibility since it doesn't make sense.
+//
 // ****************************************************************************
 void
 VisWindow::UpdateAxesArray()
@@ -4084,9 +4087,6 @@ VisWindow::UpdateAxesArray()
 
     // title
     axesArray->SetTitleVisibility(atts.GetAxes().GetTitle().GetVisible());
-
-    // grid lines
-    axesArray->SetGridVisibility(atts.GetAxes().GetGrid());
 
     // ticks
     axesArray->SetTickVisibility(atts.GetTicksVisible(), label);
@@ -4126,11 +4126,52 @@ VisWindow::UpdateAxesArray()
 //  Programmer:  Eric Brugger
 //  Creation:    December 9, 2008
 //
+//  Modifications:
+//    Eric Brugger, Tue Jan 20 12:10:53 PST 2009
+//    I finished implementing this routine.
+//
 // ****************************************************************************
 void
 VisWindow::UpdateAxesParallel()
 {
-    axesParallel->SetVisibility(true);
+    const AxesArray &atts = annotationAtts.GetAxesArray();
+
+    // visibility
+    axesParallel->SetVisibility(atts.GetVisible());
+
+    // labels
+    int label = atts.GetAxes().GetLabel().GetVisible() ? 1 : 0;
+    axesParallel->SetLabelVisibility(label);
+    axesParallel->SetLabelScaling(atts.GetAutoSetScaling(), 
+                                  atts.GetAxes().GetLabel().GetScaling());
+
+    // title
+    axesParallel->SetTitleVisibility(atts.GetAxes().GetTitle().GetVisible());
+
+    // ticks
+    axesParallel->SetTickVisibility(atts.GetTicksVisible(), label);
+    axesParallel->SetAutoSetTicks(atts.GetAutoSetTicks());
+    axesParallel->SetMajorTickMinimum(atts.GetAxes().GetTickMarks().GetMajorMinimum());
+    axesParallel->SetMajorTickMaximum(atts.GetAxes().GetTickMarks().GetMajorMaximum());
+    axesParallel->SetMajorTickSpacing(atts.GetAxes().GetTickMarks().GetMajorSpacing());
+    axesParallel->SetMinorTickSpacing(atts.GetAxes().GetTickMarks().GetMinorSpacing());
+
+    // font size
+    axesParallel->SetLabelFontHeight(atts.GetAxes().GetLabel().GetFont().GetScale()*0.02);
+    axesParallel->SetTitleFontHeight(atts.GetAxes().GetTitle().GetFont().GetScale()*0.02);
+
+    // line width
+    axesParallel->SetLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineWidth())));
+
+    // text attributes
+    VisWinTextAttributes titleAtts, labelAtts;
+    titleAtts = FontAttributes_To_VisWinTextAttributes(
+                       atts.GetAxes().GetTitle().GetFont());
+    labelAtts = FontAttributes_To_VisWinTextAttributes(
+                       atts.GetAxes().GetLabel().GetFont());
+    axesParallel->SetTitleTextAttributes(titleAtts);
+    axesParallel->SetLabelTextAttributes(labelAtts);
+    // SetLabelScaling has 3 args not 2.
 }
 
 
