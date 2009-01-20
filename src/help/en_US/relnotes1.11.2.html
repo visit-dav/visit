@@ -23,6 +23,7 @@
 <li>Fixed problem with revolved surface area query returning 0 on a mesh of beam elements. Note, it is important for the database to indicate that topological dimension of the mesh is 1. For a Silo database, one would use the DBOPT_TOPO_DIM option to the DBPutUcdmesh() call.</li>
 <li>Added support for VTK meshes which contain non-zero count of points but zero count of cells. The transform manager will now add VTK_VERTEX cells to such datasets.</li>
 <li>A memory leak was fixed with ray-casted volume rendering.</li>
+<li>Fixed problem with build_visit failing to install Silo on Darwin because it was using a C compiler to link code with C++ dependencies.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.11.1.html">VisIt 1.11.1 Release Notes</a>.</p>
