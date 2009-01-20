@@ -448,6 +448,9 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Hank Childs, Mon Sep 15 16:28:51 PST 2008
 //    Manage memory for non-cachable vars.
 //
+//    Hank Childs, Tue Jan 20 16:33:40 CST 2009
+//    Add a stage for "waiting for all processors to finish I/O".
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -592,6 +595,8 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     int t1 = visitTimer->StartTimer();
     if (canDoCollectiveCommunication)
     {
+        const char *progressStr="Waiting for all processors to finish I/O";
+        src->DatabaseProgress(0, 0, progressStr);
         //
         // If any processor decides to do material selection, they all should
         // If any processor had an error, they all should return
@@ -602,6 +607,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         MPI_Allreduce(tmp, rtmp, 2, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
         shouldDoMatSelect = bool(rtmp[0]);
         hadError = bool(rtmp[1]);
+        src->DatabaseProgress(1, 0, progressStr);
     }
     visitTimer->StopTimer(t1, "Waiting for all processors to catch up");
 #endif
@@ -8239,6 +8245,9 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
 //    No longer add a stage for material select.  For big SILs, getting this
 //    information just takes too long.
 //
+//    Hank Childs, Tue Jan 20 16:25:23 CST 2009
+//    Add a stage for parallel I/O.
+//
 // ****************************************************************************
 
 int
@@ -8279,6 +8288,12 @@ avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
             }
         }
     }
+
+    // 
+    // Barrier for parallel I/O to catch up.
+    //
+    if (PAR_Size() > 1)
+        numStages += 1;
 
     //
     // Some file formats do their own selection.  They have a combined stage,
