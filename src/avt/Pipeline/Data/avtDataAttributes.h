@@ -245,6 +245,9 @@ class     avtWebpage;
 //    I made PlotInfoAttributes be a non-pointer member since I want it to
 //    always exist so many filters can append to it.
 //
+//    Hank Childs, Tue Jan 20 12:03:05 CST 2009
+//    Added dynamicDomainDecomposition.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -270,6 +273,10 @@ class PIPELINE_API avtDataAttributes
     double                   GetTime(void) { return dtime; };
     void                     SetTime(double);
     bool                     TimeIsAccurate(void) { return timeIsAccurate; };
+
+    void                     SetDynamicDomainDecomposition(bool);
+    bool                     GetDynamicDomainDecomposition(void) 
+                                        { return dynamicDomainDecomposition; };
 
     avtExtents              *GetTrueSpatialExtents(void)
                                     { return trueSpatial; };
@@ -524,6 +531,7 @@ class PIPELINE_API avtDataAttributes
     bool                     timeIsAccurate;
     int                      cycle;
     bool                     cycleIsAccurate;
+    bool                     dynamicDomainDecomposition;
     avtGhostType             containsGhostZones;
     bool                     containsExteriorBoundaryGhosts;
     bool                     containsOriginalCells;
