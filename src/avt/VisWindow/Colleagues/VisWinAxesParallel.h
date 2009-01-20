@@ -62,6 +62,11 @@ class VisWindowColleagueProxy;
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications:
+//    Eric Brugger, Tue Jan 20 11:33:00 PST 2009
+//    I implemented autoSetTicks, labelVisibility, titleVisibility,
+//    tickVisibility and setting the major and minor tick locations.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
@@ -81,11 +86,12 @@ class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
     virtual void              StartAxesParallelMode(void);
     virtual void              StopAxesParallelMode(void);
 
+    void                      SetTitles();
+
     void                      SetLabelVisibility(int);
     void                      SetTitleVisibility(int);
     void                      SetVisibility(int);
-    void                      SetTickLocation(int);
-    void                      SetGridVisibility(int);
+    void                      SetTickVisibility(bool,bool);
     void                      SetAutoSetTicks(int);
     void                      SetMajorTickMinimum(double);
     void                      SetMajorTickMaximum(double);
@@ -94,7 +100,11 @@ class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
     void                      SetLabelFontHeight(double);
     void                      SetTitleFontHeight(double);
     void                      SetLineWidth(int);
-    void                      SetLabelScaling(bool, int, int);
+    void                      SetLabelScaling(bool, int);
+    void                      SetLabelTextAttributes(
+                                  const VisWinTextAttributes &atts);
+    void                      SetTitleTextAttributes(
+                                  const VisWinTextAttributes &atts);
   protected:
     struct AxisInfo {
         vtkVisItAxisActor2D *axis;
@@ -102,21 +112,19 @@ class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
         vtkVisItAxisActor2D *axisCap2;
         int lastPow;
         int lastAxisDigits;
-        int pow;
-        int userPow;
         char units[256];
         char title[256];
         double range[2];
         double xpos;
         AxisInfo()
-            : axis(NULL), lastPow(0), lastAxisDigits(3), pow(0), userPow(0)
+            : axis(NULL), lastPow(0), lastAxisDigits(3)
         {
             xpos = 0;
             units[0] = '\0';
             title[0] = '\0';
         }
-        AxisInfo(vtkVisItAxisActor2D *a, int lp, int lad, int p, int up)
-            : axis(a), lastPow(lp), lastAxisDigits(lad), pow(p), userPow(up)
+        AxisInfo(vtkVisItAxisActor2D *a, int lp, int lad)
+            : axis(a), lastPow(lp), lastAxisDigits(lad)
         {
             xpos = 0;
             units[0] = '\0';
@@ -134,8 +142,8 @@ class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
     int                       axisVisibility;
     bool                      labelVisibility;
     bool                      titleVisibility;
-    int                       tickLocation;
-    bool                      gridVisibility;
+    bool                      tickVisibility;
+    bool                      tickLabelVisibility;
     bool                      autoSetTicks;
     double                    majorTickMinimum;
     double                    majorTickMaximum;
@@ -144,14 +152,22 @@ class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
     double                    labelFontHeight;
     double                    titleFontHeight; 
     int                       lineWidth;
+    VisWinTextAttributes      titleTextAttributes;
+    VisWinTextAttributes      labelTextAttributes;
+    int                       axisPow;
+    int                       userPow;
 
     void                      SetNumberOfAxes(int);
-    void                      AdjustValues(double, double, double, double);
-    void                      AdjustRange(double, double, double, double);
+    bool                      AdjustValues(double, double);
+    void                      AdjustRange(double, double);
     void                      GetRange(double &, double &, double &, double &);
     void                      AddAxesToWindow(void);
     void                      RemoveAxesFromWindow(void);
     bool                      ShouldAddAxes(void);
+    void                      UpdateLabelTextAttributes(double, double,
+                                  double);
+    void                      UpdateTitleTextAttributes(double, double,
+                                  double);
 };
 
 

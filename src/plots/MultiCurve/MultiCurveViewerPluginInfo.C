@@ -276,6 +276,9 @@ MultiCurveViewerPluginInfo::GetMenuName() const
 // Creation:   December 9, 2008
 //
 // Modifications:
+//   Eric Brugger, Tue Jan 20 12:19:28 PST 2009
+//   I added code to enlarge the multi color field to 16 entries so that
+//   clients may set them.
 //
 // ****************************************************************************
 #include <avtColorTables.h>
@@ -297,5 +300,6 @@ MultiCurveViewerPluginInfo::InitializeDefaultPalette(
             multiCurve->SetDefaultPalette(ctAtts->operator[](i));
         }
     }
+    multiCurve->EnlargeMultiColor(16);
 }
 

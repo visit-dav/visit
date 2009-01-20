@@ -79,6 +79,9 @@ using   std::vector;
 //    Jeremy Meredith, Tue Nov 18 15:51:31 EST 2008
 //    Support setting some attributes that were previously hardcoded.
 //
+//    Eric Brugger, Tue Jan 20 11:35:52 PST 2009
+//    I removed SetGridVisibility since it doesn't make sense.
+//
 // ****************************************************************************
 
 VisWinAxesArray::VisWinAxesArray(VisWindowColleagueProxy &p) : VisWinColleague(p)
@@ -90,7 +93,6 @@ VisWinAxesArray::VisWinAxesArray(VisWindowColleagueProxy &p) : VisWinColleague(p
     titleVisibility=1;
     labelFontHeight=0.02;
     titleFontHeight=0.02;
-    gridVisibility=0;
     tickVisibility = true;
     tickLabelVisibility = true;
     tickLocation=2;
@@ -866,32 +868,6 @@ VisWinAxesArray::SetTickVisibility(bool vis, bool labelvis)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesArray::SetGridVisibility
-//
-//  Purpose:
-//      Sets the visibility of axis gridlines. 
-//
-//  Arguments:
-//      vis     The visibility of the gridlines. 
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   January 31, 2008
-//
-// ****************************************************************************
-
-void
-VisWinAxesArray::SetGridVisibility(int vis)
-{
-    gridVisibility = vis;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
-    {
-        axes[i].axis->SetDrawGridlines(gridVisibility);
-    }
-} 
-       
-       
-// ****************************************************************************
 //  Method: VisWinAxesArray::SetAutoSetTicks
 //
 //  Purpose:
@@ -1135,6 +1111,9 @@ VisWinAxesArray::SetLineWidth(int width)
 //    Jeremy Meredith, Tue Nov 18 15:51:31 EST 2008
 //    Support setting some attributes that were previously hardcoded.
 //
+//    Eric Brugger, Tue Jan 20 11:35:52 PST 2009
+//    I removed SetGridVisibility since it doesn't make sense.
+//
 // ****************************************************************************
 
 void
@@ -1160,7 +1139,6 @@ VisWinAxesArray::SetNumberOfAxes(int n)
         {
             vtkVisItAxisActor2D *ax;
             ax = vtkVisItAxisActor2D::New();
-            ax->SetTickVisibility(tickVisibility);
             ax->SetMinorTicksVisible(tickVisibility);
             ax->SetTickVisibility(tickVisibility || tickLabelVisibility);
             ax->SetFontFamilyToCourier();
@@ -1196,7 +1174,7 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             axes[i].axis->SetLabelVisibility(labelVisibility);
             axes[i].axis->SetTitleVisibility(titleVisibility);
             axes[i].axis->SetTickLocation(tickLocation);
-            axes[i].axis->SetDrawGridlines(gridVisibility);
+            axes[i].axis->SetDrawGridlines(false);
             axes[i].axis->SetAdjustLabels(autoSetTicks);
             axes[i].axis->SetMajorTickMinimum(majorTickMinimum);
             axes[i].axis->SetMajorTickMaximum(majorTickMaximum);

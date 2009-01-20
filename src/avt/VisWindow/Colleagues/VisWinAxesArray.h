@@ -69,6 +69,9 @@ class VisWindowColleagueProxy;
 //    Jeremy Meredith, Tue Nov 18 15:50:49 EST 2008
 //    Added support for a few missing features and new font attributes.
 //
+//    Eric Brugger, Tue Jan 20 11:33:46 PST 2009
+//    I removed SetGridVisibility since it doesn't make sense.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxesArray : public VisWinColleague
@@ -95,7 +98,6 @@ class VISWINDOW_API VisWinAxesArray : public VisWinColleague
     void                      SetVisibility(int);
     void                      SetTickVisibility(bool,bool);
     void                      SetTickLocation(int);
-    void                      SetGridVisibility(int);
     void                      SetAutoSetTicks(int);
     void                      SetMajorTickMinimum(double);
     void                      SetMajorTickMaximum(double);
@@ -148,7 +150,6 @@ class VISWINDOW_API VisWinAxesArray : public VisWinColleague
     int                       tickLocation;
     bool                      tickVisibility;
     bool                      tickLabelVisibility;
-    bool                      gridVisibility;
     bool                      autoSetTicks;
     double                    majorTickMinimum;
     double                    majorTickMaximum;
