@@ -1071,6 +1071,9 @@ avtNek5000FileFormat::FreeUpResources(void)
 //    Hank Childs, Thu Dec 18 10:15:50 CST 2008
 //    Indicate that the format now does its own domain decomposition.
 //
+//    Hank Childs, Tue Jan 20 15:45:02 CST 2009
+//    Add velocity_mag.
+//
 // ****************************************************************************
 
 void
@@ -1096,6 +1099,8 @@ avtNek5000FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ti
 
         if (iDim == 3)
             AddScalarVarToMetaData(md, "z_velocity", meshname, AVT_NODECENT);
+
+        AddScalarVarToMetaData(md, "velocity_mag", meshname, AVT_NODECENT);
     }
     int ii;
     for (ii = 0; ii < iNumSFields; ii++)
@@ -1503,7 +1508,18 @@ avtNek5000FileFormat::GetVar(int timestep, int domain, const char *varname)
         bool shouldDelete = false;
         if (it == cachedData.end())
         {
-            v = ReadVar(timestep, element, varname);
+            if (strcmp(varname, "velocity_mag") != 0)
+                v = ReadVar(timestep, element, varname);
+            else
+            {
+                v = ReadVelocity(timestep, element);
+                float *v2 = new float[pts_per_element];
+                for (int j = 0 ; j < pts_per_element ; j++)
+                    v2[j] = sqrt(v[3*j]*v[3*j] + v[3*j+1]*v[3*j+1] 
+                                 + v[3*j+2]*v[3*j+2]);
+                delete [] v;
+                v = v2;
+            }
             // Only cache the elements that are likely to occur on this proc.
             if (canCache)
                 cachedData.insert(std::pair<PointerKey, float *>(key, v));
@@ -1757,7 +1773,7 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
 //  Arguments:
 //      timestate  The index of the timestate.  If GetNTimesteps returned
 //                 'N' time steps, this is guaranteed to be between 0 and N-1.
-//      domain     The index of the domain.  If there are NDomains, this
+//      element     The index of the domain.  If there are NDomains, this
 //                 value is guaranteed to be between 0 and NDomains-1,
 //                 regardless of block origin.
 //      varname    The name of the variable requested.
@@ -1798,7 +1814,7 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
 // ****************************************************************************
 
 float *
-avtNek5000FileFormat::ReadVelocity(int timestate, int domain)
+avtNek5000FileFormat::ReadVelocity(int timestate, int element)
 {
     int iTimestep = timestate + iFirstTimestep;
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
@@ -1807,7 +1823,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int domain)
 
     float *var = new float[nPts*3];
 
-    if (iTimestep != iCurrTimestep || (bParFormat && aBlockLocs[domain*2] != iCurrVarProc))
+    if (iTimestep != iCurrTimestep || (bParFormat && aBlockLocs[element*2] != iCurrVarProc))
     {
         if (fdVar)
             fclose(fdVar);
@@ -1815,7 +1831,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int domain)
         char *filename = new char[ fileTemplate.size() + 64 ];
         iCurrVarProc = 0;
         if (bParFormat)
-            iCurrVarProc = aBlockLocs[domain*2];
+            iCurrVarProc = aBlockLocs[element*2];
 
         GetFileName(iTimestep, iCurrVarProc, 
                     filename, fileTemplate.size() + 64);
@@ -1835,7 +1851,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int domain)
     GetDomainSizeAndVarOffset(iTimestep, "velocity", nFloatsInDomain, 
                               iBinaryOffset, iAsciiOffset, dummy);
     if (bParFormat)
-        domain = aBlockLocs[domain*2 + 1];
+        element = aBlockLocs[element*2 + 1];
 
     int iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrVarProc]*sizeof(int) : 0);
 
@@ -1843,12 +1859,12 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int domain)
     {
         int64_t filepos;
         if (!bParFormat)
-            filepos = (int64_t)iRealHeaderSize + (int64_t)(nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
+            filepos = (int64_t)iRealHeaderSize + (int64_t)(nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
         else
             //This assumes [block 0: 216u 216v 216w][block 1: 216u 216v 216w]...[block n: 216u 216v 216w]
             filepos = (int64_t)iRealHeaderSize + 
                       (int64_t)aBlocksPerFile[iCurrVarProc]*iBinaryOffset*iPrecision + //the header and mesh if one exists
-                      (int64_t)domain*nPts*iDim*iPrecision;
+                      (int64_t)element*nPts*iDim*iPrecision;
         if (iPrecision == 4)
         {
             float *tmppts = new float[nPts*iDim];
@@ -1908,7 +1924,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int domain)
         for (ii = 0 ; ii < nPts ; ii++)
         {
             fseek(fdVar, (int64_t)iAsciiCurrFileStart + 
-                         (int64_t)domain*iAsciiCurrFileLineLen*nPts + 
+                         (int64_t)element*iAsciiCurrFileLineLen*nPts + 
                          (int64_t)ii*iAsciiCurrFileLineLen + 
                          (int64_t)iAsciiOffset, SEEK_SET);
             if (iDim == 3)
@@ -2183,6 +2199,7 @@ avtNek5000FileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
     {
         int iNumPrecedingFloats = 0;
         if (STREQUAL(var, "velocity")==0  || 
+            STREQUAL(var, "velocity_mag")==0 ||
             STREQUAL(var, "x_velocity")==0)
         {
             if (outTimestepHasMesh)
