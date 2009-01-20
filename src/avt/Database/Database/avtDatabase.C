@@ -751,6 +751,10 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Fri Feb 15 16:19:02 PST 2008
 //    Fix possible buffer overwrite.
 //
+//    Hank Childs, Tue Jan 20 10:36:40 PST 2009
+//    Initialize data member for whether or not the file format does its own
+//    domain decomposition.
+//
 // ****************************************************************************
 
 void
@@ -768,10 +772,12 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     atts.SetFullDBName(fullDBName);
     avtDataValidity   &validity = dob->GetInfo().GetValidity();
 
-    string mesh = GetMetaData(ts)->MeshForVar(var);
-    const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    atts.SetDynamicDomainDecomposition(md->GetFormatCanDoDomainDecomposition());
+    string mesh = md->MeshForVar(var);
+    const avtMeshMetaData *mmd = md->GetMesh(mesh);
     bool haveSetTrueSpatialExtents = false;
-    atts.SetNumStates(GetMetaData(ts)->GetNumStates());
+    atts.SetNumStates(md->GetNumStates());
     if (mmd != NULL)
     {
         atts.SetCellOrigin(mmd->cellOrigin);

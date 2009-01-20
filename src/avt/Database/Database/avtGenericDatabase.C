@@ -4696,6 +4696,12 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Cyrus Harrison, Tue Feb 12 14:54:34 PST 2008
 //    Added support for caching post ghost material & mixed var objects. 
 //
+//    Hank Childs, Tue Jan 20 13:01:52 CST 2009
+//    If we are doing dynamic domain decomposition, then give each processor's
+//    domain a domain ID that matches the processor's rank.  The streamline
+//    algorithm (for example) assumes that all of the domains have different
+//    IDs.
+//    
 // ****************************************************************************
 
 void
@@ -4807,6 +4813,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         if (!doSelect || !Interface->PerformsMaterialSelection())
         {
             // We know we want the dataset as a whole
+            if (md->GetFormatCanDoDomainDecomposition())
+                domains[i] = PAR_Rank();
             debug4 << "Generic database instructing get for var = " 
                    << var << ", timestep = " << ts << " domain = "
                    << domains[i] << endl;

@@ -1952,6 +1952,8 @@ avtStreamlineFilter::ReportStatistics(
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Add statusMsgSz.
 //
+//   Hank Childs, Tue Jan 20 13:06:33 CST 2009
+//   Add support for file formats that do their own domain decomposition.
 //
 // ****************************************************************************
 
@@ -1965,6 +1967,13 @@ avtStreamlineFilter::Initialize()
 
     // Get/Compute the interval tree.
     avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents();
+    if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition())
+    {
+        // The reader returns an interval tree with one domain (for everything).
+        // This is not what we want.  So forget about this one, as we will be 
+        // better off calculating one.
+        it_tmp = NULL;
+    }
     if (it_tmp == NULL)
     {
         if (OperatingOnDemand())
