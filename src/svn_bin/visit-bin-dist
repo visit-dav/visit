@@ -367,6 +367,9 @@
 #    total bytes and to skip single files larger than some other maximum
 #    setting.
 #
+#    Hank Childs, Tue Jan 20 15:18:10 PST 2009
+#    Copy over the Princeton config files.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -1474,6 +1477,7 @@ cp $VisItDir/svn_bin/visit-config-open   $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-ornl   $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-anag   $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-anl    $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-princeton    $verdir/.visit
 if (-e $verdir/.visit/visit-config-$Configuration) then
     ln -s visit-config-$Configuration $verdir/.visit/config
 endif
