@@ -152,12 +152,17 @@ Definition:
 // Creation:   December 9, 2008
 //
 // Modifications:
+//   Eric Brugger, Wed Jan 21 08:07:40 PST 2009
+//   I added yAxisTitleFormat, useYAxisRange, and yAxisRange. 
 //
 // ****************************************************************************
 bool
 MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &obj) const
 {
-    if (markerVariable != obj.markerVariable)
+    if (markerVariable != obj.markerVariable || 
+        yAxisTitleFormat != obj.yAxisTitleFormat ||
+        useYAxisRange != obj.useYAxisRange ||
+        yAxisRange != obj.yAxisRange)
         return true;
 
     return false;

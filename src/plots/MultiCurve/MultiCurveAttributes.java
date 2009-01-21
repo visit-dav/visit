@@ -71,7 +71,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes()
     {
-        super(9);
+        super(12);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
@@ -80,13 +80,16 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         multiColor = new ColorAttributeList();
         lineStyle = 0;
         lineWidth = 0;
+        yAxisTitleFormat = new String("%g");
+        useYAxisRange = false;
+        yAxisRange = 1;
         displayMarkers = true;
         markerVariable = new String("default");
     }
 
     public MultiCurveAttributes(MultiCurveAttributes obj)
     {
-        super(9);
+        super(12);
 
         int i;
 
@@ -103,6 +106,9 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         multiColor = new ColorAttributeList(obj.multiColor);
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
+        yAxisTitleFormat = new String(obj.yAxisTitleFormat);
+        useYAxisRange = obj.useYAxisRange;
+        yAxisRange = obj.yAxisRange;
         displayMarkers = obj.displayMarkers;
         markerVariable = new String(obj.markerVariable);
 
@@ -121,6 +127,9 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
                 (multiColor.equals(obj.multiColor)) &&
                 (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
+                (yAxisTitleFormat.equals(obj.yAxisTitleFormat)) &&
+                (useYAxisRange == obj.useYAxisRange) &&
+                (yAxisRange == obj.yAxisRange) &&
                 (displayMarkers == obj.displayMarkers) &&
                 (markerVariable.equals(obj.markerVariable)));
     }
@@ -171,16 +180,34 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         Select(6);
     }
 
+    public void SetYAxisTitleFormat(String yAxisTitleFormat_)
+    {
+        yAxisTitleFormat = yAxisTitleFormat_;
+        Select(7);
+    }
+
+    public void SetUseYAxisRange(boolean useYAxisRange_)
+    {
+        useYAxisRange = useYAxisRange_;
+        Select(8);
+    }
+
+    public void SetYAxisRange(double yAxisRange_)
+    {
+        yAxisRange = yAxisRange_;
+        Select(9);
+    }
+
     public void SetDisplayMarkers(boolean displayMarkers_)
     {
         displayMarkers = displayMarkers_;
-        Select(7);
+        Select(10);
     }
 
     public void SetMarkerVariable(String markerVariable_)
     {
         markerVariable = markerVariable_;
-        Select(8);
+        Select(11);
     }
 
     // Property getting methods
@@ -191,6 +218,9 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
     public ColorAttributeList    GetMultiColor() { return multiColor; }
     public int                   GetLineStyle() { return lineStyle; }
     public int                   GetLineWidth() { return lineWidth; }
+    public String                GetYAxisTitleFormat() { return yAxisTitleFormat; }
+    public boolean               GetUseYAxisRange() { return useYAxisRange; }
+    public double                GetYAxisRange() { return yAxisRange; }
     public boolean               GetDisplayMarkers() { return displayMarkers; }
     public String                GetMarkerVariable() { return markerVariable; }
 
@@ -212,8 +242,14 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(6, buf))
             buf.WriteInt(lineWidth);
         if(WriteSelect(7, buf))
-            buf.WriteBool(displayMarkers);
+            buf.WriteString(yAxisTitleFormat);
         if(WriteSelect(8, buf))
+            buf.WriteBool(useYAxisRange);
+        if(WriteSelect(9, buf))
+            buf.WriteDouble(yAxisRange);
+        if(WriteSelect(10, buf))
+            buf.WriteBool(displayMarkers);
+        if(WriteSelect(11, buf))
             buf.WriteString(markerVariable);
     }
 
@@ -249,9 +285,18 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
                 SetLineWidth(buf.ReadInt());
                 break;
             case 7:
-                SetDisplayMarkers(buf.ReadBool());
+                SetYAxisTitleFormat(buf.ReadString());
                 break;
             case 8:
+                SetUseYAxisRange(buf.ReadBool());
+                break;
+            case 9:
+                SetYAxisRange(buf.ReadDouble());
+                break;
+            case 10:
+                SetDisplayMarkers(buf.ReadBool());
+                break;
+            case 11:
                 SetMarkerVariable(buf.ReadString());
                 break;
             }
@@ -273,6 +318,9 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         str = str + indent + "multiColor = {\n" + multiColor.toString(indent + "    ") + indent + "}\n";
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
+        str = str + stringToString("yAxisTitleFormat", yAxisTitleFormat, indent) + "\n";
+        str = str + boolToString("useYAxisRange", useYAxisRange, indent) + "\n";
+        str = str + doubleToString("yAxisRange", yAxisRange, indent) + "\n";
         str = str + boolToString("displayMarkers", displayMarkers, indent) + "\n";
         str = str + stringToString("markerVariable", markerVariable, indent) + "\n";
         return str;
@@ -287,6 +335,9 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
     private ColorAttributeList    multiColor;
     private int                   lineStyle;
     private int                   lineWidth;
+    private String                yAxisTitleFormat;
+    private boolean               useYAxisRange;
+    private double                yAxisRange;
     private boolean               displayMarkers;
     private String                markerVariable;
 }

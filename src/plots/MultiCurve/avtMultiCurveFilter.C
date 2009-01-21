@@ -190,6 +190,12 @@ avtMultiCurveFilter::PostExecute(void)
 //  Programmer: xml2avt
 //  Creation:   omitted
 //
+//  Modifications:
+//    Eric Brugger, Wed Jan 21 08:15:16 PST 2009
+//    I added code to properly set the y axis scale.  I added the ability
+//    to specify the format for the curve label strings, which are used for
+//    the y-axis title for the individual curves.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -245,10 +251,27 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
     vtkDataSet **out_ds = new vtkDataSet*[ny];
     vector<string> labels;
 
-    // The scale is hardwired to 1. Eventually this should be settable from
-    // the plot attributes. Right now changing the scale wouldn't do anything
-    // since the underlying code is currently broken.
-    double scale = 1.;
+    //
+    // Calculate the scale. If the user has specified the Y axis range use
+    // that, otherwise use the range of the data.
+    //
+    double scale;
+    if (atts.GetUseYAxisRange())
+    {
+        scale = 1. / (atts.GetYAxisRange() / 2.);
+    }
+    else
+    {
+        double yMin = vals[0];
+        double yMax = vals[0];
+        for (int i = 0; i < nx * ny; i++)
+        {
+            yMin = yMin < vals[i] ? yMin : vals[i];
+            yMax = yMax > vals[i] ? yMax : vals[i];
+        }
+        double yAbsMax = fabs(yMin) > fabs(yMax) ? fabs(yMin) : fabs(yMax);
+        scale = 1. / yAbsMax;
+    }
 
     for (int i = 0; i < ny; i++)
     {
@@ -311,7 +334,7 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
         // Create the label.
         //
         char label[80];
-        SNPRINTF(label, 80, "%g", ypts[i]);
+        SNPRINTF(label, 80, atts.GetYAxisTitleFormat().c_str(), ypts[i]);
         labels.push_back(label);
     }
 
