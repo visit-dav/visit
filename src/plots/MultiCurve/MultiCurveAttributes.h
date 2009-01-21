@@ -87,6 +87,7 @@ public:
     void SelectChangedColors();
     void SelectSingleColor();
     void SelectMultiColor();
+    void SelectYAxisTitleFormat();
     void SelectMarkerVariable();
 
     // Property setting methods
@@ -97,6 +98,9 @@ public:
     void SetMultiColor(const ColorAttributeList &multiColor_);
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
+    void SetYAxisTitleFormat(const std::string &yAxisTitleFormat_);
+    void SetUseYAxisRange(bool useYAxisRange_);
+    void SetYAxisRange(double yAxisRange_);
     void SetDisplayMarkers(bool displayMarkers_);
     void SetMarkerVariable(const std::string &markerVariable_);
 
@@ -112,6 +116,10 @@ public:
           ColorAttributeList    &GetMultiColor();
     int                         GetLineStyle() const;
     int                         GetLineWidth() const;
+    const std::string           &GetYAxisTitleFormat() const;
+          std::string           &GetYAxisTitleFormat();
+    bool                        GetUseYAxisRange() const;
+    double                      GetYAxisRange() const;
     bool                        GetDisplayMarkers() const;
     const std::string           &GetMarkerVariable() const;
           std::string           &GetMarkerVariable();
@@ -148,6 +156,9 @@ public:
         ID_multiColor,
         ID_lineStyle,
         ID_lineWidth,
+        ID_yAxisTitleFormat,
+        ID_useYAxisRange,
+        ID_yAxisRange,
         ID_displayMarkers,
         ID_markerVariable
     };
@@ -160,6 +171,9 @@ private:
     ColorAttributeList    multiColor;
     int                   lineStyle;
     int                   lineWidth;
+    std::string           yAxisTitleFormat;
+    bool                  useYAxisRange;
+    double                yAxisRange;
     bool                  displayMarkers;
     std::string           markerVariable;
 

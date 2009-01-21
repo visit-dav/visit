@@ -70,6 +70,9 @@ class QvisVariableButton;
 // Creation:   omitted
 //
 // Modifications:
+//   Eric Brugger, Wed Jan 21 08:20:18 PST 2009
+//   I added yAxisTitleFormat, useYAxisRange, and yAxisRange.  I changed
+//   markerVariable from a variable button to a text field.
 //   
 // ****************************************************************************
 
@@ -102,8 +105,11 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     void opacityChanged(int opacity, int index);
     void lineStyleChanged(int style);
     void lineWidthChanged(int style);
-    void markerVariableChanged(const QString &varName);
+    void yAxisTitleFormatProcessText();
+    void useYAxisRangeChanged(bool val);
+    void yAxisRangeProcessText();
     void displayMarkersChanged(bool val);
+    void markerVariableProcessText();
   private:
     int                     plotType;
     QGroupBox              *curveColorGroup;
@@ -113,10 +119,14 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     QvisColorManagerWidget *multipleColors;
     QvisLineStyleWidget    *lineStyle;
     QvisLineWidthWidget    *lineWidth;
-    QvisVariableButton     *markerVariable;
+    QLineEdit              *yAxisTitleFormat;
+    QCheckBox              *useYAxisRange;
+    QLineEdit              *yAxisRange;
     QCheckBox              *displayMarkers;
+    QLineEdit *markerVariable;
     QLabel                 *lineStyleLabel;
     QLabel                 *lineWidthLabel;
+    QLabel                 *yAxisTitleFormatLabel;
     QLabel                 *markerVariableLabel;
 
     MultiCurveAttributes   *atts;

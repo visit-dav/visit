@@ -34,10 +34,19 @@
       <Field name="lineWidth" label="Line Width" type="linewidth">
         0
       </Field>
+      <Field name="yAxisTitleFormat" label="Y-Axis title format" type="string">
+        %g
+      </Field>
+      <Field name="useYAxisRange" label="Y-Axis range" type="bool">
+        false
+      </Field>
+      <Field name="yAxisRange" label="yAxisRange" type="double" enabler="useYAxisRange:true">
+        1.
+      </Field>
       <Field name="displayMarkers" label="Display markers" type="bool">
         true
       </Field>
-      <Field name="markerVariable" label="Marker variable" type="variablename" vartypes="01000000000">
+      <Field name="markerVariable" label="Marker variable" type="string">
         default
       </Field>
       <Function name="EnlargeMultiColor" user="true" member="true">
