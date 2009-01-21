@@ -10,7 +10,8 @@
 #  Date:       Fri May 12 15:55:22 PST 2006
 #
 #  Modifications:
-#
+#    Mark C. Miller, Wed Jan 21 10:00:10 PST 2009
+#    Removed silly comment regarding global annotation object 'a'
 # ----------------------------------------------------------------------------
 import os, sys
 
@@ -94,7 +95,7 @@ def TestNetworkReset():
 #
 def main():
     # Turn off all annotation
-    TurnOffAllAnnotations() # defines global object 'a'
+    TurnOffAllAnnotations()
 
     TestNetworkReset()
 
