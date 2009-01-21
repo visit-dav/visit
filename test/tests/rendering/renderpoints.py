@@ -12,7 +12,8 @@
 #  Date:       Fri Aug 26 13:39:07 PST 2005
 #
 #  Modificatons:
-#
+#    Mark C. Miller, Wed Jan 21 10:00:10 PST 2009
+#    Removed silly comment regarding global annotation object 'a'
 # ----------------------------------------------------------------------------
 
 #
@@ -195,7 +196,7 @@ def test2():
 
 def main():
     # Turn off all annotation
-    TurnOffAllAnnotations() # defines global object 'a'
+    TurnOffAllAnnotations()
 
     OpenDatabase("../data/galaxy0000.silo")
 

@@ -34,6 +34,9 @@
 #
 #    Mark C. Miller, Tue Aug 19 17:31:29 PDT 2008
 #    Add code to permit the test to be run with compression as well.
+#
+#    Mark C. Miller, Wed Jan 21 10:00:10 PST 2009
+#    Removed silly comment regarding global annotation object 'a'
 # ----------------------------------------------------------------------------
 
 
@@ -261,7 +264,7 @@ def TestAutoOpaqueFlag():
     DeleteAllPlots()
 
 def Main():
-    TurnOffAllAnnotations() # defines global object 'a'
+    TurnOffAllAnnotations()
     TestCurve()
     TestPointMesh()
     TestGlobe()

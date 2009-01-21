@@ -10,6 +10,8 @@
 #  Date:       Mon Sep 25 14:17:58 PST 2006
 #
 #  Modifications:
+#    Mark C. Miller, Wed Jan 21 10:00:10 PST 2009
+#    Removed silly comments regarding global annotation object 'a'
 #
 # ----------------------------------------------------------------------------
 
@@ -50,7 +52,7 @@ def test0(datapath):
     CloseDatabase(db)
 
 def main():
-    TurnOffAllAnnotations() # defines global object 'a'
+    TurnOffAllAnnotations()
 
     InvertBackgroundColor()
 

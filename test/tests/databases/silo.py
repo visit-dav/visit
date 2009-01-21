@@ -41,8 +41,10 @@
 #    Changed number of vectors in vector plot to match the old behavior.
 #    (We now account for how many domains there are.)
 #
+#    Mark C. Miller, Wed Jan 21 10:00:10 PST 2009
+#    Removed silly comment regarding global annotation object 'a'
 # ----------------------------------------------------------------------------
-TurnOffAllAnnotations() # defines global object 'a'
+TurnOffAllAnnotations()
 
 OpenDatabase("../data/multipart_multi_ucd3d.silo")
 
