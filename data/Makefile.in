@@ -303,6 +303,10 @@
 #   Brad Whitlock, Fri Nov  7 11:36:41 PST 2008
 #   Added streak.C
 # 
+#   Mark C. Miller, Wed Jan 21 09:31:13 PST 2009
+#   I removed '.tar' from pattern match filters for NOT_DISTRIB target so
+#   that it catch all compressed binary data files and not just those that
+#   were also tar files.
 ##############################################################################
 
 ##
@@ -311,7 +315,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-NOT_DISTRIB=near_planar.vtk *_test_data *.tar.bz2 *.tar.gz *.tar.bz \
+NOT_DISTRIB=near_planar.vtk *_test_data *.bz2 *.gz *.bz \
             miranda_raw
 
 EZSRC=bov.C curve_builder.C degen_meshes.C distribution_curves.C
