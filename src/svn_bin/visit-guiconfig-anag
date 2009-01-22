@@ -2,6 +2,10 @@
 <Object name="VisIt">
     <Field name="Version" type="string">1.8.0</Field>
     <Object name="GUI">
+        <Object name="Compute engines">
+            <Field name="visible" type="bool">false</Field>
+            <Field name="posted" type="bool">true</Field>
+        </Object>
         <Object name="Macros">
             <Field name="visible" type="bool">false</Field>
             <Field name="posted" type="bool">true</Field>
