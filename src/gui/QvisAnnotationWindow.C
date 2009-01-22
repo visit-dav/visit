@@ -485,6 +485,11 @@ QvisAnnotationWindow::CreateGeneralTab()
 //   Brad Whitlock, Wed Jun 25 09:48:41 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Thu Jan 22 14:53:22 EST 2009
+//   Update just the various 2D sub-tabs sensitivity, not the entire
+//   2D tab, when "show axes" is unchecked.  (If you set the whole
+//   tab, then you've even disabled "show axes" and can't re-check it.)
+//
 // ****************************************************************************
 
 void
@@ -504,7 +509,7 @@ QvisAnnotationWindow::Create2DTab()
             this, SLOT(axesFlagChecked2D(bool)));
     page2DLayout->addWidget(axesFlagToggle2D);
 
-    QTabWidget *page2DTabs = new QTabWidget(page2D);
+    page2DTabs = new QTabWidget(page2D);
     page2DLayout->addWidget(page2DTabs);
 
     // Create the general options page.
@@ -646,6 +651,11 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
 //   Brad Whitlock, Thu Jun 26 10:32:05 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Thu Jan 22 14:53:22 EST 2009
+//   Update just the various 3D sub-tabs sensitivity, not the entire
+//   3D tab, when "show axes" is unchecked.  (If you set the whole
+//   tab, then you've even disabled "show axes" and can't re-check it.)
+//
 // ****************************************************************************
 
 void
@@ -680,7 +690,7 @@ QvisAnnotationWindow::Create3DTab()
             this, SLOT(bboxFlagChecked(bool)));
     buttonLayout->addWidget(bboxFlagToggle);
 
-    QTabWidget *page3DTabs = new QTabWidget(page3D);
+    page3DTabs = new QTabWidget(page3D);
     page3DLayout->addWidget(page3DTabs);
 
     // Create the general 3D options page.
@@ -1324,6 +1334,10 @@ QvisAnnotationWindow::UpdateAxesArray()
 // Creation:   Thu Feb 7 17:25:58 PST 2008
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan 22 14:53:22 EST 2009
+//   Update just the various 2D sub-tabs sensitivity, not the entire
+//   2D tab, when "show axes" is unchecked.  (If you set the whole
+//   tab, then you've even disabled "show axes" and can't re-check it.)
 //   
 // ****************************************************************************
 
@@ -1335,7 +1349,8 @@ QvisAnnotationWindow::UpdateAxes2D()
     axesFlagToggle2D->blockSignals(true);
     axesFlagToggle2D->setChecked(axes.GetVisible());
     axesFlagToggle2D->blockSignals(false);
-    page2D->setEnabled(axes.GetVisible());
+
+    page2DTabs->setEnabled(axes.GetVisible());
 
     axesAutoSetTicksToggle2D->blockSignals(true);
     axesAutoSetTicksToggle2D->setChecked(axes.GetAutoSetTicks());
@@ -1382,6 +1397,10 @@ QvisAnnotationWindow::UpdateAxes2D()
 // Creation:   Thu Feb 7 17:38:52 PST 2008
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan 22 14:53:22 EST 2009
+//   Update just the various 3D sub-tabs sensitivity, not the entire
+//   3D tab, when "show axes" is unchecked.  (If you set the whole
+//   tab, then you've even disabled "show axes" and can't re-check it.)
 //   
 // ****************************************************************************
 
@@ -1393,7 +1412,8 @@ QvisAnnotationWindow::UpdateAxes3D()
     axes3DVisible->blockSignals(true);
     axes3DVisible->setChecked(axes.GetVisible());
     axes3DVisible->blockSignals(false);
-    page3D->setEnabled(axes.GetVisible());
+
+    page3DTabs->setEnabled(axes.GetVisible());
 
     axesAutoSetTicksToggle->blockSignals(true);
     axesAutoSetTicksToggle->setChecked(axes.GetAutoSetTicks());

@@ -130,6 +130,10 @@ class QvisLineWidthWidget;
 //   Jeremy Meredith, Tue Nov 18 15:49:29 EST 2008
 //   Added AxisArray modality options.
 //
+//   Jeremy Meredith, Thu Jan 22 14:55:02 EST 2009
+//   Change the 2D and 3D tabs to update just the sub-widget sensitivities,
+//   not the whole tab itself, when "show axes" is unchecked.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -268,6 +272,7 @@ private:
 
     // 2D tab widgets
     QWidget                  *page2D;
+    QTabWidget               *page2DTabs;
     QCheckBox                *axesFlagToggle2D;
     QCheckBox                *axesAutoSetTicksToggle2D;
     QCheckBox                *labelAutoSetScalingToggle2D;
@@ -278,6 +283,7 @@ private:
 
     // 3D tab widgets
     QWidget                  *page3D;
+    QTabWidget               *page3DTabs;
     QCheckBox                *axes3DVisible;
     QCheckBox                *axesAutoSetTicksToggle;
     QCheckBox                *labelAutoSetScalingToggle;
