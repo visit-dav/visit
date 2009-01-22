@@ -735,7 +735,6 @@ avtOUTCARFileFormat::ReadAllMetaData()
                                line[index+3],
                                '\0'};
                 int n = atoi(tmp);
-                cerr << element_names[i] <<": "<<n<<endl;
                 natoms += n;
                 element_counts.push_back(n);
                 index += 4;
