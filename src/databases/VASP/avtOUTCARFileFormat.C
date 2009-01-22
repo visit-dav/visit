@@ -553,6 +553,12 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    Add support for single-digit elements in TITEL line with underscored
 //    suffixes.
 //
+//    Jeremy Meredith, Thu Jan 22 15:33:50 EST 2009
+//    Changed the parsing of ions per type to allow for the fact that VASP
+//    seems to use a 4-char fixed-width field for the number.  So, a line
+//    like "ions per type =  40 5006000" should be parsed as resulting in
+//    ion counts of 40, 500, and 6000.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -718,14 +724,28 @@ avtOUTCARFileFormat::ReadAllMetaData()
         else if (!all_ions_read && !strncmp(line,"   ions per type =",18))
         {
             all_ions_read = true;
-            istringstream sin(&(line[18]));
-            int n;
-            sin >> n;
-            while (sin)
+            int index = 30;
+            int len = strlen(line);
+            int count = (len-30)/4;
+            for (int i=0; i<count; i++)
             {
+                char tmp[5] = {line[index+0],
+                               line[index+1],
+                               line[index+2],
+                               line[index+3],
+                               '\0'};
+                int n = atoi(tmp);
+                cerr << element_names[i] <<": "<<n<<endl;
                 natoms += n;
                 element_counts.push_back(n);
-                sin >> n;
+                index += 4;
+            }
+
+            if (element_counts.size() != element_types.size())
+            {
+                cerr << "Error: parsed number of ions per type didn't match "
+                     << "number of TITEL species found.  Suspect a problem "
+                     << "parsing 'ions per type'.\n";
             }
         }
 
