@@ -817,6 +817,9 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
 //    Change argument to GetFileName, as it now takes the time slice 
 //    corresponding to the VisIt time index, not the Nek time index.
 //
+//    Hank Childs, Thu Jan 22 16:28:43 CST 2009
+//    Change the parallel error handling if a block file can't be found.
+//
 // ****************************************************************************
 void
 avtNek5000FileFormat::ReadBlockLocations()
@@ -853,6 +856,7 @@ avtNek5000FileFormat::ReadBlockLocations()
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
     int *tmpBlocks = new int[iNumBlocks];
 
+    int badFile = iNumBlocks+1;
     for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
     {
         int t0 = visitTimer->StartTimer();
@@ -861,9 +865,8 @@ avtNek5000FileFormat::ReadBlockLocations()
         visitTimer->StopTimer(t0, "avtNek5000FileFormat constructor, time to open a file");
         if (!f.is_open())
         {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "Could not open file %s.", filename);
-            EXCEPTION1(InvalidDBTypeException, msg);
+            badFile = ii;
+            break;
         }
 
         int tmp1, tmp2, tmp3, tmp4;
@@ -894,6 +897,17 @@ avtNek5000FileFormat::ReadBlockLocations()
 #endif
         f.close();
     }
+
+    badFile = UnifyMinimumValue(badFile);
+    if (badFile < iNumBlocks)
+    {
+        GetFileName(0, badFile, blockfilename, fileTemplate.size() + 64);
+        char msg[1024];
+        SNPRINTF(msg, 1024, "Could not open file \"%s\" to read block "
+                            "locations.", blockfilename);
+        EXCEPTION1(InvalidDBTypeException, msg);
+    }
+
     delete[] blockfilename;
     delete[] tmpBlocks;
 
