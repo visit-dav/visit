@@ -66,6 +66,9 @@
 #
 #    Mark C. Miller, Fri Dec 19 10:38:15 PST 2008
 #    Changed directory where data is posted to /project/projectdir/visit/www
+#
+#    Mark C. Miller, Thu Jan 22 11:49:50 PST 2009
+#    Added visus to skip list, removed tabs.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -84,11 +87,11 @@ logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov"
 eqzero() {
     if test "$1" = "0"; then
         echo 0
-	return
+        return
     fi
     if test -z "$1"; then
         echo 0
-	return
+        return
     fi
     echo 1
 }
@@ -96,11 +99,11 @@ eqzero() {
 nezero() {
     if test "$1" != "0"; then
         echo 0
-	return
+        return
     fi
     if test -n "$1"; then
         echo 0
-	return
+        return
     fi
     echo 1
 }
@@ -155,9 +158,9 @@ checkAndHandleError() {
     if test -n "`echo $handlerBehavior | grep flush`"; then
         if test `wc -l $errorLogFile | tr -s ' ' | sed -e 's/^ //' | cut -d' ' -f1` -eq 0; then
             return
-	else
-	    emailSubject="Message(s) from VisIt's Automatic Test Run"
-	fi
+        else
+            emailSubject="Message(s) from VisIt's Automatic Test Run"
+        fi
     fi
 
     # put logfile contents in an email and send it
@@ -212,12 +215,12 @@ do
          ;;
       -force)
          skipIfNoChanges=0;
-	 shift
-	 ;;
+         shift
+         ;;
       -changed)
          scriptWasChanged=1;
-	 shift
-	 ;;
+         shift
+         ;;
       -help)
          optError=1
          shift
@@ -376,31 +379,34 @@ skipList_dueTo_parallelRendering="\
           davinci,scalable,parallel:tests/databases/chgcar.py:chgcar_11"
 
 skipList_dueTo_temporaryBugs="\
-	  davinci,scalable,parallel:tests/databases/defer_expr.py \
-	  davinci,parallel:tests/databases/defer_expr.py \
-	  davinci,serial:tests/databases/defer_expr.py \
-	  davinci,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
-	  davinci,scalable,parallel:tests/operators/transform.py:ops_transform05 \
-	  davinci,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-	  davinci,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-	  davinci,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
+          davinci,scalable,parallel:tests/databases/defer_expr.py \
+          davinci,parallel:tests/databases/defer_expr.py \
+          davinci,serial:tests/databases/defer_expr.py \
+          davinci,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
+          davinci,scalable,parallel:tests/operators/transform.py:ops_transform05 \
+          davinci,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
+          davinci,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
+          davinci,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
 
 skipList_for_Davinci="\
-	  davinci,serial:tests/databases/silo.py:silo_20,silo_21 \
-	  davinci,parallel:tests/databases/silo.py:silo_20,silo_21 \
-	  davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21 \
+          davinci,serial:tests/databases/silo.py:silo_20,silo_21 \
+          davinci,parallel:tests/databases/silo.py:silo_20,silo_21 \
+          davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21 \
           davinci,serial:tests/meshtype/csg.py:csg_02 \
           davinci,parallel:tests/meshtype/csg.py:csg_02 \
           davinci,scalable,parallel:tests/meshtype/csg.py:csg_02 \
-	  davinci,serial:tests/databases/itaps.py \
-	  davinci,parallel:tests/databases/itaps.py \
-	  davinci,scalable,parallel:tests/databases/itaps.py \
-	  davinci,serial:tests/databases/vista.py \
-	  davinci,parallel:tests/databases/vista.py \
-	  davinci,scalable,parallel:tests/databases/vista.py \
+          davinci,serial:tests/databases/itaps.py \
+          davinci,parallel:tests/databases/itaps.py \
+          davinci,scalable,parallel:tests/databases/itaps.py \
+          davinci,serial:tests/databases/vista.py \
+          davinci,parallel:tests/databases/vista.py \
+          davinci,scalable,parallel:tests/databases/vista.py \
           davinci,serial:tests/hybrid/lineout.py:Lineout2d_output_15 \
           davinci,parallel:tests/hybrid/lineout.py:Lineout2d_output_15 \
-          davinci,scalable,parallel:tests/hybrid/lineout.py:Lineout2d_output_15"
+          davinci,scalable,parallel:tests/hybrid/lineout.py:Lineout2d_output_15 \
+          davinci,serial:tests/databases/visus.py \
+          davinci,parallel:tests/databases/visus.py \
+          davinci,scalable,parallel:tests/databases/visus.py"
           
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs $skipList_for_Davinci"
 
