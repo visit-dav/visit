@@ -4,7 +4,7 @@
     <Object name="VIEWER">
         <Object name="DEFAULT_VALUES">
             <Object name="GlobalAttributes">
-                <Field name="autoUpdateFlag" type="bool">true</Field>
+                <Field name="autoUpdateFlag" type="bool">false</Field>
                 <Field name="applyOperator" type="bool">false</Field>
                 <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
             </Object>
@@ -14,6 +14,9 @@
             </Object>
             <Object name="WindowInformation">
                 <Field name="boundingBoxNavigate" type="bool">false</Field>
+            </Object>
+            <Object name="RenderingAttributes">
+                <Field name="displayListMode" type="string">Always</Field>
             </Object>
             <Object name="SliceAttributes">
                 <Field name="project2d" type="bool">false</Field>
@@ -27,6 +30,14 @@
                     <Field name="names" type="stringVector">"Use ghost data (if present)" "Enable only root level by default" "Enable only explicitly defined materials by default" "Check for mapping file and import coordinates if available" </Field>
                     <Field name="optBools" type="intVector">1 1 1 1 </Field>
                 </Object>
+            </Object>
+            <Object name="PickAttributes">
+                <Field name="displayIncidentElements" type="bool">false</Field>
+                <Field name="showNodeId" type="bool">false</Field>
+                <Field name="showNodeBlockLogicalCoords" type="bool">true</Field>
+                <Field name="showZoneId" type="bool">false</Field>
+                <Field name="showZoneBlockLogicalCoords" type="bool">true</Field>
+                <Field name="showMeshName" type="bool">false</Field>
             </Object>
         </Object>
     </Object>
