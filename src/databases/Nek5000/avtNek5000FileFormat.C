@@ -422,7 +422,6 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
             {
                 int step;
                 f >> step;
-                //iTimestepsWithMesh.push_back(step);
             }
         }
         else if (STREQUAL("type:", tag.c_str())==0)
@@ -541,9 +540,14 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
 //    Removed unreferenced variables.
 //
 //    Dave Bremer, Mon Aug 11 13:53:18 PDT 2008
-//    Brought in a change from Stefan Kerkemeier to determine if a file is binary
-//    by looking for the endian-ness tag.  Added my own change to field tag 
-//    parsing, to parse the same way between serial and parallel binary files.
+//    Brought in a change from Stefan Kerkemeier to determine if a file is 
+//    binary by looking for the endian-ness tag.  Added my own change to field
+//    tag parsing, to parse the same way between serial and parallel binary 
+//    files.
+//   
+//    Hank Childs, Wed Jan 21 18:18:54 CST 2009
+//    Change argument to GetFileName, as it now takes the time slice 
+//    corresponding to the VisIt time index, not the Nek time index.
 //
 // ****************************************************************************
 
@@ -555,7 +559,7 @@ avtNek5000FileFormat::ParseNekFileHeader()
     //Now read the header out of one the files to get block and variable info
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
 
-    GetFileName(iFirstTimestep, 0, blockfilename, fileTemplate.size() + 64);
+    GetFileName(0, 0, blockfilename, fileTemplate.size() + 64);
     ifstream  f(blockfilename);
 
     if (!f.is_open())
@@ -809,6 +813,10 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
 //    Kathleen Bonnell, Wed Jul 2 09:44:44 PDT 2008 
 //    Removed unreferenced variables.
 //
+//    Hank Childs, Wed Jan 21 18:18:54 CST 2009
+//    Change argument to GetFileName, as it now takes the time slice 
+//    corresponding to the VisIt time index, not the Nek time index.
+//
 // ****************************************************************************
 void
 avtNek5000FileFormat::ReadBlockLocations()
@@ -848,7 +856,7 @@ avtNek5000FileFormat::ReadBlockLocations()
     for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
     {
         int t0 = visitTimer->StartTimer();
-        GetFileName(iFirstTimestep, ii, blockfilename, fileTemplate.size() + 64);
+        GetFileName(0, ii, blockfilename, fileTemplate.size() + 64);
         f.open(blockfilename);
         visitTimer->StopTimer(t0, "avtNek5000FileFormat constructor, time to open a file");
         if (!f.is_open())
@@ -1585,18 +1593,21 @@ avtNek5000FileFormat::GetVar(int timestep, int domain, const char *varname)
 //    Hank Childs, Fri Dec 19 10:38:23 CST 2008
 //    Renamed method to ReadVar
 //
+//    Hank Childs, Wed Jan 21 18:18:54 CST 2009
+//    Change argument to GetFileName, as it now takes the time slice 
+//    corresponding to the VisIt time index, not the Nek time index.
+//
 // ****************************************************************************
 
 float *
 avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
 {
-    int iTimestep = timestate + iFirstTimestep;
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
     float *var = new float[nPts];
     int ii;
     ReadBlockLocations();
 
-    if (iTimestep != iCurrTimestep || (bParFormat && aBlockLocs[element*2] != iCurrVarProc))
+    if (timestate != iCurrTimestep || (bParFormat && aBlockLocs[element*2] != iCurrVarProc))
     {
         if (fdVar)
             fclose(fdVar);
@@ -1607,7 +1618,7 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
         if (bParFormat)
             iCurrVarProc = aBlockLocs[element*2];
 
-        GetFileName(iTimestep, iCurrVarProc, 
+        GetFileName(timestate, iCurrVarProc, 
                     filename, fileTemplate.size() + 64);
 
         fdVar = fopen(filename, "rb");
@@ -1615,14 +1626,14 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
             EXCEPTION1(InvalidFilesException, filename);
         delete[] filename;
 
-        iCurrTimestep = iTimestep;
+        iCurrTimestep = timestate;
         if (!bBinary)
             FindAsciiDataStart(fdVar, iAsciiCurrFileStart, iAsciiCurrFileLineLen);
     }
 
     int nFloatsInDomain = 0, iBinaryOffset = 0, iAsciiOffset = 0, iHasMesh = 0;
 
-    GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
+    GetDomainSizeAndVarOffset(timestate, varname, nFloatsInDomain, 
                               iBinaryOffset, iAsciiOffset, iHasMesh);
 
     if (bParFormat)
@@ -1811,19 +1822,22 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
 //    Renamed to ReadVelocity and changed method to only read the data and NOT
 //    set up the VTK data structure.
 //
+//    Hank Childs, Wed Jan 21 18:18:54 CST 2009
+//    Change argument to GetFileName, as it now takes the time slice 
+//    corresponding to the VisIt time index, not the Nek time index.
+//
 // ****************************************************************************
 
 float *
 avtNek5000FileFormat::ReadVelocity(int timestate, int element)
 {
-    int iTimestep = timestate + iFirstTimestep;
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
     int ii;
     ReadBlockLocations();
 
     float *var = new float[nPts*3];
 
-    if (iTimestep != iCurrTimestep || (bParFormat && aBlockLocs[element*2] != iCurrVarProc))
+    if (timestate != iCurrTimestep || (bParFormat && aBlockLocs[element*2] != iCurrVarProc))
     {
         if (fdVar)
             fclose(fdVar);
@@ -1833,7 +1847,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
         if (bParFormat)
             iCurrVarProc = aBlockLocs[element*2];
 
-        GetFileName(iTimestep, iCurrVarProc, 
+        GetFileName(timestate, iCurrVarProc, 
                     filename, fileTemplate.size() + 64);
 
         fdVar = fopen(filename, "rb");
@@ -1841,14 +1855,14 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
             EXCEPTION1(InvalidFilesException, filename);
         delete[] filename;
 
-        iCurrTimestep = iTimestep;
+        iCurrTimestep = timestate;
         if (!bBinary)
             FindAsciiDataStart(fdVar, iAsciiCurrFileStart, iAsciiCurrFileLineLen);
     }
 
     int nFloatsInDomain = 0, iBinaryOffset = 0, iAsciiOffset = 0, dummy;
 
-    GetDomainSizeAndVarOffset(iTimestep, "velocity", nFloatsInDomain, 
+    GetDomainSizeAndVarOffset(timestate, "velocity", nFloatsInDomain, 
                               iBinaryOffset, iAsciiOffset, dummy);
     if (bParFormat)
         element = aBlockLocs[element*2 + 1];
@@ -1997,13 +2011,20 @@ avtNek5000FileFormat::GetTimes(std::vector<double> &outTimes)
 //    by a serial code, in which there is only one output dir.
 //
 //    Dave Bremer, Fri Aug  8 12:57:47 PDT 2008
-//    Brought in a change from Stefan Kerkemeier to infer that the parallel/binary
-//    format is in use if 2 or 3 printf tokens are in the file template.
+//    Brought in a change from Stefan Kerkemeier to infer that the
+//    parallel/binary format is in use if 2 or 3 printf tokens are in the 
+//    file template.
+//
+//    Hank Childs, Wed Jan 21 18:18:54 CST 2009
+//    Changed semantics of time slice argument ... it now the time slice 
+//    corresponding to the VisIt time index, not the Nek time index.
+//
 // ****************************************************************************
 
 void
-avtNek5000FileFormat::GetFileName(int timestep, int pardir, char *outFileName, int bufSize)
+avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName, int bufSize)
 {
+    int timestep  = rawTimestep+iFirstTimestep;
     int nPrintfTokens = 0;
     int ii;
 
