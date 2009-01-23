@@ -27,27 +27,8 @@
 #
 # ----------------------------------------------------------------------------
 
-OpenDatabase("../data/globe.silo")
-AddPlot("Volume", "t")
-silr=SILRestriction()
-silr.TurnOffSet(4)
-SetPlotSILRestriction(silr)
 
-DrawPlots()
-
-v=GetView3D()
-v.viewNormal=(0.507832, -0.301407, -0.807007)
-v.viewUp=(-0.831783, -0.415313, -0.368309)
-SetView3D(v)
-
-# test fast volume render
-Test("volume_01")
-
-# test software volume render
-volAtts=VolumeAttributes()
-volAtts.rendererType = volAtts.RayCasting
-SetPlotOptions(volAtts)
-Test("volume_02")
+#START SECTION TO BE MOVED
 
 DeleteAllPlots()
 OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
@@ -74,5 +55,29 @@ SetView3D(v)
 
 Test("volume_03")
 DeleteAllPlots()
+
+# END SECTION TO BE MOVED
+
+OpenDatabase("../data/globe.silo")
+AddPlot("Volume", "t")
+silr=SILRestriction()
+silr.TurnOffSet(4)
+SetPlotSILRestriction(silr)
+
+DrawPlots()
+
+v=GetView3D()
+v.viewNormal=(0.507832, -0.301407, -0.807007)
+v.viewUp=(-0.831783, -0.415313, -0.368309)
+SetView3D(v)
+
+# test fast volume render
+Test("volume_01")
+
+# test software volume render
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.RayCasting
+SetPlotOptions(volAtts)
+Test("volume_02")
 
 Exit()
