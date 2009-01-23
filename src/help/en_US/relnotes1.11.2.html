@@ -15,6 +15,7 @@
 <p><b><font size="4">Enhancements in version 1.11.2</font></b></p>
 <ul>
 <li>Added support for ANNOTATION_INT nodelists in Silo plugin.</li>
+<li>Host profiles were added for Princeton clusters.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.11.2</font></b></p>
 <ul>
@@ -24,7 +25,7 @@
 <li>Added support for VTK meshes which contain non-zero count of points but zero count of cells. The transform manager will now add VTK_VERTEX cells to such datasets.</li>
 <li>A memory leak was fixed with ray-casted volume rendering.</li>
 <li>Fixed problem with build_visit failing to install Silo on Darwin because it was using a C compiler to link code with C++ dependencies.</li>
-<li>Host profiles were added for Princeton clusters.</li>
+<li>A bug was corrected in the DDCMD database reader where only the first file in a multi-file database was being read.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.11.1.html">VisIt 1.11.1 Release Notes</a>.</p>
