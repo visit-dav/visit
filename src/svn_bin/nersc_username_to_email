@@ -74,13 +74,17 @@ case $1 in
     "brugger")
         emaddr=brugger1@llnl.gov
         ;;
-    # Tom Fogal, University of New Hampshire
+    # Tom Fogal, University of New Hampshire / University of Utah
     "fogal1")
         emaddr=tfogal@alumni.unh.edu
         ;;
     # Dave Pugmire, Oak Ridge National Laboratory
     "pugmire")
         emaddr=pugmire@ornl.gov
+        ;;
+    # Josh Strtton, formerly of the SCI institute
+    "stratton")
+        emaddr=strattonbrazil@gmail.com
         ;;
     # Randy Hudson, University of Chicago, Argonne National Laboratory
     "rhudson")
