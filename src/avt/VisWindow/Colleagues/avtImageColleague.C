@@ -39,6 +39,7 @@
 // ************************************************************************* //
 //                              avtImageColleague.C                          //
 // ************************************************************************* //
+
 #include <avtImageColleague.h>
 
 #include <snprintf.h>
@@ -55,6 +56,7 @@
 
 #include <AnnotationObject.h>
 #include <avtCallback.h>
+#include <Utility.h>
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
@@ -434,12 +436,20 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
 //
 //   Dave Bremer, Fri Mar  9 16:09:36 PST 2007
 //   Added more error checking on image reads.
+//
+//   Hank Childs, Fri Jan 23 14:58:19 PST 2009
+//   Add an error message if the file can't be read.  Add support for tilde's
+//   for home directories.
+//
 // ****************************************************************************
 
 bool
 avtImageColleague::UpdateImage(std::string filename)
 {
     bool retval = true;
+
+    if (filename.size() > 0 && filename[0] == '~')
+        filename = ExpandUserPath(filename);
 
     // Get a reader for filename if possible.
     vtkImageReader2 *r =
@@ -498,6 +508,12 @@ avtImageColleague::UpdateImage(std::string filename)
     else
     {
         currentImage = "";
+        if (filename != "")
+        {
+            std::string msg = "Could not open file " + filename 
+                            + " to create image annotation object";
+            avtCallback::IssueWarning(msg.c_str());
+        }
 
         if(mapper) { mapper->SetInput(NULL); }
 #ifdef RESAMPLE_IMAGE
