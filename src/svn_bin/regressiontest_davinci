@@ -69,6 +69,9 @@
 #
 #    Mark C. Miller, Thu Jan 22 11:49:50 PST 2009
 #    Added visus to skip list, removed tabs.
+#
+#    Mark C. Miller, Thu Jan 22 16:44:32 PST 2009
+#    Removed some silo tests from the skip list
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -389,9 +392,6 @@ skipList_dueTo_temporaryBugs="\
           davinci,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
 
 skipList_for_Davinci="\
-          davinci,serial:tests/databases/silo.py:silo_20,silo_21 \
-          davinci,parallel:tests/databases/silo.py:silo_20,silo_21 \
-          davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21 \
           davinci,serial:tests/meshtype/csg.py:csg_02 \
           davinci,parallel:tests/meshtype/csg.py:csg_02 \
           davinci,scalable,parallel:tests/meshtype/csg.py:csg_02 \
