@@ -204,6 +204,7 @@ AddPlot("Vector","vec")
 vec = VectorAttributes()
 vec.useStride = 1
 vec.stride = 41
+vec.colorByMag = 0
 SetPlotOptions(vec)
 DrawPlots()
 Test("silo_21")
