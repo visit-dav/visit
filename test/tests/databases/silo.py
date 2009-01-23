@@ -41,10 +41,15 @@
 #    Changed number of vectors in vector plot to match the old behavior.
 #    (We now account for how many domains there are.)
 #
-#    Mark C. Miller, Wed Jan 21 10:00:10 PST 2009
-#    Removed silly comment regarding global annotation object 'a'
+#    Mark C. Miller, Thu Jan 22 16:27:54 PST 2009
+#    Modified tests of defvars using mag and vec to make them less sensitive
+#    to differences in platform. The mag test was computing a vector magnitude
+#    whose range was very, very tiny. Switching that to sum fixes that
+#    problem. The vector plot was simply generating way to many vectors that
+#    were being drawn on top of each other. I changed it to use a moderately
+#    large prime as the stride.
 # ----------------------------------------------------------------------------
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/multipart_multi_ucd3d.silo")
 
@@ -190,14 +195,15 @@ Test("silo_18")
 #
 DeleteAllPlots()
 OpenDatabase("../data/multi_rect3d.silo")
-AddPlot("Pseudocolor","mag")
+AddPlot("Pseudocolor","sum")
 DrawPlots()
 Test("silo_20")
 
 DeleteActivePlots()
 AddPlot("Vector","vec")
 vec = VectorAttributes()
-vec.nVectors = 400 * 36
+vec.useStride = 1
+vec.stride = 41
 SetPlotOptions(vec)
 DrawPlots()
 Test("silo_21")
