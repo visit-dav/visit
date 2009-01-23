@@ -1126,6 +1126,12 @@ avtDDCMDFileFormat::CopyDataToBlocks(const DDCMDHeader *header)
 //    I added the ability to read atom files, which required being able to
 //    read multiple files to get all the data.
 //
+//    Eric Brugger, Fri Jan 23 13:24:17 PST 2009
+//    I corrected a bug where the reader only read the first file of a
+//    multi-file file.  The problem was that it was picking up the value
+//    of nFiles from the base class, which was 1, instead of from the
+//    header. I changed the code to set nFiles from the header.
+//
 // ****************************************************************************
 
 void
@@ -1138,7 +1144,8 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
     int rank = 0;
 #endif
 
-    unsigned int lRec = header->GetLRec();
+    unsigned int lRec   = header->GetLRec();
+    unsigned int nFiles = header->GetNFiles();
 
     char          string[1024];
     char         *buffer;
@@ -1216,6 +1223,12 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
 //    I added the ability to read atom files, which required being able to
 //    read multiple files to get all the data.
 //
+//    Eric Brugger, Fri Jan 23 13:24:17 PST 2009
+//    I corrected a bug where the reader only read the first file of a
+//    multi-file file.  The problem was that it was picking up the value
+//    of nFiles from the base class, which was 1, instead of from the
+//    header. I changed the code to set nFiles from the header.
+//
 // ****************************************************************************
 
 void
@@ -1231,6 +1244,7 @@ avtDDCMDFileFormat::DetermineProcessorReadOffset(const DDCMDHeader *header,
     unsigned int headerLength = header->GetHeaderLength();
     unsigned int lRec         = header->GetLRec();
     bool         cgridFile    = header->GetCGridFile();
+    unsigned int nFiles       = header->GetNFiles();
 
     //
     // Determine the size of each file.
