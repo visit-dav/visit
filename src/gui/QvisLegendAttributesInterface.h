@@ -65,6 +65,10 @@ class QvisScreenPositionEdit;
 //    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
 //    Added orientationComboBox
 //   
+//    Hank Childs, Fri Jan 23 15:19:28 PST 2009
+//    Add support for whether or not to draw the "min/max" portion of the
+//    legend.
+//
 // ****************************************************************************
 
 class GUI_API QvisLegendAttributesInterface : public QvisAnnotationObjectInterface
@@ -101,6 +105,7 @@ private slots:
     void shadowToggled(bool);
     void useForegroundColorToggled(bool);
     void drawLabelsToggled(bool);
+    void drawMinmaxToggled(bool);
     void drawBoundingBoxToggled(bool);
     void boundingBoxColorChanged(const QColor &);
     void boundingBoxOpacityChanged(int);
@@ -124,6 +129,7 @@ private:
     QCheckBox              *useForegroundColorCheckBox;
 
     QCheckBox              *drawLabelsCheckBox;
+    QCheckBox              *drawMinmaxCheckBox;
     QCheckBox              *drawTitleCheckBox;
 
     QCheckBox              *drawBoundingBoxCheckBox;

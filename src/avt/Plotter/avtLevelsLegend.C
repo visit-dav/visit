@@ -43,6 +43,7 @@
 #include <avtLevelsLegend.h>
 
 #include <math.h>
+#include <snprintf.h>
 
 #include <vtkLookupTable.h>
 #include <vtkVerticalScalarBarActor.h>
@@ -80,6 +81,9 @@
 //    we can wind up invoking methods on the object we are constructing here
 //    before all its state variables have been initialized.
 //
+//    Hank Childs, Fri Jan 23 15:43:43 PST 2009
+//    Initialize minmaxVisibility.
+//
 // ****************************************************************************
 
 avtLevelsLegend::avtLevelsLegend()
@@ -105,6 +109,7 @@ avtLevelsLegend::avtLevelsLegend()
     barVisibility = 1;
     rangeVisibility = 1;
     labelVisibility = true;
+    minmaxVisibility = true;
     titleVisibility = true;
 
     //
@@ -184,6 +189,9 @@ avtLevelsLegend::~avtLevelsLegend()
 //    Changed computed size depending on whether the bar is vertical 
 //    or horizontal.
 //
+//    Hank Childs, Fri Jan 23 15:55:45 PST 2009
+//    Add support for user setting the range visibility.
+//
 // ****************************************************************************
 
 void
@@ -206,7 +214,7 @@ avtLevelsLegend::GetLegendSize(double maxHeight, double &w, double &h)
         if (databaseInfo != NULL) nLines += 2.0;
         if (varName != NULL)      nLines += 1.0;
         if (message != NULL)      nLines += 1.0;
-        if (rangeVisibility)      nLines += 2.0;
+        if (rangeVisibility && minmaxVisibility)      nLines += 2.0;
         if (barVisibility)        nLines += nLevels * 1.1 + 1.0 + fudge;
     
         h = nLines * fontHeight * scale[1];
@@ -235,7 +243,7 @@ avtLevelsLegend::GetLegendSize(double maxHeight, double &w, double &h)
         if (databaseInfo != NULL) nLines += 2.0;
         if (varName != NULL)      nLines += 1.0;
         if (message != NULL)      nLines += 1.0;
-        if (rangeVisibility)      nLines += 2.0;
+        if (rangeVisibility && minmaxVisibility)      nLines += 2.0;
         if (barVisibility)        nLines += 4.0;  //Let the height of the horz bar be 2x font height (?)
 
         h = nLines * fontHeight * scale[1];
@@ -338,6 +346,50 @@ bool
 avtLevelsLegend::GetLabelVisibility() const
 {
     return labelVisibility;
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetMinMaxVisibility
+//
+// Purpose: 
+//   Sets whether min/max is visible.
+//
+// Arguments:
+//   val : True if min/max is to be visible.
+//
+// Programmer: Hank Childs
+// Creation:   January 23, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetMinMaxVisibility(bool val)
+{
+    minmaxVisibility = val;
+    sBar->SetRangeVisibility(minmaxVisibility && rangeVisibility);
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::GetMinMaxVisibility
+//
+// Purpose: 
+//   Returns whether min/max is visible.
+//
+// Returns:    Whether min/max is visible.
+//
+// Programmer: Hank Childs
+// Creation:   January 23, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtLevelsLegend::GetMinMaxVisibility() const
+{
+    return minmaxVisibility;
 }
 
 // ****************************************************************************
@@ -676,7 +728,7 @@ void
 avtLevelsLegend::SetVarRangeVisibility(const int val )
 {
     rangeVisibility = val;
-    sBar->SetRangeVisibility(val);
+    sBar->SetRangeVisibility(rangeVisibility && minmaxVisibility);
 }
 
 
@@ -805,6 +857,9 @@ avtLevelsLegend::ChangeFontHeight(double fh)
 //
 // Modifications:
 //   
+//    Hank Childs, Fri Jan 23 16:33:32 PST 2009
+//    Also set the range format.
+//
 // ****************************************************************************
 
 void
@@ -812,4 +867,9 @@ avtLevelsLegend::SetNumberFormat(const char *fmt)
 {
     // Set the label format.
     sBar->SetLabelFormat(fmt);
+
+    // Use the format in the min/max range label.
+    char rangeFormat[200];
+    SNPRINTF(rangeFormat, 200, "Max: %s\nMin: %s", fmt, fmt);
+    sBar->SetRangeFormat(rangeFormat);
 }

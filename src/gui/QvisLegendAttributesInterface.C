@@ -71,6 +71,7 @@
 #define LEGEND_ORIENTATION0    3
 #define LEGEND_ORIENTATION1    4
 #define LEGEND_DRAW_TITLE      5
+#define LEGEND_DRAW_MINMAX     6
 
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::QvisLegendAttributesInterface
@@ -97,6 +98,9 @@
 //
 //   Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
 //   Added orientationComboBox
+//
+//   Hank Childs, Fri Jan 23 15:19:56 PST 2009
+//   Add support for drawMinmax.
 //
 // ****************************************************************************
 
@@ -191,7 +195,11 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     drawLabelsCheckBox = new QCheckBox(tr("Draw labels"), this);
     connect(drawLabelsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawLabelsToggled(bool)));
-    cLayout->addWidget(drawLabelsCheckBox, row, 1, 1, 3);
+    cLayout->addWidget(drawLabelsCheckBox, row, 1);
+    drawMinmaxCheckBox = new QCheckBox(tr("Draw min/max"), this);
+    connect(drawMinmaxCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(drawMinmaxToggled(bool)));
+    cLayout->addWidget(drawMinmaxCheckBox, row, 2, 1, 2);
     ++row;
 
     QFrame *splitter2 = new QFrame(this);
@@ -390,6 +398,9 @@ QvisLegendAttributesInterface::SetBool(int bit, bool val)
 //   Brad Whitlock, Fri Oct 17 10:20:16 PDT 2008
 //   Qt 4.
 //
+//   Hank Childs, Fri Jan 23 15:22:49 PST 2009
+//   Add support for drawMinmax.
+//
 // ****************************************************************************
 
 void
@@ -488,6 +499,11 @@ QvisLegendAttributesInterface::UpdateControls()
     drawLabelsCheckBox->blockSignals(true);
     drawLabelsCheckBox->setChecked(GetBool(LEGEND_DRAW_LABELS));
     drawLabelsCheckBox->blockSignals(false);
+
+    // Set the "draw labels" box.
+    drawMinmaxCheckBox->blockSignals(true);
+    drawMinmaxCheckBox->setChecked(GetBool(LEGEND_DRAW_MINMAX));
+    drawMinmaxCheckBox->blockSignals(false);
 
     // Set the font height
     fontHeight->setText(QString().sprintf("%g", annot->GetDoubleAttribute1()));
@@ -931,6 +947,27 @@ void
 QvisLegendAttributesInterface::drawLabelsToggled(bool val)
 {
     SetBool(LEGEND_DRAW_LABELS, val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisLegendAttributesInterface::drawMinmaxToggled
+//
+// Purpose: 
+//   Called when the draw min/max checkbox is toggled.
+//
+// Programmer: Hank Childs
+// Creation:   January 23, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisLegendAttributesInterface::drawMinmaxToggled(bool val)
+{
+    SetBool(LEGEND_DRAW_MINMAX, val);
     SetUpdate(false);
     Apply();
 }
