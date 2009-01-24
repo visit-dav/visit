@@ -420,6 +420,38 @@ avtLegend::GetLabelVisibility() const
 }
 
 // ****************************************************************************
+// Method: avtLegend::SetMinMaxVisibility
+//
+// Programmer: Hank Childs
+// Creation:   January 23, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetMinMaxVisibility(bool)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::GetMinMaxVisibility
+//
+// Programmer: Hank Childs
+// Creation:   January 23, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtLegend::GetMinMaxVisibility() const
+{
+    return true;
+}
+
+// ****************************************************************************
 // Method: avtLegend::SetNumberFormat
 //
 // Programmer: Brad Whitlock

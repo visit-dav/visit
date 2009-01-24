@@ -329,6 +329,9 @@ void vtkVerticalScalarBarActor::SetRange(double min, double max)
 //    Brad Whitlock, Wed Mar 21 16:03:32 PST 2007
 //    Render bounding box.
 //
+//    Hank Childs, Fri Jan 23 16:21:58 PST 2009
+//    Separate the range visibility from the label visibility.
+//
 // *********************************************************************
 int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
 {
@@ -354,13 +357,12 @@ int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
       this->TicsActor->RenderOverlay(viewport);
       }
 
+    if (this->RangeVisibility)
+      {
+      this->RangeActor->RenderOverlay(viewport);
+      }
     if (this->LabelOkayToDraw && this->LabelVisibility)
       {
-      if (this->RangeVisibility)
-        {
-        this->RangeActor->RenderOverlay(viewport);
-        }
-         
       for (i=0; i<this->NumberOfLabelsBuilt; i++)
         {
         renderedSomething += this->LabelActors[i]->RenderOverlay(viewport);
@@ -438,6 +440,12 @@ void vtkVerticalScalarBarActor::BuildTitle(vtkViewport *viewport)
   this->TitleOkayToDraw = 1;
 }
 
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 23 16:32:02 PST 2009
+//    No longer call AdjustRangeFormat ... just use the number format from
+//    input.
+//
 void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
 {
   int* viewSize = viewport->GetSize(); 
@@ -459,7 +467,7 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
     varRange[1] = lutRange[1];
     }
 
-  AdjustRangeFormat(varRange[0], varRange[1]);
+  //AdjustRangeFormat(varRange[0], varRange[1]);
 
   //
   // create the range label

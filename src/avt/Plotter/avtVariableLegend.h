@@ -105,6 +105,9 @@ class  vtkLookupTable;
 //    Brad Whitlock, Wed Mar 21 10:00:31 PDT 2007
 //    Added virtual methods SetDrawLabels/GetDrawLabels,SetFormatString.
 //
+//    Hank Childs, Fri Jan 23 15:39:06 PST 2009
+//    Add support for Set/GetMinMax.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtVariableLegend : public avtLegend
@@ -120,6 +123,8 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     virtual bool               GetTitleVisibility() const;
     virtual void               SetLabelVisibility(bool);
     virtual bool               GetLabelVisibility() const;
+    virtual void               SetMinMaxVisibility(bool);
+    virtual bool               GetMinMaxVisibility() const;
     virtual void               SetNumberFormat(const char *);
 
     virtual void               SetLegendScale(double xScale, double yScale);
@@ -147,6 +152,7 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     int                        rangeVisibility;
     bool                       titleVisibility;
     bool                       labelVisibility;
+    bool                       minmaxVisibility;
 
     virtual void               ChangePosition(double, double);
     virtual void               ChangeTitle(const char *);

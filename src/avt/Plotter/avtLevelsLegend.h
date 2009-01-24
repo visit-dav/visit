@@ -104,6 +104,10 @@ class  vtkLookupTable;
 //
 //    Dave Bremer, Mon Oct 13 12:36:09 PDT 2008
 //    Added SetNumberFormat()
+//
+//    Hank Childs, Fri Jan 23 15:43:01 PST 2009
+//    Added min/max visibility.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtLevelsLegend : public avtLegend
@@ -118,6 +122,8 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     virtual bool    GetTitleVisibility() const;
     virtual void    SetLabelVisibility(bool);
     virtual bool    GetLabelVisibility() const;
+    virtual void    SetMinMaxVisibility(bool);
+    virtual bool    GetMinMaxVisibility() const;
 
     virtual void    SetLegendScale(double xScale, double yScale);
     virtual void    SetBoundingBoxVisibility(bool);
@@ -151,6 +157,7 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     int                        rangeVisibility;
     bool                       titleVisibility;
     bool                       labelVisibility;
+    bool                       minmaxVisibility;
 
     virtual void               ChangePosition(double, double);
     virtual void               ChangeTitle(const char *);
