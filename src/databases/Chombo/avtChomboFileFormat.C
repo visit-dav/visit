@@ -109,6 +109,9 @@ using     std::string;
 //    Gunther H. Weber, Thu Apr 17 14:29:25 PDT 2008
 //    Check if an option exists before querying its value
 //
+//    Hank Childs, Sun Jan 25 15:39:08 PST 2009
+//    Improve support for ghost data.
+//
 // ****************************************************************************
 
 avtChomboFileFormat::avtChomboFileFormat(const char *filename, 
@@ -116,7 +119,8 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
     : avtSTMDFileFormat(&filename, 1)
 {
     initializedReader = false;
-    useGhosts = true;
+    allowedToUseGhosts = true;
+    fileContainsGhosts = false;
     enableOnlyRootLevel = false;
     enableOnlyExplicitMaterials = false;
     checkForMappingFile = true;
@@ -125,7 +129,7 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
         for (int i = 0; i < atts->GetNumberOfOptions(); ++i)
         {
             if (atts->GetName(i) == "Use ghost data (if present)")
-                useGhosts = atts->GetBool("Use ghost data (if present)");
+                allowedToUseGhosts = atts->GetBool("Use ghost data (if present)");
             else if (atts->GetName(i) == "Enable only root level by default")
                 enableOnlyRootLevel = atts->GetBool("Enable only root level by default");
             else if (atts->GetName(i) == "Enable only explicitly defined materials by default")
@@ -347,6 +351,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //
 //    Dave Pugmire, Fri Aug 22 10:27:39 EDT 2008
 //    boxes_buff was leaking.
+//
+//    Hank Childs, Sun Jan 25 15:43:03 PST 2009
+//    Set proper Boolean if we find evidence of ghost data.
 //
 // ****************************************************************************
 
@@ -857,12 +864,16 @@ avtChomboFileFormat::InitializeReader(void)
                     H5Aread(ghost_id, intvect2d_id, &g);
                     numGhosts.push_back(g.i);
                     numGhosts.push_back(g.j);
+                    if (g.i > 0 || g.j > 0)
+                        fileContainsGhosts = true;
                     numGhosts.push_back(0);
                 }
                 else
                 {
                     intvect3d g;
                     H5Aread(ghost_id, intvect3d_id, &g);
+                    if (g.i > 0 || g.j > 0 || g.k)
+                        fileContainsGhosts = true;
                     numGhosts.push_back(g.i);
                     numGhosts.push_back(g.j);
                     numGhosts.push_back(g.k);
@@ -949,6 +960,10 @@ avtChomboFileFormat::InitializeReader(void)
 //    Hank Childs, Fri Nov 14 09:11:33 PST 2008
 //    Only create the domain boundaries object if we are not using ghost data.
 //
+//    Hank Childs, Sun Jan 25 15:54:52 PST 2009
+//    Improve the test for whether or not to create the domain boundaries
+//    object.
+//
 // ****************************************************************************
 
 void
@@ -1015,7 +1030,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // Now set up the data structure for patch boundaries.  The data 
     // does all the work ... it just needs to know the extents of each patch.
     //
-    if (!useGhosts)
+    if (!allowedToUseGhosts || !fileContainsGhosts)
     {
         int t2 = visitTimer->StartTimer();
         avtRectilinearDomainBoundaries *rdb 
@@ -1199,6 +1214,9 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Gunther H. Weber, Thu May  8 19:41:52 PDT 2008
 //    Set spatial extents.
 //
+//    Hank Childs, Sun Jan 25 15:55:17 PST 2009
+//    Change test for whether or not we are using ghost data.
+//
 // ****************************************************************************
 
 void
@@ -1245,7 +1263,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->numGroups = num_levels;
     mesh->groupTitle = "levels";
     mesh->groupPieceName = "level";
-    mesh->containsExteriorBoundaryGhosts = useGhosts;
+    mesh->containsExteriorBoundaryGhosts = allowedToUseGhosts && fileContainsGhosts;
     std::vector<int> groupIds(totalPatches);
     std::vector<string> blockPieceNames(totalPatches);
     for (i = 0 ; i < totalPatches ; i++)
@@ -1560,6 +1578,9 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Hank Childs, Sun Oct 28 13:36:43 PST 2007
 //    Fix bug with avtRealDims.
 //
+//    Hank Childs, Sun Jan 25 15:55:31 PST 2009
+//    Change test for whether or not we are allowed to use ghost data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1588,7 +1609,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 
     int dims[3];
     int numGhostI = 0, numGhostJ = 0, numGhostK = 0;
-    if (!useGhosts)
+    if (!allowedToUseGhosts)
     {
         dims[0] = hiI[patch]-lowI[patch]+1;
         dims[1] = hiJ[patch]-lowJ[patch]+1;
@@ -1617,7 +1638,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
     zcoord->SetNumberOfTuples(dims[2]);
 
     float *ptr = xcoord->GetPointer(0);
-    if (!useGhosts)
+    if (!allowedToUseGhosts)
         ptr[0] = lowI[patch]*dx[level];
     else
         ptr[0] = (lowI[patch]-numGhostI)*dx[level];
@@ -1626,7 +1647,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         ptr[i] = ptr[0] + i*dx[level];
 
     ptr = ycoord->GetPointer(0);
-    if (!useGhosts)
+    if (!allowedToUseGhosts)
         ptr[0] = lowJ[patch]*dx[level];
     else
         ptr[0] = (lowJ[patch]-numGhostJ)*dx[level];
@@ -1637,7 +1658,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
     if (dimension == 3)
     {
         ptr = zcoord->GetPointer(0);
-        if (!useGhosts)
+        if (!allowedToUseGhosts)
             ptr[0] = lowK[patch]*dx[level];
         else
             ptr[0] = (lowK[patch]-numGhostK)*dx[level];
@@ -1669,7 +1690,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
     rg->GetFieldData()->AddArray(arr);
     arr->Delete();
 
-    if (useGhosts)
+    if (allowedToUseGhosts)
     {
         //
         // Store real dims so that pick reports correct indices
@@ -1817,6 +1838,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Gunther H. Weber, Mon Mar 24 20:46:04 PDT 2008
 //    Added support for node centered Chombo data.
 //
+//    Hank Childs, Sun Jan 25 15:55:58 PST 2009
+//    Change test for whether or not we are allowed to use ghost data.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1944,7 +1968,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
     H5Dclose(data);
     H5Gclose(level_id);
 
-    if (!useGhosts)
+    if (!allowedToUseGhosts)
     {
         //
         // Strip out the ghost information.  Note: this is probably an inefficient
