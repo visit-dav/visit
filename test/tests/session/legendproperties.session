@@ -1756,7 +1756,7 @@
                                 <Field name="fontItalic" type="bool">true</Field>
                                 <Field name="fontShadow" type="bool">false</Field>
                                 <Field name="doubleAttribute1" type="double">0.015</Field>
-                                <Field name="intAttribute1" type="int">39</Field>
+                                <Field name="intAttribute1" type="int">103</Field>
                             </Object>
                             <Object name="AnnotationObject">
                                 <Field name="objectName" type="string">Plot0001</Field>
@@ -1787,7 +1787,7 @@
                                 <Field name="fontItalic" type="bool">false</Field>
                                 <Field name="fontShadow" type="bool">false</Field>
                                 <Field name="doubleAttribute1" type="double">0.015</Field>
-                                <Field name="intAttribute1" type="int">38</Field>
+                                <Field name="intAttribute1" type="int">102</Field>
                             </Object>
                         </Object>
                         <Object name="InteractorAttributes">
