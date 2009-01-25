@@ -41,6 +41,9 @@
 #    Organized different parts of the test into functions and added a new
 #    function that sets the properties for a legend.
 #
+#    Hank Childs, Sun Jan 25 15:07:31 PST 2009
+#    Turn off minmaxLabels as well.
+#
 # ----------------------------------------------------------------------------
 
 # Test the Subset plot with some subsets turned off, and single-color on.
@@ -258,6 +261,7 @@ def TestLegendProperties(a):
     # Test turning off the labels.
     legend.fontItalic = 0
     legend.drawLabels = 0
+    legend.drawMinMax = 0
     Test("legends_27")
 
     # Test turning off the title.

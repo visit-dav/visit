@@ -1633,7 +1633,7 @@
                                 <Field name="fontItalic" type="bool">false</Field>
                                 <Field name="fontShadow" type="bool">false</Field>
                                 <Field name="doubleAttribute1" type="double">0.015</Field>
-                                <Field name="intAttribute1" type="int">37</Field>
+                                <Field name="intAttribute1" type="int">101</Field>
                             </Object>
                         </Object>
                         <Object name="InteractorAttributes">
