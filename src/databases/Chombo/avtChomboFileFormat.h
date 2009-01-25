@@ -121,6 +121,9 @@ class DBOptionsAttributes;
 //    Gunther H. Weber, Tue Apr 15 17:43:30 PDT 2008
 //    Add support to automatically import a coordinate mapping file via conn_cmfe
 //
+//    Hank Childs, Sun Jan 25 15:38:50 PST 2009
+//    Improve support for ghost data.
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -162,7 +165,8 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     std::vector<int>       refinement_ratio;
     std::vector<double>    dx;
     std::list<Expression*> expressions;
-    bool                   useGhosts;
+    bool                   allowedToUseGhosts;
+    bool                   fileContainsGhosts;
     bool                   enableOnlyRootLevel;
     bool                   enableOnlyExplicitMaterials;
     bool                   checkForMappingFile;
