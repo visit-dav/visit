@@ -79,6 +79,9 @@ typedef struct
 //    Hank Childs, Thu Jun 12 15:39:13 PDT 2008
 //    Added support for preventing on demand operation.
 //
+//    Dave Pugmire, Mon Jan 26 13:04:56 EST 2009
+//    Added purgeDSCount and access function.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
@@ -104,11 +107,15 @@ class PIPELINE_API avtDatasetOnDemandFilter : virtual public
     // This needs to do something else......
     void                         SetOperatingOnDemand( bool v ) { operatingOnDemand = v; }
 
+protected:
+    int                          GetPurgeDSCount() const { return purgeDSCount; }
+
   private:
     std::list<DomainCacheEntry>  domainQueue;
     int                          maxQueueLength;
     avtContract_p                firstContract;
     bool                         operatingOnDemand;
+    int                          purgeDSCount;
 };
 
 
