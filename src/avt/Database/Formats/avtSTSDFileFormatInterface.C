@@ -46,6 +46,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtIOInformation.h>
+#include <avtParallel.h>
 #include <avtSTSDFileFormat.h>
 
 #include <vtkDataArray.h>
@@ -154,6 +155,9 @@ avtSTSDFileFormatInterface::~avtSTSDFileFormatInterface()
 //    Hank Childs, Thu Feb 14 10:08:01 PST 2002
 //    Add better support for multiple blocks.
 //
+//    Hank Childs, Mon Jan 26 09:13:53 PST 2009
+//    Add support for readers that do their own domain decomposition.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -166,7 +170,11 @@ avtSTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 
     if (dom < 0 || dom >= nBlocks)
     {
-        EXCEPTION2(BadIndexException, dom, nBlocks);
+        if (dom == PAR_Rank())
+            // Format is doing its own domain decomposition.
+            dom = 0;
+        else
+            EXCEPTION2(BadIndexException, dom, nBlocks);
     }
 
     return timesteps[ts][dom]->GetMesh(mesh);
@@ -197,6 +205,9 @@ avtSTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //    Kathleen Bonnell, Mon Mar 18 17:22:30 PST 2002 
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
+//    Hank Childs, Mon Jan 26 09:13:53 PST 2009
+//    Add support for readers that do their own domain decomposition.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -209,7 +220,11 @@ avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 
     if (dom < 0 || dom >= nBlocks)
     {
-        EXCEPTION2(BadIndexException, dom, nBlocks);
+        if (dom == PAR_Rank())
+            // Format is doing its own domain decomposition.
+            dom = 0;
+        else
+            EXCEPTION2(BadIndexException, dom, nBlocks);
     }
 
     return timesteps[ts][dom]->GetVar(var);
@@ -240,6 +255,9 @@ avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //    Kathleen Bonnell, Mon Mar 18 17:22:30 PST 2002  
 //    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
+//    Hank Childs, Mon Jan 26 09:13:53 PST 2009
+//    Add support for readers that do their own domain decomposition.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -252,7 +270,11 @@ avtSTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 
     if (dom < 0 || dom >= nBlocks)
     {
-        EXCEPTION2(BadIndexException, dom, nBlocks);
+        if (dom == PAR_Rank())
+            // Format is doing its own domain decomposition.
+            dom = 0;
+        else
+            EXCEPTION2(BadIndexException, dom, nBlocks);
     }
 
     return timesteps[ts][dom]->GetVectorVar(var);
@@ -285,6 +307,9 @@ avtSTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 //    Hank Childs, Thu Feb 14 10:08:01 PST 2002
 //    Add better support for multiple blocks.
 //
+//    Hank Childs, Mon Jan 26 09:13:53 PST 2009
+//    Add support for readers that do their own domain decomposition.
+//
 // ****************************************************************************
 
 void *
@@ -308,7 +333,11 @@ avtSTSDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 
     if (dom < 0 || dom >= nBlocks)
     {
-        EXCEPTION2(BadIndexException, dom, nBlocks);
+        if (dom == PAR_Rank())
+            // Format is doing its own domain decomposition.
+            dom = 0;
+        else
+            EXCEPTION2(BadIndexException, dom, nBlocks);
     }
 
     return timesteps[ts][dom]->GetAuxiliaryData(var, type, args, df);
