@@ -80,6 +80,9 @@ using std::vector;
 //    Mark C. Miller, Tue Jan  6 18:55:39 PST 2009
 //    Removed separate implementation for GRUMMP now that GRUMMP supports
 //    getDescription method correctly.
+//
+//    Mark C. Miller, Mon Jan 26 15:22:44 PST 2009
+//    Removed explicit qualification of name of namespace on supressMessage
 // ****************************************************************************
 #define CheckITAPSError2(IMI, ERR, FN, ARGS, THELINE, THEFILE)                                  \
     if (ERR != 0)                                                                               \
@@ -127,7 +130,7 @@ namespace avtITAPS_CUtility
     extern char** entTopologies;
     extern char** itapsDataTypeNames;
     extern map<string, int> messageCounts;
-    extern const char *avtITAPS_CUtility::supressMessage;
+    extern const char *supressMessage;
 
     void ITAPSErrorCleanupHelper(int dummy, ...);
     void InitDataTypeNames();
