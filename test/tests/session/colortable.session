@@ -730,8 +730,6 @@
                 <Field name="stereoRendering" type="bool">false</Field>
                 <Field name="stereoType" type="string">CrystalEyes</Field>
                 <Field name="notifyForEachRender" type="bool">false</Field>
-                <Field name="scalableActivationMode" type="string">Always</Field>
-                <Field name="scalableAutoThreshold" type="int">2000000</Field>
                 <Field name="specularFlag" type="bool">false</Field>
                 <Field name="specularCoeff" type="float">0.6</Field>
                 <Field name="specularPower" type="float">10</Field>
@@ -2211,8 +2209,6 @@
                                 </Object>
                             </Object>
                         </Object>
-                        <Field name="scalableAutoThreshold" type="int">2000000</Field>
-                        <Field name="scalableActivationMode" type="int">2</Field>
                         <Field name="notifyForEachRender" type="bool">false</Field>
                         <Field name="surfaceRepresentation" type="int">0</Field>
                         <Field name="displayListMode" type="int">2</Field>
