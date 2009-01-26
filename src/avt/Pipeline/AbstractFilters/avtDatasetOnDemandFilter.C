@@ -66,6 +66,9 @@
 //
 //   Hank Childs, Thu Jun 12 16:08:41 PDT 2008
 //   Initialize operatingOnDemand.
+//   
+//    Dave Pugmire, Mon Jan 26 13:04:56 EST 2009
+//    Initialize purgeDSCount.
 //
 // ****************************************************************************
 
@@ -73,6 +76,7 @@ avtDatasetOnDemandFilter::avtDatasetOnDemandFilter()
 {
     maxQueueLength = 2;
     operatingOnDemand = false;
+    purgeDSCount = 0;
 }
 
 
@@ -114,6 +118,9 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 //
 //   Hank Childs, Thu Jun 12 11:08:55 PDT 2008
 //   Tell the contract we are streaming.
+//
+//    Dave Pugmire, Mon Jan 26 13:04:56 EST 2009
+//    Increment purgeDSCount when a DS is purged.
 //
 // ****************************************************************************
 
@@ -166,6 +173,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId)
         int purgeDomainID = domainQueue.back().domainID;
         domainQueue.pop_back();
         purgeDS->Delete();
+        purgeDSCount++;
     }
 
     return rv;
