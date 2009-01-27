@@ -59,6 +59,7 @@
 #           CFITSIO  3006     cfitsio3006.tar.gz     -f
 #           CGNS     2.4.3    cgnslib_2.4-3.tar.gz   -c
 #           ExodusII 4.46     exodusii-4.46.tar.gz   -e
+#           FastBit  0.9.9    fastbit-b0.9.9.tar.gz  -r
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
 #           H5part   1.4.0    H5Part-1.4.0.tar.gz    -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
@@ -98,6 +99,7 @@
 #     Function 8.11, build_ccmio:   build CCMIO
 #     Function 8.12, build_tcmalloc: build google-perftools/tcmalloc
 #     Function 8.13, build_icet:    build Ice-T
+#     Function 8.14, build_fastbit: build FastBit
 #     Function 8, build_silo:       build Silo
 #     Function 9, build_hostconf:   build the config-site/host.conf file
 #     Function 9.1, build_visit:    build the VisIt source code
@@ -496,6 +498,9 @@
 #     enable verbose makefiles so debugging IceT issues is possible, and
 #     install IceT instead of copying libraries manually.
 #
+#     Hank Childs, Mon Jan 26 15:57:02 PST 2009
+#     Add support for FastBit.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -611,7 +616,7 @@ export GROUP=${GROUP-"visit"}
 export LOG_FILE=${LOG_FILE-"build_visit_log"}
 export SVNREVISION=${SVNREVISION-"HEAD"}
 # Created a temporary value because the user can override most of 
-# the components, which forr the GUI happens at a later time.
+# the components, which for the GUI happens at a later time.
 # the tmp value is useful for user feedback.
 if [[ $VISITARCH == "" ]] ; then
     export VISITARCHTMP=${ARCH}_${C_COMPILER}
@@ -676,6 +681,8 @@ parallel="no"
 ON_parallel="off"
 export DO_H5PART="no"
 export ON_H5PART="off"
+export DO_FASTBIT="no"
+export ON_FASTBIT="off"
 export DO_SVN="no"
 export ON_SVN="off"
 export DO_REVISION="no"
@@ -839,6 +846,10 @@ export H5PART_FILE=${H5PART_FILE-"H5Part-1.4.0.tar.gz"}
 export H5PART_VERSION=${H5PART_VERSION-"1.4.0"}
 export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION-"1.0"}
 export H5PART_BUILD_DIR=${H5PART_BUILD_DIR-"H5Part-1.4.0"}
+
+export FASTBIT_FILE=${FASTBIT_FILE-"fastbit-b0.9.9.tar.gz"}
+export FASTBIT_VERSION=${FASTBIT_VERSION-"0.9.9"}
+export FASTBIT_DIR=${FASTBIT_DIR-"fastbit-b0.9.9"}
 
 export CCMIO_FILE=${CCMIO_FILE-"libccmio-2.6.1.tar.gz"}
 export CCMIO_VERSION=${CCMIO_VERSION-"2.6.1"}
@@ -1501,6 +1512,10 @@ function check_visit_source_code
 #    Hank Childs, Fri Jun 13 14:31:47 PDT 2008
 #    Add support for tcmalloc / google perftools.
 #
+#    Hank Childs, Tue Jan 27 10:14:53 PST 2009
+#    Merge in changes from 1.12RC, including build of FastBit. 
+#    Also change code to fail if download is unsuccessful.
+#
 # *************************************************************************** #
 
 function check_optional_3rdparty
@@ -1510,91 +1525,99 @@ function check_optional_3rdparty
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
         ensure_built_or_ready "boxlib"  "" $BOXLIB_BUILD_DIR  $BOXLIB_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build Boxlib.  ${BOXLIB_FILE} not found."
             ANY_ERRORS="yes"
             DO_BOXLIB="no"
+            error "Unable to build Boxlib.  ${BOXLIB_FILE} not found."
         fi
     fi
     
     if [[ "$DO_CCMIO" == "yes" ]] ; then
         ensure_built_or_ready "ccmio"  $CCMIO_VERSION $CCMIO_BUILD_DIR  $CCMIO_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build CCMIO.  ${CCMIO_FILE} not found."
             ANY_ERRORS="yes"
             DO_CCMIO="no"
+            error "Unable to build CCMIO.  ${CCMIO_FILE} not found."
         fi
     fi
     
     if [[ "$DO_CFITSIO" == "yes" ]] ; then
         ensure_built_or_ready "cfitsio" $CFITSIO_VERSION $CFITSIO_BUILD_DIR $CFITSIO_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build CFITSIO.  ${CFITSIO_FILE} not found."
             ANY_ERRORS="yes"
             DO_CFITSIO="no"
+            error "Unable to build CFITSIO.  ${CFITSIO_FILE} not found."
         fi
     fi
     
     if [[ "$DO_CGNS" == "yes" ]] ; then
         ensure_built_or_ready "cgns" $CGNS_VERSION $CGNS_BUILD_DIR $CGNS_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build CGNS.  ${CGNS_FILE} not found."
             ANY_ERRORS="yes"
             DO_CGNS="no"
+            error "Unable to build CGNS.  ${CGNS_FILE} not found."
         fi
     fi
-    
+    if [[ "$DO_FASTBIT" == "yes" ]] ; then
+        ensure_built_or_ready "fastbit" $FASTBIT_VERSION $FASTBIT_DIR $FASTBIT_FILE
+        if [[ $? != 0 ]] ; then
+            warn "Unable to build FastBit.  ${FASTBIT_FILE} not found."
+            warn "FastBit is not available for download from the VisIt build site"
+            ANY_ERRORS="yes"
+            DO_FASTBIT="no"
+            error "Try going to https://codeforge.lbl.gov/frs/?group_id=44"
+        fi
+    fi
     if [[ "$DO_EXODUS" == "yes" ]] ; then
         ensure_built_or_ready "exodus" $EXODUS_VERSION $EXODUS_BUILD_DIR $EXODUS_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build ExodusII.  ${EXODUS_FILE} not found."
             ANY_ERRORS="yes"
             DO_EXODUS="no"
+            error "Unable to build ExodusII.  ${EXODUS_FILE} not found."
         fi
     fi
     
     if [[ "$DO_GDAL" == "yes" ]] ; then
         ensure_built_or_ready "gdal" $GDAL_VERSION $GDAL_BUILD_DIR $GDAL_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build GDAL.  ${GDAL_FILE} not found."
             ANY_ERRORS="yes"
             DO_GDAL="no"
+            error "Unable to build GDAL.  ${GDAL_FILE} not found."
         fi
     fi
     
     if [[ "$DO_H5PART" == "yes" ]] ; then
         ensure_built_or_ready "h5part" $H5PART_VERSION $H5PART_BUILD_DIR $H5PART_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build H5Part.  ${H5PART_FILE} not found."
             ANY_ERRORS="yes"
             DO_H5PART="no"
+            error "Unable to build H5Part.  ${H5PART_FILE} not found."
         fi
     fi
     
     if [[ "$DO_HDF4" == "yes" ]] ; then
         ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_BUILD_DIR $HDF4_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build HDF4.  ${HDF4_FILE} not found."
             ANY_ERRORS="yes"
             DO_HDF4="no"
+            error "Unable to build HDF4.  ${HDF4_FILE} not found."
         fi
     fi
     
     if [[ "$DO_HDF5" == "yes" ]] ; then
         ensure_built_or_ready "hdf5" $HDF5_VERSION $HDF5_BUILD_DIR $HDF5_FILE
         if [[ $? != 0 ]] ; then
-            # fatal error, since other libs require hdf5
-            error "Unable to build HDF5.  ${HDF5_FILE} not found."
             ANY_ERRORS="yes"
             DO_HDF5="no"
+            error "Unable to build HDF5.  ${HDF5_FILE} not found."
         fi
     fi
     
     if [[ "$DO_ITAPS" == "yes" ]] ; then
         ensure_built_or_ready "itaps" $ITAPS_VERSION $ITAPS_BUILD_DIR  $ITAPS_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build ITAPS.  ${ITAPS_FILE} not found."
             ANY_ERRORS="yes"
             DO_ITAPS="no"
+            error "Unable to build ITAPS.  ${ITAPS_FILE} not found."
         fi
     fi
     
@@ -1608,44 +1631,44 @@ function check_optional_3rdparty
                 warn "Note: You have requested to build the Mili library." 
                 warn "Mili is not available for public download and" 
                 warn "is only available through Subversion access." 
-                error
             fi
+            error
         fi
     fi
     
     if [[ "$DO_NETCDF" == "yes" ]] ; then
         ensure_built_or_ready "netcdf" $NETCDF_VERSION $NETCDF_BUILD_DIR $NETCDF_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build NetCDF.  ${NETCDF_FILE} not found."
             ANY_ERRORS="yes"
             DO_NETCDF="no"
+            error "Unable to build NetCDF.  ${NETCDF_FILE} not found."
         fi
     fi
     
     if [[ "$DO_SILO" == "yes" ]] ; then
         ensure_built_or_ready "silo" $SILO_VERSION $SILO_BUILD_DIR $SILO_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build ilo.  ${SILO_FILE} not found."
             ANY_ERRORS="yes"
             DO_SILO="no"
+            error "Unable to build Silo.  ${SILO_FILE} not found."
         fi
     fi
     
     if [[ "$DO_SZIP" == "yes" ]] ; then
         ensure_built_or_ready "szip" $SZIP_VERSION $SZIP_BUILD_DIR $SZIP_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build SZIP.  ${SZIP_FILE} not found."
             ANY_ERRORS="yes"
             DO_SZIP="no"
+            error "Unable to build SZIP.  ${SZIP_FILE} not found."
         fi
     fi
     
     if [[ "$DO_VISUS" == "yes" ]] ; then
         ensure_built_or_ready "visus" $VISUS_VERSION $VISUS_BUILD_DIR $VISUS_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build ViSUS.  ${VISUS_FILE} not found."
             ANY_ERRORS="yes"
             DO_VISUS="no"
+            error "Unable to build ViSUS.  ${VISUS_FILE} not found."
         fi
     fi
     
@@ -1659,17 +1682,17 @@ function check_optional_3rdparty
                 warn "You have requested to build the google perftools library."
                 warn "This is not currently available for download from the VisIt website and" 
                 warn "is only available through Subversion access."
-                error
             fi
+            error
         fi
     fi
     
     if [[ "$DO_ICET" == "yes" ]] ; then
         ensure_built_or_ready "icet" $ICET_VERSION $ICET_BUILD_DIR $ICET_FILE
         if [[ $? != 0 ]] ; then
-            warn "Unable to build Ice-T.  ${ICET_FILE} not found."
             ANY_ERRORS="yes"
             DO_ICET="no"
+            error "Unable to build Ice-T.  ${ICET_FILE} not found."
         fi
     fi
 }
@@ -6883,6 +6906,77 @@ function build_icet
 
 
 # *************************************************************************** #
+#                         Function 8.14, build_fastbit                        #
+# *************************************************************************** #
+
+function build_fastbit
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -d ${FASTBIT_DIR} ]] ; then
+       info_box "Found ${FASTBIT_DIR} . . ." 1>&3
+    elif [[ -f ${FASTBIT_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${FASTBIT_FILE} . . ." 1>&3
+       uncompress_untar ${FASTBIT_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${FASTBIT_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${FASTBIT_FILE%.*} ]] ; then
+       info_box "Tarring ${FASTBIT_FILE%.*} . . ." 1>&3
+       tar xf ${FASTBIT_FILE%.*}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${FASTBIT_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring FastBit . . ." 1>&3
+    cd ${FASTBIT_DIR}
+    echo "Invoking command to configure FastBit"
+    ./configure \
+       CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       --prefix="$VISITDIR/fastbit/$FASTBIT_VERSION/$VISITARCH" \
+       --disable-shared
+    if [[ $? != 0 ]] ; then
+       echo "FastBit configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build FastBit
+    #
+    info_box "Building FastBit . . . (~7 minutes)" 1>&3
+    echo "Building FastBit"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       echo "FastBit build failed.  Giving up"
+       return 1
+    fi
+    info_box "Installing FastBit . . ." 1>&3
+    echo "Installing FastBit"
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+       echo "FastBit build (make install) failed.  Giving up"
+       return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/fastbit"
+       chgrp -R ${GROUP} "$VISITDIR/fastbit"
+    fi
+    cd "$START_DIR"
+    echo "Done with FastBit"
+    return 0
+}
+
+
+# *************************************************************************** #
 #                          Function 9, build_hostconf                         #
 # *************************************************************************** #
 
@@ -7042,6 +7136,18 @@ function build_hostconf
         >> $HOSTCONF
         echo \
 "DEFAULT_H5PART_LIB=\$VISITHOME/h5part/$H5PART_VERSION/\$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## FastBit" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    if [[ "$DO_FASTBIT" == "yes" ]] ; then
+        echo \
+"DEFAULT_FASTBIT_INCLUDE=\$VISITHOME/fastbit/$FASTBIT_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_FASTBIT_LIB=\$VISITHOME/fastbit/$FASTBIT_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -7432,6 +7538,10 @@ printvariables () {
   printf "%s%s\n" "H5PART_COMPATIBILITY_VERSION=" "${H5PART_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "H5PART_BUILD_DIR=" "${H5PART_BUILD_DIR}"
 
+  printf "%s%s\n" "FASTBIT_FILE=" "${FASTBIT_FILE}"
+  printf "%s%s\n" "FASTBIT_VERSION=" "${FASTBIT_VERSION}"
+  printf "%s%s\n" "FASTBIT_DIR=" "${FASTBIT_DIR}"
+
   printf "%s%s\n" "CCMIO_FILE=" "${CCMIO_FILE}"
   printf "%s%s\n" "CCMIO_VERSION=" "${CCMIO_VERSION}"
   printf "%s%s\n" "CCMIO_COMPATIBILITY_VERSION=" "${CCMIO_COMPATIBILITY_VERSION}"
@@ -7471,6 +7581,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
   printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
   printf "%-15s %s [%s]\n" "--exodus" "Build Exodus" "$DO_EXODUS"
+  printf "%-15s %s [%s]\n" "--fastbit" "Build FastBit" "$DO_FASTBIT"
   printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
   printf "%-15s %s [%s]\n" "--gdal" "Build GDAL" "$DO_GDAL"
   printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
@@ -7687,6 +7798,8 @@ for arg in "${arguments[@]}" ; do
         --cxxflags) next_arg="cxxflags";;
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
         --debug) set -vx;;
+        --fastbit) DO_FASTBIT="yes"; ON_FASTBIT="on"
+                  DO_HDF5="yes"; ON_HDF5="on";;
         --exodus) DO_EXODUS="yes"; ON_EXODUS="on"
                   DO_NETCDF="yes"; ON_NETCDF="on";;
         --flags-debug) next_arg="flags-debug";;
@@ -7897,6 +8010,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "CFITSIO"  "3006   $CFITSIO_FILE"   $ON_CFITSIO \
            "CGNS"     "2.4.3  $CGNS_FILE"      $ON_CGNS \
            "ExodusII" "4.46   $EXODUS_FILE"    $ON_EXODUS \
+           "FastBit"  "0.99   $FASTBIT_FILE"   $ON_FASTBIT \
            "GDAL"     "1.3.2  $GDAL_FILE"      $ON_GDAL \
            "H5Part"   "1.3.3  $H5PART_FILE"    $ON_H5PART \
            "HDF4"     "2.4.1  $HDF4_FILE"      $ON_HDF4 \
@@ -7918,6 +8032,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_CFITSIO="no"
         DO_CGNS="no"
         DO_EXODUS="no"
+        DO_FASTBIT="no"
         DO_GDAL="no"
         DO_H5PART="no"
         DO_HDF4="no"
@@ -7941,6 +8056,9 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
               ExodusII)
                  DO_EXODUS="yes"
                  DO_NETCDF="yes";;
+              FastBit)
+                 DO_HDF5="yes"
+                 DO_FASTBIT="yes";;
               GDAL)
                  DO_GDAL="yes";;
               H5Part)
@@ -8403,6 +8521,21 @@ if [[ "$DO_H5PART" == "yes" ]] ; then
             error "Unable to build or install H5Part.  Bailing out."
         fi
         info "Done building H5Part"
+    fi
+fi
+
+cd "$START_DIR"
+if [[ "$DO_FASTBIT" == "yes" ]] ; then
+    check_if_installed "fastbit" $FASTBIT_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping FastBit build.  FastBit is already installed."
+    else
+        info "Building FastBit (~7 minutes)"
+        build_fastbit
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install FastBit.  Bailing out."
+        fi
+        info "Done building FastBit"
     fi
 fi
 

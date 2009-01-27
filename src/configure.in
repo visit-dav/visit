@@ -907,6 +907,10 @@ dnl
 dnl    Mark C. Miller, Sat Dec 20 07:38:09 PST 2008
 dnl    Added logic to specify itaps impl in CPPFLAGS when building itaps
 dnl    plugin.
+dnl
+dnl    Hank Childs, Tue Jan 27 09:27:43 PST 2009
+dnl    Add FastBit.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2500,6 +2504,49 @@ AC_SUBST(H5PART_LIB)
 AC_SUBST(H5PART_LIBDIR)
 
 #
+# Look for FastBit
+#
+AC_MSG_CHECKING(for FastBit)
+FASTBIT=""
+FASTBIT_INCLUDE=""
+FASTBIT_LIB=""
+FASTBIT_LIBDIR=""
+AC_ARG_WITH(fastbit,
+            [  --with-fastbit=INC-DIR,LIB-DIR       Location of FastBit headers and library],
+           fastbit_specified="yes",
+           fastbit_specified="no",
+           )
+if test "$fastbit_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      FASTBIT_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      FASTBIT_LIB="-L`echo $withval |cut -f2 -d, -s`"
+      FASTBIT_LIBDIR="`echo $withval |cut -f2 -d, -s`"
+   fi
+else
+   if test "$DEFAULT_FASTBIT_INCLUDE" != "" ; then
+      FASTBIT_INCLUDE="-I$DEFAULT_FASTBIT_INCLUDE $FASTBIT_INCLUDE"
+   fi
+   if test "$DEFAULT_FASTBIT_LIB" != "" ; then
+      FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit -lrt"
+      H5PART_LIBDIR="$DEFAULT_FASTBIT_LIB"
+   fi
+fi
+if test "$FASTBIT_LIB" != "" ; then
+   if test "$FASTBIT_INCLUDE" != "" ; then
+      FASTBIT="$""(FASTBIT)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(FASTBIT)
+AC_SUBST(FASTBIT_INCLUDE)
+AC_SUBST(FASTBIT_LIB)
+AC_SUBST(FASTBIT_LIBDIR)
+
+#
 # Look for ViSUS 
 #
 AC_MSG_CHECKING(for ViSUS)
@@ -3658,6 +3705,7 @@ CREATE_BOXLIB2D_LINK=""
 CREATE_BOXLIB3D_LINK=""
 CREATE_CFITSIO_LINK=""
 CREATE_H5PART_LINK=""
+CREATE_FASTBIT_LINK=""
 CREATE_CCMIO_LINK=""
 case $UNAME in
   Darwin)
@@ -3691,6 +3739,9 @@ case $UNAME in
     if test "$H5PART_LIB" != "" ; then
         CREATE_H5PART_LINK="create_h5part_link"
     fi
+    if test "$FASTBIT_LIB" != "" ; then
+        CREATE_FASTBIT_LINK="create_fastbit_link"
+    fi
     if test "$CCMIO_LIBS" != "" ; then
         CREATE_CCMIO_LINK="create_ccmio_link"
     fi
@@ -3706,6 +3757,7 @@ AC_SUBST(CREATE_BOXLIB2D_LINK)
 AC_SUBST(CREATE_BOXLIB3D_LINK)
 AC_SUBST(CREATE_CFITSIO_LINK)
 AC_SUBST(CREATE_H5PART_LINK)
+AC_SUBST(CREATE_FASTBIT_LINK)
 AC_SUBST(CREATE_CCMIO_LINK)
 AC_SUBST(VAC_CV_LIBDIR_CREATE_LINKS)
 AC_SUBST(VAC_CV_LIBDIR_DESTROY_LINKS)
