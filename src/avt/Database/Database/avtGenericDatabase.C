@@ -1872,6 +1872,7 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2998,6 +2999,10 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added support for ignoring bad extents from dbs.
+//
+//    Hank Childs, Tue Jan 27 11:03:49 PST 2009
+//    Don't use cached meta data when it comes to identifiers.
+//
 // ****************************************************************************
 
 void
@@ -3059,7 +3064,9 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
         // for "all" (= -1) timesteps.  Examples of "all" timesteps entities
         // are global node ids where the nodes do not change over time.
         //
-        void_ref_ptr vr = cache.GetVoidRef(var, type, ts, domains[i]);
+        void_ref_ptr vr;
+        if (strcmp(type, AUXILIARY_DATA_IDENTIFIERS) != 0)
+            vr = cache.GetVoidRef(var, type, ts, domains[i]);
         if (*vr == NULL)
         {
             vr = cache.GetVoidRef(var, type, -1, domains[i]);

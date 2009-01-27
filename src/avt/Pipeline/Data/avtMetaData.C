@@ -49,6 +49,8 @@
 
 #include <avtCommonDataFunctions.h>
 #include <avtFacelist.h>
+#include <avtHistogramSpecification.h>
+#include <avtIdentifierSelection.h>
 #include <avtIntervalTree.h>
 #include <avtOriginatingSource.h>
 #include <avtMixedVariable.h>
@@ -118,9 +120,9 @@ avtIntervalTree *
 avtMetaData::GetDataExtents(const char *var)
 {
     VoidRefList list;
-    avtContract_p spec = GetContract();
+    avtContract_p contract = GetContract();
     source->GetVariableAuxiliaryData(AUXILIARY_DATA_DATA_EXTENTS, (void*) var,
-                                     spec, list);
+                                     contract, list);
     if (list.nList == 0)
     {
         return NULL;
@@ -162,9 +164,9 @@ avtIntervalTree *
 avtMetaData::GetSpatialExtents(const char *var)
 {
     VoidRefList list;
-    avtContract_p spec = GetContract();
+    avtContract_p contract = GetContract();
     source->GetMeshAuxiliaryData(AUXILIARY_DATA_SPATIAL_EXTENTS, (void*) var,
-                                     spec, list);
+                                 contract, list);
     if (list.nList == 0)
     {
         return NULL;
@@ -176,6 +178,73 @@ avtMetaData::GetSpatialExtents(const char *var)
 
     avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
     return tree;
+}
+
+
+// ****************************************************************************
+//  Method: avtMetaData::GetHistogram
+//
+//  Purpose:
+//      Gets the histogram corresponding to the input histogram specification.
+//     
+//  Programmer: Hank Childs
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+bool
+avtMetaData::GetHistogram(avtHistogramSpecification *hs)
+{
+    if (hs == NULL)
+        EXCEPTION0(ImproperUseException);
+
+    VoidRefList list;
+    avtContract_p contract = GetContract();
+    source->GetVariableAuxiliaryData(AUXILIARY_DATA_HISTOGRAM, (void *)hs,
+                                     contract, list);
+    VISIT_LONG_LONG *counts = hs->GetCounts();
+    for (int i = 0 ; i < hs->GetTotalNumberOfBins() ; i++)
+        if (counts[i] != 0)
+            return true;
+
+    return false;
+}
+
+
+// ****************************************************************************
+//  Method: avtMetaData::GetIdentifiers
+//
+//  Purpose:
+//      Gets the identifiers corresponding to a data selection.
+//     
+//  Programmer: Hank Childs
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+avtIdentifierSelection *
+avtMetaData::GetIdentifiers(std::vector<avtDataSelection *>ds)
+{
+    if (ds.size() == 0)
+        EXCEPTION0(ImproperUseException);
+
+    VoidRefList list;
+    avtContract_p contract = GetContract();
+    
+    source->GetVariableAuxiliaryData(AUXILIARY_DATA_IDENTIFIERS, (void *)&ds,
+                                     contract, list);
+
+    if (list.nList == 0)
+    {
+        return NULL;
+    }
+    if (list.nList != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    avtIdentifierSelection *ids = (avtIdentifierSelection *) *(list.list[0]);
+    return ids;
 }
 
 
@@ -207,9 +276,9 @@ avtFacelist *
 avtMetaData::GetExternalFacelist(int domain)
 {
     VoidRefList list;
-    avtContract_p spec = GetContract(domain);
+    avtContract_p contract = GetContract(domain);
     source->GetMeshAuxiliaryData(AUXILIARY_DATA_EXTERNAL_FACELIST, NULL,
-                                 spec, list);
+                                 contract, list);
     if (list.nList == 0)
     {
         return NULL;
@@ -248,26 +317,27 @@ avtMaterial *
 avtMetaData::GetMaterial(int domain, int timestep, bool post_ghost)
 {
     VoidRefList list;
-    avtContract_p spec = GetContract(domain);
+    avtContract_p contract = GetContract(domain);
+
     //
     // If a timestep has been specified, set it in DataRequest.
     //
     if (timestep != -1)
-        spec->GetDataRequest()->SetTimestep(timestep);
+        contract->GetDataRequest()->SetTimestep(timestep);
 
     // look for ghost corrected material object if needed
     if(post_ghost)
     {
         source->GetMaterialAuxiliaryData(AUXILIARY_DATA_POST_GHOST_MATERIAL, 
                                          NULL,
-                                         spec,
+                                         contract,
                                          list);
     }
     else // look standard material object
     {
         source->GetMaterialAuxiliaryData(AUXILIARY_DATA_MATERIAL, 
                                          NULL,
-                                         spec,
+                                         contract,
                                          list);    
     }
     
@@ -305,13 +375,13 @@ avtSpecies *
 avtMetaData::GetSpecies(int domain, int timestep)
 {
     VoidRefList list;
-    avtContract_p spec = GetContract(domain);
+    avtContract_p contract = GetContract(domain);
     //
     // If a timestep has been specified, set it in DataRequest.
     //
     if (timestep != -1)
-        spec->GetDataRequest()->SetTimestep(timestep);
-    source->GetSpeciesAuxiliaryData(AUXILIARY_DATA_SPECIES, NULL, spec,list);
+        contract->GetDataRequest()->SetTimestep(timestep);
+    source->GetSpeciesAuxiliaryData(AUXILIARY_DATA_SPECIES, NULL, contract,list);
     if (list.nList == 0)
     {
         return NULL;
@@ -328,7 +398,7 @@ avtMetaData::GetSpecies(int domain, int timestep)
 //  Method: avtMetaData::GetContract
 //
 //  Purpose:
-//      Gets a pipeline specification corresponding to all data.
+//      Gets a contract corresponding to all data.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
@@ -349,7 +419,7 @@ avtMetaData::GetContract(void)
 //  Method: avtMetaData::GetContract
 //
 //  Purpose:
-//      Gets a pipeline specification corresponding to all data.
+//      Gets a contract corresponding to all data.
 //
 //  Arguments:
 //      domain  The identifier for the chunk we are interested in.
@@ -412,12 +482,12 @@ avtMetaData::GetMixedVar(const char *varname,
                          bool post_ghost)
 {
     VoidRefList list;
-    avtContract_p spec = GetContract(domain);
+    avtContract_p contract = GetContract(domain);
     //
     // If a timestep has been specified, set it in DataRequest.
     //
     if (timestep != -1)
-        spec->GetDataRequest()->SetTimestep(timestep);
+        contract->GetDataRequest()->SetTimestep(timestep);
 
     // pass the varname, so the source can obtain the proper mixed var.
     
@@ -427,7 +497,7 @@ avtMetaData::GetMixedVar(const char *varname,
         source->GetVariableAuxiliaryData(
                                       AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE, 
                                          (void*)varname, 
-                                         spec,
+                                         contract,
                                          list);
     }
     else
@@ -435,7 +505,7 @@ avtMetaData::GetMixedVar(const char *varname,
         // look for standard mixvar object
         source->GetVariableAuxiliaryData(AUXILIARY_DATA_MIXED_VARIABLE, 
                                          (void*)varname, 
-                                         spec,
+                                         contract,
                                          list);
     }
     

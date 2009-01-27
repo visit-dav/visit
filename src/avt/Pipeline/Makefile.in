@@ -252,6 +252,9 @@
 #    Hank Childs, Mon Jan  5 13:25:54 CST 2009
 #    Added avtIsolevelsSelection and avtPlaneSelection.
 #
+#    Hank Childs and Jeremy Meredith, Tue Jan 27 11:00:31 PST 2009
+#    Added avtHistogramSpecification and avtIdentifierSelection.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -287,6 +290,8 @@ Data_src= \
   Data/avtHexahedronExtractor.C \
   Data/avtHexahedron20Extractor.C \
   Data/avtHexahedron27Extractor.C \
+  Data/avtHistogramSpecification.C \
+  Data/avtIdentifierSelection.C \
   Data/avtImage.C \
   Data/avtImagePartition.C \
   Data/avtImageRepresentation.C \
