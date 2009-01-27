@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE VIEWER VISWINDOW VIEWERLIB VIEWEROBJ VIEWERLIB_SRC VIEWEREXE_SRC GUI GUILIB GUIOBJ GUIFRAMEWORKS ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS SLIVR_GUI_IMPL SLIVR_GUI_HDR HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB VISITWRAPPER_RPATH CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_TUVOK TUVOK_LIB TUVOK_INCLUDE BUILD_ZLIB ZLIB_LIB HDF5_INCLUDE HDF5_LIB HDF5_TARGET SILO_INCLUDE SILO_LIB SILO_TARGET EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB_INCLUDE PDB_LIB PDB_TARGET MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB QT_LDFLAGS QT_LIBS QT_CORE QT_CORE_LIB QT_DESIGNER QT_DESIGNER_LIB QT_GUI QT_GUI_LIB QT_HELP QT_HELP_LIB QT_CLUCENE QT_CLUCENE_LIB QT_NETWORK QT_NETWORK_LIB QT_OPENGL QT_OPENGL_LIB QT_SCRIPT QT_SCRIPT_LIB QT_SQL QT_SQL_LIB QT_SVG QT_SVG_LIB QT_TEST QT_TEST_LIB QT_XML QT_XML_LIB QT_QUI QT_QUI_LIB QT_CXXFLAGS QT_MOC VTKQT_CPPFLAGS VTKQT VTKQT_LIBS X_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS DATA_EXE_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_MILI_LINK CREATE_HDF4_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK VAC_CV_LIBDIR_CREATE_LINKS VAC_CV_LIBDIR_DESTROY_LINKS MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE VIEWER VISWINDOW VIEWERLIB VIEWEROBJ VIEWERLIB_SRC VIEWEREXE_SRC GUI GUILIB GUIOBJ GUIFRAMEWORKS ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS SLIVR_GUI_IMPL SLIVR_GUI_HDR HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB VISITWRAPPER_RPATH CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_TUVOK TUVOK_LIB TUVOK_INCLUDE BUILD_ZLIB ZLIB_LIB HDF5_INCLUDE HDF5_LIB HDF5_TARGET SILO_INCLUDE SILO_LIB SILO_TARGET EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB_INCLUDE PDB_LIB PDB_TARGET MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR FASTBIT FASTBIT_INCLUDE FASTBIT_LIB FASTBIT_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB QT_LDFLAGS QT_LIBS QT_CORE QT_CORE_LIB QT_DESIGNER QT_DESIGNER_LIB QT_GUI QT_GUI_LIB QT_HELP QT_HELP_LIB QT_CLUCENE QT_CLUCENE_LIB QT_NETWORK QT_NETWORK_LIB QT_OPENGL QT_OPENGL_LIB QT_SCRIPT QT_SCRIPT_LIB QT_SQL QT_SQL_LIB QT_SVG QT_SVG_LIB QT_TEST QT_TEST_LIB QT_XML QT_XML_LIB QT_QUI QT_QUI_LIB QT_CXXFLAGS QT_MOC VTKQT_CPPFLAGS VTKQT VTKQT_LIBS X_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS DATA_EXE_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_MILI_LINK CREATE_HDF4_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_FASTBIT_LINK CREATE_CCMIO_LINK VAC_CV_LIBDIR_CREATE_LINKS VAC_CV_LIBDIR_DESTROY_LINKS MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
 ac_subst_files='VARIABLES TARGETS DIRTARGETS LIBTARGETS PARLIBTARGETS SOURCE_DEPENDENCIES'
 
 # Initialize some variables set by options.
@@ -909,6 +909,7 @@ Optional Packages:
   --with-boxlib2d=INC-DIR,LIB-DIR      Location of Boxlib2D header and library
   --with-boxlib3d=INC-DIR,LIB-DIR      Location of Boxlib3D header and library
   --with-h5part=INC-DIR,LIB-DIR       Location of H5Part headers and library
+  --with-fastbit=INC-DIR,LIB-DIR       Location of FastBit headers and library
   --with-visus=INC-DIR,LIB-DIR      Location of ViSUS header and library
   --with-netcdf=INC-DIR,LIB-DIR     Location of netCDF header and library
   --with-cgns=INC-DIR,LIB-DIR     Location of CGNS header and library
@@ -5610,7 +5611,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5613:" \
+echo "$as_me:5614:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -5900,14 +5901,13 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
-
-        echo "$as_me:$LINENO: checking for strerror in -lcposix" >&5
-echo $ECHO_N "checking for strerror in -lcposix... $ECHO_C" >&6
-if test "${ac_cv_lib_cposix_strerror+set}" = set; then
+echo "$as_me:$LINENO: checking for library containing strerror" >&5
+echo $ECHO_N "checking for library containing strerror... $ECHO_C" >&6
+if test "${ac_cv_search_strerror+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcposix  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
+ac_cv_search_strerror=no
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -5952,24 +5952,80 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_lib_cposix_strerror=yes
+  ac_cv_search_strerror="none required"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_lib_cposix_strerror=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_cposix_strerror" >&5
-echo "${ECHO_T}$ac_cv_lib_cposix_strerror" >&6
-if test $ac_cv_lib_cposix_strerror = yes; then
-  LIBS="$LIBS -lcposix"
-fi
+if test "$ac_cv_search_strerror" = no; then
+  for ac_lib in cposix; do
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
 
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char strerror ();
+int
+main ()
+{
+strerror ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_search_strerror="-l$ac_lib"
+break
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
 
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+  done
+fi
+LIBS=$ac_func_search_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_search_strerror" >&5
+echo "${ECHO_T}$ac_cv_search_strerror" >&6
+if test "$ac_cv_search_strerror" != no; then
+  test "$ac_cv_search_strerror" = "none required" || LIBS="$ac_cv_search_strerror $LIBS"
+
+fi
 
 
 BUILD_FORTRAN=""
@@ -9130,6 +9186,56 @@ fi
 
 
 #
+# Look for FastBit
+#
+echo "$as_me:$LINENO: checking for FastBit" >&5
+echo $ECHO_N "checking for FastBit... $ECHO_C" >&6
+FASTBIT=""
+FASTBIT_INCLUDE=""
+FASTBIT_LIB=""
+FASTBIT_LIBDIR=""
+
+# Check whether --with-fastbit or --without-fastbit was given.
+if test "${with_fastbit+set}" = set; then
+  withval="$with_fastbit"
+  fastbit_specified="yes"
+else
+  fastbit_specified="no"
+fi;
+if test "$fastbit_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      FASTBIT_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      FASTBIT_LIB="-L`echo $withval |cut -f2 -d, -s`"
+      FASTBIT_LIBDIR="`echo $withval |cut -f2 -d, -s`"
+   fi
+else
+   if test "$DEFAULT_FASTBIT_INCLUDE" != "" ; then
+      FASTBIT_INCLUDE="-I$DEFAULT_FASTBIT_INCLUDE $FASTBIT_INCLUDE"
+   fi
+   if test "$DEFAULT_FASTBIT_LIB" != "" ; then
+      FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit -lrt"
+      H5PART_LIBDIR="$DEFAULT_FASTBIT_LIB"
+   fi
+fi
+if test "$FASTBIT_LIB" != "" ; then
+   if test "$FASTBIT_INCLUDE" != "" ; then
+      FASTBIT="$""(FASTBIT)"
+      echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+   else
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+   fi
+else
+   echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+
+
+
+
+#
 # Look for ViSUS
 #
 echo "$as_me:$LINENO: checking for ViSUS" >&5
@@ -10066,7 +10172,7 @@ ac_x_header_dirs='
 /usr/openwin/share/include'
 
 if test "$ac_x_includes" = no; then
-  # Guess where to find include files, by looking for Intrinsic.h.
+  # Guess where to find include files, by looking for Xlib.h.
   # First, try using that file with no special directory specified.
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -10074,7 +10180,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 _ACEOF
 if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
@@ -10101,7 +10207,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
   for ac_dir in $ac_x_header_dirs; do
-  if test -r "$ac_dir/X11/Intrinsic.h"; then
+  if test -r "$ac_dir/X11/Xlib.h"; then
     ac_x_includes=$ac_dir
     break
   fi
@@ -10115,18 +10221,18 @@ if test "$ac_x_libraries" = no; then
   # See if we find them without any special options.
   # Don't add to $LIBS permanently.
   ac_save_LIBS=$LIBS
-  LIBS="-lXt $LIBS"
+  LIBS="-lX11 $LIBS"
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 int
 main ()
 {
-XtMalloc (0)
+XrmInitialize ()
   ;
   return 0;
 }
@@ -11807,6 +11913,7 @@ CREATE_BOXLIB2D_LINK=""
 CREATE_BOXLIB3D_LINK=""
 CREATE_CFITSIO_LINK=""
 CREATE_H5PART_LINK=""
+CREATE_FASTBIT_LINK=""
 CREATE_CCMIO_LINK=""
 case $UNAME in
   Darwin)
@@ -11840,11 +11947,15 @@ case $UNAME in
     if test "$H5PART_LIB" != "" ; then
         CREATE_H5PART_LINK="create_h5part_link"
     fi
+    if test "$FASTBIT_LIB" != "" ; then
+        CREATE_FASTBIT_LINK="create_fastbit_link"
+    fi
     if test "$CCMIO_LIBS" != "" ; then
         CREATE_CCMIO_LINK="create_ccmio_link"
     fi
   ;;
 esac
+
 
 
 
@@ -20593,6 +20704,10 @@ s,@H5PART@,$H5PART,;t t
 s,@H5PART_INCLUDE@,$H5PART_INCLUDE,;t t
 s,@H5PART_LIB@,$H5PART_LIB,;t t
 s,@H5PART_LIBDIR@,$H5PART_LIBDIR,;t t
+s,@FASTBIT@,$FASTBIT,;t t
+s,@FASTBIT_INCLUDE@,$FASTBIT_INCLUDE,;t t
+s,@FASTBIT_LIB@,$FASTBIT_LIB,;t t
+s,@FASTBIT_LIBDIR@,$FASTBIT_LIBDIR,;t t
 s,@VISUS@,$VISUS,;t t
 s,@VISUS_INCLUDE@,$VISUS_INCLUDE,;t t
 s,@VISUS_LIB@,$VISUS_LIB,;t t
@@ -20728,6 +20843,7 @@ s,@CREATE_BOXLIB2D_LINK@,$CREATE_BOXLIB2D_LINK,;t t
 s,@CREATE_BOXLIB3D_LINK@,$CREATE_BOXLIB3D_LINK,;t t
 s,@CREATE_CFITSIO_LINK@,$CREATE_CFITSIO_LINK,;t t
 s,@CREATE_H5PART_LINK@,$CREATE_H5PART_LINK,;t t
+s,@CREATE_FASTBIT_LINK@,$CREATE_FASTBIT_LINK,;t t
 s,@CREATE_CCMIO_LINK@,$CREATE_CCMIO_LINK,;t t
 s,@VAC_CV_LIBDIR_CREATE_LINKS@,$VAC_CV_LIBDIR_CREATE_LINKS,;t t
 s,@VAC_CV_LIBDIR_DESTROY_LINKS@,$VAC_CV_LIBDIR_DESTROY_LINKS,;t t
