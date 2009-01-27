@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+  <Plugin name="HDF_UC" type="database" label="HDF_UC" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" specifiedFilenames="false">
+    <CXXFLAGS>
+      $(HDF5_INCLUDE)
+      $(FASTBIT_INCLUDE)
+      $(H5PART_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(FASTBIT_LIB)
+      $(H5PART_LIB)
+      $(HDF5_LIB)
+      $(ZLIB_LIB)
+    </LIBS>
+    <Extensions>
+      h5
+      h5part
+    </Extensions>
+    <Files components="M">
+      avtHDF_UCFileFormat.C
+      hdf5_a.C
+      hdf5_d.C
+      hdf5_f.C
+      hdf5_g.C
+      hdf5_s.C
+      fqindex.C
+      indexfileC.C
+      indexfile.C
+      timestep.C
+      hdf5_fastquery.C
+      histogramCache.C
+    </Files>
+    <Files components="E">
+      avtHDF_UCFileFormat.C
+      hdf5_a.C
+      hdf5_d.C
+      hdf5_f.C
+      hdf5_g.C
+      hdf5_s.C
+      fqindex.C
+      indexfileC.C
+      indexfile.C
+      timestep.C
+      hdf5_fastquery.C
+      histogramCache.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

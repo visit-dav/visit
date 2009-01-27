@@ -70,6 +70,7 @@ PIPELINE_API void    SumFloatArrayAcrossAllProcessors(float *, float *, int);
 PIPELINE_API void    SumDoubleAcrossAllProcessors(double&);
 PIPELINE_API void    SumDoubleArrayAcrossAllProcessors(double *, double *,int);
 PIPELINE_API void    SumIntArrayAcrossAllProcessors(int *, int *, int);
+PIPELINE_API void    SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG*, VISIT_LONG_LONG*, int);
 PIPELINE_API bool    ThisProcessorHasMinimumValue(double);
 PIPELINE_API bool    ThisProcessorHasMaximumValue(double);
 PIPELINE_API void    UnifyMinMax(double *, int, int=0);

@@ -146,6 +146,8 @@ typedef std::vector<std::string> MaterialList;
 
 DBATTS_API extern const char * AUXILIARY_DATA_DATA_EXTENTS;
 DBATTS_API extern const char * AUXILIARY_DATA_EXTERNAL_FACELIST;
+DBATTS_API extern const char * AUXILIARY_DATA_HISTOGRAM;
+DBATTS_API extern const char * AUXILIARY_DATA_IDENTIFIERS;
 DBATTS_API extern const char * AUXILIARY_DATA_MATERIAL;
 DBATTS_API extern const char * AUXILIARY_DATA_POST_GHOST_MATERIAL;
 DBATTS_API extern const char * AUXILIARY_DATA_SPECIES;

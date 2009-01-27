@@ -679,6 +679,75 @@ SumIntArrayAcrossAllProcessors(int *inArray, int *outArray, int nArray)
 
 
 // ****************************************************************************
+//  Function: SumLongLongArrayAcrossAllProcessors
+//
+//  Purpose:
+//      Sums an array of long longs across all processors.
+//
+//  Arguments:
+//      inArray    The input.
+//      outArray   The sums of the inArrays across all processors.
+//      nArray     The number of entries in inArray/outArray.
+//
+//  Programmer:    Jeremy Meredith
+//  Creation:      February 22, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray,
+                                    VISIT_LONG_LONG *outArray, int nArray)
+{
+#ifdef PARALLEL
+    MPI_Datatype datatype = MPI_LONG_LONG;
+    MPI_Aint lb,e;
+    // On at least one mpi implementation (mpich2-1.0.5, Linux-x86-64),
+    // MPI_LONG_LONG blatantly fails.  But for some reason INTEGER8 works.
+    // Luckily we can tell this by checking the datatype size of the type.
+    // We'll try a few different ones, and if none work, just do it slowly
+    // using a single-precision int.
+    MPI_Type_get_extent(datatype, &lb, &e);
+    if (e != sizeof(VISIT_LONG_LONG))
+    {
+        datatype = MPI_UNSIGNED_LONG_LONG;
+        MPI_Type_get_extent(datatype, &lb, &e);
+    }
+#ifdef MPI_INTEGER8  // ... may only be MPI-2.
+    if (e != sizeof(VISIT_LONG_LONG))
+    {
+        datatype = MPI_INTEGER8;
+        MPI_Type_get_extent(datatype, &lb, &e);
+    }
+#endif
+    if (e == sizeof(VISIT_LONG_LONG))
+    {
+        MPI_Allreduce(inArray, outArray, nArray, datatype, MPI_SUM,
+                      VISIT_MPI_COMM);
+    }
+    else
+    {
+        // This is pathetic, but I don't have a better idea.
+        int *tmpInArray = new int[nArray];
+        int *tmpOutArray = new int[nArray];
+        for (int i=0; i<nArray; i++)
+            tmpInArray[i] = inArray[i];
+        MPI_Allreduce(tmpInArray, tmpOutArray, nArray, MPI_INT, MPI_SUM,
+                      VISIT_MPI_COMM);
+        for (int i=0; i<nArray; i++)
+            outArray[i] = tmpOutArray[i];
+    }
+#else
+    for (int i = 0 ; i < nArray ; i++)
+    {
+        outArray[i] = inArray[i];
+    }
+#endif
+}
+
+
+// ****************************************************************************
 //  Function: SumDoubleArrayAcrossAllProcessors
 //
 //  Purpose:
