@@ -38,7 +38,7 @@
 
 #ifndef VTK_TIME_SLIDER_ACTOR_H
 #define VTK_TIME_SLIDER_ACTOR_H
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 #include <vtkActor2D.h>
 
 class vtkCellArray;
@@ -60,7 +60,7 @@ class vtkPolyDataMapper2D;
 //   
 // ****************************************************************************
 
-class VISIT_VTK_API vtkTimeSliderActor : public vtkActor2D
+class RENDERING_VISIT_VTK_API vtkTimeSliderActor : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkTimeSliderActor, vtkActor2D);

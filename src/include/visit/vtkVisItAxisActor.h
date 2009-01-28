@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkVisItAxisActor.h
+../../visit_vtk/rendering/vtkVisItAxisActor.h

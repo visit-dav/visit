@@ -56,14 +56,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkTriad2D_h
 #define __vtkTriad2D_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 #include "vtkActor2D.h"
 #include "vtkVisItAxisActor2D.h"
 #include "vtkCamera.h"
 
 
-class VISIT_VTK_API vtkTriad2D : public vtkActor2D
+class RENDERING_VISIT_VTK_API vtkTriad2D : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkTriad2D, vtkActor2D);

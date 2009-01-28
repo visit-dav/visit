@@ -49,13 +49,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkRubberBandMapper2D_h
 #define __vtkRubberBandMapper2D_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 #include "vtkPolyDataMapper2D.h"
 
 struct vtkRubberBandMapper2DOverlay;
 
-class VISIT_VTK_API vtkRubberBandMapper2D : public vtkPolyDataMapper2D
+class RENDERING_VISIT_VTK_API vtkRubberBandMapper2D : public vtkPolyDataMapper2D
 {
 public:
   vtkTypeMacro(vtkRubberBandMapper2D,vtkPolyDataMapper2D);

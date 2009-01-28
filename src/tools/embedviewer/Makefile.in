@@ -37,6 +37,10 @@
 #   Dave Pugmire, Fri Oct 3 11:29:19 EDT 2008
 #   Added avtIVP libs.
 #
+#   Mark C. Miller, Tue Jan 27 18:03:23 PST 2009
+#   Removed refs to $(FILIB) which was for the FAST INTERVAL LIBRARY and
+#   was replaced by some Boost builtin libs.
+#
 ##############################################################################
 
 ##
@@ -53,10 +57,10 @@ VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lviewer -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lexpr \
      -lexpr -lparser -lplugin -lqtviswindow -lviswindow_ser -lavtivp_ser -lavtmath_ser -lplotter_ser \
-     -lavtfilters_ser -lavtwriter_ser -lavtview -lpipeline_ser -lvisit_vtk \
+     -lavtfilters_ser -lavtwriter_ser -lavtview -lpipeline_ser -lvisit_vtk -lrendering_visit_vtk \
      -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
-     $(VTK_LIBS) $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
+     $(VTK_LIBS) $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) @LIBS@ @PTHREAD_LIB@
 
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@ @EXE_LDFLAGS@
 LIBDEP=

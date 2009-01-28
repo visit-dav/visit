@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkMesaRectilinearGridMapper.h,v $
+  Module:    $RCSfile: vtkMesaStructuredGridMapper.h,v $
   Language:  C++
   Date:      $Date: 2002/08/22 18:39:30 $
   Version:   $Revision: 1.20 $
@@ -15,28 +15,28 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkMesaRectilinearGridMapper - a RectilinearGridMapper for the Mesa library
+// .NAME vtkMesaStructuredGridMapper - a StructuredGridMapper for the Mesa library
 // .SECTION Description
-// vtkMesaRectilinearGridMapper is a subclass of vtkRectilinearGridMapper.
-// vtkMesaRectilinearGridMapper is a geometric RectilinearGridMapper for the Mesa 
+// vtkMesaStructuredGridMapper is a subclass of vtkStructuredGridMapper.
+// vtkMesaStructuredGridMapper is a geometric StructuredGridMapper for the Mesa 
 // rendering library.
 
-#ifndef __vtkMesaRectilinearGridMapper_h
-#define __vtkMesaRectilinearGridMapper_h
+#ifndef __vtkMesaStructuredGridMapper_h
+#define __vtkMesaStructuredGridMapper_h
 
-#include "vtkRectilinearGridMapper.h"
-#include <visit_vtk_exports.h>
+#include "vtkStructuredGridMapper.h"
+#include <rendering_visit_vtk_exports.h>
 
 class vtkProperty;
 class vtkRenderWindow;
 class vtkMesaRenderer;
 class vtkTimerLog;
 
-class VISIT_VTK_API vtkMesaRectilinearGridMapper : public vtkRectilinearGridMapper
+class RENDERING_VISIT_VTK_API vtkMesaStructuredGridMapper : public vtkStructuredGridMapper
 {
 public:
-  static vtkMesaRectilinearGridMapper *New();
-  vtkTypeRevisionMacro(vtkMesaRectilinearGridMapper,vtkRectilinearGridMapper);
+  static vtkMesaStructuredGridMapper *New();
+  vtkTypeRevisionMacro(vtkMesaStructuredGridMapper,vtkStructuredGridMapper);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -59,8 +59,8 @@ public:
   vtkGetMacro(EnableColorTexturing, bool);
 
 protected:
-  vtkMesaRectilinearGridMapper();
-  ~vtkMesaRectilinearGridMapper();
+  vtkMesaStructuredGridMapper();
+  ~vtkMesaStructuredGridMapper();
 
   int ListStart;
   int CurrentList;
@@ -86,8 +86,8 @@ protected:
                      int arrayAccessMode, int arrayId, const char *arrayName,
                      int& offset);
 private:
-  vtkMesaRectilinearGridMapper(const vtkMesaRectilinearGridMapper&);  // Not implemented.
-  void operator=(const vtkMesaRectilinearGridMapper&);  // Not implemented.
+  vtkMesaStructuredGridMapper(const vtkMesaStructuredGridMapper&);  // Not implemented.
+  void operator=(const vtkMesaStructuredGridMapper&);  // Not implemented.
 };
 
 #endif

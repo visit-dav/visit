@@ -45,7 +45,7 @@ All rights reserved.
 
 #ifndef __vtkVisItAxisActor_h
 #define __vtkVisItAxisActor_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 #include <vector>
 #include <string>
@@ -91,7 +91,7 @@ All rights reserved.
 // ****************************************************************************
 
 
-class VISIT_VTK_API vtkVisItAxisActor : public vtkActor
+class RENDERING_VISIT_VTK_API vtkVisItAxisActor : public vtkActor
 {
 public:
   vtkTypeMacro(vtkVisItAxisActor,vtkActor);

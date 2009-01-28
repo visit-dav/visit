@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkRubberBandMapper2D.h
+../../visit_vtk/rendering/vtkRubberBandMapper2D.h

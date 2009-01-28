@@ -285,7 +285,7 @@ PAROBJ=$(SRC:.C=_par.o)
 LIB=libquery
 SERLIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) -lavtddf_ser -lavtshapelets_ser
 PARLIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) -lavtddf_par -lavtshapelets_par
-COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lavtview -lvisit_vtk -llightweight_visit_vtk
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lavtview -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk
 SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -lavtfilters_ser -lexpressions_ser -ldatabase_ser -lmir_ser $(SERLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS) @LIBS@
 PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -lavtfilters_par -lexpressions_par -ldatabase_par -lmir_par $(PARLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 

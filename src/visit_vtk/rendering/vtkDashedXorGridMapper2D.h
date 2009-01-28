@@ -52,13 +52,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkDashedXorGridMapper2D_h
 #define __vtkDashedXorGridMapper2D_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 #include "vtkPolyDataMapper2D.h"
 
 struct vtkDashedXorGridMapper2DOverlay;
 
-class VISIT_VTK_API vtkDashedXorGridMapper2D : public vtkPolyDataMapper2D
+class RENDERING_VISIT_VTK_API vtkDashedXorGridMapper2D : public vtkPolyDataMapper2D
 {
 public:
   vtkTypeMacro(vtkDashedXorGridMapper2D,vtkPolyDataMapper2D);

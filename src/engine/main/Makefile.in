@@ -279,6 +279,9 @@
 #    Brad Whitlock, Tue Dec  2 12:28:19 PST 2008
 #    I changed the enginewrapper targets so they can have an rpath built in.
 #
+#    Mark C. Miller, Tue Jan 27 18:03:23 PST 2009
+#    Removed refs to $(FILIB) which was for the FAST INTERVAL LIBRARY and
+#    was replaced by some Boost builtin libs.
 ##############################################################################
 
 ##
@@ -295,7 +298,7 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @PLATFORM_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../include/visit
 
 COMMONLIBS=-L../../lib -lplugin -lavtview \
-        -lvisit_vtk -llightweight_visit_vtk \
+        -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk \
 	-lenginerpc -lutility -lmisc -lcomm -lstate \
         -ldbatts -lavtexceptions -lexpr -lexpr -lparser \
 	$(VISIT_VTK_LDFLAGS)
@@ -305,14 +308,14 @@ SERLIBS=$(COMMONLIBS) -lviswindow_ser -lplotter_ser -lmir_ser -lavtwriter_ser \
         -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
         -lengineparstate_ser -lparallel_visit_vtk_ser \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) \
-	$(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
+	@LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
         -lavtddf_par -lavtivp_par -lavtmath_par -lavtshapelets_par -ldatabase_par -lquery_par\
         -lexpressions_par -lavtfilters_par -lpipeline_par \
         -lengineparstate_par -lparallel_visit_vtk_par \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
-	$(ZLIB_LIB) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
+	$(ZLIB_LIB) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 SERLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_ser.@SHLIB_LIBEXT@ \
           ../../lib/libdatabase_ser.@SHLIB_LIBEXT@ ../../lib/libpipeline_ser.@SHLIB_LIBEXT@ \

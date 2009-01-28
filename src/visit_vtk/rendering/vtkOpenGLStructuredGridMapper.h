@@ -1,10 +1,10 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkMesaStructuredGridMapper.h,v $
+  Module:    $RCSfile: vtkOpenGLStructuredGridMapper.h,v $
   Language:  C++
-  Date:      $Date: 2002/08/22 18:39:30 $
-  Version:   $Revision: 1.20 $
+  Date:      $Date: 2002/08/22 18:39:31 $
+  Version:   $Revision: 1.31 $
 
   Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
@@ -15,28 +15,27 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkMesaStructuredGridMapper - a StructuredGridMapper for the Mesa library
+// .NAME vtkOpenGLStructuredGridMapper - a StructuredGridMapper for the OpenGL library
 // .SECTION Description
-// vtkMesaStructuredGridMapper is a subclass of vtkStructuredGridMapper.
-// vtkMesaStructuredGridMapper is a geometric StructuredGridMapper for the Mesa 
+// vtkOpenGLStructuredGridMapper is a subclass of vtkStructuredGridMapper.
+// vtkOpenGLStructuredGridMapper is a geometric StructuredGridMapper for the OpenGL 
 // rendering library.
 
-#ifndef __vtkMesaStructuredGridMapper_h
-#define __vtkMesaStructuredGridMapper_h
+#ifndef __vtkOpenGLStructuredGridMapper_h
+#define __vtkOpenGLStructuredGridMapper_h
 
 #include "vtkStructuredGridMapper.h"
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 class vtkProperty;
 class vtkRenderWindow;
-class vtkMesaRenderer;
-class vtkTimerLog;
+class vtkOpenGLRenderer;
 
-class VISIT_VTK_API vtkMesaStructuredGridMapper : public vtkStructuredGridMapper
+class RENDERING_VISIT_VTK_API vtkOpenGLStructuredGridMapper : public vtkStructuredGridMapper
 {
 public:
-  static vtkMesaStructuredGridMapper *New();
-  vtkTypeRevisionMacro(vtkMesaStructuredGridMapper,vtkStructuredGridMapper);
+  static vtkOpenGLStructuredGridMapper *New();
+  vtkTypeRevisionMacro(vtkOpenGLStructuredGridMapper,vtkStructuredGridMapper);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -50,7 +49,7 @@ public:
   void ReleaseGraphicsResources(vtkWindow *);
 
   // Description:
-  // Draw method for Mesa.
+  // Draw method for OpenGL.
   virtual int Draw(vtkRenderer *ren, vtkActor *a);
 
   // Description:
@@ -59,8 +58,8 @@ public:
   vtkGetMacro(EnableColorTexturing, bool);
 
 protected:
-  vtkMesaStructuredGridMapper();
-  ~vtkMesaStructuredGridMapper();
+  vtkOpenGLStructuredGridMapper();
+  ~vtkOpenGLStructuredGridMapper();
 
   int ListStart;
   int CurrentList;
@@ -85,9 +84,10 @@ protected:
   bool UsesPointData(vtkDataSet *input, int scalarMode,
                      int arrayAccessMode, int arrayId, const char *arrayName,
                      int& offset);
+
 private:
-  vtkMesaStructuredGridMapper(const vtkMesaStructuredGridMapper&);  // Not implemented.
-  void operator=(const vtkMesaStructuredGridMapper&);  // Not implemented.
+  vtkOpenGLStructuredGridMapper(const vtkOpenGLStructuredGridMapper&);  // Not implemented.
+  void operator=(const vtkOpenGLStructuredGridMapper&);  // Not implemented.
 };
 
 #endif

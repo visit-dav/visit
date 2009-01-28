@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkVerticalScalarBarWithOpacityActor.h
+../../visit_vtk/rendering/vtkVerticalScalarBarWithOpacityActor.h

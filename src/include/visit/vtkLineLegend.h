@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkLineLegend.h
+../../visit_vtk/rendering/vtkLineLegend.h

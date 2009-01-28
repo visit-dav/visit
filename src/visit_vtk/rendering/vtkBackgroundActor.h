@@ -53,7 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkBackgroundActor_h
 #define __vtkBackgroundActor_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 #include "vtkActor2D.h"
 #include "vtkPolyDataMapper2D.h"
@@ -61,7 +61,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkActor2D.h"
 #include "vtkTimeStamp.h"
 
-class VISIT_VTK_API vtkBackgroundActor : public vtkActor2D
+class RENDERING_VISIT_VTK_API vtkBackgroundActor : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkBackgroundActor, vtkActor2D);
