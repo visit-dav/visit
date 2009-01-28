@@ -27,13 +27,13 @@
 #define __vtkOSMesaRenderWindow_h
 
 #include "vtkMesaRenderWindow.h"
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 
 class vtkIdList;
 class vtkOSMesaRenderWindowInternal;
 
-class VISIT_VTK_API vtkOSMesaRenderWindow : public vtkMesaRenderWindow
+class RENDERING_VISIT_VTK_API vtkOSMesaRenderWindow : public vtkMesaRenderWindow
 {
 public:
   static vtkOSMesaRenderWindow *New();

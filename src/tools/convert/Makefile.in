@@ -81,9 +81,18 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
-SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lplotter_ser -lparallel_visit_vtk_ser -lavtfilters_ser -lavtview -lavtddf_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lplotter_par -lparallel_visit_vtk_par -lavtfilters_par -lavtview -lavtddf_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lplotter_ser -lparallel_visit_vtk_ser -lavtfilters_ser -lavtview -lavtddf_ser -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lplotter_par -lparallel_visit_vtk_par -lavtfilters_par -lavtview -lavtddf_par -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 LIBDEP=
+
+##
+## We don't want GL dependencies, so define a VTK lib variable
+## with those removed and anything else from VTK we DON'T need.
+##
+MY_VTK_LIBS=`echo "@VTK_LIBS@" | tr ' ' '\n' | grep -v "vtkRendering\\\|vtkftgl\\\|vtkfreetype"`
+
+SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser -lavtddf_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
+PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par -lavtddf_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
 ##
 ## Files...
@@ -91,24 +100,46 @@ LIBDEP=
 SRC=convert.C
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
-
+SEROBJ_LITE=convert_ser_lite.o
+PAROBJ_LITE=convert_par_lite.o
 
 ##
 ## Standard targets...
 ##
-all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@
+all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@ @CONVERT_SER@_lite @CONVERT_PAR@_lite
 
 clean:
 	$(RM) $(SEROBJ) $(PAROBJ) @CONVERT_SER@ @CONVERT_PAR@
+	$(RM) $(SEROBJ_LITE) $(PAROBJ_LITE) @CONVERT_SER@_lite @CONVERT_PAR@_lite
 
 ##
 ## Other targets...
 ##
+$(SEROBJ_LITE): $(SRC)
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
+	$(CXX) -DDISABLE_EXPRESSIONS $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
+@OS_RULE@
+
+$(PAROBJ_LITE): $(SRC)
+	source='$<' object='$@' libtool=no                \
+	depfile='./$*_par.d'  tmpdepfile='./$*.tmp_par_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp                  \
+	$(CXX) -DDISABLE_EXPRESSIONS $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
+@OS_RULE@
+
 @CONVERT_SER@ or_no_ser: $(LIBDEP) $(SEROBJ)
 	$(CXX) -o $@ $(SEROBJ) $(LDFLAGS) $(SERLIBS)
 
 @CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ)
 	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
+
+@CONVERT_SER@_lite: $(LIBDEP) $(SEROBJ_LITE) @CONVERT_SER@
+	$(CXX) -o $@ $(SEROBJ_LITE) $(LDFLAGS) $(SERLIBS_LITE)
+
+@CONVERT_PAR@_lite: $(LIBDEP) $(PAROBJ_LITE) @CONVERT_PAR@
+	$(CXX) -o $@ $(PAROBJ_LITE) $(LDFLAGS) $(PARLIBS_LITE) @MPI_LIBS@
 
 ##
 ## Automatic dependency stuff

@@ -35,55 +35,31 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef VTK_TEXTURED_BACKGROUND_ACTOR_H
-#define VTK_TEXTURED_BACKGROUND_ACTOR_H
-#include <vtkActor2D.h>
-#include <visit_vtk_exports.h>
 
-class vtkTexture;
-class vtkRenderer;
+// ************************************************************************* //
+//                               InitVTK.h                                   //
+// ************************************************************************* //
+
+#ifndef INIT_VTK_H
+#define INIT_VTK_H
+#include <rendering_visit_vtk_exports.h>
 
 // ****************************************************************************
-// Class: vtkTexturedBackgroundActor
+//  Module: InitVTK
 //
-// Purpose:
-//   This class is a 2D actor that can draw a background image into a render
-//   window.
+//  Purpose:
+//      A central point for VTK initialization.
 //
-// Notes:      This class does not need to be associated with a mapper because
-//             a specialized mapper is created and used internally.
+//  Programmer: Hank Childs
+//  Creation:   April 24, 2001
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Nov 16 10:21:51 PST 2007
-//
-// Modifications:
-//   
 // ****************************************************************************
 
-class VISIT_VTK_API vtkTexturedBackgroundActor : public vtkActor2D
+namespace InitVTK
 {
-public:
-  static vtkTexturedBackgroundActor *New();
- 
-  vtkTypeMacro(vtkTexturedBackgroundActor, vtkActor2D); 
-  virtual void PrintSelf(ostream &os, vtkIndent indent);
- 
-  virtual void ReleaseGraphicsResources(vtkWindow *);
-
-  int SetTextureAndRenderers(const char *filename, vtkRenderer *bg, vtkRenderer *canvas);
-
-  void SetSphereMode(bool);
-  void SetImageRepetitions(int,int);
-protected:
-   vtkTexturedBackgroundActor();
-  ~vtkTexturedBackgroundActor(); 
-
-   vtkMapper2D *GetInitializedMapper();
-   vtkTexture  *GetTexture(const char *);
-   void         SetTextureAndRenderers(vtkTexture *tex, vtkRenderer *bg, vtkRenderer *canvas);
-
-   vtkTexture  *texture;
-   char        *imageFile;
-};
+    RENDERING_VISIT_VTK_API void Initialize();
+    RENDERING_VISIT_VTK_API void ForceMesa();
+    RENDERING_VISIT_VTK_API void UnforceMesa();
+}
 
 #endif

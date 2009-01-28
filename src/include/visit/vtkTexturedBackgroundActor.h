@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkTexturedBackgroundActor.h
+../../visit_vtk/rendering/vtkTexturedBackgroundActor.h

@@ -25,13 +25,13 @@
 #define __vtkOpenGLRectilinearGridMapper_h
 
 #include "vtkRectilinearGridMapper.h"
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 class vtkProperty;
 class vtkRenderWindow;
 class vtkOpenGLRenderer;
 
-class VISIT_VTK_API vtkOpenGLRectilinearGridMapper : public vtkRectilinearGridMapper
+class RENDERING_VISIT_VTK_API vtkOpenGLRectilinearGridMapper : public vtkRectilinearGridMapper
 {
 public:
   static vtkOpenGLRectilinearGridMapper *New();

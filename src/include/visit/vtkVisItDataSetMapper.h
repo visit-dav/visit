@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkVisItDataSetMapper.h
+../../visit_vtk/rendering/vtkVisItDataSetMapper.h

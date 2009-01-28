@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkRectilinearGridMapper.h,v $
+  Module:    $RCSfile: vtkStructuredGridMapper.h,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,33 +12,33 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkRectilinearGridMapper - map vtkRectilinearGrid to graphics primitives
+// .NAME vtkStructuredGridMapper - map vtkStructuredGrid to graphics primitives
 // .SECTION Description
-// vtkRectilinearGridMapper is a class that maps rectilinear data (i.e., vtkRectilinearGrid)
-// to graphics primitives. vtkRectilinearGridMapper serves as a superclass for
-// device-specific rectilinear data mappers, that actually do the mapping to the
+// vtkStructuredGridMapper is a class that maps curvilinear data (i.e., vtkStructuredGrid)
+// to graphics primitives. vtkStructuredGridMapper serves as a superclass for
+// device-specific curvilinear data mappers, that actually do the mapping to the
 // rendering/graphics hardware/software.
 
-#ifndef __vtkRectilinearGridMapper_h
-#define __vtkRectilinearGridMapper_h
+#ifndef __vtkStructuredGridMapper_h
+#define __vtkStructuredGridMapper_h
 
 #include "vtkMapper.h"
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
-class vtkRectilinearGrid;
+class vtkStructuredGrid;
 class vtkRenderer;
 
-class VISIT_VTK_API vtkRectilinearGridMapper : public vtkMapper 
+class RENDERING_VISIT_VTK_API vtkStructuredGridMapper : public vtkMapper 
 {
 public:
-  static vtkRectilinearGridMapper *New();
-  vtkTypeRevisionMacro(vtkRectilinearGridMapper,vtkMapper);
+  static vtkStructuredGridMapper *New();
+  vtkTypeRevisionMacro(vtkStructuredGridMapper,vtkMapper);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
   // Specify the input data to map.
-  void SetInput(vtkRectilinearGrid *in);
-  vtkRectilinearGrid *GetInput();
+  void SetInput(vtkStructuredGrid *in);
+  vtkStructuredGrid *GetInput();
   
   // Description:
   // Make a shallow copy of this mapper.
@@ -57,15 +57,15 @@ public:
   vtkGetMacro(SceneIs3D, bool);
 
 protected:  
-  vtkRectilinearGridMapper();
-  ~vtkRectilinearGridMapper() {};
+  vtkStructuredGridMapper();
+  ~vtkStructuredGridMapper() {};
    bool    SceneIs3D;
 
   virtual int FillInputPortInformation(int, vtkInformation*);
 
 private:
-  vtkRectilinearGridMapper(const vtkRectilinearGridMapper&);  // Not implemented.
-  void operator=(const vtkRectilinearGridMapper&);  // Not implemented.
+  vtkStructuredGridMapper(const vtkStructuredGridMapper&);  // Not implemented.
+  void operator=(const vtkStructuredGridMapper&);  // Not implemented.
 };
 
 #endif

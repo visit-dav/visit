@@ -24,7 +24,7 @@
 
 #ifndef __vtkVisItDataSetMapper_h
 #define __vtkVisItDataSetMapper_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 #include "vtkDataSetMapper.h"
 
 class vtkPolyDataMapper;
@@ -39,7 +39,7 @@ class vtkDataSetSurfaceFilter;
 //   because the factory wants to return these objects as vtkDataSetMapper*
 // ****************************************************************************
 
-class VISIT_VTK_API vtkVisItDataSetMapper : public vtkDataSetMapper 
+class RENDERING_VISIT_VTK_API vtkVisItDataSetMapper : public vtkDataSetMapper 
 {
 public:
   static vtkVisItDataSetMapper *New();

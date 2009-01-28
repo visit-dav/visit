@@ -38,7 +38,7 @@
 
 #ifndef __vtkLineLegend_h
 #define __vtkLineLegend_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 #include <vtkActor2D.h>
 #include <vtkTextMapper.h>
@@ -49,7 +49,7 @@ class vtkTransform;
 class vtkTransformPolyDataFilter;
 
 
-class VISIT_VTK_API vtkLineLegend : public vtkActor2D
+class RENDERING_VISIT_VTK_API vtkLineLegend : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkLineLegend,vtkActor2D);

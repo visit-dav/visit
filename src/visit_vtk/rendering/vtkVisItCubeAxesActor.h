@@ -46,7 +46,7 @@ All rights reserve
 
 #ifndef __vtkVisItCubeAxesActor_h
 #define __vtkVisItCubeAxesActor_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 #include "vtkVisItAxisActor.h"
 #include "vtkCamera.h"
@@ -62,7 +62,7 @@ All rights reserve
 #define VTK_TICKS_OUTSIDE       1
 #define VTK_TICKS_BOTH          2
 
-class VISIT_VTK_API vtkVisItCubeAxesActor : public vtkActor
+class RENDERING_VISIT_VTK_API vtkVisItCubeAxesActor : public vtkActor
 {
 public:
   vtkTypeMacro(vtkVisItCubeAxesActor,vtkActor);

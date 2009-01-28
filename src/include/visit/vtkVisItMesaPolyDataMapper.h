@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkVisItMesaPolyDataMapper.h
+../../visit_vtk/rendering/vtkVisItMesaPolyDataMapper.h

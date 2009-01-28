@@ -73,10 +73,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkVerticalScalarBarWithOpacityActor_h
 #define __vtkVerticalScalarBarWithOpacityActor_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 #include <vtkVerticalScalarBarActor.h>
 
-class VISIT_VTK_API vtkVerticalScalarBarWithOpacityActor : public vtkVerticalScalarBarActor
+class RENDERING_VISIT_VTK_API vtkVerticalScalarBarWithOpacityActor : public vtkVerticalScalarBarActor
 {
 public:
   vtkTypeMacro(vtkVerticalScalarBarWithOpacityActor,vtkVerticalScalarBarActor);

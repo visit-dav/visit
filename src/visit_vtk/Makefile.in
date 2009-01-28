@@ -49,7 +49,7 @@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=lightweight full parallel
+SUBDIRS=lightweight full rendering parallel
 
 message:
 	@echo

@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkTriad2D.h
+../../visit_vtk/rendering/vtkTriad2D.h

@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkVisItOpenGLPolyDataMapper.h
+../../visit_vtk/rendering/vtkVisItOpenGLPolyDataMapper.h

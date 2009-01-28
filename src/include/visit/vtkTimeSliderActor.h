@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkTimeSliderActor.h
+../../visit_vtk/rendering/vtkTimeSliderActor.h

@@ -313,64 +313,41 @@
 ##
 @SET_MAKE@
 @VARIABLES@
+OPENGL_SRC=vtkVisItOpenGLPolyDataMapper.C \
+           vtkOpenGLRectilinearGridMapper.C \
+           vtkOpenGLStructuredGridMapper.C \
+           vtkOpenGLTexturedBackgroundMapper.C \
+           vtkVisItOpenGLTexture.C
 
-##
-## Files...
-##
-SRC= vtkAxisDepthSort.C \
-    vtkConnectedTubeFilter.C \
-    vtkCSGGrid.C \
-    vtkDataSetRemoveGhostCells.C \
-    vtkDisjointCubesFacelistFilter.C \
-    vtkLineoutFilter.C \
-    vtkLinesFromOriginalCells.C \
-    vtkMultiFontVectorText.C \
-    vtkOBJWriter.C \
-    vtkOnionPeelFilter.C \
-    vtkPolyDataOnionPeelFilter.C \
-    vtkPPMWriter.C \
-    vtkRGBWriter.C \
-    vtkRectilinearGridFacelistFilter.C \
-    vtkRectilinearLinesNoDataFilter.C \
-    vtkSkewLookupTable.C \
-    vtkSlicer.C \
-    vtkStructuredGridFacelistFilter.C \
-    vtkSurfaceFilter.C \
-    vtkSurfaceFromVolume.C \
-    vtkTensorReduceFilter.C \
-    vtkUniqueFeatureEdges.C \
-    vtkUnstructuredGridRelevantPointsFilter.C \
-    vtkVectorFontCharacterData.C \
-    vtkVectorGlyph.C \
-    vtkVectorReduceFilter.C \
-    vtkVertexFilter.C \
-    vtkVisItCellDataToPointData.C \
-    vtkVisItCellLocator.C \
-    vtkVisItClipper.C \
-    vtkVisItContourFilter.C \
-    vtkVisItCutter.C \
-    vtkVisItExtractGrid.C \
-    vtkVisItExtractRectilinearGrid.C \
-    vtkVisItFeatureEdges.C \
-    vtkVisItGlyph3D.C \
-    vtkVisItProbeFilter.C \
-    vtkVisItPolyDataNormals.C \
-    vtkVisItRectilinearGrid.C \
-    vtkVisItSTLWriter.C \
-    vtkVisItScalarTree.C \
-    vtkVisItStreamLine.C \
-    vtkVisItStructuredGrid.C \
-    vtkVisItStructuredGridNormals.C \
-    vtkVisItTensorGlyph.C \
-    vtkVisItTIFFWriter.C \
-    vtkVolumeFromVolume.C
+MESA_SRC=vtkOSMesaRenderWindow.C \
+         vtkMesaRectilinearGridMapper.C \
+         vtkMesaStructuredGridMapper.C \
+         vtkMesaTexturedBackgroundMapper.C \
+         vtkVisItMesaPolyDataMapper.C
 
-CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I../../include -I.
-OBJ=$(SRC:.C=.o)
-LIB=libvisit_vtk
-LIBS_FOR_MACOSX_PREBINDING=-framework Carbon
-LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
+SRC=InitVTK.C \
+    vtkLineLegend.C \
+    vtkRectilinearGridMapper.C \
+    vtkStructuredGridMapper.C \
+    vtkVisItDataSetMapper.C \
+    vtkTexturedBackgroundActor.C \
+    vtkDashedXorGridMapper2D.C \
+    vtkRubberBandMapper2D.C \
+    vtkBackgroundActor.C \
+    vtkTimeSliderActor.C \
+    vtkVerticalScalarBarActor.C \
+    vtkVerticalScalarBarWithOpacityActor.C \
+    vtkVisItAxisActor.C \
+    vtkVisItAxisActor2D.C \
+    vtkVisItCubeAxesActor.C \
+    vtkTriad2D.C
 
+CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I../../include -I. $(GLEW_INCLUDE)
+
+OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) $(MESA_OBJ)
+LIB=librendering_visit_vtk
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(GL_LIBS) -framework Carbon
+LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk $(GLEW_LIBS) $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
 
 ##
 ## Standard targets...

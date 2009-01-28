@@ -71,7 +71,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkVisItAxisActor2D_h
 #define __vtkVisItAxisActor2D_h
-#include <visit_vtk_exports.h>
+#include <rendering_visit_vtk_exports.h>
 
 #include "vtkActor2D.h"
 #include "vtkPolyDataMapper2D.h"
@@ -80,7 +80,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define VTK_MAX_LABELS 1000
 
-class VISIT_VTK_API vtkVisItAxisActor2D : public vtkActor2D
+class RENDERING_VISIT_VTK_API vtkVisItAxisActor2D : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkVisItAxisActor2D,vtkActor2D);
