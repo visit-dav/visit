@@ -694,6 +694,11 @@ avtHistogramSpecification::Print(ostream &out) const
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 26, 2008
 //
+//  Modifications:
+//    Mark C. Miller, Tue Jan 27 18:34:41 PST 2009
+//    MPI_Type_get_extent is only in MPI-2. Likewise for
+//    MPI_UNSIGNED_LONG_LONG. So, I made the first check conditional
+//    on MPI_UNSIGNED_LONG_LONG being defined.
 // ****************************************************************************
 bool
 avtHistogramSpecification::GetToRootProcessor(int tag)
@@ -706,13 +711,14 @@ avtHistogramSpecification::GetToRootProcessor(int tag)
     // Luckily we can tell this by checking the datatype size of the type.
     // We'll try a few different ones, and if none work, just do it slowly
     // using a single-precision int.
+#if defined(MPI_UNSIGNED_LONG_LONG)
     MPI_Type_get_extent(datatype, &lb, &e);
     if (e != sizeof(VISIT_LONG_LONG))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_get_extent(datatype, &lb, &e);
     }
-#ifdef MPI_INTEGER8  // ... may only be MPI-2.
+#elif defined(MPI_INTEGER8)  // ... may only be MPI-2.
     if (e != sizeof(VISIT_LONG_LONG))
     {
         datatype = MPI_INTEGER8;
