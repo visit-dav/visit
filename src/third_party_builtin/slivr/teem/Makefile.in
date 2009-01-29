@@ -53,6 +53,7 @@ all: message teem
 clean:
 	$(RM) README.txt
 	$(RM) -rf teem-1.9.0-src
+	$(RM) build_teem
 	$(RM) -rf $(TOPDIR)/include/teem
 	$(RM) -rf $(TOPDIR)/bin/teem
 	$(RM) -rf $(TOPDIR)/lib/TEEM-1.9
@@ -112,6 +113,7 @@ build_teem: README.txt
 	mv $(TOPDIR)/bin/ungantry   $(TOPDIR)/bin/teem
 	mv $(TOPDIR)/bin/unu        $(TOPDIR)/bin/teem
 	mv $(TOPDIR)/bin/vprobe     $(TOPDIR)/bin/teem
+	touch build_teem
 
 teem: build_teem
 
