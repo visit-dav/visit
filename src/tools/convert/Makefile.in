@@ -69,6 +69,11 @@
 #   Dave Pugmire, Fri Oct 3 11:29:19 EDT 2008
 #   Added avtIVP libs.
 #
+#   Mark C. Miller, Wed Jan 28 16:12:57 PST 2009
+#   Added this comment regarding changes made in the previous update....
+#   Added variables and rules to make a 'lite' version with fewer
+#   dependencies on VTK, MESA, GL, and VisIt. Removed refs to $(FILIB).
+#
 ##############################################################################
 
 ##
@@ -81,8 +86,8 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
-SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lplotter_ser -lparallel_visit_vtk_ser -lavtfilters_ser -lavtview -lavtddf_ser -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lplotter_par -lparallel_visit_vtk_par -lavtfilters_par -lavtview -lavtddf_par -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lplotter_ser -lparallel_visit_vtk_ser -lavtfilters_ser -lavtview -lavtddf_ser -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lplotter_par -lparallel_visit_vtk_par -lavtfilters_par -lavtview -lavtddf_par -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 LIBDEP=
 
 ##
@@ -91,8 +96,8 @@ LIBDEP=
 ##
 MY_VTK_LIBS=`echo "@VTK_LIBS@" | tr ' ' '\n' | grep -v "vtkRendering\\\|vtkftgl\\\|vtkfreetype"`
 
-SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser -lavtddf_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par -lavtddf_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser -lavtddf_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
+PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par -lavtddf_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
 ##
 ## Files...
