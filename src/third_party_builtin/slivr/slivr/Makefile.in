@@ -62,6 +62,7 @@ all: message slivr
 
 clean:
 	$(RM) $(SLIVR_IS_EXTRACTED)
+	$(RM) build_slivr
 	# Next line is temporary: should remove eventually, but it will make sure
 	# developers don't get `dead files' in their tree.
 	#  -- Sat Dec 27 19:52:55 MST 2008
@@ -76,7 +77,7 @@ $(SLIVR_IS_EXTRACTED):
 	gunzip < $(SLIVR_TARBALL) | tar xvf - > /dev/null
 	touch $(SLIVR_IS_EXTRACTED)
 
-slivr: $(SLIVR_IS_EXTRACTED)
+build_slivr: $(SLIVR_IS_EXTRACTED)
 	cd slivr && \
 		$(CMAKE) \
 		-D CMAKE_C_COMPILER:FILEPATH=$(CC) \
@@ -92,6 +93,9 @@ slivr: $(SLIVR_IS_EXTRACTED)
 		.
 	cd slivr && $(MAKE)
 	cd slivr && $(MAKE) install
+	touch build_slivr
+
+slivr: build_slivr
 
 .PHONY: slivr
 
