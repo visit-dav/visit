@@ -392,6 +392,8 @@ avtSiloFileFormat::GetFile(int f)
 //    Jeremy Meredith, Thu Aug  7 16:16:34 EDT 2008
 //    Added missing filename argument to an sprintf.
 //
+//    Mark C. Miller, Fri Jan 30 12:48:09 PST 2009
+//    Changed order of opens from PDB then HDF5 to HDF5 then PDB.
 // ****************************************************************************
 
 DBfile *
@@ -420,8 +422,8 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     // Open the Silo file. Impose priority order on drivers by first
     // trying PDB, then HDF5, then fall-back to UNKNOWN
     //
-    if (((dbfiles[f] = DBOpen(filenames[f], DB_PDB, DB_READ)) == NULL) && 
-        ((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) == NULL) && 
+    if (((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) == NULL) && 
+        ((dbfiles[f] = DBOpen(filenames[f], DB_PDB, DB_READ)) == NULL) && 
         ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) == NULL))
     {
         EXCEPTION1(InvalidFilesException, filenames[f]);
