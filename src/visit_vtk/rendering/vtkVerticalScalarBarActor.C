@@ -58,6 +58,7 @@
 #include <vtkWindow.h>
 #include <limits.h>
 #include <float.h>
+#include "vtkSkew.h"
 
 #define DefaultNumLabels 5
 
@@ -328,6 +329,9 @@ void vtkVerticalScalarBarActor::SetRange(double min, double max)
 //    Brad Whitlock, Wed Mar 21 16:03:32 PST 2007
 //    Render bounding box.
 //
+//    Hank Childs, Fri Jan 23 16:21:58 PST 2009
+//    Separate the range visibility from the label visibility.
+//
 // *********************************************************************
 int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
 {
@@ -353,13 +357,12 @@ int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
       this->TicsActor->RenderOverlay(viewport);
       }
 
+    if (this->RangeVisibility)
+      {
+      this->RangeActor->RenderOverlay(viewport);
+      }
     if (this->LabelOkayToDraw && this->LabelVisibility)
       {
-      if (this->RangeVisibility)
-        {
-        this->RangeActor->RenderOverlay(viewport);
-        }
-         
       for (i=0; i<this->NumberOfLabelsBuilt; i++)
         {
         renderedSomething += this->LabelActors[i]->RenderOverlay(viewport);
@@ -437,6 +440,12 @@ void vtkVerticalScalarBarActor::BuildTitle(vtkViewport *viewport)
   this->TitleOkayToDraw = 1;
 }
 
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 23 16:32:02 PST 2009
+//    No longer call AdjustRangeFormat ... just use the number format from
+//    input.
+//
 void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
 {
   int* viewSize = viewport->GetSize(); 
@@ -458,7 +467,7 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
     varRange[1] = lutRange[1];
     }
 
-  AdjustRangeFormat(varRange[0], varRange[1]);
+  //AdjustRangeFormat(varRange[0], varRange[1]);
 
   //
   // create the range label
@@ -629,7 +638,8 @@ BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels
           val = min; 
       if (this->UseSkewScaling)
         {
-        val = this->SkewTheValue(val, min, max);
+        // The function we were using was actually the "inverse" skew.
+        val = vtkInverseSkewValue(val, min, max, this->SkewFactor);
         }
       else if (this->UseLogScaling)
         {
@@ -1554,29 +1564,6 @@ void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
 
   // Now do superclass
   this->Superclass::ShallowCopy(prop);
-}
-
-// ****************************************************************************
-//  Modifications:
-//
-//    Kathleen Bonnell, Thu Feb 19 14:10:21 PST 2004 
-//    Removed the scaling portion. 
-//
-// ****************************************************************************
- 
-double
-vtkVerticalScalarBarActor::SkewTheValue(double val, double min, double max)
-{
-  if (this->SkewFactor < 0.) this->SkewFactor = 1.;
-  if (this->SkewFactor == 1.) return val;
-
-  double rangeDif = max - min;
-  double log_skew_inv = 1./(log(this->SkewFactor));
-  double k = (this->SkewFactor -1.) / rangeDif;
-
-  double v2 = log((val - min) * k + 1) * log_skew_inv;
-  double temp  = (rangeDif * v2 + min) ;
-  return temp;
 }
 
 // ****************************************************************************

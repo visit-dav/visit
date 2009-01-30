@@ -123,6 +123,9 @@ typedef std::vector<double> doubleVector;
 //    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
 //    Added Orientation member and accessors.
 //
+//    Brad Whitlock, Fri Dec 19 15:44:12 PST 2008
+//    I removed the skew function.
+//
 // ****************************************************************************
 
 class RENDERING_VISIT_VTK_API vtkVerticalScalarBarActor : public vtkActor2D
@@ -342,7 +345,6 @@ protected:
   virtual void BuildColorBar(vtkViewport *);
   void BuildBoundingBox(vtkViewport *viewport);
 
-  double SkewTheValue(double, double, double);
   bool   ShouldCollapseDiscrete(void);
 
   vtkLookupTable *LookupTable;
