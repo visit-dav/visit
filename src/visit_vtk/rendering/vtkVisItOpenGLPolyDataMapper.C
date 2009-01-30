@@ -4575,7 +4575,7 @@ vtkVisItOpenGLPolyDataMapper::BeginColorTexturing()
     glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 #else
     // OpenGL
-#if HAVE_LIBGLEW
+#ifdef HAVE_LIBGLEW
     if(!this->GLEW_initialized)
     {
         this->GLEW_initialized = glewInit() == GLEW_OK;
@@ -4619,7 +4619,7 @@ vtkVisItOpenGLPolyDataMapper::EndColorTexturing()
     glDisable(GL_COLOR_SUM_EXT);
 #else
     // OpenGL
-#if HAVE_LIBGLEW
+#ifdef HAVE_LIBGLEW
     if(this->GLEW_initialized && GLEW_EXT_secondary_color)
         glDisable(GL_COLOR_SUM_EXT);
 #endif     
