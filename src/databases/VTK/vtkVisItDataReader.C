@@ -269,17 +269,28 @@ vtkVisItDataReader::IssueReadWarning(double val)
     numReadWarnings++;
 }
 
+// ***************************************************************************
+//  Modifications:
+//    Mark C. Miller Fri Jan 30 09:36:50 PST 2009
+//    Added information to the error message about replacing 'float' with
+//    'double' in the file since this seems to be a common occurence.
+// ***************************************************************************
 void
 vtkVisItDataReader::IssueReadWarning(const char *buf, int eval)
 {
     if (numReadWarnings > 5)
         return;
 
-    char msg[256];
+    char msg[1024];
     SNPRINTF(msg, sizeof(msg), "Error reading VTK file near value %s."
-        "\nThe system error message is \"%s\"\n%s",
+        "\nThe system error message is \"%s\"\n%s%s",
         buf, eval==-131?"Not integral value":strerror(eval),
-	numReadWarnings==5?"\nFurther warnings will be suppressed.":"");
+        numReadWarnings==5?"\nFurther warnings will be suppressed.\n":"",
+        eval==ERANGE?"The problem might be that your file has double precision\n"
+            "data but the type is specified as 'float'. Try replacing all\n"
+            "instances of 'float' in your file with 'double'. On Linux/Unix,\n"
+            "the following command will change the file in place (make a copy first)...\n"
+            "sed -i -e \"s/\\([[:space:]]*\\)float\\([[:space:]]*\\)/\\1double\\2/\" <filename>\n":"");
     if (!avtCallback::IssueWarning(msg))
         cerr << msg << endl;
 
