@@ -172,7 +172,9 @@ DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
 // Creation:   Thu Aug 28 16:21:31 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 30 16:14:20 PST 2009
+//   Guard against out of bounds slice indices.
+//
 // ****************************************************************************
 
 void
@@ -196,16 +198,22 @@ DataArrayModel::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
     {
         nColumns = dims[2];
         nRows = dims[1];
+        if(sliceIndex >= dims[0])
+            sliceIndex = 0;
     }
     else if(displayMode == SpreadsheetTable::SliceY)
     {
         nColumns = dims[2];
         nRows = dims[0];
+        if(sliceIndex >= dims[1])
+            sliceIndex = 0;
     }
     else if(displayMode == SpreadsheetTable::SliceZ)
     {
         nColumns = dims[0];
         nRows = dims[1];
+        if(sliceIndex >= dims[2])
+            sliceIndex = 0;
     }
     else if(displayMode == SpreadsheetTable::UCDCell)
     {
