@@ -906,7 +906,9 @@ SpreadsheetViewer::Update(Subject *)
 // Creation:   Tue Feb 20 14:06:26 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 30 15:43:07 PST 2009
+//   Treat polydata as unstructured.
+//
 // ****************************************************************************
 
 void
@@ -936,7 +938,8 @@ SpreadsheetViewer::updateSpreadsheet()
         displayStructuredGrid(dims);
         calculateMinMaxCells(dims, true);
     }
-    else if(input->IsA("vtkUnstructuredGrid"))
+    else if(input->IsA("vtkUnstructuredGrid") ||
+            input->IsA("vtkPolyData"))
     {
         displayUnstructuredGrid();
         int dims[3] = {1,1,1};
@@ -974,6 +977,9 @@ SpreadsheetViewer::updateSpreadsheet()
 //
 //   Gunther H. Weber, Wed Oct 17 16:28:11 PDT 2007
 //   Adapt base index if data set has real dims field data
+//
+//   Brad Whitlock, Fri Jan 30 16:02:12 PST 2009
+//   I fixed a logic error that produced all zeros in the table.
 //
 // ****************************************************************************
 
@@ -1079,7 +1085,6 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
 #endif
         for(int t = 0; t < nTables; ++t)
         {
-            tables[t]->setUpdatesEnabled(false);
             tables[t]->blockSignals(true);
 
             // Tell the table about our data so it can display it 
@@ -1404,6 +1409,9 @@ SpreadsheetViewer::updateMinMaxButtons()
 //   Brad Whitlock, Tue Aug 26 15:31:41 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Fri Jan 30 15:37:10 PST 2009
+//   I fixed a bug with removing tabs from the tab widget.
+//
 // ****************************************************************************
 
 void
@@ -1431,7 +1439,6 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
                 t[i] = tables[i];
             else
             {
-                QString name; name.sprintf("%d", i);
                 t[i] = new SpreadsheetTable(0);
                 t[i]->setUpdatesEnabled(false);
                 t[i]->setLUT(colorLUT);
@@ -1458,7 +1465,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
                 t[i] = tables[i];
             else
             {
-                zTabs->removeTab(zTabs->count()-1);
+                zTabs->removeTab(zTabs->indexOf(tables[i]));
                 disconnect(tables[i], SIGNAL(selectionChanged()),
                            this, SLOT(tableSelectionChanged()));
                 delete tables[i];
@@ -1623,6 +1630,9 @@ SpreadsheetViewer::clear()
 //   Brad Whitlock, Tue Aug 26 15:28:00 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Fri Jan 30 15:17:13 PST 2009
+//   Check for non-NULL table.
+//
 // ****************************************************************************
 
 void
@@ -1635,15 +1645,18 @@ SpreadsheetViewer::updateMenuEnabledState(int tableIndex)
     if(zTabs->currentIndex() == tableIndex)
     {
         QTableView *table = (QTableView *)zTabs->currentWidget();
-        bool enabled = table->selectionModel()->hasSelection();
+        if(table != 0)
+        {
+            bool enabled = table->selectionModel()->hasSelection();
 
-        fileMenu_SaveText->setEnabled(enabled);
-        editMenu_Copy->setEnabled(enabled);
+            fileMenu_SaveText->setEnabled(enabled);
+            editMenu_Copy->setEnabled(enabled);
 #ifndef Q_WS_MAC
-        operationsMenu->setEnabled(enabled);
+            operationsMenu->setEnabled(enabled);
 #else
-        opButton->setEnabled(enabled);
+            opButton->setEnabled(enabled);
 #endif
+        }
     }
 }
 
