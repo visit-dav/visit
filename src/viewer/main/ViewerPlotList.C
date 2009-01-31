@@ -8583,8 +8583,14 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
                     }
                     CATCHALL(...)
                     {
-                        // plot will be zero if an error occurred, so we don't
-                        // need to do further error handling right here
+                         QString str = tr("Could not create a plot of type"
+                                  " from variable %1 of database %2 on "
+                                  "host %3.  This often happens because "
+                                  "something has changed since the session "
+                                  "file was saved.  (For example, the file "
+                                  "was overwritten.)").arg(plotVar.c_str()).
+                                  arg(plotDB.c_str()).arg(plotHost.c_str());
+                         Warning(str);
                     }
                     ENDTRY
                 }
