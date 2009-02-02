@@ -395,6 +395,10 @@ DataArrayModel::rowCount(const QModelIndex &) const
 //   Changed the way the vtk id is obtained from the model to avoid AIX/xlC
 //   problems.
 //
+//   Gunther H. Weber, Mon Feb  2 15:42:07 PST 2009
+//   Use internalId() instead of internalPointer() to obtain global index of a
+//   spreadsheet element since latter does not work on Linux systems. 
+//
 // ****************************************************************************
 
 QVariant
@@ -407,8 +411,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             return QVariant();
         else
         {
-            void *ptr = index.internalPointer();
-            vtkIdType id = *((vtkIdType*)&ptr);
+            vtkIdType id = index.internalId();
             double value = 0.;
             if(id < dataArray->GetNumberOfTuples())
                 value = dataArray->GetTuple1(id);
@@ -429,8 +432,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             return QVariant();
         else
         {
-            void *ptr = index.internalPointer();
-            vtkIdType id = *((vtkIdType*)&ptr);
+            vtkIdType id = index.internalId();
             double value = 0.;
             if(id < dataArray->GetNumberOfTuples())
                 value = dataArray->GetTuple1(id);
@@ -443,14 +445,13 @@ DataArrayModel::data(const QModelIndex &index, int role) const
         bool ghost = false;
         if(ghostArray != 0)
         {
-            void *ptr = index.internalPointer();
-            vtkIdType index = *((vtkIdType*)&ptr);
+            vtkIdType id = index.internalId();
 
             // By convention, the ghost zones array contains unsigned char.
             const unsigned char *ghosts = (const unsigned char *)ghostArray->
                 GetVoidPointer(0);
-            if(index < ghostArray->GetNumberOfTuples())
-                ghost = ghosts[index] > 0;
+            if(id < ghostArray->GetNumberOfTuples())
+                ghost = ghosts[id] > 0;
         }
 
         return ghost ? QVariant(QBrush(QColor(200,200,200))) : QVariant();

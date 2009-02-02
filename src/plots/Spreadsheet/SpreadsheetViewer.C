@@ -370,7 +370,11 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
 // Creation:   Tue Feb 20 14:01:13 PST 2007
 //
 // Modifications:
-//   
+//    Gunther H. Weber, Mon Feb  2 15:44:28 PST 2009
+//    Changed signal/slot signature in disconnect call from
+//    currentChanged(QWidget*) to currentChanged(int) since Qt 4 changed
+//    the argument.
+//
 // ****************************************************************************
 
 SpreadsheetViewer::~SpreadsheetViewer()
@@ -379,8 +383,8 @@ SpreadsheetViewer::~SpreadsheetViewer()
 
     // Make sure that we don't cause any tabChanged signals when we later
     // delete the tabs so disconnect the signal.
-    disconnect(zTabs, SIGNAL(currentChanged(QWidget*)),
-               this, SLOT(tabChanged(QWidget*)));
+    disconnect(zTabs, SIGNAL(currentChanged(int)),
+               this, SLOT(tabChanged(int)));
 
     // Delete the button group since it has no parent.
     delete normalButtonGroup;
