@@ -501,6 +501,10 @@
 #     Hank Childs, Mon Jan 26 15:57:02 PST 2009
 #     Add support for FastBit.
 #
+#
+#     Jeremy Meredith, Thu Jan 29 13:24:34 EST 2009
+#     Fixing Mesa 6.4.2 patching.  (This is already fixed on the 2.0 branch?)
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
