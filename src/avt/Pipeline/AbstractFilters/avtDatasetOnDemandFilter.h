@@ -82,6 +82,9 @@ typedef struct
 //    Dave Pugmire, Mon Jan 26 13:04:56 EST 2009
 //    Added purgeDSCount and access function.
 //
+//    Dave Pugmire, Tue Feb  3 11:05:24 EST 2009
+//    Added loadDSCount and access function
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
@@ -109,13 +112,14 @@ class PIPELINE_API avtDatasetOnDemandFilter : virtual public
 
 protected:
     int                          GetPurgeDSCount() const { return purgeDSCount; }
+    int                          GetLoadDSCount() const { return loadDSCount; }
 
   private:
     std::list<DomainCacheEntry>  domainQueue;
     int                          maxQueueLength;
     avtContract_p                firstContract;
     bool                         operatingOnDemand;
-    int                          purgeDSCount;
+    int                          purgeDSCount, loadDSCount;
 };
 
 

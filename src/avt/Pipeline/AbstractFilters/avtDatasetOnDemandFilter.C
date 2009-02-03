@@ -70,6 +70,9 @@
 //    Dave Pugmire, Mon Jan 26 13:04:56 EST 2009
 //    Initialize purgeDSCount.
 //
+//    Dave Pugmire, Tue Feb  3 11:05:24 EST 2009
+//    Initialize loadDSCount.
+//
 // ****************************************************************************
 
 avtDatasetOnDemandFilter::avtDatasetOnDemandFilter()
@@ -77,6 +80,7 @@ avtDatasetOnDemandFilter::avtDatasetOnDemandFilter()
     maxQueueLength = 2;
     operatingOnDemand = false;
     purgeDSCount = 0;
+    loadDSCount = 0;
 }
 
 
@@ -122,6 +126,9 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 //    Dave Pugmire, Mon Jan 26 13:04:56 EST 2009
 //    Increment purgeDSCount when a DS is purged.
 //
+//    Dave Pugmire, Tue Feb  3 11:05:24 EST 2009
+//    Increment loadDSCount when a DS is loaded.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -165,6 +172,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId)
     entry.domainID = domainId;
     entry.ds = rv;
     rv->Register(NULL);
+    loadDSCount++;
 
     domainQueue.push_front(entry);
     if ( domainQueue.size() > maxQueueLength )

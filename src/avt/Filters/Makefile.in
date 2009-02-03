@@ -102,6 +102,9 @@
 #    Hank Childs, Tue Dec  2 13:41:08 PST 2008
 #    Add the avtStreamlinePolyDataFilter.
 #
+#    Dave Pugmire, Tue Feb  3 10:56:45 EST 2009
+#    Add the streamline algorithm code.
+#
 ##############################################################################
 
 ##
@@ -144,8 +147,14 @@ SRC=\
  avtShiftCenteringFilter.C \
  avtSimilarityTransformFilter.C \
  avtSmoothPolyDataFilter.C \
+ avtMasterSlaveSLAlgorithm.C \
+ avtParDomSLAlgorithm.C \
+ avtParSLAlgorithm.C \
+ avtSerialSLAlgorithm.C \
+ avtSLAlgorithm.C \
  avtStreamlineFilter.C \
  avtStreamlinePolyDataFilter.C \
+ avtStreamlineWrapper.C \
  avtSummationFilter.C \
  avtSurfaceFilter.C \
  avtTiledImageCompositor.C \
