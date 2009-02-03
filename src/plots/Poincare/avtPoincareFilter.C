@@ -224,7 +224,7 @@ avtPoincareFilter::PostExecute(void)
 void
 avtPoincareFilter::CreateStreamlineOutput( vector<avtStreamlineWrapper *> &streamlines)
 {
-    cout<<"We have "<<streamlines.size()<<" streamlines.\n";
+    cout<<"There are have "<<streamlines.size()<<" streamlines.\n";
     GeneratePoincarePoints(streamlines);
     ClassifyPoincarePoints();
     
@@ -578,94 +578,28 @@ avtPoincareFilter::GetFieldlineProperties( std::vector<avtVector> &points,
 void
 avtPoincareFilter::GeneratePoincarePoints( vector<avtStreamlineWrapper*> &streamlines)
 {
-    //Plane equation.
-    double plane[4];
-    plane[0] = clipPlaneN.x;
-    plane[1] = clipPlaneN.y;
-    plane[2] = clipPlaneN.z;
-    plane[3] = clipPlanePt.dot(clipPlaneN);
-    //cout<<"Pln: ["<<plane[0]<<", "<<plane[1]<<", "<<plane[2]<<", "<<plane[3]<<"]\n";
+  poincarePts.resize(streamlines.size());
 
-    poincarePts.resize(streamlines.size());
+  for ( int i=0; i<streamlines.size(); ++i )
+  {
+    avtStreamline *sl = streamlines[i]->sl;
+    
+    avtStreamline::iterator siter = sl->begin();
 
-    for ( int i = 0; i < streamlines.size(); i++ )
+    while( siter != sl->end() )
     {
-        avtStreamline *sl = streamlines[i]->sl;
+      avtVector pt;
+      pt.x = (*siter)->front()[0];
+      pt.y = (*siter)->front()[1];
+      pt.z = (*siter)->front()[2];
 
-        avtStreamline::iterator siter;
-        int j = 0;
-        avtVector p0, p1;
-        for(siter = sl->begin(); siter != sl->end(); siter++, j++)
-        {
-            if (j == 0)
-            {
-                p0.x = (*siter)->front()[0];
-                p0.y = (*siter)->front()[1];
-                p0.z = (*siter)->front()[2];
-                continue;
-            }
-            p0 = p1;
-            p1.x = (*siter)->front()[0];
-            p1.y = (*siter)->front()[1];
-            p1.z = (*siter)->front()[2];
+      poincarePts[i].push_back(pt);
 
-            double dist0 = plane[0]*p0.x + plane[1]*p0.y + plane[2]*p0.z - plane[3];
-            double dist1 = plane[0]*p1.x + plane[1]*p1.y + plane[2]*p1.z - plane[3];
-            
-            if (SIGN(dist0) != SIGN(dist1))
-            {
-                avtVector lnDir = p1-p0;
-                double dot = lnDir.dot(clipPlaneN);
-
-                //Only get points that intersect parallel to the plane normal.
-                if ( dot > 0.0 )
-                {
-                    avtVector w = p0-clipPlanePt;
-                    double s = -clipPlaneN.dot(w) / dot;
-                    avtVector intersectPt = p0 + lnDir*s;
-                    
-                    poincarePts[i].push_back(intersectPt);
-                }
-            }
-        }
-        cout<<i<<": We have "<<poincarePts[i].size()<<" poincare points\n";
+      ++siter;
     }
 
-        /*
-        for ( int j = 1; j < terminatedStreamlines[i].size(); j++ )
-        {
-            avtVector p0 = terminatedStreamlines[i][j-1];
-            avtVector p1 = terminatedStreamlines[i][j];
-
-            double dist0 = plane[0]*p0.x + plane[1]*p0.y + plane[2]*p0.z - plane[3];
-            double dist1 = plane[0]*p1.x + plane[1]*p1.y + plane[2]*p1.z - plane[3];
-
-            //cout<<j<<endl;
-            //cout<<"p0: "<<p0<<" d= "<<dist0<<endl;
-            //cout<<"p1: "<<p1<<" d= "<<dist1<<endl;
-            
-            // If p0 and p1 are on opposite sides of the plane, then we hit it.
-
-            if (SIGN(dist0) != SIGN(dist1))
-            {
-                avtVector lnDir = p1-p0;
-                double dot = lnDir.dot(clipPlaneN);
-
-                //Only get points that intersect parallel to the plane normal.
-                //cout<<"***** dot= "<<dot<<endl;
-                if ( dot > 0.0 )
-                {
-                    avtVector w = p0-clipPlanePt;
-                    double s = -clipPlaneN.dot(w) / dot;
-                    avtVector intersectPt = p0 + lnDir*s;
-                    
-                    poincarePts[i].push_back(intersectPt);
-                }
-            }
-            //cout<<endl;
-        }
-    }
-        */
+    cout << i << ": There are " << poincarePts[i].size() << " fieldline points\n";
+  }
 }
 
 // ****************************************************************************
@@ -690,19 +624,28 @@ avtPoincareFilter::ClassifyPoincarePoints()
 
     for ( int i = 0; i < poincarePts.size(); i++ )
     {
-        unsigned int winding, twist, island;
-        GetFieldlineProperties(poincarePts[i], 10000, winding, twist, island);
+      unsigned int toroidalWinding, poloidalWinding, islands;
+      GetFieldlineProperties(poincarePts[i], 30, toroidalWinding, poloidalWinding, islands);
+      
+      poincareClassification[i].push_back((int) toroidalWinding);
+      poincareClassification[i].push_back((int) poloidalWinding);
+      poincareClassification[i].push_back((int) islands);
+      
+      double safetyFactor = 0.0;
+      
+      if ( poloidalWinding > 0 )
+        safetyFactor = (double) toroidalWinding / (double) poloidalWinding;
 
-        poincareClassification[i].push_back((int)winding);
-        poincareClassification[i].push_back((int)twist);
-        poincareClassification[i].push_back((int)island);
-
-        double safety = 0.0;
-        if ( twist > 0 )
-            safety = (double)winding / (double)twist;
-        cout<<i<<": ptCnt= "<<poincarePts[i].size()<<" WTI= "<<winding<<" "<<twist<<" "<<island<<" safety= "<<safety<<endl;
+      cout << i
+            << "  ptCnt = " << poincarePts[i].size()
+            << "  toroidal windings = " <<  toroidalWinding
+            << "  poloiddal windings = " << poloidalWinding
+            << "  islands = " << islands
+            << "  safety factor = " << safetyFactor
+            << endl;
     }
-    cout<<endl;
+
+    cout << endl;
 }
 
 // ****************************************************************************
@@ -723,154 +666,162 @@ avtPoincareFilter::ClassifyPoincarePoints()
 vtkPolyData *
 avtPoincareFilter::CreatePoincareOutput()
 {
-    vtkAppendPolyData *append = vtkAppendPolyData::New();
+  vtkAppendPolyData *append = vtkAppendPolyData::New();
+
+  for ( int i=0; i<poincarePts.size(); ++i )
+  {
+    unsigned int toroidalWinding = poincareClassification[i][0];
+    unsigned int poloidalWinding = poincareClassification[i][1];
+    unsigned int islands         = poincareClassification[i][2];
+    
+    // If toroidal winding is zero, skip it.
+    if ( toroidalWinding == 0 )
+      continue;
+      
+    double safetyFactor = 0.0;
+    
+    if ( poloidalWinding > 0 )
+      safetyFactor = (double) toroidalWinding / (double) poloidalWinding;
+    
+    // Plane equation.
+    double plane[4];
+    plane[0] = clipPlaneN.x = 1.0;
+    plane[1] = clipPlaneN.y = 0.0;
+    plane[2] = clipPlaneN.z = 0.0;
+    plane[3] = clipPlanePt.dot(clipPlaneN);
+    
+    // Collect all of the points that intersect the desired plane.
+    // In this case it is currently fixed to the X plane.
+    vector< avtVector > puncturePoints;
+    
+    avtVector p0, p1 = poincarePts[i][0];
+    double dist0, dist1 = plane[0]*p1.x + plane[1]*p1.y + plane[2]*p1.z - plane[3];
+    
+    for( unsigned int j=1; j<poincarePts[i].size(); ++j )
+    {
+      p0 = p1;
+      p1 = poincarePts[i][j];
+      
+      dist0 = dist1;
+      dist1 = plane[0]*p1.x + plane[1]*p1.y + plane[2]*p1.z - plane[3];
+      
+      if (SIGN(dist0) != SIGN(dist1))
+      {
+        avtVector lnDir = p1 - p0;
+        double dot = lnDir.dot(clipPlaneN);
+  
+        // Collect the points that intersect the desired plane.
+        if ( dot > 0.0 )
+        {
+          avtVector w = p0 - clipPlanePt;
+          double s = -clipPlaneN.dot(w) / dot;
+          avtVector intersectPt = p0 + lnDir*s;
+        
+          puncturePoints.push_back(intersectPt);
+        }
+      }
+    }
+    
+    cout << i << ": There are " << puncturePoints.size() << " puncture points\n";
 
     int cnt = 0;
-    for ( int i = 0; i < poincarePts.size(); i++ )
+
+    for ( int j=0; j<toroidalWinding; ++j )
     {
-        // If winding is zero, skip it.
-        if ( poincareClassification[i][0] == 0 )
-            continue;
+      std::vector<avtVector> ptSet;
+      
+      for ( int idx=j; idx<puncturePoints.size(); idx += toroidalWinding )
+      {
+        ptSet.push_back(puncturePoints[idx]);
+      }
 
-        double safety = (double)poincareClassification[i][0] / (double)poincareClassification[i][1];
-        double integerPart, fractionalPart;
-        fractionalPart = modf(safety, &integerPart);
-        if ( fractionalPart > 0.0 )
+      cout << "Toroidal group " << j << " has " << ptSet.size() << " points." << endl;
+      
+      //Create groups that represent the toroidial groups.
+      vtkPoints *points = vtkPoints::New();
+      vtkCellArray *cells = vtkCellArray::New();
+      vtkFloatArray *scalars = vtkFloatArray::New();
+      
+      cells->InsertNextCell(ptSet.size());
+      scalars->Allocate(ptSet.size());
+      
+      for ( int k=0; k<ptSet.size(); ++k )
+      {
+         points->InsertPoint(k, ptSet[k].x, ptSet[k].y, ptSet[k].z);
+         cells->InsertCellPoint(k);
+         scalars->InsertTuple1(k, (double) cnt);
+      }
+
+      cnt++;
+      
+      // Create a new VTK polyline.
+      vtkPolyData *pd = vtkPolyData::New();
+      pd->SetPoints(points);
+      pd->SetLines(cells);
+      scalars->SetName("colorVar");
+      pd->GetPointData()->SetScalars(scalars);
+      
+      append->AddInput(pd);
+      
+      points->Delete();
+      cells->Delete();
+      scalars->Delete();
+      
+      if (showPoints)
+      {
+        for ( int k=0; k<ptSet.size(); ++k )
         {
-            cout<<"Skipping safety= "<<safety<<endl;
-            continue;
+          double pt[3] = { ptSet[k].x, ptSet[k].y, ptSet[k].z };
+
+          double rad = 0.005;
+    
+          vtkPolyData *ball = CreateSphere(-1.0, rad, pt);
+          append->AddInput(ball);
+          ball->Delete();
         }
-        cout<<"NOT   Skipping safety= "<<safety<<endl;
-
-        int sz = poincarePts[i].size()/poincareClassification[i][0];
-
-        for ( int j = 0; j < poincareClassification[i][0]; j++ )
-        {
-            std::vector<avtVector> pts;
-            int cell = 0;
-            cout<<"Wind= "<<j<<endl;
-            for ( int idx = j; idx < poincarePts[i].size(); idx += poincareClassification[i][0] )
-            {
-                pts.push_back(poincarePts[i][idx]);
-                //cout<<"   "<<cell<<": idx= "<<idx<<endl;
-                cell++;
-            }
-            //cout<<endl;
-            /*
-            if ( j == 1 )
-            {
-                cout<<"******** SKIP j= "<<j<<endl;
-                continue;
-            }
-            else cout<<"******** DRAW j= "<<j<<endl;
-            */
-
-            //Create poincare segments.
-            vtkPoints *points = vtkPoints::New();
-            vtkCellArray *cells = vtkCellArray::New();
-            vtkFloatArray *scalars = vtkFloatArray::New();
-        
-            cells->InsertNextCell(pts.size());
-            scalars->Allocate(pts.size());
-
-            cout<<"Create segment: "<<pts.size()<<endl;//" val= "<<val<<endl;
-            for ( int k = 0; k < pts.size(); k++ )
-            {
-                points->InsertPoint(k, pts[k].x, pts[k].y, pts[k].z);
-                cells->InsertCellPoint(k);
-                scalars->InsertTuple1(k,(double)cnt);
-            }
-            cnt++;
-            
-            vtkPolyData *pd = vtkPolyData::New();
-            pd->SetPoints(points);
-            pd->SetLines(cells);
-            scalars->SetName("colorVar");
-            pd->GetPointData()->SetScalars(scalars);
-
-            append->AddInput(pd);
-            
-            points->Delete();
-            cells->Delete();
-            scalars->Delete();
-        }
-            
-        if (showPoints)
-        {
-            for ( int j = 0; j < poincarePts[i].size(); j++ )
-            {
-                double pt[3] = {poincarePts[i][j].x,poincarePts[i][j].y,poincarePts[i][j].z};
-                double rad = 0.005;
-
-                vtkPolyData *ball = CreateSphere(-1.0, rad, pt);
-                append->AddInput(ball);
-                ball->Delete();
-            }
-        }
+      }
     }
 
+    if (showStreamlines)
+    {
+      vtkPoints *points = vtkPoints::New();
+      vtkCellArray *cells = vtkCellArray::New();
+      vtkFloatArray *scalars = vtkFloatArray::New();
+      
+      cells->InsertNextCell(poincarePts[i].size());
+      scalars->Allocate(poincarePts[i].size());
+      
+      for ( int j=0; j<poincarePts[i].size(); ++j )
+      {
+          points->InsertPoint(j,
+          poincarePts[i][j].x,
+          poincarePts[i][j].y,
+          poincarePts[i][j].z);
 
-    append->Update();
-    vtkPolyData *outPD = append->GetOutput();
-    outPD->Register(NULL);
-    outPD->SetSource(NULL);
-    append->Delete();
-    
-    return outPD;
+          cells->InsertCellPoint(j);
+          scalars->InsertTuple1(j, (double) i);
+      }
 
-   #if 0
-
-        double safety = (double)poincareClassification[i][0] / (double)poincareClassification[i][1];
-        /*
-        if ((double)((int)safety) != safety)
-            continue;
-        */
-        
-        int idx = 0;
-        cout<<i<<": poincPts= "<<poincarePts[i].size()<<endl;
-        for ( int j = 0; j < poincarePts[i].size(); j++)
-        {
-            points->InsertPoint(j, poincarePts[i][idx].x,poincarePts[i][idx].y,poincarePts[i][idx].z);
-            cells->InsertCellPoint(j);
-            
-            scalars->InsertTuple1(j, safety);
-            cout<<"     "<<j<<"  "<<idx<<" "<<poincarePts[i][idx]<<endl;
-            idx = (idx+poincareClassification[i][0]) % poincarePts[i].size();
-        }
-        cout<<endl;
-
-        vtkPolyData *pd = vtkPolyData::New();
-        pd->SetPoints(points);
-        pd->SetLines(cells);
-        scalars->SetName("colorVar");
-        pd->GetPointData()->SetScalars(scalars);
-
-        append->AddInput(pd);
-        
-        points->Delete();
-        cells->Delete();
-        scalars->Delete();
-        
-
-        if (showPoints)
-        {
-            for ( int j = 0; j < poincarePts[i].size(); j++ )
-            {
-                double pt[3] = {poincarePts[i][j].x,poincarePts[i][j].y,poincarePts[i][j].z};
-
-                vtkPolyData *ball = StartSphere(1.0, pt);
-                append->AddInput(ball);
-                ball->Delete();
-            }
-        }
+      // Create a new VTK polyline.
+      vtkPolyData *pd = vtkPolyData::New();
+      pd->SetPoints(points);
+      pd->SetLines(cells);
+      scalars->SetName("colorVar");
+      pd->GetPointData()->SetScalars(scalars);
+      
+      append->AddInput(pd);
+      
+      points->Delete();
+      cells->Delete();
+      scalars->Delete();
     }
+  }
     
-    append->Update();
-    vtkPolyData *outPD = append->GetOutput();
-    outPD->Register(NULL);
-    outPD->SetSource(NULL);
-    append->Delete();
-    
-    return outPD;
-#endif
+  append->Update();
+  vtkPolyData *outPD = append->GetOutput();
+  outPD->Register(NULL);
+  outPD->SetSource(NULL);
+  append->Delete();
+  
+  return outPD;
 }
