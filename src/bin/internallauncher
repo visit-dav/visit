@@ -410,6 +410,13 @@ exec perl -x $0 ${1+"$@"};
 #    Dave Pugmire, Thu Jan 15 16:43:07 EST 2009
 #    Add -debug_engine_rank option.
 #
+#    Gunther H. Weber, Mon Feb  2 18:05:13 PST 2009
+#    Set up LD_LIBRARY_PATH on franklin expicitly to include the path to the
+#    gcc version used to build VisIt so that users with different loaded modules
+#    still have a path to the correct C++ standard libraries. Use copy of env
+#    in VisIt directory since using the system version breaks some NERSC job
+#    validation scripts.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1368,6 +1375,15 @@ if ( $host =~ /^nid/ )
     if ($nodename =~ /^franklin/)
     {
         $IsRunningOnFranklinNERSC = 1;
+        $ENV{LD_LIBRARY_PATH} = join ':' ,
+            ("/opt/gcc/4.2.0.quadcore/snos/lib64",
+             "/opt/xt-pe/2.1.41HD/lib",
+             "/opt/pgi/8.0.1/linux86-64/8.0/libso",
+             "/opt/pgi/8.0.1/linux86-64/8.0/lib",
+             "/opt/xt-os/2.1.41HD/lib",
+             "/opt/xt-libc/2.1.41HD/amd64/lib",
+             "/opt/torque/2.3.4-200809011357/lib",
+             "/opt/moab/5.2.4-s11143/lib");
     }
 }
 
@@ -2199,7 +2215,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 push @mpicmd, "-n",  $procs if $procs_set;
                 if ( $IsRunningOnFranklinNERSC || $IsRunningOnJaguarCNL_ORNL )
                 {
-                    push @mpicmd, "env LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
+                    push @mpicmd, "$visitbindir/env LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
                 }
                 push @mpicmd, "@visitcmd\n";
             }
