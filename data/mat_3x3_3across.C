@@ -107,6 +107,15 @@ int main(int argc, char **argv) {
   DBPutMaterial(db, "material", "mesh", nmat, matnos, matlist, dims, 2, 
                 mix_next, mix_mat, mix_zone, mix_vf, mixlen, DB_FLOAT, NULL);
 
+
+
+  char *expNames[3] = {"mat1", "mat2", "mat3"};
+  char *expDefs[3] = {"matvf(<material>, 1)", "matvf(<material>, 2)", "matvf(<material>, 3)"};
+  int   expTypes[3] = {DB_VARTYPE_SCALAR, DB_VARTYPE_SCALAR, DB_VARTYPE_SCALAR};
+  DBoptlist *optlists[3] = {NULL, NULL, NULL};
+
+  DBPutDefvars(db, "_visit_defvars", 3, expNames, expTypes, expDefs, optlists);
+
   DBClose(db);
 
   return 0;
