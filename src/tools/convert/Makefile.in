@@ -74,6 +74,10 @@
 #   Added variables and rules to make a 'lite' version with fewer
 #   dependencies on VTK, MESA, GL, and VisIt. Removed refs to $(FILIB).
 #
+#   Jeremy Meredith, Tue Feb  3 12:19:01 EST 2009
+#   Changed the way the _lite dependencies work to enable a serial
+#   build to pass.
+#
 ##############################################################################
 
 ##
@@ -111,7 +115,7 @@ PAROBJ_LITE=convert_par_lite.o
 ##
 ## Standard targets...
 ##
-all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@ @CONVERT_SER@_lite @CONVERT_PAR@_lite
+all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@ 
 
 clean:
 	$(RM) $(SEROBJ) $(PAROBJ) @CONVERT_SER@ @CONVERT_PAR@
@@ -134,16 +138,16 @@ $(PAROBJ_LITE): $(SRC)
 	$(CXX) -DDISABLE_EXPRESSIONS $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
 @OS_RULE@
 
-@CONVERT_SER@ or_no_ser: $(LIBDEP) $(SEROBJ)
+@CONVERT_SER@ or_no_ser: $(LIBDEP) $(SEROBJ) @CONVERT_SER@_lite
 	$(CXX) -o $@ $(SEROBJ) $(LDFLAGS) $(SERLIBS)
 
-@CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ)
+@CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ) @CONVERT_PAR@_lite
 	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
 
-@CONVERT_SER@_lite: $(LIBDEP) $(SEROBJ_LITE) @CONVERT_SER@
+@CONVERT_SER@_lite: $(LIBDEP) $(SEROBJ_LITE) 
 	$(CXX) -o $@ $(SEROBJ_LITE) $(LDFLAGS) $(SERLIBS_LITE)
 
-@CONVERT_PAR@_lite: $(LIBDEP) $(PAROBJ_LITE) @CONVERT_PAR@
+@CONVERT_PAR@_lite: $(LIBDEP) $(PAROBJ_LITE) 
 	$(CXX) -o $@ $(PAROBJ_LITE) $(LDFLAGS) $(PARLIBS_LITE) @MPI_LIBS@
 
 ##
