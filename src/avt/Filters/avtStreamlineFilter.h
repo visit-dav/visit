@@ -61,6 +61,7 @@ class vtkTubeFilter;
 class vtkPolyData;
 class vtkRibbonFilter;
 class vtkAppendPolyData;
+class avtStreamlineWrapper;
 
 #define STREAMLINE_SOURCE_POINT      0
 #define STREAMLINE_SOURCE_LINE       1
@@ -88,112 +89,6 @@ class vtkAppendPolyData;
 #define STREAMLINE_STAGED_LOAD_ONDEMAND 0
 #define STREAMLINE_PARALLEL_STATIC_DOMAINS 1
 #define STREAMLINE_MASTER_SLAVE 2
-
-class pt3d
-{
-  public:
-    pt3d( const pt3d &p ) {xyz[0]=p.xyz[0]; xyz[1]=p.xyz[1]; xyz[2]=p.xyz[2]; }
-    pt3d() { xyz[0]=xyz[1]=xyz[2]=0.0;}
-    pt3d( double _x, double _y, double _z=0.0 ) {xyz[0]=_x; xyz[1]=_y; xyz[2]=_z;}
-
-    const double *values() const { return xyz; }
-
-    //double& operator[]( const size_type& n ) const { return xyz[n]; }
-    //double& operator[]( const size_type& n ) { return xyz[n]; }
-
-
-    double xyz[3];
-};
-
-typedef enum
-{
-    NO_BALANCE,
-    MAX_CNT,
-    MAX_PCT
-    
-} BalanceType;
-
-/*
-typedef enum
-{
-    STAGED_LOAD_ONDEMAND,
-    STATIC_DOMAINS,
-    BALANCED_STATIC_DOMAINS,
-    ASYNC_BALANCED_STATIC_DOMAINS,
-    BALANCED_LOAD_ONDEMAND,
-    ASYNC_BALANCED_LOAD_ONDEMAND,
-} SLMethod;
-*/
-
-class avtStreamlineWrapper
-{
-  public:
-    enum Status
-    {
-        UNSET=-1,
-        TERMINATE,
-        OUTOFBOUNDS
-    };
-
-    enum Dir
-    {
-        FWD=0,
-        BWD
-    };
-
-    avtStreamlineWrapper();
-    avtStreamlineWrapper( avtStreamline *s, Dir slDir=FWD, int ID=-1 );
-    ~avtStreamlineWrapper();
-
-    void UpdateDomainCount( int dom );
-    void ComputeStatistics();
-
-    vtkPolyData * GetVTKPolyData( int spatialDim, int coloringMethod, int displayMethod, vector<float> &thetas );
-    void GetStartPoint( pt3d &pt );
-    void GetEndPoint( pt3d &pt );
-
-    void Debug();
-    void Serialize( MemStream::Mode mode, MemStream &buff, avtIVPSolver *solver );
-
-
-    avtStreamline *sl;
-
-    // Helpers needed for computing streamlines
-    std::vector<int> seedPtDomainList;
-    int domain;
-    Status status;
-    Dir dir;
-    
-    // statistical bookeeping.
-    vector<int> domainVisitCnts;
-    int maxCnt, sum, numDomainsVisited;
-    int numTimesCommunicated;
-    int id;
-};
-
-class SlaveInfo
-{
-  public:
-    SlaveInfo( int r, int nDomains );
-    ~SlaveInfo() {}
-
-    void AddSL( int slDomain);
-    void RemoveSL( int dom );
-    void Update( vector<int> &status, bool debug=false );
-    void Reset() { justUpdated = false; }
-
-    void Debug();
-
-    //Member data.
-    bool justUpdated;
-    double balance;
-    int canGive, canAccept, slCount, slLoadedCount, slOOBCount, rank;
-    int domLoadedCount;
-    vector<int> domainCnt;
-    vector<bool> domainLoaded;
-};
-
-
 
 // ****************************************************************************
 // Class: avtStreamlineFilter
@@ -245,6 +140,10 @@ class SlaveInfo
 //
 //   Dave Pugmire, Thu Jan 15 12:01:30 EST 2009
 //   Add case5 to MasterSlave algorithm.
+//
+//   Dave Pugmire, Tue Feb  3 10:58:56 EST 2009
+//   Major refactor of the streamline code.  Moved all the streamline
+//   algorithm code into different classes.
 //
 // ****************************************************************************
 
@@ -306,27 +205,6 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     std::vector<vtkDataSet*>dataSets;
     std::map<int, vtkVisItCellLocator*> domainToCellLocatorMap;
 
-    int numDomainsLoaded, numSLCommunicated, numStatusCommunicated, 
-        numIntegrationSteps, numIterations, numBytesSent, numBusyLoopIterations;
-    int maxSLCommunications, totalMaxSLCommunications;
-    int totalNumDomainsLoaded, totalNumSLCommunicated, 
-        totalNumStatusCommunicated, totalNumIntegrationSteps, 
-        totalNumIterations, totalNumBytesSent, totalNumBusyLoopIterations;
-    bool haveGhostZones;
-#ifdef PARALLEL
-    int rank, nProcs;
-    std::map<MPI_Request, unsigned char*> sendSLBufferMap, recvSLBufferMap;
-    std::map<MPI_Request, int *> sendIntBufferMap, recvIntBufferMap;
-    std::vector<int> terminationSends;
-    std::vector< std::vector<int> > domainsLoaded;
-    std::vector<int> allSLCounts;
-
-    std::vector<MPI_Request>  statusRecvRequests, slRecvRequests;
-    int                       statusMsgSz;
-    std::vector<SlaveInfo>    slaveInfo;
-    vector<int>               slDomCnts, domLoaded;
-#endif
-
     // Various starting locations for streamlines.
     double pointSource[3];
     double lineStart[3], lineEnd[3];
@@ -337,30 +215,8 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
 
     //Timings helpers.
     int                       numSeedPts;
-    double                    totalTime, wallTime;
-    double                    integrationTime, communicationTime, 
-                              IOTime, sortTime, sleepTime;
-    float                     totalIOTime, totalIntegrationTime, totalCommTime, 
-                              totalTotalTime, totalSortTime, totalSleepTime;
-    //Statistics.
-    typedef struct SLStatistics
-    {
-        float min, max, mean, sigma, total;
-        float value;
-    } SLStatistics;
-
-    SLStatistics              IOTimeStats, integrationTimeStats, commTimeStats,
-                              totalTimeStats, sleepTimeStats, sortTimeStats,
-                              loadDomStats, statusCommStats, slCommStats, bytesSentStats,
-                              iterationStats, intStepStats, busyLoopStats;
-
-    double                    gatherTime1, gatherTime2, asyncSLTime, 
-                              asyncTermTime, asyncSendCleanupTime;
-    void                      ReportTimings();
-    void                      ReportTimings(ostream &os);
     int                       method;
-    int                       maxCount, balanceNumToSend;
-    double                    loadFactor, underWorkedFactor;
+    int                       maxCount, workGroupSz;
     
 
     virtual void              Execute(void);
@@ -370,153 +226,34 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     virtual avtContract_p     ModifyContract(avtContract_p);
     virtual bool              CheckOnDemandViability(void);
 
-    virtual vtkDataSet        *GetDomain(int);
-    virtual bool              DomainLoaded(int) const;
-
-    void                      SetZToZero(vtkPolyData *) const;
-
-    void                      GetSeedPoints(
-                                   std::vector<avtStreamlineWrapper *> &pts);
     void                      IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps=-1);
     avtIVPSolver::Result      IntegrateDomain(avtStreamlineWrapper *slSeg, 
                                               vtkDataSet *ds,
                                               double *extents,
                                               int maxSteps=-1);
+    virtual vtkDataSet        *GetDomain(int);
+    virtual bool              DomainLoaded(int) const;
+
+    void                      SetZToZero(vtkPolyData *) const;
+    vtkPolyData *             StartSphere(float val, double pt[3]);
+    void                      GetSeedPoints(
+                                   std::vector<avtStreamlineWrapper *> &pts);
     virtual void              CreateStreamlineOutput( 
                                                      vector<avtStreamlineWrapper *> &streamlines)
                                                     = 0;
 
-    void                      ReportStatistics(
-                                  vector<avtStreamlineWrapper *> &streamlines);
-
-    //Streamline techniques.
-    virtual void              StagedLoadOnDemand(
-                                   std::vector<avtStreamlineWrapper *> &sdpts);
-    virtual void              ParallelBalancedStaticDomains(
-                                   std::vector<avtStreamlineWrapper *> &sdpts,
-                                   bool asynchronous = false,
-                                   BalanceType balance=NO_BALANCE,
-                                   bool loadOnDemand = false );
-    virtual void              AsyncStaticDomains( 
-                                   std::vector<avtStreamlineWrapper *> &sdpts );
-    virtual void              MasterSlave(
-                                    std::vector<avtStreamlineWrapper *> &sdpts);
-    virtual void             UpdateStatus(vector<avtStreamlineWrapper *> &streamlines,
-                                          vector<vector<int> > &status);
-    virtual void             PrintStatus();
-    virtual void             Case1(vector<avtStreamlineWrapper *> &streamlines );
-    virtual void             Case2(vector<avtStreamlineWrapper *> &streamlines );
-    virtual void             Case3(vector<avtStreamlineWrapper *> &streamlines,
-                                   int overloadFactor,
-                                   int NDomainFactor);
-    virtual void             Case4(vector<avtStreamlineWrapper *> &streamlines,
-                                   int oobThreshold);
-    virtual void             Case5(int overworkThreshold,
-                                   bool domainCheck);
-    virtual void             FindSlackers(std::vector<int> &slackers,
-                                          int oobFactor=-1,
-                                          int sortMethod=0,
-                                          bool checkJustUpdated=false);
-    virtual bool             HandleSlaveMessages(vector<vector<int> > &msgs,
-                                                 vector<avtStreamlineWrapper *> &streamlines,
-                                                 bool &done,
-                                                 int &terminates,
-                                                 int msgSelect=-1);
-    /*
-    virtual void              AsynchronousParallelStaticDomains(
-                                   std::vector<pt3d> &seedpoints);
-    virtual void              OLD_ParallelBalancedStaticDomains( 
-                                   std::vector<pt3d> &seedpoints,
-                                   BalanceType balance=NO_BALANCE,
-                                   int maxPts=-1,
-                                   int divFactor=1);
-    virtual void              ParallelBalancedLoadOnDemand(
-                                   std::vector<pt3d> &seedpoints,
-                                   float loadFactor = 1.20,
-                                   BalanceType balance=NO_BALANCE,
-                                   int maxPts=-1,
-                                   int divFactor=1);
-    */
-
-    virtual void              SortStreamlines( 
-                                   std::vector<avtStreamlineWrapper *> &);
-    virtual bool              StaticDomainExchangeStreamlines( 
-                               std::vector<avtStreamlineWrapper *> &slines,
-                               std::vector< 
-                                    std::vector< avtStreamlineWrapper *> > &);
-    virtual bool              AsyncExchangeStreamlines( 
-                               std::vector<avtStreamlineWrapper *> &streamlines,
-                               std::vector< 
-                               std::vector< avtStreamlineWrapper *> > &,
-                               int &earlyTerminations);
-
-    virtual void              AsyncExchangeStatus(int numTerminated,
-                                                  int &otherTerminates,
-                                                  bool recvBalanceInfo,
-                                                  bool sendBalanceInfo=false,
-                                                  int slCount=0);
-
-    virtual void              AsyncSendStatus2(int master,
-                                               int numTerminated,
-                                               std::vector<int> &status);
-    virtual bool              AsyncRecvStatus2(int &numTerminated,
-                                               std::vector< std::vector<int> > &slaveStatus);
-    virtual bool              AsyncRecvMasterMsg(std::vector< std::vector<int> > &balanceInfo);
-    virtual void              AsyncSendSlaveMsgs(int dst, int msg, std::vector<int> &info);
-    virtual void              AsyncSendSlaveMsgs(int msg, std::vector<int> &info);
-    
-    virtual void              FigureOutBalancing( 
-                                 std::vector<avtStreamlineWrapper *> &slines, 
-                                 float loadFactor );
-    virtual void              AsyncFigureOutBalancing( 
-                                 std::vector<avtStreamlineWrapper *> &slines );
-
-    virtual void              SendStreamlinesTo(int num, int sender, 
-                                   int receiver, 
-                                   std::vector<avtStreamlineWrapper *> &);
-
-    virtual void              InitRequests();
-    virtual void              CheckPendingSendRequests();
-    virtual void              CleanupAsynchronous();
-    virtual void              PostRecvStatusReq( int proc );
-    virtual void              PostRecvSLReq( int proc );
-
-    virtual void              AsyncSendSL(int receiver,
-                                          avtStreamlineWrapper *slSeg);
-    virtual void              AsyncSendSLs(int receiver, 
-                                 const std::vector<avtStreamlineWrapper*> 
-                                                                      &slSegs);
-
-    virtual void              AsyncSendStatus(int numTerminated, 
-                                    bool sendBalanceInfo=false, int slCount=0);
-    virtual void              AsyncRecvStatus(int &numTerminated, 
-                                              bool balanceInfo=false );
-
-    virtual void              PrintLoadBalanceInfo();
-    virtual int               AsyncRecvStreamlines(
-                                    std::vector<avtStreamlineWrapper *> &slines,
-                                    int &earlyTerminations );
-    virtual void              AsyncRecvs(
-                                std::vector<avtStreamlineWrapper *> &slines, 
-                                bool blockingWait, int *numSLs, int *numTerm );
-
     // Helper functions.
-    vtkPolyData *             StartSphere( float val, double pt[3] );
-    bool                      PointInDomain( pt3d &pt, int domain );
-    int                       DomainToRank( int domain );
+    bool                      PointInDomain(avtVector &pt, int domain);
+    int                       DomainToRank(int domain);
     void                      ComputeDomainToRankMapping();
-    bool                      OwnDomain( int domain );
-    void                      SetDomain( avtStreamlineWrapper *slSeg );
+    bool                      OwnDomain(int domain);
+    void                      SetDomain(avtStreamlineWrapper *slSeg);
     void                      Initialize();
     void                      ComputeRankList(const std::vector<int> &domList, 
                                               std::vector<int> &ranks, 
                                               std::vector<int> &doms );
-
-    void                      InitStatistics();
-    void                      FinalizeStatistics();
-    void                      ComputeStatistics( float val,
-                                                 SLStatistics &stats,
-                                                 bool skipMaster=false);
+    
+    friend class avtSLAlgorithm;
 };
 
 

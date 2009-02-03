@@ -37,50 +37,74 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtStreamlinePolyDataFilter.h                      //
+//                              avtParSLAlgorithm.h                          //
 // ************************************************************************* //
 
-#ifndef AVT_STREAMLINE_POLY_DATA_FILTER_H
-#define AVT_STREAMLINE_POLY_DATA_FILTER_H
+#ifndef AVT_PAR_SL_ALGORITHM_H
+#define AVT_PAR_SL_ALGORITHM_H
+#ifdef PARALLEL
 
-#include <avtStreamlineFilter.h>
-
+#include "avtSLAlgorithm.h"
 
 // ****************************************************************************
-// Class: avtStreamlinePolyDataFilter
+// Class: avtParSLAlgorithm
 //
 // Purpose:
-//     This class inherits from avtStreamlineFilter and its sole job is to
-//     implement CreateStreamlineOutput, which it does by creating vtkPolyData.
+//    Abstract base class for parallel streamline algorithms.
 //
-// Notes:  The original implementation of CreateStreamlineOutput was in
-//         avtStreamlineFilter and was by Dave Pugmire.  That code was moved to
-//         this module by Hank Childs during a later refactoring that allowed
-//         the avtStreamlineFilter to be used in more places.
-//
-// Programmer: Hank Childs (refactoring) / Dave Pugmire (actual code)
-// Creation:   December 2, 2008
-//
-//   Dave Pugmire, Mon Feb  2 14:39:35 EST 2009
-//   Moved GetVTKPolyData from avtStreamlineWrapper to here.
+// Programmer: Dave Pugmire
+// Creation:   Mon Jan 26 13:25:58 EST 2009
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
+class avtParSLAlgorithm : public avtSLAlgorithm
 {
   public:
-                              avtStreamlinePolyDataFilter() {;};
-    virtual                  ~avtStreamlinePolyDataFilter() {;};
+    avtParSLAlgorithm(avtStreamlineFilter *slFilter);
+    virtual ~avtParSLAlgorithm();
+
+    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              PostExecute();
 
   protected:
-    vtkPolyData*              GetVTKPolyData(avtStreamline *sl,
-                                             int id,
-                                             std::vector<float> &thetas);
-    void                      CreateStreamlineOutput( 
-                                 vector<avtStreamlineWrapper *> &streamlines );
+    void                       InitRequests();
+    void                       CheckPendingSendRequests();
+    void                       CleanupAsynchronous();
+    void                       PostRecvStatusReq( int proc );
+    void                       PostRecvSLReq( int proc );
+    void                       SendMsg(int dest, std::vector<int> &msg);
+    void                       SendAllMsg(std::vector<int> &msg);
+    void                       RecvMsgs(std::vector<std::vector<int> > &msgs);
+    void                       SendSLs(int dst,
+                                       std::vector<avtStreamlineWrapper*> &);
+    int                        RecvSLs(std::list<avtStreamlineWrapper*> &,
+                                       int &earlyTerminations);
+    bool                       ExchangeSLs( std::list<avtStreamlineWrapper *> &,
+                                            std::vector<std::vector<avtStreamlineWrapper *> >&,
+                                            int &earlyTerminations );
+    
+    int                       rank, nProcs;
+    std::map<MPI_Request, unsigned char*> sendSLBufferMap, recvSLBufferMap;
+    std::map<MPI_Request, int *> sendIntBufferMap, recvIntBufferMap;
+
+    std::vector<MPI_Request>  statusRecvRequests, slRecvRequests;
+    int                       statusMsgSz, slMsgSz;
+
+    virtual void              CalculateStatistics();
+    virtual void              CalculateExtraTime();
+    virtual void              ComputeStatistics(SLStatistics &stats);
+    virtual void              ReportTimings(ostream &os, bool totals);
+    virtual void              ReportCounters(ostream &os, bool totals);
+
+    //Timers.
+    SLStatistics              CommTime;
+    //Counters.
+    SLStatistics              MsgCnt, SLCommCnt, BytesCnt;
+
+  private:
+    static int                STATUS_TAG, STREAMLINE_TAG;
+
 };
 
-
 #endif
-
-
+#endif

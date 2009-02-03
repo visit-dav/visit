@@ -207,6 +207,9 @@ avtStreamline::Advance(const avtIVPField* field,
 //    Added maxSteps argument to optionally control how many integration steps
 //    are taken.
 //
+//    Dave Pugmire, Tue Feb  3 10:54:34 EST 2009
+//    More debug statements.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -225,7 +228,6 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
     // domain of field
     if(! field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()))
     {
-        //cout<<"Pt0 "<<ivp->GetCurrentY()<<" not in domain\n";
         return avtIVPSolver::OUTSIDE_DOMAIN;
     }
     
@@ -241,13 +243,13 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 
         try
         {
-            //debug1<< "Step( t= "<<tEnd<<", d= "<<dEnd<<" );\n";
+            debug5<< "Step( t= "<<tEnd<<", d= "<<dEnd<<" );\n";
             result = ivp->Step(field, timeMode, tEnd, dEnd, step);
             numSteps++;
         }
         catch( avtIVPField::Undefined& )
         {
-            //debug1<<ivp->GetCurrentY()<<" not in domain\n";
+            debug5<<ivp->GetCurrentY()<<" not in domain\n";
             // integrator left the domain, retry with smaller step
             // if step size is below given minimum, give up
 
@@ -336,6 +338,9 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //    Modify how data without ghost zones are handled. Pass in a dataset extents
 //    array. Use that to do adaptive jumping out on the velocity vector.
 //
+//    Dave Pugmire, Tue Feb  3 10:54:34 EST 2009
+//    More debug statements.
+//
 // ****************************************************************************
 
 void
@@ -387,11 +392,11 @@ avtStreamline::HandleGhostZones(avtIVPSolver *ivp,
     dir /= len;
     double leapingDistance = minRange * 0.001;
 
-    debug1<< "Leaping: "<<leapingDistance<< " dir = "<<dir<<endl;
-    debug1<< "Leap: "<<pt;
+    debug5<< "Leaping: "<<leapingDistance<< " dir = "<<dir<<endl;
+    debug5<< "Leap: "<<pt;
     dir *= leapingDistance;
     avtVec newPt = pt + dir;
-    debug1<<" ==> "<<newPt<<endl;
+    debug5<<" ==> "<<newPt<<endl;
 
     ivp->SetCurrentY( newPt );
     ivp->SetCurrentT( ivp->GetCurrentT() + leapingDistance );
@@ -523,6 +528,9 @@ avtStreamline::PtEnds( avtVec &ptBwd, avtVec &ptFwd ) const
 //    Hank Childs, Tue Aug 19 17:05:38 PDT 2008
 //    Initialize the sz variable to make purify happy.
 //
+//    Dave Pugmire, Tue Feb  3 10:54:34 EST 2009
+//    More debug statements.
+//
 // ****************************************************************************
 
 void
@@ -542,7 +550,7 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     }
     else
     {
-        //debug1 << "avtStreamline READ: listSz = " << _steps.size() <<endl;
+        debug5 << "avtStreamline READ: listSz = " << _steps.size() <<endl;
         _steps.clear();
         size_t sz = 0;
         buff.io( mode, sz );
@@ -595,9 +603,8 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     }
     
     buff.io( mode, intersectPts );
-    //debug1<<"IO: iPts = "<<intersectPts.size()<<endl;
-
-    //debug1 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
+    debug5<<"IO: iPts = "<<intersectPts.size()<<endl;
+    debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
 }
 
 // ****************************************************************************
@@ -709,12 +716,6 @@ avtStreamline::IntersectWithPlane(avtIVPStep *step0, avtIVPStep *step1)
 
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
     
-    //    cout<<"P0: "<<p0<<endl;
-    //    cout<<"P1: "<<p1<<endl;
-    //    cout<<"IntersectWithPlane: "<<distP0<<" "<<distP1<<" ::==> "
-    //        <<(SIGN(distP0) != SIGN(distP1))<<endl;
-    //    cout<<endl;
-    
     if (SIGN(distP0) != SIGN(distP1))
     {
         avtVec intPt;
@@ -722,11 +723,8 @@ avtStreamline::IntersectWithPlane(avtIVPStep *step0, avtIVPStep *step1)
                                intersectPlaneNorm, intPt))
         {
             intersectPts.push_back( intPt );
-            /*
-            debug1<<"Compute: iPts = "<<intersectPts.size()<<endl;
-            cout << "*******************Intersected the plane\n";
-            cout<<p0<<" "<<p1<<" ==> "<<intPt<<endl;
-            */
+            debug5<<"Compute: iPts = "<<intersectPts.size()<<endl;
+            debug5<<p0<<" "<<p1<<" ==> "<<intPt<<endl;
         }
     }
 }

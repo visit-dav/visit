@@ -37,50 +37,46 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtStreamlinePolyDataFilter.h                      //
+//                              avtParDomSLAlgorithm.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_STREAMLINE_POLY_DATA_FILTER_H
-#define AVT_STREAMLINE_POLY_DATA_FILTER_H
+#ifndef AVT_PAR_DOM_SL_ALGORITHM_H
+#define AVT_PAR_DOM_SL_ALGORITHM_H
 
-#include <avtStreamlineFilter.h>
-
+#ifdef PARALLEL
+#include "avtParSLAlgorithm.h"
 
 // ****************************************************************************
-// Class: avtStreamlinePolyDataFilter
+// Class: avtParDomSLAlgorithm
 //
 // Purpose:
-//     This class inherits from avtStreamlineFilter and its sole job is to
-//     implement CreateStreamlineOutput, which it does by creating vtkPolyData.
+//    A streamline algorithm that parallelizes over domains.
 //
-// Notes:  The original implementation of CreateStreamlineOutput was in
-//         avtStreamlineFilter and was by Dave Pugmire.  That code was moved to
-//         this module by Hank Childs during a later refactoring that allowed
-//         the avtStreamlineFilter to be used in more places.
-//
-// Programmer: Hank Childs (refactoring) / Dave Pugmire (actual code)
-// Creation:   December 2, 2008
-//
-//   Dave Pugmire, Mon Feb  2 14:39:35 EST 2009
-//   Moved GetVTKPolyData from avtStreamlineWrapper to here.
+// Programmer: Dave Pugmire
+// Creation:   Mon Jan 26 13:25:58 EST 2009
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
+class avtParDomSLAlgorithm : public avtParSLAlgorithm
 {
   public:
-                              avtStreamlinePolyDataFilter() {;};
-    virtual                  ~avtStreamlinePolyDataFilter() {;};
+    avtParDomSLAlgorithm(avtStreamlineFilter *slFilter, int maxCount);
+    virtual ~avtParDomSLAlgorithm();
+
+    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual const char*       AlgoName() const {return "ParallelStaticDomains";}
+
+    virtual void              Execute();
 
   protected:
-    vtkPolyData*              GetVTKPolyData(avtStreamline *sl,
-                                             int id,
-                                             std::vector<float> &thetas);
-    void                      CreateStreamlineOutput( 
-                                 vector<avtStreamlineWrapper *> &streamlines );
+    void                      ExchangeTermination();
+    void                      ExchangeSLs(
+                                          std::vector<std::vector<avtStreamlineWrapper *> >&);
+    int                       numTerminated, totalNumStreamlines;
+
+    std::list<avtStreamlineWrapper *> activeSLs;
+    int                       maxCnt;
 };
 
-
 #endif
-
-
+#endif

@@ -1,0 +1,247 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-400142
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                              avtParDomSLAlgorithm.h                       //
+// ************************************************************************* //
+
+#include "avtParDomSLAlgorithm.h"
+#include <TimingsManager.h>
+
+using namespace std;
+
+#ifdef PARALLEL
+
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::avtParDomSLAlgorithm
+//
+//  Purpose:
+//      avtParDomSLAlgorithm constructor.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//
+// ****************************************************************************
+
+avtParDomSLAlgorithm::avtParDomSLAlgorithm(avtStreamlineFilter *slFilter,
+                                           int maxCount)
+    : avtParSLAlgorithm(slFilter)
+{
+    numTerminated = 0;
+    totalNumStreamlines = 0;
+    statusMsgSz = 1;
+    maxCnt = maxCount;
+}
+
+
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::~avtParDomSLAlgorithm
+//
+//  Purpose:
+//      avtParDomSLAlgorithm destructor
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//
+// ****************************************************************************
+avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
+{
+}
+
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::Initialize
+//
+//  Purpose:
+//      Initialization.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//
+// ****************************************************************************
+
+
+void
+avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
+{
+    avtParSLAlgorithm::Initialize(seedPts);
+    totalNumStreamlines = seedPts.size();
+    numTerminated = 0;
+
+    //Get the SLs that I own.
+    for (int i = 0; i < seedPts.size(); i++)
+    {
+        avtStreamlineWrapper *s = seedPts[i];
+        avtVector endPt;
+        s->GetEndPoint(endPt);
+        if (OwnDomain(s->domain))
+        {
+            if (PointInDomain(endPt, s->domain))
+                activeSLs.push_back(s);
+            else
+            {
+                numTerminated++;
+                delete s;
+            }
+        }
+        else
+            delete s;
+    }
+
+    debug1<<"Init: numSLs= "<<totalNumStreamlines<<endl;
+    debug1<<"ExchangeTermination: t= "<<numTerminated<<endl;
+    debug1<<"My SLcount= "<<activeSLs.size()<<endl;
+    ExchangeTermination();
+}
+
+
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::ExchangeTermination()
+//
+//  Purpose:
+//      Send/recv terminations.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//
+// ****************************************************************************
+
+void
+avtParDomSLAlgorithm::ExchangeTermination()
+{
+    // If I have terminations, send it out.
+    if (numTerminated > 0)
+    {
+        vector<int> msg(1);
+        msg[0] = numTerminated;
+        SendAllMsg(msg);
+        
+        totalNumStreamlines -= numTerminated;
+        numTerminated = 0;
+    }
+
+    // Check to see if msgs are coming in.
+    vector<vector<int> > msgs;
+    RecvMsgs(msgs);
+    for (int i = 0; i < msgs.size(); i++)
+    {
+        int src = msgs[i][0];
+        int nTerm = msgs[i][1];
+        
+        totalNumStreamlines -= nTerm;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::ExchangeSLs
+//
+//  Purpose:
+//      Send/recv streamlines.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//
+// ****************************************************************************
+
+void
+avtParDomSLAlgorithm::ExchangeSLs(
+               vector<vector<avtStreamlineWrapper *> > &distributeSLs)
+{
+    int earlyTerminations = 0;
+    avtParSLAlgorithm::ExchangeSLs(activeSLs, distributeSLs, earlyTerminations);
+    numTerminated += earlyTerminations;
+}
+
+
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::Execute
+//
+//  Purpose:
+//      Execute the static domain SL algorithm.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//
+// ****************************************************************************
+
+void
+avtParDomSLAlgorithm::Execute()
+{
+    debug1<<"avtParDomSLAlgorithm::Execute()\n";
+    int timer = visitTimer->StartTimer();
+    
+    vector< vector< avtStreamlineWrapper *> > distributeStreamlines(nProcs);
+
+    while (totalNumStreamlines > 0)
+    {
+        //Integrate upto maxCnt streamlines.
+        list<avtStreamlineWrapper *>::iterator s;
+        int cnt = 0;
+        while (cnt < maxCnt && !activeSLs.empty())
+        {
+            avtStreamlineWrapper *s = activeSLs.front();
+            activeSLs.pop_front();
+
+            IntegrateStreamline(s);
+            if (s->status == avtStreamlineWrapper::TERMINATE)
+            {
+                terminatedSLs.push_back(s);
+                numTerminated++;
+            }
+            else
+            {
+                int owningRank = DomainToRank(s->domain);
+                if (owningRank == rank)
+                    activeSLs.push_back(s);
+                else
+                {
+                    distributeStreamlines[owningRank].push_back(s);
+                }
+            }
+            cnt++;
+        }
+
+        ExchangeSLs(distributeStreamlines);
+        ExchangeTermination();
+        CheckPendingSendRequests();
+    }
+
+    CheckPendingSendRequests();
+    TotalTime.value += visitTimer->StopTimer(timer, "Execute");
+}
+
+#endif

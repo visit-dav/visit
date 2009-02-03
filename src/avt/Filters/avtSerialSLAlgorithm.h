@@ -37,50 +37,38 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtStreamlinePolyDataFilter.h                      //
+//                              avtSerialStreamlineAlgorithm.h               //
 // ************************************************************************* //
 
-#ifndef AVT_STREAMLINE_POLY_DATA_FILTER_H
-#define AVT_STREAMLINE_POLY_DATA_FILTER_H
+#ifndef AVT_SERIAL_SL_ALGORITHM_H
+#define AVT_SERIAL_SL_ALGORITHM_H
 
-#include <avtStreamlineFilter.h>
-
+#include "avtSLAlgorithm.h"
 
 // ****************************************************************************
-// Class: avtStreamlinePolyDataFilter
+// Class: avtSerialSLAlgorithm
 //
 // Purpose:
-//     This class inherits from avtStreamlineFilter and its sole job is to
-//     implement CreateStreamlineOutput, which it does by creating vtkPolyData.
+//    A class for performing serial streamline integration.
 //
-// Notes:  The original implementation of CreateStreamlineOutput was in
-//         avtStreamlineFilter and was by Dave Pugmire.  That code was moved to
-//         this module by Hank Childs during a later refactoring that allowed
-//         the avtStreamlineFilter to be used in more places.
-//
-// Programmer: Hank Childs (refactoring) / Dave Pugmire (actual code)
-// Creation:   December 2, 2008
-//
-//   Dave Pugmire, Mon Feb  2 14:39:35 EST 2009
-//   Moved GetVTKPolyData from avtStreamlineWrapper to here.
+// Programmer: Dave Pugmire
+// Creation:   Mon Jan 26 13:25:58 EST 2009
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
+class avtSerialSLAlgorithm : public avtSLAlgorithm
 {
   public:
-                              avtStreamlinePolyDataFilter() {;};
-    virtual                  ~avtStreamlinePolyDataFilter() {;};
+    avtSerialSLAlgorithm( avtStreamlineFilter *slFilter );
+    virtual ~avtSerialSLAlgorithm();
+    
+    virtual const char*       AlgoName() const {return "Serial";}
+    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              Execute();
 
   protected:
-    vtkPolyData*              GetVTKPolyData(avtStreamline *sl,
-                                             int id,
-                                             std::vector<float> &thetas);
-    void                      CreateStreamlineOutput( 
-                                 vector<avtStreamlineWrapper *> &streamlines );
+    std::list<avtStreamlineWrapper *> activeSLs, oobSLs;
+    
 };
 
-
 #endif
-
-
