@@ -196,6 +196,13 @@ avtParDomSLAlgorithm::ExchangeSLs(
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Feb  4 16:17:40 EST 2009
+//   Regression fix. Handling streamlines that lie in multiple domains after
+//   integration was not handled correctly after the code refactor. Added
+//   HandleOOBSL().
+//
 // ****************************************************************************
 
 void
@@ -223,15 +230,8 @@ avtParDomSLAlgorithm::Execute()
                 numTerminated++;
             }
             else
-            {
-                int owningRank = DomainToRank(s->domain);
-                if (owningRank == rank)
-                    activeSLs.push_back(s);
-                else
-                {
-                    distributeStreamlines[owningRank].push_back(s);
-                }
-            }
+                HandleOOBSL(s, distributeStreamlines);
+            
             cnt++;
         }
 
@@ -242,6 +242,54 @@ avtParDomSLAlgorithm::Execute()
 
     CheckPendingSendRequests();
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
+}
+
+
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::HandleOOBSL
+//
+//  Purpose:
+//      Handle an out of bounds streamline.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Febuary 4 2009
+//
+// ****************************************************************************
+
+void
+avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s,
+                         std::vector< std::vector< avtStreamlineWrapper *> > &d)
+{
+    MemStream buff;
+    bool deleteSL = true;
+
+    // The integrated streamline could lie in multiple domains.
+    // Duplicate the SL and send to the proper owner.
+    for (int i = 0; i < s->seedPtDomainList.size(); i++)
+    {
+        int domRank = DomainToRank(s->seedPtDomainList[i]);
+        if (domRank == rank)
+        {
+            activeSLs.push_back(s);
+            deleteSL = false;
+        }
+        else
+        {
+            // First time, create the buffer.
+            if (buff.buffLen() == 0)
+                s->Serialize(MemStream::WRITE, buff, GetSolver());
+
+            // Create a copy of the SL and add it to the distribute array.
+            avtStreamlineWrapper *newS = new avtStreamlineWrapper;
+            buff.rewind();
+            newS->Serialize(MemStream::READ, buff, GetSolver());
+            newS->domain = s->seedPtDomainList[i];
+            d[domRank].push_back(newS);
+        }
+    }
+
+    if (deleteSL)
+        delete s;
 }
 
 #endif

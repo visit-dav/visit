@@ -55,6 +55,13 @@
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Feb  4 16:17:40 EST 2009
+//   Regression fix. Handling streamlines that lie in multiple domains after
+//   integration was not handled correctly after the code refactor. Added
+//   HandleOOBSL().
+//
 // ****************************************************************************
 
 class avtParDomSLAlgorithm : public avtParSLAlgorithm
@@ -70,8 +77,10 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
 
   protected:
     void                      ExchangeTermination();
+    void                      HandleOOBSL(avtStreamlineWrapper *s,
+                          std::vector< std::vector< avtStreamlineWrapper *> >&);
     void                      ExchangeSLs(
-                                          std::vector<std::vector<avtStreamlineWrapper *> >&);
+                            std::vector<std::vector<avtStreamlineWrapper *> >&);
     int                       numTerminated, totalNumStreamlines;
 
     std::list<avtStreamlineWrapper *> activeSLs;

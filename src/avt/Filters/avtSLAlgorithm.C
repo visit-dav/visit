@@ -128,9 +128,6 @@ avtSLAlgorithm::IntegrateStreamline(avtStreamlineWrapper *s)
 
     IntegrateTime.value += visitTimer->StopTimer(timerHandle, "IntegrateStreamline()");
     IntegrateCnt.value++;
-    
-    if (s->seedPtDomainList.size() > 1)
-        EXCEPTION0(ImproperUseException);
 }
 
 // ****************************************************************************
