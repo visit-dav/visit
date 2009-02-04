@@ -102,6 +102,9 @@
 #    Hank Childs, Tue Dec  2 13:41:08 PST 2008
 #    Add the avtStreamlinePolyDataFilter.
 #
+#    Hank Childs, Mon Feb  2 16:42:03 PST 2009
+#    Added avtNamedSelectionFilter.
+#
 #    Dave Pugmire, Tue Feb  3 10:56:45 EST 2009
 #    Add the streamline algorithm code.
 #
@@ -137,6 +140,7 @@ SRC=\
  avtLineoutFilter.C \
  avtMassVoxelExtractor.C \
  avtMeshLogFilter.C \
+ avtNamedSelectionFilter.C \
  avtPointToGlyphFilter.C \
  avtRayCompositer.C \
  avtRayTracer.C \

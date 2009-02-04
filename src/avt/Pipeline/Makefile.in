@@ -255,6 +255,9 @@
 #    Hank Childs and Jeremy Meredith, Tue Jan 27 11:00:31 PST 2009
 #    Added avtHistogramSpecification and avtIdentifierSelection.
 #
+#    Hank Childs, Mon Feb  2 08:24:47 PST 2009
+#    Added named selections.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -340,6 +343,8 @@ Pipeline_src= \
   Pipeline/avtImageReader.C \
   Pipeline/avtImageTiler.C \
   Pipeline/avtImageWriter.C \
+  Pipeline/avtNamedSelection.C \
+  Pipeline/avtNamedSelectionManager.C \
   Pipeline/avtNullDataReader.C \
   Pipeline/avtNullDataWriter.C \
   Pipeline/avtParallel.C \

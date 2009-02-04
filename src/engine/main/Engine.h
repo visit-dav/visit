@@ -49,6 +49,7 @@ class ExecuteRPC;
 class ExportDatabaseRPC;
 class KeepAliveRPC;
 class MakePlotRPC;
+class NamedSelectionRPC;
 class OpenDatabaseRPC;
 class PickRPC;
 class QueryRPC;
@@ -180,6 +181,9 @@ class Xfer;
 //
 //    Tom Fogal, Mon Aug 11 11:39:07 EDT 2008
 //    Instance variable to store how many X servers we should start up.
+//
+//    Hank Childs, Thu Jan 29 11:12:04 PST 2009
+//    Add data member namedSelectionRPC.
 //
 //    Tom Fogal, Mon Sep  1 12:47:57 EDT 2008
 //    Instance variable to store what kind of display we'll render with, and
@@ -331,6 +335,7 @@ class Engine
     SimulationCommandRPC     *simulationCommandRPC;
     ExportDatabaseRPC        *exportDatabaseRPC;
     ConstructDDFRPC          *constructDDFRPC;
+    NamedSelectionRPC        *namedSelectionRPC;
     SetEFileOpenOptionsRPC   *setEFileOpenOptionsRPC;
 
     // The metadata, filename, format, control data for a simulation

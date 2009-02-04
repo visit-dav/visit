@@ -123,6 +123,9 @@ class   avtWebpage;
 //    Hank Childs, Mon Jun 16 12:25:31 PDT 2008
 //    Add method CalculateSpatialIntervalTree.
 //
+//    Hank Childs, Tue Feb  3 11:26:05 PST 2009
+//    Add friend status for avtNamedSelectionManager.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -137,6 +140,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtLineScanQuery;
     friend                   class avtLineSurfaceFilter;
     friend                   class avtExecuteThenTimeLoopFilter;
+    friend                   class avtNamedSelectionManager;
 
   public:
                              avtDataset(avtDataObjectSource *);

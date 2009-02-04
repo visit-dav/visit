@@ -750,6 +750,31 @@ static PyObject *args_SetQueryFloatFormatRPC(ViewerRPC *rpc)
     return ViewerRPC_one_string(rpc->GetStringArg1());
 }
 
+static PyObject *args_CreateNamedSelectionRPC(ViewerRPC *rpc)
+{
+    return ViewerRPC_one_string(rpc->GetStringArg1());
+}
+
+static PyObject *args_DeleteNamedSelectionRPC(ViewerRPC *rpc)
+{
+    return ViewerRPC_one_string(rpc->GetStringArg1());
+}
+
+static PyObject *args_LoadNamedSelectionRPC(ViewerRPC *rpc)
+{
+    return ViewerRPC_one_string(rpc->GetStringArg1());
+}
+
+static PyObject *args_SaveNamedSelectionRPC(ViewerRPC *rpc)
+{
+    return ViewerRPC_one_string(rpc->GetStringArg1());
+}
+
+static PyObject *args_ApplyNamedSelectionRPC(ViewerRPC *rpc)
+{
+    return ViewerRPC_one_string(rpc->GetStringArg1());
+}
+
 static PyObject *args_SetMeshManagementAttributesRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_SetDefaultMeshManagementAttributesRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_ResetMeshManagementAttributesRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
@@ -831,6 +856,9 @@ static PyObject *args_SetDefaultFileOpenOptionsRPC(ViewerRPC *) { return ViewerR
 //
 // Modifications:
 //   
+//    Hank Childs, Wed Jan 28 07:21:05 PST 2009
+//    Add new RPCs for named selections.
+//
 // ****************************************************************************
 
 PyObject *
@@ -1368,6 +1396,21 @@ args_ViewerRPC(ViewerRPC *rpc)
         break;
     case ViewerRPC::SetDefaultFileOpenOptionsRPC:
         args = args_SetDefaultFileOpenOptionsRPC(rpc);
+        break;
+    case ViewerRPC::CreateNamedSelectionRPC:
+        args = args_CreateNamedSelectionRPC(rpc);
+        break;
+    case ViewerRPC::DeleteNamedSelectionRPC:
+        args = args_DeleteNamedSelectionRPC(rpc);
+        break;
+    case ViewerRPC::LoadNamedSelectionRPC:
+        args = args_LoadNamedSelectionRPC(rpc);
+        break;
+    case ViewerRPC::SaveNamedSelectionRPC:
+        args = args_SaveNamedSelectionRPC(rpc);
+        break;
+    case ViewerRPC::ApplyNamedSelectionRPC:
+        args = args_ApplyNamedSelectionRPC(rpc);
         break;
     default:
         // The ViewerRPC is not handled so just wrap the whole ViewerRPC and pass

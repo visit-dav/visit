@@ -204,6 +204,9 @@ EngineProxy::~EngineProxy()
 //    Jeremy Meredith, Wed Jan 23 16:11:41 EST 2008
 //    Added setEFileOpenOptionsRPC.
 //
+//    Hank Childs, Thu Jan 29 10:16:47 PST 2009
+//    Added namedSelectionRPC.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -232,6 +235,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&simulationCommandRPC);
     xfer.Add(&exportDatabaseRPC);
     xfer.Add(&constructDDFRPC);
+    xfer.Add(&namedSelectionRPC);
     xfer.Add(&setEFileOpenOptionsRPC);
 
     //
@@ -1379,6 +1383,142 @@ EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
     {
         RECONSTITUTE_EXCEPTION(cloneNetworkRPC.GetExceptionType(),
                                cloneNetworkRPC.Message());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::ApplyNamedSelection
+//
+//  Purpose:
+//      Apply a named selection to a list of plots.
+//
+//  Arguments:
+//    ids        the id of the network to have the selection applied to.
+//    selName    the name of the named selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2009
+//
+// ****************************************************************************
+
+void
+EngineProxy::ApplyNamedSelection(const std::vector<std::string> &ids, 
+                                 const std::string selName)
+{
+    namedSelectionRPC(NamedSelectionRPC::APPLY, ids, selName);
+    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
+                               namedSelectionRPC.Message());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::CreateNamedSelection
+//
+//  Purpose:
+//      Create a named selection to a list of plots.
+//
+//  Arguments:
+//    ids        the id of the network to create the selection from.
+//    selName    the name of the named selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2009
+//
+// ****************************************************************************
+
+void
+EngineProxy::CreateNamedSelection(int id, const std::string selName)
+{
+    namedSelectionRPC(NamedSelectionRPC::CREATE, id, selName);
+    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
+                               namedSelectionRPC.Message());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::DeleteNamedSelection
+//
+//  Purpose:
+//      Delete a named selection to a list of plots.
+//
+//  Arguments:
+//    ids        the id of the network to create the selection from.
+//    selName    the name of the named selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2009
+//
+// ****************************************************************************
+
+void
+EngineProxy::DeleteNamedSelection(const std::string selName)
+{
+    namedSelectionRPC(NamedSelectionRPC::DELETE, selName);
+    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
+                               namedSelectionRPC.Message());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::LoadNamedSelection
+//
+//  Purpose:
+//      Load a named selection to a list of plots.
+//
+//  Arguments:
+//    ids        the id of the network to create the selection from.
+//    selName    the name of the named selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2009
+//
+// ****************************************************************************
+
+void
+EngineProxy::LoadNamedSelection(const std::string selName)
+{
+    namedSelectionRPC(NamedSelectionRPC::LOAD, selName);
+    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
+                               namedSelectionRPC.Message());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::SaveNamedSelection
+//
+//  Purpose:
+//      Save a named selection to a list of plots.
+//
+//  Arguments:
+//    ids        the id of the network to create the selection from.
+//    selName    the name of the named selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2009
+//
+// ****************************************************************************
+
+void
+EngineProxy::SaveNamedSelection(const std::string selName)
+{
+    namedSelectionRPC(NamedSelectionRPC::SAVE, selName);
+    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
+                               namedSelectionRPC.Message());
     }
 }
 

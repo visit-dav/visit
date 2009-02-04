@@ -469,6 +469,9 @@ class avtDefaultPlotMetaData;
 //    Refactored the ViewerSubject so it no longer contains the QApplication or
 //    the event loop so it can be embedded in other Qt applications.
 //
+//    Hank Childs, Wed Jan 28 14:53:32 PST 2009
+//    Add support for named selections.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -572,6 +575,12 @@ private:
     void UpdateDBPluginInfo();
 
     void SendSimulationCommand();
+
+    void ApplyNamedSelection();
+    void CreateNamedSelection();
+    void DeleteNamedSelection();
+    void LoadNamedSelection();
+    void SaveNamedSelection();
 
     void SetDefaultPlotOptions();
     void ResetPlotOptions();

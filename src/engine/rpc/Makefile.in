@@ -126,6 +126,9 @@
 #    Jeremy Meredith, Wed Jan 23 16:52:27 EST 2008
 #    Added SetEFileOpenOptionsRPC.
 #
+#    Hank Childs, Thu Jan 29 10:17:19 PST 2009
+#    Added NamedSelectionRPC.
+#
 ###############################################################################
 
 ##
@@ -149,6 +152,7 @@ SRC= \
     ExecuteRPC.C \
     ExportDatabaseRPC.C \
     MakePlotRPC.C \
+    NamedSelectionRPC.C \
     OpenDatabaseRPC.C \
     PickRPC.C \
     ProcInfoRPC.C \

@@ -12282,6 +12282,162 @@ visit_SetDefaultMeshManagementAttributes(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_ApplyNamedSelection
+//
+// Purpose: 
+//   Tells the viewer to apply a named selection to the current plot.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ApplyNamedSelection(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+       return NULL;
+
+    // Activate the database.
+    MUTEX_LOCK();
+        GetViewerMethods()->ApplyNamedSelection(selName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_CreateNamedSelection
+//
+// Purpose: 
+//   Tells the viewer to make a named selection out of the elements in the
+//   current plot.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_CreateNamedSelection(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+       return NULL;
+
+    // Activate the database.
+    MUTEX_LOCK();
+        GetViewerMethods()->CreateNamedSelection(selName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_DeleteNamedSelection
+//
+// Purpose: 
+//   Tells the viewer to delete a named selection.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_DeleteNamedSelection(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+       return NULL;
+
+    // Activate the database.
+    MUTEX_LOCK();
+        GetViewerMethods()->DeleteNamedSelection(selName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_LoadNamedSelection
+//
+// Purpose: 
+//   Tells the viewer to load a named selection from a file.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_LoadNamedSelection(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+       return NULL;
+
+    // Activate the database.
+    MUTEX_LOCK();
+        GetViewerMethods()->LoadNamedSelection(selName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SaveNamedSelection
+//
+// Purpose: 
+//   Tells the viewer to save the named selection to a file.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SaveNamedSelection(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+       return NULL;
+
+    // Activate the database.
+    MUTEX_LOCK();
+        GetViewerMethods()->SaveNamedSelection(selName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_Argv
 //
 // Purpose: 
@@ -13433,6 +13589,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Jeremy Meredith, Mon Jan  5 10:21:05 EST 2009
 //   Added LoadAttribute, SaveAttribute
 //
+//   Hank Childs, Wed Jan 28 10:42:28 PST 2009
+//   Add calls for named selections.
+//
 // ****************************************************************************
 
 static void
@@ -13464,6 +13623,8 @@ AddDefaultMethods()
     AddMethod("AddWindow",  visit_AddWindow, visit_AddWindow_doc);
     AddMethod("AlterDatabaseCorrelation", visit_AlterDatabaseCorrelation, 
                                            visit_AlterDatabaseCorrelation_doc);
+    AddMethod("ApplyNamedSelection", visit_ApplyNamedSelection,
+                                           visit_ApplyNamedSelection_doc);
     AddMethod("AnimationSetNFrames", visit_AnimationSetNFrames, NULL);
     AddMethod("ChangeActivePlotsVar", visit_ChangeActivePlotsVar, 
                                                visit_ChangeActivePlotsVar_doc);
@@ -13498,6 +13659,8 @@ AddDefaultMethods()
                                              visit_CreateAnnotationObject_doc);
     AddMethod("CreateDatabaseCorrelation", visit_CreateDatabaseCorrelation,
                                           visit_CreateDatabaseCorrelation_doc);
+    AddMethod("CreateNamedSelection", visit_CreateNamedSelection,
+                                           visit_CreateNamedSelection_doc);
     AddMethod("DefineArrayExpression", visit_DefineArrayExpression,
                                                visit_DefineExpression_doc);
     AddMethod("DefineCurveExpression", visit_DefineCurveExpression,
@@ -13523,6 +13686,8 @@ AddDefaultMethods()
     AddMethod("DeleteActivePlots", visit_DeleteActivePlots,
                                                         visit_DeletePlots_doc);
     AddMethod("DeleteAllPlots", visit_DeleteAllPlots,visit_DeletePlots_doc);
+    AddMethod("DeleteNamedSelection", visit_DeleteNamedSelection,
+                                           visit_DeleteNamedSelection_doc);
     AddMethod("DeletePlotDatabaseKeyframe", visit_DeletePlotDatabaseKeyframe,
                                          visit_DeletePlotDatabaseKeyframe_doc);
     AddMethod("DeletePlotKeyframe", visit_DeletePlotKeyframe,
@@ -13608,6 +13773,8 @@ AddDefaultMethods()
     AddMethod("InvertBackgroundColor", visit_InvertBackgroundColor,
                                               visit_InvertBackgroundColor_doc);
     AddMethod("Lineout", visit_Lineout, visit_Lineout_doc);
+    AddMethod("LoadNamedSelection", visit_LoadNamedSelection,
+                                           visit_LoadNamedSelection_doc);
     AddMethod("MovePlotDatabaseKeyframe", visit_MovePlotDatabaseKeyframe,
                                            visit_MovePlotDatabaseKeyframe_doc);
     AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe,
@@ -13665,6 +13832,8 @@ AddDefaultMethods()
               visit_RestoreSessionWithDifferentSources,
               visit_RestoreSession_doc);
     AddMethod("SaveSession", visit_SaveSession, visit_SaveSession_doc);
+    AddMethod("SaveNamedSelection", visit_SaveNamedSelection,
+                                           visit_SaveNamedSelection_doc);
     AddMethod("SaveWindow", visit_SaveWindow, visit_SaveWindow_doc);
     AddMethod("SetActivePlots", visit_SetActivePlots,visit_SetActivePlots_doc);
     AddMethod("SetActiveTimeSlider", visit_SetActiveTimeSlider, 

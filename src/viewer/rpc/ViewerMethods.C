@@ -753,6 +753,136 @@ ViewerMethods::RequestMetaData(const std::string &database, int ts)
 }
 
 // ****************************************************************************
+// Method: ViewerMethods::ApplyNamedSelection
+//
+// Purpose: 
+//     Applies a named selection.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerMethods::ApplyNamedSelection(const std::string &selName)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ApplyNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::CreateNamedSelection
+//
+// Purpose: 
+//     Creates a named selection.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerMethods::CreateNamedSelection(const std::string &selName)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::CreateNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::DeleteNamedSelection
+//
+// Purpose: 
+//     Deletes a named selection.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerMethods::DeleteNamedSelection(const std::string &selName)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::DeleteNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::LoadNamedSelection
+//
+// Purpose: 
+//     Load a named selection.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerMethods::LoadNamedSelection(const std::string &selName)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::LoadNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::SaveNamedSelection
+//
+// Purpose: 
+//     Saves a named selection.
+//
+// Programmer: Hank Childs
+// Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SaveNamedSelection(const std::string &selName)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SaveNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerMethods::ExportDatabase
 //
 // Purpose: 

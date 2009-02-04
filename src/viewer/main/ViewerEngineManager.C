@@ -3219,6 +3219,112 @@ ViewerEngineManager::SetConstructDDFAtts(ConstructDDFAttributes *e)
 
 
 // ****************************************************************************
+//  Method: ViewerEngineManager::ApplyNamedSelection
+//
+//  Purpose:
+//      Applies a named selection.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::ApplyNamedSelection(const EngineKey &ek, 
+                                         const std::vector<std::string> &ids,
+                                         const std::string &selName)
+{
+    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    engine->ApplyNamedSelection(ids, selName);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::CreateNamedSelection
+//
+//  Purpose:
+//      Creates a named selection.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::CreateNamedSelection(const EngineKey &ek, 
+                                          int id, const std::string &selName)
+{
+    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    engine->CreateNamedSelection(id, selName);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::DeleteNamedSelection
+//
+//  Purpose:
+//      Deletes a named selection.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::DeleteNamedSelection(const EngineKey &ek, 
+                                         const std::string &selName)
+{
+    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    engine->DeleteNamedSelection(selName);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::LoadNamedSelection
+//
+//  Purpose:
+//      Loads a named selection.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::LoadNamedSelection(const EngineKey &ek, 
+                                         const std::string &selName)
+{
+    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    engine->LoadNamedSelection(selName);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::SaveNamedSelection
+//
+//  Purpose:
+//      Saves a named selection.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 28, 2009
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::SaveNamedSelection(const EngineKey &ek, 
+                                         const std::string &selName)
+{
+    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    engine->SaveNamedSelection(selName);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+
+// ****************************************************************************
 //  Method: ViewerEngineManager::ConstructDDF
 //
 //  Purpose:
