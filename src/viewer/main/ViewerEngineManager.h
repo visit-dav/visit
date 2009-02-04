@@ -282,6 +282,9 @@ class FileOpenOptions;
 //    to new engines.  Also, allow clients to set new ones which will
 //    get broadcast to existing engines.
 //
+//    Hank Childs, Wed Jan 28 15:03:08 PST 2009
+//    Add support for named selections.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -398,6 +401,12 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                       const QueryOverTimeAttributes *qatts);
     bool ExportDatabase(const EngineKey &ek, int id);
     bool ConstructDDF(const EngineKey &ek, int id);
+    bool ApplyNamedSelection(const EngineKey &ek, const std::vector<std::string> &ids, 
+                             const std::string &);
+    bool CreateNamedSelection(const EngineKey &ek, int, const std::string &);
+    bool DeleteNamedSelection(const EngineKey &ek, const std::string &);
+    bool LoadNamedSelection(const EngineKey &ek, const std::string &);
+    bool SaveNamedSelection(const EngineKey &ek, const std::string &);
 
     void CreateNode(DataNode *) const;
     void SetFromNode(DataNode *, const std::string &);

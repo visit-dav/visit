@@ -7532,6 +7532,9 @@ ViewerSubject::HandleViewerRPC()
 //    Brad Whitlock, Wed Jan 14 13:58:02 PST 2009
 //    I removed UpdatePlotInfoAtts.
 //
+//    Hank Childs, Wed Jan 28 14:51:03 PST 2009
+//    Added support for named selections.
+//
 // ****************************************************************************
 
 void
@@ -7903,6 +7906,21 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::SetSuppressMessagesRPC:
         SetSuppressMessages();
+        break;
+    case ViewerRPC::ApplyNamedSelectionRPC:
+        ApplyNamedSelection();
+        break;
+    case ViewerRPC::CreateNamedSelectionRPC:
+        CreateNamedSelection();
+        break;
+    case ViewerRPC::DeleteNamedSelectionRPC:
+        DeleteNamedSelection();
+        break;
+    case ViewerRPC::LoadNamedSelectionRPC:
+        LoadNamedSelection();
+        break;
+    case ViewerRPC::SaveNamedSelectionRPC:
+        SaveNamedSelection();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -9433,6 +9451,292 @@ ViewerSubject::SetCreateVectorMagnitudeExpressions()
     wM->SetCreateVectorMagnitudeExpressions(
         GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
+
+// ****************************************************************************
+//  Method:  ViewerSubject::ApplyNamedSelection()
+//
+//  Purpose: Handle a ApplyNamedSelection RPC
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerSubject::ApplyNamedSelection()
+{
+    int   i;
+
+    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
+
+    //
+    // Perform the RPC.
+    //
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+    ViewerPlotList *plist = win->GetPlotList();
+    intVector plotIDs;
+    plist->GetActivePlotIDs(plotIDs, false);
+    if (plotIDs.size() <= 0)
+    {
+        Error(tr("To apply a named selection, you must have an active"
+                 " plot.  No named selection was applied."));
+        return;
+    }
+    std::vector<std::string> plotNames;
+    for (i = 0 ; i < plotIDs.size() ; i++)
+    {
+        plotNames.push_back(plist->GetPlot(plotIDs[i])->GetPlotName());
+    }
+    ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
+    int networkId = plot->GetNetworkID();
+    const EngineKey   &engineKey = plot->GetEngineKey();
+    for (int i = 1 ; i < plotIDs.size() ; i++)
+    {
+        ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
+        const EngineKey   &engineKey2 = plot->GetEngineKey();
+        if (engineKey2 != engineKey)
+        {
+            Error(tr("All plots involving a named selection must come from"
+                 " the same engine.  No named selection was applied."));
+        }
+    }
+        
+    TRY
+    {
+        if (ViewerEngineManager::Instance()->ApplyNamedSelection(engineKey, 
+                                                      plotNames, selName))
+        {
+            // Only force a redraw if we have active, non-hidden, realized
+            // plots.
+            vector<int> plotIDs2;
+            plist->GetActivePlotIDs(plotIDs2, true);
+            if (plotIDs2.size() > 0)
+            {
+                GetViewerMethods()->ClearWindow(false);
+                GetViewerMethods()->DrawPlots(false);
+            }
+            Message(tr("Applied named selection"));
+        }
+        else
+        {
+            Error(tr("Unable to apply named selection"));
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        char message[1024];
+        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
+                                             e.Message().c_str());
+        Error(message);
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::CreateNamedSelection()
+//
+//  Purpose: Handle a CreateNamedSelection RPC
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerSubject::CreateNamedSelection()
+{
+    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
+
+    //
+    // Perform the RPC.
+    //
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+    ViewerPlotList *plist = win->GetPlotList();
+    intVector plotIDs;
+    plist->GetActivePlotIDs(plotIDs);
+    if (plotIDs.size() <= 0)
+    {
+        Error(tr("To create a named selection, you must have an active"
+                 " plot.  No named selection was created."));
+        return;
+    }
+    if (plotIDs.size() > 1)
+    {
+        Error(tr("You can only have one active plot when creating a named"
+                 " selection.  No named selection was created."));
+        return;
+    }
+    ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
+    int networkId = plot->GetNetworkID();
+    const EngineKey   &engineKey = plot->GetEngineKey();
+        
+    TRY
+    {
+        if (ViewerEngineManager::Instance()->CreateNamedSelection(engineKey, 
+                                                      networkId, selName))
+        {
+            Message(tr("Created named selection"));
+        }
+        else
+        {
+            Error(tr("Unable to create named selection"));
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        char message[1024];
+        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
+                                             e.Message().c_str());
+        Error(message);
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::DeleteNamedSelection()
+//
+//  Purpose: Handle a DeleteNamedSelection RPC
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerSubject::DeleteNamedSelection()
+{
+    //
+    // Get the rpc arguments.
+    //
+    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
+
+    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
+
+    EngineKey engineKey(hostName, simName);
+
+    //
+    // Perform the RPC.
+    //
+    TRY
+    {
+        if (ViewerEngineManager::Instance()->DeleteNamedSelection(engineKey, selName))
+        {
+            Message(tr("Deleted named selection"));
+        }
+        else
+        {
+            Error(tr("Unable to delete named selection"));
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        char message[1024];
+        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
+                                             e.Message().c_str());
+        Error(message);
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::LoadNamedSelection()
+//
+//  Purpose: Handle a LoadNamedSelection RPC
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerSubject::LoadNamedSelection()
+{
+    //
+    // Get the rpc arguments.
+    //
+    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
+
+    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
+
+    EngineKey engineKey(hostName, simName);
+
+    //
+    // Perform the RPC.
+    //
+    TRY
+    {
+        if (ViewerEngineManager::Instance()->LoadNamedSelection(engineKey, selName))
+        {
+            Message(tr("Loaded named selection"));
+        }
+        else
+        {
+            Error(tr("Unable to load named selection"));
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        char message[1024];
+        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
+                                             e.Message().c_str());
+        Error(message);
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SaveNamedSelection()
+//
+//  Purpose: Handle a SaveNamedSelection RPC
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 28, 2009
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SaveNamedSelection()
+{
+    //
+    // Get the rpc arguments.
+    //
+    std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
+
+    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
+
+    EngineKey engineKey(hostName, simName);
+
+    //
+    // Perform the RPC.
+    //
+    TRY
+    {
+        if (ViewerEngineManager::Instance()->SaveNamedSelection(engineKey, selName))
+        {
+            Message(tr("Saved named selection"));
+        }
+        else
+        {
+            Error(tr("Unable to save named selection"));
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        char message[1024];
+        SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
+                                             e.Message().c_str());
+        Error(message);
+    }
+    ENDTRY
+}
+
 
 // ****************************************************************************
 //  Method:  ViewerSubject::SetSuppressMessages()

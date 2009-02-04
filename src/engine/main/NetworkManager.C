@@ -54,6 +54,8 @@
 #include <MaterialAttributes.h>
 #include <MeshManagementAttributes.h>
 #include <avtExpressionEvaluatorFilter.h>
+#include <avtNamedSelectionFilter.h>
+#include <avtNamedSelectionManager.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 #include <DatabaseException.h>
@@ -1306,6 +1308,26 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
 int
 NetworkManager::EndNetwork(int windowID)
 {
+    std::map<std::string, std::string>::iterator it;
+    for (it = namedSelectionsToApply.begin() ; 
+         it != namedSelectionsToApply.end() ; it++)
+    {
+        if ((it)->first == workingNet->GetPlotName())
+        {
+            avtNamedSelectionFilter *f = new avtNamedSelectionFilter();
+            f->SetSelectionName(it->second);
+            NetnodeFilter *filt = new NetnodeFilter(f, "NamedSelection");
+            Netnode *n = workingNetnodeList.back();
+            workingNetnodeList.pop_back();
+            filt->GetInputNodes().push_back(n);
+
+            // Push the ExpressionEvaluator onto the working list.
+            workingNetnodeList.push_back(filt);
+
+            workingNet->AddNode(filt);
+        }
+    }
+
     // Checking to see if the network has been built successfully.
     if (workingNetnodeList.size() != 1)
     {
@@ -3443,6 +3465,155 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     }
     ENDTRY
 }
+
+
+// ****************************************************************************
+//  Method:  NetworkManager::CreateNamedSelection
+//
+//  Purpose:
+//      Creates a named selection from a plot.
+//
+//  Arguments:
+//    id         The network to use.
+//    selName    The name of the selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 30, 2009
+//
+// ****************************************************************************
+
+void
+NetworkManager::CreateNamedSelection(int id, const std::string &selName)
+{
+    if (id >= networkCache.size())
+    {
+        debug1 << "Internal error:  asked to use network ID (" << id 
+               << ") >= num saved networks ("
+               << networkCache.size() << ")" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+ 
+    if (networkCache[id] == NULL)
+    {
+        debug1 << "Asked to construct a named selection from a network "
+               << "that has already been cleared." << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    if (id != networkCache[id]->GetNetID())
+    {
+        debug1 << "Internal error: network at position[" << id << "] "
+               << "does not have same id (" << networkCache[id]->GetNetID()
+               << ")" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    avtDataObject_p dob = 
+        networkCache[id]->GetPlot()->GetIntermediateDataObject();
+
+    if (*dob == NULL)
+    {
+        debug1 << "Could not find a valid data set to create a named "
+               << "selection from" << endl;
+        EXCEPTION0(NoInputException);
+    }
+
+    avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
+    nsm->CreateNamedSelection(dob, selName);
+}
+
+
+// ****************************************************************************
+//  Method:  NetworkManager::ApplyNamedSelection
+//
+//  Purpose:
+//      Applies a named selection to a plot.
+//
+//  Arguments:
+//    ids        The networks to use.
+//    selName    The name of the selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 30, 2009
+//
+// ****************************************************************************
+
+void
+NetworkManager::ApplyNamedSelection(const std::vector<std::string> &ids, 
+                                     const std::string &selName)
+{
+    for (int i = 0 ; i < ids.size() ; i++)
+    {
+        namedSelectionsToApply[ids[i]] = selName;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  NetworkManager::DeleteNamedSelection
+//
+//  Purpose:
+//      Deletes a named selection.
+//
+//  Arguments:
+//    selName    The name of the selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 30, 2009
+//
+// ****************************************************************************
+
+void
+NetworkManager::DeleteNamedSelection(const std::string &selName)
+{
+    avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
+    nsm->DeleteNamedSelection(selName);
+}
+
+
+// ****************************************************************************
+//  Method:  NetworkManager::LoadNamedSelection
+//
+//  Purpose:
+//      Loads a named selection.
+//
+//  Arguments:
+//    selName    The name of the selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 30, 2009
+//
+// ****************************************************************************
+
+void
+NetworkManager::LoadNamedSelection(const std::string &selName)
+{
+    avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
+    nsm->LoadNamedSelection(selName);
+}
+
+
+// ****************************************************************************
+//  Method:  NetworkManager::SaveNamedSelection
+//
+//  Purpose:
+//      Saves a named selection.
+//
+//  Arguments:
+//    selName    The name of the selection.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 30, 2009
+//
+// ****************************************************************************
+
+void
+NetworkManager::SaveNamedSelection(const std::string &selName)
+{
+    avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
+    nsm->SaveNamedSelection(selName);
+}
+
 
 // ****************************************************************************
 //  Method:  NetworkManager::ConstructDDF

@@ -581,6 +581,9 @@ Engine::Finalize(void)
 //    Tom Fogal, Mon Sep  1 14:19:45 EDT 2008
 //    Removed an assert.
 //
+//    Hank Childs, Thu Jan 29 11:15:16 PST 2009
+//    Add NamedSelectionRPC.
+//
 // ****************************************************************************
 
 void
@@ -688,6 +691,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     simulationCommandRPC            = new SimulationCommandRPC;
     exportDatabaseRPC               = new ExportDatabaseRPC;
     constructDDFRPC                 = new ConstructDDFRPC;
+    namedSelectionRPC               = new NamedSelectionRPC;
     setEFileOpenOptionsRPC          = new SetEFileOpenOptionsRPC;
 
     xfer->Add(quitRPC);
@@ -713,6 +717,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(simulationCommandRPC);
     xfer->Add(exportDatabaseRPC);
     xfer->Add(constructDDFRPC);
+    xfer->Add(namedSelectionRPC);
     xfer->Add(setEFileOpenOptionsRPC);
 
     // Create an object to implement the RPCs
@@ -742,6 +747,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<SimulationCommandRPC>(simulationCommandRPC));
     rpcExecutors.push_back(new RPCExecutor<ExportDatabaseRPC>(exportDatabaseRPC));
     rpcExecutors.push_back(new RPCExecutor<ConstructDDFRPC>(constructDDFRPC));
+    rpcExecutors.push_back(new RPCExecutor<NamedSelectionRPC>(namedSelectionRPC));
     rpcExecutors.push_back(new RPCExecutor<SetEFileOpenOptionsRPC>(setEFileOpenOptionsRPC));
 
     // Hook up the expression list as an observed object.

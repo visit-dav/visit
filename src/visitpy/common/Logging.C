@@ -1649,6 +1649,36 @@ static void log_SetQueryFloatFormatRPC(ViewerRPC *rpc, char *str)
                         rpc->GetStringArg1().c_str());
 }
 
+static void log_CreateNamedSelectionRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "CreateNamedSelection(\"%s\")\n", 
+                        rpc->GetStringArg1().c_str());
+}
+
+static void log_DeleteNamedSelectionRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "DeleteNamedSelection(\"%s\")\n", 
+                        rpc->GetStringArg1().c_str());
+}
+
+static void log_LoadNamedSelectionRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "LoadNamedSelection(\"%s\")\n", 
+                        rpc->GetStringArg1().c_str());
+}
+
+static void log_SaveNamedSelectionRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "SaveNamedSelection(\"%s\")\n", 
+                        rpc->GetStringArg1().c_str());
+}
+
+static void log_ApplyNamedSelectionRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "ApplyNamedSelection(\"%s\")\n", 
+                        rpc->GetStringArg1().c_str());
+}
+
 // ****************************************************************************
 // Method: LogRPCs
 //
@@ -2189,6 +2219,21 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::SetQueryFloatFormatRPC:
         log_SetQueryFloatFormatRPC(rpc, str);
+        break;
+    case ViewerRPC::CreateNamedSelectionRPC:
+        log_CreateNamedSelectionRPC(rpc, str);
+        break;
+    case ViewerRPC::DeleteNamedSelectionRPC:
+        log_DeleteNamedSelectionRPC(rpc, str);
+        break;
+    case ViewerRPC::LoadNamedSelectionRPC:
+        log_LoadNamedSelectionRPC(rpc, str);
+        break;
+    case ViewerRPC::SaveNamedSelectionRPC:
+        log_SaveNamedSelectionRPC(rpc, str);
+        break;
+    case ViewerRPC::ApplyNamedSelectionRPC:
+        log_ApplyNamedSelectionRPC(rpc, str);
         break;
         
     // RPCs that we don't want to log:

@@ -179,6 +179,11 @@
       TurnOffAllLocksRPC
       SetDefaultFileOpenOptionsRPC
       SetSuppressMessagesRPC
+      ApplyNamedSelectionRPC
+      CreateNamedSelectionRPC
+      DeleteNamedSelectionRPC
+      LoadNamedSelectionRPC
+      SaveNamedSelectionRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

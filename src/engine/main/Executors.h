@@ -71,6 +71,7 @@
 #include <ExportDatabaseRPC.h>
 #include <KeepAliveRPC.h>
 #include <MakePlotRPC.h>
+#include <NamedSelectionRPC.h>
 #include <OpenDatabaseRPC.h>
 #include <PickRPC.h>
 #include <ProcInfoRPC.h>
@@ -1503,6 +1504,67 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
         rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
+}
+
+// ****************************************************************************
+//  Method:  RPCExecutor<NamedSelectionRPC>::Execute
+//
+//  Purpose:
+//      Handles a NamedSelection RPC.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2009
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
+{
+    Engine *engine = Engine::Instance();
+    NetworkManager *netmgr = engine->GetNetMgr();
+
+    debug2 << "Executing NamedSelectionRPC." << endl;
+
+    avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
+    LoadBalancer::RegisterProgressCallback(NULL, NULL);
+    avtOriginatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
+    TRY
+    {
+        NamedSelectionRPC::NamedSelectionType t = rpc->GetNamedSelectionType();
+        switch (t)
+        {
+          case NamedSelectionRPC::APPLY:
+            netmgr->ApplyNamedSelection(rpc->GetPlotNames(), rpc->GetSelectionName());
+            break;
+          case NamedSelectionRPC::CREATE:
+            netmgr->CreateNamedSelection(rpc->GetPlotID(), rpc->GetSelectionName());
+            break;
+          case NamedSelectionRPC::DELETE:
+            netmgr->DeleteNamedSelection(rpc->GetSelectionName());
+            break;
+          case NamedSelectionRPC::LOAD:
+            netmgr->LoadNamedSelection(rpc->GetSelectionName());
+            break;
+          case NamedSelectionRPC::SAVE:
+            netmgr->SaveNamedSelection(rpc->GetSelectionName());
+            break;
+        }
+        rpc->SendReply();
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+
+    avtDataObjectSource::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    LoadBalancer::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    avtOriginatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
 }
 
 // ****************************************************************************

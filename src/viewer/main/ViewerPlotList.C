@@ -7807,20 +7807,31 @@ ViewerPlotList::GetPlot(const int id) const
 // Creation:   May 28, 2002 
 //
 // Modifications:
+//
 //   Hank Childs, Thu Oct  2 14:22:16 PDT 2003
 //   Renamed from GetPlotID.  Made it return a vector of ids.
+//
+//   Hank Childs, Mon Feb  2 16:02:32 PST 2009
+//   Added a Boolean for whether or not to include active and hidden plots.
 //
 // ****************************************************************************
 
 void
-ViewerPlotList::GetActivePlotIDs(intVector &ids) const
+ViewerPlotList::GetActivePlotIDs(intVector &ids, bool onlyRealizedAndUnhidden) 
+        const
 {
     ids.clear();
     for (int i = 0; i < nPlots; ++i)
     {
-        if (plots[i].active && plots[i].realized && !plots[i].hidden)
+        if (plots[i].active)
         {
-            ids.push_back(i);
+            if (onlyRealizedAndUnhidden)
+            {
+               if (plots[i].realized && !plots[i].hidden)
+                   ids.push_back(i);
+            }
+            else
+                ids.push_back(i);
         }
     }
 }

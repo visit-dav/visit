@@ -1,0 +1,1 @@
+../../avt/Pipeline/Pipeline/avtNamedSelectionManager.h

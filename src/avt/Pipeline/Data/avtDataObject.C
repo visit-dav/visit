@@ -101,15 +101,22 @@ avtDataObject::~avtDataObject()
 //      Propagates an Update up the pipeline.
 //
 //  Arguments:
-//      spec    The specification of what data the pipeline should execute.
+//      contract   The contract of what data the pipeline should execute.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Feb  2 09:26:36 PST 2009
+//    Store off the contract if this is not a transient data object.
+//    (Chose to do this only for non-transients, because those are probably
+//     the only ones we'd want it for ... simply trying to save on space.)
+//
 // ****************************************************************************
 
 bool
-avtDataObject::Update(avtContract_p spec)
+avtDataObject::Update(avtContract_p contract)
 {
     bool rv = false;
     if (source == NULL)
@@ -121,8 +128,10 @@ avtDataObject::Update(avtContract_p spec)
     }
     else
     {
-        rv = source->Update(spec);
+        rv = source->Update(contract);
     }
+
+    contractFromPrevExecution = contract;
 
     return rv;
 }

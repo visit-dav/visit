@@ -296,6 +296,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Thu Jan  8 15:08:33 PST 2009
 //    I added methods to help deal with the plot information.
 //
+//    Hank Childs, Mon Feb  2 16:02:04 PST 2009
+//    Added argument to GetActivePlotIDs.
+//
 // ****************************************************************************
 
 
@@ -448,7 +451,7 @@ public:
     void ResetNetworkIds(const EngineKey &key);
     std::string GetVarName();
     ViewerPlot *GetPlot(const int id) const;
-    void GetActivePlotIDs(intVector &) const;
+    void GetActivePlotIDs(intVector &, bool onlyRealizedAndUnhidden = true) const;
 
     int GetWindowId() const;
 
