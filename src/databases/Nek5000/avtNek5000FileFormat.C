@@ -2109,6 +2109,9 @@ avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName
 //    Hank Childs, Mon Jan 12 18:09:54 CST 2009
 //    Overhauled method to only read the current time slice.
 //
+//    Hank Childs, Wed Feb  4 15:40:22 CST 2009
+//    Always indicate that there is a mesh at time 0.
+//
 // ****************************************************************************
 
 void
@@ -2119,6 +2122,7 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
         aTimes.resize(iNumTimesteps);
         aCycles.resize(iNumTimesteps);
         iTimestepsWithMesh.resize(iNumTimesteps, false);
+        iTimestepsWithMesh[0] = true;
         readTimeInfoFor.resize(iNumTimesteps, false);
     }
 
