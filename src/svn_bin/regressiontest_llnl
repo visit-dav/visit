@@ -65,6 +65,9 @@
 #
 #    Mark C. Miller, Fri Oct 31 17:00:45 PDT 2008
 #    Added some itaps tests to the skip list
+#
+#    Mark C. Miller, Wed Feb  4 07:50:54 PST 2009
+#    Added 'killed' to grep filter on summary file to produce summary email.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -424,7 +427,7 @@ for m in $modes; do
     touch short_summary
     echo "Failed results should be obtainable from" >> short_summary
     echo "ftp://ftp.llnl.gov/outgoing/visit_results_${theMode}_${dateTag}.tar.gz" >> short_summary
-    grep 'category\|failed' summary >> short_summary
+    grep 'category\|failed\|killed' summary >> short_summary
     checkAndHandleError $curerror warning "test mode $m failed" short_summary 
 
     # try to use auto-login, anonymous ftp to

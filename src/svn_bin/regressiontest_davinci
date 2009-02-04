@@ -72,6 +72,9 @@
 #
 #    Mark C. Miller, Thu Jan 22 16:44:32 PST 2009
 #    Removed some silo tests from the skip list
+#
+#    Mark C. Miller, Wed Feb  4 07:50:54 PST 2009
+#    Added 'killed' to grep filter on summary file to produce summary email.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -434,7 +437,7 @@ for m in $modes; do
     touch short_summary
     echo "Failed results should be obtainable on davinci.nersc.gov" >> short_summary
     echo "file:///project/projectdirs/visit/www/${dateTag}/${theMode}/index.html" >> short_summary
-    grep 'category\|failed' summary >> short_summary
+    grep 'category\|failed\|killed' summary >> short_summary
     checkAndHandleError $curerror warning "test mode $m failed" short_summary 
 
     failedPyFiles=`grep failed short_summary | cut -d':' -f1`
