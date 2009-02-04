@@ -417,6 +417,9 @@ exec perl -x $0 ${1+"$@"};
 #    in VisIt directory since using the system version breaks some NERSC job
 #    validation scripts.
 #
+#    Hank Childs, Wed Feb  4 15:40:22 CST 2009
+#    Remove PYTHONPATH logic for Argonne's Eureka machine.  No longer needed.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2299,7 +2302,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @printcmd, @sublaunchpostcmd, "\n", if $sublaunchpostcmd_set;
             push @printcmd, ("\"".(pop @printcmd)."\"");
             if ( $IsRunningOnEureka_ANL ) {
-               $ENV{PYTHONPATH} = "/home/buettner/python_lib:/usr/lib64/python:/usr/lib64/python2.4/lib-dynload";
+               # $ENV{PYTHONPATH} = "/home/buettner/python_lib:/usr/lib64/python:/usr/lib64/python2.4/lib-dynload";
                @parcmd = "qsub";
                push @parcmd, "-n";
                push @parcmd, $nodes;
