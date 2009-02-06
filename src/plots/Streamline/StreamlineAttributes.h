@@ -165,6 +165,7 @@ public:
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
     void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
     void SetMaxDomainCacheSize(int maxDomainCacheSize_);
+    void SetWorkGroupSize(int workGroupSize_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -209,6 +210,7 @@ public:
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
     int                  GetMaxStreamlineProcessCount() const;
     int                  GetMaxDomainCacheSize() const;
+    int                  GetWorkGroupSize() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -293,7 +295,8 @@ public:
         ID_integrationType,
         ID_streamlineAlgorithmType,
         ID_maxStreamlineProcessCount,
-        ID_maxDomainCacheSize
+        ID_maxDomainCacheSize,
+        ID_workGroupSize
     };
 
 private:
@@ -329,6 +332,7 @@ private:
     int            streamlineAlgorithmType;
     int            maxStreamlineProcessCount;
     int            maxDomainCacheSize;
+    int            workGroupSize;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

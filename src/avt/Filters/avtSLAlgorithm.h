@@ -55,6 +55,11 @@
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
 //
+// Modifications:
+//
+//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//    Add a SortStreamlines that takes a vector.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -89,8 +94,8 @@ class avtSLAlgorithm
                                      {return streamlineFilter->DomainToRank(dom); }
 
     //Utility functions.
-    virtual void              SortStreamlines( std::list<avtStreamlineWrapper *> &);
-    
+    virtual void              SortStreamlines(std::list<avtStreamlineWrapper *> &);
+    virtual void              SortStreamlines(std::vector<avtStreamlineWrapper *> &);
     //Statistics and timers.
     class SLStatistics
     {

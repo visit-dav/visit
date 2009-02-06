@@ -161,6 +161,9 @@
       <Field name="maxDomainCacheSize" label="Max domain cache" type="int">
         3
       </Field>
+      <Field name="workGroupSize" label="Work group size" type="int">
+        32
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

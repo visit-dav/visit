@@ -56,13 +56,18 @@ using namespace std;
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//    Change numTerminated to numSLChange.
+//
 // ****************************************************************************
 
 avtParDomSLAlgorithm::avtParDomSLAlgorithm(avtStreamlineFilter *slFilter,
                                            int maxCount)
     : avtParSLAlgorithm(slFilter)
 {
-    numTerminated = 0;
+    numSLChange = 0;
     totalNumStreamlines = 0;
     statusMsgSz = 1;
     maxCnt = maxCount;
@@ -92,6 +97,11 @@ avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//    Change numTerminated to numSLChange.
+//
 // ****************************************************************************
 
 
@@ -100,7 +110,7 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 {
     avtParSLAlgorithm::Initialize(seedPts);
     totalNumStreamlines = seedPts.size();
-    numTerminated = 0;
+    numSLChange = 0;
 
     //Get the SLs that I own.
     for (int i = 0; i < seedPts.size(); i++)
@@ -114,18 +124,21 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
                 activeSLs.push_back(s);
             else
             {
-                numTerminated++;
+                numSLChange--;
                 delete s;
             }
         }
         else
             delete s;
     }
-
-    debug1<<"Init: numSLs= "<<totalNumStreamlines<<endl;
-    debug1<<"ExchangeTermination: t= "<<numTerminated<<endl;
-    debug1<<"My SLcount= "<<activeSLs.size()<<endl;
     ExchangeTermination();
+
+    debug1<<"My SLcount= "<<activeSLs.size()<<endl;
+    debug1<<"I own: [";
+    for (int i = 0; i < numDomains; i++)
+        if (OwnDomain(i))
+            debug1<<i<<" ";
+    debug1<<"]\n";
 }
 
 
@@ -138,20 +151,25 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//    Change numTerminated to numSLChange.
+//
 // ****************************************************************************
 
 void
 avtParDomSLAlgorithm::ExchangeTermination()
 {
     // If I have terminations, send it out.
-    if (numTerminated > 0)
+    if (numSLChange != 0)
     {
         vector<int> msg(1);
-        msg[0] = numTerminated;
+        msg[0] = numSLChange;
         SendAllMsg(msg);
         
-        totalNumStreamlines -= numTerminated;
-        numTerminated = 0;
+        totalNumStreamlines += numSLChange;
+        numSLChange = 0;
     }
 
     // Check to see if msgs are coming in.
@@ -159,10 +177,8 @@ avtParDomSLAlgorithm::ExchangeTermination()
     RecvMsgs(msgs);
     for (int i = 0; i < msgs.size(); i++)
     {
-        int src = msgs[i][0];
-        int nTerm = msgs[i][1];
-        
-        totalNumStreamlines -= nTerm;
+        debug2<<msgs[i][1]<<" slChange= "<<msgs[i][1]<<endl;
+        totalNumStreamlines += msgs[i][1];
     }
 }
 
@@ -175,6 +191,11 @@ avtParDomSLAlgorithm::ExchangeTermination()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//    Change numTerminated to numSLChange.
+//
 // ****************************************************************************
 
 void
@@ -183,7 +204,7 @@ avtParDomSLAlgorithm::ExchangeSLs(
 {
     int earlyTerminations = 0;
     avtParSLAlgorithm::ExchangeSLs(activeSLs, distributeSLs, earlyTerminations);
-    numTerminated += earlyTerminations;
+    numSLChange -= earlyTerminations;
 }
 
 
@@ -202,6 +223,9 @@ avtParDomSLAlgorithm::ExchangeSLs(
 //   Regression fix. Handling streamlines that lie in multiple domains after
 //   integration was not handled correctly after the code refactor. Added
 //   HandleOOBSL().
+//
+//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//    Change numTerminated to numSLChange.
 //
 // ****************************************************************************
 
@@ -227,7 +251,7 @@ avtParDomSLAlgorithm::Execute()
             if (s->status == avtStreamlineWrapper::TERMINATE)
             {
                 terminatedSLs.push_back(s);
-                numTerminated++;
+                numSLChange--;
             }
             else
                 HandleOOBSL(s, distributeStreamlines);
@@ -254,6 +278,12 @@ avtParDomSLAlgorithm::Execute()
 //  Programmer: Dave Pugmire
 //  Creation:   Febuary 4 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//    Change numTerminated to numSLChange. Account for SLs 'created' when
+//    passing one SL multiple times.
+//
 // ****************************************************************************
 
 void
@@ -267,6 +297,10 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s,
     // Duplicate the SL and send to the proper owner.
     for (int i = 0; i < s->seedPtDomainList.size(); i++)
     {
+        // if i > 0, we create new streamlines.
+        if (i > 0)
+            numSLChange++;
+
         int domRank = DomainToRank(s->seedPtDomainList[i]);
         if (domRank == rank)
         {

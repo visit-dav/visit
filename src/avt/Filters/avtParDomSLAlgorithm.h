@@ -62,6 +62,9 @@
 //   integration was not handled correctly after the code refactor. Added
 //   HandleOOBSL().
 //
+//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//    Change numTerminated to numSLChange.
+//
 // ****************************************************************************
 
 class avtParDomSLAlgorithm : public avtParSLAlgorithm
@@ -81,7 +84,7 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
                           std::vector< std::vector< avtStreamlineWrapper *> >&);
     void                      ExchangeSLs(
                             std::vector<std::vector<avtStreamlineWrapper *> >&);
-    int                       numTerminated, totalNumStreamlines;
+    int                       numSLChange, totalNumStreamlines;
 
     std::list<avtStreamlineWrapper *> activeSLs;
     int                       maxCnt;

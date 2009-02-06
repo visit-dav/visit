@@ -311,7 +311,7 @@ StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, S
 }
 
 // Type map format string
-const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiii";
+const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiiii";
 
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
@@ -381,6 +381,7 @@ StreamlineAttributes::StreamlineAttributes() :
     streamlineAlgorithmType = ParallelStaticDomains;
     maxStreamlineProcessCount = 10;
     maxDomainCacheSize = 3;
+    workGroupSize = 32;
 }
 
 // ****************************************************************************
@@ -457,6 +458,7 @@ StreamlineAttributes::StreamlineAttributes(const StreamlineAttributes &obj) :
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
+    workGroupSize = obj.workGroupSize;
 
     SelectAll();
 }
@@ -556,6 +558,7 @@ StreamlineAttributes::operator = (const StreamlineAttributes &obj)
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
+    workGroupSize = obj.workGroupSize;
 
     SelectAll();
     return *this;
@@ -651,7 +654,8 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (integrationType == obj.integrationType) &&
             (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
             (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
-            (maxDomainCacheSize == obj.maxDomainCacheSize));
+            (maxDomainCacheSize == obj.maxDomainCacheSize) &&
+            (workGroupSize == obj.workGroupSize));
 }
 
 // ****************************************************************************
@@ -926,6 +930,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_streamlineAlgorithmType,   (void *)&streamlineAlgorithmType);
     Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
     Select(ID_maxDomainCacheSize,        (void *)&maxDomainCacheSize);
+    Select(ID_workGroupSize,             (void *)&workGroupSize);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1152,6 +1157,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("maxDomainCacheSize", maxDomainCacheSize));
     }
 
+    if(completeSave || !FieldsEqual(ID_workGroupSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("workGroupSize", workGroupSize));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1350,6 +1361,8 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetMaxStreamlineProcessCount(node->AsInt());
     if((node = searchNode->GetNode("maxDomainCacheSize")) != 0)
         SetMaxDomainCacheSize(node->AsInt());
+    if((node = searchNode->GetNode("workGroupSize")) != 0)
+        SetWorkGroupSize(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1593,6 +1606,13 @@ StreamlineAttributes::SetMaxDomainCacheSize(int maxDomainCacheSize_)
 {
     maxDomainCacheSize = maxDomainCacheSize_;
     Select(ID_maxDomainCacheSize, (void *)&maxDomainCacheSize);
+}
+
+void
+StreamlineAttributes::SetWorkGroupSize(int workGroupSize_)
+{
+    workGroupSize = workGroupSize_;
+    Select(ID_workGroupSize, (void *)&workGroupSize);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1851,6 +1871,12 @@ StreamlineAttributes::GetMaxDomainCacheSize() const
     return maxDomainCacheSize;
 }
 
+int
+StreamlineAttributes::GetWorkGroupSize() const
+{
+    return workGroupSize;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1971,6 +1997,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_streamlineAlgorithmType:   return "streamlineAlgorithmType";
     case ID_maxStreamlineProcessCount: return "maxStreamlineProcessCount";
     case ID_maxDomainCacheSize:        return "maxDomainCacheSize";
+    case ID_workGroupSize:             return "workGroupSize";
     default:  return "invalid index";
     }
 }
@@ -2027,6 +2054,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_streamlineAlgorithmType:   return FieldType_enum;
     case ID_maxStreamlineProcessCount: return FieldType_int;
     case ID_maxDomainCacheSize:        return FieldType_int;
+    case ID_workGroupSize:             return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -2083,6 +2111,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_streamlineAlgorithmType:   return "enum";
     case ID_maxStreamlineProcessCount: return "int";
     case ID_maxDomainCacheSize:        return "int";
+    case ID_workGroupSize:             return "int";
     default:  return "invalid index";
     }
 }
@@ -2307,6 +2336,11 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_maxDomainCacheSize:
         {  // new scope
         retval = (maxDomainCacheSize == obj.maxDomainCacheSize);
+        }
+        break;
+    case ID_workGroupSize:
+        {  // new scope
+        retval = (workGroupSize == obj.workGroupSize);
         }
         break;
     default: retval = false;

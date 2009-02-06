@@ -84,6 +84,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
 //   Removed the accurate distance calculation option.
 //
+//   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
+//   Added workGroupSize for the masterSlave algorithm.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -132,6 +135,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void pointDensityChanged(int val);
     void maxSLCountChanged(int val);
     void maxDomainCacheChanged(int val);
+    void workGroupSizeChanged(int val);
     void displayMethodChanged(int val);
     void showStartChanged(bool val);
     void radiusProcessText();
@@ -198,6 +202,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QSpinBox  *maxSLCount;
     QLabel    *maxDomainCacheLabel;
     QSpinBox  *maxDomainCache;
+    QLabel    *workGroupSizeLabel;
+    QSpinBox  *workGroupSize;
 
     StreamlineAttributes *streamAtts;
 };

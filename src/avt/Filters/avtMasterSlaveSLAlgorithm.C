@@ -74,24 +74,68 @@ avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
                                   int nProcs,
                                   int workGroupSz)
 {
-    avtMasterSlaveSLAlgorithm *algo = NULL;
+    debug1<<"avtMasterSlaveSLAlgorithm::Create\n";
     
-    //Easy case, 1 working group.
-    if (nProcs <= workGroupSz)
+    avtMasterSlaveSLAlgorithm *algo = NULL;
+    int numMasters = 1;
+    int extra = 0;
+    
+    if (nProcs < workGroupSz)
+        workGroupSz = nProcs;
+    else
     {
-        if (rank == 0)
-        {
-            vector<int> slaves;
-            for (int i = 1; i < nProcs; i++)
-                slaves.push_back(i);
-            algo = new avtMasterSLAlgorithm(slFilter, maxCount, slaves);
-        }
-        else
-        {
-            int master = 0;
-            algo = new avtSlaveSLAlgorithm(slFilter, maxCount, master);
-        }
+        numMasters = nProcs/workGroupSz;
+        extra = nProcs%workGroupSz;
     }
+    
+    int extraPerMaster = extra / numMasters;
+    int extraTill = extra % numMasters;
+
+    debug1<<"numMasters= "<<numMasters<<endl;
+
+    int nextSlave = numMasters;
+    vector<vector<int> > masterList(numMasters);
+    for (int m = 0; m < numMasters; m++)
+    {
+        masterList[m].resize(2);
+        int N = workGroupSz-1 + extraPerMaster;
+        if (m < extraTill)
+            N++;
+
+        masterList[m][0] = nextSlave;
+        masterList[m][1] = (nextSlave+N-1);
+        debug1<<"Master: "<<m<<" ["<<masterList[m][0]<<" "<<masterList[m][1]<<"]"<<endl;
+        nextSlave += N;
+    }
+
+    //I am a master.
+    if (rank < numMasters)
+    {
+        vector<int> slaves;
+        for (int i = masterList[rank][0]; i <= masterList[rank][1]; i++)
+            slaves.push_back(i);
+        
+        algo = new avtMasterSLAlgorithm(slFilter, maxCount, workGroupSz, slaves);
+        debug1<<"I am a master. My slaves are: [";
+        for(int i = 0; i < slaves.size(); i++) debug1<<slaves[i]<<" ";
+        debug1<<"]\n";
+
+    }
+    
+    // I'm a slave. Look for my master.
+    else
+    {
+        for (int m = 0; m < numMasters; m++)
+            if (rank >= masterList[m][0] && rank <= masterList[m][1])
+            {
+                debug1<<"I am a slave. My master is "<<m<<endl;
+                algo = new avtSlaveSLAlgorithm(slFilter, maxCount, m);
+                break;
+            }
+    }
+
+    if (algo == NULL)
+        EXCEPTION0(ImproperUseException);
     
     return algo;
 }
@@ -114,7 +158,8 @@ avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtStreamlineFilter *slFilt
 {
     maxCnt = maxCount;
     sleepMicroSec = 300;
-    
+    latencyTimer = -1;
+
     // Msg type, numTerminated, domain vector.
     statusMsgSz = 2 + numDomains;
 }
@@ -149,7 +194,6 @@ void
 avtMasterSlaveSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
 {
     avtParSLAlgorithm::Initialize(seedPts);
-    latencyTimer = -1;
 }
 
 
@@ -273,9 +317,11 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 
 avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
                                            int maxCount,
+                                           int workGrpSz,
                                            vector<int> &slaves)
     : avtMasterSlaveSLAlgorithm(slFilter, maxCount)
 {
+    workGroupSz = workGrpSz;
     //Create my slaves.
     for (int i = 0; i < slaves.size(); i++)
         slaveInfo.push_back(SlaveInfo(slaves[i], numDomains));
@@ -283,6 +329,11 @@ avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
     slDomCnts.resize(numDomains,0);
     domLoaded.resize(numDomains,0);
 
+    case1Cnt = 0;
+    case2Cnt = 0;
+    case3Cnt = 0;
+    case4Cnt = 0;
+    case5Cnt = 0;
 }
 
 
@@ -315,17 +366,33 @@ avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
 void
 avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
 {
+    SortStreamlines(seedPts);
     avtMasterSlaveSLAlgorithm::Initialize(seedPts);
-    case1Cnt = 0;
-    case2Cnt = 0;
-    case3Cnt = 0;
-    case4Cnt = 0;
-    case5Cnt = 0;
+    int nSeeds = seedPts.size();
+
+    int numMasters;
+    if (nProcs < workGroupSz)
+        numMasters = 1;
+    else
+        numMasters = nProcs/workGroupSz;
+    int ptsPerMaster = nSeeds/numMasters;
+
+    int i0 = rank*ptsPerMaster;
+    int i1 = i0+ptsPerMaster;
+    if (rank == (numMasters-1))
+        i1 = nSeeds;
+    debug1<<"I have seeds: "<<i0<<" --> "<<i1<<endl;
     
-    totalNumStreamlines = seedPts.size();
+    //Delete the seeds I don't need.
+    for (int i = 0; i < i0; i++)
+        delete seedPts[i];
+    for (int i = i1; i < nSeeds; i++)
+        delete seedPts[i];
     
-    for (int i = 0; i < seedPts.size(); i++)
+    for (int i = i0; i < i1; i++)
         activeSLs.push_back(seedPts[i]);
+    
+    totalNumStreamlines = activeSLs.size();
 }
 
 // ****************************************************************************
@@ -370,8 +437,6 @@ avtMasterSLAlgorithm::CalculateStatistics()
 bool
 avtMasterSLAlgorithm::UpdateStatus()
 {
-    debug1<<"avtMasterSLAlgorithm::UpdateStatus()\n";
-    
     //Clean and update SL/Domain counts.
     for (int i = 0; i < numDomains; i++)
     {
@@ -467,7 +532,7 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
     {
         if (slaveInfo[i].rank == rank)
         {
-            debug1<<"Update for rank= "<<rank<<endl;
+            debug5<<"Update for rank= "<<rank<<endl;
             vector<int> domStatus;
             for (int j = 3; j < status.size(); j++)
                 domStatus.push_back(status[j]);
@@ -475,7 +540,6 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
             break;
         }
     }
-    debug1<<"UpdateSlaveStatus() DONE\n";
 }
 
 // ****************************************************************************
@@ -503,23 +567,24 @@ avtMasterSLAlgorithm::Execute()
         if (UpdateStatus())
         {
             PrintStatus();
+            /*
             Case1(case1Cnt);
             Case2(case2Cnt);
             int case3OverloadFactor = 10*maxCnt, case3NDomainFactor = 3*maxCnt;
             Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
             Case4(0,case4Cnt);
-
-            /*
-            Case4(3*maxCount, case4Bcnt);
-            Case1(case1cnt);
-            Case4(1*maxCount, case4Ccnt); //Remove this KILLED performance. ODD.
-            Case2(case2cnt);
-            int case3OverloadFactor = 10*maxCount, case3NDomainFactor = 3*maxCount;
-            Case3(case3OverloadFactor, case3NDomainFactor, case3cnt);
-            Case4(0, case4Acnt);
-            Case5(2*maxCount, true, case5Acnt);
-            Case5(2*maxCount, false, case5Bcnt);
             */
+            
+            Case4(3*maxCnt, case4Cnt);
+            Case1(case1Cnt);
+            Case4(1*maxCnt, case4Cnt); //Remove this KILLED performance. ODD.
+            Case2(case2Cnt);
+            int case3OverloadFactor = 10*maxCnt, case3NDomainFactor = 3*maxCnt;
+            Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
+            Case4(0, case4Cnt);
+            
+            //Case5(2*maxCount, true, case5Acnt);
+            //Case5(2*maxCount, false, case5Bcnt);
 
             debug1<<endl<<"Post-Mortem"<<endl;
             PrintStatus();
@@ -630,7 +695,6 @@ avtMasterSLAlgorithm::Case1(int &counter)
         return;
     
     FindSlackers();
-    debug1<<"Case1: slackers: "<<slackers.size()<<endl;
     
     vector< vector< avtStreamlineWrapper *> > distributeSLs(nProcs);
     bool streamlinesToSend = false;
@@ -731,7 +795,7 @@ avtMasterSLAlgorithm::Case2(int &counter)
 
         //Sort on SL count per domain.
         sort(domCnts.begin(),domCnts.end(), domCntCompare);
-        if (true)
+        if (false)
         {
             debug1<<"SL sort: [";
             for (int i = 0; i < domCnts.size(); i++)
@@ -832,7 +896,7 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
     for (int i = 0; i < slackers.size(); i++)
     {
         int slackerIdx = slackers[i];
-        debug1<<"Case 3: slackerRank="<<slaveInfo[slackerIdx].rank<<endl;
+        //debug1<<"Case 3: slackerRank="<<slaveInfo[slackerIdx].rank<<endl;
         
         for (int d = 0; d < numDomains; d++)
         {
@@ -840,14 +904,14 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
             if ( !slaveInfo[slackerIdx].domainLoaded[d] &&
                  slaveInfo[slackerIdx].domainCnt[d] > 0)
             {
-                debug1<<"   dom= "<<d<<endl;
+                //debug1<<"   dom= "<<d<<endl;
                 // Find a partner who has the domain and has fewer than overloadFactor SLs.
                 for (int j = 0; j < slaveInfo.size(); j++)
                 {
                     if (j != slackerIdx && slaveInfo[j].domainLoaded[d] &&
                         slaveInfo[j].slCount < overloadFactor)
                     {
-                        debug1<<"      partner= "<<j<<endl;
+                        //debug1<<"      partner= "<<j<<endl;
                         domPartner.push_back(j);
                     }
                 }
@@ -855,15 +919,15 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
             
             if (domPartner.size() > 0)
             {
-                debug1<<"domPartner: [";
-                for(int k=0; k<domPartner.size(); k++) debug1<<domPartner[k]<<" ";
-                debug1<<"]\n";
+                //debug1<<"domPartner: [";
+                //for(int k=0; k<domPartner.size(); k++) debug1<<domPartner[k]<<" ";
+                //debug1<<"]\n";
                 
                 random_shuffle(domPartner.begin(), domPartner.end());
                 
-                debug1<<"random sort: [";
-                for(int k=0; k<domPartner.size(); k++) debug1<<domPartner[k]<<" ";
-                debug1<<"]\n";                
+                //debug1<<"random sort: [";
+                //for(int k=0; k<domPartner.size(); k++) debug1<<domPartner[k]<<" ";
+                //debug1<<"]\n";                
                 for (int j = 0; j < domPartner.size(); j++)
                 {
                     sender.push_back(slackerIdx);
@@ -883,15 +947,9 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
     {
         SlaveInfo &recvSlave = slaveInfo[recv[i]];
         SlaveInfo &sendSlave = slaveInfo[sender[i]];
-        
-        debug1<<"c3: si = "<<sender[i]<<endl;
-        debug1<<"c3: ri = "<<recv[i]<<endl;
-        debug1<<"c3: sr = "<<sendSlave.rank<<endl;
-        debug1<<"c3: rr = "<<recvSlave.rank<<endl;
-        
         int d = dom[i];
-
         int n = sendSlave.domainCnt[d];
+
         if (n > maxSLsToSend)
             n = maxSLsToSend;
 
@@ -1193,6 +1251,7 @@ avtSlaveSLAlgorithm::Execute()
             sendStatus = true;
             if (activeSLs.empty())
             {
+                debug1<<"Latency saving status send\n";
                 SendStatus();
                 sendStatus = false;
             }

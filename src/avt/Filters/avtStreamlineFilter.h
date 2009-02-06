@@ -145,6 +145,9 @@ class avtStreamlineWrapper;
 //   Major refactor of the streamline code.  Moved all the streamline
 //   algorithm code into different classes.
 //
+//   Dave Pugmire, Thu Feb  5 12:23:33 EST 2009
+//   Add workGroupSize for masterSlave algorithm.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -162,7 +165,9 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     void                      SetMaxStepLength(double len);
     void                      SetTermination(int type, double term);
     void                      SetIntegrationType(int algo);
-    void                      SetStreamlineAlgorithm(int algo, int maxCnt, int domainCache);
+    void                      SetStreamlineAlgorithm(int algo, int maxCnt,
+                                                     int domainCache,
+                                                     int workGrpSz);
     void                      SetTolerances(double reltol, double abstol);
 
     void                      SetPointSource(double pt[3]);

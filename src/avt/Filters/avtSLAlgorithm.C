@@ -190,9 +190,6 @@ avtSLAlgorithm::PostExecute()
 //
 //  Modifications:
 //
-//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
-//   Fix memory leak. domainCnt not delete if allSameDomain is true.
-//
 // ****************************************************************************
 
 void
@@ -214,6 +211,41 @@ avtSLAlgorithm::SortStreamlines(list<avtStreamlineWrapper *> &sl)
     
     SortTime.value += visitTimer->StopTimer(timerHandle, "SortStreamlines()");
 }
+
+
+// ****************************************************************************
+//  Method: avtSLAlgorithm::SortStreamlines
+//
+//  Purpose:
+//      Sort streamlines based on the domains they span.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 16, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSLAlgorithm::SortStreamlines(vector<avtStreamlineWrapper *> &sl)
+{
+    int timerHandle = visitTimer->StartTimer();
+    vector<avtStreamlineWrapper*>::iterator s;
+
+    //Set sortkey to -domain. (So that loaded domains sort first).
+    for (s=sl.begin(); s != sl.end(); ++s)
+    {
+        if ( DomainLoaded((*s)->domain))
+            (*s)->sortKey = -(*s)->domain;
+        else
+            (*s)->sortKey = (*s)->domain;
+    }
+
+    sort(sl.begin(), sl.end(), slDomainCompare);
+    
+    SortTime.value += visitTimer->StopTimer(timerHandle, "SortStreamlines()");
+}
+
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CalculateStatistics

@@ -112,6 +112,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
   public:
     avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
                          int maxCount,
+                         int workGrpSz,
                          std::vector<int> &slaves);
     virtual ~avtMasterSLAlgorithm();
 
@@ -122,7 +123,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
   protected:
     virtual void              CalculateStatistics();
 
-    int                       totalNumStreamlines;
+    int                       totalNumStreamlines, workGroupSz;
     int                       case1Cnt, case2Cnt, case3Cnt, case4Cnt, case5Cnt;
     std::vector<SlaveInfo>    slaveInfo;
     std::vector<int>          slDomCnts, domLoaded, slackers;
