@@ -331,6 +331,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
 //   Remove accurate distance calculate option.
 //
+//   Dave Pugmire, Thu Feb  5 12:23:33 EST 2009
+//   Add workGroupSize for masterSlave algorithm.
+//
 // ****************************************************************************
 
 void
@@ -355,7 +358,8 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
     streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
                                              atts.GetMaxStreamlineProcessCount(),
-                                             atts.GetMaxDomainCacheSize());
+                                             atts.GetMaxDomainCacheSize(),
+                                             atts.GetWorkGroupSize());
     streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
     streamlineFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
     streamlineFilter->SetTermination(atts.GetTerminationType(), atts.GetTermination());

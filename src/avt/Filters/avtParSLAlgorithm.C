@@ -383,9 +383,9 @@ avtParSLAlgorithm::SendMsg(int dst,
     for (int i = 0; i < msg.size(); i++)
         buff[i] = msg[i];
         
-    debug1<<"Send: "<<dst<<" [";
-    for(int i = 0; i < msg.size(); i++) debug1<<buff[i]<<" ";
-    debug1<<"]\n";
+    debug5<<"Send: "<<dst<<" [";
+    for(int i = 0; i < msg.size(); i++) debug5<<buff[i]<<" ";
+    debug5<<"]\n";
 
     MPI_Isend(buff, statusMsgSz, MPI_INT, dst,
               avtParSLAlgorithm::STATUS_TAG,
@@ -458,7 +458,7 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
             for (int i = 0; i < num; i++)
             {
                 int idx = indices[i];
-                debug1<<"RecvMsg from "<<idx<<endl;
+                debug5<<"RecvMsg from "<<idx<<endl;
 
                 MPI_Request req = statusRecvRequests[idx];
                 if (req == MPI_REQUEST_NULL)
@@ -476,9 +476,9 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
                     msg.push_back(buff[i]);
                 msgs.push_back(msg);
 
-                debug1<<"msg= [";
-                for(int i = 0; i < msg.size(); i++) debug1<<msg[i]<<" ";
-                debug1<<"]\n";
+                debug5<<"msg= [";
+                for(int i = 0; i < msg.size(); i++) debug5<<msg[i]<<" ";
+                debug5<<"]\n";
                 
                 //Clean up.
                 delete [] buff;

@@ -147,6 +147,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Tue Oct 7 08:17:22 EDT 2008
 //   Changed 'Termination Criteria' to 'Termination Criterion'
 //
+//   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
+//   Added workGroupSize for the masterSlave algorithm.
+//
 // ****************************************************************************
 
 void
@@ -461,6 +464,15 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     algoGLayout->addWidget( maxDomainCacheLabel, 3,0);
     algoGLayout->addWidget( maxDomainCache, 3,1);
 
+    workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
+    workGroupSize = new QSpinBox(algoGrp);
+    workGroupSize->setMinimum(2);
+    workGroupSize->setMaximum(1000000);
+    connect(workGroupSize, SIGNAL(valueChanged(int)),
+            this, SLOT(workGroupSizeChanged(int)));
+    algoGLayout->addWidget( workGroupSizeLabel, 4,0);
+    algoGLayout->addWidget( workGroupSize, 4,1);
+
     // Integrator group.
     QGroupBox *intGrp = new QGroupBox(pageAdvanced);
     intGrp->setTitle(tr("Integration method") );
@@ -589,6 +601,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //
 //   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
 //   Removed the accurate distance calculation option.
+//
+//   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
+//   Added workGroupSize for the masterSlave algorithm.
 //
 // ****************************************************************************
 
@@ -795,6 +810,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             maxDomainCache->blockSignals(true);
             maxDomainCache->setValue(streamAtts->GetMaxDomainCacheSize());
             maxDomainCache->blockSignals(false);
+            break;
+        case StreamlineAttributes::ID_workGroupSize:
+            workGroupSize->blockSignals(true);
+            workGroupSize->setValue(streamAtts->GetWorkGroupSize());
+            workGroupSize->blockSignals(false);
             break;
         }
     }
@@ -1017,6 +1037,12 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
 // Programmer: Dave Pugmire
 // Creation:   Fri Aug 1 16:41:38 EDT 2008
 //
+//
+// Modifications:
+//
+//   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
+//   Added workGroupSize for the masterSlave algorithm.
+//
 // ****************************************************************************
 
 void
@@ -1031,6 +1057,8 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
     maxDomainCache->hide();
     maxSLCountLabel->hide();
     maxSLCount->hide();
+    workGroupSizeLabel->hide();
+    workGroupSize->hide();
 
     if ( useLoadOnDemand )
     {
@@ -1048,6 +1076,8 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
         maxDomainCache->show();
         maxSLCountLabel->show();
         maxSLCount->show();
+        workGroupSizeLabel->show();
+        workGroupSize->show();
     }
 }
 
@@ -1079,6 +1109,9 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 //
 //   Brad Whitlock, Wed Aug  6 15:34:13 PDT 2008
 //   Use new methods.
+//
+//   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
+//   Added workGroupSize for the masterSlave algorithm.
 //
 // ****************************************************************************
 
@@ -1322,6 +1355,15 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
         if (val >= 1)
             streamAtts->SetMaxStreamlineProcessCount(val);
     }
+
+    // workGroupSize
+    if (which_widget == StreamlineAttributes::ID_workGroupSize || doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = workGroupSize->value();
+        if (val >= 2)
+            streamAtts->SetWorkGroupSize(val);
+    }
 }
 
 
@@ -1564,6 +1606,13 @@ void
 QvisStreamlinePlotWindow::maxDomainCacheChanged(int val)
 {
     streamAtts->SetMaxDomainCacheSize(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::workGroupSizeChanged(int val)
+{
+    streamAtts->SetWorkGroupSize(val);
     Apply();
 }
 
