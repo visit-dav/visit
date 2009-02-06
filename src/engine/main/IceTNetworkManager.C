@@ -555,6 +555,9 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 //    Hank Childs, Thu Jan 15 11:07:53 CST 2009
 //    Changed GetSize call to GetCaptureRegion, since that works for 2D.
 //
+//    Hank Childs, Fri Feb  6 15:47:17 CST 2009
+//    Fix memory leak.
+//
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::Readback(VisWindow * const viswin,
@@ -593,7 +596,14 @@ IceTNetworkManager::Readback(VisWindow * const viswin,
         this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
     } else {
         // We don't have an image -- we need to receive it from our buddy.
-        pixels = new GLubyte[4*width*height];
+        // Purpose of static pixel_ptr ... if I delete this memory too soon (i.e. along
+        // with "depth"), then there is a crash ... it is being used after the function
+        // exits.  So just wait until the next render to free it.
+        static GLubyte *pixel_ptr = NULL;
+        if (pixel_ptr != NULL)
+           delete [] pixel_ptr;
+        pixel_ptr = new GLubyte[4*width*height];
+        pixels = pixel_ptr;
         depth = new GLuint[width*height];
 
         dynamic = true;
