@@ -507,6 +507,7 @@
 #     Tom Fogal, Sat Feb  7 15:40:49 EST 2009
 #     Die if we can't cd to a build directory.
 #     Use make option flags on Mesa's build.
+#     Document that Exodus requires NetCDF.
 #
 # *****************************************************************************
 #
@@ -7587,7 +7588,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--cmake"   "Build CMake" "built by default unless --no-thirdparty flag is used"
   printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
   printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
-  printf "%-15s %s [%s]\n" "--exodus" "Build Exodus" "$DO_EXODUS"
+  printf "%-15s %s [%s]\n" "--exodus" "Build Exodus (requires NetCDF)" "$DO_EXODUS"
   printf "%-15s %s [%s]\n" "--fastbit" "Build FastBit" "$DO_FASTBIT"
   printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
   printf "%-15s %s [%s]\n" "--gdal" "Build GDAL" "$DO_GDAL"
