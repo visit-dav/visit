@@ -236,6 +236,11 @@ avtZoneIdNamedSelection::GetDomainList(std::vector<int> &domains)
 //  Programmer: Hank Childs
 //  Creation:   February 3, 2009
 //
+//  Modifications:
+//
+//    Tom Fogal, Sat Feb  7 17:13:46 EST 2009
+//    Fix declaration of iterator, and make it const.
+//
 // ****************************************************************************
 
 void
@@ -258,7 +263,7 @@ avtZoneIdNamedSelection::GetMatchingIds(unsigned int *pts, int nvals,
         IntPair ip;
         ip.d = (int) pts[2*i];
         ip.z = (int) pts[2*i+1];
-        std::set<IntPair>::iterator it;
+        std::set<IntPair, PairCompare>::const_iterator it;
         it = lookupSet.find(ip);
         if (it != lookupSet.end())
             ids.push_back(i);
