@@ -501,9 +501,11 @@
 #     Hank Childs, Mon Jan 26 15:57:02 PST 2009
 #     Add support for FastBit.
 #
-#
 #     Jeremy Meredith, Thu Jan 29 13:24:34 EST 2009
 #     Fixing Mesa 6.4.2 patching.  (This is already fixed on the 2.0 branch?)
+#
+#     Tom Fogal, Sat Feb  7 15:40:49 EST 2009
+#     Die if we can't cd to a build directory.
 #
 # *****************************************************************************
 #
@@ -2578,7 +2580,7 @@ function build_mesa
     # Build Mesa.
     #
     info "Building Mesa . . . (~2 minutes)"
-    cd $MESA_BUILD_DIR
+    cd $MESA_BUILD_DIR || error "Can't cd to mesa build dir."
     $MAKE $MESA_TARGET
     if [[ $? != 0 ]] ; then
        warn "Mesa build failed.  Giving up"
@@ -2718,7 +2720,7 @@ function build_qt
        return 1
     fi
     
-    cd $QT_BUILD_DIR
+    cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
       
     #
     # Call configure
@@ -2871,7 +2873,7 @@ function build_cmake
     # Issue "bootstrap", which takes the place of configure for CMake.
     #
     info "Bootstrapping CMake . . ."
-    cd $CMAKE_BUILD_DIR
+    cd $CMAKE_BUILD_DIR || error "Can't cd to CMake build dir."
     if [[ "$OPSYS" == "AIX" ]]; then
         env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap
     else
@@ -3278,7 +3280,7 @@ function build_vtk
     # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
     #
     info "Executing CMake on VTK"
-    cd $VTK_BUILD_DIR
+    cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
     CMAKE_BIN=../${CMAKE_BUILD_DIR}/bin/cmake
     if [[ "$OPSYS" == "Darwin" ]]; then
     ${CMAKE_BIN} \
@@ -3581,7 +3583,7 @@ function build_python
     #
     # Call configure
     #
-    cd $PYTHON_BUILD_DIR
+    cd $PYTHON_BUILD_DIR || error "Can't cd to Python build dir."
     PYTHON_OPT="$C_OPT_FLAGS"
     info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\"" \
          "--prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
@@ -3739,7 +3741,7 @@ function build_silo
     # Call configure
     #
     info "Configuring Silo . . ."
-    cd $SILO_BUILD_DIR
+    cd $SILO_BUILD_DIR || error "Can't cd to Silo build dir."
     info "Invoking command to configure Silo"
     SILO_LINK_OPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
@@ -3860,7 +3862,7 @@ function build_szip
 
     #
     info "Configuring SZIP . . ."
-    cd ${SZIP_BUILD_DIR}
+    cd ${SZIP_BUILD_DIR} || error "Can't cd to szip build dir."
     info "Invoking command to configure SZIP"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
@@ -3949,7 +3951,7 @@ function build_hdf5
 
     #
     info "Configuring HDF5 . . ."
-    cd $HDF5_BUILD_DIR
+    cd $HDF5_BUILD_DIR || error "Can't cd to HDF5 build dir."
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
     else
@@ -4118,7 +4120,7 @@ function build_mili
     fi
 
     info "Configuring Mili . . ."
-    cd $MILI_BUILD_DIR
+    cd $MILI_BUILD_DIR || error "Can't cd to mili build dir."
 
     info "Invoking command to configure Mili"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
@@ -5091,7 +5093,7 @@ function build_hdf4
     fi
 
     info "Configuring HDF4 . . ."
-    cd $HDF4_BUILD_DIR
+    cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
     info "Invoking command to configure HDF4"
     MAKEOPS=""
     if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
@@ -5279,7 +5281,7 @@ function build_netcdf
     fi
 
     info "Configuring NetCDF . . ."
-    cd $NETCDF_BUILD_DIR
+    cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
     info "Invoking command to configure NetCDF"
     if [[ "$OPSYS" == "Darwin" ]]; then
         EXTRA_FLAGS="--enable-largefile"
@@ -5395,7 +5397,7 @@ function build_cgns
 
     #
     info "Configuring CGNS . . ."
-    cd $CGNS_BUILD_DIR
+    cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
     info "Invoking command to configure CGNS"
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
@@ -5489,7 +5491,7 @@ function build_gdal
 
     #
     info "Configuring GDAL . . ."
-    cd $GDAL_BUILD_DIR
+    cd $GDAL_BUILD_DIR || error "Can't cd to GDAL build dir."
     info "Invoking command to configure GDAL"
     if [[ "$OPSYS" == "Darwin" ]]; then
        EXTRA_FLAGS="F77=\"\"--enable-shared --disable-static"
@@ -5625,7 +5627,7 @@ function build_exodus
        return 1
     fi
 
-    cd $EXODUS_BUILD_DIR
+    cd $EXODUS_BUILD_DIR || error "Can't cd to exodus build dir."
     #
     # Build Exodus
     #
@@ -6143,7 +6145,7 @@ function change_boxlib_dim_using_patches
     #
     if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
        info "Changing the Boxlib dimension from 3 to 2! Going to $START_DIR"
-       cd $START_DIR
+       cd $START_DIR || error "Can't cd to ${START_DIR}"
        if [[ "$OPSYS" == "AIX" ]]; then
           info "PATCHING AIX"
           patch -p0 << \EOF
@@ -6231,7 +6233,7 @@ function build_boxlib
        fi
     fi
 
-    cd $BOXLIB_BUILD_DIR
+    cd $BOXLIB_BUILD_DIR || error "Can't cd to BoxLib build dir."
     #
     # Build Boxlib 3D
     #
@@ -6292,7 +6294,7 @@ function build_boxlib
 
     change_boxlib_dim_using_patches
 
-    cd $BOXLIB_BUILD_DIR
+    cd $BOXLIB_BUILD_DIR || error "Can't cd to BoxLib build dir."
     #
     # Build Boxlib 2D
     #
@@ -6378,7 +6380,7 @@ function build_cfitsio
 
     #
     info "Configuring CFITSIO . . ."
-    cd $CFITSIO_BUILD_DIR
+    cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
@@ -6477,7 +6479,7 @@ function build_h5part
 
     #
     info "Configuring H5Part . . ."
-    cd $H5PART_BUILD_DIR
+    cd $H5PART_BUILD_DIR || error "Can't cd to h5part build dir."
     if [[ "$DO_HDF5" == "yes" ]] ; then
        export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
        export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
@@ -6696,7 +6698,7 @@ function build_ccmio
     fi
     #
     info "Configuring CCMIO . . ."
-    cd $CCMIO_BUILD_DIR
+    cd $CCMIO_BUILD_DIR || error "Can't cd to CCMIO build dir."
 
     #
     # Build CCMIO
@@ -6783,7 +6785,7 @@ function build_tcmalloc
 
 
     info "Configuring google-perftools . . ."
-    cd $TCMALLOC_BUILD_DIR
+    cd $TCMALLOC_BUILD_DIR || error "Can't cd to tcmalloc build dir."
 
     #
     # Build TCMALLOC
@@ -6872,7 +6874,7 @@ function build_icet
     fi
 
     info "Executing CMake on Ice-T"
-    cd $ICET_BUILD_DIR
+    cd $ICET_BUILD_DIR || error "Can't cd to IceT build dir."
     touch fakempi.so
     ${CMAKE_BIN} \
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
@@ -6940,7 +6942,7 @@ function build_fastbit
 
     #
     info_box "Configuring FastBit . . ." 1>&3
-    cd ${FASTBIT_DIR}
+    cd ${FASTBIT_DIR} || error "Can't cd to fastbit build dir."
     echo "Invoking command to configure FastBit"
     ./configure \
        CXX="$CXX_COMPILER" CC="$C_COMPILER" \
