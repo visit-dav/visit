@@ -36,12 +36,17 @@
 *
 *****************************************************************************/
 
-#include <stdio.h>
-#include <silo.h>
-#include <math.h>
-#include <visitstream.h>
+// Modifications:
+//   Tom Fogal, Sat Feb  7 18:22:56 EST 2009
+//   Added missing includes and modernize them.
+
+#include <cmath>
+#include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
+#include <silo.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 // File: noise.C

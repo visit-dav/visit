@@ -46,13 +46,19 @@
 // Programmer: Hank Childs
 // Creation:   October 5, 2004
 //
+// Modifications:
+//
+//   Tom Fogal, Sat Feb  7 18:21:23 EST 2009
+//   Added missing includes and modernize them.
+//
 // ****************************************************************************
 
-#include <stdio.h>
-#include <silo.h>
-#include <math.h>
-#include <vector>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
 #include <string>
+#include <vector>
+#include <silo.h>
 #include <visitstream.h>
 
 void WriteOutMultivars(DBfile *);

@@ -60,13 +60,18 @@
 //  method and the unusual method where a Multi-XXX entry refers to a member
 //  in the root file using the filename, see bug #6790 
 //
+//  Tom Fogal, Sat Feb  7 18:17:47 EST 2009
+//  Added missing includes and modernize them.
+//
 // ****************************************************************************
 
-#include <stdio.h>
-#include <silo.h>
-#include <math.h>
-#include <vector>
+#include <cmath>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
+#include <vector>
+#include <silo.h>
 #include <visitstream.h>
 
 using std::vector;
