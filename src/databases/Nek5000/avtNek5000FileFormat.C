@@ -973,6 +973,9 @@ avtNek5000FileFormat::ReadBlockLocations()
 //    Hank Childs, Wed Jan  7 18:24:01 CST 2009
 //    Clear out the cache.
 //
+//    Tom Fogal, Sat Feb  7 17:32:20 EST 2009
+//    Fix the iterator declaration.
+//
 // ****************************************************************************
 
 avtNek5000FileFormat::~avtNek5000FileFormat()
@@ -989,13 +992,13 @@ avtNek5000FileFormat::~avtNek5000FileFormat()
         aBlocksPerFile = NULL;
     }
 
-    std::map<PointerKey, float *>::iterator it;
+    std::map<PointerKey, float *, KeyCompare>::iterator it;
     for (it = cachedData.begin() ; it != cachedData.end() ; it++)
         delete [] it->second;
     std::map<int, avtIntervalTree *>::iterator it2;
     for (it2 = boundingBoxes.begin() ; it2 != boundingBoxes.end() ; it2++)
         delete [] it2->second;
-    std::map<PointerKey, avtIntervalTree *>::iterator it3;
+    std::map<PointerKey, avtIntervalTree *, KeyCompare>::iterator it3;
     for (it3 = dataExtents.begin() ; it3 != dataExtents.end() ; it3++)
         delete [] it3->second;
 }
@@ -3108,12 +3111,15 @@ avtNek5000FileFormat::CombineElementLists(
 //    Hank Childs, Wed Jan  7 16:54:58 CST 2009
 //    Delete cached data when we go to a new time slice.
 //
+//    Tom Fogal, Sat Feb  7 17:33:06 EST 2009
+//    Fix the iterator declaration.
+//
 // ****************************************************************************
 
 void
 avtNek5000FileFormat::ActivateTimestep(int ts)
 {
-    std::map<PointerKey, float *>::iterator it;
+    std::map<PointerKey, float *, KeyCompare>::iterator it;
     std::map<PointerKey, float *, KeyCompare> new_cachedData;
     for (it = cachedData.begin() ; it != cachedData.end() ; it++)
     {
@@ -3124,7 +3130,7 @@ avtNek5000FileFormat::ActivateTimestep(int ts)
     }
     cachedData = new_cachedData;
 
-    std::map<PointerKey, avtIntervalTree *>::iterator it2;
+    std::map<PointerKey, avtIntervalTree *, KeyCompare>::iterator it2;
     std::map<PointerKey, avtIntervalTree *, KeyCompare> new_dataExtents;
     for (it2 = dataExtents.begin() ; it2 != dataExtents.end() ; it2++)
     {
