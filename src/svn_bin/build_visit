@@ -506,6 +506,7 @@
 #
 #     Tom Fogal, Sat Feb  7 15:40:49 EST 2009
 #     Die if we can't cd to a build directory.
+#     Use make option flags on Mesa's build.
 #
 # *****************************************************************************
 #
@@ -2581,7 +2582,7 @@ function build_mesa
     #
     info "Building Mesa . . . (~2 minutes)"
     cd $MESA_BUILD_DIR || error "Can't cd to mesa build dir."
-    $MAKE $MESA_TARGET
+    $MAKE ${MAKE_OPT_FLAGS} $MESA_TARGET
     if [[ $? != 0 ]] ; then
        warn "Mesa build failed.  Giving up"
        return 1
