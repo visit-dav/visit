@@ -36,11 +36,18 @@
 *
 *****************************************************************************/
 
-#include <stdio.h>
-#include <silo.h>
+// Modificaitons:
+//
+//   Tom Fogal, Sat Feb  7 18:17:47 EST 2009
+//   Added missing includes and modernize them.
+
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <vector>
-#include <math.h>
+#include <silo.h>
 
 //
 // Template function for memory reallocation.

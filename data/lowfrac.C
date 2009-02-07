@@ -36,12 +36,18 @@
 *
 *****************************************************************************/
 
-#include <visitstream.h>
-#include <math.h>
+// Modifications:
+//   Tom Fogal, Sat Feb  7 18:21:59 EST 2009
+//   Added missing includes and modernize them.
+
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <vector>
-#include <stdio.h>
 #include <silo.h>
+#include <visitstream.h>
 
 using std::cerr;
 using std::endl;

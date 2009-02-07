@@ -36,13 +36,6 @@
 *
 *****************************************************************************/
 
-#include <stdio.h>
-#include <silo.h>
-#include <math.h>
-#include <visitstream.h>
-#include <vector>
-#include <string>
-
 // ****************************************************************************
 // File: tire.C
 //
@@ -58,8 +51,18 @@
 // Creation:   Fri Jun 21 13:50:00 PST 2002
 //
 // Modifications:
+//   Tom Fogal, Sat Feb  7 18:25:10 EST 2009
+//   Added missing includes and modernize them.
 //   
 // ****************************************************************************
+
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <vector>
+#include <silo.h>
+#include <visitstream.h>
 
 //
 // Mesh dimensions
