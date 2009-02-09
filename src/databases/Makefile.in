@@ -397,6 +397,7 @@ REQUIRED=\
  GGCM \
  Fluent \
  Image \
+ LAMMPS \
  Lines \
  MFIX \
  Miranda \
@@ -474,17 +475,17 @@ distclean:
 		for dir in $$rev; do (cd $$dir || exit && test ! -f Makefile || $(MAKE) $@); done \
 	fi
 	for dir in ITAPS_*; do \
- 	    if test $$dir == ITAPS_C; then \
- 	        continue; \
- 	    fi; \
+	    if test $$dir == ITAPS_C; then \
+	        continue; \
+	    fi; \
 	    for f in $$dir/*.[Chc]; do \
- 	        if test -w $$f; then \
+	        if test -w $$f; then \
 	            echo "Skipping deletion of $$dir"; \
- 	            continue 2; \
- 	        fi; \
- 	    done; \
- 	    $(RM) -r $$dir; \
- 	done
+	            continue 2; \
+	        fi; \
+	    done; \
+	    $(RM) -r $$dir; \
+	done
 	-$(RM) $(DISTCLEAN_FILES) *~ core
 	-$(RM) $(LIB)
 	-$(RM) $(CLEAN_FILES)
