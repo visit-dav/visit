@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+  <Plugin name="SimV2" type="database" label="SimulationV2" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="false" specifiedFilenames="false">
+    <Extensions>
+      sim2
+    </Extensions>
+    <Files components="E">
+      avtSimV2FileFormat.C
+      avtSimV2Writer.C
+      SimV2GetMesh.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

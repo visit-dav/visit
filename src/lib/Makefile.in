@@ -314,12 +314,8 @@ libqt:
 	ln -s @QT_LIB@/$(QT_SVG)* .
 	$(RM) $(QT_TEST)*
 	ln -s @QT_LIB@/$(QT_TEST)* .
-	$(RM) $(QT_WEBKIT)*
-	ln -s @QT_LIB@/$(QT_WEBKIT)* .
 	$(RM) $(QT_XML)*
 	ln -s @QT_LIB@/$(QT_XML)* .
-	$(RM) $(QT_XMLPATTERNS)*
-	ln -s @QT_LIB@/$(QT_XMLPATTERNS)* .
 
 libqui:
 	$(RM) $(QT_QUI)
@@ -412,9 +408,7 @@ clean: clean_make_links
         $(QT_SQL)* \
         $(QT_SVG)* \
         $(QT_TEST)* \
-        $(QT_WEBKIT)* \
         $(QT_XML)* \
-        $(QT_XMLPATTERNS)* \
         $(QT_QUI) \
 	$(LIBVTKCOMMON)* \
 	$(LIBVTKDICOM)* \

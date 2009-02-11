@@ -1,4 +1,4 @@
-#include <VisItDataInterface_V1.h>
+#include "materialhelpers.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -23,6 +23,8 @@
  *   An initialized VisIt_MaterialData structure.
  *
  * Modifications:
+ *   Brad Whitlock, Tue Feb 10 13:44:01 PST 2009
+ *   I changed some of the arrays into VisIt_DataArray objects.
  *
  *****************************************************************************/
 
@@ -41,10 +43,21 @@ VisIt_MaterialData_alloc(int nCells, int *arrlen)
 
     *arrlen = m->nzones;
     m->mixlen = 0;
-    m->mix_mat =  (int*)malloc(sizeof(int) * *arrlen);
-    m->mix_zone = (int*)malloc(sizeof(int) * *arrlen);
-    m->mix_next = (int*)malloc(sizeof(int) * *arrlen);
-    m->mix_vf =   (float*)malloc(sizeof(float) * *arrlen);
+    m->mix_mat.dataType = VISIT_DATATYPE_INT;
+    m->mix_mat.owner = VISIT_OWNER_VISIT;
+    m->mix_mat.iArray = (int*)malloc(sizeof(int) * *arrlen);
+
+    m->mix_zone.dataType = VISIT_DATATYPE_INT;
+    m->mix_zone.owner = VISIT_OWNER_VISIT;
+    m->mix_zone.iArray = (int*)malloc(sizeof(int) * *arrlen);
+
+    m->mix_next.dataType = VISIT_DATATYPE_INT;
+    m->mix_next.owner = VISIT_OWNER_VISIT;
+    m->mix_next.iArray = (int*)malloc(sizeof(int) * *arrlen);
+
+    m->mix_vf.dataType = VISIT_DATATYPE_FLOAT;
+    m->mix_vf.owner = VISIT_OWNER_VISIT;
+    m->mix_vf.fArray =   (float*)malloc(sizeof(float) * *arrlen);
 
     return m;
 }
@@ -136,6 +149,8 @@ VisIt_MaterialData_addCleanCell(VisIt_MaterialData *m, int cell, int id)
  *   arrlen : The length of the mix arrays allocated to the object.
  *
  * Modifications:
+ *   Brad Whitlock, Tue Feb 10 13:45:38 PST 2009
+ *   I changed some arrays to VisIt_DataArray.
  *
  *****************************************************************************/
 
@@ -147,25 +162,25 @@ VisIt_MaterialData_addMixedCell(VisIt_MaterialData *m, int cell, int *id, float 
     {
         /* Must resize the mix arrays */
         *arrlen += 1000;
-        m->mix_mat =  (int*)realloc(m->mix_mat,  sizeof(int) * *arrlen);
-        m->mix_zone = (int*)realloc(m->mix_zone, sizeof(int) * *arrlen);
-        m->mix_next = (int*)realloc(m->mix_next, sizeof(int) * *arrlen);
-        m->mix_vf =   (float*)realloc(m->mix_vf, sizeof(float) * *arrlen);
+        m->mix_mat.iArray =  (int*)realloc(m->mix_mat.iArray,  sizeof(int) * *arrlen);
+        m->mix_zone.iArray = (int*)realloc(m->mix_zone.iArray, sizeof(int) * *arrlen);
+        m->mix_next.iArray = (int*)realloc(m->mix_next.iArray, sizeof(int) * *arrlen);
+        m->mix_vf.fArray =   (float*)realloc(m->mix_vf.fArray, sizeof(float) * *arrlen);
     }
     
     m->matlist.iArray[cell] = -(m->mixlen + 1);
 
     for(i = 0; i < nmats; ++i)
     {
-        m->mix_mat[m->mixlen] = id[i];
-        m->mix_zone[m->mixlen] = cell;
-        m->mix_next[m->mixlen] = 
-        m->mix_vf[m->mixlen] = vf[i];
+        m->mix_mat.iArray[m->mixlen] = id[i];
+        m->mix_zone.iArray[m->mixlen] = cell;
+        m->mix_next.iArray[m->mixlen] = 
+        m->mix_vf.fArray[m->mixlen] = vf[i];
 
         if(i < nmats - 1)
-            m->mix_next[m->mixlen] = m->mixlen + 2;
+            m->mix_next.iArray[m->mixlen] = m->mixlen + 2;
         else
-            m->mix_next[m->mixlen] = 0;
+            m->mix_next.iArray[m->mixlen] = 0;
 
         ++m->mixlen;
     }

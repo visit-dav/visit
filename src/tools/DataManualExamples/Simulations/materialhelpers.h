@@ -1,6 +1,6 @@
 #ifndef MATERIAL_HELPERS_H
 #define MATERIAL_HELPERS_H
-#include <VisItDataInterface_V1.h>
+#include <VisItDataInterface_V2.h>
 
 /* Helper functions for setting up a VisIt_MaterialData */
 

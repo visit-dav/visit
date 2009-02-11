@@ -1,26 +1,26 @@
 ##
 ## Programs and options...
 ##
-include /home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/make-variables
-TOPDIR=/home/js9/visitdev/2008-12-29_volumeplot/trunk/src
+include /Users/whitlocb/Development/MAIN/trunk/src/include/make-variables
+TOPDIR=/Users/whitlocb/Development/MAIN/trunk/src
 
 
 ##
 ## Libraries and includes...
 ##
 VTK_INCLUDE= \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk/Common \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk/Filtering \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk/Graphics \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk/Hybrid \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk/IO \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk/Imaging \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk/Rendering \
-  -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/vtk/Utilities
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk \
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk/Common \
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk/Filtering \
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk/Graphics \
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk/Hybrid \
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk/IO \
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk/Imaging \
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk/Rendering \
+  -I/Users/whitlocb/Development/MAIN/trunk/src/include/vtk/Utilities
 CXXFLAGS=$(CXXFLAGSORIG)
-CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include -I/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/visit $(PY_CXXFLAGS)
-LDFLAGS=$(LDFLAGSORIG) $(PLUGIN_LDFLAGS) -L/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/plugins/databases
+CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I/Users/whitlocb/Development/MAIN/trunk/src/include -I/Users/whitlocb/Development/MAIN/trunk/src/include/mesa -I/Users/whitlocb/Development/MAIN/trunk/src/include/visit $(PY_CXXFLAGS)
+LDFLAGS=$(LDFLAGSORIG) $(PLUGIN_LDFLAGS) -L/Users/whitlocb/Development/MAIN/trunk/src/plugins/databases
 
 LIBG_QT_LIBS=$(QT_CORE_LIB) $(QT_GUI_LIB)
 LIBV_QT_LIBS=$(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_OPENGL_LIB)
@@ -54,10 +54,10 @@ MLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexcept
 ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
 EPARLIBS=-lpipeline_par -ldatabase_par -lmir_par -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)
 
-IDSO=/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/plugins/databases/libILAMMPSDatabase.so
-MDSO=/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/plugins/databases/libMLAMMPSDatabase.so
-ESERDSO=/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/plugins/databases/libELAMMPSDatabase_ser.so
-EPARDSO=/home/js9/visitdev/2008-12-29_volumeplot/trunk/src/plugins/databases/libELAMMPSDatabase_par.so
+IDSO=/Users/whitlocb/Development/MAIN/trunk/src/plugins/databases/libILAMMPSDatabase.dylib
+MDSO=/Users/whitlocb/Development/MAIN/trunk/src/plugins/databases/libMLAMMPSDatabase.dylib
+ESERDSO=/Users/whitlocb/Development/MAIN/trunk/src/plugins/databases/libELAMMPSDatabase_ser.dylib
+EPARDSO=/Users/whitlocb/Development/MAIN/trunk/src/plugins/databases/libELAMMPSDatabase_par.dylib
 
 
 DISTRIB=
@@ -111,4 +111,4 @@ message:
 ##
 ## Automatic dependency stuff
 ##
-include /home/js9/visitdev/2008-12-29_volumeplot/trunk/src/include/make-targets
+include /Users/whitlocb/Development/MAIN/trunk/src/include/make-targets

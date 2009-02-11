@@ -40,6 +40,9 @@
 #   Brad Whitlock, Thu Jan 17 17:34:53 PST 2008
 #   Added materials example.
 #
+#   Brad Whitlock, Fri Feb  6 14:34:19 PST 2009
+#   Added csgmesh, species examples and support for libsim V2.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -51,8 +54,10 @@
 CFLAGS=@CFLAGS@ -g -I. -I$(TOPDIR)/include -I$(TOPDIR)/include/visit
 LDFLAGS=@LDFLAGS@ @EXE_LDFLAGS@ @EXPORT_DYNAMIC@ -L$(TOPDIR)/archives
 LIBS=@LIBS@ -lsim
+V2LIBS=@LIBS@ -lsimV2
 F77FLAGS=-I$(TOPDIR)/include/visit
 FLIBS=@LIBS@ -lsimf -lsim
+V2FLIBS=@LIBS@ -lsimV2f -lsimV2
 BUILD_FORTRAN=allfortran
 
 PARLIBS=@MPI_LIBS@
@@ -159,6 +164,9 @@ MATERIAL=material
 SRC_MATERIAL=material.c materialhelpers.c
 OBJ_MATERIAL=material.o materialhelpers.o
 
+SPECIES=species
+OBJ_SPECIES=species.o
+
 # Writeback demonstration
 WRITEBACK=writeback
 WRITEBACK_PAR=writeback_par
@@ -177,6 +185,10 @@ FUPDATEPLOTS=fupdateplots
 FSRC_UPDATEPLOTS=fupdateplots.f
 FOBJ_UPDATEPLOTS=fupdateplots.o
 
+# CSG mesh demonstration
+CSG=csg
+OBJ_CSG=csg.o
+
 .SUFFIXES: _par.o
 
 all: allc @BUILD_FORTRAN@
@@ -193,11 +205,11 @@ metadata:  $(SIM5) $(SIM6) $(SIM7) $(SIM8) $(SIM9) $(SIM10) $(SIM11) $(SIM12)
 
 fmetadata: $(FSIM5) $(FSIM6) $(FSIM7) $(FSIM8) $(FSIM9) $(FSIM10) $(FSIM11) $(FSIM12)
 
-meshsims: $(MESH) $(UNSTRUCTURED) $(CURVE) $(POINT)
+meshsims: $(MESH) $(UNSTRUCTURED) $(CURVE) $(POINT) $(CSG)
 
 fmeshsims: $(FMESH) $(FUNSTRUCTURED) $(FCURVE) $(FPOINT)
 
-materialsims: $(MATERIAL)
+materialsims: $(MATERIAL) $(SPECIES)
 
 fmaterialsims: $(FMATERIAL)
 
@@ -233,6 +245,7 @@ cleanmesh:
 	$(RM) $(POINT) $(OBJ_POINT) $(FPOINT) $(FOBJ_POINT)
 	$(RM) $(CURVE) $(OBJ_CURVE) $(FCURVE) $(FOBJ_CURVE)
 	$(RM) $(UNSTRUCTURED) $(OBJ_UNSTRUCTURED) $(FUNSTRUCTURED) $(FOBJ_UNSTRUCTURED)
+	$(RM) $(CSG) $(OBJ_CSG)
 
 cleanscalar:
 	$(RM) $(SCALAR) $(OBJ_SCALAR) $(FSCALAR) $(FOBJ_SCALAR) $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR)
@@ -240,6 +253,7 @@ cleanscalar:
 cleanmaterial:
 	$(RM) $(MATERIAL) $(OBJ_MATERIAL)
 	$(RM) $(FMATERIAL) $(FOBJ_MATERIAL)
+	$(RM) $(SPECIES) $(OBJ_SPECIES)
 
 $(SIM1): $(OBJ_SIM1)
 	$(CC) -o $(SIM1) $(OBJ_SIM1) $(LDFLAGS) $(LIBS)
@@ -359,15 +373,21 @@ $(FSCALAR_PAR): $(FOBJ_SCALAR_PAR)
 	mpif77 -o $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR) $(LDFLAGS) $(FLIBS) $(PARLIBS)
 
 $(MATERIAL): $(OBJ_MATERIAL)
-	$(CC) -o $(MATERIAL) $(OBJ_MATERIAL) $(LDFLAGS) $(LIBS) -lm
+	$(CC) -o $(MATERIAL) $(OBJ_MATERIAL) $(LDFLAGS) $(V2LIBS) -lm
 
 $(FMATERIAL): $(FOBJ_MATERIAL)
-	$(F77) -o $(FMATERIAL) $(FOBJ_MATERIAL) $(LDFLAGS) $(FLIBS)
+	$(F77) -o $(FMATERIAL) $(FOBJ_MATERIAL) $(LDFLAGS) $(V2FLIBS)
+
+$(SPECIES): $(OBJ_SPECIES)
+	$(CC) -o $(SPECIES) $(OBJ_SPECIES) $(LDFLAGS) $(V2LIBS)
 
 $(WRITEBACK): $(OBJ_WRITEBACK)
 	$(CC) -o $(WRITEBACK) $(OBJ_WRITEBACK) $(LDFLAGS) $(LIBS)
 
 $(WRITEBACK_PAR): $(OBJ_WRITEBACK_PAR)
 	$(CC) -o $(WRITEBACK_PAR) $(OBJ_WRITEBACK_PAR) $(LDFLAGS) $(LIBS) $(PARLIBS)
+
+$(CSG): $(OBJ_CSG)
+	$(CC) -o $(CSG) $(OBJ_CSG) $(LDFLAGS) $(V2LIBS)
 
 @TARGETS@

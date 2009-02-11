@@ -182,6 +182,10 @@
 #    Jeremy Meredith, Wed Jan 23 16:17:16 EST 2008
 #    Added SetMFileOpenOptionsRPCExecutor.
 #
+#    Brad Whitlock, Thu Feb  5 16:31:32 PST 2009
+#    I had to add visit_vtk to the LIBS since it contains vtkCSGGrid, which
+#    is indirectly needed by the database library.
+#
 ##############################################################################
 
 ##
@@ -205,6 +209,7 @@ LIBS= \
     -lcomm \
     -lmisc \
     -lutility \
+    -lvisit_vtk \
     -llightweight_visit_vtk \
     @VTK_LIGHTWEIGHT_LIBS@ \
     @PREBIND_LIBS@ \

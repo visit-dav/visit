@@ -49,7 +49,7 @@ c
 c-----------------------------------------------------------------
       program main
       implicit none
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   local variables
       integer err
 
@@ -69,7 +69,7 @@ c mainloop
 c-----------------------------------------------------------------
       subroutine mainloop()
       implicit none
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   local variables
       integer visitstate, result, blocking
 ccc   SIMSTATE common block
@@ -127,7 +127,7 @@ c Simulate one time step
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c These functions must be defined to satisfy the visitfortransiminterface lib.
+c These functions must be defined to satisfy the visitfortransimV2interface lib.
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -141,7 +141,7 @@ c---------------------------------------------------------------------------
       character*8 cmd, stringdata
       integer     lcmd, lstringdata, intdata
       real        floatdata
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
       integer runflag, simcycle
       real simtime
@@ -192,7 +192,7 @@ c---------------------------------------------------------------------------
       integer function visitgetmetadata(handle)
       implicit none
       integer handle
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
       integer runflag, simcycle
       real simtime
@@ -245,7 +245,7 @@ c---------------------------------------------------------------------------
       implicit none
       character*8 name
       integer     handle, domain, lname
-      include "visitfortransiminterface.inc" 
+      include "visitfortransimV2interface.inc" 
 ccc   RECTMESH
       integer NX, NY
       parameter (NX = 5)
@@ -286,7 +286,7 @@ c---------------------------------------------------------------------------
       implicit none
       character*8 name
       integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
       visitgetscalar = VISIT_ERROR
       end
 
@@ -298,7 +298,7 @@ c---------------------------------------------------------------------------
       implicit none
       character*8 name
       integer     handle, lname
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
       visitgetcurve = VISIT_ERROR
       end
 
@@ -308,7 +308,7 @@ c---------------------------------------------------------------------------
       integer function visitgetdomainlist(handle)
       implicit none
       integer handle
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
       visitgetdomainlist = VISIT_OKAY
       end
 
@@ -319,7 +319,7 @@ c---------------------------------------------------------------------------
       implicit none
       character*8 name
       integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   RECTMESH
       integer NX, NY
       parameter (NX = 5)

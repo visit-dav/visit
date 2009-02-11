@@ -37,11 +37,13 @@
 *****************************************************************************/
 
 #include <VisItControlInterface_V2.h>
+#include <VisItDataInterface_V2.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <materialhelpers.h>
+#define USE_VERSION2_DATA_INTERFACE
+#include "materialhelpers.c"
 
 void simulate_one_timestep(void);
 void read_input_deck(void) { }
@@ -57,7 +59,7 @@ static double simtime = 0.;
  * Purpose: Callback function for control commands.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Mon Feb  9 15:27:09 PST 2009
  *
  * Input Arguments:
  *   cmd         : The command string that we want the sim to execute.
@@ -86,7 +88,7 @@ void ControlCommandCallback(const char *cmd,
  * Purpose: This is the main event loop function.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Mon Feb  9 15:27:09 PST 2009
  *
  * Modifications:
  *
@@ -144,7 +146,7 @@ void mainloop(void)
  * Purpose: This is the main function for the program.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Mon Feb  9 15:27:09 PST 2009
  *
  * Input Arguments:
  *   argc : The number of command line arguments.
@@ -159,8 +161,8 @@ int main(int argc, char **argv)
     /* Initialize environment variables. */
     VisItSetupEnvironment();
     /* Write out .sim file that VisIt uses to connect. */
-    VisItInitializeSocketAndDumpSimFile("materials",
-        "Demonstrates material data access function",
+    VisItInitializeSocketAndDumpSimFile("species",
+        "Demonstrates species data access function",
         "/path/to/where/sim/was/started",
         NULL, NULL, NULL);
 
@@ -184,8 +186,6 @@ void simulate_one_timestep(void)
 }
 
 /* DATA ACCESS FUNCTIONS */
-
-/* Values to match the Fortran example. */
 #define NX 5
 #define NY 4
 #define XMIN 0.f
@@ -193,7 +193,6 @@ void simulate_one_timestep(void)
 #define YMIN 0.f
 #define YMAX 3.f
 const char *matNames[] = {"Water", "Membrane", "Air"};
-
 #define DX (XMAX - XMIN)
 
 /* Rectilinear mesh */
@@ -202,21 +201,67 @@ static float rmesh_y[NY];
 static const int   rmesh_dims[] = {NX, NY, 1};
 static const int   rmesh_ndims = 2;
 
+/* The matlist table indicates the material numbers that are found in
+ * each cell. Every 3 numbers indicates the material numbers in a cell.
+ * A material number of 0 means that the material entry is not used.
+ */
+int matlist[NY-1][NX-1][3] = {
+    {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
+    {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
+    {{3,0,0},{2,3,0},{1,2,3},{1,2,0}}
+};
+
+/* The mat_vf table indicates the material volume fractions that are
+ * found in a cell.
+ */
+float mat_vf[NY-1][NX-1][3] = {
+    {{1.,0.,0.},{0.75,0.25,0.},  {0.8125,0.1875, 0.},{1.,0.,0.}},
+    {{1.,0.,0.},{0.625,0.375,0.},{0.5625,0.4375,0.}, {1.,0.,0.}},
+    {{1.,0.,0.},{0.3,0.7,0.},    {0.2,0.4,0.4},      {0.55,0.45,0.}}
+};
+
+/* Species data. */
+int nmaterialSpecies[3] = {3, 1, 4};
+const char *materialSpecies[3][4] = {
+    {"H2O", "Ca", "NaCl", NULL},
+    {"Latex", NULL, NULL, NULL},
+    {"N2", "O2", "CO2", "Ar"}
+};
+const float matspeciesMF[3][4] = {
+    {0.99f, 0.0005f, 0.0095f, 0.f },
+    {1.f,   0.f,     0.f,     0.f},
+    {0.7f,  0.2f,    0.06f,   0.04f}
+};
+
+VisIt_NameList *
+SpeciesNames(void)
+{
+    int i, j;
+    VisIt_NameList *elem = (VisIt_NameList *)malloc(3 * sizeof(VisIt_NameList));
+    for(i = 0; i < 3; ++i)
+    {
+        elem[i].numNames = nmaterialSpecies[i];
+        elem[i].names = (const char **)malloc(sizeof(char*)*nmaterialSpecies[i]);
+        for(j = 0; j < nmaterialSpecies[i]; ++j)
+            elem[i].names[j] = strdup(materialSpecies[i][j]);
+    }
+    return elem;
+}
+
 /******************************************************************************
  *
  * Purpose: This callback function returns simulation metadata.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:40:23 PST 2008
+ * Date:       Mon Feb  9 15:27:09 PST 2009
  *
  * Modifications:
- *   Brad Whitlock, Thu Apr 10 11:59:07 PDT 2008
- *   Added a scalar variable so we can demonstrate mixed scalars.
  *
  *****************************************************************************/
 
 VisIt_SimulationMetaData *VisItGetMetaData(void)
 {
+    int i, j;
     /* Create a metadata object with no variables. */
     size_t sz = sizeof(VisIt_SimulationMetaData);
     VisIt_SimulationMetaData *md = 
@@ -272,6 +317,17 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->scalars[0].meshName = strdup("mesh2d");
     md->scalars[0].centering = VISIT_VARCENTERING_ZONE;
 
+    /* Add species */
+    sz = sizeof(VisIt_SpeciesMetaData);
+    md->numSpecies = 1;
+    md->species = (VisIt_SpeciesMetaData *)malloc(sz);
+    md->species[0].name = strdup("Species");
+    md->species[0].meshName = strdup("mesh2d");
+    md->species[0].materialName = strdup("Material");
+    md->species[0].nmaterialSpecies = 3;
+    sz = sizeof(VisIt_NameList) * 3;
+    md->species[0].materialSpeciesNames = SpeciesNames();
+
     /* Add some custom commands. */
     md->numGenericCommands = 3;
     sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
@@ -298,7 +354,7 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
  * Purpose: This callback function returns meshes.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
+ * Date:       Mon Feb  9 15:27:09 PST 2009
  *
  * Modifications:
  *
@@ -371,7 +427,7 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
  * Purpose: This callback function returns material data.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
+ * Date:       Mon Feb  9 15:27:09 PST 2009
  *
  * Modifications:
  *
@@ -391,25 +447,6 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
     matnos[0] = VisIt_MaterialData_addMaterial(handle, matNames[0]);
     matnos[1] = VisIt_MaterialData_addMaterial(handle, matNames[1]);
     matnos[2] = VisIt_MaterialData_addMaterial(handle, matNames[2]);
-
-    /* The matlist table indicates the material numbers that are found in
-     * each cell. Every 3 numbers indicates the material numbers in a cell.
-     * A material number of 0 means that the material entry is not used.
-     */
-    int matlist[NY-1][NX-1][3] = {
-        {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
-        {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
-        {{3,0,0},{2,3,0},{1,2,3},{1,2,0}}
-    };
-
-    /* The mat_vf table indicates the material volume fractions that are
-     * found in a cell.
-     */
-    float mat_vf[NY-1][NX-1][3] = {
-        {{1.,0.,0.},{0.75,0.25,0.},  {0.8125,0.1875, 0.},{1.,0.,0.}},
-        {{1.,0.,0.},{0.625,0.375,0.},{0.5625,0.4375,0.}, {1.,0.,0.}},
-        {{1.,0.,0.},{0.3,0.7,0.},    {0.2,0.4,0.4},      {0.55,0.45,0.}}
-    };
 
     for(j = 0; j < NY-1; ++j)
     {
@@ -433,6 +470,118 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
     }
 
     return handle;
+}
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns species data.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Feb  9 15:27:09 PST 2009
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+VisIt_SpeciesData *VisItGetSpecies(int domain, const char *name)
+{
+    int *species = NULL, *mixedSpecies = NULL;
+    int c, mixc, mfc, i, j;
+    float *speciesMF = NULL;
+    VisIt_SpeciesData *spec = NULL;
+
+    spec = (VisIt_SpeciesData *)malloc(sizeof(VisIt_SpeciesData));
+    memset(spec, 0, sizeof(VisIt_SpeciesData));
+
+    spec->ndims = 2;
+    spec->dims[0] = NX-1;
+    spec->dims[1] = NY-1;
+    spec->nmaterialSpecies = 3;
+    spec->materialSpecies = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM,
+        nmaterialSpecies);
+    spec->materialSpeciesNames = SpeciesNames();
+
+    species = (int *)malloc(100 * sizeof(int));
+    memset(species, 0, 100 * sizeof(int));
+    spec->species = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, species);
+
+    mixedSpecies = (int *)malloc(100 * sizeof(int));
+    memset(mixedSpecies, 0, 100 * sizeof(int));
+    spec->mixedSpecies = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, mixedSpecies);
+
+    speciesMF = (float *)malloc(100 * sizeof(float));
+    memset(speciesMF, 0, 100 * sizeof(float));
+    spec->speciesMF = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, speciesMF);
+
+    c = 0;
+    mixc = 0;
+    mfc = 0;
+    for (j = 0; j < NY-1; j++)
+    {
+        for (i = 0; i < NX-1; i++, c++)
+        {
+            int m, mi, s, nmats = 0;
+            /* Count the number of materials in the cell. */
+            for(mi = 0; mi < 3; ++mi)
+            {
+                if(matlist[j][i][mi] > 0)
+                    nmats++;
+            }   
+
+            if (nmats == 1)
+            {
+                m = matlist[j][i][0]-1;
+
+                if (nmaterialSpecies[m] == 1)
+                {
+                    /* This 1 material has 1 species. */
+                    species[c] = 0;
+                }
+                else
+                {
+                    /* This 1 material has many species */
+                    species[c] = mfc + 1; /* 1-origin */
+                    for (s = 0; s < nmaterialSpecies[m]; s++)
+                    {
+                        speciesMF[mfc] = matspeciesMF[m][s];
+                        mfc++;
+                    }
+                }
+            }
+            else
+            {
+                /* There are mixed materials */
+                species[c] = -mixc - 1;
+
+                for (mi = 0; mi < nmats; ++mi)
+                {
+                    m = matlist[j][i][mi]-1;
+
+                    if (nmaterialSpecies[m] == 1)
+                    {
+                        /* The current material has 1 species. */
+                        mixedSpecies[mixc] = 0;
+                    }
+                    else
+                    {
+                        /* The current material has many species. */
+                        int     s;
+                        mixedSpecies[mixc] = mfc + 1; /* 1-origin */
+                        for (s = 0; s < nmaterialSpecies[m]; s++)
+                        {
+                            speciesMF[mfc] = matspeciesMF[m][s];
+                            mfc++;
+                        }
+                    }
+                    mixc++;
+                }
+            }
+        }
+    }
+    spec->nspeciesMF = mfc;
+    spec->nmixedSpecies = mixc;
+
+    return spec;
 }
 
 /******************************************************************************
@@ -527,7 +676,7 @@ VisIt_SimulationCallback visitCallbacks =
     &VisItGetMetaData,
     &VisItGetMesh,
     &VisItGetMaterial,
-    NULL, /* GetSpecies*/
+    &VisItGetSpecies,
     &VisItGetScalar,
     NULL, /* GetCurve */
     &VisItGetMixedScalar,

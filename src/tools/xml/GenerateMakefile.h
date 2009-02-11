@@ -504,7 +504,7 @@ class MakefileGeneratorPlugin : public Plugin
             out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
                    "-lavtmath_ser -lavtview -lavtexceptions -ldbatts -lstate "
                    "-lexpr -lmisc -lcomm -lparser -lutility -lvisit_vtk "
-                   "-llightweight_visit_vtk -lparallel_visit_vtk_ser "
+                   "-lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser "
                    "$(VLIBS_FOR_MACOSX_PREBINDING) ";
             //
             // HACK HACK HACK -- This should be a flag in the XML file instead
@@ -529,14 +529,14 @@ class MakefileGeneratorPlugin : public Plugin
             out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
                    "-lavtmath_ser -lavtview -ldbatts -lavtexceptions "
                    "-lstate -lmisc -lcomm -lexpr -lparser -lutility "
-                   "-lvisit_vtk -llightweight_visit_vtk "
+                   "-lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk "
                    "-lparallel_visit_vtk_ser -lexpressions_ser "
                    "$(ESERLIBS_FOR_MACOSX_PREBINDING) "
                    "$(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par "
                    "-lavtmath_par -lavtview -ldbatts -lavtexceptions "
                    "-lstate -lmisc -lcomm -lexpr -lparser -lutility "
-                   "-lvisit_vtk -llightweight_visit_vtk "
+                   "-lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk "
                    "-lparallel_visit_vtk_par -lexpressions_par "
                    "$(EPARLIBS_FOR_MACOSX_PREBINDING) "
 		   "$(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
@@ -715,11 +715,11 @@ class MakefileGeneratorPlugin : public Plugin
             out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
                    "-lavtmath_ser -lavtview -ldbatts -lavtexceptions "
                    "-lmisc -lcomm -lstate -lexpr -lparser -lutility "
-                   "-lvisit_vtk -llightweight_visit_vtk "
+                   "-lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk "
                    "-lparallel_visit_vtk_ser "
                    "$(VLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser $(ESERLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par $(EPARLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser $(ESERLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par $(EPARLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
