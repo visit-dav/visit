@@ -78,6 +78,8 @@
 #   Changed the way the _lite dependencies work to enable a serial
 #   build to pass.
 #
+#   Mark C. Miller, Wed Feb 11 10:10:53 PST 2009
+#   Elminated some more vtk and avt dependencies from _lite versions
 ##############################################################################
 
 ##
