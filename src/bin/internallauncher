@@ -420,6 +420,12 @@ exec perl -x $0 ${1+"$@"};
 #    Hank Childs, Wed Feb  4 15:40:22 CST 2009
 #    Remove PYTHONPATH logic for Argonne's Eureka machine.  No longer needed.
 #
+#    Jeremy Meredith, Wed Feb 11 15:03:18 EST 2009
+#    Confirmed PYTHONPATH isn't needed for Eureka and deleted the line.
+#    Added remote host fix for parallel launches; the remote nodes think
+#    it's called login1-mgmt.  (It used to be hard-coded in the ANL config
+#    host profiles, but that prevented client-server from working.)
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1407,6 +1413,7 @@ $IsRunningOnEureka_ANL = 0;
 if ( ($parallel) and $exe_name eq "engine" and $host =~ /login1/ )
 {
     $IsRunningOnEureka_ANL = 1;
+    $remotehost = "login1-mgmt.eureka";
 }
 
 #  We stripped off the "host" argument above, so put it back here.
@@ -2302,7 +2309,6 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @printcmd, @sublaunchpostcmd, "\n", if $sublaunchpostcmd_set;
             push @printcmd, ("\"".(pop @printcmd)."\"");
             if ( $IsRunningOnEureka_ANL ) {
-               # $ENV{PYTHONPATH} = "/home/buettner/python_lib:/usr/lib64/python:/usr/lib64/python2.4/lib-dynload";
                @parcmd = "qsub";
                push @parcmd, "-n";
                push @parcmd, $nodes;
