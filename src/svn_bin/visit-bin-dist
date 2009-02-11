@@ -370,6 +370,9 @@
 #    Hank Childs, Tue Jan 20 15:18:10 PST 2009
 #    Copy over the Princeton config files.
 #
+#    Brad Whitlock, Fri Feb  6 14:50:41 PST 2009
+#    Added installation of libsimV2.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -829,6 +832,7 @@ set helpdir = distribution/visit/$Version/$visitbindir/help
 set plugindir = distribution/visit/$Version/$visitbindir/plugins
 set javadir = distribution/visit/$Version/$visitbindir/java
 set simv1dir = distribution/visit/$Version/$visitbindir/libsim/V1
+set simv2dir = distribution/visit/$Version/$visitbindir/libsim/V2
 set frameworkdir = distribution/visit/$Version/$visitbindir/Frameworks
 
 #
@@ -1465,6 +1469,18 @@ if (-e $VisItDir/archives/libsim.a) then
 endif
 if (-e $VisItDir/archives/libsimf.a) then
     cp $VisItDir/archives/libsimf.a $simv1dir/lib
+endif
+#
+# Install libsim V2
+#
+if (-e $VisItDir/archives/libsimV2.a) then
+    cp $VisItDir/archives/libsimV2.a $simv2dir/lib
+    cp $VisItDir/sim/lib/VisItControlInterface_V2.h $simv2dir/include
+    cp $VisItDir/sim/lib/visitfortransimV2interface.inc $simv2dir/include
+    cp $VisItDir/databases/SimV2/VisItDataInterface_V2.h $simv2dir/include
+endif
+if (-e $VisItDir/archives/libsimV2f.a) then
+    cp $VisItDir/archives/libsimV2f.a $simv2dir/lib
 endif
 
 #
