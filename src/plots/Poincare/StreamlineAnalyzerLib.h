@@ -3,7 +3,7 @@
 
    The MIT License
 
-   Copyright (c) 2004 Scientific Computing and Imaging Institute,
+   Copyright (c) 2009 Scientific Computing and Imaging Institute,
    University of Utah.
 
    License for the specific language governing rights and limitations under
@@ -36,39 +36,33 @@
  *   University of Utah
  *   September 2006
  *
- *  Copyright (C) 2006 SCI Group
  */
 
 #if !defined(StreamlineAnalyzerLib_h)
 #define StreamlineAnalyzerLib_h
 
-#include "Point.h"
-#include "Vector.h"
+//#include <Core/Geometry/Point.h>
+//#include <Core/Geometry/Vector.h>
 
-#include <vector>
 #include <avtVector.h>
 
-using namespace std;
+typedef avtVector Point ;
+typedef avtVector Vector;
 
-// Basic interface between the outside world and the base libs.
-void getFieldlineProperties( const vector<avtVector> &pts,
-                             unsigned int maxToroidalWinding,
-                             unsigned int *toroidalWindingRet,
-                             unsigned int *poloidalWindingRet,
-                             unsigned int *islandRet );
+#include <vector>
 
 enum FieldlineType { UNKNOWN  = 0,
 
-         PERIODIC = 10,
-         RATIONAL = 11,
-         O_POINT  = 12,
-         X_POINT  = 13,
-         
-         QUASI_PERIODIC = 20,
-         IRRATIONAL     = 21,
-         ISLAND_CHAIN   = 22,
-         
-         CHAOTIC = 30 };
+                     PERIODIC = 10,
+                     RATIONAL = 11,
+                     O_POINT  = 12,
+                     X_POINT  = 13,
+                     
+                     QUASI_PERIODIC = 20,
+                     IRRATIONAL     = 21,
+                     ISLAND_CHAIN   = 22,
+                     
+                     CHAOTIC = 30 };
   
 struct FieldlineInfo {
   FieldlineType type;
@@ -85,8 +79,7 @@ struct FieldlineInfo {
 namespace FusionPSE {
 
 using namespace std;
-using namespace SLIVR;
-  //using namespace SCIRun;
+//using namespace SCIRun;
 
 
 class FieldlineLib
@@ -98,16 +91,16 @@ public:
   int ccw( Vector v0, Vector v1 );
 
   int intersect( Point l0_p0, Point l0_p1,
-     Point l1_p0, Point l1_p1 );
+                 Point l1_p0, Point l1_p1 );
 
   void convexHull( vector< Point > &hullPts,
-       vector< unsigned int > &ordering,
-       unsigned int &m,
-       unsigned int toroidalWinding,
-       int dir );
+                   vector< unsigned int > &ordering,
+                   unsigned int &m,
+                   unsigned int toroidalWinding,
+                   int dir );
 
   bool hullCheck( vector< Point > &points,
-      unsigned int toroidalWinding );
+                  unsigned int toroidalWinding );
 
   unsigned int factorial( unsigned int n0, unsigned int n1 );
 
@@ -121,104 +114,104 @@ public:
   IntersectCheck( vector< Point >& points, unsigned int nbins );
 
   unsigned int Blankinship( unsigned int toroidalWinding,
-          unsigned int poloidalWinding,
-          unsigned int offset = 1 );
+                            unsigned int poloidalWinding,
+                            unsigned int offset = 1 );
 
   void poloidalWindingCheck( vector< Point > &points,
-       vector< unsigned int > &poloidalWindingset,
-       unsigned int maxToroidalToroidalWinding,
-       unsigned int &bestToroidalWinding,
-       unsigned int &bestPoloidalWinding,
-       double &bestHitrate,
-       unsigned int &nextBestToroidalWinding,
-       unsigned int &nextBestPoloidalWinding,
-       double &nextBestHitrate,
-       unsigned int level );
+                   vector< unsigned int > &poloidalWindingset,
+                   unsigned int maxToroidalToroidalWinding,
+                   unsigned int &bestToroidalWinding,
+                   unsigned int &bestPoloidalWinding,
+                   double &bestHitrate,
+                   unsigned int &nextBestToroidalWinding,
+                   unsigned int &nextBestPoloidalWinding,
+                   double &nextBestHitrate,
+                   unsigned int level );
 
   double
   poloidalWindingStats( vector< Point >& poloidalWinding_points,
-        unsigned int poloidalWinding );
+              unsigned int poloidalWinding );
 
   bool
   rationalCheck( vector< Point >& points,
-     unsigned int toroidalWinding,
-     unsigned int &island,
-     float &avenode,
-     float delta=0.01);
+                 unsigned int toroidalWinding,
+                 unsigned int &island,
+                 float &avenode,
+                 float delta=0.01);
 
   bool
   islandChecks( vector< Point >& points,
-    unsigned int toroidalWinding,
-    unsigned int &islands,
-    float &avenode );
+                unsigned int toroidalWinding,
+                unsigned int &islands,
+                float &avenode );
 
   bool
   basicChecks( vector< Point >& points,
-         Vector & globalCentroid,
-         unsigned int &toroidalWinding,
-         unsigned int &poloidalWinding,
-         unsigned int &skip,
-         unsigned int &type,
-         unsigned int &islands,
-         float &avenode,
-         bool &groupCCW,
-         unsigned int &toroidalWindingNextBest );
+               Vector & globalCentroid,
+               unsigned int &toroidalWinding,
+               unsigned int &poloidalWinding,
+               unsigned int &skip,
+               unsigned int &type,
+               unsigned int &islands,
+               float &avenode,
+               bool &groupCCW,
+               unsigned int &toroidalWindingNextBest );
 
 
   FieldlineInfo 
   fieldlineProperties( vector< Point > &ptList,
-           unsigned int override,
-           unsigned int maxToroidalWinding,
-           float hitrate );
+                       unsigned int override,
+                       unsigned int maxToroidalWinding,
+                       float hitrate );
 
   FieldlineInfo 
   fieldlineProperties( vector< Point > &points,
-           unsigned int maxToroidalToroidalWinding );
+                       unsigned int maxToroidalToroidalWinding );
 
 
   unsigned int
   islandProperties( vector< Point > &points,
-        Vector &baseCentroid,
-        unsigned int &startIndex,
-        unsigned int &middleIndex,
-        unsigned int &stopIndex,
-        unsigned int &nodes );
+                    Vector &baseCentroid,
+                    unsigned int &startIndex,
+                    unsigned int &middleIndex,
+                    unsigned int &stopIndex,
+                    unsigned int &nodes );
 
   unsigned int
-  surfaceOverlapCheck( vector< vector< pair< Point, double > > > &bins,
-        unsigned int toroidalWinding,
-        unsigned int skip,
-        unsigned int &nnodes );
+  surfaceOverlapCheck( vector< vector< Point > > &bins,
+                    unsigned int toroidalWinding,
+                    unsigned int skip,
+                    unsigned int &nnodes );
 
   unsigned int
-  surfaceGroupCheck( vector< vector< pair< Point, double > > > &bins,
-         unsigned int i,
-         unsigned int j,
-         unsigned int nnodes );
+  surfaceGroupCheck( vector< vector< Point > > &bins,
+                     unsigned int i,
+                     unsigned int j,
+                     unsigned int nnodes );
 
   unsigned int
-  removeOverlap( vector< vector < pair< Point, double > > > &bins,
-     unsigned int &nnodes,
-     unsigned int toroidalWinding,
-     unsigned int poloidalWinding,
-     unsigned int skip,
-     unsigned int island );
+  removeOverlap( vector< vector < Point > > &bins,
+                 unsigned int &nnodes,
+                 unsigned int toroidalWinding,
+                 unsigned int poloidalWinding,
+                 unsigned int skip,
+                 unsigned int island );
 
   unsigned int
-  smoothCurve( vector< vector < pair< Point, double > > > &bins,
-         unsigned int &nnodes,
-         unsigned int toroidalWinding,
-         unsigned int poloidalWinding,
-         unsigned int skip,
-         unsigned int island );
+  smoothCurve( vector< vector < Point > > &bins,
+               unsigned int &nnodes,
+               unsigned int toroidalWinding,
+               unsigned int poloidalWinding,
+               unsigned int skip,
+               unsigned int island );
 
   unsigned int
-  mergeOverlap( vector< vector < pair< Point, double > > > &bins,
-    unsigned int &nnodes,
-    unsigned int toroidalWinding,
-    unsigned int poloidalWinding,
-    unsigned int skip,
-    unsigned int island );
+  mergeOverlap( vector< vector < Point > > &bins,
+                unsigned int &nnodes,
+                unsigned int toroidalWinding,
+                unsigned int poloidalWinding,
+                unsigned int skip,
+                unsigned int island );
 };
 
 } // End namespace FusionPSE

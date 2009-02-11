@@ -3,7 +3,7 @@
 
    The MIT License
 
-   Copyright (c) 2004 Scientific Computing and Imaging Institute,
+   Copyright (c) 2009 Scientific Computing and Imaging Institute,
    University of Utah.
 
    License for the specific language governing rights and limitations under
@@ -36,49 +36,14 @@
  *   University of Utah
  *   September 2006
  *
- *  Copyright (C) 2006 SCI Group
  */
 
-/* NOTES:
-windingNumber = number of revs. to get back to begining.
-
-*/
-
-//#include <Packages/FusionPSE/Dataflow/Modules/Fields/StreamlineAnalyzerLib.h>
-
-#include "StreamlineAnalyzerLib.h"
-#include <DebugStream.h>
-#include <Utils.h>
+#include <StreamlineAnalyzerLib.h>
 
 #include <float.h>
 #include <iostream>
 
 using namespace std;
-using namespace SLIVR;
-
-// Basic interface between the outside world and the base libs.
-void getFieldlineProperties( const vector<avtVector> &pts,
-                             unsigned int maxToroidalWinding,
-                             unsigned int *toroidalWindingRet,
-                             unsigned int *poloidalWindingRet,
-                             unsigned int *islandRet )
-{
-  // Move all of the points over to C++ structures which makes the
-  // library interface easier to maintain.
-  vector< Point > points;
-  
-  for( unsigned int i=0; i<pts.size(); i++ ) 
-    points.push_back( Point( pts[i].x, pts[i].y, pts[i].z ) );
-
-  FusionPSE::FieldlineLib fl;
-
-  FieldlineInfo fi = fl.fieldlineProperties( points, 0, maxToroidalWinding, 0.90 );
-
-  *toroidalWindingRet = fi.toroidalWinding;
-  *poloidalWindingRet   = fi.poloidalWinding;
-  *islandRet  = fi.islands;
-}
-
 
 namespace FusionPSE {
 
@@ -92,12 +57,12 @@ Point FieldlineLib::interpert( Point lastPt, Point currPt, double t ) {
 
 int FieldlineLib::ccw( Vector v0, Vector v1 ) {
     
-  if( v0.x() * v1.z() - v0.z() * v1.x() > FLT_MIN ) return  1;    //  CCW
-  if( v0.z() * v1.x() - v0.x() * v1.z() > FLT_MIN ) return -1;    //  CW
-  if( v0.x() * v1.x() < 0.0 || v0.z() * v1.z() < 0.0 ) return -1; // CW
+  if( v0.x * v1.z - v0.z * v1.x > FLT_MIN ) return  1;    //  CCW
+  if( v0.z * v1.x - v0.x * v1.z > FLT_MIN ) return -1;    //  CW
+  if( v0.x * v1.x < 0.0 || v0.z * v1.z < 0.0 ) return -1; // CW
     
-  if( v0.x()*v0.x()+v0.z()*v0.z() >=
-      v1.x()*v1.x()+v1.z()*v1.z() ) return 0;               //  ON LINE
+  if( v0.x*v0.x+v0.z*v0.z >=
+      v1.x*v1.x+v1.z*v1.z ) return 0;               //  ON LINE
     
   return 1;                                                 //  CCW
 }
@@ -147,7 +112,7 @@ void FieldlineLib::convexHull( vector< Point > &hullPts,
 
   // Find the point with the minimum z value.
   for( unsigned int i=m; i<npts; i++ ) {
-    if( hullPts[ min ].z() > hullPts[i].z() )
+    if( hullPts[ min ].z > hullPts[i].z )
       min = i;
   }
 
@@ -285,10 +250,10 @@ Point FieldlineLib::circle(Point &pt1, Point &pt2, Point &pt3)
 // Check the given point are perpendicular to x or y axis 
 bool FieldlineLib::IsPerpendicular(Point &pt1, Point &pt2, Point &pt3)
 {
-  double d21z = pt2.z() - pt1.z();
-  double d21x = pt2.x() - pt1.x();
-  double d32z = pt3.z() - pt2.z();
-  double d32x = pt3.x() - pt2.x();
+  double d21z = pt2.z - pt1.z;
+  double d21x = pt2.x - pt1.x;
+  double d32z = pt3.z - pt2.z;
+  double d32x = pt3.x - pt2.x;
         
   // checking whether the line of the two pts are vertical
   if (fabs(d21x) <= FLT_MIN && fabs(d32z) <= FLT_MIN)
@@ -306,20 +271,16 @@ bool FieldlineLib::IsPerpendicular(Point &pt1, Point &pt2, Point &pt3)
 
 Point FieldlineLib::CalcCircle(Point &pt1, Point &pt2, Point &pt3)
 {
-  Point center;
-      
-  double d21z = pt2.z() - pt1.z();
-  double d21x = pt2.x() - pt1.x();
-  double d32z = pt3.z() - pt2.z();
-  double d32x = pt3.x() - pt2.x();
+  double d21z = pt2.z - pt1.z;
+  double d21x = pt2.x - pt1.x;
+  double d32z = pt3.z - pt2.z;
+  double d32x = pt3.x - pt2.x;
         
   if (fabs(d21x) < FLT_MIN && fabs(d32z ) < FLT_MIN ) {
 
-    center.x( 0.5*(pt2.x() + pt3.x()) );
-    center.y( pt1.y() );
-    center.z( 0.5*(pt1.z() + pt2.z()) );
-
-    return center;
+    return Point( ( 0.5*(pt2.x + pt3.x) ),
+                  ( pt1.y ),
+                  ( 0.5*(pt1.z + pt2.z) ) );
   }
         
   // IsPerpendicular() assure that xDelta(s) are not zero
@@ -330,17 +291,16 @@ Point FieldlineLib::CalcCircle(Point &pt1, Point &pt2, Point &pt3)
   if (fabs(aSlope-bSlope) > FLT_MIN) {
     
     // calc center
-    center.x( (aSlope*bSlope*(pt1.z() - pt3.z()) +
-               bSlope*(pt1.x() + pt2.x()) -
-               aSlope*(pt2.x() + pt3.x()) ) / (2.0* (bSlope-aSlope) ) );
+    double x = (aSlope*bSlope*(pt1.z - pt3.z) +
+                bSlope*(pt1.x + pt2.x) -
+                aSlope*(pt2.x + pt3.x) ) / (2.0* (bSlope-aSlope) );
 
-    center.y( pt1.y() );
-
-    center.z( -(center.x() - (pt1.x()+pt2.x())/2.0) / aSlope +
-              (pt1.z()+pt2.z())/2.0 );
+    return Point( x,
+                  pt1.y,
+                  -(x - (pt1.x+pt2.x)/2.0) / aSlope + (pt1.z+pt2.z)/2.0 );
   }
 
-  return center;
+  return Point(0,0,0);
 }
 
 
@@ -535,7 +495,7 @@ poloidalWindingStats( vector< Point >& poloidalWinding_points,
     unsigned int cc = 0;
     
     for( unsigned int j=i; j<poloidalWinding_points.size(); j+=poloidalWinding ) {
-      sum += poloidalWinding_points[j].z();
+      sum += poloidalWinding_points[j].z;
       ++cc;
     }
     
@@ -544,8 +504,8 @@ poloidalWindingStats( vector< Point >& poloidalWinding_points,
     double sumofsquares = 0;
     
     for( unsigned int j=i; j<poloidalWinding_points.size(); j+=poloidalWinding ) {
-      sumofsquares += ((poloidalWinding_points[j].z()-average)*
-                       (poloidalWinding_points[j].z()-average));
+      sumofsquares += ((poloidalWinding_points[j].z-average)*
+                       (poloidalWinding_points[j].z-average));
     }
     
 //     cerr << poloidalWinding << "  "
@@ -709,9 +669,9 @@ islandChecks( vector< Point >& points,
         if( maxDist < vec.length() )
           maxDist = vec.length();
 
-        Ixx += vec.z()*vec.z();
-        Ixz -= vec.x()*vec.z();
-        Izz += vec.x()*vec.x();
+        Ixx += vec.z*vec.z;
+        Ixz -= vec.x*vec.z;
+        Izz += vec.x*vec.x;
       }
 
       // Short cut to the principal axes because the Y moments of
@@ -993,8 +953,8 @@ basicChecks( vector< Point >& points,
         v0 = (Vector) points[i] - (Vector) points[k];
         v1 = (Vector) points[j] - (Vector) points[k];
 
-        v0.safe_normalize();
-        v1.safe_normalize();
+        v0.normalize();
+        v1.normalize();
 
         //      cerr << "Indexes " << i << "  " << j << "  " << k << " dot  "
         //           << Dot( v0, v1 ) << endl;
@@ -1078,8 +1038,8 @@ basicChecks( vector< Point >& points,
 //            island = 0;
 //            type = 2;
               
-//            v0.safe_normalize();
-//            v1.safe_normalize();
+//            v0.normalize();
+//            v1.normalize();
               
 //            cerr << "FAILED ISLAND SANITY CHECK #1  "
 //                 << i << "  " << j << "  " << k << "  "
@@ -1104,8 +1064,8 @@ basicChecks( vector< Point >& points,
 //            island = 0;
 //            type = 2;
 
-//            v0.safe_normalize();
-//            v1.safe_normalize();
+//            v0.normalize();
+//            v1.normalize();
 
 //            cerr << "FAILED ISLAND SANITY CHECK #2  "
 //                 << i << "  " << j << "  " << k << "  "
@@ -1413,17 +1373,17 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   Point penultimatePt = ptList[0];
 
   Point lastPt = ptList[0];
-  double lastAng = atan2( ptList[0].y(), ptList[0].x() );
+  double lastAng = atan2( ptList[0].y, ptList[0].x );
 
   // Get the direction of the streamline toroidal winding.
-  bool CCWstreamline = (lastAng < atan2( ptList[1].y(), ptList[1].x() ));
+  bool CCWstreamline = (lastAng < atan2( ptList[1].y, ptList[1].x ));
 
   for( unsigned int i=1; i<ptList.size(); ++i)
   {
     // Get the current point.
     Point currPt = ptList[i];
 
-    double currAng = atan2( currPt.y(), currPt.x() );
+    double currAng = atan2( currPt.y, currPt.x );
 
     // First look at only points that are in the correct plane. In
     // this case the initial analsis is done at the zero plane.
@@ -1459,9 +1419,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     if( toroidal_points.size() ) 
     {
       if( checkPoloidal &&
-          0.0 < currPt.z() &&
-          penultimatePt.z() <= lastPt.z() &&
-          currPt.z() < lastPt.z() ) 
+          0.0 < currPt.z &&
+          penultimatePt.z <= lastPt.z &&
+          currPt.z < lastPt.z ) 
       {
         ++poloidalCount;
         
@@ -1473,7 +1433,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     // Once the fieldline z value falls below zero check for a
     // poloidal again.
-    if( currPt.z() < 0.0 && checkPoloidal == false )
+    if( currPt.z < 0.0 && checkPoloidal == false )
       checkPoloidal = true;
 
     // Save the distance between points to use for finding periodic
@@ -2102,9 +2062,9 @@ islandProperties( vector< Point > &points,
     if( maxDist < vec.length() )
       maxDist = vec.length();
     
-    Ixx += vec.z()*vec.z();
-    Ixz -= vec.x()*vec.z();
-    Izz += vec.x()*vec.x();
+    Ixx += vec.z*vec.z;
+    Ixz -= vec.x*vec.z;
+    Izz += vec.x*vec.x;
   }
   
   // Short cut to the principal axes because the Y moments of
@@ -2258,7 +2218,7 @@ islandProperties( vector< Point > &points,
 
 unsigned int
 FieldlineLib::
-surfaceOverlapCheck( vector< vector< pair< Point, double > > > &bins,
+surfaceOverlapCheck( vector< vector< Point > > &bins,
                      unsigned int toroidalWinding,
                      unsigned int skip,
                      unsigned int &nnodes )
@@ -2273,8 +2233,8 @@ surfaceOverlapCheck( vector< vector< pair< Point, double > > > &bins,
 
     for( unsigned int j=2; j<nnodes; j++ ) {
 
-      Vector v0 = (Vector) bins[i][0].first - (Vector) bins[i][j].first;
-      Vector v1 = (Vector) bins[i][1].first - (Vector) bins[i][j].first;
+      Vector v0 = (Vector) bins[i][0] - (Vector) bins[i][j];
+      Vector v1 = (Vector) bins[i][1] - (Vector) bins[i][j];
       
       if( Dot( v0, v1 ) < 0.0 ) {
         nnodes = j;
@@ -2286,8 +2246,8 @@ surfaceOverlapCheck( vector< vector< pair< Point, double > > > &bins,
   if( toroidalWinding == 1 )
     return nnodes;
 
-  Vector v0 = (Vector) bins[0   ][1].first - (Vector) bins[0][0].first;
-  Vector v1 = (Vector) bins[skip][0].first - (Vector) bins[0][0].first;
+  Vector v0 = (Vector) bins[0   ][1] - (Vector) bins[0][0];
+  Vector v1 = (Vector) bins[skip][0] - (Vector) bins[0][0];
 
   // If the skip and point ordering are opposite in directions then the
   // previous group is the skip. Otherwise is they have the same
@@ -2309,8 +2269,8 @@ surfaceOverlapCheck( vector< vector< pair< Point, double > > > &bins,
     // two points in the current group.
     for( unsigned int k=0; k<nnodes; k++ ) {
 
-      Vector v0 = (Vector) bins[i][0].first - (Vector) bins[j][k].first;
-      Vector v1 = (Vector) bins[i][1].first - (Vector) bins[j][k].first;
+      Vector v0 = (Vector) bins[i][0] - (Vector) bins[j][k];
+      Vector v1 = (Vector) bins[i][1] - (Vector) bins[j][k];
       
       if( Dot( v0, v1 ) < 0.0 ) {
         nnodes = k;
@@ -2321,8 +2281,8 @@ surfaceOverlapCheck( vector< vector< pair< Point, double > > > &bins,
     // in the previous group.
     for( unsigned int k=1; k<nnodes; k++ ) {
 
-      Vector v0 = (Vector) bins[j][k  ].first - (Vector) bins[i][0].first;
-      Vector v1 = (Vector) bins[j][k-1].first - (Vector) bins[i][0].first;
+      Vector v0 = (Vector) bins[j][k  ] - (Vector) bins[i][0];
+      Vector v1 = (Vector) bins[j][k-1] - (Vector) bins[i][0];
       
       if( Dot( v0, v1 ) < 0.0 ) {
         nnodes = k;
@@ -2337,7 +2297,7 @@ surfaceOverlapCheck( vector< vector< pair< Point, double > > > &bins,
 
 unsigned int
 FieldlineLib::
-surfaceGroupCheck( vector< vector< pair< Point, double > > > &bins,
+surfaceGroupCheck( vector< vector< Point > > &bins,
                    unsigned int i,
                    unsigned int j,
                    unsigned int nnodes ) {
@@ -2348,8 +2308,8 @@ surfaceGroupCheck( vector< vector< pair< Point, double > > > &bins,
     // Check to see if the first overlapping point is really a
     // fill-in point. This happens because the spacing between
     // toroidalWinding groups varries between groups.
-    Vector v0 = (Vector) bins[j][0      ].first - (Vector) bins[i][nodes].first;
-    Vector v1 = (Vector) bins[i][nodes-1].first - (Vector) bins[i][nodes].first;
+    Vector v0 = (Vector) bins[j][0      ] - (Vector) bins[i][nodes];
+    Vector v1 = (Vector) bins[i][nodes-1] - (Vector) bins[i][nodes];
     
     if( Dot( v0, v1 ) < 0.0 )
       nodes++;
@@ -2363,7 +2323,7 @@ surfaceGroupCheck( vector< vector< pair< Point, double > > > &bins,
 
 unsigned int
 FieldlineLib::
-removeOverlap( vector< vector < pair< Point, double > > > &bins,
+removeOverlap( vector< vector < Point > > &bins,
                unsigned int &nnodes,
                unsigned int toroidalWinding,
                unsigned int poloidalWinding,
@@ -2374,7 +2334,7 @@ removeOverlap( vector< vector < pair< Point, double > > > &bins,
 
   for( unsigned int i=0; i<toroidalWinding; i++ )
     for( unsigned int j=0; j<nnodes; j++ )
-      globalCentroid += (Vector) bins[i][j].first;
+      globalCentroid += (Vector) bins[i][j];
   
   globalCentroid /= (toroidalWinding*nnodes);
     
@@ -2392,8 +2352,8 @@ removeOverlap( vector< vector < pair< Point, double > > > &bins,
 
         // See if the first point overlaps another section.
         for( unsigned int  j=nnodes/2; j<bins[i].size(); j++ ) {
-          if( Dot( (Vector) bins[i][j  ].first - (Vector) bins[i][0].first,
-                   (Vector) bins[i][j-1].first - (Vector) bins[i][0].first )
+          if( Dot( (Vector) bins[i][j  ] - (Vector) bins[i][0],
+                   (Vector) bins[i][j-1] - (Vector) bins[i][0] )
               < 0.0 ) {
 
 //          cerr <<  "removeOverlap - First point overlaps another section after " << j-1 << endl;
@@ -2407,8 +2367,8 @@ removeOverlap( vector< vector < pair< Point, double > > > &bins,
         // See if a point overlaps the first section.
         if( nodes == 0 ) {
           for( unsigned int j=nnodes/2; j<bins[i].size(); j++ ) {
-            if( Dot( (Vector) bins[i][0].first - (Vector) bins[i][j].first,
-                     (Vector) bins[i][1].first - (Vector) bins[i][j].first )
+            if( Dot( (Vector) bins[i][0] - (Vector) bins[i][j],
+                     (Vector) bins[i][1] - (Vector) bins[i][j] )
                 < 0.0 ) {
 //            cerr << "removeOverlap - A point overlaps the first section at " << j-1 << endl;
               nodes = j;
@@ -2427,7 +2387,7 @@ removeOverlap( vector< vector < pair< Point, double > > > &bins,
         points.resize( bins[i].size() );
 
         for( unsigned int j=0; j<bins[i].size(); j++ )
-          points[j] = bins[i][j].first;
+          points[j] = bins[i][j];
         
         if( islandProperties( points, globalCentroid,
                               startIndex, middleIndex, stopIndex, nodes ) == 3 )
@@ -2487,7 +2447,7 @@ removeOverlap( vector< vector < pair< Point, double > > > &bins,
 
 unsigned int
 FieldlineLib::
-smoothCurve( vector< vector < pair< Point, double > > > &bins,
+smoothCurve( vector< vector < Point > > &bins,
              unsigned int &nnodes,
              unsigned int toroidalWinding,
              unsigned int poloidalWinding,
@@ -2498,7 +2458,7 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
 
   for( unsigned int i=0; i<toroidalWinding; i++ )
     for( unsigned int j=0; j<nnodes; j++ )
-      globalCentroid += (Vector) bins[i][j].first;
+      globalCentroid += (Vector) bins[i][j];
   
   globalCentroid /= (toroidalWinding*nnodes);
 
@@ -2509,18 +2469,18 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
     for( unsigned int i=0; i<toroidalWinding; i++ ) {
       //      for( unsigned int s=0; s<add; s++ )
       {
-        pair< Point, double > newPts[add*nnodes];
+        pair< Point, unsigned int > newPts[add*nnodes];
 
         for( unsigned int j=0; j<add*nnodes; j++ )
-          newPts[j] = pair< Point, double > (Point(0,0,0), 0 );
+          newPts[j] = pair< Point, unsigned int > (Point(0,0,0), 0 );
         
         for( unsigned int j=1; j<nnodes-1; j++ ) {
 
           unsigned int j_1 = (j-1+nnodes) % nnodes;
           unsigned int j1  = (j+1+nnodes) % nnodes;
 
-          Vector v0 = (Vector) bins[i][j1].first - (Vector) bins[i][j  ].first;
-          Vector v1 = (Vector) bins[i][j ].first - (Vector) bins[i][j_1].first;
+          Vector v0 = (Vector) bins[i][j1] - (Vector) bins[i][j  ];
+          Vector v1 = (Vector) bins[i][j ] - (Vector) bins[i][j_1];
 
           cerr << i << " smooth " << j_1 << " "  << j << " "  << j1 << "  "
                << ( v0.length() > v1.length() ?
@@ -2532,36 +2492,36 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
                 v0.length() / v1.length() :
                 v1.length() / v0.length() ) < 10.0 ) {
 
-            Vector center = (Vector) circle( bins[i][j_1].first,
-                                             bins[i][j  ].first,
-                                             bins[i][j1 ].first );
+            Vector center = (Vector) circle( bins[i][j_1],
+                                             bins[i][j  ],
+                                             bins[i][j1 ] );
 
-            double rad = ((Vector) bins[i][j].first - center).length();
+            double rad = ((Vector) bins[i][j] - center).length();
 
 
             for( unsigned int s=0; s<add; s++ ) {
-              Vector midPt = (Vector) bins[i][j_1].first +
+              Vector midPt = (Vector) bins[i][j_1] +
                 (double) (add-s) / (double) (add+1) *
-                ((Vector) bins[i][j].first - (Vector) bins[i][j_1].first );
+                ((Vector) bins[i][j] - (Vector) bins[i][j_1] );
                 
 
               Vector midVec = midPt - center;
 
-              midVec.safe_normalize();
+              midVec.normalize();
 
               newPts[add*j+s].first += center + midVec * rad;
-              newPts[add*j+s].second += 1.0;
+              newPts[add*j+s].second += 1;
 
-              midPt = (Vector) bins[i][j].first +
+              midPt = (Vector) bins[i][j] +
                 (double) (add-s) / (double) (add+1) *
-                ((Vector) bins[i][j1].first - (Vector) bins[i][j].first );
+                ((Vector) bins[i][j1] - (Vector) bins[i][j] );
 
               midVec = midPt - center;
 
-              midVec.safe_normalize();
+              midVec.normalize();
 
               newPts[add*j1+s].first += center + midVec * rad;
-              newPts[add*j1+s].second += 1.0;
+              newPts[add*j1+s].second += 1;
             }
           }
         }
@@ -2576,9 +2536,9 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
               
               newPts[k].first /= newPts[k].second;
               
-              //              cerr << i << " insert " << j << "  " << newPts[k].first << endl;
+//            cerr << i << " insert " << j << "  " << newPts[k] << endl;
               
-              bins[i].insert( bins[i].begin()+j, newPts[k] );
+              bins[i].insert( bins[i].begin()+j, newPts[k].first );
             }
           }
         }
@@ -2591,9 +2551,9 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
               
             newPts[k].first /= newPts[k].second;
               
-            //        cerr << i << " insert " << 0.0<< "  " << newPts[k].first << endl;
+//            cerr << i << " insert " << 0.0<< "  " << newPts[k] << endl;
               
-            bins[i].push_back( newPts[k] );
+            bins[i].push_back( newPts[k].first );
           }
         }
       }
@@ -2617,18 +2577,18 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
       {
         unsigned int nodes = bins[i].size();
 
-        pair< Point, double > newPts[add*nodes];
+        pair< Point, unsigned int > newPts[add*nodes];
 
         for( unsigned int j=0; j<add*nodes; j++ )
-          newPts[j] = pair< Point, double > (Point(0,0,0), 0 );
+          newPts[j] = pair< Point, unsigned int > (Point(0,0,0), 0 );
         
         for( unsigned int j=1; j<nodes-1; j++ ) {
 
           unsigned int j_1 = j - 1;
           unsigned int j1  = j + 1;
 
-          Vector v0 = (Vector) bins[i][j1].first - (Vector) bins[i][j  ].first;
-          Vector v1 = (Vector) bins[i][j ].first - (Vector) bins[i][j_1].first;
+          Vector v0 = (Vector) bins[i][j1] - (Vector) bins[i][j  ];
+          Vector v1 = (Vector) bins[i][j ] - (Vector) bins[i][j_1];
 
           //      cerr << i << " smooth " << j_1 << " "  << j << " "  << j1 << "  "
           //           << ( v0.length() > v1.length() ?
@@ -2640,36 +2600,36 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
                 v0.length() / v1.length() :
                 v1.length() / v0.length() ) < 10.0 ) {
 
-            Vector center = (Vector) circle( bins[i][j_1].first,
-                                             bins[i][j  ].first,
-                                             bins[i][j1 ].first );
+            Vector center = (Vector) circle( bins[i][j_1],
+                                             bins[i][j  ],
+                                             bins[i][j1 ] );
 
-            double rad = ((Vector) bins[i][j].first - center).length();
+            double rad = ((Vector) bins[i][j] - center).length();
 
 
             for( unsigned int s=0; s<add; s++ ) {
-              Vector midPt = (Vector) bins[i][j_1].first +
+              Vector midPt = (Vector) bins[i][j_1] +
                 (double) (add-s) / (double) (add+1) *
-                ((Vector) bins[i][j].first - (Vector) bins[i][j_1].first );
+                ((Vector) bins[i][j] - (Vector) bins[i][j_1] );
                 
 
               Vector midVec = midPt - center;
 
-              midVec.safe_normalize();
+              midVec.normalize();
 
               newPts[add*j+s].first += center + midVec * rad;
-              newPts[add*j+s].second += 1.0;
+              newPts[add*j+s].second += 1;
 
-              midPt = (Vector) bins[i][j].first +
+              midPt = (Vector) bins[i][j] +
                 (double) (add-s) / (double) (add+1) *
-                ((Vector) bins[i][j1].first - (Vector) bins[i][j].first );
+                ((Vector) bins[i][j1] - (Vector) bins[i][j] );
 
               midVec = midPt - center;
 
-              midVec.safe_normalize();
+              midVec.normalize();
 
               newPts[add*j1+s].first += center + midVec * rad;
-              newPts[add*j1+s].second += 1.0;
+              newPts[add*j1+s].second += 1;
             }
           }
         }
@@ -2684,9 +2644,9 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
               
               newPts[k].first /= newPts[k].second;
               
-              //              cerr << i << " insert " << j << "  " << newPts[k].first << endl;
+              cerr << i << " insert " << j << "  " << newPts[k].first << endl;
               
-              bins[i].insert( bins[i].begin()+j, newPts[k] );
+              bins[i].insert( bins[i].begin()+j, newPts[k].first );
             }
           }
         }
@@ -2703,7 +2663,7 @@ smoothCurve( vector< vector < pair< Point, double > > > &bins,
 
 unsigned int
 FieldlineLib::
-mergeOverlap( vector< vector < pair< Point, double > > > &bins,
+mergeOverlap( vector< vector < Point > > &bins,
               unsigned int &nnodes,
               unsigned int toroidalWinding,
               unsigned int poloidalWinding,
@@ -2714,13 +2674,13 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
 
   for( unsigned int i=0; i<toroidalWinding; i++ )
     for( unsigned int j=0; j<nnodes; j++ )
-      globalCentroid += (Vector) bins[i][j].first;
+      globalCentroid += (Vector) bins[i][j];
   
   globalCentroid /= (toroidalWinding*nnodes);
     
   if( island ) {
 
-    vector < pair< Point, double > > tmp_bins[toroidalWinding];
+    vector < Point > tmp_bins[toroidalWinding];
 
     for( unsigned int i=0; i<toroidalWinding; i++ ) {
       
@@ -2733,7 +2693,7 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
       points.resize( bins[i].size() );
 
       for( unsigned int j=0; j<bins[i].size(); j++ )
-        points[j] = bins[i][j].first;
+        points[j] = bins[i][j];
 
       unsigned int turns =
         islandProperties( points, globalCentroid,
@@ -2766,8 +2726,8 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
         // Insert the remaining points.
         for( unsigned int j=0; j<tmp_bins[i].size(); j++ ) {
 
-          Vector v0 = (Vector) bins[i][0].first -
-            (Vector) tmp_bins[i][j].first;
+          Vector v0 = (Vector) bins[i][0] -
+            (Vector) tmp_bins[i][j];
 
           double angle = 0;
           double length = 99999;
@@ -2776,8 +2736,8 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
 
           for( unsigned int k=1; k<bins[i].size(); k++ ) {
 
-            Vector v1 = (Vector) bins[i][k].first -
-              (Vector) tmp_bins[i][j].first;
+            Vector v1 = (Vector) bins[i][k] -
+              (Vector) tmp_bins[i][j];
 
             double ang = acos( Dot(v0, v1) / (v0.length() * v1.length()) );
 
@@ -2833,7 +2793,7 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
 
           for( unsigned int j=0; j<tmp_bins[i].size(); j++ ) {
 
-            vector< pair< Point, double > >::iterator inList =
+            vector< Point >::iterator inList =
               find( bins[i].begin(), bins[i].end(), tmp_bins[i][j] );
               
             if( inList != bins[i].end() ) {
@@ -2872,13 +2832,13 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
           // See if any of the segments cross.
           for( unsigned int j=0; 0 && j<bins[i].size()-1; j++ ) {
               
-            Point l0_p0 = bins[i][j].first;
-            Point l0_p1 = bins[i][j+1].first;
+            Point l0_p0 = bins[i][j];
+            Point l0_p1 = bins[i][j+1];
               
             for( unsigned int k=j+2; k<bins[i].size()-1; k++ ) {
                 
-              Point l1_p0 = bins[i][k].first;
-              Point l1_p1 = bins[i][k+1].first;
+              Point l1_p0 = bins[i][k];
+              Point l1_p1 = bins[i][k+1];
                 
               if( intersect( l0_p0, l0_p1, l1_p0, l1_p1 ) == 1 ) {
                 if( start0 == 0 ) {
@@ -2893,7 +2853,7 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
                        << start1 << "  " << end1 << endl;
 
                   if( 0 ) {
-                    vector < pair< Point, double > > tmp_bins[2];
+                    vector < Point > tmp_bins[2];
 
                     for( unsigned int l=start0; l<end0; l++ )
                       tmp_bins[0].push_back( bins[i][l] );
@@ -2928,7 +2888,7 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
     }
   } else {
 
-    vector < pair< Point, double > > tmp_bins[toroidalWinding];
+    vector < Point > tmp_bins[toroidalWinding];
 
     // This gives the minimal number of nodes for each group.
     surfaceOverlapCheck( bins, toroidalWinding, skip, nnodes );
@@ -2982,12 +2942,12 @@ mergeOverlap( vector< vector < pair< Point, double > > > &bins,
 
         for( unsigned int j=0; j<toroidalWinding; j++ ) {
 
-          Vector v0 = (Vector) bins[j][0].first -
-            (Vector) tmp_bins[i][i0].first;
+          Vector v0 = (Vector) bins[j][0] -
+            (Vector) tmp_bins[i][i0];
 
           for( unsigned int j0=1; j0<bins[j].size(); j0++ ) {
-            Vector v1 = (Vector) bins[j][j0].first -
-              (Vector) tmp_bins[i][i0].first;
+            Vector v1 = (Vector) bins[j][j0] -
+              (Vector) tmp_bins[i][i0];
         
             double ang = acos( Dot(v0, v1) / (v0.length() * v1.length()) );
 

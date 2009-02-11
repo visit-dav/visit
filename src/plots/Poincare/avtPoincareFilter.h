@@ -57,6 +57,9 @@
 //
 // ****************************************************************************
 
+#include "StreamlineAnalyzerLib.h"
+
+
 class avtPoincareFilter : public avtStreamlineFilter
 {
   public:
@@ -81,21 +84,42 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual void              CreateStreamlineOutput( 
                                    vector<avtStreamlineWrapper *> &streamlines);
 
+  virtual void loadCurve( avtDataTree *dt,
+                          vector< vector < vector < Point > > > &nodes,
+                          unsigned int color,
+                          double color_value );
+  
+  virtual void loadSurface( avtDataTree *dt,
+                            vector< vector < vector < Point > > > &nodes,
+                            unsigned int nnodes,
+                            unsigned int color,
+                            double color_value,
+                            bool clodes_surface);
+
     // Poincare filter methods.
-    void                      GetFieldlineProperties( std::vector<avtVector> &points,
-                                                      unsigned int maxWinding,
-                                                      unsigned int &winding,
-                                                      unsigned int &twist,
-                                                      unsigned int &island );
     void                      GeneratePoincarePoints(
                                    vector<avtStreamlineWrapper*> &streamlines);
     void                      ClassifyPoincarePoints();
-    vtkPolyData               *CreatePoincareOutput();
+    avtDataTree               *CreatePoincareOutput();
 
     bool                      showStreamlines, showPoints;
-    avtVector                 clipPlanePt, clipPlaneN;
+
+    FusionPSE::FieldlineLib FLlib;         
+
+    int override;
+    int maxToroidalWinding;
+    double hitrate;
+  
+    unsigned int color;
+    unsigned int showIslands;
+    unsigned int overlaps;
+
+    bool is_curvemesh;
+    int adjust_plane;
+
+    std::vector< double >     planes;
     std::vector< std::vector<avtVector> > poincarePts;
-    std::vector< std::vector<int> > poincareClassification;
+    std::vector<  FieldlineInfo > poincareClassification;
 };
 
 
