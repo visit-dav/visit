@@ -232,6 +232,9 @@
 #   Hank Childs, Mon Dec 29 11:52:35 PST 2008
 #   Added avtDominantMaterialExpression.
 #
+#   Jeremy Meredith, Wed Feb 11 16:39:34 EST 2009
+#   Removed verdict-related stuff from MeshQuality into new third_party lib.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -423,18 +426,7 @@ MeshQuality_src= \
   MeshQuality/avtVMetricTaper.C \
   MeshQuality/avtVMetricVolume.C \
   MeshQuality/avtVMetricWarpage.C \
-  MeshQuality/avtVerdictExpression.C \
-  MeshQuality/V_EdgeMetric.C \
-  MeshQuality/V_GaussIntegration.C \
-  MeshQuality/V_HexMetric.C \
-  MeshQuality/V_KnifeMetric.C \
-  MeshQuality/V_PyramidMetric.C \
-  MeshQuality/V_QuadMetric.C \
-  MeshQuality/V_TetMetric.C \
-  MeshQuality/V_TriMetric.C \
-  MeshQuality/V_WedgeMetric.C \
-  MeshQuality/VerdictVector.C
-
+  MeshQuality/avtVerdictExpression.C
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
@@ -443,7 +435,7 @@ PAROBJ=$(SRC:.C=_par.o)
 LIB=libexpressions
 SERLIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) -lavtfilters_ser -lavtddf_ser
 PARLIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) -lavtfilters_par -lavtddf_par
-COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lavtview
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lavtview -lvisit_verdict
 SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -ldatabase_ser -lmir_ser $(VTK_LIBS) $(SERLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@
 PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -ldatabase_par -lmir_par $(VTK_LIBS) $(PARLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 

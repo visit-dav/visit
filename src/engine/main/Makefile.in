@@ -282,6 +282,10 @@
 #    Mark C. Miller, Tue Jan 27 18:03:23 PST 2009
 #    Removed refs to $(FILIB) which was for the FAST INTERVAL LIBRARY and
 #    was replaced by some Boost builtin libs.
+#
+#    Jeremy Meredith, Wed Feb 11 16:38:42 EST 2009
+#    Added link to visit_verdict library.
+#
 ##############################################################################
 
 ##
@@ -300,7 +304,7 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @PLATFORM_CPPFLAGS@ @CPPFLAGS@ \
 COMMONLIBS=-L../../lib -lplugin -lavtview \
         -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk \
 	-lenginerpc -lutility -lmisc -lcomm -lstate \
-        -ldbatts -lavtexceptions -lexpr -lexpr -lparser \
+        -ldbatts -lavtexceptions -lexpr -lexpr -lparser -lvisit_verdict \
 	$(VISIT_VTK_LDFLAGS)
 
 SERLIBS=$(COMMONLIBS) -lviswindow_ser -lplotter_ser -lmir_ser -lavtwriter_ser \
