@@ -200,6 +200,12 @@ avtVector::operator-=(const avtVector &r)
 
 // scalar multiplication/division
 
+// Allows for double * avtVector so that everything doesn't have to be
+// avtVector * double
+inline avtVector operator*(const double s, const avtVector& v) {
+  return v*s;
+}
+
 inline avtVector
 avtVector::operator*(const double &s) const
 {
@@ -258,6 +264,10 @@ avtVector::cross(const avtVector &r) const
     return v;
 }
 
+inline avtVector Cross(const avtVector& v0, const avtVector& v1) {
+  return v0.cross(v1);
+}
+
 // dot product
 inline double
 avtVector::operator*(const avtVector &r) const
@@ -269,6 +279,10 @@ inline double
 avtVector::dot(const avtVector &r) const
 {
     return x*r.x + y*r.y + z*r.z;
+}
+
+inline double Dot(const avtVector& v0, const avtVector& v1) {
+  return v0.dot(v1);
 }
 
 // 2-norm
