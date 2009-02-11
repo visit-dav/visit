@@ -54,6 +54,9 @@
 #   Tom Fogal, Sun Jul 27 13:33:23 EDT 2008
 #   Added cognomen.
 #
+#   Jeremy Meredith, Wed Feb 11 16:39:58 EST 2009
+#   Added verdict.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -61,8 +64,8 @@
 @DIRTARGETS@
 
 SUBDIRS=@BUILD_MESA_STUB@ @BUILD_ZLIB@ @BUILD_GLEW@ @BUILD_BILIB@ \
-    @BUILD_SLIVR@ @BUILD_COGNOMEN@ @BUILD_TUVOK@ bow
-ALLSUBDIRS=mesa_stub zlib glew bilib slivr bow cognomen Tuvok
+    @BUILD_SLIVR@ @BUILD_COGNOMEN@ @BUILD_TUVOK@ bow verdict
+ALLSUBDIRS=mesa_stub zlib glew bilib slivr bow cognomen Tuvok verdict
 
 message:
 	@echo
