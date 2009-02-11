@@ -98,10 +98,10 @@ LIBDEP=
 ## We don't want GL dependencies, so define a VTK lib variable
 ## with those removed and anything else from VTK we DON'T need.
 ##
-MY_VTK_LIBS=`echo "@VTK_LIBS@" | tr ' ' '\n' | grep -v "vtkRendering\\\|vtkftgl\\\|vtkfreetype"`
+MY_VTK_LIBS=`echo "@VTK_LIBS@" | tr ' ' '\n' | grep -v "vtkRendering\\\|vtkftgl\\\|vtkfreetype\\\|vtkHybrid\\\|vtksys"`
 
-SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser -lavtddf_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
-PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par -lavtddf_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir_ser -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
+PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir_par -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
 ##
 ## Files...
