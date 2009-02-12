@@ -294,16 +294,78 @@ avtSLAlgorithm::CalculateStatistics()
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Overhaul how statistics are computed. Add mean and std deviation.
 //
+//   Dave Pugmire, Fri Feb  6 14:42:07 EST 2009
+//   Add histogram to the statistics. Move parallel version here.
+//
 // ****************************************************************************
 
 void
 avtSLAlgorithm::ComputeStatistics(SLStatistics &stats)
 {
+#ifndef PARALLEL
+
     stats.min = stats.value;
     stats.max = stats.value;
     stats.mean = stats.value;
     stats.sigma = 0.0;
     stats.total = stats.value;
+
+#else
+
+    int rank = PAR_Rank();
+    int nProcs = PAR_Size();
+    float *input = new float[nProcs], *output = new float[nProcs];
+
+    for (int i = 0; i < nProcs; i++)
+        input[i] = 0.0;
+    input[rank] = stats.value;
+    
+    SumFloatArrayAcrossAllProcessors(input, output, nProcs);
+    
+    // A value of -1 means that there is no data to be calculated.
+    // We need to remove these from the min/max/mean computation.
+    stats.total = 0.0;
+    int nVals = 0;
+    for (int i = 0; i < nProcs; i++)
+    {
+        if (output[i] >= 0.0)
+        {
+            stats.total += output[i];
+            nVals++;
+        }
+    }
+    stats.mean = stats.total / (float)nVals;
+
+    float sum = 0.0;
+    for (int i = 0; i < nProcs; i++)
+    {
+        if (output[i] >= 0.0)
+        {
+            float x = output[i] - stats.mean;
+            sum += (x*x);
+        }
+    }
+    sum /= (float)nVals;
+    stats.sigma = sqrt(sum);
+
+    stats.histogram.resize(nVals);
+    int i, j;
+    for (i = 0, j = 0; i < nProcs; i++)
+        if (output[i] >= 0.0)
+        {
+            stats.histogram[j] = output[i];
+            j++;
+        }
+    if (stats.histogram.size() > 0)
+    {
+        sort(stats.histogram.begin(), stats.histogram.end());
+        stats.min = stats.histogram[0];
+        stats.max = stats.histogram[nVals-1];
+    }
+
+    delete [] input;
+    delete [] output;
+#endif
 }
 
 
@@ -384,6 +446,8 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
     os<<"Totals: ***********************************************"<<endl;
     os<<"Method= "<<AlgoName()<<" nCPUs= "<<nCPUs<<" nDom= "<<numDomains;
     os<<" nPts= "<<numSeedPoints<<endl;
+    os<<" maxCount= "<<streamlineFilter->maxCount;
+    os<<" domCache= "<<streamlineFilter->cacheQLen<<endl;
     os<<endl;
 
     ReportTimings(os, true);
@@ -410,14 +474,14 @@ avtSLAlgorithm::ReportTimings(ostream &os, bool totals)
 {
     os<<"Timings: *********************************************"<<endl;
     if (totals)
-        os<<"Time      = "<<TotalTime.max<<endl;
+        os<<"t_Time      = "<<TotalTime.max<<endl;
     else
-        os<<"Time      = "<<TotalTime.value<<endl;
+        os<<"l_Time      = "<<TotalTime.value<<endl;
 
-    PrintTiming(os, "ExtraTime = ", ExtraTime, TotalTime, totals);
-    PrintTiming(os, "IntgTime  = ", IntegrateTime, TotalTime, totals);
-    PrintTiming(os, "IOTime    = ", IOTime, TotalTime, totals);
-    PrintTiming(os, "SortTime  = ", SortTime, TotalTime, totals);
+    PrintTiming(os, "IntgTime", IntegrateTime, TotalTime, totals);
+    PrintTiming(os, "IOTime", IOTime, TotalTime, totals);
+    PrintTiming(os, "SortTime", SortTime, TotalTime, totals);
+    PrintTiming(os, "ExtraTime", ExtraTime, TotalTime, totals);
 }
 
 
@@ -436,9 +500,9 @@ avtSLAlgorithm::ReportCounters(ostream &os, bool totals)
 {
     os<<"Counters: ********************************************"<<endl;
     
-    PrintCounter(os, "DomLoad   = ", DomLoadCnt, totals);
-    PrintCounter(os, "DomPurge  = ", DomPurgeCnt, totals);
-    PrintCounter(os, "IntgrCnt  = ", IntegrateCnt, totals);
+    PrintCounter(os, "DomLoad", DomLoadCnt, totals);
+    PrintCounter(os, "DomPurge", DomPurgeCnt, totals);
+    PrintCounter(os, "IntgrCnt", IntegrateCnt, totals);
 }
 
 // ****************************************************************************
@@ -450,6 +514,11 @@ avtSLAlgorithm::ReportCounters(ostream &os, bool totals)
 //  Programmer: Dave Pugmire
 //  Creation:   January 28, 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Thu Feb 12 08:47:29 EST 2009
+//    Better formatting for stats output.
+//
 // ****************************************************************************
 void
 avtSLAlgorithm::PrintTiming(ostream &os, 
@@ -458,9 +527,13 @@ avtSLAlgorithm::PrintTiming(ostream &os,
                             const SLStatistics &t,
                             bool total)
 {
+    string strFmt = str;
+    strFmt.resize(10, ' ');
+    os << (total ? "t_" : "l_");
+    os<<strFmt<<" = ";
+
     if (total)
     {
-        os<<str;
         os<<s.total;
         os<<" ["<<100.0*(s.total/t.total)<<"%] ";
         os<<" ["<<s.min<<", "<<s.max<<", "<<s.mean<<" : "<<s.sigma<<"]";
@@ -468,13 +541,12 @@ avtSLAlgorithm::PrintTiming(ostream &os,
         if (s.mean != 0.0)
         {
             float v = s.sigma / s.mean;
-            os<<" ["<<v<<"]";
+            os<<" [s/m"<<v<<"]";
         }
         os<<endl;
     }
     else
     {
-        os<<str;
         float v = s.value;
         if (s.value < 0.0)
             v = 0.0;
@@ -494,16 +566,25 @@ avtSLAlgorithm::PrintTiming(ostream &os,
 //  Programmer: Dave Pugmire
 //  Creation:   January 28, 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Thu Feb 12 08:47:29 EST 2009
+//    Better formatting for stats output.
+//
 // ****************************************************************************
 void
 avtSLAlgorithm::PrintCounter(ostream &os, 
                              char *str, 
                              const SLStatistics &s,
-                             bool totals)
+                             bool total)
 {
-    if (totals)
+    string strFmt = str;
+    strFmt.resize(10, ' ');
+    os << (total ? "t_" : "l_");
+    os<<strFmt<<" = ";
+
+    if (total)
     {
-        os<<str;
         os<<s.total;
         os<<" ["<<s.min<<", "<<s.max<<", "<<s.mean<<" : "<<s.sigma<<"]";
 
@@ -513,14 +594,25 @@ avtSLAlgorithm::PrintCounter(ostream &os,
             os<<" ["<<v<<"]";
         }
         os<<endl;
+#ifdef PARALLEL
+        //Print histogram.
+        if (PAR_Rank() == 0)
+        {
+            char f[128];
+            sprintf(f, "%s_histogram.txt", str);
+            ofstream hos;
+            hos.open(f, ios::out);
+            for (int i = 0; i < s.histogram.size(); i++)
+                hos<<s.histogram[i]<<endl;
+            hos.close();
+        }
+#endif
     }
     else
     {
-        os<<str;
         float v = s.value;
         if (s.value < 0.0)
             v = 0.0;
-        os<<v;
         float p = 0.0;
         if (s.total > 0.0)
             p = s.value/s.total * 100.0;
@@ -528,6 +620,9 @@ avtSLAlgorithm::PrintCounter(ostream &os,
         float sd = 0.0;
         if (s.sigma != 0.0)
             sd = (v-s.mean) / s.sigma;
+
+        //Print the value, % of all total, how many sigmas away.
+        os<<v;
         os<<" ["<<p<<"%] ["<<sd<<"] ";
         os<<endl;
     }

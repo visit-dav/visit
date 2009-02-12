@@ -743,77 +743,6 @@ avtParSLAlgorithm::CalculateExtraTime()
     ExtraTime.value -= CommTime.value;
 }
 
-
-// ****************************************************************************
-//  Method: avtParSLAlgorithm::ComputeStatistics
-//
-//  Purpose:
-//      Compute statistics over a value.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Dec 12, 2008
-//
-// Modifications:
-//
-//   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
-//   Overhaul how statistics are computed. Add mean and std deviation.
-//
-// ****************************************************************************
-
-void
-avtParSLAlgorithm::ComputeStatistics(SLStatistics &stats)
-{
-    float *input = new float[nProcs], *output = new float[nProcs];
-
-    for (int i = 0; i < nProcs; i++)
-        input[i] = 0.0;
-    input[rank] = stats.value;
-    
-    SumFloatArrayAcrossAllProcessors(input, output, nProcs);
-    
-    // A value of -1 means that there is no data to be calculated.
-    // We need to remove these from the min/max/mean computation.
-    stats.total = 0.0;
-    int nVals = 0;
-    for (int i = 0; i < nProcs; i++)
-    {
-        if (output[i] >= 0.0)
-        {
-            stats.total += output[i];
-            nVals++;
-        }
-    }
-    stats.mean = stats.total / (float)nVals;
-
-    float sum = 0.0;
-    for (int i = 0; i < nProcs; i++)
-    {
-        if (output[i] >= 0.0)
-        {
-            float x = output[i] - stats.mean;
-            sum += (x*x);
-        }
-    }
-    sum /= (float)nVals;
-    stats.sigma = sqrt(sum);
-
-    vector<float> arr(nVals,0.0);
-    int i, j;
-    for (i = 0, j = 0; i < nProcs; i++)
-        if (output[i] >= 0.0)
-        {
-            arr[j] = output[i];
-            j++;
-        }
-    
-    sort(arr.begin(), arr.end());
-    stats.min = arr[0];
-    stats.max = arr[arr.size()-1];
-
-    delete [] input;
-    delete [] output;
-}
-
 // ****************************************************************************
 //  Method: avtParSLAlgorithm::ReportTimings
 //
@@ -829,7 +758,7 @@ avtParSLAlgorithm::ReportTimings(ostream &os, bool totals)
 {
     avtSLAlgorithm::ReportTimings(os, totals);
 
-    PrintTiming(os, "CommTime  = ", CommTime, TotalTime, totals);
+    PrintTiming(os, "CommTime", CommTime, TotalTime, totals);
 }
 
 
@@ -848,9 +777,9 @@ avtParSLAlgorithm::ReportCounters(ostream &os, bool totals)
 {
     avtSLAlgorithm::ReportCounters(os, totals);
 
-    PrintCounter(os, "MsgCount  = ", MsgCnt, totals);
-    PrintCounter(os, "SLComCnt  = ", SLCommCnt, totals);
-    PrintCounter(os, "ComBytes  = ", BytesCnt, totals);
+    PrintCounter(os, "MsgCount", MsgCnt, totals);
+    PrintCounter(os, "SLComCnt", SLCommCnt, totals);
+    PrintCounter(os, "ComBytes", BytesCnt, totals);
 }
 
 #endif
