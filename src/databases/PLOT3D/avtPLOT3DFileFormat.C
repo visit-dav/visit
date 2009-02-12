@@ -2766,7 +2766,6 @@ int vtkVisItPLOT3DReader::ComputeSolutionOffset(FILE *fp)
 
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
-#include <vtkStructuredGrid.h>
 
 #include <Expression.h>
 

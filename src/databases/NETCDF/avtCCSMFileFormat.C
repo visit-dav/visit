@@ -46,7 +46,6 @@
 
 #include <vtkCellArray.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPolyData.h>
 #include <vtkPoints.h>

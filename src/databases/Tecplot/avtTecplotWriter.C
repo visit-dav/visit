@@ -49,8 +49,8 @@
 #include <avtDatabaseMetaData.h>
 
 #include <ImproperUseException.h>
-#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkPointData.h>
 #include <vtkCellType.h>
 #include <vtkCell.h>

@@ -224,6 +224,8 @@ avtTecplotBinaryFileFormat::FreeUpResources(void)
 // Programmer: Brad Whitlock
 // Creation:   Fri Jun 6 15:32:40 PST 2008
 //
+//    Mark C. Miller, Wed Feb 11 17:02:41 PST 2009
+//    Removed reference to centering of curve meta data.
 // ****************************************************************************
 
 void
@@ -244,7 +246,6 @@ avtTecplotBinaryFileFormat::Initialize(TecplotFile *f, avtDatabaseMetaData *md,
             {
                 avtCurveMetaData *cmd = new avtCurveMetaData;
                 cmd->name = f->zones[z].zoneName;
-                cmd->centering = AVT_NODECENT;
                 cmd->xLabel = f->titleAndVars.varNames[0];
                 cmd->xUnits = f->titleAndVars.varUnits[0];
                 cmd->yLabel = f->titleAndVars.varNames[1];
