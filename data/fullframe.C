@@ -121,6 +121,71 @@ write_fullframe(DBfile *dbfile)
                    DB_DOUBLE, NULL);
     DBPutPointvar1(dbfile, "rad", "pointmesh", (float*)rad, NPTS,
                    DB_DOUBLE, NULL);
+
+    //
+    // Write out a variety of different ways of 1D scalars
+    // which VisIt should correctly re-interpret as curves.
+    //
+    double dc[NX];
+    float  fc[NX];
+    void *vals[1];
+    for (i = 0; i < NX; i++)
+    {
+        dc[i] = sin(i*2*3.1415/NX);
+        fc[i] = (i-NX/2)*5;
+    }
+
+    dims[0] = NX;
+    ndims = 1;
+    coords[0] = (float *)x;
+    DBPutQuadmesh(dbfile, "quad_1d", NULL, coords, dims, ndims,
+                  DB_DOUBLE, DB_COLLINEAR, NULL);
+    varnames[0] = "qd_1d_comp0";
+    dims[0] = NX;
+    vals[0] = dc;
+    DBPutQuadvar(dbfile, "qd_1d", "quad_1d",
+                 1, varnames, (float**) vals, dims,
+                 ndims, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
+    varnames[0] = "qu_1d_comp1";
+    dims[0] = NX;
+    vals[0] = fc;
+    DBPutQuadvar(dbfile, "qu_1d", "quad_1d",
+                 1, varnames, (float**) vals, dims,
+                 ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+
+    dims[0] = NX;
+    coords[0] = (float *)xc;
+    vals[0] = dc;
+    DBPutPointmesh(dbfile, "point_1d", ndims, coords, NX,
+                   DB_DOUBLE, NULL);
+    DBPutPointvar1(dbfile, "rad_1d", "point_1d", (float*)vals[0], NX,
+                   DB_DOUBLE, NULL);
+
+    int *zonelist = new int[(NX-1)*2];
+    int shapesize = 2;
+    int shapecnt = NX-1;
+    int shapetype = DB_ZONETYPE_BEAM;
+    for (i = 0; i < NX-1; i++)
+    {
+        zonelist[2*i] = i;
+        zonelist[2*i+1] = i+1;
+    }
+    DBPutZonelist2(dbfile, "ucd_1d_zl", NX-1, 1, zonelist, (NX-1)*2,
+                0, 0, 0, &shapetype, &shapesize, &shapecnt, 1, NULL);
+    delete [] zonelist;
+ 
+    char *coordnames = "ucd_x";
+    coords[0] = (float *)x;
+    DBPutUcdmesh(dbfile, "ucd_1d", 1, &coordnames, coords,
+                NX, NX-1, "ucd_1d_zl", NULL, DB_DOUBLE, NULL);
+
+    varnames[0] = "u";
+    vals[0] = dc;
+    DBPutUcdvar(dbfile, "ud_1d", "ucd_1d", 1, varnames, (float**)vals,
+        NX, NULL, 0, DB_DOUBLE, DB_NODECENT, 0);
+    vals[0] = fc;
+    DBPutUcdvar(dbfile, "uf_1d", "ucd_1d", 1, varnames, (float**)vals,
+        NX, NULL, 0, DB_FLOAT, DB_NODECENT, 0);
 }
 
 int
