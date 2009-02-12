@@ -49,101 +49,6 @@
 #include "BitUtils.h"
 #include "ResampledMat.h"
 
-
-#include <verdict.h>
-
-inline void
-Swap1(double &a, double &b)
-{
-    double tmp = a;
-    a = b;
-    b = tmp;
-}
-
-inline void
-Swap3(double c[][3], int a, int b)
-{
-    Swap1(c[a][0], c[b][0]);
-    Swap1(c[a][1], c[b][1]);
-    Swap1(c[a][2], c[b][2]);
-}
-
-inline
-void Copy3(double coords[][3], double a[], int i)
-{
-    a[0] = coords[i][0];
-    a[1] = coords[i][1];
-    a[2] = coords[i][2];
-}
-
-static double CalculateVolume(int type, double coords[][3])
-{
-    switch (type)
-    {
-      case VTK_TRIANGLE:
-          return v_tri_area(3, coords);
-        
-      case VTK_QUAD:
-        return v_quad_area(4, coords);
-        
-      case VTK_PIXEL:
-        Swap3(coords, 2, 3);
-        return v_quad_area(4, coords);
-
-      case VTK_VOXEL:
-        Swap3(coords, 2,3);
-        Swap3(coords, 6,7);
-        return v_hex_volume(8,coords);
-
-      case VTK_HEXAHEDRON:
-        return v_hex_volume(8,coords);
-
-      case VTK_TETRA:
-        return v_tet_volume(4,coords);
-
-      case VTK_WEDGE:
-        {
-        int   subdiv[3][4] = { {0,5,4,3}, {0,2,1,4}, {0,4,5,2} };
-        double tet_coords[4][3];
-        double vol = 0;
-        for (int i = 0 ; i < 3 ; i++)
-        {
-            for (int j = 0 ; j < 4 ; j++)
-                for (int k = 0 ; k < 3 ; k++)
-                    tet_coords[j][k] = coords[subdiv[i][j]][k];
-            vol += v_tet_volume(4, tet_coords);
-        }
-        return vol;
-        }
-        
-      // The verdict metric for pyramid I have yet to figure out how to work.
-      // However, it does the same thing that we do here: Divide the pyramid
-      // into two tetrahedrons.
-      case VTK_PYRAMID:
-        {
-        double one[4][3];
-        double two[4][3];
-            
-        Copy3(coords,one[0], 0);
-        Copy3(coords,one[1], 1);
-        Copy3(coords,one[2], 2);
-        Copy3(coords,one[3], 4);
-
-        Copy3(coords,two[0], 0);
-        Copy3(coords,two[1], 2);
-        Copy3(coords,two[2], 3);
-        Copy3(coords,two[3], 4);
-
-        return v_tet_volume(4,one) + v_tet_volume(4,two);
-        }
-    }
-
-    cerr << "ERROR; SHOULDN'T GET HERE!!!!\n";
-    return -99999;
-}
-
-
-
 // ****************************************************************************
 //  Constructor:  RecursiveCellReconstructor::RecursiveCellReconstructor
 //
@@ -209,8 +114,7 @@ RecursiveCellReconstructor::RecursiveCellReconstructor(vtkDataSet *d,
 // ****************************************************************************
 void
 RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
-                                            int nids_, int *ids_,
-                                            double *vfs)
+                                            int nids_, int *ids_)
 {
     cellid = cellid_;
     celltype = celltype_;
@@ -529,19 +433,7 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
         }
     }
 
-    // If we'r going to calculate actual volume fractions, first
-    // zero them out, then accumulate the output cell partial contributions.
-    if (vfs)
-    {
-        for (int matno=0; matno < nMaterials; matno++)
-        {
-            vfs[matno] = 0.0;
-        }
-    }
-
-
     // Spit the reconstructed cells into the output zone list
-    double totalvol = 0;
     for (int out = 0 ; out < outlist.size() ; out++)
     {
         TempCell &outcell = outlist[out];
@@ -557,42 +449,6 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
 
         for (int n=0; n<outcell.nnodes; n++)
             mir.indexList.push_back(outcell.ids[n]);
-
-        
-        if (vfs)
-        {
-            double coords[MAX_NODES_PER_ZONE][3];
-            //cerr << "output cell, orig="<<zone.origzone<<", mat="<<zone.mat<<", #"<<out<<":\n";
-            for (int n=0; n<outcell.nnodes; n++)
-            {
-                int id = outcell.ids[n];
-                if (id < mir.origNPoints)
-                {
-                    coords[n][0] = mir.origXCoords[id];
-                    coords[n][1] = mir.origYCoords[id];
-                    coords[n][2] = mir.origZCoords[id];
-                }
-                else
-                {
-                    coords[n][0] = mir.coordsList[id-mir.origNPoints].x;
-                    coords[n][1] = mir.coordsList[id-mir.origNPoints].y;
-                    coords[n][2] = mir.coordsList[id-mir.origNPoints].z;
-                }
-                //cerr <<"   coord = "<<coords[n][0]<<" , "<<coords[n][1]<<" , "<<coords[n][2]<<"\n";
-            }
-            double vol = CalculateVolume(outcell.celltype, coords);
-            totalvol += vol;
-            //cerr << "   Volume = "<< vol<<endl;
-            vfs[outcell.mat] += vol;
-        }
-    }
-
-    if (vfs)
-    {
-        for (int matno=0; matno < nMaterials; matno++)
-        {
-            vfs[matno] /= totalvol;
-        }
     }
 }
 

@@ -68,12 +68,11 @@ class CellReconstructor
     CellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&, int, int, bool,
                       MIRConnectivity&, ZooMIR&);
     virtual ~CellReconstructor();
-    virtual void ReconstructCell(int, int, int, int*, double*) = 0;
+    virtual void ReconstructCell(int, int, int, int*) = 0;
 
   protected:
     vtkDataSet                             *mesh;
     avtMaterial                            *mat;
-    avtMaterial                            *origMat;
     ResampledMat                           &rm;
     int                                     nPoints;
     int                                     nCells;
