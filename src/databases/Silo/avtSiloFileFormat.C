@@ -6606,6 +6606,9 @@ avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Mark C. Miller, Wed Feb 11 23:22:37 PST 2009
+//    Added support for 1D unstructured mesh, mainly to test funky curves
 // ****************************************************************************
 
 vtkDataSet *
@@ -6644,7 +6647,7 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     float *tmp = pts;
     const float *coords0 = (float*) um->coords[0];
     const float *coords1 = (float*) um->coords[1];
-    if (dim3)
+    if (um->coords[2] != NULL)
     {
         const float *coords2 = (float*) um->coords[2];
         for (int i = 0 ; i < nnodes ; i++)
@@ -6654,12 +6657,21 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
             *tmp++ = *coords2++;
         }
     }
-    else
+    else if (um->coords[1] != NULL)
     {
         for (int i = 0 ; i < nnodes ; i++)
         {
             *tmp++ = *coords0++;
             *tmp++ = *coords1++;
+            *tmp++ = 0.;
+        }
+    }
+    else if (um->coords[0] != NULL)
+    {
+        for (int i = 0 ; i < nnodes ; i++)
+        {
+            *tmp++ = *coords0++;
+            *tmp++ = 0.;
             *tmp++ = 0.;
         }
     }

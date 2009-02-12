@@ -47,7 +47,6 @@
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>

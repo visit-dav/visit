@@ -53,7 +53,6 @@
 #include <vtkIntArray.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
 

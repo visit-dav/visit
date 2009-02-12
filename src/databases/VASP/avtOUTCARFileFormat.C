@@ -10,7 +10,6 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>
 

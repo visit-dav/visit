@@ -53,8 +53,8 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkStructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>

@@ -50,7 +50,7 @@
 #include <vtkDataArrayCollection.h>
 #include <vtkDataArraySelection.h>
 #include <vtkPointData.h>
-#include <vtkStructuredGrid.h>
+#include <vtkDataSet.h>
 #include <vtkVisItEnSightReader.h>
 #include <vtkVisItEnSightGoldBinaryReader.h>
 #include <vtkVisItEnSightGoldReader.h>

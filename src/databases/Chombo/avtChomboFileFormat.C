@@ -54,7 +54,6 @@
 #include <vtkIntArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <DBOptionsAttributes.h>

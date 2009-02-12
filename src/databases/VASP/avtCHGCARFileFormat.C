@@ -48,7 +48,6 @@
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkIdList.h>

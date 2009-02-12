@@ -52,7 +52,6 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
