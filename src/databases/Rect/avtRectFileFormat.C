@@ -92,6 +92,9 @@ ifstream &operator >> (ifstream &s, string &str)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  4, 2003
 //
+//  Modifications:
+//    Mark C. Miller, Thu Feb 12 01:18:59 PST 2009
+//    Removed setting of gridType here. It is set in ReadVizFile
 // ****************************************************************************
 avtRectFileFormat::avtRectFileFormat(const char *fname)
     : avtMTMDFileFormat(fname)
@@ -114,8 +117,6 @@ avtRectFileFormat::avtRectFileFormat(const char *fname)
     cachedMeshes = new vtkDataSet*[ndomains];
     for (int d=0; d<ndomains; d++)
         cachedMeshes[d] = NULL;
-
-    gridType = AVT_CURVILINEAR_MESH;
 }
 
 // ****************************************************************************
@@ -190,6 +191,10 @@ avtRectFileFormat::GetMesh(int ts, int dom, const char *mesh)
 //
 //    Mark C. Miller, Wed Jan 16 17:25:43 PST 2008
 //    Added support for multiple rect blocks
+//
+//    Mark C. Miller, Thu Feb 12 01:19:27 PST 2009
+//    Moved code to open grid file to AFTER block that handles rectlinear grid
+//    as a grid file is needed only for curvilinear grids.
 // ****************************************************************************
 vtkDataSet *
 avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
@@ -207,17 +212,6 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     dims[0] = dxsize[dom];
     dims[1] = dysize[dom];
     dims[2] = dzsize[dom];
-
-    //
-    // Open the file
-    //
-    char fname[256];
-    sprintf(fname, "%sgrid/domain%04d", dirname.c_str(), dom);
-    ifstream in(fname, ios::in);
-    if (in.fail())
-    {
-        EXCEPTION1(InvalidFilesException, fname);
-    }
 
     if (gridType == AVT_RECTILINEAR_MESH)
     {
@@ -265,6 +259,17 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
         coords[2]->Delete();
 
         return rgrid;
+    }
+
+    //
+    // Open the file
+    //
+    char fname[256];
+    sprintf(fname, "%sgrid/domain%04d", dirname.c_str(), dom);
+    ifstream in(fname, ios::in);
+    if (in.fail())
+    {
+        EXCEPTION1(InvalidFilesException, fname);
     }
 
     //
@@ -543,6 +548,8 @@ avtRectFileFormat::SetUpDomainConnectivity()
 //    Mark C. Miller, Wed Jan 16 17:25:43 PST 2008
 //    Added support for multiple rect blocks
 //
+//    Mark C. Miller, Thu Feb 12 01:20:13 PST 2009
+//    Fixed parsing of size info from 'domainIJK' lines
 // ****************************************************************************
 void
 avtRectFileFormat::ReadVizFile(ifstream &in)
@@ -607,8 +614,8 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
 
     for (i=0; i<ndomains; i++)
     {
-	if (i > 0 || buff == "gridtype")
-            in >> buff;
+        if (i == 0 && buff == "gridtype" || i > 0)
+            in >> buff; // for "domainIJK" token
         int x,y,z;
         in >> x >> y >> z;
         dxsize.push_back(x);
