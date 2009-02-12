@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *avtCurveMetaData::TypeMapFormatString = "ssbissssbddb";
+const char *avtCurveMetaData::TypeMapFormatString = "ssbssssbddbs";
 
 // ****************************************************************************
 // Method: avtCurveMetaData::avtCurveMetaData
@@ -62,7 +62,6 @@ avtCurveMetaData::avtCurveMetaData() :
 {
     name = "curve";
     validVariable = true;
-    centering = AVT_NODECENT;
     xLabel = "X-Axis";
     yLabel = "Y-Axis";
     hasDataExtents = false;
@@ -92,7 +91,6 @@ avtCurveMetaData::avtCurveMetaData(const avtCurveMetaData &obj) :
     name = obj.name;
     originalName = obj.originalName;
     validVariable = obj.validVariable;
-    centering = obj.centering;
     xUnits = obj.xUnits;
     xLabel = obj.xLabel;
     yUnits = obj.yUnits;
@@ -101,6 +99,7 @@ avtCurveMetaData::avtCurveMetaData(const avtCurveMetaData &obj) :
     minDataExtents = obj.minDataExtents;
     maxDataExtents = obj.maxDataExtents;
     hideFromGUI = obj.hideFromGUI;
+    from1DScalarName = obj.from1DScalarName;
 
     SelectAll();
 }
@@ -147,7 +146,6 @@ avtCurveMetaData::operator = (const avtCurveMetaData &obj)
     name = obj.name;
     originalName = obj.originalName;
     validVariable = obj.validVariable;
-    centering = obj.centering;
     xUnits = obj.xUnits;
     xLabel = obj.xLabel;
     yUnits = obj.yUnits;
@@ -156,6 +154,7 @@ avtCurveMetaData::operator = (const avtCurveMetaData &obj)
     minDataExtents = obj.minDataExtents;
     maxDataExtents = obj.maxDataExtents;
     hideFromGUI = obj.hideFromGUI;
+    from1DScalarName = obj.from1DScalarName;
 
     SelectAll();
     return *this;
@@ -183,7 +182,6 @@ avtCurveMetaData::operator == (const avtCurveMetaData &obj) const
     return ((name == obj.name) &&
             (originalName == obj.originalName) &&
             (validVariable == obj.validVariable) &&
-            (centering == obj.centering) &&
             (xUnits == obj.xUnits) &&
             (xLabel == obj.xLabel) &&
             (yUnits == obj.yUnits) &&
@@ -191,7 +189,8 @@ avtCurveMetaData::operator == (const avtCurveMetaData &obj) const
             (hasDataExtents == obj.hasDataExtents) &&
             (minDataExtents == obj.minDataExtents) &&
             (maxDataExtents == obj.maxDataExtents) &&
-            (hideFromGUI == obj.hideFromGUI));
+            (hideFromGUI == obj.hideFromGUI) &&
+            (from1DScalarName == obj.from1DScalarName));
 }
 
 // ****************************************************************************
@@ -335,18 +334,18 @@ avtCurveMetaData::NewInstance(bool copy) const
 void
 avtCurveMetaData::SelectAll()
 {
-    Select(ID_name,           (void *)&name);
-    Select(ID_originalName,   (void *)&originalName);
-    Select(ID_validVariable,  (void *)&validVariable);
-    Select(ID_centering,      (void *)&centering);
-    Select(ID_xUnits,         (void *)&xUnits);
-    Select(ID_xLabel,         (void *)&xLabel);
-    Select(ID_yUnits,         (void *)&yUnits);
-    Select(ID_yLabel,         (void *)&yLabel);
-    Select(ID_hasDataExtents, (void *)&hasDataExtents);
-    Select(ID_minDataExtents, (void *)&minDataExtents);
-    Select(ID_maxDataExtents, (void *)&maxDataExtents);
-    Select(ID_hideFromGUI,    (void *)&hideFromGUI);
+    Select(ID_name,             (void *)&name);
+    Select(ID_originalName,     (void *)&originalName);
+    Select(ID_validVariable,    (void *)&validVariable);
+    Select(ID_xUnits,           (void *)&xUnits);
+    Select(ID_xLabel,           (void *)&xLabel);
+    Select(ID_yUnits,           (void *)&yUnits);
+    Select(ID_yLabel,           (void *)&yLabel);
+    Select(ID_hasDataExtents,   (void *)&hasDataExtents);
+    Select(ID_minDataExtents,   (void *)&minDataExtents);
+    Select(ID_maxDataExtents,   (void *)&maxDataExtents);
+    Select(ID_hideFromGUI,      (void *)&hideFromGUI);
+    Select(ID_from1DScalarName, (void *)&from1DScalarName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -482,6 +481,11 @@ avtCurveMetaData::UnsetExtents()
 //    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
 //    Added centering and DataExtents. 
 //
+//    Mark C. Miller, Mon Feb  9 14:20:43 PST 2009
+//    Added from1DScalarName
+//
+//    Mark C. Miller, Wed Feb 11 17:17:13 PST 2009
+//    Removed centering
 // ****************************************************************************
 inline void
 Indent(ostream &out, int indent)
@@ -508,25 +512,6 @@ avtCurveMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Labels = x:" << xLabel.c_str() << ", y:" << yLabel.c_str() << endl;
 
-    Indent(out, indent);
-    out << "Centering = ";
-    switch (centering)
-    {
-      case AVT_NODECENT:
-        out << "node centered.";
-        break;
-
-      case AVT_ZONECENT:
-        out << "zone centered.";
-        break;
-
-      case AVT_UNKNOWN_CENT:
-      default:
-        out << "unknowing centering.";
-        break;
-    }
-    out << endl;
-    
     if (!validVariable)
     {
         Indent(out, indent);
@@ -542,6 +527,11 @@ avtCurveMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "The extents are not set." << endl;
+    }
+    if (from1DScalarName != "")
+    {
+        Indent(out, indent);
+        out << "Re-interpreted from 1D scalar named \"" << from1DScalarName << "\"" << endl;
     }
 }
 

@@ -195,6 +195,9 @@ avtRectFileFormat::GetMesh(int ts, int dom, const char *mesh)
 //    Mark C. Miller, Thu Feb 12 01:19:27 PST 2009
 //    Moved code to open grid file to AFTER block that handles rectlinear grid
 //    as a grid file is needed only for curvilinear grids.
+//
+//    Mark C. Miller, Thu Feb 12 11:09:38 PST 2009
+//    Handle 1D (and 2D though it was not tested) case of grid
 // ****************************************************************************
 vtkDataSet *
 avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
@@ -284,6 +287,10 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     // Tell the grid what its dimensions are and populate the points array.
     //
     sgrid->SetDimensions(dims);
+    int ndims = 0;
+    if (dims[0] > 1) ndims++;
+    if (dims[1] > 1) ndims++;
+    if (dims[2] > 1) ndims++;
 
     //
     // Populate the coordinates.
@@ -291,12 +298,16 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     points->SetNumberOfPoints(numpts[dom]);
     float *pts = (float *) points->GetVoidPointer(0);
 
-    for (int d=0; d<3; d++)
+    int i,d;
+    for (d=0; d<ndims; d++)
     {
-        for (int i=0; i<numpts[dom]; i++)
-        {
+        for (i=0; i<numpts[dom]; i++)
             in >> pts[i*3 + d];
-        }
+    }
+    for (d=ndims; d < 3; d++)
+    {
+        for (i=0; i<numpts[dom]; i++)
+            pts[i*3 + d] = 0.0;
     }
 
     in.close();
@@ -434,6 +445,9 @@ avtRectFileFormat::GetNTimesteps()
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg
+//
+//    Mark C. Miller, Thu Feb 12 11:10:21 PST 2009
+//    Set dimensions according to xyz extents of mesh
 // ****************************************************************************
 void
 avtRectFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
@@ -444,8 +458,12 @@ avtRectFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     mesh->meshType = AVT_CURVILINEAR_MESH;
     mesh->numBlocks = ndomains;
     mesh->blockOrigin = 0;
-    mesh->spatialDimension = 3;
-    mesh->topologicalDimension = 3;
+    int ndims = 0;
+    if (xsize > 1) ndims++;
+    if (ysize > 1) ndims++;
+    if (zsize > 1) ndims++;
+    mesh->spatialDimension = ndims;
+    mesh->topologicalDimension = ndims;
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
     for (int i=0; i < nvars; i++)

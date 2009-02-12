@@ -287,6 +287,9 @@ typedef struct {
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added support for ignoring bad extents from dbs.
+//
+//    Mark C. Miller, Mon Feb  9 14:15:05 PST 2009
+//    Added method to convert 1D Var MDs to Curve MDs in metadata.
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -401,6 +404,7 @@ class DATABASE_API avtDatabase
     void                        AddMeshQualityExpressions(avtDatabaseMetaData *);
     void                        AddTimeDerivativeExpressions(avtDatabaseMetaData *);
     void                        AddVectorMagnitudeExpressions(avtDatabaseMetaData *);
+    void                        Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *);
     
     virtual bool                HasInvariantMetaData(void) const = 0;
     virtual bool                HasInvariantSIL(void) const = 0;

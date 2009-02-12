@@ -1236,6 +1236,8 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    Kathleen Bonnell, Wed Jun 11 16:59:22 PDT 2008 
 //    Add support for AVT_CURVE. 
 //
+//    Mark C. Miller, Wed Feb 11 17:10:57 PST 2009
+//    Removed centering from curve meta data
 // ****************************************************************************
 
 void
@@ -1362,17 +1364,7 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             break;
 
           case AVT_CURVE:
-            {
-                const avtCurveMetaData *cmd=GetMetaData(ts)->GetCurve(varName);
-                if (cmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
+            atts = ds->GetPointData();
             break;
 
           default:
@@ -2818,6 +2810,10 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Hank Childs, Mon Dec 15 18:22:54 CST 2008
 //    Add domain information when we cache.
 //
+//    Mark C. Miller, Thu Feb 12 02:21:10 PST 2009
+//    Handle curve objects that are the result of re-interpreting some 1D
+//    scalar variables by requesting them from the plugin as we would any
+//    other scalar variable (e.g. GetScalarVarDataset()) 
 // ****************************************************************************
 
 vtkDataSet *
@@ -2854,10 +2850,19 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     {
         real_meshname = mmd->originalName.c_str();
     }
-    if (cmd != NULL && 
-        cmd->originalName != cmd->name && cmd->originalName != "")
+    if (cmd != NULL)
     {
-        real_meshname = cmd->originalName.c_str();
+        //
+        // If this curve object was re-interpreted from a 1D scalar, get it like we would
+        // a real scalar.
+        //
+        if (cmd->from1DScalarName != "")
+            return GetScalarVarDataset(cmd->from1DScalarName.c_str(),ts,domain,material,dataRequest);
+
+        if (cmd->originalName != cmd->name && cmd->originalName != "")
+        {
+            real_meshname = cmd->originalName.c_str();
+        }
     }
 
     if (mesh == NULL)
