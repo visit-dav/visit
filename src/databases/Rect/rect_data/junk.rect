@@ -1,9 +1,0 @@
-name bar
-domains 2
-timesteps 1
-variables 1 myTest
-
-size 4 5 1
-gridtype rect
-domain0000 4 3 1 0 0 0
-domain0001 4 2 1 0 2 0
