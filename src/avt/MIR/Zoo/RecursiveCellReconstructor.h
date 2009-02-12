@@ -60,7 +60,7 @@ class RecursiveCellReconstructor : public CellReconstructor
     RecursiveCellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&,
                                int, int, MIRConnectivity&, ZooMIR&);
 
-    void ReconstructCell(int, int, int, int*, double*);
+    void ReconstructCell(int, int, int, int*);
 };
 
 #endif

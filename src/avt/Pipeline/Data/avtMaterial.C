@@ -275,46 +275,6 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
     }
 }
 
-avtMaterial::avtMaterial(const avtMaterial *m)
-{
-    nMaterials = m->nMaterials;
-    materials = m->materials;
-    all_materials = m->all_materials;
-
-    nZones = m->nZones;
-    matlist = new int[nZones];
-    for (int i=0; i<nZones; i++)
-    {
-        matlist[i] = m->matlist[i];
-    }
-
-    mixlen = m->mixlen;
-    mixalloc = mixlen * 2;
-    mix_mat  = m->mix_mat  ? new int[mixalloc]   : NULL;
-    mix_next = m->mix_next ? new int[mixalloc]   : NULL;
-    mix_zone = m->mix_zone ? new int[mixalloc]   : NULL;
-    mix_vf   = m->mix_vf   ? new float[mixalloc] : NULL;
-
-    for (int i=0; i<mixlen; i++)
-    {
-        if (m->mix_mat)
-            mix_mat[i] = m->mix_mat[i];
-        if (m->mix_next)
-            mix_next[i] = m->mix_next[i];
-        if (m->mix_zone)
-            mix_zone[i] = m->mix_zone[i];
-        if (m->mix_vf)
-            mix_vf[i] = m->mix_vf[i];
-    }
-
-    nUsedMats = m->nUsedMats;
-    mapMatToUsedMat = m->mapMatToUsedMat;
-    mapUsedMatToMat = m->mapUsedMatToMat;
-    originalMaterialOrdering = m->originalMaterialOrdering;
-}
-
-avtMaterial::
-
 // ****************************************************************************
 //  Method: avtMaterial constructor
 //
@@ -1587,7 +1547,6 @@ avtMaterial::Initialize(int nMats, const vector<string> &matnames,
         }
     }
     mixlen     = mixl;
-    mixalloc   = mixlen;
     mix_mat    = new int[mixlen];
     mix_next   = new int[mixlen];
     if (mixz == NULL)
@@ -1639,103 +1598,6 @@ avtMaterial::GetVolFracsForZone(int zone_id, std::vector<float> &vfs)
     }
 }
 
-template <class T>
-static void GrowArray(T *&array, int num_to_copy, int new_size)
-{
-    T *newarray = new T[new_size];
-    for (int i=0; i<num_to_copy; i++)
-        newarray[i] = array[i];
-    delete[] array;
-    array = newarray;
-}
-
-void
-avtMaterial::CheckMixArraySize()
-{
-    const int growth = 100000;
-    if (mixlen + nMaterials >= mixalloc)
-    {
-        mixalloc += growth;
-        GrowArray(mix_mat,  mixlen, mixalloc);
-        GrowArray(mix_zone, mixlen, mixalloc);
-        GrowArray(mix_vf,   mixlen, mixalloc);
-        GrowArray(mix_next, mixlen, mixalloc);
-    }
-}
-
-void
-avtMaterial::SetVolFracForMatAndZone(int zone_id, int mat_index, float val)
-{
-    const bool debug = false;
-    CheckMixArraySize();
-    int index = mixlen;
-    int next = 0;
-    if (matlist[zone_id] >= 0)
-    {
-        if (debug) cerr << "Clean same case -- setting matlist["<<zone_id<<"] to "<<-(mixlen+1)<<endl;
-        int old_material = matlist[zone_id];
-        matlist[zone_id] = -(mixlen+1);
-        mixlen++;
-        if (old_material != mat_index)
-        {
-            if (debug) cerr << "   Not my material.... -- setting mix_mat["<<index<<"] to "<<mat_index<<"\n";
-            next = mixlen+1;
-            mix_mat[index] = old_material;
-            mix_vf[index] = 1.0;
-            mix_zone[index] = zone_id+1; // 1-origin
-            mix_next[index] = next;
-            index = next-1;
-            next = 0;
-        }
-    }
-    else
-    {
-        index = -matlist[zone_id] - 1;
-        next = mix_next[index];
-        while (next > 0)
-        {
-            if (mix_mat[index] == mat_index)
-            {
-                break;
-            }
-            index = next-1;
-            next = mix_next[index];
-        }
-        if (mix_mat[index] != mat_index)
-        {
-            next = mixlen+1;
-            if (debug) cerr << "Non-existing mix case; setting mix_next["<<index<<"] to "<<next<<"\n";
-            mix_next[index] = next;
-            index = next-1;
-            next = 0;
-            mixlen++;
-        }
-        else
-        {
-            if (debug) cerr << "Existing mix case\n";
-        }
-    }
-    if (debug) cerr << "zone_id="<<zone_id<<"  mat_index="<<mat_index<<endl;
-    if (debug) cerr << "   index="<<index<<"   next="<<next<<endl;
-    mix_mat[index] = mat_index;
-    mix_vf[index] = val;
-    mix_zone[index] = zone_id+1; // 1-origin
-    mix_next[index] = next;
-}
-
-
-void
-avtMaterial::Print(ostream &out)
-{
-    avtMaterial::Print(out,
-                       nZones,
-                       matlist,
-                       mixlen,
-                       mix_mat,
-                       mix_zone,
-                       mix_vf,
-                       mix_next);
-}
 
 // ****************************************************************************
 //  Method: ExtractCellMatInfo 
@@ -1888,19 +1750,13 @@ avtMaterial::Print(ostream& out, int nzones , const int *matlist, int mixlen,
         }
         else
         {
+            out << "Zone " << i << " is mixing as follows" << endl; 
             int mixidx = -(matlist[i]+1);
             float vfsum = 0.0;
 
-            out << "Zone " << i << " (mixzone="<<mix_zone[mixidx]<<")"
-                <<" is mixing as follows" << endl; 
             while (true)
             {
-                out << " mixidx="<<mixidx
-                    << " mix_mat="<<mix_mat[mixidx]
-                    << " mix_next="<<mix_next[mixidx]
-                    << " mix_zone="<<mix_zone[mixidx]
-                    << " mix_vf="<<mix_vf[mixidx]
-                    << " (" << (int) (100*mix_vf[mixidx]) << "%)\n";
+                out << mix_mat[mixidx] << " (" << (int) (100*mix_vf[mixidx]) << "%), ";
                 matNumsUsed[mix_mat[mixidx]] = true;
                 vfsum += mix_vf[mixidx];
                 if (mix_next[mixidx] == 0)
