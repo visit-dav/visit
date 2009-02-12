@@ -8,11 +8,15 @@
 #  Programmer: Mark C. Miller 
 #  Date:       May 15, 2008 
 #
+#  Mark C. Miller, Thu Feb 12 01:30:24 PST 2009
+#  Added test for rectilinear mesh case. Re-enabled setting of SIL restriction
+#  which was disabled due to a bug that was resolved back in May, 2008.
 # ----------------------------------------------------------------------------
 
 
 # test the main mesh
-OpenDatabase("../src/databases/Rect/data/datafile.rect")
+TestSection("Curvilinear grid files")
+OpenDatabase("../data/Rect_test_data/curv_data/datafile.rect")
 AddPlot("Mesh","Mesh")
 DrawPlots()
 v=GetView3D()
@@ -34,8 +38,22 @@ silr = SILRestriction()
 for i in range(silr.NumSets()):
     if silr.SetName(i) == "domain2":
         silr.TurnOffSet(i)
-#SetPlotSILRestriction(silr) ghost zone comm. bug 8612 
+SetPlotSILRestriction(silr)
 DrawPlots()
 Test("rect_04")
+
+DeleteAllPlots()
+CloseDatabase("../data/Rect_test_data/curv_data/datafile.rect")
+
+TestSection("Rectilinear grid files")
+OpenDatabase("../data/Rect_test_data/rect_data/datafile.rect")
+AddPlot("Mesh","Mesh")
+DrawPlots()
+ResetView()
+Test("rect_05")
+
+AddPlot("Pseudocolor","myTest")
+DrawPlots()
+Test("rect_06")
 
 Exit()
