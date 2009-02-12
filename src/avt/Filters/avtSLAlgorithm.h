@@ -60,6 +60,9 @@
 //    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
 //    Add a SortStreamlines that takes a vector.
 //
+//   Dave Pugmire, Fri Feb  6 14:42:07 EST 2009
+//   Add histogram to the statistics.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -104,8 +107,10 @@ class avtSLAlgorithm
         {
             value = 0.0;
             min=max=mean=sigma=total=0.0;
+            histogram.resize(0);
         }
         float min, max, mean, sigma, total;
+        std::vector<float> histogram;
         float value;
     };
 

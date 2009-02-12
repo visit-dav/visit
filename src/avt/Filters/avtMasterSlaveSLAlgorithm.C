@@ -280,9 +280,9 @@ avtMasterSlaveSLAlgorithm::ReportTimings(ostream &os, bool totals)
 {
     avtParSLAlgorithm::ReportTimings(os, totals);
     
-    PrintTiming(os, "SleepTime = ", SleepTime, TotalTime, totals);
-    PrintTiming(os, "LatencyTime = ", LatencyTime, TotalTime, totals);
-    PrintTiming(os, "MaxLatTime  = ", MaxLatencyTime, TotalTime, totals);
+    PrintTiming(os, "SleepTime", SleepTime, TotalTime, totals);
+    PrintTiming(os, "LatencyTime", LatencyTime, TotalTime, totals);
+    PrintTiming(os, "MaxLatTime", MaxLatencyTime, TotalTime, totals);
 }
 
 // ****************************************************************************
@@ -300,7 +300,7 @@ void
 avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 {
     avtParSLAlgorithm::ReportCounters(os, totals);
-    PrintCounter(os, "SleepCnt = ", SleepCnt, totals);
+    PrintCounter(os, "SleepCnt", SleepCnt, totals);
 }
 
 
@@ -577,7 +577,7 @@ avtMasterSLAlgorithm::Execute()
             
             Case4(3*maxCnt, case4Cnt);
             Case1(case1Cnt);
-            Case4(1*maxCnt, case4Cnt); //Remove this KILLED performance. ODD.
+            //Case4(1*maxCnt, case4Cnt); //Remove this KILLED performance. ODD.
             Case2(case2Cnt);
             int case3OverloadFactor = 10*maxCnt, case3NDomainFactor = 3*maxCnt;
             Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
@@ -890,7 +890,7 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
                             int NDomainFactor,
                             int &counter )
 {
-    FindSlackers(NDomainFactor);
+    FindSlackers(NDomainFactor, true, true);
 
     vector<int> sender, recv, dom;
     for (int i = 0; i < slackers.size(); i++)

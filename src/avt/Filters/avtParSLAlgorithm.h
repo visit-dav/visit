@@ -55,6 +55,11 @@
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
 //
+// Modifications:
+//
+//   Dave Pugmire, Thu Feb 12 08:43:01 EST 2009
+//   Removed ComputeStatistics. (Moved to avtSLAlgorithm)
+//
 // ****************************************************************************
 
 class avtParSLAlgorithm : public avtSLAlgorithm
@@ -92,7 +97,6 @@ class avtParSLAlgorithm : public avtSLAlgorithm
 
     virtual void              CalculateStatistics();
     virtual void              CalculateExtraTime();
-    virtual void              ComputeStatistics(SLStatistics &stats);
     virtual void              ReportTimings(ostream &os, bool totals);
     virtual void              ReportCounters(ostream &os, bool totals);
 
