@@ -62,6 +62,9 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkCellTypes.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkStructuredGrid.h>
+
+#include <vtkVisItUtility.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
@@ -1251,9 +1254,180 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds)
     //
     // Note, we're returning the original pointer here. So, transform manager
     // will NOT think we've done any work on it. In fact, we have 'transformed'
-    // it in place. This should be harmless.
+    // it 'in place' meaning the version in generic db's cache was modified.
+    // This should be harmless to TransformManager.
     //
     return ds;
+}
+
+//
+// Convenience macro to instantiate type-specific code for each VTK
+// data array type.
+//
+#define SET_VALS(vN,cN)                                \
+    vN  *ina = vN::SafeDownCast(inda);                 \
+    vN *outa = vN::SafeDownCast(outda);                \
+    cN *invals = ina->GetPointer(0);                   \
+    cN *outvals = outa->GetPointer(0);                 \
+    int off = 0;                                       \
+    if (skip == 3 && invals[1] != (cN) 0) off = 1;     \
+    if (skip == 3 && invals[2] != (cN) 0) off = 2;     \
+    for (int i = 0, j = off; i < npts; i++, j += skip) \
+        outvals[i] = invals[j];
+
+static void
+CopyDataArrayVals(vtkDataArray *inda, vtkDataArray *outda, int npts, int skip)
+{
+    switch (inda->GetDataType())
+    {
+        case VTK_CHAR: { SET_VALS(vtkCharArray,char); break; }
+        case VTK_UNSIGNED_CHAR: { SET_VALS(vtkUnsignedCharArray, unsigned char); break; }
+        case VTK_SHORT: { SET_VALS(vtkShortArray, short); break; }
+        case VTK_UNSIGNED_SHORT: { SET_VALS(vtkUnsignedShortArray, unsigned short); break; }
+        case VTK_INT: { SET_VALS(vtkIntArray, int); break; }
+        case VTK_UNSIGNED_INT: { SET_VALS(vtkUnsignedIntArray, unsigned int); break; }
+        case VTK_LONG: { SET_VALS(vtkLongArray, long); break; }
+        case VTK_UNSIGNED_LONG: { SET_VALS(vtkUnsignedLongArray, unsigned long); break; }
+        case VTK_FLOAT: { SET_VALS(vtkFloatArray, float); break; }
+        case VTK_DOUBLE: { SET_VALS(vtkDoubleArray, double); break; }
+        case VTK_ID_TYPE: { SET_VALS(vtkIdTypeArray, vtkIdType); break; }
+    }
+}
+
+// ****************************************************************************
+//  Method: ConvertCurvesToRectGrids
+//
+//  Purpose: Handle situations in which a plugin serves up what amounts to
+//  curve data as a 1D, non-rectilinear-grid, dataset. 
+//
+//  Programmer: Mark C. Miller
+//  Creation: February 9, 2009
+// ****************************************************************************
+
+vtkDataSet *
+avtTransformManager::ConvertCurvesToRectGrids(avtDatabaseMetaData *md,
+vtkDataSet *ds, int dom)
+{
+    // As cheaply as possible, we want to avoid as much as possible the
+    // call to GetVTKObjectKey() which does a reverse lookup in generic
+    // db's cache. So, we first do a number of checks to see if we
+    // indeed have any work to do. 
+
+    // If this dataset is for a curve, then if its already a rect grid,
+    // we don't have any work to do on it. 
+    int doType = ds->GetDataObjectType();
+    if (doType == VTK_RECTILINEAR_GRID)
+        return ds;
+
+    // Can't possibly be any work to do if we don't have any curves in md
+    if (md->GetNumCurves() <= 0)
+        return ds;
+
+    // Rule out any datasets that cannot possibly be curves.
+    int xvalsType;
+    vtkDataArray *xvals;
+    switch (doType)
+    {
+        case VTK_POLY_DATA:
+        {
+            // It can't possibly be a curve if its got polys or strips
+            vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
+            if (pd->GetNumberOfPolys() || pd->GetNumberOfStrips())
+                return ds;
+            xvalsType = pd->GetPoints()->GetDataType();
+            xvals = pd->GetPoints()->GetData();
+            break;
+        }
+        case VTK_STRUCTURED_GRID:
+        {
+            // It can't possibly be curve data if it has more than one dimension
+            // that is of size greater than one.
+            int dims[3];
+            vtkStructuredGrid *sgrid = vtkStructuredGrid::SafeDownCast(ds);
+            sgrid->GetDimensions(dims);
+            int numDimsGtOne = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                if (dims[i] > 1)
+                    numDimsGtOne++;
+            }
+            if (numDimsGtOne > 1)
+                return ds;
+            xvalsType = sgrid->GetPoints()->GetDataType();
+            xvals = sgrid->GetPoints()->GetData();
+            break;
+        }
+        case VTK_UNSTRUCTURED_GRID:
+        {
+            //
+            // There isn't a whole lot we can do to check this case without doing
+            // problem sized work. But, a curve should be a set of N points and
+            // N-1 (or N if the only cells are VTK_VERTEX) cells. So, check that.
+            //
+            vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::SafeDownCast(ds);
+            if (ugrid->GetNumberOfCells() > 0 &&
+                ugrid->GetNumberOfCells() != ugrid->GetNumberOfPoints()-1 &&
+                ugrid->GetNumberOfCells() != ugrid->GetNumberOfPoints())
+                return ds;
+            xvalsType = ugrid->GetPoints()->GetDataType();
+            xvals = ugrid->GetPoints()->GetData();
+            break;
+        }
+    }
+
+    //
+    // Ok, now a more expensive check to see if MetaData says this object
+    // is a curve. To do it, we need to do the reverse lookup in generic
+    // db's cache.
+    //
+    int i;
+    const char *vname;
+    if (!gdbCache->GetVTKObjectKey(&vname, 0, 0, dom, 0, ds))
+    {
+        EXCEPTION1(PointerNotInCacheException, ds);
+    }
+    const avtCurveMetaData *cmd = 0;
+    for (i = 0; i < md->GetNumCurves(); i++)
+    {
+        cmd = md->GetCurve(i);
+        if (cmd->from1DScalarName == string(vname))
+            break;
+    }
+    if (cmd == 0)
+        return ds;
+
+    //
+    // Do some additional sanity checks and setup the yvals array
+    //
+    int npts = ds->GetNumberOfPoints();
+    vtkDataArray *yvals;
+    yvals = ds->GetPointData()->GetScalars();
+    if (yvals == 0 || yvals->GetNumberOfTuples() != npts)
+        return ds;
+    int yvalsType = yvals->GetDataType();
+
+    debug1 << "avtTransformManager: Converting \"" << vname
+           << "\" scalar dataset of size " << npts
+           << " to a curve dataset" << endl;
+
+    //
+    // Arriving here, we're sure this is a curve object. So, now convert
+    // it to the form VisIt wants.
+    //
+    vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(npts, xvalsType);
+    vtkDataArray *xvalsNew = rg->GetXCoordinates(); 
+    vtkDataArray *yvalsNew = vtkDataArray::CreateDataArray(yvalsType);
+    yvalsNew->SetNumberOfComponents(1);
+    yvalsNew->SetName(cmd->name.c_str());
+    yvalsNew->SetNumberOfTuples(npts);
+    // The first call to CopyDataArrayVals here uses a 'skip' of 3
+    // because coords in polydata, s|ugrids are always xyz triplets
+    CopyDataArrayVals(xvals, xvalsNew, npts, 3);
+    CopyDataArrayVals(yvals, yvalsNew, npts, 1);
+    rg->GetPointData()->SetScalars(yvalsNew);
+    yvalsNew->Delete();
+
+    return rg;
 }
 
 // ****************************************************************************
@@ -1280,6 +1454,9 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds)
 //    Pass in domain IDs to transforming functions, because they are needed
 //    to efficiently access cache.
 //
+//    Mark C. Miller, Thu Feb 12 02:18:45 PST 2009
+//    Convert datasets that are intended to be curves but served up as 
+//    non-rectilinear-grid, 1D datasets to correct type.
 // ****************************************************************************
 bool
 avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
@@ -1304,6 +1481,9 @@ avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
 
             // Handle vtkPoints datasets that have points but no cells
             ds = AddVertexCellsToPointsOnlyDataset(ds);
+
+            // Handle 1D datasets as curves (rect grids)
+            ds = ConvertCurvesToRectGrids(md, ds, domains[i]);
 
             //ds = HangingToConforming(md, d_spec, ds);
 

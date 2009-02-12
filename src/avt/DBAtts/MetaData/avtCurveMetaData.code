@@ -134,6 +134,11 @@ Definition:
 //    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
 //    Added centering and DataExtents. 
 //
+//    Mark C. Miller, Mon Feb  9 14:20:43 PST 2009
+//    Added from1DScalarName
+//
+//    Mark C. Miller, Wed Feb 11 17:17:13 PST 2009
+//    Removed centering
 // ****************************************************************************
 inline void
 Indent(ostream &out, int indent)
@@ -160,25 +165,6 @@ avtCurveMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Labels = x:" << xLabel.c_str() << ", y:" << yLabel.c_str() << endl;
 
-    Indent(out, indent);
-    out << "Centering = ";
-    switch (centering)
-    {
-      case AVT_NODECENT:
-        out << "node centered.";
-        break;
-
-      case AVT_ZONECENT:
-        out << "zone centered.";
-        break;
-
-      case AVT_UNKNOWN_CENT:
-      default:
-        out << "unknowing centering.";
-        break;
-    }
-    out << endl;
-    
     if (!validVariable)
     {
         Indent(out, indent);
@@ -194,6 +180,11 @@ avtCurveMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "The extents are not set." << endl;
+    }
+    if (from1DScalarName != "")
+    {
+        Indent(out, indent);
+        out << "Re-interpreted from 1D scalar named \"" << from1DScalarName << "\"" << endl;
     }
 }
 

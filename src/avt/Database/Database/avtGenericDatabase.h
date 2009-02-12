@@ -56,8 +56,6 @@
 
 #include <vectortypes.h>
 
-#include <MIR.h>
-
 struct    avtDatasetCollection;
 class     avtMatSpeciesMetaData;
 class     avtDomainBoundaries;

@@ -69,6 +69,15 @@
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
 
+#include <algorithm>
+#include <map>
+#include <string>
+#include <vector>
+
+using std::map;
+using std::string;
+using std::vector;
+
 void
 ConvertSlashes(char *str)
 {
@@ -497,11 +506,14 @@ avtDatabase::avtDatabase()
 //    Hank Childs, Tue Mar 22 10:41:23 PST 2005
 //    Fix memory leak.
 //
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
 // ****************************************************************************
 
 avtDatabase::~avtDatabase()
 {
-    std::vector<avtDataObjectSource *>::iterator it;
+    vector<avtDataObjectSource *>::iterator it;
     for (it = sourcelist.begin() ; it != sourcelist.end() ; it++)
     {
         delete *it;
@@ -755,6 +767,12 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Initialize data member for whether or not the file format does its own
 //    domain decomposition.
 //
+//    Mark C. Miller, Wed Feb 11 17:08:51 PST 2009
+//    Removed 'centering' member from curve metadata
+//
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
 // ****************************************************************************
 
 void
@@ -852,7 +870,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     var_list.push_back(var);
     if (*spec != NULL)
     {
-        const std::vector<CharStrRef> &secondaryVariables 
+        const vector<CharStrRef> &secondaryVariables 
                                                = spec->GetSecondaryVariables();
         for (i = 0 ; i < secondaryVariables.size() ; i++)
         {
@@ -995,7 +1013,6 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(1, var_list[i]);
             atts.SetVariableType(AVT_CURVE, var_list[i]);
-            atts.SetCentering(cmd->centering, var_list[i]);
             atts.SetTopologicalDimension(1);
             atts.SetSpatialDimension(1);
             atts.SetXUnits(cmd->xUnits);
@@ -1185,6 +1202,8 @@ avtDatabase::GetMostRecentTimestep(void) const
 //    Cyrus Harrison, Wed Nov 28 09:50:46 PST 2007
 //    Added vector magnitude expressions 
 //
+//    Mark C. Miller, Thu Feb 12 11:35:34 PST 2009
+//    Added call to convert 1D vars to curves
 // ****************************************************************************
 
 void
@@ -1220,6 +1239,8 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
     if (avtDatabaseFactory::GetCreateVectorMagnitudeExpressions())
         AddVectorMagnitudeExpressions(md);
 
+    Convert1DVarMDsToCurveMDs(md);
+
     if (! OnlyServeUpMetaData())
     {
         PopulateIOInformation(timeState, ioInfo);
@@ -1233,6 +1254,74 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 
 
 // ****************************************************************************
+//  Method: avtDatabase::Convert1DVarMDsToCurveMDs
+//
+//  Purpose: Convert 1D var MDs (vars defined on 1D meshes) to Curve MDs 
+//
+//  Programmer: Mark C. Miller
+//  Creation: February 9, 2009
+// ****************************************************************************
+
+void
+avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
+{
+    int i;
+
+    //
+    // Look for any 1D meshes. If we don't have any, then we can't
+    // have any 1D vars and we can terminate early.
+    //
+    map<string, int> meshNameToNumMap;
+    for (i = 0; i < md->GetNumMeshes(); i++)
+    {
+        const avtMeshMetaData *mmd = md->GetMesh(i);
+        if (mmd->spatialDimension == 1 && mmd->numBlocks == 1)
+            meshNameToNumMap[mmd->name] = i;
+    }
+    if (meshNameToNumMap.size() == 0)
+        return;
+
+    //
+    // Find all scalar vars defined on the meshes found above. These
+    // need to be converted to Curve MD objects.
+    //
+    map<string, int>::iterator it;
+    vector<int> scalarsToHide;
+    for (i = 0; i < md->GetNumScalars(); i++)
+    {
+        const avtScalarMetaData *smd = md->GetScalar(i);
+        it = meshNameToNumMap.find(smd->meshName);
+        if (it != meshNameToNumMap.end())
+        {
+            const avtMeshMetaData *mmd = md->GetMesh(it->second);
+            scalarsToHide.push_back(i);
+            avtCurveMetaData *cmd = new avtCurveMetaData();
+            if (!md->GetCurve(smd->name))
+                cmd->name = smd->name;
+            else
+                cmd->name = "1D_Scalars/" + smd->name;
+            cmd->originalName = smd->originalName;
+            cmd->validVariable = smd->validVariable;
+            cmd->yUnits = smd->units;
+            cmd->xUnits = mmd->xUnits;
+            cmd->xLabel = mmd->xLabel;
+            cmd->hasDataExtents = smd->hasDataExtents;
+            cmd->minDataExtents = smd->minDataExtents;
+            cmd->maxDataExtents = smd->maxDataExtents;
+            cmd->hideFromGUI = smd->hideFromGUI;
+            cmd->from1DScalarName = smd->name;
+            md->Add(cmd);
+            debug3 << "Re-interpreted 1D avtScalarMetaData \"" << smd->originalName
+                   << "\" as avtCurveMetaData \"" << cmd->name << "\"" << endl;
+        }
+    }
+
+    for (i = 0; i < (int) scalarsToHide.size(); i++)
+        md->GetScalars(scalarsToHide[i]).hideFromGUI = true;
+    for (it = meshNameToNumMap.begin(); it != meshNameToNumMap.end(); it++)
+        md->GetMeshes(it->second).hideFromGUI = true;
+}
+
 //  Method: avtDatabase::AddMeshQualityExpressions
 //
 //  Purpose:
@@ -1396,6 +1485,10 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Tue Apr 15 15:12:26 PDT 2008
 //    Eliminated database objects for which hideFromGUI is true
+//
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
 // ****************************************************************************
 
 void
@@ -1407,17 +1500,17 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
         return;
 
     int numMeshes = md->GetNumMeshes();
-    std::string base1 = "time_derivative";
+    string base1 = "time_derivative";
 
     for (i = 0 ; i < numMeshes ; i++)
     {
          const avtMeshMetaData *mmd = md->GetMesh(i);
 
-         std::string base2;
+         string base2;
          if (numMeshes == 1)
              base2 = base1;
          else
-             base2 = base1 + std::string("/") + std::string(mmd->name);
+             base2 = base1 + string("/") + string(mmd->name);
 
          avtMeshType mt = mmd->meshType;
          
@@ -1450,12 +1543,12 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
              continue;
 
          bool needPrefix = (doPos && doConn);
-         std::string conn_base = base2;
+         string conn_base = base2;
          if (needPrefix)
-             conn_base = base2 + std::string("/") + std::string("conn_based");
-         std::string pos_base = base2;
+             conn_base = base2 + string("/") + string("conn_based");
+         string pos_base = base2;
          if (needPrefix)
-             pos_base = base2 + std::string("/") + std::string("pos_based");
+             pos_base = base2 + string("/") + string("pos_based");
 
      //
      // Define expressions for time and last time to use in denominator of expressions
@@ -1463,7 +1556,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
      if (doConn)
      {
              Expression new_expr;
-             std::string expr_name = conn_base + std::string("/") + mmd->name + "_time";
+             string expr_name = conn_base + string("/") + mmd->name + "_time";
              new_expr.SetName(expr_name);
              char buff[1024];
              SNPRINTF(buff, 1024, "time(%s)", mmd->name.c_str());
@@ -1472,8 +1565,8 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
              new_expr.SetAutoExpression(true);
              md->AddExpression(&new_expr);
 
-             expr_name = conn_base + std::string("/") + mmd->name + "_lasttime";
-             std::string time_expr_name = conn_base + std::string("/") + mmd->name + "_time";
+             expr_name = conn_base + string("/") + mmd->name + "_lasttime";
+             string time_expr_name = conn_base + string("/") + mmd->name + "_time";
              new_expr.SetName(expr_name);
              SNPRINTF(buff, 1024, "conn_cmfe(<[-1]id:%s>, %s)",
              time_expr_name.c_str(), mmd->name.c_str());
@@ -1486,7 +1579,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
      if (doPos)
      {
              Expression new_expr;
-             std::string expr_name = pos_base + std::string("/") + mmd->name + "_time";
+             string expr_name = pos_base + string("/") + mmd->name + "_time";
              new_expr.SetName(expr_name);
              char buff[1024];
              SNPRINTF(buff, 1024, "time(%s)", mmd->name.c_str());
@@ -1495,8 +1588,8 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
              new_expr.SetAutoExpression(true);
              md->AddExpression(&new_expr);
 
-             expr_name = pos_base + std::string("/") + mmd->name + "_lasttime";
-             std::string time_expr_name = pos_base + std::string("/") + mmd->name + "_time";
+             expr_name = pos_base + string("/") + mmd->name + "_lasttime";
+             string time_expr_name = pos_base + string("/") + mmd->name + "_time";
              new_expr.SetName(expr_name);
              SNPRINTF(buff, 1024, "pos_cmfe(<[-1]id:%s>, %s, 0.)",
              time_expr_name.c_str(), mmd->name.c_str());
@@ -1515,11 +1608,11 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                  if (doConn)
                  {
                      Expression new_expr;
-                     std::string expr_name = conn_base + std::string("/")
+                     string expr_name = conn_base + string("/")
                                            + smd->name;
-                     std::string time_expr_name = conn_base + std::string("/")
+                     string time_expr_name = conn_base + string("/")
                                    + smd->meshName + "_time";
-                     std::string last_time_expr_name = conn_base + std::string("/")
+                     string last_time_expr_name = conn_base + string("/")
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
@@ -1534,11 +1627,11 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                  if (doPos)
                  {
                      Expression new_expr;
-                     std::string expr_name = pos_base + std::string("/")
+                     string expr_name = pos_base + string("/")
                                            + smd->name;
-                     std::string time_expr_name = pos_base + std::string("/")
+                     string time_expr_name = pos_base + string("/")
                                    + smd->meshName + "_time";
-                     std::string last_time_expr_name = pos_base + std::string("/")
+                     string last_time_expr_name = pos_base + string("/")
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
@@ -1562,11 +1655,11 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                  if (doConn)
                  {
                      Expression new_expr;
-                     std::string expr_name = conn_base + std::string("/")
+                     string expr_name = conn_base + string("/")
                                            + smd->name;
-                     std::string time_expr_name = conn_base + std::string("/")
+                     string time_expr_name = conn_base + string("/")
                                    + smd->meshName + "_time";
-                     std::string last_time_expr_name = conn_base + std::string("/")
+                     string last_time_expr_name = conn_base + string("/")
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
@@ -1581,11 +1674,11 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                  if (doPos)
                  {
                      Expression new_expr;
-                     std::string expr_name = pos_base + std::string("/")
+                     string expr_name = pos_base + string("/")
                                            + smd->name;
-                     std::string time_expr_name = pos_base + std::string("/")
+                     string time_expr_name = pos_base + string("/")
                                    + smd->meshName + "_time";
-                     std::string last_time_expr_name = pos_base + std::string("/")
+                     string last_time_expr_name = pos_base + string("/")
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
@@ -2125,6 +2218,9 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Fixed case where strlen(str_auto) == 0 causing uninitialized data being
 //    used in conditional jump.
 //
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
 // ****************************************************************************
 
 void
@@ -2147,7 +2243,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     strncpy(dir, textfile, p-textfile);
     dir[p-textfile] = '\0';
 
-    std::vector<char *>  list;
+    vector<char *>  list;
     char  str_auto[1024];
     char  str_with_dir[1024];
     int   count = 0;
@@ -2182,7 +2278,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     }
 
     filelist = new char*[count];
-    std::vector<char *>::iterator it;
+    vector<char *>::iterator it;
     filelistN = 0;
     for (it = list.begin() ; it != list.end() ; it++)
     {
@@ -2297,6 +2393,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Cyrus Harrison, Fri Sep 14 13:59:30 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
 // ****************************************************************************
 
 void               
@@ -2344,14 +2443,14 @@ avtDatabase::Query(PickAttributes *pa)
         }
         else
         {
-            const std::vector<int> &mapsOut = top->GetMapsOut();
+            const vector<int> &mapsOut = top->GetMapsOut();
             for (int j = 0; j < mapsOut.size() ; j++)
             {
                 int cIndex = mapsOut[j];
                 avtSILCollection_p collection = sil->GetSILCollection(cIndex);
                 if (*collection != NULL && collection->GetRole() == SIL_DOMAIN)
                 {
-                    const std::vector<int> &setIds = 
+                    const vector<int> &setIds = 
                                                    collection->GetSubsetList();
                     if (foundDomain >= 0 && foundDomain < setIds.size())
                     {
@@ -2455,7 +2554,7 @@ avtDatabase::Query(PickAttributes *pa)
         }
     }
 
-    std::string meshInfo;
+    string meshInfo;
     QueryMesh(pa->GetActiveVariable(), ts, foundDomain, meshInfo, 
               pa->GetShowMeshName());
     pa->SetMeshInfo(meshInfo);

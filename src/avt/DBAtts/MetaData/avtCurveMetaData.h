@@ -40,7 +40,6 @@
 #define AVTCURVEMETADATA_H
 #include <dbatts_exports.h>
 #include <string>
-#include <avtTypes.h>
 #include <AttributeSubject.h>
 
 // ****************************************************************************
@@ -89,7 +88,6 @@ public:
         ID_name = 0,
         ID_originalName,
         ID_validVariable,
-        ID_centering,
         ID_xUnits,
         ID_xLabel,
         ID_yUnits,
@@ -97,22 +95,23 @@ public:
         ID_hasDataExtents,
         ID_minDataExtents,
         ID_maxDataExtents,
-        ID_hideFromGUI
+        ID_hideFromGUI,
+        ID_from1DScalarName
     };
 
 public:
-    std::string  name;
-    std::string  originalName;
-    bool         validVariable;
-    avtCentering centering;
-    std::string  xUnits;
-    std::string  xLabel;
-    std::string  yUnits;
-    std::string  yLabel;
-    bool         hasDataExtents;
-    double       minDataExtents;
-    double       maxDataExtents;
-    bool         hideFromGUI;
+    std::string name;
+    std::string originalName;
+    bool        validVariable;
+    std::string xUnits;
+    std::string xLabel;
+    std::string yUnits;
+    std::string yLabel;
+    bool        hasDataExtents;
+    double      minDataExtents;
+    double      maxDataExtents;
+    bool        hideFromGUI;
+    std::string from1DScalarName;
 
 private:
     // Static class format string for type map.

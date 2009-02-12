@@ -83,6 +83,8 @@ class avtSourceFromDatabase;
 //    Hank Childs, Mon Aug 25 16:16:57 PDT 2008
 //    Add a function to clear the cache.
 //
+//    Mark C. Miller, Thu Feb 12 11:38:37 PST 2009
+//    Added method to convert 1d scalar vars to curves
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -112,6 +114,8 @@ class DATABASE_API avtTransformManager
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int);
     vtkDataSet                *AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds);
+    vtkDataSet                *ConvertCurvesToRectGrids(avtDatabaseMetaData *md,
+                                   vtkDataSet *ds, int dom);
 
     avtVariableCache           cache;
     avtVariableCache          *gdbCache;

@@ -8,9 +8,6 @@
     <Field name="validVariable" label="Valid variable" type="bool" access="public">
       true
     </Field>
-    <Field name="centering" label="Variable centering" type="avtCentering" access="public">
-      AVT_NODECENT
-    </Field>
     <Field name="xUnits" label="X units" type="string" access="public">
     </Field>
     <Field name="xLabel" label="X label" type="string" access="public">
@@ -32,6 +29,8 @@
     </Field>
     <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
       false
+    </Field>
+    <Field name="from1DScalarName" label="Name  of 1D scalar this curve object was interpreted from" type="string" access="public">
     </Field>
     <Function name="avtCurveMetaData2" user="true" member="true">
     </Function>

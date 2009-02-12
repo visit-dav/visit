@@ -63,7 +63,6 @@ public class avtCurveMetaData extends AttributeSubject
         name = new String("curve");
         originalName = new String("");
         validVariable = true;
-        centering = 0;
         xUnits = new String("");
         xLabel = new String("X-Axis");
         yUnits = new String("");
@@ -72,6 +71,7 @@ public class avtCurveMetaData extends AttributeSubject
         minDataExtents = 0;
         maxDataExtents = 0;
         hideFromGUI = false;
+        from1DScalarName = new String("");
     }
 
     public avtCurveMetaData(avtCurveMetaData obj)
@@ -81,7 +81,6 @@ public class avtCurveMetaData extends AttributeSubject
         name = new String(obj.name);
         originalName = new String(obj.originalName);
         validVariable = obj.validVariable;
-        centering = obj.centering;
         xUnits = new String(obj.xUnits);
         xLabel = new String(obj.xLabel);
         yUnits = new String(obj.yUnits);
@@ -90,6 +89,7 @@ public class avtCurveMetaData extends AttributeSubject
         minDataExtents = obj.minDataExtents;
         maxDataExtents = obj.maxDataExtents;
         hideFromGUI = obj.hideFromGUI;
+        from1DScalarName = new String(obj.from1DScalarName);
 
         SelectAll();
     }
@@ -100,7 +100,6 @@ public class avtCurveMetaData extends AttributeSubject
         return ((name.equals(obj.name)) &&
                 (originalName.equals(obj.originalName)) &&
                 (validVariable == obj.validVariable) &&
-                (centering == obj.centering) &&
                 (xUnits.equals(obj.xUnits)) &&
                 (xLabel.equals(obj.xLabel)) &&
                 (yUnits.equals(obj.yUnits)) &&
@@ -108,7 +107,8 @@ public class avtCurveMetaData extends AttributeSubject
                 (hasDataExtents == obj.hasDataExtents) &&
                 (minDataExtents == obj.minDataExtents) &&
                 (maxDataExtents == obj.maxDataExtents) &&
-                (hideFromGUI == obj.hideFromGUI));
+                (hideFromGUI == obj.hideFromGUI) &&
+                (from1DScalarName.equals(obj.from1DScalarName)));
     }
 
     // Property setting methods
@@ -130,57 +130,57 @@ public class avtCurveMetaData extends AttributeSubject
         Select(2);
     }
 
-    public void SetCentering(int centering_)
-    {
-        centering = centering_;
-        Select(3);
-    }
-
     public void SetXUnits(String xUnits_)
     {
         xUnits = xUnits_;
-        Select(4);
+        Select(3);
     }
 
     public void SetXLabel(String xLabel_)
     {
         xLabel = xLabel_;
-        Select(5);
+        Select(4);
     }
 
     public void SetYUnits(String yUnits_)
     {
         yUnits = yUnits_;
-        Select(6);
+        Select(5);
     }
 
     public void SetYLabel(String yLabel_)
     {
         yLabel = yLabel_;
-        Select(7);
+        Select(6);
     }
 
     public void SetHasDataExtents(boolean hasDataExtents_)
     {
         hasDataExtents = hasDataExtents_;
-        Select(8);
+        Select(7);
     }
 
     public void SetMinDataExtents(double minDataExtents_)
     {
         minDataExtents = minDataExtents_;
-        Select(9);
+        Select(8);
     }
 
     public void SetMaxDataExtents(double maxDataExtents_)
     {
         maxDataExtents = maxDataExtents_;
-        Select(10);
+        Select(9);
     }
 
     public void SetHideFromGUI(boolean hideFromGUI_)
     {
         hideFromGUI = hideFromGUI_;
+        Select(10);
+    }
+
+    public void SetFrom1DScalarName(String from1DScalarName_)
+    {
+        from1DScalarName = from1DScalarName_;
         Select(11);
     }
 
@@ -188,7 +188,6 @@ public class avtCurveMetaData extends AttributeSubject
     public String  GetName() { return name; }
     public String  GetOriginalName() { return originalName; }
     public boolean GetValidVariable() { return validVariable; }
-    public int     GetCentering() { return centering; }
     public String  GetXUnits() { return xUnits; }
     public String  GetXLabel() { return xLabel; }
     public String  GetYUnits() { return yUnits; }
@@ -197,6 +196,7 @@ public class avtCurveMetaData extends AttributeSubject
     public double  GetMinDataExtents() { return minDataExtents; }
     public double  GetMaxDataExtents() { return maxDataExtents; }
     public boolean GetHideFromGUI() { return hideFromGUI; }
+    public String  GetFrom1DScalarName() { return from1DScalarName; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -208,23 +208,23 @@ public class avtCurveMetaData extends AttributeSubject
         if(WriteSelect(2, buf))
             buf.WriteBool(validVariable);
         if(WriteSelect(3, buf))
-            buf.WriteInt(centering);
-        if(WriteSelect(4, buf))
             buf.WriteString(xUnits);
-        if(WriteSelect(5, buf))
+        if(WriteSelect(4, buf))
             buf.WriteString(xLabel);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(5, buf))
             buf.WriteString(yUnits);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             buf.WriteString(yLabel);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteBool(hasDataExtents);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteDouble(minDataExtents);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             buf.WriteDouble(maxDataExtents);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(10, buf))
             buf.WriteBool(hideFromGUI);
+        if(WriteSelect(11, buf))
+            buf.WriteString(from1DScalarName);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -244,31 +244,31 @@ public class avtCurveMetaData extends AttributeSubject
                 SetValidVariable(buf.ReadBool());
                 break;
             case 3:
-                SetCentering(buf.ReadInt());
-                break;
-            case 4:
                 SetXUnits(buf.ReadString());
                 break;
-            case 5:
+            case 4:
                 SetXLabel(buf.ReadString());
                 break;
-            case 6:
+            case 5:
                 SetYUnits(buf.ReadString());
                 break;
-            case 7:
+            case 6:
                 SetYLabel(buf.ReadString());
                 break;
-            case 8:
+            case 7:
                 SetHasDataExtents(buf.ReadBool());
                 break;
-            case 9:
+            case 8:
                 SetMinDataExtents(buf.ReadDouble());
                 break;
-            case 10:
+            case 9:
                 SetMaxDataExtents(buf.ReadDouble());
                 break;
-            case 11:
+            case 10:
                 SetHideFromGUI(buf.ReadBool());
+                break;
+            case 11:
+                SetFrom1DScalarName(buf.ReadString());
                 break;
             }
         }
@@ -280,7 +280,6 @@ public class avtCurveMetaData extends AttributeSubject
         str = str + stringToString("name", name, indent) + "\n";
         str = str + stringToString("originalName", originalName, indent) + "\n";
         str = str + boolToString("validVariable", validVariable, indent) + "\n";
-        str = str + intToString("centering", centering, indent) + "\n";
         str = str + stringToString("xUnits", xUnits, indent) + "\n";
         str = str + stringToString("xLabel", xLabel, indent) + "\n";
         str = str + stringToString("yUnits", yUnits, indent) + "\n";
@@ -289,6 +288,7 @@ public class avtCurveMetaData extends AttributeSubject
         str = str + doubleToString("minDataExtents", minDataExtents, indent) + "\n";
         str = str + doubleToString("maxDataExtents", maxDataExtents, indent) + "\n";
         str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
+        str = str + stringToString("from1DScalarName", from1DScalarName, indent) + "\n";
         return str;
     }
 
@@ -297,7 +297,6 @@ public class avtCurveMetaData extends AttributeSubject
     private String  name;
     private String  originalName;
     private boolean validVariable;
-    private int     centering;
     private String  xUnits;
     private String  xLabel;
     private String  yUnits;
@@ -306,5 +305,6 @@ public class avtCurveMetaData extends AttributeSubject
     private double  minDataExtents;
     private double  maxDataExtents;
     private boolean hideFromGUI;
+    private String  from1DScalarName;
 }
 
