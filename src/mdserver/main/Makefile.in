@@ -211,6 +211,7 @@ LIBS= \
     -lutility \
     -lvisit_vtk \
     -llightweight_visit_vtk \
+    -lvisit_verdict \
     @VTK_LIGHTWEIGHT_LIBS@ \
     @PREBIND_LIBS@ \
     @LIBS@ \

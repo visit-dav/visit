@@ -230,6 +230,7 @@ class MIR_API ZooMIR : public MIR
 
     vtkPoints                              *outPts;
     vtkDataSet                             *mesh;
+    avtMaterial                            *origMat;
 
   protected:
     bool ReconstructCleanMesh(vtkDataSet *, avtMaterial *);
