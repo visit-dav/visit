@@ -56,4 +56,18 @@ AddPlot("Pseudocolor","myTest")
 DrawPlots()
 Test("rect_06")
 
+DeleteAllPlots()
+CloseDatabase("../data/Rect_test_data/rect_data/datafile.rect")
+
+TestSection("1D Datasets and re-interp. as curves.")
+
+OpenDatabase("../data/Rect_test_data/1d/curv_data/datafile.rect")
+AddPlot("Curve", "Mesh/pressure")
+DrawPlots()
+ResetView()
+Test("rect_07")
+AddPlot("Curve", "Mesh/density")
+TimeSliderNextState()
+Test("rect_08")
+
 Exit()
