@@ -614,7 +614,7 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
 
     for (i=0; i<ndomains; i++)
     {
-        if (i == 0 && buff == "gridtype" || i > 0)
+        if (i == 0 && (buff == "curv" || buff == "rect") || i > 0)
             in >> buff; // for "domainIJK" token
         int x,y,z;
         in >> x >> y >> z;
