@@ -210,8 +210,41 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     MIRConnectivity conn;
     conn.SetUpConnectivity(mesh);
 
+    // extract coordinate arrays
+    SetUpCoords();
+
     // Pack the material
     avtMaterial *mat = mat_orig->CreatePackedMaterial();
+
+    // Iteration
+    const int NUM_ITERATIONS = 100;
+    avtMaterial *matCopy = NUM_ITERATIONS ? new avtMaterial(mat) : NULL;
+    // --->
+#if 0
+    cout << "\nORIGINAL MAT\n\n";
+    mat_orig->Print(cout);
+
+    cout << "\nPACKED MAT\n\n";
+    mat->Print(cout);
+
+    cout << "\nCOPY OF PACKED MAT\n\n";
+    matCopy->Print(cout);
+
+    mat->SetVolFracForMatAndZone(2, 0, .44);
+    //mat->SetVolFracForMatAndZone(0, 0, 1.0);
+    //mat->SetVolFracForMatAndZone(0, 1, .97);
+    //mat->SetVolFracForMatAndZone(0, 0, -.4);
+    //mat->SetVolFracForMatAndZone(0, 1, 1.6);
+    //mat->SetVolFracForMatAndZone(0, 1, .98);
+    //mat->SetVolFracForMatAndZone(0, 1, .98);
+
+    cout << "\nPACKED MAT (after mods)\n\n";
+    mat->Print(cout);
+#endif
+    // --->
+
+    // NOTE: specmix_quad.silo, zone=66 is interesting
+
 
     mapMatToUsedMat = mat_orig->GetMapMatToUsedMat();
     mapUsedMatToMat = mat_orig->GetMapUsedMatToMat();
@@ -223,10 +256,14 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     int nCells  = mesh->GetNumberOfCells();
     int nPoints = mesh->GetNumberOfPoints();
 
-    // extract coordinate arrays
-    SetUpCoords();
-
     // resample the material volume fractions to the nodes
+    int actual_iterations = (NUM_ITERATIONS < 1) ? 1 : NUM_ITERATIONS;
+   for (int iter = 0; iter < actual_iterations; iter++)
+   {
+       coordsList.clear();
+       zonesList.clear();
+       indexList.clear();
+
     ResampledMat rm(nCells, nPoints, mat, &conn);
     rm.Resample();
 
@@ -249,20 +286,103 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
                                             nCells, conn, *this);
     }
 
+    bool debug = false;
 
     int *conn_ptr = conn.connectivity;
+    double actualVFStorage[nMaterials];
+    double *actualVFs = (NUM_ITERATIONS > 0) ? actualVFStorage : NULL;
+    double maxdiff = 0;
     for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
     {
+        debug = c==66;
+
         int  celltype = conn.celltype[c];
         int *ids      = conn_ptr+1;
         int  nids     = *conn_ptr;
 
-        cr->ReconstructCell(c, celltype, nids, ids);
+        cr->ReconstructCell(c, celltype, nids, ids, actualVFs);
+
+        if (NUM_ITERATIONS > 0)
+        {
+            std::vector<float> neededVFs, triedVFs;
+            matCopy->GetVolFracsForZone(c,neededVFs);
+            mat->GetVolFracsForZone(c,triedVFs);
+            if (debug) cerr << "--- CELL "<<c<<" ---\n";
+            for (int m=0; m<nMaterials; m++)
+            {
+                float wanted = neededVFs[m];
+                float tried  = triedVFs[m];
+                float got    = actualVFs[m];
+                float diff   = wanted - got;
+                
+                float alpha = (float(NUM_ITERATIONS-1)-float(iter))/float(NUM_ITERATIONS-1);
+                float damping = 0.1;// * alpha;
+                //float newval = tried + damping*(diff<0 ? -1 : (diff > 0 ? +1 : 0));
+                float newval = tried + damping*diff;
+                if (debug) cerr << "   >> mat "<<m<<", got="<<actualVFs[m]
+                     << " tried="<<triedVFs[m]
+                     << " wanted="<<neededVFs[m]
+                     << " diff="<<diff
+                     << " new="<<newval << endl;
+                mat->SetVolFracForMatAndZone(c,m,newval);
+                if (diff > maxdiff)
+                    maxdiff = diff;
+            }
+        }
+    }
+    cerr << "MAXDIFF="<<maxdiff<<endl;
+
+    if (debug)
+    {
+        cerr << "\n\n UPDATED MAT \n\n";
+        mat->Print(cerr);
     }
 
-    delete cr;
-
     visitTimer->StopTimer(timerHandle2, "MIR: Cell clipping");
+
+    delete cr;
+   }
+
+    /*
+    if (NUM_ITERATIONS > 0)
+    {
+        int nOutCells = zonesList.size();
+        double coords[MAX_NODES_PER_ZONE][3];
+        double actualVFs[nMaterials];
+        for (int m=0; m<nMaterials; m++)
+            actualVFs[m] = 0.0;
+
+        for (int c = 0; c<nOutCells; c++)
+        {
+            ReconstructedZone &zone = zonesList[c];
+            int connindex = zone.startindex;
+            cerr << "output cell, orig="<<zone.origzone<<", mat="<<zone.mat<<", #"<<c<<":\n";
+            for (int n=0; n<zone.nnodes; n++)
+            {
+                int index = indexList[connindex];
+                if (index < origNPoints)
+                {
+                    coords[n][0] = origXCoords[index];
+                    coords[n][1] = origYCoords[index];
+                    coords[n][2] = origZCoords[index];
+                }
+                else
+                {
+                    coords[n][0] = coordsList[index-origNPoints].x;
+                    coords[n][1] = coordsList[index-origNPoints].y;
+                    coords[n][2] = coordsList[index-origNPoints].z;
+                }
+                connindex++;
+                cerr <<"   coord = "
+                     <<coords[n][0]<<" , "
+                     <<coords[n][1]<<" , "
+                     <<coords[n][2]<<"\n";
+            }
+            cerr << "   Volume = "<< CalculateVolume(zone.celltype, coords)<<endl;
+        }
+    }
+    */
+
     visitTimer->StopTimer(timerHandle, "Full MIR reconstruction");
     visitTimer->DumpTimings();
 

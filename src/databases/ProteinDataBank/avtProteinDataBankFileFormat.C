@@ -174,6 +174,10 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Thu Aug  7 13:46:38 EDT 2008
 //    Fixed broken sprintf commands.
 //
+//    Jeremy Meredith, Thu Feb 12 12:27:28 EST 2009
+//    Added a simple residue type enumeration.  Needed to move
+//    HETNAM parsing into meta-data reading instead of atom data reading.
+//
 // ****************************************************************************
 
 void
@@ -241,8 +245,15 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             md->Add(new avtLabelMetaData(name_cmpnm, name_mesh, AVT_NODECENT));
         }
 
+        // Add the residue types with enumeration
+        avtScalarMetaData *rt_smd =
+            new avtScalarMetaData(name_rt, name_mesh, AVT_NODECENT);
+        rt_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+        for (int r=0; r<NumberOfKnownResidues(); r++)
+            rt_smd->AddEnumNameValue(NumberToResiduename(r), r);
+        md->Add(rt_smd);
+
         // Add the rest of the scalars
-        AddScalarVarToMetaData(md, name_rt, name_mesh, AVT_NODECENT);
         AddScalarVarToMetaData(md, name_rs, name_mesh, AVT_NODECENT);
         AddScalarVarToMetaData(md, name_bk, name_mesh, AVT_NODECENT);
         AddScalarVarToMetaData(md, name_occ, name_mesh, AVT_NODECENT);
@@ -874,6 +885,10 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 //    Explicitly make "no compound" part of the compound name array.
 //    This makes getting the name for any particular compound number easier.
 //
+//    Jeremy Meredith, Thu Feb 12 12:33:54 EST 2009
+//    Moved HETNAM parsing into this function so that we can create the
+//    enumerated scalar to include new residue types defined in this file.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::ReadAllMetaData()
@@ -890,10 +905,22 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
     nmodels = 0;
     int titleLineCount = 0, sourceLineCount = 0;
     bool canReadCompounds = true;
+    std::string hetnam, longhetnam;
+    bool readingHetnam = false;
     std::string source;
     while (in)
     {
         string record(line,0,6);
+        if (readingHetnam && record != "HETNAM")
+        {
+            debug4 << "Adding new residue name: " << hetnam.c_str()
+                   << ", longname=" << longhetnam.c_str() << endl;
+            AddResiduename(hetnam.c_str(), longhetnam.c_str());
+            hetnam = "";
+            longhetnam = "";
+            readingHetnam = false;
+        }
+
         if (record == "MODEL ")
         {
             // Count the models
@@ -922,6 +949,30 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
                 compoundNames.push_back("No compound");
             }
             compoundNames.push_back(string(line + 10));
+        }
+        else if (record == "HETNAM")
+        {
+            char het[4];
+            memcpy(het, line + 11, 3);
+            het[3] = '\0';
+
+            if(hetnam != std::string(het))
+            {
+                if(readingHetnam)
+                {
+                    debug4 << "Adding new residue name: " << hetnam.c_str()
+                           << ", longname=" << longhetnam.c_str() << endl;
+                    AddResiduename(hetnam.c_str(), longhetnam.c_str());
+                    longhetnam = "";
+                }
+
+                readingHetnam = true;
+            }
+
+            if(longhetnam.size() > 0)
+                longhetnam += "\n";
+            longhetnam += TrimTrailingSpaces(line + 15);
+            hetnam = het;
         }
         in.getline(line, 82);
     }
@@ -998,6 +1049,10 @@ avtProteinDataBankFileFormat::OpenFileAtBeginning()
 //    Jeremy Meredith, Thu Oct 18 16:31:20 EDT 2007
 //    COMPND records can be multi-line; ignore all but the first line.
 //
+//    Jeremy Meredith, Thu Feb 12 12:33:54 EST 2009
+//    Moved HETNAM parsing out of this function, and into the meta-data
+//    reading so that we can create the enumerated scalar with new residues.
+//
 // ****************************************************************************
 
 void
@@ -1029,24 +1084,11 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
         }
     }
 
-    std::string hetnam, longhetnam;
-    bool readingHetnam = false;
-
     int compound = 0;
 
     while (in)
     {
         string record(line,0,6);
-
-        if (readingHetnam && record != "HETNAM")
-        {
-            debug4 << "Adding new residue name: " << hetnam.c_str()
-                   << ", longname=" << longhetnam.c_str() << endl;
-            AddResiduename(hetnam.c_str(), longhetnam.c_str());
-            hetnam = "";
-            longhetnam = "";
-            readingHetnam = false;
-        }
 
         if (record == "ATOM  ")
         {
@@ -1061,30 +1103,6 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
         else if (record == "ENDMDL")
         {
             break;
-        }
-        else if (record == "HETNAM")
-        {
-            char het[4];
-            memcpy(het, line + 11, 3);
-            het[3] = '\0';
-
-            if(hetnam != std::string(het))
-            {
-                if(readingHetnam)
-                {
-                    debug4 << "Adding new residue name: " << hetnam.c_str()
-                           << ", longname=" << longhetnam.c_str() << endl;
-                    AddResiduename(hetnam.c_str(), longhetnam.c_str());
-                    longhetnam = "";
-                }
-
-                readingHetnam = true;
-            }
-
-            if(longhetnam.size() > 0)
-                longhetnam += "\n";
-            longhetnam += TrimTrailingSpaces(line + 15);
-            hetnam = het;
         }
         else if (record == "CONECT")
         {

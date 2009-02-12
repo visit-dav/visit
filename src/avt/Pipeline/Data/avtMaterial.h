@@ -162,6 +162,7 @@ struct MatZoneMap
 class PIPELINE_API avtMaterial
 {
   public:
+                                     avtMaterial(const avtMaterial*);
                                      avtMaterial(int nMats,
                                                  const int *mats,
                                                  char **names, int ndims,
@@ -240,6 +241,12 @@ class PIPELINE_API avtMaterial
                                          const float *mix_vf,
                                          const int *mix_next);
     
+    void                      Print(ostream &out);
+
+    void SetVolFracForMatAndZone(int zone_id, int mat_index, float val);
+    void CheckMixArraySize();
+
+    
   protected:
     int                        nMaterials;
     std::vector<std::string>   materials;
@@ -247,6 +254,7 @@ class PIPELINE_API avtMaterial
     int                        nZones;
     int                       *matlist;
     int                        mixlen;
+    int                        mixalloc;
     int                       *mix_mat;
     int                       *mix_next;
     int                       *mix_zone;
