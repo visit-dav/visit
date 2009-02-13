@@ -334,7 +334,7 @@ SILOSRC=bigsil.C csg.C emptydomains.C fullframe.C galaxy.C ghost.C \
         global_node.C globe.C largefile.C lineout_test.C lowfrac.C \
         meshorigin.C multi_test.C noise.C noise2d.C one_quad.C \
         quad_disk.C sid97.C specmix.C testall.C thinplane.C tire.C \
-        wave.C mat_3x3_3across.C
+        wave.C mat_3x3_3across.C mat_3x3x3_3across.C
 SILO_TARGET=$(SILOSRC:.C=)
 #SILO_TARGET=`echo $(SILOSRC) | sed -e 's/\.C//g'` is an alternative
 
@@ -400,6 +400,7 @@ test: $(EZ_TARGET)  @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET) $(BINSRC)
 	./csg
 	./lowfrac
 	./mat_3x3_3across
+	./mat_3x3x3_3across
 	./bov
 	./one_quad
 	./fullframe
@@ -462,6 +463,7 @@ testh5: @SILO_TARGET@ @HDF5_TARGET@
 	   ./csg -driver DB_HDF5;\
 	   ./lowfrac -driver DB_HDF5;\
 	   ./mat_3x3_3across -driver DB_HDF5;\
+	   ./mat_3x3x3_3across -driver DB_HDF5;\
 	   ./one_quad -driver DB_HDF5; \
 	   ./fullframe -driver DB_HDF5; \
 	   ./thinplane -driver DB_HDF5; \
@@ -570,6 +572,9 @@ clean: bin_data_clean gen_data_clean src_clean
 
 ./mat_3x3_3across: mat_3x3_3across.o
 	$(CXX) -o $@ mat_3x3_3across.o $(LDFLAGS) $(LIBS)
+
+./mat_3x3x3_3across: mat_3x3x3_3across.o
+	$(CXX) -o $@ mat_3x3x3_3across.o $(LDFLAGS) $(LIBS)
 
 ./largefile: largefile.o
 	$(CXX) -o $@ largefile.o $(LDFLAGS) $(LIBS)
