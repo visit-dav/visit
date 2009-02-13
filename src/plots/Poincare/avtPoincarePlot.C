@@ -301,7 +301,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     // Set the streamline attributes.
     poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORLAND_PRINCE);
     poincareFilter->SetStreamlineAlgorithm(STREAMLINE_STAGED_LOAD_ONDEMAND,
-                                             10, 3);
+                                           10, 3, 1);
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
     poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
     if (atts.GetTerminationType() == PoincareAttributes::Distance)
