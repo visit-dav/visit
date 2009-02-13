@@ -20,6 +20,15 @@
     <Field name="algorithm" label="Algorithm" type="enum" subtype="Algorithm">
       ZooClipping
     </Field>
+    <Field name="iterationEnabled" label="Iteration enabled" type="bool">
+      false
+    </Field>
+    <Field name="numIterations" label="Number of iterations" type="int">
+      5
+    </Field>
+    <Field name="iterationDamping" label="Iteration damping factor" type="float">
+      0.4
+    </Field>
     <Field name="simplifyHeavilyMixedZones" label="Simplify Heavily Mixed Zones" type="bool">
       false
     </Field>

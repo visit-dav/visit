@@ -85,10 +85,14 @@ IsovolumeCellReconstructor::IsovolumeCellReconstructor(vtkDataSet *d,
 //    Jeremy Meredith, Thu Aug 18 17:09:36 PDT 2005
 //    Initial version.  Lifted heavily from the Recursive version.
 //
+//    Jeremy Meredith, Fri Feb 13 11:05:06 EST 2009
+//    Added calculation of output vf's per material, if requested.
+//
 // ****************************************************************************
 void
 IsovolumeCellReconstructor::ReconstructCell(int cellid_, int celltype_,
-                                            int nids_, int *ids_)
+                                            int nids_, int *ids_,
+                                            double *outputvfs)
 {
     cellid = cellid_;
     celltype = celltype_;
@@ -348,6 +352,17 @@ IsovolumeCellReconstructor::ReconstructCell(int cellid_, int celltype_,
         }
     }
 
+    // If we're going to calculate actual volume fractions, first
+    // zero them out, then accumulate the output cell partial contributions.
+    double totalvol = 0;
+    if (outputvfs)
+    {
+        for (int matno=0; matno < nMaterials; matno++)
+        {
+            outputvfs[matno] = 0.0;
+        }
+    }
+
     // Spit the reconstructed cells into the output zone list
     for (int out = 0 ; out < outlist.size() ; out++)
     {
@@ -364,6 +379,39 @@ IsovolumeCellReconstructor::ReconstructCell(int cellid_, int celltype_,
 
         for (int n=0; n<outcell.nnodes; n++)
             mir.indexList.push_back(outcell.ids[n]);
+
+        if (outputvfs)
+        {
+            double coords[MAX_NODES_PER_ZONE][3];
+            for (int n=0; n<outcell.nnodes; n++)
+            {
+                int id = outcell.ids[n];
+                if (id < mir.origNPoints)
+                {
+                    coords[n][0] = mir.origXCoords[id];
+                    coords[n][1] = mir.origYCoords[id];
+                    coords[n][2] = mir.origZCoords[id];
+                }
+                else
+                {
+                    coords[n][0] = mir.coordsList[id-mir.origNPoints].x;
+                    coords[n][1] = mir.coordsList[id-mir.origNPoints].y;
+                    coords[n][2] = mir.coordsList[id-mir.origNPoints].z;
+                }
+            }
+            double vol = CalculateVolumeOrAreaHelper(outcell.celltype, coords);
+            totalvol += vol;
+            outputvfs[outcell.mat] += vol;
+        }
+    }
+
+    // And finally, normalize by the total volume
+    if (outputvfs)
+    {
+        for (int matno=0; matno < nMaterials; matno++)
+        {
+            outputvfs[matno] /= totalvol;
+        }
     }
 }
 

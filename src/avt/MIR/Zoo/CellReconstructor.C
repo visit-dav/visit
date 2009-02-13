@@ -48,6 +48,8 @@
 #include "BitUtils.h"
 #include "ResampledMat.h"
 
+#include <verdict.h>
+
 // ****************************************************************************
 //  Constructor: CellReconstructor::CellReconstructor
 //
@@ -421,4 +423,111 @@ CellReconstructor::CreateOutputShape(TempCell &old,
     }
 
     outlist.push_back(cell);
+}
+
+// ****************************************************************************
+//  Method:  CellReconstructor::CalculateVolumeOrAreaHelper
+//
+//  Purpose:
+//    Calculate the area or volume of a VTK cell.  Logic taken
+//    from the mesh quality expressions.
+//
+//  Arguments:
+//    type       vtk cell type
+//    coords     the coordinates in VTK order
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+
+inline void
+Swap1(double &a, double &b)
+{
+    double tmp = a;
+    a = b;
+    b = tmp;
+}
+
+inline void
+Swap3(double c[][3], int a, int b)
+{
+    Swap1(c[a][0], c[b][0]);
+    Swap1(c[a][1], c[b][1]);
+    Swap1(c[a][2], c[b][2]);
+}
+
+inline
+void Copy3(double coords[][3], double a[], int i)
+{
+    a[0] = coords[i][0];
+    a[1] = coords[i][1];
+    a[2] = coords[i][2];
+}
+
+double
+CellReconstructor::CalculateVolumeOrAreaHelper(int type, double coords[][3])
+{
+    switch (type)
+    {
+      case VTK_TRIANGLE:
+          return v_tri_area(3, coords);
+        
+      case VTK_QUAD:
+        return v_quad_area(4, coords);
+        
+      case VTK_PIXEL:
+        Swap3(coords, 2, 3);
+        return v_quad_area(4, coords);
+
+      case VTK_VOXEL:
+        Swap3(coords, 2,3);
+        Swap3(coords, 6,7);
+        return v_hex_volume(8,coords);
+
+      case VTK_HEXAHEDRON:
+        return v_hex_volume(8,coords);
+
+      case VTK_TETRA:
+        return v_tet_volume(4,coords);
+
+      case VTK_WEDGE:
+        {
+        int   subdiv[3][4] = { {0,5,4,3}, {0,2,1,4}, {0,4,5,2} };
+        double tet_coords[4][3];
+        double vol = 0;
+        for (int i = 0 ; i < 3 ; i++)
+        {
+            for (int j = 0 ; j < 4 ; j++)
+                for (int k = 0 ; k < 3 ; k++)
+                    tet_coords[j][k] = coords[subdiv[i][j]][k];
+            vol += v_tet_volume(4, tet_coords);
+        }
+        return vol;
+        }
+        
+      // The verdict metric for pyramid I have yet to figure out how to work.
+      // However, it does the same thing that we do here: Divide the pyramid
+      // into two tetrahedrons.
+      case VTK_PYRAMID:
+        {
+        double one[4][3];
+        double two[4][3];
+            
+        Copy3(coords,one[0], 0);
+        Copy3(coords,one[1], 1);
+        Copy3(coords,one[2], 2);
+        Copy3(coords,one[3], 4);
+
+        Copy3(coords,two[0], 0);
+        Copy3(coords,two[1], 2);
+        Copy3(coords,two[2], 3);
+        Copy3(coords,two[3], 4);
+
+        return v_tet_volume(4,one) + v_tet_volume(4,two);
+        }
+    }
+
+    // ERROR; SHOULDN'T GET HERE!!!!
+    return -99999;
 }

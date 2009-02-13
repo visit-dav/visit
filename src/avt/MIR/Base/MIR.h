@@ -78,6 +78,9 @@ class avtSpecies;
 //    Jeremy Meredith, Thu Aug 18 16:35:05 PDT 2005
 //    Added algorithm selector, and added VF for isovolume algorithm.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 class MIR_API MIR
 {
@@ -91,6 +94,7 @@ class MIR_API MIR
     void SetAlgorithm(int);
     void SetSubdivisionLevel(MIROptions::SubdivisionLevel);
     void SetNumIterations(int);
+    void SetIterationDamping(float);
     void SetSmoothing(bool);
     void SetLeaveCleanZonesWhole(bool);
     void SetCleanZonesOnly(bool);

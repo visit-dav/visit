@@ -830,6 +830,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Hank Childs, Fri Jan 16 15:30:15 PST 2009
 //    Store the variable with the working network.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 void
@@ -891,6 +894,9 @@ NetworkManager::StartNetwork(const string &format,
     dataRequest->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
     dataRequest->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
     dataRequest->SetMIRAlgorithm(matopts.GetAlgorithm());
+    dataRequest->SetMIRNumIterations(matopts.GetIterationEnabled() ?
+                                     matopts.GetNumIterations() : 0);
+    dataRequest->SetMIRIterationDamping(matopts.GetIterationDamping());
     dataRequest->SetSimplifyHeavilyMixedZones(matopts.GetSimplifyHeavilyMixedZones());
     dataRequest->SetMaxMaterialsPerZone(matopts.GetMaxMaterialsPerZone());
     dataRequest->SetIsovolumeMIRVF(matopts.GetIsoVolumeFraction());

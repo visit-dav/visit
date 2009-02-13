@@ -52,6 +52,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 18, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 13 11:05:06 EST 2009
+//    Added calculation of output vf's per material, if requested.
+//
 // ****************************************************************************
 
 class RecursiveCellReconstructor : public CellReconstructor
@@ -60,7 +64,7 @@ class RecursiveCellReconstructor : public CellReconstructor
     RecursiveCellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&,
                                int, int, MIRConnectivity&, ZooMIR&);
 
-    void ReconstructCell(int, int, int, int*);
+    void ReconstructCell(int, int, int, int*, double*);
 };
 
 #endif

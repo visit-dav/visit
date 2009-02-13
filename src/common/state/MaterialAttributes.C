@@ -78,7 +78,7 @@ MaterialAttributes::Algorithm_FromString(const std::string &s, MaterialAttribute
 }
 
 // Type map format string
-const char *MaterialAttributes::TypeMapFormatString = "bbbbibif";
+const char *MaterialAttributes::TypeMapFormatString = "bbbbibifbif";
 
 // ****************************************************************************
 // Method: MaterialAttributes::MaterialAttributes
@@ -103,6 +103,9 @@ MaterialAttributes::MaterialAttributes() :
     cleanZonesOnly = false;
     needValidConnectivity = false;
     algorithm = ZooClipping;
+    iterationEnabled = false;
+    numIterations = 5;
+    iterationDamping = 0.4;
     simplifyHeavilyMixedZones = false;
     maxMaterialsPerZone = 3;
     isoVolumeFraction = 0.5;
@@ -131,6 +134,9 @@ MaterialAttributes::MaterialAttributes(const MaterialAttributes &obj) :
     cleanZonesOnly = obj.cleanZonesOnly;
     needValidConnectivity = obj.needValidConnectivity;
     algorithm = obj.algorithm;
+    iterationEnabled = obj.iterationEnabled;
+    numIterations = obj.numIterations;
+    iterationDamping = obj.iterationDamping;
     simplifyHeavilyMixedZones = obj.simplifyHeavilyMixedZones;
     maxMaterialsPerZone = obj.maxMaterialsPerZone;
     isoVolumeFraction = obj.isoVolumeFraction;
@@ -182,6 +188,9 @@ MaterialAttributes::operator = (const MaterialAttributes &obj)
     cleanZonesOnly = obj.cleanZonesOnly;
     needValidConnectivity = obj.needValidConnectivity;
     algorithm = obj.algorithm;
+    iterationEnabled = obj.iterationEnabled;
+    numIterations = obj.numIterations;
+    iterationDamping = obj.iterationDamping;
     simplifyHeavilyMixedZones = obj.simplifyHeavilyMixedZones;
     maxMaterialsPerZone = obj.maxMaterialsPerZone;
     isoVolumeFraction = obj.isoVolumeFraction;
@@ -214,6 +223,9 @@ MaterialAttributes::operator == (const MaterialAttributes &obj) const
             (cleanZonesOnly == obj.cleanZonesOnly) &&
             (needValidConnectivity == obj.needValidConnectivity) &&
             (algorithm == obj.algorithm) &&
+            (iterationEnabled == obj.iterationEnabled) &&
+            (numIterations == obj.numIterations) &&
+            (iterationDamping == obj.iterationDamping) &&
             (simplifyHeavilyMixedZones == obj.simplifyHeavilyMixedZones) &&
             (maxMaterialsPerZone == obj.maxMaterialsPerZone) &&
             (isoVolumeFraction == obj.isoVolumeFraction));
@@ -365,6 +377,9 @@ MaterialAttributes::SelectAll()
     Select(ID_cleanZonesOnly,            (void *)&cleanZonesOnly);
     Select(ID_needValidConnectivity,     (void *)&needValidConnectivity);
     Select(ID_algorithm,                 (void *)&algorithm);
+    Select(ID_iterationEnabled,          (void *)&iterationEnabled);
+    Select(ID_numIterations,             (void *)&numIterations);
+    Select(ID_iterationDamping,          (void *)&iterationDamping);
     Select(ID_simplifyHeavilyMixedZones, (void *)&simplifyHeavilyMixedZones);
     Select(ID_maxMaterialsPerZone,       (void *)&maxMaterialsPerZone);
     Select(ID_isoVolumeFraction,         (void *)&isoVolumeFraction);
@@ -428,6 +443,24 @@ MaterialAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("algorithm", Algorithm_ToString(algorithm)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_iterationEnabled, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("iterationEnabled", iterationEnabled));
+    }
+
+    if(completeSave || !FieldsEqual(ID_numIterations, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("numIterations", numIterations));
+    }
+
+    if(completeSave || !FieldsEqual(ID_iterationDamping, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("iterationDamping", iterationDamping));
     }
 
     if(completeSave || !FieldsEqual(ID_simplifyHeavilyMixedZones, &defaultObject))
@@ -508,6 +541,12 @@ MaterialAttributes::SetFromNode(DataNode *parentNode)
                 SetAlgorithm(value);
         }
     }
+    if((node = searchNode->GetNode("iterationEnabled")) != 0)
+        SetIterationEnabled(node->AsBool());
+    if((node = searchNode->GetNode("numIterations")) != 0)
+        SetNumIterations(node->AsInt());
+    if((node = searchNode->GetNode("iterationDamping")) != 0)
+        SetIterationDamping(node->AsFloat());
     if((node = searchNode->GetNode("simplifyHeavilyMixedZones")) != 0)
         SetSimplifyHeavilyMixedZones(node->AsBool());
     if((node = searchNode->GetNode("maxMaterialsPerZone")) != 0)
@@ -553,6 +592,27 @@ MaterialAttributes::SetAlgorithm(MaterialAttributes::Algorithm algorithm_)
 {
     algorithm = algorithm_;
     Select(ID_algorithm, (void *)&algorithm);
+}
+
+void
+MaterialAttributes::SetIterationEnabled(bool iterationEnabled_)
+{
+    iterationEnabled = iterationEnabled_;
+    Select(ID_iterationEnabled, (void *)&iterationEnabled);
+}
+
+void
+MaterialAttributes::SetNumIterations(int numIterations_)
+{
+    numIterations = numIterations_;
+    Select(ID_numIterations, (void *)&numIterations);
+}
+
+void
+MaterialAttributes::SetIterationDamping(float iterationDamping_)
+{
+    iterationDamping = iterationDamping_;
+    Select(ID_iterationDamping, (void *)&iterationDamping);
 }
 
 void
@@ -611,6 +671,24 @@ MaterialAttributes::GetAlgorithm() const
 }
 
 bool
+MaterialAttributes::GetIterationEnabled() const
+{
+    return iterationEnabled;
+}
+
+int
+MaterialAttributes::GetNumIterations() const
+{
+    return numIterations;
+}
+
+float
+MaterialAttributes::GetIterationDamping() const
+{
+    return iterationDamping;
+}
+
+bool
 MaterialAttributes::GetSimplifyHeavilyMixedZones() const
 {
     return simplifyHeavilyMixedZones;
@@ -657,6 +735,9 @@ MaterialAttributes::GetFieldName(int index) const
     case ID_cleanZonesOnly:            return "cleanZonesOnly";
     case ID_needValidConnectivity:     return "needValidConnectivity";
     case ID_algorithm:                 return "algorithm";
+    case ID_iterationEnabled:          return "iterationEnabled";
+    case ID_numIterations:             return "numIterations";
+    case ID_iterationDamping:          return "iterationDamping";
     case ID_simplifyHeavilyMixedZones: return "simplifyHeavilyMixedZones";
     case ID_maxMaterialsPerZone:       return "maxMaterialsPerZone";
     case ID_isoVolumeFraction:         return "isoVolumeFraction";
@@ -689,6 +770,9 @@ MaterialAttributes::GetFieldType(int index) const
     case ID_cleanZonesOnly:            return FieldType_bool;
     case ID_needValidConnectivity:     return FieldType_bool;
     case ID_algorithm:                 return FieldType_enum;
+    case ID_iterationEnabled:          return FieldType_bool;
+    case ID_numIterations:             return FieldType_int;
+    case ID_iterationDamping:          return FieldType_float;
     case ID_simplifyHeavilyMixedZones: return FieldType_bool;
     case ID_maxMaterialsPerZone:       return FieldType_int;
     case ID_isoVolumeFraction:         return FieldType_float;
@@ -721,6 +805,9 @@ MaterialAttributes::GetFieldTypeName(int index) const
     case ID_cleanZonesOnly:            return "bool";
     case ID_needValidConnectivity:     return "bool";
     case ID_algorithm:                 return "enum";
+    case ID_iterationEnabled:          return "bool";
+    case ID_numIterations:             return "int";
+    case ID_iterationDamping:          return "float";
     case ID_simplifyHeavilyMixedZones: return "bool";
     case ID_maxMaterialsPerZone:       return "int";
     case ID_isoVolumeFraction:         return "float";
@@ -773,6 +860,21 @@ MaterialAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_algorithm:
         {  // new scope
         retval = (algorithm == obj.algorithm);
+        }
+        break;
+    case ID_iterationEnabled:
+        {  // new scope
+        retval = (iterationEnabled == obj.iterationEnabled);
+        }
+        break;
+    case ID_numIterations:
+        {  // new scope
+        retval = (numIterations == obj.numIterations);
+        }
+        break;
+    case ID_iterationDamping:
+        {  // new scope
+        retval = (iterationDamping == obj.iterationDamping);
         }
         break;
     case ID_simplifyHeavilyMixedZones:

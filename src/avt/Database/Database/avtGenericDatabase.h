@@ -330,6 +330,9 @@ class     vtkUnstructuredGrid;
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Jeremy Meredith, Fri Feb 13 12:04:16 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -450,11 +453,13 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               stringVector &, 
                                               stringVector &, 
                                               bool, bool, bool, bool, bool,
-                                              bool, bool, int, int, float, bool, 
+                                              bool, bool, int, int,
+                                              int, float, float, bool, 
                                               bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
-                                      bool, int, int, float, bool, bool&, bool&,bool, 
+                                      bool, int, int, int, float,
+                                      float, bool, bool&, bool&,bool, 
                                       avtMaterial *&);
     avtMaterial               *GetMaterial(int, const char *, int, const avtDataRequest_p = 0);
     avtSpecies                *GetSpecies(int, const char *, int);
