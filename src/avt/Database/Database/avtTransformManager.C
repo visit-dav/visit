@@ -1302,6 +1302,11 @@ CopyDataArrayVals(vtkDataArray *inda, vtkDataArray *outda, int npts, int skip)
 //
 //  Programmer: Mark C. Miller
 //  Creation: February 9, 2009
+//  
+//  Modifications:
+//    Mark C. Miller, Fri Feb 13 09:12:38 PST 2009
+//    Fixed problem where cmd could be non-zero after exiting loop looking
+//    for curve mds of the given name. 
 // ****************************************************************************
 
 vtkDataSet *
@@ -1392,6 +1397,7 @@ vtkDataSet *ds, int dom)
         cmd = md->GetCurve(i);
         if (cmd->from1DScalarName == string(vname))
             break;
+        cmd = 0;
     }
     if (cmd == 0)
         return ds;
