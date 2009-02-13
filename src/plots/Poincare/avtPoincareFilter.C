@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtPoincareFilter.h>
+#include <avtStreamlineWrapper.h>
 
 #include <vtkDataSet.h>
 #include <vtkSlicer.h>
@@ -1061,19 +1062,10 @@ avtPoincareFilter::CreatePoincareOutput()
       }
       else
       {
-//      VMesh::dimension_type dims(2);
-        
-//      dims[0] = nnodes;
-//      dims[1] = (planes.size()+1) * toroidalWinding;
-        
-//      MeshHandle new_mesh = CreateMesh(fo,dims);
-//      ofield_h = CreateField(fo,new_mesh);
-        
-//      std::cerr << "Creating a surface of "
-//                << dims[0] << "  " << dims[1] << std::endl;
-
-        loadSurface( dt, puncturePts, nnodes, color, color_value,
-                     (islands?true:false));
+        if( islands )
+          loadIsland( dt, puncturePts, nnodes, color, color_value );
+        else
+          loadSurface( dt, puncturePts, nnodes, color, color_value );
       }
     }
 
@@ -1135,14 +1127,17 @@ loadCurve( avtDataTree *dt,
 {
   vtkAppendPolyData *append = vtkAppendPolyData::New();
 
+  unsigned int nplanes = nodes.size();
+  unsigned int toroidalWindings = nodes[0].size();
+
   // Loop through each plane
-  for( unsigned int p=0; p<nodes.size(); ++p ) 
+  for( unsigned int p=0; p<nplanes; ++p ) 
   {
     if( color == 3 )
       color_value = p;
 
     // Loop through each toroidial group
-    for( unsigned int j=0; j<nodes[p].size(); ++j ) 
+    for( unsigned int j=0; j<toroidalWindings; ++j ) 
     {
       //Create groups that represent the toroidial groups.
       vtkPoints *points = vtkPoints::New();
@@ -1162,11 +1157,11 @@ loadCurve( avtDataTree *dt,
         cells->InsertCellPoint(i);
 
         if( color == 2 )
-          scalars->InsertTuple1(i, (double) (i*nodes[p][j].size()+j));
+          color_value = (i*toroidalWindings+j)*nplanes + p;
         else if( color == 5 )
-          scalars->InsertTuple1(i, (double) i);
-        else
-          scalars->InsertTuple1(i, (double) color_value);
+          color_value =  i;
+
+        scalars->InsertTuple1(i, color_value);
       }
 
       // Create a new VTK polyline.
@@ -1186,13 +1181,13 @@ loadCurve( avtDataTree *dt,
 
   if (showPoints)
   {
-    for( unsigned int p=0; p<nodes.size(); ++p ) 
+    for( unsigned int p=0; p<nplanes; ++p ) 
     {
       if( color == 3 )
         color_value = p;
 
       // Loop through each toroidial group
-      for( unsigned int j=0; j<nodes[p].size(); ++j ) 
+      for( unsigned int j=0; j<toroidalWindings; ++j ) 
       {
         if( color == 4 )
           color_value = j;
@@ -1206,12 +1201,12 @@ loadCurve( avtDataTree *dt,
             
           vtkPolyData *ball = CreateSphere(-1.0, rad, pt);
 
-//        if( color == 2 )
-//          scalars->InsertTuple1(i, (double) (i*nodes[p][j].size()+j));
-//        else if( color == 5 )
-//          scalars->InsertTuple1(i, (double) i);
-//        else
-//          scalars->InsertTuple1(i, (double) color_value);
+//         if( color == 2 )
+//           color_value = (i*toroidalWindings+j)*nplanes + p;
+//         else if( color == 5 )
+//           color_value =  i;
+
+//        scalars->InsertTuple1(i, color_value);
 
           append->AddInput(ball);
           ball->Delete();
@@ -1236,16 +1231,165 @@ loadSurface( avtDataTree *dt,
              vector< vector < vector < Point > > > &nodes,
              unsigned int nnodes,
              unsigned int color,
-             double color_value,
-             bool closed_surface) 
+             double color_value) 
 {
+  unsigned int nplanes = nodes.size();
+  unsigned int toroidalWindings = nodes[0].size();
 
-//  loadCurve( dt, nodes, color, color_value );
+  // Add one to the first dimension to create a closed
+  // cylinder. Add one to the second dimension to a torus.
+  int dims[3];
+  dims[0] = nnodes  * toroidalWindings + 1;
+  dims[1] = planes.size() + 1;
+  dims[2] = 1;
+  
+  vtkPoints *points = vtkPoints::New();
+  vtkFloatArray *scalars = vtkFloatArray::New();
+  
+  points->SetNumberOfPoints(dims[0]*dims[1]);
+  scalars->Allocate(dims[0]*dims[1]);
+
+  float *points_ptr = (float *) points->GetVoidPointer(0);
+  
+  // Loop through each plane.
+  for( unsigned int p=0; p<=nplanes; ++p ) 
+  {
+    unsigned int pp = p % nplanes;
+
+    // Loop through each toroidial group
+    for( unsigned int j=0; j<toroidalWindings; ++j ) 
+    {
+      if( color == 4 )
+        color_value = j;
+
+      // Normally each toroidial group can be displayed in the order
+      // received. Except for the last plane where it needs to be
+      // adjusted by one group. That is if the streamline started in
+      // the "correct" place. This is not always the case so it may be
+      // necessary to adjust the winding group location by one.
+      unsigned int k;
+      
+      if( p == adjust_plane )
+      {
+        k = (j-1 + toroidalWindings) % toroidalWindings;
+      }
+      else
+      {
+        k = j;
+      }
+
+      unsigned int jj = p;
+
+      if( color == 3 )
+        color_value = j * nplanes + p;
+
+      // Loop through each point in toroidial group. Note the first
+      // and last point are the same so that the surface is cylinder.
+      for(unsigned int i=0; i<nnodes; ++i )
+      {
+        unsigned int ii = j*nnodes + i;
+
+        unsigned int n1 = jj * dims[0] + ii;
+
+        points_ptr[n1*3+0] = nodes[p][k][i].x;
+        points_ptr[n1*3+1] = nodes[p][k][i].y;
+        points_ptr[n1*3+2] = nodes[p][k][i].z;
+
+        if( color == 2 )
+          color_value = (i*toroidalWindings+j)*nplanes + p;
+        else if( color == 5 )
+          color_value =  1;
+        
+        scalars->InsertTuple1(n1, (double) color_value);
+      }
+    }
+  }
+
+  // Loop through each plane.
+  for( unsigned int p=0; p<=nplanes; ++p ) 
+  {
+    unsigned int pp = p % nplanes;
+
+    // Loop through the toroidial group
+    unsigned int j=0;
+    {
+      if( color == 4 )
+        color_value = j;
+
+      // Normally each toroidial group can be displayed in the order
+      // received. Except for the last plane where it needs to be
+      // adjusted by one group. That is if the streamline started in
+      // the "correct" place. This is not always the case so it may be
+      // necessary to adjust the winding group location by one.
+      unsigned int k;
+      
+      if( p == adjust_plane )
+      {
+        k = (j-1 + nodes[pp].size()) % nodes[pp].size();
+      }
+      else
+      {
+        k = j;
+      }
+
+      unsigned int jj = p;
+
+      if( color == 3 )
+        color_value = j * nplanes + p;
+
+      // Loop through the first point in the first toroidial
+      // group. This completes the cylinder.
+      unsigned int i=0;
+      {
+        unsigned int ii = toroidalWindings * nnodes;
+
+        unsigned int n1 = jj * dims[0] + ii;
+
+        points_ptr[n1*3+0] = nodes[p][k][i].x;
+        points_ptr[n1*3+1] = nodes[p][k][i].y;
+        points_ptr[n1*3+2] = nodes[p][k][i].z;
+
+        if( color == 2 )
+          color_value = (i*toroidalWindings+j)*nplanes + p;
+        else if( color == 5 )
+          color_value =  1;
+        
+        scalars->InsertTuple1(n1, (double) color_value);
+      }
+    }
+  }
+
+  // Create a new VTK structure grid.
+  vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+  sgrid->SetDimensions(dims);
+  sgrid->SetPoints(points);
+  scalars->SetName("colorVar");
+  sgrid->GetPointData()->SetScalars(scalars);
+  
+  dt->Merge( new avtDataTree(sgrid, 0) );
+  
+  points->Delete();
+  scalars->Delete();
+}
+
+
+void
+avtPoincareFilter::
+loadIsland( avtDataTree *dt,
+            vector< vector < vector < Point > > > &nodes,
+            unsigned int nnodes,
+            unsigned int color,
+            double color_value) 
+{
+  unsigned int nplanes = nodes.size();
+  unsigned int toroidalWindings = nodes[0].size();
 
   int dims[3];
    
-  dims[0] = nnodes + (closed_surface?1:0);
-  dims[1] = nodes.size(); // * nodes[0].size() + 1;
+  // Add one to the first dimension to create a closed
+  // cylinder. Add one to the second dimension to a torus.
+  dims[0] = nnodes + 1;
+  dims[1] = nplanes * nodes[0].size() + 1;
   dims[2] = 1;
   
   vtkPoints *points = vtkPoints::New();
@@ -1257,26 +1401,26 @@ loadSurface( avtDataTree *dt,
   float *points_ptr = (float *) points->GetVoidPointer(0);
   
   // Loop through each toroidial group
-//  for( unsigned int j=0; j<nodes[0].size(); ++j )
-  for( unsigned int j=0; j<1; ++j )
+  for( unsigned int j=0; j<nodes[0].size(); ++j )
   {
     if( color == 4 )
       color_value = j;
 
     // Loop through each plane.
-    for( unsigned int p=0; p<nodes.size(); ++p ) 
+    for( unsigned int p=0; p<nplanes; ++p ) 
     {
-      // Normally each toroidial group can be displayed in the order
-      // received. Except for the last plane where it needs to be
-      // adjusted by one group. That is if the streamline started in
-      // the "correct" place. This is not always the case so it may be
-      // necessary to adjust the winding group location by one.
+      // Normally each toroidial winding group can be displayed in the
+      // order received. Except for the last plane where it needs to
+      // be adjusted by one group. That is if the streamline started
+      // in the "correct" place. This is not always the case so it may
+      // be necessary to adjust the toroidal winding group location by
+      // one.
       unsigned int k, offset = 0;
       
       if( p == adjust_plane )
       {
-        k = (j-1 + nodes[p].size()) % nodes[p].size();
-        offset = (closed_surface?1:0);
+        k = (j-1 + toroidalWindings) % toroidalWindings;
+        offset = 1;
       }
       else
       {
@@ -1284,32 +1428,32 @@ loadSurface( avtDataTree *dt,
         offset = 0;
       }
 
-      unsigned int jj = nodes.size() * j + p;
+      unsigned int jj = nplanes * j + p;
 
       if( color == 3 )
-        color_value = jj; //p;
+        color_value = jj;
 
       // Loop through each point in toroidial group. Note the first
       // and last point are the same so that the surface is cylinder.
-      for(unsigned int i=0; i<nnodes+(closed_surface?1:0); ++i )
+      for(unsigned int i=0; i<=nnodes; ++i )
       {
-        unsigned int n1 = jj * (nnodes) + i;
+        unsigned int n1 = jj * dims[0] + i;
 
         points_ptr[n1*3+0] = nodes[p][k][(i+offset) % nnodes].x;
         points_ptr[n1*3+1] = nodes[p][k][(i+offset) % nnodes].y;
         points_ptr[n1*3+2] = nodes[p][k][(i+offset) % nnodes].z;
 
         if( color == 2 )
-          scalars->InsertTuple1(n1, (double) (i*nodes[p].size()+k));
+          color_value = (i*toroidalWindings+j)*nplanes + p;
         else if( color == 5 )
-          scalars->InsertTuple1(n1, (double) i);
-        else
-          scalars->InsertTuple1(n1, (double) color_value);
+          color_value =  1;
+        
+        scalars->InsertTuple1(n1, (double) color_value);
       }
     }
   }
 
-  /*
+
   // Add in the first toroidal group from the first plane to complete
   // the torus.
   unsigned int j = 0;
@@ -1330,8 +1474,8 @@ loadSurface( avtDataTree *dt,
 
   if( p == adjust_plane )
   {
-    k = (j-1 + nodes[p].size()) % nodes[p].size();
-//    offset = (closed_surface?1:0);
+    k = (j-1 + toroidalWindings) % toroidalWindings;
+    offset = 1;
   }
   else
   {
@@ -1339,38 +1483,38 @@ loadSurface( avtDataTree *dt,
     offset = 0;
   }
 
-  unsigned int jj = nodes.size() * nodes[p].size();
+  unsigned int jj = nplanes * toroidalWindings;
 
   if( color == 3 )
-    color_value = jj; //p;
+    color_value = jj;
 
   // Loop through each point in toroidial group. Note the first
   // and last point are the same so that the surface is cylinder.
-  for(unsigned int i=0; i<nnodes+(closed_surface?1:0); ++i )
+  for(unsigned int i=0; i<=nnodes; ++i )
   {
-    unsigned int n1 = jj * (nnodes+1) + i;
+    unsigned int n1 = jj * dims[0] + i;
 
     points_ptr[n1*3+0] = nodes[p][k][(i+offset) % nnodes].x;
     points_ptr[n1*3+1] = nodes[p][k][(i+offset) % nnodes].y;
     points_ptr[n1*3+2] = nodes[p][k][(i+offset) % nnodes].z;
 
     if( color == 2 )
-      scalars->InsertTuple1(n1, (double) (i*nodes[p].size()+k));
+      color_value = (i*toroidalWindings+j)*nplanes + p;
     else if( color == 5 )
-      scalars->InsertTuple1(n1, (double) i);
-    else
-      scalars->InsertTuple1(n1, (double) color_value);
+      color_value =  1;
+    
+    scalars->InsertTuple1(n1, (double) color_value);
   }
-  */
-  // Create a new VTK structure grid.
-   vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
-   sgrid->SetDimensions(dims);
-   sgrid->SetPoints(points);
-   scalars->SetName("colorVar");
-   sgrid->GetPointData()->SetScalars(scalars);
 
-   dt->Merge( new avtDataTree(sgrid, 0) );
-        
-   points->Delete();
-   scalars->Delete();       
+  // Create a new VTK structure grid.
+  vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+  sgrid->SetDimensions(dims);
+  sgrid->SetPoints(points);
+  scalars->SetName("colorVar");
+  sgrid->GetPointData()->SetScalars(scalars);
+  
+  dt->Merge( new avtDataTree(sgrid, 0) );
+  
+  points->Delete();
+  scalars->Delete();       
 }

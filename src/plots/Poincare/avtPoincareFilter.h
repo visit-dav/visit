@@ -93,8 +93,13 @@ class avtPoincareFilter : public avtStreamlineFilter
                             vector< vector < vector < Point > > > &nodes,
                             unsigned int nnodes,
                             unsigned int color,
-                            double color_value,
-                            bool clodes_surface);
+                            double color_value);
+
+  virtual void loadIsland( avtDataTree *dt,
+                           vector< vector < vector < Point > > > &nodes,
+                           unsigned int nnodes,
+                           unsigned int color,
+                           double color_value);
 
     // Poincare filter methods.
     void                      GeneratePoincarePoints(
