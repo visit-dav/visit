@@ -64,13 +64,16 @@ public class MaterialAttributes extends AttributeSubject
 
     public MaterialAttributes()
     {
-        super(8);
+        super(11);
 
         smoothing = false;
         forceMIR = false;
         cleanZonesOnly = false;
         needValidConnectivity = false;
         algorithm = ALGORITHM_ZOOCLIPPING;
+        iterationEnabled = false;
+        numIterations = 5;
+        iterationDamping = 0.4f;
         simplifyHeavilyMixedZones = false;
         maxMaterialsPerZone = 3;
         isoVolumeFraction = 0.5f;
@@ -78,13 +81,16 @@ public class MaterialAttributes extends AttributeSubject
 
     public MaterialAttributes(MaterialAttributes obj)
     {
-        super(8);
+        super(11);
 
         smoothing = obj.smoothing;
         forceMIR = obj.forceMIR;
         cleanZonesOnly = obj.cleanZonesOnly;
         needValidConnectivity = obj.needValidConnectivity;
         algorithm = obj.algorithm;
+        iterationEnabled = obj.iterationEnabled;
+        numIterations = obj.numIterations;
+        iterationDamping = obj.iterationDamping;
         simplifyHeavilyMixedZones = obj.simplifyHeavilyMixedZones;
         maxMaterialsPerZone = obj.maxMaterialsPerZone;
         isoVolumeFraction = obj.isoVolumeFraction;
@@ -100,6 +106,9 @@ public class MaterialAttributes extends AttributeSubject
                 (cleanZonesOnly == obj.cleanZonesOnly) &&
                 (needValidConnectivity == obj.needValidConnectivity) &&
                 (algorithm == obj.algorithm) &&
+                (iterationEnabled == obj.iterationEnabled) &&
+                (numIterations == obj.numIterations) &&
+                (iterationDamping == obj.iterationDamping) &&
                 (simplifyHeavilyMixedZones == obj.simplifyHeavilyMixedZones) &&
                 (maxMaterialsPerZone == obj.maxMaterialsPerZone) &&
                 (isoVolumeFraction == obj.isoVolumeFraction));
@@ -136,22 +145,40 @@ public class MaterialAttributes extends AttributeSubject
         Select(4);
     }
 
+    public void SetIterationEnabled(boolean iterationEnabled_)
+    {
+        iterationEnabled = iterationEnabled_;
+        Select(5);
+    }
+
+    public void SetNumIterations(int numIterations_)
+    {
+        numIterations = numIterations_;
+        Select(6);
+    }
+
+    public void SetIterationDamping(float iterationDamping_)
+    {
+        iterationDamping = iterationDamping_;
+        Select(7);
+    }
+
     public void SetSimplifyHeavilyMixedZones(boolean simplifyHeavilyMixedZones_)
     {
         simplifyHeavilyMixedZones = simplifyHeavilyMixedZones_;
-        Select(5);
+        Select(8);
     }
 
     public void SetMaxMaterialsPerZone(int maxMaterialsPerZone_)
     {
         maxMaterialsPerZone = maxMaterialsPerZone_;
-        Select(6);
+        Select(9);
     }
 
     public void SetIsoVolumeFraction(float isoVolumeFraction_)
     {
         isoVolumeFraction = isoVolumeFraction_;
-        Select(7);
+        Select(10);
     }
 
     // Property getting methods
@@ -160,6 +187,9 @@ public class MaterialAttributes extends AttributeSubject
     public boolean GetCleanZonesOnly() { return cleanZonesOnly; }
     public boolean GetNeedValidConnectivity() { return needValidConnectivity; }
     public int     GetAlgorithm() { return algorithm; }
+    public boolean GetIterationEnabled() { return iterationEnabled; }
+    public int     GetNumIterations() { return numIterations; }
+    public float   GetIterationDamping() { return iterationDamping; }
     public boolean GetSimplifyHeavilyMixedZones() { return simplifyHeavilyMixedZones; }
     public int     GetMaxMaterialsPerZone() { return maxMaterialsPerZone; }
     public float   GetIsoVolumeFraction() { return isoVolumeFraction; }
@@ -178,10 +208,16 @@ public class MaterialAttributes extends AttributeSubject
         if(WriteSelect(4, buf))
             buf.WriteInt(algorithm);
         if(WriteSelect(5, buf))
-            buf.WriteBool(simplifyHeavilyMixedZones);
+            buf.WriteBool(iterationEnabled);
         if(WriteSelect(6, buf))
-            buf.WriteInt(maxMaterialsPerZone);
+            buf.WriteInt(numIterations);
         if(WriteSelect(7, buf))
+            buf.WriteFloat(iterationDamping);
+        if(WriteSelect(8, buf))
+            buf.WriteBool(simplifyHeavilyMixedZones);
+        if(WriteSelect(9, buf))
+            buf.WriteInt(maxMaterialsPerZone);
+        if(WriteSelect(10, buf))
             buf.WriteFloat(isoVolumeFraction);
     }
 
@@ -208,12 +244,21 @@ public class MaterialAttributes extends AttributeSubject
                 SetAlgorithm(buf.ReadInt());
                 break;
             case 5:
-                SetSimplifyHeavilyMixedZones(buf.ReadBool());
+                SetIterationEnabled(buf.ReadBool());
                 break;
             case 6:
-                SetMaxMaterialsPerZone(buf.ReadInt());
+                SetNumIterations(buf.ReadInt());
                 break;
             case 7:
+                SetIterationDamping(buf.ReadFloat());
+                break;
+            case 8:
+                SetSimplifyHeavilyMixedZones(buf.ReadBool());
+                break;
+            case 9:
+                SetMaxMaterialsPerZone(buf.ReadInt());
+                break;
+            case 10:
                 SetIsoVolumeFraction(buf.ReadFloat());
                 break;
             }
@@ -235,6 +280,9 @@ public class MaterialAttributes extends AttributeSubject
         if(algorithm == ALGORITHM_ISOVOLUME)
             str = str + "ALGORITHM_ISOVOLUME";
         str = str + "\n";
+        str = str + boolToString("iterationEnabled", iterationEnabled, indent) + "\n";
+        str = str + intToString("numIterations", numIterations, indent) + "\n";
+        str = str + floatToString("iterationDamping", iterationDamping, indent) + "\n";
         str = str + boolToString("simplifyHeavilyMixedZones", simplifyHeavilyMixedZones, indent) + "\n";
         str = str + intToString("maxMaterialsPerZone", maxMaterialsPerZone, indent) + "\n";
         str = str + floatToString("isoVolumeFraction", isoVolumeFraction, indent) + "\n";
@@ -248,6 +296,9 @@ public class MaterialAttributes extends AttributeSubject
     private boolean cleanZonesOnly;
     private boolean needValidConnectivity;
     private int     algorithm;
+    private boolean iterationEnabled;
+    private int     numIterations;
+    private float   iterationDamping;
     private boolean simplifyHeavilyMixedZones;
     private int     maxMaterialsPerZone;
     private float   isoVolumeFraction;

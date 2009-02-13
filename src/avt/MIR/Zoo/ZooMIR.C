@@ -210,8 +210,17 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     MIRConnectivity conn;
     conn.SetUpConnectivity(mesh);
 
+    // extract coordinate arrays
+    SetUpCoords();
+
     // Pack the material
     avtMaterial *mat = mat_orig->CreatePackedMaterial();
+
+    // For iteration, create another copy of the material to use
+    // for the desired VF's.  CreatePackedMaterial efficiently
+    // creates a copy of an already-packed material.
+    avtMaterial *matCopy = options.numIterations > 0 ?
+                              mat->CreatePackedMaterial() : NULL;
 
     mapMatToUsedMat = mat_orig->GetMapMatToUsedMat();
     mapUsedMatToMat = mat_orig->GetMapUsedMatToMat();
@@ -223,49 +232,81 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     int nCells  = mesh->GetNumberOfCells();
     int nPoints = mesh->GetNumberOfPoints();
 
-    // extract coordinate arrays
-    SetUpCoords();
-
     // resample the material volume fractions to the nodes
-    ResampledMat rm(nCells, nPoints, mat, &conn);
-    rm.Resample();
-
-    // loop over the cells and do the reconstruction
-    int timerHandle2 = visitTimer->StartTimer();
-
-    coordsList.reserve(nPoints/4);
-    zonesList.reserve(int(float(nCells)*1.5));
-    indexList.reserve(int(float(nCells)*10));
-
-    CellReconstructor *cr;
-    if (options.algorithm == 1) // Recursive Clipping
+    for (int iter = 0; iter < options.numIterations+1; iter++)
     {
-        cr = new RecursiveCellReconstructor(mesh, mat, rm, nPoints,
-                                            nCells, conn, *this);
+        coordsList.clear();
+        zonesList.clear();
+        indexList.clear();
+
+        ResampledMat rm(nCells, nPoints, mat, &conn);
+        rm.Resample();
+
+        // loop over the cells and do the reconstruction
+        int timerHandle2 = visitTimer->StartTimer();
+
+        coordsList.reserve(nPoints/4);
+        zonesList.reserve(int(float(nCells)*1.5));
+        indexList.reserve(int(float(nCells)*10));
+
+        CellReconstructor *cr;
+        if (options.algorithm == 1) // Recursive Clipping
+        {
+            cr = new RecursiveCellReconstructor(mesh, mat, rm, nPoints,
+                                                nCells, conn, *this);
+        }
+        else // algorithm == 2 // Isovolume
+        {
+            cr = new IsovolumeCellReconstructor(mesh, mat, rm, nPoints,
+                                                nCells, conn, *this);
+        }
+
+        int *conn_ptr = conn.connectivity;
+        double actualVFStorage[nMaterials];
+        double *actualVFs = (options.numIterations>0) ? actualVFStorage : NULL;
+        double maxdiff = 0;
+        for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
+        {
+            int  celltype = conn.celltype[c];
+            int *ids      = conn_ptr+1;
+            int  nids     = *conn_ptr;
+
+            cr->ReconstructCell(c, celltype, nids, ids, actualVFs);
+
+            if (options.numIterations > 0 &&
+                iter < options.numIterations)
+            {
+                std::vector<float> neededVFs, triedVFs;
+                matCopy->GetVolFracsForZone(c,neededVFs);
+                mat->GetVolFracsForZone(c,triedVFs);
+                for (int m=0; m<nMaterials; m++)
+                {
+                    float wanted = neededVFs[m];
+                    float tried  = triedVFs[m];
+                    float got    = actualVFs[m];
+                    float diff   = wanted - got;
+                
+                    if (diff != 0)
+                    {
+                        float newval = tried + options.iterationDamping * diff;
+                        mat->SetVolFracForZoneAndMat(c,m,newval);
+                        if (diff > maxdiff)
+                            maxdiff = diff;
+                    }
+                }
+            }
+        }
+
+        visitTimer->StopTimer(timerHandle2, "MIR: Cell clipping");
+
+        delete cr;
     }
-    else // algorithm == 2 // Isovolume
-    {
-        cr = new IsovolumeCellReconstructor(mesh, mat, rm, nPoints,
-                                            nCells, conn, *this);
-    }
 
-
-    int *conn_ptr = conn.connectivity;
-    for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
-    {
-        int  celltype = conn.celltype[c];
-        int *ids      = conn_ptr+1;
-        int  nids     = *conn_ptr;
-
-        cr->ReconstructCell(c, celltype, nids, ids);
-    }
-
-    delete cr;
-
-    visitTimer->StopTimer(timerHandle2, "MIR: Cell clipping");
     visitTimer->StopTimer(timerHandle, "Full MIR reconstruction");
     visitTimer->DumpTimings();
 
+    if (matCopy)
+        delete matCopy;
     delete mat;
     return true;
 }

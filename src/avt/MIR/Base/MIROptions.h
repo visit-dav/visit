@@ -75,6 +75,9 @@
 //    Jeremy Meredith, Thu Aug 18 16:36:42 PDT 2005
 //    Added algorithm and isovolumeVF.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration and damping capability.
+//
 // ****************************************************************************
 class MIR_API MIROptions
 {
@@ -89,6 +92,7 @@ class MIR_API MIROptions
     int              algorithm;
     SubdivisionLevel subdivisionLevel;
     int              numIterations;
+    float            iterationDamping;
     bool             smoothing;
     bool             leaveCleanZonesWhole;
     bool             cleanZonesOnly;

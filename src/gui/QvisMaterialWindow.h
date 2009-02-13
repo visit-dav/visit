@@ -75,6 +75,9 @@ class QComboBox;
 //    Brad Whitlock, Wed Apr  9 11:36:37 PDT 2008
 //    QString for caption, shortName.
 //
+//    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
+//    Added material iteration capability.
+//
 // ****************************************************************************
 
 class QvisMaterialWindow : public QvisPostableWindowObserver
@@ -105,6 +108,9 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     void simplifyHeavilyMixedZonesChanged(bool val);
     void maxMatsPerZoneProcessText(void);
     void isoVolumeFractionProcessText(void);
+    void numIterationsProcessText(void);
+    void iterationDampingProcessText(void);
+    void enableIterationChanged(bool val);
   private:
     MaterialAttributes *atts;
 
@@ -116,9 +122,14 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     QCheckBox *simplifyHeavilyMixedZones;
     QNarrowLineEdit *maxMatsPerZone;
     QNarrowLineEdit *isoVolumeFraction;
+    QCheckBox *enableIteration;
+    QNarrowLineEdit *numIterations;
+    QNarrowLineEdit *iterationDamping;
     QLabel *maxMatsPerZoneLabel;
     QLabel *algorithmLabel;
     QLabel *isoVolumeFractionLabel;
+    QLabel *numIterationsLabel;
+    QLabel *iterationDampingLabel;
 };
 
 #endif

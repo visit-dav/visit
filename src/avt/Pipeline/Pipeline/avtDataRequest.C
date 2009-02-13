@@ -167,6 +167,9 @@ using     std::map;
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -190,6 +193,8 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
     mirAlgorithm = 1; // 0=Tet 1==Zoo 2=Isovolume
+    mirNumIterations = 0; // 0 = no iteration
+    mirIterationDamping = .2; // the multiplier of the vf diff when iterating
     isovolumeMIRVF = 0.5;
     simplifyHeavilyMixedZones = false;
     maxMatsPerZone = 3;
@@ -319,6 +324,9 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
@@ -341,6 +349,8 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
     mirAlgorithm = 1; // 0=Tet 1==Zoo 2=Isovolume
+    mirNumIterations = 0; // 0 = no iteration
+    mirIterationDamping = .2; // the multiplier of the vf diff when iterating
     isovolumeMIRVF = 0.5;
     simplifyHeavilyMixedZones = false;
     maxMatsPerZone = 3;
@@ -610,6 +620,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -662,6 +675,8 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     simplifyHeavilyMixedZones       = spec.simplifyHeavilyMixedZones;
     maxMatsPerZone                  = spec.maxMatsPerZone;
     mirAlgorithm                    = spec.mirAlgorithm;
+    mirNumIterations                = spec.mirNumIterations;
+    mirIterationDamping             = spec.mirIterationDamping;
     isovolumeMIRVF                  = spec.isovolumeMIRVF;
     desiredGhostDataType            = spec.desiredGhostDataType;
     maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
@@ -784,6 +799,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
 //
 // ****************************************************************************
 
@@ -908,6 +926,16 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     }
 
     if (mirAlgorithm != ds.mirAlgorithm)
+    {
+        return false;
+    }
+
+    if (mirNumIterations != ds.mirNumIterations)
+    {
+        return false;
+    }
+
+    if (mirIterationDamping != ds.mirIterationDamping)
     {
         return false;
     }
@@ -1707,6 +1735,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Jeremy Meredith, Thu Aug  7 14:44:02 EDT 2008
 //    Removed unused var.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 static const char *
@@ -1762,6 +1793,10 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("needCleanZonesOnly", YesOrNo(needCleanZonesOnly));
     sprintf(str, "%d", mirAlgorithm);
     webpage->AddTableEntry2("mirAlgorithm", str);
+    sprintf(str, "%d", mirNumIterations);
+    webpage->AddTableEntry2("mirNumIterations", str);
+    sprintf(str, "%f", mirIterationDamping);
+    webpage->AddTableEntry2("mirIterationDamping", str);
     sprintf(str, "%f", isovolumeMIRVF);
     webpage->AddTableEntry2("isovolumeMIRVF", str);
     webpage->AddTableEntry2("simplifyHeavilyMixedZones", YesOrNo(simplifyHeavilyMixedZones));

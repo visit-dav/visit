@@ -126,7 +126,7 @@ class DBATTS_API avtSILMatrix
     SILCategoryRole         GetRole1(void) const { return role1; };
     SILCategoryRole         GetRole2(void) const { return role2; };
     SILCategoryRole         GetRoleForCollection(int ind) const
-                               { return (ind < set1.size() ? role2 : role1); };
+                         { return (ind < int(set1.size()) ? role2 : role1); };
 
   protected:
     avtSIL               *sil;

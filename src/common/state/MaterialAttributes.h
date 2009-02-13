@@ -89,6 +89,9 @@ public:
     void SetCleanZonesOnly(bool cleanZonesOnly_);
     void SetNeedValidConnectivity(bool needValidConnectivity_);
     void SetAlgorithm(Algorithm algorithm_);
+    void SetIterationEnabled(bool iterationEnabled_);
+    void SetNumIterations(int numIterations_);
+    void SetIterationDamping(float iterationDamping_);
     void SetSimplifyHeavilyMixedZones(bool simplifyHeavilyMixedZones_);
     void SetMaxMaterialsPerZone(int maxMaterialsPerZone_);
     void SetIsoVolumeFraction(float isoVolumeFraction_);
@@ -99,6 +102,9 @@ public:
     bool  GetCleanZonesOnly() const;
     bool  GetNeedValidConnectivity() const;
     Algorithm GetAlgorithm() const;
+    bool  GetIterationEnabled() const;
+    int   GetNumIterations() const;
+    float GetIterationDamping() const;
     bool  GetSimplifyHeavilyMixedZones() const;
     int   GetMaxMaterialsPerZone() const;
     float GetIsoVolumeFraction() const;
@@ -128,6 +134,9 @@ public:
         ID_cleanZonesOnly,
         ID_needValidConnectivity,
         ID_algorithm,
+        ID_iterationEnabled,
+        ID_numIterations,
+        ID_iterationDamping,
         ID_simplifyHeavilyMixedZones,
         ID_maxMaterialsPerZone,
         ID_isoVolumeFraction
@@ -139,6 +148,9 @@ private:
     bool  cleanZonesOnly;
     bool  needValidConnectivity;
     int   algorithm;
+    bool  iterationEnabled;
+    int   numIterations;
+    float iterationDamping;
     bool  simplifyHeavilyMixedZones;
     int   maxMaterialsPerZone;
     float isoVolumeFraction;

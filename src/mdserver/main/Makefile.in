@@ -189,6 +189,9 @@
 #    Brad Whitlock, Thu Feb 12 14:00:42 PST 2009
 #    I put visit_vtk into PREBIND_LIBS so it would only be used on the Mac.
 #
+#    Jeremy Meredith, Fri Feb 13 11:56:33 EST 2009
+#    Added linking of visit verdict library.
+#
 ##############################################################################
 
 ##
@@ -215,6 +218,7 @@ LIBS= \
     -lmisc \
     -lutility \
     -llightweight_visit_vtk \
+    -lvisit_verdict \
     @VTK_LIGHTWEIGHT_LIBS@ \
     @PREBIND_LIBS@ \
     @LIBS@ \

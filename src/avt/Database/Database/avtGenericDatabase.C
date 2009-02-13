@@ -3461,6 +3461,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    they had only one material.  Added code to account for that in
 //    case of creating boundary surfaces.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3476,6 +3479,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool simplifyHeavilyMixedZones,
                         int  maxMatsPerZone,
                         int  mirAlgorithm,
+                        int  mirNumIterations,
+                        float  mirIterationDamping,
                         float isovolumeMIRVF,
                         bool didGhosts,
                         bool &subdivisionOccurred,
@@ -3535,7 +3540,9 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                                  needValidConnectivity,
                                  needSmoothMaterialInterfaces,
                                  needCleanZonesOnly, simplifyHeavilyMixedZones,
-                                 maxMatsPerZone, mirAlgorithm, isovolumeMIRVF,
+                                 maxMatsPerZone, mirAlgorithm,
+                                 mirNumIterations, mirIterationDamping,
+                                 isovolumeMIRVF,
                                  didGhosts,
                                  subdivisionOccurred,
                                  notAllCellsSubdivided, reUseMIR, 
@@ -4328,6 +4335,9 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Hank Childs, Thu Feb 21 16:41:25 PST 2008
 //    Throw an exception if we get a bad MIR type value.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 void_ref_ptr
@@ -4338,6 +4348,8 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            bool needCleanZonesOnly, 
                            bool simplifyHeavilyMixedZones, int maxMatsPerZone,
                            int  mirAlgorithm,
+                           int  mirNumIterations,
+                           float mirIterationDamping,
                            float isovolumeMIRVF,
                            bool didGhosts,
                            bool &subdivisionOccurred,
@@ -4347,7 +4359,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
     mat_to_use = mat;
 
     char cacheLbl[1000];
-    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s",
+    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s_%d_%f",
             needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
             needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
             needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
@@ -4355,7 +4367,10 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             simplifyHeavilyMixedZones    ? "Simplify"   : "NoSimplify",
             maxMatsPerZone,
             isovolumeMIRVF,
-            mirAlgorithm==0 ? "TetMIR" : (mirAlgorithm==1 ? "ZooMIR" : "IsovolumeMIR"));
+            mirAlgorithm==0 ? "TetMIR" : (mirAlgorithm==1 ? "ZooMIR" : "IsovolumeMIR"),
+            mirNumIterations,
+            mirIterationDamping);
+            
 
     //
     // See if we already have the data lying around.
@@ -4402,6 +4417,8 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
         }
 
         mir->SetAlgorithm(mirAlgorithm);
+        mir->SetNumIterations(mirNumIterations);
+        mir->SetIterationDamping(mirIterationDamping);
         mir->SetLeaveCleanZonesWhole(!needValidConnectivity);
         mir->SetSmoothing(needSmoothMaterialInterfaces);
         mir->SetCleanZonesOnly(needCleanZonesOnly);
@@ -7195,6 +7212,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
 //    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 void
@@ -7269,6 +7289,8 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                 spec->SimplifyHeavilyMixedZones(),
                                 spec->MaxMaterialsPerZone(),
                                 spec->MIRAlgorithm(),
+                                spec->MIRNumIterations(),
+                                spec->MIRIterationDamping(),
                                 spec->IsovolumeMIRVF(),
                                 didGhosts, so, nacs, reUseMIR);
 

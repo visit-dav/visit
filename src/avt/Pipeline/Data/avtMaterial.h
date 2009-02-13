@@ -157,6 +157,11 @@ struct MatZoneMap
 //    Cyrus Harrison, Wed Jan 30 11:05:15 PST 2008
 //    Added helper to obtain per material volume fractions.
 //
+//    Jeremy Meredith, Fri Feb 13 10:45:16 EST 2009
+//    Added extra printing methods, and a method to change the volume
+//    fraction for a material in a zone.  Also  an internal variable,
+//    mixalloc, which specifies how long the mixed arrays have been allocated.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -240,6 +245,20 @@ class PIPELINE_API avtMaterial
                                          const float *mix_vf,
                                          const int *mix_next);
     
+    static void                      RawPrint(ostream &out, int numZones,
+                                         const int *matlist,
+                                         int mixlen,
+                                         const int *mix_mat,
+                                         const int *mix_zone,
+                                         const float *mix_vf,
+                                         const int *mix_next);
+    
+    void                             Print(ostream &out);
+    void                             RawPrint(ostream &out);
+
+    void SetVolFracForZoneAndMat(int zone_id, int mat_index, float val);
+
+    
   protected:
     int                        nMaterials;
     std::vector<std::string>   materials;
@@ -247,6 +266,7 @@ class PIPELINE_API avtMaterial
     int                        nZones;
     int                       *matlist;
     int                        mixlen;
+    int                        mixalloc;
     int                       *mix_mat;
     int                       *mix_next;
     int                       *mix_zone;
@@ -273,6 +293,8 @@ class PIPELINE_API avtMaterial
                                           const int *, int, const int *,
                                           const int *, const int *,
                                           const float *);
+    void                       CheckMixArraySize();
+
   private:
     // These methods are defined to prevent accidental use of bitwise copy
     // implementations.  If you want to re-define them to do something

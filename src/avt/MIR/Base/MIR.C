@@ -120,6 +120,22 @@ MIR::SetNumIterations(int ni)
 }
 
 // ****************************************************************************
+//  Method:  MIR::SetIterationDamping
+//
+//  Purpose:
+//    Set the option iterationDamping.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 12, 2009
+//
+// ****************************************************************************
+void
+MIR::SetIterationDamping(float damp)
+{
+    options.iterationDamping = damp;
+}
+
+// ****************************************************************************
 //  Method:  MIR::SetSmoothing
 //
 //  Purpose:

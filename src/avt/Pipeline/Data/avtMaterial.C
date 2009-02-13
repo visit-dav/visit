@@ -1467,6 +1467,11 @@ avtMaterial::Destruct(void *p)
 //    Hank Childs, Wed Feb 18 09:36:38 PST 2004
 //    Add an argument for a list of all materials.
 //
+//    Jeremy Meredith, Fri Feb 13 12:06:17 EST 2009
+//    Added an internal variable, mixalloc, which specifies how
+//    long the mixed arrays have been allocated (not the length
+//    of their valid contents).
+//
 // ****************************************************************************
 
 void
@@ -1547,6 +1552,7 @@ avtMaterial::Initialize(int nMats, const vector<string> &matnames,
         }
     }
     mixlen     = mixl;
+    mixalloc   = mixlen;
     mix_mat    = new int[mixlen];
     mix_next   = new int[mixlen];
     if (mixz == NULL)
@@ -1596,6 +1602,123 @@ avtMaterial::GetVolFracsForZone(int zone_id, std::vector<float> &vfs)
     {
         vfs[matlist[zone_id]] = 1.0;
     }
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::CheckMixArraySize
+//
+//  Purpose:
+//    Checks to see if we start appending some materials to the
+//    mix arrays if we'll overflow their currently allocated length.
+//    If so, grows those arrays.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+
+template <class T>
+static void GrowArray(T *&array, int num_to_copy, int new_size)
+{
+    T *newarray = new T[new_size];
+    for (int i=0; i<num_to_copy; i++)
+        newarray[i] = array[i];
+    delete[] array;
+    array = newarray;
+}
+
+void
+avtMaterial::CheckMixArraySize()
+{
+    const int growth = 100000;
+    if (mixlen + nMaterials >= mixalloc)
+    {
+        mixalloc += growth;
+        GrowArray(mix_mat,  mixlen, mixalloc);
+        GrowArray(mix_zone, mixlen, mixalloc);
+        GrowArray(mix_vf,   mixlen, mixalloc);
+        GrowArray(mix_next, mixlen, mixalloc);
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::SetVolFracForZoneAndMat
+//
+//  Purpose:
+//    Change the VF for a single material in a zone.  No guarantees
+//    that the new VFs add to 1.0.
+//
+//  Arguments:
+//    zone_id     the zone (0-origin) where we need to set the new VF
+//    mat_index   the material number for which we need to set the new VF
+//    val         the new VF
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+void
+avtMaterial::SetVolFracForZoneAndMat(int zone_id, int mat_index, float val)
+{
+    CheckMixArraySize();
+    int index = mixlen;
+    int next = 0;
+    if (matlist[zone_id] >= 0)
+    {
+        // Clean material case.  We at least need to move this one into the
+        // mix array so we can set its value to something other than 1.0.
+        int old_material = matlist[zone_id];
+        matlist[zone_id] = -(mixlen+1);
+        mixlen++;
+        if (old_material != mat_index)
+        {
+            // In this case, the clean material isn't the one we want to
+            // set to a new value.  Add the clean material into the mix
+            // array, and then set up index+next to add the new material
+            // into the mix array (at the bottom of the function).
+            next = mixlen+1;
+            mix_mat[index] = old_material;
+            mix_vf[index] = 1.0;
+            mix_zone[index] = zone_id+1; // 1-origin
+            mix_next[index] = next;
+            index = next-1;
+            next = 0;
+            mixlen++;
+        }
+    }
+    else
+    {
+        // Mixed mat case.  Search for a mixed mat matching the desired one.
+        index = -matlist[zone_id] - 1;
+        next = mix_next[index];
+        while (next > 0)
+        {
+            if (mix_mat[index] == mat_index)
+            {
+                break;
+            }
+            index = next-1;
+            next = mix_next[index];
+        }
+        if (mix_mat[index] != mat_index)
+        {
+            // Didn't find it.  We need to extend the mix array by one here.
+            next = mixlen+1;
+            mix_next[index] = next;
+            index = next-1;
+            next = 0;
+            mixlen++;
+        }
+    }
+    // Okay, next and index are set such that we just need to
+    // the new, correct values in the mix array.
+    mix_mat[index] = mat_index;
+    mix_vf[index] = val;
+    mix_zone[index] = zone_id+1; // 1-origin
+    mix_next[index] = next;
 }
 
 
@@ -1780,6 +1903,92 @@ avtMaterial::Print(ostream& out, int nzones , const int *matlist, int mixlen,
         out << ", " << pos->first;
     out << endl;
 }
+
+
+// ****************************************************************************
+//  Method:  avtMaterial::RawPrint
+//
+//  Purpose:
+//    Print out the material in a more raw form.
+//
+//  Arguments:
+//    out        the output stream
+//    (various)  the material structure values array
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+void
+avtMaterial::RawPrint(ostream& out, int nzones , const int *matlist,
+                      int mixlen, const int *mix_mat, const int *mix_zone,
+                      const float *mix_vf, const int *mix_next)
+{
+    out << "matlist\n";
+    for (int i=0; i<nzones; i++)
+        out << "   "<<i<<"\t = "<<matlist[i] << endl;
+
+    out << "mix\n";
+    for (int i=0; i<mixlen; i++)
+        out << "   "<<i
+            << "\tmat="<<mix_mat[i]
+            << "\tzone="<<mix_zone[i]
+            << "\tvf="<<mix_vf[i]
+            << "\tnext="<<mix_next[i]<<endl;
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::Print
+//
+//  Purpose:
+//    Print out the material in a human readable form.
+//
+//  Arguments:
+//    out        the output stream
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+void
+avtMaterial::Print(ostream &out)
+{
+    avtMaterial::Print(out,
+                       nZones,
+                       matlist,
+                       mixlen,
+                       mix_mat,
+                       mix_zone,
+                       mix_vf,
+                       mix_next);
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::RawPrint
+//
+//  Purpose:
+//    Print out the material in a more raw form.
+//
+//  Arguments:
+//    out        the output stream
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+void
+avtMaterial::RawPrint(ostream &out)
+{
+    avtMaterial::Print(out,
+                       nZones,
+                       matlist,
+                       mixlen,
+                       mix_mat,
+                       mix_zone,
+                       mix_vf,
+                       mix_next);
+}
+
 
 
 // ****************************************************************************

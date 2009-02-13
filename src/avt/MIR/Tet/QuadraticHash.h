@@ -97,14 +97,14 @@ class QuadraticHash
 
  private:
     unsigned int (*hashfunc)(K&);
-    unsigned int   size;
+    int            size;
     int            sizeindex;
     unsigned int   currentcell;
     K              currentKey;
 
     int            iteratorpos;
 
-    unsigned int  numvalid;
+    int            numvalid;
     Entry         *table;
 };
 
@@ -178,7 +178,7 @@ QuadraticHash<K,V>::~QuadraticHash()
 template <class K, class V>
 bool QuadraticHash<K,V>::Find(K &key)
 {
-    unsigned int emptycell  = -1;
+    int emptycell  = -1;
     unsigned int startcell  = hashfunc(key) % size;;
     unsigned int probeindex = 0;
 

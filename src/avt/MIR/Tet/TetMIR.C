@@ -987,7 +987,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
         for (size_t i = 0; i < mats.size(); i++)
         {
             int origmatno = mats[i];
-            if (origmatno < mapMatToUsedMat.size())
+            if (origmatno < int(mapMatToUsedMat.size()))
             {
                 int usedmatno = mapMatToUsedMat[origmatno];
                 if (usedmatno != -1)

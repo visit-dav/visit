@@ -132,8 +132,11 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
 //
-//   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
-//   Initial Qt4 Port.
+//    Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//    Initial Qt4 Port.
+//
+//    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
+//    Added material iteration capability.
 //
 // ****************************************************************************
 
@@ -200,6 +203,29 @@ QvisMaterialWindow::CreateWindowContents()
     connect(isoVolumeFraction, SIGNAL(returnPressed()),
             this, SLOT(isoVolumeFractionProcessText()));
     mainLayout->addWidget(isoVolumeFraction, 7,1);
+
+    // Iteration options
+    enableIteration = new QCheckBox(tr("Enable iteration (Zoo/Isovol only)"), 
+                                              central);
+    connect(enableIteration, SIGNAL(toggled(bool)),
+            this, SLOT(enableIterationChanged(bool)));
+    mainLayout->addWidget(enableIteration, 8,0);
+
+    numIterationsLabel = new QLabel(tr("Number of iterations"), 
+                                        central);
+    mainLayout->addWidget(numIterationsLabel,9,0);
+    numIterations = new QNarrowLineEdit(central);
+    connect(numIterations, SIGNAL(returnPressed()),
+            this, SLOT(numIterationsProcessText()));
+    mainLayout->addWidget(numIterations, 9,1);
+
+    iterationDampingLabel = new QLabel(tr("Convergence rate (>0)"), 
+                                        central);
+    mainLayout->addWidget(iterationDampingLabel,10,0);
+    iterationDamping = new QNarrowLineEdit(central);
+    connect(numIterations, SIGNAL(returnPressed()),
+            this, SLOT(iterationDampingProcessText()));
+    mainLayout->addWidget(iterationDamping, 10,1);
 }
 
 
@@ -229,6 +255,9 @@ QvisMaterialWindow::CreateWindowContents()
 //    Brad Whitlock, Fri Dec 14 17:38:49 PST 2007
 //    Made it use ids.
 //
+//    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
+//    Added material iteration capability.
+//
 // ****************************************************************************
 
 void
@@ -244,6 +273,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     simplifyHeavilyMixedZones->blockSignals(true);
     maxMatsPerZone->blockSignals(true);
     isoVolumeFraction->blockSignals(true);
+    enableIteration->blockSignals(true);
+    numIterations->blockSignals(true);
+    iterationDamping->blockSignals(true);
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -280,6 +312,25 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
                 isoVolumeFraction->setEnabled(false);
                 isoVolumeFractionLabel->setEnabled(false);
             }
+            enableIteration->setEnabled(
+                   atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume);
+            iterationDamping->setEnabled(
+                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
+                  atts->GetIterationEnabled());
+            iterationDampingLabel->setEnabled(
+                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
+                  atts->GetIterationEnabled());
+            numIterations->setEnabled(
+                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
+                  atts->GetIterationEnabled());
+            numIterationsLabel->setEnabled(
+                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
+                  atts->GetIterationEnabled());
             algorithm->setCurrentIndex(atts->GetAlgorithm());
             break;
           case MaterialAttributes::ID_simplifyHeavilyMixedZones:
@@ -296,6 +347,33 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
             temp.setNum(atts->GetIsoVolumeFraction());
             isoVolumeFraction->setText(temp);
             break;
+          case MaterialAttributes::ID_iterationEnabled:
+            enableIteration->setChecked(atts->GetIterationEnabled());
+            iterationDamping->setEnabled(
+                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
+                  atts->GetIterationEnabled());
+            iterationDampingLabel->setEnabled(
+                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
+                  atts->GetIterationEnabled());
+            numIterations->setEnabled(
+                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
+                  atts->GetIterationEnabled());
+            numIterationsLabel->setEnabled(
+                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
+                  atts->GetIterationEnabled());
+            break;
+          case MaterialAttributes::ID_numIterations:
+            temp.setNum(atts->GetNumIterations());
+            numIterations->setText(temp);
+            break;
+          case MaterialAttributes::ID_iterationDamping:
+            temp.setNum(atts->GetIterationDamping());
+            iterationDamping->setText(temp);
+            break;
         }
     }
 
@@ -307,6 +385,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     simplifyHeavilyMixedZones->blockSignals(false);
     maxMatsPerZone->blockSignals(false);
     isoVolumeFraction->blockSignals(false);
+    enableIteration->blockSignals(false);
+    numIterations->blockSignals(false);
+    iterationDamping->blockSignals(false);
 }
 
 
@@ -338,6 +419,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 //
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
+//
+//    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
+//    Added material iteration capability.
 //
 // ****************************************************************************
 
@@ -430,6 +514,55 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
             atts->SetIsoVolumeFraction(atts->GetIsoVolumeFraction());
         }
     }
+
+    // Do numIterations
+    if(which_widget == MaterialAttributes::ID_numIterations || doAll)
+    {
+        temp = numIterations->displayText().simplified();
+        bool okay = !temp.isEmpty();
+        if (okay)
+        {
+            int val = temp.toInt(&okay);
+            if (val < 0 || val > 1000)
+                okay = false;
+            else
+                atts->SetNumIterations(val);
+        }
+
+        if (!okay)
+        {
+            msg = tr("The value of numIterations was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetNumIterations());
+            Message(msg);
+            atts->SetNumIterations(atts->GetNumIterations());
+        }
+    }
+
+    // Do iterationDamping
+    if(which_widget == MaterialAttributes::ID_iterationDamping || doAll)
+    {
+        temp = iterationDamping->displayText().simplified();
+        bool okay = !temp.isEmpty();
+        if (okay)
+        {
+            float val = temp.toFloat(&okay);
+            if (val <= 0 || val > 10)
+                okay = false;
+            else
+                atts->SetIterationDamping(val);
+        }
+
+        if (!okay)
+        {
+            msg = tr("The value of iterationDamping was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetIterationDamping());
+            Message(msg);
+            atts->SetIterationDamping(atts->GetIterationDamping());
+        }
+    }
+
 }
 
 
@@ -609,6 +742,28 @@ void
 QvisMaterialWindow::isoVolumeFractionProcessText()
 {
     GetCurrentValues(MaterialAttributes::ID_isoVolumeFraction);
+    Apply();
+}
+
+void
+QvisMaterialWindow::enableIterationChanged(bool val)
+{
+    atts->SetIterationEnabled(val);
+    Apply();
+}
+
+
+void
+QvisMaterialWindow::numIterationsProcessText()
+{
+    GetCurrentValues(MaterialAttributes::ID_numIterations);
+    Apply();
+}
+
+void
+QvisMaterialWindow::iterationDampingProcessText()
+{
+    GetCurrentValues(MaterialAttributes::ID_iterationDamping);
     Apply();
 }
 

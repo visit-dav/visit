@@ -61,6 +61,12 @@
 //    Mark C. Miller, Thu Feb  9 21:06:10 PST 2006
 //    Renamed Array class to VisItArray to avoid name collisions with
 //    third-party libs
+//
+//    Jeremy Meredith, Fri Feb 13 10:56:43 EST 2009
+//    Allowed ReconstructCell to take a new argument where it will, if
+//    desired, output the volume fractions for the reconstructed materials.
+//    Also, added helper function to calculate volume or area.
+//
 // ****************************************************************************
 class CellReconstructor
 {
@@ -68,17 +74,21 @@ class CellReconstructor
     CellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&, int, int, bool,
                       MIRConnectivity&, ZooMIR&);
     virtual ~CellReconstructor();
-    virtual void ReconstructCell(int, int, int, int*) = 0;
+    virtual void ReconstructCell(int, int, int, int*, double*) = 0;
 
   protected:
     vtkDataSet                             *mesh;
     avtMaterial                            *mat;
+    avtMaterial                            *origMat;
     ResampledMat                           &rm;
     int                                     nPoints;
     int                                     nCells;
     MIRConnectivity                        &conn;
     ZooMIR                                 &mir;
     int                                     nMaterials;
+
+    static double CalculateVolumeOrAreaHelper(int celltype,double coords[][3]);
+
   protected:
     int           cellid;
     int           celltype;

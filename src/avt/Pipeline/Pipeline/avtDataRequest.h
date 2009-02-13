@@ -199,6 +199,9 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
@@ -358,6 +361,16 @@ class PIPELINE_API avtDataRequest
     void                         SetMIRAlgorithm(int ma)
                                      { mirAlgorithm = ma; }
 
+    int                          MIRNumIterations(void)
+                                     { return mirNumIterations;}
+    void                         SetMIRNumIterations(int n)
+                                     { mirNumIterations = n; }
+
+    float                        MIRIterationDamping(void)
+                                     { return mirIterationDamping;}
+    void                         SetMIRIterationDamping(float d)
+                                     { mirIterationDamping = d; }
+
     float                        IsovolumeMIRVF(void)
                                      { return isovolumeMIRVF;}
     void                         SetIsovolumeMIRVF(float vf)
@@ -456,6 +469,8 @@ class PIPELINE_API avtDataRequest
     bool                         needSmoothMaterialInterfaces;
     bool                         needCleanZonesOnly;
     int                          mirAlgorithm;
+    int                          mirNumIterations;
+    float                        mirIterationDamping;
     float                        isovolumeMIRVF;
     bool                         simplifyHeavilyMixedZones;
     int                          maxMatsPerZone;
