@@ -2469,7 +2469,9 @@ smoothCurve( vector< vector < Point > > &bins,
     for( unsigned int i=0; i<toroidalWinding; i++ ) {
       //      for( unsigned int s=0; s<add; s++ )
       {
-        pair< Point, unsigned int > newPts[add*nnodes];
+        vector< pair< Point, unsigned int > > newPts;
+
+        newPts.resize( add*nnodes );
 
         for( unsigned int j=0; j<add*nnodes; j++ )
           newPts[j] = pair< Point, unsigned int > (Point(0,0,0), 0 );
@@ -2680,7 +2682,9 @@ mergeOverlap( vector< vector < Point > > &bins,
     
   if( island ) {
 
-    vector < Point > tmp_bins[toroidalWinding];
+    vector < vector < Point > > tmp_bins;
+
+    tmp_bins.resize( toroidalWinding );
 
     for( unsigned int i=0; i<toroidalWinding; i++ ) {
       
