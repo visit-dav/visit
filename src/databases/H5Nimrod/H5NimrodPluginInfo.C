@@ -173,6 +173,10 @@ H5NimrodGeneralPluginInfo::HasWriter() const
 //     Dave Pugmire, Thu Feb 12 12:04:30 EST 2009
 //     Add .h5 to the extension list.
 //
+//     Dave Pugmire, Fri Feb 13 13:30:26 EST 2009
+//     Remove .h5 from the list. It was causing issues w/
+//     other hdf5 readers.
+//
 // ****************************************************************************
 
 std::vector<std::string>
@@ -180,7 +184,6 @@ H5NimrodGeneralPluginInfo::GetDfltExtsFromGen() const
 {
     std::vector<std::string> defaultExtensions;
     defaultExtensions.push_back(".h5nimrod");
-    defaultExtensions.push_back(".h5");
 
     return defaultExtensions;
 }
