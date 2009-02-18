@@ -1316,6 +1316,39 @@ void vtkCSGGrid::AddZones(int nzones, const int *const zoneIds)
 }
 
 //----------------------------------------------------------------------------
+// Programmer: Mark C. Miller, Tue Feb 17 17:54:04 PST 2009
+//----------------------------------------------------------------------------
+bool vtkCSGGrid::operator==(const vtkCSGGrid &grid) const
+{
+    int i;
+
+    if (numBoundaries != grid.numBoundaries ||
+        numRegions != grid.numRegions ||
+        numZones != grid.numZones)
+        return false;
+
+    for (i = 0; i < numZones; i++)
+    {
+        if (gridZones[i] != grid.gridZones[i])
+            return false;
+    }
+    for (i = 0; i < numRegions; i++)
+    {
+        if (regTypeFlags[i] != grid.regTypeFlags[i] ||
+            leftIds[i] != grid.leftIds[i] ||
+            rightIds[i] != grid.rightIds[i])
+            return false;
+    }
+    for (i = 0; i < numBoundaries; i++)
+    {
+        if (gridBoundaries[i] != grid.gridBoundaries[i])
+            return false;
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
 // Modifications:
 //
 //   Hank Childs, Fri Jun  9 12:54:36 PDT 2006

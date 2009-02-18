@@ -85,6 +85,10 @@ class avtSourceFromDatabase;
 //
 //    Mark C. Miller, Thu Feb 12 11:38:37 PST 2009
 //    Added method to convert 1d scalar vars to curves
+//
+//    Mark C. Miller, Tue Feb 17 17:57:54 PST 2009
+//    Added FindMatchingCSGDiscretization to handle CSG meshes that don't
+//    vary with time.
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -110,6 +114,11 @@ class DATABASE_API avtTransformManager
     vtkDataSet                *NativeToFloat(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int dom);
+    vtkDataSet                *FindMatchingCSGDiscretization(
+                                   const avtDatabaseMetaData *const md,
+                                   const avtDataRequest_p &dataRequest,
+                                   const char *vname, const char *type,
+                                   int ts, int dom, const char *mat);
     vtkDataSet                *CSGToDiscrete(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int);

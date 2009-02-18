@@ -53,6 +53,8 @@
 //   Kathleen Bonnell, Wed May 17 10:58:54 PDT 2006
 //   Added stub for vtkWriter::SetInput(vtkDataObject*).
 //
+//   Mark C. Miller, Tue Feb 17 17:55:08 PST 2009
+//   Added operator= and New() for vtkCSGGrid class
 // ****************************************************************************
 
 class vtkPolyData;
@@ -142,5 +144,7 @@ class vtkCSGGrid {
     void DiscretizeSpace3(int,int,int,double,double,double,double,double,double,double,double);
     void DiscretizeSurfaces(int, double, double, double, double, double, double, double);
     void DiscretizeSpace(int, double, double, double, double, double, double, double);
+    bool operator==(const vtkCSGGrid&) const;
+    void *New();
 };
 #endif
