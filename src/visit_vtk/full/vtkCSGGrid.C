@@ -1317,6 +1317,11 @@ void vtkCSGGrid::AddZones(int nzones, const int *const zoneIds)
 
 //----------------------------------------------------------------------------
 // Programmer: Mark C. Miller, Tue Feb 17 17:54:04 PST 2009
+//
+// Modifications:
+//    Mark C. Miller, Tue Feb 17 20:38:14 PST 2009
+//    Fixed bug where NUM_QCOEFFS multiplier was missing from loop over
+//    boundaries.
 //----------------------------------------------------------------------------
 bool vtkCSGGrid::operator==(const vtkCSGGrid &grid) const
 {
@@ -1339,7 +1344,7 @@ bool vtkCSGGrid::operator==(const vtkCSGGrid &grid) const
             rightIds[i] != grid.rightIds[i])
             return false;
     }
-    for (i = 0; i < numBoundaries; i++)
+    for (i = 0; i < NUM_QCOEFFS * numBoundaries; i++)
     {
         if (gridBoundaries[i] != grid.gridBoundaries[i])
             return false;
