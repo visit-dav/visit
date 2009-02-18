@@ -126,6 +126,9 @@ QvisMultiCurvePlotWindow::~QvisMultiCurvePlotWindow()
 //   I added yAxisTitleFormat, useYAxisRange, and yAxisRange.  I changed
 //   markerVariable from a variable button to a text field.
 //   
+//   Eric Brugger, Wed Feb 18 07:57:54 PST 2009
+//   I added displayIds and idVariable.
+//
 // ****************************************************************************
 
 void
@@ -218,6 +221,18 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
     connect(markerVariable, SIGNAL(returnPressed()),
             this, SLOT(markerVariableProcessText()));
     mainLayout->addWidget(markerVariable, 5,1);
+
+    displayIds = new QCheckBox(tr("Display ids"), central);
+    connect(displayIds, SIGNAL(toggled(bool)),
+            this, SLOT(displayIdsChanged(bool)));
+    mainLayout->addWidget(displayIds, 6,0);
+
+    idVariableLabel = new QLabel(tr("Id variable"), central);
+    mainLayout->addWidget(idVariableLabel,7,0);
+    idVariable = new QLineEdit(central);
+    connect(idVariable, SIGNAL(returnPressed()),
+            this, SLOT(idVariableProcessText()));
+    mainLayout->addWidget(idVariable, 7,1);
 }
 
 
@@ -237,6 +252,9 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 //   I added yAxisTitleFormat, useYAxisRange, and yAxisRange.  I changed
 //   markerVariable from a variable button to a text field.
 //   
+//   Eric Brugger, Wed Feb 18 07:57:54 PST 2009
+//   I added displayIds and idVariable.
+//
 // ****************************************************************************
 
 void
@@ -318,6 +336,14 @@ QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case MultiCurveAttributes::ID_markerVariable:
             markerVariable->setText(QString(atts->GetMarkerVariable().c_str()));
+            break;
+          case MultiCurveAttributes::ID_displayIds:
+            displayIds->blockSignals(true);
+            displayIds->setChecked(atts->GetDisplayIds());
+            displayIds->blockSignals(false);
+            break;
+          case MultiCurveAttributes::ID_idVariable:
+            idVariable->setText(QString(atts->GetIdVariable().c_str()));
             break;
         }
     }
@@ -441,6 +467,9 @@ QvisMultiCurvePlotWindow::UpdateMultipleAreaColors()
 //   I added yAxisTitleFormat, useYAxisRange, and yAxisRange.  I changed
 //   markerVariable from a variable button to a text field.
 //   
+//   Eric Brugger, Wed Feb 18 07:57:54 PST 2009
+//   I added displayIds and idVariable.
+//
 // ****************************************************************************
 
 void
@@ -487,6 +516,20 @@ QvisMultiCurvePlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("Marker variable"),
                 QString(atts->GetMarkerVariable().c_str()));
             atts->SetMarkerVariable(atts->GetMarkerVariable());
+        }
+    }
+
+    // Do idVariable
+    if(which_widget == MultiCurveAttributes::ID_idVariable || doAll)
+    {
+        QString temp = idVariable->displayText();
+        if(!temp.isEmpty())
+            atts->SetIdVariable(temp.toStdString());
+        else
+        {
+            ResettingError(tr("Id variable"),
+                QString(atts->GetIdVariable().c_str()));
+            atts->SetIdVariable(atts->GetIdVariable());
         }
     }
 }
@@ -711,6 +754,23 @@ void
 QvisMultiCurvePlotWindow::markerVariableProcessText()
 {
     GetCurrentValues(MultiCurveAttributes::ID_markerVariable);
+    Apply();
+}
+
+
+void
+QvisMultiCurvePlotWindow::displayIdsChanged(bool val)
+{
+    atts->SetDisplayIds(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisMultiCurvePlotWindow::idVariableProcessText()
+{
+    GetCurrentValues(MultiCurveAttributes::ID_idVariable);
     Apply();
 }
 

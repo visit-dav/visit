@@ -89,6 +89,7 @@ public:
     void SelectMultiColor();
     void SelectYAxisTitleFormat();
     void SelectMarkerVariable();
+    void SelectIdVariable();
 
     // Property setting methods
     void SetDefaultPalette(const ColorControlPointList &defaultPalette_);
@@ -103,6 +104,8 @@ public:
     void SetYAxisRange(double yAxisRange_);
     void SetDisplayMarkers(bool displayMarkers_);
     void SetMarkerVariable(const std::string &markerVariable_);
+    void SetDisplayIds(bool displayIds_);
+    void SetIdVariable(const std::string &idVariable_);
 
     // Property getting methods
     const ColorControlPointList &GetDefaultPalette() const;
@@ -123,6 +126,9 @@ public:
     bool                        GetDisplayMarkers() const;
     const std::string           &GetMarkerVariable() const;
           std::string           &GetMarkerVariable();
+    bool                        GetDisplayIds() const;
+    const std::string           &GetIdVariable() const;
+          std::string           &GetIdVariable();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -160,7 +166,9 @@ public:
         ID_useYAxisRange,
         ID_yAxisRange,
         ID_displayMarkers,
-        ID_markerVariable
+        ID_markerVariable,
+        ID_displayIds,
+        ID_idVariable
     };
 
 private:
@@ -176,6 +184,8 @@ private:
     double                yAxisRange;
     bool                  displayMarkers;
     std::string           markerVariable;
+    bool                  displayIds;
+    std::string           idVariable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

@@ -266,6 +266,10 @@ avtMultiCurvePlot::CustomizeMapper(avtDataObjectInformation &doi)
 //  Programmer: xml2avt
 //  Creation:   omitted
 //
+//  Modifications:
+//    Eric Brugger, Wed Feb 18 12:13:03 PST 2009
+//    I added the ability to display identifiers at each of the points.
+//
 // ****************************************************************************
 
 void
@@ -313,7 +317,8 @@ avtMultiCurvePlot::SetAtts(const AttributeGroup *a)
     //
     // Create the decorations.
     //
-    decoMapper->SetLabelVisibility(atts.GetDisplayMarkers());
+    decoMapper->SetMarkerVisibility(atts.GetDisplayMarkers());
+    decoMapper->SetIdVisibility(atts.GetDisplayIds());
 }
 
 

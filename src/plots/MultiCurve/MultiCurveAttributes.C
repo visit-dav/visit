@@ -78,7 +78,7 @@ MultiCurveAttributes::ColoringMethod_FromString(const std::string &s, MultiCurve
 }
 
 // Type map format string
-const char *MultiCurveAttributes::TypeMapFormatString = "au*iaaiisbdbs";
+const char *MultiCurveAttributes::TypeMapFormatString = "au*iaaiisbdbsbs";
 
 // ****************************************************************************
 // Method: MultiCurveAttributes::MultiCurveAttributes
@@ -107,6 +107,8 @@ MultiCurveAttributes::MultiCurveAttributes() :
     yAxisRange = 1;
     displayMarkers = true;
     markerVariable = "default";
+    displayIds = false;
+    idVariable = "default";
 }
 
 // ****************************************************************************
@@ -139,6 +141,8 @@ MultiCurveAttributes::MultiCurveAttributes(const MultiCurveAttributes &obj) :
     yAxisRange = obj.yAxisRange;
     displayMarkers = obj.displayMarkers;
     markerVariable = obj.markerVariable;
+    displayIds = obj.displayIds;
+    idVariable = obj.idVariable;
 
     SelectAll();
 }
@@ -194,6 +198,8 @@ MultiCurveAttributes::operator = (const MultiCurveAttributes &obj)
     yAxisRange = obj.yAxisRange;
     displayMarkers = obj.displayMarkers;
     markerVariable = obj.markerVariable;
+    displayIds = obj.displayIds;
+    idVariable = obj.idVariable;
 
     SelectAll();
     return *this;
@@ -229,7 +235,9 @@ MultiCurveAttributes::operator == (const MultiCurveAttributes &obj) const
             (useYAxisRange == obj.useYAxisRange) &&
             (yAxisRange == obj.yAxisRange) &&
             (displayMarkers == obj.displayMarkers) &&
-            (markerVariable == obj.markerVariable));
+            (markerVariable == obj.markerVariable) &&
+            (displayIds == obj.displayIds) &&
+            (idVariable == obj.idVariable));
 }
 
 // ****************************************************************************
@@ -385,6 +393,8 @@ MultiCurveAttributes::SelectAll()
     Select(ID_yAxisRange,       (void *)&yAxisRange);
     Select(ID_displayMarkers,   (void *)&displayMarkers);
     Select(ID_markerVariable,   (void *)&markerVariable);
+    Select(ID_displayIds,       (void *)&displayIds);
+    Select(ID_idVariable,       (void *)&idVariable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -503,6 +513,18 @@ MultiCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("markerVariable", markerVariable));
     }
 
+    if(completeSave || !FieldsEqual(ID_displayIds, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayIds", displayIds));
+    }
+
+    if(completeSave || !FieldsEqual(ID_idVariable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("idVariable", idVariable));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -577,6 +599,10 @@ MultiCurveAttributes::SetFromNode(DataNode *parentNode)
         SetDisplayMarkers(node->AsBool());
     if((node = searchNode->GetNode("markerVariable")) != 0)
         SetMarkerVariable(node->AsString());
+    if((node = searchNode->GetNode("displayIds")) != 0)
+        SetDisplayIds(node->AsBool());
+    if((node = searchNode->GetNode("idVariable")) != 0)
+        SetIdVariable(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -665,6 +691,20 @@ MultiCurveAttributes::SetMarkerVariable(const std::string &markerVariable_)
 {
     markerVariable = markerVariable_;
     Select(ID_markerVariable, (void *)&markerVariable);
+}
+
+void
+MultiCurveAttributes::SetDisplayIds(bool displayIds_)
+{
+    displayIds = displayIds_;
+    Select(ID_displayIds, (void *)&displayIds);
+}
+
+void
+MultiCurveAttributes::SetIdVariable(const std::string &idVariable_)
+{
+    idVariable = idVariable_;
+    Select(ID_idVariable, (void *)&idVariable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -779,6 +819,24 @@ MultiCurveAttributes::GetMarkerVariable()
     return markerVariable;
 }
 
+bool
+MultiCurveAttributes::GetDisplayIds() const
+{
+    return displayIds;
+}
+
+const std::string &
+MultiCurveAttributes::GetIdVariable() const
+{
+    return idVariable;
+}
+
+std::string &
+MultiCurveAttributes::GetIdVariable()
+{
+    return idVariable;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -819,6 +877,12 @@ MultiCurveAttributes::SelectMarkerVariable()
     Select(ID_markerVariable, (void *)&markerVariable);
 }
 
+void
+MultiCurveAttributes::SelectIdVariable()
+{
+    Select(ID_idVariable, (void *)&idVariable);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -855,6 +919,8 @@ MultiCurveAttributes::GetFieldName(int index) const
     case ID_yAxisRange:       return "yAxisRange";
     case ID_displayMarkers:   return "displayMarkers";
     case ID_markerVariable:   return "markerVariable";
+    case ID_displayIds:       return "displayIds";
+    case ID_idVariable:       return "idVariable";
     default:  return "invalid index";
     }
 }
@@ -891,6 +957,8 @@ MultiCurveAttributes::GetFieldType(int index) const
     case ID_yAxisRange:       return FieldType_double;
     case ID_displayMarkers:   return FieldType_bool;
     case ID_markerVariable:   return FieldType_string;
+    case ID_displayIds:       return FieldType_bool;
+    case ID_idVariable:       return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -927,6 +995,8 @@ MultiCurveAttributes::GetFieldTypeName(int index) const
     case ID_yAxisRange:       return "double";
     case ID_displayMarkers:   return "bool";
     case ID_markerVariable:   return "string";
+    case ID_displayIds:       return "bool";
+    case ID_idVariable:       return "string";
     default:  return "invalid index";
     }
 }
@@ -1011,6 +1081,16 @@ MultiCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_markerVariable:
         {  // new scope
         retval = (markerVariable == obj.markerVariable);
+        }
+        break;
+    case ID_displayIds:
+        {  // new scope
+        retval = (displayIds == obj.displayIds);
+        }
+        break;
+    case ID_idVariable:
+        {  // new scope
+        retval = (idVariable == obj.idVariable);
         }
         break;
     default: retval = false;
@@ -1168,14 +1248,18 @@ MultiCurveAttributes::MarkColorAsChanged(int index)
 //   Eric Brugger, Wed Jan 21 08:07:40 PST 2009
 //   I added yAxisTitleFormat, useYAxisRange, and yAxisRange. 
 //
+//   Eric Brugger, Tue Feb 17 18:03:08 PST 2009
+//   I added idVariable.
+//
 // ****************************************************************************
 bool
 MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &obj) const
 {
-    if (markerVariable != obj.markerVariable || 
-        yAxisTitleFormat != obj.yAxisTitleFormat ||
+    if (yAxisTitleFormat != obj.yAxisTitleFormat ||
         useYAxisRange != obj.useYAxisRange ||
-        yAxisRange != obj.yAxisRange)
+        yAxisRange != obj.yAxisRange || 
+        markerVariable != obj.markerVariable || 
+        idVariable != obj.idVariable)
         return true;
 
     return false;

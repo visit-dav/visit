@@ -531,7 +531,7 @@ QvisViewWindow::CreateWindowContents()
             this, SLOT(processRangeAxisArrayText()));
     layoutAxisArray->addWidget(rangeAxisArrayLineEdit, 2, 1);
     QLabel *rangeAxisArrayLabel = new QLabel(tr("Range"), pageAxisArray);
-    rangeAxisArrayLabel->setBuddy(rangeAxisArrayLabel);
+    rangeAxisArrayLabel->setBuddy(rangeAxisArrayLineEdit);
     layoutAxisArray->addWidget(rangeAxisArrayLabel, 2, 0);
     pageAxisArrayLayout->addStretch(10);
 

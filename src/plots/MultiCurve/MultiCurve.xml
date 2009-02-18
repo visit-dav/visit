@@ -49,6 +49,12 @@
       <Field name="markerVariable" label="Marker variable" type="string">
         default
       </Field>
+      <Field name="displayIds" label="Display ids" type="bool">
+        false
+      </Field>
+      <Field name="idVariable" label="Id variable" type="string">
+        default
+      </Field>
       <Function name="EnlargeMultiColor" user="true" member="true">
       </Function>
       <Function name="ColorIsChanged" user="true" member="true">
