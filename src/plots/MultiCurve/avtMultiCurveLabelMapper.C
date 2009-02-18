@@ -55,12 +55,17 @@
 //  Programmer:   Eric Brugger
 //  Creation:     December 12, 2008
 //
+//  Modifications:
+//    Eric Brugger, Wed Feb 18 12:05:44 PST 2009
+//    I added the ability to display identifiers at each of the points.
+//
 // ****************************************************************************
 
 avtMultiCurveLabelMapper::avtMultiCurveLabelMapper()
 {
-    labelVis      = true;
-    scale         = 0.05;
+    markerVisibility = true;
+    idVisibility     = false;
+    scale            = 0.05;
 }
 
 
@@ -87,12 +92,17 @@ avtMultiCurveLabelMapper::~avtMultiCurveLabelMapper()
 //  Programmer:   Eric Brugger
 //  Creation:     December 12, 2008
 //
+//  Modifications:
+//    Eric Brugger, Wed Feb 18 12:05:44 PST 2009
+//    I added the ability to display identifiers at each of the points.
+//
 // ****************************************************************************
 
 void
 avtMultiCurveLabelMapper::CustomizeMappers(void)
 {
-    SetLabelVisibility(labelVis);
+    SetMarkerVisibility(markerVisibility);
+    SetIdVisibility(idVisibility);
     SetScale(scale);
 }
 
@@ -109,6 +119,10 @@ avtMultiCurveLabelMapper::CustomizeMappers(void)
 //
 //  Programmer:   Eric Brugger
 //  Creation:     December 12, 2008
+//
+//  Modifications:
+//    Eric Brugger, Wed Feb 18 12:05:44 PST 2009
+//    I added the ability to display identifiers at each of the points.
 //
 // ****************************************************************************
 
@@ -130,9 +144,14 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
         ds->GetPointData()->GetArray("CurveSymbols"));
     int *buf = (intArray == NULL) ? NULL : intArray->GetPointer(0);
 
+    vtkIntArray *intArray2 = vtkIntArray::SafeDownCast(
+        ds->GetPointData()->GetArray("CurveIds"));
+    int *buf2 = (intArray2 == NULL) ? NULL : intArray2->GetPointer(0);
+
     double    pos[3];        
     for (vtkIdType i = 0; i < ds->GetNumberOfPoints(); i++)
     {
+        // Add the marker.
         avtLabelActor_p la = new avtLabelActor;
         ds->GetPoint(i, pos);
         la->SetAttachmentPoint(pos);
@@ -140,6 +159,19 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
             la->SetMarker(buf[i]);
         else
             la->SetMarker(2);
+        la->SetScale(scale);
+        actors.push_back(la);
+
+        // Add the id.
+        la = new avtLabelActor;
+        ds->GetPoint(i, pos);
+        la->SetAttachmentPoint(pos);
+        char label[16];
+        if (buf2 != NULL)
+            sprintf(label, "%d", buf2[i]);
+        else
+            sprintf(label, "%d", i);
+        la->SetDesignator(label);
         la->SetScale(scale);
         actors.push_back(la);
     }
@@ -172,33 +204,68 @@ avtMultiCurveLabelMapper::SetScale(double s)
 
 
 // ****************************************************************************
-//  Method: avtMultiCurveLabelMapper::SetLabelVisibility
+//  Method: avtMultiCurveLabelMapper::SetMarkerVisibility
 //
 //  Purpose:
-//      Sets the visibility for the label actors. 
+//      Sets the visibility for the marker actors. 
 //
 //  Arguments:
 //      labelsOn  The new visibility state.
 //
 //  Programmer:   Eric Brugger
-//  Creation:     December 12, 2008
+//  Creation:     February 18, 2009
 //
 // ****************************************************************************
 
 void
-avtMultiCurveLabelMapper::SetLabelVisibility(bool labelsOn)
+avtMultiCurveLabelMapper::SetMarkerVisibility(bool labelsOn)
 {
-   labelVis = labelsOn;
+   markerVisibility = labelsOn;
    if (labelsOn)
    {
-       for (int i = 0; i < actors.size(); i++)
+       for (int i = 0; i < actors.size(); i += 2)
        {
            actors[i]->UnHide();
        }
    } 
    else 
    {
-       for (int i = 0; i < actors.size(); i++)
+       for (int i = 0; i < actors.size(); i += 2)
+       {
+           actors[i]->Hide();
+       }
+   } 
+}
+
+
+// ****************************************************************************
+//  Method: avtMultiCurveLabelMapper::SetIdVisibility
+//
+//  Purpose:
+//      Sets the visibility for the id actors. 
+//
+//  Arguments:
+//      labelsOn  The new visibility state.
+//
+//  Programmer:   Eric Brugger
+//  Creation:     February 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMultiCurveLabelMapper::SetIdVisibility(bool labelsOn)
+{
+   idVisibility = labelsOn;
+   if (labelsOn)
+   {
+       for (int i = 1; i < actors.size(); i += 2)
+       {
+           actors[i]->UnHide();
+       }
+   } 
+   else 
+   {
+       for (int i = 1; i < actors.size(); i += 2)
        {
            actors[i]->Hide();
        }

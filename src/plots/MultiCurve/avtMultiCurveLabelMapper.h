@@ -51,12 +51,18 @@ class     vtkDataSet;
 //  Class: avtMultiCurveLabelMapper
 //
 //  Purpose:
-//      A mapper for labels for the multi curve plot.  This extends the
-//      functionality of a decorations mapper by mapping label-glyphs onto
-//      dataset.
+//    A mapper for labels for the multi curve plot.  This extends the
+//    functionality of a decorations mapper by mapping markers and ids
+//    onto a dataset.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 12, 2008
+//
+//  Modifications:
+//    Eric Brugger, Wed Feb 18 12:02:11 PST 2009
+//    I added the ability to display identifiers at each of the points.
+//    I replaced setLabelVisibility with setMarkerVisibility and added
+//    setIdVisibility.
 //
 // ****************************************************************************
 
@@ -67,10 +73,12 @@ class avtMultiCurveLabelMapper : public avtDecorationsMapper
     virtual                   ~avtMultiCurveLabelMapper();
 
     void                       SetScale(double);
-    void                       SetLabelVisibility(bool);
+    void                       SetMarkerVisibility(bool);
+    void                       SetIdVisibility(bool);
 
   protected:
-    bool                       labelVis;
+    bool                       markerVisibility;
+    bool                       idVisibility;
     double                     scale;
 
     virtual void               CustomizeMappers(void);

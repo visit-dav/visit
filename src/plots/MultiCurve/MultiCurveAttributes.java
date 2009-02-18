@@ -71,7 +71,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes()
     {
-        super(12);
+        super(14);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
@@ -85,11 +85,13 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         yAxisRange = 1;
         displayMarkers = true;
         markerVariable = new String("default");
+        displayIds = false;
+        idVariable = new String("default");
     }
 
     public MultiCurveAttributes(MultiCurveAttributes obj)
     {
-        super(12);
+        super(14);
 
         int i;
 
@@ -111,6 +113,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         yAxisRange = obj.yAxisRange;
         displayMarkers = obj.displayMarkers;
         markerVariable = new String(obj.markerVariable);
+        displayIds = obj.displayIds;
+        idVariable = new String(obj.idVariable);
 
         SelectAll();
     }
@@ -131,7 +135,9 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
                 (useYAxisRange == obj.useYAxisRange) &&
                 (yAxisRange == obj.yAxisRange) &&
                 (displayMarkers == obj.displayMarkers) &&
-                (markerVariable.equals(obj.markerVariable)));
+                (markerVariable.equals(obj.markerVariable)) &&
+                (displayIds == obj.displayIds) &&
+                (idVariable.equals(obj.idVariable)));
     }
 
     public String GetName() { return "MultiCurve"; }
@@ -210,6 +216,18 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         Select(11);
     }
 
+    public void SetDisplayIds(boolean displayIds_)
+    {
+        displayIds = displayIds_;
+        Select(12);
+    }
+
+    public void SetIdVariable(String idVariable_)
+    {
+        idVariable = idVariable_;
+        Select(13);
+    }
+
     // Property getting methods
     public ColorControlPointList GetDefaultPalette() { return defaultPalette; }
     public Vector                GetChangedColors() { return changedColors; }
@@ -223,6 +241,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
     public double                GetYAxisRange() { return yAxisRange; }
     public boolean               GetDisplayMarkers() { return displayMarkers; }
     public String                GetMarkerVariable() { return markerVariable; }
+    public boolean               GetDisplayIds() { return displayIds; }
+    public String                GetIdVariable() { return idVariable; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -251,6 +271,10 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(displayMarkers);
         if(WriteSelect(11, buf))
             buf.WriteString(markerVariable);
+        if(WriteSelect(12, buf))
+            buf.WriteBool(displayIds);
+        if(WriteSelect(13, buf))
+            buf.WriteString(idVariable);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -299,6 +323,12 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
             case 11:
                 SetMarkerVariable(buf.ReadString());
                 break;
+            case 12:
+                SetDisplayIds(buf.ReadBool());
+                break;
+            case 13:
+                SetIdVariable(buf.ReadString());
+                break;
             }
         }
     }
@@ -323,6 +353,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("yAxisRange", yAxisRange, indent) + "\n";
         str = str + boolToString("displayMarkers", displayMarkers, indent) + "\n";
         str = str + stringToString("markerVariable", markerVariable, indent) + "\n";
+        str = str + boolToString("displayIds", displayIds, indent) + "\n";
+        str = str + stringToString("idVariable", idVariable, indent) + "\n";
         return str;
     }
 
@@ -340,5 +372,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
     private double                yAxisRange;
     private boolean               displayMarkers;
     private String                markerVariable;
+    private boolean               displayIds;
+    private String                idVariable;
 }
 

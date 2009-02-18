@@ -196,6 +196,9 @@ avtMultiCurveFilter::PostExecute(void)
 //    to specify the format for the curve label strings, which are used for
 //    the y-axis title for the individual curves.
 //
+//    Eric Brugger, Wed Feb 18 08:25:08 PST 2009
+//    I added code to handle the id variable.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -231,7 +234,12 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
         ->GetPointer(0);
 
     vtkDataArray *var = inDS->GetPointData()->GetScalars();
-    vtkDataArray *var2 = inDS->GetPointData()->GetArray(atts.GetMarkerVariable().c_str());
+    vtkDataArray *var2 = NULL;
+    if (atts.GetMarkerVariable() != "default")
+        var2 = inDS->GetPointData()->GetArray(atts.GetMarkerVariable().c_str());
+    vtkDataArray *var3 = NULL;
+    if (atts.GetIdVariable() != "default")
+        var3 = inDS->GetPointData()->GetArray(atts.GetIdVariable().c_str());
     if (var == NULL)
     {
         EXCEPTION1(ImproperUseException, "No point data");
@@ -244,6 +252,9 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
     float *vals2 = NULL;
     if (var2 != NULL)
         vals2 = vtkFloatArray::SafeDownCast(var2)->GetPointer(0);
+    float *vals3 = NULL;
+    if (var3 != NULL)
+        vals3 = vtkFloatArray::SafeDownCast(var3)->GetPointer(0);
 
     //
     // Create the data sets and labels for each of the curves.
@@ -316,6 +327,22 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
         }
 
         //
+        // Create the array specifying the curve ids.
+        //
+        vtkIntArray *ids = vtkIntArray::New();
+        ids->SetName("CurveIds");
+        ids->SetNumberOfComponents(1);
+        ids->SetNumberOfTuples(nx);
+        buf = ids->GetPointer(0);
+        for (int j = 0; j < nx; j++)
+        {
+            if (vals3 == NULL)
+                buf[j] = i*nx+j;
+            else
+                buf[j] = int(vals3[i*nx+j]);
+        }
+
+        //
         // Create the data set.
         //
         vtkPolyData *polyData = vtkPolyData::New();
@@ -324,9 +351,12 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
         polyData->SetPoints(points);
         polyData->GetPointData()->AddArray(symbols);
         polyData->GetPointData()->CopyFieldOn("CurveSymbols");
+        polyData->GetPointData()->AddArray(ids);
+        polyData->GetPointData()->CopyFieldOn("CurveIds");
         lines->Delete();
         points->Delete();
         symbols->Delete();
+        ids->Delete();
 
         out_ds[i] = polyData;
     

@@ -155,14 +155,18 @@ Definition:
 //   Eric Brugger, Wed Jan 21 08:07:40 PST 2009
 //   I added yAxisTitleFormat, useYAxisRange, and yAxisRange. 
 //
+//   Eric Brugger, Tue Feb 17 18:03:08 PST 2009
+//   I added idVariable.
+//
 // ****************************************************************************
 bool
 MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &obj) const
 {
-    if (markerVariable != obj.markerVariable || 
-        yAxisTitleFormat != obj.yAxisTitleFormat ||
+    if (yAxisTitleFormat != obj.yAxisTitleFormat ||
         useYAxisRange != obj.useYAxisRange ||
-        yAxisRange != obj.yAxisRange)
+        yAxisRange != obj.yAxisRange || 
+        markerVariable != obj.markerVariable || 
+        idVariable != obj.idVariable)
         return true;
 
     return false;

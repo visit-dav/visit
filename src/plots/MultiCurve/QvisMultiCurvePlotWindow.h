@@ -74,6 +74,9 @@ class QvisVariableButton;
 //   I added yAxisTitleFormat, useYAxisRange, and yAxisRange.  I changed
 //   markerVariable from a variable button to a text field.
 //   
+//   Eric Brugger, Wed Feb 18 07:56:29 PST 2009
+//   I added displayIds and idVariable.
+//
 // ****************************************************************************
 
 class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
@@ -110,6 +113,8 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     void yAxisRangeProcessText();
     void displayMarkersChanged(bool val);
     void markerVariableProcessText();
+    void displayIdsChanged(bool val);
+    void idVariableProcessText();
   private:
     int                     plotType;
     QGroupBox              *curveColorGroup;
@@ -123,11 +128,14 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     QCheckBox              *useYAxisRange;
     QLineEdit              *yAxisRange;
     QCheckBox              *displayMarkers;
-    QLineEdit *markerVariable;
+    QLineEdit              *markerVariable;
+    QCheckBox              *displayIds;
+    QLineEdit              *idVariable;
     QLabel                 *lineStyleLabel;
     QLabel                 *lineWidthLabel;
     QLabel                 *yAxisTitleFormatLabel;
     QLabel                 *markerVariableLabel;
+    QLabel                 *idVariableLabel;
 
     MultiCurveAttributes   *atts;
 };
