@@ -82,6 +82,10 @@
 // approach has more difficulty. So, we take the former approach and treat
 // the word "point" in vtkDataSet's interface as "boundary" in vtkCSGGrid's
 // interface.
+//
+// Modifications:
+//    Mark C. Miller, Tue Feb 17 17:54:34 PST 2009
+//    Added operator==
 
 // .SECTION See Also
 // vtkImplicitFunction, vtkQuadric, vtkUnstructuredGrid, vtkDataSet
@@ -282,13 +286,9 @@ public:
   void AddRegions(int nregions, const int *const lids, const int *const rids,
                   const int *const typeflags,
                   int lxforms, const double *const xforms);
-#if 0
-  void AddRegions(int nregions, const int *const lids, const int *const rids,
-                  const int *const typeflags,
-                  int lxforms, const float *const xforms);
-#endif
-
   void AddZones(int nzones, const int *const zoneIds);
+
+  bool operator==(const vtkCSGGrid &) const;
 
 protected:
   vtkCSGGrid();
