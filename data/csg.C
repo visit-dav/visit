@@ -44,6 +44,7 @@
 static void build_csg(DBfile *dbfile, char *name);
 static void build_greenman_csg(DBfile *dbfile, char *name);
 static void build_primitives_csg(DBfile *dbfile);
+static void build_csg_time_series(int driver);
 
 int
 main(int argc, char *argv[])
@@ -81,6 +82,7 @@ main(int argc, char *argv[])
     build_csg(dbfile, "csgmesh");
     build_greenman_csg(dbfile, "greenman_mesh");
     build_primitives_csg(dbfile);
+    build_csg_time_series(driver);
     DBClose(dbfile);
 
     return 0;
@@ -1268,5 +1270,78 @@ build_primitives_csg(DBfile *dbfile)
 
         DBPutCSGZonelist(dbfile, "ssbd_csgzl", nregs, typeflags, leftids, rightids,
                          NULL, 0, DB_INT, nzones, zonelist, optlist);
+    }
+}
+
+static void
+build_csg_time_series(int driver)
+{
+    for (int i = 0; i < 8; i++)
+    {
+        char fileName[64];
+        sprintf(fileName, "csg_series_%03d.silo", i);
+        DBfile *dbfile = DBCreate(fileName, 0, DB_LOCAL, "csg time series test file", driver);
+
+        int typeflags[] =
+        {
+            DBCSG_SPHERE_PR,
+            DBCSG_PLANE_X
+        };
+
+        float coeffs[] =
+        {
+            0.0, 0.0, 0.0, 1.0,               // point-radius form of sphere
+            0.0                               // x-intercept form of plane
+        };
+
+        if (i == 3) coeffs[3] = 1.5;
+        if (i == 6) coeffs[4] = -0.25;
+
+        double extents[] = {-2.0, -2.0, -2.0, 2.0, 2.0, 2.0};
+
+        char *bndnames[] = {"sphere", "plane"};
+
+        DBoptlist *optlist = DBMakeOptlist(4);
+        DBAddOption(optlist, DBOPT_EXTENTS, extents);
+        DBAddOption(optlist, DBOPT_BNDNAMES, bndnames);
+
+        DBPutCsgmesh(dbfile, "sphere", 3, 1, typeflags,
+            NULL, coeffs, 4, DB_FLOAT, extents, "sphere_csgzl", optlist);
+
+        DBPutCsgmesh(dbfile, "half_sphere", 3, 2, typeflags,
+            NULL, coeffs, 5, DB_FLOAT, extents, "half_sphere_csgzl", optlist);
+
+        DBPutCsgmesh(dbfile, "half_sphere_compliment", 3, 2, typeflags,
+            NULL, coeffs, 5, DB_FLOAT, extents, "half_sphere_comp_csgzl", optlist);
+
+        int typeflags2[] =
+        {
+            DBCSG_INNER,          // 0: inside of sphere 
+            DBCSG_OUTER,          // 1: +x side of plane
+            DBCSG_INTERSECT,      // 2: the +half sphere
+            DBCSG_COMPLIMENT      // 3: the not of 2
+        };
+        //                 0   1   2   3
+        int leftids[] =  { 0,  1,  1,  2};
+        int rightids[] = {-1, -1,  0, -1};
+        int zonelist1[] = {0};
+        int zonelist2[] = {2};
+        int zonelist3[] = {3};
+
+        char *zonenames[] = {"region_1"};
+
+        DBClearOptlist(optlist);
+        DBAddOption(optlist, DBOPT_ZONENAMES, zonenames);
+
+        DBPutCSGZonelist(dbfile, "sphere_csgzl", 1, typeflags2, leftids, rightids,
+                         NULL, 0, DB_INT, 1, zonelist1, optlist);
+
+        DBPutCSGZonelist(dbfile, "half_sphere_csgzl", 3, typeflags2, leftids, rightids,
+                         NULL, 0, DB_INT, 1, zonelist2, optlist);
+
+        DBPutCSGZonelist(dbfile, "half_sphere_comp_csgzl", 4, typeflags2, leftids, rightids,
+                         NULL, 0, DB_INT, 1, zonelist3, optlist);
+
+        DBClose(dbfile);
     }
 }
