@@ -11,6 +11,10 @@
 #  Mark C. Miller, Thu Feb 12 01:30:24 PST 2009
 #  Added test for rectilinear mesh case. Re-enabled setting of SIL restriction
 #  which was disabled due to a bug that was resolved back in May, 2008.
+#
+#  Mark C. Miller, Wed Feb 18 17:52:44 PST 2009
+#  Fixed missing AddPlot() call just prior to image 08. Changed name of 
+#  curve objects that get re-interpreted.
 # ----------------------------------------------------------------------------
 
 
@@ -59,14 +63,19 @@ Test("rect_06")
 DeleteAllPlots()
 CloseDatabase("../data/Rect_test_data/rect_data/datafile.rect")
 
-TestSection("1D Datasets and re-interp. as curves.")
+TestSection("1D Datasets re-interpreted as curves.")
+
+c = CurveAttributes()
+c.showLabels = 0
+SetDefaultPlotOptions(c)
 
 OpenDatabase("../data/Rect_test_data/1d/curv_data/datafile.rect")
-AddPlot("Curve", "pressure")
+AddPlot("Curve", "Scalar_Curves/pressure")
 DrawPlots()
 ResetView()
 Test("rect_07")
-AddPlot("Curve", "density")
+AddPlot("Curve", "Scalar_Curves/density")
+DrawPlots()
 TimeSliderNextState()
 Test("rect_08")
 
