@@ -511,7 +511,11 @@
 #
 #     Mark C. Miller, Wed Feb 18 22:57:25 PST 2009
 #     Updated Silo to version 4.7 and added to build_silo logic to use Qt
-#     for silex.
+#     for silex. Installed some binaries for Mac OS
+#
+#     Mark C. Miller, Thu Feb 19 09:41:43 PST 2009
+#     Added ability to specify alternate download paths for downloading files.
+#     Set Silo functions to download silo from Silo's web site.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -1103,6 +1107,8 @@ function downloadv
 #   Hank Childs, Fri Dec 12 09:28:35 PST 2008                                 #
 #   Add special logic for Ice-T.                                              #
 #                                                                             #
+#   Mark C. Miller, Thu Feb 19 09:16:46 PST 2009
+#   Added argument to specify a download_path. Removed special IceT coding.
 # *************************************************************************** #
 
 function download_file
@@ -1112,17 +1118,14 @@ function download_file
     if [[ "$DO_SVN" == "yes" ]] ; then
         svn cat $SVN_ROOT_PATH/trunk/third_party/$2 > $2
     else
-        if [[ "$1" == "" ]] ; then
+        if [[ "$3" != "" ]] ; then
+            download_path="$3/$2"
+	elif [[ "$1" == "" ]] ; then
             download_path="https://wci.llnl.gov/codes/visit/$2"
         else
             download_path="https://wci.llnl.gov/codes/visit/$1/$2"
         fi
 
-        # Special logic for Ice-T, since we get it from a different place.
-        if [[ "$2" == "IceT-0-5-4.tar.gz" ]] ; then
-            download_path="http://www.cs.unm.edu/~kmorel/IceT/IceT-0-5-4.tar.gz"
-        fi
-    
         if [[ "$OPSYS" == "Darwin" ]]; then
             # MaxOS X comes with curl
             curl -ksfo $2 $download_path
@@ -1294,6 +1297,7 @@ function ensure_built_or_ready
     INSTALL_DIR=$VISITDIR/$BUILD_NAME/$BUILD_VERSION/$VISITARCH
     BUILD_DIR=$3
     SRC_FILE=$4
+    DOWNLOAD_PATH=$5
 
     info "Checking for ${BUILD_NAME}-${BUILD_VERSION}"
     
@@ -1309,7 +1313,11 @@ function ensure_built_or_ready
     fi
     
     if [[ "$ALREADY_INSTALLED" == "NO" && "$HAVE_TARBALL" == "NO" ]] ; then
-        download_3rdparty ${SRC_FILE}
+        if [[ -z "$DOWNLOAD_PATH" ]] ; then
+            download_3rdparty ${SRC_FILE}
+	else
+            download_file "" ${SRC_FILE} ${DOWNLOAD_PATH}
+	fi
         if [[ $? != 0 ]] ; then
             warn "Error: Cannot obtain source for $BUILD_NAME."
             return 1
@@ -1657,7 +1665,7 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_SILO" == "yes" ]] ; then
-        ensure_built_or_ready "silo" $SILO_VERSION $SILO_BUILD_DIR $SILO_FILE
+        ensure_built_or_ready "silo" $SILO_VERSION $SILO_BUILD_DIR $SILO_FILE "https://wci.llnl.gov/codes/silo/silo-4.7"
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_SILO="no"
@@ -1699,7 +1707,7 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_ICET" == "yes" ]] ; then
-        ensure_built_or_ready "icet" $ICET_VERSION $ICET_BUILD_DIR $ICET_FILE
+        ensure_built_or_ready "icet" $ICET_VERSION $ICET_BUILD_DIR $ICET_FILE "http://www.cs.unm.edu/~kmorel/IceT"
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ICET="no"
