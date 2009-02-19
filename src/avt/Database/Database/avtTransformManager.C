@@ -1398,6 +1398,10 @@ CopyDataArrayVals(vtkDataArray *inda, vtkDataArray *outda, int npts, int skip)
 //    Mark C. Miller, Fri Feb 13 09:12:38 PST 2009
 //    Fixed problem where cmd could be non-zero after exiting loop looking
 //    for curve mds of the given name. 
+//
+//    Mark C. Miller, Wed Feb 18 17:24:29 PST 2009
+//    Fixed lookup of vtk object key to use yvals data array instead of the
+//    dataset itself which returns the mesh object.
 // ****************************************************************************
 
 vtkDataSet *
@@ -1472,13 +1476,23 @@ vtkDataSet *ds, int dom)
     }
 
     //
+    // Do some additional sanity checks and setup the yvals array
+    //
+    int npts = ds->GetNumberOfPoints();
+    vtkDataArray *yvals;
+    yvals = ds->GetPointData()->GetScalars();
+    if (yvals == 0 || yvals->GetNumberOfTuples() != npts)
+        return ds;
+    int yvalsType = yvals->GetDataType();
+
+    //
     // Ok, now a more expensive check to see if MetaData says this object
     // is a curve. To do it, we need to do the reverse lookup in generic
     // db's cache.
     //
     int i;
     const char *vname;
-    if (!gdbCache->GetVTKObjectKey(&vname, 0, 0, dom, 0, ds))
+    if (!gdbCache->GetVTKObjectKey(&vname, 0, 0, dom, 0, yvals))
     {
         EXCEPTION1(PointerNotInCacheException, ds);
     }
@@ -1492,16 +1506,6 @@ vtkDataSet *ds, int dom)
     }
     if (cmd == 0)
         return ds;
-
-    //
-    // Do some additional sanity checks and setup the yvals array
-    //
-    int npts = ds->GetNumberOfPoints();
-    vtkDataArray *yvals;
-    yvals = ds->GetPointData()->GetScalars();
-    if (yvals == 0 || yvals->GetNumberOfTuples() != npts)
-        return ds;
-    int yvalsType = yvals->GetDataType();
 
     debug1 << "avtTransformManager: Converting \"" << vname
            << "\" scalar dataset of size " << npts
