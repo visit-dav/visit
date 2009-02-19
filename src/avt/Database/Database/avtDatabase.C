@@ -1260,6 +1260,11 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 //
 //  Programmer: Mark C. Miller
 //  Creation: February 9, 2009
+//
+//  Modifications:
+//    Mark C. Miller, Wed Feb 18 14:54:59 PST 2009
+//    Fixed naming of curve md objects so their names don't wind up colliding
+//    with thier original scalar var objects.
 // ****************************************************************************
 
 void
@@ -1296,10 +1301,7 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
             const avtMeshMetaData *mmd = md->GetMesh(it->second);
             scalarsToHide.push_back(i);
             avtCurveMetaData *cmd = new avtCurveMetaData();
-            if (!md->GetCurve(smd->name))
-                cmd->name = smd->name;
-            else
-                cmd->name = "1D_Scalars/" + smd->name;
+            cmd->name = "Scalar_Curves/" + smd->name;
             cmd->originalName = smd->originalName;
             cmd->validVariable = smd->validVariable;
             cmd->yUnits = smd->units;
@@ -1316,6 +1318,10 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
         }
     }
 
+    //
+    // Hide from the GUI, those scalars that got converted as well
+    // as any 1D meshes.
+    //
     for (i = 0; i < (int) scalarsToHide.size(); i++)
         md->GetScalars(scalarsToHide[i]).hideFromGUI = true;
     for (it = meshNameToNumMap.begin(); it != meshNameToNumMap.end(); it++)
