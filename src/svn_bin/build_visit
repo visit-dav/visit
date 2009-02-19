@@ -66,7 +66,7 @@
 #           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
-#           Silo     4.6.2    silo-4.6.2.tar.gz
+#           Silo     4.6.2    silo-4.7.tar.gz
 #           szip     2.1      szip-2.1.tar.gz
 #
 #         Experimental (internal)
@@ -509,6 +509,9 @@
 #     Use make option flags on Mesa's build.
 #     Document that Exodus requires NetCDF.
 #
+#     Mark C. Miller, Wed Feb 18 22:57:25 PST 2009
+#     Updated Silo to version 4.7 and added to build_silo logic to use Qt
+#     for silex.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -864,10 +867,10 @@ export CCMIO_VERSION=${CCMIO_VERSION-"2.6.1"}
 export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION-"2.0"}
 export CCMIO_BUILD_DIR=${CCMIO_BUILD_DIR-"libccmio-2.6.1"}
 
-export SILO_FILE=${SILO_FILE-"silo-4.6.2.tar.gz"}
-export SILO_VERSION=${SILO_VERSION-"4.6.2"}
-export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.6"}
-export SILO_BUILD_DIR=${SILO_BUILD_DIR-"silo-4.6.2"}
+export SILO_FILE=${SILO_FILE-"silo-4.7.tar.gz"}
+export SILO_VERSION=${SILO_VERSION-"4.7"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.7"}
+export SILO_BUILD_DIR=${SILO_BUILD_DIR-"silo-4.7"}
 
 export ITAPS_FILE=${ITAPS_FILE-"ITAPS-MOAB-26Jun07.tar.gz"}
 export ITAPS_VERSION=${ITAPS_VERSION-"1.0.0"}
@@ -3724,7 +3727,12 @@ function build_pil
 
 
 # *************************************************************************** #
-#                            Function 8, build_silo                           #
+#                            Function 8, build_silo                           
+#
+# Modfications:                                                          
+#   Mark C. Miller, Wed Feb 18 22:57:25 PST 2009
+#   Added logic to build silex and copy bins on Mac. Removed disablement of
+#   browser.
 # *************************************************************************** #
 
 function build_silo
@@ -3761,13 +3769,18 @@ function build_silo
     else
        WITHSZIPARG="--without-szlib"
     fi
-    # Silex not ported to Qt4, disable building Silo with it for now.
+    if [[ "$DO_QT" == "yes" ]] ; then
+       export SILOQTDIR="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
+       WITHSILOQTARG="--with-qt=$SILOQTDIR"
+    else
+       WITHSILOQTARG="--disable-silex"
+    fi
     
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/silo/$SILO_VERSION/$VISITARCH" \
-        "$WITHHDF5ARG" "$WITHSZIPARG" \
-        --without-readline --disable-fortran --disable-browser --disable-silex
+        "$WITHHDF5ARG" "$WITHSZIPARG" "$WITHSILOQTARG" \
+        --without-readline --disable-fortran
     if [[ $? != 0 ]] ; then
        warn "Silo configure failed.  Giving up"
        return 1
@@ -3793,12 +3806,23 @@ function build_silo
         mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
         mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
         mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
+        mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
         cp src/silo/silo.h   \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
         cp src/silo/silo.inc \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
         cp src/silo/pmpio.h \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+        cp tools/silex/silex \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
+        cp tools/browser/browser \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
+        cp tools/browser/silodiff \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
+        cp tools/browser/silofile \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
+        cp tools/silock/silock \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
         #
         # Make dynamic executable
         #
@@ -8026,7 +8050,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "IceT"     "0.5.4  $ICET_FILE"      $ON_ICET \
            "Mili"     "1.10   $MILI_FILE (not available from the web)"      $ON_MILI \
            "TCMALLOC" "0.97   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
-           "Silo"     "4.6.2  $SILO_FILE"      $ON_SILO \
+           "Silo"     "4.7    $SILO_FILE"      $ON_SILO \
            "SZip"     "2.1    $SZIP_FILE"      $ON_SZIP \
            "NetCDF"   "3.6.0  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
     retval=$?
