@@ -521,6 +521,10 @@
 #     Refactored the multiple places that downloads functions were implmeneted
 #     to download_file/try_download_file. The former either trys known places
 #     or loops over specified sites. The latter attempts a specific download.
+#
+#     Mark C. Miller, Thu Feb 19 14:51:07 PST 2009
+#     Fixed help message for --svn option. It DOES NOT assume HEAD and always
+#     reads the revision argument.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -7610,29 +7614,29 @@ usage () {
   printf "%s\n" ""
   printf "OPTIONS\n"
   printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
-  printf "%-11s <%s> \n%s [%s]\n" "--absolute" "/path/to/directory" \
-    "          Change the behavior of the install name path for
-          the Darwin dynamic libraries. Enabling this flag
-          will used the THIRD_PARTY_PATH path for creating
-          an absolute path to the dynamic libraries and not
-          use the default relative path." "@executable_path/../lib"
-  printf "%-11s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
-  printf "\t  %s\n" "This variable is used in constructing the 3rd party"
-  printf "\t  %s\n" "library path; usually set to something like"
-  printf "\t  %s\n" "'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
+  printf "%s <%s> \n%s [%s]\n" "--absolute" "/path/to/directory" \
+    "             Change the behavior of the install name path for
+             the Darwin dynamic libraries. Enabling this flag
+             will used the THIRD_PARTY_PATH path for creating
+             an absolute path to the dynamic libraries and not
+             use the default relative path." "@executable_path/../lib"
+  printf "%s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
+  printf "\t  %s\n" "   This variable is used in constructing the 3rd party"
+  printf "\t  %s\n" "   library path; usually set to something like"
+  printf "\t  %s\n" "   'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
   printf "%-11s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"
   printf "%-11s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
   printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
-  printf "%-11s <%s> %s [%s]\n" "--svn" "revision" \
-    "Use the SVN server for the VisIt distribution" "${SVNREVISION}"
-  printf "\t%s\n" "[svn co $SVN_ROOT_PATH/trunk/src]"
-  printf "%-11s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
+  printf "%s <%s> %s\n" "--svn" "revision" \
+    "Obtain <revision> of VisIt source code from the SVN server"
+  printf "\t%s\n" "    [svn co $SVN_ROOT_PATH/trunk/src]"
+  printf "%s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
   printf "%-11s <%s> \n%s [%s]\n" "--thirdparty-path" "/path/to/directory" \
-    "          Specify the root directory name under which the 3rd party
-          libraries have been installed.  If defined, it would typically
-          mean the 3rd party libraries are pre-built and are installed
-          somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
-  printf "%-11s <%s> %s [%s]\n" "--version" "version" "The VisIt version to build" "$VISIT_VERSION"
+    "             Specify the root directory name under which the 3rd party
+             libraries have been installed.  If defined, it would typically
+             mean the 3rd party libraries are pre-built and are installed
+             somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
+  printf "%s <%s> %s [%s]\n" "--version" "version" "The VisIt version to build" "$VISIT_VERSION"
 }
 
 # *************************************************************************** #
