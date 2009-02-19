@@ -516,6 +516,11 @@
 #     Mark C. Miller, Thu Feb 19 09:41:43 PST 2009
 #     Added ability to specify alternate download paths for downloading files.
 #     Set Silo functions to download silo from Silo's web site.
+#
+#     Mark C. Miller, Thu Feb 19 12:31:20 PST 2009
+#     Refactored the multiple places that downloads functions were implmeneted
+#     to download_file/try_download_file. The former either trys known places
+#     or loops over specified sites. The latter attempts a specific download.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -793,7 +798,7 @@ export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION-"2.5"}
 export PYTHON_FILE=${PYTHON_FILE-"Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"}
 export PYTHON_BUILD_DIR=${PYTHON_BUILD_DIR-"Python-$PYTHON_VERSION"}
 
-export PIL_URL=${PIL_URL-"http://effbot.org/media/downloads/Imaging-1.1.6.tar.gz"}
+export PIL_URL=${PIL_URL-"http://effbot.org/media/downloads"}
 export PIL_FILE=${PIL_FILE-"Imaging-1.1.6.tar.gz"}
 export PIL_BUILD_DIR=${PIL_BUILD_DIR-"Imaging-1.1.6"}
 
@@ -1060,31 +1065,6 @@ function uncompress_untar
 
 
 # *************************************************************************** #
-# Function: downloadv                                                         #
-#                                                                             #
-# Purpose: Downloads a file from a list of possible locations.  Stops when    #
-#          a download succeeds.  Each argument should be a mirror of the same #
-#          file.  Dies if the file is unavailable from all locations.         #
-#                                                                             #
-# Programmer: Tom Fogal                                                       #
-# Date: Fri Oct  3 10:30:27 MDT 2008                                          #
-#                                                                             #
-# Modifications:                                                              #
-#                                                                             #
-# *************************************************************************** #
-function downloadv
-{
-    for mirror in $@ ; do
-        download_web_file  "${mirror}"
-        if  [[ $? == 0 ]] ; then
-            return 0
-        fi
-        info "Download failed."
-    done
-    return 1
-}
-
-# *************************************************************************** #
 # Function: download_file                                                     #
 #                                                                             #
 # Purpose: Downloads a file using wget and show a dialog screen.              #
@@ -1109,105 +1089,84 @@ function downloadv
 #                                                                             #
 #   Mark C. Miller, Thu Feb 19 09:16:46 PST 2009
 #   Added argument to specify a download_path. Removed special IceT coding.
+#
+#   Mark C. Miller, Thu Feb 19 12:21:55 PST 2009
+#   Changed to support multiple sites as well as default visit places.
 # *************************************************************************** #
 
 function download_file
 {
-    info "Downloading $2 . . ." 
-    # Try and download the file.
-    if [[ "$DO_SVN" == "yes" ]] ; then
-        svn cat $SVN_ROOT_PATH/trunk/third_party/$2 > $2
-    else
-        if [[ "$3" != "" ]] ; then
-            download_path="$3/$2"
-	elif [[ "$1" == "" ]] ; then
-            download_path="https://wci.llnl.gov/codes/visit/$2"
-        else
-            download_path="https://wci.llnl.gov/codes/visit/$1/$2"
-        fi
-
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            # MaxOS X comes with curl
-            curl -ksfo $2 $download_path
-        else
-            check_wget
-            if [[ $? != 0 ]] ; then
-                   error "Need to download $2 from the VisIt website, but \
-                          cannot locate the wget utility to do so."
+# $1 is the file name to download
+# $2...$* [OPTIONAL] list of sites to obtain the file from
+# If no sites are specified, tries SVN (if that is allowed) followed by
+# known visit web places.
+    typeset dfile=$1
+    info "Downloading $dfile . . ." 
+    shift
+    if [[ "$1" == "" ]] ; then
+        # If SVN is requested, try that first before anything else
+        if [[ "$DO_SVN" == "yes" ]] ; then
+            svn cat $SVN_ROOT_PATH/trunk/third_party/$dfile > $dfile
+            if [[ $? == 0 && -e $dfile ]] ; then
+	        return 0
             fi
-            wget $WGET_OPTS -o /dev/null $download_path
+	    rm -f $dfile
         fi
-    fi
-    
-    if [[ $? != 0 ]] ; then
-        # Error downloading the file: if it's still hanging around remove it
-        if [[ -e $2 ]] ; then
-            rm $2
+	# If SVN was not requested or if it failed...
+        if [[ "$dfile" == "$VISIT_FILE" ]] ; then
+            try_download_file https://wci.llnl.gov/codes/visit/$VISIT_VERSION/$dfile
+	else
+            try_download_file https://wci.llnl.gov/codes/visit/3rd_party/$dfile
         fi
-        return 1
+	if [[ $? == 0 ]] ; then
+	    return 0
+	fi
+    else
+        # try all sites listed incl. falling back to visit's 3rd_party
+        for site in $* https://wci.llnl.gov/codes/visit/3rd_party; do
+            try_download_file $site/$dfile 
+	    if [[ $? == 0 ]] ; then
+	        return 0
+	    fi
+	done
     fi
-
-    if [[ -e $2 ]] ; then
-        return 0
-    fi
-    return 1
+    info "Failed to download $dfile" 
+    return 1 
 }
 
-# *************************************************************************** #
-# Function: download_web_file                                                 #
-#                                                                             #
-# Purpose: Downloads a file using wget and show a dialog screen.              #
-#                                                                             #
-# Programmer: Jeremy Meredith                                                 #
-# Date: Fri Aug  8 13:07:18 EDT 2008                                          #
-#                                                                             #
-# Modifications:                                                              #
-#    Cyrus Harrison,   Tue Nov 18 09:20:45 PST 2008                           #
-#    Changed return values to standard (0 == success, 1 == failure)           # 
-#    Check for existance of wget if needed (fatal error if not ava)           #
-#                                                                             #
-# *************************************************************************** #
+# *************************************************************************** 
+# Function: try_download_file
+#
+# Purpose: DONT USE THIS FUNCTION. USE download_file.
+# Downloads a file using wget or curl. 
+#
+# Programmer: Refactored from other sources (Mark C. Miller)
+# Creation: February 19, 2009
+#
+# *************************************************************************** 
 
-function download_web_file
+function try_download_file
 {
-    info "Downloading $1 . . ."
-
-    # Try and download the file.
     if [[ "$OPSYS" == "Darwin" ]]; then
         # MaxOS X comes with curl
-        curl -ksfo $2 "$1"
+        curl -ksfo $1
     else
         check_wget
         if [[ $? != 0 ]] ; then
-            error "Need to download $2 from the VisIt website, but " \
-                  "cannot locate the wget utility to do so."             
+            error "Need to download $1, but \
+                   cannot locate the wget utility to do so."
         fi
         wget $WGET_OPTS -o /dev/null $1
     fi
-    if [[ -e $2 ]] ; then
-        return 0
+
+    if [[ $? != 0 ]] ; then
+        rm -f `basename $1`
+        return 1
     fi
-    return 1
+
+    return 0
 }
 
-# *************************************************************************** #
-# Function: download_3rdparty                                                 #
-#                                                                             #
-# Purpose: Downloads a 3rd party file using wget and show a dialog screen.    #
-#                                                                             #
-# Programmer: Brad Whitlock,                                                  #
-# Date: Thu Apr 5 14:38:36 PST 2007                                           #
-#                                                                             #
-# *************************************************************************** #
-
-function download_3rdparty
-{
-    download_file "3rd_party" $1
-    if [[ $? == 0 ]] ; then
-        return 0
-    fi
-    return 1
-}
 
 # *************************************************************************** #
 # Function: check_svn_client                                                  #
@@ -1313,11 +1272,7 @@ function ensure_built_or_ready
     fi
     
     if [[ "$ALREADY_INSTALLED" == "NO" && "$HAVE_TARBALL" == "NO" ]] ; then
-        if [[ -z "$DOWNLOAD_PATH" ]] ; then
-            download_3rdparty ${SRC_FILE}
-	else
-            download_file "" ${SRC_FILE} ${DOWNLOAD_PATH}
-	fi
+        download_file ${SRC_FILE} ${DOWNLOAD_PATH}
         if [[ $? != 0 ]] ; then
             warn "Error: Cannot obtain source for $BUILD_NAME."
             return 1
@@ -1504,7 +1459,7 @@ function check_visit_source_code
             info \
 "Got VisIt source code. Lets look for 3rd party libraries."
         else
-            download_file "${VISIT_VERSION}" "$VISIT_FILE"
+            download_file $VISIT_FILE
             if [[ $? != 0 ]] ; then
                warn \
 "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
@@ -3703,9 +3658,8 @@ function build_python
 function build_pil
 {
     if ! test -f ${PIL_FILE} ; then
-        downloadv        \
-            "${PIL_URL}" \
-            "https://wci.llnl.gov/codes/visit/3rd_party/${PIL_FILE}"
+        download_file ${PIL_FILE} \
+            "${PIL_URL}"
         if [[ $? != 0 ]] ; then
             warn "Could not download ${PIL_FILE}"
             return 1
