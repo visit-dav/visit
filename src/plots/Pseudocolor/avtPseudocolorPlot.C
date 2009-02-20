@@ -44,6 +44,7 @@
 
 #include <PseudocolorAttributes.h>
 
+#include <avtColorTables.h>
 #include <avtExtents.h>
 #include <avtLookupTable.h>
 #include <avtPseudocolorFilter.h>
@@ -92,6 +93,10 @@
 //    mistake.  (It was replacing the compact tree filter, and was causing
 //    performance degradation.)
 //
+//    Jeremy Meredith, Fri Feb 20 15:09:22 EST 2009
+//    Added support for using per-color alpha values from a color table
+//    (instead of just a single global opacity for the whole plot).
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::avtPseudocolorPlot()
@@ -107,6 +112,7 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 
     filter = NULL;
     pcfilter = NULL;
+    colorTableIsFullyOpaque = true;
 
     //
     // This is to allow the legend to reference counted so the behavior can
@@ -397,6 +403,10 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Chagned 'SetLegendRanges' to 'SetLimitsMode', as the legend ranges are
 //    dependent upon values set in SetLimitsMode. 
 //
+//    Jeremy Meredith, Fri Feb 20 15:09:22 EST 2009
+//    Added support for using per-color alpha values from a color table
+//    (instead of just a single global opacity for the whole plot).
+//
 // ****************************************************************************
 
 void
@@ -405,7 +415,9 @@ avtPseudocolorPlot::CustomizeBehavior()
     SetLimitsMode(atts.GetLimitsMode());
     SetPointGlyphSize();
 
-    if (atts.GetOpacity() < 1.)
+    bool fullyOpaque = atts.GetUseColorTableOpacity() ?
+        colorTableIsFullyOpaque : (atts.GetOpacity() == 1.);
+    if (!fullyOpaque)
     {
        behavior->SetRenderOrder(MUST_GO_LAST);
        behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
@@ -504,6 +516,14 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    Jeremy Meredith, Wed Nov 26 11:28:24 EST 2008
 //    Added line style/width control.
 //
+//    Jeremy Meredith, Fri Feb 20 15:09:22 EST 2009
+//    Added support for using per-color alpha values from a color table
+//    (instead of just a single global opacity for the whole plot).
+//    Changing color can now change opacity, and we must check the
+//    color table opacity before we call SetOpacity (now SetOpacityFromAtts)
+//    to set the rendering order.  Renamed SetOpacity because it was
+//    too complex to take just a single argument.
+//
 // ****************************************************************************
 
 void
@@ -513,16 +533,13 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
-         (atts.GetColorTableName() != newAtts->GetColorTableName()); 
+        (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
+        (atts.GetUseColorTableOpacity() != newAtts->GetUseColorTableOpacity());
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
     needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
     atts = *newAtts;
-
-    SetOpacity(atts.GetOpacity());
-    SetLighting(atts.GetLightingFlag());
-    SetLegend(atts.GetLegendFlag());
 
     // Update the plot's colors if needed.
     if(updateColors || atts.GetColorTableName() == "Default")
@@ -530,6 +547,11 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         colorsInitialized = true;
         SetColorTable(atts.GetColorTableName().c_str());
     }
+
+    SetOpacityFromAtts();
+    SetLighting(atts.GetLightingFlag());
+    SetLegend(atts.GetLegendFlag());
+
 
     glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
     glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
@@ -619,17 +641,32 @@ avtPseudocolorPlot::GetDataExtents(vector<double> &extents)
 //    avtLookupTable) to ensure that changes to active color in color table
 //    window will have effect if this plot's color table is "Default". 
 //
+//    Jeremy Meredith, Fri Feb 20 15:09:22 EST 2009
+//    Added support for using per-color alpha values from a color table
+//    (instead of just a single global opacity for the whole plot).
+//    We have to be careful to update the mapper opacity, render order,
+//    and return value here.
+//
 // ****************************************************************************
 
 bool
 avtPseudocolorPlot::SetColorTable(const char *ctName)
 {
-    bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
+    bool oldColorTableIsFullyOpaque = colorTableIsFullyOpaque;
+    colorTableIsFullyOpaque =
+        avtColorTables::Instance()->ColorTableIsFullyOpaque(ctName);
+    SetOpacityFromAtts();
 
+    bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
+    bool retval = (namesMatch &&
+                   (oldColorTableIsFullyOpaque != colorTableIsFullyOpaque));
     if (atts.GetColorTableName() == "Default")
-        return avtLUT->SetColorTable(NULL, namesMatch); 
+        retval |= avtLUT->SetColorTable(NULL, namesMatch,
+                                     atts.GetUseColorTableOpacity()); 
     else
-        return avtLUT->SetColorTable(ctName, namesMatch);
+        retval |= avtLUT->SetColorTable(ctName, namesMatch,
+                                     atts.GetUseColorTableOpacity());
+    return retval;
 }
 
 
@@ -864,13 +901,25 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
 //
+//    Jeremy Meredith, Fri Feb 20 15:12:26 EST 2009
+//    Added support for using per-color alpha values from a color table
+//    (instead of just a single global opacity for the whole plot).
+//    This function now needs to set a real opacity less than 1.0
+//    if the we have non-1.0 alphas set from the color table (since
+//    the value in the mapper gets propagated to the actor prop which is
+//    then used to move the geometry into the sorted transparency actor).
+//
 // ****************************************************************************
 
 void
-avtPseudocolorPlot::SetOpacity(double opacity)
+avtPseudocolorPlot::SetOpacityFromAtts()
 {
-    glyphMapper->SetOpacity(opacity);
-    if (opacity < 1.)
+    double origOpacity = atts.GetOpacity();
+    double realOpacity = atts.GetUseColorTableOpacity() ?
+        (colorTableIsFullyOpaque ? 1.0 : 0.99) : origOpacity;
+
+    glyphMapper->SetOpacity(realOpacity);
+    if (realOpacity < 1.0)
     {
        behavior->SetRenderOrder(MUST_GO_LAST);
        behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);

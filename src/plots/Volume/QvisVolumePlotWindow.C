@@ -387,6 +387,10 @@ QvisVolumePlotWindow::Create1DTransferFunctionGroup(int maxWidth)
 //   transfer functions. I also passed in a new parent for widgets. Finally,
 //   I changed the widget layout.
 //
+//   Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//   Added support for getting alphas from color table instead of
+//   set via freeform/gaussian editor.
+//
 // ****************************************************************************
 
 void
@@ -563,6 +567,10 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     rb->setChecked(true);
     modeButtonGroup->addButton(rb, 1);
     opLayout->addWidget(rb, 6, 0);
+    rb = new QRadioButton(tr("From Color Table"), opacityWidgetGroup);
+    rb->setChecked(true);
+    modeButtonGroup->addButton(rb, 2);
+    opLayout->addWidget(rb, 7, 0);
 
     // Create the gaussian opacity editor widget.
     QVBoxLayout *barLayout = new QVBoxLayout(0);
@@ -994,6 +1002,10 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   Brad Whitlock, Tue Dec 16 11:52:01 PST 2008
 //   I added code to update the histogram. I also renamed a field.
 //
+//   Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//   Added support for getting alphas from color table instead of
+//   set via freeform/gaussian editor.
+//
 // ****************************************************************************
 
 void
@@ -1034,26 +1046,34 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             break;
         case VolumeAttributes::ID_colorControlPoints:
             UpdateColorControlPoints();
+            UpdateFreeform();
             break;
         case VolumeAttributes::ID_opacityAttenuation:
             attenuationSlider->blockSignals(true);
             attenuationSlider->setValue(int(volumeAtts->GetOpacityAttenuation() * 255));
             attenuationSlider->blockSignals(false);
             break;
-        case VolumeAttributes::ID_freeformFlag:
+        case VolumeAttributes::ID_opacityMode:
             modeButtonGroup->blockSignals(true);
-            modeButtonGroup->button(volumeAtts->GetFreeformFlag()?0:1)->setChecked(true);
+            modeButtonGroup->button(int(volumeAtts->GetOpacityMode()))->setChecked(true);
             modeButtonGroup->blockSignals(false);
 
-            if(volumeAtts->GetFreeformFlag())
+            if(volumeAtts->GetOpacityMode() == VolumeAttributes::FreeformMode)
             {
                 alphaWidget->hide();
                 scribbleAlphaWidget->show();
+                scribbleAlphaWidget->setEnabled(true);
             }
-            else
+            else if(volumeAtts->GetOpacityMode() == VolumeAttributes::GaussianMode)
             {
                 scribbleAlphaWidget->hide();
                 alphaWidget->show();
+            }
+            else // from color table
+            {
+                alphaWidget->hide();
+                scribbleAlphaWidget->show();
+                scribbleAlphaWidget->setEnabled(false);
             }
             break;
         case VolumeAttributes::ID_opacityControlPoints:
@@ -1363,6 +1383,11 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Fri Sep 7 09:21:28 PDT 2001
 //   Moved the code to set the equalSpacing and smoothing check boxes to here.
 //
+//   Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//   Added support for getting alphas from color table instead of
+//   set via freeform/gaussian editor.  Make sure to pass the color
+//   table's alphas to the spectrum bar.
+//
 // ****************************************************************************
 
 void
@@ -1395,7 +1420,8 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
         {
             QColor ctmp((int)cpts[i].GetColors()[0],
                         (int)cpts[i].GetColors()[1],
-                        (int)cpts[i].GetColors()[2]);
+                        (int)cpts[i].GetColors()[2],
+                        (int)cpts[i].GetColors()[3]);
             spectrumBar->setControlPointColor(i, ctmp);
             spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
         }
@@ -1407,7 +1433,8 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
         {
             QColor ctmp((int)cpts[i].GetColors()[0],
                         (int)cpts[i].GetColors()[1],
-                        (int)cpts[i].GetColors()[2]);
+                        (int)cpts[i].GetColors()[2],
+                        (int)cpts[i].GetColors()[3]);
             spectrumBar->setControlPointColor(i, ctmp);
             spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
         }
@@ -1417,7 +1444,8 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
         {
             QColor ctmp((int)cpts[i].GetColors()[0],
                         (int)cpts[i].GetColors()[1],
-                        (int)cpts[i].GetColors()[2]);
+                        (int)cpts[i].GetColors()[2],
+                        (int)cpts[i].GetColors()[3]);
             spectrumBar->addControlPoint(ctmp, cpts[i].GetPosition());
         }
     }
@@ -1432,7 +1460,8 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
         {
             QColor ctmp((int)cpts[i].GetColors()[0],
                         (int)cpts[i].GetColors()[1],
-                        (int)cpts[i].GetColors()[2]);
+                        (int)cpts[i].GetColors()[2],
+                        (int)cpts[i].GetColors()[3]);
             spectrumBar->setControlPointColor(i, ctmp);
             spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
         }
@@ -1512,18 +1541,37 @@ QvisVolumePlotWindow::UpdateGaussianControlPoints()
 //   Brad Whitlock, Thu Sep 6 10:30:50 PDT 2001
 //   Modified to use the new version of the VolumeAttributes.
 //
+//   Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//   Added support for getting alphas from color table instead of
+//   set via freeform/gaussian editor.
+//
 // ****************************************************************************
 
 void
 QvisVolumePlotWindow::UpdateFreeform()
 {
-    const unsigned char *opacity = volumeAtts->GetFreeformOpacity();
-
-    // Convert the state object's opacities into floats that can be used by
-    // the alpha widget.
     float f[256];
-    for(int i = 0; i < 256; ++i)
-        f[i] = float(opacity[i]) / 255.;
+
+    if (volumeAtts->GetOpacityMode() == VolumeAttributes::ColorTableMode)
+    {
+        unsigned char rgb[256*3];
+        unsigned char alpha[256];
+        volumeAtts->GetColorControlPoints().GetColors(rgb, 256, alpha);
+
+        // Convert the state object's opacities into floats that can be used by
+        // the alpha widget.
+        for(int i = 0; i < 256; ++i)
+            f[i] = float(alpha[i]) / 255.;
+    }
+    else
+    {
+        const unsigned char *opacity = volumeAtts->GetFreeformOpacity();
+
+        // Convert the state object's opacities into floats that can be used by
+        // the alpha widget.
+        for(int i = 0; i < 256; ++i)
+            f[i] = float(opacity[i]) / 255.;
+    }
 
     // Set the alphas into the scribble widget.
     scribbleAlphaWidget->blockSignals(true);
@@ -1720,6 +1768,10 @@ QvisVolumePlotWindow::Update2DTransferFunction()
 //   I added code to update the 1D opacity widgets when we are showing
 //   colors in their backgrounds.
 //
+//   Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//   Added support for getting alphas from color table instead of
+//   set via freeform/gaussian editor.
+//
 // ****************************************************************************
 
 void
@@ -1746,7 +1798,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
             ptColors[0] = (unsigned char)c.red();
             ptColors[1] = (unsigned char)c.green();
             ptColors[2] = (unsigned char)c.blue();
-            ptColors[3] = 0;
+            ptColors[3] = (unsigned char)c.alpha();;
             pt.SetColors(ptColors);
             pt.SetPosition(pos);
             cpts.AddControlPoints(pt);
@@ -1767,7 +1819,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     if(which_widget == 1 || doAll)
     {
         // Store the opacity
-        if(!volumeAtts->GetFreeformFlag())
+        if(volumeAtts->GetOpacityMode() == VolumeAttributes::GaussianMode)
         {
             // Store the gaussian control points.
             GaussianControlPointList cpts;
@@ -1786,7 +1838,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
             }
             volumeAtts->SetOpacityControlPoints(cpts);
         }
-        else
+        else if (volumeAtts->GetOpacityMode() == VolumeAttributes::FreeformMode)
         {
             // Store the freeform opacities.
             float *alphas = scribbleAlphaWidget->getRawOpacities(256);
@@ -1795,6 +1847,10 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
                 a[i] = (unsigned char)(alphas[i] * 255.);
             volumeAtts->SetFreeformOpacity(a);
             delete [] alphas;
+        }
+        else
+        {
+            // Nothing to do....
         }
     }
 
@@ -2337,15 +2393,29 @@ QvisVolumePlotWindow::selectedColor(const QColor &color)
 //   Added code to update the freeform widget so GetCurrentValues does not
 //   undo the copy that we just did when auto update is on.
 //
+//   Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//   Added support for getting alphas from color table instead of set
+//   via freeform/gaussian editor.  When we enter this mode, make sure
+//   to copy the values from the color table to the freeform display.
+//
 // ****************************************************************************
 
 void
 QvisVolumePlotWindow::interactionModeChanged(int index)
 {
-    volumeAtts->SetFreeformFlag(index == 0);
-    if(volumeAtts->GetFreeformFlag())
+    VolumeAttributes::OpacityModes oldmode = volumeAtts->GetOpacityMode();
+    VolumeAttributes::OpacityModes newmode =
+        (VolumeAttributes::OpacityModes)index;
+
+    volumeAtts->SetOpacityMode(newmode);
+    if(oldmode == VolumeAttributes::GaussianMode &&
+       newmode == VolumeAttributes::FreeformMode)
     {
         CopyGaussianOpacitiesToFreeForm();
+        UpdateFreeform();
+    }
+    else if (newmode == VolumeAttributes::ColorTableMode)
+    {
         UpdateFreeform();
     }
     Apply();

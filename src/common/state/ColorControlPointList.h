@@ -115,7 +115,7 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    void GetColors(unsigned char *rgb, int ncolors) const;
+    void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 
     // IDs that can be used to identify fields in case statements

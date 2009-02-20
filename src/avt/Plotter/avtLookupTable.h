@@ -60,6 +60,11 @@ class vtkSkewLookupTable;
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 27, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 20 11:18:31 EST 2009
+//    Allowed SetColorTable to optionally also use the color table's opacity.
+//    Added new SetLUTColorsAndOpacity method to actually perform the work.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtLookupTable
@@ -69,10 +74,15 @@ class PLOTTER_API avtLookupTable
     virtual                      ~avtLookupTable();
 
     void                          SetSkewFactor(const double);
-    bool                          SetColorTable(const char *ctName, bool);
+    bool                          SetColorTable(const char *ctName, bool,
+                                                bool useOpacities = false);
     void                          SetLUTColors(const unsigned char *, int);
     void                          SetLUTColorsWithOpacity(
                                       const unsigned char *, int);
+    void                          SetLUTColorsAndOpacity(
+                                      const unsigned char *,
+                                      const unsigned char *,
+                                      int);
 
     int                           GetNumberOfColors(void);
 

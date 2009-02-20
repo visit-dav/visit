@@ -69,6 +69,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RENDERER_RAYCASTING = 2;
     public final static int RENDERER_RAYCASTINGINTEGRATION = 3;
     public final static int RENDERER_SLIVR = 4;
+    public final static int RENDERER_TUVOK = 5;
 
     public final static int GRADIENTTYPE_CENTEREDDIFFERENCES = 0;
     public final static int GRADIENTTYPE_SOBELOPERATOR = 1;
@@ -80,6 +81,10 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int SAMPLINGTYPE_KERNELBASED = 0;
     public final static int SAMPLINGTYPE_RASTERIZATION = 1;
 
+    public final static int OPACITYMODES_FREEFORMMODE = 0;
+    public final static int OPACITYMODES_GAUSSIANMODE = 1;
+    public final static int OPACITYMODES_COLORTABLEMODE = 2;
+
 
     public VolumeAttributes()
     {
@@ -89,7 +94,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         lightingFlag = true;
         colorControlPoints = new ColorControlPointList();
         opacityAttenuation = 1f;
-        freeformFlag = true;
+        opacityMode = OPACITYMODES_FREEFORMMODE;
         opacityControlPoints = new GaussianControlPointList();
         resampleTarget = 50000;
         opacityVariable = new String("default");
@@ -113,8 +118,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         skewFactor = 1;
         sampling = SAMPLINGTYPE_RASTERIZATION;
         rendererSamples = 3f;
-        TransferFunctionWidgetList = new Vector();
-        transferFunctionDim = 0;
+        transferFunction2DWidgets = new Vector();
+        transferFunctionDim = 1;
     }
 
     public VolumeAttributes(VolumeAttributes obj)
@@ -127,7 +132,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         lightingFlag = obj.lightingFlag;
         colorControlPoints = new ColorControlPointList(obj.colorControlPoints);
         opacityAttenuation = obj.opacityAttenuation;
-        freeformFlag = obj.freeformFlag;
+        opacityMode = obj.opacityMode;
         opacityControlPoints = new GaussianControlPointList(obj.opacityControlPoints);
         resampleTarget = obj.resampleTarget;
         opacityVariable = new String(obj.opacityVariable);
@@ -152,12 +157,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         skewFactor = obj.skewFactor;
         sampling = obj.sampling;
         rendererSamples = obj.rendererSamples;
-        // *** Copy the TransferFunctionWidgetList field ***
-        TransferFunctionWidgetList = new Vector(obj.TransferFunctionWidgetList.size());
-        for(i = 0; i < obj.TransferFunctionWidgetList.size(); ++i)
+        // *** Copy the transferFunction2DWidgets field ***
+        transferFunction2DWidgets = new Vector(obj.transferFunction2DWidgets.size());
+        for(i = 0; i < obj.transferFunction2DWidgets.size(); ++i)
         {
-            TransferFunctionWidget newObj = (TransferFunctionWidget)TransferFunctionWidgetList.elementAt(i);
-            TransferFunctionWidgetList.addElement(new TransferFunctionWidget(newObj));
+            TransferFunctionWidget newObj = (TransferFunctionWidget)transferFunction2DWidgets.elementAt(i);
+            transferFunction2DWidgets.addElement(new TransferFunctionWidget(newObj));
         }
 
         transferFunctionDim = obj.transferFunctionDim;
@@ -174,21 +179,21 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 256 && freeformOpacity_equal; ++i)
             freeformOpacity_equal = (freeformOpacity[i] == obj.freeformOpacity[i]);
 
-        // Compare the elements in the TransferFunctionWidgetList vector.
-        boolean TransferFunctionWidgetList_equal = (obj.TransferFunctionWidgetList.size() == TransferFunctionWidgetList.size());
-        for(i = 0; (i < TransferFunctionWidgetList.size()) && TransferFunctionWidgetList_equal; ++i)
+        // Compare the elements in the transferFunction2DWidgets vector.
+        boolean transferFunction2DWidgets_equal = (obj.transferFunction2DWidgets.size() == transferFunction2DWidgets.size());
+        for(i = 0; (i < transferFunction2DWidgets.size()) && transferFunction2DWidgets_equal; ++i)
         {
             // Make references to TransferFunctionWidget from Object.
-            TransferFunctionWidget TransferFunctionWidgetList1 = (TransferFunctionWidget)TransferFunctionWidgetList.elementAt(i);
-            TransferFunctionWidget TransferFunctionWidgetList2 = (TransferFunctionWidget)obj.TransferFunctionWidgetList.elementAt(i);
-            TransferFunctionWidgetList_equal = TransferFunctionWidgetList1.equals(TransferFunctionWidgetList2);
+            TransferFunctionWidget transferFunction2DWidgets1 = (TransferFunctionWidget)transferFunction2DWidgets.elementAt(i);
+            TransferFunctionWidget transferFunction2DWidgets2 = (TransferFunctionWidget)obj.transferFunction2DWidgets.elementAt(i);
+            transferFunction2DWidgets_equal = transferFunction2DWidgets1.equals(transferFunction2DWidgets2);
         }
         // Create the return value
         return ((legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
                 (colorControlPoints.equals(obj.colorControlPoints)) &&
                 (opacityAttenuation == obj.opacityAttenuation) &&
-                (freeformFlag == obj.freeformFlag) &&
+                (opacityMode == obj.opacityMode) &&
                 (opacityControlPoints.equals(obj.opacityControlPoints)) &&
                 (resampleTarget == obj.resampleTarget) &&
                 (opacityVariable.equals(obj.opacityVariable)) &&
@@ -210,7 +215,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (skewFactor == obj.skewFactor) &&
                 (sampling == obj.sampling) &&
                 (rendererSamples == obj.rendererSamples) &&
-                TransferFunctionWidgetList_equal &&
+                transferFunction2DWidgets_equal &&
                 (transferFunctionDim == obj.transferFunctionDim));
     }
 
@@ -242,9 +247,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
-    public void SetFreeformFlag(boolean freeformFlag_)
+    public void SetOpacityMode(int opacityMode_)
     {
-        freeformFlag = freeformFlag_;
+        opacityMode = opacityMode_;
         Select(4);
     }
 
@@ -386,7 +391,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public boolean                  GetLightingFlag() { return lightingFlag; }
     public ColorControlPointList    GetColorControlPoints() { return colorControlPoints; }
     public float                    GetOpacityAttenuation() { return opacityAttenuation; }
-    public boolean                  GetFreeformFlag() { return freeformFlag; }
+    public int                      GetOpacityMode() { return opacityMode; }
     public GaussianControlPointList GetOpacityControlPoints() { return opacityControlPoints; }
     public int                      GetResampleTarget() { return resampleTarget; }
     public String                   GetOpacityVariable() { return opacityVariable; }
@@ -408,7 +413,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public double                   GetSkewFactor() { return skewFactor; }
     public int                      GetSampling() { return sampling; }
     public float                    GetRendererSamples() { return rendererSamples; }
-    public Vector                   GetTransferFunctionWidgetList() { return TransferFunctionWidgetList; }
+    public Vector                   GetTransferFunction2DWidgets() { return transferFunction2DWidgets; }
     public int                      GetTransferFunctionDim() { return transferFunctionDim; }
 
     // Write and read methods.
@@ -423,7 +428,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(3, buf))
             buf.WriteFloat(opacityAttenuation);
         if(WriteSelect(4, buf))
-            buf.WriteBool(freeformFlag);
+            buf.WriteInt(opacityMode);
         if(WriteSelect(5, buf))
             opacityControlPoints.Write(buf);
         if(WriteSelect(6, buf))
@@ -468,10 +473,10 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteFloat(rendererSamples);
         if(WriteSelect(26, buf))
         {
-            buf.WriteInt(TransferFunctionWidgetList.size());
-            for(int i = 0; i < TransferFunctionWidgetList.size(); ++i)
+            buf.WriteInt(transferFunction2DWidgets.size());
+            for(int i = 0; i < transferFunction2DWidgets.size(); ++i)
             {
-                TransferFunctionWidget tmp = (TransferFunctionWidget)TransferFunctionWidgetList.elementAt(i);
+                TransferFunctionWidget tmp = (TransferFunctionWidget)transferFunction2DWidgets.elementAt(i);
                 tmp.Write(buf);
             }
         }
@@ -500,7 +505,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 SetOpacityAttenuation(buf.ReadFloat());
                 break;
             case 4:
-                SetFreeformFlag(buf.ReadBool());
+                SetOpacityMode(buf.ReadInt());
                 break;
             case 5:
                 opacityControlPoints.Read(buf);
@@ -569,12 +574,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             case 26:
                 {
                     int len = buf.ReadInt();
-                    TransferFunctionWidgetList.clear();
+                    transferFunction2DWidgets.clear();
                     for(int j = 0; j < len; ++j)
                     {
                         TransferFunctionWidget tmp = new TransferFunctionWidget();
                         tmp.Read(buf);
-                        TransferFunctionWidgetList.addElement(tmp);
+                        transferFunction2DWidgets.addElement(tmp);
                     }
                 }
                 Select(26);
@@ -593,7 +598,14 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         str = str + indent + "colorControlPoints = {\n" + colorControlPoints.toString(indent + "    ") + indent + "}\n";
         str = str + floatToString("opacityAttenuation", opacityAttenuation, indent) + "\n";
-        str = str + boolToString("freeformFlag", freeformFlag, indent) + "\n";
+        str = str + indent + "opacityMode = ";
+        if(opacityMode == OPACITYMODES_FREEFORMMODE)
+            str = str + "OPACITYMODES_FREEFORMMODE";
+        if(opacityMode == OPACITYMODES_GAUSSIANMODE)
+            str = str + "OPACITYMODES_GAUSSIANMODE";
+        if(opacityMode == OPACITYMODES_COLORTABLEMODE)
+            str = str + "OPACITYMODES_COLORTABLEMODE";
+        str = str + "\n";
         str = str + indent + "opacityControlPoints = {\n" + opacityControlPoints.toString(indent + "    ") + indent + "}\n";
         str = str + intToString("resampleTarget", resampleTarget, indent) + "\n";
         str = str + stringToString("opacityVariable", opacityVariable, indent) + "\n";
@@ -619,6 +631,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RENDERER_RAYCASTINGINTEGRATION";
         if(rendererType == RENDERER_SLIVR)
             str = str + "RENDERER_SLIVR";
+        if(rendererType == RENDERER_TUVOK)
+            str = str + "RENDERER_TUVOK";
         str = str + "\n";
         str = str + indent + "gradientType = ";
         if(gradientType == GRADIENTTYPE_CENTEREDDIFFERENCES)
@@ -643,12 +657,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "SAMPLINGTYPE_RASTERIZATION";
         str = str + "\n";
         str = str + floatToString("rendererSamples", rendererSamples, indent) + "\n";
-        str = str + indent + "TransferFunctionWidgetList = {\n";
-        for(int i = 0; i < TransferFunctionWidgetList.size(); ++i)
+        str = str + indent + "transferFunction2DWidgets = {\n";
+        for(int i = 0; i < transferFunction2DWidgets.size(); ++i)
         {
-            AttributeSubject s = (AttributeSubject)TransferFunctionWidgetList.elementAt(i);
+            AttributeSubject s = (AttributeSubject)transferFunction2DWidgets.elementAt(i);
             str = str + s.toString(indent + "    ");
-            if(i < TransferFunctionWidgetList.size()-1)
+            if(i < transferFunction2DWidgets.size()-1)
                 str = str + ", ";
             str = str + "\n";
         }
@@ -658,35 +672,35 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     }
 
     // Attributegroup convenience methods
-    public void AddTransferFunctionWidgetList(TransferFunctionWidget obj)
+    public void AddTransferFunction2DWidgets(TransferFunctionWidget obj)
     {
-        TransferFunctionWidgetList.addElement(new TransferFunctionWidget(obj));
+        transferFunction2DWidgets.addElement(new TransferFunctionWidget(obj));
         Select(26);
     }
 
-    public void ClearTransferFunctionWidgetLists()
+    public void ClearTransferFunction2DWidgets()
     {
-        TransferFunctionWidgetList.clear();
+        transferFunction2DWidgets.clear();
         Select(26);
     }
 
-    public void RemoveTransferFunctionWidgetList(int index)
+    public void RemoveTransferFunction2DWidgets(int index)
     {
-        if(index >= 0 && index < TransferFunctionWidgetList.size())
+        if(index >= 0 && index < transferFunction2DWidgets.size())
         {
-            TransferFunctionWidgetList.remove(index);
+            transferFunction2DWidgets.remove(index);
             Select(26);
         }
     }
 
-    public int GetNumTransferFunctionWidgetLists()
+    public int GetNumTransferFunction2DWidgets()
     {
-        return TransferFunctionWidgetList.size();
+        return transferFunction2DWidgets.size();
     }
 
-    public TransferFunctionWidget GetTransferFunctionWidgetList(int i)
+    public TransferFunctionWidget GetTransferFunction2DWidgets(int i)
     {
-        TransferFunctionWidget tmp = (TransferFunctionWidget)TransferFunctionWidgetList.elementAt(i);
+        TransferFunctionWidget tmp = (TransferFunctionWidget)transferFunction2DWidgets.elementAt(i);
         return tmp;
     }
 
@@ -696,7 +710,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private boolean                  lightingFlag;
     private ColorControlPointList    colorControlPoints;
     private float                    opacityAttenuation;
-    private boolean                  freeformFlag;
+    private int                      opacityMode;
     private GaussianControlPointList opacityControlPoints;
     private int                      resampleTarget;
     private String                   opacityVariable;
@@ -718,7 +732,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private double                   skewFactor;
     private int                      sampling;
     private float                    rendererSamples;
-    private Vector                   TransferFunctionWidgetList; // vector of TransferFunctionWidget objects
+    private Vector                   transferFunction2DWidgets; // vector of TransferFunctionWidget objects
     private int                      transferFunctionDim;
 }
 

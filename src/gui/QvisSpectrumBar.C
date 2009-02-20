@@ -62,12 +62,50 @@
 /// Declarations of internally used classes and structs.
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
+static const char * const alphaBackground_xpm[] = {
+"16 16 2 1",
+".    c #a0a0a0",
+"+    c #FFFFFF",
+"........++++++++",
+"........++++++++",
+"........++++++++",
+"........++++++++",
+"........++++++++",
+"........++++++++",
+"........++++++++",
+"........++++++++",
+"++++++++........",
+"++++++++........",
+"++++++++........",
+"++++++++........",
+"++++++++........",
+"++++++++........",
+"++++++++........",
+"++++++++........",
+};
 
+
+// ****************************************************************************
+// Struct: ControlPoint
+//
+// Purpose:
+//   This is a "private" class that contains the control point.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   2001
+//
+// Modifications:
+//   Jeremy Meredith, Fri Feb 20 14:54:44 EST 2009
+//   Added support for alpha values.
+//   
+// ****************************************************************************
 typedef struct
 {
     int   rank;
     float position;
-    float color[3];
+    float color[4];
 } ControlPoint;
 
 static int ControlPointCompare(const void *c1, const void *c2);
@@ -85,6 +123,8 @@ static int ControlPointCompare(const void *c1, const void *c2);
 // Creation:   Wed Jan 3 10:00:33 PDT 2001
 //
 // Modifications:
+//   Jeremy Meredith, Fri Feb 20 14:54:44 EST 2009
+//   Added support for alpha values.
 //   
 // ****************************************************************************
 
@@ -104,7 +144,7 @@ public:
     int   NumControlPoints() const;
     float Position(int index) const;
     int   Rank(int rank) const;
-    void  SetColor(int index, float r, float g, float b);
+    void  SetColor(int index, float r, float g, float b, float a);
     void  SetColorValues(const float *cv, int n);
     void  SetEditMode(bool val);
     void  SetPosition(int index, float pos);
@@ -153,6 +193,9 @@ private:
 //   Brad Whitlock, Mon Jun  2 10:55:56 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Fri Feb 20 14:54:44 EST 2009
+//   Added background checkerboard image for alpha support.
+//
 // ****************************************************************************
 
 QvisSpectrumBar::QvisSpectrumBar(QWidget *parent) : QWidget(parent)
@@ -179,6 +222,9 @@ QvisSpectrumBar::QvisSpectrumBar(QWidget *parent) : QWidget(parent)
     // Set the widget's minimum width and height.
     setMinimumWidth(50);
     setMinimumHeight(60);
+
+    // Load the checkerboard pattern as an XPM
+    alphaBackground = QImage(alphaBackground_xpm);
 }
 
 // ****************************************************************************
@@ -324,6 +370,8 @@ QvisSpectrumBar::continuousUpdate() const
 // Creation:   Wed Jan 3 10:28:35 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//    Added alpha support.
 //   
 // ****************************************************************************
 
@@ -333,9 +381,10 @@ QvisSpectrumBar::controlPointColor(int index) const
     if(index >= 0 && index < controlPoints->NumControlPoints())
         return QColor((int)(controlPoints->operator[](index).color[0] * 255.),
                      (int)(controlPoints->operator[](index).color[1] * 255.),
-                     (int)(controlPoints->operator[](index).color[2] * 255.));
+                     (int)(controlPoints->operator[](index).color[2] * 255.),
+                     (int)(controlPoints->operator[](index).color[3] * 255.));
     else
-        return QColor(0,0,0);
+        return QColor(0,0,0,255);
 }
 
 // ****************************************************************************
@@ -552,6 +601,8 @@ QvisSpectrumBar::setSuppressUpdates(bool val)
 // Notes:      Emits controlPointAdded, activeControlPointChanged signals.
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//    Added alpha support.
 //   
 // ****************************************************************************
 
@@ -572,6 +623,7 @@ QvisSpectrumBar::addControlPoint(const QColor &color, float position)
     temp.color[0] = (float)color.red() / 255;
     temp.color[1] = (float)color.green() / 255;
     temp.color[2] = (float)color.blue() / 255;
+    temp.color[3] = (float)color.alpha() / 255;
 
     // Figure out a position for the new point.
     if(position < 0. || position > 1.)
@@ -695,6 +747,9 @@ QvisSpectrumBar::alignControlPoints()
 //   Kathleen Bonnell, Tue Dec 28 16:20:47 PST 2004
 //   Cast args for QColor constructor to int to prevent comiler warnings.
 //   
+//   Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//   Added alpha support.
+//
 // ****************************************************************************
 
 void
@@ -716,7 +771,8 @@ QvisSpectrumBar::removeControlPoint()
         // Emit information about the control point that was removed.
         QColor temp((int)(removedPoint.color[0] * 255.),
                     (int)(removedPoint.color[1] * 255.),
-                    (int)(removedPoint.color[2] * 255.));
+                    (int)(removedPoint.color[2] * 255.),
+                    (int)(removedPoint.color[3] * 255.));
         emit controlPointRemoved(index, temp, removedPoint.position);
 
         // Emit the index of the new active control point.
@@ -741,16 +797,18 @@ QvisSpectrumBar::removeControlPoint()
 // Creation:   Wed Jan 3 10:57:15 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//    Added alpha support.
 //   
 // ****************************************************************************
 
 void
 QvisSpectrumBar::setRawColors(unsigned char *colors, int ncolors)
 {
-    float *fcolors = new float[ncolors * 3];
+    float *fcolors = new float[ncolors * 4];
 
     // Turn the unsigned chars into floats.
-    for(int i = 0; i < ncolors * 3; ++i)
+    for(int i = 0; i < ncolors * 4; ++i)
         fcolors[i] = (float)colors[i] / 255;
 
     // Note that the fcolors array is owned by the controlPoints object after
@@ -779,6 +837,9 @@ QvisSpectrumBar::setRawColors(unsigned char *colors, int ncolors)
 //   Brad Whitlock, Mon Jul 14 14:44:11 PST 2003
 //   I added some value checking.
 //
+//   Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//   Added alpha support.
+//
 // ****************************************************************************
 
 void
@@ -786,13 +847,13 @@ QvisSpectrumBar::setEditMode(bool val)
 {
     if(!val)
     {
-        float *fcolors = new float[256 * 3];
+        float *fcolors = new float[256 * 4];
         unsigned char *raw = getRawColors(256);
 
         if(raw)
         {
             // Turn the unsigned chars into floats.
-            for(int i = 0; i < 256 * 3; ++i)
+            for(int i = 0; i < 256 * 4; ++i)
                 fcolors[i] = (float)raw[i] / 255;
 
             // Note that the fcolors array is owned by the controlPoints object after
@@ -822,6 +883,8 @@ QvisSpectrumBar::setEditMode(bool val)
 // Creation:   Wed Jan 3 11:00:36 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//    Added alpha support.
 //   
 // ****************************************************************************
 
@@ -830,14 +893,15 @@ QvisSpectrumBar::setControlPointColor(int index, const QColor &color)
 {
     if(index >= 0 && index < controlPoints->NumControlPoints())
     {
-         float r, g, b;
+         float r, g, b, a;
          r = (float)color.red() / 255.;
          g = (float)color.green() / 255.;
          b = (float)color.blue() / 255.;
+         a = (float)color.alpha() / 255.;
 
          // Set the color and update the widget.
          controlPoints->SetEditMode(true);
-         controlPoints->SetColor(index, r, g, b);
+         controlPoints->SetColor(index, r, g, b, a);
          update();
 
          // Emit a signal indicating that a control point changed colors.
@@ -1452,6 +1516,9 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 //   Brad Whitlock, Mon Jun  2 11:05:39 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Fri Feb 20 14:54:44 EST 2009
+//   Added support for alpha values.
+//
 // ****************************************************************************
 
 void
@@ -1475,26 +1542,89 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
     if(interpolatedColors)
     {
         unsigned char *cptr = interpolatedColors;
+        paint.fillRect(area,QBrush(alphaBackground));
+
+        QColor brightAlphaColor(255,255,255,255);
+        QColor darkAlphaColor(0,0,0,255);
+            
+        int prevAlphPos = -1;
         
         // Draw the spectrum based on the orientation of the widget.
         if(orientation == HorizontalTop || orientation == HorizontalBottom)
         {
             // Draw vertical lines.
-            for(int i = 0; i < range; ++i, cptr += 3)
+            for(int i = 0; i < range; ++i, cptr += 4)
             {
-                paint.setPen(QPen(QColor((int)cptr[0],(int)cptr[1],(int)cptr[2])));
+                int curAlphPos = int(area.y() +
+                                   (1.-float(cptr[3])/255.)*(area.height()-1));
+                if (i==0)
+                    prevAlphPos = curAlphPos;
+                else if (curAlphPos > prevAlphPos)
+                    prevAlphPos++;
+                else if (curAlphPos < prevAlphPos)
+                    prevAlphPos--;
+
+                // Draw the colors opaque above the alpha line.
+                // and translucet below.
+                paint.setPen(QPen(QColor((int)cptr[0],
+                                         (int)cptr[1],
+                                         (int)cptr[2],
+                                         (int)cptr[3])));
                 paint.drawLine(i + area.x(), area.y(),
+                               i + area.x(), curAlphPos);
+
+                paint.setPen(QPen(QColor((int)cptr[0],
+                                         (int)cptr[1],
+                                         (int)cptr[2],
+                                         255)));
+                paint.drawLine(i + area.x(), curAlphPos,
                                i + area.x(), area.y() + area.height() + 1);
+
+                // Draw the alpha value as lines
+                paint.setPen(QPen(brightAlphaColor));
+                paint.drawLine(i+area.x(), prevAlphPos,
+                               i+area.x(), curAlphPos);
+                paint.setPen(QPen(darkAlphaColor));
+                paint.drawPoint(i+area.x(), curAlphPos+1);
+                prevAlphPos = curAlphPos;
             }
         }
         else
         {
             // Draw horizontal lines.
-            for(int i = range - 1; i >= 0; --i, cptr += 3)
+            for(int i = range - 1; i >= 0; --i, cptr += 4)
             {
-                paint.setPen(QPen(QColor((int)cptr[0],(int)cptr[1],(int)cptr[2])));
+                int curAlphPos = int(area.x() +
+                                     float(cptr[3])/255.)*(area.width()-1);
+                if (i==0)
+                    prevAlphPos = curAlphPos;
+                else if (curAlphPos > prevAlphPos)
+                    prevAlphPos++;
+                else if (curAlphPos < prevAlphPos)
+                    prevAlphPos--;
+
+                // Draw the colors opaque to the left of the alpha line.
+                // and translucet to the right.
+                paint.setPen(QPen(QColor((int)cptr[0],
+                                         (int)cptr[1],
+                                         (int)cptr[2],
+                                         (int)cptr[3])));
                 paint.drawLine(area.x(), i + area.y(),
+                               curAlphPos, i + area.y());
+
+                paint.setPen(QPen(QColor((int)cptr[0],
+                                         (int)cptr[1],
+                                         (int)cptr[2],
+                                         255)));
+                paint.drawLine(curAlphPos, i + area.y(),
                                area.x() + area.width() + 1, i + area.y());
+
+                // Draw the alpha value as lines
+                paint.setPen(QPen(brightAlphaColor));
+                paint.drawLine(prevAlphPos, i+area.y(),
+                               curAlphPos, i+area.y());
+                paint.setPen(QPen(darkAlphaColor));
+                paint.drawPoint(curAlphPos+1, i+area.y());
             }
         }
 
@@ -1533,6 +1663,9 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
 //   Brad Whitlock, Mon Jul 14 14:43:04 PST 2003
 //   I added a little range checking code.
 //
+//   Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//   Added alpha support.
+//
 // ****************************************************************************
 
 unsigned char *
@@ -1548,7 +1681,7 @@ QvisSpectrumBar::getRawColors(int range)
         return 0;
 
     // Allocate memory for the array to be returned.
-    int arrayLength = range * 3;
+    int arrayLength = range * 4;
     row = new unsigned char[arrayLength];
 
     /*******************************************
@@ -1562,11 +1695,12 @@ QvisSpectrumBar::getRawColors(int range)
         {
             /* The desired index into the colors we have. */
             int src_index = (int)(((float)i /(float)(range - 1)) * 
-               (this->controlPoints->NumColorValues() - 1)) * 3;
+               (this->controlPoints->NumColorValues() - 1)) * 4;
 
-            row[i * 3]     = (unsigned char)(controlPoints->ColorValue(src_index) * 255.);
-            row[i * 3 + 1] = (unsigned char)(controlPoints->ColorValue(src_index+1) * 255.);
-            row[i * 3 + 2] = (unsigned char)(controlPoints->ColorValue(src_index+2) * 255.);
+            row[i * 4]     = (unsigned char)(controlPoints->ColorValue(src_index) * 255.);
+            row[i * 4 + 1] = (unsigned char)(controlPoints->ColorValue(src_index+1) * 255.);
+            row[i * 4 + 2] = (unsigned char)(controlPoints->ColorValue(src_index+2) * 255.);
+            row[i * 4 + 3] = (unsigned char)(controlPoints->ColorValue(src_index+2) * 255.);
         }
 
         return row;
@@ -1607,7 +1741,7 @@ QvisSpectrumBar::getRawColors(int range)
                 if(!smoothing())
                 {
                     memcpy((char *)newpts[i].color,
-                          (char *)oldpts[ci].color, 3 * sizeof(float));
+                          (char *)oldpts[ci].color, 4 * sizeof(float));
                 }
                 else
                 {
@@ -1615,7 +1749,7 @@ QvisSpectrumBar::getRawColors(int range)
                     {
                         memcpy((char *)newpts[i].color,
                               (char *)oldpts[ci].color,
-                               3 * sizeof(float));
+                               4 * sizeof(float));
                     }
                     else
                     {
@@ -1625,6 +1759,8 @@ QvisSpectrumBar::getRawColors(int range)
                             oldpts[i-1].color[1])*0.5;
                         newpts[i].color[2] = (oldpts[i].color[2] + 
                             oldpts[i-1].color[2])*0.5;
+                        newpts[i].color[3] = (oldpts[i].color[3] + 
+                            oldpts[i-1].color[3])*0.5;
                     }
                 }
             } // end for
@@ -1639,7 +1775,7 @@ QvisSpectrumBar::getRawColors(int range)
                    ((oldpts[i].position - oldpts[i-1].position) * 0.5);
                 memcpy((char *)newpts[i].color,
                       (char *)oldpts[i].color,
-                       3 * sizeof(float));
+                       4 * sizeof(float));
             }
             memcpy((char *)&newpts[npoints-1],(char *)&oldpts[npoints-2],
                    sizeof(ControlPoint));
@@ -1656,8 +1792,8 @@ QvisSpectrumBar::getRawColors(int range)
     int consecutiveZeroLengthRanges = 0;
     for(ci = 0; ci < npoints - 1; ci++)
     {
-        float delta_r, delta_g, delta_b;
-        float r_sum, g_sum, b_sum;
+        float delta_r, delta_g, delta_b, delta_a;
+        float r_sum, g_sum, b_sum, a_sum;
         int   color_start_i, color_end_i, color_range;
 
         // Initialize some variables.
@@ -1678,6 +1814,7 @@ QvisSpectrumBar::getRawColors(int range)
                         row[c++] = (unsigned char)(c1->color[0] * 255);
                         row[c++] = (unsigned char)(c1->color[1] * 255);
                         row[c++] = (unsigned char)(c1->color[2] * 255);
+                        row[c++] = (unsigned char)(c1->color[3] * 255);
                     }
                 }
             }
@@ -1688,12 +1825,16 @@ QvisSpectrumBar::getRawColors(int range)
                 delta_r = (float)(c2->color[0]-c1->color[0])/(float)(color_range-1);
                 delta_g = (float)(c2->color[1]-c1->color[1])/(float)(color_range-1);
                 delta_b = (float)(c2->color[2]-c1->color[2])/(float)(color_range-1);
+                delta_a = (float)(c2->color[3]-c1->color[3])/(float)(color_range-1);
             }
             else
-                delta_r = delta_g = delta_b = 0.;
+                delta_r = delta_g = delta_b = delta_a = 0.;
 
             // Initialize sums.
-            r_sum = c1->color[0]; g_sum = c1->color[1]; b_sum = c1->color[2];
+            r_sum = c1->color[0];
+            g_sum = c1->color[1];
+            b_sum = c1->color[2];
+            a_sum = c1->color[3];
 
             // Interpolate color1 to color2.
             for(i = color_start_i; i < color_end_i; i++)
@@ -1704,10 +1845,14 @@ QvisSpectrumBar::getRawColors(int range)
                     row[c++] = (unsigned char)(r_sum * 255);
                     row[c++] = (unsigned char)(g_sum * 255);
                     row[c++] = (unsigned char)(b_sum * 255);
+                    row[c++] = (unsigned char)(a_sum * 255);
                 }
 
                 // Add the color deltas.
-                r_sum += delta_r; g_sum += delta_g; b_sum += delta_b;
+                r_sum += delta_r;
+                g_sum += delta_g;
+                b_sum += delta_b;
+                a_sum += delta_a;
             }
 
             if(ci == npoints - 2 && color_end_i != range)
@@ -1719,6 +1864,7 @@ QvisSpectrumBar::getRawColors(int range)
                         row[c++] = (unsigned char)(c2->color[0] * 255);
                         row[c++] = (unsigned char)(c2->color[1] * 255);
                         row[c++] = (unsigned char)(c2->color[2] * 255);
+                        row[c++] = (unsigned char)(c2->color[3] * 255);
                     }
                 }
             }
@@ -1728,10 +1874,11 @@ QvisSpectrumBar::getRawColors(int range)
             row[c++] = (unsigned char)(c1->color[0] * 255);
             row[c++] = (unsigned char)(c1->color[1] * 255);
             row[c++] = (unsigned char)(c1->color[2] * 255);
+            row[c++] = (unsigned char)(c1->color[3] * 255);
 
             // If this is the second zero length range in a row, back up.
             if(++consecutiveZeroLengthRanges > 1)
-                c -= 3;
+                c -= 4;
         }
 
         c1++;
@@ -2539,13 +2686,15 @@ ControlPointList::Clear()
 // Creation:   Wed Jan 3 11:31:40 PDT 2001
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//    Added alpha support.
+//
 // ****************************************************************************
 
 float
 ControlPointList::ColorValue(int index) const
 {
-    if(nvals == 0 || colorvals == NULL || index < 0 || index >= nvals*3)
+    if(nvals == 0 || colorvals == NULL || index < 0 || index >= nvals*4)
         return 0.;
     else
         return colorvals[index];
@@ -2730,17 +2879,20 @@ ControlPointList::SetEditMode(bool val)
 // Creation:   Wed Jan 3 11:37:12 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
+//    Added alpha support.
 //   
 // ****************************************************************************
 
 void
-ControlPointList::SetColor(int index, float r, float g, float b)
+ControlPointList::SetColor(int index, float r, float g, float b, float a)
 {
     if(nels != 0 && list != NULL && index >= 0 && index < nels)
     {
         list[index].color[0] = r;
         list[index].color[1] = g;
         list[index].color[2] = b;
+        list[index].color[3] = a;
     }
 }
 

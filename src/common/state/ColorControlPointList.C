@@ -996,31 +996,40 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Fix indexing bug that can come up with huge numbers of colors.  This
 //   bug ultimately led to memory overwrites and a crash.
 //
+//   Jeremy Meredith, Fri Feb 20 15:06:36 EST 2009
+//   Added optional alpha channel support (can set to NULL if not wanted).
+//
 // ****************************************************************************
 
 void
-ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
+ColorControlPointList::GetColors(unsigned char *rgb,
+                                 int ncolors,
+                                 unsigned char *alpha) const
 {
     int i, ci, c = 0;
     float *newPts_pos = NULL;
     float *newPts_r = NULL;
     float *newPts_g = NULL;
     float *newPts_b = NULL;
+    float *newPts_a = NULL;
 
     float *oldPts_pos = NULL;
     float *oldPts_r = NULL;
     float *oldPts_g = NULL;
     float *oldPts_b = NULL;
+    float *oldPts_a = NULL;
 
     float *c1_pos = NULL;
     float *c1_r = NULL;
     float *c1_g = NULL;
     float *c1_b = NULL;
+    float *c1_a = NULL;
 
     float *c2_pos = NULL;
     float *c2_r = NULL;
     float *c2_g = NULL;
     float *c2_b = NULL;
+    float *c2_a = NULL;
 
     /*******************************************
      * Phase I -- Get some values from the color
@@ -1043,6 +1052,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
         oldPts_r   = new float[npoints + 1];
         oldPts_g   = new float[npoints + 1];
         oldPts_b   = new float[npoints + 1];
+        oldPts_a   = new float[npoints + 1];
     }
     else
     {
@@ -1050,6 +1060,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
         oldPts_r   = new float[npoints];
         oldPts_g   = new float[npoints];
         oldPts_b   = new float[npoints];
+        oldPts_a   = new float[npoints];
     }
 
     for(i = 0; i < npoints; ++i)
@@ -1059,6 +1070,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
         oldPts_r[i] = float(cpt.GetColors()[0]) / 255.;
         oldPts_g[i] = float(cpt.GetColors()[1]) / 255.;
         oldPts_b[i] = float(cpt.GetColors()[2]) / 255.;
+        oldPts_a[i] = float(cpt.GetColors()[3]) / 255.;
     }
 
     /*******************************************
@@ -1071,6 +1083,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
         newPts_r = new float[npoints];
         newPts_g = new float[npoints];
         newPts_b = new float[npoints];
+        newPts_a = new float[npoints];
 
         if(equal || discrete)
         {
@@ -1085,6 +1098,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
                     newPts_r[i] = oldPts_r[ci];
                     newPts_g[i] = oldPts_g[ci];
                     newPts_b[i] = oldPts_b[ci];
+                    newPts_a[i] = oldPts_a[ci];
                 }
                 else
                 {
@@ -1093,12 +1107,14 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
                         newPts_r[i] = oldPts_r[ci];
                         newPts_g[i] = oldPts_g[ci];
                         newPts_b[i] = oldPts_b[ci];
+                        newPts_a[i] = oldPts_a[ci];
                     }
                     else
                     {
                         newPts_r[i] = (oldPts_r[i] + oldPts_r[i-1])*0.5;
                         newPts_g[i] = (oldPts_g[i] + oldPts_g[i-1])*0.5;
                         newPts_b[i] = (oldPts_b[i] + oldPts_b[i-1])*0.5;
+                        newPts_a[i] = (oldPts_a[i] + oldPts_a[i-1])*0.5;
                     }
                 }
             } // end for
@@ -1110,6 +1126,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
             newPts_r[0] = oldPts_r[0];
             newPts_g[0] = oldPts_g[0];
             newPts_b[0] = oldPts_b[0];
+            newPts_a[0] = oldPts_a[0];
             for(i = 1; i < npoints - 1; i++)
             {
                 newPts_pos[i] = oldPts_pos[i-1] + 
@@ -1117,16 +1134,19 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
                 newPts_r[i] = oldPts_r[i];
                 newPts_g[i] = oldPts_g[i];
                 newPts_b[i] = oldPts_b[i];
+                newPts_a[i] = oldPts_a[i];
             }
             newPts_pos[npoints-1] = oldPts_pos[npoints-2];
             newPts_r[npoints-1] = oldPts_r[npoints-2];
             newPts_g[npoints-1] = oldPts_g[npoints-2];
             newPts_b[npoints-1] = oldPts_b[npoints-2];
+            newPts_a[npoints-1] = oldPts_a[npoints-2];
         }
         c1_pos = newPts_pos;
         c1_r = newPts_r;
         c1_g = newPts_g;
         c1_b = newPts_b;
+        c1_a = newPts_a;
     }
     else
     {
@@ -1134,6 +1154,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
         c1_r = oldPts_r;
         c1_g = oldPts_g;
         c1_b = oldPts_b;
+        c1_a = oldPts_a;
     }
 
     /********************************************
@@ -1143,10 +1164,13 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
     bool postSample = (ncolors < (npoints * sampleMultiple));
     int oldNColors = ncolors;
     unsigned char *dest = rgb;
+    unsigned char *dest_a = alpha;
     if(postSample)
     {
         ncolors = npoints * sampleMultiple;
         dest = new unsigned char[3 * ncolors];
+        if (dest_a)
+            dest_a = new unsigned char[ncolors];
     }
 
     /********************************************
@@ -1156,11 +1180,12 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
     c2_r = c1_r;
     c2_g = c1_g;
     c2_b = c1_b;
+    c2_a = c1_a;
 
     for(ci = 0; ci < npoints - 1; ci++)
     {
-        float delta_r, delta_g, delta_b;
-        float r_sum, g_sum, b_sum;
+        float delta_r, delta_g, delta_b, delta_a;
+        float r_sum, g_sum, b_sum, a_sum;
         int   color_start_i, color_end_i, color_range;
 
         // Initialize some variables.
@@ -1168,6 +1193,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
         c2_r++;
         c2_g++;
         c2_b++;
+        c2_a++;
         color_start_i = int(c1_pos[0] * float(ncolors));
         color_end_i = int(c2_pos[0] * float(ncolors));
         color_range = color_end_i - color_start_i;
@@ -1181,6 +1207,8 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
                     dest[3*i+0] = (unsigned char)(c1_r[0] * 255);
                     dest[3*i+1] = (unsigned char)(c1_g[0] * 255);
                     dest[3*i+2] = (unsigned char)(c1_b[0] * 255);
+                    if (dest_a)
+                        dest_a[i] = (unsigned char)(c1_a[0] * 255);
                 }
             }
 
@@ -1190,12 +1218,16 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
                 delta_r = (float)(c2_r[0] - c1_r[0])/(float)(color_range-1);
                 delta_g = (float)(c2_g[0] - c1_g[0])/(float)(color_range-1);
                 delta_b = (float)(c2_b[0] - c1_b[0])/(float)(color_range-1);
+                delta_a = (float)(c2_a[0] - c1_a[0])/(float)(color_range-1);
             }
             else
-                delta_r = delta_g = delta_b = 0.;
+                delta_r = delta_g = delta_b = delta_a = 0.;
 
             // Initialize sums.
-            r_sum = c1_r[0]; g_sum = c1_g[0]; b_sum = c1_b[0];
+            r_sum = c1_r[0];
+            g_sum = c1_g[0];
+            b_sum = c1_b[0];
+            a_sum = c1_a[0];
 
             // Interpolate color1 to color2.
             for(i = color_start_i; i < color_end_i; i++)
@@ -1204,9 +1236,14 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
                 dest[3*i+0] = (unsigned char)(r_sum * 255);
                 dest[3*i+1] = (unsigned char)(g_sum * 255);
                 dest[3*i+2] = (unsigned char)(b_sum * 255);
+                if (dest_a)
+                    dest_a[i] = (unsigned char)(a_sum * 255);
 
                 // Add the color deltas.
-                r_sum += delta_r; g_sum += delta_g; b_sum += delta_b;
+                r_sum += delta_r;
+                g_sum += delta_g;
+                b_sum += delta_b;
+                a_sum += delta_a;
             }
 
             if(ci == npoints - 2 && color_end_i != ncolors)
@@ -1216,6 +1253,8 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
                     dest[3*i+0] = (unsigned char)(c2_r[0] * 255);
                     dest[3*i+1] = (unsigned char)(c2_g[0] * 255);
                     dest[3*i+2] = (unsigned char)(c2_b[0] * 255);
+                    if (dest_a)
+                        dest_a[i] = (unsigned char)(c2_a[0] * 255);
                 }
             }
         }
@@ -1224,12 +1263,15 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
             dest[3*color_start_i+0] = (unsigned char)(c1_r[0] * 255);
             dest[3*color_start_i+1] = (unsigned char)(c1_g[0] * 255);
             dest[3*color_start_i+2] = (unsigned char)(c1_b[0] * 255);
+            if (dest_a)
+                dest_a[color_start_i] = (unsigned char)(c1_a[0] * 255);
         }
 
         c1_pos++;
         c1_r++;
         c1_g++;
         c1_b++;
+        c1_a++;
     }
 
     /********************************************
@@ -1249,9 +1291,13 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
             rgb[c++] = dest[index*3];
             rgb[c++] = dest[index*3+1];
             rgb[c++] = dest[index*3+2];
+            if (alpha)
+                alpha[c++] = dest_a[index*3+2];
         }
 
         delete [] dest;
+        if (dest_a)
+            delete [] dest_a;
     }
 
     // Free unneeded memory.
@@ -1259,11 +1305,13 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
     delete [] oldPts_r;
     delete [] oldPts_g;
     delete [] oldPts_b;
+    delete [] oldPts_a;
 
     delete [] newPts_pos;
     delete [] newPts_r;
     delete [] newPts_g;
     delete [] newPts_b;
+    delete [] newPts_a;
 }
 
 // ****************************************************************************

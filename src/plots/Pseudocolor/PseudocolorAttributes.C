@@ -191,7 +191,7 @@ PseudocolorAttributes::PointType_FromString(const std::string &s, PseudocolorAtt
 }
 
 // Type map format string
-const char *PseudocolorAttributes::TypeMapFormatString = "bbbbiiidddiddsibsiii";
+const char *PseudocolorAttributes::TypeMapFormatString = "bbbbiiidddiddsibsiiib";
 
 // ****************************************************************************
 // Method: PseudocolorAttributes::PseudocolorAttributes
@@ -230,6 +230,7 @@ PseudocolorAttributes::PseudocolorAttributes() :
     pointSizePixels = 2;
     lineStyle = 0;
     lineWidth = 0;
+    useColorTableOpacity = false;
 }
 
 // ****************************************************************************
@@ -270,6 +271,7 @@ PseudocolorAttributes::PseudocolorAttributes(const PseudocolorAttributes &obj) :
     pointSizePixels = obj.pointSizePixels;
     lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
+    useColorTableOpacity = obj.useColorTableOpacity;
 
     SelectAll();
 }
@@ -333,6 +335,7 @@ PseudocolorAttributes::operator = (const PseudocolorAttributes &obj)
     pointSizePixels = obj.pointSizePixels;
     lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
+    useColorTableOpacity = obj.useColorTableOpacity;
 
     SelectAll();
     return *this;
@@ -376,7 +379,8 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (pointSizeVar == obj.pointSizeVar) &&
             (pointSizePixels == obj.pointSizePixels) &&
             (lineStyle == obj.lineStyle) &&
-            (lineWidth == obj.lineWidth));
+            (lineWidth == obj.lineWidth) &&
+            (useColorTableOpacity == obj.useColorTableOpacity));
 }
 
 // ****************************************************************************
@@ -520,26 +524,27 @@ PseudocolorAttributes::NewInstance(bool copy) const
 void
 PseudocolorAttributes::SelectAll()
 {
-    Select(ID_legendFlag,          (void *)&legendFlag);
-    Select(ID_lightingFlag,        (void *)&lightingFlag);
-    Select(ID_minFlag,             (void *)&minFlag);
-    Select(ID_maxFlag,             (void *)&maxFlag);
-    Select(ID_centering,           (void *)&centering);
-    Select(ID_scaling,             (void *)&scaling);
-    Select(ID_limitsMode,          (void *)&limitsMode);
-    Select(ID_min,                 (void *)&min);
-    Select(ID_max,                 (void *)&max);
-    Select(ID_pointSize,           (void *)&pointSize);
-    Select(ID_pointType,           (void *)&pointType);
-    Select(ID_skewFactor,          (void *)&skewFactor);
-    Select(ID_opacity,             (void *)&opacity);
-    Select(ID_colorTableName,      (void *)&colorTableName);
-    Select(ID_smoothingLevel,      (void *)&smoothingLevel);
-    Select(ID_pointSizeVarEnabled, (void *)&pointSizeVarEnabled);
-    Select(ID_pointSizeVar,        (void *)&pointSizeVar);
-    Select(ID_pointSizePixels,     (void *)&pointSizePixels);
-    Select(ID_lineStyle,           (void *)&lineStyle);
-    Select(ID_lineWidth,           (void *)&lineWidth);
+    Select(ID_legendFlag,           (void *)&legendFlag);
+    Select(ID_lightingFlag,         (void *)&lightingFlag);
+    Select(ID_minFlag,              (void *)&minFlag);
+    Select(ID_maxFlag,              (void *)&maxFlag);
+    Select(ID_centering,            (void *)&centering);
+    Select(ID_scaling,              (void *)&scaling);
+    Select(ID_limitsMode,           (void *)&limitsMode);
+    Select(ID_min,                  (void *)&min);
+    Select(ID_max,                  (void *)&max);
+    Select(ID_pointSize,            (void *)&pointSize);
+    Select(ID_pointType,            (void *)&pointType);
+    Select(ID_skewFactor,           (void *)&skewFactor);
+    Select(ID_opacity,              (void *)&opacity);
+    Select(ID_colorTableName,       (void *)&colorTableName);
+    Select(ID_smoothingLevel,       (void *)&smoothingLevel);
+    Select(ID_pointSizeVarEnabled,  (void *)&pointSizeVarEnabled);
+    Select(ID_pointSizeVar,         (void *)&pointSizeVar);
+    Select(ID_pointSizePixels,      (void *)&pointSizePixels);
+    Select(ID_lineStyle,            (void *)&lineStyle);
+    Select(ID_lineWidth,            (void *)&lineWidth);
+    Select(ID_useColorTableOpacity, (void *)&useColorTableOpacity);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -692,6 +697,12 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("lineWidth", lineWidth));
     }
 
+    if(completeSave || !FieldsEqual(ID_useColorTableOpacity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useColorTableOpacity", useColorTableOpacity));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -824,6 +835,8 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
+    if((node = searchNode->GetNode("useColorTableOpacity")) != 0)
+        SetUseColorTableOpacity(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -970,6 +983,13 @@ PseudocolorAttributes::SetLineWidth(int lineWidth_)
     Select(ID_lineWidth, (void *)&lineWidth);
 }
 
+void
+PseudocolorAttributes::SetUseColorTableOpacity(bool useColorTableOpacity_)
+{
+    useColorTableOpacity = useColorTableOpacity_;
+    Select(ID_useColorTableOpacity, (void *)&useColorTableOpacity);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1106,6 +1126,12 @@ PseudocolorAttributes::GetLineWidth() const
     return lineWidth;
 }
 
+bool
+PseudocolorAttributes::GetUseColorTableOpacity() const
+{
+    return useColorTableOpacity;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1146,26 +1172,27 @@ PseudocolorAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:          return "legendFlag";
-    case ID_lightingFlag:        return "lightingFlag";
-    case ID_minFlag:             return "minFlag";
-    case ID_maxFlag:             return "maxFlag";
-    case ID_centering:           return "centering";
-    case ID_scaling:             return "scaling";
-    case ID_limitsMode:          return "limitsMode";
-    case ID_min:                 return "min";
-    case ID_max:                 return "max";
-    case ID_pointSize:           return "pointSize";
-    case ID_pointType:           return "pointType";
-    case ID_skewFactor:          return "skewFactor";
-    case ID_opacity:             return "opacity";
-    case ID_colorTableName:      return "colorTableName";
-    case ID_smoothingLevel:      return "smoothingLevel";
-    case ID_pointSizeVarEnabled: return "pointSizeVarEnabled";
-    case ID_pointSizeVar:        return "pointSizeVar";
-    case ID_pointSizePixels:     return "pointSizePixels";
-    case ID_lineStyle:           return "lineStyle";
-    case ID_lineWidth:           return "lineWidth";
+    case ID_legendFlag:           return "legendFlag";
+    case ID_lightingFlag:         return "lightingFlag";
+    case ID_minFlag:              return "minFlag";
+    case ID_maxFlag:              return "maxFlag";
+    case ID_centering:            return "centering";
+    case ID_scaling:              return "scaling";
+    case ID_limitsMode:           return "limitsMode";
+    case ID_min:                  return "min";
+    case ID_max:                  return "max";
+    case ID_pointSize:            return "pointSize";
+    case ID_pointType:            return "pointType";
+    case ID_skewFactor:           return "skewFactor";
+    case ID_opacity:              return "opacity";
+    case ID_colorTableName:       return "colorTableName";
+    case ID_smoothingLevel:       return "smoothingLevel";
+    case ID_pointSizeVarEnabled:  return "pointSizeVarEnabled";
+    case ID_pointSizeVar:         return "pointSizeVar";
+    case ID_pointSizePixels:      return "pointSizePixels";
+    case ID_lineStyle:            return "lineStyle";
+    case ID_lineWidth:            return "lineWidth";
+    case ID_useColorTableOpacity: return "useColorTableOpacity";
     default:  return "invalid index";
     }
 }
@@ -1190,26 +1217,27 @@ PseudocolorAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:          return FieldType_bool;
-    case ID_lightingFlag:        return FieldType_bool;
-    case ID_minFlag:             return FieldType_bool;
-    case ID_maxFlag:             return FieldType_bool;
-    case ID_centering:           return FieldType_enum;
-    case ID_scaling:             return FieldType_enum;
-    case ID_limitsMode:          return FieldType_enum;
-    case ID_min:                 return FieldType_double;
-    case ID_max:                 return FieldType_double;
-    case ID_pointSize:           return FieldType_double;
-    case ID_pointType:           return FieldType_enum;
-    case ID_skewFactor:          return FieldType_double;
-    case ID_opacity:             return FieldType_opacity;
-    case ID_colorTableName:      return FieldType_colortable;
-    case ID_smoothingLevel:      return FieldType_int;
-    case ID_pointSizeVarEnabled: return FieldType_bool;
-    case ID_pointSizeVar:        return FieldType_variablename;
-    case ID_pointSizePixels:     return FieldType_int;
-    case ID_lineStyle:           return FieldType_linestyle;
-    case ID_lineWidth:           return FieldType_linewidth;
+    case ID_legendFlag:           return FieldType_bool;
+    case ID_lightingFlag:         return FieldType_bool;
+    case ID_minFlag:              return FieldType_bool;
+    case ID_maxFlag:              return FieldType_bool;
+    case ID_centering:            return FieldType_enum;
+    case ID_scaling:              return FieldType_enum;
+    case ID_limitsMode:           return FieldType_enum;
+    case ID_min:                  return FieldType_double;
+    case ID_max:                  return FieldType_double;
+    case ID_pointSize:            return FieldType_double;
+    case ID_pointType:            return FieldType_enum;
+    case ID_skewFactor:           return FieldType_double;
+    case ID_opacity:              return FieldType_opacity;
+    case ID_colorTableName:       return FieldType_colortable;
+    case ID_smoothingLevel:       return FieldType_int;
+    case ID_pointSizeVarEnabled:  return FieldType_bool;
+    case ID_pointSizeVar:         return FieldType_variablename;
+    case ID_pointSizePixels:      return FieldType_int;
+    case ID_lineStyle:            return FieldType_linestyle;
+    case ID_lineWidth:            return FieldType_linewidth;
+    case ID_useColorTableOpacity: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1234,26 +1262,27 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:          return "bool";
-    case ID_lightingFlag:        return "bool";
-    case ID_minFlag:             return "bool";
-    case ID_maxFlag:             return "bool";
-    case ID_centering:           return "enum";
-    case ID_scaling:             return "enum";
-    case ID_limitsMode:          return "enum";
-    case ID_min:                 return "double";
-    case ID_max:                 return "double";
-    case ID_pointSize:           return "double";
-    case ID_pointType:           return "enum";
-    case ID_skewFactor:          return "double";
-    case ID_opacity:             return "opacity";
-    case ID_colorTableName:      return "colortable";
-    case ID_smoothingLevel:      return "int";
-    case ID_pointSizeVarEnabled: return "bool";
-    case ID_pointSizeVar:        return "variablename";
-    case ID_pointSizePixels:     return "int";
-    case ID_lineStyle:           return "linestyle";
-    case ID_lineWidth:           return "linewidth";
+    case ID_legendFlag:           return "bool";
+    case ID_lightingFlag:         return "bool";
+    case ID_minFlag:              return "bool";
+    case ID_maxFlag:              return "bool";
+    case ID_centering:            return "enum";
+    case ID_scaling:              return "enum";
+    case ID_limitsMode:           return "enum";
+    case ID_min:                  return "double";
+    case ID_max:                  return "double";
+    case ID_pointSize:            return "double";
+    case ID_pointType:            return "enum";
+    case ID_skewFactor:           return "double";
+    case ID_opacity:              return "opacity";
+    case ID_colorTableName:       return "colortable";
+    case ID_smoothingLevel:       return "int";
+    case ID_pointSizeVarEnabled:  return "bool";
+    case ID_pointSizeVar:         return "variablename";
+    case ID_pointSizePixels:      return "int";
+    case ID_lineStyle:            return "linestyle";
+    case ID_lineWidth:            return "linewidth";
+    case ID_useColorTableOpacity: return "bool";
     default:  return "invalid index";
     }
 }
@@ -1378,6 +1407,11 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_lineWidth:
         {  // new scope
         retval = (lineWidth == obj.lineWidth);
+        }
+        break;
+    case ID_useColorTableOpacity:
+        {  // new scope
+        retval = (useColorTableOpacity == obj.useColorTableOpacity);
         }
         break;
     default: retval = false;

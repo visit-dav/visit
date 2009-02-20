@@ -782,6 +782,74 @@ avtColorTables::GetColors(const std::string &ctName)
 }
 
 // ****************************************************************************
+//  Method:  avtColorTables::GetAlphas
+//
+//  Purpose:
+//    Like GetColors, but gets the alpha values instead.
+//
+//  Arguments:
+//   ctName : The name of the color table for which we want the colors.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 20, 2009
+//
+// ****************************************************************************
+const unsigned char *
+avtColorTables::GetAlphas(const std::string &ctName)
+{
+    unsigned char dummy[256*3];
+    const unsigned char *retval = NULL;
+    int index;
+    if((index = ctAtts->GetColorTableIndex(ctName)) != -1)
+    {
+        const ColorControlPointList &ct = ctAtts->operator[](index);
+        ct.GetColors(dummy, GetNumColors(), tmpAlphas);
+        retval = tmpAlphas;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method:  avtColorTables::ColorTableIsFullyOpaque
+//
+//  Purpose:
+//    Checks to see if any control point in the requested color table
+//    (or the default one) has an alpha value less than 1.
+//
+//  Arguments:
+//    reqName    the requested color table name to check (or "Default")
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 20, 2009
+//
+// ****************************************************************************
+bool
+avtColorTables::ColorTableIsFullyOpaque(const std::string &reqName)
+{
+    std::string ctName = reqName;
+    if (ctName == "" || ctName == "Default")
+        ctName = GetDefaultContinuousColorTable();
+    if (ctName == "" || ctName == "Default")
+        ctName = GetDefaultDiscreteColorTable();
+    
+    int index = ctAtts->GetColorTableIndex(ctName);
+    if (index == -1)
+        return true;
+
+    const ColorControlPointList &ct = ctAtts->operator[](index);
+    int npts = ct.GetNumControlPoints();
+    for (int i=0; i<npts; i++)
+    {
+        unsigned char alpha = ct.GetControlPoints(i).GetColors()[3];
+        if (alpha < 255)
+            return false;
+    }
+
+    return true;
+}
+
+// ****************************************************************************
 // Method: avtColorTables::GetSampledColors
 //
 // Purpose: 

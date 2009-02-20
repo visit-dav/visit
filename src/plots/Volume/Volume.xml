@@ -95,6 +95,11 @@
         KernelBased
         Rasterization
       </Enum>
+      <Enum name="OpacityModes">
+        FreeformMode
+        GaussianMode
+        ColorTableMode
+      </Enum>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -106,8 +111,8 @@
       <Field name="opacityAttenuation" label="opacityAttenuation" type="float">
         1.000000
       </Field>
-      <Field name="freeformFlag" label="freeformFlag" type="bool">
-        true
+      <Field name="opacityMode" label="opacityMode" type="enum" subtype="OpacityModes">
+        FreeformMode
       </Field>
       <Field name="opacityControlPoints" label="opacityControlPoints" type="att" subtype="GaussianControlPointList">
       </Field>

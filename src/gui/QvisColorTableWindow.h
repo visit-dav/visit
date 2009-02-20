@@ -97,6 +97,9 @@ class QvisColorGridWidget;
 //   Added support for showing hints such as the color index or an
 //   element name (if we're working with an atomic color table).
 //
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
+//
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -135,6 +138,7 @@ private slots:
     void redValueChanged(int r);
     void greenValueChanged(int g);
     void blueValueChanged(int b);
+    void alphaValueChanged(int b);
     void activateDiscreteColor(const QColor &, int);
     void activateContinuousColor(int index);
     void chooseContinuousColor(int, const QPoint &);
@@ -192,9 +196,9 @@ private:
     QCheckBox                *showIndexHintsCheckBox;
 
     QvisColorGridWidget      *discreteColors;
-    QLabel                   *componentLabels[3];
-    QSlider                  *componentSliders[3];
-    QSpinBox                 *componentSpinBoxes[3];
+    QLabel                   *componentLabels[4];
+    QSlider                  *componentSliders[4];
+    QSpinBox                 *componentSpinBoxes[4];
 
     // This object also observes the color table attributes.
     ColorTableObserver       ctObserver;

@@ -72,6 +72,9 @@ class QTimer;
 //   Brad Whitlock, Mon Jun  2 10:47:34 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
+//
 // ****************************************************************************
 
 class GUI_API QvisSpectrumBar : public QWidget
@@ -153,6 +156,7 @@ private slots:
     void   handlePaging();
 private:
     QTimer             *timer;
+    QImage             alphaBackground;
 
     ControlOrientation orientation;
     int                margin;

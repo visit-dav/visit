@@ -80,7 +80,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
 
     public PseudocolorAttributes()
     {
-        super(20);
+        super(21);
 
         legendFlag = true;
         lightingFlag = true;
@@ -102,11 +102,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizePixels = 2;
         lineStyle = 0;
         lineWidth = 0;
+        useColorTableOpacity = false;
     }
 
     public PseudocolorAttributes(PseudocolorAttributes obj)
     {
-        super(20);
+        super(21);
 
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
@@ -128,6 +129,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizePixels = obj.pointSizePixels;
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
+        useColorTableOpacity = obj.useColorTableOpacity;
 
         SelectAll();
     }
@@ -154,7 +156,8 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
                 (pointSizeVar.equals(obj.pointSizeVar)) &&
                 (pointSizePixels == obj.pointSizePixels) &&
                 (lineStyle == obj.lineStyle) &&
-                (lineWidth == obj.lineWidth));
+                (lineWidth == obj.lineWidth) &&
+                (useColorTableOpacity == obj.useColorTableOpacity));
     }
 
     public String GetName() { return "Pseudocolor"; }
@@ -281,6 +284,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         Select(19);
     }
 
+    public void SetUseColorTableOpacity(boolean useColorTableOpacity_)
+    {
+        useColorTableOpacity = useColorTableOpacity_;
+        Select(20);
+    }
+
     // Property getting methods
     public boolean GetLegendFlag() { return legendFlag; }
     public boolean GetLightingFlag() { return lightingFlag; }
@@ -302,6 +311,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public int     GetPointSizePixels() { return pointSizePixels; }
     public int     GetLineStyle() { return lineStyle; }
     public int     GetLineWidth() { return lineWidth; }
+    public boolean GetUseColorTableOpacity() { return useColorTableOpacity; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -346,6 +356,8 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(lineStyle);
         if(WriteSelect(19, buf))
             buf.WriteInt(lineWidth);
+        if(WriteSelect(20, buf))
+            buf.WriteBool(useColorTableOpacity);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -415,6 +427,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             case 19:
                 SetLineWidth(buf.ReadInt());
                 break;
+            case 20:
+                SetUseColorTableOpacity(buf.ReadBool());
+                break;
             }
         }
     }
@@ -472,6 +487,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
+        str = str + boolToString("useColorTableOpacity", useColorTableOpacity, indent) + "\n";
         return str;
     }
 
@@ -497,5 +513,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     private int     pointSizePixels;
     private int     lineStyle;
     private int     lineWidth;
+    private boolean useColorTableOpacity;
 }
 
