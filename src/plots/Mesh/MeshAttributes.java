@@ -78,7 +78,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public MeshAttributes()
     {
-        super(18);
+        super(19);
 
         legendFlag = true;
         lineStyle = 0;
@@ -98,11 +98,12 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         opaqueMeshIsAppropriate = true;
         showInternal = false;
         pointSizePixels = 2;
+        opacity = 1;
     }
 
     public MeshAttributes(MeshAttributes obj)
     {
-        super(18);
+        super(19);
 
         legendFlag = obj.legendFlag;
         lineStyle = obj.lineStyle;
@@ -122,6 +123,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         opaqueMeshIsAppropriate = obj.opaqueMeshIsAppropriate;
         showInternal = obj.showInternal;
         pointSizePixels = obj.pointSizePixels;
+        opacity = obj.opacity;
 
         SelectAll();
     }
@@ -146,7 +148,8 @@ public class MeshAttributes extends AttributeSubject implements Plugin
                 (pointType == obj.pointType) &&
                 (opaqueMeshIsAppropriate == obj.opaqueMeshIsAppropriate) &&
                 (showInternal == obj.showInternal) &&
-                (pointSizePixels == obj.pointSizePixels));
+                (pointSizePixels == obj.pointSizePixels) &&
+                (opacity == obj.opacity));
     }
 
     public String GetName() { return "Mesh"; }
@@ -261,6 +264,12 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         Select(17);
     }
 
+    public void SetOpacity(double opacity_)
+    {
+        opacity = opacity_;
+        Select(18);
+    }
+
     // Property getting methods
     public boolean        GetLegendFlag() { return legendFlag; }
     public int            GetLineStyle() { return lineStyle; }
@@ -280,6 +289,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     public boolean        GetOpaqueMeshIsAppropriate() { return opaqueMeshIsAppropriate; }
     public boolean        GetShowInternal() { return showInternal; }
     public int            GetPointSizePixels() { return pointSizePixels; }
+    public double         GetOpacity() { return opacity; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -320,6 +330,8 @@ public class MeshAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(showInternal);
         if(WriteSelect(17, buf))
             buf.WriteInt(pointSizePixels);
+        if(WriteSelect(18, buf))
+            buf.WriteDouble(opacity);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -385,6 +397,9 @@ public class MeshAttributes extends AttributeSubject implements Plugin
             case 17:
                 SetPointSizePixels(buf.ReadInt());
                 break;
+            case 18:
+                SetOpacity(buf.ReadDouble());
+                break;
             }
         }
     }
@@ -435,6 +450,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("opaqueMeshIsAppropriate", opaqueMeshIsAppropriate, indent) + "\n";
         str = str + boolToString("showInternal", showInternal, indent) + "\n";
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
+        str = str + doubleToString("opacity", opacity, indent) + "\n";
         return str;
     }
 
@@ -458,5 +474,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     private boolean        opaqueMeshIsAppropriate;
     private boolean        showInternal;
     private int            pointSizePixels;
+    private double         opacity;
 }
 

@@ -154,7 +154,7 @@ MeshAttributes::OpaqueMode_FromString(const std::string &s, MeshAttributes::Opaq
 }
 
 // Type map format string
-const char *MeshAttributes::TypeMapFormatString = "biiabdidabbibsibbi";
+const char *MeshAttributes::TypeMapFormatString = "biiabdidabbibsibbid";
 
 // ****************************************************************************
 // Method: MeshAttributes::MeshAttributes
@@ -191,6 +191,7 @@ MeshAttributes::MeshAttributes() :
     opaqueMeshIsAppropriate = true;
     showInternal = false;
     pointSizePixels = 2;
+    opacity = 1;
 }
 
 // ****************************************************************************
@@ -229,6 +230,7 @@ MeshAttributes::MeshAttributes(const MeshAttributes &obj) :
     opaqueMeshIsAppropriate = obj.opaqueMeshIsAppropriate;
     showInternal = obj.showInternal;
     pointSizePixels = obj.pointSizePixels;
+    opacity = obj.opacity;
 
     SelectAll();
 }
@@ -290,6 +292,7 @@ MeshAttributes::operator = (const MeshAttributes &obj)
     opaqueMeshIsAppropriate = obj.opaqueMeshIsAppropriate;
     showInternal = obj.showInternal;
     pointSizePixels = obj.pointSizePixels;
+    opacity = obj.opacity;
 
     SelectAll();
     return *this;
@@ -331,7 +334,8 @@ MeshAttributes::operator == (const MeshAttributes &obj) const
             (pointType == obj.pointType) &&
             (opaqueMeshIsAppropriate == obj.opaqueMeshIsAppropriate) &&
             (showInternal == obj.showInternal) &&
-            (pointSizePixels == obj.pointSizePixels));
+            (pointSizePixels == obj.pointSizePixels) &&
+            (opacity == obj.opacity));
 }
 
 // ****************************************************************************
@@ -493,6 +497,7 @@ MeshAttributes::SelectAll()
     Select(ID_opaqueMeshIsAppropriate, (void *)&opaqueMeshIsAppropriate);
     Select(ID_showInternal,            (void *)&showInternal);
     Select(ID_pointSizePixels,         (void *)&pointSizePixels);
+    Select(ID_opacity,                 (void *)&opacity);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -637,6 +642,12 @@ MeshAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("pointSizePixels", pointSizePixels));
     }
 
+    if(completeSave || !FieldsEqual(ID_opacity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacity", opacity));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -751,6 +762,8 @@ MeshAttributes::SetFromNode(DataNode *parentNode)
         SetShowInternal(node->AsBool());
     if((node = searchNode->GetNode("pointSizePixels")) != 0)
         SetPointSizePixels(node->AsInt());
+    if((node = searchNode->GetNode("opacity")) != 0)
+        SetOpacity(node->AsDouble());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -883,6 +896,13 @@ MeshAttributes::SetPointSizePixels(int pointSizePixels_)
     Select(ID_pointSizePixels, (void *)&pointSizePixels);
 }
 
+void
+MeshAttributes::SetOpacity(double opacity_)
+{
+    opacity = opacity_;
+    Select(ID_opacity, (void *)&opacity);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1013,6 +1033,12 @@ MeshAttributes::GetPointSizePixels() const
     return pointSizePixels;
 }
 
+double
+MeshAttributes::GetOpacity() const
+{
+    return opacity;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1077,6 +1103,7 @@ MeshAttributes::GetFieldName(int index) const
     case ID_opaqueMeshIsAppropriate: return "opaqueMeshIsAppropriate";
     case ID_showInternal:            return "showInternal";
     case ID_pointSizePixels:         return "pointSizePixels";
+    case ID_opacity:                 return "opacity";
     default:  return "invalid index";
     }
 }
@@ -1119,6 +1146,7 @@ MeshAttributes::GetFieldType(int index) const
     case ID_opaqueMeshIsAppropriate: return FieldType_bool;
     case ID_showInternal:            return FieldType_bool;
     case ID_pointSizePixels:         return FieldType_int;
+    case ID_opacity:                 return FieldType_opacity;
     default:  return FieldType_unknown;
     }
 }
@@ -1161,6 +1189,7 @@ MeshAttributes::GetFieldTypeName(int index) const
     case ID_opaqueMeshIsAppropriate: return "bool";
     case ID_showInternal:            return "bool";
     case ID_pointSizePixels:         return "int";
+    case ID_opacity:                 return "opacity";
     default:  return "invalid index";
     }
 }
@@ -1275,6 +1304,11 @@ MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_pointSizePixels:
         {  // new scope
         retval = (pointSizePixels == obj.pointSizePixels);
+        }
+        break;
+    case ID_opacity:
+        {  // new scope
+        retval = (opacity == obj.opacity);
         }
         break;
     default: retval = false;

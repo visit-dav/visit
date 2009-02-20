@@ -119,6 +119,7 @@ public:
     void SetOpaqueMeshIsAppropriate(bool opaqueMeshIsAppropriate_);
     void SetShowInternal(bool showInternal_);
     void SetPointSizePixels(int pointSizePixels_);
+    void SetOpacity(double opacity_);
 
     // Property getting methods
     bool                 GetLegendFlag() const;
@@ -142,6 +143,7 @@ public:
     bool                 GetOpaqueMeshIsAppropriate() const;
     bool                 GetShowInternal() const;
     int                  GetPointSizePixels() const;
+    double               GetOpacity() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -192,7 +194,8 @@ public:
         ID_pointType,
         ID_opaqueMeshIsAppropriate,
         ID_showInternal,
-        ID_pointSizePixels
+        ID_pointSizePixels,
+        ID_opacity
     };
 
 private:
@@ -214,6 +217,7 @@ private:
     bool           opaqueMeshIsAppropriate;
     bool           showInternal;
     int            pointSizePixels;
+    double         opacity;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

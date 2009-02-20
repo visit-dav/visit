@@ -50,6 +50,7 @@ class QvisColorButton;
 class QvisPointControl;
 class Subject;
 class MeshAttributes;
+class QvisOpacitySlider;
 
 // ****************************************************************************
 // Class: QvisMeshPlotWindow
@@ -96,6 +97,9 @@ class MeshAttributes;
 //   Cyrus Harrison, Fri Jul 18 14:44:51 PDT 2008
 //   Initial Qt4 Port. 
 //
+//   Jeremy Meredith, Fri Feb 20 17:28:17 EST 2009
+//   Added per-plot alpha (opacity) support.
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -136,6 +140,8 @@ private slots:
     void pointSizeVarToggled(bool);
     void pointSizeVarChanged(const QString &);
 
+    void changedOpacity(int opacity, const void *);
+
 private:
     int                     plotType;
     MeshAttributes         *meshAtts;
@@ -157,6 +163,8 @@ private:
     QCheckBox              *foregroundToggle;
     QButtonGroup           *smoothingLevelGroup;
     QvisPointControl       *pointControl;
+    QLabel                *opacityLabel;
+    QvisOpacitySlider     *opacitySlider;
 };
 
 #endif
