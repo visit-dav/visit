@@ -133,6 +133,9 @@ Definition:
 //    Added rendererType and gradientType to the list of modifications
 //    that require re-calculating the gradient.
 //
+//    Jeremy Meredith, Fri Feb 20 15:14:29 EST 2009
+//    Made opacity mode be an enum instead of a flag.
+//
 // ****************************************************************************
 bool
 VolumeAttributes::GradientWontChange(const VolumeAttributes &obj) const
@@ -145,7 +148,7 @@ VolumeAttributes::GradientWontChange(const VolumeAttributes &obj) const
         freeformOpacity_equal = (freeformOpacity[i] == obj.freeformOpacity[i]);
 
     // Create the return value
-    return ((freeformFlag         == obj.freeformFlag) &&
+    return ((opacityMode          == obj.opacityMode) &&
             (opacityControlPoints == obj.opacityControlPoints) &&
             (resampleTarget       == obj.resampleTarget) &&
             (opacityVariable      == obj.opacityVariable) &&
@@ -184,6 +187,11 @@ Definition:
 //   Jeremy Meredith, Thu Oct  2 13:29:40 PDT 2003
 //   Made the method const.
 //
+//   Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//   Made opacity mode be an enum instead of a flag.
+//   Added support for alphas to come from a color table
+//   instead of being specified by the user in the plot itself.
+//
 // ****************************************************************************
 
 void
@@ -194,13 +202,18 @@ VolumeAttributes::GetTransferFunction(unsigned char *rgba) const
     const unsigned char *a_ptr;
 
     // Figure out the colors
-    colorControlPoints.GetColors(rgb, 256);
+    colorControlPoints.GetColors(rgb, 256, alphas);
     // Figure out the opacities
-    if(freeformFlag)
+    if (opacityMode == FreeformMode)
         a_ptr = freeformOpacity;
-    else
+    else if (opacityMode == GaussianMode)
     {
         GetGaussianOpacities(alphas);
+        a_ptr = alphas;
+    }
+    else // color table mode
+    {
+        // we already got the opacities
         a_ptr = alphas;
     }
 
@@ -370,16 +383,36 @@ VolumeAttributes::GetGaussianOpacities(unsigned char *alphas) const
 Function: GetOpacities
 Declaration: void GetOpacities(unsigned char *alphas);
 Definition:
+// ****************************************************************************
+//  Method:  VolumeAttributes::GetOpacities
+//
+//  Purpose:
+//    Get the actual opacities for the plot.
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//    Made opacity mode be an enum instead of a flag.
+//    Added support for alphas to come from a color table
+//    instead of being specified by the user in the plot itself.
+//
+// ****************************************************************************
 void
 VolumeAttributes::GetOpacities(unsigned char *alphas)
 {
-    if(freeformFlag)
+    if (opacityMode == FreeformMode)
     {
         for(int i = 0; i < 256; ++i)
             alphas[i] = freeformOpacity[i];
     }
-    else
+    else if (opacityMode == GaussianMode)
+    {
         GetGaussianOpacities(alphas);
+    }
+    else // color table mode
+    {
+        unsigned char rgbtmp[256 * 3];
+        colorControlPoints.GetColors(rgbtmp, 256, alphas);
+    }
 }
 
 Function: SetSmoothingFlag
@@ -433,6 +466,8 @@ Definition:
 // Creation:   Thu Sep 6 10:23:59 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//    Made opacity mode be an enum instead of a flag.
 //
 // ****************************************************************************
 
@@ -445,7 +480,7 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
         // Skip any of the transfer function members.
         if(i == ID_colorControlPoints || 
            i == ID_opacityAttenuation || 
-           i == ID_freeformFlag || 
+           i == ID_opacityMode || 
            i == ID_opacityControlPoints ||
            i == ID_freeformOpacity ||
            i == ID_transferFunction2DWidgets ||

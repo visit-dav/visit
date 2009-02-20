@@ -99,6 +99,11 @@ class PseudocolorAttributes;
 //   Jeremy Meredith, Wed Nov 26 11:28:24 EST 2008
 //   Added line style/width controls.
 //
+//   Jeremy Meredith, Fri Feb 20 15:14:29 EST 2009
+//   Added support for using per-color alpha values from a color table
+//   (instead of just a single global opacity for the whole plot).
+//   There's a new toggle for this, and it overrides the whole-plot opacity.
+//
 // ****************************************************************************
 
 class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver
@@ -125,6 +130,7 @@ private slots:
     void lightingToggled(bool on);
     void minToggled(bool on);
     void maxToggled(bool on);
+    void useColorTableOpacityToggled(bool on);
     void processMaxLimitText();
     void processMinLimitText();
     void processSkewText();
@@ -147,6 +153,7 @@ private:
     int                   plotType;
     PseudocolorAttributes *pcAtts;
     QButtonGroup          *centeringButtons;
+    QCheckBox             *useColorTableOpacity;
     QCheckBox             *legendToggle;
     QCheckBox             *lightingToggle;
     QCheckBox             *minToggle;
@@ -157,6 +164,7 @@ private:
     QButtonGroup          *scalingButtons;
     QLabel                *skewLabel;
     QLineEdit             *skewLineEdit;
+    QLabel                *opacityLabel;
     QvisOpacitySlider     *opacitySlider;
     QvisColorTableButton  *colorTableButton;
     QButtonGroup          *smoothingLevelButtons;

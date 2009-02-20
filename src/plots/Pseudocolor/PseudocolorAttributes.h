@@ -125,6 +125,7 @@ public:
     void SetPointSizePixels(int pointSizePixels_);
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
+    void SetUseColorTableOpacity(bool useColorTableOpacity_);
 
     // Property getting methods
     bool              GetLegendFlag() const;
@@ -149,6 +150,7 @@ public:
     int               GetPointSizePixels() const;
     int               GetLineStyle() const;
     int               GetLineWidth() const;
+    bool              GetUseColorTableOpacity() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -207,7 +209,8 @@ public:
         ID_pointSizeVar,
         ID_pointSizePixels,
         ID_lineStyle,
-        ID_lineWidth
+        ID_lineWidth,
+        ID_useColorTableOpacity
     };
 
 private:
@@ -231,6 +234,7 @@ private:
     int         pointSizePixels;
     int         lineStyle;
     int         lineWidth;
+    bool        useColorTableOpacity;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

@@ -68,6 +68,9 @@ class ColorTableAttributes;
 //   Brad Whitlock, Thu Nov 13 11:58:13 PDT 2003
 //   I changed how the message is passed out of ExportColorTable.
 //
+//   Jeremy Meredith, Fri Feb 20 14:54:04 EST 2009
+//   Added some alpha support methods.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtColorTables
@@ -81,6 +84,8 @@ public:
     void                 SetDefaultDiscreteColorTable(const std::string &);
 
     const unsigned char *GetColors(const std::string &ctName);
+    const unsigned char *GetAlphas(const std::string &ctName);
+    bool                 ColorTableIsFullyOpaque(const std::string &ctName);
 
     unsigned char       *GetSampledColors(const std::string &ctName,
                                           int nColors) const;
@@ -102,6 +107,7 @@ protected:
 
     ColorTableAttributes   *ctAtts;
     unsigned char           tmpColors[256*3];
+    unsigned char           tmpAlphas[256];
 
     static avtColorTables  *instance;
 };

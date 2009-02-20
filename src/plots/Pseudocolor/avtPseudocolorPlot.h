@@ -132,6 +132,10 @@ class     avtVariableLegend;
 //    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
 //    other processor's portion of image space.
 //
+//    Jeremy Meredith, Fri Feb 20 15:09:22 EST 2009
+//    Added support for using per-color alpha values from a color table
+//    (instead of just a single global opacity for the whole plot).
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -155,7 +159,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
 
     void                        SetLimitsMode(int);
 
-    void                        SetOpacity(double);
+    void                        SetOpacityFromAtts();
     void                        SetScaling(int, double);
 
   protected:
@@ -168,6 +172,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     bool                        colorsInitialized;
     int                         topoDim;
     avtLookupTable             *avtLUT;
+    bool                        colorTableIsFullyOpaque;
 
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);

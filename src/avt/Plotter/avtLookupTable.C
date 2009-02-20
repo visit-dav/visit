@@ -165,6 +165,47 @@ avtLookupTable::SetLUTColors(const unsigned char *colors, int nColors)
     }
 }
 
+// ****************************************************************************
+//  Method:  avtLookupTable::SetLUTColorsAndOpacity
+//
+//  Purpose:
+//    Like SetLUTColorsWithOpacity, but takes a 3-component color
+//    and a separate list of alpha values.
+//
+//  Arguments:
+//    colors     3-component rgb triples
+//    alphas     1-component alpha values
+//    nColors    the number of colors in the array
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 20, 2009
+//
+// ****************************************************************************
+
+void
+avtLookupTable::SetLUTColorsAndOpacity(const unsigned char *colors,
+                                       const unsigned char *alphas,
+                                       int nColors)
+{
+    // Rebuild the lut with the new color table.
+    stdLUT->SetNumberOfTableValues(nColors);
+    logLUT->SetNumberOfTableValues(nColors);
+    skewLUT->SetNumberOfTableValues(nColors);
+
+    const unsigned char *cptr = colors;
+    for(int i = 0; i < nColors; ++i)
+    {
+        double r = double(cptr[0]) * INV_255;
+        double g = double(cptr[1]) * INV_255;
+        double b = double(cptr[2]) * INV_255;
+        double a = double(alphas[i]) * INV_255;
+        stdLUT->SetTableValue(i, r, g, b, a);
+        logLUT->SetTableValue(i, r, g, b, a);
+        skewLUT->SetTableValue(i, r, g, b, a);
+        cptr += 3;
+    }
+}
+
 
 // ****************************************************************************
 // Method: avtVariableMapper::SetLUTColorsWithOpacity
@@ -269,10 +310,15 @@ avtLookupTable::GetNumberOfColors()
 //    Jeremy Meredith, Fri Aug  8 10:26:38 EDT 2008
 //    Check for NULL ctName before doing a comparison, not afterwards....
 //
+//    Jeremy Meredith, Fri Feb 20 15:01:03 EST 2009
+//    Added ability to also set the LUT colors with opacities from the
+//    color table (if requested by the caller in the new argument).
+//
 // ****************************************************************************
 
 bool
-avtLookupTable::SetColorTable(const char *ctName, bool validName)
+avtLookupTable::SetColorTable(const char *ctName, bool validName,
+                              bool useOpacities)
 {
     bool retval = false;
     bool useDefault = false;
@@ -296,22 +342,34 @@ avtLookupTable::SetColorTable(const char *ctName, bool validName)
         if(dct == 0)
             dct = ct->GetDefaultDiscreteColorTable().c_str();
         const unsigned char *c = ct->GetColors(dct);
+        const unsigned char *a = NULL;
+        if (useOpacities)
+            a = ct->GetAlphas(dct);
         if(c != NULL)
         {
             // Set the colors into the lookup table.
             retval = true;
-            SetLUTColors(c, ct->GetNumColors());
+            if (a)
+                SetLUTColorsAndOpacity(c, a, ct->GetNumColors());
+            else
+                SetLUTColors(c, ct->GetNumColors());
         }
     }
     else if (validName) 
     {
         // Use the specified color table. It was a valid color table.
         const unsigned char *c = ct->GetColors(ctName);
+        const unsigned char *a = NULL;
+        if (useOpacities)
+            a = ct->GetAlphas(ctName);
         if(c != NULL)
         {
             // Set the colors into the lookup table.
             retval = true;
-            SetLUTColors(c, ct->GetNumColors());
+            if (a)
+                SetLUTColorsAndOpacity(c, a, ct->GetNumColors());
+            else
+                SetLUTColors(c, ct->GetNumColors());
         }
     }
 

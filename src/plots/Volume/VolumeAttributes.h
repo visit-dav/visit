@@ -87,6 +87,12 @@ public:
         KernelBased,
         Rasterization
     };
+    enum OpacityModes
+    {
+        FreeformMode,
+        GaussianMode,
+        ColorTableMode
+    };
 
     VolumeAttributes();
     VolumeAttributes(const VolumeAttributes &obj);
@@ -114,7 +120,7 @@ public:
     void SetLightingFlag(bool lightingFlag_);
     void SetColorControlPoints(const ColorControlPointList &colorControlPoints_);
     void SetOpacityAttenuation(float opacityAttenuation_);
-    void SetFreeformFlag(bool freeformFlag_);
+    void SetOpacityMode(OpacityModes opacityMode_);
     void SetOpacityControlPoints(const GaussianControlPointList &opacityControlPoints_);
     void SetResampleTarget(int resampleTarget_);
     void SetOpacityVariable(const std::string &opacityVariable_);
@@ -144,7 +150,7 @@ public:
     const ColorControlPointList    &GetColorControlPoints() const;
           ColorControlPointList    &GetColorControlPoints();
     float                          GetOpacityAttenuation() const;
-    bool                           GetFreeformFlag() const;
+    OpacityModes                   GetOpacityMode() const;
     const GaussianControlPointList &GetOpacityControlPoints() const;
           GaussianControlPointList &GetOpacityControlPoints();
     int                            GetResampleTarget() const;
@@ -210,6 +216,11 @@ public:
 protected:
     static std::string SamplingType_ToString(int);
 public:
+    static std::string OpacityModes_ToString(OpacityModes);
+    static bool OpacityModes_FromString(const std::string &, OpacityModes &);
+protected:
+    static std::string OpacityModes_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -236,7 +247,7 @@ public:
         ID_lightingFlag,
         ID_colorControlPoints,
         ID_opacityAttenuation,
-        ID_freeformFlag,
+        ID_opacityMode,
         ID_opacityControlPoints,
         ID_resampleTarget,
         ID_opacityVariable,
@@ -269,7 +280,7 @@ private:
     bool                     lightingFlag;
     ColorControlPointList    colorControlPoints;
     float                    opacityAttenuation;
-    bool                     freeformFlag;
+    int                      opacityMode;
     GaussianControlPointList opacityControlPoints;
     int                      resampleTarget;
     std::string              opacityVariable;

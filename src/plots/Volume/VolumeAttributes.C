@@ -193,8 +193,46 @@ VolumeAttributes::SamplingType_FromString(const std::string &s, VolumeAttributes
     return false;
 }
 
+//
+// Enum conversion methods for VolumeAttributes::OpacityModes
+//
+
+static const char *OpacityModes_strings[] = {
+"FreeformMode", "GaussianMode", "ColorTableMode"
+};
+
+std::string
+VolumeAttributes::OpacityModes_ToString(VolumeAttributes::OpacityModes t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return OpacityModes_strings[index];
+}
+
+std::string
+VolumeAttributes::OpacityModes_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return OpacityModes_strings[index];
+}
+
+bool
+VolumeAttributes::OpacityModes_FromString(const std::string &s, VolumeAttributes::OpacityModes &val)
+{
+    val = VolumeAttributes::FreeformMode;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == OpacityModes_strings[i])
+        {
+            val = (OpacityModes)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // Type map format string
-const char *VolumeAttributes::TypeMapFormatString = "bbafbaisUbfbfbfbfbiiiiidifa*i";
+const char *VolumeAttributes::TypeMapFormatString = "bbafiaisUbfbfbfbfbiiiiidifa*i";
 
 // ****************************************************************************
 // Method: VolumeAttributes::VolumeAttributes
@@ -219,7 +257,7 @@ VolumeAttributes::VolumeAttributes() :
     lightingFlag = true;
     SetDefaultColorControlPoints();
     opacityAttenuation = 1;
-    freeformFlag = true;
+    opacityMode = FreeformMode;
     resampleTarget = 50000;
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = (unsigned char)i;
@@ -267,7 +305,7 @@ VolumeAttributes::VolumeAttributes(const VolumeAttributes &obj) :
     lightingFlag = obj.lightingFlag;
     colorControlPoints = obj.colorControlPoints;
     opacityAttenuation = obj.opacityAttenuation;
-    freeformFlag = obj.freeformFlag;
+    opacityMode = obj.opacityMode;
     opacityControlPoints = obj.opacityControlPoints;
     resampleTarget = obj.resampleTarget;
     opacityVariable = obj.opacityVariable;
@@ -360,7 +398,7 @@ VolumeAttributes::operator = (const VolumeAttributes &obj)
     lightingFlag = obj.lightingFlag;
     colorControlPoints = obj.colorControlPoints;
     opacityAttenuation = obj.opacityAttenuation;
-    freeformFlag = obj.freeformFlag;
+    opacityMode = obj.opacityMode;
     opacityControlPoints = obj.opacityControlPoints;
     resampleTarget = obj.resampleTarget;
     opacityVariable = obj.opacityVariable;
@@ -442,7 +480,7 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (lightingFlag == obj.lightingFlag) &&
             (colorControlPoints == obj.colorControlPoints) &&
             (opacityAttenuation == obj.opacityAttenuation) &&
-            (freeformFlag == obj.freeformFlag) &&
+            (opacityMode == obj.opacityMode) &&
             (opacityControlPoints == obj.opacityControlPoints) &&
             (resampleTarget == obj.resampleTarget) &&
             (opacityVariable == obj.opacityVariable) &&
@@ -613,7 +651,7 @@ VolumeAttributes::SelectAll()
     Select(ID_lightingFlag,              (void *)&lightingFlag);
     Select(ID_colorControlPoints,        (void *)&colorControlPoints);
     Select(ID_opacityAttenuation,        (void *)&opacityAttenuation);
-    Select(ID_freeformFlag,              (void *)&freeformFlag);
+    Select(ID_opacityMode,               (void *)&opacityMode);
     Select(ID_opacityControlPoints,      (void *)&opacityControlPoints);
     Select(ID_resampleTarget,            (void *)&resampleTarget);
     Select(ID_opacityVariable,           (void *)&opacityVariable);
@@ -720,10 +758,10 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("opacityAttenuation", opacityAttenuation));
     }
 
-    if(completeSave || !FieldsEqual(ID_freeformFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_opacityMode, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("freeformFlag", freeformFlag));
+        node->AddNode(new DataNode("opacityMode", OpacityModes_ToString(opacityMode)));
     }
 
     if(completeSave || !FieldsEqual(ID_opacityControlPoints, &defaultObject))
@@ -916,8 +954,22 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         colorControlPoints.SetFromNode(node);
     if((node = searchNode->GetNode("opacityAttenuation")) != 0)
         SetOpacityAttenuation(node->AsFloat());
-    if((node = searchNode->GetNode("freeformFlag")) != 0)
-        SetFreeformFlag(node->AsBool());
+    if((node = searchNode->GetNode("opacityMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetOpacityMode(OpacityModes(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OpacityModes value;
+            if(OpacityModes_FromString(node->AsString(), value))
+                SetOpacityMode(value);
+        }
+    }
     if((node = searchNode->GetNode("opacityControlPoints")) != 0)
         opacityControlPoints.SetFromNode(node);
     if((node = searchNode->GetNode("resampleTarget")) != 0)
@@ -1075,10 +1127,10 @@ VolumeAttributes::SetOpacityAttenuation(float opacityAttenuation_)
 }
 
 void
-VolumeAttributes::SetFreeformFlag(bool freeformFlag_)
+VolumeAttributes::SetOpacityMode(VolumeAttributes::OpacityModes opacityMode_)
 {
-    freeformFlag = freeformFlag_;
-    Select(ID_freeformFlag, (void *)&freeformFlag);
+    opacityMode = opacityMode_;
+    Select(ID_opacityMode, (void *)&opacityMode);
 }
 
 void
@@ -1275,10 +1327,10 @@ VolumeAttributes::GetOpacityAttenuation() const
     return opacityAttenuation;
 }
 
-bool
-VolumeAttributes::GetFreeformFlag() const
+VolumeAttributes::OpacityModes
+VolumeAttributes::GetOpacityMode() const
 {
-    return freeformFlag;
+    return OpacityModes(opacityMode);
 }
 
 const GaussianControlPointList &
@@ -1702,7 +1754,7 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_lightingFlag:              return "lightingFlag";
     case ID_colorControlPoints:        return "colorControlPoints";
     case ID_opacityAttenuation:        return "opacityAttenuation";
-    case ID_freeformFlag:              return "freeformFlag";
+    case ID_opacityMode:               return "opacityMode";
     case ID_opacityControlPoints:      return "opacityControlPoints";
     case ID_resampleTarget:            return "resampleTarget";
     case ID_opacityVariable:           return "opacityVariable";
@@ -1754,7 +1806,7 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_lightingFlag:              return FieldType_bool;
     case ID_colorControlPoints:        return FieldType_att;
     case ID_opacityAttenuation:        return FieldType_float;
-    case ID_freeformFlag:              return FieldType_bool;
+    case ID_opacityMode:               return FieldType_enum;
     case ID_opacityControlPoints:      return FieldType_att;
     case ID_resampleTarget:            return FieldType_int;
     case ID_opacityVariable:           return FieldType_variablename;
@@ -1806,7 +1858,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_lightingFlag:              return "bool";
     case ID_colorControlPoints:        return "att";
     case ID_opacityAttenuation:        return "float";
-    case ID_freeformFlag:              return "bool";
+    case ID_opacityMode:               return "enum";
     case ID_opacityControlPoints:      return "att";
     case ID_resampleTarget:            return "int";
     case ID_opacityVariable:           return "variablename";
@@ -1876,9 +1928,9 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (opacityAttenuation == obj.opacityAttenuation);
         }
         break;
-    case ID_freeformFlag:
+    case ID_opacityMode:
         {  // new scope
-        retval = (freeformFlag == obj.freeformFlag);
+        retval = (opacityMode == obj.opacityMode);
         }
         break;
     case ID_opacityControlPoints:
@@ -2129,6 +2181,9 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
 //    Added rendererType and gradientType to the list of modifications
 //    that require re-calculating the gradient.
 //
+//    Jeremy Meredith, Fri Feb 20 15:14:29 EST 2009
+//    Made opacity mode be an enum instead of a flag.
+//
 // ****************************************************************************
 bool
 VolumeAttributes::GradientWontChange(const VolumeAttributes &obj) const
@@ -2141,7 +2196,7 @@ VolumeAttributes::GradientWontChange(const VolumeAttributes &obj) const
         freeformOpacity_equal = (freeformOpacity[i] == obj.freeformOpacity[i]);
 
     // Create the return value
-    return ((freeformFlag         == obj.freeformFlag) &&
+    return ((opacityMode          == obj.opacityMode) &&
             (opacityControlPoints == obj.opacityControlPoints) &&
             (resampleTarget       == obj.resampleTarget) &&
             (opacityVariable      == obj.opacityVariable) &&
@@ -2177,6 +2232,11 @@ VolumeAttributes::GradientWontChange(const VolumeAttributes &obj) const
 //   Jeremy Meredith, Thu Oct  2 13:29:40 PDT 2003
 //   Made the method const.
 //
+//   Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//   Made opacity mode be an enum instead of a flag.
+//   Added support for alphas to come from a color table
+//   instead of being specified by the user in the plot itself.
+//
 // ****************************************************************************
 
 void
@@ -2187,13 +2247,18 @@ VolumeAttributes::GetTransferFunction(unsigned char *rgba) const
     const unsigned char *a_ptr;
 
     // Figure out the colors
-    colorControlPoints.GetColors(rgb, 256);
+    colorControlPoints.GetColors(rgb, 256, alphas);
     // Figure out the opacities
-    if(freeformFlag)
+    if (opacityMode == FreeformMode)
         a_ptr = freeformOpacity;
-    else
+    else if (opacityMode == GaussianMode)
     {
         GetGaussianOpacities(alphas);
+        a_ptr = alphas;
+    }
+    else // color table mode
+    {
+        // we already got the opacities
         a_ptr = alphas;
     }
 
@@ -2354,16 +2419,36 @@ VolumeAttributes::GetGaussianOpacities(unsigned char *alphas) const
     }
 }
 
+// ****************************************************************************
+//  Method:  VolumeAttributes::GetOpacities
+//
+//  Purpose:
+//    Get the actual opacities for the plot.
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//    Made opacity mode be an enum instead of a flag.
+//    Added support for alphas to come from a color table
+//    instead of being specified by the user in the plot itself.
+//
+// ****************************************************************************
 void
 VolumeAttributes::GetOpacities(unsigned char *alphas)
 {
-    if(freeformFlag)
+    if (opacityMode == FreeformMode)
     {
         for(int i = 0; i < 256; ++i)
             alphas[i] = freeformOpacity[i];
     }
-    else
+    else if (opacityMode == GaussianMode)
+    {
         GetGaussianOpacities(alphas);
+    }
+    else // color table mode
+    {
+        unsigned char rgbtmp[256 * 3];
+        colorControlPoints.GetColors(rgbtmp, 256, alphas);
+    }
 }
 
 void
@@ -2402,6 +2487,8 @@ VolumeAttributes::GetEqualSpacingFlag() const
 // Creation:   Thu Sep 6 10:23:59 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 20 15:16:43 EST 2009
+//    Made opacity mode be an enum instead of a flag.
 //
 // ****************************************************************************
 
@@ -2414,7 +2501,7 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
         // Skip any of the transfer function members.
         if(i == ID_colorControlPoints || 
            i == ID_opacityAttenuation || 
-           i == ID_freeformFlag || 
+           i == ID_opacityMode || 
            i == ID_opacityControlPoints ||
            i == ID_freeformOpacity ||
            i == ID_transferFunction2DWidgets ||

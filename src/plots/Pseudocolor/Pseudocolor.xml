@@ -88,6 +88,9 @@
       <Field name="lineWidth" label="lineWidth" type="linewidth">
         0
       </Field>
+      <Field name="useColorTableOpacity" label="Use opacity from color table" type="bool">
+        false
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="Print" user="true" member="true">

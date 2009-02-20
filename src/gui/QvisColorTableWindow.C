@@ -170,6 +170,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Jeremy Meredith, Wed Dec 31 16:11:50 EST 2008
 //   Added show index hints checkbox for discrete color tables.
 //
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
+//
 // ****************************************************************************
 
 void
@@ -336,11 +339,12 @@ QvisColorTableWindow::CreateWindowContents()
     // Create the discrete color table sliders, text fields.
     QGridLayout *discreteLayout = new QGridLayout();
     innerColorLayout->addLayout(discreteLayout);
-    QString cnames[3];
+    QString cnames[4];
     cnames[0] = tr("Red");
     cnames[1] = tr("Green");
     cnames[2] = tr("Blue");
-    for(int j = 0; j < 3; ++j)
+    cnames[3] = tr("Alpha");
+    for(int j = 0; j < 4; ++j)
     {
         QString n;
         n.sprintf("componentSliders[%d]", j);
@@ -376,12 +380,19 @@ QvisColorTableWindow::CreateWindowContents()
             connect(componentSpinBoxes[j], SIGNAL(valueChanged(int)),
                     this, SLOT(greenValueChanged(int)));
         }
-        else
+        else if(j == 2)
         {
             connect(componentSliders[j], SIGNAL(valueChanged(int)),
                     this, SLOT(blueValueChanged(int)));
             connect(componentSpinBoxes[j], SIGNAL(valueChanged(int)),
                     this, SLOT(blueValueChanged(int)));
+        }
+        else
+        {
+            connect(componentSliders[j], SIGNAL(valueChanged(int)),
+                    this, SLOT(alphaValueChanged(int)));
+            connect(componentSpinBoxes[j], SIGNAL(valueChanged(int)),
+                    this, SLOT(alphaValueChanged(int)));
         }
         connect(componentSliders[j], SIGNAL(sliderPressed()),
                 this, SLOT(sliderPressed()));
@@ -772,6 +783,8 @@ QvisColorTableWindow::GetActiveColorControlPoints()
 // Creation:   Mon Jun 11 23:35:25 PST 2001
 //
 // Modifications:
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
 //   
 // ****************************************************************************
 
@@ -796,7 +809,8 @@ QvisColorTableWindow::UpdateColorControlPoints()
             {
                 QColor ctmp((int)cpts[i].GetColors()[0],
                             (int)cpts[i].GetColors()[1],
-                            (int)cpts[i].GetColors()[2]);
+                            (int)cpts[i].GetColors()[2],
+                            (int)cpts[i].GetColors()[3]);
                 spectrumBar->setControlPointColor(i, ctmp);
                 spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
             }
@@ -808,7 +822,8 @@ QvisColorTableWindow::UpdateColorControlPoints()
             {
                 QColor ctmp((int)cpts[i].GetColors()[0],
                             (int)cpts[i].GetColors()[1],
-                            (int)cpts[i].GetColors()[2]);
+                            (int)cpts[i].GetColors()[2],
+                            (int)cpts[i].GetColors()[3]);
                 spectrumBar->setControlPointColor(i, ctmp);
                 spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
             }
@@ -818,7 +833,8 @@ QvisColorTableWindow::UpdateColorControlPoints()
             {
                 QColor ctmp((int)cpts[i].GetColors()[0],
                             (int)cpts[i].GetColors()[1],
-                            (int)cpts[i].GetColors()[2]);
+                            (int)cpts[i].GetColors()[2],
+                            (int)cpts[i].GetColors()[3]);
                 spectrumBar->addControlPoint(ctmp, cpts[i].GetPosition());
             }
         }
@@ -833,7 +849,8 @@ QvisColorTableWindow::UpdateColorControlPoints()
             {
                 QColor ctmp((int)cpts[i].GetColors()[0],
                             (int)cpts[i].GetColors()[1],
-                            (int)cpts[i].GetColors()[2]);
+                            (int)cpts[i].GetColors()[2],
+                            (int)cpts[i].GetColors()[3]);
 
                 spectrumBar->setControlPointColor(i, ctmp);
                 spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
@@ -875,6 +892,9 @@ QvisColorTableWindow::UpdateColorControlPoints()
 //   Brad Whitlock, Thu Feb 6 14:17:51 PST 2003
 //   Added code to extend the color table.
 //
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
+//
 // ****************************************************************************
 
 void
@@ -906,7 +926,7 @@ QvisColorTableWindow::UpdateDiscreteSettings()
 
         // Now update the sliders and the spin buttons.
         QColor sc(discreteColors->selectedColor());
-        for(i = 0; i < 3; ++i)
+        for(i = 0; i < 4; ++i)
         {
             componentSliders[i]->blockSignals(true);
             componentSpinBoxes[i]->blockSignals(true);
@@ -917,7 +937,9 @@ QvisColorTableWindow::UpdateDiscreteSettings()
         componentSpinBoxes[1]->setValue(sc.green());
         componentSliders[2]->setValue(sc.blue());
         componentSpinBoxes[2]->setValue(sc.blue());
-        for(i = 0; i < 3; ++i)
+        componentSliders[3]->setValue(sc.alpha());
+        componentSpinBoxes[3]->setValue(sc.alpha());
+        for(i = 0; i < 4; ++i)
         {
             componentSliders[i]->blockSignals(false);
             componentSpinBoxes[i]->blockSignals(false);
@@ -1005,6 +1027,9 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 //    Jeremy Meredith, Fri Aug 11 17:14:32 EDT 2006
 //    Refactoring of color grid widget caused index to lose "color" in names.
 //   
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
+//
 // ****************************************************************************
 
 void
@@ -1030,7 +1055,7 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
     }
 
     // Disable signals in the sliders.
-    for(i = 0; i < 3; ++i)
+    for(i = 0; i < 4; ++i)
     {
         componentSliders[i]->blockSignals(true);
         componentSpinBoxes[i]->blockSignals(true);
@@ -1043,9 +1068,11 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
     componentSpinBoxes[1]->setValue(c.green());
     componentSliders[2]->setValue(c.blue());
     componentSpinBoxes[2]->setValue(c.blue());
+    componentSliders[3]->setValue(c.alpha());
+    componentSpinBoxes[3]->setValue(c.alpha());
 
     // Enable signals in the sliders.
-    for(i = 0; i < 3; ++i)
+    for(i = 0; i < 4; ++i)
     {
         componentSliders[i]->blockSignals(false);
         componentSpinBoxes[i]->blockSignals(false);
@@ -1068,6 +1095,9 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
 //    Jeremy Meredith, Fri Aug 11 17:14:32 EDT 2006
 //    Refactoring of color grid widget caused index to lose "color" in names.
 //   
+//    Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//    Added alpha channel support.
+//
 // ****************************************************************************
 
 void
@@ -1096,6 +1126,7 @@ QvisColorTableWindow::ChangeSelectedColor(const QColor &c)
             ccp.GetColors()[0] = (unsigned char)c.red();
             ccp.GetColors()[1] = (unsigned char)c.green();
             ccp.GetColors()[2] = (unsigned char)c.blue();
+            ccp.GetColors()[3] = (unsigned char)c.alpha();
             ccp.SelectColors();
             ccpl->SelectControlPoints();
 
@@ -1170,6 +1201,9 @@ QvisColorTableWindow::GetNextColor()
 //   Brad Whitlock, Wed Nov 20 16:46:46 PST 2002
 //   I changed the code so it supports discrete color tables.
 //
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
+//
 // ****************************************************************************
 
 void
@@ -1196,7 +1230,7 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
             ptColors[0] = (unsigned char)c.red();
             ptColors[1] = (unsigned char)c.green();
             ptColors[2] = (unsigned char)c.blue();
-            ptColors[3] = 255;
+            ptColors[3] = (unsigned char)c.alpha();
             pt.SetColors(ptColors);
             pt.SetPosition(pos);
             cpts.AddControlPoints(pt);
@@ -1730,6 +1764,8 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // Creation:   Thu Nov 21 14:44:44 PST 2002
 //
 // Modifications:
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
 //   
 // ****************************************************************************
 
@@ -1746,7 +1782,7 @@ QvisColorTableWindow::redValueChanged(int r)
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
 
-        c.setRgb(r, c.green(), c.blue());
+        c.setRgb(r, c.green(), c.blue(), c.alpha());
         ChangeSelectedColor(c);
     }
 }
@@ -1765,6 +1801,8 @@ QvisColorTableWindow::redValueChanged(int r)
 // Creation:   Thu Nov 21 14:44:44 PST 2002
 //
 // Modifications:
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
 //   
 // ****************************************************************************
 
@@ -1781,7 +1819,7 @@ QvisColorTableWindow::greenValueChanged(int g)
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
 
-        c.setRgb(c.red(), g, c.blue());
+        c.setRgb(c.red(), g, c.blue(), c.alpha());
         ChangeSelectedColor(c);
     }
 }
@@ -1800,6 +1838,8 @@ QvisColorTableWindow::greenValueChanged(int g)
 // Creation:   Thu Nov 21 14:44:44 PST 2002
 //
 // Modifications:
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
 //   
 // ****************************************************************************
 
@@ -1816,7 +1856,42 @@ QvisColorTableWindow::blueValueChanged(int b)
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
 
-        c.setRgb(c.red(), c.green(), b);
+        c.setRgb(c.red(), c.green(), b, c.alpha());
+        ChangeSelectedColor(c);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::alphaValueChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the active discrete color
+//   changes due to the alpha slider or spin box.
+//
+// Arguments:
+//   a : The new alpha value.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February 20, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisColorTableWindow::alphaValueChanged(int a)
+{
+    const ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    if(ccpl)
+    {
+        QColor c;
+
+        if(ccpl->GetDiscreteFlag())
+            c = discreteColors->selectedColor();
+        else
+            c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        c.setRgb(c.red(), c.green(), c.blue(), a);
         ChangeSelectedColor(c);
     }
 }
@@ -1927,6 +2002,9 @@ QvisColorTableWindow::setActiveDiscrete(const QString &ct)
 //   I added code to prevent the spectrum bar from emitting signals while
 //   it is having color control points added or removed.
 //
+//   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
+//   Added alpha channel support.
+//
 // ****************************************************************************
 
 void
@@ -1963,7 +2041,7 @@ QvisColorTableWindow::resizeColorTable(int size)
                 for(i = 0; i < addPoints; ++i)
                 {
                     QColor c(GetNextColor());
-                    ColorControlPoint newPt(1., c.red(), c.green(), c.blue(), 255);
+                    ColorControlPoint newPt(1., c.red(), c.green(), c.blue(), c.alpha());
                     ccpl->AddControlPoints(newPt);
                 }
 

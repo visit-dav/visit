@@ -171,6 +171,11 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Jeremy Meredith, Wed Nov 26 11:28:24 EST 2008
 //   Added line style/width controls.
 //
+//   Jeremy Meredith, Fri Feb 20 15:14:29 EST 2009
+//   Added support for using per-color alpha values from a color table
+//   (instead of just a single global opacity for the whole plot).
+//   There's a new toggle for this, and it overrides the whole-plot opacity.
+//
 // ****************************************************************************
 
 void
@@ -299,6 +304,7 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     QGridLayout *gLayout = new QGridLayout(0);
     gLayout->setMargin(0);
     topLayout->addLayout(gLayout);
+    int gRow = 0;
 
     // Create the skew factor line edit    
     skewLineEdit = new QLineEdit(central);
@@ -308,7 +314,8 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     skewLabel = new QLabel(tr("Skew factor"), central);
     skewLabel->setBuddy(skewLineEdit);
     skewLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    gLayout->addWidget(skewLabel, 0, 0);
+    gLayout->addWidget(skewLabel, gRow, 0);
+    gRow++;
 
     // Create the point control
     pointControl = new QvisPointControl(central);
@@ -322,8 +329,17 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
             this, SLOT(pointTypeChanged(int)));
-    gLayout->addWidget(pointControl, 1, 0, 1, 2);
+    gLayout->addWidget(pointControl, gRow, 0, 1, 2);
+    gRow++;
  
+    // Create the use-color-table-opacity checkbox
+    useColorTableOpacity =
+        new QCheckBox(tr("Use opacity from color table"), central);
+    connect(useColorTableOpacity, SIGNAL(toggled(bool)),
+            this, SLOT(useColorTableOpacityToggled(bool)));
+    gLayout->addWidget(useColorTableOpacity, gRow, 0, 1,2);
+    gRow++;
+
     //
     // Create the opacity slider
     //
@@ -332,34 +348,37 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     opacitySlider->setGradientColor(QColor(0, 0, 0));
     connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(changedOpacity(int, const void*)));
-    gLayout->addWidget(opacitySlider, 2, 1);
+    gLayout->addWidget(opacitySlider, gRow, 1);
 
-    QLabel *opacityLabel = new QLabel(tr("Opacity"), central);
+    opacityLabel = new QLabel(tr("Opacity"), central);
     opacityLabel->setBuddy(opacitySlider);
     opacityLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    gLayout->addWidget(opacityLabel, 2, 0);
+    gLayout->addWidget(opacityLabel, gRow, 0);
+    gRow++;
 
     // Create the color table widgets
     colorTableButton = new QvisColorTableButton(central);
     connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    gLayout->addWidget(colorTableButton, 3, 1, Qt::AlignLeft | Qt::AlignVCenter);
+    gLayout->addWidget(colorTableButton, gRow, 1, Qt::AlignLeft | Qt::AlignVCenter);
     QLabel *colorTableLabel = new QLabel(tr("Color table"), central);
     colorTableLabel->setBuddy(colorTableButton);
     colorTableLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    gLayout->addWidget(colorTableLabel, 3, 0);
+    gLayout->addWidget(colorTableLabel, gRow, 0);
+    gRow++;
 
     // Create the legend toggle
     legendToggle = new QCheckBox(tr("Legend"), central);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    gLayout->addWidget(legendToggle, 4, 0);
+    gLayout->addWidget(legendToggle, gRow, 0);
 
     // Create the lighting toggle
     lightingToggle = new QCheckBox(tr("Lighting"), central);
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
-    gLayout->addWidget(lightingToggle, 4, 1);
+    gLayout->addWidget(lightingToggle, gRow, 1);
+    gRow++;
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
@@ -379,7 +398,8 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     rb = new QRadioButton(tr("High"), central);
     smoothingLevelButtons->addButton(rb, 2);
     smoothingLayout->addWidget(rb, 0, 3);
-    gLayout->addLayout(smoothingLayout, 5,0, 1,2);
+    gLayout->addLayout(smoothingLayout, gRow,0, 1,2);
+    gRow++;
 }
 
 // ****************************************************************************
@@ -448,6 +468,11 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //
 //   Jeremy Meredith, Wed Nov 26 11:28:24 EST 2008
 //   Added line style/width controls.
+//
+//   Jeremy Meredith, Fri Feb 20 15:14:29 EST 2009
+//   Added support for using per-color alpha values from a color table
+//   (instead of just a single global opacity for the whole plot).
+//   There's a new toggle for this, and it overrides the whole-plot opacity.
 //
 // ****************************************************************************
 
@@ -586,6 +611,13 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(pcAtts->GetLineWidth());
             lineWidth->blockSignals(false);
+            break;
+        case PseudocolorAttributes::ID_useColorTableOpacity:
+            useColorTableOpacity->blockSignals(true);
+            useColorTableOpacity->setChecked(pcAtts->GetUseColorTableOpacity());
+            opacitySlider->setEnabled(!pcAtts->GetUseColorTableOpacity());
+            opacityLabel->setEnabled(!pcAtts->GetUseColorTableOpacity());
+            useColorTableOpacity->blockSignals(false);
             break;
         }
     } // end for
@@ -1043,4 +1075,30 @@ QvisPseudocolorPlotWindow::lineWidthChanged(int newWidth)
     pcAtts->SetLineWidth(newWidth);
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisPseudocolorPlotWindow::useColorTableOpacityToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 
+//   useColorTableOpacity button is toggled.
+//
+// Arguments:
+//   val : The new state of the useColorTableOpacity toggle.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February 20, 2009
+//   
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::useColorTableOpacityToggled(bool val)
+{
+    pcAtts->SetUseColorTableOpacity(val);
+    opacitySlider->setEnabled(!pcAtts->GetUseColorTableOpacity());
+    opacityLabel->setEnabled(!pcAtts->GetUseColorTableOpacity());
+    Apply();
+}
+
 
