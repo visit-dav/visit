@@ -4109,6 +4109,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Renamed near, far to nearPlane and farPlane since near,far are
 //    reserve words in the Windows compiler.
 //
+//    Jeremy Meredith, Fri Feb 20 17:26:49 EST 2009
+//    Use the property's opacity for the edge color (mesh lines) as well.
+//
 // ****************************************************************************
 
 void
@@ -4156,7 +4159,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
   
     double edgeColor[4];
     prop->GetEdgeColor(edgeColor); 
-    edgeColor[3] = 1.; 
+    edgeColor[3] = prop->GetOpacity(); 
     glColor4dv(edgeColor);
 
     t = input->GetPointData()->GetTCoords();

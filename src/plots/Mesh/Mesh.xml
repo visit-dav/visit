@@ -78,6 +78,9 @@
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         2
       </Field>
+      <Field name="opacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
     </Attribute>
