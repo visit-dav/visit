@@ -55,6 +55,9 @@
       <Field name="idVariable" label="Id variable" type="string">
         default
       </Field>
+      <Field name="legendFlag" label="legendFlag" type="bool">
+        true
+      </Field>
       <Function name="EnlargeMultiColor" user="true" member="true">
       </Function>
       <Function name="ColorIsChanged" user="true" member="true">

@@ -78,7 +78,7 @@ MultiCurveAttributes::ColoringMethod_FromString(const std::string &s, MultiCurve
 }
 
 // Type map format string
-const char *MultiCurveAttributes::TypeMapFormatString = "au*iaaiisbdbsbs";
+const char *MultiCurveAttributes::TypeMapFormatString = "au*iaaiisbdbsbsb";
 
 // ****************************************************************************
 // Method: MultiCurveAttributes::MultiCurveAttributes
@@ -109,6 +109,7 @@ MultiCurveAttributes::MultiCurveAttributes() :
     markerVariable = "default";
     displayIds = false;
     idVariable = "default";
+    legendFlag = true;
 }
 
 // ****************************************************************************
@@ -143,6 +144,7 @@ MultiCurveAttributes::MultiCurveAttributes(const MultiCurveAttributes &obj) :
     markerVariable = obj.markerVariable;
     displayIds = obj.displayIds;
     idVariable = obj.idVariable;
+    legendFlag = obj.legendFlag;
 
     SelectAll();
 }
@@ -200,6 +202,7 @@ MultiCurveAttributes::operator = (const MultiCurveAttributes &obj)
     markerVariable = obj.markerVariable;
     displayIds = obj.displayIds;
     idVariable = obj.idVariable;
+    legendFlag = obj.legendFlag;
 
     SelectAll();
     return *this;
@@ -237,7 +240,8 @@ MultiCurveAttributes::operator == (const MultiCurveAttributes &obj) const
             (displayMarkers == obj.displayMarkers) &&
             (markerVariable == obj.markerVariable) &&
             (displayIds == obj.displayIds) &&
-            (idVariable == obj.idVariable));
+            (idVariable == obj.idVariable) &&
+            (legendFlag == obj.legendFlag));
 }
 
 // ****************************************************************************
@@ -395,6 +399,7 @@ MultiCurveAttributes::SelectAll()
     Select(ID_markerVariable,   (void *)&markerVariable);
     Select(ID_displayIds,       (void *)&displayIds);
     Select(ID_idVariable,       (void *)&idVariable);
+    Select(ID_legendFlag,       (void *)&legendFlag);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -525,6 +530,12 @@ MultiCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("idVariable", idVariable));
     }
 
+    if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("legendFlag", legendFlag));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -603,6 +614,8 @@ MultiCurveAttributes::SetFromNode(DataNode *parentNode)
         SetDisplayIds(node->AsBool());
     if((node = searchNode->GetNode("idVariable")) != 0)
         SetIdVariable(node->AsString());
+    if((node = searchNode->GetNode("legendFlag")) != 0)
+        SetLegendFlag(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -705,6 +718,13 @@ MultiCurveAttributes::SetIdVariable(const std::string &idVariable_)
 {
     idVariable = idVariable_;
     Select(ID_idVariable, (void *)&idVariable);
+}
+
+void
+MultiCurveAttributes::SetLegendFlag(bool legendFlag_)
+{
+    legendFlag = legendFlag_;
+    Select(ID_legendFlag, (void *)&legendFlag);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -837,6 +857,12 @@ MultiCurveAttributes::GetIdVariable()
     return idVariable;
 }
 
+bool
+MultiCurveAttributes::GetLegendFlag() const
+{
+    return legendFlag;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -921,6 +947,7 @@ MultiCurveAttributes::GetFieldName(int index) const
     case ID_markerVariable:   return "markerVariable";
     case ID_displayIds:       return "displayIds";
     case ID_idVariable:       return "idVariable";
+    case ID_legendFlag:       return "legendFlag";
     default:  return "invalid index";
     }
 }
@@ -959,6 +986,7 @@ MultiCurveAttributes::GetFieldType(int index) const
     case ID_markerVariable:   return FieldType_string;
     case ID_displayIds:       return FieldType_bool;
     case ID_idVariable:       return FieldType_string;
+    case ID_legendFlag:       return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -997,6 +1025,7 @@ MultiCurveAttributes::GetFieldTypeName(int index) const
     case ID_markerVariable:   return "string";
     case ID_displayIds:       return "bool";
     case ID_idVariable:       return "string";
+    case ID_legendFlag:       return "bool";
     default:  return "invalid index";
     }
 }
@@ -1091,6 +1120,11 @@ MultiCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_idVariable:
         {  // new scope
         retval = (idVariable == obj.idVariable);
+        }
+        break;
+    case ID_legendFlag:
+        {  // new scope
+        retval = (legendFlag == obj.legendFlag);
         }
         break;
     default: retval = false;

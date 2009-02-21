@@ -43,6 +43,7 @@
 #include <avtMultiCurvePlot.h>
 
 #include <avtColorTables.h>
+#include <avtLevelsLegend.h>
 #include <avtLevelsMapper.h>
 #include <avtLookupTable.h>
 #include <avtMultiCurveFilter.h>
@@ -58,6 +59,10 @@
 //  Programmer: xml2avt
 //  Creation:   omitted
 //
+//  Modifications:
+//    Eric Brugger, Fri Feb 20 16:21:57 PST 2009
+//    I added a legend to the plot.
+//
 // ****************************************************************************
 
 avtMultiCurvePlot::avtMultiCurvePlot()
@@ -65,8 +70,24 @@ avtMultiCurvePlot::avtMultiCurvePlot()
     MultiCurveFilter = new avtMultiCurveFilter(atts);
 
     levelsMapper     = new avtLevelsMapper;
+    levelsLegend     = new avtLevelsLegend;
     decoMapper       = new avtMultiCurveLabelMapper();
     avtLUT           = new avtLookupTable;
+
+    //
+    // Set some legend properties.
+    //
+    levelsLegend->SetColorBarVisibility(0);
+    levelsLegend->SetTitleVisibility(1);
+    levelsLegend->SetLookupTable(avtLUT->GetLookupTable());
+
+    //
+    // This is to allow the legend to reference counted so the behavior can
+    // still access it after the plot is deleted.  The legend cannot be
+    // reference counted all of the time since we need to know that it is a
+    // levelsLegend.
+    //
+    levelsLegendRefPtr = levelsLegend;
 }
 
 
@@ -75,6 +96,10 @@ avtMultiCurvePlot::avtMultiCurvePlot()
 //
 //  Programmer: xml2avt
 //  Creation:   omitted
+//
+//  Modifications:
+//    Eric Brugger, Fri Feb 20 16:21:57 PST 2009
+//    I added a legend to the plot.
 //
 // ****************************************************************************
 
@@ -100,6 +125,11 @@ avtMultiCurvePlot::~avtMultiCurvePlot()
         delete avtLUT;
         avtLUT = NULL;
     }
+
+    //
+    // Do not delete the levelsLegend since it is being held by
+    // levelsLegendRefPtr.
+    //
 }
 
 
@@ -220,6 +250,10 @@ avtMultiCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Programmer: xml2avt
 //  Creation:   omitted
 //
+//  Modifications:
+//    Eric Brugger, Fri Feb 20 16:21:57 PST 2009
+//    I added a legend to the plot.
+//
 // ****************************************************************************
 
 void
@@ -227,8 +261,23 @@ avtMultiCurvePlot::CustomizeBehavior(void)
 {
     behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_AXISPARALLEL);
 
+    //
+    // Create the legend, which consists of the tick scale and any legend
+    // text from the operators.
+    //
+    char msg[80];
+    sprintf(msg, "Each tick is %g", atts.GetYAxisRange() / 4.);
+    levelsLegend->SetTitle(msg);
+
+    const MapNode *mNode = behavior->GetInfo().GetAttributes().GetPlotInformation().GetData().GetEntry("LegendMessage");
+    if (mNode != NULL)
+    {
+        const string message = mNode->GetEntry("message")->AsString();
+        levelsLegend->SetMessage(message.c_str());
+    }
+
     behavior->SetShiftFactor(0.0);
-    behavior->SetLegend(NULL);
+    behavior->SetLegend(levelsLegendRefPtr);
 }
 
 
@@ -269,6 +318,9 @@ avtMultiCurvePlot::CustomizeMapper(avtDataObjectInformation &doi)
 //  Modifications:
 //    Eric Brugger, Wed Feb 18 12:13:03 PST 2009
 //    I added the ability to display identifiers at each of the points.
+//
+//    Eric Brugger, Fri Feb 20 16:21:57 PST 2009
+//    I added a legend to the plot.
 //
 // ****************************************************************************
 
@@ -313,6 +365,7 @@ avtMultiCurvePlot::SetAtts(const AttributeGroup *a)
 
     SetLineWidth(atts.GetLineWidth());
     SetLineStyle(atts.GetLineStyle());
+    SetLegend(atts.GetLegendFlag());
 
     //
     // Create the decorations.
@@ -361,6 +414,34 @@ void
 avtMultiCurvePlot::SetLineStyle(int ls)
 {
     levelsMapper->SetLineStyle(Int2LineStyle(ls));
+}
+
+
+// ****************************************************************************
+//  Method: avtMultiCurvePlot::SetLegend
+//
+//  Purpose:
+//      Turns the legend on or off.
+//
+//  Arguments:
+//      on      True if the legend should be turned on, false otherwise.
+//
+//  Programmer: Eric Brugger
+//  Creation:   February 20, 2009
+//
+// ****************************************************************************
+
+void
+avtMultiCurvePlot::SetLegend(bool on)
+{
+    if (on)
+    {
+        levelsLegend->LegendOn();
+    }
+    else
+    {
+        levelsLegend->LegendOff();
+    }
 }
 
 

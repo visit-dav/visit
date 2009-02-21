@@ -129,6 +129,9 @@ QvisMultiCurvePlotWindow::~QvisMultiCurvePlotWindow()
 //   Eric Brugger, Wed Feb 18 07:57:54 PST 2009
 //   I added displayIds and idVariable.
 //
+//   Eric Brugger, Fri Feb 20 16:14:50 PST 2009
+//   I added displayLegend.
+//
 // ****************************************************************************
 
 void
@@ -233,6 +236,11 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
     connect(idVariable, SIGNAL(returnPressed()),
             this, SLOT(idVariableProcessText()));
     mainLayout->addWidget(idVariable, 7,1);
+
+    displayLegend = new QCheckBox(tr("Legend"), central);
+    connect(displayLegend, SIGNAL(toggled(bool)),
+            this, SLOT(displayLegendChanged(bool)));
+    topLayout->addWidget(displayLegend, 8,0);
 }
 
 
@@ -254,6 +262,9 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 //   
 //   Eric Brugger, Wed Feb 18 07:57:54 PST 2009
 //   I added displayIds and idVariable.
+//
+//   Eric Brugger, Fri Feb 20 16:14:50 PST 2009
+//   I added displayLegend.
 //
 // ****************************************************************************
 
@@ -344,6 +355,11 @@ QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case MultiCurveAttributes::ID_idVariable:
             idVariable->setText(QString(atts->GetIdVariable().c_str()));
+            break;
+          case MultiCurveAttributes::ID_legendFlag:
+            displayLegend->blockSignals(true);
+            displayLegend->setChecked(atts->GetLegendFlag());
+            displayLegend->blockSignals(false);
             break;
         }
     }
@@ -771,6 +787,15 @@ void
 QvisMultiCurvePlotWindow::idVariableProcessText()
 {
     GetCurrentValues(MultiCurveAttributes::ID_idVariable);
+    Apply();
+}
+
+
+void
+QvisMultiCurvePlotWindow::displayLegendChanged(bool val)
+{
+    atts->SetLegendFlag(val);
+    SetUpdate(false);
     Apply();
 }
 

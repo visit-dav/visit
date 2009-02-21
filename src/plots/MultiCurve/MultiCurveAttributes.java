@@ -71,7 +71,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes()
     {
-        super(14);
+        super(15);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
@@ -87,11 +87,12 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         markerVariable = new String("default");
         displayIds = false;
         idVariable = new String("default");
+        legendFlag = true;
     }
 
     public MultiCurveAttributes(MultiCurveAttributes obj)
     {
-        super(14);
+        super(15);
 
         int i;
 
@@ -115,6 +116,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         markerVariable = new String(obj.markerVariable);
         displayIds = obj.displayIds;
         idVariable = new String(obj.idVariable);
+        legendFlag = obj.legendFlag;
 
         SelectAll();
     }
@@ -137,7 +139,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
                 (displayMarkers == obj.displayMarkers) &&
                 (markerVariable.equals(obj.markerVariable)) &&
                 (displayIds == obj.displayIds) &&
-                (idVariable.equals(obj.idVariable)));
+                (idVariable.equals(obj.idVariable)) &&
+                (legendFlag == obj.legendFlag));
     }
 
     public String GetName() { return "MultiCurve"; }
@@ -228,6 +231,12 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         Select(13);
     }
 
+    public void SetLegendFlag(boolean legendFlag_)
+    {
+        legendFlag = legendFlag_;
+        Select(14);
+    }
+
     // Property getting methods
     public ColorControlPointList GetDefaultPalette() { return defaultPalette; }
     public Vector                GetChangedColors() { return changedColors; }
@@ -243,6 +252,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
     public String                GetMarkerVariable() { return markerVariable; }
     public boolean               GetDisplayIds() { return displayIds; }
     public String                GetIdVariable() { return idVariable; }
+    public boolean               GetLegendFlag() { return legendFlag; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -275,6 +285,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(displayIds);
         if(WriteSelect(13, buf))
             buf.WriteString(idVariable);
+        if(WriteSelect(14, buf))
+            buf.WriteBool(legendFlag);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -329,6 +341,9 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
             case 13:
                 SetIdVariable(buf.ReadString());
                 break;
+            case 14:
+                SetLegendFlag(buf.ReadBool());
+                break;
             }
         }
     }
@@ -355,6 +370,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         str = str + stringToString("markerVariable", markerVariable, indent) + "\n";
         str = str + boolToString("displayIds", displayIds, indent) + "\n";
         str = str + stringToString("idVariable", idVariable, indent) + "\n";
+        str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         return str;
     }
 
@@ -374,5 +390,6 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
     private String                markerVariable;
     private boolean               displayIds;
     private String                idVariable;
+    private boolean               legendFlag;
 }
 
