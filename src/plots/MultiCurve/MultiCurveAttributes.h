@@ -106,6 +106,7 @@ public:
     void SetMarkerVariable(const std::string &markerVariable_);
     void SetDisplayIds(bool displayIds_);
     void SetIdVariable(const std::string &idVariable_);
+    void SetLegendFlag(bool legendFlag_);
 
     // Property getting methods
     const ColorControlPointList &GetDefaultPalette() const;
@@ -129,6 +130,7 @@ public:
     bool                        GetDisplayIds() const;
     const std::string           &GetIdVariable() const;
           std::string           &GetIdVariable();
+    bool                        GetLegendFlag() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -168,7 +170,8 @@ public:
         ID_displayMarkers,
         ID_markerVariable,
         ID_displayIds,
-        ID_idVariable
+        ID_idVariable,
+        ID_legendFlag
     };
 
 private:
@@ -186,6 +189,7 @@ private:
     std::string           markerVariable;
     bool                  displayIds;
     std::string           idVariable;
+    bool                  legendFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

@@ -48,6 +48,7 @@
 
 #include <MultiCurveAttributes.h>
 
+class     avtLevelsLegend;
 class     avtLevelsMapper;
 class     avtLookupTable;
 class     avtMultiCurveFilter;
@@ -62,6 +63,10 @@ class     avtMultiCurveLabelMapper;
 //
 //  Programmer: xml2avt
 //  Creation:   omitted
+//
+//  Modifications:
+//    Eric Brugger, Fri Feb 20 16:20:09 PST 2009
+//    I added a legend to the plot.
 //
 // ****************************************************************************
 
@@ -78,6 +83,7 @@ class avtMultiCurvePlot : public avtSurfaceDataPlot
     virtual void                SetAtts(const AttributeGroup*);
     void                        SetLineWidth(int);
     void                        SetLineStyle(int);
+    void                        SetLegend(bool);
 
   protected:
     MultiCurveAttributes        atts;
@@ -85,6 +91,8 @@ class avtMultiCurvePlot : public avtSurfaceDataPlot
     avtMultiCurveFilter        *MultiCurveFilter;
 
     avtLevelsMapper            *levelsMapper;
+    avtLevelsLegend            *levelsLegend;
+    avtLegend_p                 levelsLegendRefPtr;
     avtMultiCurveLabelMapper   *decoMapper;
     avtLookupTable             *avtLUT;
 

@@ -77,6 +77,9 @@ class QvisVariableButton;
 //   Eric Brugger, Wed Feb 18 07:56:29 PST 2009
 //   I added displayIds and idVariable.
 //
+//   Eric Brugger, Fri Feb 20 16:13:15 PST 2009
+//   I added displayLegend.
+//
 // ****************************************************************************
 
 class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
@@ -115,6 +118,7 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     void markerVariableProcessText();
     void displayIdsChanged(bool val);
     void idVariableProcessText();
+    void displayLegendChanged(bool val);
   private:
     int                     plotType;
     QGroupBox              *curveColorGroup;
@@ -131,6 +135,7 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     QLineEdit              *markerVariable;
     QCheckBox              *displayIds;
     QLineEdit              *idVariable;
+    QCheckBox              *displayLegend;
     QLabel                 *lineStyleLabel;
     QLabel                 *lineWidthLabel;
     QLabel                 *yAxisTitleFormatLabel;
