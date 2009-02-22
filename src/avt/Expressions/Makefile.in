@@ -235,16 +235,19 @@
 #   Jeremy Meredith, Wed Feb 11 16:39:34 EST 2009
 #   Removed verdict-related stuff from MeshQuality into new third_party lib.
 #
+#   Hank Childs, Mon Feb 16 07:34:34 PST 2009
+#   Added TimeIterators directory.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
 SUBDIRS=Abstract CMFE Conditional Derivations General ImageProcessing \
-        Management Math MeshQuality 
+        Management Math MeshQuality TimeIterators
 SRC=$(Abstract_src) $(CMFE_src) $(Conditional_src) $(Derivations_src) \
     $(General_src) $(ImageProcessing_src) $(Management_src) $(Math_src) \
-    $(MeshQuality_src) 
+    $(MeshQuality_src) $(TimeIterators_src)
 
 Abstract_src= \
   Abstract/avtBinaryMathExpression.C \
@@ -427,6 +430,16 @@ MeshQuality_src= \
   MeshQuality/avtVMetricVolume.C \
   MeshQuality/avtVMetricWarpage.C \
   MeshQuality/avtVerdictExpression.C
+
+TimeIterators_src= \
+  TimeIterators/avtAverageOverTimeExpression.C \
+  TimeIterators/avtMinOverTimeExpression.C \
+  TimeIterators/avtMaxOverTimeExpression.C \
+  TimeIterators/avtSumOverTimeExpression.C \
+  TimeIterators/avtTimeIteratorDataTreeIteratorExpression.C \
+  TimeIterators/avtTimeIteratorExpression.C \
+  TimeIterators/avtValueAtExtremaExpression.C \
+  TimeIterators/avtWhenConditionIsTrueExpression.C 
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 

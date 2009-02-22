@@ -126,6 +126,9 @@ class   avtWebpage;
 //    Hank Childs, Tue Feb  3 11:26:05 PST 2009
 //    Add friend status for avtNamedSelectionManager.
 //
+//    Hank Childs, Sun Feb 15 10:12:22 PST 2009
+//    Add friend status for avtTimeIteratorExpression.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -141,6 +144,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtLineSurfaceFilter;
     friend                   class avtExecuteThenTimeLoopFilter;
     friend                   class avtNamedSelectionManager;
+    friend                   class avtTimeIteratorExpression;
 
   public:
                              avtDataset(avtDataObjectSource *);

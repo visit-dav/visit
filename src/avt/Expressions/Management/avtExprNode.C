@@ -143,6 +143,12 @@
 #include <avtExpressionComponentMacro.h>
 #include <avtAbelInversionExpression.h>
 #include <avtConservativeSmoothingExpression.h>
+#include <avtAverageOverTimeExpression.h>
+#include <avtMinOverTimeExpression.h>
+#include <avtMaxOverTimeExpression.h>
+#include <avtSumOverTimeExpression.h>
+#include <avtWhenConditionIsTrueExpression.h>
+#include <avtValueAtExtremaExpression.h>
 #include <avtMeanFilterExpression.h>
 #include <avtMedianFilterExpression.h>
 #include <avtConnCMFEExpression.h>
@@ -515,6 +521,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //
 //    Hank Childs, Mon Dec 29 13:57:53 PST 2008
 //    Added dominant_mat.
+//
+//    Hank Childs, Mon Feb 16 15:00:30 PST 2009
+//    Added time iteration expressions.
 //
 // ****************************************************************************
 
@@ -945,6 +954,136 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtConstantFunctionExpression(false);
     if (functionName == "point_constant")
         return new avtConstantFunctionExpression(true);
+
+    if (functionName == "average_over_time")
+        return new avtAverageOverTimeExpression();
+    if (functionName == "min_over_time")
+        return new avtMinOverTimeExpression();
+    if (functionName == "max_over_time")
+        return new avtMaxOverTimeExpression();
+    if (functionName == "sum_over_time")
+        return new avtSumOverTimeExpression();
+    if (functionName == "first_time_when_condition_is_true")
+    {
+        avtWhenConditionIsTrueExpression *e = 
+                                          new avtWhenConditionIsTrueExpression;
+        e->SetWhenConditionIsFirstTrue(true);
+        e->SetOutputType(WCT_OUTPUT_TIME);
+        return e;
+    }
+    if (functionName == "last_time_when_condition_is_true")
+    {
+        avtWhenConditionIsTrueExpression *e = 
+                                          new avtWhenConditionIsTrueExpression;
+        e->SetWhenConditionIsFirstTrue(false);
+        e->SetOutputType(WCT_OUTPUT_TIME);
+        return e;
+    }
+    if (functionName == "first_cycle_when_condition_is_true")
+    {
+        avtWhenConditionIsTrueExpression *e = 
+                                          new avtWhenConditionIsTrueExpression;
+        e->SetWhenConditionIsFirstTrue(true);
+        e->SetOutputType(WCT_OUTPUT_CYCLE);
+        return e;
+    }
+    if (functionName == "last_cycle_when_condition_is_true")
+    {
+        avtWhenConditionIsTrueExpression *e = 
+                                          new avtWhenConditionIsTrueExpression;
+        e->SetWhenConditionIsFirstTrue(false);
+        e->SetOutputType(WCT_OUTPUT_CYCLE);
+        return e;
+    }
+    if (functionName == "first_time_index_when_condition_is_true")
+    {
+        avtWhenConditionIsTrueExpression *e = 
+                                          new avtWhenConditionIsTrueExpression;
+        e->SetWhenConditionIsFirstTrue(true);
+        e->SetOutputType(WCT_OUTPUT_TIME_INDEX);
+        return e;
+    }
+    if (functionName == "last_time_index_when_condition_is_true")
+    {
+        avtWhenConditionIsTrueExpression *e = 
+                                          new avtWhenConditionIsTrueExpression;
+        e->SetWhenConditionIsFirstTrue(false);
+        e->SetOutputType(WCT_OUTPUT_TIME_INDEX);
+        return e;
+    }
+    if (functionName == "var_when_condition_is_first_true")
+    {
+        avtWhenConditionIsTrueExpression *e = 
+                                          new avtWhenConditionIsTrueExpression;
+        e->SetWhenConditionIsFirstTrue(true);
+        e->SetOutputType(WCT_OUTPUT_VARIABLE);
+        return e;
+    }
+    if (functionName == "var_when_condition_is_last_true")
+    {
+        avtWhenConditionIsTrueExpression *e = 
+                                          new avtWhenConditionIsTrueExpression;
+        e->SetWhenConditionIsFirstTrue(false);
+        e->SetOutputType(WCT_OUTPUT_VARIABLE);
+        return e;
+    }
+    if (functionName == "time_at_minimum")
+    {
+        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
+        e->SetAtMaximum(false);
+        e->SetOutputType(VE_OUTPUT_TIME);
+        return e;
+    }
+    if (functionName == "cycle_at_minimum")
+    {
+        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
+        e->SetAtMaximum(false);
+        e->SetOutputType(VE_OUTPUT_CYCLE);
+        return e;
+    }
+    if (functionName == "time_index_at_minimum")
+    {
+        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
+        e->SetAtMaximum(false);
+        e->SetOutputType(VE_OUTPUT_TIME_INDEX);
+        return e;
+    }
+    if (functionName == "value_at_minimum")
+    {
+        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
+        e->SetAtMaximum(false);
+        e->SetOutputType(VE_OUTPUT_VARIABLE);
+        return e;
+    }
+    if (functionName == "time_at_maximum")
+    {
+        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
+        e->SetAtMaximum(true);
+        e->SetOutputType(VE_OUTPUT_TIME);
+        return e;
+    }
+    if (functionName == "cycle_at_maximum")
+    {
+        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
+        e->SetAtMaximum(true);
+        e->SetOutputType(VE_OUTPUT_CYCLE);
+        return e;
+    }
+    if (functionName == "time_index_at_maximum")
+    {
+        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
+        e->SetAtMaximum(true);
+        e->SetOutputType(VE_OUTPUT_TIME_INDEX);
+        return e;
+    }
+    if (functionName == "value_at_maximum")
+    {
+        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
+        e->SetAtMaximum(true);
+        e->SetOutputType(VE_OUTPUT_VARIABLE);
+        return e;
+    }
+
 
     return NULL;
 }
