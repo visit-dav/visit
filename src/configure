@@ -10629,7 +10629,7 @@ echo "$as_me:$LINENO: checking if IceT should be used" >&5
 echo $ECHO_N "checking if IceT should be used... $ECHO_C" >&6
 
 # Allow enabling IceT through a config site variable.
-if test -n "${ICET_ENABLE}" -o "x${DEFAULT_ICET_INCLUDE}" != "xno"; then
+if test -n "${ICET_ENABLE}" -o "x${enable_icet}" = "xyes"; then
   enable_icet="yes"
 else
   enable_icet="no"
@@ -10641,11 +10641,10 @@ fi
 if test "x${enable_icet}" = "yes" -a \
         \( -z "${UseParallel}" -o "x${UseParallel}" = "xno" \); then
 
-    { { echo "$as_me:$LINENO: error: IceT usage requested, but you're not doing a parallel
+    { echo "$as_me:$LINENO: WARNING: IceT usage requested, but you're not doing a parallel
 build. IceT requires '--enable-parallel' to be specified." >&5
-echo "$as_me: error: IceT usage requested, but you're not doing a parallel
+echo "$as_me: WARNING: IceT usage requested, but you're not doing a parallel
 build. IceT requires '--enable-parallel' to be specified." >&2;}
-   { (exit 1); exit 1; }; }
 
 
 fi
