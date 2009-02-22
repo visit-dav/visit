@@ -146,6 +146,9 @@
 //    Hank Childs, Mon Dec 29 11:56:50 PST 2008
 //    Added dominant_mat.
 //
+//    Hank Childs, Sun Feb 22 08:56:33 PST 2009
+//    Added category for time iterating expressions.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -346,7 +349,31 @@ const char *expr_comparison[] = {
     NULL
 };
 
-#define NUM_EXPRESSION_CATEGORIES 14
+const char *expr_time_iteration[] = {
+    "average_over_time",
+    "cycle_at_minimum",
+    "cycle_at_maximum",
+    "first_cycle_when_condition_is_true",
+    "first_time_when_condition_is_true",
+    "first_time_index_when_condition_is_true",
+    "last_cycle_when_condition_is_true",
+    "last_time_when_condition_is_true",
+    "last_time_index_when_condition_is_true",
+    "min_over_time", 
+    "max_over_time", 
+    "sum_over_time", 
+    "time_at_minimum",
+    "time_at_maximum",
+    "time_index_at_minimum",
+    "time_index_at_maximum",
+    "value_at_minimum",
+    "value_at_maximum",
+    "var_when_condition_is_first_true",
+    "var_when_condition_is_last_true",
+    NULL
+};
+
+#define NUM_EXPRESSION_CATEGORIES 15
 ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 
 // ****************************************************************************
@@ -365,6 +392,9 @@ ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 12:15:08 PDT 2008
 //   Support for internationalization.
+//
+//   Hank Childs, Sun Feb 22 09:01:29 PST 2009
+//   Add time iteration category.
 //
 // ****************************************************************************
 
@@ -405,6 +435,8 @@ QvisExpressionsWindow::QvisExpressionsWindow(
     exprlist[12].list = expr_conditional;
     exprlist[13].name = tr("Logical");
     exprlist[13].list = expr_logical;
+    exprlist[14].name = tr("Time Iteration");
+    exprlist[14].list = expr_time_iteration;
 
     exprList = exprList_;
 }
@@ -1183,6 +1215,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Hank Childs, Wed Oct  8 16:31:05 PDT 2008
 //    Make pos_cmfe fillin be more comprehensible.
 //
+//    Hank Childs, Sun Feb 22 12:42:21 PST 2009
+//    Add fillins for time iterating expressions.
+//
 // ****************************************************************************
 
 void
@@ -1297,6 +1332,52 @@ QvisExpressionsWindow::insertFunction(QAction * action)
     else if (func_name == "cell_constant" || func_name == "point_constant")
     {
         definitionEdit->insertPlainText("(<meshvar>, <constantvalue>)");
+        doParens = false;
+    }
+    else if(func_name == "average_over_time" || func_name == "min_over_time"
+            || func_name == "max_over_time" || func_name == "sum_over_time")
+    {
+        definitionEdit->insertPlainText("(<var>, [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if(func_name == "last_cycle_when_condition_is_true" ||
+            func_name == "first_cycle_when_condition_is_true" ||
+            func_name == "last_time_index_when_condition_is_true" ||
+            func_name == "first_time_index_when_condition_is_true" ||
+            func_name == "last_time_when_condition_is_true" ||
+            func_name == "first_time_when_condition_is_true")
+    {
+        definitionEdit->insertPlainText("(<condition>, <fillvar-for-when-condition-is-never-true> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if(func_name == "var_when_condition_is_first_true" ||
+            func_name == "var_when_condition_is_last_true")
+    {
+        definitionEdit->insertPlainText("(<cond>, <var-for-output>, <fillvar-for-when-cond-is-never-true> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if(func_name == "cycle_at_minimum" ||
+            func_name == "time_at_minimum" ||
+            func_name == "time_index_at_minimum")
+    {
+        definitionEdit->insertPlainText("(<var-to-find-minimum-of> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if(func_name == "cycle_at_maximum" ||
+            func_name == "time_at_maximum" ||
+            func_name == "time_index_at_maximum")
+    {
+        definitionEdit->insertPlainText("(<var-to-find-maximum-of> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if (func_name == "value_at_minimum")
+    {
+        definitionEdit->insertPlainText("(<var-to-find-minimum-of>, <var-for-output> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if (func_name == "value_at_maximum")
+    {
+        definitionEdit->insertPlainText("(<var-to-find-maximum-of>, <var-for-output> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
         doParens = false;
     }
 
