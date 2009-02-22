@@ -69,6 +69,13 @@ dnl    Small cleanups.  Try to use AS_IF instead of if, etc.
 dnl
 dnl    Tom Fogal, Tue Dec 16 19:53:23 MST 2008
 dnl    Fix test for enabling IceT via host confs.
+dnl
+dnl    Tom Fogal, Sun Feb 22 14:00:09 MST 2009
+dnl    Don't enable IceT if the user only set DEFAULT_ICET_INCLUDE.  Use
+dnl     ICET_ENABLE as well to specify it without the --enable option.
+dnl    Downgrade the error to a warning.
+dnl    Fix a bug which would cause the config-site setting to take precedence
+dnl     over the --enable configure option.
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
@@ -98,7 +105,7 @@ AC_ARG_WITH([icet-libdir],
 AC_MSG_CHECKING([if IceT should be used])
 
 # Allow enabling IceT through a config site variable.
-AS_IF([test -n "${ICET_ENABLE}" -o "x${DEFAULT_ICET_INCLUDE}" != "xno"],
+AS_IF([test -n "${ICET_ENABLE}" -o "x${enable_icet}" = "xyes"],
     [enable_icet="yes"],
     [enable_icet="no"]
 )
@@ -107,7 +114,7 @@ AS_IF([test -n "${ICET_ENABLE}" -o "x${DEFAULT_ICET_INCLUDE}" != "xno"],
 AS_IF([test "x${enable_icet}" = "yes" -a \
         \( -z "${UseParallel}" -o "x${UseParallel}" = "xno" \)],
     [
-    AC_MSG_ERROR([IceT usage requested, but you're not doing a parallel
+    AC_MSG_WARN([IceT usage requested, but you're not doing a parallel
 build. IceT requires '--enable-parallel' to be specified.])
     ]
 )
