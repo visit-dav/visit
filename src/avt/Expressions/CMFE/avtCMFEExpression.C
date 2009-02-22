@@ -348,6 +348,10 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    Hank Childs, Thu Apr 10 16:10:33 PDT 2008
 //    Make sure that consistent ghost levels are requested.
 //
+//    Hank Childs, Sun Feb 22 10:46:41 PST 2009
+//    Allow for expressions to be the "CMFE var" 
+//    (example: <conn_cmfe([1]id:p+1> ... p+1 is an expression)
+//
 // ****************************************************************************
 
 void
@@ -361,7 +365,24 @@ avtCMFEExpression::Execute()
 
     int actualTimestep = GetTimestate(dbp);
 
-    avtDataObject_p dob = dbp->GetOutput(var.c_str(), actualTimestep);
+    ParsingExprList *pel = ParsingExprList::Instance();
+    ExpressionList original_list = *(pel->GetList());
+    ExpressionList new_list = original_list;
+    Expression exp2;
+    exp2.SetName("_avt_internal_cmfe_expr");
+    std::string var_wo_quotes = var;
+    for (int i = var_wo_quotes.size()-1 ; i >= 0 ; i--)
+        if (var_wo_quotes[i] == '\'')
+            var_wo_quotes.replace(i,1,"");
+
+    exp2.SetDefinition(var_wo_quotes);
+    exp2.SetType(Expression::Unknown);
+    new_list.AddExpressions(exp2);
+    *(pel->GetList()) = new_list;
+
+    std::string dbvar = pel->GetRealVariable("_avt_internal_cmfe_expr");
+
+    avtDataObject_p dob = dbp->GetOutput(dbvar.c_str(), actualTimestep);
     if (*dob == NULL)
         EXCEPTION1(InvalidVariableException, var.c_str());
     if (strcmp(dob->GetType(), "avtDataset") != 0)
@@ -409,12 +430,13 @@ avtCMFEExpression::Execute()
     //
     bool oldVal = VarExpr::GetVarLeavesRequiresCurrentDB();
     VarExpr::SetGetVarLeavesRequiresCurrentDB(false);
-    ParsingExprList *pel = ParsingExprList::Instance();
-    ExpressionList original_list = *(pel->GetList());
-    ExpressionList new_list = original_list;
     Expression exp;
     exp.SetName(expr_var.c_str());
-    exp.SetDefinition(argument_expression);
+    std::string replace_string = ":" + var;
+    int pos = argument_expression.find(replace_string)+1;
+    std::string new_defn = argument_expression;
+    new_defn.replace(pos, var.size(), "_avt_internal_cmfe_expr");
+    exp.SetDefinition(new_defn);
     exp.SetType(Expression::Unknown);
     new_list.AddExpressions(exp);
     *(pel->GetList()) = new_list;
