@@ -87,6 +87,10 @@ struct avtIVPStateHelper;
 //
 //    Hank Childs, Tue Aug 19 15:34:14 PDT 2008
 //    Make sure that velStart and velEnd are appropriately sized.
+//    
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion.
 //
 // ****************************************************************************
 
@@ -247,18 +251,24 @@ class avtIVPSolver
     enum Result
     {
         OK,
+        TERMINATE,
         OUTSIDE_DOMAIN,
         STEPSIZE_UNDERFLOW,
         STIFFNESS_DETECTED,
         UNSPECIFIED_ERROR,
     };
+    enum TerminateType
+    {
+        TIME,
+        DISTANCE,
+        STEP
+    };
     
     virtual void    Reset(const double& t_start, const avtVecRef& y_start) = 0;
 
-    virtual Result  Step(const avtIVPField* field, 
-                         const bool &timeMode,
-                         const double& t_max, 
-                         const double& d_max,
+    virtual Result  Step(const avtIVPField* field,
+                         const TerminateType &type,
+                         const double &end,
                          avtIVPStep* ivpstep = 0 ) = 0;
     virtual void    OnExitDomain() {}
     virtual avtVec  GetCurrentY() const = 0;

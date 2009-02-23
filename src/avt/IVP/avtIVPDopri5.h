@@ -70,6 +70,10 @@
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Chagned how distanced based termination is computed.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPDopri5: public avtIVPSolver
@@ -86,9 +90,8 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
     virtual Result   Step(const avtIVPField* field,
-                          const bool &timeMode,
-                          const double& t_max,
-                          const double& d_max,
+                          const TerminateType &type,
+                          const double &end,                      
                           avtIVPStep* ivpstep = NULL);
 
     virtual avtVec   GetCurrentY() const;
@@ -115,6 +118,7 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
 
   private:
+    int numStep;
     double reltol;
     double abstol;
 

@@ -153,6 +153,11 @@ avtIVPDopri5::~avtIVPDopri5()
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion.
+//  
 // ****************************************************************************
 
 void 
@@ -168,6 +173,7 @@ avtIVPDopri5::Reset(const double& t_start, const avtVecRef& y_start)
     
     t = t_start;
     d = 0.0;
+    numStep = 0;
     y = y_start;
     k1 = avtVec(y_start.dim());
 }
@@ -420,15 +426,28 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Consider a negative stepsize. Change how distance termination is computed.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion.    
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
 avtIVPDopri5::Step(const avtIVPField* field,
-                   const bool &timeMode,
-                   const double& t_max,
-                   const double& d_max,
+                   const TerminateType &termType,
+                   const double &end,
                    avtIVPStep* ivpstep) 
 {
+    if (termType == TIME)
+        t_max = end;
+    else if (termType == DISTANCE || termType == STEP)
+    {
+        t_max = std::numeric_limits<double>::max();
+        if (end < 0)
+            t_max = -t_max;
+    }
+    debug5<<"End= "<<end<<" t_max= "<<t_max<<endl;
+    
     const double direction = sign( 1.0, t_max - t );
 
     avtVec k2, k3, k4, k5, k6, k7;
@@ -451,11 +470,14 @@ avtIVPDopri5::Step(const avtIVPField* field,
     // determine stepsize (user-specified or educated guess)
     if( h == 0.0 )
         h = h_init;
-    
     if( h == 0.0 )
+    {
         h = GuessInitialStep( field, local_h_max, t_max );
+    }
     else
+    {   
         h = sign( h, direction );
+    }
 
     // integration step loop, will exit after successful step
     while( true )
@@ -466,8 +488,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
         // stepsize underflow?
         if( 0.1*std::abs(h) <= std::abs(t)*epsilon ) 
         {
-            //debug1 << "\tavtIVPDopri5::step(): exiting at t = " 
-            //       << t << ", step size too small (h = " << h << ")\n";
+            debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
+                   << t << ", step size too small (h = " << h << ")\n";
             return STEPSIZE_UNDERFLOW;
         }
 
@@ -480,8 +502,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
 
         n_steps++;
 
-        //debug1 << "\tavtIVPDopri5::step(): t = " << t << ", y = " << y 
-        //       << ", h = " << h << ", t+h = " << t+h << '\n';
+        debug5 << "\tavtIVPDopri5::step(): t = " << t << ", y = " << y 
+               << ", h = " << h << ", t+h = " << t+h << '\n';
 
         // perform stages
         y_new = y + h*a21*k1;
@@ -559,9 +581,9 @@ avtIVPDopri5::Step(const avtIVPField* field,
                 
                     if( iasti == 15 ) 
                     {
-                        //debug1 << "\tavtIVPDopri5::step(): exiting at t = " 
-                        //       << t << ", problem seems stiff (y = " << y 
-                        //       << ")\n";
+                        debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
+                               << t << ", problem seems stiff (y = " << y 
+                               << ")\n";
                         return STIFFNESS_DETECTED;
                     }
                 }
@@ -602,18 +624,29 @@ avtIVPDopri5::Step(const avtIVPField* field,
 
             t = t+h;
             h = h_new;
-            
-            if (!timeMode)
+            numStep++;
+
+            if (termType == TIME)
+            {
+                if ((end > 0 && t >= end) ||
+                    (end < 0 && t <= end))
+                    return TERMINATE;
+            }
+            else if (termType == DISTANCE)
             {
                 double len = ivpstep->Length();
-                if ( d+len > d_max )
+                if (d+len > fabs(end))
                     throw avtIVPField::Undefined();
                 d = d + len;
             }
+            else if (termType == STEP &&
+                     numStep >= (int)fabs(end))
+                return TERMINATE;
+                
             
             // normal exit
-            //debug1 << "\tavtIVPDopri5::step(): normal exit, now at t = " 
-            //       << t << ", y = " << y << ", h = " << h << '\n';
+            debug5 << "\tavtIVPDopri5::step(): normal exit, now at t = " 
+                   << t << ", y = " << y << ", h = " << h << '\n';
             return OK;
         }
         else 
@@ -627,8 +660,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
 
             h = h_new;
             
-            //debug1 << "\tavtIVPDopri5::step(): step rejected, retry with h = "
-            //       << h << '\n';
+            debug5 << "\tavtIVPDopri5::step(): step rejected, retry with h = "
+                   << h << '\n';
         }
     }
 }
@@ -648,7 +681,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
 void
 avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(reltol)
+    aiss.Accept(numStep)
+        .Accept(reltol)
         .Accept(abstol)
         .Accept(h)
         .Accept(h_max)

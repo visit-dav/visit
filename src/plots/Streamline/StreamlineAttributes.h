@@ -92,7 +92,8 @@ public:
     enum TerminationType
     {
         Distance,
-        Time
+        Time,
+        Step
     };
     enum IntegrationType
     {

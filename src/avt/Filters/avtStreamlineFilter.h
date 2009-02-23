@@ -82,6 +82,7 @@ class avtStreamlineWrapper;
 
 #define STREAMLINE_TERMINATE_DISTANCE 0
 #define STREAMLINE_TERMINATE_TIME 1
+#define STREAMLINE_TERMINATE_STEP 2
 
 #define STREAMLINE_INTEGRATE_DORLAND_PRINCE 0
 #define STREAMLINE_INTEGRATE_ADAMS_BASHFORTH 1
@@ -148,6 +149,9 @@ class avtStreamlineWrapper;
 //   Dave Pugmire, Thu Feb  5 12:23:33 EST 2009
 //   Add workGroupSize for masterSlave algorithm.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -190,7 +194,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     double maxStepLength;
     double relTol;
     double absTol;
-    int terminationType;
+    avtIVPSolver::TerminateType terminationType;
     int integrationType;
     double termination;
     double radius;

@@ -90,26 +90,25 @@
 //    Added maxSteps argument to Advance() to optionally control how many
 //    integration steps are taken.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//    Removed the plane intersection code.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
 {
   public:
     typedef std::list<avtIVPStep*>::const_iterator iterator;
+    avtStreamline(const avtIVPSolver* model, const double& t_start, 
+                  const avtVec& p_start, int ID=-1);
+    avtStreamline();
+    ~avtStreamline();
 
-              avtStreamline(const avtIVPSolver* model, const double& t_start, 
-                            const avtVec& p_start, int ID=-1);
-              avtStreamline();
-              ~avtStreamline();
-
-    //Set, for instance, a plane for doing poincare plots ??
-    void      UnsetIntersectPlane();
-    void      SetIntersectPlane(const avtVec &pt, const avtVec &norm);
-   
     avtIVPSolver::Result Advance(const avtIVPField* field,
-                                 bool timeMode,
+                                 avtIVPSolver::TerminateType termType,
                                  double end,
-                                 int  maxSteps=-1,
                                  bool vorticity=false,
                                  bool haveGhostZones=false,
                                  double *extents=NULL);
@@ -119,7 +118,7 @@ class IVP_API avtStreamline
     double    TMax() const;
 
     avtVec    PtStart() const { return _p0; }
-    void      PtEnds( avtVec &pBwd, avtVec &pFwd ) const;
+    void      PtEnd(avtVec &end);
     double    TStart() const { return _t0; }
 
     bool      IsForward() const { return true; }
@@ -142,14 +141,13 @@ class IVP_API avtStreamline
     
     avtIVPSolver::Result DoAdvance(avtIVPSolver* ivp,
                                    const avtIVPField* field,
-                                   double tEnd,
-                                   double dEnd,
-                                   bool timeMode,
-                                   int maxSteps=-1,
+                                   avtIVPSolver::TerminateType termType,
+                                   double end,                             
                                    bool haveGhostZones=false,
                                    double *extents=NULL);
 
-    void      HandleGhostZones(avtIVPSolver* ivp, bool haveGhostZones,
+    void      HandleGhostZones(bool forward,
+                               bool haveGhostZones,
                                double *extents);
 
     // Integration steps.
@@ -162,17 +160,10 @@ class IVP_API avtStreamline
     
     bool wantVorticity;
 
-    // Solvers.
-    avtIVPSolver*       _ivp_fwd;
-    avtIVPSolver*       _ivp_bwd;
+    // Solver.
+    avtIVPSolver*       _ivpSolver;
 
   public:
-    bool intersectPlaneSet;
-    double planeEq[4];
-    avtVec intersectPlanePt, intersectPlaneNorm;
-    std::vector<avtVec> intersectPts;
-    void IntersectWithPlane( avtIVPStep *step0, avtIVPStep *step1 );
-
     //Bookeeping
     int id;
 };

@@ -68,7 +68,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <vtkPolyData.h>
 #include <vtkSphereSource.h>
 #include <vtkPointSource.h>
-#include <vtkVisItStreamLine.h>
+#include <vtkVisItStreamline.h>
 #include <vtkGlyph3D.h>
 
 #include <vtkVisItCellLocator.h>
@@ -134,13 +134,16 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Add 3 point density vars.
 //
+//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//   Added termination by number of steps.
+//   
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
 {
     normalizedVecExprName = "";
     maxStepLength = 0.;
-    terminationType = STREAMLINE_TERMINATE_DISTANCE;
+    terminationType = avtIVPSolver::TIME;
     termination = 100.;
     showStart = true;
     radius = 0.125;
@@ -448,13 +451,24 @@ avtStreamlineFilter::SetIntegrationType(int type)
 //
 //   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
 //   Remove accurate distance calculate option.
+//
+//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//   Added termination by number of steps.
 //   
 // ****************************************************************************
 
 void
 avtStreamlineFilter::SetTermination(int type, double term)
 {
-    terminationType = type;
+    terminationType = avtIVPSolver::TIME;
+    
+    if (type == STREAMLINE_TERMINATE_DISTANCE)
+        terminationType = avtIVPSolver::DISTANCE;
+    else if (type == STREAMLINE_TERMINATE_TIME)
+        terminationType = avtIVPSolver::TIME;
+    else if (type == STREAMLINE_TERMINATE_STEP)
+        terminationType = avtIVPSolver::STEP;
+
     termination = term;
 }
 
@@ -1301,6 +1315,9 @@ avtStreamlineFilter::DomainToRank(int domain)
 //   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
 //   Remove accurate distance calculate option.
 //
+//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//   Added termination by number of steps. Cleanup of other term types.   
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1312,7 +1329,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
     bool haveGhostZones = false; //(a.GetContainsGhostZones()==AVT_NO_GHOSTS ? false : true);
 
-    debug2<< "avtStreamlineFilter::IntegrateDomain(dom= "
+    debug5<< "avtStreamlineFilter::IntegrateDomain(dom= "
           <<slSeg->domain<<") HGZ = "<<haveGhostZones <<endl;
 
     // prepare streamline integration ingredients
@@ -1333,7 +1350,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     
     velocity->CachingOn();
     avtIVPVTKField field(velocity);
-    bool timeMode = (terminationType==STREAMLINE_TERMINATE_TIME);
+    
     double end = termination;
     if (slSeg->dir == avtStreamlineWrapper::BWD)
         end = - end;
@@ -1342,9 +1359,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     bool doVorticity = ((coloringMethod == STREAMLINE_COLOR_VORTICITY)
                         || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
     avtIVPSolver::Result result = slSeg->sl->Advance(&field,
-                                                     timeMode,
+                                                     terminationType,
                                                      end,
-                                                     maxSteps,
                                                      doVorticity,
                                                      haveGhostZones,
                                                      extents);
@@ -1363,7 +1379,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
              (slSeg->seedPtDomainList.size() == 1 && 
              (slSeg->domain == oldDomain || slSeg->domain == -1)))
         {
-            debug2<<"TERMINATE: sz= "<<slSeg->seedPtDomainList.size()<<" dom= "
+            debug5<<"TERMINATE: sz= "<<slSeg->seedPtDomainList.size()<<" dom= "
                   <<slSeg->domain<<" oldDom= "<<oldDomain<<endl;
             //slSeg->Debug();
             slSeg->status = avtStreamlineWrapper::TERMINATE;
@@ -1376,6 +1392,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     if (cellToPt)
         cellToPt->Delete();
 
+    debug5<<"::IntegrateDomain() result= "<<result<<endl;
     return result;
 }
 
@@ -1402,7 +1419,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 void
 avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps)
 {
-    debug2 << "\navtStreamlineFilter::IntegrateStreamline(dom= "
+    debug5 << "\navtStreamlineFilter::IntegrateStreamline(dom= "
            << slSeg->domain<<")\n";
 
     slSeg->status = avtStreamlineWrapper::UNSET;
@@ -1434,7 +1451,7 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
         }
     }
     
-    debug2 << "   IntegrateStreamline DONE: status = " << (slSeg->status==avtStreamlineWrapper::TERMINATE ? "TERMINATE" : "OOB")
+    debug5 << "   IntegrateStreamline DONE: status = " << (slSeg->status==avtStreamlineWrapper::TERMINATE ? "TERMINATE" : "OOB")
            << " domCnt= "<<slSeg->seedPtDomainList.size()<<endl;
 }
 

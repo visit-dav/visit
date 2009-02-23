@@ -67,6 +67,10 @@
 //    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
 //    Add a tolerance and counter for handling stiffness detection.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
@@ -81,9 +85,8 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
     virtual Result   Step(const avtIVPField* field,
-                          const bool& timeMode,
-                          const double& t_max,
-                          const double& d_max,
+                          const TerminateType &type,
+                          const double &end,                      
                           avtIVPStep* ivpstep = NULL);
     virtual void    OnExitDomain();
 
@@ -133,6 +136,7 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
                                     double epsilon );
 
   private:
+    int numStep;
     double tol;
     double h, h_max;
     double t, d;
