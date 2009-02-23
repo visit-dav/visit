@@ -209,6 +209,9 @@
 #    Cyrus Harrison, Thu May  8 13:37:06 PDT 2008
 #    Added DualMesh operator. 
 #
+#    Jeremy Meredith, Mon Feb 23 18:06:01 EST 2009
+#    Added Edge operator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -222,7 +225,8 @@ OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells @SILO_TARGET@ \
          SubdivideQuads SurfCompPrep 
 
 REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \
-         Decimate DeferExpression Displace DualMesh Elevate ExternalSurface \
+         Decimate DeferExpression Displace DualMesh \
+	 Edge Elevate ExternalSurface \
          IndexSelect InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
          PDF Project Reflect Replicate Resample Revolve Slice Smooth \
          SphereSlice ThreeSlice Threshold Transform Tube ZoneDump
