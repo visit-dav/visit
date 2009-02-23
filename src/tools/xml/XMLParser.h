@@ -197,6 +197,9 @@ ParseCharacters(const QString &buff)
 //    Brad Whitlock, Wed Oct 15 14:23:40 PDT 2008
 //    Added support for additional Java files.
 //
+//    Jeremy Meredith, Mon Feb 23 17:37:33 EST 2009
+//    Don't just check if init is nonnull, check if it's true.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -612,7 +615,7 @@ class XMLParser : public QXmlDefaultHandler
                 currentField->SetPrivateAccess();
 
             QString init      = atts.value("init");
-            if (!init.isNull())
+            if (!init.isNull() && Text2Bool(init)==true)
             {
                 if (!currentAttribute->codeFile)
                     throw QString("No codefile found for initializer for %1.").arg(name);
