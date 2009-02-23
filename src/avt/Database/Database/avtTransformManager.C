@@ -1554,7 +1554,6 @@ vtkDataSet *ds, int dom)
 //    Hank Childs, Fri May  9 16:01:45 PDT 2008
 //    Pass in domain IDs to transforming functions, because they are needed
 //    to efficiently access cache.
-//
 //    Mark C. Miller, Thu Feb 12 02:18:45 PST 2009
 //    Convert datasets that are intended to be curves but served up as 
 //    non-rectilinear-grid, 1D datasets to correct type.

@@ -426,6 +426,10 @@ exec perl -x $0 ${1+"$@"};
 #    it's called login1-mgmt.  (It used to be hard-coded in the ANL config
 #    host profiles, but that prevented client-server from working.)
 #
+#    Hank Childs, Fri Feb 13 12:27:28 CST 2009
+#    Merge in changes from RC, which includes new support for now unset
+#    env var for Myrinet libs.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1416,6 +1420,7 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /login1/ )
     $remotehost = "login1-mgmt.eureka";
 }
 
+
 #  We stripped off the "host" argument above, so put it back here.
 #  This allowed us to change it if needed, e.g. for the Q machine.
 #  VisIt seems to need the -host argument before the -nread and -nwrite
@@ -2240,13 +2245,17 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 # Lens loads modules that we hate, by default.
                 print TFILE 'eval $(modulecmd sh unload PE-pgi)',"\n";
             }
+            if ($IsRunningOnEureka_ANL)
+            {
+                print TFILE "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/mx/lib\n";
+            }
             print TFILE $cdcmd;
             print TFILE $limitcmd;
             print TFILE "@sublaunchprecmd", "\n", if $sublaunchprecmd_set;
             print TFILE "@mpicmd";
             print TFILE "@sublaunchpostcmd", "\n", if $sublaunchpostcmd_set;
             close(TFILE);
-           
+
             if ($IsRunningOnEureka_ANL)
             {
                 `chmod 755 $tfilename`;
