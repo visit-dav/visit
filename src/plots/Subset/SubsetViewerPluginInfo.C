@@ -400,6 +400,11 @@ SubsetViewerPluginInfo::XPMIconData() const
 //    Allowed meshes to pass through with a single category, even though
 //    they are not a subset variable.
 //
+//    Jeremy Meredith, Mon Feb 23 17:43:55 EST 2009
+//    Created a new subset type for meshes and used that.  (Apparently
+//    I had left the type as EnumScalar before, which didn't cause any
+//    problems at the time, but is obviously not quite correct.)
+//
 // ****************************************************************************
 #include <stdio.h>
 
@@ -532,8 +537,8 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           if (vn == meshName)
           {
               debug5 << "Variable for subset plot is a mesh."<<endl; 
-              subsetAtts->SetSubsetType(SubsetAttributes::EnumScalar);
-              defaultAtts->SetSubsetType(SubsetAttributes::EnumScalar);
+              subsetAtts->SetSubsetType(SubsetAttributes::Mesh);
+              defaultAtts->SetSubsetType(SubsetAttributes::Mesh);
               sprintf(temp, "Whole mesh (%s)", vn.c_str());
               sv.push_back(temp);
           }

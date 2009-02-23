@@ -67,7 +67,8 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
     public final static int SUBSET_TYPE_GROUP = 1;
     public final static int SUBSET_TYPE_MATERIAL = 2;
     public final static int SUBSET_TYPE_ENUMSCALAR = 3;
-    public final static int SUBSET_TYPE_UNKNOWN = 4;
+    public final static int SUBSET_TYPE_MESH = 4;
+    public final static int SUBSET_TYPE_UNKNOWN = 5;
 
     public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
     public final static int COLORINGMETHOD_COLORBYMULTIPLECOLORS = 1;
@@ -452,6 +453,8 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
             str = str + "SUBSET_TYPE_MATERIAL";
         if(subsetType == SUBSET_TYPE_ENUMSCALAR)
             str = str + "SUBSET_TYPE_ENUMSCALAR";
+        if(subsetType == SUBSET_TYPE_MESH)
+            str = str + "SUBSET_TYPE_MESH";
         if(subsetType == SUBSET_TYPE_UNKNOWN)
             str = str + "SUBSET_TYPE_UNKNOWN";
         str = str + "\n";

@@ -98,7 +98,6 @@ SubsetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
-
 Function: SubsetViewerPluginInfo::ReInitializePlotAtts
 Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 Definition:
@@ -425,3 +424,4 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     defaultAtts->SetSubsetNames(sv);
     defaultAtts->SetMultiColor(cal);
 }
+
