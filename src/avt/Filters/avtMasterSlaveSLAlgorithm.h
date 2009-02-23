@@ -158,6 +158,11 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
 //
+// Modifications:
+//
+//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
+//   Add timeout counter for slaves. 
+//
 // ****************************************************************************
 
 class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
@@ -174,7 +179,7 @@ class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual void              UpdateStatus();
 
   protected:
-    int                       master, numTerminated;
+    int                       master, numTerminated, timeout;
     bool                      workToDo;
     std::vector<int>          status, prevStatus;
     std::list<avtStreamlineWrapper *> activeSLs, oobSLs;
