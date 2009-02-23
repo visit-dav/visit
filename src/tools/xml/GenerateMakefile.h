@@ -487,9 +487,9 @@ class MakefileGeneratorPlugin : public Plugin
                    "-lproxybase $(QT_LDFLAGS) $(LIBV_QT_LIBS) $(ZLIB_LIB) "
                    "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser "
-                   "-ldatabase_ser -lmir_ser -lplugin" << endl;
+                   "-ldatabase_ser -lmir_ser -lplugin -lvisit_verdict" << endl;
             out << "EPARLIBS_FOR_MACOSX_PREBINDING=-lavtddf_par "
-                   "-ldatabase_par -lmir_par -lplugin" << endl;
+                   "-ldatabase_par -lmir_par -lplugin -lvisit_verdict" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions "
                    "-ldbatts -lplugin -lexpr -lparser" << endl;
 #endif
@@ -705,8 +705,8 @@ class MakefileGeneratorPlugin : public Plugin
                    "-lviswindow_ser -lavtwriter_ser -lvtkqt -lwinutil "
                    "-lproxybase $(QT_LDFLAGS) $(LIBV_QT_LIBS) $(ZLIB_LIB) "
                    "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
-            out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin" << endl;
-            out << "EPARLIBS_FOR_MACOSX_PREBINDING=-lavtddf_par -ldatabase_par -lmir_par -lplugin" << endl;
+            out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin -lvisit_verdict" << endl;
+            out << "EPARLIBS_FOR_MACOSX_PREBINDING=-lavtddf_par -ldatabase_par -lmir_par -lplugin -lvisit_verdict" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions -lplugin -ldbatts -lparser -lexpr" << endl;
 #endif
             out << "ILIBS=" << endl;
