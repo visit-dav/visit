@@ -67,6 +67,7 @@ public:
         Group,
         Material,
         EnumScalar,
+        Mesh,
         Unknown
     };
     enum ColoringMethod

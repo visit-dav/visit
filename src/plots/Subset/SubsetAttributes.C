@@ -45,20 +45,21 @@
 
 static const char *Subset_Type_strings[] = {
 "Domain", "Group", "Material", 
-"EnumScalar", "Unknown"};
+"EnumScalar", "Mesh", "Unknown"
+};
 
 std::string
 SubsetAttributes::Subset_Type_ToString(SubsetAttributes::Subset_Type t)
 {
     int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return Subset_Type_strings[index];
 }
 
 std::string
 SubsetAttributes::Subset_Type_ToString(int t)
 {
-    int index = (t < 0 || t >= 5) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return Subset_Type_strings[index];
 }
 
@@ -66,7 +67,7 @@ bool
 SubsetAttributes::Subset_Type_FromString(const std::string &s, SubsetAttributes::Subset_Type &val)
 {
     val = SubsetAttributes::Domain;
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == Subset_Type_strings[i])
         {
@@ -724,7 +725,7 @@ SubsetAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
+            if(ival >= 0 && ival < 6)
                 SetSubsetType(Subset_Type(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
