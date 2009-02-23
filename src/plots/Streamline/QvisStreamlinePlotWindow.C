@@ -150,6 +150,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
 //   Added workGroupSize for the masterSlave algorithm.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Added number of steps as a termination criterion.
+//    
 // ****************************************************************************
 
 void
@@ -164,6 +167,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     termType = new QComboBox(central);
     termType->addItem(tr("Distance"));
     termType->addItem(tr("Time"));
+    termType->addItem(tr("Number of Steps"));
     connect(termType, SIGNAL(activated(int)),
             this, SLOT(termTypeChanged(int)));
     mainLayout->addWidget(termType, 1,0);
@@ -781,6 +785,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             absTol->setText(temp);
             break;
         case StreamlineAttributes::ID_terminationType:
+            UpdateTerminationType();
             termType->blockSignals(true);
             termType->setCurrentIndex( int(streamAtts->GetTerminationType()) );
             termType->blockSignals(false);
@@ -1027,6 +1032,35 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
         absTolLabel->show();
     }
 }
+
+// ****************************************************************************
+// Method: QvisStreamlinePlotWindow::UpdateTerminationType
+//
+// Purpose: 
+//   Updates the widgets for the various termination types.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Feb 19 12:35:38 EST 2008
+//
+//
+// ****************************************************************************
+
+void
+QvisStreamlinePlotWindow::UpdateTerminationType()
+{
+  /*
+    if (streamAtts->GetTerminationType() == StreamlineAttributes::Time ||
+        streamAtts->GetTerminationType() == StreamlineAttributes::Distance)
+      {
+        //termination->SetPrecision(5);
+      }
+    else
+      {
+      streamAtts->SetTermination( (int)streamAtts->GetTermination());
+      }
+  */
+}
+
 
 // ****************************************************************************
 // Method: QvisStreamlinePlotWindow::UpdateAlgorithmAttributes

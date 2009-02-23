@@ -47,7 +47,7 @@
 #include <vtkInterpolatedVelocityField.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
-
+#include <DebugStream.h>
 
 // ****************************************************************************
 //  Method: avtIVPVTKField constructor
@@ -96,6 +96,7 @@ avtIVPVTKField::operator()(const double& t, const avtVecRef& x) const
     avtVec y( x.dim() ), param( pad(x,t));
     
     int result = iv->FunctionValues( param.values(), y.values() );
+    //debug5<<result<<"= iv->FunctionValues("<<param<<") y= "<<y<<endl;
     
     if( !result )
         throw Undefined();

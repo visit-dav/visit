@@ -33,6 +33,7 @@
       <Enum name="TerminationType">
         Distance
         Time
+        Step
       </Enum>
       <Enum name="IntegrationType">
         DormandPrince

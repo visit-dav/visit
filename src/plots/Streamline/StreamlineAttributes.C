@@ -203,20 +203,21 @@ StreamlineAttributes::IntegrationDirection_FromString(const std::string &s, Stre
 //
 
 static const char *TerminationType_strings[] = {
-"Distance", "Time"};
+"Distance", "Time", "Step"
+};
 
 std::string
 StreamlineAttributes::TerminationType_ToString(StreamlineAttributes::TerminationType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return TerminationType_strings[index];
 }
 
 std::string
 StreamlineAttributes::TerminationType_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return TerminationType_strings[index];
 }
 
@@ -224,7 +225,7 @@ bool
 StreamlineAttributes::TerminationType_FromString(const std::string &s, StreamlineAttributes::TerminationType &val)
 {
     val = StreamlineAttributes::Distance;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == TerminationType_strings[i])
         {
@@ -1315,7 +1316,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetTerminationType(TerminationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

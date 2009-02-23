@@ -45,11 +45,8 @@
 #include <list>
 #include <iostream>
 #include <limits>
-
 #include <avtVecArray.h>
-
 #include <DebugStream.h>
-
 
 // ****************************************************************************
 //  Method: avtStreamline constructor
@@ -57,6 +54,12 @@
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//  
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//  
 // ****************************************************************************
 
 avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
@@ -65,13 +68,9 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
     _t0 = t_start;
     _p0 = p_start;
     id = ID;
-    intersectPlaneSet = false;
     
-    _ivp_fwd = model->Clone();
-    _ivp_fwd->Reset(_t0, _p0);
-
-    _ivp_bwd = model->Clone();
-    _ivp_bwd->Reset(_t0, _p0);
+    _ivpSolver = model->Clone();
+    _ivpSolver->Reset(_t0, _p0);
     wantVorticity = false;
 }
 
@@ -86,9 +85,7 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
 
 avtStreamline::avtStreamline()
 {
-    intersectPlaneSet = false;
-    _ivp_fwd = NULL;
-    _ivp_bwd = NULL;
+    _ivpSolver = NULL;
     wantVorticity = false;
 }
 
@@ -99,17 +96,19 @@ avtStreamline::avtStreamline()
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//    
 // ****************************************************************************
 
 avtStreamline::~avtStreamline()
 {
-    if ( _ivp_fwd )
-        delete _ivp_fwd;
-    if ( _ivp_bwd )
-        delete _ivp_bwd;
+    if ( _ivpSolver )
+        delete _ivpSolver;
     
-    _ivp_fwd = NULL;
-    _ivp_bwd = NULL;
+    _ivpSolver = NULL;
     for(iterator si = begin(); si != end(); si++)
          delete *si;
 }    
@@ -136,44 +135,24 @@ avtStreamline::~avtStreamline()
 //    Added maxSteps argument to optionally control how many integration steps
 //    are taken.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
 avtStreamline::Advance(const avtIVPField* field,
-                       bool timeMode,
+                       avtIVPSolver::TerminateType termType,
                        double end,
-                       int maxSteps,
                        bool vorticity,
                        bool haveGhostZones,
                        double *extents)
 {
     wantVorticity = vorticity;
-    double tEnd, dEnd;
     
-    if ( timeMode )
-    {
-        tEnd = end;
-        dEnd = std::numeric_limits<double>::max();
-    }
-    else
-    {
-        dEnd = end;
-        tEnd = std::numeric_limits<double>::max();
-        if ( end < 0 )
-        {
-            tEnd = -tEnd;
-            dEnd = fabs(dEnd);
-        }
-    }
-    
-    if (tEnd < TMin())
-        return DoAdvance(_ivp_bwd, field, tEnd, dEnd, timeMode,
-                         maxSteps, haveGhostZones, extents);
-    else if (tEnd > TMax())
-        return DoAdvance(_ivp_fwd, field, tEnd, dEnd, timeMode,
-                         maxSteps, haveGhostZones, extents);
-    
-    return avtIVPSolver::OK;
+    return DoAdvance(_ivpSolver, field, termType, end,
+                     haveGhostZones, extents);    
 }
 
 
@@ -210,28 +189,27 @@ avtStreamline::Advance(const avtIVPField* field,
 //    Dave Pugmire, Tue Feb  3 10:54:34 EST 2009
 //    More debug statements.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//    
 // ****************************************************************************
 
 avtIVPSolver::Result
 avtStreamline::DoAdvance(avtIVPSolver* ivp,
                          const avtIVPField* field,
-                         double tEnd,
-                         double dEnd,
-                         bool timeMode,
-                         int maxSteps,
+                         avtIVPSolver::TerminateType termType,
+                         double end,
                          bool haveGhostZones,
                          double *extents)
 {
     avtIVPSolver::Result result;
-
+    
     // catch cases where the start position is outside the 
     // domain of field
-    if(! field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()))
-    {
+    if (!field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()))
         return avtIVPSolver::OUTSIDE_DOMAIN;
-    }
     
-    int numSteps = 0;
     while (1)
     {
         // record state for later restore, if needed
@@ -243,9 +221,9 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 
         try
         {
-            debug5<< "Step( t= "<<tEnd<<", d= "<<dEnd<<" );\n";
-            result = ivp->Step(field, timeMode, tEnd, dEnd, step);
-            numSteps++;
+            debug5<<"Step( mode= "<<termType<<" end= "<<end<<endl;
+            result = ivp->Step(field, termType, end, step);
+            debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
         }
         catch( avtIVPField::Undefined& )
         {
@@ -263,8 +241,9 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             if( fabs(h) < 1e-9 )
             {
                 delete step;
-                HandleGhostZones(ivp, haveGhostZones, extents);
-                return avtIVPSolver::OUTSIDE_DOMAIN;
+                HandleGhostZones((end > 0.0), haveGhostZones, extents);
+                debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN\n";
+                return avtIVPSolver::OUTSIDE_DOMAIN;            
             }
             
             ivp->SetNextStepSize( h );
@@ -278,39 +257,19 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
         {
         }
         // record step if it was successful
-        if (result == avtIVPSolver::OK)
+        if (result == avtIVPSolver::OK ||
+            result == avtIVPSolver::TERMINATE)
         {
             if ( wantVorticity )
                 step->ComputeVorticity( field );
-            
-            if (ivp->GetCurrentT() < TMin())
-            {
-                if (!_steps.empty())
-                    IntersectWithPlane( _steps.front(), step );
-                _steps.push_front( step );
 
-                if( ivp->GetCurrentT() <= tEnd )
-                {
-                    break;
-                }
-            }
+            if (end < 0) //backwards
+                _steps.push_front( step );
             else 
-            {
-                if (!_steps.empty())
-                    IntersectWithPlane( _steps.back(), step );
                 _steps.push_back( step );
 
-                if( ivp->GetCurrentT() >= tEnd )
-                {
-                    break;
-                }
-            }
-            
-            // Max steps reached. Bail out.
-            if (maxSteps != -1 && numSteps >= maxSteps)
-            {
+            if (result == avtIVPSolver::TERMINATE)
                 break;
-            }
         }
         else
         {
@@ -318,7 +277,6 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             break;
         }
     }
-
     return result;
 }
 
@@ -341,10 +299,13 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //    Dave Pugmire, Tue Feb  3 10:54:34 EST 2009
 //    More debug statements.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Code cleanup.    
+//
 // ****************************************************************************
 
 void
-avtStreamline::HandleGhostZones(avtIVPSolver *ivp,
+avtStreamline::HandleGhostZones(bool forward,
                                 bool haveGhostZones,
                                 double *extents)
 {
@@ -369,7 +330,7 @@ avtStreamline::HandleGhostZones(avtIVPSolver *ivp,
         return;
 
     avtVec dir, pt;
-    if ( ivp == _ivp_fwd )
+    if (forward)
     {
         iterator si = _steps.end();
         si--;
@@ -398,8 +359,8 @@ avtStreamline::HandleGhostZones(avtIVPSolver *ivp,
     avtVec newPt = pt + dir;
     debug5<<" ==> "<<newPt<<endl;
 
-    ivp->SetCurrentY( newPt );
-    ivp->SetCurrentT( ivp->GetCurrentT() + leapingDistance );
+    _ivpSolver->SetCurrentY(newPt);
+    _ivpSolver->SetCurrentT(_ivpSolver->GetCurrentT() + leapingDistance);
 }
 
 
@@ -493,7 +454,7 @@ avtStreamline::size() const
 
 
 // ****************************************************************************
-//  Method: avtStreamline::PtEnds
+//  Method: avtStreamline::PtEnd
 //
 //  Purpose:
 //      Sets the ending locations for the forward and backward integrations.
@@ -501,13 +462,18 @@ avtStreamline::size() const
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//
 // ****************************************************************************
 
 void
-avtStreamline::PtEnds( avtVec &ptBwd, avtVec &ptFwd ) const
+avtStreamline::PtEnd(avtVec &end)
 {
-    ptBwd = _ivp_bwd->GetCurrentY();
-    ptFwd = _ivp_fwd->GetCurrentY();
+    end = _ivpSolver->GetCurrentY();
 }
 
 
@@ -530,6 +496,9 @@ avtStreamline::PtEnds( avtVec &ptBwd, avtVec &ptFwd ) const
 //
 //    Dave Pugmire, Tue Feb  3 10:54:34 EST 2009
 //    More debug statements.
+//
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Code cleanup: We no longer need fwd/bwd solvers.
 //
 // ****************************************************************************
 
@@ -564,169 +533,24 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
 
     if ( mode == MemStream::WRITE )
     {
-        avtIVPState stateF, stateB;
+        avtIVPState solverState;
 
-        _ivp_fwd->GetState( stateF );
-        stateF.Serialize( mode, buff );
-
-        _ivp_bwd->GetState( stateB );
-        stateB.Serialize( mode, buff );
+        _ivpSolver->GetState(solverState);
+        solverState.Serialize(mode, buff);
     }
     else
     {
         // TODO:
-        //_ivp_fwd->Serialize( mode, buff );
-        //_ivp_bwd->Serialize( mode, buff );
+        //_ivpSolver->Serialize( mode, buff );
 
-        avtIVPState stateF, stateB;
-        stateF.Serialize( mode, buff );
-        stateB.Serialize( mode, buff );
+        avtIVPState solverState;
+        solverState.Serialize(mode, buff);
 
-        if ( _ivp_fwd )
-            delete _ivp_fwd;
-        if ( _ivp_bwd )
-            delete _ivp_bwd;
+        if (_ivpSolver)
+            delete _ivpSolver;
         
-        _ivp_fwd = solver->Clone();
-        _ivp_bwd = solver->Clone();
-
-        _ivp_fwd->PutState( stateF );
-        _ivp_bwd->PutState( stateB );
+        _ivpSolver = solver->Clone();
+        _ivpSolver->PutState(solverState);
     }
-    buff.io( mode, intersectPlaneSet );
-    buff.io( mode, intersectPlanePt );
-    buff.io( mode, intersectPlaneNorm );
-    if ( mode == MemStream::READ )
-    {
-        if ( intersectPlaneSet )
-            SetIntersectPlane( intersectPlanePt, intersectPlaneNorm );
-    }
-    
-    buff.io( mode, intersectPts );
-    debug5<<"IO: iPts = "<<intersectPts.size()<<endl;
     debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
 }
-
-// ****************************************************************************
-//  Method: avtStreamline::UnsetIntersectPlane
-//
-//  Purpose:
-//      Indicate that we don't want to do processing that focuses on plane
-//      intersections.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-void
-avtStreamline::UnsetIntersectPlane()
-{
-    intersectPlaneSet = false;
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamline::SetIntersectPlane
-//
-//  Purpose:
-//      Sets a plane that we should focus on while integrating streamlines.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-void
-avtStreamline::SetIntersectPlane( const avtVec &pt, const avtVec &norm )
-{
-    intersectPlanePt = pt;
-    intersectPlaneNorm = (norm / norm.length());
-
-    planeEq[0] = intersectPlaneNorm.values()[0];
-    planeEq[1] = intersectPlaneNorm.values()[1];
-    planeEq[2] = intersectPlaneNorm.values()[2];
-    planeEq[3] = -inner(intersectPlanePt,intersectPlaneNorm);
-    intersectPlaneSet = true;
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamline::IntersectLinePlane
-//
-//  Purpose:
-//      Determines if a plane and line intersect and where
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-static bool
-IntersectLinePlane(avtVec &Lp0, avtVec &Lp1, avtVec &plnPt, 
-                   avtVec &plnNorm, avtVec &intPt)
-{
-    avtVec lineDir = Lp1-Lp0;
-    avtVec lineDirN = lineDir / lineDir.length();
-    
-    // No intersection!
-    double dotProd = inner( lineDir, plnNorm );
-    if ( dotProd <= 0.0 )
-        return false;
-
-    avtVec w = Lp0-plnPt;
-    double s = -inner(plnNorm,w) / dotProd;
-    intPt = Lp0 + s*(lineDir);
-    
-    return true;
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamline::IntersectWithPlane
-//
-//  Purpose:
-//      Intersects a streamline with a plane.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-void
-avtStreamline::IntersectWithPlane(avtIVPStep *step0, avtIVPStep *step1)
-{
-    if ( !intersectPlaneSet )
-        return;
-
-    if ( step0 == NULL || step1 == NULL )
-        return;
-    
-    avtVec p0(0.0,0.0,0.0), p1(0.0,0.0,0.0);
-    for ( int i = 0; i < 3; i++ )
-    {
-        p0.values()[i] = step0->front().values()[i];
-        p1.values()[i] = step1->front().values()[i];
-    }
-
-    double distP0 = p0.values()[0]*planeEq[0] + p0.values()[1]*planeEq[1] 
-                  + p0.values()[2]*planeEq[2] + planeEq[3];
-    double distP1 = p1.values()[0]*planeEq[0] + p1.values()[1]*planeEq[1] 
-                  + p1.values()[2]*planeEq[2] + planeEq[3];
-
-#define SIGN(x) ((x) < 0.0 ? -1 : 1)
-    
-    if (SIGN(distP0) != SIGN(distP1))
-    {
-        avtVec intPt;
-        if (IntersectLinePlane(p0, p1, intersectPlanePt, 
-                               intersectPlaneNorm, intPt))
-        {
-            intersectPts.push_back( intPt );
-            debug5<<"Compute: iPts = "<<intersectPts.size()<<endl;
-            debug5<<p0<<" "<<p1<<" ==> "<<intPt<<endl;
-        }
-    }
-}
-
-

@@ -134,6 +134,9 @@ avtStreamlineWrapper::~avtStreamlineWrapper()
 //   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
 //   Print out how many steps have been taken.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    No longer have fwd/bwd solvers.
+//
 // ****************************************************************************
 
 void
@@ -141,15 +144,9 @@ avtStreamlineWrapper::Debug()
 {
     debug1 << "avtStreamlineWrapper::Debug()\n";
 
-    avtVec ends[2];
-    sl->PtEnds(ends[0], ends[1]);
-    if (dir == FWD)
-        debug1<<"******seed: ["<<ends[1].values()[0]<<", "
-              <<ends[1].values()[1]<<", "<<ends[1].values()[2]<<"]";
-    else
-        debug1<<"******seed: ["<<ends[0].values()[0]<<", "
-              <<ends[0].values()[1]<<", "<<ends[0].values()[2]<<"]";
-
+    avtVec end;
+    sl->PtEnd(end);
+    debug1<<"******seed: "<<end;
     debug1<<" Dom= [ "<<domain<<", ";
     for (int i = 0; i < seedPtDomainList.size(); i++)
         debug1<<seedPtDomainList[i]<<", ";
@@ -229,27 +226,22 @@ avtStreamlineWrapper::GetStartPoint(avtVector &pt) const
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    No longer have fwd/bwd solvers.
+//
 // ****************************************************************************
 
 void
 avtStreamlineWrapper::GetEndPoint(avtVector &pt) const
 {
-    avtVec ptBwd(0,0,0), ptFwd(0,0,0);
+    avtVec end;
     
-    sl->PtEnds(ptBwd, ptFwd);
-    if (dir == FWD)
-    {
-        pt.x = ptFwd.values()[0];
-        pt.y = ptFwd.values()[1];
-        pt.z = ptFwd.values()[2];
-    }
-    else
-    {
-        pt.x = ptBwd.values()[0];
-        pt.y = ptBwd.values()[1];
-        pt.z = ptBwd.values()[2];
-    }
-    
+    sl->PtEnd(end);
+    pt.x = end.values()[0];
+    pt.y = end.values()[1];
+    pt.z = end.values()[2];
     debug5<<"avtStreamlineWrapper::GetEndPoint() = "<<pt<<endl;
 }
 

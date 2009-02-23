@@ -284,6 +284,11 @@ avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 //    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
 //    Add a tolerance and counter for handling stiffness detection.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//    Removed the plane intersection code.
+//    
 // ****************************************************************************
 
 void 
@@ -291,6 +296,7 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
 {
     t = t_start;
     d = 0.0;
+    numStep = 0;
     degenerate_iterations = 0;
     yCur = y_start;
     h = h_max;
@@ -587,15 +593,22 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
 //    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
 //    Add a tolerance and counter for handling stiffness detection.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Reworked the termination code. Added a type enum and value. Made num steps
+//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//    Removed the plane intersection code.    
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
 avtIVPAdamsBashforth::Step(const avtIVPField* field,
-                           const bool &timeMode,
-                           const double& t_max,
-                           const double& d_max,
+                           const TerminateType &type,
+                           const double &end,                                              
                            avtIVPStep* ivpstep)
 {
+    return OK;
+#if 0
+    
     const double direction = sign( 1.0, t_max - t );
     
     h = sign( h, direction );
@@ -634,6 +647,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
         (*ivpstep)[1] = yNew;
         ivpstep->tStart = t;
         ivpstep->tEnd = t + h;
+        numStep++;
 
         // Handle distanced based termination.
         if (!timeMode)
@@ -671,6 +685,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
     // Reset the step size on sucessful step..
     h = h_max;
     return res;
+#endif
 }
 
 // ****************************************************************************
@@ -687,11 +702,15 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 //    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
 //    Add a tolerance and counter for handling stiffness detection.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Serialize the numStep member data.
+//    
 // ****************************************************************************
 void
 avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(tol)
+    aiss.Accept(numStep)
+        .Accept(tol)
         .Accept(degenerate_iterations)
         .Accept(stiffness_eps)
         .Accept(h)

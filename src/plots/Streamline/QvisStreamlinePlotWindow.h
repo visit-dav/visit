@@ -87,6 +87,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
 //   Added workGroupSize for the masterSlave algorithm.
 //
+//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//    Added number of steps as a termination criterion.
+//    
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -113,6 +116,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void UpdateSourceAttributes();
     void UpdateAlgorithmAttributes();
     void UpdateIntegrationAttributes();
+    void UpdateTerminationType();
   private slots:
     void sourceTypeChanged(int val);
     void termTypeChanged(int val);
