@@ -119,6 +119,9 @@
 //    Overhauled the handling of the "values" array, since it has been
 //    mis-used for over a year and been giving incorrect results.
 //
+//    Dave Pugmire, Mon Feb 23 13:29:49 EST 2009
+//    Added LookupTimer.
+//    
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -140,6 +143,7 @@ class MISC_API TimingsManager
 
     int                        StartTimer(bool force=false);
     double                     StopTimer(int, const std::string &, bool force=false);
+    double                     LookupTimer(const std::string &);
 
     static double              DiffTime();
 
@@ -148,6 +152,7 @@ class MISC_API TimingsManager
 
     void                       WithholdOutput(bool);
     void                       OutputAllTimings();
+
 
   protected:
     std::string                filename;
