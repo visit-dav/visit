@@ -466,9 +466,9 @@ TimingsManager::StartTimer(bool forced)
     }
     else if (rv > usedEntry.size())
     {
-	debug1 << "TimingsManager::StartTimer: Cannot start timer. "
-	       << "Returning -1 as if timing was disabled." << std::endl;
-	return -1;
+        debug1 << "TimingsManager::StartTimer: Cannot start timer. "
+               << "Returning -1 as if timing was disabled." << std::endl;
+        return -1;
     }
     else
     {
@@ -563,12 +563,17 @@ TimingsManager::LookupTimer(const std::string &nm)
 {
     double val = 0.0;
 
-    int numT = times.size();
-    for (int i = 0 ; i < numT ; i++)
+    if (enabled)
     {
-        if (summaries[i].find(nm,0) != std::string::npos)
+        int numT = times.size();
+        debug1<<"numT= "<<numT<<endl;
+        for (int i = 0 ; i < numT ; i++)
         {
-            val += times[i];
+            debug1<<i<<": "<<summaries[i]<<endl;
+            if (summaries[i].find(nm,0) != std::string::npos)
+            {
+                val += times[i];
+            }
         }
     }
 
