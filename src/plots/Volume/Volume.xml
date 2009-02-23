@@ -22,6 +22,7 @@
     </LIBS>
     <Files components="S">
       TransferFunctionWidget.C
+      PyTransferFunctionWidget.C
     </Files>
     <Files components="V">
       VolumeFunctions.C
