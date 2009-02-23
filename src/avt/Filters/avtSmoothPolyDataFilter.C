@@ -45,6 +45,7 @@
 #include <vtkDataSet.h>
 #include <vtkSmoothPolyDataFilter.h>
 #include <vtkPolyData.h>
+#include <vtkGeometryFilter.h>
 
 #include <avtDataset.h>
 
@@ -129,24 +130,29 @@ avtSmoothPolyDataFilter::SetSmoothingLevel(int sl)
 //  Creation:   December  6, 2002
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Feb 23 10:41:33 EST 2009
+//    If we didn't get poly data, don't throw an error, convert it.
+//    Also, do that check after our no-op checks to save time.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtSmoothPolyDataFilter::ExecuteData(vtkDataSet *inDS, int, string)
 {
-    // We only work on surface data
-    if (inDS->GetDataObjectType() != VTK_POLY_DATA)
-    {
-        EXCEPTION1(VisItException, "avtSmoothPolyDataFilter::ExecuteDataTree "
-                                   "-- Did not get polydata");
-    }
-
+    // Detect no-ops
     if (smoothingLevel == 0 ||
         GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 2 ||
         GetInput()->GetInfo().GetAttributes().GetSpatialDimension()     != 3)
     {
         return inDS;
+    }
+
+    // We only work on surface data
+    if (inDS->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        vtkGeometryFilter *geom = vtkGeometryFilter::New();
+        geom->SetInput(inDS);
+        inDS = geom->GetOutput();
     }
 
     //
