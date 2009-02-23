@@ -157,7 +157,7 @@ avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtStreamlineFilter *slFilt
     : avtParSLAlgorithm(slFilter)
 {
     maxCnt = maxCount;
-    sleepMicroSec = 300;
+    sleepMicroSec = 100;
     latencyTimer = -1;
 
     // Msg type, numTerminated, domain vector.
@@ -527,6 +527,10 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
     int nTerm = status[2];
     
     totalNumStreamlines -= nTerm;
+
+    debug5<<"Status: "<<rank<<" "<<nTerm<<" [";
+    for (int i = 3; i<status.size(); i++) debug5<<status[i]<<" ";
+    debug5<<"]\n";
     
     for (int i = 0; i < slaveInfo.size(); i++)
     {
@@ -551,6 +555,11 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
+//   Add call to check for sent buffers.
+//
 // ****************************************************************************
 
 void
@@ -566,7 +575,7 @@ avtMasterSLAlgorithm::Execute()
         debug1<<"while ("<<totalNumStreamlines<<" > 0)\n";
         if (UpdateStatus())
         {
-            PrintStatus();
+            //PrintStatus();
             /*
             Case1(case1Cnt);
             Case2(case2Cnt);
@@ -587,7 +596,7 @@ avtMasterSLAlgorithm::Execute()
             //Case5(2*maxCount, false, case5Bcnt);
 
             debug1<<endl<<"Post-Mortem"<<endl;
-            PrintStatus();
+            //PrintStatus();
             
             for (int i = 0; i < slaveInfo.size(); i++)
                 slaveInfo[i].Reset();
@@ -597,6 +606,7 @@ avtMasterSLAlgorithm::Execute()
             debug1<<"Nothing to do: "<<totalNumStreamlines<<endl;
             Sleep();
         }
+        CheckPendingSendRequests();
     }
     
     SendAllSlavesMsg(MSG_DONE);
@@ -1043,6 +1053,11 @@ avtMasterSLAlgorithm::Case4(int oobThreshold,
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
+//   Add timeout counter for slaves.
+//
 // ****************************************************************************
 
 avtSlaveSLAlgorithm::avtSlaveSLAlgorithm(avtStreamlineFilter *slFilter,
@@ -1051,6 +1066,7 @@ avtSlaveSLAlgorithm::avtSlaveSLAlgorithm(avtStreamlineFilter *slFilter,
     : avtMasterSlaveSLAlgorithm(slFilter, maxCount)
 {
     master = masterRank;
+    timeout = 0;
 }
 
 // ****************************************************************************
@@ -1193,6 +1209,11 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
         msg.push_back(numTerminated);
         for (int i = 0; i < status.size(); i++)
             msg.push_back(status[i]);
+
+        debug5<<"Send: [";
+        for(int i=0; i<msg.size();i++)debug5<<msg[i]<<" ";
+        debug5<<"]\n";
+        
         SendMsg(master, msg);
         
         //Status just sent, reset.
@@ -1285,9 +1306,26 @@ avtSlaveSLAlgorithm::Execute()
 
         if (newSLs)
             debug1<<"Recv some SLs. sz= "<<activeSLs.size()<<endl;
-        
+
         if (sendStatus || newSLs || newMsgs || numTerminated > 0)
             SendStatus();
+        else
+        {
+            if (!workToDo)
+            {
+                timeout++;
+                if (timeout > 1000)
+                {
+                    debug1<<"TIMEOUT FORCE SEND STATUS\n";
+                    SendStatus(true);
+                    Sleep();
+                    timeout = 0;
+                }
+                else if (timeout % 200 == 0)
+                    Sleep();
+            }
+        }
+        CheckPendingSendRequests();
     }
 #endif
 
@@ -1353,6 +1391,8 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 {
     vector<vector<int> > msgs;
     RecvMsgs(msgs);
+
+    debug5<<"avtSlave::ProcessMessages()  msgs= "<<msgs.size()<<endl;
     
     done = false;
     newMsgs = (msgs.size() > 0);
@@ -1400,7 +1440,6 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             if (sendSLs.size() > 0)
                 SendSLs(dst, sendSLs);
         }
-        
     }
 }
 

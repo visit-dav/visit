@@ -383,14 +383,13 @@ avtParSLAlgorithm::SendMsg(int dst,
     for (int i = 0; i < msg.size(); i++)
         buff[i] = msg[i];
         
+    int err = MPI_Isend(buff, statusMsgSz, MPI_INT, dst,
+                        avtParSLAlgorithm::STATUS_TAG,
+                        VISIT_MPI_COMM, &req);
     debug5<<"Send: "<<dst<<" [";
     for(int i = 0; i < msg.size(); i++) debug5<<buff[i]<<" ";
-    debug5<<"]\n";
+    debug5<<"] err= "<<err<<endl;
 
-    MPI_Isend(buff, statusMsgSz, MPI_INT, dst,
-              avtParSLAlgorithm::STATUS_TAG,
-              VISIT_MPI_COMM, &req);
-    
     sendIntBufferMap[req] = buff;
     
     BytesCnt.value += (sizeof(int) *statusMsgSz);
@@ -452,6 +451,7 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
         for (int i = 0; i < statusRecvRequests.size(); i++)
             copy.push_back(statusRecvRequests[i]);
         err = MPI_Testsome(nReq, &copy[0], &num, indices, status);
+        debug5<<"::RecvMsgs() err= "<<err<<" Testsome("<<nReq<<"); num= "<<num<<endl;
 
         if (num > 0)
         {

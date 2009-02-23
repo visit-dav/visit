@@ -68,7 +68,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <vtkPolyData.h>
 #include <vtkSphereSource.h>
 #include <vtkPointSource.h>
-#include <vtkVisItStreamline.h>
+#include <vtkVisItStreamLine.h>
 #include <vtkGlyph3D.h>
 
 #include <vtkVisItCellLocator.h>
@@ -136,6 +136,9 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //
 //   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //   Added termination by number of steps.
+//
+//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
+//   Initialize the initial domain load count and timer.
 //   
 // ****************************************************************************
 
@@ -176,6 +179,8 @@ avtStreamlineFilter::avtStreamlineFilter()
     INIT_POINT(boxExtents, 0., 1., 0.);
     INIT_POINT(boxExtents+3, 1., 0., 1.);
     useWholeBox = false;
+    InitialIOTime = 0.0;
+    InitialDomLoads = 0;
 }
 
 
@@ -905,6 +910,9 @@ avtStreamlineFilter::CheckOnDemandViability(void)
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Add MasterSlave method.
 //
+//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
+//   Initialize the initial domain load count and timer.
+//
 // ****************************************************************************
 
 void
@@ -934,7 +942,7 @@ avtStreamlineFilter::Execute(void)
 #else
     slAlgo = new avtSerialSLAlgorithm(this);
 #endif
-    
+    InitialIOTime = visitTimer->LookupTimer("Reading dataset");
     slAlgo->Initialize(seedpoints);
     slAlgo->Execute();
     slAlgo->PostExecute();
@@ -995,6 +1003,9 @@ computeMeanStdDev( int nProcs, int rank, float val, float &mean, float &stdDev )
 //
 //   Hank Childs, Tue Jan 20 13:06:33 CST 2009
 //   Add support for file formats that do their own domain decomposition.
+//
+//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
+//   Initialize the initial domain load count and timer.
 //
 // ****************************************************************************
 
@@ -1084,6 +1095,7 @@ avtStreamlineFilter::Initialize()
             ds->Register(NULL);
             dataSets[ ds_list.domains[i] ] = ds;
         }
+        InitialDomLoads = ds_list.domains.size();       
     }
 
 #ifdef PARALLEL

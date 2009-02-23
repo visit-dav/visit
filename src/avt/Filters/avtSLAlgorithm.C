@@ -139,12 +139,21 @@ avtSLAlgorithm::IntegrateStreamline(avtStreamlineWrapper *s)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//  
+//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
+//   Initialize the initial domain load count and timer.  
+//
 // ****************************************************************************
 
 void
 avtSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 {
     numSeedPoints = seedPts.size();
+
+    IOTime.value = streamlineFilter->InitialIOTime;
+    TotalTime.value = streamlineFilter->InitialIOTime;
+    DomLoadCnt.value = streamlineFilter->InitialDomLoads;
 }
 
 // ****************************************************************************
@@ -164,7 +173,7 @@ avtSLAlgorithm::PostExecute()
     debug1<<"avtSLAlgorithm::PostExecute()\n";
 
     vector<avtStreamlineWrapper *> v;
-
+    
     while (! terminatedSLs.empty())
     {
         v.push_back(terminatedSLs.front());
@@ -267,9 +276,9 @@ avtSLAlgorithm::CalculateStatistics()
     ComputeStatistics(IntegrateTime);
     ComputeStatistics(SortTime);
     ComputeStatistics(IntegrateCnt);
-
-    DomLoadCnt.value = streamlineFilter->GetLoadDSCount();
-    DomPurgeCnt.value = streamlineFilter->GetPurgeDSCount();
+    
+    DomLoadCnt.value += streamlineFilter->GetLoadDSCount();
+    DomPurgeCnt.value += streamlineFilter->GetPurgeDSCount();
     ComputeStatistics(DomLoadCnt);
     ComputeStatistics(DomPurgeCnt);
     
@@ -468,13 +477,21 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
 //  Programmer: Dave Pugmire
 //  Creation:   January 28, 2009
 //
+//  Modifications:
+//  
+//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
+//   Print total TOTAL time.
+//
 // ****************************************************************************
 void
 avtSLAlgorithm::ReportTimings(ostream &os, bool totals)
 {
     os<<"Timings: *********************************************"<<endl;
     if (totals)
-        os<<"t_Time      = "<<TotalTime.max<<endl;
+    {
+        os<<"t_Time       = "<<TotalTime.max<<endl;
+        os<<"t_TotalTime  = "<<TotalTime.total<<endl;
+    }
     else
         os<<"l_Time      = "<<TotalTime.value<<endl;
 

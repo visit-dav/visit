@@ -149,8 +149,11 @@ class avtStreamlineWrapper;
 //   Dave Pugmire, Thu Feb  5 12:23:33 EST 2009
 //   Add workGroupSize for masterSlave algorithm.
 //
-//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//    Reworked the termination code. Added a type enum and value.
+//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//   Reworked the termination code. Added a type enum and value.
+//
+//   Dave Pugmire, Mon Feb 23 13:40:28 EST 2009
+//   Initial IO time and domain load counter.
 //
 // ****************************************************************************
 
@@ -226,7 +229,8 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     int                       numSeedPts;
     int                       method;
     int                       maxCount, workGroupSz;
-    
+    double                    InitialIOTime;
+    int                       InitialDomLoads;
 
     virtual void              Execute(void);
     virtual void              UpdateDataObjectInfo(void);
