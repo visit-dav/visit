@@ -62,28 +62,6 @@
 /// Declarations of internally used classes and structs.
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-static const char * const alphaBackground_xpm[] = {
-"16 16 2 1",
-".    c #a0a0a0",
-"+    c #FFFFFF",
-"........++++++++",
-"........++++++++",
-"........++++++++",
-"........++++++++",
-"........++++++++",
-"........++++++++",
-"........++++++++",
-"........++++++++",
-"++++++++........",
-"++++++++........",
-"++++++++........",
-"++++++++........",
-"++++++++........",
-"++++++++........",
-"++++++++........",
-"++++++++........",
-};
-
 
 // ****************************************************************************
 // Struct: ControlPoint
@@ -222,9 +200,6 @@ QvisSpectrumBar::QvisSpectrumBar(QWidget *parent) : QWidget(parent)
     // Set the widget's minimum width and height.
     setMinimumWidth(50);
     setMinimumHeight(60);
-
-    // Load the checkerboard pattern as an XPM
-    alphaBackground = QImage(alphaBackground_xpm);
 }
 
 // ****************************************************************************
@@ -1519,8 +1494,12 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 //   Jeremy Meredith, Fri Feb 20 14:54:44 EST 2009
 //   Added support for alpha values.
 //
+//   Jeremy Meredith, Mon Feb 23 15:20:31 EST 2009
+//   Combined horizontal and vertical logic (it was getting to be too
+//   much work to keep them in sync).
+//
 // ****************************************************************************
-
+#include <iostream>
 void
 QvisSpectrumBar::drawSpectrum(QPainter &paint)
 {
@@ -1542,90 +1521,83 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
     if(interpolatedColors)
     {
         unsigned char *cptr = interpolatedColors;
-        paint.fillRect(area,QBrush(alphaBackground));
 
         QColor brightAlphaColor(255,255,255,255);
         QColor darkAlphaColor(0,0,0,255);
-            
+
         int prevAlphPos = -1;
         
         // Draw the spectrum based on the orientation of the widget.
-        if(orientation == HorizontalTop || orientation == HorizontalBottom)
+        bool horiz = (orientation == HorizontalTop || orientation == HorizontalBottom);
+        for(int i = 0; i < range; ++i, cptr += 4)
         {
-            // Draw vertical lines.
-            for(int i = 0; i < range; ++i, cptr += 4)
-            {
-                int curAlphPos = int(area.y() +
-                                   (1.-float(cptr[3])/255.)*(area.height()-1));
-                if (i==0)
-                    prevAlphPos = curAlphPos;
-                else if (curAlphPos > prevAlphPos)
-                    prevAlphPos++;
-                else if (curAlphPos < prevAlphPos)
-                    prevAlphPos--;
+            int constVal = horiz ? i+area.x() : i+area.y();
+            int minVal = horiz ? area.y() : area.x();
+            int maxVal = horiz ? area.y()+area.height() : area.x()+area.width();
 
-                // Draw the colors opaque above the alpha line.
-                // and translucet below.
-                paint.setPen(QPen(QColor((int)cptr[0],
-                                         (int)cptr[1],
-                                         (int)cptr[2],
-                                         (int)cptr[3])));
-                paint.drawLine(i + area.x(), area.y(),
-                               i + area.x(), curAlphPos);
-
-                paint.setPen(QPen(QColor((int)cptr[0],
-                                         (int)cptr[1],
-                                         (int)cptr[2],
-                                         255)));
-                paint.drawLine(i + area.x(), curAlphPos,
-                               i + area.x(), area.y() + area.height() + 1);
-
-                // Draw the alpha value as lines
-                paint.setPen(QPen(brightAlphaColor));
-                paint.drawLine(i+area.x(), prevAlphPos,
-                               i+area.x(), curAlphPos);
-                paint.setPen(QPen(darkAlphaColor));
-                paint.drawPoint(i+area.x(), curAlphPos+1);
+            float alpha = float(cptr[3])/255.;
+            int curAlphPos = minVal + (1.0-alpha)*(maxVal-minVal-2);
+            if (i==0)
                 prevAlphPos = curAlphPos;
-            }
-        }
-        else
-        {
-            // Draw horizontal lines.
-            for(int i = range - 1; i >= 0; --i, cptr += 4)
+            else if (curAlphPos > prevAlphPos)
+                prevAlphPos++;
+            else if (curAlphPos < prevAlphPos)
+                prevAlphPos--;
+
+            // Fake a translucent color above the alpha line.
+            int j = minVal;
+            bool bright = ((i/8)%2) == 0;
+            while (j<curAlphPos)
             {
-                int curAlphPos = int(area.x() +
-                                     float(cptr[3])/255.)*(area.width()-1);
-                if (i==0)
-                    prevAlphPos = curAlphPos;
-                else if (curAlphPos > prevAlphPos)
-                    prevAlphPos++;
-                else if (curAlphPos < prevAlphPos)
-                    prevAlphPos--;
-
-                // Draw the colors opaque to the left of the alpha line.
-                // and translucet to the right.
-                paint.setPen(QPen(QColor((int)cptr[0],
-                                         (int)cptr[1],
-                                         (int)cptr[2],
-                                         (int)cptr[3])));
-                paint.drawLine(area.x(), i + area.y(),
-                               curAlphPos, i + area.y());
-
-                paint.setPen(QPen(QColor((int)cptr[0],
-                                         (int)cptr[1],
-                                         (int)cptr[2],
-                                         255)));
-                paint.drawLine(curAlphPos, i + area.y(),
-                               area.x() + area.width() + 1, i + area.y());
-
-                // Draw the alpha value as lines
-                paint.setPen(QPen(brightAlphaColor));
-                paint.drawLine(prevAlphPos, i+area.y(),
-                               curAlphPos, i+area.y());
-                paint.setPen(QPen(darkAlphaColor));
-                paint.drawPoint(curAlphPos+1, i+area.y());
+                if (bright)
+                    paint.setPen(QPen(QColor((int)cptr[0]*alpha + 255*(1.-alpha),
+                                             (int)cptr[1]*alpha + 255*(1.-alpha),
+                                             (int)cptr[2]*alpha + 255*(1.-alpha))));
+                else
+                    paint.setPen(QPen(QColor((int)cptr[0]*alpha + 200*(1.-alpha),
+                                             (int)cptr[1]*alpha + 200*(1.-alpha),
+                                             (int)cptr[2]*alpha + 200*(1.-alpha))));
+                bright = !bright;
+                int j2 = (j+7 < curAlphPos) ? j+7 : curAlphPos;
+                if (horiz)
+                    paint.drawLine(constVal, j,
+                                   constVal, j2);
+                else
+                    paint.drawLine(j,  constVal,
+                                   j2, constVal);
+                j += 8;
             }
+
+            // Draw opaque color below the alpha line
+            paint.setPen(QPen(QColor((int)cptr[0],
+                                     (int)cptr[1],
+                                     (int)cptr[2],
+                                     255)));
+            if (horiz)
+                paint.drawLine(constVal, curAlphPos,
+                               constVal, maxVal+1);
+            else
+                paint.drawLine(curAlphPos, constVal,
+                               maxVal+1,   constVal);
+
+            // Draw the alpha value line:
+            // - bright line on top
+            paint.setPen(QPen(brightAlphaColor));
+
+            if (horiz)
+                paint.drawLine(constVal, prevAlphPos,
+                               constVal, curAlphPos);
+            else
+                paint.drawLine(prevAlphPos, constVal,
+                               curAlphPos, constVal);
+
+            // - dark underline
+            paint.setPen(QPen(darkAlphaColor));
+            if (horiz)
+                paint.drawPoint(constVal, (curAlphPos>prevAlphPos)?curAlphPos+1:prevAlphPos+1);
+            else
+                paint.drawPoint((curAlphPos>prevAlphPos)?curAlphPos+1:prevAlphPos+1, constVal);
+            prevAlphPos = curAlphPos;
         }
 
         // Draw the sunken bevel around the spectrum.
@@ -1665,6 +1637,10 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
 //
 //   Jeremy Meredith, Fri Feb 20 14:56:50 EST 2009
 //   Added alpha support.
+//
+//   Jeremy Meredith, Mon Feb 23 15:05:07 EST 2009
+//   Fixed what appeared to cause the bug where we'd get bad values
+//   when there are too dense a set of control points.
 //
 // ****************************************************************************
 
@@ -1802,7 +1778,7 @@ QvisSpectrumBar::getRawColors(int range)
         color_end_i = int(c2->position * range);
         color_range = color_end_i - color_start_i;
 
-        if(color_range > 1)
+        if(color_range >= 1)
         {
             consecutiveZeroLengthRanges = 0;
             if(ci == 0 && color_start_i != 0)

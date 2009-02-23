@@ -75,6 +75,10 @@ class QTimer;
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
 //
+//   Jeremy Meredith, Mon Feb 23 15:22:04 EST 2009
+//   Removed the background pixmap; drawing with a real alpha
+//   was expensive, and it was easy to fake it.
+//
 // ****************************************************************************
 
 class GUI_API QvisSpectrumBar : public QWidget
@@ -156,7 +160,6 @@ private slots:
     void   handlePaging();
 private:
     QTimer             *timer;
-    QImage             alphaBackground;
 
     ControlOrientation orientation;
     int                margin;
