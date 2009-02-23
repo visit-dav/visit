@@ -548,6 +548,34 @@ TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
 
 
 // ****************************************************************************
+//  Method: TimingsManager::LookupTimer
+//
+//  Purpose:
+//      Lookup timer value.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Feb 23, 2009
+//
+// ****************************************************************************
+
+double
+TimingsManager::LookupTimer(const std::string &nm)
+{
+    double val = 0.0;
+
+    int numT = times.size();
+    for (int i = 0 ; i < numT ; i++)
+    {
+        if (summaries[i].find(nm,0) != std::string::npos)
+        {
+            val += times[i];
+        }
+    }
+
+    return val;
+}
+
+// ****************************************************************************
 //  Method: TimingsManager::DumpTimings
 //
 //  Purpose:
