@@ -146,6 +146,9 @@
 //    Fix enable case for Enums with QButtonGroup, ensure QButtonGroup has
 //    valid parent.
 //
+//    Dave Pugmire, Tue Feb 24 15:26:46 EST 2009
+//    tempcolor wasn't declared as a QColor before it was used.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -900,7 +903,7 @@ class WindowGeneratorColor : public virtual Color , public virtual WindowGenerat
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
         c << "            { // new scope" << endl;
-        c << "                tempcolor = QColor(atts->Get"<<Name<<"().Red()," << endl;
+        c << "                QColor tempcolor = QColor(atts->Get"<<Name<<"().Red()," << endl;
         c << "                                   atts->Get"<<Name<<"().Green()," << endl;
         c << "                                   atts->Get"<<Name<<"().Blue());" << endl;
         c << "                "<<name<<"->blockSignals(true);" << endl;
