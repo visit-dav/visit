@@ -3785,6 +3785,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
 //    Changed 'vector<int>' to 'intVector', and 'vector<string>' to 
 //    'stringVector'.
 //
+//    Mark C. Miller, Tue Feb 24 10:14:20 PST 2009
+//    Added quotes around material name in debug output.
 // ****************************************************************************
 
 void
@@ -3816,7 +3818,7 @@ avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, stringVector &mn,
         }
         if (!foundMatch)
         {
-            debug1 << "Was unable to match material " << mn[i].c_str() << " against "
+            debug1 << "Was unable to match material \"" << mn[i].c_str() << "\" against "
                    << "any material for this dataset.  It is likely that this "
                    << "material exists at another timestep, but not at this "
                    << "one." << endl;
