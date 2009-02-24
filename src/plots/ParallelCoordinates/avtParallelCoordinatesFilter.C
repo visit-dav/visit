@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtParallelCoordinatesFilter.C                      //
+//                         avtParallelCoordinatesFilter.C                    //
 // ************************************************************************* //
 
 #include <avtParallelCoordinatesFilter.h>
@@ -66,10 +66,13 @@
 #include <vtkVisItScalarTree.h>
 
 #include <avtDataAttributes.h>
-#include <avtExtents.h>
+#include <avtDataRangeSelection.h>
 #include <avtDataTree.h>
+#include <avtExtents.h>
+#include <avtIdentifierSelection.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
+#include <avtNamedSelection.h>
 #include <avtParallel.h>
 
 #include <DebugStream.h>
@@ -147,14 +150,13 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 // ****************************************************************************
 
 avtContract_p
-avtParallelCoordinatesFilter::ModifyContract(
-                                           avtContract_p in_spec)
+avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
 {
-    avtContract_p outSpec = new avtContract(in_spec);
+    avtContract_p rv = new avtContract(in_contract);
     
-    outSpec->NoStreaming();
+    rv->NoStreaming();
 
-    return outSpec;
+    return rv;
 }
 
 
@@ -1390,3 +1392,296 @@ avtParallelCoordinatesFilter::PrepareForArrayVariable()
 
     return;
 }
+
+
+// ****************************************************************************
+//  Method: avtParallelCoordinatesFilter::CreateNamedSelection
+//
+//  Purpose:
+//      Creates a named selection from its input.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 9, 2009
+//
+// ****************************************************************************
+
+avtNamedSelection *
+avtParallelCoordinatesFilter::CreateNamedSelection(avtContract_p c, 
+                                                   const std::string &selName)
+{
+    debug1 << "Start avtParallelCoordinatesFilter::CreateNamedSelection" << endl;
+    avtNamedSelection *rv = NULL;
+    rv = CreateDBAcceleratedNamedSelection(c, selName);
+    if (rv != NULL)
+        return rv;
+
+    rv = CreateNamedSelectionThroughTraversal(c, selName);
+    debug1 << "End avtParallelCoordinatesFilter::CreateNamedSelection" << endl;
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection
+//
+//  Purpose:
+//      Creates a named selection by getting it from the database where
+//      it uses acceleration.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 9, 2009
+//
+// ****************************************************************************
+
+avtNamedSelection *
+avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
+                                                   avtContract_p c,
+                                                   const std::string &selName)
+{
+    if (! GetInput()->GetInfo().GetValidity().GetZonesPreserved())
+    {
+        // Zones have been removed upstream, so the direct-to-database query
+        // will be invalid.  Give up.
+        return NULL;
+    }
+
+    int  j;
+
+    std::vector<avtDataSelection *> drs;
+    stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
+    for (j = 0 ; j < axisCount ; j++)
+    {
+        drs.push_back(new avtDataRangeSelection(
+                     curAxisVarNames[j],
+                     parCoordsAtts.GetExtentMinima()[j],
+                     parCoordsAtts.GetExtentMaxima()[j]));
+    }
+/*
+    if (parCoordsAtts.GetApplyNamedSelection())
+    {
+        vector<double> ids;
+        avtCallback::GetNamedSelection(
+                            parCoordsAtts.GetApplyNamedSelectionName(), ids);
+        if (ids.size()>0)
+        {
+            avtIdentifierSelection *idsel = new avtIdentifierSelection();
+            idsel->SetIdentifiers(ids);
+            drs.push_back(idsel);
+        }
+    }
+ */
+    avtIdentifierSelection *ids = GetMetaData()->GetIdentifiers(drs);
+    avtNamedSelection *rv = NULL;
+    if (ids != NULL)
+        rv = new avtFloatingPointIdNamedSelection(selName, ids->GetIdentifiers());
+    delete ids;
+
+    for (j = 0 ; j < drs.size() ; j++)
+        delete drs[j];
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal
+//
+//  Purpose:
+//      Creates a named selection from its input by traversing the data.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 9, 2009
+//
+// ****************************************************************************
+
+avtNamedSelection *
+avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(avtContract_p c, 
+                                                   const std::string &selName)
+{
+    int  i;
+
+    // Get the zone number labels loaded up.
+    GetInput()->Update(c);
+
+    avtDataTree_p tree = GetInputDataTree();
+
+    std::vector<int> doms;
+    std::vector<int> zones;
+    int nleaves = 0;
+    vtkDataSet **leaves = tree->GetAllLeaves(nleaves);
+    stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
+    for (i = 0 ; i < nleaves ; i++)
+    {
+        int axisNum;
+        int tupleCount, componentCount;
+        int cellVertexCount, vertexNum, valueNum;
+        bool arrayIsCellData, dataBadOrMissing;
+        std::string arrayName;
+        vtkDataArray *dataArray;
+        vtkIdList *pointIdList;
+        float *arrayValues;
+        float valueSum;
+        
+        std::vector<float *> varArrayValues;
+        boolVector           varIsCellData;
+        intVector            varComponentCounts;
+        int cellCount       = leaves[i]->GetNumberOfCells();
+        int pointCount      = leaves[i]->GetNumberOfPoints();
+    
+        for (axisNum = 0; axisNum < axisCount; axisNum++)
+        {
+            if (isArrayVar)
+                arrayName = pipelineVariable;
+            else
+                arrayName = curAxisVarNames[axisNum];
+    
+            dataArray = leaves[i]->GetCellData()->GetArray(arrayName.c_str());
+            arrayIsCellData = true;
+            tupleCount = cellCount;
+    
+            if (dataArray == NULL)
+            {
+                dataArray = leaves[i]->GetPointData()->GetArray(arrayName.c_str());
+                arrayIsCellData = false;
+                tupleCount = pointCount;
+            }
+    
+            if (dataArray == NULL)
+                dataBadOrMissing = true;
+            else if (dataArray->GetDataType() != VTK_FLOAT)
+                dataBadOrMissing = true;
+            else if (dataArray->GetNumberOfTuples() != tupleCount)
+                dataBadOrMissing = true;
+            else
+                dataBadOrMissing = false;
+            
+            if (dataBadOrMissing)
+            {
+                debug3 << "PCP/aPAF/EDT/5: ParallelCoordinates plot input data array "
+                       << arrayName << " is bad or missing." << endl;
+                return NULL;
+            }
+        
+            if (isArrayVar)
+                varArrayValues.push_back(((float *)dataArray->GetVoidPointer(0))
+                                         + axisNum);
+            else
+                varArrayValues.push_back((float *)dataArray->GetVoidPointer(0));
+            varIsCellData.push_back(arrayIsCellData);
+            varComponentCounts.push_back(dataArray->GetNumberOfComponents());
+        }
+    
+
+        floatVector inputTuple = floatVector(axisCount);
+    
+        vtkDataArray *ocn = leaves[i]->GetCellData()->
+                                            GetArray("avtOriginalCellNumbers");
+        if (ocn == NULL)
+        {
+            EXCEPTION0(ImproperUseException);
+        }
+        unsigned int *ptr = (unsigned int *) ocn->GetVoidPointer(0);
+        if (ptr == NULL)
+        {
+            EXCEPTION0(ImproperUseException);
+        }
+
+        int ncells = leaves[i]->GetNumberOfCells();
+        int curSize = doms.size();
+        int numMatching = 0;
+        for (int j = 0 ; j < ncells ; j++)
+        {
+            int axisNum;
+            for (axisNum = 0; axisNum < axisCount; axisNum++)
+            {
+                arrayValues     = varArrayValues[axisNum];
+                componentCount  = varComponentCounts[axisNum];
+
+                if (varIsCellData[axisNum])
+                {
+                    inputTuple[axisNum] =
+                    arrayValues[j*componentCount];
+                }
+                else
+                {
+                    leaves[i]->GetCellPoints(j, pointIdList);
+                    cellVertexCount = pointIdList->GetNumberOfIds();
+
+                    valueSum = 0.0;
+
+                    for (vertexNum = 0; vertexNum < cellVertexCount; vertexNum++)
+                    {
+                        valueNum = pointIdList->GetId(vertexNum)*componentCount;
+                        valueSum += arrayValues[valueNum];
+                    }
+
+                    if (cellVertexCount == 0) cellVertexCount = 1;
+
+                    inputTuple[axisNum] = valueSum / (float)cellVertexCount;
+                }
+                if (applySubranges[axisNum])
+                {
+                    if (inputTuple[axisNum] < parCoordsAtts.GetExtentMinima()[axisNum])
+                        break;
+                    if (inputTuple[axisNum] > parCoordsAtts.GetExtentMaxima()[axisNum])
+                        break;
+                }
+            }
+            if (axisNum >= axisCount) // then all axes "passed test"
+            {
+                doms.push_back(ptr[2*j]);
+                zones.push_back(ptr[2*j+1]);
+            }
+        }
+    }
+
+    // Note the poor use of MPI below, coded for expediency, as I believe all
+    // of the named selections will be small.
+    int *numPerProcIn = new int[PAR_Size()];
+    int *numPerProc   = new int[PAR_Size()];
+    for (i = 0 ; i < PAR_Size() ; i++)
+        numPerProcIn[i] = 0;
+    numPerProcIn[PAR_Rank()] = doms.size();
+    SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
+    int numTotal = 0;
+    for (i = 0 ; i < PAR_Size() ; i++)
+        numTotal += numPerProc[i];
+    if (numTotal > 1000000)
+    {
+        EXCEPTION1(VisItException, "You have selected too many zones in your "
+                   "named selection.  Disallowing ... no selection created");
+    }
+    int myStart = 0;
+    for (i = 0 ; i < PAR_Rank()-1 ; i++)
+        myStart += numPerProc[i];
+
+    int *selForDomsIn = new int[numTotal];
+    int *selForDoms   = new int[numTotal];
+    for (i = 0 ; i < doms.size() ; i++)
+        selForDomsIn[myStart+i] = doms[i];
+    SumIntArrayAcrossAllProcessors(selForDomsIn, selForDoms, numTotal);
+
+    int *selForZonesIn = new int[numTotal];
+    int *selForZones   = new int[numTotal];
+    for (i = 0 ; i < zones.size() ; i++)
+        selForZonesIn[myStart+i] = zones[i];
+    SumIntArrayAcrossAllProcessors(selForZonesIn, selForZones, numTotal);
+
+    //
+    // Now construct the actual named selection and add it to our internal
+    // data structure for tracking named selections.
+    //
+    avtNamedSelection *ns = 
+             new avtZoneIdNamedSelection(selName,numTotal,selForDoms,selForZones);
+
+    delete [] numPerProcIn;
+    delete [] numPerProc;
+    delete [] selForDomsIn;
+    delete [] selForDoms;
+    delete [] selForZonesIn;
+    delete [] selForZones;
+
+    return ns;
+}
+
+

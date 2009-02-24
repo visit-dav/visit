@@ -185,6 +185,10 @@ avtNamedSelectionFilter::ModifyContract(avtContract_p contract)
         rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
     }
 
+    avtDataSelection *ds = ns->CreateSelection();
+    if (ds != NULL)
+        rv->GetDataRequest()->AddDataSelection(ds);
+    
     return rv;
 }
 

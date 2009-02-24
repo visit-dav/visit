@@ -46,6 +46,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
+#include <avtDataObjectSource.h>
 #include <avtDataset.h>
 #include <avtNamedSelection.h>
 #include <avtParallel.h>
@@ -124,21 +125,44 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
 {
     int   i;
 
-    avtContract_p contract = dob->GetContractFromPreviousExecution();
-    if (contract->GetDataRequest()->NeedZoneNumbers() == false)
-    {
-        // If we don't have zone numbers, then get them, even if we have
-        // to re-execute the whole darn pipeline.
-        avtContract_p c2 = new avtContract(contract);
-        c2->GetDataRequest()->TurnZoneNumbersOn();
-        debug1 << "Must re-execute pipeline to create named selection" << endl;
-        dob->Update(c2);
-        debug1 << "Done re-executing pipeline to create named selection" << endl;
-    }
-
     if (strcmp(dob->GetType(), "avtDataset") != 0)
     {
         EXCEPTION1(VisItException, "Named selections only work on data sets");
+    }
+
+    avtContract_p c1 = dob->GetContractFromPreviousExecution();
+    avtContract_p contract;
+    if (c1->GetDataRequest()->NeedZoneNumbers() == false)
+    {
+        // If we don't have zone numbers, then get them, even if we have
+        // to re-execute the whole darn pipeline.
+        contract = new avtContract(c1);
+        contract->GetDataRequest()->TurnZoneNumbersOn();
+    }
+    else
+    {
+        contract = c1;
+    }
+
+    // 
+    // Let the input try to create the named selection ... some have special
+    // logic, for example the parallel coordinates filter.
+    //
+    avtNamedSelection *ns = dob->GetSource()->CreateNamedSelection(contract, 
+                                                                   selName);
+    if (ns != NULL)
+    {
+        int curSize = selList.size();
+        selList.resize(curSize+1);
+        selList[curSize] = ns;
+        return;
+    }
+
+    if (contract->GetDataRequest()->NeedZoneNumbers() == false)
+    {
+        debug1 << "Must re-execute pipeline to create named selection" << endl;
+        dob->Update(contract);
+        debug1 << "Done re-executing pipeline to create named selection" << endl;
     }
 
     avtDataset_p ds;
@@ -209,8 +233,7 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     // Now construct the actual named selection and add it to our internal
     // data structure for tracking named selections.
     //
-    avtNamedSelection *ns = new avtZoneIdNamedSelection(selName, numTotal,
-                                                        selForDoms, selForZones);
+    ns = new avtZoneIdNamedSelection(selName,numTotal,selForDoms,selForZones);
     int curSize = selList.size();
     selList.resize(curSize+1);
     selList[curSize] = ns;

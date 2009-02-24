@@ -53,8 +53,9 @@ typedef   bool (*AbortCallback)(void *);
 typedef   void (*ProgressCallback)(void *, const char *, const char *,int,int);
 
 
-class     avtQueryableSource;
+class     avtNamedSelection;
 class     avtOriginatingSource;
+class     avtQueryableSource;
 
 
 // ****************************************************************************
@@ -88,6 +89,9 @@ class     avtOriginatingSource;
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Hank Childs, Mon Feb  9 15:09:29 PST 2009
+//    Added method CreateNamedSelection. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSource
@@ -107,6 +111,10 @@ class PIPELINE_API avtDataObjectSource
     static void                     RegisterAbortCallback(AbortCallback,void*);
     static void                     RegisterProgressCallback(ProgressCallback,
                                                              void *);
+
+    virtual avtNamedSelection      *CreateNamedSelection(avtContract_p, 
+                                                         const std::string &)
+                                          { return NULL; };
 
   protected:
     static AbortCallback            abortCallback;

@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtParallelCoordinatesFilter.h                       //
+//                         avtParallelCoordinatesFilter.h                    //
 // ************************************************************************* //
 
 #ifndef AVT_PARALLEL_COORDINATES_FILTER_H
@@ -77,6 +77,9 @@ class vtkPoints;
 //    ordered axis array names in the attributes be empty.
 //    Also handle X positions defined by binning in array vars.
 //
+//    Hank Childs, Mon Feb 23 18:01:41 PST 2009
+//    Added methods for creating named selections.
+//
 // ****************************************************************************
 
 class avtParallelCoordinatesFilter : public avtSIMODataTreeIterator
@@ -92,10 +95,10 @@ public:
     virtual const char         *GetDescription(void)
                                     { return "Parallel axis plot"; };
     virtual void                ReleaseData(void);
+    virtual avtNamedSelection  *CreateNamedSelection(avtContract_p, const std::string &);
 
 protected:
-    virtual avtContract_p
-                                ModifyContract(avtContract_p);
+    virtual avtContract_p       ModifyContract(avtContract_p);
     virtual avtDataTree_p       ExecuteDataTree(vtkDataSet *, int, string);
 
     virtual void                UpdateDataObjectInfo(void);
@@ -144,7 +147,12 @@ private:
     vtkCellArray               *dataCurveVerts;
 
     int                       **binnedAxisCounts;
+
+    virtual avtNamedSelection  *CreateNamedSelectionThroughTraversal(avtContract_p, const std::string &);
+    virtual avtNamedSelection  *CreateDBAcceleratedNamedSelection(avtContract_p, const std::string &);
 };
 
 
 #endif
+
+
