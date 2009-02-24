@@ -212,6 +212,10 @@
 #    Jeremy Meredith, Mon Feb 23 18:06:01 EST 2009
 #    Added Edge operator.
 #
+#    Hank Childs, Mon Feb 23 21:32:27 PST 2009
+#    Add PersistentParticles operator, which was primarily implemented by
+#    Oliver Ruebel.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -228,7 +232,7 @@ REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \
          Decimate DeferExpression Displace DualMesh \
 	 Edge Elevate ExternalSurface \
          IndexSelect InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
-         PDF Project Reflect Replicate Resample Revolve Slice Smooth \
+         PDF PersistentParticles Project Reflect Replicate Resample Revolve Slice Smooth \
          SphereSlice ThreeSlice Threshold Transform Tube ZoneDump
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins

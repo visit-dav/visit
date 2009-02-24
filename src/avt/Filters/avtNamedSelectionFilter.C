@@ -102,6 +102,13 @@ avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 {
     int   i;
 
+    //
+    // See if the input reader applied the named selection on read.
+    //
+    if (selectionId >= 0)
+        if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selectionId))
+            return in_ds;
+
     vtkDataArray *ocn=in_ds->GetCellData()->GetArray("avtOriginalCellNumbers");
     if (ocn == NULL)
     {
@@ -186,8 +193,9 @@ avtNamedSelectionFilter::ModifyContract(avtContract_p contract)
     }
 
     avtDataSelection *ds = ns->CreateSelection();
+    selectionId = -1;
     if (ds != NULL)
-        rv->GetDataRequest()->AddDataSelection(ds);
+        selectionId = rv->GetDataRequest()->AddDataSelection(ds);
     
     return rv;
 }
