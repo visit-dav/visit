@@ -60,6 +60,11 @@ class vtkDataSet;
 //  Programmer: Hank Childs
 //  Creation:   February 2, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 23 21:27:00 PST 2009
+//    Added data member selectionId.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtNamedSelectionFilter : public avtDataTreeIterator
@@ -77,6 +82,7 @@ class AVTFILTERS_API avtNamedSelectionFilter : public avtDataTreeIterator
 
   protected:
     std::string           selName;
+    int                   selectionId;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
     virtual avtContract_p ModifyContract(avtContract_p);

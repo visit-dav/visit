@@ -165,11 +165,21 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
 //  Programmer: Hank Childs
 //  Creation:   January 24, 2008
 //
+//    Hank Childs, Mon Feb 23 19:20:14 PST 2009
+//    Use the contract from the original execution.
+//
 // ****************************************************************************
 
 void
 avtExecuteThenTimeLoopFilter::Execute(void)
 {
+    if (*origContract == NULL)
+    {
+        // You're derived type reimplemented ModifyContract and you need to
+        // make it call SetContract.
+        EXCEPTION0(ImproperUseException);
+    }
+
     FinalizeTimeLoop();
     int i;
 
@@ -181,15 +191,13 @@ avtExecuteThenTimeLoopFilter::Execute(void)
         avtExpressionEvaluatorFilter eef;
         eef.SetInput(src->GetOutput());
 
-        avtContract_p spec = 
-                new avtContract(GetGeneralContract());
+        avtContract_p contract = new avtContract(origContract);
         int currentTime = (i < endTime ? i : endTime);
         debug5 << "Execute-then-time-loop-filter updating with time slice #" 
                << currentTime << endl;
-        spec->GetDataRequest()->SetTimestep(currentTime);
+        contract->GetDataRequest()->SetTimestep(currentTime);
 
-        avtContract_p spec2 = ModifyContract(spec);
-        eef.Update(spec2);
+        eef.Update(contract);
 
         // Friend status plus reference points leads to some extra contortions here.
         avtDataset *ds = *(eef.GetTypedOutput());

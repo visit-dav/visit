@@ -72,6 +72,11 @@
 //  Programmer: Hank Childs
 //  Creation:   January 24, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 23 19:19:41 PST 2009
+//    Added infrastructure for using the contract for the first execution.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtExecuteThenTimeLoopFilter 
@@ -99,12 +104,18 @@ class PIPELINE_API avtExecuteThenTimeLoopFilter
     virtual void                        Finalize(void) = 0;
 
     void                                FinalizeTimeLoop(void);
+    virtual avtContract_p               ModifyContract(avtContract_p c)
+                                           { SetContract(c); return c; };
+
+    void                                SetContract(avtContract_p c)
+                                               { origContract = c; };
   private:
     int                                 startTime;
     int                                 endTime;
     int                                 stride;
     int                                 nFrames;
     int                                 actualEnd;
+    avtContract_p                       origContract;
 };
 
 
