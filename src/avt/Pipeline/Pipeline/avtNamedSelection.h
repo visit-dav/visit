@@ -46,6 +46,8 @@
 
 #include <visitstream.h>
 
+class     avtDataSelection;
+
 
 typedef struct { int d; int z; } IntPair;
 class PairCompare {
@@ -70,6 +72,11 @@ class PairCompare {
 //  Programmer: Hank Childs
 //  Creation:   February 2, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 23 10:09:26 PST 2009
+//    Added support for setting up data selections for contracts.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelection
@@ -86,7 +93,9 @@ class PIPELINE_API avtNamedSelection
 
     virtual void        Read(const std::string &) = 0;
     virtual void        Write(const std::string &) = 0;
+
     virtual bool        GetDomainList(std::vector<int> &) { return false; };
+    virtual avtDataSelection *CreateSelection(void) { return NULL; };
 
     virtual SELECTION_TYPE  GetType(void) = 0;
 
@@ -131,10 +140,15 @@ class PIPELINE_API avtFloatingPointIdNamedSelection : public avtNamedSelection
 {
   public:
                   avtFloatingPointIdNamedSelection(const std::string &);
+                  avtFloatingPointIdNamedSelection(const std::string &,
+                                                   const std::vector<double> &);
     virtual      ~avtFloatingPointIdNamedSelection();
     
     virtual void  Read(const std::string &);
     virtual void  Write(const std::string &);
+
+    virtual avtDataSelection *CreateSelection(void);
+
     virtual SELECTION_TYPE  GetType(void) { return FLOAT_ID; };
 
   protected:

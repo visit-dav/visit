@@ -107,6 +107,9 @@ class     avtWebpage;
 //    Cyrus Harrison, Wed Feb 13 10:19:20 PST 2008
 //    Removed debug dump flag b/c this is now handled by avtDebugDumpOptions.
 //
+//    Hank Childs, Mon Feb 23 13:20:07 PST 2009
+//    Added support for named selections.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -130,6 +133,9 @@ class PIPELINE_API avtFilter
     virtual avtQueryableSource         *GetQueryableSource(void);
     avtContract_p                       GetGeneralContract(void);
     virtual void                        ReleaseData(void);
+
+    virtual avtNamedSelection          *CreateNamedSelection(avtContract_p,
+                                                             const std::string &);
 
   protected:
     bool                                modified;

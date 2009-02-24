@@ -3255,7 +3255,7 @@ bool
 ViewerEngineManager::CreateNamedSelection(const EngineKey &ek, 
                                           int id, const std::string &selName)
 {
-    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    ENGINE_PROXY_RPC_BEGIN("CreateNamedSelection");
     engine->CreateNamedSelection(id, selName);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
@@ -3276,7 +3276,7 @@ bool
 ViewerEngineManager::DeleteNamedSelection(const EngineKey &ek, 
                                          const std::string &selName)
 {
-    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    ENGINE_PROXY_RPC_BEGIN("DeleteNamedSelection");
     engine->DeleteNamedSelection(selName);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
@@ -3297,7 +3297,7 @@ bool
 ViewerEngineManager::LoadNamedSelection(const EngineKey &ek, 
                                          const std::string &selName)
 {
-    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    ENGINE_PROXY_RPC_BEGIN("LoadNamedSelection");
     engine->LoadNamedSelection(selName);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
@@ -3318,7 +3318,7 @@ bool
 ViewerEngineManager::SaveNamedSelection(const EngineKey &ek, 
                                          const std::string &selName)
 {
-    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
+    ENGINE_PROXY_RPC_BEGIN("SaveNamedSelection");
     engine->SaveNamedSelection(selName);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
