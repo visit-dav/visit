@@ -93,6 +93,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
   private slots:
     void terminationProcessText();
     void terminationTypeChanged(int val);
+    void integratorTypeChanged(int val);
     void streamlineSourceChanged(int val);
     void showStreamlinesChanged(bool val);
     void showPointsChanged(bool val);
@@ -104,8 +105,6 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void planeSourcePointProcessText();
     void planeSourceNormalProcessText();
     void planeSourceUpVecProcessText();
-    void clipPlaneOriginProcessText();
-    void clipPlaneNormalProcessText();
     void colorTableNameChanged(bool useDefault, const QString &ctName);
     void singleColorChanged(const QColor &color);
     void legendFlagChanged(bool val);
@@ -113,11 +112,22 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void relTolProcessText();
     void absTolProcessText();
     void maxStepLengthProcessText();
+    void NumberPlanesProcessText();
+    void ColorStyleChanged(int val);
+    void MaxToroidalWindingProcessText();
+    void OverrideToroidalWindingProcessText();
+    void HitRateProcessText();
+    void ShowCurvesChanged(int val);
+    void AdjustPlaneProcessText();
+    void ShowIslandsChanged(bool val);
+    void OverlapsChanged(int val);
   private:
     int plotType;
     QLineEdit *termination;
     QWidget      *terminationType;
     QButtonGroup *terminationTypeButtonGroup;
+    QWidget      *integratorType;
+    QButtonGroup *integratorTypeButtonGroup;
     QWidget      *streamlineSource;
     QButtonGroup *streamlineSourceButtonGroup;
     QCheckBox *showStreamlines;
@@ -130,8 +140,6 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *planeSourcePoint;
     QLineEdit *planeSourceNormal;
     QLineEdit *planeSourceUpVec;
-    QLineEdit *clipPlaneOrigin;
-    QLineEdit *clipPlaneNormal;
     QvisColorTableButton *colorTableName;
     QvisColorButton *singleColor;
     QCheckBox *legendFlag;
@@ -139,8 +147,21 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *relTol;
     QLineEdit *absTol;
     QLineEdit *maxStepLength;
+    QLineEdit *NumberPlanes;
+    QWidget      *ColorStyle;
+    QButtonGroup *ColorStyleButtonGroup;
+    QLineEdit *MaxToroidalWinding;
+    QLineEdit *OverrideToroidalWinding;
+    QLineEdit *HitRate;
+    QWidget      *ShowCurves;
+    QButtonGroup *ShowCurvesButtonGroup;
+    QLineEdit *AdjustPlane;
+    QCheckBox *ShowIslands;
+    QWidget      *Overlaps;
+    QButtonGroup *OverlapsButtonGroup;
     QLabel *terminationLabel;
     QLabel *terminationTypeLabel;
+    QLabel *integratorTypeLabel;
     QLabel *streamlineSourceLabel;
     QLabel *pointDensityLabel;
     QLabel *sourceRadiusLabel;
@@ -150,13 +171,19 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *planeSourcePointLabel;
     QLabel *planeSourceNormalLabel;
     QLabel *planeSourceUpVecLabel;
-    QLabel *clipPlaneOriginLabel;
-    QLabel *clipPlaneNormalLabel;
     QLabel *colorTableNameLabel;
     QLabel *singleColorLabel;
     QLabel *relTolLabel;
     QLabel *absTolLabel;
     QLabel *maxStepLengthLabel;
+    QLabel *NumberPlanesLabel;
+    QLabel *ColorStyleLabel;
+    QLabel *MaxToroidalWindingLabel;
+    QLabel *OverrideToroidalWindingLabel;
+    QLabel *HitRateLabel;
+    QLabel *ShowCurvesLabel;
+    QLabel *AdjustPlaneLabel;
+    QLabel *OverlapsLabel;
 
     PoincareAttributes *atts;
 };

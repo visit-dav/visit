@@ -71,6 +71,7 @@ public:
     };
     enum TerminationType
     {
+        Steps,
         Distance,
         Time
     };
@@ -79,6 +80,35 @@ public:
         PointSource,
         LineSource,
         PlaneSource
+    };
+    enum ColorStyleType
+    {
+        OriginalValue,
+        InputOrder,
+        PointIndex,
+        Plane,
+        ToroidalWindingOrder,
+        ToroidalWindingPointOrder,
+        ToroidalWindings,
+        PoloidalWindings,
+        SafetyFactor
+    };
+    enum ShowMeshType
+    {
+        Curves,
+        Surfaces
+    };
+    enum OverlapType
+    {
+        Raw,
+        Remove,
+        Merge,
+        Smooth
+    };
+    enum IntegratorType
+    {
+        RungeKutta,
+        AdamsBashforth
     };
 
     PoincareAttributes();
@@ -102,14 +132,13 @@ public:
     void SelectPlaneSourcePoint();
     void SelectPlaneSourceNormal();
     void SelectPlaneSourceUpVec();
-    void SelectClipPlaneOrigin();
-    void SelectClipPlaneNormal();
     void SelectColorTableName();
     void SelectSingleColor();
 
     // Property setting methods
     void SetTermination(double termination_);
     void SetTerminationType(TerminationType terminationType_);
+    void SetIntegratorType(IntegratorType integratorType_);
     void SetStreamlineSource(SourceType streamlineSource_);
     void SetShowStreamlines(bool showStreamlines_);
     void SetShowPoints(bool showPoints_);
@@ -121,8 +150,6 @@ public:
     void SetPlaneSourcePoint(const double *planeSourcePoint_);
     void SetPlaneSourceNormal(const double *planeSourceNormal_);
     void SetPlaneSourceUpVec(const double *planeSourceUpVec_);
-    void SetClipPlaneOrigin(const double *clipPlaneOrigin_);
-    void SetClipPlaneNormal(const double *clipPlaneNormal_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetLegendFlag(bool legendFlag_);
@@ -130,10 +157,20 @@ public:
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
     void SetMaxStepLength(double maxStepLength_);
+    void SetNumberPlanes(int NumberPlanes_);
+    void SetColorStyle(ColorStyleType ColorStyle_);
+    void SetMaxToroidalWinding(int MaxToroidalWinding_);
+    void SetOverrideToroidalWinding(int OverrideToroidalWinding_);
+    void SetHitRate(double HitRate_);
+    void SetShowCurves(ShowMeshType ShowCurves_);
+    void SetAdjustPlane(int AdjustPlane_);
+    void SetShowIslands(bool ShowIslands_);
+    void SetOverlaps(OverlapType Overlaps_);
 
     // Property getting methods
     double               GetTermination() const;
     TerminationType      GetTerminationType() const;
+    IntegratorType       GetIntegratorType() const;
     SourceType           GetStreamlineSource() const;
     bool                 GetShowStreamlines() const;
     bool                 GetShowPoints() const;
@@ -151,10 +188,6 @@ public:
           double         *GetPlaneSourceNormal();
     const double         *GetPlaneSourceUpVec() const;
           double         *GetPlaneSourceUpVec();
-    const double         *GetClipPlaneOrigin() const;
-          double         *GetClipPlaneOrigin();
-    const double         *GetClipPlaneNormal() const;
-          double         *GetClipPlaneNormal();
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
     const ColorAttribute &GetSingleColor() const;
@@ -164,6 +197,15 @@ public:
     double               GetRelTol() const;
     double               GetAbsTol() const;
     double               GetMaxStepLength() const;
+    int                  GetNumberPlanes() const;
+    ColorStyleType       GetColorStyle() const;
+    int                  GetMaxToroidalWinding() const;
+    int                  GetOverrideToroidalWinding() const;
+    double               GetHitRate() const;
+    ShowMeshType         GetShowCurves() const;
+    int                  GetAdjustPlane() const;
+    bool                 GetShowIslands() const;
+    OverlapType          GetOverlaps() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -185,6 +227,26 @@ public:
 protected:
     static std::string SourceType_ToString(int);
 public:
+    static std::string ColorStyleType_ToString(ColorStyleType);
+    static bool ColorStyleType_FromString(const std::string &, ColorStyleType &);
+protected:
+    static std::string ColorStyleType_ToString(int);
+public:
+    static std::string ShowMeshType_ToString(ShowMeshType);
+    static bool ShowMeshType_FromString(const std::string &, ShowMeshType &);
+protected:
+    static std::string ShowMeshType_ToString(int);
+public:
+    static std::string OverlapType_ToString(OverlapType);
+    static bool OverlapType_FromString(const std::string &, OverlapType &);
+protected:
+    static std::string OverlapType_ToString(int);
+public:
+    static std::string IntegratorType_ToString(IntegratorType);
+    static bool IntegratorType_FromString(const std::string &, IntegratorType &);
+protected:
+    static std::string IntegratorType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -197,6 +259,7 @@ public:
     enum {
         ID_termination = 0,
         ID_terminationType,
+        ID_integratorType,
         ID_streamlineSource,
         ID_showStreamlines,
         ID_showPoints,
@@ -208,20 +271,28 @@ public:
         ID_planeSourcePoint,
         ID_planeSourceNormal,
         ID_planeSourceUpVec,
-        ID_clipPlaneOrigin,
-        ID_clipPlaneNormal,
         ID_colorTableName,
         ID_singleColor,
         ID_legendFlag,
         ID_lightingFlag,
         ID_relTol,
         ID_absTol,
-        ID_maxStepLength
+        ID_maxStepLength,
+        ID_NumberPlanes,
+        ID_ColorStyle,
+        ID_MaxToroidalWinding,
+        ID_OverrideToroidalWinding,
+        ID_HitRate,
+        ID_ShowCurves,
+        ID_AdjustPlane,
+        ID_ShowIslands,
+        ID_Overlaps
     };
 
 private:
     double         termination;
     int            terminationType;
+    int            integratorType;
     int            streamlineSource;
     bool           showStreamlines;
     bool           showPoints;
@@ -233,8 +304,6 @@ private:
     double         planeSourcePoint[3];
     double         planeSourceNormal[3];
     double         planeSourceUpVec[3];
-    double         clipPlaneOrigin[3];
-    double         clipPlaneNormal[3];
     std::string    colorTableName;
     ColorAttribute singleColor;
     bool           legendFlag;
@@ -242,6 +311,15 @@ private:
     double         relTol;
     double         absTol;
     double         maxStepLength;
+    int            NumberPlanes;
+    int            ColorStyle;
+    int            MaxToroidalWinding;
+    int            OverrideToroidalWinding;
+    double         HitRate;
+    int            ShowCurves;
+    int            AdjustPlane;
+    bool           ShowIslands;
+    int            Overlaps;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
