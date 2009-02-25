@@ -204,6 +204,8 @@ class Field
     void SetInitCodeFromString(const QString &value)
     {
         initcode.clear();
+        if (value.isEmpty())
+            return;
 
         // s contains a string with various targets and init codes.
         QStringList lines(value.split("\n"));
