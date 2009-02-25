@@ -155,6 +155,9 @@ class avtStreamlineWrapper;
 //   Dave Pugmire, Mon Feb 23 13:40:28 EST 2009
 //   Initial IO time and domain load counter.
 //
+//   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
+//   Initial implemenation of pathlines.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -208,6 +211,9 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     int    coloringMethod;
     int    dataSpatialDimension;
     std::string normalizedVecExprName;
+    int    curTimeSlice;
+    std::string velocityName;
+    bool   doPathlines;
 
     avtIntervalTree *intervalTree;
     avtIVPSolver *solver;

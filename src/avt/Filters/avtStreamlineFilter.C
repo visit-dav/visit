@@ -73,11 +73,15 @@ Consider the leaveDomains SLs and the balancing at the same time.
 
 #include <vtkVisItCellLocator.h>
 
+#include <avtCallback.h>
+#include <avtDatabase.h>
+#include <avtDatabaseMetaData.h>
 #include <avtDataset.h>
 #include <avtDataTree.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtIVPVTKField.h>
+#include <avtIVPVTKTimeVaryingField.h>
 #include <avtIVPDopri5.h>
 #include <avtIVPAdamsBashforth.h>
 #include <avtIntervalTree.h>
@@ -89,9 +93,12 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <DebugStream.h>
 #include <MemStream.h>
 #include <TimingsManager.h>
+#include <InvalidFilesException.h>
 #include <Expression.h>
 #include <ExpressionList.h>
 #include <ParsingExprList.h>
+
+#include <snprintf.h>
 
 #ifdef PARALLEL
 #include <time.h> // needed for nanosleep
@@ -139,11 +146,15 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
 //   Initialize the initial domain load count and timer.
-//   
+//
+//   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
+//   Initial implemenation of pathlines.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
 {
+    doPathlines = false;
     normalizedVecExprName = "";
     maxStepLength = 0.;
     terminationType = avtIVPSolver::TIME;
@@ -1095,7 +1106,7 @@ avtStreamlineFilter::Initialize()
             ds->Register(NULL);
             dataSets[ ds_list.domains[i] ] = ds;
         }
-        InitialDomLoads = ds_list.domains.size();       
+        InitialDomLoads = ds_list.domains.size();
     }
 
 #ifdef PARALLEL
@@ -1328,7 +1339,10 @@ avtStreamlineFilter::DomainToRank(int domain)
 //   Remove accurate distance calculate option.
 //
 //   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//   Added termination by number of steps. Cleanup of other term types.   
+//   Added termination by number of steps. Cleanup of other term types. 
+//
+//   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
+//   Initial implemenation of pathlines.  
 //
 // ****************************************************************************
 
@@ -1345,24 +1359,75 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
           <<slSeg->domain<<") HGZ = "<<haveGhostZones <<endl;
 
     // prepare streamline integration ingredients
-    vtkInterpolatedVelocityField* velocity=vtkInterpolatedVelocityField::New();
+    vtkInterpolatedVelocityField* velocity1=vtkInterpolatedVelocityField::New();
+    if (doPathlines)
+    {
+        // Our expression will be the active variable, so reset it.
+        if (ds->GetPointData()->GetArray(velocityName.c_str()) != NULL)
+            ds->GetPointData()->SetActiveVectors(velocityName.c_str());
+        if (ds->GetCellData()->GetArray(velocityName.c_str()) != NULL)
+            ds->GetCellData()->SetActiveVectors(velocityName.c_str());
+    }
     
     // See if we have cell cenetered data...
-    vtkCellDataToPointData *cellToPt = NULL;
+    vtkCellDataToPointData *cellToPt1 = NULL;
     if (ds->GetPointData()->GetVectors() == NULL)
     {
-        cellToPt = vtkCellDataToPointData::New();
+        cellToPt1 = vtkCellDataToPointData::New();
         
-        cellToPt->SetInput(ds);
-        cellToPt->Update();
-        velocity->AddDataSet(cellToPt->GetOutput());
+        cellToPt1->SetInput(ds);
+        cellToPt1->Update();
+        velocity1->AddDataSet(cellToPt1->GetOutput());
     }
     else
-        velocity->AddDataSet(ds);
+        velocity1->AddDataSet(ds);
     
-    velocity->CachingOn();
-    avtIVPVTKField field(velocity);
-    
+    velocity1->CachingOn();
+
+    vtkInterpolatedVelocityField* velocity2=NULL;
+    vtkDataSet *ds2 = NULL;
+    vtkCellDataToPointData *cellToPt2 = NULL;
+    double t1, t2;
+    if (doPathlines)
+    {
+        velocity2 = vtkInterpolatedVelocityField::New();
+        ds2 = (vtkDataSet *) ds->NewInstance();
+        ds2->ShallowCopy(ds);
+        if (ds2->GetPointData()->GetVectors() != NULL)
+            ds2->GetPointData()->SetActiveVectors("_pathline_vecs");
+        else
+            ds2->GetCellData()->SetActiveVectors("_pathline_vecs");
+        
+        // See if we have cell cenetered data...
+        if (ds2->GetPointData()->GetVectors() == NULL)
+        {
+            cellToPt2 = vtkCellDataToPointData::New();
+            
+            cellToPt2->SetInput(ds2);
+            cellToPt2->Update();
+            velocity2->AddDataSet(cellToPt2->GetOutput());
+        }
+        else
+            velocity2->AddDataSet(ds2);
+        
+        velocity2->CachingOn();
+
+        std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+        ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+        if (*dbp == NULL)
+            EXCEPTION1(InvalidFilesException, db.c_str());
+        avtDatabaseMetaData *md = dbp->GetMetaData(curTimeSlice, false,
+                                                   false, false);
+        t1 = md->GetTimes()[curTimeSlice];
+        t2 = md->GetTimes()[curTimeSlice+1];
+    }
+
+    avtIVPField *field = NULL;
+    if (doPathlines)
+        field = new avtIVPVTKTimeVaryingField(velocity1, velocity2, t1, t2);
+    else
+        field = new avtIVPVTKField(velocity1);
+
     double end = termination;
     if (slSeg->dir == avtStreamlineWrapper::BWD)
         end = - end;
@@ -1370,7 +1435,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     //slSeg->Debug();
     bool doVorticity = ((coloringMethod == STREAMLINE_COLOR_VORTICITY)
                         || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
-    avtIVPSolver::Result result = slSeg->sl->Advance(&field,
+    avtIVPSolver::Result result = slSeg->sl->Advance(field,
                                                      terminationType,
                                                      end,
                                                      doVorticity,
@@ -1400,10 +1465,14 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     else
         slSeg->status = avtStreamlineWrapper::TERMINATE;
     
-    velocity->Delete();
-    if (cellToPt)
-        cellToPt->Delete();
-
+    velocity1->Delete();
+    if (velocity2)
+        velocity2->Delete();
+    if (cellToPt1)
+        cellToPt1->Delete();
+    if (cellToPt2)
+        cellToPt2->Delete();
+    
     debug5<<"::IntegrateDomain() result= "<<result<<endl;
     return result;
 }
@@ -2012,6 +2081,9 @@ avtStreamlineFilter::StartSphere(float val, double pt[3])
 //   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
 //   Remove accurate distance calculate option.
 //
+//   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
+//   Initial implemenation of pathlines.  
+//
 // ****************************************************************************
 
 avtContract_p
@@ -2020,13 +2092,15 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
     avtDataRequest_p out_dr = NULL;
 
-    if (strcmp(in_dr->GetVariable(), "colorVar") == 0)
+    if (strcmp(in_dr->GetVariable(), "colorVar") == 0 || doPathlines)
     {
         // The avtStreamlinePlot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
     }
 
+    if (doPathlines)
+        out_dr->AddSecondaryVariable("_pathline_vecs");
     avtContract_p out_contract;
     if ( *out_dr )
         out_contract = new avtContract(in_contract, out_dr);
@@ -2035,6 +2109,33 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
 
     //out_contract->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
     out_contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
+    if (doPathlines)
+    {
+        bool needExpr = true;
+        ExpressionList *elist = ParsingExprList::Instance()->GetList();
+
+        for (int i = 0 ; i < elist->GetNumExpressions() ; i++)
+        {
+            if (elist->GetExpressions(i).GetName() == "_pathline_vecs")
+                needExpr = false;
+        }
+        if (needExpr)
+        {
+            velocityName = out_dr->GetVariable(); // HANK: ASSUMPTION
+            std::string meshname = out_dr->GetVariable(); // Can reuse varname here.
+            Expression *e = new Expression();
+            e->SetName("_pathline_vecs");
+            char defn[1024];
+            SNPRINTF(defn, 1024, "conn_cmfe(<[1]id:%s>, %s)", velocityName.c_str(), meshname.c_str());
+            e->SetDefinition(defn);
+            e->SetType(Expression::VectorMeshVar);
+            elist->AddExpressions(*e);
+            delete e;
+        }
+
+        curTimeSlice = out_dr->GetTimestep();
+    }
 
     return avtDatasetOnDemandFilter::ModifyContract(out_contract);
 }
