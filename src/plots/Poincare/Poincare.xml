@@ -18,6 +18,7 @@
         ColorBySeedPointID
       </Enum>
       <Enum name="TerminationType">
+        Steps
         Distance
         Time
       </Enum>
@@ -26,19 +27,47 @@
         LineSource
         PlaneSource
       </Enum>
+      <Enum name="ColorStyleType">
+        OriginalValue
+        InputOrder
+        PointIndex
+        Plane
+        ToroidalWindingOrder
+        ToroidalWindingPointOrder
+        ToroidalWindings
+        PoloidalWindings
+        SafetyFactor
+      </Enum>
+      <Enum name="ShowMeshType">
+        Curves
+        Surfaces
+      </Enum>
+      <Enum name="OverlapType">
+        Raw
+        Remove
+        Merge
+        Smooth
+      </Enum>
+      <Enum name="IntegratorType">
+        RungeKutta
+        AdamsBashforth
+      </Enum>
       <Field name="termination" label="Termination" type="double">
         10.000000
       </Field>
       <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
-        Time
+        Steps
+      </Field>
+      <Field name="integratorType" label="Integrator" type="enum" subtype="IntegratorType">
+        AdamsBashforth
       </Field>
       <Field name="streamlineSource" label="Streamline Source" type="enum" subtype="SourceType">
       </Field>
       <Field name="showStreamlines" label="Show Streamlines" type="bool">
-        true
+        false
       </Field>
       <Field name="showPoints" label="Show Points" type="bool">
-        true
+        false
       </Field>
       <Field name="pointDensity" label="Point Density" type="int" enabler="streamlineSource:LineSource,PlaneSource">
         1
@@ -76,16 +105,6 @@
         1.000000
         0.000000
       </Field>
-      <Field name="clipPlaneOrigin" label="Clip Plane Origin" type="doubleArray" length="3">
-        0.000000
-        0.000000
-        0.000000
-      </Field>
-      <Field name="clipPlaneNormal" label="Clip Plane Normal" type="doubleArray" length="3">
-        0.000000
-        0.000000
-        1.000000
-      </Field>
       <Field name="colorTableName" label="Color table" type="colortable">
         Default
       </Field>
@@ -109,6 +128,33 @@
       </Field>
       <Field name="maxStepLength" label="maximum step length" type="double">
         0.100000
+      </Field>
+      <Field name="NumberPlanes" label="NumberPlanes" type="int">
+        1
+      </Field>
+      <Field name="ColorStyle" label="ColorStyle value" type="enum" subtype="ColorStyleType">
+        SafetyFactor
+      </Field>
+      <Field name="MaxToroidalWinding" label="MaxToroidalWinding" type="int">
+        30
+      </Field>
+      <Field name="OverrideToroidalWinding" label="OverrideToroidalWinding" type="int">
+        0
+      </Field>
+      <Field name="HitRate" label="HitRate" type="double">
+        0.900000
+      </Field>
+      <Field name="ShowCurves" label="ShowCurves" type="enum" subtype="ShowMeshType">
+        Curves
+      </Field>
+      <Field name="AdjustPlane" label="AdjustPlane" type="int">
+        -1
+      </Field>
+      <Field name="ShowIslands" label="ShowIslands" type="bool">
+        false
+      </Field>
+      <Field name="Overlaps" label="Overlaps" type="enum" subtype="OverlapType">
+        Remove
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
