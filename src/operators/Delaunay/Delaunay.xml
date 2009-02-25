@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+  <Plugin name="Delaunay" type="operator" label="Delaunay" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false">
+    <Attribute name="DelaunayAttributes" purpose="Attributes for the Delaunay Operator" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="Dimension">
+        Automatic
+        Triangulation
+        Tetrahedralization
+      </Enum>
+      <Field name="dimension" label="Dimension" type="enum" subtype="Dimension">
+        Automatic
+      </Field>
+    </Attribute>
+  </Plugin>

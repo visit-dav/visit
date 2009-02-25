@@ -37,53 +37,52 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//  File: avtEdgeFilter.h
+//  File: avtDelaunayFilter.h
 // ************************************************************************* //
 
-#ifndef AVT_Edge_FILTER_H
-#define AVT_Edge_FILTER_H
+#ifndef AVT_Delaunay_FILTER_H
+#define AVT_Delaunay_FILTER_H
 
 
 #include <avtPluginDataTreeIterator.h>
-#include <EdgeAttributes.h>
+#include <DelaunayAttributes.h>
 
 
 class vtkDataSet;
 
 
 // ****************************************************************************
-//  Class: avtEdgeFilter
+//  Class: avtDelaunayFilter
 //
 //  Purpose:
-//      Extract the edges from polygons.  Like the mesh filter, but
-//      relies purely on VTK and makes no use of visit-specific
-//      optimizations.
+//      A plugin operator for Delaunay.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   February 23, 2009
+//  Creation:   February 25, 2009
 //
 // ****************************************************************************
 
-class avtEdgeFilter : public avtPluginDataTreeIterator
+class avtDelaunayFilter : public avtPluginDataTreeIterator
 {
   public:
-                         avtEdgeFilter();
-    virtual             ~avtEdgeFilter();
+                         avtDelaunayFilter();
+    virtual             ~avtDelaunayFilter();
 
     static avtFilter    *Create();
 
-    virtual const char  *GetType(void)  { return "avtEdgeFilter"; };
+    virtual const char  *GetType(void)  { return "avtDelaunayFilter"; };
     virtual const char  *GetDescription(void)
-                             { return "Edge"; };
+                             { return "Delaunay"; };
 
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
-    EdgeAttributes   atts;
+    DelaunayAttributes   atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    void                  UpdateDataObjectInfo();
+    virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+    void                 UpdateDataObjectInfo();
+
 };
 
 
