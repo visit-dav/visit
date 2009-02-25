@@ -36,55 +36,25 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//  File: avtEdgeFilter.h
-// ************************************************************************* //
+#ifndef PY_DELAUNAYATTRIBUTES_H
+#define PY_DELAUNAYATTRIBUTES_H
+#include <Python.h>
+#include <DelaunayAttributes.h>
 
-#ifndef AVT_Edge_FILTER_H
-#define AVT_Edge_FILTER_H
-
-
-#include <avtPluginDataTreeIterator.h>
-#include <EdgeAttributes.h>
-
-
-class vtkDataSet;
-
-
-// ****************************************************************************
-//  Class: avtEdgeFilter
 //
-//  Purpose:
-//      Extract the edges from polygons.  Like the mesh filter, but
-//      relies purely on VTK and makes no use of visit-specific
-//      optimizations.
+// Functions exposed to the VisIt module.
 //
-//  Programmer: Jeremy Meredith
-//  Creation:   February 23, 2009
-//
-// ****************************************************************************
-
-class avtEdgeFilter : public avtPluginDataTreeIterator
-{
-  public:
-                         avtEdgeFilter();
-    virtual             ~avtEdgeFilter();
-
-    static avtFilter    *Create();
-
-    virtual const char  *GetType(void)  { return "avtEdgeFilter"; };
-    virtual const char  *GetDescription(void)
-                             { return "Edge"; };
-
-    virtual void         SetAtts(const AttributeGroup*);
-    virtual bool         Equivalent(const AttributeGroup*);
-
-  protected:
-    EdgeAttributes   atts;
-
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    void                  UpdateDataObjectInfo();
-};
-
+void           PyDelaunayAttributes_StartUp(DelaunayAttributes *subj, void *data);
+void           PyDelaunayAttributes_CloseDown();
+PyMethodDef *   PyDelaunayAttributes_GetMethodTable(int *nMethods);
+bool           PyDelaunayAttributes_Check(PyObject *obj);
+DelaunayAttributes *  PyDelaunayAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyDelaunayAttributes_New();
+PyObject *      PyDelaunayAttributes_Wrap(const DelaunayAttributes *attr);
+void           PyDelaunayAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyDelaunayAttributes_SetDefaults(const DelaunayAttributes *atts);
+std::string    PyDelaunayAttributes_GetLogString();
+std::string    PyDelaunayAttributes_ToString(const DelaunayAttributes *, const char *);
 
 #endif
+
