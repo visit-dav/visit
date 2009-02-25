@@ -222,8 +222,8 @@ avtCurveCMFEExpression::RemoveDuplicateX(vtkRectilinearGrid *rgrid)
     size_t i, j, k, nDups = 1;
     size_t ny = rgrid->GetPointData()->GetNumberOfArrays();
     double *sum = new double[ny];
-    vtkDataArray **y = new (vtkDataArray*)[ny];
-    vtkDataArray **Y = new (vtkDataArray*)[ny];
+    vtkDataArray **y = new vtkDataArray*[ny];
+    vtkDataArray **Y = new vtkDataArray*[ny];
 
     vtkDataArray *x = rgrid->GetXCoordinates();
     for (i = 0; i < ny; i++)

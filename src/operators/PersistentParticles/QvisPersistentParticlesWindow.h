@@ -44,17 +44,7 @@
 
 class PersistentParticlesAttributes;
 class QLabel;
-class QCheckBox;
 class QLineEdit;
-class QSpinBox;
-class QVBox;
-class QButtonGroup;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
-class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisPersistentParticlesWindow
@@ -77,8 +67,8 @@ class QvisPersistentParticlesWindow : public QvisOperatorWindow
   public:
     QvisPersistentParticlesWindow(const int type,
                          PersistentParticlesAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisPersistentParticlesWindow();
     virtual void CreateWindowContents();

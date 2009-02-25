@@ -4871,7 +4871,7 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
         GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
             plotPluginManager->GetEnabledID(i));
 
-        std::string key(GUIInfo->GetMenuName()->latin1());
+        std::string key(GUIInfo->GetMenuName()->toStdString());
         key += " plot attributes";
 
         if(plotWindows[i] != 0 &&
@@ -4902,7 +4902,7 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
         GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
                                        operatorPluginManager->GetEnabledID(i));
 
-        std::string key(GUIInfo->GetMenuName()->latin1());
+        std::string key(GUIInfo->GetMenuName()->toStdString());
         key += " operator attributes";
 
         if(operatorWindows[i] != 0 &&

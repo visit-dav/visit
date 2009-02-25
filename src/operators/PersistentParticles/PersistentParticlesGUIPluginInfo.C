@@ -42,6 +42,7 @@
 
 #include <PersistentParticlesPluginInfo.h>
 #include <PersistentParticlesAttributes.h>
+#include <qapplication.h>
 #include <QvisPersistentParticlesWindow.h>
 
 #if defined(__APPLE__)
@@ -76,10 +77,10 @@ extern "C" GUIOperatorPluginInfo* GetGUIInfo()
 //
 // ****************************************************************************
 
-const char *
+QString *
 PersistentParticlesGUIPluginInfo::GetMenuName() const
 {
-    return "PersistentParticles";
+    return new QString(qApp->translate("OperatorNames", "PersistentParticles"));
 }
 
 
@@ -102,9 +103,11 @@ PersistentParticlesGUIPluginInfo::GetMenuName() const
 // ****************************************************************************
 
 QvisPostableWindowObserver *
-PersistentParticlesGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject *attr,
-    QvisNotepadArea *notepad)
+PersistentParticlesGUIPluginInfo::CreatePluginWindow(int type, 
+    AttributeSubject *attr, const QString &caption, 
+    const QString &shortName, QvisNotepadArea *notepad)
 {
-    return new QvisPersistentParticlesWindow(type, (PersistentParticlesAttributes *)attr,
-        "PersistentParticles operator attributes", "PersistentParticles operator", notepad);
+    return new QvisPersistentParticlesWindow(type, 
+               (PersistentParticlesAttributes *)attr,
+               caption, shortName, notepad);
 }

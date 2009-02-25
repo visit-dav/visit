@@ -79,9 +79,10 @@ class PersistentParticlesCommonPluginInfo : public virtual CommonOperatorPluginI
 class PersistentParticlesGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual PersistentParticlesCommonPluginInfo
 {
   public:
-    virtual const char *GetMenuName() const;
+    virtual QString *GetMenuName() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
-        AttributeSubject *attr, QvisNotepadArea *notepad);
+        AttributeSubject *attr, const QString &caption, 
+        const QString &shortName, QvisNotepadArea *notepad);
 };
 
 class PersistentParticlesViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual PersistentParticlesCommonPluginInfo
@@ -95,6 +96,7 @@ class PersistentParticlesViewerPluginInfo : public virtual ViewerOperatorPluginI
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,
                                         const bool fromDefault);
+    virtual QString *GetMenuName() const;
 
     static void InitializeGlobalObjects();
   private:

@@ -41,20 +41,9 @@
 #include <PersistentParticlesAttributes.h>
 #include <ViewerProxy.h>
 
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisVariableButton.h>
+#include <QLabel>
+#include <QGridLayout>
+#include <QLineEdit>
 
 #include <stdio.h>
 #include <string>
@@ -76,8 +65,8 @@ using std::string;
 
 QvisPersistentParticlesWindow::QvisPersistentParticlesWindow(const int type,
                          PersistentParticlesAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -119,26 +108,28 @@ QvisPersistentParticlesWindow::~QvisPersistentParticlesWindow()
 void
 QvisPersistentParticlesWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(0);
+    mainLayout->setMargin(10);
+    mainLayout->setSpacing(5);
 
 
-    startIndexLabel = new QLabel("Index of first time slice", central, "startIndexLabel");
+    startIndexLabel = new QLabel(tr("Index of first time slice"), central);
     mainLayout->addWidget(startIndexLabel,0,0);
-    startIndex = new QLineEdit(central, "startIndex");
+    startIndex = new QLineEdit(tr("startIndex"), central);
     connect(startIndex, SIGNAL(returnPressed()),
             this, SLOT(startIndexProcessText()));
     mainLayout->addWidget(startIndex, 0,1);
 
-    stopIndexLabel = new QLabel("Index of last time slice", central, "stopIndexLabel");
+    stopIndexLabel = new QLabel(tr("Index of last time slice"), central);
     mainLayout->addWidget(stopIndexLabel,1,0);
-    stopIndex = new QLineEdit(central, "stopIndex");
+    stopIndex = new QLineEdit(tr("stopIndex"),central);
     connect(stopIndex, SIGNAL(returnPressed()),
             this, SLOT(stopIndexProcessText()));
     mainLayout->addWidget(stopIndex, 1,1);
 
-    strideLabel = new QLabel("Skip rate between time slices", central, "strideLabel");
+    strideLabel = new QLabel(tr("Skip rate between time slices"), central);
     mainLayout->addWidget(strideLabel,2,0);
-    stride = new QLineEdit(central, "stride");
+    stride = new QLineEdit(tr("stride"), central);
     connect(stride, SIGNAL(returnPressed()),
             this, SLOT(strideProcessText()));
     mainLayout->addWidget(stride, 2,1);
@@ -229,7 +220,7 @@ QvisPersistentParticlesWindow::GetCurrentValues(int which_widget)
     // Do startIndex
     if(which_widget == PersistentParticlesAttributes::ID_startIndex || doAll)
     {
-        temp = startIndex->displayText().simplifyWhiteSpace();
+        temp = startIndex->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -250,7 +241,7 @@ QvisPersistentParticlesWindow::GetCurrentValues(int which_widget)
     // Do stopIndex
     if(which_widget == PersistentParticlesAttributes::ID_stopIndex || doAll)
     {
-        temp = stopIndex->displayText().simplifyWhiteSpace();
+        temp = stopIndex->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -271,7 +262,7 @@ QvisPersistentParticlesWindow::GetCurrentValues(int which_widget)
     // Do stride
     if(which_widget == PersistentParticlesAttributes::ID_stride || doAll)
     {
-        temp = stride->displayText().simplifyWhiteSpace();
+        temp = stride->displayText().simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
