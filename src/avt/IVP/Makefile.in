@@ -34,6 +34,9 @@
 #
 # Modifications:
 #
+# Dave Pugmire, Tue Feb 24 09:24:49 EST 2009
+# Added avtIVPVTKTimeVaryingField.C
+#
 ##############################################################################
 
 ##
@@ -47,7 +50,7 @@
 ##
 ## Files...
 ##
-SRC=avtIVPDopri5.C avtIVPSolver.C avtIVPVTKField.C avtStreamline.C MemStream.C avtIVPAdamsBashforth.C
+SRC=avtIVPDopri5.C avtIVPSolver.C avtIVPVTKField.C avtIVPVTKTimeVaryingField.C avtStreamline.C MemStream.C avtIVPAdamsBashforth.C
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 

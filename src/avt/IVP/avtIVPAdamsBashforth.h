@@ -71,6 +71,9 @@
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion.
 //
+//    Dave Pugmire, Tue Feb 24 10:49:33 EST 2009
+//    Replaced Euler step with RK4 step. Removed the Moulton corrector.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
@@ -86,7 +89,7 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     // adaptive stepsize control retries until success or underflow
     virtual Result   Step(const avtIVPField* field,
                           const TerminateType &type,
-                          const double &end,                      
+                          const double &end,
                           avtIVPStep* ivpstep = NULL);
     virtual void    OnExitDomain();
 
@@ -111,29 +114,10 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
     
     void             UpdateHistory( const avtVec &yNew );
-    avtIVPSolver::Result EulerStep(const avtIVPField* field,
-                                   avtVec &yNew);
+    avtIVPSolver::Result RK4Step(const avtIVPField* field,
+                                 avtVec &yNew);
     avtIVPSolver::Result ABStep(const avtIVPField* field,
                                 avtVec &yNew);
-    int              AdamsMoulton4Steps(const avtIVPField* field,
-                                        avtVec x,
-                                        double t,
-                                        double h,
-                                        double tolerance,
-                                        int iterations);
-    avtVec           AdamsBashforth5Steps(avtVec &y,
-                                          double h );
-    
-    int              Adams5Steps(const avtIVPField* field,
-                                 avtVec x0,
-                                 double t,
-                                 double h,
-                                 avtVec *y_bashforth,
-                                 double tolerance,
-                                 int iterations );
-    bool              HasConverged( avtVec &y0,
-                                    avtVec &y1,
-                                    double epsilon );
 
   private:
     int numStep;
@@ -145,6 +129,7 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     avtVecArray history;
     avtVec yCur;
     avtVec ys[2];
+    int initialized;
 };
 
 #endif
