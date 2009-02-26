@@ -71,11 +71,14 @@
 //   Brad Whitlock, Tue Dec  2 16:11:54 PST 2008
 //   I added material vars.
 //
+//   Brad Whitlock, Wed Feb 25 16:11:10 PST 2009
+//   I added x_scale, x_translate. I changed log's type too.
+//
 // ****************************************************************************
 
 Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), hasMaterial(false),
     slice(0), sliceIndex(0), hsize(0), dataset(0), integrate(false),
-    log(false), y_scale(1.), y_translate(0.)
+    log(Streaker::LOGTYPE_NONE), x_scale(1.), x_translate(0.), y_scale(1.), y_translate(0.)
 {
 }
 
@@ -165,6 +168,8 @@ Streaker::FreeUpResources()
 // Creation:   Wed Nov 12 13:41:37 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Wed Feb 25 16:11:10 PST 2009
+//   I added x_scale, x_translate.
 //   
 // ****************************************************************************
 
@@ -193,7 +198,7 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
             continue;
         else if(strncmp(line, "streakplot", 10) == 0)
         {
-            bool invalidStreak = false;
+            bool invalidStreak = true;
             char varname[100];
             char xvar[100];
             char yvar[100];
@@ -205,9 +210,27 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
             const char *ptr = line + 10;
             int ci;
             StreakInfo s;
-            if(sscanf(ptr, "%s %s %s %s %s %d %g %g %s %s", 
+            if(sscanf(ptr, "%s %s %s %s %s %d %g %g %g %g %s %s", 
+                      varname, xvar, yvar, zvar, cs, &ci,
+                      &s.x_scale, &s.x_translate, &s.y_scale, &s.y_translate,
+                      integrate, log) == 12)
+            {
+                invalidStreak = false;
+            }
+            else if(sscanf(ptr, "%s %s %s %s %s %d %g %g %s %s", 
                       varname, xvar, yvar, zvar, cs, &ci,
                       &s.y_scale, &s.y_translate, integrate, log) == 10)
+            {
+              
+                invalidStreak = false;
+            }
+
+            if(invalidStreak)
+            {
+                debug4 << "Streak file has an invalid line " << lineIndex << endl;
+                cerr << "Streak file has an invalid line " << lineIndex << endl;
+            }
+            else
             {
                 s.xvar = xvar;
                 s.yvar = yvar;
@@ -229,20 +252,21 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
                 s.integrate = (strcmp(integrate, "on") == 0 ||
                                strcmp(integrate, "On") == 0 ||
                                strcmp(integrate, "ON") == 0);
-                s.log       = (strcmp(log, "on") == 0 ||
-                               strcmp(log, "On") == 0 ||
-                               strcmp(log, "ON") == 0);
-            }
-            else
-                invalidStreak = true;
 
-            if(invalidStreak)
-            {
-                debug4 << "Streak file has an invalid line " << lineIndex << endl;
-                cerr << "Streak file has an invalid line " << lineIndex << endl;
-            }
-            else
+                if(strcmp(log, "on") == 0 ||
+                   strcmp(log, "On") == 0 ||
+                   strcmp(log, "ON") == 0 ||
+                   strcmp(log, "log") == 0)
+                {
+                    s.log = LOGTYPE_LOG;
+                }
+                else if(strcmp(log, "log10") == 0)
+                    s.log = LOGTYPE_LOG10;
+                else
+                    s.log = LOGTYPE_NONE;
+
                 AddStreak(varname, s, pdb);
+            }
         }       
     }
 }
@@ -512,6 +536,9 @@ Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
 //   Brad Whitlock, Tue Dec  2 16:52:24 PST 2008
 //   Added material support.
 //
+//   Brad Whitlock, Wed Feb 25 16:06:40 PST 2009
+//   Changed to use log10.
+//
 // ****************************************************************************
 
 void
@@ -529,11 +556,11 @@ Streaker::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mmd->topologicalDimension = 2;
         mmd->xLabel = it->second.xvar;
         if(it->second.integrate && it->second.log)
-            mmd->yLabel = std::string("log(integrated ") + it->second.yvar + std::string(")");
+            mmd->yLabel = std::string("log10(integrated ") + it->second.yvar + std::string(")");
         else if(it->second.integrate)
             mmd->yLabel = std::string("integrated ") +  it->second.yvar;
         else if(it->second.log)
-            mmd->yLabel = std::string("log(") +  it->second.yvar + std::string(")");
+            mmd->yLabel = std::string("log10(") +  it->second.yvar + std::string(")");
         else
             mmd->yLabel = it->second.yvar;
         md->Add(mmd);
@@ -831,6 +858,9 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
 //   Brad Whitlock, Wed Dec  3 14:02:10 PST 2008
 //   Added material support.
 //
+//   Brad Whitlock, Wed Feb 25 16:14:33 PST 2009
+//   I added x_scale and x_translate. I also added support for different logs.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -881,14 +911,20 @@ Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PD
         for(int j = 0; j < sdims[1]; ++j)
             for(int i = 0; i < sdims[0]; ++i)
             {
+                double xval = times[i];
+                xval *= s.x_scale;
+                xval += s.x_translate;
+
                 ysum[i] += (double)*yc++;
                 double yval = ysum[i];
                 yval *= s.y_scale;
                 yval += s.y_translate;
-                if(s.log)
+                if(s.log == LOGTYPE_LOG)
                     yval = log((yval > 0.) ? yval : 1.e-9);
+                else if(s.log == LOGTYPE_LOG10)
+                    yval = log10((yval > 0.) ? yval : 1.e-9);
 
-                *coords++ = (float)times[i];
+                *coords++ = (float)xval;
                 *coords++ = (float)yval;
                 *coords++ = 0.;
             }
@@ -899,13 +935,19 @@ Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PD
         for(int j = 0; j < sdims[1]; ++j)
             for(int i = 0; i < sdims[0]; ++i)
             {
+                double xval = times[i];
+                xval *= s.x_scale;
+                xval += s.x_translate;
+
                 double yval = (double)*yc++;
                 yval *= s.y_scale;
                 yval += s.y_translate;
-                if(s.log)
+                if(s.log == LOGTYPE_LOG)
                     yval = log((yval > 0.) ? yval : 1.e-9);
+                else if(s.log == LOGTYPE_LOG10)
+                    yval = log10((yval > 0.) ? yval : 1.e-9);
 
-                *coords++ = (float)times[i];
+                *coords++ = (float)xval;
                 *coords++ = (float)yval;
                 *coords++ = 0.;
             }
