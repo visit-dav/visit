@@ -1550,6 +1550,9 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
 //   Mark C. Miller, Wed May 23 15:27:53 PDT 2007
 //   Initialized varInfo.dims before populating with call to get_simple_extents
 //   
+//   Luis Chacon, Wed Feb 25 15:40:06 EST 2009
+//   Modified the reader to handle time-changing meshes.
+//
 // ****************************************************************************
 
 herr_t
@@ -1644,7 +1647,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 
             // Get the variable's size.
             hid_t sid = H5Dget_space(obj);
-	    for (int dd = 0; dd < 3; varInfo.dims[dd] = 1, dd++);
+            for (int dd = 0; dd < 3; varInfo.dims[dd] = 1, dd++);
             H5Sget_simple_extent_dims(sid, varInfo.dims, NULL);
 
             //
@@ -1742,7 +1745,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
         }
 
         // Indicate that we have the mesh coordinates.
-        if(info->level == 0 && std::string(name) == "node_coords")
+        if(varName.find("nodes"))
         {
             debug4 << "Have mesh coordinates." << endl;
             info->This->haveMeshCoords = true;
@@ -1775,10 +1778,11 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
                     {
                         for(int j = 0; j < 3; ++j)
                         {
-                            char *ptr = data + 20 * j + 1;
-                            char tmp[21];
+                            int dsize = H5Tget_size(attrType);
+                            char *ptr = data + dsize * j + 1;
+                            char tmp[dsize+1];
                             int i;
-                            for(i = 0; i < 20 && *ptr != ' '; ++i)
+                            for(i = 0; i < dsize && *ptr != ' '; ++i)
                                 tmp[i] = *ptr++;
                             tmp[i] = '\0';
                         
@@ -1790,6 +1794,17 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
                                 info2.coordZ = std::string(tmp);
                         }
                         info2.hasCoords = true;
+
+                        debug4 << "Have mesh coordinates: " 
+                               << info2.coordX  << endl;
+                        debug4 << "Have mesh coordinates: " 
+                               << info2.coordY  << endl;
+                        debug4 << "Have mesh coordinates: " 
+                               << info2.coordZ  << endl;
+                    }
+                    else
+                    {
+                        debug4 << "No mesh coordinates found." << endl;
                     }
                     H5Tclose(attrType);
                 }
