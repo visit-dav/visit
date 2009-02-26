@@ -1416,14 +1416,10 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
         if (*dbp == NULL)
             EXCEPTION1(InvalidFilesException, db.c_str());
-
-        /*
-        avtDatabaseMetaData *md = dbp->GetMetaData(curTimeSlice, 
+        avtDatabaseMetaData *md = dbp->GetMetaData(curTimeSlice,
                                                    false,false, false);
-
         t1 = md->GetTimes()[curTimeSlice];
         t2 = md->GetTimes()[curTimeSlice+1];
-        */
     }
 
     avtIVPField *field = NULL;
