@@ -2354,7 +2354,7 @@ surfaceOverlapCheck( vector< vector< Point > > &bins,
   // If the skip and point ordering are opposite in directions then the
   // previous group is the skip. Otherwise is they have the same
   // direction then toroidalWinding-skip is the previous group.
-  unsigned int skipDir;
+  int skipDir;
 
   if( Dot( v0, v1 ) < 0.0 )
     skipDir = 1;
