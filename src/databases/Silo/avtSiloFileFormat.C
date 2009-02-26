@@ -1183,6 +1183,12 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Tue Jan  6 22:11:33 PST 2009
 //    Added support for explicit specification of topological dimension of a
 //    ucd mesh from the database via the DBOPT_TOPO_DIM option.
+//
+//    Mark C. Miller, Wed Feb 25 17:35:05 PST 2009
+//    Tightened logic for triggering ANNOTATION_INT nodelist search to ensure
+//    it happens only when ReadDir is in the root (topDir) directory. Also,
+//    Added a call to CloseFile(1) just prior to calling AddAnnotInt... as 
+//    a work-around for a bug in HDF5.
 // ****************************************************************************
 
 void
@@ -1726,8 +1732,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             haveAddedNodelistEnumerations[name_w_dir] = true;
             AddNodelistEnumerations(dbfile, md, name_w_dir);
         }
-        else if (searchForAnnotInt)
+        else if (searchForAnnotInt && strcmp(dirname, topDir.c_str()) == 0)
+
         {
+            // This call to CloseFile is to work around a probable bug in HDF5.
+            // Without it, HDF5 aborts on an assertion regarding shared files.
+            // It has something to do with having the same file opened multiple
+            // times, once by ReadDir() and then again in AddAnnotIntNodelists...
+            CloseFile(1);
             AddAnnotIntNodelistEnumerations(dbfile, md, name_w_dir, mm);
         }
 
@@ -5130,6 +5142,10 @@ PaintNodesForAnnotIntFacelist(float *ptr,
 //  Programmer: Mark C. Miller 
 //  Creation:   December 18, 2008 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Feb 25 17:36:51 PST 2009
+//    Add missing DBZonelistInfo flag from setting of data read mask just
+//    prior to getting the ucdmesh.
 // ****************************************************************************
 
 vtkDataArray *
@@ -5258,7 +5274,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
         //
         // Read the mesh header and just the zonelist for it.
         //
-        long oldMask = DBSetDataReadMask(DBUMZonelist);
+        long oldMask = DBSetDataReadMask(DBUMZonelist|DBZonelistInfo);
         DBucdmesh  *um = DBGetUcdmesh(domain_file, directory_mesh);
         DBSetDataReadMask(oldMask);
         if (allocated_directory_mesh)
@@ -11168,6 +11184,13 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
 //    Mark C. Miller, Tue Dec 23 11:12:31 PST 2008
 //    Fixed wrong parameter based to setting of NChoosR min/max values.
 //
+//    Mark C. Miller, Tue Feb 24 16:58:31 PST 2009
+//    Replaced use of DetermineFileAndDirectory with
+//    DetermineFilenameAndDirectory and explicit opens. The latter DOES NOT
+//    use the plugin's file management routines and this is important because
+//    this method is being called from within ReadDir we cannot allow file
+//    pointer stuff to change out from underneath ReadDir while it is still
+//    completing. 
 // ****************************************************************************
 void
 avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
@@ -11185,12 +11208,27 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
     map<string,int> arr_names;
     bool haveFaceLists = false;
     bool haveNodeLists = false;
+    DBfile *correctFile = dbfile;
     for (int i = 0; i < mm->nblocks; i++)
     {
         char *realvar;
-        DBfile *correctFile;
-        DetermineFileAndDirectory(mm->meshnames[i], correctFile,
-                                          0, realvar);
+        char filename[1024];
+        DetermineFilenameAndDirectory(mm->meshnames[i], 0, filename, realvar, 0);
+        if (strcmp(filename, ".") != 0)
+        {
+            if (correctFile != dbfile && correctFile != 0)
+                DBClose(correctFile);
+            correctFile = DBOpen(filename, DB_UNKNOWN, DB_READ);
+        }
+        if (correctFile == 0)
+        {
+            debug1 << "Failed to open \"" << filename << "\" searching for ANNOTATION_INT object" << endl;
+            continue;
+        }
+        else
+        {
+            debug1 << "Opened \"" << filename << "\" searching for ANNOTATION_INT object" << endl;
+        }
 
         DBcompoundarray *ai = DBGetCompoundarray(correctFile, "ANNOTATION_INT");
         if (ai)
@@ -11208,6 +11246,8 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
             DBFreeCompoundarray(ai);
         }
     }
+    if (correctFile != dbfile && correctFile != 0)
+        DBClose(correctFile);
 
     //
     // If we didn't find anything, we're done.
