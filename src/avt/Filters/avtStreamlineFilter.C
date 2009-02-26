@@ -1431,7 +1431,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     double end = termination;
     if (slSeg->dir == avtStreamlineWrapper::BWD)
         end = - end;
-    
+
     //slSeg->Debug();
     bool doVorticity = ((coloringMethod == STREAMLINE_COLOR_VORTICITY)
                         || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
