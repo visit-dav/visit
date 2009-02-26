@@ -59,7 +59,7 @@
 //  Modifications:
 //    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
 //    Improved version of A-B solver that builds function history from
-//    initial Euler steps.
+//    initial HK4 steps.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Changed how distanced based termination is computed.
@@ -114,8 +114,10 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
     
     void             UpdateHistory( const avtVec &yNew );
+
     avtIVPSolver::Result RK4Step(const avtIVPField* field,
                                  avtVec &yNew);
+
     avtIVPSolver::Result ABStep(const avtIVPField* field,
                                 avtVec &yNew);
 

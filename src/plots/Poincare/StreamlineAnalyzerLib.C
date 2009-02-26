@@ -47,6 +47,8 @@ using namespace std;
 
 namespace FusionPSE {
 
+#define SIGN(x) ((x) < 0.0 ? -1 : 1)
+
 //using namespace SCIRun;
 
 Point FieldlineLib::interpert( Point lastPt, Point currPt, double t ) {
@@ -359,10 +361,10 @@ poloidalWindingCheck( vector< Point > &points,
                       unsigned int maxToroidalWinding,
                       unsigned int &bestToroidalWinding,
                       unsigned int &bestPoloidalWinding,
-                      double &bestHitrate,
+                      double &bestMatchPercent,
                       unsigned int &nextBestToroidalWinding,
                       unsigned int &nextBestPoloidalWinding,
-                      double &nextBestHitrate,
+                      double &nextBestMatchPercent,
                       unsigned int level ) {
 
   bestToroidalWinding = 0;
@@ -370,42 +372,62 @@ poloidalWindingCheck( vector< Point > &points,
   nextBestToroidalWinding = 0;
   nextBestPoloidalWinding = 0;
   
-  bestHitrate = 0;
-  nextBestHitrate = 0;
-  
-  for( unsigned int toroidalWinding=1; (toroidalWinding<maxToroidalWinding &&
-                                toroidalWinding<points.size()/2); ++toroidalWinding) {
+  bestMatchPercent = 0;
+  nextBestMatchPercent = 0;
 
-    // If the first two connections of one group crosses the
-    // first two connections of another group skip it.
+  unsigned int npts = points.size();
+
+  // The premise is that for a given toroidal winding the poloidal
+  // winding should be consistant between each Nth punction point,
+  // where N is the toroidal winding. For instance, if the toroidal
+  // winding is 5 and the poloidal winding is 2. Then the pattern
+  // should be:
+
+  // 0 1 1 1 2 - 2 3 3 3 4 - 4 5 5 5 6
+
+  // In this case the different between every 5th value (the toroidal
+  // winding) should be 2 (the poloidal winding).
+
+  for( unsigned int toroidalWinding=1;
+       (toroidalWinding<maxToroidalWinding && toroidalWinding<npts/2);
+       ++toroidalWinding )
+  {
+
+    // If the first two connections of one toroidal winding group
+    // crosses the first two connections of another group skip it.
     if( level == 1 && !IntersectCheck( points, toroidalWinding ) )
       continue;
 
-    // Get the average poloidalWinding value for this surface.
-    unsigned int poloidalWinding = 0;
+    // Get the average value of the poloidal winding.
+    double poloidalWindingAve = 0;
 
-    for( unsigned int i=0; i<points.size()-toroidalWinding; ++i)
-      poloidalWinding += (poloidalWindingset[i+toroidalWinding] - poloidalWindingset[i]);
+    for( unsigned int i=0; i<npts-toroidalWinding; i++)
+      poloidalWindingAve += (poloidalWindingset[i+toroidalWinding] -
+                          poloidalWindingset[i]);
 
-    // Round the average value to the nearest integer value.
-    poloidalWinding = (unsigned int)
-      ((float) poloidalWinding / (float) (points.size()-toroidalWinding) + 0.5);
+    poloidalWindingAve =
+      (float) poloidalWindingAve / (float) (npts-toroidalWinding);
       
-    if( poloidalWinding == 0 )
+    if( poloidalWindingAve < 0.5 )
       continue;
 
-    unsigned int cc = 0;
+    // Round the average value to the nearest integer value.
+    unsigned int poloidalWinding = (poloidalWindingAve + 0.5);
 
     if( level == 2 )
       cerr << "tested toroidalWinding/poloidalWinding  "
            << toroidalWinding << "  "
            << poloidalWinding << "  hits  ";
 
-    // See if the poloidalWindinging pattern is consistant throughout all
-    // of the toroidalWindings.
-    for( unsigned int i=0; i<points.size()-toroidalWinding; ++i) {
-      if( poloidalWinding == poloidalWindingset[i+toroidalWinding] - poloidalWindingset[i] ) {
-        ++cc;
+    // Count the number of times the poloidal winding matches the
+    // windings between puncture points (i.e. the poloidal winding
+    // set).
+    unsigned int nMatches = 0;
+
+    for( unsigned int i=0; i<npts-toroidalWinding; ++i) {
+      if( poloidalWinding ==
+          poloidalWindingset[i+toroidalWinding] - poloidalWindingset[i] ) {
+        ++nMatches;
 
         if( level == 2 ) {
           cerr << 1 << " ";
@@ -418,7 +440,7 @@ poloidalWindingCheck( vector< Point > &points,
     if( level == 2 )
       cerr << endl;
 
-    double hitrate = (double) cc / (double) (points.size()-toroidalWinding);
+    double matchPercent = (double) nMatches / (double) (npts-toroidalWinding);
 
     if( level >= 1 )
       cerr << "tested toroidalWinding/poloidalWinding  "
@@ -426,15 +448,15 @@ poloidalWindingCheck( vector< Point > &points,
            << poloidalWinding << "  ("
            << (double)toroidalWinding/(double)poloidalWinding << ")  "
            << "consistency "
-           << 100.0 * hitrate
+           << 100.0 * matchPercent
            << " percent" << endl;
 
-    if( bestHitrate <= hitrate ) {
-      nextBestHitrate = bestHitrate;
+    if( bestMatchPercent <= matchPercent ) {
+      nextBestMatchPercent = bestMatchPercent;
       nextBestToroidalWinding = bestToroidalWinding;
-      nextBestPoloidalWinding   = bestPoloidalWinding;
+      nextBestPoloidalWinding = bestPoloidalWinding;
 
-      bestHitrate = hitrate;
+      bestMatchPercent = matchPercent;
 
       // Keep the low order toroidalWinding / poloidalWinding
       if( bestToroidalWinding == 0 ||
@@ -445,14 +467,15 @@ poloidalWindingCheck( vector< Point > &points,
         bestPoloidalWinding = poloidalWinding;
       }
 
-    } else if( nextBestHitrate <= hitrate ) {
+    } else if( nextBestMatchPercent <= matchPercent ) {
 
-      // Do not save higher order toroidalWinding / poloidalWinding as next best.
+      // Do not save higher order toroidalWinding / poloidalWinding as
+      // next best.
       if( !(toroidalWinding % bestToroidalWinding == 0 &&
             poloidalWinding % bestPoloidalWinding == 0 &&
             toroidalWinding / bestToroidalWinding == poloidalWinding / bestPoloidalWinding) ) {
 
-        nextBestHitrate = hitrate;
+        nextBestMatchPercent = matchPercent;
               
         // Keep the low order toroidalWinding / poloidalWinding
         if( nextBestToroidalWinding == 0 ||
@@ -466,8 +489,8 @@ poloidalWindingCheck( vector< Point > &points,
     }
   }
 
-  // If the toroidalWinding and poloidalWinding have a common denominator find the
-  // greatest and remove it.
+  // If the toroidalWinding and poloidalWinding have a common
+  // denominator find the greatest denominator and remove it.
   if( bestToroidalWinding != bestPoloidalWinding ) {
 
     for( unsigned int i=bestPoloidalWinding; i>1; --i) {
@@ -483,39 +506,59 @@ poloidalWindingCheck( vector< Point > &points,
 
 
 double FieldlineLib::
-poloidalWindingStats( vector< Point >& poloidalWinding_points,
+poloidalWindingStats( vector< Point >& poloidalWindingPoints,
                       unsigned int poloidalWinding )
 {
+  if( poloidalWinding > poloidalWindingPoints.size() / 2 )
+  {
+    return 99999.9;
+  }
+
+  // Find the average standard deviation for each of the poloidal
+  // groups. If the poloidal winding is correct the standard deviation
+  // should be a small compared it a wrong value. However, this is
+  // based on having a reasonable first guess, i.e. really bad guesses
+  // could give a small standard deviation yet be incorrect.
+
+  // Note for a rational surface the standard deviation should be
+  // zero.
 
   double average_sd = 0;
   
   for( unsigned int i=0; i<poloidalWinding; ++i ) {
+
+    // Find the centroid of the points based on the poloidal winding.
+    Vector centroid(0,0,0);
+    unsigned int npts = 0;
     
-    double sum = 0;
-    unsigned int cc = 0;
-    
-    for( unsigned int j=i; j<poloidalWinding_points.size(); j+=poloidalWinding ) {
-      sum += poloidalWinding_points[j].z;
-      ++cc;
+    for( unsigned int j=i;
+         j<poloidalWindingPoints.size();
+         j+=poloidalWinding ) {
+      centroid += (Vector) poloidalWindingPoints[j];
+      ++npts;
     }
     
-    double average = sum / (double) cc;
-    
+    centroid /= (double) npts;
+
+    // Get the L2 norm distance for each group.
     double sumofsquares = 0;
     
-    for( unsigned int j=i; j<poloidalWinding_points.size(); j+=poloidalWinding ) {
-      sumofsquares += ((poloidalWinding_points[j].z-average)*
-                       (poloidalWinding_points[j].z-average));
+    for( unsigned int j=i;
+         j<poloidalWindingPoints.size();
+         j+=poloidalWinding ) {
+      sumofsquares += (poloidalWindingPoints[j]-centroid).length2();
     }
+
+    // Calculate the standard deviation
+    average_sd += sqrt( sumofsquares / (double) npts );
     
 //     cerr << poloidalWinding << "  "
 //       << i << "  "
 //       << cc << "  "
-//       << sqrt( sumofsquares / (double) cc ) << endl;
-
-    average_sd += sqrt( sumofsquares / (double) cc );
+//       << sqrt( sumofsquares / (double) npys ) << endl;
   }
-  
+
+  // Return the average standard deviation from all groups.
   return average_sd /= (double) poloidalWinding;
 }
 
@@ -523,16 +566,20 @@ poloidalWindingStats( vector< Point >& poloidalWinding_points,
 bool FieldlineLib::
 rationalCheck( vector< Point >& points,
                unsigned int toroidalWinding,
-               unsigned int &island,
+               unsigned int &islands,
                float &avenode,
                float delta)
 {
-  // Look at the distance between the centroid and the points. If it
-  // is very small then the fieldine is assumed to be on a rational
-  // surface.
+  // Look at the distance between the centroid of each toroidal and
+  // the points that are in it. If it is smaller then the distance
+  // between the points that make up the fieldine is assumed to be on
+  // a rational surface.
+
+  // Note: this distance, delta, is defined indirectly based on the
+  // integration step size.
   for( unsigned int i=0; i<toroidalWinding; i++ ) {
 
-    // Get the local centroid for the group.
+    // Get the local centroid for the toroidal group.
     Vector localCentroid(0,0,0);
 
     unsigned int npts = 0;
@@ -554,6 +601,7 @@ rationalCheck( vector< Point >& points,
     }
   }
 
+  islands = 0;
   avenode = 1;
 
   return true;
@@ -1348,93 +1396,56 @@ FieldlineInfo
 FieldlineLib::fieldlineProperties( vector< Point > &ptList,
                                    unsigned int override,
                                    unsigned int maxToroidalWinding,
-                                   float hitrate )
+                                   float matchPercentLimit )
 {
-  bool checkPoloidal = false;
-
-  unsigned int poloidalCount = 0;
-  std::vector< unsigned int > safetyFactorSet;
+  vector< unsigned int > safetyFactorSet;
   safetyFactorSet.clear();
 
   // First find out how many toroidal windings it takes to get back to the
   // starting point at the Phi = 0 plane. 
-  double plane = 0;
 
-  std::vector< Point > toroidal_points;
-  std::vector< Point > poloidal_points;
+  vector< Point > toroidal_points;
+  vector< Point > poloidal_points;
   toroidal_points.clear();
   poloidal_points.clear();
 
-  std::cerr << "Analyzing  " << std::endl;
+  cerr << "Analyzing  " << endl;
 
   unsigned int npts = 0;
   float delta = 0.0;
 
-  Point penultimatePt = ptList[0];
+  Point lastPt, currPt = ptList[0];
 
-  Point lastPt = ptList[0];
-  double lastAng = atan2( ptList[0].y, ptList[0].x );
+  // Set up the Y plane equation as the base analysis takes place in
+  // the X-Z plane.
+  Vector planeNY( 0, 1, 0 );
+  Vector planePt(0,0,0);
 
-  // Get the direction of the streamline toroidal winding.
-  bool CCWstreamline = (lastAng < atan2( ptList[1].y, ptList[1].x ));
+  double planeY[4];
+      
+  planeY[0] = planeNY.x;
+  planeY[1] = planeNY.y;
+  planeY[2] = planeNY.z;
+  planeY[3] = planePt.dot(planeNY);
+
+  double lastDistY, currDistY = planeNY.dot( currPt ) - planeY[3];
+
+  // Set up the Z plane equation.
+  Vector planeNZ( 0, 0, 1 );
+
+  double planeZ[4];
+      
+  planeZ[0] = planeNZ.x;
+  planeZ[1] = planeNZ.y;
+  planeZ[2] = planeNZ.z;
+  planeZ[3] = planePt.dot(planeNZ);
+
+  double lastDistZ, currDistZ = planeNZ.dot( currPt ) - planeZ[3];
 
   for( unsigned int i=1; i<ptList.size(); ++i)
   {
-    // Get the current point.
-    Point currPt = ptList[i];
-
-    double currAng = atan2( currPt.y, currPt.x );
-
-    // First look at only points that are in the correct plane. In
-    // this case the initial analsis is done at the zero plane.
-    if( ( CCWstreamline && lastAng < 0 && 0 <= currAng) ||
-        (!CCWstreamline && currAng < 0 && 0 <= lastAng) ) 
-    {
-      double t;
-      
-      if( fabs(currAng-lastAng) > 1.0e-12 )
-        t = (plane-lastAng) / (currAng-lastAng);
-      else
-        t = 0;
-
-      Point point = interpert( lastPt, currPt, t );
-
-      // Once the first puncture point has been found start checking
-      // for positive zero crossings - aka poloidal windings.
-      if( toroidal_points.size() == 0 )
-        checkPoloidal = true;
-
-      toroidal_points.push_back( point );
-      
-//      if( points.size() && points.size() < maxToroidalWinding )
-//        cerr << "toroidalWinding/poloidal  "
-//             << points.size() - 1 << "  "
-//             << poloidal << "  "
-//             << (double) (points.size()-1)/(double)poloidal << endl;
-
-      safetyFactorSet.push_back( poloidalCount );
-    }
-
-    // Find the positive zero crossings which indicate a poloidal winding.
-    if( toroidal_points.size() ) 
-    {
-      if( checkPoloidal &&
-          0.0 < currPt.z &&
-          penultimatePt.z <= lastPt.z &&
-          currPt.z < lastPt.z ) 
-      {
-        ++poloidalCount;
-        
-        poloidal_points.push_back( lastPt );
-        
-        checkPoloidal = false;
-      }
-    }
-
-    // Once the fieldline z value falls below zero check for a
-    // poloidal again.
-    if( currPt.z < 0.0 && checkPoloidal == false )
-      checkPoloidal = true;
+    lastPt = currPt;
+    currPt = Vector(ptList[i]);
 
     // Save the distance between points to use for finding periodic
     // fieldlines (i.e. rational surfaces).
@@ -1442,19 +1453,78 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     delta += vec.length();
     ++npts;
-    
-    penultimatePt = lastPt;
-    lastPt  = currPt;
-    lastAng = currAng;
+
+    // Poloidal plane distances.
+    lastDistY = currDistY;
+    currDistY = Dot( planeNY, currPt ) - planeY[3];
+
+    // First look at only points that intersect the poloidal plane.
+    if( SIGN(lastDistY) != SIGN(currDistY) ) 
+    {
+      Vector dir(currPt-lastPt);
+      
+      double dot = Dot(planeNY, dir);
+      
+      // If the segment is in the same direction as the poloidal plane
+      // then find where it intersects the plane.
+      if( dot > 0.0 )
+      {
+        Vector w = lastPt - planePt;
+        
+        double t = -Dot(planeNY, w ) / dot;
+        
+        Point point = Point(lastPt + dir * t);
+        
+        toroidal_points.push_back( point );
+
+        safetyFactorSet.push_back( poloidal_points.size() );
+
+//      if( points.size() && points.size() < maxToroidalWinding )
+//        cerr << "toroidalWinding/poloidal  "
+//             << points.size() - 1 << "  "
+//             << poloidal << "  "
+//             << (double) (points.size()-1)/(double)poloidal << endl;
+      }
+    }
+
+    // Find the positive zero crossings which indicate a poloidal winding.
+    if( toroidal_points.size() )
+    {
+      // Poloidal plane distances.
+      lastDistZ = currDistZ;
+      currDistZ = Dot( planeNZ, currPt ) - planeZ[3];
+
+      // First look at only points that intersect the toroiadal plane.
+      if( SIGN(lastDistZ) != SIGN(currDistZ) ) 
+      {
+        Vector dir(currPt-lastPt);
+      
+        double dot = Dot(planeNZ, dir);
+      
+        // If the segment is in the same direction as the toroidal plane
+        // then find where it intersects the plane.
+        if( dot > 0.0 )
+        {
+          Vector w = lastPt - planePt;
+        
+          double t = -Dot(planeNZ, w ) / dot;
+        
+          Point point = Point(lastPt + dir * t);
+        
+          poloidal_points.push_back( point );
+        }
+      }
+    }
   }
 
-  // At this point all of the puncture points (toroidal points) have
-  // been found as well as the poloidal points.
-  std::cerr << "analyzing with "
-            << toroidal_points.size() << " toroidal points and "
-            << poloidal_points.size() << " poloidal points " << std::endl;
+  // At this point all of the puncture points (toroidal points) as
+  // well as the poloidal points have been found.
 
-  // Get the average distance between points. If with 1/10 of the
+  cerr << "analyzing with "
+            << toroidal_points.size() << " toroidal points and "
+            << poloidal_points.size() << " poloidal points " << endl;
+
+  // Get the average distance between points. If within 1/10 of the
   // distance the fieldline is probably on a rational surface.
   delta /= (float) npts;
   delta /= 10.0;
@@ -1480,68 +1550,70 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     unsigned int nextBestToroidalWinding = 0;
     unsigned int nextBestPoloidalWinding = 0;
     
-    double bestHitrate = 0;
-    double nextBestHitrate = 0;
+    double bestMatchPercent = 0;
+    double nextBestMatchPercent = 0;
 
-
+    // Check the consistancy of the safety factor set. 
     poloidalWindingCheck( toroidal_points, safetyFactorSet, maxToroidalWinding,
-                          bestToroidalWinding, bestPoloidalWinding, bestHitrate,
-                          nextBestToroidalWinding, nextBestPoloidalWinding, nextBestHitrate, 1 );
+                          bestToroidalWinding, bestPoloidalWinding, bestMatchPercent,
+                          nextBestToroidalWinding, nextBestPoloidalWinding, nextBestMatchPercent, 1 );
 
-    if( bestHitrate < hitrate ) 
+    // Test against a user setable match limit. Default is 0.90 (90%)
+    if( bestMatchPercent < matchPercentLimit ) 
     {
-      std::cerr << "Poor consistancy - probably chaotic" << std::endl;
+      cerr << "Poor consistancy - probably chaotic" << endl;
 
-      std::cerr << "Poloidal set ";
+      cerr << "Poloidal set ";
 
       for( unsigned int i=0; i<safetyFactorSet.size(); ++i)
-        std::cerr << "(" << i << "," << safetyFactorSet[i] << ") ";
+        cerr << "(" << i << "," << safetyFactorSet[i] << ") ";
 
-      std::cerr << std::endl;
+      cerr << endl;
 
+      // Check the consistancy of the safety factor set but report the
+      // findings.
       poloidalWindingCheck( toroidal_points, safetyFactorSet, maxToroidalWinding,
-                            bestToroidalWinding, bestPoloidalWinding, bestHitrate,
-                            nextBestToroidalWinding, nextBestPoloidalWinding, nextBestHitrate, 2 );
+                            bestToroidalWinding, bestPoloidalWinding, bestMatchPercent,
+                            nextBestToroidalWinding, nextBestPoloidalWinding, nextBestMatchPercent, 2 );
 
       toroidalWinding = 0;
       poloidalWinding = 0;
       skip = 0;
+      islands = 0;
 
       type = CHAOTIC;
     } 
+
+    // The number of matches is better than the user defined limit so
+    // gather some other stats.
     else 
     {
       toroidalWinding = bestToroidalWinding;
       poloidalWinding = bestPoloidalWinding;
       skip = Blankinship( toroidalWinding, poloidalWinding );
 
-      std::cerr << "final toroidalWinding/poloidal  "
+      cerr << "final toroidalWinding/poloidal  "
                 << toroidalWinding << "  "
                 << poloidalWinding << "  ("
                 << (double)toroidalWinding/(double)poloidalWinding << ")  "
                 << "consistency "
-                << 100.0 * bestHitrate
-                << " percent" << std::endl;
+                << 100.0 * bestMatchPercent
+                << " percent" << endl;
 
-      // Find the base poloidal periodicy based on the zero crossing
-      double base_sd =
+      // Find the base poloidal periodicity standard deviation.
+      unsigned int bestPoloidalWinding = poloidalWinding;
+      double best_sd =
         poloidalWindingStats( poloidal_points, poloidalWinding );
 
-      std::cerr << "Base poloidal  " << poloidalWinding
-                << "  " << base_sd
-                << std::endl;
+      cerr << "Base poloidal  " << poloidalWinding
+                << "  " << best_sd << endl;
 
-      // Find the best poloidal periodicy based on the zero crossing
-      unsigned int bestPoloidalWinding = poloidalWinding;
-      double best_sd = base_sd;
-
+      // Find the best poloidal periodicy standard deviation. 
+      // Note dividing by three insures that there are at least three
+      // points in each group.
       for( unsigned int i=1; i<=poloidal_points.size()/3; ++i ) 
       {
         double average_sd = poloidalWindingStats( poloidal_points, i );
-        
-        //        cerr << "Poloidal  " << i
-        //             << "  " << average_sd
-        //             << endl;
 
         if( best_sd > average_sd ) 
         {
@@ -1550,12 +1622,14 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         }
       }
 
+      // If the best is an in integer value of the base then the
+      // result is the same because more groups can create smaller
+      // regions.
       if( bestPoloidalWinding % poloidalWinding == 0 )
-        std::cerr<< "Integer ";
+        cerr<< "Integer ";
 
-      std::cerr << "Best Poloidal Winding " << bestPoloidalWinding
-                << "  " << best_sd
-                << std::endl;
+      cerr << "Best Poloidal Winding " << bestPoloidalWinding
+                << "  " << best_sd << endl;
 
 //     ++safetyFactorConsistant;
 
@@ -1569,17 +1643,17 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       {
 //      ++poloidalPeriodicyMismatch;
 
-        if( nextBestHitrate / bestHitrate < 0.95 )
-          std::cerr << std::endl << "**********************  "
+        if( nextBestMatchPercent / bestMatchPercent < 0.95 )
+          cerr << endl << "**********************  "
                     << nextBestToroidalWinding << "  " << nextBestPoloidalWinding
-                    << "  **********************" << std::endl;
+                    << "  **********************" << endl;
       } 
       else 
       {
-        std::cerr << std::endl << "!!!!!!!!!!!!!!!!!!!!!!  "
+        cerr << endl << "!!!!!!!!!!!!!!!!!!!!!!  "
                   << (bestPoloidalWinding > poloidalWinding ? "Higher " : "Lower ")
                   << "order may be better"
-                  << "  !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                  << "  !!!!!!!!!!!!!!!!!!!!!!" << endl;
       }
     }
   }
@@ -1591,45 +1665,73 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   {
     type = RATIONAL;
     
-    std::cerr << "Appears to be a rational surface "
-              << delta << std::endl;
-  }     
+    cerr << "Appears to be a rational surface "
+         << delta << endl;
+  }
+  
+  // Check to see if the fieldline creates a set of islands.
   else if( islandChecks( toroidal_points, toroidalWinding,
                          islands, nnodes ) ) 
   {
     type = ISLAND_CHAIN;
     
-    // Find the island poloidal based on the zero crossing
+    // The number of nodes is set so that when connected the islands
+    // are complete. The poloidal winding times the number of nodes is
+    // also the valve at which points start repeating so it is similar
+    // the poloidal winding value for an irrational surface.
     nnodes = ceil(nnodes);
-    unsigned int islandpoloidal = (unsigned int) nnodes;
-    double islandsd =
-      poloidalWindingStats( poloidal_points, islandpoloidal );
+
+    // Find the base island poloidal periodicity standard deviation.
+    unsigned int island_poloidal = poloidalWinding * (unsigned int) nnodes;
+    double island_sd =
+      poloidalWindingStats( poloidal_points, island_poloidal );
     
+    cerr << "Base island poloidal  " << island_poloidal
+         << "  " << island_sd << endl;
+
+    // Find the best island poloidal periodicy standard deviation.
+    // Note dividing by two insures that there are at least two
+    // points in each group.
     for( unsigned int i=0; i<poloidal_points.size()/2; ++i ) 
     {
       double average_sd = poloidalWindingStats( poloidal_points, i );
       
-      if( islandsd > average_sd ) 
+      if( island_sd > average_sd ) 
       {
-        islandsd = average_sd;
-        islandpoloidal = i;
+        island_sd = average_sd;
+        island_poloidal = i;
       }
     }
 
-    if( islandpoloidal % poloidalWinding == 0 )
-      std::cerr<< "Integer ";
+    // If the best is an integer value of the base then the result is
+    // the same because more groups can create smaller regions.
+    if( island_poloidal % (poloidalWinding * (unsigned int) nnodes) == 0 )
+      cerr<< "Integer ";
     
-    std::cerr << "Island poloidal  " << islandpoloidal
-              << "  " << islandsd
-              << std::endl;
-    
-    if( islandpoloidal &&
-        islandpoloidal % ((unsigned int)nnodes * poloidalWinding) == 0 ) 
+    cerr << "Island poloidal  " << island_poloidal
+              << "  " << island_sd << endl;
+
+    // If the best island poloidal winding value is the poloidal
+    // winding value times the number of nodes then there is self
+    // consistancy. Note allow for +1/-1 on the number of nodes as it
+    // can be difficult to determine the last node in an island chain.
+    for( int i=-1; i<=1; ++i )
     {
-      std::cerr << "Zero crossing period matches the number of nodes in the island" << std::endl;
+      if( island_poloidal &&
+          island_poloidal % (poloidalWinding * (unsigned int)(nnodes+i)) == 0 ) 
+      {
+        cerr << "Zero crossing period matches the number of nodes ("
+             << nnodes << " " << i
+             <<  ") in the island" << endl;
+
+        nnodes += i;
+
+        break;
+      }
     }
-          
-  } 
+  }
+
+  // At this point assume the surface is irrational.
   else 
   {
     type = IRRATIONAL;
@@ -1644,10 +1746,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
          j<toroidal_points.size();
          i+=toroidalWinding, j+=toroidalWinding ) 
     {
-          
       for( unsigned int k=1; k<toroidalWinding; k++ ) 
       {
-            
         v0 = (Vector) toroidal_points[i] - (Vector) toroidal_points[k];
         v1 = (Vector) toroidal_points[j] - (Vector) toroidal_points[k];
           
@@ -1658,13 +1758,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
           
           if( k != toroidalWinding - skip && k != skip ) 
           {
-            std::cerr << std::endl
+            cerr << endl
                       << "ERROR in finding the overlap"
                       << " toroidalWinding " << toroidalWinding
                       << " poloidal " << poloidalWinding
                       << " skip " << skip
                       << " overlap group " << k
-                      << std::endl;
+                      << endl;
           }
           
           break;
@@ -1673,7 +1773,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     }
   }
 
-  std::cerr << "End of streamline " << 0 // fieldlineInfo.size()
+  cerr << "End of streamline " << 0 // fieldlineInfo.size()
             << "  type " << type 
             << "  toroidal windings " << toroidalWinding 
             << "  poloidal windings " << poloidalWinding
@@ -1681,7 +1781,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
             << "  skip "   << skip
             << "  islands " << islands
             << "  nnodes " << nnodes
-            << std::endl << std::endl;
+            << endl << endl;
 
   FieldlineInfo fi;
 
@@ -1721,7 +1821,9 @@ fieldlineProperties( vector< Point > &points,
   vector< unsigned int > toroidalWindingList;
 
   // Find the best toroidalWinding for each test.
-  for( toroidalWinding=1; toroidalWinding<=maxToroidalWinding; toroidalWinding++ ) {
+  for( toroidalWinding=1;
+       toroidalWinding<=maxToroidalWinding;
+       ++toroidalWinding ) {
           
     if( points.size() <= 2 * toroidalWinding ) {
       cerr << "Streamline has too few points ("
@@ -2001,7 +2103,7 @@ fieldlineProperties( vector< Point > &points,
     toroidalWindingNextBest = 0;
   }
 
-  std::cerr << "End of streamline " << 0 // fieldlineInfo.size()
+  cerr << "End of streamline " << 0 // fieldlineInfo.size()
             << "  type " << type 
             << "  toroidal windings " << toroidalWinding 
             << "  poloidal windings " << poloidalWinding
@@ -2009,7 +2111,7 @@ fieldlineProperties( vector< Point > &points,
             << "  skip "   << skip
             << "  islands " << islands
             << "  nnodes " << nnodes
-            << std::endl << std::endl;
+            << endl << endl;
 
   FieldlineInfo fi;
 

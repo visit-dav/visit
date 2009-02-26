@@ -71,7 +71,7 @@ static inline double sign( const double& a, const double& b )
 //  Modifications:
 //    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
 //    Improved version of A-B solver that builds function history from
-//    initial Euler steps.
+//    initial RK4 steps.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Changed how distanced based termination is computed.
@@ -141,7 +141,7 @@ avtIVPAdamsBashforth::GetCurrentT() const
 //  Modifications:
 //    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
 //    Improved version of A-B solver that builds function history from
-//    initial Euler steps.
+//    initial RK4 steps.
 //
 // ****************************************************************************
 
@@ -163,7 +163,7 @@ avtIVPAdamsBashforth::GetCurrentY() const
 //  Modifications:
 //    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
 //    Improved version of A-B solver that builds function history from
-//    initial Euler steps.
+//    initial RK4 steps.
 //
 // ****************************************************************************
 
@@ -280,7 +280,7 @@ avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 //  Modifications:
 //    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
 //    Improved version of A-B solver that builds function history from
-//    initial Euler steps.
+//    initial RK4 steps.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Changed how distanced based termination is computed.
@@ -326,7 +326,7 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
 //  Modifications:
 //    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
 //    Improved version of A-B solver that builds function history from
-//    initial Euler steps.
+//    initial RK4 steps.
 //
 // ****************************************************************************
 
@@ -360,7 +360,7 @@ avtIVPAdamsBashforth::RK4Step(const avtIVPField* field,
   f[3] = (*field)(t,yCur + f[2])       * h;
 
   yNew = yCur + (f[0] + 2.0 * f[1] + 2.0 * f[2] + f[3]) * (1.0 / 6.0);
-    
+
   return avtIVPSolver::OK;
 }
 
@@ -462,11 +462,15 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
     // Use a forth order Runga Kutta integration to seed the Adams-Bashforth.
     if ( initialized < STEPS )
     {
-        // Save the first vector values in the history. 
-        if( initialized == 0 )
-            history[0] = (*field)(t,yCur);
-        res = RK4Step( field, yNew );
-        ++initialized;
+      // Save the first vector values in the history. 
+      if( initialized == 0 )
+      {
+        history[0] = (*field)(t,yCur);
+      }
+
+      res = RK4Step( field, yNew );
+      
+      ++initialized;
     }
     else
     {
@@ -532,7 +536,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
         t = t+h;
     }
 
-    // Reset the step size on sucessful step..
+    // Reset the step size on sucessful step.
     h = h_max;
     return res;
 }
