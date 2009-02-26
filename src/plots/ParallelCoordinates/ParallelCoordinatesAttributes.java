@@ -64,7 +64,7 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
 {
     public ParallelCoordinatesAttributes()
     {
-        super(12);
+        super(14);
 
         scalarAxisNames = new Vector();
         visualAxisNames = new Vector();
@@ -78,11 +78,13 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
         contextColor = new ColorAttribute(0, 220, 0);
         drawLinesOnlyIfExtentsOn = true;
         unifyAxisExtents = false;
+        linesNumPartitions = 512;
+        forceFullDataFocus = false;
     }
 
     public ParallelCoordinatesAttributes(ParallelCoordinatesAttributes obj)
     {
-        super(12);
+        super(14);
 
         int i;
 
@@ -116,6 +118,8 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
         contextColor = new ColorAttribute(obj.contextColor);
         drawLinesOnlyIfExtentsOn = obj.drawLinesOnlyIfExtentsOn;
         unifyAxisExtents = obj.unifyAxisExtents;
+        linesNumPartitions = obj.linesNumPartitions;
+        forceFullDataFocus = obj.forceFullDataFocus;
 
         SelectAll();
     }
@@ -172,7 +176,9 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
                 (contextNumPartitions == obj.contextNumPartitions) &&
                 (contextColor == obj.contextColor) &&
                 (drawLinesOnlyIfExtentsOn == obj.drawLinesOnlyIfExtentsOn) &&
-                (unifyAxisExtents == obj.unifyAxisExtents));
+                (unifyAxisExtents == obj.unifyAxisExtents) &&
+                (linesNumPartitions == obj.linesNumPartitions) &&
+                (forceFullDataFocus == obj.forceFullDataFocus));
     }
 
     public String GetName() { return "ParallelCoordinates"; }
@@ -251,6 +257,18 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
         Select(11);
     }
 
+    public void SetLinesNumPartitions(int linesNumPartitions_)
+    {
+        linesNumPartitions = linesNumPartitions_;
+        Select(12);
+    }
+
+    public void SetForceFullDataFocus(boolean forceFullDataFocus_)
+    {
+        forceFullDataFocus = forceFullDataFocus_;
+        Select(13);
+    }
+
     // Property getting methods
     public Vector         GetScalarAxisNames() { return scalarAxisNames; }
     public Vector         GetVisualAxisNames() { return visualAxisNames; }
@@ -264,6 +282,8 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
     public ColorAttribute GetContextColor() { return contextColor; }
     public boolean        GetDrawLinesOnlyIfExtentsOn() { return drawLinesOnlyIfExtentsOn; }
     public boolean        GetUnifyAxisExtents() { return unifyAxisExtents; }
+    public int            GetLinesNumPartitions() { return linesNumPartitions; }
+    public boolean        GetForceFullDataFocus() { return forceFullDataFocus; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -292,6 +312,10 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
             buf.WriteBool(drawLinesOnlyIfExtentsOn);
         if(WriteSelect(11, buf))
             buf.WriteBool(unifyAxisExtents);
+        if(WriteSelect(12, buf))
+            buf.WriteInt(linesNumPartitions);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(forceFullDataFocus);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -339,6 +363,12 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
             case 11:
                 SetUnifyAxisExtents(buf.ReadBool());
                 break;
+            case 12:
+                SetLinesNumPartitions(buf.ReadInt());
+                break;
+            case 13:
+                SetForceFullDataFocus(buf.ReadBool());
+                break;
             }
         }
     }
@@ -358,6 +388,8 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
         str = str + indent + "contextColor = {" + contextColor.Red() + ", " + contextColor.Green() + ", " + contextColor.Blue() + ", " + contextColor.Alpha() + "}\n";
         str = str + boolToString("drawLinesOnlyIfExtentsOn", drawLinesOnlyIfExtentsOn, indent) + "\n";
         str = str + boolToString("unifyAxisExtents", unifyAxisExtents, indent) + "\n";
+        str = str + intToString("linesNumPartitions", linesNumPartitions, indent) + "\n";
+        str = str + boolToString("forceFullDataFocus", forceFullDataFocus, indent) + "\n";
         return str;
     }
 
@@ -375,5 +407,7 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
     private ColorAttribute contextColor;
     private boolean        drawLinesOnlyIfExtentsOn;
     private boolean        unifyAxisExtents;
+    private int            linesNumPartitions;
+    private boolean        forceFullDataFocus;
 }
 

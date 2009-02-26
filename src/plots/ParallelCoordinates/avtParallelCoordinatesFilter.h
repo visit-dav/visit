@@ -45,11 +45,13 @@
 
 #include <ParallelCoordinatesAttributes.h>
 #include <avtSIMODataTreeIterator.h>
+#include <avtHistogramSpecification.h>
 
 #include <vector>
 #include <string>
 
 #define PCP_CTX_BRIGHTNESS_LEVELS         100
+#define PCP_MAX_TIMESTEPS                 12
 
 class vtkDataSet;
 class vtkPolyData;
@@ -80,6 +82,10 @@ class vtkPoints;
 //    Hank Childs, Mon Feb 23 18:01:41 PST 2009
 //    Added methods for creating named selections.
 //
+//    Jeremy Meredith, Wed Feb 25 13:37:08 EST 2009
+//    Use new histogram structure for context and (optionally) focus.
+//    Add some multiple-timestep support.
+//
 // ****************************************************************************
 
 class avtParallelCoordinatesFilter : public avtSIMODataTreeIterator
@@ -93,7 +99,7 @@ public:
     virtual const char         *GetType(void)
                                     { return "avtParallelCoordinatesFilter"; };
     virtual const char         *GetDescription(void)
-                                    { return "Parallel axis plot"; };
+                                    { return "Parallel coordinates plot"; };
     virtual void                ReleaseData(void);
     virtual avtNamedSelection  *CreateNamedSelection(avtContract_p, const std::string &);
 
@@ -111,24 +117,27 @@ private:
     void                        ComputeCurrentDataExtentsOverAllDomains();
 
     void                        InitializeDataTupleInput();
-    void                        InitializeOutputDataSets();
-    void                        InputDataTuple(const floatVector &inputTuple);
-    void                        CountDataTuple(const floatVector &inputTuple);
+    void                        CountDataTupleFocus(int ts,
+                                                    const floatVector &tuple);
+    void                        CountDataTupleContext(int ts,
+                                                     const floatVector &tuple);
 
-    void                        InitializePairwiseBins();
-    void                        CleanUpPairwiseBins();
+    void                        InitializeContextHistograms();
+    void                        InitializeFocusHistograms();
+    void                        CleanUpAllHistograms();
 
-    void                        DrawContext();
-    void                        DrawDataCurves();
+    void                        DrawContext(int ts);
+    void                        DrawFocusHistograms(int ts);
     void                        PrepareForArrayVariable();
+    string                      ConvertExtentsToCondition();
 
     ParallelCoordinatesAttributes parCoordsAtts;
     
     bool                        isArrayVar;
     bool                        sendNullOutput;
 
-    stringVector                curveAndAxisLabels;
-    stringVector                contextLabels;
+    stringVector                focusLabels[PCP_MAX_TIMESTEPS];
+    stringVector                contextLabels[PCP_MAX_TIMESTEPS];
 
     int                         axisCount;
 
@@ -139,20 +148,24 @@ private:
     boolVector                  applySubranges;
     bool                        extentsApplied;
 
-    int                         outputCurveCount;
+    bool                        gotHistogramsFromDB;
+    std::vector<avtHistogramSpecification*> histograms;
+    std::vector<avtHistogramSpecification*> histogramsForSelectedRegion;
 
+    // Data and methods to support old full-data-point focus rendering
     vtkPolyData                *dataCurvePolyData;
     vtkPoints                  *dataCurvePoints;
     vtkCellArray               *dataCurveLines;
     vtkCellArray               *dataCurveVerts;
-
-    int                       **binnedAxisCounts;
+    int outputCurveCount;
+    void DrawFocusPolyLines();
+    void InitializeFocusPolyData();
+    void AppendDataTupleFocus(const floatVector&);
 
     virtual avtNamedSelection  *CreateNamedSelectionThroughTraversal(avtContract_p, const std::string &);
     virtual avtNamedSelection  *CreateDBAcceleratedNamedSelection(avtContract_p, const std::string &);
 };
 
 
+
 #endif
-
-

@@ -222,7 +222,20 @@ Definition:
 //    visualAxisNames (though visualnames not matching will not force
 //    recalculation.)
 //
-
+//    Jeremy Meredith, Tue Mar  4 18:17:13 EST 2008
+//    Added linesNumPartitions.
+//
+//    Jeremy Meredith, Fri Mar  7 11:43:37 EST 2008
+//    Added named selection and time iteration fields.
+//
+//    Jeremy Meredith, Thu Mar 27 16:38:18 EDT 2008
+//    Allow user to force into the mode using individual data point lines
+//    for the focus instead of using a histogram.
+//
+//    Jeremy Meredith, Wed Feb 25 16:55:12 EST 2009
+//    Port to trunk.  Removed time iteration (for now) and
+//    named selections (since they are done differently now).
+//
 // ****************************************************************************
 bool
 ParallelCoordinatesAttributes::ChangesRequireRecalculation(
@@ -231,12 +244,15 @@ ParallelCoordinatesAttributes::ChangesRequireRecalculation(
     if (extentMinima != obj.extentMinima ||
         extentMaxima != obj.extentMaxima ||
         drawLines != obj.drawLines ||
+        linesNumPartitions != obj.linesNumPartitions ||
         drawContext != obj.drawContext ||
         drawLinesOnlyIfExtentsOn != obj.drawLinesOnlyIfExtentsOn ||
         contextNumPartitions != obj.contextNumPartitions ||
         contextGamma != obj.contextGamma ||
         scalarAxisNames != obj.scalarAxisNames ||
-        unifyAxisExtents != obj.unifyAxisExtents)
+        unifyAxisExtents != obj.unifyAxisExtents ||
+        forceFullDataFocus != obj.forceFullDataFocus
+        )
     {
         return true;
     }

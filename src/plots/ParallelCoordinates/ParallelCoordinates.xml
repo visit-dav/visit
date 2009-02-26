@@ -14,7 +14,7 @@
       QvisParallelCoordinatesWidget.h
       QvisParallelCoordinatesPlotWizard.h
     </Files>
-    <Attribute name="ParallelCoordinatesAttributes" purpose="This class contains the plot attributes for the ParallelCoordinates plot." persistent="true" exportAPI="" exportInclude="" codefile="ParallelCoordinates.code">
+    <Attribute name="ParallelCoordinatesAttributes" purpose="This class contains the plot attributes for the ParallelCoordinates plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ParallelCoordinates.code">
       <Field name="scalarAxisNames" label="scalarAxisNames" type="stringVector">
       </Field>
       <Field name="visualAxisNames" label="visualAxisNames" type="stringVector">
@@ -51,6 +51,12 @@
         true
       </Field>
       <Field name="unifyAxisExtents" label="Unify the data extents across all axes" type="bool">
+        false
+      </Field>
+      <Field name="linesNumPartitions" label="Number of line partitions" type="int">
+        512
+      </Field>
+      <Field name="forceFullDataFocus" label="Force full data focus rendering" type="bool">
         false
       </Field>
       <Function name="InsertAxis" user="true" member="true">

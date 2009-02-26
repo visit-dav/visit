@@ -96,6 +96,8 @@ public:
     void SetContextColor(const ColorAttribute &contextColor_);
     void SetDrawLinesOnlyIfExtentsOn(bool drawLinesOnlyIfExtentsOn_);
     void SetUnifyAxisExtents(bool unifyAxisExtents_);
+    void SetLinesNumPartitions(int linesNumPartitions_);
+    void SetForceFullDataFocus(bool forceFullDataFocus_);
 
     // Property getting methods
     const stringVector   &GetScalarAxisNames() const;
@@ -116,6 +118,8 @@ public:
           ColorAttribute &GetContextColor();
     bool                 GetDrawLinesOnlyIfExtentsOn() const;
     bool                 GetUnifyAxisExtents() const;
+    int                  GetLinesNumPartitions() const;
+    bool                 GetForceFullDataFocus() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -148,7 +152,9 @@ public:
         ID_contextNumPartitions,
         ID_contextColor,
         ID_drawLinesOnlyIfExtentsOn,
-        ID_unifyAxisExtents
+        ID_unifyAxisExtents,
+        ID_linesNumPartitions,
+        ID_forceFullDataFocus
     };
 
 private:
@@ -164,6 +170,8 @@ private:
     ColorAttribute contextColor;
     bool           drawLinesOnlyIfExtentsOn;
     bool           unifyAxisExtents;
+    int            linesNumPartitions;
+    bool           forceFullDataFocus;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *ParallelCoordinatesAttributes::TypeMapFormatString = "s*s*d*d*babfiabb";
+const char *ParallelCoordinatesAttributes::TypeMapFormatString = "s*s*d*d*babfiabbib";
 
 // ****************************************************************************
 // Method: ParallelCoordinatesAttributes::ParallelCoordinatesAttributes
@@ -67,6 +67,8 @@ ParallelCoordinatesAttributes::ParallelCoordinatesAttributes() :
     contextNumPartitions = 128;
     drawLinesOnlyIfExtentsOn = true;
     unifyAxisExtents = false;
+    linesNumPartitions = 512;
+    forceFullDataFocus = false;
 }
 
 // ****************************************************************************
@@ -99,6 +101,8 @@ ParallelCoordinatesAttributes::ParallelCoordinatesAttributes(const ParallelCoord
     contextColor = obj.contextColor;
     drawLinesOnlyIfExtentsOn = obj.drawLinesOnlyIfExtentsOn;
     unifyAxisExtents = obj.unifyAxisExtents;
+    linesNumPartitions = obj.linesNumPartitions;
+    forceFullDataFocus = obj.forceFullDataFocus;
 
     SelectAll();
 }
@@ -154,6 +158,8 @@ ParallelCoordinatesAttributes::operator = (const ParallelCoordinatesAttributes &
     contextColor = obj.contextColor;
     drawLinesOnlyIfExtentsOn = obj.drawLinesOnlyIfExtentsOn;
     unifyAxisExtents = obj.unifyAxisExtents;
+    linesNumPartitions = obj.linesNumPartitions;
+    forceFullDataFocus = obj.forceFullDataFocus;
 
     SelectAll();
     return *this;
@@ -189,7 +195,9 @@ ParallelCoordinatesAttributes::operator == (const ParallelCoordinatesAttributes 
             (contextNumPartitions == obj.contextNumPartitions) &&
             (contextColor == obj.contextColor) &&
             (drawLinesOnlyIfExtentsOn == obj.drawLinesOnlyIfExtentsOn) &&
-            (unifyAxisExtents == obj.unifyAxisExtents));
+            (unifyAxisExtents == obj.unifyAxisExtents) &&
+            (linesNumPartitions == obj.linesNumPartitions) &&
+            (forceFullDataFocus == obj.forceFullDataFocus));
 }
 
 // ****************************************************************************
@@ -410,6 +418,8 @@ ParallelCoordinatesAttributes::SelectAll()
     Select(ID_contextColor,             (void *)&contextColor);
     Select(ID_drawLinesOnlyIfExtentsOn, (void *)&drawLinesOnlyIfExtentsOn);
     Select(ID_unifyAxisExtents,         (void *)&unifyAxisExtents);
+    Select(ID_linesNumPartitions,       (void *)&linesNumPartitions);
+    Select(ID_forceFullDataFocus,       (void *)&forceFullDataFocus);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -518,6 +528,18 @@ ParallelCoordinatesAttributes::CreateNode(DataNode *parentNode, bool completeSav
         node->AddNode(new DataNode("unifyAxisExtents", unifyAxisExtents));
     }
 
+    if(completeSave || !FieldsEqual(ID_linesNumPartitions, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("linesNumPartitions", linesNumPartitions));
+    }
+
+    if(completeSave || !FieldsEqual(ID_forceFullDataFocus, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("forceFullDataFocus", forceFullDataFocus));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -578,6 +600,10 @@ ParallelCoordinatesAttributes::SetFromNode(DataNode *parentNode)
         SetDrawLinesOnlyIfExtentsOn(node->AsBool());
     if((node = searchNode->GetNode("unifyAxisExtents")) != 0)
         SetUnifyAxisExtents(node->AsBool());
+    if((node = searchNode->GetNode("linesNumPartitions")) != 0)
+        SetLinesNumPartitions(node->AsInt());
+    if((node = searchNode->GetNode("forceFullDataFocus")) != 0)
+        SetForceFullDataFocus(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -666,6 +692,20 @@ ParallelCoordinatesAttributes::SetUnifyAxisExtents(bool unifyAxisExtents_)
 {
     unifyAxisExtents = unifyAxisExtents_;
     Select(ID_unifyAxisExtents, (void *)&unifyAxisExtents);
+}
+
+void
+ParallelCoordinatesAttributes::SetLinesNumPartitions(int linesNumPartitions_)
+{
+    linesNumPartitions = linesNumPartitions_;
+    Select(ID_linesNumPartitions, (void *)&linesNumPartitions);
+}
+
+void
+ParallelCoordinatesAttributes::SetForceFullDataFocus(bool forceFullDataFocus_)
+{
+    forceFullDataFocus = forceFullDataFocus_;
+    Select(ID_forceFullDataFocus, (void *)&forceFullDataFocus);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -780,6 +820,18 @@ ParallelCoordinatesAttributes::GetUnifyAxisExtents() const
     return unifyAxisExtents;
 }
 
+int
+ParallelCoordinatesAttributes::GetLinesNumPartitions() const
+{
+    return linesNumPartitions;
+}
+
+bool
+ParallelCoordinatesAttributes::GetForceFullDataFocus() const
+{
+    return forceFullDataFocus;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -856,6 +908,8 @@ ParallelCoordinatesAttributes::GetFieldName(int index) const
     case ID_contextColor:             return "contextColor";
     case ID_drawLinesOnlyIfExtentsOn: return "drawLinesOnlyIfExtentsOn";
     case ID_unifyAxisExtents:         return "unifyAxisExtents";
+    case ID_linesNumPartitions:       return "linesNumPartitions";
+    case ID_forceFullDataFocus:       return "forceFullDataFocus";
     default:  return "invalid index";
     }
 }
@@ -892,6 +946,8 @@ ParallelCoordinatesAttributes::GetFieldType(int index) const
     case ID_contextColor:             return FieldType_color;
     case ID_drawLinesOnlyIfExtentsOn: return FieldType_bool;
     case ID_unifyAxisExtents:         return FieldType_bool;
+    case ID_linesNumPartitions:       return FieldType_int;
+    case ID_forceFullDataFocus:       return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -928,6 +984,8 @@ ParallelCoordinatesAttributes::GetFieldTypeName(int index) const
     case ID_contextColor:             return "color";
     case ID_drawLinesOnlyIfExtentsOn: return "bool";
     case ID_unifyAxisExtents:         return "bool";
+    case ID_linesNumPartitions:       return "int";
+    case ID_forceFullDataFocus:       return "bool";
     default:  return "invalid index";
     }
 }
@@ -1012,6 +1070,16 @@ ParallelCoordinatesAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
     case ID_unifyAxisExtents:
         {  // new scope
         retval = (unifyAxisExtents == obj.unifyAxisExtents);
+        }
+        break;
+    case ID_linesNumPartitions:
+        {  // new scope
+        retval = (linesNumPartitions == obj.linesNumPartitions);
+        }
+        break;
+    case ID_forceFullDataFocus:
+        {  // new scope
+        retval = (forceFullDataFocus == obj.forceFullDataFocus);
         }
         break;
     default: retval = false;
@@ -1236,7 +1304,20 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
 //    visualAxisNames (though visualnames not matching will not force
 //    recalculation.)
 //
-
+//    Jeremy Meredith, Tue Mar  4 18:17:13 EST 2008
+//    Added linesNumPartitions.
+//
+//    Jeremy Meredith, Fri Mar  7 11:43:37 EST 2008
+//    Added named selection and time iteration fields.
+//
+//    Jeremy Meredith, Thu Mar 27 16:38:18 EDT 2008
+//    Allow user to force into the mode using individual data point lines
+//    for the focus instead of using a histogram.
+//
+//    Jeremy Meredith, Wed Feb 25 16:55:12 EST 2009
+//    Port to trunk.  Removed time iteration (for now) and
+//    named selections (since they are done differently now).
+//
 // ****************************************************************************
 bool
 ParallelCoordinatesAttributes::ChangesRequireRecalculation(
@@ -1245,12 +1326,15 @@ ParallelCoordinatesAttributes::ChangesRequireRecalculation(
     if (extentMinima != obj.extentMinima ||
         extentMaxima != obj.extentMaxima ||
         drawLines != obj.drawLines ||
+        linesNumPartitions != obj.linesNumPartitions ||
         drawContext != obj.drawContext ||
         drawLinesOnlyIfExtentsOn != obj.drawLinesOnlyIfExtentsOn ||
         contextNumPartitions != obj.contextNumPartitions ||
         contextGamma != obj.contextGamma ||
         scalarAxisNames != obj.scalarAxisNames ||
-        unifyAxisExtents != obj.unifyAxisExtents)
+        unifyAxisExtents != obj.unifyAxisExtents ||
+        forceFullDataFocus != obj.forceFullDataFocus
+        )
     {
         return true;
     }
