@@ -1291,7 +1291,7 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
                 else if( color == 5 )
                     color_value =  i;
                 
-                scalars->InsertTuple1(n1, (double) color_value);
+                scalars->InsertTuple1(n1, color_value);
 
                 // Create the quad.
                 quad->GetPointIds()->SetId( 0,   jj    * dims[0] + i );
@@ -1326,7 +1326,7 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
             else if( color == 5 )
               color_value =  i;
             
-            scalars->InsertTuple1(n1, (double) color_value);
+            scalars->InsertTuple1(n1, color_value);
         }
     }
     
@@ -1376,7 +1376,7 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
         else if( color == 5 )
           color_value =  i;
         
-        scalars->InsertTuple1(n1, (double) color_value);
+        scalars->InsertTuple1(n1, color_value);
     }
 
     // For a surface add in the first point from the adjacent
@@ -1402,7 +1402,7 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
     else if( color == 5 )
       color_value =  i;
     
-    scalars->InsertTuple1(n1, (double) color_value);
+    scalars->InsertTuple1(n1, color_value);
 
 
     // Stuff the points and scalars into the VTK unstructure grid.

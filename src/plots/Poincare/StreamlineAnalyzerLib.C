@@ -546,7 +546,7 @@ poloidalWindingStats( vector< Point >& poloidalWindingPoints,
     for( unsigned int j=i;
          j<poloidalWindingPoints.size();
          j+=poloidalWinding ) {
-      sumofsquares += (poloidalWindingPoints[j]-centroid).length2();
+      sumofsquares += Vector(poloidalWindingPoints[j]-centroid).length2();
     }
 
     // Calculate the standard deviation
@@ -1426,9 +1426,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   planeY[0] = planeNY.x;
   planeY[1] = planeNY.y;
   planeY[2] = planeNY.z;
-  planeY[3] = planePt.dot(planeNY);
+  planeY[3] = Dot(planePt, planeNY);
 
-  double lastDistY, currDistY = planeNY.dot( currPt ) - planeY[3];
+  double lastDistY, currDistY = Dot(planeNY, currPt) - planeY[3];
 
   // Set up the Z plane equation.
   Vector planeNZ( 0, 0, 1 );
@@ -1438,14 +1438,14 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   planeZ[0] = planeNZ.x;
   planeZ[1] = planeNZ.y;
   planeZ[2] = planeNZ.z;
-  planeZ[3] = planePt.dot(planeNZ);
+  planeZ[3] = Dot(planePt, planeNZ);
 
-  double lastDistZ, currDistZ = planeNZ.dot( currPt ) - planeZ[3];
+  double lastDistZ, currDistZ = Dot(planeNZ, currPt) - planeZ[3];
 
   for( unsigned int i=1; i<ptList.size(); ++i)
   {
     lastPt = currPt;
-    currPt = Vector(ptList[i]);
+    currPt = ptList[i];
 
     // Save the distance between points to use for finding periodic
     // fieldlines (i.e. rational surfaces).
@@ -1469,7 +1469,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       // then find where it intersects the plane.
       if( dot > 0.0 )
       {
-        Vector w = lastPt - planePt;
+        Vector w = (Vector) lastPt - planePt;
         
         double t = -Dot(planeNY, w ) / dot;
         
@@ -1505,7 +1505,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         // then find where it intersects the plane.
         if( dot > 0.0 )
         {
-          Vector w = lastPt - planePt;
+          Vector w = (Vector) lastPt - planePt;
         
           double t = -Dot(planeNZ, w ) / dot;
         
