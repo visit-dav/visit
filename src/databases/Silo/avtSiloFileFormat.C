@@ -1189,6 +1189,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    it happens only when ReadDir is in the root (topDir) directory. Also,
 //    Added a call to CloseFile(1) just prior to calling AddAnnotInt... as 
 //    a work-around for a bug in HDF5.
+//
+//    Mark C. Miller, Mon Mar  2 11:50:08 PST 2009
+//    Removed call to CloseFile(1) just prior to adding annot-int nodelists.
+//    The issue that addressed is now handled in the AddAnnotInt... routine.
 // ****************************************************************************
 
 void
@@ -1735,11 +1739,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         else if (searchForAnnotInt && strcmp(dirname, topDir.c_str()) == 0)
 
         {
-            // This call to CloseFile is to work around a probable bug in HDF5.
-            // Without it, HDF5 aborts on an assertion regarding shared files.
-            // It has something to do with having the same file opened multiple
-            // times, once by ReadDir() and then again in AddAnnotIntNodelists...
-            CloseFile(1);
             AddAnnotIntNodelistEnumerations(dbfile, md, name_w_dir, mm);
         }
 
@@ -11191,6 +11190,14 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
 //    this method is being called from within ReadDir we cannot allow file
 //    pointer stuff to change out from underneath ReadDir while it is still
 //    completing. 
+//
+//    Mark C. Miller, Mon Mar  2 11:46:47 PST 2009
+//    Undid previous change and instead added a call to the loop which has
+//    the effect of keeping the toc file open. The previous logic failed
+//    whenever the file being opened was not in '.' and it made more sense to
+//    just try to re-use the file opening logic and management routines of
+//    the plugin instead of solve problems with file naming here. Also, added
+//    logic to deal with EMTPY blocks in the mesh.
 // ****************************************************************************
 void
 avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
@@ -11208,27 +11215,16 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
     map<string,int> arr_names;
     bool haveFaceLists = false;
     bool haveNodeLists = false;
-    DBfile *correctFile = dbfile;
     for (int i = 0; i < mm->nblocks; i++)
     {
-        char *realvar;
-        char filename[1024];
-        DetermineFilenameAndDirectory(mm->meshnames[i], 0, filename, realvar, 0);
-        if (strcmp(filename, ".") != 0)
-        {
-            if (correctFile != dbfile && correctFile != 0)
-                DBClose(correctFile);
-            correctFile = DBOpen(filename, DB_UNKNOWN, DB_READ);
-        }
-        if (correctFile == 0)
-        {
-            debug1 << "Failed to open \"" << filename << "\" searching for ANNOTATION_INT object" << endl;
+        if (string(mm->meshnames[i]) == "EMPTY")
             continue;
-        }
-        else
-        {
-            debug1 << "Opened \"" << filename << "\" searching for ANNOTATION_INT object" << endl;
-        }
+
+        char *realvar;
+        DBfile *correctFile;
+        DetermineFileAndDirectory(mm->meshnames[i], correctFile, 0, realvar);
+        if (correctFile == 0)
+            continue;
 
         DBcompoundarray *ai = DBGetCompoundarray(correctFile, "ANNOTATION_INT");
         if (ai)
@@ -11245,9 +11241,14 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
             }
             DBFreeCompoundarray(ai);
         }
+
+        //
+        // Ensure that the toc file remains open while iterating through
+        // this loop because the caller, ReadDir(), will expect that it
+        // will not be closed.
+        //
+        OpenFile(tocIndex);
     }
-    if (correctFile != dbfile && correctFile != 0)
-        DBClose(correctFile);
 
     //
     // If we didn't find anything, we're done.
