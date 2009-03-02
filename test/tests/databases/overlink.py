@@ -6,6 +6,9 @@
 #  Programmer: Mark C. Miller 
 #  Date:       November 11, 2004 
 #
+#  Modifications:
+#    Mark C. Miller, Mon Mar  2 12:44:59 PST 2009
+#    Added tests for 3D and 2D ANNOTTAION_INT nodelists
 # ----------------------------------------------------------------------------
 
 
@@ -40,5 +43,73 @@ for i in range(silr.NumSets()):
         silr.TurnOffSet(i)
 SetPlotSILRestriction(silr)
 Test("overlink_04")
+
+#
+# Test ANNOTATION_INT objects and read options
+#
+DeleteAllPlots()
+CloseDatabase("../data/overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo")
+
+# First test open with search for ANNOT_INT objects turned on
+# but none actually in the database.
+readOptions=GetDefaultFileOpenOptions("Silo")
+readOptions["Search For ANNOTATION_INT (!!Slow!!)"] = 1
+SetDefaultFileOpenOptions("Silo", readOptions)
+OpenDatabase("../data/multipart_multi_ucd3d.silo")
+AddPlot("Pseudocolor","d")
+DrawPlots()
+ResetView()
+Test("overlink_05")
+
+# likewise on single domain, single file
+DeleteAllPlots()
+CloseDatabase("../data/multipart_multi_ucd3d.silo")
+OpenDatabase("../data/globe.silo")
+AddPlot("Pseudocolor","dx")
+DrawPlots()
+ResetView()
+Test("overlink_06")
+DeleteAllPlots()
+CloseDatabase("../data/globe.silo")
+
+# Ok, now lets do some real annot_int work
+DeleteAllPlots()
+CloseDatabase("../data/globe.silo")
+OpenDatabase("../data/overlink_test_data/annotInt/sweptCellTagTest.silo")
+AddPlot("Mesh","MMESH")
+DrawPlots()
+Test("overlink_07")
+
+silr = SILRestriction()
+for i in range(silr.NumSets()):
+    if silr.SetName(i) == "negYNodes":
+        silr.TurnOffSet(i)
+        break
+SetPlotSILRestriction(silr)
+Test("overlink_08")
+
+for i in range(silr.NumSets()):
+    if silr.SetName(i) == "negZNodes":
+        silr.TurnOffSet(i)
+        break
+SetPlotSILRestriction(silr)
+Test("overlink_09")
+
+DeleteAllPlots()
+CloseDatabase("../data/overlink_test_data/annotInt/sweptCellTagTest.silo")
+OpenDatabase("../data/overlink_test_data/annotInt/overlink2dTest.silo")
+AddPlot("Mesh","MMESH")
+DrawPlots()
+ResetView()
+v = GetView2D()
+v.windowCoords = (-0.360608, 6.36061, -0.115684, 6.11568)
+SetView2D(v)
+silr = SILRestriction()
+for i in range(silr.NumSets()):
+    if silr.SetName(i) == "posR":
+        silr.TurnOffSet(i)
+        break
+SetPlotSILRestriction(silr)
+Test("overlink_10")
 
 Exit()
