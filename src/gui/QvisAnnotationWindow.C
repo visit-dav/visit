@@ -420,6 +420,7 @@ QvisAnnotationWindow::CreateGeneralTab()
     databasePathExpansionMode->addItem(tr("Full"));
     databasePathExpansionMode->addItem(tr("Smart"));
     databasePathExpansionMode->addItem(tr("Smart Directory"));
+
     connect(databasePathExpansionMode, SIGNAL(activated(int)),
             this, SLOT(databasePathExpansionModeChanged(int)));
     databasePathExpansionModeLabel = new QLabel(tr("Path Expansion"), 
@@ -436,6 +437,26 @@ QvisAnnotationWindow::CreateGeneralTab()
     connect(databaseInfoFont, SIGNAL(fontChanged(const FontAttributes &)),
             this, SLOT(databaseInfoFontChanged(const FontAttributes &)));
     dLayout->addWidget(databaseInfoFont, 2, 0, 1, 2);
+
+    QFrame *dbSep2 = new QFrame(databaseInfo);
+    dbSep2->setFrameStyle(QFrame::HLine + QFrame::Sunken);
+    dLayout->addWidget(dbSep2, 3, 0, 1, 2);
+
+    QWidget *timeControls = new QWidget(databaseInfo);
+    dLayout->addWidget(timeControls, 4, 0, 1, 2);
+    QHBoxLayout *htLayout = new QHBoxLayout(timeControls);
+    htLayout->setSpacing(5);
+    databaseTimeScale = new QNarrowLineEdit(timeControls);
+    connect(databaseTimeScale, SIGNAL(returnPressed()),
+            this, SLOT(databaseTimeScaleChanged()));
+    htLayout->addWidget(new QLabel(tr("Time scale factor"), timeControls));
+    htLayout->addWidget(databaseTimeScale);
+
+    databaseTimeOffset = new QNarrowLineEdit(timeControls);
+    connect(databaseTimeOffset, SIGNAL(returnPressed()),
+            this, SLOT(databaseTimeOffsetChanged()));
+    htLayout->addWidget(new QLabel(tr("Time offset"), timeControls));
+    htLayout->addWidget(databaseTimeOffset);
 
     //
     // Create the user information
@@ -1523,6 +1544,9 @@ QvisAnnotationWindow::UpdateAxes3D()
 //   Jeremy Meredith, Tue Nov 18 15:45:15 EST 2008
 //   Added options for AxisArray modality.
 //
+//   Brad Whitlock, Mon Mar  2 14:43:04 PST 2009
+//   I added time scale and offset.
+//
 // ****************************************************************************
 
 void
@@ -1578,6 +1602,14 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             databasePathExpansionMode->setCurrentIndex(
                                 annotationAtts->GetDatabaseInfoExpansionMode());
             databasePathExpansionMode->blockSignals(false);
+            break;
+        case AnnotationAttributes::ID_databaseInfoTimeScale:
+            databaseTimeScale->setText(
+                QString("%1").arg(annotationAtts->GetDatabaseInfoTimeScale()));
+            break;
+        case AnnotationAttributes::ID_databaseInfoTimeOffset:
+            databaseTimeOffset->setText(
+                QString("%1").arg(annotationAtts->GetDatabaseInfoTimeOffset()));
             break;
         case AnnotationAttributes::ID_legendInfoFlag:
             legendInfo->blockSignals(true);
@@ -1788,6 +1820,9 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
 //   Jeremy Meredith, Tue Nov 18 15:45:15 EST 2008
 //   Added options for AxisArray modality.
 //
+//   Brad Whitlock, Mon Mar  2 14:40:38 PST 2009
+//   I added database time scale and offset.
+//
 // ****************************************************************************
 
 void
@@ -1830,6 +1865,18 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
     {
         QString temp(backgroundImage->displayText().trimmed());
         annotationAtts->SetBackgroundImage(temp.toStdString());
+    }
+
+    if (which_widget == AnnotationAttributes::ID_databaseInfoTimeScale || doAll)
+    {
+        QString temp(databaseTimeScale->displayText().trimmed());
+        annotationAtts->SetDatabaseInfoTimeScale(temp.toDouble());
+    }
+
+    if (which_widget == AnnotationAttributes::ID_databaseInfoTimeOffset || doAll)
+    {
+        QString temp(databaseTimeOffset->displayText().trimmed());
+        annotationAtts->SetDatabaseInfoTimeOffset(temp.toDouble());
     }
 }
 
@@ -2271,6 +2318,46 @@ QvisAnnotationWindow::databaseInfoFontChanged(const FontAttributes &f)
 {
     annotationAtts->SetDatabaseInfoFont(f);
     SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::databaseTimeScaleChanged
+//
+// Purpose: 
+//   This is a Qt slot that is called when the database time scale changes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  2 14:39:48 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::databaseTimeScaleChanged()
+{
+    GetCurrentValues(AnnotationAttributes::ID_databaseInfoTimeScale);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::databaseTimeOffsetChanged
+//
+// Purpose: 
+//   This is a Qt slot that is called when the database time offset changes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  2 14:39:48 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::databaseTimeOffsetChanged()
+{
+    GetCurrentValues(AnnotationAttributes::ID_databaseInfoTimeOffset);
     Apply();
 }
 

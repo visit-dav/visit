@@ -91,7 +91,7 @@ avtHDF_UCFileFormat::avtHDF_UCFileFormat(const char *filename, DBOptionsAttribut
     else
         fbIsAllowed = true;
 
-    cerr<< "fbIsAllowed = " << fbIsAllowed << endl<< endl;
+    debug4<< "fbIsAllowed = " << fbIsAllowed << endl<< endl;
     
     processAllTimesteps = false;
     readerTimestep = -1;
@@ -153,7 +153,7 @@ avtHDF_UCFileFormat::findAllTimesteps(const char *filename)
   ReadAndProcessDirectory(dir, CheckFileCallback, this);
 
   for (int i=0; i<fileNames.size(); i++)
-    cerr << "File " << i << " is " << fileNames[i] << endl;
+    debug4 << "File " << i << " is " << fileNames[i] << endl;
   
   processAllTimesteps = true;
 }
@@ -191,11 +191,11 @@ int
 avtHDF_UCFileFormat::GetNTimesteps(void)
 {
   if (!processAllTimesteps) {
-    cerr << "WARNING: GetNTimesteps called before all timesteps were processed " << endl;
+    debug4 << "WARNING: GetNTimesteps called before all timesteps were processed " << endl;
     EXCEPTION1(InvalidVariableException, "All Timestpes have to be processed");
   }
 
-  cerr << plugin << "returning " << fileNames.size() << " timesteps.. " << endl;
+  debug4 << plugin << "returning " << fileNames.size() << " timesteps.. " << endl;
   return fileNames.size();
 }
 
@@ -203,7 +203,7 @@ void
 avtHDF_UCFileFormat::ActivateTimestep(int ts) 
 {
   currentTimestep = ts;
-  //  cerr << plugin << "ActivateTimestep setting to " << currentTimestep << endl;
+  //  debug4 << plugin << "ActivateTimestep setting to " << currentTimestep << endl;
 }
 
 
@@ -212,7 +212,7 @@ avtHDF_UCFileFormat::ActivateTimestep(int ts)
 void
 avtHDF_UCFileFormat::updateReader(int newTimestep, bool runquery)
 {
-  //  cerr<<plugin<<":updateReader newtime="<<newTimestep<< ", readerTime="<<readerTimestep<<", runQuery="<<runquery<<endl;
+  //  debug4<<plugin<<":updateReader newtime="<<newTimestep<< ", readerTime="<<readerTimestep<<", runQuery="<<runquery<<endl;
   if (newTimestep == readerTimestep)
     return;
   
@@ -222,7 +222,7 @@ avtHDF_UCFileFormat::updateReader(int newTimestep, bool runquery)
   reader.openFile(fileNames[newTimestep], h5part);
   readerTimestep = newTimestep;
 
-  //  cerr << plugin << " updateReader switching to new timestep " << readerTimestep << endl;
+  //  debug4 << plugin << " updateReader switching to new timestep " << readerTimestep << endl;
 
   if (querySpecified && runquery) 
     runQuery();
@@ -232,11 +232,11 @@ avtHDF_UCFileFormat::updateReader(int newTimestep, bool runquery)
 void
 avtHDF_UCFileFormat::runQuery()
 {
-  //  cerr<<"Query string is " << queryString << endl;
+  //  debug4<<"Query string is " << queryString << endl;
   // read the relevant indices at this point; get the actual data in GetVar() and GetMesh()
   queryResults.clear();
   reader.executeQuery((char*)queryString.c_str(), 0, queryResults);
-  cerr<<"Execute Query resulted in " << queryResults.size() << " hits.." << endl;
+  debug4<<"Execute Query resulted in " << queryResults.size() << " hits.." << endl;
 }
 
 
@@ -281,7 +281,7 @@ avtHDF_UCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     pmesh->meshType = AVT_POINT_MESH;
     pmesh->topologicalDimension = 0;
     pmesh->spatialDimension = (is2D ? 2 : 3);
-    cerr << "Spatial dimension: " << pmesh->spatialDimension << endl;
+    debug4 << "Spatial dimension: " << pmesh->spatialDimension << endl;
     pmesh->hasSpatialExtents = false;
     md->Add(pmesh);
 
@@ -330,20 +330,20 @@ avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
   double *Z = NULL;
   BaseFileInterface::DataType type;
   
-  //  cerr<<"avtHDF_UCFileFormat::GetMesh()" << endl;
+  //  debug4<<"avtHDF_UCFileFormat::GetMesh()" << endl;
 
   updateReader(ts, true);
   
   if (readAllData)
     {
-      //      cerr<<"GetMesh:: readAlldata" << endl;
+      //      debug4<<"GetMesh:: readAlldata" << endl;
       vector<int64_t> dims;
       reader.getVariableInformation("x", 0, dims, &type);
 
       if (dims.size() != 1)
         EXCEPTION1(InvalidVariableException, meshname);
       numParticles = dims[0];
-      cerr<<"GetMesh:: all " << numParticles << " particles... " << endl;
+      debug4<<"GetMesh:: all " << numParticles << " particles... " << endl;
       X = new double[dims[0]];
       reader.getData("x", 0, X);
       Y = new double[dims[0]];
@@ -363,8 +363,8 @@ avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
       vector<int64_t> dims;
       numParticles = queryResults.size();
       
-      cerr<<"GetMesh:: read [" << numParticles << "] particles... " << endl;
-      cerr<<"GetMesh:: read [" << numParticles << "] particles from query result.. " << endl;
+      debug4<<"GetMesh:: read [" << numParticles << "] particles... " << endl;
+      debug4<<"GetMesh:: read [" << numParticles << "] particles from query result.. " << endl;
       X = new double[numParticles];
       reader.getPointData("x", 0, X, queryResults);
       
@@ -437,19 +437,19 @@ avtHDF_UCFileFormat::GetVar(int ts, const char *varname)
     double *V = NULL;
     int numParticles = 0;
 
-    //    cerr<<"avtHDF_UCFileFormat::GetVar()" << endl;
+    //    debug4<<"avtHDF_UCFileFormat::GetVar()" << endl;
 
     updateReader(ts, true);
     
     if (readAllData)
       {
-        //        cerr<<"GetVar:: readAlldata" << endl;
+        //        debug4<<"GetVar:: readAlldata" << endl;
         vector<int64_t> dims;
         reader.getVariableInformation(varname, 0, dims, &type);
         if (dims.size() != 1)
           EXCEPTION1(InvalidVariableException, varname);
         numParticles = dims[0];
-        cerr<<"GetVar() reading all " << numParticles << " particles...." << endl;
+        debug4<<"GetVar() reading all " << numParticles << " particles...." << endl;
         V = new double[numParticles];
         reader.getData(varname, 0, V);
       }
@@ -458,7 +458,7 @@ avtHDF_UCFileFormat::GetVar(int ts, const char *varname)
       // we are going to read a subset of the data based on the query that was previously executed
       // in RegisterDataSelections()
       numParticles = queryResults.size();
-      cerr<<"GetVar() returning subset of " << numParticles << " particles...." << endl;
+      debug4<<"GetVar() returning subset of " << numParticles << " particles...." << endl;
       V = new double[numParticles];
       reader.getPointData(varname, 0, V, queryResults);
     }
@@ -529,12 +529,12 @@ avtHDF_UCFileFormat::GetAuxiliaryData(const char *var, int ts, const char *type,
 {
   int t1 = visitTimer->StartTimer();
   
-  //  cerr << plugin << "inside GetAuxiliaryData " << endl<<endl;
+  //  debug4 << plugin << "inside GetAuxiliaryData " << endl<<endl;
   updateReader(ts, false);
   
     if (strcmp(type, AUXILIARY_DATA_HISTOGRAM) == 0)
     {
-      cerr << "HDF_UC TRYING TO GET HISTOGRAM!!" << endl;
+      debug4 << "HDF_UC TRYING TO GET HISTOGRAM!!" << endl;
       avtHistogramSpecification *spec = (avtHistogramSpecification *) s;
       ConstructHistogram(spec);
       
@@ -546,7 +546,7 @@ avtHDF_UCFileFormat::GetAuxiliaryData(const char *var, int ts, const char *type,
 
     if (strcmp(type, AUXILIARY_DATA_IDENTIFIERS) == 0)
     {
-      cerr << "HDF_UC TRYING TO GET AUXILIARY DATA FOR IDENTIFIERS " << endl<<endl<<endl;
+      debug4 << "HDF_UC TRYING TO GET AUXILIARY DATA FOR IDENTIFIERS " << endl<<endl<<endl;
       std::vector<avtDataSelection *> *ds = (std::vector<avtDataSelection *> *) s;
       std::vector<avtDataSelection *> drs;
       for (int i = 0 ; i < ds->size() ; i++)
@@ -590,7 +590,7 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
   int t1 = visitTimer->StartTimer();
   string func = "ConstructHistogram:: ";
 
-  cerr << plugin << func << endl<<endl;
+  debug4 << plugin << func << endl<<endl;
 
   if (NULL==spec) 
     EXCEPTION1(InvalidVariableException, "NULL Histogram Specification");
@@ -609,39 +609,39 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
   updateReader(timestep, false);
   
   if (timestep!=0) {
-    cerr << plugin << func << " WARNING: code needs to be tested.. "<< endl;
+    debug4 << plugin << func << " WARNING: code needs to be tested.. "<< endl;
     //EXCEPTION1(InvalidVariableException, "Timestep has to be 0 for now");
   }
 
   /*if (!regularBinning) {
-    cerr << plugin << func << " Need to implement adaptive binning " << endl;
+    debug4 << plugin << func << " Need to implement adaptive binning " << endl;
     EXCEPTION1(InvalidVariableException, "regularBinning");
   }*/
 
   for (int i=0; i<numBins.size(); i++) 
     if (regularBinning) {
       if (numBins[i]<1) {
-        cerr << plugin << func << " Need to specify a valid #bins for histogram " << endl;
+        debug4 << plugin << func << " Need to specify a valid #bins for histogram " << endl;
         EXCEPTION1(InvalidVariableException, "numBins");
       }
     }
   
   if (variables.empty()) {
-    cerr << plugin << func << " Histogram Spec needs to specify variables to plot " << endl;
+    debug4 << plugin << func << " Histogram Spec needs to specify variables to plot " << endl;
     EXCEPTION1(InvalidVariableException, "variables");
   }
   
   for (int i=0; i<variables.size(); i++){
     bool found = reader.checkForVariable(variables[i]);
     if (!found) {
-      cerr << plugin << func << " Histogram Spec lists variable not present in plugin " << endl;
+      debug4 << plugin << func << " Histogram Spec lists variable not present in plugin " << endl;
       EXCEPTION1(InvalidVariableException, variables[i]);
     }
   }
   
   if( boundsSpecified ){
     if (variables.size()!= boundsSize) {
-      cerr << plugin << func << " Histogram Spec variable list does not match bounds list size " << endl;
+      debug4 << plugin << func << " Histogram Spec variable list does not match bounds list size " << endl;
       EXCEPTION1(InvalidVariableException, "Variable bounds list mismatch");
     }
   }
@@ -651,7 +651,7 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
   isCached = histoCache->getCached(spec);
   if( isCached ){
       boundsSpecified = spec->BoundsSpecified();  
-      cerr << plugin << func << "Histogram retrieved from cache "<<endl;
+      debug4 << plugin << func << "Histogram retrieved from cache "<<endl;
   }  
   
   
@@ -669,13 +669,13 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
   }
   //if bounds are not specified than ask the reader for the extends 
   else{
-        cerr<< plugin << func << "Detected that bounds are not set.. setting them to..";
+        debug4<< plugin << func << "Detected that bounds are not set.. setting them to..";
         for(int i=0; i<variables.size() ; i++){
             reader.getDataMinMax_Double(variables[i],
                                     0,
                                     begins[i],
                                     ends[i]);
-            cerr<< "\t FastBit calculated " << variables[i] << " bounds to be.. " 
+            debug4<< "\t FastBit calculated " << variables[i] << " bounds to be.. " 
                   << begins[i] << ", "<< ends[i] << endl<<endl;
         }
   }
@@ -709,8 +709,8 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     double begin2 = begins[1];
     double end2 = ends[1];
     
-    //    cerr << "BEGIN1 = " << begin1 << ", END1 " << end1 << ", begin2 " << begin2 << ", end2 = " << end2 << endl;
-    //    cerr << "numbins1 = " << numBins[0] << ", numBins2 = " << numBins[1] << endl;
+    //    debug4 << "BEGIN1 = " << begin1 << ", END1 " << end1 << ", begin2 " << begin2 << ", end2 = " << end2 << endl;
+    //    debug4 << "numbins1 = " << numBins[0] << ", numBins2 = " << numBins[1] << endl;
   
     if( regularBinning ){ //if regular binning should be used
             reader.get2DHistogram((int64_t)0,
@@ -723,7 +723,7 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
                           count);
     }else{ //if adaptive binning should be used
           if( condition.empty() ){   //do we have a condition   
-                  cerr<<"********************************HDF_UC*************** No condition"<<endl;
+                  debug4<<"********************************HDF_UC*************** No condition"<<endl;
                   reader.get2DAdaptiveHistogram(
                               (int64_t)0,
                               variables[0].c_str(),
@@ -733,7 +733,7 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
                               spec->GetBounds()[0] , spec->GetBounds()[1] ,
                               count);
           }else{ //without a condition
-                  cerr<<"********************************HDF_UC*************** Condition"<<endl;               
+                  debug4<<"********************************HDF_UC*************** Condition"<<endl;               
                   reader.get2DAdaptiveHistogram(
                               (int64_t)0,
                               condition.c_str(),
@@ -745,19 +745,19 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
                               count );
           }
     }
-    //cerr<<"**********************HDF_UC*************"<<spec->GetBounds().size()<<" "<<spec->GetBounds()[0].size()<<" "<<spec->GetBounds()[1].size()<<endl;     
+    //debug4<<"**********************HDF_UC*************"<<spec->GetBounds().size()<<" "<<spec->GetBounds()[0].size()<<" "<<spec->GetBounds()[1].size()<<endl;     
     
     spec->SetBoundsSpecified();
     spec->SetCounts( count );   //Copy the counts into the specification
-    //cerr<<"**********************HDF_UC*************"<<spec->GetNumberOfBins()[0]<<" "<<spec->GetNumberOfBins()[1]<<endl;      
+    //debug4<<"**********************HDF_UC*************"<<spec->GetNumberOfBins()[0]<<" "<<spec->GetNumberOfBins()[1]<<endl;      
  
     
-    //    cerr<<"Computed histogram successfully and counts are set!"<<endl<<endl;
+    //    debug4<<"Computed histogram successfully and counts are set!"<<endl<<endl;
     cacheCurrentHisto = true;
   }
   
   else { // generic histogram, will need to take slices..
-    cerr << plugin << func << " Need to implement generic histogram slices.. " << endl;
+    debug4 << plugin << func << " Need to implement generic histogram slices.. " << endl;
     EXCEPTION1(InvalidVariableException,"variables");
   }
   
@@ -793,7 +793,7 @@ avtHDF_UCFileFormat::RegisterDataSelections(
                                 const std::vector<avtDataSelection_p> &sels, 
                                 std::vector<bool> *selectionsApplied) 
 {
-  cerr << plugin << "RegisterDataSelection.." << endl;
+  debug4 << plugin << "RegisterDataSelection.." << endl;
 
   updateReader(currentTimestep, false); 
 
@@ -809,7 +809,7 @@ avtHDF_UCFileFormat::RegisterDataSelections(
   reader.getVariableNames(varNames);
   
   if (fbIsAllowed) {
-    cerr << "selList.size() = " << selList.size() << endl;
+    debug4 << "selList.size() = " << selList.size() << endl;
     bool firstValidSelection=true; //needed for correct formating of the query string
     for (int i = 0; i < selList.size(); ++i) {
       
@@ -843,15 +843,15 @@ avtHDF_UCFileFormat::RegisterDataSelections(
       
       else if (std::string(selList[i]->GetType()) == std::string("Identifier Data Selection")) {
         
-        cerr <<plugin << "Register Data Selection found identifier type" << endl;
-        cerr << "\t for selList[ " << i << "]" << endl;
+        debug4 <<plugin << "Register Data Selection found identifier type" << endl;
+        debug4 << "\t for selList[ " << i << "]" << endl;
         
         (*(this->selsApplied))[i] = true;
         userMadeSelection = true;
         avtIdentifierSelection *ids = (avtIdentifierSelection *) *(selList[i]);
         
         const std::vector<double> Identifiers = ids->GetIdentifiers();
-        cerr <<"\t Returned Identifiers list size is " << Identifiers.size() << endl;
+        debug4 <<"\t Returned Identifiers list size is " << Identifiers.size() << endl;
         
         string id_string;
         int len = get_string_from_identifiers(Identifiers, id_string);
@@ -871,10 +871,10 @@ avtHDF_UCFileFormat::RegisterDataSelections(
   }
 
   if (querySpecified) {
-    //cerr << "query Specified " << queryString << endl;
+    //debug4 << "query Specified " << queryString << endl;
     runQuery();
   } else {
-    cerr << "query NOT specified " << endl;
+    debug4 << "query NOT specified " << endl;
   }
 
 
@@ -883,8 +883,8 @@ avtHDF_UCFileFormat::RegisterDataSelections(
   else
     readAllData = true;
 
-  //cerr<<fbIsAllowed<<"   "<<userMadeSelection<<" "<<endl;
-  //cerr << "queryString at eof RegisterDataSelection is " << queryString << endl;
+  //debug4<<fbIsAllowed<<"   "<<userMadeSelection<<" "<<endl;
+  //debug4 << "queryString at eof RegisterDataSelection is " << queryString << endl;
 }
 
 
@@ -914,7 +914,7 @@ avtHDF_UCFileFormat::ConstructIdentifiersFromDataRangeSelection(
                                      std::vector<avtDataSelection *> &drs)
 {
   std::string func = "ConstructIdentifiersFromDataRangeSelection";
-  cerr<< "Started in " << plugin << func << endl;
+  debug4<< "Started in " << plugin << func << endl;
   
   avtIdentifierSelection *rv = new avtIdentifierSelection();
   std::vector<double> ids;
@@ -944,8 +944,7 @@ avtHDF_UCFileFormat::ConstructIdentifiersFromDataRangeSelection(
     
     else if (std::string(drs[i]->GetType())==std::string("Identifier Data Selection")) { // identifier selection..
 
-      cerr << "IMPORTANT------------------"<< endl;
-      cerr << plugin << " Named selection found............."  << endl;
+      debug4 << plugin << " Named selection found............."  << endl;
   
       avtIdentifierSelection *id = (avtIdentifierSelection*)drs[i];
       const vector<double>& ids = id->GetIdentifiers();
@@ -963,15 +962,14 @@ avtHDF_UCFileFormat::ConstructIdentifiersFromDataRangeSelection(
       }
     }
   }
-  cerr << "IMPORTANT------------------"<< endl;
-  cerr << plugin << func << "query string is " << query << endl;
-  cerr << endl << endl;
+  debug4 << plugin << func << "query string is " << query << endl;
+  debug4 << endl << endl;
 
   if (querySpecified) {
     
     std::vector<int32_t> qResults;
     reader.executeQuery((char*)query.c_str(), 0, qResults);
-    cerr << "\t Execution of query string["<<query.size()<<" resulted in " << qResults.size() << " entries.." << endl;
+    debug4 << "\t Execution of query string["<<query.size()<<" resulted in " << qResults.size() << " entries.." << endl;
    
     double *V = new double[qResults.size()];
     reader.getPointData("id", 0, V, qResults); // Prabhat- TODO 'id' is hardcoded here...
@@ -992,7 +990,7 @@ avtHDF_UCFileFormat::ConstructIdentifiersFromDataRangeSelection(
 int  avtHDF_UCFileFormat::get_string_from_identifiers(const vector<double>& Identifiers, string& id_string) {
   
   id_string = "";
-  cerr << "get_string_from_identifiers id length = " << Identifiers.size() << endl;
+  debug4 << "get_string_from_identifiers id length = " << Identifiers.size() << endl;
   if (Identifiers.size()>0) {
     
     id_string = "( id in ( "; // Prabhat- TODO id is hardcoded here..

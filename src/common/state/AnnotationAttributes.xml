@@ -37,6 +37,12 @@
     <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:true">
       File
     </Field>
+    <Field name="databaseInfoTimeScale" label="Time scale" type="double">
+      1.
+    </Field>
+    <Field name="databaseInfoTimeOffset" label="Time offset" type="double">
+      0.
+    </Field>
     <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
       true
     </Field>

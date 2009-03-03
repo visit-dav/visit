@@ -87,6 +87,9 @@ class     vtkTextActor;
 //    Brad Whitlock, Tue Jan 29 16:16:14 PST 2008
 //    Added SetDatabaseInfoTextAttributes.
 //
+//    Brad Whitlock, Mon Mar  2 14:10:22 PST 2009
+//    I added time scale and offset.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinLegends : public VisWinColleague
@@ -103,12 +106,14 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
                                                 bool legend);
     void                          SetDatabaseInfoTextAttributes(
                                       const VisWinTextAttributes &);
-
+    void                          SetTimeScaleAndOffset(double,double);
   protected:
     vtkTextActor                 *dbInfoActor;
     bool                          dbInfoIsAdded;
     bool                          dbInfoVisible;
     VisWinTextAttributes          dbInfoTextAttributes;
+    double                        dbInfoTimeScale;
+    double                        dbInfoTimeOffset;
 
     int                           pathExpansionMode;
     bool                          legendVisible;
@@ -123,7 +128,7 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     void                          UpdateDBInfo(std::vector<avtActor_p> &);
 
   private:
-    static bool                   CreateDatabaseInfo(char *,
+     bool                         CreateDatabaseInfo(char *,
                                                      const std::string &,
                                                      avtDataAttributes &);
 };

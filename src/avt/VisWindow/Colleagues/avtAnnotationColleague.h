@@ -58,6 +58,9 @@ class AnnotationObject;
 //   Brad Whitlock, Tue Mar 20 10:18:04 PDT 2007
 //   Added support for setting legend properties.
 //
+//   Brad Whitlock, Mon Mar  2 14:19:55 PST 2009
+//   I added SetTimeScaleAndOffset.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtAnnotationColleague : protected VisWinColleague
@@ -106,6 +109,8 @@ public:
     virtual void UpdateView(void) { };
     virtual void UpdatePlotList(std::vector<avtActor_p> &p) { };
     virtual void SetFrameAndState(int, int, int, int, int, int, int) { };
+
+    virtual void SetTimeScaleAndOffset(double,double) { };
 
 private:
     std::string name;
