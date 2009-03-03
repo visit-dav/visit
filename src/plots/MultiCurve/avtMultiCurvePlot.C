@@ -254,6 +254,10 @@ avtMultiCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Eric Brugger, Fri Feb 20 16:21:57 PST 2009
 //    I added a legend to the plot.
 //
+//    Eric Brugger, Tue Mar  3 15:07:09 PST 2009
+//    I modified the routine to get the y axis tick spacing from the plot
+//    information.
+//
 // ****************************************************************************
 
 void
@@ -265,11 +269,15 @@ avtMultiCurvePlot::CustomizeBehavior(void)
     // Create the legend, which consists of the tick scale and any legend
     // text from the operators.
     //
-    char msg[80];
-    sprintf(msg, "Each tick is %g", atts.GetYAxisRange() / 4.);
-    levelsLegend->SetTitle(msg);
+    const MapNode *mNode = behavior->GetInfo().GetAttributes().GetPlotInformation().GetData().GetEntry("AxisTickSpacing");
+    if (mNode != NULL)
+    {
+        char msg[80];
+        sprintf(msg, "Each tick is %g", mNode->GetEntry("spacing")->AsDouble());
+        levelsLegend->SetTitle(msg);
+    }
 
-    const MapNode *mNode = behavior->GetInfo().GetAttributes().GetPlotInformation().GetData().GetEntry("LegendMessage");
+    mNode = behavior->GetInfo().GetAttributes().GetPlotInformation().GetData().GetEntry("LegendMessage");
     if (mNode != NULL)
     {
         const string message = mNode->GetEntry("message")->AsString();
@@ -449,7 +457,7 @@ avtMultiCurvePlot::SetLegend(bool on)
 //  Method: avtMultiCurvePlot::EnhanceSpecification
 //
 //  Purpose:
-//      Enhance the contract to request the secondary variable.
+//      Enhance the contract to request the secondary variables.
 //
 //  Returns:    The new contract.
 //
@@ -459,23 +467,29 @@ avtMultiCurvePlot::SetLegend(bool on)
 //  Programmer: Eric Brugger
 //  Creation:   December 12, 2008
 //
+//  Modifications:
+//    Eric Brugger, Thu Feb 26 17:49:02 PST 2009
+//    I added code to also request the id variable.
+//
 // ****************************************************************************
 
 avtContract_p
 avtMultiCurvePlot::EnhanceSpecification(avtContract_p spec)
 {
     string mv = atts.GetMarkerVariable();
-    if (mv == "default")
+    string iv = atts.GetIdVariable();
+    if (mv == "default" && iv == "default")
     {
         return spec;
     }
     avtDataRequest_p ds = spec->GetDataRequest();
     const char *primaryVariable = ds->GetVariable();
-    if (mv == primaryVariable)
+    if ((mv == "default" || mv == primaryVariable) &&
+        (iv == "default" || iv == primaryVariable))
     {
         //
-        // They didn't leave it as "default", but it is the same variable, so
-        // don't read it in again.
+        // Both variables are either "default" or the same as the plot
+        // variable, so don't read it in again.
         //
         return spec;
     }
@@ -483,11 +497,14 @@ avtMultiCurvePlot::EnhanceSpecification(avtContract_p spec)
     //
     // The pipeline specification should really be const -- it is used
     // elsewhere, so we can't modify it and return it.  Make a copy and in
-    // the new copy, add a secondary variable.
+    // the new copy, add the secondary variables.
     //
     avtDataRequest_p nds = new avtDataRequest(primaryVariable,
                                       ds->GetTimestep(), ds->GetRestriction());
-    nds->AddSecondaryVariable(mv.c_str());
+    if (mv != "default" && mv != primaryVariable)
+        nds->AddSecondaryVariable(mv.c_str());
+    if (iv != "default" && iv != primaryVariable && iv != mv)
+        nds->AddSecondaryVariable(iv.c_str());
     avtContract_p rv = new avtContract(spec, nds);
 
     return rv;

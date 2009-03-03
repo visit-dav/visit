@@ -299,6 +299,10 @@ VisWinAxesParallel::SetForegroundColor(double fr_, double fg_, double fb_)
 //    I implemented autoSetTicks, labelVisibility, titleVisibility,
 //    tickVisibility and setting the major and minor tick locations.
 //
+//    Eric Brugger, Tue Mar  3 09:47:53 PST 2009
+//    I modified the axes so that the number of ticks displayed on an
+//    individual curve would increase as the number of axes decreased.
+//
 // ****************************************************************************
 
 void
@@ -352,18 +356,21 @@ VisWinAxesParallel::UpdateView(void)
         else
             axes[i].axis->SetMajorTickLabelScale(1.);
 
-        double xpos1 = vxmin + (axes[i].xpos - (1./3.) - xmin) * dx;
-        double xpos2 = vxmin + (axes[i].xpos + (1./3.) - xmin) * dx;
+        double nTicks = floor(30./(axes.size()-1.)-1.);
+        double tickSize = (axes.size() - 1.) / 60.;
+
+        double xpos1 = vxmin + (axes[i].xpos - (nTicks * tickSize) - xmin) * dx;
+        double xpos2 = vxmin + (axes[i].xpos + (nTicks * tickSize) - xmin) * dx;
 
         axes[i].axisCap1->SetTitle(axes[i].title);
         axes[i].axisCap1->SetVisibility(axisVisibility);
         axes[i].axisCap1->SetTitleVisibility(titleVisibility);
-        axes[i].axisCap1->SetRange(-10., 10.);
+        axes[i].axisCap1->SetRange(-nTicks, nTicks);
         axes[i].axisCap1->GetPoint1Coordinate()->SetValue(vymin, xpos1);
         axes[i].axisCap1->GetPoint2Coordinate()->SetValue(vymin, xpos2);
 
         axes[i].axisCap2->SetVisibility(axisVisibility);
-        axes[i].axisCap2->SetRange(-10., 10.);
+        axes[i].axisCap2->SetRange(-nTicks, nTicks);
         axes[i].axisCap2->GetPoint1Coordinate()->SetValue(vymax, xpos1);
         axes[i].axisCap2->GetPoint2Coordinate()->SetValue(vymax, xpos2);
     }
@@ -1028,6 +1035,10 @@ VisWinAxesParallel::SetLabelTextAttributes(const VisWinTextAttributes &att)
 //    I implemented autoSetTicks, labelVisibility, titleVisibility,
 //    tickVisibility and setting the major and minor tick locations.
 //
+//    Eric Brugger, Tue Mar  3 09:47:53 PST 2009
+//    I modified the axes so that the number of ticks displayed on an
+//    individual curve would increase as the number of axes decreased.
+//
 // ****************************************************************************
 
 void
@@ -1041,6 +1052,13 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
 
     if (n < axes.size())
     {
+        for (int i=1; i<n; i++)
+        {
+            axes[i].axisCap1->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
+            axes[i].axisCap1->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+            axes[i].axisCap2->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
+            axes[i].axisCap2->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+        }
         for (int i=n; i<axes.size(); i++)
         {
             axes[i].axis->Delete();
@@ -1054,6 +1072,13 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
     }
     else if (n > axes.size())
     {
+        for (int i=1; i<axes.size(); i++)
+        {
+            axes[i].axisCap1->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
+            axes[i].axisCap1->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+            axes[i].axisCap2->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
+            axes[i].axisCap2->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+        }
         for (int i=axes.size(); i<n; i++)
         {
             vtkVisItAxisActor2D *ax;
@@ -1110,10 +1135,10 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
                 ax->SetTickLocation(0);
                 ax->SetDrawGridlines(false);
                 ax->SetAdjustLabels(false);
-                ax->SetMajorTickMinimum(-10.);
-                ax->SetMajorTickMaximum(10.);
-                ax->SetMajorTickSpacing(5.);
-                ax->SetMinorTickSpacing(5.);
+                ax->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
+                ax->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+                ax->SetMajorTickSpacing(1.);
+                ax->SetMinorTickSpacing(1.);
                 ax->SetLabelFontHeight(labelFontHeight);
                 ax->SetTitleFontHeight(titleFontHeight);
                 ax->GetProperty()->SetLineWidth(lineWidth);
@@ -1136,10 +1161,10 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
                 ax->SetTickLocation(0);
                 ax->SetDrawGridlines(false);
                 ax->SetAdjustLabels(false);
-                ax->SetMajorTickMinimum(-10.);
-                ax->SetMajorTickMaximum(10.);
-                ax->SetMajorTickSpacing(5.);
-                ax->SetMinorTickSpacing(5.);
+                ax->SetMajorTickMinimum(-floor(30./(n-1.)-1.));
+                ax->SetMajorTickMaximum(floor(30./(n-1.)-1.));
+                ax->SetMajorTickSpacing(1.);
+                ax->SetMinorTickSpacing(1.);
                 ax->GetProperty()->SetLineWidth(lineWidth);
                 ax->GetProperty()->SetColor(fr, fg, fb);
 

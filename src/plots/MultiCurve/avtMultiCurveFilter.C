@@ -129,10 +129,15 @@ avtMultiCurveFilter::PreExecute(void)
 //  Method: avtMultiCurveFilter::PostExecute
 //
 //  Purpose:
-//      Set the vis windows spatial extents.
+//      Set the vis windows spatial extents and the y axis tick spacing.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 12, 2008
+//
+//  Modifications:
+//    Eric Brugger, Tue Mar  3 15:07:09 PST 2009
+//    I modified the routine to pass the y axis tick spacing in the plot
+//    information so that the plot can include it in the legend.
 //
 // ****************************************************************************
 
@@ -144,6 +149,9 @@ avtMultiCurveFilter::PostExecute(void)
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
 
+    //
+    // Update the spatial extents.
+    //
     std::vector<std::string> labels;
     outAtts.GetLabels(labels);
     int nCurves = labels.size();
@@ -171,6 +179,14 @@ avtMultiCurveFilter::PostExecute(void)
 
         outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
     }
+
+    //
+    // Add the y axis tick spacing to the plot information so that the
+    // plot can include it in the legend.
+    //
+    MapNode axisTickSpacing;
+    axisTickSpacing["spacing"] = yAxisTickSpacing;
+    outAtts.AddPlotInformation("AxisTickSpacing", axisTickSpacing);
 }
 
 
@@ -198,6 +214,15 @@ avtMultiCurveFilter::PostExecute(void)
 //
 //    Eric Brugger, Wed Feb 18 08:25:08 PST 2009
 //    I added code to handle the id variable.
+//
+//    Eric Brugger, Thu Feb 26 17:40:54 PST 2009
+//    I added code to not plot points where the marker variable was negative.
+//
+//    Eric Brugger, Tue Mar  3 13:31:06 PST 2009
+//    I modified the curve scaling to match changes in the spacing and
+//    positioning of axes tick marks.  That change involved increasing the
+//    number of ticks displayed on an individual curve as the number of
+//    axes decreased.
 //
 // ****************************************************************************
 
@@ -267,9 +292,12 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
     // that, otherwise use the range of the data.
     //
     double scale;
+    double nTicks = floor(30./ny-1.);
+    double tickSize = ny / 60.;
     if (atts.GetUseYAxisRange())
     {
-        scale = 1. / (atts.GetYAxisRange() / 2.);
+        scale = 1. / (atts.GetYAxisRange() / 2.) * nTicks * tickSize;
+        yAxisTickSpacing = atts.GetYAxisRange() / 2. / nTicks;
     }
     else
     {
@@ -281,7 +309,8 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
             yMax = yMax > vals[i] ? yMax : vals[i];
         }
         double yAbsMax = fabs(yMin) > fabs(yMax) ? fabs(yMin) : fabs(yMax);
-        scale = 1. / yAbsMax;
+        scale = 1. / yAbsMax * nTicks * tickSize;
+        yAxisTickSpacing = yAbsMax / nTicks;
     }
 
     for (int i = 0; i < ny; i++)
@@ -293,21 +322,35 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
 
         double xLine[3];
         xLine[2] = 0.0;
+        int npts = 0;
         for (int j = 0; j < nx; j++)
         {
-            xLine[0] = xpts[j];
-            xLine[1] = (double)i + 0.5 + vals[i*nx+j] * scale * (1. / 3.);
-            points->InsertNextPoint(xLine);
+            if (vals2 == NULL || vals2[i*nx+j] >= 0.)
+            {
+                xLine[0] = xpts[j];
+                xLine[1] = (double)i + 0.5 + vals[i*nx+j] * scale;
+                points->InsertNextPoint(xLine);
+                npts++;
+            }
         }
 
         vtkCellArray *lines = vtkCellArray::New();
 
-        for (int j = 0; j < nx - 1; j++)
+        if (npts == 1)
         {
-            vtkIdType vtkPointIDs[2];
-            vtkPointIDs[0] = j;
-            vtkPointIDs[1] = j + 1;
-            lines->InsertNextCell(2, vtkPointIDs);
+            vtkIdType vtkPointIDs[1];
+            vtkPointIDs[0] = 0;
+            lines->InsertNextCell(1, vtkPointIDs);
+        }
+        else if (npts > 1)
+        {
+            for (int j = 0; j < npts - 1; j++)
+            {
+                vtkIdType vtkPointIDs[2];
+                vtkPointIDs[0] = j;
+                vtkPointIDs[1] = j + 1;
+                lines->InsertNextCell(2, vtkPointIDs);
+            }
         }
 
         //
@@ -318,12 +361,17 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
         symbols->SetNumberOfComponents(1);
         symbols->SetNumberOfTuples(nx);
         int *buf = symbols->GetPointer(0);
+        npts = 0;
         for (int j = 0; j < nx; j++)
         {
-            if (vals2 == NULL)
-                buf[j] = 0;
-            else
-                buf[j] = int(vals2[i*nx+j]);
+            if (vals2 == NULL || vals2[i*nx+j] >= 0.)
+            {
+                if (vals2 == NULL)
+                    buf[npts] = 0;
+                else
+                    buf[npts] = int(vals2[i*nx+j]);
+                npts++;
+            }
         }
 
         //
@@ -334,12 +382,17 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
         ids->SetNumberOfComponents(1);
         ids->SetNumberOfTuples(nx);
         buf = ids->GetPointer(0);
+        npts = 0;
         for (int j = 0; j < nx; j++)
         {
-            if (vals3 == NULL)
-                buf[j] = i*nx+j;
-            else
-                buf[j] = int(vals3[i*nx+j]);
+            if (vals2 == NULL || vals2[i*nx+j] >= 0.)
+            {
+                if (vals3 == NULL)
+                    buf[npts] = i*nx+j;
+                else
+                    buf[npts] = int(vals3[i*nx+j]);
+                npts++;
+            }
         }
 
         //

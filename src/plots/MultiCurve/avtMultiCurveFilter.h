@@ -58,6 +58,11 @@
 //  Programmer: xml2avt
 //  Creation:   omitted
 //
+//  Modifications:
+//    Eric Brugger, Tue Mar  3 15:06:26 PST 2009
+//    I added yAxisTickSpacing, so that I could pass it along in the
+//    plot information, so that the plot could include it in the legend.
+//
 // ****************************************************************************
 
 class avtMultiCurveFilter : public avtSIMODataTreeIterator
@@ -74,6 +79,7 @@ class avtMultiCurveFilter : public avtSIMODataTreeIterator
 
   protected:
     MultiCurveAttributes      atts;
+    double                    yAxisTickSpacing;
 
     virtual avtDataTree_p     ExecuteDataTree(vtkDataSet *, int, std::string);
 
