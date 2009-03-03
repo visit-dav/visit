@@ -28,6 +28,9 @@
 #    Brad Whitlock, Wed Jul 26 14:31:57 PST 2006
 #    Added testing for auto fullframe of some glyphed plots.
 #
+#    Kathleen Bonnell, Tue Mar  3 13:20:57 PST 2009
+#    Added testing for log-scaling of curves and 2d plots.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -124,6 +127,11 @@ def TestViewChangeFullFrame():
     SetPlotOptions(h)
     Test("ViewChangeFullFrame_07")
 
+    # cleanup for next test
+    v = GetView2D()
+    v.fullFrameActivationMode = v.Auto
+    SetView2D(v)
+
     DeleteAllPlots()
 
 def TestViewChangeFullFrameWithGlyphs():
@@ -178,11 +186,136 @@ def TestViewChangeFullFrameWithGlyphs():
     Test("ViewChangeAutoFF_05")
     DeleteAllPlots()
 
+def TestViewChangeLogScaling2D():
+    TestSection("Testing view changes with log scaling of 2D plots")
+
+    OpenDatabase("../data/curv2d.silo")
+    AddPlot("Pseudocolor", "u")
+    DrawPlots()
+    ResetView()
+
+    #7944  ensure that changing curve view scaling does not affect 2D.
+    v = GetViewCurve()
+    v.domainScale = v.LOG
+    v.rangeScale = v.LOG
+    SetViewCurve(v)
+
+    Test("ViewChangeLogScale2D_00")
+
+    #8563  using view window coords to put a plot into a range suitable 
+    #      for log-scaling
+
+    v = GetView2D()
+    v.fullFrameActivationMode = v.Off
+    wc = v.windowCoords
+    v.windowCoords = (1e-13, 0.25, wc[2], wc[3])
+    SetView2D(v)
+
+    Test("ViewChangeLogScale2D_01")
+    v.xScale = v.LOG 
+    SetView2D(v)
+    Test("ViewChangeLogScale2D_02")
+
+    #clean up for next test
+    v = GetView2D()
+    v.xScale = v.LINEAR
+    v.yScale = v.LINEAR
+    SetView2D(v)
+    ResetView()
+
+    v = GetViewCurve()
+    v.domainScale = v.LINEAR
+    v.rangeScale = v.LINEAR
+    SetViewCurve(v)
+    DeleteAllPlots()
+
+def TestViewChangeLogScalingCurves():
+    TestSection("Testing view changes with log scaling of curves")
+    # '8880:  Add curve plot.  Set scaling to log-log.  Add another curve plot.
+    OpenDatabase("../data/distribution.ultra")
+    AddPlot("Curve", "Laplace Distribution")
+    # For log scaling to work with these curves, we need to transform
+    # first.
+
+    trans = TransformAttributes()
+    trans.doTranslate = 1
+    trans.translateX = 30
+    trans.translateY = 10
+    SetDefaultOperatorOptions(trans)
+    AddOperator("Transform")
+    DrawPlots()
+    ResetView()
+    Test("ViewChangeLogScaleCurves_00")
+   
+    v = GetViewCurve()
+    v.domainScale = v.LOG 
+    v.rangeScale  = v.LOG 
+    SetViewCurve(v)
+
+    Test("ViewChangeLogScaleCurves_01")
+
+    AddPlot("Curve", "Log Normal Distribution")
+    AddOperator("Transform")
+    DrawPlots()
+    Test("ViewChangeLogScaleCurves_02")
+
+    AddPlot("Curve", "Exponential Distribution")
+    AddOperator("Transform")
+    DrawPlots()
+    Test("ViewChangeLogScaleCurves_03")
+
+    v = GetViewCurve()
+    v.domainScale = v.LINEAR 
+    v.rangeScale  = v.LINEAR 
+    SetViewCurve(v)
+
+    DeleteAllPlots()
+
+    #8660  add log scaling to a curve put in an appropriate range via the
+    #      box operator
+    OpenDatabase("../data/c063.curve")
+    AddPlot("Curve", "flat")
+    AddPlot("Curve", "going_down")
+    AddPlot("Curve", "going_up")
+    AddPlot("Curve", "parabolic")
+
+    DrawPlots()
+
+    SetActivePlots((0, 1, 2, 3))
+    AddOperator("Box")
+    b = BoxAttributes()
+    b.minx = 0.4
+    b.maxx = 0.8
+    b.miny = 0.000001 
+    b.maxy = 10000 
+    SetOperatorOptions(b) 
+
+    SetViewExtentsType("actual")
+
+    Test("ViewChangeLogScaleCurves_04")
+
+    v = GetViewCurve()
+    v.domainScale = v.LOG 
+    v.rangeScale  = v.LOG 
+    SetViewCurve(v)
+   
+    Test("ViewChangeLogScaleCurves_05")
+
+    #clean up for next test
+    v = GetViewCurve()
+    v.domainScale = v.LINEAR 
+    v.rangeScale  = v.LINEAR 
+    SetViewCurve(v)
+    ResetView()
+    DeleteAllPlots()
+
 def ViewChangeMain():
     InitAnnotation()
     TestViewChangeSliceFlip()
     TestViewChangeFullFrame()
     TestViewChangeFullFrameWithGlyphs()
+    TestViewChangeLogScaling2D()
+    TestViewChangeLogScalingCurves()
 
 # Call the main function
 ViewChangeMain()
