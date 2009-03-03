@@ -196,7 +196,7 @@ void H5_Index::openHDF5FileLocal(const char* file_location){
 
 void H5_Index::openH5PartFile(std::string file_location) {
 
-  std::cout << "OpenH5PartFile..." << std::endl;
+  //std::cout << "OpenH5PartFile..." << std::endl;
 
   // open in HDF5_UC file mode
   if (!file_open) { 
@@ -221,8 +221,8 @@ void H5_Index::openH5PartFile(std::string file_location) {
   nTimeSteps = H5PartGetNumSteps(h5partFile);
   nDatasets = H5PartGetNumDatasets(h5partFile);
 
-  std::cout << "nParticles: " << nParticles << std::endl;
-  std::cout << "nDatasets: " << nDatasets << std::endl;
+  //std::cout << "nParticles: " << nParticles << std::endl;
+  //std::cout << "nDatasets: " << nDatasets << std::endl;
 
   const h5part_int64_t lenName = 64;
   char datasetName[lenName];
@@ -236,7 +236,7 @@ void H5_Index::openH5PartFile(std::string file_location) {
       perror("Could not retrieve dataset names!");
     }
     else {
-      std::cout << "datasetName: " << datasetName << "." << std::endl;
+      //std::cout << "datasetName: " << datasetName << "." << std::endl;
       variable_names.push_back(datasetName);
       variable_indices.push_back(i);
       variable_types.push_back(datasetType);
@@ -821,7 +821,7 @@ bool H5_Index::getPointData(const std::string variablename,int64_t time,void *da
         //open an existing data set...
         answer = dataset_id.open(file_id.getID(),path.c_str());
         if(answer == false) {
-          std::cout << "Dataset of file " << file_id.getID() << " could not be opened " << std::endl;
+          //std::cout << "Dataset of file " << file_id.getID() << " could not be opened " << std::endl;
           return answer;
         }
         //first get the type information...

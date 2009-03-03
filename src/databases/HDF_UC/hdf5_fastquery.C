@@ -41,14 +41,14 @@ void HDF5_FQ::openFile(const std::string & name, const bool useH5PartFile){
   //if this is a new file, close the last one
   
   if(valid){
-    std::cerr<<"HDF5_FQ::openFile() called on " << name 
-             <<" This is a new file.. deleting old stuff " << std::endl;
+    //std::cerr<<"HDF5_FQ::openFile() called on " << name 
+    //         <<" This is a new file.. deleting old stuff " << std::endl;
     if (dataSets)
       delete dataSets;
     deleteQuery();
   }
 
-  std::cerr<<"HDF_FQ::openFile() allocating new dataSets, fastQuery" << std::endl;
+  //std::cerr<<"HDF_FQ::openFile() allocating new dataSets, fastQuery" << std::endl;
   dataSets = new H5_Index(useH5PartFile);
   dataSets->openHDF5File(name);
   numtimeSlice=dataSets->getNumSteps();
@@ -227,12 +227,12 @@ int64_t HDF5_FQ::executeEqualitySelectionQuery(const char * varname,
                                                std::vector<int32_t>& offset){
   
   ibis::gVerbose = 0;
-  std::cerr<<"HDF_FQ:: executeEqualityQuery, input identifiers size="<< identifiers.size() << std::endl;
+  //std::cerr<<"HDF_FQ:: executeEqualityQuery, input identifiers size="<< identifiers.size() << std::endl;
   tok = fastQuery[time]->createEqualitySelectionQuery(varname, identifiers);
 
   numHits = fastQuery[time]->submitQuery(tok);
 
-  std::cerr<<"HDF_FQ:: after executing equalitySelection query, #hits = "<< numHits << std::endl;
+  //std::cerr<<"HDF_FQ:: after executing equalitySelection query, #hits = "<< numHits << std::endl;
   if (numHits>0)
     fastQuery[time]->getHitLocations((const char*)tok,offset);
   
@@ -271,7 +271,7 @@ void HDF5_FQ::getDataMinMax_Double(const std::string& variableName,
   // timestep has to be zero, since there's only 1 dataset open at a time..
   result = dataSets->getActualRange(variableName, 0, (void*)range);
   if (!result) {
-    std::cerr<<"ERROR:: HDF_FQ:: getDataMinMax call failed" << std::endl << std::endl;
+    //std::cerr<<"ERROR:: HDF_FQ:: getDataMinMax call failed" << std::endl << std::endl;
   }
 
   min = range[0];
@@ -307,13 +307,13 @@ long HDF5_FQ::convert_fastbit_to_hdf5_fq_hist(double* bound, uint32_t *count,
       counts.push_back(count[i]);
     }
     
-    std::cout << "Pushed "<< bounds.size() << " elements into the bounds array..."  
-              << "and    "<< counts.size() << " elements into counts array..." 
-              << std::endl;
+    //std::cout << "Pushed "<< bounds.size() << " elements into the bounds array..."  
+    //          << "and    "<< counts.size() << " elements into counts array..." 
+    //          << std::endl;
     err = counts.size();
   }
   else {
-    std::cout << "convert_fastbit_to_hdf5_fq_hist called with invalid num_read" << std::endl;
+    //std::cout << "convert_fastbit_to_hdf5_fq_hist called with invalid num_read" << std::endl;
   }
   
   return err;
@@ -415,8 +415,8 @@ long HDF5_FQ::get1DHistogram(int64_t timestep,
 */
   //TODO:: transfer result from count to counts;
   // Check this with John Wu
-  std::cout<<"get1DDistribution w/ strides returned " << err 
-           << "count size is " << count.size() << std::endl;
+  //std::cout<<"get1DDistribution w/ strides returned " << err 
+  //         << "count size is " << count.size() << std::endl;
 
   for (unsigned int i=0;i<count.size();i++)
     counts.push_back((uint32_t)count[i]);
@@ -482,10 +482,10 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
     for (int i=0; i<=num_bins2; i++)
       bounds2.push_back(begin2 + i*stride2);
     
-    std::cout << "HDF_FQ:: get2DHistogram created "
-              << " bounds1 [size= " << bounds1.size() << "], " 
-              << " bounds2 [size= " << bounds2.size() << "]"
-              << std::endl;
+    //std::cout << "HDF_FQ:: get2DHistogram created "
+    //          << " bounds1 [size= " << bounds1.size() << "], " 
+    //         << " bounds2 [size= " << bounds2.size() << "]"
+    //          << std::endl;
     return err;
 }
 
@@ -518,9 +518,9 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
     std::vector<size_t> count;
 
     ibis::gVerbose = 0;
-    std::cout << "HDF_FQ:: starting get2DDistribution call with following info" <<
-      variableName1 << "[" << begin1 << "," << end1 << "," << stride1 << "] " <<
-      variableName2 << "[" << begin2 << "," << end2 << "," << stride2 << "] " << std::endl;
+    //std::cout << "HDF_FQ:: starting get2DDistribution call with following info" <<
+    //  variableName1 << "[" << begin1 << "," << end1 << "," << stride1 << "] " <<
+    //  variableName2 << "[" << begin2 << "," << end2 << "," << stride2 << "] " << std::endl;
       
       
     err = fastQuery[timestep]->get2DDistribution(condition, 
@@ -530,7 +530,7 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
                                                  begin2, end2, stride2,
                                                  counts);
 
-    std::cout << "HDF_FQ:: returned from 2DDistribution call with err=" << err << std::endl;
+    //std::cout << "HDF_FQ:: returned from 2DDistribution call with err=" << err << std::endl;
     ibis::gVerbose = 0;
     return err;
  }
@@ -554,7 +554,7 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
                                                bounds1, bounds2,
                                                counts);
                                                
-  std::cout << "HDF_FQ:: returned from First New 2DAdaptiveDistribution call with err=" 
+  //std::cout << "HDF_FQ:: returned from First New 2DAdaptiveDistribution call with err=" 
             << err << std::endl;
   ibis::gVerbose = 0;
   return err;
@@ -581,8 +581,8 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
                                                bounds2,
                                                counts);
                                                
-  std::cout << "HDF_FQ:: returned from Second New 2DAdaptiveDistribution call with err=" 
-            << err << std::endl;
+  //std::cout << "HDF_FQ:: returned from Second New 2DAdaptiveDistribution call with err=" 
+  //          << err << std::endl;
   ibis::gVerbose = 0;
   return err;
 }

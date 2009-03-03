@@ -77,7 +77,7 @@ public class AnnotationAttributes extends AttributeSubject
 
     public AnnotationAttributes()
     {
-        super(18);
+        super(20);
 
         axes2D = new Axes2D();
         axes3D = new Axes3D();
@@ -86,6 +86,8 @@ public class AnnotationAttributes extends AttributeSubject
         databaseInfoFlag = true;
         databaseInfoFont = new FontAttributes();
         databaseInfoExpansionMode = PATHEXPANSIONMODE_FILE;
+        databaseInfoTimeScale = 1;
+        databaseInfoTimeOffset = 0;
         legendInfoFlag = true;
         backgroundColor = new ColorAttribute(255, 255, 255);
         foregroundColor = new ColorAttribute(0, 0, 0);
@@ -101,7 +103,7 @@ public class AnnotationAttributes extends AttributeSubject
 
     public AnnotationAttributes(AnnotationAttributes obj)
     {
-        super(18);
+        super(20);
 
         axes2D = new Axes2D(obj.axes2D);
         axes3D = new Axes3D(obj.axes3D);
@@ -110,6 +112,8 @@ public class AnnotationAttributes extends AttributeSubject
         databaseInfoFlag = obj.databaseInfoFlag;
         databaseInfoFont = new FontAttributes(obj.databaseInfoFont);
         databaseInfoExpansionMode = obj.databaseInfoExpansionMode;
+        databaseInfoTimeScale = obj.databaseInfoTimeScale;
+        databaseInfoTimeOffset = obj.databaseInfoTimeOffset;
         legendInfoFlag = obj.legendInfoFlag;
         backgroundColor = new ColorAttribute(obj.backgroundColor);
         foregroundColor = new ColorAttribute(obj.foregroundColor);
@@ -135,6 +139,8 @@ public class AnnotationAttributes extends AttributeSubject
                 (databaseInfoFlag == obj.databaseInfoFlag) &&
                 (databaseInfoFont.equals(obj.databaseInfoFont)) &&
                 (databaseInfoExpansionMode == obj.databaseInfoExpansionMode) &&
+                (databaseInfoTimeScale == obj.databaseInfoTimeScale) &&
+                (databaseInfoTimeOffset == obj.databaseInfoTimeOffset) &&
                 (legendInfoFlag == obj.legendInfoFlag) &&
                 (backgroundColor == obj.backgroundColor) &&
                 (foregroundColor == obj.foregroundColor) &&
@@ -191,70 +197,82 @@ public class AnnotationAttributes extends AttributeSubject
         Select(6);
     }
 
+    public void SetDatabaseInfoTimeScale(double databaseInfoTimeScale_)
+    {
+        databaseInfoTimeScale = databaseInfoTimeScale_;
+        Select(7);
+    }
+
+    public void SetDatabaseInfoTimeOffset(double databaseInfoTimeOffset_)
+    {
+        databaseInfoTimeOffset = databaseInfoTimeOffset_;
+        Select(8);
+    }
+
     public void SetLegendInfoFlag(boolean legendInfoFlag_)
     {
         legendInfoFlag = legendInfoFlag_;
-        Select(7);
+        Select(9);
     }
 
     public void SetBackgroundColor(ColorAttribute backgroundColor_)
     {
         backgroundColor = backgroundColor_;
-        Select(8);
+        Select(10);
     }
 
     public void SetForegroundColor(ColorAttribute foregroundColor_)
     {
         foregroundColor = foregroundColor_;
-        Select(9);
+        Select(11);
     }
 
     public void SetGradientBackgroundStyle(int gradientBackgroundStyle_)
     {
         gradientBackgroundStyle = gradientBackgroundStyle_;
-        Select(10);
+        Select(12);
     }
 
     public void SetGradientColor1(ColorAttribute gradientColor1_)
     {
         gradientColor1 = gradientColor1_;
-        Select(11);
+        Select(13);
     }
 
     public void SetGradientColor2(ColorAttribute gradientColor2_)
     {
         gradientColor2 = gradientColor2_;
-        Select(12);
+        Select(14);
     }
 
     public void SetBackgroundMode(int backgroundMode_)
     {
         backgroundMode = backgroundMode_;
-        Select(13);
+        Select(15);
     }
 
     public void SetBackgroundImage(String backgroundImage_)
     {
         backgroundImage = backgroundImage_;
-        Select(14);
+        Select(16);
     }
 
     public void SetImageRepeatX(int imageRepeatX_)
     {
         imageRepeatX = imageRepeatX_;
-        Select(15);
+        Select(17);
     }
 
     public void SetImageRepeatY(int imageRepeatY_)
     {
         imageRepeatY = imageRepeatY_;
-        Select(16);
+        Select(18);
     }
 
     public void SetAxesArray(AxesArray axesArray_)
     {
         axesArray = axesArray_;
-        Select(17);
+        Select(19);
     }
 
     // Property getting methods
@@ -265,6 +283,8 @@ public class AnnotationAttributes extends AttributeSubject
     public boolean        GetDatabaseInfoFlag() { return databaseInfoFlag; }
     public FontAttributes GetDatabaseInfoFont() { return databaseInfoFont; }
     public int            GetDatabaseInfoExpansionMode() { return databaseInfoExpansionMode; }
+    public double         GetDatabaseInfoTimeScale() { return databaseInfoTimeScale; }
+    public double         GetDatabaseInfoTimeOffset() { return databaseInfoTimeOffset; }
     public boolean        GetLegendInfoFlag() { return legendInfoFlag; }
     public ColorAttribute GetBackgroundColor() { return backgroundColor; }
     public ColorAttribute GetForegroundColor() { return foregroundColor; }
@@ -295,26 +315,30 @@ public class AnnotationAttributes extends AttributeSubject
         if(WriteSelect(6, buf))
             buf.WriteInt(databaseInfoExpansionMode);
         if(WriteSelect(7, buf))
-            buf.WriteBool(legendInfoFlag);
+            buf.WriteDouble(databaseInfoTimeScale);
         if(WriteSelect(8, buf))
-            backgroundColor.Write(buf);
+            buf.WriteDouble(databaseInfoTimeOffset);
         if(WriteSelect(9, buf))
-            foregroundColor.Write(buf);
+            buf.WriteBool(legendInfoFlag);
         if(WriteSelect(10, buf))
-            buf.WriteInt(gradientBackgroundStyle);
+            backgroundColor.Write(buf);
         if(WriteSelect(11, buf))
-            gradientColor1.Write(buf);
+            foregroundColor.Write(buf);
         if(WriteSelect(12, buf))
-            gradientColor2.Write(buf);
+            buf.WriteInt(gradientBackgroundStyle);
         if(WriteSelect(13, buf))
-            buf.WriteInt(backgroundMode);
+            gradientColor1.Write(buf);
         if(WriteSelect(14, buf))
-            buf.WriteString(backgroundImage);
+            gradientColor2.Write(buf);
         if(WriteSelect(15, buf))
-            buf.WriteInt(imageRepeatX);
+            buf.WriteInt(backgroundMode);
         if(WriteSelect(16, buf))
-            buf.WriteInt(imageRepeatY);
+            buf.WriteString(backgroundImage);
         if(WriteSelect(17, buf))
+            buf.WriteInt(imageRepeatX);
+        if(WriteSelect(18, buf))
+            buf.WriteInt(imageRepeatY);
+        if(WriteSelect(19, buf))
             axesArray.Write(buf);
     }
 
@@ -351,42 +375,48 @@ public class AnnotationAttributes extends AttributeSubject
                 SetDatabaseInfoExpansionMode(buf.ReadInt());
                 break;
             case 7:
-                SetLegendInfoFlag(buf.ReadBool());
+                SetDatabaseInfoTimeScale(buf.ReadDouble());
                 break;
             case 8:
-                backgroundColor.Read(buf);
-                Select(8);
+                SetDatabaseInfoTimeOffset(buf.ReadDouble());
                 break;
             case 9:
-                foregroundColor.Read(buf);
-                Select(9);
+                SetLegendInfoFlag(buf.ReadBool());
                 break;
             case 10:
-                SetGradientBackgroundStyle(buf.ReadInt());
+                backgroundColor.Read(buf);
+                Select(10);
                 break;
             case 11:
-                gradientColor1.Read(buf);
+                foregroundColor.Read(buf);
                 Select(11);
                 break;
             case 12:
-                gradientColor2.Read(buf);
-                Select(12);
+                SetGradientBackgroundStyle(buf.ReadInt());
                 break;
             case 13:
-                SetBackgroundMode(buf.ReadInt());
+                gradientColor1.Read(buf);
+                Select(13);
                 break;
             case 14:
-                SetBackgroundImage(buf.ReadString());
+                gradientColor2.Read(buf);
+                Select(14);
                 break;
             case 15:
-                SetImageRepeatX(buf.ReadInt());
+                SetBackgroundMode(buf.ReadInt());
                 break;
             case 16:
-                SetImageRepeatY(buf.ReadInt());
+                SetBackgroundImage(buf.ReadString());
                 break;
             case 17:
+                SetImageRepeatX(buf.ReadInt());
+                break;
+            case 18:
+                SetImageRepeatY(buf.ReadInt());
+                break;
+            case 19:
                 axesArray.Read(buf);
-                Select(17);
+                Select(19);
                 break;
             }
         }
@@ -413,6 +443,8 @@ public class AnnotationAttributes extends AttributeSubject
         if(databaseInfoExpansionMode == PATHEXPANSIONMODE_SMARTDIRECTORY)
             str = str + "PATHEXPANSIONMODE_SMARTDIRECTORY";
         str = str + "\n";
+        str = str + doubleToString("databaseInfoTimeScale", databaseInfoTimeScale, indent) + "\n";
+        str = str + doubleToString("databaseInfoTimeOffset", databaseInfoTimeOffset, indent) + "\n";
         str = str + boolToString("legendInfoFlag", legendInfoFlag, indent) + "\n";
         str = str + indent + "backgroundColor = {" + backgroundColor.Red() + ", " + backgroundColor.Green() + ", " + backgroundColor.Blue() + ", " + backgroundColor.Alpha() + "}\n";
         str = str + indent + "foregroundColor = {" + foregroundColor.Red() + ", " + foregroundColor.Green() + ", " + foregroundColor.Blue() + ", " + foregroundColor.Alpha() + "}\n";
@@ -456,6 +488,8 @@ public class AnnotationAttributes extends AttributeSubject
     private boolean        databaseInfoFlag;
     private FontAttributes databaseInfoFont;
     private int            databaseInfoExpansionMode;
+    private double         databaseInfoTimeScale;
+    private double         databaseInfoTimeOffset;
     private boolean        legendInfoFlag;
     private ColorAttribute backgroundColor;
     private ColorAttribute foregroundColor;

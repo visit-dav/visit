@@ -210,7 +210,7 @@ void H5_FQ_Variable::loadIndex(const char*) const throw () {
             }
             if (idx && ibis::gVerbose > 10) {
                 ibis::util::ioLock lck;
-                idx->print(std::cout);
+                //idx->print(std::cout);
             }
         }
         catch (const char *s) {
@@ -292,12 +292,12 @@ ibis::index* H5_FQ_Variable::readIndex() const {
     }
     else {
         ibis::util::ioLock lock;
-        std::cerr << "Error -- H5_FQ_Variable::readIndex found nkeys = "
-                  << nkeys << " and noffsets = " << noffsets
-                  << " for variable " << name() << " in "
-                  << h5file_.getFileName() << " do not satisfy "
-            "nkeys+1==noffsets or nkeys==2*(offsets-1)"
-                  << std::endl;
+        //std::cerr << "Error -- H5_FQ_Variable::readIndex found nkeys = "
+        //          << nkeys << " and noffsets = " << noffsets
+        //          << " for variable " << name() << " in "
+        //          << h5file_.getFileName() << " do not satisfy "
+        //    "nkeys+1==noffsets or nkeys==2*(offsets-1)"
+        //          << std::endl;
     }
     return ret;
 } // H5_FQ_Variable::readIndex
@@ -383,7 +383,7 @@ int H5_FQ_Timestep::createIndex(const std::vector<const char *>& names,
                 if (ibis::gVerbose > 5) {
                     // print some information about the index
                     ibis::util::ioLock lock;
-                    tmp.print(std::cout);
+                    //tmp.print(std::cout);
                 }
             }
         }
@@ -397,7 +397,7 @@ int H5_FQ_Timestep::createIndex(const std::vector<const char *>& names,
                 if (ibis::gVerbose > 5) {
                     // print some information about the index
                     ibis::util::ioLock lock;
-                    tmp.print(std::cout);
+                    //tmp.print(std::cout);
                 }
             }
         }
@@ -479,7 +479,7 @@ int H5_FQ_Timestep::buildIndex(const char *name, const char *binning) {
             tmp.write(h5file_);
             if (ibis::gVerbose > 5) { // print some information about the index
                 ibis::util::ioLock lock;
-                tmp.print(std::cout);
+                //tmp.print(std::cout);
             }
         }
     }
@@ -491,7 +491,7 @@ int H5_FQ_Timestep::buildIndex(const char *name, const char *binning) {
             tmp.write(h5file_);
             if (ibis::gVerbose > 5) { // print some information about the index
                 ibis::util::ioLock lock;
-                tmp.print(std::cout);
+                //tmp.print(std::cout);
             }
         }
     }

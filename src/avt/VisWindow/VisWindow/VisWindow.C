@@ -4344,6 +4344,9 @@ VisWindow::UpdateAxes3D()
 //   Added code to set the text attributes for the database and the user 
 //   information.
 //
+//   Brad Whitlock, Mon Mar  2 14:07:57 PST 2009
+//   I added time scale and offset.
+//
 // ****************************************************************************
 
 void
@@ -4358,9 +4361,14 @@ VisWindow::UpdateTextAnnotations()
     legends->SetVisibility(annotationAtts.GetDatabaseInfoFlag(),
                            annotationAtts.GetDatabaseInfoExpansionMode(),
                            annotationAtts.GetLegendInfoFlag());
+    legends->SetTimeScaleAndOffset(annotationAtts.GetDatabaseInfoTimeScale(),
+                                   annotationAtts.GetDatabaseInfoTimeOffset());
     const FontAttributes &fa2 = annotationAtts.GetDatabaseInfoFont();
     legends->SetDatabaseInfoTextAttributes(
         FontAttributes_To_VisWinTextAttributes(fa2));
+
+    annotations->SetTimeScaleAndOffset(annotationAtts.GetDatabaseInfoTimeScale(),
+                                       annotationAtts.GetDatabaseInfoTimeOffset());
 
     plots->TriggerPlotListUpdate();
 }

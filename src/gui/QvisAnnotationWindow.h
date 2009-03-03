@@ -134,6 +134,9 @@ class QvisLineWidthWidget;
 //   Change the 2D and 3D tabs to update just the sub-widget sensitivities,
 //   not the whole tab itself, when "show axes" is unchecked.
 //
+//   Brad Whitlock, Mon Mar  2 14:31:48 PST 2009
+//   I added support for scaling and offsetting time.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -187,6 +190,8 @@ private slots:
     void databaseInfoFontChanged(const FontAttributes &);
     void legendChecked(bool val);
     void turnOffAllAnnotations();
+    void databaseTimeScaleChanged();
+    void databaseTimeOffsetChanged();
 
     // array option slots
     void axesFlagCheckedArray(bool val);
@@ -259,6 +264,8 @@ private:
     QComboBox                *databasePathExpansionMode;
     QCheckBox                *legendInfo;
     QPushButton              *turnOffAllButton;
+    QNarrowLineEdit          *databaseTimeScale;
+    QNarrowLineEdit          *databaseTimeOffset;
 
     // axisarray tab widgets
     QWidget                  *pageArray;

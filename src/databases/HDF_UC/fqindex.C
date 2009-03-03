@@ -28,7 +28,7 @@ H5_FQ_IndexUnbinned::H5_FQ_IndexUnbinned(const H5_FQ_Variable* c)
     }
     if (ibis::gVerbose > 2) { // output a summary of the index
         ibis::util::ioLock lock;
-        print(std::cout);
+        //print(std::cout);
     }
 } // H5_FQ_IndexUnbinned::H5_FQ_IndexUnbinned
 
@@ -539,7 +539,7 @@ H5_FQ_IndexBinned::H5_FQ_IndexBinned(const H5_FQ_Variable *c,
     }
     if (ibis::gVerbose > 2) { // output a summary of the index
         ibis::util::ioLock lock;
-        print(std::cout);
+        //print(std::cout);
     }
 } // constructor
 
@@ -1005,7 +1005,7 @@ void H5_FQ_IndexBinned::activate(uint32_t i) const {
 // activate the ith through jth bitmap
 void H5_FQ_IndexBinned::activate(uint32_t i, uint32_t j) const {
   //const unsigned nobs = vals.size();
-  //    std::cout << "activate i, j \n" << std::endl;
+  //std::cout << "activate i, j \n" << std::endl;
     std::string nm(col->name());
     if (i >= nobs || i >= j) return; // empty range
     if (bits.size() != nobs) return;

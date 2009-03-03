@@ -90,6 +90,9 @@ const double   VisWinLegends::dbInfoWidth         = 0.21;
 //    Brad Whitlock, Wed Mar 26 14:32:19 PDT 2008
 //    Changed dbInfoTextAttributes so it uses scale instead of height.
 //
+//    Brad Whitlock, Mon Mar  2 14:11:07 PST 2009
+//    I added dbInfoTimeScale and dbInfoTimeOffset.
+//
 // ****************************************************************************
 
 VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p),
@@ -103,6 +106,8 @@ VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p),
     dbInfoActor->GetTextProperty()->SetLineOffset(0);
     dbInfoActor->GetTextProperty()->SetLineSpacing(1);
     dbInfoIsAdded = false;
+    dbInfoTimeScale = 1.;
+    dbInfoTimeOffset = 0.;
 
     dbInfoVisible = true;
     pathExpansionMode = 0;
@@ -487,6 +492,29 @@ VisWinLegends::SetVisibility(bool db, int path_exp_mode, bool legend)
     legendVisible = legend;
 }
 
+// ****************************************************************************
+// Method: VisWinLegends::SetTimeScaleAndOffset
+//
+// Purpose: 
+//   Sets the scale and offset that will be applied to the time.
+//
+// Arguments:
+//   scale  : Multiplier for the time.
+//   offset : Offset that will be added to the time.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  2 14:13:57 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinLegends::SetTimeScaleAndOffset(double scale, double offset)
+{
+    dbInfoTimeScale = scale;
+    dbInfoTimeOffset = offset;
+}
 
 // ****************************************************************************
 //  Method: VisWinLegends::CreateDatabaseInfo
@@ -508,6 +536,9 @@ VisWinLegends::SetVisibility(bool db, int path_exp_mode, bool legend)
 //    Added explicit pass of the database name to easily support path
 //    expansion modes.
 //
+//    Brad Whitlock, Mon Mar  2 14:12:41 PST 2009
+//    I added support for time scale and offset.
+//
 // ****************************************************************************
 
 bool
@@ -524,7 +555,8 @@ VisWinLegends::CreateDatabaseInfo(char *info,
     }
     if (atts.TimeIsAccurate())
     {
-        sprintf(info+strlen(info), "Time:%-10g", atts.GetTime());
+        double t = atts.GetTime() * dbInfoTimeScale + dbInfoTimeOffset;
+        sprintf(info+strlen(info), "Time:%-10g", t);
         hasTime = true;
     }
     return hasTime;

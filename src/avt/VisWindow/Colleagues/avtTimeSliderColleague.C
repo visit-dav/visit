@@ -75,6 +75,9 @@
 //    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
 //    Initialize timeFormatString. 
 //
+//    Brad Whitlock, Mon Mar  2 14:21:54 PST 2009
+//    I added timeScale and timeOffset.
+//
 // ****************************************************************************
 
 avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
@@ -87,6 +90,8 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     textString = 0;
     timeDisplayMode = 0;
     currentTime = 0.;
+    timeScale = 1.;
+    timeOffset = 0.;
 
     //
     // Create and position the time slider actor
@@ -701,6 +706,9 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 //   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
 //   Added timeFormat arg, use it to set timeFormatString.
 //
+//   Brad Whitlock, Mon Mar  2 14:22:34 PST 2009
+//   I added timeScale and timeOffset.
+//
 // ****************************************************************************
 
 void
@@ -737,7 +745,8 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
-        SNPRINTF(tmp, 100, timeFormat, currentTime);
+        double t = currentTime * timeScale + timeOffset;
+        SNPRINTF(tmp, 100, timeFormat, t);
         len = left.size() + strlen(tmp) + right.size() + 1;
         textString = new char[len];
         SNPRINTF(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
@@ -822,3 +831,26 @@ avtTimeSliderColleague::GetSliderRect(double x, double y, double width,
     rect[3] = SliderHeight(height);
 }
 
+// ****************************************************************************
+// Method: avtTimeSliderColleague::SetTimeScaleAndOffset
+//
+// Purpose: 
+//   Sets the scale and offset that will be applied to the time.
+//
+// Arguments:
+//   scale  : Multiplier for the time.
+//   offset : Offset that will be added to the time.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  2 14:13:57 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtTimeSliderColleague::SetTimeScaleAndOffset(double scale, double offset)
+{
+    timeScale = scale;
+    timeOffset = offset;
+}

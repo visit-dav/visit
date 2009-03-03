@@ -72,6 +72,8 @@
 VisWinAnnotations::VisWinAnnotations(VisWindowColleagueProxy &m) :
     VisWinColleague(m), annotations(), actorList()
 {
+    timeScale = 1.;
+    timeOffset = 0.;
 }
 
 // ****************************************************************************
@@ -376,6 +378,9 @@ VisWinAnnotations::SetFrameAndState(int nFrames,
 //   Brad Whitlock, Wed Nov 7 17:01:34 PDT 2007
 //   Added text 3D finally.
 //
+//   Brad Whitlock, Mon Mar  2 15:33:25 PST 2009
+//   I added code to set the new annotation's time scale and offset.
+//
 // ****************************************************************************
 
 bool
@@ -473,6 +478,9 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
 
         // Add the annotation to the list.
         annotations.push_back(annot);
+
+        // Set the annotation's time scale and offset.
+        annot->SetTimeScaleAndOffset(timeScale, timeOffset);
 
         //
         // Add the annotation to the renderer.
@@ -829,4 +837,31 @@ VisWinAnnotations::CreateAnnotationObjectsFromList(const AnnotationObjectList &a
         if(AddAnnotationObject(annotType, annot.GetObjectName()))
             annotations[annotations.size()-1]->SetOptions(annot);
     }
+}
+
+// ****************************************************************************
+// Method: VisWinAnnotations::SetTimeScaleAndOffset
+//
+// Purpose: 
+//   Sets the annotation objects' time scale and offset.
+//
+// Arguments:
+//   scale  : Multiplier for the time.
+//   offset : Offset that will be added to the time.
+//   
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  2 14:18:24 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAnnotations::SetTimeScaleAndOffset(double scale, double offset)
+{
+    timeScale = scale;
+    timeOffset = offset;
+
+    for(int i = 0; i < annotations.size(); ++i)
+        annotations[i]->SetTimeScaleAndOffset(scale, offset);
 }
