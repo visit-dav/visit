@@ -77,6 +77,8 @@
       </Function>
       <Function name="ParallelCoordinatesViewerPluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
+      <Function name="ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling" user="false" member="true">
+      </Function>
       <Include file="header" quoted="false">
         AxisRestrictionAttributes.h
       </Include>

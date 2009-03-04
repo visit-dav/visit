@@ -185,6 +185,12 @@ VolumeViewerPluginInfo::AllocAvtPlot()
     return new avtVolumePlot;
 }
 
+bool
+VolumeViewerPluginInfo::Permits2DViewScaling() const
+{
+    return false;
+}
+
 // ****************************************************************************
 //  Method: VolumeViewerPluginInfo::InitializePlotAtts
 //

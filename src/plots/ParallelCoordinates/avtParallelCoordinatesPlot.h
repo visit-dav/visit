@@ -65,6 +65,8 @@ class avtLookupTable;
 //  Notes: initial implementation taken from Mark Blair's ParallelAxis plot.
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Mar  3 13:37:13 PST 2009
+//    Removed CanDo2DViewScaling (moved into Viewer PluginInfo)
 //
 // ****************************************************************************
 
@@ -80,7 +82,6 @@ public:
 
     virtual void             SetAtts(const AttributeGroup*);
     virtual void             ReleaseData(void);
-    virtual bool             CanDo2DViewScaling(void) { return false;}
 
 protected:
     avtParallelCoordinatesFilter   *parAxisFilter;

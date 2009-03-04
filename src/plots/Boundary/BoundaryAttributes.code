@@ -308,7 +308,7 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           defaultAtts->SetBoundaryType(BoundaryAttributes::Domain);
           if (mesh->blockNames.empty())
           {
-              for (i = 0; i < mesh->numBlocks; i++)
+              for (int i = 0; i < mesh->numBlocks; i++)
               { 
                   sprintf(temp, "%d", i+mesh->blockOrigin);
                   sv.push_back(temp);

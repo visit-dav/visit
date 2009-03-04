@@ -2867,6 +2867,9 @@ ViewerPlot::GetReader() const
 //    Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007 
 //    Retrieve the correct ScaleMode before setting it in avtPlot. 
 //
+//    Kathleen Bonnell, Tue Mar  3 10:18:50 PST 2009
+//    CanDo*ViewScaling now retrieved from viewerPluginInfo, not plot.
+//
 // ****************************************************************************
 
 void
@@ -3045,13 +3048,13 @@ ViewerPlot::CreateActor(bool createNew,
     plotList[cacheIndex]->SetForegroundColor(fgColor);
     plotList[cacheIndex]->SetIndex(networkID);
     plotList[cacheIndex]->SetCurrentSILRestriction(silr);
-    if (plotList[cacheIndex]->CanDoCurveViewScaling())
+    if (viewerPluginInfo->PermitsCurveViewScaling())
     {
         viewerPlotList->GetScaleMode(xScaleMode, yScaleMode, WINMODE_CURVE);
         plotList[cacheIndex]->SetScaleMode(xScaleMode, yScaleMode, WINMODE_CURVE);
     }
     else if (2 == GetSpatialDimension() && 
-             plotList[cacheIndex]->CanDo2DViewScaling())
+             viewerPluginInfo->Permits2DViewScaling())
     {
         viewerPlotList->GetScaleMode(xScaleMode, yScaleMode, WINMODE_2D);
         plotList[cacheIndex]->SetScaleMode(xScaleMode, yScaleMode, WINMODE_2D);
@@ -5537,11 +5540,23 @@ ViewerPlot::AlternateDisplayAllowClientUpdates() const
 //   Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007 
 //   Added WINDOW_MODE arg. 
 //
+//   Kathleen Bonnell, Tue Mar  3 10:20:56 PST 2009
+//   Only set scaling if appropriate to do so.
+//
 // ****************************************************************************
 
 void
 ViewerPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 {
+    if (wm != WINMODE_CURVE && wm != WINMODE_2D)
+        return;
+
+    else if (wm == WINMODE_CURVE && !viewerPluginInfo->PermitsCurveViewScaling())
+        return;
+
+    else if (wm == WINMODE_2D && !viewerPluginInfo->Permits2DViewScaling())
+        return;
+
     xScaleMode = ds;
     yScaleMode = rs;
 
@@ -5569,7 +5584,7 @@ ViewerPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 
 
 // ****************************************************************************
-// Method: ViewerPlot::CanDoLogViewScaling
+// Method: ViewerPlot::PermitsLogViewScaling
 //
 // Purpose: 
 //   Returns whether or not this plot supports log view scaling.
@@ -5581,27 +5596,27 @@ ViewerPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 // Creation:   May 11, 2007
 //
 // Modifications:
-//  
+//    Kathleen Bonnell, Tue Mar  3 10:18:50 PST 2009
+//    Renamed to PermitsLogViewScaling, retrieve plot's flag from 
+//    viewerPluginInfo, not plot
+//
 // ****************************************************************************
 
 bool 
-ViewerPlot::CanDoLogViewScaling(WINDOW_MODE wm)
+ViewerPlot::PermitsLogViewScaling(WINDOW_MODE wm)
 {
     bool rv = false;
 
-    if (*plotList[cacheIndex] != NULL)
+    switch (wm)
     {
-        switch (wm)
-        {
-            case WINMODE_CURVE:
-                rv = plotList[cacheIndex]->CanDoCurveViewScaling();
-                break;
-            case WINMODE_2D:
-                rv = plotList[cacheIndex]->CanDo2DViewScaling();
-                break;
-            default:
-                break;
-        }
+        case WINMODE_CURVE:
+            rv = viewerPluginInfo->PermitsCurveViewScaling();
+            break;
+        case WINMODE_2D:
+            rv = viewerPluginInfo->Permits2DViewScaling();
+            break;
+        default:
+            break;
     }
     return rv;
 }

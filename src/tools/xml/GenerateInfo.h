@@ -178,6 +178,9 @@
 //   Account for NULL attributes for when an XML file is missing attributes
 //   (e.g. a database plugin).
 //
+//   Kathleen Bonnell, Tue Mar  3 10:41:17 PST 2009
+//   Added Permits2DViewScaling & PermitsCurveViewScaling to Viewer plot Info.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -553,6 +556,10 @@ class InfoGeneratorPlugin : public Plugin
             h << endl;
             if(OverrideBuiltin(infoName + "::ProvidesLegend"))
                 h << "    virtual bool ProvidesLegend() const;" << endl;
+            if(OverrideBuiltin(infoName + "::PermitsCurveViewScaling"))
+                h << "    virtual bool PermitsCurveViewScaling() const;" << endl;
+            if(OverrideBuiltin(infoName + "::Permits2DViewScaling"))
+                h << "    virtual bool Permits2DViewScaling() const;" << endl;
             h << "    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);" << endl;
             if(OverrideBuiltin(infoName + "::ReInitializePlotAtts"))
                 h << "    virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);" << endl;
@@ -1542,6 +1549,8 @@ class InfoGeneratorPlugin : public Plugin
         else if(type == "plot")
         {
             WriteOverrideDefinition(c, name + "ViewerPluginInfo::ProvidesLegend");
+            WriteOverrideDefinition(c, name + "ViewerPluginInfo::PermitsCurveViewScaling");
+            WriteOverrideDefinition(c, name + "ViewerPluginInfo::Permits2DViewScaling");
 
             funcName = name + "ViewerPluginInfo::InitializePlotAtts";
             if(!ReplaceBuiltin(c, funcName))

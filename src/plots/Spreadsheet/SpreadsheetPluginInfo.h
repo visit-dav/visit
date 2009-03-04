@@ -104,6 +104,7 @@ class SpreadsheetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public 
     virtual avtPlot *AllocAvtPlot();
 
     virtual bool ProvidesLegend() const;
+    virtual bool Permits2DViewScaling() const;
     virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);

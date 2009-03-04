@@ -200,3 +200,13 @@ CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
         colorIndex = (colorIndex + 1) % ct->GetNumColors();
     }
 }
+
+Target: xml2info
+Function:  CurveViewerPluginInfo::PermitsCurveViewScaling
+Declaration: virtual bool PermitsCurveViewScaling() const;
+Definition:
+bool
+CurveViewerPluginInfo::PermitsCurveViewScaling() const
+{
+    return true;
+}

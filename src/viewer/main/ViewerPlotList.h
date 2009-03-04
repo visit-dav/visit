@@ -299,6 +299,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Hank Childs, Mon Feb  2 16:02:04 PST 2009
 //    Added argument to GetActivePlotIDs.
 //
+//    Kathleen Bonnell, Tue Mar  3 15:03:19 PST 2009
+//    Renamed CanDoLogViewScaling to PermitsLogViewScaling.
+//
 // ****************************************************************************
 
 
@@ -471,7 +474,7 @@ public:
 
     void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE);
     void GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE);
-    bool CanDoLogViewScaling(WINDOW_MODE);
+    bool PermitsLogViewScaling(WINDOW_MODE);
 
   protected:
     bool        AskForCorrelationPermission(const stringVector &dbs) const;

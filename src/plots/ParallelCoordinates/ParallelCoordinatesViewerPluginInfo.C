@@ -185,6 +185,12 @@ ParallelCoordinatesViewerPluginInfo::AllocAvtPlot()
     return new avtParallelCoordinatesPlot;
 }
 
+bool
+ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling() const
+{
+    return false;
+}
+
 // ****************************************************************************
 //  Method: ParallelCoordinatesViewerPluginInfo::InitializePlotAtts
 //

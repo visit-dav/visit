@@ -288,6 +288,9 @@ class avtToolInterface;
 //    Brad Whitlock, Wed Jan  7 15:32:49 PST 2009
 //    Added UpdatePlotInformation and removed GetPlotInfoAtts.
 //
+//    Kathleen Bonnell, Tue Mar  3 15:03:19 PST 2009
+//    Renamed CanDoLogViewScaling to PermitsLogViewScaling.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -488,7 +491,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     void UpdatePlotInformation() const;
 
     void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm);
-    bool CanDoLogViewScaling(WINDOW_MODE wm);
+    bool PermitsLogViewScaling(WINDOW_MODE wm);
 
   protected:
     void CopyHelper(const ViewerPlot &);

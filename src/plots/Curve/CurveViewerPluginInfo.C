@@ -192,6 +192,12 @@ CurveViewerPluginInfo::AllocAvtPlot()
     return new avtCurvePlot;
 }
 
+bool
+CurveViewerPluginInfo::PermitsCurveViewScaling() const
+{
+    return true;
+}
+
 // ****************************************************************************
 //  Method: CurveViewerPluginInfo::InitializePlotAtts
 //
