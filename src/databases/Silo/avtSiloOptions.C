@@ -71,15 +71,24 @@ using std::vector;
 //    do that without also taking a big performance hit of having to open all
 //    the subfiles in a multi-file Silo file. So, we make it the user's 
 //    responsibility to turn on this functionality via a read option.
+//
+//    Mark C. Miller, Wed Mar  4 08:56:57 PST 2009
+//    Made controls for ignoring extents tri-state.
 // ****************************************************************************
 
 DBOptionsAttributes *
 GetSiloReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    vector<string> ignoreOpts;
+    ignoreOpts.push_back("Always"); // 0
+    ignoreOpts.push_back("Auto");   // 1
+    ignoreOpts.push_back("Never");  // 2
+    rv->SetEnum("Ignore Spatial Extents", 1); // Auto
+    rv->SetEnumStrings("Ignore Spatial Extents", ignoreOpts);
+    rv->SetEnum("Ignore Data Extents", 1); // Auto 
+    rv->SetEnumStrings("Ignore Data Extents", ignoreOpts);
     rv->SetBool("Force Single", true);
-    rv->SetBool("Ignore Spatial Extents", false);
-    rv->SetBool("Ignore Data Extents", false);
     rv->SetBool("Search For ANNOTATION_INT (!!Slow!!)", false);
     return rv;
 }
