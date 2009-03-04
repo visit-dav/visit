@@ -207,6 +207,10 @@ static const int maxCoincidentNodelists = 12;
 //    Mark C. Miller, Wed Mar  4 08:54:57 PST 2009
 //    Improved logic to handle ignoring of spatial/data extents so that user
 //    can override explicitly or let plugin handle automatically.
+//
+//    Mark C. Miller, Wed Mar  4 12:05:45 PST 2009
+//    Made option processing for extents compatible with 'old' way of doing
+//    them.
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -246,9 +250,35 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
         else if (rdatts->GetName(i) == "Search For ANNOTATION_INT (!!Slow!!)")
             searchForAnnotInt = rdatts->GetBool("Search For ANNOTATION_INT (!!Slow!!)");
         else if (rdatts->GetName(i) == "Ignore Spatial Extents")
-            ignoreSpatialExtentsAAN = (AANTriState) rdatts->GetEnum("Ignore Spatial Extents");
+        {
+            // Handle the old (bool) way of doing this
+            if (rdatts->GetType(i) == DBOptionsAttributes::Bool)
+            {
+                if (rdatts->GetBool("Ignore Spatial Extents"))
+                    ignoreSpatialExtentsAAN = Always;
+                else
+                    ignoreSpatialExtentsAAN = Never;
+            }
+            else
+            {
+                ignoreSpatialExtentsAAN = (AANTriState) rdatts->GetEnum("Ignore Spatial Extents");
+            }
+        }
         else if (rdatts->GetName(i) == "Ignore Data Extents")
-            ignoreDataExtentsAAN = (AANTriState) rdatts->GetEnum("Ignore Data Extents");
+        {
+            // Handle the old (bool) way of doing this
+            if (rdatts->GetType(i) == DBOptionsAttributes::Bool)
+            {
+                if (rdatts->GetBool("Ignore Data Extents"))
+                    ignoreDataExtentsAAN = Always;
+                else
+                    ignoreDataExtentsAAN = Never;
+            }
+            else
+            {
+                ignoreDataExtentsAAN = (AANTriState) rdatts->GetEnum("Ignore Data Extents");
+            }
+        }
         else
             debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
     }
