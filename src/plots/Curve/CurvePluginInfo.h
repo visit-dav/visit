@@ -103,6 +103,7 @@ class CurveViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtua
 
     virtual avtPlot *AllocAvtPlot();
 
+    virtual bool PermitsCurveViewScaling() const;
     virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual QString *GetMenuName() const;
     virtual const char **XPMIconData() const;

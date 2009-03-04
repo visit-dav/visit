@@ -109,6 +109,8 @@
       </Function>
       <Function name="SpreadsheetViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
+      <Function name="SpreadsheetViewerPluginInfo::Permits2DViewScaling" user="false" member="true">
+      </Function>
       <Include file="header" quoted="false">
         PlaneAttributes.h
       </Include>

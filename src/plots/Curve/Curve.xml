@@ -77,6 +77,8 @@
       </Function>
       <Function name="CurveViewerPluginInfo::SetColor" user="true" member="true" access="private">
       </Function>
+      <Function name="CurveViewerPluginInfo::PermitsCurveViewScaling" user="false" member="true">
+      </Function>
       <Include file="source" quoted="false">
         Line.h
       </Include>

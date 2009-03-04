@@ -553,3 +553,12 @@ SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     }
 }
 
+Target: xml2info
+Function:  SpreadsheetViewerPluginInfo::Permits2DViewScaling
+Declaration: virtual bool Permits2DViewScaling() const;
+Definition:
+bool
+SpreadsheetViewerPluginInfo::Permits2DViewScaling() const
+{
+    return false;
+}

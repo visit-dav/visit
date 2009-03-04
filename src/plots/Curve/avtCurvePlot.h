@@ -83,6 +83,9 @@ class     vtkProperty;
 //    Kathleen Bonnell, Tue Apr  3 17:17:33 PDT 2007 
 //    Added CanDoCurveViewScaling. 
 //    
+//    Kathleen Bonnell, Tue Mar  3 13:37:13 PST 2009
+//    Removed CanDo2DViewScaling (moved into Viewer PluginInfo)
+//
 // ****************************************************************************
 
 
@@ -101,8 +104,6 @@ class avtCurvePlot : public avtLineDataPlot
     void                        SetLineWidth(int);
     void                        SetLineStyle(int);
 
-    virtual bool                CanDoCurveViewScaling(void) 
-                                    { return true; };
   protected:
     CurveAttributes                atts;
 

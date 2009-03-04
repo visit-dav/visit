@@ -594,3 +594,13 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+
+Target: xml2info
+Function:  VolumeViewerPluginInfo::Permits2DViewScaling
+Declaration: virtual bool Permits2DViewScaling() const;
+Definition:
+bool
+VolumeViewerPluginInfo::Permits2DViewScaling() const
+{
+    return false;
+}

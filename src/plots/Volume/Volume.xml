@@ -209,6 +209,8 @@
       </Function>
       <Function name="SetTransferFunctionDim" user="false" member="true">
       </Function>
+      <Function name="VolumeViewerPluginInfo::Permits2DViewScaling" user="false" member="true">
+      </Function>
       <Include file="source" quoted="false">
         ColorControlPoint.h
       </Include>

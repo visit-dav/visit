@@ -106,6 +106,7 @@ class ParallelCoordinatesViewerPluginInfo : public virtual ViewerPlotPluginInfo,
 
     virtual avtPlot *AllocAvtPlot();
 
+    virtual bool Permits2DViewScaling() const;
     virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual QString *GetMenuName() const;
     virtual const char **XPMIconData() const;

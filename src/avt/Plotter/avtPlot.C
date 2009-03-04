@@ -1523,19 +1523,22 @@ avtPlot::GetPlotInformation() const
 //    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
 //    2D and Curve modes now stored separately.
 //
+//    Kathleen Bonnell, Tue Mar  3 10:40:06 PST 2009
+//    Removed 'CanDo*ViewScaling' tests. 
+//
 // ****************************************************************************
 
 bool
 avtPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 {
     bool retval = false;
-    if (wm == WINMODE_CURVE && CanDoCurveViewScaling()) 
+    if (wm == WINMODE_CURVE)
     {
         xScaleModeCurve = ds;
         yScaleModeCurve = rs;
         retval = true;
     }
-    else if (wm == WINMODE_2D && CanDo2DViewScaling())
+    else if (wm == WINMODE_2D)
     {
         xScaleMode2D = ds;
         yScaleMode2D = rs;

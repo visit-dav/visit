@@ -191,6 +191,12 @@ SpreadsheetViewerPluginInfo::ProvidesLegend() const
     return false;
 }
 
+bool
+SpreadsheetViewerPluginInfo::Permits2DViewScaling() const
+{
+    return false;
+}
+
 // ****************************************************************************
 // Method: SpreadsheetViewerPluginInfo::InitializePlotAtts
 //
@@ -568,7 +574,7 @@ SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     avtSILRestriction_p silr = plot->GetSILRestriction();
     avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
     const std::vector<int> &mapsOut = current->GetMapsOut();
-    for(int j = 0; j < mapsOut.size() && !validName; ++j)
+    for(size_t j = 0; j < mapsOut.size() && !validName; ++j)
     {
         int cIndex = mapsOut[j];
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
@@ -576,7 +582,7 @@ SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
         {
             const std::vector<int> &setIds = collection->GetSubsetList();
             nSets = setIds.size();
-            for(int si = 0; si < setIds.size() && !validName; ++si)
+            for(size_t si = 0; si < setIds.size() && !validName; ++si)
             {
                 if(!firstNameSet)
                 {

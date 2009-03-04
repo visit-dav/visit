@@ -9081,7 +9081,7 @@ ViewerPlotList::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
 
 
 // ****************************************************************************
-// Method: ViewerPlotList::CanDoLogViewScaling
+// Method: ViewerPlotList::PermitsLogViewScaling
 //
 // Purpose: 
 //   Returns whether or not all plots support log view scaling.
@@ -9097,10 +9097,14 @@ ViewerPlotList::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
 //   Only test an individual plot if it has been realized (otherwise, it
 //   will always return false). 
 //  
+//   Kathleen Bonnell, Tue Mar  3 10:16:49 PST 2009
+//   Renamed to PermitsLogViewScaling, no longer test for 'realized' as it
+//   is no longer necessary.
+//
 // ****************************************************************************
 
 bool 
-ViewerPlotList::CanDoLogViewScaling(WINDOW_MODE wm)
+ViewerPlotList::PermitsLogViewScaling(WINDOW_MODE wm)
 {
     if (nPlots <= 0)
         return false;
@@ -9108,8 +9112,7 @@ ViewerPlotList::CanDoLogViewScaling(WINDOW_MODE wm)
     bool rv = true;
     for (int i = 0; i < nPlots && rv; ++i)
     {
-        if (plots[i].realized)
-            rv &= plots[i].plot->CanDoLogViewScaling(wm);
+        rv &= plots[i].plot->PermitsLogViewScaling(wm);
     }
     return rv;
 }
