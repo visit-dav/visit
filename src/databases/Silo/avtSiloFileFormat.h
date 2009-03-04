@@ -208,6 +208,9 @@ typedef struct
 //
 //    Mark C. Miller, Tue Dec 23 22:14:30 PST 2008
 //    Added support for ANNOTATION_INT nodelists (special case)
+//
+//    Mark C. Miller, Wed Mar  4 08:54:57 PST 2009
+//    Added tri-state variables to better manage ignoring of extents. 
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -241,9 +244,12 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  ActivateTimestep(void);
 
   protected:
+    enum AANTriState {Always=0, Auto, Never};
     DBfile              **dbfiles;
     int                   tocIndex;
     int                   dontForceSingle; // used primarily for testing
+    AANTriState           ignoreSpatialExtentsAAN;
+    AANTriState           ignoreDataExtentsAAN;
     bool                  ignoreSpatialExtents;
     bool                  ignoreDataExtents;
     bool                  searchForAnnotInt;

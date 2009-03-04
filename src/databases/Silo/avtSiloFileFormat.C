@@ -203,6 +203,10 @@ static const int maxCoincidentNodelists = 12;
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added logic to ignore spatial/data extents.
+//
+//    Mark C. Miller, Wed Mar  4 08:54:57 PST 2009
+//    Improved logic to handle ignoring of spatial/data extents so that user
+//    can override explicitly or let plugin handle automatically.
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -216,6 +220,8 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     numNodeLists = 0;
     maxAnnotIntLists = 0;
     tocIndex = 0; 
+    ignoreSpatialExtentsAAN = Auto;
+    ignoreDataExtentsAAN = Auto;
     ignoreSpatialExtents = false;
     ignoreDataExtents = false;
     searchForAnnotInt = false;
@@ -237,12 +243,12 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     {
         if (rdatts->GetName(i) == "Force Single")
             dontForceSingle = rdatts->GetBool("Force Single") ? 0 : 1;
-        else if (rdatts->GetName(i) == "Ignore Spatial Extents")
-            ignoreSpatialExtents = rdatts->GetBool("Ignore Spatial Extents");
-        else if (rdatts->GetName(i) == "Ignore Data Extents")
-            ignoreDataExtents = rdatts->GetBool("Ignore Data Extents");
         else if (rdatts->GetName(i) == "Search For ANNOTATION_INT (!!Slow!!)")
             searchForAnnotInt = rdatts->GetBool("Search For ANNOTATION_INT (!!Slow!!)");
+        else if (rdatts->GetName(i) == "Ignore Spatial Extents")
+            ignoreSpatialExtentsAAN = (AANTriState) rdatts->GetEnum("Ignore Spatial Extents");
+        else if (rdatts->GetName(i) == "Ignore Data Extents")
+            ignoreDataExtentsAAN = (AANTriState) rdatts->GetEnum("Ignore Data Extents");
         else
             debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
     }
@@ -1193,6 +1199,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Mon Mar  2 11:50:08 PST 2009
 //    Removed call to CloseFile(1) just prior to adding annot-int nodelists.
 //    The issue that addressed is now handled in the AddAnnotInt... routine.
+//
+//    Mark C. Miller, Wed Mar  4 08:54:57 PST 2009
+//    Improved logic to handle ignoring of spatial/data extents so that user
+//    can override explicitly or let plugin handle automatically.
 // ****************************************************************************
 
 void
@@ -1355,9 +1365,28 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         codeNameGuess = GuessCodeNameFromTopLevelVars(dbfile);
 
-        // summarily ignore extents for block structured code
-        if (codeNameGuess == "BlockStructured")
+        // Decide whether or not to ignore data extents
+        if (ignoreDataExtentsAAN == Always)
             ignoreDataExtents = true;
+        else if (ignoreDataExtentsAAN == Never)
+            ignoreDataExtents = false;
+        else // Auto
+        {
+            if (codeNameGuess == "BlockStructured")
+                ignoreDataExtents = true;
+            else if (codeNameGuess == "Ale3d")
+                ignoreDataExtents = true;
+        }
+
+        // Decide whether or not to ignore spatial extents
+        if (ignoreSpatialExtentsAAN == Always)
+            ignoreSpatialExtents = true;
+        else if (ignoreSpatialExtentsAAN == Never)
+            ignoreSpatialExtents = false;
+        else // Auto
+        {
+            // Nothing automaticly to do for sptail extents, yet
+        }
 
         if (DBInqVarExists(dbfile, "ConnectivityIsTimeVarying"))
         {
@@ -4569,6 +4598,9 @@ UpdateNodelistEntry(float *ptr, int nodeId, int val, float uval,
 //    Kathleen Bonnell, Wed Jul 2 14:43:22 PDT 2008
 //    Removed unreferenced variables.
 //
+//    Mark C. Miller, Tue Mar  3 19:33:23 PST 2009
+//    Added logic to get blockNum from groupInfo before attempting to use
+//    special vtk array.
 // ****************************************************************************
 
 vtkDataArray *
@@ -4628,15 +4660,24 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     base_index[1] = arr->GetValue(1) ? arr->GetValue(1)-1 : 0;
     base_index[2] = arr->GetValue(2) ? arr->GetValue(2)-1 : 0;
 
-    vtkIntArray *arr1 = vtkIntArray::SafeDownCast(ds->GetFieldData()->GetArray("group_id"));
-    if (arr1 == 0)
+    int blockNum = -1;
+    if (groupInfo.haveGroups)
+    {
+        blockNum = groupInfo.ids[domain];
+    }
+    else
+    {
+        vtkIntArray *arr1 = vtkIntArray::SafeDownCast(ds->GetFieldData()->GetArray("group_id"));
+        if (arr1 != 0)
+            blockNum = arr1->GetValue(0);
+    }
+    if (blockNum == -1)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Cannot find field data array \"group_id\""
+        SNPRINTF(msg, sizeof(msg), "Cannot find obtain block number " 
             "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
-    int blockNum = arr1->GetValue(0);
 
     int group_min_idx[3] = {0,0,0};
     int group_max_idx[3] = {0,0,0};
@@ -7222,6 +7263,9 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
 //    Cyrus Harrison, Thu Apr 26 10:14:42 PDT 2007
 //    Added group_id as field data to the VTK dataset.
 //
+//    Mark C. Miller, Tue Mar  3 19:35:35 PST 2009
+//    Predicated addition of "group_id" as field data on it having
+//    non-negative value.
 // ****************************************************************************
 
 vtkDataSet *
@@ -7265,12 +7309,15 @@ avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn, int domain)
     //
     // Add group id as field data
     //
-    vtkIntArray *grp_id_arr = vtkIntArray::New();
-    grp_id_arr->SetNumberOfTuples(1);
-    grp_id_arr->SetValue(0, qm->group_no);
-    grp_id_arr->SetName("group_id");
-    ds->GetFieldData()->AddArray(grp_id_arr);
-    grp_id_arr->Delete();
+    if (qm->group_no >= 0)
+    {
+        vtkIntArray *grp_id_arr = vtkIntArray::New();
+        grp_id_arr->SetNumberOfTuples(1);
+        grp_id_arr->SetValue(0, qm->group_no);
+        grp_id_arr->SetName("group_id");
+        ds->GetFieldData()->AddArray(grp_id_arr);
+        grp_id_arr->Delete();
+    }
 
     //
     // Determine the indices of the mesh within its group.  Add that to the
@@ -11099,16 +11146,27 @@ AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd)
 //    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
 //    Added call to clear nlBlockToWindowsMap before build-it, or possibly
 //    re-building from a second or more call to this method.
+//
+//    Mark C. Miller, Tue Mar  3 19:31:37 PST 2009
+//    As per Cyrus' recommendation, forced it to work only if mesh name
+//    is specifically 'hydro_mesh' but left all other logic (which supports
+//    perhaps multiple meshes) in place.
 // ****************************************************************************
 void
 avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
     string meshname)
 {
+    if (meshname != "hydro_mesh")
+        return;
+
     if (DBInqVarType(dbfile, "/Global/Nodelists") != DB_DIR)
         return;
 
     DBReadVar(dbfile, "/Global/Nodelists/NumberNodelists", &numNodeLists);
 
+    // Note, if we ever remove the restriction on meshname, above, we need
+    // to make sure we don't wind up defining the same name scalar on different
+    // meshes.
     avtScalarMetaData *smd = new avtScalarMetaData("Nodelists",
                                      meshname, AVT_NODECENT);
 
