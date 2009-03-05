@@ -86,6 +86,9 @@
 #
 #   Mark C. Miller, Wed Mar  4 17:52:51 PST 2009
 #   Made it work for a dbio-only build
+#
+#   Mark C. Miller, Thu Mar  5 10:04:30 PST 2009
+#   Fixed missing libs for non-dbio-only build.
 ##############################################################################
 
 ##
@@ -108,8 +111,19 @@ LIBDEP=
 ##
 MY_VTK_LIBS=`echo "@VTK_LIBS@" | tr ' ' '\n' | grep -v "vtkRendering\\\|vtkftgl\\\|vtkfreetype\\\|vtkHybrid\\\|vtksys"`
 
-SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtexceptions -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
-PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtexceptions -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+##
+## Do some more magic to further reduce dependencies for dbio-only builds.
+## In that case, @BUILD_DBIO_ONLY@ will be non-empty, the test for zero
+## sized string will be false and the echos will NOT occur making all these
+## strings empty.
+##
+LIBLITE=`test -z "@BUILD_DBIO_ONLY@" && echo '-lvisit_verdict'`
+SLIBLITE1=`test -z "@BUILD_DBIO_ONLY@" && echo '-lavtmath_ser'`
+SLIBLITE2=`test -z "@BUILD_DBIO_ONLY@" && echo '-lmir_ser'`
+PLIBLITE1=`test -z "@BUILD_DBIO_ONLY@" && echo '-lavtmath_par'`
+PLIBLITE2=`test -z "@BUILD_DBIO_ONLY@" && echo '-lmir_par'`
+SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser $(LIBLITE) -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts $(SLIBLITE1) -lavtexceptions $(SLIBLITE2) -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
+PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par $(LIBLITE) -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts $(SLIBLITE1) -lavtexceptions $(SLIBLITE2) -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
 BUILD_DBIO_ONLY=convert_ser_lite
 
@@ -154,7 +168,7 @@ $(PAROBJ_LITE): $(SRC)
 @CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ) @CONVERT_PAR@_lite
 	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
 
-convert_ser_lite: $(LIBDEP) $(SEROBJ_LITE) 
+$(tmpbin)/visitconvert_ser_lite: $(LIBDEP) $(SEROBJ_LITE) 
 	$(CXX) -o $@ $(SEROBJ_LITE) $(LDFLAGS) $(SERLIBS_LITE)
 
 @CONVERT_PAR@_lite: $(LIBDEP) $(PAROBJ_LITE) 
