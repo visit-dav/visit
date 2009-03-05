@@ -66,11 +66,13 @@
 #           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
-#           Silo     4.6.2    silo-4.7.tar.gz
+#           Silo     4.7      silo-4.7.tar.gz
 #           szip     2.1      szip-2.1.tar.gz
 #
 #         Experimental (internal)
-#           ITAPS             ITAPS-MOAB-26Jun07.tar.gz -I
+#           ITAPS             ITAPS-FMDB_14Jan09.tar.gz -I
+#           ITAPS             ITAPS-GRUMMP-13Jan09.tar.gz -I
+#           ITAPS             ITAPS-MOAB-3.99_04Dec08.tar.gz -I
 #           ViSUS             visus_26Feb07.tar.gz      -V
 #
 #   Layout:
@@ -100,6 +102,9 @@
 #     Function 8.12, build_tcmalloc: build google-perftools/tcmalloc
 #     Function 8.13, build_icet:    build Ice-T
 #     Function 8.14, build_fastbit: build FastBit
+#     Function 8.15, build_itaps_moab: build MOAB impl. of ITAPS
+#     Function 8.16, build_itaps_fmdb: build FMDB impl. of ITAPS
+#     Function 8.17, build_itaps_grummp: build GRUMMP impl. of ITAPS
 #     Function 8, build_silo:       build Silo
 #     Function 9, build_hostconf:   build the config-site/host.conf file
 #     Function 9.1, build_visit:    build the VisIt source code
@@ -747,6 +752,7 @@ export DO_OPTIONAL="yes"
 export ON_OPTIONAL="on"
 export DO_MORE="no"
 export ON_MORE="off"
+export DO_DBIO_ONLY="no"
 
 # Setup svn path: use SVN_NERSC_NAME if set
 if test -z "$SVN_NERSC_NAME" ; then
@@ -885,10 +891,20 @@ export SILO_VERSION=${SILO_VERSION-"4.7"}
 export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.7"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR-"silo-4.7"}
 
-export ITAPS_FILE=${ITAPS_FILE-"ITAPS-MOAB-26Jun07.tar.gz"}
-export ITAPS_VERSION=${ITAPS_VERSION-"1.0.0"}
-export ITAPS_COMPATIBILITY_VERSION=${ITAPS_COMPATIBILITY_VERSION-"1.0"}
-export ITAPS_BUILD_DIR=${ITAPS_BUILD_DIR-"${ITAPS_FILE%.tar*}"}
+export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE-"ITAPS-MOAB-3.99_04Dec08.tar.gz"}
+export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION-"3.99_04Dec08"}
+export ITAPS_MOAB_COMPATIBILITY_VERSION=${ITAPS_MOAB_COMPATIBILITY_VERSION-"3.99_04Dec08"}
+export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR-"${ITAPS_MOAB_FILE%.tar*}"}
+
+export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE-"ITAPS-FMDB_14Jan09.tar.gz"}
+export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION-"14Jan09"}
+export ITAPS_FMDB_COMPATIBILITY_VERSION=${ITAPS_FMDB_COMPATIBILITY_VERSION-"14Jan09"}
+export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR-"${ITAPS_FMDB_FILE%.tar*}"}
+
+export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE-"ITAPS-GRUMMP-13Jan09.tar.gz"}
+export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION-"13Jan09"}
+export ITAPS_GRUMMP_COMPATIBILITY_VERSION=${ITAPS_GRUMMP_COMPATIBILITY_VERSION-"13Jan09"}
+export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR-"${ITAPS_GRUMMP_FILE%.tar*}"}
 
 export VISUS_FILE=${VISUS_FILE-"visus_26Feb07.tar.gz"}
 export VISUS_VERSION=${VISUS_VERSION-"1.0.0"}
@@ -1591,11 +1607,23 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_ITAPS" == "yes" ]] ; then
-        ensure_built_or_ready "itaps" $ITAPS_VERSION $ITAPS_BUILD_DIR  $ITAPS_FILE
+        ensure_built_or_ready "itaps" $ITAPS_MOAB_VERSION $ITAPS_MOAB_BUILD_DIR  $ITAPS_MOAB_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ITAPS="no"
-            error "Unable to build ITAPS.  ${ITAPS_FILE} not found."
+            error "Unable to build ITAPS_MOAB.  ${ITAPS_MOAB_FILE} not found."
+        fi
+        ensure_built_or_ready "itaps" $ITAPS_FMDB_VERSION $ITAPS_FMDB_BUILD_DIR  $ITAPS_FMDB_FILE
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_ITAPS="no"
+            error "Unable to build ITAPS_FMDB.  ${ITAPS_FMDB_FILE} not found."
+        fi
+        ensure_built_or_ready "itaps" $ITAPS_GRUMMP_VERSION $ITAPS_GRUMMP_BUILD_DIR  $ITAPS_GRUMMP_FILE
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_ITAPS="no"
+            error "Unable to build ITAPS_GRUMMP.  ${ITAPS_GRUMMP_FILE} not found."
         fi
     fi
     
@@ -6973,6 +7001,216 @@ function build_fastbit
     return 0
 }
 
+# *************************************************************************** #
+#                          Function 8.15, build_itaps_moab                    #
+# *************************************************************************** #
+
+function build_itaps_moab
+{
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $ITAPS_MOAB_BUILD_DIR $ITAPS_MOAB_FILE
+    untarred_itaps_moab=$?
+    if [[ $untarred_itaps_moab == -1 ]] ; then
+       warn "Unable to prepare ITAPS_MOAB build directory. Giving Up!"
+       return 1
+    fi
+    
+    #
+    # Call configure
+    #
+    info "Configuring ITAPS_MOAB. . ."
+    cd $ITAPS_MOAB_BUILD_DIR || error "Cannot cd to $ITAPS_MOAB_BUILD_DIR build dir."
+    info "Invoking command to configure ITAPS_MOAB"
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+       WITHHDF5ARG="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH --with-hdf5-ldflags=-lz"
+    else
+       WITHHDF5ARG="--without-hdf5"
+    fi
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+       WITHSZIPARG="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+    else
+       WITHSZIPARG="--without-szip"
+    fi
+    if [[ "$DO_NETCDF" == "yes" ]] ; then
+       WITHNETCDFARG="--with-netcdf=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
+    else
+       WITHNETCDFARG="--without-netcdf"
+    fi
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix="$VISITDIR/itaps/MOAB/$ITAPS_MOAB_VERSION/$VISITARCH" \
+        --enable-imesh=nofortran --with-zlib \
+        $WITHHDF5ARG "$WITHSZIPARG" "$WITHNETCDFARG"
+    if [[ $? != 0 ]] ; then
+       warn "Silo configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build ITAPS_MOAB
+    #
+    info "Building ITAPS_MOAB. . . (~10 minutes)"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_MOAB build failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing ITAPS_FMDB"
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        warn "I do not know how to install ITAPS_MOAB on a Mac. Giving up"
+    else
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+           warn "ITAPS_MOAB install failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/itaps/MOAB"
+       chgrp -R ${GROUP} "$VISITDIR/itaps/MOAB"
+    fi
+    cd "$START_DIR"
+    info "Done with ITAPS_MOAB"
+    return 0
+}
+
+# *************************************************************************** #
+#                          Function 8.16, build_itaps_fmdb                    #
+# *************************************************************************** #
+
+function build_itaps_fmdb
+{
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $ITAPS_FMDB_BUILD_DIR $ITAPS_FMDB_FILE
+    untarred_itaps_fmdb=$?
+    if [[ $untarred_itaps_fmdb == -1 ]] ; then
+       warn "Unable to prepare ITAPS_FMDB build directory. Giving Up!"
+       return 1
+    fi
+    
+    #
+    # Call configure
+    #
+    info "Configuring ITAPS_FMDB. . ."
+    cd $ITAPS_FMDB_BUILD_DIR || error "Cannot cd to $ITAPS_FMDB_BUILD_DIR build dir."
+    info "Invoking command to configure ITAPS_FMDB"
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix="$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH" \
+        --enable-iMesh
+    if [[ $? != 0 ]] ; then
+       warn "Silo configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build ITAPS_FMDB
+    #
+    info "Building ITAPS_FMDB. . . (~10 minutes)"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_FMDB build failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing ITAPS_FMDB"
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        warn "I do not know how to install ITAPS_FMDB on a Mac. Giving up"
+    else
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+           warn "ITAPS_FMDB install failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/itaps/FMDB"
+       chgrp -R ${GROUP} "$VISITDIR/itaps/FMDB"
+    fi
+    cd "$START_DIR"
+    info "Done with ITAPS_FMDB"
+    return 0
+}
+
+# *************************************************************************** #
+#                       Function 8.16, build_itaps_grummp                     #
+# *************************************************************************** #
+
+function build_itaps_grummp
+{
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $ITAPS_GRUMMP_BUILD_DIR $ITAPS_GRUMMP_FILE
+    untarred_itaps_grummp=$?
+    if [[ $untarred_itaps_grummp == -1 ]] ; then
+       warn "Unable to prepare ITAPS_GRUMMP build directory. Giving Up!"
+       return 1
+    fi
+    
+    #
+    # Call configure
+    #
+    info "Configuring ITAPS_GRUMMP. . ."
+    cd $ITAPS_GRUMMP_BUILD_DIR || error "Cannot cd to $ITAPS_GRUMMP_BUILD_DIR build dir."
+    info "Invoking command to configure ITAPS_GRUMMP"
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix="$VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
+        --enable-iBase --enable-iMesh
+    if [[ $? != 0 ]] ; then
+       warn "Silo configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build ITAPS_GRUMMP
+    #
+    info "Building ITAPS_GRUMMP. . . (~10 minutes)"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_GRUMMP build failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing ITAPS_GRUMMP"
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        warn "I do not know how to install ITAPS_GRUMMP on a Mac. Giving up"
+    else
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+           warn "ITAPS_GRUMMP install failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/itaps/GRUMMP"
+       chgrp -R ${GROUP} "$VISITDIR/itaps/GRUMMP"
+    fi
+    cd "$START_DIR"
+    info "Done with ITAPS_GRUMMP"
+    return 0
+}
 
 # *************************************************************************** #
 #                          Function 9, build_hostconf                         #
@@ -7250,11 +7488,11 @@ function build_hostconf
         >> $HOSTCONF
     fi
     if [[ "$DO_ITAPS" == "yes" ]] ; then
+        echo "##" >> $HOSTCONF
+        echo "## Various ITAPS implementations" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
         echo \
-"DEFAULT_ITAPS_INCLUDE=\$VISITHOME/itaps/$ITAPS_VERSION/\$VISITARCH/include" \
-        >> $HOSTCONF
-        echo \
-"DEFAULT_ITAPS_LIB=\$VISITHOME/itaps/$ITAPS_VERSION/\$VISITARCH/lib" \
+"DEFAULT_ITAPS_IMPLS=$ITAPS_MOAB_IMPL $ITAPS_FMDB_IMPL $ITAPS_GRUMMP_IMPL" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
@@ -7328,6 +7566,10 @@ function build_visit
     fi
     if [[ "${DO_SLIVR}" == "yes" ]] ; then
        EXTRA_FEATURES="${EXTRA_FEATURES} --enable-slivr"
+    fi
+    # A dbio-only build disables pretty much everything else.
+    if [[ "${DO_DBIO_ONLY}" == "yes" ]] ; then
+       EXTRA_FEATURES="--enable-dbio-only"
     fi
     ./configure ${PARFLAGS} ${EXTRA_FEATURES}
     if [[ $? != 0 ]] ; then
@@ -7545,10 +7787,20 @@ printvariables () {
   printf "%s%s\n" "CCMIO_COMPATIBILITY_VERSION=" "${CCMIO_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "CCMIO_BUILD_DIR=" "${CCMIO_BUILD_DIR}"
 
-  printf "%s%s\n" "ITAPS_FILE=" "${ITAPS_FILE}"
-  printf "%s%s\n" "ITAPS_VERSION=" "${ITAPS_VERSION}"
-  printf "%s%s\n" "ITAPS_COMPATIBILITY_VERSION=" "${ITAPS_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "ITAPS_BUILD_DIR=" "${ITAPS_BUILD_DIR}"
+  printf "%s%s\n" "ITAPS_MOAB_FILE=" "${ITAPS_MOAB_FILE}"
+  printf "%s%s\n" "ITAPS_MOAB_VERSION=" "${ITAPS_MOAB_VERSION}"
+  printf "%s%s\n" "ITAPS_MOAB_COMPATIBILITY_VERSION=" "${ITAPS_MOAB_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "ITAPS_MOAB_BUILD_DIR=" "${ITAPS_MOAB_BUILD_DIR}"
+
+  printf "%s%s\n" "ITAPS_FMDB_FILE=" "${ITAPS_FMDB_FILE}"
+  printf "%s%s\n" "ITAPS_FMDB_VERSION=" "${ITAPS_FMDB_VERSION}"
+  printf "%s%s\n" "ITAPS_FMDB_COMPATIBILITY_VERSION=" "${ITAPS_FMDB_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "ITAPS_FMDB_BUILD_DIR=" "${ITAPS_FMDB_BUILD_DIR}"
+
+  printf "%s%s\n" "ITAPS_GRUMMP_FILE=" "${ITAPS_GRUMMP_FILE}"
+  printf "%s%s\n" "ITAPS_GRUMMP_VERSION=" "${ITAPS_GRUMMP_VERSION}"
+  printf "%s%s\n" "ITAPS_GRUMMP_COMPATIBILITY_VERSION=" "${ITAPS_GRUMMP_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "ITAPS_GRUMMP_BUILD_DIR=" "${ITAPS_GRUMMP_BUILD_DIR}"
 
   printf "%s%s\n" "VISUS_FILE=" "${VISUS_FILE}"
   printf "%s%s\n" "VISUS_VERSION=" "${VISUS_VERSION}"
@@ -7611,6 +7863,7 @@ usage () {
   printf "\t\t%15s\n" "NOTE: not available for download from web"
   printf "%-15s %s [%s]\n" "--visus" "Build ViSUS (experimental!)" "$DO_VISUS"
   printf "%-15s %s [%s]\n" "--vtk" "Build VTK" "built by default unless --no-thirdparty flag is used"
+  printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
   printf "%s\n" ""
   printf "OPTIONS\n"
   printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
@@ -7839,6 +8092,7 @@ for arg in "${arguments[@]}" ; do
         --visus) DO_VISUS="yes"; ON_VISUS="on";;
         --version) next_arg="version";;
         --vtk) DO_VTK="yes"; ON_VTK="on";;
+        --dbio-only) DO_DBIO_ONLY="yes";;
         -4) deprecated="${deprecated} --hdf4";;
         -5) deprecated="${deprecated} --hdf5";;
         -c) deprecated="${deprecated} --cgns";;
@@ -8567,6 +8821,60 @@ if [[ "$DO_SILO" == "yes" ]] ; then
     fi
 fi
 
+cd "$START_DIR"
+if [[ "$DO_ITAPS" == "yes" ]] ; then
+
+    # handle MOAB implementation of ITAPS
+    check_if_installed "itaps/MOAB" $ITAPS_MOAB_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping ITAPS_MOAB build.  ITAPS_MOAB is already installed."
+    else
+        info "Building ITAPS_MOAB (~10 minutes)"
+        build_itaps_moab
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install ITAPS_MOAB.  Bailing out."
+        fi
+        info "Done building ITAPS_MOAB"
+    fi
+    export ITAPS_MOAB_IMPL="MOAB:cub:-I\$VISITHOME/itaps/MOAB/$ITAPS_MOAB_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/MOAB/$ITAPS_MOAB_VERSION/\$VISITARCH/lib,-liMesh,-lMOAB,-lvtkGraphics"
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+       ITAPS_MOAB_IMPL="$ITAPS_MOAB_IMPL,-L\$VISITHOME/hdf5/$HDF5_VERSION/\$VISITARCH/lib,-lhdf5,-lz"
+    fi
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+       ITAPS_MOAB_IMPL="$ITAPS_MOAB_IMPL,-L\$VISITHOME/szip/$SZIP_VERSION/\$VISITARCH/lib,-lsz"
+    fi
+    if [[ "$DO_NETCDF" == "yes" ]] ; then
+       ITAPS_MOAB_IMPL="$ITAPS_MOAB_IMPL,-L\$VISITHOME/netcdf/$NETCDF_VERSION/\$VISITARCH/lib,-lnetcdf_c++,-lnetcdf"
+    fi
+
+    # handle FMDB implementation of ITAPS
+    check_if_installed "itaps/FMDB" $ITAPS_FMDB_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping ITAPS_FMDB build.  ITAPS_FMDB is already installed."
+    else
+        info "Building ITAPS_FMDB (~10 minutes)"
+        build_itaps_fmdb
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install ITAPS_FMDB.  Bailing out."
+        fi
+        info "Done building ITAPS_FMDB"
+    fi
+    export ITAPS_FMDB_IMPL="FMDB:sms:-I\$VISITHOME/itaps/FMDB/$ITAPS_FMDB_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/FMDB/$ITAPS_FMDB_VERSION/\$VISITARCH/lib,-lFMDB,-lSCORECModel,-lSCORECUtil,-lvtkGraphics"
+
+    # handle GRUMMP implementation ot ITAPS
+    check_if_installed "itaps/GRUMMP" $ITAPS_GRUMMP_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping ITAPS_GRUMMP build.  ITAPS_GRUMMP is already installed."
+    else
+        info "Building ITAPS_GRUMMP (~10 minutes)"
+        build_itaps_grummp
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install ITAPS_GRUMMP.  Bailing out."
+        fi
+        info "Done building ITAPS_GRUMMP"
+    fi
+    export ITAPS_GRUMMP_IMPL="GRUMMP:bdry,smesh,vmesh:-I\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-liMesh_GRUMMP,-lGR_3D,-lGR_surf,-lGR_2D,-lGR_base,-lSUMAAlog_lite,-lOptMS,-lvtkGraphics"
+fi
 
 #
 # Create the host.conf file
