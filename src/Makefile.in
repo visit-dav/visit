@@ -135,16 +135,20 @@
 #    Hank Childs, Sat Feb  9 15:31:35 PST 2008
 #    Renamed components directory to avt.
 #
+#    Mark C. Miller, Wed Mar  4 18:02:00 PST 2009
+#    Made it work for dbio-only build.
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=include lib bin third_party_builtin common @VTKQT@ visit_vtk \
+SUBDIRS_DBIO_ONLY=include lib bin third_party_builtin common visit_vtk avt databases tools
+SUBDIRS_STD=include lib bin third_party_builtin common @VTKQT@ visit_vtk \
         avt engine launcher @METADATA_SERVER@ winutil @VIEWER@ \
 	@GUI@ @VISITPY@ @JAVA_TARGET@ plots operators databases @HELP@ \
 	sim tools
+SUBDIRS=@SUBDIRS@
 
 #
 # Make sure that the installation directories exist

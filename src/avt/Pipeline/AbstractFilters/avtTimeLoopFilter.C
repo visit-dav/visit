@@ -48,6 +48,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <math.h>
 
 
 // ****************************************************************************

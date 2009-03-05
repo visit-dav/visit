@@ -40,6 +40,7 @@
 //                            avtGenericDatabase.C                           //
 // ************************************************************************* //
 
+#include <visit-config.h>
 #include <avtGenericDatabase.h>
 #include <algorithm>
 #include <float.h>
@@ -97,8 +98,10 @@
 #include <avtUnstructuredPointBoundaries.h>
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
+#ifndef DBIO_ONLY
 #include <TetMIR.h>
 #include <ZooMIR.h>
+#endif
 
 #include <DebugStream.h>
 #include <BadDomainException.h>
@@ -3464,6 +3467,8 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Mark C. Miller, Wed Mar  4 18:00:22 PST 2009
+//    Adjusted for dbio-only build
 // ****************************************************************************
 
 avtDataTree_p
@@ -3487,6 +3492,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool &notAllCellsSubdivided,
                         bool reUseMIR)
 {
+#ifndef DBIO_ONLY
     if (ds == NULL)
     {
         char msg[128];
@@ -3753,6 +3759,9 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     delete [] out_ds;
 
     return outDT;
+#else
+    return 0;
+#endif
 }
 
 
@@ -4185,6 +4194,8 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
 //    Jeremy Meredith, Wed Aug  6 18:08:33 EDT 2008
 //    Changed char* to const char* to fix warning.
 //
+//    Mark C. Miller, Wed Mar  4 18:00:38 PST 2009
+//    Adjusted for dbio-only build
 // ****************************************************************************
 
 void
@@ -4235,8 +4246,10 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 
             avtMixedVariable *mixVarOut = NULL;
             vtkDataArray     *scalarOut = NULL;
+#ifndef DBIO_ONLY
             MIR::SpeciesSelect(specList, mat, species, arr, mixvar, 
                                scalarOut, mixVarOut);
+#endif
             ds->GetCellData()->RemoveArray(var.c_str());
             ds->GetCellData()->AddArray(scalarOut);
             if (activeVar)
@@ -4340,6 +4353,8 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Mark C. Miller, Wed Mar  4 18:00:58 PST 2009
+//    Adjusted for dbio-only build
 // ****************************************************************************
 
 void_ref_ptr
@@ -4358,6 +4373,8 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            bool &notAllCellsSubdivided, bool reUseMIR,
                            avtMaterial *&mat_to_use)
 {
+    void_ref_ptr vr = void_ref_ptr();
+#ifndef DBIO_ONLY
     mat_to_use = mat;
 
     char cacheLbl[1000];
@@ -4380,7 +4397,6 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
     avtDatabaseMetaData *md = GetMetaData(timestep);
     string meshname = md->MeshForVar(varname);
     string matname  = md->MaterialOnMesh(meshname);
-    void_ref_ptr vr = void_ref_ptr();
     if (reUseMIR)
     {
         vr = cache.GetVoidRef(matname.c_str(), cacheLbl, timestep, domain);
@@ -4451,6 +4467,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
     MIR *rv = (MIR *) *vr;
     subdivisionOccurred   = rv->SubdivisionOccurred();
     notAllCellsSubdivided = rv->NotAllCellsSubdivided();
+#endif
     return vr;
 }
 

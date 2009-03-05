@@ -89,15 +89,21 @@
 #   Christoph Garth, Fri Feb 15 20:29:42 PST 2008
 #   Add IVP directory.
 #
+#   Mark C. Miller, Wed Mar  4 17:59:14 PST 2009
+#   Enabled dbio-only build
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=DBAtts Math IVP Pipeline DDF MIR Shapelets\
+SUBDIRS_DBIO_ONLY=DBAtts Pipeline Database
+
+SUBDIRS_STD=DBAtts Math IVP Pipeline DDF MIR Shapelets\
         View Filters Database Expressions Queries Plotter FileWriter \
         @VISWINDOW@ QtVisWindow
+
+SUBDIRS=@SUBDIRS@
 
 message:
 	@echo
