@@ -305,6 +305,10 @@
 #
 #    Jeremy Meredith, Tue Oct 14 15:16:00 EDT 2008
 #    Added vtkRectilinearLinesNoDataFilter.
+#    
+#    Mark C. Miller, Tue Mar  3 14:04:46 PST 2009
+#    Moved vtkMultiFontVectorText and vtkVectorFontCharacterData to
+#    rendering lib.
 #
 ##############################################################################
 
@@ -324,7 +328,6 @@ SRC= vtkAxisDepthSort.C \
     vtkDisjointCubesFacelistFilter.C \
     vtkLineoutFilter.C \
     vtkLinesFromOriginalCells.C \
-    vtkMultiFontVectorText.C \
     vtkOBJWriter.C \
     vtkOnionPeelFilter.C \
     vtkPolyDataOnionPeelFilter.C \
@@ -340,7 +343,6 @@ SRC= vtkAxisDepthSort.C \
     vtkTensorReduceFilter.C \
     vtkUniqueFeatureEdges.C \
     vtkUnstructuredGridRelevantPointsFilter.C \
-    vtkVectorFontCharacterData.C \
     vtkVectorGlyph.C \
     vtkVectorReduceFilter.C \
     vtkVertexFilter.C \

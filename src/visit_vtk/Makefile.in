@@ -43,13 +43,17 @@
 #   Mark C. Miller, Wed Nov 16 12:09:09 PST 2005
 #   Removed sl_io
 #
+#   Mark C. Miller, Wed Mar  4 17:57:55 PST 2009
+#   Enabled dbio-only build.
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=lightweight full rendering parallel
+SUBDIRS_DBIO_ONLY=lightweight full
+SUBDIRS_STD=lightweight full rendering parallel
+SUBDIRS=@SUBDIRS@
 
 message:
 	@echo

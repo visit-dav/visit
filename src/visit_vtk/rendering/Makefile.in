@@ -306,6 +306,9 @@
 #    Jeremy Meredith, Tue Oct 14 15:16:00 EDT 2008
 #    Added vtkRectilinearLinesNoDataFilter.
 #
+#    Mark C. Miller, Wed Mar  4 17:58:30 PST 2009
+#    Moved vtkMultiFontVectorText.C and vtkVectorFontCharacterData.C from
+#    full dir.
 ##############################################################################
 
 ##
@@ -340,7 +343,9 @@ SRC=InitVTK.C \
     vtkVisItAxisActor.C \
     vtkVisItAxisActor2D.C \
     vtkVisItCubeAxesActor.C \
-    vtkTriad2D.C
+    vtkTriad2D.C \
+    vtkMultiFontVectorText.C \
+    vtkVectorFontCharacterData.C
 
 CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I../../include -I. $(GLEW_INCLUDE)
 

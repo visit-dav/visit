@@ -430,6 +430,8 @@ exec perl -x $0 ${1+"$@"};
 #    Merge in changes from RC, which includes new support for now unset
 #    env var for Myrinet libs.
 #
+#    Mark C. Miller, Wed Mar  4 18:02:40 PST 2009
+#    Added logic to run _lite versions of convert tool.
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1194,7 +1196,14 @@ if ((($parallel) or ($launchengine)) and
     #
     if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
     {
-        $exe_name .= "_par";
+        if (-e "$visitdir/exe/$exe_name" . "_par_lite")
+        {
+            $exe_name .= "_par_lite";
+        }
+        else
+        {
+            $exe_name .= "_par";
+        }
     }
     else
     {
@@ -1608,7 +1617,14 @@ if (!$part_set && (substr($launch,0,4) eq "psub"))
 # in parallel.
 if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
 {
-    $exe_name .= "_ser" if (!$parallel);
+    if (-e "$visitdir/exe/$exe_name" . "_ser_lite")
+    {
+        $exe_name .= "_ser_lite" if (!$parallel);
+    }
+    else
+    {
+        $exe_name .= "_ser" if (!$parallel);
+    }
 }
 
 # Determine the version number of the executable.

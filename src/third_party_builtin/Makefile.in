@@ -57,15 +57,23 @@
 #   Jeremy Meredith, Wed Feb 11 16:39:58 EST 2009
 #   Added verdict.
 #
+#   Mark C. Miller, Wed Mar  4 18:01:23 PST 2009
+#   Enabled dbio-only build.
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=@BUILD_MESA_STUB@ @BUILD_ZLIB@ @BUILD_GLEW@ @BUILD_BILIB@ \
+SUBDIRS_DBIO_ONLY=@BUILD_BILIB@ bow
+ALLSUBDIRS_DBIO_ONLY=@BUILD_BILIB@ bow
+
+SUBDIRS_STD=@BUILD_MESA_STUB@ @BUILD_ZLIB@ @BUILD_GLEW@ @BUILD_BILIB@ \
     @BUILD_SLIVR@ @BUILD_COGNOMEN@ @BUILD_TUVOK@ bow verdict
-ALLSUBDIRS=mesa_stub zlib glew bilib slivr bow cognomen Tuvok verdict
+ALLSUBDIRS_STD=mesa_stub zlib glew bilib slivr bow cognomen Tuvok verdict
+
+SUBDIRS=@SUBDIRS@
+ALLSUBDIRS=@ALLSUBDIRS@
 
 message:
 	@echo

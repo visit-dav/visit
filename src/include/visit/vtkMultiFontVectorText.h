@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkMultiFontVectorText.h
+../../visit_vtk/rendering/vtkMultiFontVectorText.h

@@ -84,6 +84,8 @@
 #   Jeremy Meredith, Mon Feb 16 10:56:55 EST 2009
 #   Added -lvisit_verdict to resolve symbols in MIR and expressions.
 #
+#   Mark C. Miller, Wed Mar  4 17:52:51 PST 2009
+#   Made it work for a dbio-only build
 ##############################################################################
 
 ##
@@ -106,8 +108,10 @@ LIBDEP=
 ##
 MY_VTK_LIBS=`echo "@VTK_LIBS@" | tr ' ' '\n' | grep -v "vtkRendering\\\|vtkftgl\\\|vtkfreetype\\\|vtkHybrid\\\|vtksys"`
 
-SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir_ser -lvisit_verdict -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
-PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir_par -lvisit_verdict -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtexceptions -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
+PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtexceptions -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+
+BUILD_DBIO_ONLY=convert_ser_lite
 
 ##
 ## Files...
@@ -121,7 +125,7 @@ PAROBJ_LITE=convert_par_lite.o
 ##
 ## Standard targets...
 ##
-all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@ 
+all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@ @BUILD_DBIO_ONLY@
 
 clean:
 	$(RM) $(SEROBJ) $(PAROBJ) @CONVERT_SER@ @CONVERT_PAR@
@@ -150,7 +154,7 @@ $(PAROBJ_LITE): $(SRC)
 @CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ) @CONVERT_PAR@_lite
 	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
 
-@CONVERT_SER@_lite: $(LIBDEP) $(SEROBJ_LITE) 
+convert_ser_lite: $(LIBDEP) $(SEROBJ_LITE) 
 	$(CXX) -o $@ $(SEROBJ_LITE) $(LDFLAGS) $(SERLIBS_LITE)
 
 @CONVERT_PAR@_lite: $(LIBDEP) $(PAROBJ_LITE) 

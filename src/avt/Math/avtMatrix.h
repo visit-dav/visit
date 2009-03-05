@@ -38,10 +38,24 @@
 
 #ifndef MATRIX_H
 #define MATRIX_H
+
+#include <visit-config.h>
 #include <math_exports.h>
 #include <visitstream.h>
 
+#ifdef DBIO_ONLY 
+#include <avtVector.h>
+#define STUB_VOID {}
+#define STUB_OP {return arg;}
+#define STUB_MAT {return avtMatrix();}
+#define STUB_OSTR {return ostr;}
+#else
 class avtVector;
+#define STUB_VOID
+#define STUB_OP
+#define STUB_MAT
+#define STUB_OSTR
+#endif
 
 // ****************************************************************************
 //  Class:  avtMatrix
@@ -72,77 +86,82 @@ class avtVector;
 class MATH_API avtMatrix
 {
   public:
-    avtMatrix();
-    avtMatrix(const avtMatrix&);
-    avtMatrix(const double *);
-    ~avtMatrix();
+    avtMatrix() STUB_VOID;
+    avtMatrix(const avtMatrix&) STUB_VOID;
+    avtMatrix(const double *) STUB_VOID;
+    ~avtMatrix() STUB_VOID;
 
     // index operators
     double       *operator[](int i);
     const double *operator[](int i) const;
 
     // assignment operator
-    void   operator=(const avtMatrix&);
+    void   operator=(const avtMatrix&) STUB_VOID;
 
     // multiply matrix*matrix
-    avtMatrix operator*(const avtMatrix&) const;
+    avtMatrix operator*(const avtMatrix& arg) const STUB_OP;
     // transform point
-    avtVector operator*(const avtVector&) const;
+    avtVector operator*(const avtVector& arg) const STUB_OP;
     // transform vector
-    avtVector operator^(const avtVector&) const;
+    avtVector operator^(const avtVector& arg) const STUB_OP;
 
-    void   Inverse();
-    void   Transpose();
+    void   Inverse() STUB_VOID;
+    void   Transpose() STUB_VOID;
 
     // utility
-    void   MakeIdentity();
-    void   MakeZero();
-    void   MakeTrackball(double,double, double,double, bool lhs=false);
-    void   MakeTranslate(double, double, double);
-    void   MakeTranslate(const avtVector&);
-    void   MakeRBT(const avtVector&, const avtVector&, const avtVector&);
-    void   MakeRotation(const avtVector&, const avtVector&, const avtVector&);
-    void   MakeScale(double,double,double);
-    void   MakeScale(double);
-    void   MakePerspectiveProjection(double,double, double, double);
-    void   MakeOrthographicProjection(double, double,double, double);
-    void   MakeView(const avtVector&, const avtVector&, const avtVector&);
+    void   MakeIdentity() STUB_VOID;
+    void   MakeZero() STUB_VOID;
+    void   MakeTrackball(double,double, double,double, bool lhs=false) STUB_VOID;
+    void   MakeTranslate(double, double, double) STUB_VOID;
+    void   MakeTranslate(const avtVector&) STUB_VOID;
+    void   MakeRBT(const avtVector&, const avtVector&, const avtVector&) STUB_VOID;
+    void   MakeRotation(const avtVector&, const avtVector&, const avtVector&) STUB_VOID;
+    void   MakeScale(double,double,double) STUB_VOID;
+    void   MakeScale(double) STUB_VOID;
+    void   MakePerspectiveProjection(double,double, double, double) STUB_VOID;
+    void   MakeOrthographicProjection(double, double,double, double) STUB_VOID;
+    void   MakeView(const avtVector&, const avtVector&, const avtVector&) STUB_VOID;
 
     void   MakeFrameToFrameConversion(
                const avtVector &, const avtVector&, const avtVector&, const avtVector &, 
-               const avtVector &, const avtVector&, const avtVector&, const avtVector &);
+               const avtVector &, const avtVector&, const avtVector&, const avtVector &) STUB_VOID;
     void   MakeCartesianToFrameConversion(
-               const avtVector &, const avtVector&, const avtVector&, const avtVector &);
+               const avtVector &, const avtVector&, const avtVector&, const avtVector &) STUB_VOID;
     void   MakeFrameToCartesianConversion(
-               const avtVector &, const avtVector&, const avtVector&, const avtVector &);
+               const avtVector &, const avtVector&, const avtVector&, const avtVector &) STUB_VOID;
     // static utility
-    static avtMatrix CreateIdentity();
-    static avtMatrix CreateZero();
-    static avtMatrix CreateTrackball(double,double, double,double, bool lhs=false);
-    static avtMatrix CreateTranslate(double, double, double);
-    static avtMatrix CreateTranslate(const avtVector&);
-    static avtMatrix CreateRBT(const avtVector&, const avtVector&, const avtVector&);
-    static avtMatrix CreateRotation(const avtVector&, const avtVector&, const avtVector&);
-    static avtMatrix CreateScale(double,double,double);
-    static avtMatrix CreateScale(double);
-    static avtMatrix CreatePerspectiveProjection(double,double, double, double);
-    static avtMatrix CreateOrthographicProjection(double, double,double, double);
-    static avtMatrix CreateView(const avtVector&, const avtVector&, const avtVector&);
+    static avtMatrix CreateIdentity() STUB_MAT;
+    static avtMatrix CreateZero() STUB_MAT;
+    static avtMatrix CreateTrackball(double,double, double,double, bool lhs=false) STUB_MAT;
+    static avtMatrix CreateTranslate(double, double, double) STUB_MAT;
+    static avtMatrix CreateTranslate(const avtVector&) STUB_MAT;
+    static avtMatrix CreateRBT(const avtVector&, const avtVector&, const avtVector&) STUB_MAT;
+    static avtMatrix CreateRotation(const avtVector&, const avtVector&, const avtVector&) STUB_MAT;
+    static avtMatrix CreateScale(double,double,double) STUB_MAT;
+    static avtMatrix CreateScale(double) STUB_MAT;
+    static avtMatrix CreatePerspectiveProjection(double,double, double, double) STUB_MAT;
+    static avtMatrix CreateOrthographicProjection(double, double,double, double) STUB_MAT;
+    static avtMatrix CreateView(const avtVector&, const avtVector&, const avtVector&) STUB_MAT;
     static avtMatrix CreateFrameToFrameConversion(
                const avtVector &, const avtVector&, const avtVector&, const avtVector &, 
-               const avtVector &, const avtVector&, const avtVector&, const avtVector &);
+               const avtVector &, const avtVector&, const avtVector&, const avtVector &) STUB_MAT;
     static avtMatrix CreateCartesianToFrameConversion(
-               const avtVector &, const avtVector&, const avtVector&, const avtVector &);
+               const avtVector &, const avtVector&, const avtVector&, const avtVector &) STUB_MAT;
     static avtMatrix CreateFrameToCartesianConversion(
-               const avtVector &, const avtVector&, const avtVector&, const avtVector &);
+               const avtVector &, const avtVector&, const avtVector&, const avtVector &) STUB_MAT;
 
     const double *GetElements() const;
 
     // friends
-    friend ostream& operator<<(ostream&,const avtMatrix&);
+    friend ostream& operator<<(ostream& ostr,const avtMatrix&) STUB_OSTR;
   private:
     double m[4][4];
 };
+
+#undef STUB_VOID
+#undef STUB_OP
+#undef STUB_MAT
+#undef STUB_OSTR
 
 inline double *
 avtMatrix::operator[](int i)

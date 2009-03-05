@@ -97,13 +97,20 @@
 #    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 #    Added Database/PointerNotInCacheException
 #
+#    Mark C. Miller, Wed Mar  4 18:03:18 PST 2009
+#    Enabled dbio-only build.
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Database Pipeline Plotter VisWindow
-SRC=$(Database_src) $(Pipeline_src) $(Plotter_src) $(VisWindow_src)
+SUBDIRS_DBIO_ONLY=Database Pipeline
+SUBDIRS_STD=Database Pipeline Plotter VisWindow
+SUBDIRS=@SUBDIRS@
+
+SRC_DBIO_ONLY=$(Database_src) $(Pipeline_src)
+SRC_STD=$(Database_src) $(Pipeline_src) $(Plotter_src) $(VisWindow_src)
+SRC=@SRC@
 
 Database_src= \
   Database/BadPermissionException.C \

@@ -38,8 +38,21 @@
 
 #ifndef VECTOR_H
 #define VECTOR_H
+
+#include <visit-config.h>
+#include <math.h>
 #include <math_exports.h>
 #include <visitstream.h>
+
+#ifdef DBIO_ONLY 
+#define STUB_VOID {}
+#define STUB_OSTR {return ostr;}
+#define STUB_STR {return "";}
+#else
+#define STUB_VOID
+#define STUB_OSTR
+#define STUB_STR
+#endif
 
 // ****************************************************************************
 //  Class:  avtVector
@@ -109,17 +122,18 @@ class MATH_API avtVector
     double length() const;
 
     // friends
-    friend ostream& operator<<(ostream&,const avtVector&);
+    friend ostream& operator<<(ostream& ostr,const avtVector&) STUB_OSTR;
 
     // input/output
-    const char *getAsText();
-    void        setAsText(const char*);
+    const char *getAsText() STUB_STR;
+    void        setAsText(const char*) STUB_VOID;
   private:
     char text[256];
 };
 
-#include <math.h>
-#include <visitstream.h>
+#undef STUB_VOID
+#undef STUB_OSTR
+#undef STUB_STR
 
 inline 
 avtVector::avtVector()

@@ -914,6 +914,10 @@ dnl
 dnl    Brad Whitlock, Fri Feb  6 14:53:51 PST 2009
 dnl    Added libsim V2.
 dnl
+dnl    Mark C. Miller, Wed Mar  4 17:55:25 PST 2009
+dnl    Enabled dbio-only build. Add logic to set SVN_REVISION to 'unknown'
+dnl    if being built from a dist hierarchy. Removed clearmake. Sent stderr
+dnl    output of qmake command to /dev/null.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -972,7 +976,11 @@ AC_MSG_CHECKING(what subversion revision is)
 if test -r SVN_REVISION; then
    SVN_REVISION=`cat SVN_REVISION`
 else
-   SVN_REVISION=`svn info . | grep "Revision:" | cut -d' ' -f2`
+   if test -d .svn; then
+      SVN_REVISION=`svn info . 2>/dev/null | grep "Revision:" | cut -d' ' -f2`
+   else
+      SVN_REVISION="unknown"
+   fi
 fi
 AC_DEFINE_UNQUOTED(SVN_REVISION,"$SVN_REVISION",[Subversion revision])
 AC_MSG_RESULT($SVN_REVISION)
@@ -1038,6 +1046,29 @@ fi
 # Check for platform specific flags.
 #
 AC_SUBST(PLATFORM_CPPFLAGS)
+
+#
+# Setup default standard dir targets. These can get overridden
+# for specific types of builds like dbio-only.
+#
+SUBDIRS="$""(SUBDIRS_STD)"
+ALLSUBDIRS="$""(ALLSUBDIRS_STD)"
+SRC="$""(SRC_STD)"
+BUILD_DBIO_ONLY=""
+AC_SUBST(SUBDIRS)
+AC_SUBST(ALLSUBDIRS)
+AC_SUBST(SRC)
+AC_SUBST(BUILD_DBIO_ONLY)
+
+#
+# Check for database-only build. Disable a slew of things if so.
+#
+AC_ARG_ENABLE(dbio-only,
+   AC_HELP_STRING([--enable-dbio-only], [build only the components necessary to support database I/O]))
+if test "$enable_dbio_only" = yes; then
+    enable_scripting=no
+    AC_DEFINE(DBIO_ONLY, [1], [Define if this is a database I/O only build])
+fi
 
 #
 # Check for CMake
@@ -1875,16 +1906,6 @@ if test $emptycxxflags = "yes"; then
     fi
 fi
 
-# Check to see if we're running clearmake.
-# If we are, set the build verbosity to 0 so that output won't mess up the rest
-# of "configure".
-AC_MSG_CHECKING(for clearmake)
-if test "`${MAKE-make} -version 2>/dev/null | cut -d' ' -f1`" = "clearmake"; then
-    AC_MSG_RESULT(yes)
-    CLEARCASE_BLD_VERBOSITY=0; export CLEARCASE_BLD_VERBOSITY
-else
-    AC_MSG_RESULT(no)
-fi
 # Set the compilation rule to include the OS, so that clearmake won't wink
 # in object files across OSes.
 #
@@ -3069,7 +3090,7 @@ AC_MSG_CHECKING(for supported Qt version)
 QtVersion=""
 QtVersion2=""
 consumeCount=-1
-toks=`$QT_BIN/qmake --version`
+toks=`$QT_BIN/qmake --version 2>/dev/null`
 for tok in $toks; do
     if test "$tok" == "Qt"; then
         consumeCount=2
@@ -3999,11 +4020,13 @@ TOOLS_FILES="tools/Makefile
              tools/writer/Makefile 
              tools/xml/Makefile
              tools/xmledit/Makefile"
+
 VISIT_VTK_FILES="visit_vtk/Makefile
                  visit_vtk/lightweight/Makefile
                  visit_vtk/full/Makefile
                  visit_vtk/rendering/Makefile
                  visit_vtk/parallel/Makefile"
+
 COMPONENT_FILES="avt/Makefile
                  avt/DBAtts/Makefile
                  avt/DDF/Makefile
@@ -4076,6 +4099,53 @@ LAUNCHER_FILES="launcher/Makefile
                 launcher/proxy/Makefile
                 launcher/main/Makefile"
 
+dnl
+dnl Disable many things if we're doing a dbio only build
+dnl
+if test "$enable_dbio_only" = yes; then
+    CONVERT_SER=""
+    CONVERT_PAR=""
+    SUBDIRS="$""(SUBDIRS_DBIO_ONLY)"
+    ALLSUBDIRS="$""(ALLSUBDIRS_DBIO_ONLY)"
+    SRC="$""(SRC_DBIO_ONLY)"
+    BUILD_DBIO_ONLY="$""(BUILD_DBIO_ONLY)"
+    MDSERVERLIB="$""(MDSO)"
+    MDSERVEROBJ="$""(MOBJ)"
+    ENGINELIBSER="$""(ESERDSO)"
+    ENGINELIBPAR="$""(EPARDSO)"
+    GUI_FILES=""
+    HELP_FILES=""
+    WINUTIL_FILES=""
+    VIEWER_FILES=""
+    ENGINE_FILES=""
+    MDSERVER_FILES=""
+    LAUNCHER_FILES=""
+    VTKQT_FILES=""
+    PLOT_FILES=""
+    OPERATOR_FILES=""
+    VISITPY_FILES=""
+    SIMULATION_PROTOTYPE_FILES=""
+    CQSCORE_FILES=""
+    JAVA_FILES=""
+    THIRD_PARTY_BUILTIN_FILES="
+        third_party_builtin/Makefile
+        third_party_builtin/bilib/Makefile
+        third_party_builtin/bow/Makefile"
+    TOOLS_FILES="
+        tools/Makefile
+        tools/xml/Makefile
+        tools/convert/Makefile"
+    VISIT_VTK_FILES="
+        visit_vtk/Makefile
+        visit_vtk/lightweight/Makefile
+        visit_vtk/full/Makefile"
+    COMPONENT_FILES="
+        avt/Makefile
+        avt/DBAtts/Makefile
+        avt/Database/Makefile
+        avt/Pipeline/Makefile"
+fi
+
 AC_OUTPUT($STANDARD_FILES
           $GUI_FILES
           $HELP_FILES
@@ -4128,8 +4198,10 @@ if test "$UNAME" = "Darwin";  then
     svn_bin/makebundles
 fi
 
+if test ! "$enable_dbio_only" = yes; then
 (cd plots     && ${MAKE-make} dirmakefiles)
 (cd operators && ${MAKE-make} dirmakefiles)
+fi
 (cd databases && ${MAKE-make} dirmakefiles)
 if test -n "$JAVA_TARGET"; then
 (cd java      && ${MAKE-make} version)

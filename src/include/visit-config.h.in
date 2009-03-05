@@ -1,5 +1,8 @@
 /* include/visit-config.h.in.  Generated from configure.in by autoheader.  */
 
+/* Define if this is a database I/O only build */
+#undef DBIO_ONLY
+
 /* Define if you have the boost interval template library. */
 #undef HAVE_BILIB
 

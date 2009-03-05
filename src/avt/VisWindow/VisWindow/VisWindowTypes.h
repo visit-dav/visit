@@ -61,11 +61,27 @@
 //    Eric Brugger, Tue Dec  9 14:32:10 PST 2008
 //    Added the AxisParallel window mode.
 //
+//    Mark C. Miller, Wed Mar  4 17:59:51 PST 2009
+//    Adjusted for dbio-only build.
 // ************************************************************************* //
 
 
 #ifndef VIS_WINDOW_TYPES_H
 #define VIS_WINDOW_TYPES_H
+
+#include <visit-config.h>
+
+typedef enum
+{
+    WINMODE_2D            = 0,
+    WINMODE_3D,           /* 1 */
+    WINMODE_CURVE,        /* 2 */
+    WINMODE_AXISARRAY,    /* 3 */
+    WINMODE_AXISPARALLEL, /* 4 */
+    WINMODE_NONE          /* 5 */
+}  WINDOW_MODE;
+
+#ifndef DBIO_ONLY
 
 #include <avtVector.h>
 #include <viswindow_exports.h>
@@ -80,16 +96,6 @@ typedef enum
     LINEOUT,         /* 4 */
     SPREADSHEET_PICK /* 5*/
 }  INTERACTION_MODE;
-
-typedef enum
-{
-    WINMODE_2D            = 0,
-    WINMODE_3D,           /* 1 */
-    WINMODE_CURVE,        /* 2 */
-    WINMODE_AXISARRAY,    /* 3 */
-    WINMODE_AXISPARALLEL, /* 4 */
-    WINMODE_NONE          /* 5 */
-}  WINDOW_MODE;
 
 typedef enum {
     CB_START         = 0,
@@ -194,6 +200,8 @@ ValidMode(WINDOW_MODE mode)
 
     return false;
 }
+
+#endif // DBIO_ONLY
 
 
 #endif
