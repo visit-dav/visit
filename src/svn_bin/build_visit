@@ -530,6 +530,15 @@
 #     Mark C. Miller, Thu Feb 19 14:51:07 PST 2009
 #     Fixed help message for --svn option. It DOES NOT assume HEAD and always
 #     reads the revision argument.
+#
+#     Mark C. Miller, Thu Mar  5 13:46:15 PST 2009
+#     Added this comment regarding recent changes that I neglected to comment
+#     about. Added support for a dbio-only (DO_DBIO_ONLY) build. Added logic
+#     in several places to disable stuff that is not needed for a dbio-only
+#     build as well as enable all 3rd party database plugin libs.
+#
+#     Mark C. Miller, Thu Mar  5 16:33:45 PST 2009
+#     I fixed problems that arose due to a bad commit.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -2725,11 +2734,16 @@ function build_qt
     #
     # Call configure
     #
+    EXTRA_QT_FLAGS=""
+    if [[ "${DO_DBIO_ONLY}" == "yes" ]] ; then
+       EXTRA_QT_FLAGS="-no-openssl -no-nas-sound -no-opengl -no-xshape -no-xinerama -no-xcursor -no-xfixes -no-xrandr -no-xrender -no-fontconfig -no-tablet -no-gif -no-libtiff -no-libpng -no-libmng -no-libjpeg"
+    fi
     
     info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/" \
          "-platform ${QT_PLATFORM}" \
          "-make libs -make tools -fast -no-separate-debug-info" \
-         "-no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite"
+         "-no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite" \
+         "${EXTRA_QT_FLAGS}"
 
     echo "yes" | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
                              -platform ${QT_PLATFORM} \
@@ -2737,6 +2751,7 @@ function build_qt
                              -no-nas-sound -no-opengl -no-xshape -no-xinerama -no-xcursor \
                              -no-xfixes -no-xrandr -no-xrender -no-fontconfig -no-tablet \
                              -no-gif -no-libtiff -no-libpng -no-libmng -no-libjpeg \
+                             ${EXTRA_QT_FLAGS} \
                              -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite | tee qt.config.out
     
     if [[ $? != 0 ]] ; then
@@ -2744,15 +2759,17 @@ function build_qt
        return 1
     fi
 
-#    #
-#    # Figure out if configure found the OpenGL libraries
-#    #
-#    HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'`
-#    if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
-#       warn "Qt4 configure did not find OpenGL." \
-#             "VisIt needs Qt4 with enabled OpenGL support. Giving up."
-#       return 1
-#    fi
+    #
+    # Figure out if configure found the OpenGL libraries
+    #
+    if [[ "${DO_DBIO_ONLY}" != "yes" ]] ; then
+       HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'`
+       if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
+          warn "Qt4 configure did not find OpenGL." \
+                "VisIt needs Qt4 with enabled OpenGL support. Giving up."
+          return 1
+       fi
+    fi
     
     #
     # Build Qt4. Config options above make sure we only build the libs & tools.
@@ -3322,17 +3339,35 @@ function build_vtk
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
     else
-    ${CMAKE_BIN} \
-        -DBUILD_SHARED_LIBS:BOOL=ON\
-        -DBUILD_TESTING:BOOL=OFF\
-        -DUSE_ANSI_STD_LIB:BOOL=ON\
-        -DVTK_USE_MANGLED_MESA:BOOL=OFF\
-        -DVTK_USE_HYBRID:BOOL=ON\
-        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-        .
+       if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
+           ${CMAKE_BIN} \
+               -DBUILD_SHARED_LIBS:BOOL=ON\
+               -DBUILD_TESTING:BOOL=OFF\
+               -DUSE_ANSI_STD_LIB:BOOL=ON\
+               -DVTK_USE_MANGLED_MESA:BOOL=OFF\
+               -DVTK_USE_HYBRID:BOOL=ON\
+               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+               -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+               -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+               -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+               .
+       else
+           ${CMAKE_BIN} \
+               -DBUILD_SHARED_LIBS:BOOL=ON\
+               -DBUILD_TESTING:BOOL=OFF\
+               -DUSE_ANSI_STD_LIB:BOOL=ON\
+               -DVTK_USE_MANGLED_MESA:BOOL=ON\
+               -DVTK_USE_HYBRID:BOOL=ON\
+               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+               -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+               -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+               -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+               -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+               -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+               -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+               -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+               .
+       fi
     fi
     if [[ $? != 0 ]] ; then
        warn "Cannot get CMAKE to create the makefiles.  Giving up."
@@ -3404,9 +3439,11 @@ function build_vtk
     #
     
     # Save off this directory for later
-#    cd MangleMesaInclude
-#    export BAD_MESA="$PWD"
-#    cd ..
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+        cd MangleMesaInclude
+        export BAD_MESA="$PWD"
+        cd ..
+    fi
 
     info "Installing VTK . . ."
 
@@ -3477,15 +3514,17 @@ function build_vtk
     # The MangleMesa headers have absolute paths.  Correct these headers now for
     # the new location they have been copied into.
     #
-#    cd "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude"
-#    SED_STR1=$(echo "$BAD_MESA" | sed 's/\//\\\//g')  
-    # Converts all '/' to "\/" for later sed'ding 
-#    SED_STR2=$(echo "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude" |\
-#    sed 's/\//\\\//g')
-#    for i in *.h ; do
-#       cat $i | sed 's/'${SED_STR1}'/'${SED_STR2}'/g' > tmp.h
-#       mv -f tmp.h $i
-#    done
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+        cd "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude"
+        SED_STR1=$(echo "$BAD_MESA" | sed 's/\//\\\//g')  
+        # Converts all '/' to "\/" for later sed'ding 
+        SED_STR2=$(echo "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude" |\
+        sed 's/\//\\\//g')
+        for i in *.h ; do
+           cat $i | sed 's/'${SED_STR1}'/'${SED_STR2}'/g' > tmp.h
+           mv -f tmp.h $i
+        done
+    fi
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/vtk"
        chgrp -R ${GROUP} "$VISITDIR/vtk"
@@ -8145,6 +8184,53 @@ if test -n "${next_action}" ; then
     esac
 fi
 
+#
+# As a temporary convenience, for a dbio-only build, we turn on almost all
+# of the 3rd party I/O libs used by database plugins.
+#
+if [[ "$DO_DBIO_ONLY" ]]; then
+    DO_HDF4="yes"
+    ON_HDF4="on"
+    DO_HDF5="yes"
+    ON_HDF5="on"
+    DO_BOXLIB="yes"
+    ON_BOXLIB="on"
+    DO_CGNS="yes"
+    ON_CGNS="on"
+    DO_EXODUS="yes"
+    ON_EXODUS="on"
+    DO_CFITSIO="yes"
+    ON_CFITSIO="on"
+    DO_GDAL="yes"
+    ON_GDAL="on"
+    DO_NETCDF="yes"
+    ON_NETCDF="on"
+    DO_H5PART="yes"
+    ON_H5PART="on"
+    DO_SZIP="yes"
+    ON_SZIP="on"
+    DO_CCMIO="yes"
+    ON_CCMIO="on"
+    DO_ITAPS="yes"
+    ON_ITAPS="on"
+    DO_SILO="yes"
+    ON_SILO="on"
+
+    #
+    # Any plugin for this yet?
+    #
+#    DO_FASTBIT="yes"
+#    ON_FASTBIT="on"
+
+    #
+    # Releasibility of these libs is not yet understood
+    #
+#    DO_MILI="yes"
+#    ON_MILI="on"
+#    DO_VISUS="yes"
+#    ON_VISUS="on"
+fi
+
 # Show a splashscreen. This routine also determines if we have "dialog"
 # or "whiptail", which we use to show dialogs. If we do not have either
 # then proceed in non-graphical mode.
@@ -8404,11 +8490,15 @@ export VISITDIR="$PWD"
 
 
 if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
-    DO_MESA="no"
+    DO_MESA="yes"
     DO_QT="yes"
     DO_CMAKE="yes"
     DO_VTK="yes"
-    DO_PYTHON="no"
+    DO_PYTHON="yes"
+    if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
+        DO_PYTHON="no"
+        DO_MESA="no"
+    fi
 fi
 if [[ "$DO_ICET" == "yes" ]] ; then
     DO_CMAKE="yes"
