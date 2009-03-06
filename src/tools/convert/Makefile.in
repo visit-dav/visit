@@ -89,6 +89,10 @@
 #
 #   Mark C. Miller, Thu Mar  5 10:04:30 PST 2009
 #   Fixed missing libs for non-dbio-only build.
+#
+#   Mark C. Miller, Thu Mar  5 16:27:38 PST 2009
+#   Fixed BUILD_DBIO_ONLY symbol to specify correct target for
+#   visitconvert_ser_lite
 ##############################################################################
 
 ##
@@ -125,7 +129,7 @@ PLIBLITE2=`test -z "@BUILD_DBIO_ONLY@" && echo '-lmir_par'`
 SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser $(LIBLITE) -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts $(SLIBLITE1) -lavtexceptions $(SLIBLITE2) -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
 PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par $(LIBLITE) -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts $(SLIBLITE1) -lavtexceptions $(SLIBLITE2) -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
-BUILD_DBIO_ONLY=convert_ser_lite
+BUILD_DBIO_ONLY=$(tmpbin)/visitconvert_ser_lite
 
 ##
 ## Files...
@@ -168,6 +172,10 @@ $(PAROBJ_LITE): $(SRC)
 @CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ) @CONVERT_PAR@_lite
 	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
 
+##
+## Having this target explicitly instead of derived from @CONVERT_SER@
+## allows it to work for both 'normal' build and a dbio-only build.
+##
 $(tmpbin)/visitconvert_ser_lite: $(LIBDEP) $(SEROBJ_LITE) 
 	$(CXX) -o $@ $(SEROBJ_LITE) $(LDFLAGS) $(SERLIBS_LITE)
 
