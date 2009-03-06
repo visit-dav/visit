@@ -90,10 +90,12 @@ exec perl -x $0 ${1+"$@"};
 #     Hank Childs, Tue Dec 18 15:58:52 PST 2007    
 #     Create file SVN_VERSION
 #
+#     Mark C. Miller, Thu Mar  5 17:58:08 PST 2009
+#     Added support for dbio-only distribution
 
 require "newgetopt.pl";
 
-$USAGE = "USAGE: $0 dist_file [-withhelp] [-withtest]\n";
+$USAGE = "USAGE: $0 dist_file [-withhelp] [-withtest] [-dbioonly]\n";
 
 if (! -d "src")
 {
@@ -105,7 +107,7 @@ if (! -d "src")
 system("cd src; svn info . | grep \"Revision:\" | cut -d' ' -f2 > SVN_REVISION; cd ..");
 
 # Parse the argument list.
-&NGetOpt("withhelp","withtest");
+&NGetOpt("withhelp","withtest","dbioonly");
 
 # If we wanted help files then create them now.
 #
@@ -119,7 +121,14 @@ if($opt_withhelp)
 }
 
 $dist = "";
-$filelist = "./src/svn_bin/source_files";
+if($opt_dbioonly)
+{
+    $filelist = "./src/svn_bin/source_files -dbio-only";
+}
+else
+{
+    $filelist = "./src/svn_bin/source_files";
+}
 
 $fulldist = shift;
 if (!defined($fulldist))
