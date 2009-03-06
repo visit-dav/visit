@@ -103,8 +103,8 @@ MultiCurveAttributes::MultiCurveAttributes() :
     lineStyle = 0;
     lineWidth = 0;
     yAxisTitleFormat = "%g";
-    useYAxisRange = false;
-    yAxisRange = 1;
+    useYAxisTickSpacing = false;
+    yAxisTickSpacing = 1;
     displayMarkers = true;
     markerVariable = "default";
     displayIds = false;
@@ -138,8 +138,8 @@ MultiCurveAttributes::MultiCurveAttributes(const MultiCurveAttributes &obj) :
     lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     yAxisTitleFormat = obj.yAxisTitleFormat;
-    useYAxisRange = obj.useYAxisRange;
-    yAxisRange = obj.yAxisRange;
+    useYAxisTickSpacing = obj.useYAxisTickSpacing;
+    yAxisTickSpacing = obj.yAxisTickSpacing;
     displayMarkers = obj.displayMarkers;
     markerVariable = obj.markerVariable;
     displayIds = obj.displayIds;
@@ -196,8 +196,8 @@ MultiCurveAttributes::operator = (const MultiCurveAttributes &obj)
     lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     yAxisTitleFormat = obj.yAxisTitleFormat;
-    useYAxisRange = obj.useYAxisRange;
-    yAxisRange = obj.yAxisRange;
+    useYAxisTickSpacing = obj.useYAxisTickSpacing;
+    yAxisTickSpacing = obj.yAxisTickSpacing;
     displayMarkers = obj.displayMarkers;
     markerVariable = obj.markerVariable;
     displayIds = obj.displayIds;
@@ -235,8 +235,8 @@ MultiCurveAttributes::operator == (const MultiCurveAttributes &obj) const
             (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (yAxisTitleFormat == obj.yAxisTitleFormat) &&
-            (useYAxisRange == obj.useYAxisRange) &&
-            (yAxisRange == obj.yAxisRange) &&
+            (useYAxisTickSpacing == obj.useYAxisTickSpacing) &&
+            (yAxisTickSpacing == obj.yAxisTickSpacing) &&
             (displayMarkers == obj.displayMarkers) &&
             (markerVariable == obj.markerVariable) &&
             (displayIds == obj.displayIds) &&
@@ -385,21 +385,21 @@ MultiCurveAttributes::NewInstance(bool copy) const
 void
 MultiCurveAttributes::SelectAll()
 {
-    Select(ID_defaultPalette,   (void *)&defaultPalette);
-    Select(ID_changedColors,    (void *)&changedColors);
-    Select(ID_colorType,        (void *)&colorType);
-    Select(ID_singleColor,      (void *)&singleColor);
-    Select(ID_multiColor,       (void *)&multiColor);
-    Select(ID_lineStyle,        (void *)&lineStyle);
-    Select(ID_lineWidth,        (void *)&lineWidth);
-    Select(ID_yAxisTitleFormat, (void *)&yAxisTitleFormat);
-    Select(ID_useYAxisRange,    (void *)&useYAxisRange);
-    Select(ID_yAxisRange,       (void *)&yAxisRange);
-    Select(ID_displayMarkers,   (void *)&displayMarkers);
-    Select(ID_markerVariable,   (void *)&markerVariable);
-    Select(ID_displayIds,       (void *)&displayIds);
-    Select(ID_idVariable,       (void *)&idVariable);
-    Select(ID_legendFlag,       (void *)&legendFlag);
+    Select(ID_defaultPalette,      (void *)&defaultPalette);
+    Select(ID_changedColors,       (void *)&changedColors);
+    Select(ID_colorType,           (void *)&colorType);
+    Select(ID_singleColor,         (void *)&singleColor);
+    Select(ID_multiColor,          (void *)&multiColor);
+    Select(ID_lineStyle,           (void *)&lineStyle);
+    Select(ID_lineWidth,           (void *)&lineWidth);
+    Select(ID_yAxisTitleFormat,    (void *)&yAxisTitleFormat);
+    Select(ID_useYAxisTickSpacing, (void *)&useYAxisTickSpacing);
+    Select(ID_yAxisTickSpacing,    (void *)&yAxisTickSpacing);
+    Select(ID_displayMarkers,      (void *)&displayMarkers);
+    Select(ID_markerVariable,      (void *)&markerVariable);
+    Select(ID_displayIds,          (void *)&displayIds);
+    Select(ID_idVariable,          (void *)&idVariable);
+    Select(ID_legendFlag,          (void *)&legendFlag);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -494,16 +494,16 @@ MultiCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("yAxisTitleFormat", yAxisTitleFormat));
     }
 
-    if(completeSave || !FieldsEqual(ID_useYAxisRange, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_useYAxisTickSpacing, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("useYAxisRange", useYAxisRange));
+        node->AddNode(new DataNode("useYAxisTickSpacing", useYAxisTickSpacing));
     }
 
-    if(completeSave || !FieldsEqual(ID_yAxisRange, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_yAxisTickSpacing, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("yAxisRange", yAxisRange));
+        node->AddNode(new DataNode("yAxisTickSpacing", yAxisTickSpacing));
     }
 
     if(completeSave || !FieldsEqual(ID_displayMarkers, &defaultObject))
@@ -602,10 +602,10 @@ MultiCurveAttributes::SetFromNode(DataNode *parentNode)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("yAxisTitleFormat")) != 0)
         SetYAxisTitleFormat(node->AsString());
-    if((node = searchNode->GetNode("useYAxisRange")) != 0)
-        SetUseYAxisRange(node->AsBool());
-    if((node = searchNode->GetNode("yAxisRange")) != 0)
-        SetYAxisRange(node->AsDouble());
+    if((node = searchNode->GetNode("useYAxisTickSpacing")) != 0)
+        SetUseYAxisTickSpacing(node->AsBool());
+    if((node = searchNode->GetNode("yAxisTickSpacing")) != 0)
+        SetYAxisTickSpacing(node->AsDouble());
     if((node = searchNode->GetNode("displayMarkers")) != 0)
         SetDisplayMarkers(node->AsBool());
     if((node = searchNode->GetNode("markerVariable")) != 0)
@@ -679,17 +679,17 @@ MultiCurveAttributes::SetYAxisTitleFormat(const std::string &yAxisTitleFormat_)
 }
 
 void
-MultiCurveAttributes::SetUseYAxisRange(bool useYAxisRange_)
+MultiCurveAttributes::SetUseYAxisTickSpacing(bool useYAxisTickSpacing_)
 {
-    useYAxisRange = useYAxisRange_;
-    Select(ID_useYAxisRange, (void *)&useYAxisRange);
+    useYAxisTickSpacing = useYAxisTickSpacing_;
+    Select(ID_useYAxisTickSpacing, (void *)&useYAxisTickSpacing);
 }
 
 void
-MultiCurveAttributes::SetYAxisRange(double yAxisRange_)
+MultiCurveAttributes::SetYAxisTickSpacing(double yAxisTickSpacing_)
 {
-    yAxisRange = yAxisRange_;
-    Select(ID_yAxisRange, (void *)&yAxisRange);
+    yAxisTickSpacing = yAxisTickSpacing_;
+    Select(ID_yAxisTickSpacing, (void *)&yAxisTickSpacing);
 }
 
 void
@@ -810,15 +810,15 @@ MultiCurveAttributes::GetYAxisTitleFormat()
 }
 
 bool
-MultiCurveAttributes::GetUseYAxisRange() const
+MultiCurveAttributes::GetUseYAxisTickSpacing() const
 {
-    return useYAxisRange;
+    return useYAxisTickSpacing;
 }
 
 double
-MultiCurveAttributes::GetYAxisRange() const
+MultiCurveAttributes::GetYAxisTickSpacing() const
 {
-    return yAxisRange;
+    return yAxisTickSpacing;
 }
 
 bool
@@ -933,21 +933,21 @@ MultiCurveAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_defaultPalette:   return "defaultPalette";
-    case ID_changedColors:    return "changedColors";
-    case ID_colorType:        return "colorType";
-    case ID_singleColor:      return "singleColor";
-    case ID_multiColor:       return "multiColor";
-    case ID_lineStyle:        return "lineStyle";
-    case ID_lineWidth:        return "lineWidth";
-    case ID_yAxisTitleFormat: return "yAxisTitleFormat";
-    case ID_useYAxisRange:    return "useYAxisRange";
-    case ID_yAxisRange:       return "yAxisRange";
-    case ID_displayMarkers:   return "displayMarkers";
-    case ID_markerVariable:   return "markerVariable";
-    case ID_displayIds:       return "displayIds";
-    case ID_idVariable:       return "idVariable";
-    case ID_legendFlag:       return "legendFlag";
+    case ID_defaultPalette:      return "defaultPalette";
+    case ID_changedColors:       return "changedColors";
+    case ID_colorType:           return "colorType";
+    case ID_singleColor:         return "singleColor";
+    case ID_multiColor:          return "multiColor";
+    case ID_lineStyle:           return "lineStyle";
+    case ID_lineWidth:           return "lineWidth";
+    case ID_yAxisTitleFormat:    return "yAxisTitleFormat";
+    case ID_useYAxisTickSpacing: return "useYAxisTickSpacing";
+    case ID_yAxisTickSpacing:    return "yAxisTickSpacing";
+    case ID_displayMarkers:      return "displayMarkers";
+    case ID_markerVariable:      return "markerVariable";
+    case ID_displayIds:          return "displayIds";
+    case ID_idVariable:          return "idVariable";
+    case ID_legendFlag:          return "legendFlag";
     default:  return "invalid index";
     }
 }
@@ -972,21 +972,21 @@ MultiCurveAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_defaultPalette:   return FieldType_att;
-    case ID_changedColors:    return FieldType_ucharVector;
-    case ID_colorType:        return FieldType_enum;
-    case ID_singleColor:      return FieldType_color;
-    case ID_multiColor:       return FieldType_att;
-    case ID_lineStyle:        return FieldType_linestyle;
-    case ID_lineWidth:        return FieldType_linewidth;
-    case ID_yAxisTitleFormat: return FieldType_string;
-    case ID_useYAxisRange:    return FieldType_bool;
-    case ID_yAxisRange:       return FieldType_double;
-    case ID_displayMarkers:   return FieldType_bool;
-    case ID_markerVariable:   return FieldType_string;
-    case ID_displayIds:       return FieldType_bool;
-    case ID_idVariable:       return FieldType_string;
-    case ID_legendFlag:       return FieldType_bool;
+    case ID_defaultPalette:      return FieldType_att;
+    case ID_changedColors:       return FieldType_ucharVector;
+    case ID_colorType:           return FieldType_enum;
+    case ID_singleColor:         return FieldType_color;
+    case ID_multiColor:          return FieldType_att;
+    case ID_lineStyle:           return FieldType_linestyle;
+    case ID_lineWidth:           return FieldType_linewidth;
+    case ID_yAxisTitleFormat:    return FieldType_string;
+    case ID_useYAxisTickSpacing: return FieldType_bool;
+    case ID_yAxisTickSpacing:    return FieldType_double;
+    case ID_displayMarkers:      return FieldType_bool;
+    case ID_markerVariable:      return FieldType_string;
+    case ID_displayIds:          return FieldType_bool;
+    case ID_idVariable:          return FieldType_string;
+    case ID_legendFlag:          return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1011,21 +1011,21 @@ MultiCurveAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_defaultPalette:   return "att";
-    case ID_changedColors:    return "ucharVector";
-    case ID_colorType:        return "enum";
-    case ID_singleColor:      return "color";
-    case ID_multiColor:       return "att";
-    case ID_lineStyle:        return "linestyle";
-    case ID_lineWidth:        return "linewidth";
-    case ID_yAxisTitleFormat: return "string";
-    case ID_useYAxisRange:    return "bool";
-    case ID_yAxisRange:       return "double";
-    case ID_displayMarkers:   return "bool";
-    case ID_markerVariable:   return "string";
-    case ID_displayIds:       return "bool";
-    case ID_idVariable:       return "string";
-    case ID_legendFlag:       return "bool";
+    case ID_defaultPalette:      return "att";
+    case ID_changedColors:       return "ucharVector";
+    case ID_colorType:           return "enum";
+    case ID_singleColor:         return "color";
+    case ID_multiColor:          return "att";
+    case ID_lineStyle:           return "linestyle";
+    case ID_lineWidth:           return "linewidth";
+    case ID_yAxisTitleFormat:    return "string";
+    case ID_useYAxisTickSpacing: return "bool";
+    case ID_yAxisTickSpacing:    return "double";
+    case ID_displayMarkers:      return "bool";
+    case ID_markerVariable:      return "string";
+    case ID_displayIds:          return "bool";
+    case ID_idVariable:          return "string";
+    case ID_legendFlag:          return "bool";
     default:  return "invalid index";
     }
 }
@@ -1092,14 +1092,14 @@ MultiCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (yAxisTitleFormat == obj.yAxisTitleFormat);
         }
         break;
-    case ID_useYAxisRange:
+    case ID_useYAxisTickSpacing:
         {  // new scope
-        retval = (useYAxisRange == obj.useYAxisRange);
+        retval = (useYAxisTickSpacing == obj.useYAxisTickSpacing);
         }
         break;
-    case ID_yAxisRange:
+    case ID_yAxisTickSpacing:
         {  // new scope
-        retval = (yAxisRange == obj.yAxisRange);
+        retval = (yAxisTickSpacing == obj.yAxisTickSpacing);
         }
         break;
     case ID_displayMarkers:
@@ -1285,13 +1285,17 @@ MultiCurveAttributes::MarkColorAsChanged(int index)
 //   Eric Brugger, Tue Feb 17 18:03:08 PST 2009
 //   I added idVariable.
 //
+//   Eric Brugger, Thu Mar  5 17:54:39 PST 2009
+//   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
+//   yAxisTickSpacing.
+//
 // ****************************************************************************
 bool
 MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &obj) const
 {
     if (yAxisTitleFormat != obj.yAxisTitleFormat ||
-        useYAxisRange != obj.useYAxisRange ||
-        yAxisRange != obj.yAxisRange || 
+        useYAxisTickSpacing != obj.useYAxisTickSpacing ||
+        yAxisTickSpacing != obj.yAxisTickSpacing || 
         markerVariable != obj.markerVariable || 
         idVariable != obj.idVariable)
         return true;

@@ -139,6 +139,11 @@ avtMultiCurveFilter::PreExecute(void)
 //    I modified the routine to pass the y axis tick spacing in the plot
 //    information so that the plot can include it in the legend.
 //
+//    Eric Brugger, Fri Mar  6 08:21:35 PST 2009
+//    I modified the routine so that the filter could would also accept as
+//    input a collection of poly data data sets representing the individual
+//    curves to display.
+//
 // ****************************************************************************
 
 void
@@ -181,27 +186,26 @@ avtMultiCurveFilter::PostExecute(void)
     }
 
     //
-    // Add the y axis tick spacing to the plot information so that the
-    // plot can include it in the legend.
+    // If we created the curves (and set the yAxisTickSpacing) then add
+    // the y axis tick spacing to the plot information so that the plot
+    // can include it in the legend.
     //
-    MapNode axisTickSpacing;
-    axisTickSpacing["spacing"] = yAxisTickSpacing;
-    outAtts.AddPlotInformation("AxisTickSpacing", axisTickSpacing);
+    if (setYAxisTickSpacing)
+    {
+        MapNode axisTickSpacing;
+        axisTickSpacing["spacing"] = yAxisTickSpacing;
+        outAtts.AddPlotInformation("AxisTickSpacing", axisTickSpacing);
+    }
 }
 
 
 // ****************************************************************************
-//  Method: avtMultiCurveFilter::ExecuteDataTree
+//  Method: avtMultiCurveFilter::Execute
 //
 //  Purpose:
 //      Does the actual VTK code to modify the datatree.
 //
 //  Arguments:
-//      inDS      The input dataset.
-//      domain    The domain number.
-//      label     The label.
-//
-//  Returns:      The output datatree.
 //
 //  Programmer: xml2avt
 //  Creation:   omitted
@@ -224,12 +228,64 @@ avtMultiCurveFilter::PostExecute(void)
 //    number of ticks displayed on an individual curve as the number of
 //    axes decreased.
 //
+//    Eric Brugger, Thu Mar  5 17:21:37 PST 2009
+//    I modified the code that calculates the minimum and maximum of the
+//    data to exclude values where the marker variable was negative.
+//
+//    Eric Brugger, Thu Mar  5 17:58:19 PST 2009
+//    I replaced UseYAxisRange and YAxisRange with UseYAxisTickSpacing and
+//    YAxisTickSpacing.
+//
+//    Eric Brugger, Fri Mar  6 08:21:35 PST 2009
+//    I modified the routine so that the filter could would also accept as
+//    input a collection of poly data data sets representing the individual
+//    curves to display.
+//
 // ****************************************************************************
 
-avtDataTree_p
-avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
-    std::string label)
+void
+avtMultiCurveFilter::Execute(void)
 {
+    //
+    // Get the input data tree to obtain the data sets.
+    //
+    avtDataTree_p tree = GetInputDataTree();
+
+    //
+    // Get the data sets.
+    //
+    int nSets;
+    vtkDataSet **dataSets = tree->GetAllLeaves(nSets);
+
+    //
+    // Get the domain ids.
+    //
+    vector<int> domains;
+    tree->GetAllDomainIds(domains);
+
+    //
+    // If we have 1 data set then it is a rectilinear grid and this routine
+    // will convert it to polydata, if we have more than one data set then
+    // it is has already been converted to poly data and we will just pass
+    // it along.
+    //
+    if (nSets < 1)
+    {
+        EXCEPTION1(ImproperUseException, "Expecting at least one dataset");
+    }
+    else if (nSets > 1)
+    {
+        for (int i = 0; i < nSets; i++)
+            if (dataSets[i]->GetDataObjectType() != VTK_POLY_DATA)
+                EXCEPTION1(ImproperUseException, "Expecting poly data");
+        SetOutputDataTree(tree);
+        setYAxisTickSpacing = false;
+        return;
+    }
+
+    vtkDataSet *inDS = dataSets[0];
+    int domain = domains[0];
+
     if (inDS->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
         EXCEPTION1(ImproperUseException, "Expecting a rectilinear grid");
@@ -294,24 +350,50 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
     double scale;
     double nTicks = floor(30./ny-1.);
     double tickSize = ny / 60.;
-    if (atts.GetUseYAxisRange())
+    if (atts.GetUseYAxisTickSpacing())
     {
-        scale = 1. / (atts.GetYAxisRange() / 2.) * nTicks * tickSize;
-        yAxisTickSpacing = atts.GetYAxisRange() / 2. / nTicks;
+        scale = tickSize / atts.GetYAxisTickSpacing();
+        yAxisTickSpacing = atts.GetYAxisTickSpacing();
     }
     else
     {
-        double yMin = vals[0];
-        double yMax = vals[0];
-        for (int i = 0; i < nx * ny; i++)
+        double yMin, yMax;
+        if (vals2 == NULL)
         {
-            yMin = yMin < vals[i] ? yMin : vals[i];
-            yMax = yMax > vals[i] ? yMax : vals[i];
+            yMin = vals[0];
+            yMax = vals[0];
+            for (int i = 1; i < nx * ny; i++)
+            {
+                yMin = yMin < vals[i] ? yMin : vals[i];
+                yMax = yMax > vals[i] ? yMax : vals[i];
+            }
+        }
+        else
+        {
+            yMin = 1.;
+            yMax = 1.;
+            int i;
+            for (i = 0; i < nx * ny && vals2[i] < 0.; i++)
+                /* do nothing */;
+            if (i < nx * ny)
+            {
+                yMin = vals[i];
+                yMax = vals[i];
+                for (i = i; i < nx * ny; i++)
+                {
+                    if (vals2[i] >= 0.)
+                    {
+                        yMin = yMin < vals[i] ? yMin : vals[i];
+                        yMax = yMax > vals[i] ? yMax : vals[i];
+                    }
+                }
+            }
         }
         double yAbsMax = fabs(yMin) > fabs(yMax) ? fabs(yMin) : fabs(yMax);
         scale = 1. / yAbsMax * nTicks * tickSize;
         yAxisTickSpacing = yAbsMax / nTicks;
     }
+    setYAxisTickSpacing = true;
 
     for (int i = 0; i < ny; i++)
     {
@@ -438,5 +520,5 @@ avtMultiCurveFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
     //
     GetOutput()->GetInfo().GetAttributes().SetLabels(labels);
 
-    return outDT;
+    SetOutputDataTree(outDT);
 }

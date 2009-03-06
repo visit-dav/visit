@@ -44,7 +44,7 @@
 #define AVT_MultiCurve_FILTER_H
 
 
-#include <avtDataTreeIterator.h>
+#include <avtDatasetToDatasetFilter.h>
 #include <MultiCurveAttributes.h>
 
 
@@ -63,9 +63,13 @@
 //    I added yAxisTickSpacing, so that I could pass it along in the
 //    plot information, so that the plot could include it in the legend.
 //
+//    Eric Brugger, Fri Mar  6 08:19:58 PST 2009
+//    I modified the filter could would also accept as input a collection
+//    of poly data data sets representing the individual curves to display.
+//
 // ****************************************************************************
 
-class avtMultiCurveFilter : public avtSIMODataTreeIterator
+class avtMultiCurveFilter : public avtDatasetToDatasetFilter
 {
   public:
                               avtMultiCurveFilter(MultiCurveAttributes &);
@@ -79,9 +83,10 @@ class avtMultiCurveFilter : public avtSIMODataTreeIterator
 
   protected:
     MultiCurveAttributes      atts;
+    bool                      setYAxisTickSpacing;
     double                    yAxisTickSpacing;
 
-    virtual avtDataTree_p     ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual void              Execute(void);
 
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);

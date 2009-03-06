@@ -81,8 +81,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         lineStyle = 0;
         lineWidth = 0;
         yAxisTitleFormat = new String("%g");
-        useYAxisRange = false;
-        yAxisRange = 1;
+        useYAxisTickSpacing = false;
+        yAxisTickSpacing = 1;
         displayMarkers = true;
         markerVariable = new String("default");
         displayIds = false;
@@ -110,8 +110,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         yAxisTitleFormat = new String(obj.yAxisTitleFormat);
-        useYAxisRange = obj.useYAxisRange;
-        yAxisRange = obj.yAxisRange;
+        useYAxisTickSpacing = obj.useYAxisTickSpacing;
+        yAxisTickSpacing = obj.yAxisTickSpacing;
         displayMarkers = obj.displayMarkers;
         markerVariable = new String(obj.markerVariable);
         displayIds = obj.displayIds;
@@ -134,8 +134,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
                 (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
                 (yAxisTitleFormat.equals(obj.yAxisTitleFormat)) &&
-                (useYAxisRange == obj.useYAxisRange) &&
-                (yAxisRange == obj.yAxisRange) &&
+                (useYAxisTickSpacing == obj.useYAxisTickSpacing) &&
+                (yAxisTickSpacing == obj.yAxisTickSpacing) &&
                 (displayMarkers == obj.displayMarkers) &&
                 (markerVariable.equals(obj.markerVariable)) &&
                 (displayIds == obj.displayIds) &&
@@ -195,15 +195,15 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         Select(7);
     }
 
-    public void SetUseYAxisRange(boolean useYAxisRange_)
+    public void SetUseYAxisTickSpacing(boolean useYAxisTickSpacing_)
     {
-        useYAxisRange = useYAxisRange_;
+        useYAxisTickSpacing = useYAxisTickSpacing_;
         Select(8);
     }
 
-    public void SetYAxisRange(double yAxisRange_)
+    public void SetYAxisTickSpacing(double yAxisTickSpacing_)
     {
-        yAxisRange = yAxisRange_;
+        yAxisTickSpacing = yAxisTickSpacing_;
         Select(9);
     }
 
@@ -246,8 +246,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
     public int                   GetLineStyle() { return lineStyle; }
     public int                   GetLineWidth() { return lineWidth; }
     public String                GetYAxisTitleFormat() { return yAxisTitleFormat; }
-    public boolean               GetUseYAxisRange() { return useYAxisRange; }
-    public double                GetYAxisRange() { return yAxisRange; }
+    public boolean               GetUseYAxisTickSpacing() { return useYAxisTickSpacing; }
+    public double                GetYAxisTickSpacing() { return yAxisTickSpacing; }
     public boolean               GetDisplayMarkers() { return displayMarkers; }
     public String                GetMarkerVariable() { return markerVariable; }
     public boolean               GetDisplayIds() { return displayIds; }
@@ -274,9 +274,9 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(7, buf))
             buf.WriteString(yAxisTitleFormat);
         if(WriteSelect(8, buf))
-            buf.WriteBool(useYAxisRange);
+            buf.WriteBool(useYAxisTickSpacing);
         if(WriteSelect(9, buf))
-            buf.WriteDouble(yAxisRange);
+            buf.WriteDouble(yAxisTickSpacing);
         if(WriteSelect(10, buf))
             buf.WriteBool(displayMarkers);
         if(WriteSelect(11, buf))
@@ -324,10 +324,10 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
                 SetYAxisTitleFormat(buf.ReadString());
                 break;
             case 8:
-                SetUseYAxisRange(buf.ReadBool());
+                SetUseYAxisTickSpacing(buf.ReadBool());
                 break;
             case 9:
-                SetYAxisRange(buf.ReadDouble());
+                SetYAxisTickSpacing(buf.ReadDouble());
                 break;
             case 10:
                 SetDisplayMarkers(buf.ReadBool());
@@ -364,8 +364,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + stringToString("yAxisTitleFormat", yAxisTitleFormat, indent) + "\n";
-        str = str + boolToString("useYAxisRange", useYAxisRange, indent) + "\n";
-        str = str + doubleToString("yAxisRange", yAxisRange, indent) + "\n";
+        str = str + boolToString("useYAxisTickSpacing", useYAxisTickSpacing, indent) + "\n";
+        str = str + doubleToString("yAxisTickSpacing", yAxisTickSpacing, indent) + "\n";
         str = str + boolToString("displayMarkers", displayMarkers, indent) + "\n";
         str = str + stringToString("markerVariable", markerVariable, indent) + "\n";
         str = str + boolToString("displayIds", displayIds, indent) + "\n";
@@ -384,8 +384,8 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
     private int                   lineStyle;
     private int                   lineWidth;
     private String                yAxisTitleFormat;
-    private boolean               useYAxisRange;
-    private double                yAxisRange;
+    private boolean               useYAxisTickSpacing;
+    private double                yAxisTickSpacing;
     private boolean               displayMarkers;
     private String                markerVariable;
     private boolean               displayIds;
