@@ -100,8 +100,8 @@ public:
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetYAxisTitleFormat(const std::string &yAxisTitleFormat_);
-    void SetUseYAxisRange(bool useYAxisRange_);
-    void SetYAxisRange(double yAxisRange_);
+    void SetUseYAxisTickSpacing(bool useYAxisTickSpacing_);
+    void SetYAxisTickSpacing(double yAxisTickSpacing_);
     void SetDisplayMarkers(bool displayMarkers_);
     void SetMarkerVariable(const std::string &markerVariable_);
     void SetDisplayIds(bool displayIds_);
@@ -122,8 +122,8 @@ public:
     int                         GetLineWidth() const;
     const std::string           &GetYAxisTitleFormat() const;
           std::string           &GetYAxisTitleFormat();
-    bool                        GetUseYAxisRange() const;
-    double                      GetYAxisRange() const;
+    bool                        GetUseYAxisTickSpacing() const;
+    double                      GetYAxisTickSpacing() const;
     bool                        GetDisplayMarkers() const;
     const std::string           &GetMarkerVariable() const;
           std::string           &GetMarkerVariable();
@@ -165,8 +165,8 @@ public:
         ID_lineStyle,
         ID_lineWidth,
         ID_yAxisTitleFormat,
-        ID_useYAxisRange,
-        ID_yAxisRange,
+        ID_useYAxisTickSpacing,
+        ID_yAxisTickSpacing,
         ID_displayMarkers,
         ID_markerVariable,
         ID_displayIds,
@@ -183,8 +183,8 @@ private:
     int                   lineStyle;
     int                   lineWidth;
     std::string           yAxisTitleFormat;
-    bool                  useYAxisRange;
-    double                yAxisRange;
+    bool                  useYAxisTickSpacing;
+    double                yAxisTickSpacing;
     bool                  displayMarkers;
     std::string           markerVariable;
     bool                  displayIds;

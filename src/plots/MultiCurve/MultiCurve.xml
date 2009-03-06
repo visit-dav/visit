@@ -37,10 +37,10 @@
       <Field name="yAxisTitleFormat" label="Y-Axis title format" type="string">
         %g
       </Field>
-      <Field name="useYAxisRange" label="Y-Axis range" type="bool">
+      <Field name="useYAxisTickSpacing" label="Y-Axis tick spacing" type="bool">
         false
       </Field>
-      <Field name="yAxisRange" label="yAxisRange" type="double" enabler="useYAxisRange:true">
+      <Field name="yAxisTickSpacing" label="yAxisTickSpacing" type="double" enabler="useYAxisTickSpacing:true">
         1.
       </Field>
       <Field name="displayMarkers" label="Display markers" type="bool">

@@ -158,13 +158,17 @@ Definition:
 //   Eric Brugger, Tue Feb 17 18:03:08 PST 2009
 //   I added idVariable.
 //
+//   Eric Brugger, Thu Mar  5 17:54:39 PST 2009
+//   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
+//   yAxisTickSpacing.
+//
 // ****************************************************************************
 bool
 MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &obj) const
 {
     if (yAxisTitleFormat != obj.yAxisTitleFormat ||
-        useYAxisRange != obj.useYAxisRange ||
-        yAxisRange != obj.yAxisRange || 
+        useYAxisTickSpacing != obj.useYAxisTickSpacing ||
+        yAxisTickSpacing != obj.yAxisTickSpacing || 
         markerVariable != obj.markerVariable || 
         idVariable != obj.idVariable)
         return true;

@@ -132,6 +132,10 @@ QvisMultiCurvePlotWindow::~QvisMultiCurvePlotWindow()
 //   Eric Brugger, Fri Feb 20 16:14:50 PST 2009
 //   I added displayLegend.
 //
+//   Eric Brugger, Thu Mar  5 17:48:42 PST 2009
+//   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
+//   yAxisTickSpacing.
+//
 // ****************************************************************************
 
 void
@@ -203,15 +207,15 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
             this, SLOT(yAxisTitleFormatProcessText()));
     mainLayout->addWidget(yAxisTitleFormat, 2,1);
 
-    useYAxisRange = new QCheckBox(tr("Y-Axis range"), central);
-    connect(useYAxisRange, SIGNAL(toggled(bool)),
-            this, SLOT(useYAxisRangeChanged(bool)));
-    mainLayout->addWidget(useYAxisRange, 3,0);
+    useYAxisTickSpacing = new QCheckBox(tr("Y-Axis tick spacing"), central);
+    connect(useYAxisTickSpacing, SIGNAL(toggled(bool)),
+            this, SLOT(useYAxisTickSpacingChanged(bool)));
+    mainLayout->addWidget(useYAxisTickSpacing, 3,0);
 
-    yAxisRange = new QLineEdit(central);
-    connect(yAxisRange, SIGNAL(returnPressed()),
-            this, SLOT(yAxisRangeProcessText()));
-    mainLayout->addWidget(yAxisRange, 3,1);
+    yAxisTickSpacing = new QLineEdit(central);
+    connect(yAxisTickSpacing, SIGNAL(returnPressed()),
+            this, SLOT(yAxisTickSpacingProcessText()));
+    mainLayout->addWidget(yAxisTickSpacing, 3,1);
 
     displayMarkers = new QCheckBox(tr("Display markers"), central);
     connect(displayMarkers, SIGNAL(toggled(bool)),
@@ -265,6 +269,10 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 //
 //   Eric Brugger, Fri Feb 20 16:14:50 PST 2009
 //   I added displayLegend.
+//
+//   Eric Brugger, Thu Mar  5 17:48:42 PST 2009
+//   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
+//   yAxisTickSpacing.
 //
 // ****************************************************************************
 
@@ -324,21 +332,21 @@ QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
           case MultiCurveAttributes::ID_yAxisTitleFormat:
             yAxisTitleFormat->setText(QString(atts->GetYAxisTitleFormat().c_str()));
             break;
-          case MultiCurveAttributes::ID_useYAxisRange:
-            if (atts->GetUseYAxisRange() == true)
+          case MultiCurveAttributes::ID_useYAxisTickSpacing:
+            if (atts->GetUseYAxisTickSpacing() == true)
             {
-                yAxisRange->setEnabled(true);
+                yAxisTickSpacing->setEnabled(true);
             }
             else
             {
-                yAxisRange->setEnabled(false);
+                yAxisTickSpacing->setEnabled(false);
             }
-            useYAxisRange->blockSignals(true);
-            useYAxisRange->setChecked(atts->GetUseYAxisRange());
-            useYAxisRange->blockSignals(false);
+            useYAxisTickSpacing->blockSignals(true);
+            useYAxisTickSpacing->setChecked(atts->GetUseYAxisTickSpacing());
+            useYAxisTickSpacing->blockSignals(false);
             break;
-          case MultiCurveAttributes::ID_yAxisRange:
-            yAxisRange->setText(DoubleToQString(atts->GetYAxisRange()));
+          case MultiCurveAttributes::ID_yAxisTickSpacing:
+            yAxisTickSpacing->setText(DoubleToQString(atts->GetYAxisTickSpacing()));
             break;
           case MultiCurveAttributes::ID_displayMarkers:
             displayMarkers->blockSignals(true);
@@ -486,6 +494,10 @@ QvisMultiCurvePlotWindow::UpdateMultipleAreaColors()
 //   Eric Brugger, Wed Feb 18 07:57:54 PST 2009
 //   I added displayIds and idVariable.
 //
+//   Eric Brugger, Thu Mar  5 17:48:42 PST 2009
+//   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
+//   yAxisTickSpacing.
+//
 // ****************************************************************************
 
 void
@@ -507,17 +519,17 @@ QvisMultiCurvePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do yAxisRange
-    if(which_widget == MultiCurveAttributes::ID_yAxisRange || doAll)
+    // Do yAxisTickSpacing
+    if(which_widget == MultiCurveAttributes::ID_yAxisTickSpacing || doAll)
     {
         double val;
-        if(LineEditGetDouble(yAxisRange, val))
-            atts->SetYAxisRange(val);
+        if(LineEditGetDouble(yAxisTickSpacing, val))
+            atts->SetYAxisTickSpacing(val);
         else
         {
-            ResettingError(tr("yAxisRange"),
-                DoubleToQString(atts->GetYAxisRange()));
-            atts->SetYAxisRange(atts->GetYAxisRange());
+            ResettingError(tr("yAxisTickSpacing"),
+                DoubleToQString(atts->GetYAxisTickSpacing()));
+            atts->SetYAxisTickSpacing(atts->GetYAxisTickSpacing());
         }
     }
 
@@ -742,17 +754,17 @@ QvisMultiCurvePlotWindow::yAxisTitleFormatProcessText()
 
 
 void
-QvisMultiCurvePlotWindow::useYAxisRangeChanged(bool val)
+QvisMultiCurvePlotWindow::useYAxisTickSpacingChanged(bool val)
 {
-    atts->SetUseYAxisRange(val);
+    atts->SetUseYAxisTickSpacing(val);
     Apply();
 }
 
 
 void
-QvisMultiCurvePlotWindow::yAxisRangeProcessText()
+QvisMultiCurvePlotWindow::yAxisTickSpacingProcessText()
 {
-    GetCurrentValues(MultiCurveAttributes::ID_yAxisRange);
+    GetCurrentValues(MultiCurveAttributes::ID_yAxisTickSpacing);
     Apply();
 }
 

@@ -80,6 +80,10 @@ class QvisVariableButton;
 //   Eric Brugger, Fri Feb 20 16:13:15 PST 2009
 //   I added displayLegend.
 //
+//   Eric Brugger, Thu Mar  5 17:46:26 PST 2009
+//   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
+//   yAxisTickSpacing.
+//
 // ****************************************************************************
 
 class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
@@ -112,8 +116,8 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     void lineStyleChanged(int style);
     void lineWidthChanged(int style);
     void yAxisTitleFormatProcessText();
-    void useYAxisRangeChanged(bool val);
-    void yAxisRangeProcessText();
+    void useYAxisTickSpacingChanged(bool val);
+    void yAxisTickSpacingProcessText();
     void displayMarkersChanged(bool val);
     void markerVariableProcessText();
     void displayIdsChanged(bool val);
@@ -129,8 +133,8 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     QvisLineStyleWidget    *lineStyle;
     QvisLineWidthWidget    *lineWidth;
     QLineEdit              *yAxisTitleFormat;
-    QCheckBox              *useYAxisRange;
-    QLineEdit              *yAxisRange;
+    QCheckBox              *useYAxisTickSpacing;
+    QLineEdit              *yAxisTickSpacing;
     QCheckBox              *displayMarkers;
     QLineEdit              *markerVariable;
     QCheckBox              *displayIds;
