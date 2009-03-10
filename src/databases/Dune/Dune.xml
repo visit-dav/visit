@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-  <Plugin name="Dune" type="database" label="Dune" version="1.0" enabled="true" dbtype="MTSD" haswriter="false">
-    <Extensions>
-      Dat
-    </Extensions>
-    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
-    </Attribute>
-  </Plugin>

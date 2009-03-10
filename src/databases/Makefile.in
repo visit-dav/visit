@@ -334,6 +334,11 @@
 #   Hank Childs, Tue Jan 27 10:36:10 PST 2009
 #   Added Prabhat's HDF_UC reader.
 #
+#   Mark C. Miller, Mon Mar  9 18:43:49 PDT 2009
+#   Removed the Dune plugin. It contained some large data files, probably
+#   samples that should have been put in data dir instead. But, it was easier
+#   just to remove the plugin entirely. And, I don't think anyone has been
+#   using it for a while.
 ##############################################################################
 
 @SET_MAKE@
@@ -389,7 +394,6 @@ REQUIRED=\
  CTRL \
  Curve2D \
  DDCMD \
- Dune \
  Dyna3D \
  EnSight \
  ExtrudedVol \
