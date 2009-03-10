@@ -339,6 +339,7 @@ void avtLabelActor::SetForegroundColor(double fg[3])
     labelActor->GetProperty()->SetColor(fg);
 }
 
+
 // ****************************************************************************
 //  Method:  avtLabelActor::SetForegroundColor
 //
@@ -357,6 +358,29 @@ void avtLabelActor::SetForegroundColor(double fg[3])
 void avtLabelActor::SetForegroundColor(double r, double g, double b)
 {
     labelActor->GetProperty()->SetColor(r, g, b);
+}
+
+
+// ****************************************************************************
+//  Method:  avtLabelActor::SetForegroundColor
+//
+//  Purpose: Set the actors' color.
+//
+//  Arguments:
+//    r      The red component of the foreground color.
+//    g      The green component of the foreground color.
+//    b      The blue component of the foreground color.
+//    a      The alpha component of the foreground color.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    March 9, 2009 
+//
+// ****************************************************************************
+
+void avtLabelActor::SetForegroundColor(double r, double g, double b, double a)
+{
+    labelActor->GetProperty()->SetColor(r, g, b);
+    labelActor->GetProperty()->SetOpacity(a);
 }
 
 

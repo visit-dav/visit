@@ -47,7 +47,9 @@
 #include <vtkPointData.h>
 #include <vtkDataSet.h>
 #include <BadIndexException.h>
+#include <ColorAttribute.h>
 
+const double INV_255 = 0.0039215686274509803377;
 
 // ****************************************************************************
 //  Method: avtMultiCurveLabelMapper constructor
@@ -124,6 +126,11 @@ avtMultiCurveLabelMapper::CustomizeMappers(void)
 //    Eric Brugger, Wed Feb 18 12:05:44 PST 2009
 //    I added the ability to display identifiers at each of the points.
 //
+//    Eric Brugger, Mon Mar  9 17:59:58 PDT 2009
+//    I enhanced the plot so that the markers and identifiers displayed for
+//    the points are in the same color as the curve, instead of always in
+//    black.
+//
 // ****************************************************************************
 
 void
@@ -139,6 +146,9 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
     {
         EXCEPTION2(BadIndexException, inNum, 10);
     }
+
+    double col[4];
+    GetLevelColor(inNum, col);
 
     vtkIntArray *intArray = vtkIntArray::SafeDownCast(
         ds->GetPointData()->GetArray("CurveSymbols"));
@@ -160,7 +170,9 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
         else
             la->SetMarker(2);
         la->SetScale(scale);
+        la->SetForegroundColor(col[0], col[1], col[2], col[3]);
         actors.push_back(la);
+        colors.push_back(inNum);
 
         // Add the id.
         la = new avtLabelActor;
@@ -173,7 +185,9 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
             sprintf(label, "%d", i);
         la->SetDesignator(label);
         la->SetScale(scale);
+        la->SetForegroundColor(col[0], col[1], col[2], col[3]);
         actors.push_back(la);
+        colors.push_back(inNum);
     }
 }
 
@@ -270,4 +284,71 @@ avtMultiCurveLabelMapper::SetIdVisibility(bool labelsOn)
            actors[i]->Hide();
        }
    } 
+}
+
+
+// ****************************************************************************
+//  Method: avtMultiCurveLabelMapper::SetColors
+//
+//  Purpose:
+//      Set the color attribute list used for colormapping the labels.
+//
+//  Arguments:
+//      c         The new color attribute list.
+//
+//  Programmer:   Eric Brugger
+//  Creation:     March 9, 2009
+//
+// ****************************************************************************
+
+void
+avtMultiCurveLabelMapper::SetColors(const ColorAttributeList &c)
+{
+    cal = c;
+    for (int i = 0; i < actors.size(); i++)
+    {
+        double col[4];
+        GetLevelColor(colors[i], col);
+        actors[i]->SetForegroundColor(col[0], col[1], col[2], col[3]);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMultiCurveLabelMapper::GetLevelColor
+//
+//  Purpose:
+//      Retrieves the color associated with levelNum.
+//
+//  Arguments:
+//      levelNum  The level number.
+//      col       A place to store the color.
+//
+//  Programmer:   Eric Brugger
+//  Creation:     March 9, 2009
+//
+// ****************************************************************************
+
+void
+avtMultiCurveLabelMapper::GetLevelColor(const int levelNum, double col[4])
+{
+    int nc = cal.GetNumColors();
+    if (nc == 1)  // constant color for all levels
+    {
+        col[0] = cal[0].Red()   * INV_255;
+        col[1] = cal[0].Green() * INV_255;
+        col[2] = cal[0].Blue()  * INV_255;
+        col[3] = cal[0].Alpha() * INV_255;
+        return;
+    }
+
+    if (levelNum < 0 || levelNum >= nc)
+    {
+        EXCEPTION2(BadIndexException, levelNum, nc);
+    }
+
+    col[0] = cal[levelNum].Red()   * INV_255;
+    col[1] = cal[levelNum].Green() * INV_255;
+    col[2] = cal[levelNum].Blue()  * INV_255;
+    col[3] = cal[levelNum].Alpha() * INV_255;
 }

@@ -42,7 +42,9 @@
 
 #ifndef AVT_MULTI_CURVE_LABEL_MAPPER_H
 #define AVT_MULTI_CURVE_LABEL_MAPPER_H
+
 #include <avtDecorationsMapper.h>
+#include <ColorAttributeList.h>
 
 class     vtkDataSet;
 
@@ -64,6 +66,11 @@ class     vtkDataSet;
 //    I replaced setLabelVisibility with setMarkerVisibility and added
 //    setIdVisibility.
 //
+//    Eric Brugger, Mon Mar  9 17:57:34 PDT 2009
+//    I enhanced the plot so that the markers and identifiers displayed for
+//    the points are in the same color as the curve, instead of always in
+//    black.
+//
 // ****************************************************************************
 
 class avtMultiCurveLabelMapper : public avtDecorationsMapper
@@ -76,10 +83,16 @@ class avtMultiCurveLabelMapper : public avtDecorationsMapper
     void                       SetMarkerVisibility(bool);
     void                       SetIdVisibility(bool);
 
+    void                       SetColors(const ColorAttributeList &c);
+    void                       GetLevelColor(const int, double[4]);
+
   protected:
     bool                       markerVisibility;
     bool                       idVisibility;
     double                     scale;
+
+    ColorAttributeList         cal;
+    vector<int>                colors;
 
     virtual void               CustomizeMappers(void);
     virtual void               SetDatasetInput(vtkDataSet *, int);
