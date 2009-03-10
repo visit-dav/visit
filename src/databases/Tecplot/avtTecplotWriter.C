@@ -42,6 +42,8 @@
 
 #include <avtTecplotWriter.h>
 
+#include <visit-config.h>
+
 #include <vector>
 
 #include <vtkDataSetWriter.h>
@@ -55,7 +57,9 @@
 #include <vtkCellType.h>
 #include <vtkCell.h>
 #include <vtkVisItCellDataToPointData.h>
+#ifndef DBIO_ONLY
 #include <Tetrahedralizer.h>
+#endif
 
 using     std::string;
 using     std::vector;
@@ -183,6 +187,9 @@ avtTecplotWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //  Programmer: Jeremy Meredith
 //  Creation:   Wed Feb 9 13:44:32 PST 2005
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar 10 11:15:29 PDT 2009
+//    Added conditional compilation for dbio-only build. 
 // ****************************************************************************
 
 void
@@ -281,6 +288,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
             int ntets = 0;
 
             // Do the connectivity
+#ifndef DBIO_ONLY
             switch (cell->GetCellType())
             {
               case VTK_HEXAHEDRON:
@@ -296,6 +304,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
                 nelements+=Tetrahedralizer::GetLowTetNodesForTet(n,ids,tetids);
                 break;
             }
+#endif
         }
     }
     else
@@ -343,6 +352,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
             int ntets = 0;
 
             // Do the connectivity
+#ifndef DBIO_ONLY
             switch (cell->GetCellType())
             {
               case VTK_HEXAHEDRON:
@@ -361,6 +371,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
                 ntets = Tetrahedralizer::GetLowTetNodesForTet(n,ids,tetids);
                 break;
             }
+#endif
 
             for (int t = 0 ; t<ntets; t++)
             {

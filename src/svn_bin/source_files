@@ -67,12 +67,17 @@ if ($ARGV[0] eq "-dbio-only")
     push @files, get_svn_recursive    "./src/common/misc";
     push @files, get_svn_recursive    "./src/common/parser";
     push @files, get_svn_recursive    "./src/common/plugin";
+    push @files, get_svn_recursive    "./src/common/proxybase";
     push @files, get_svn_recursive    "./src/common/state";
     push @files, get_svn_recursive    "./src/common/utility";
     push @files, get_svn_norecursive  "./src/visit_vtk";
     push @files, get_svn_recursive    "./src/visit_vtk/full";
     push @files, get_svn_recursive    "./src/visit_vtk/lightweight";
     push @files, get_svn_norecursive  "./src/avt";
+    push @files, get_svn_norecursive  "./src/avt/Math/avtVector.h";
+    push @files, get_svn_norecursive  "./src/avt/Math/avtMatrix.h";
+    push @files, get_svn_norecursive  "./src/avt/Math/math_exports.h";
+    push @files, get_svn_norecursive  "./src/avt/VisWindow/VisWindow/VisWindowTypes.h";
     push @files, get_svn_recursive    "./src/avt/DBAtts";
     push @files, get_svn_recursive    "./src/avt/Database";
     push @files, get_svn_recursive    "./src/avt/Pipeline";
