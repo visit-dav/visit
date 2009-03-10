@@ -234,3 +234,4 @@ avtIVPVTKField::SetNormalized( bool v )
 {
     normalized = v;
 }
+

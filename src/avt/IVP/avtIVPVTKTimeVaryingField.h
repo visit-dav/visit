@@ -63,6 +63,9 @@
 //
 //  Modifications:
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Add GetValidTimeRange.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
@@ -80,8 +83,11 @@ class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
     bool           IsInside( const double& t, const avtVecRef& x ) const;
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
+    virtual bool   GetValidTimeRange(double range[]) const;
 
   protected:
+
+
     vtkInterpolatedVelocityField   *iv1;
     vtkInterpolatedVelocityField   *iv2;
     double                          time1;

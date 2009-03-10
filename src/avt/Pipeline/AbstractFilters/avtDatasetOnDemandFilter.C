@@ -129,12 +129,16 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 //    Dave Pugmire, Tue Feb  3 11:05:24 EST 2009
 //    Increment loadDSCount when a DS is loaded.
 //
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Added support for time/domain.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtDatasetOnDemandFilter::GetDomain(int domainId)
+avtDatasetOnDemandFilter::GetDomain(int domainId,
+                                    int timeStep)
 {
-    debug1<<"avtDatasetOnDemandFilter::GetDomain( "<<domainId<<" );\n";
+    debug1<<"avtDatasetOnDemandFilter::GetDomain("<<domainId<<", "<<timeStep<<");"<<endl;
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
 
@@ -145,11 +149,13 @@ avtDatasetOnDemandFilter::GetDomain(int domainId)
     std::list<DomainCacheEntry>::iterator it;
     for ( it = domainQueue.begin(); it != domainQueue.end(); it++ )
         // Found it. Move it to the front of the list.
-        if ( it->domainID == domainId )
+        if (it->domainID == domainId &&
+            it->timeStep == timeStep)
         {
             DomainCacheEntry entry;
             entry.ds = it->ds;
             entry.domainID = it->domainID;
+            entry.timeStep = timeStep;
 
             //Remove, then move to front.
             domainQueue.erase( it );
@@ -157,11 +163,15 @@ avtDatasetOnDemandFilter::GetDomain(int domainId)
             return entry.ds;
         }
 
+
+    debug5<<"     Update->GetDomain "<<domainId<<" time= "<<timeStep<<endl;
     avtContract_p new_contract = new avtContract(firstContract);
     vector<int> domains;
     domains.push_back(domainId);
     new_contract->GetDataRequest()->GetRestriction()->TurnOnAll();
     new_contract->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
+    if (timeStep >= 0)
+        new_contract->GetDataRequest()->SetTimestep(timeStep);
     new_contract->SetOnDemandStreaming(true);
 
     GetInput()->Update(new_contract);
@@ -170,6 +180,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId)
     // Add it to the cache.
     DomainCacheEntry entry;
     entry.domainID = domainId;
+    entry.timeStep = timeStep;
     entry.ds = rv;
     rv->Register(NULL);
     loadDSCount++;
@@ -196,9 +207,14 @@ avtDatasetOnDemandFilter::GetDomain(int domainId)
 //  Programmer: Dave Pugmire
 //  Creation:   March 13, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Added support for time/domain.
+//
 // ****************************************************************************
 bool
-avtDatasetOnDemandFilter::DomainLoaded(int domainID) const
+avtDatasetOnDemandFilter::DomainLoaded(int domainID, int timeStep) const
 {
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
@@ -206,8 +222,9 @@ avtDatasetOnDemandFilter::DomainLoaded(int domainID) const
     if ( domainID >= 0 )
     {
         std::list<DomainCacheEntry>::const_iterator it;
-        for ( it = domainQueue.begin(); it != domainQueue.end(); it++ )
-            if ( it->domainID == domainID )
+        for (it = domainQueue.begin(); it != domainQueue.end(); it++)
+            if (it->domainID == domainID &&
+                it->timeStep == timeStep)
                 return true;
     }
     return false;
@@ -222,19 +239,31 @@ avtDatasetOnDemandFilter::DomainLoaded(int domainID) const
 //  Programmer: Dave Pugmire
 //  Creation:   March 19, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Added support for time/domain.
+//
 // ****************************************************************************
 void
-avtDatasetOnDemandFilter::GetLoadedDomains( std::vector<int> &domains )
+avtDatasetOnDemandFilter::GetLoadedDomains(std::vector<std::vector<int> > &domains)
 {
     debug1<<"avtDatasetOnDemandFilter::GetLoadedDomains()\n";
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
 
+
     domains.resize(0);
     std::list<DomainCacheEntry>::const_iterator it;
     for ( it = domainQueue.begin(); it != domainQueue.end(); it++ )
-        domains.push_back( it->domainID );
+    {
+        vector<int> dom(2);
+        dom[0] = it->domainID;
+        dom[1] = it->timeStep;
+        domains.push_back(dom);
+    }
 }
+
 
 // ****************************************************************************
 //  Method: avtDatasetOnDemandFilter::ModifyContract

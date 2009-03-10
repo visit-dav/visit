@@ -74,6 +74,9 @@
 //    Dave Pugmire, Tue Feb 24 10:49:33 EST 2009
 //    Replaced Euler step with RK4 step. Removed the Moulton corrector.
 //
+//    Dave Pugmire, Mon Mar  9 15:35:05 EDT 2009
+//    Fix serialization for parallel integration.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
@@ -128,7 +131,7 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     double t, d;
     int degenerate_iterations;
     double stiffness_eps;
-    avtVecArray history;
+    avtVec history[5];
     avtVec yCur;
     avtVec ys[2];
     int initialized;

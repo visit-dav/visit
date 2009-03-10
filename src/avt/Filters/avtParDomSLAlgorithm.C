@@ -102,6 +102,9 @@ avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
 //    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
 //    Change numTerminated to numSLChange.
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 
@@ -136,8 +139,11 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
     debug1<<"My SLcount= "<<activeSLs.size()<<endl;
     debug1<<"I own: [";
     for (int i = 0; i < numDomains; i++)
-        if (OwnDomain(i))
+    {
+        DomainType d(i,0);
+        if (OwnDomain(d))
             debug1<<i<<" ";
+    }
     debug1<<"]\n";
 }
 

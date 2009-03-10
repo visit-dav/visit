@@ -165,6 +165,9 @@
       <Field name="workGroupSize" label="Work group size" type="int">
         32
       </Field>
+      <Field name="pathlines" label="Do pathlines" type="bool">
+        false
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

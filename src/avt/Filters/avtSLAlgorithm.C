@@ -62,12 +62,18 @@ static bool slDomainCompare(const avtStreamlineWrapper *slA,
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 avtSLAlgorithm::avtSLAlgorithm( avtStreamlineFilter *slFilter )
 {
     streamlineFilter = slFilter;
     numDomains = streamlineFilter->numDomains;
+    numTimeSteps = streamlineFilter->numTimeSteps;
 }
 
 // ****************************************************************************
@@ -95,10 +101,15 @@ avtSLAlgorithm::~avtSLAlgorithm()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtSLAlgorithm::GetDomain(int dom)
+avtSLAlgorithm::GetDomain(DomainType &dom)
 {
     int timerHandle = visitTimer->StartTimer();
 
@@ -199,6 +210,9 @@ avtSLAlgorithm::PostExecute()
 //
 //  Modifications:
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
@@ -210,10 +224,13 @@ avtSLAlgorithm::SortStreamlines(list<avtStreamlineWrapper *> &sl)
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=sl.begin(); s != sl.end(); ++s)
     {
+        long d = (*s)->domain.domain, t = (*s)->domain.timeStep;
+        long long key = (d<<32) + t;
+        key = (*s)->domain.domain;
         if ( DomainLoaded((*s)->domain))
-            (*s)->sortKey = -(*s)->domain;
+            (*s)->sortKey = -key;
         else
-            (*s)->sortKey = (*s)->domain;
+            (*s)->sortKey = key;
     }
 
     sl.sort(slDomainCompare);
@@ -233,6 +250,9 @@ avtSLAlgorithm::SortStreamlines(list<avtStreamlineWrapper *> &sl)
 //
 //  Modifications:
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
@@ -245,9 +265,9 @@ avtSLAlgorithm::SortStreamlines(vector<avtStreamlineWrapper *> &sl)
     for (s=sl.begin(); s != sl.end(); ++s)
     {
         if ( DomainLoaded((*s)->domain))
-            (*s)->sortKey = -(*s)->domain;
+            (*s)->sortKey = -(*s)->domain.domain;
         else
-            (*s)->sortKey = (*s)->domain;
+            (*s)->sortKey = (*s)->domain.domain;
     }
 
     sort(sl.begin(), sl.end(), slDomainCompare);

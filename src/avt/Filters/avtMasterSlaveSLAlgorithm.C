@@ -150,18 +150,24 @@ avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtStreamlineFilter *slFilter,
                                                      int maxCount)
     : avtParSLAlgorithm(slFilter)
 {
+    NUM_DOMAINS = numDomains * numTimeSteps;
     maxCnt = maxCount;
     sleepMicroSec = 100;
     latencyTimer = -1;
 
     // Msg type, numTerminated, domain vector.
-    statusMsgSz = 2 + numDomains;
+    statusMsgSz = 2 + NUM_DOMAINS;
 }
 
 // ****************************************************************************
@@ -313,6 +319,11 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
@@ -324,10 +335,10 @@ avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
     workGroupSz = workGrpSz;
     //Create my slaves.
     for (int i = 0; i < slaves.size(); i++)
-        slaveInfo.push_back(SlaveInfo(slaves[i], numDomains));
+        slaveInfo.push_back(SlaveInfo(slaves[i], NUM_DOMAINS));
     
-    slDomCnts.resize(numDomains,0);
-    domLoaded.resize(numDomains,0);
+    slDomCnts.resize(NUM_DOMAINS,0);
+    domLoaded.resize(NUM_DOMAINS,0);
 
     case1Cnt = 0;
     case2Cnt = 0;
@@ -433,19 +444,25 @@ avtMasterSLAlgorithm::CalculateStatistics()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
+
 bool
 avtMasterSLAlgorithm::UpdateStatus()
 {
     //Clean and update SL/Domain counts.
-    for (int i = 0; i < numDomains; i++)
+    for (int i = 0; i < NUM_DOMAINS; i++)
     {
         slDomCnts[i] = 0;
         domLoaded[i] = 0;
     }
     list<avtStreamlineWrapper *>::const_iterator s;
     for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
-        slDomCnts[(*s)->domain] ++;
+        slDomCnts[DomToIdx( (*s)->domain )] ++;
 
     // See if any slaves have sent a status.
     vector<vector<int> > msgs;
@@ -456,7 +473,7 @@ avtMasterSLAlgorithm::UpdateStatus()
         UpdateSlaveStatus(msgs[i]);
     
     for (int i = 0; i < slaveInfo.size(); i++)
-        for ( int d = 0; d < numDomains; d++)
+        for ( int d = 0; d < NUM_DOMAINS; d++)
             if (slaveInfo[i].domainLoaded[d])
                 domLoaded[d]++;
 
@@ -472,34 +489,39 @@ avtMasterSLAlgorithm::UpdateStatus()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
 avtMasterSLAlgorithm::PrintStatus()
 {
     debug1<<"DOM:               [";
-    for ( int i = 0; i < numDomains; i++)
+    for ( int i = 0; i < NUM_DOMAINS; i++)
         debug1<<setw(4)<<i<<" ";
     debug1<<"]\n";
     debug1<<"Master:            [";
-    for ( int i = 0; i < numDomains; i++)
+    for ( int i = 0; i < NUM_DOMAINS; i++)
         debug1<<setw(4)<<slDomCnts[i]<<" ";
     debug1<<"]\n";
     
     for (int i = 0; i < slaveInfo.size(); i++)
         slaveInfo[i].Debug();
     debug1<<"DCounts:           [";
-    for ( int i = 0; i < numDomains; i++)
+    for ( int i = 0; i < NUM_DOMAINS; i++)
         debug1<<setw(4)<<domLoaded[i]<<" ";
     debug1<<"]\n";
 
-    vector<int> slaveSLs(numDomains,0);
+    vector<int> slaveSLs(NUM_DOMAINS,0);
     for (int i = 0; i < slaveInfo.size(); i++)
-        for (int j = 0; j < numDomains; j++)
+        for (int j = 0; j < NUM_DOMAINS; j++)
             slaveSLs[j] += slaveInfo[i].domainCnt[j];
     debug1<<"SCounts:           [";
     int cnt = 0;
-    for ( int i = 0; i < numDomains; i++)
+    for ( int i = 0; i < NUM_DOMAINS; i++)
     {
         debug1<<setw(4)<<slaveSLs[i]<<" ";
         cnt += slaveSLs[i];
@@ -693,8 +715,11 @@ avtMasterSLAlgorithm::FindSlackers(int oobFactor,
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
+//
 //  Modifications:
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
 //
 // ****************************************************************************
 
@@ -720,7 +745,7 @@ avtMasterSLAlgorithm::Case1(int &counter)
 
         while ( activeSLs.empty() && cnt < maxCnt)
         {
-            int sDom = (*s)->domain;
+            int sDom = DomToIdx( (*s)->domain );
             if (slaveInfo[slackers[i]].domainLoaded[sDom])
             {
                 distributeSLs[slackerRank].push_back(*s);
@@ -764,8 +789,11 @@ avtMasterSLAlgorithm::Case1(int &counter)
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
+//
 //  Modifications:
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
 //
 // ****************************************************************************
 
@@ -840,7 +868,7 @@ avtMasterSLAlgorithm::Case2(int &counter)
         
         while ( !activeSLs.empty() && cnt < maxCnt)
         {
-            int sDom = (*sl)->domain;
+            int sDom = DomToIdx( (*sl)->domain );
             if (sDom == domToLoad && cnt < maxCnt)
             {
                 distributeSLs[slackerRank].push_back(*sl);
@@ -890,8 +918,11 @@ avtMasterSLAlgorithm::Case2(int &counter)
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
+//
 //  Modifications:
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
 //
 // ****************************************************************************
 
@@ -908,7 +939,7 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
         int slackerIdx = slackers[i];
         //debug1<<"Case 3: slackerRank="<<slaveInfo[slackerIdx].rank<<endl;
         
-        for (int d = 0; d < numDomains; d++)
+        for (int d = 0; d < NUM_DOMAINS; d++)
         {
             vector<int> domPartner;
             if ( !slaveInfo[slackerIdx].domainLoaded[d] &&
@@ -1001,8 +1032,11 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
+//
 //  Modifications:
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
 //
 // ****************************************************************************
 
@@ -1035,7 +1069,9 @@ avtMasterSLAlgorithm::Case4(int oobThreshold,
         {
             vector<int> msg;
             msg.push_back(MSG_LOAD_DOMAIN);
-            msg.push_back(domToLoad);
+            DomainType dom = IdxToDom(domToLoad);
+            msg.push_back(dom.domain);
+            msg.push_back(dom.timeStep);
             SendMsg(slaveInfo[idx].rank, msg);
             debug1<<"Case 4: "<<slaveInfo[idx].rank<<" load dom= "<<domToLoad<<" oobThreshold: "<<oobThreshold<<endl;
             slaveInfo[idx].LoadDom(domToLoad);
@@ -1093,14 +1129,19 @@ avtSlaveSLAlgorithm::~avtSlaveSLAlgorithm()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
 avtSlaveSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
 {
     avtMasterSlaveSLAlgorithm::Initialize(seedPts);
-    status.resize(numDomains,0);
-    prevStatus.resize(numDomains,0);
+    status.resize(NUM_DOMAINS,0);
+    prevStatus.resize(NUM_DOMAINS,0);
     numTerminated = 0;
     workToDo = false;
 }
@@ -1124,8 +1165,11 @@ avtSlaveSLAlgorithm::UpdateStatus()
         status[i] = 0;
 
     // Set 0,1 for domains loaded.
-    for (int i = 0; i < numDomains; i++)
-        status[i] = (DomainLoaded(i) ? 1: 0);
+    for (int i = 0; i < NUM_DOMAINS; i++)
+    {
+        DomainType d = IdxToDom(i);
+        status[i] = (DomainLoaded(d) ? 1: 0);
+    }
     
     //Increment/decrement all the streamlines we have.
     list<avtStreamlineWrapper *>::const_iterator s;
@@ -1135,21 +1179,21 @@ avtSlaveSLAlgorithm::UpdateStatus()
     for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
         if (DomainLoaded((*s)->domain))
         {
-            status[(*s)->domain] ++;
+            status[DomToIdx( (*s)->domain )] ++;
             workToDo = true;
         }
         else
-            status[(*s)->domain] --;
+            status[DomToIdx( (*s)->domain )] --;
 
     for (s = oobSLs.begin(); s != oobSLs.end(); ++s)
     {
         if (DomainLoaded((*s)->domain))
         {
-            status[(*s)->domain] ++;
+            status[DomToIdx( (*s)->domain )] ++;
             workToDo = true;
         }
         else
-            status[(*s)->domain] --;
+            status[DomToIdx( (*s)->domain )] --;
     }
 
 
@@ -1384,6 +1428,11 @@ avtSlaveSLAlgorithm::Execute()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
@@ -1411,7 +1460,7 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         
         else if (msgType == MSG_LOAD_DOMAIN)
         {
-            int dom = msg[2];
+            DomainType dom(msg[2], msg[3]);
             debug1<<"MSG: LoadDomain( "<<dom<<")\n";
             GetDomain(dom);
         }

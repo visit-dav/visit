@@ -293,6 +293,9 @@ avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 //    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
 //    Removed the plane intersection code.
 //
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Bug fix in parallel communication of solver state.
+//
 // ****************************************************************************
 
 void 
@@ -307,7 +310,6 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
     h = h_max;
     initialized = 0;
 
-    history.resize(yCur.dim(), STEPS);
     for( size_t i=1; i<STEPS; ++i )
       for( size_t j=0; j<yCur.dim(); ++j )
         history[i].values()[j] = 0;
@@ -328,12 +330,14 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
 //    Improved version of A-B solver that builds function history from
 //    initial RK4 steps.
 //
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Bug fix in parallel communication of solver state.
+//
 // ****************************************************************************
 
 void
 avtIVPAdamsBashforth::OnExitDomain()
 {
-    history.resize(yCur.dim(), 0);
     initialized = 0;
 }
 
@@ -379,6 +383,9 @@ avtIVPAdamsBashforth::RK4Step(const avtIVPField* field,
 //    Dave Pugmire, Tue Feb 24 14:35:38 EST 2009
 //    Remove moulton corrector code, use RK4 at startup, terminate on numSteps.
 //
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Bug fix in parallel communication of solver state.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -386,12 +393,12 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
                              avtVec &yNew )
 {
     // Calculate the predictor using the Adams-Bashforth formula
-  yNew = yCur;
+    yNew = yCur;
 
-  for (size_t i = 0; i < STEPS; i++)
-    yNew += h*divisor*bashforth[i] * history[i];
+    for (size_t i = 0; i < STEPS; i++)
+        yNew += h*divisor*bashforth[i] * history[i];
 
-  return avtIVPSolver::OK;
+    return avtIVPSolver::OK;
 }
 
 // ****************************************************************************
@@ -421,6 +428,9 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
 //
 //    Dave Pugmire, Tue Feb 24 14:35:38 EST 2009
 //    Remove moulton corrector code, use RK4 at startup, terminate on numSteps.
+//
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Bug fix in parallel communication of solver state.
 //
 // ****************************************************************************
 
@@ -462,15 +472,14 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
     // Use a forth order Runga Kutta integration to seed the Adams-Bashforth.
     if ( initialized < STEPS )
     {
-      // Save the first vector values in the history. 
-      if( initialized == 0 )
-      {
-        history[0] = (*field)(t,yCur);
-      }
-
-      res = RK4Step( field, yNew );
-      
-      ++initialized;
+        // Save the first vector values in the history. 
+        if( initialized == 0 )
+        {
+            history[0] = (*field)(t,yCur);
+        }
+        res = RK4Step( field, yNew );
+        
+        ++initialized;
     }
     else
     {
@@ -555,6 +564,9 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 //    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
 //    Add a tolerance and counter for handling stiffness detection.
 //
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Bug fix in parallel communication of solver state.
+//
 // ****************************************************************************
 void
 avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
@@ -568,7 +580,11 @@ avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(t)
         .Accept(d)
         .Accept(yCur)
-        .Accept(history)
+        .Accept(history[0])
+        .Accept(history[1])
+        .Accept(history[2])
+        .Accept(history[3])
+        .Accept(history[4])
         .Accept(initialized)
         .Accept(ys[0])
         .Accept(ys[1]);

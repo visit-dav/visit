@@ -58,6 +58,11 @@ class SlaveInfo;
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
 //
+// Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
@@ -78,6 +83,21 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 
   protected:
     int                        maxCnt;
+    int                        NUM_DOMAINS;
+    int                        DomToIdx(const DomainType &dom) const
+    {
+        int n = dom.domain/numTimeSteps + dom.timeStep;
+        debug5<<"numTS= "<<numTimeSteps<<endl;
+        debug5<<"dom "<<dom<<" ==> "<<n<<endl;
+        return n;
+    }
+
+    DomainType                 IdxToDom(const int &num) const
+    {
+        DomainType d(num/numTimeSteps + num%numTimeSteps);
+        debug5<<"idx "<<num<<" ==> "<<d<<endl;
+        return d;
+    }
     
     int                        sleepMicroSec;
     void                       Sleep();

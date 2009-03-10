@@ -334,6 +334,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Thu Feb  5 12:23:33 EST 2009
 //   Add workGroupSize for masterSlave algorithm.
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Add pathline option.
+//
 // ****************************************************************************
 
 void
@@ -356,6 +359,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     //
     streamlineFilter->SetSourceType(atts.GetSourceType());
     streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
+    streamlineFilter->SetPathlines(atts.GetPathlines());
     streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
                                              atts.GetMaxStreamlineProcessCount(),
                                              atts.GetMaxDomainCacheSize(),

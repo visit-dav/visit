@@ -87,8 +87,11 @@ class StreamlineAttributes;
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
 //   Added workGroupSize for the masterSlave algorithm.
 //
-//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//    Added number of steps as a termination criterion.
+//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//   Added number of steps as a termination criterion.
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Add pathline GUI.
 //    
 // ****************************************************************************
 
@@ -149,6 +152,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void singleColorChanged(const QColor &color);
     void legendFlagChanged(bool val);
     void lightingFlagChanged(bool val);
+    void pathlineFlagChanged(bool val);
     void useWholeBoxChanged(bool val);
     void boxExtentsProcessText();
   private:
@@ -198,6 +202,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *singleColorLabel;
     QCheckBox *legendFlag;
     QCheckBox *lightingFlag;
+    QCheckBox *pathlineFlag;
     QComboBox *termType;
     QComboBox *integrationType;
     QLabel    *slAlgoLabel;

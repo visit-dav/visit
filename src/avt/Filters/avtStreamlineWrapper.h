@@ -44,12 +44,43 @@
 #define AVT_STREAMLINE_WRAPPER_H
 
 #include <vector>
+#include <visitstream.h>
 #include <MemStream.h>
 
 class avtStreamline;
 class vtkPolyData;
 class avtVector;
 class avtIVPSolver;
+
+class DomainType
+{
+  public:
+    DomainType() :domain(-1), timeStep(0) {}
+    DomainType(const int &d) :domain(d), timeStep(0) {}
+    DomainType(const int &d, const int &t) :domain(d), timeStep(t) {}
+    ~DomainType() {}
+
+    void operator=(const DomainType &dt)
+    {
+        domain=dt.domain;
+        timeStep=dt.timeStep;
+    }
+    
+    bool operator==(const DomainType &dt) const
+    {
+        return (domain == dt.domain &&
+                timeStep == dt.timeStep);
+    }
+    bool operator<(const DomainType &dt) const
+    {
+        return domain < dt.domain && timeStep << dt.timeStep;
+    }
+
+    //Members
+    int domain, timeStep;
+
+    friend ostream& operator<<(ostream &out, const DomainType &d);
+};
 
 // ****************************************************************************
 // Class: avtStreamlineWrapper
@@ -65,6 +96,9 @@ class avtIVPSolver;
 //
 // Dave Pugmire, Mon Feb  2 14:41:25 EST 2009
 // Moved GetVTKPolyData to avtStreamlinePolyDataFilter.
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time.
 //
 // ****************************************************************************
 
@@ -88,20 +122,21 @@ class avtStreamlineWrapper
     avtStreamlineWrapper(avtStreamline *s, Dir slDir=FWD, int ID=-1);
     ~avtStreamlineWrapper();
 
-    void UpdateDomainCount( int dom );
+    void UpdateDomainCount(DomainType &dom);
     void ComputeStatistics();
-    void GetStartPoint(avtVector &pt) const;
-    void GetEndPoint(avtVector &pt) const;
+    void GetStartPoint(avtVector &pt, double &t) const;
+    void GetEndPoint(avtVector &pt, double &t) const;
+    void GetStartPoint(avtVector &pt) const {double t; GetStartPoint(pt,t); }
+    void GetEndPoint(avtVector &pt) const {double t; GetEndPoint(pt,t); }
 
     void Debug();
     void Serialize(MemStream::Mode mode, MemStream &buff, avtIVPSolver *solver);
 
-
     avtStreamline *sl;
 
     // Helpers needed for computing streamlines
-    std::vector<int> seedPtDomainList;
-    int domain;
+    std::vector<DomainType> seedPtDomainList;
+    DomainType domain;
     Status status;
     Dir dir;
     
@@ -109,7 +144,8 @@ class avtStreamlineWrapper
     std::vector<int> domainVisitCnts;
     int maxCnt, sum, numDomainsVisited;
     int numTimesCommunicated;
-    int id, sortKey;
+    int id;
+    long long sortKey;
 };
 
 #endif
