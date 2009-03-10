@@ -53,7 +53,7 @@ class  avtExtents;
 typedef struct
 {
     vtkDataSet *ds;
-    int domainID;
+    int domainID, timeStep;
 } DomainCacheEntry;
 
 
@@ -85,6 +85,9 @@ typedef struct
 //    Dave Pugmire, Tue Feb  3 11:05:24 EST 2009
 //    Added loadDSCount and access function
 //
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Added support for time/domain.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
@@ -95,10 +98,10 @@ class PIPELINE_API avtDatasetOnDemandFilter : virtual public
      virtual                    ~avtDatasetOnDemandFilter();
 
   protected:
-    virtual bool                 DomainLoaded(int) const;
-    void                         GetLoadedDomains( std::vector<int> &domains );
-    void                         SetMaxQueueLength( int len ) { maxQueueLength = len; }
-    virtual vtkDataSet           *GetDomain(int);
+    virtual bool                 DomainLoaded(int, int) const;
+    void                         GetLoadedDomains(std::vector<std::vector<int> > &domains);
+    void                         SetMaxQueueLength(int len) { maxQueueLength = len; }
+    virtual vtkDataSet           *GetDomain(int, int);
     avtContract_p                ModifyContract(avtContract_p);
     virtual void                 UpdateDataObjectInfo(void);
 

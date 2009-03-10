@@ -150,8 +150,11 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
 //   Added workGroupSize for the masterSlave algorithm.
 //
-//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//    Added number of steps as a termination criterion.
+//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//   Added number of steps as a termination criterion.
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Add pathline GUI.
 //    
 // ****************************************************************************
 
@@ -187,14 +190,19 @@ QvisStreamlinePlotWindow::CreateWindowContents()
             this, SLOT(directionTypeChanged(int)));
     mainLayout->addWidget(directionType, 3,1);
 
+    pathlineFlag = new QCheckBox(tr("Pathlines"), central);
+    connect(pathlineFlag, SIGNAL(toggled(bool)),
+            this, SLOT(pathlineFlagChanged(bool)));
+    mainLayout->addWidget(pathlineFlag, 4,0);
+
     // Add some space....
-    mainLayout->addWidget(new QLabel(tr(""), central),4,0);
+    mainLayout->addWidget(new QLabel(tr(""), central), 5,0);
 
     //
     // Create a tab widget so we can split source type and appearance.
     //
     QTabWidget *tabs = new QTabWidget(central);
-    mainLayout->addWidget(tabs, 5, 0, 1, 2);
+    mainLayout->addWidget(tabs, 6, 0, 1, 2);
 
     //
     // Create a tab for the streamline source widgets.
@@ -522,12 +530,12 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     legendFlag = new QCheckBox(tr("Legend"), central);
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
-    mainLayout->addWidget(legendFlag, 6,0);
+    mainLayout->addWidget(legendFlag, 7,0);
 
     lightingFlag = new QCheckBox(tr("Lighting"), central);
     connect(lightingFlag, SIGNAL(toggled(bool)),
             this, SLOT(lightingFlagChanged(bool)));
-    mainLayout->addWidget(lightingFlag, 6,1);
+    mainLayout->addWidget(lightingFlag, 7,1);
 }
 
 // ****************************************************************************
@@ -820,6 +828,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             workGroupSize->blockSignals(true);
             workGroupSize->setValue(streamAtts->GetWorkGroupSize());
             workGroupSize->blockSignals(false);
+            break;
+        case StreamlineAttributes::ID_pathlines:
+            pathlineFlag->blockSignals(true);
+            pathlineFlag->setChecked(streamAtts->GetPathlines());
+            pathlineFlag->blockSignals(false);
             break;
         }
     }
@@ -1731,6 +1744,14 @@ void
 QvisStreamlinePlotWindow::lightingFlagChanged(bool val)
 {
     streamAtts->SetLightingFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pathlineFlagChanged(bool val)
+{
+    streamAtts->SetPathlines(val);
     SetUpdate(false);
     Apply();
 }

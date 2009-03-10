@@ -312,7 +312,7 @@ StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, S
 }
 
 // Type map format string
-const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiiii";
+const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiiiib";
 
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
@@ -383,6 +383,7 @@ StreamlineAttributes::StreamlineAttributes() :
     maxStreamlineProcessCount = 10;
     maxDomainCacheSize = 3;
     workGroupSize = 32;
+    pathlines = false;
 }
 
 // ****************************************************************************
@@ -460,6 +461,7 @@ StreamlineAttributes::StreamlineAttributes(const StreamlineAttributes &obj) :
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
     workGroupSize = obj.workGroupSize;
+    pathlines = obj.pathlines;
 
     SelectAll();
 }
@@ -560,6 +562,7 @@ StreamlineAttributes::operator = (const StreamlineAttributes &obj)
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
     workGroupSize = obj.workGroupSize;
+    pathlines = obj.pathlines;
 
     SelectAll();
     return *this;
@@ -656,7 +659,8 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
             (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
             (maxDomainCacheSize == obj.maxDomainCacheSize) &&
-            (workGroupSize == obj.workGroupSize));
+            (workGroupSize == obj.workGroupSize) &&
+            (pathlines == obj.pathlines));
 }
 
 // ****************************************************************************
@@ -932,6 +936,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
     Select(ID_maxDomainCacheSize,        (void *)&maxDomainCacheSize);
     Select(ID_workGroupSize,             (void *)&workGroupSize);
+    Select(ID_pathlines,                 (void *)&pathlines);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1164,6 +1169,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("workGroupSize", workGroupSize));
     }
 
+    if(completeSave || !FieldsEqual(ID_pathlines, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlines", pathlines));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1364,6 +1375,8 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetMaxDomainCacheSize(node->AsInt());
     if((node = searchNode->GetNode("workGroupSize")) != 0)
         SetWorkGroupSize(node->AsInt());
+    if((node = searchNode->GetNode("pathlines")) != 0)
+        SetPathlines(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1614,6 +1627,13 @@ StreamlineAttributes::SetWorkGroupSize(int workGroupSize_)
 {
     workGroupSize = workGroupSize_;
     Select(ID_workGroupSize, (void *)&workGroupSize);
+}
+
+void
+StreamlineAttributes::SetPathlines(bool pathlines_)
+{
+    pathlines = pathlines_;
+    Select(ID_pathlines, (void *)&pathlines);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1878,6 +1898,12 @@ StreamlineAttributes::GetWorkGroupSize() const
     return workGroupSize;
 }
 
+bool
+StreamlineAttributes::GetPathlines() const
+{
+    return pathlines;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1999,6 +2025,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_maxStreamlineProcessCount: return "maxStreamlineProcessCount";
     case ID_maxDomainCacheSize:        return "maxDomainCacheSize";
     case ID_workGroupSize:             return "workGroupSize";
+    case ID_pathlines:                 return "pathlines";
     default:  return "invalid index";
     }
 }
@@ -2056,6 +2083,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_maxStreamlineProcessCount: return FieldType_int;
     case ID_maxDomainCacheSize:        return FieldType_int;
     case ID_workGroupSize:             return FieldType_int;
+    case ID_pathlines:                 return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -2113,6 +2141,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_maxStreamlineProcessCount: return "int";
     case ID_maxDomainCacheSize:        return "int";
     case ID_workGroupSize:             return "int";
+    case ID_pathlines:                 return "bool";
     default:  return "invalid index";
     }
 }
@@ -2344,6 +2373,11 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (workGroupSize == obj.workGroupSize);
         }
         break;
+    case ID_pathlines:
+        {  // new scope
+        retval = (pathlines == obj.pathlines);
+        }
+        break;
     default: retval = false;
     }
 
@@ -2435,6 +2469,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (relTol != obj.relTol) ||
            (absTol != obj.absTol) ||
            (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
+           (pathlines != obj.pathlines) ||
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||

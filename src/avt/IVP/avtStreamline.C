@@ -150,9 +150,9 @@ avtStreamline::Advance(const avtIVPField* field,
                        double *extents)
 {
     wantVorticity = vorticity;
-    
-    return DoAdvance(_ivpSolver, field, termType, end,
-                     haveGhostZones, extents);    
+    avtIVPSolver::Result res = DoAdvance(_ivpSolver, field, termType, end,
+                                         haveGhostZones, extents);
+    return res;
 }
 
 
@@ -237,7 +237,6 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             double h = ivp->GetNextStepSize();
 
             h = h/2;
-            
             if( fabs(h) < 1e-9 )
             {
                 delete step;

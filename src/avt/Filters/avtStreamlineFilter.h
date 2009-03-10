@@ -62,6 +62,7 @@ class vtkPolyData;
 class vtkRibbonFilter;
 class vtkAppendPolyData;
 class avtStreamlineWrapper;
+class DomainType;
 
 #define STREAMLINE_SOURCE_POINT      0
 #define STREAMLINE_SOURCE_LINE       1
@@ -158,6 +159,12 @@ class avtStreamlineWrapper;
 //   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
 //   Initial implemenation of pathlines.
 //
+//   Dave Pugmire, Fri Feb 27 15:13:55 EST 2009
+//   Removed unused normalize expression string.
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -174,6 +181,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     void                      SetSourceType(int sourceType);
     void                      SetMaxStepLength(double len);
     void                      SetTermination(int type, double term);
+    void                      SetPathlines(bool pathlines);
     void                      SetIntegrationType(int algo);
     void                      SetStreamlineAlgorithm(int algo, int maxCnt,
                                                      int domainCache,
@@ -210,18 +218,21 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     int    streamlineDirection;
     int    coloringMethod;
     int    dataSpatialDimension;
-    std::string normalizedVecExprName;
-    int    curTimeSlice;
-    std::string velocityName;
+
+    avtContract_p lastContract;
+
+
+    std::vector<std::vector<double> > domainTimeIntervals;
+    std::string pathlineVar, pathlineNextTimeVar;
     bool   doPathlines;
 
     avtIntervalTree *intervalTree;
     avtIVPSolver *solver;
 
-    int numDomains, cacheQLen;
+    int numDomains, numTimeSteps, cacheQLen;
     std::vector<int> domainToRank;
     std::vector<vtkDataSet*>dataSets;
-    std::map<int, vtkVisItCellLocator*> domainToCellLocatorMap;
+    std::map<DomainType, vtkVisItCellLocator*> domainToCellLocatorMap;
 
     // Various starting locations for streamlines.
     double pointSource[3];
@@ -250,8 +261,9 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
                                               vtkDataSet *ds,
                                               double *extents,
                                               int maxSteps=-1);
-    virtual vtkDataSet        *GetDomain(int);
-    virtual bool              DomainLoaded(int) const;
+    virtual vtkDataSet        *GetDomain(DomainType &);
+    virtual int               GetTimeStep(double &t) const;
+    virtual bool              DomainLoaded(DomainType &) const;
 
     void                      SetZToZero(vtkPolyData *) const;
     vtkPolyData *             StartSphere(float val, double pt[3]);
@@ -262,10 +274,10 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
                                                     = 0;
 
     // Helper functions.
-    bool                      PointInDomain(avtVector &pt, int domain);
-    int                       DomainToRank(int domain);
+    bool                      PointInDomain(avtVector &pt, DomainType &domain);
+    int                       DomainToRank(DomainType &domain);
     void                      ComputeDomainToRankMapping();
-    bool                      OwnDomain(int domain);
+    bool                      OwnDomain(DomainType &domain);
     void                      SetDomain(avtStreamlineWrapper *slSeg);
     void                      Initialize();
     void                      ComputeRankList(const std::vector<int> &domList, 

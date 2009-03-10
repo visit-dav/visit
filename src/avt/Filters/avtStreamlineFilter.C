@@ -150,12 +150,17 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
 //   Initial implemenation of pathlines.
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
 {
     doPathlines = false;
-    normalizedVecExprName = "";
+    pathlineNextTimeVar = "__pathlineNextTimeVar__";
+    pathlineVar = "";
+
     maxStepLength = 0.;
     terminationType = avtIVPSolver::TIME;
     termination = 100.;
@@ -211,11 +216,14 @@ avtStreamlineFilter::avtStreamlineFilter()
 //    Hank Childs, Fri Aug 22 09:41:02 PDT 2008
 //    Move deletion of solver to PostExecute.
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::~avtStreamlineFilter()
 {
-    std::map<int, vtkVisItCellLocator*>::const_iterator it;
+    std::map<DomainType, vtkVisItCellLocator*>::const_iterator it;
     for ( it = domainToCellLocatorMap.begin(); it != domainToCellLocatorMap.end(); it++ )
         it->second->Delete();
 }
@@ -229,6 +237,11 @@ avtStreamlineFilter::~avtStreamlineFilter()
 //  Programmer: Dave Pugmire
 //  Creation:   June 23, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
@@ -241,7 +254,8 @@ avtStreamlineFilter::ComputeRankList(const vector<int> &domList,
     for (int i = 0; i < domList.size(); i++)
     {
         int dom = domList[i];
-        int proc = DomainToRank(dom);
+        DomainType d(dom, 0);
+        int proc = DomainToRank(d);
         r.push_back(proc);
     }
 
@@ -276,19 +290,33 @@ avtStreamlineFilter::ComputeRankList(const vector<int> &domList,
 //  Programmer: Dave Pugmire
 //  Creation:   June 23, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
 {
     avtVector endPt;
-    slSeg->GetEndPoint(endPt);
+    double t;
+    slSeg->GetEndPoint(endPt, t);
     double xyz[3] = {endPt.x, endPt.y, endPt.z};
+
+    t = t+1e-7; //DRP FIX THIS! The avtStreamline::Advance() needs to set this!
+    int timeStep = GetTimeStep(t);
+
+    debug5<<"SetDomain(): pt= "<<endPt<<" T= "<<t<<" step= "<<timeStep<<endl;
     
     slSeg->seedPtDomainList.resize(0);
-    intervalTree->GetElementsListFromRange(xyz, xyz, slSeg->seedPtDomainList);
+    vector<int> doms;
+    intervalTree->GetElementsListFromRange(xyz, xyz, doms);
+    for (int i = 0; i < doms.size(); i++)
+        slSeg->seedPtDomainList.push_back(DomainType(doms[i], timeStep));
 
-    slSeg->domain = -1;
+    slSeg->domain = DomainType(-1,0);
     // 1 domain, easy.
     if (slSeg->seedPtDomainList.size() == 1)
         slSeg->domain = slSeg->seedPtDomainList[0];
@@ -298,11 +326,11 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
     else if (slSeg->seedPtDomainList.size() > 1)
     {
         // See if the point is contained in a domain owned by "me".
-        vector<int> newDomList;
+        vector<DomainType> newDomList;
         bool foundOwner = false;
         for (int i = 0; i < slSeg->seedPtDomainList.size(); i++)
         {
-            int dom = slSeg->seedPtDomainList[i];
+            DomainType dom = slSeg->seedPtDomainList[i];
             if (OwnDomain(dom))
             {
                 // If point is inside domain, we are done.
@@ -329,6 +357,7 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
     
     if (slSeg->seedPtDomainList.size() == 1)
         slSeg->domain = slSeg->seedPtDomainList[0];
+    debug5<<"SetDomain: "<<slSeg->domain<<endl;
     /*
     debug1<<"::SetDomain() pt=["<<endPt.xyz[0]<<" "<<endPt.xyz[1]
           <<" "<<endPt.xyz[2]<<"] in domains: ";
@@ -349,21 +378,87 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtStreamlineFilter::GetDomain(int domain)
+avtStreamlineFilter::GetDomain(DomainType &domain)
 {
+    //debug5<<"GetDomain("<<domain<<");\n";
     vtkDataSet *ds = NULL;
 
-    //debug1<<"OperatingOnDemand() = "<<OperatingOnDemand()<<endl;
+    debug5<<"OperatingOnDemand() = "<<OperatingOnDemand()<<endl;
     if (OperatingOnDemand())
-        ds = avtDatasetOnDemandFilter::GetDomain(domain);
+    {
+        ds = avtDatasetOnDemandFilter::GetDomain(domain.domain,
+                                                 domain.timeStep);
+    }
     else
-        ds = dataSets[domain];
+    {
+        /*
+        if (domain.timeStep != curTimeSlice)
+        {
+            debug5<<"::GetDomain()  Loading: "<<domain<<endl;
+            avtContract_p new_contract = new avtContract(lastContract);
+            new_contract->GetDataRequest()->SetTimestep(domain.timeStep);
+            GetInput()->Update(new_contract);
+            GetAllDatasetsArgs ds_list;
+            bool dummy = false;
+            GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
+
+            dataSets.resize(numDomains,NULL);
+            for (int i = 0; i < ds_list.domains.size(); i++)
+            {
+                vtkDataSet *ds = ds_list.datasets[i];
+                ds->Register(NULL);
+                dataSets[ ds_list.domains[i] ] = ds;
+            }
+
+            curTimeSlice = domain.timeStep;
+        }
+        */
+        ds = dataSets[domain.domain];
+
+    }
     
-    //debug5<<"GetDomain("<<domain<<") = "<<ds<<endl;
+    debug5<<"GetDomain("<<domain<<") = "<<ds<<endl;
     return ds;
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GetTimeStep
+//
+//  Purpose:
+//      Determine the time step from a t value.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 4, 2009
+//
+// ****************************************************************************
+
+int
+avtStreamlineFilter::GetTimeStep(double &t) const
+{
+    if (doPathlines)
+    {
+        for (int i = 0; i < domainTimeIntervals.size(); i++)
+        {
+            debug5<<" T= "<<t<<" in ["<<domainTimeIntervals[i][0]<<", "<<domainTimeIntervals[i][1]<<"] ?"<<endl;
+            if (t >= domainTimeIntervals[i][0] &&
+                t < (domainTimeIntervals[i][1]))
+            {
+                return i;
+            }
+        }
+        //EXCEPTION0(ImproperUseException);
+        return -1;
+    }
+
+    return 0;
 }
 
 
@@ -376,17 +471,22 @@ avtStreamlineFilter::GetDomain(int domain)
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 bool
-avtStreamlineFilter::DomainLoaded(int domain) const
+avtStreamlineFilter::DomainLoaded(DomainType &domain) const
 {
     //debug1<< "avtStreamlineFilter::DomainLoaded("<<domain<<");\n";
 #ifdef PARALLEL
     if (OperatingOnDemand())
-        return avtDatasetOnDemandFilter::DomainLoaded(domain);
+        return avtDatasetOnDemandFilter::DomainLoaded(domain.domain, domain.timeStep);
 
-    return PAR_Rank() == domainToRank[domain];
+    return PAR_Rank() == domainToRank[domain.domain];
 #endif
     
     return true;
@@ -486,6 +586,29 @@ avtStreamlineFilter::SetTermination(int type, double term)
         terminationType = avtIVPSolver::STEP;
 
     termination = term;
+}
+
+
+// ****************************************************************************
+// Method: avtStreamlineFilter::SetPathlines
+//
+// Purpose: 
+//   Turns pathlines on and off.
+//
+// Arguments:
+//   algo : Type of algorithm
+//   maxCnt : maximum number of streamlines to process before distributing.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Mar  5 09:51:00 EST 2009
+//
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetPathlines(bool pathlines)
+{
+    doPathlines = pathlines;
 }
 
 
@@ -964,39 +1087,6 @@ avtStreamlineFilter::Execute(void)
     intervalTree = NULL;
 }
 
-static void
-computeMeanStdDev( int nProcs, int rank, float val, float &mean, float &stdDev )
-{
-    mean = 0.0;
-    stdDev = 0.0;
-    
-#ifdef PARALLEL
-    float *input = new float[nProcs], *output = new float[nProcs];
-
-    for (int i = 0; i < nProcs; i++)
-        input[i] = 0.0;
-    input[rank] = val;
-    
-    SumFloatArrayAcrossAllProcessors(input, output, nProcs);
-    mean = output[0];
-    for (int i = 1; i < nProcs; i++)
-        mean += output[i];
-    mean /= (float)nProcs;
-
-    float sum = 0.0;
-    for (int i = 0; i < nProcs; i++)
-    {
-        float x = output[i] - mean;
-        sum += x*x;
-    }
-    sum /= (float)nProcs;
-    stdDev = sqrt(sum);
-
-    delete [] input;
-    delete [] output;
-#endif
-}
-
 // ****************************************************************************
 //  Method: avtStreamlineFilter::Initialize
 //
@@ -1017,6 +1107,9 @@ computeMeanStdDev( int nProcs, int rank, float val, float &mean, float &stdDev )
 //
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
 //   Initialize the initial domain load count and timer.
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
 //
 // ****************************************************************************
 
@@ -1126,6 +1219,35 @@ avtStreamlineFilter::Initialize()
 
     // Some methods need random number generator.
     srand(2776724);
+
+    numTimeSteps = 1;
+    if (doPathlines)
+    {
+        std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+        ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+        if (*dbp == NULL)
+            EXCEPTION1(InvalidFilesException, db.c_str());
+        avtDatabaseMetaData *md = dbp->GetMetaData(0);
+        debug5<<"Times: [";
+        for (int i = 0; i < md->GetTimes().size()-1; i++)
+        {
+            vector<double> intv(2);
+            intv[0] = md->GetTimes()[i];
+            intv[1] = md->GetTimes()[i+1];
+            if (intv[0] == intv[1])
+            {
+                intv[0] = (double)i;
+                intv[1] = (double)i+1;
+            }
+            domainTimeIntervals.push_back(intv);
+            debug5<<" ("<<intv[0]<<", "<<intv[1]<<")";
+        }
+        debug5<<"]"<<endl;
+        
+        numTimeSteps = domainTimeIntervals.size();
+        if (numTimeSteps == 1)
+            doPathlines = false;
+    }
 }
 
 
@@ -1148,10 +1270,13 @@ avtStreamlineFilter::Initialize()
 //   full check. Otherwise, points in ghost zones are reported as inside the
 //   domain.
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 bool
-avtStreamlineFilter::PointInDomain(avtVector &pt, int domain)
+avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
 {
     debug5<< "avtStreamlineFilter::PointInDomain("<<pt<<", dom= "<<domain<<");\n";
     vtkDataSet *ds = GetDomain(domain);
@@ -1166,7 +1291,7 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, int domain)
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         double bbox[6];
-        intervalTree->GetElementExtents(domain, bbox);
+        intervalTree->GetElementExtents(domain.domain, bbox);
         debug5<<"[ "<<bbox[0]<<" "<<bbox[1]<<" ] [ "<<bbox[2]<<" "<<bbox[3]<<" ] [ "<<bbox[4]<<" "<<bbox[5]<<" ]"<<endl;
         if (pt.x < bbox[0] || pt.x > bbox[1] ||
             pt.y < bbox[2] || pt.y > bbox[3])
@@ -1217,10 +1342,15 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, int domain)
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 bool
-avtStreamlineFilter::OwnDomain(int domain)
+avtStreamlineFilter::OwnDomain(DomainType &domain)
 {
 #ifdef PARALLEL
     if (OperatingOnDemand())
@@ -1304,18 +1434,21 @@ avtStreamlineFilter::ComputeDomainToRankMapping()
 }
 
 int
-avtStreamlineFilter::DomainToRank(int domain)
+avtStreamlineFilter::DomainToRank(DomainType &domain)
 {
     // First time through, compute the mapping.
     if (domainToRank.size() == 0)
         ComputeDomainToRankMapping();
 
-    if (domain < 0 || domain >= domainToRank.size())
+    if (domain.domain < 0 || domain.domain >= domainToRank.size())
         EXCEPTION1(ImproperUseException, "Domain out of range.");
     
     //debug1<<"avtStreamlineFilter::DomainToRank("<<domain<<") = "<<domainToRank[domain]<<endl;
 
-    return domainToRank[domain];
+    if (domain.timeStep != 0)
+        EXCEPTION1(ImproperUseException, "Fix DomainToRank for time slices.");
+
+    return domainToRank[domain.domain];
 }
 
 // ****************************************************************************
@@ -1342,7 +1475,10 @@ avtStreamlineFilter::DomainToRank(int domain)
 //   Added termination by number of steps. Cleanup of other term types. 
 //
 //   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
-//   Initial implemenation of pathlines.  
+//   Initial implemenation of pathlines.
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
 //
 // ****************************************************************************
 
@@ -1363,10 +1499,10 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     if (doPathlines)
     {
         // Our expression will be the active variable, so reset it.
-        if (ds->GetPointData()->GetArray(velocityName.c_str()) != NULL)
-            ds->GetPointData()->SetActiveVectors(velocityName.c_str());
-        if (ds->GetCellData()->GetArray(velocityName.c_str()) != NULL)
-            ds->GetCellData()->SetActiveVectors(velocityName.c_str());
+        if (ds->GetPointData()->GetArray(pathlineVar.c_str()) != NULL)
+            ds->GetPointData()->SetActiveVectors(pathlineVar.c_str());
+        if (ds->GetCellData()->GetArray(pathlineVar.c_str()) != NULL)
+            ds->GetCellData()->SetActiveVectors(pathlineVar.c_str());
     }
     
     // See if we have cell cenetered data...
@@ -1393,10 +1529,17 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         velocity2 = vtkInterpolatedVelocityField::New();
         ds2 = (vtkDataSet *) ds->NewInstance();
         ds2->ShallowCopy(ds);
+
         if (ds2->GetPointData()->GetVectors() != NULL)
-            ds2->GetPointData()->SetActiveVectors("_pathline_vecs");
+            ds2->GetPointData()->SetActiveVectors(pathlineNextTimeVar.c_str());
         else
-            ds2->GetCellData()->SetActiveVectors("_pathline_vecs");
+            ds2->GetCellData()->SetActiveVectors(pathlineNextTimeVar.c_str());
+        
+        if (ds->GetPointData()->GetVectors() != NULL)
+            ds->GetPointData()->SetActiveVectors(pathlineVar.c_str());
+        else
+            ds->GetCellData()->SetActiveVectors(pathlineVar.c_str());
+        
         
         // See if we have cell cenetered data...
         if (ds2->GetPointData()->GetVectors() == NULL)
@@ -1416,10 +1559,16 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
         if (*dbp == NULL)
             EXCEPTION1(InvalidFilesException, db.c_str());
-        avtDatabaseMetaData *md = dbp->GetMetaData(curTimeSlice,
+        
+        avtDatabaseMetaData *md = dbp->GetMetaData(slSeg->domain.timeStep,
                                                    false,false, false);
-        t1 = md->GetTimes()[curTimeSlice];
-        t2 = md->GetTimes()[curTimeSlice+1];
+        t1 = md->GetTimes()[slSeg->domain.timeStep];
+        t2 = md->GetTimes()[slSeg->domain.timeStep+1];
+        if (t1 == t2)
+        {
+            t1 = (double)slSeg->domain.timeStep;
+            t2 = (double)(slSeg->domain.timeStep+1);
+        }
     }
 
     avtIVPField *field = NULL;
@@ -1435,6 +1584,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     //slSeg->Debug();
     bool doVorticity = ((coloringMethod == STREAMLINE_COLOR_VORTICITY)
                         || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
+
     avtIVPSolver::Result result = slSeg->sl->Advance(field,
                                                      terminationType,
                                                      end,
@@ -1442,25 +1592,33 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                                                      haveGhostZones,
                                                      extents);
     //slSeg->Debug();
-
+    debug5<<"Back from advance: result= "<<result<<endl;
     if (result == avtIVPSolver::OUTSIDE_DOMAIN)
     {
         slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
-        int oldDomain = slSeg->domain;
+        DomainType oldDomain = slSeg->domain;
 
         //Set the new domain.
         SetDomain(slSeg);
-
-        // See if we are really done.
-        if (slSeg->seedPtDomainList.size() == 0 ||
-             (slSeg->seedPtDomainList.size() == 1 && 
-             (slSeg->domain == oldDomain || slSeg->domain == -1)))
-        {
-            debug5<<"TERMINATE: sz= "<<slSeg->seedPtDomainList.size()<<" dom= "
-                  <<slSeg->domain<<" oldDom= "<<oldDomain<<endl;
-            //slSeg->Debug();
+        
+        // Not in any domains.
+        if (slSeg->seedPtDomainList.size() == 0)
             slSeg->status = avtStreamlineWrapper::TERMINATE;
+
+        // We are in the same domain.
+        else if (slSeg->seedPtDomainList.size() == 1)
+        {
+            // pathline terminates if timestep is out of bounds.
+            if (doPathlines && slSeg->domain.timeStep == -1)
+                slSeg->status = avtStreamlineWrapper::TERMINATE;
+
+            if (slSeg->domain == oldDomain)
+                 slSeg->status = avtStreamlineWrapper::TERMINATE;
+            else
+                slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
         }
+        else
+            slSeg->status = avtStreamlineWrapper::TERMINATE;
     }
     else
         slSeg->status = avtStreamlineWrapper::TERMINATE;
@@ -1516,19 +1674,26 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
         slSeg->UpdateDomainCount(slSeg->domain);
 
         double extents[6] = { 0.,0., 0.,0., 0.,0. };
-        intervalTree->GetElementExtents(slSeg->domain, extents);
+        intervalTree->GetElementExtents(slSeg->domain.domain, extents);
         avtIVPSolver::Result result = IntegrateDomain(slSeg, ds, extents, maxSteps);
+        debug5<<"ISL: result= "<<result<<endl;
 
         //SL exited this domain.
         if (slSeg->status == avtStreamlineWrapper::OUTOFBOUNDS)
         {
+            debug5<<"OOB: call set domain\n";
             SetDomain(slSeg);
         }
         //SL terminates.
         else
         {
+            debug5<<"Terminate!\n";
+            debug5<<avtIVPSolver::OK<<endl;
+            debug5<<avtIVPSolver::TERMINATE<<endl;
+            debug5<<avtIVPSolver::OUTSIDE_DOMAIN<<endl;
             slSeg->status = avtStreamlineWrapper::TERMINATE;
-            slSeg->domain = -1;
+            slSeg->domain.domain = -1;
+            slSeg->domain.timeStep = -1;
         }
     }
     
@@ -1755,6 +1920,9 @@ randMinus1_1()
 //
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Add 3 point density vars.
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
 //
 // ****************************************************************************
 
@@ -1991,7 +2159,8 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
             slSeg = new avtStreamlineWrapper(sl,
                                              avtStreamlineWrapper::FWD,
                                              ptDom[i].id);
-            slSeg->domain = ptDom[i].domain;
+            slSeg->domain.domain = ptDom[i].domain;
+            slSeg->domain.timeStep = 0; //DRP FIX THIS!
             pts.push_back(slSeg);
         }
         
@@ -2084,11 +2253,28 @@ avtStreamlineFilter::StartSphere(float val, double pt[3])
 //   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
 //   Initial implemenation of pathlines.  
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 avtContract_p
 avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
 {
+    //See if we can set pathlines.
+    if (doPathlines)
+    {
+        std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+        ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+        if (*dbp == NULL)
+            EXCEPTION1(InvalidFilesException, db.c_str());
+        avtDatabaseMetaData *md = dbp->GetMetaData(0);
+        if (md->GetTimes().size() == 1)
+            doPathlines = false;
+    }
+
+    lastContract = in_contract;
+
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
     avtDataRequest_p out_dr = NULL;
 
@@ -2100,7 +2286,10 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     }
 
     if (doPathlines)
-        out_dr->AddSecondaryVariable("_pathline_vecs");
+    {
+        out_dr->AddSecondaryVariable(pathlineNextTimeVar.c_str());
+        pathlineVar = in_dr->GetOriginalVariable();
+    }
     avtContract_p out_contract;
     if ( *out_dr )
         out_contract = new avtContract(in_contract, out_dr);
@@ -2115,26 +2304,28 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
         bool needExpr = true;
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
-        for (int i = 0 ; i < elist->GetNumExpressions() ; i++)
+        for (int i = 0; i < elist->GetNumExpressions(); i++)
         {
-            if (elist->GetExpressions(i).GetName() == "_pathline_vecs")
+            if (elist->GetExpressions(i).GetName() == pathlineNextTimeVar)
+            {
                 needExpr = false;
+                break;
+            }
         }
         if (needExpr)
         {
-            velocityName = out_dr->GetVariable(); // HANK: ASSUMPTION
+
+            pathlineVar = out_dr->GetVariable(); // HANK: ASSUMPTION
             std::string meshname = out_dr->GetVariable(); // Can reuse varname here.
             Expression *e = new Expression();
-            e->SetName("_pathline_vecs");
+            e->SetName(pathlineNextTimeVar);
             char defn[1024];
-            SNPRINTF(defn, 1024, "conn_cmfe(<[1]id:%s>, %s)", velocityName.c_str(), meshname.c_str());
+            SNPRINTF(defn, 1024, "conn_cmfe(<[1]id:%s>, %s)", pathlineVar.c_str(), meshname.c_str());
             e->SetDefinition(defn);
             e->SetType(Expression::VectorMeshVar);
             elist->AddExpressions(*e);
             delete e;
         }
-
-        curTimeSlice = out_dr->GetTimestep();
     }
 
     return avtDatasetOnDemandFilter::ModifyContract(out_contract);

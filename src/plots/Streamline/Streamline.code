@@ -241,6 +241,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (relTol != obj.relTol) ||
            (absTol != obj.absTol) ||
            (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
+           (pathlines != obj.pathlines) ||
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||

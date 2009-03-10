@@ -51,6 +51,13 @@
 
 using namespace std;
 
+
+ostream& operator<<(ostream &out, const DomainType &d)
+{
+    out<<"["<<d.domain<<", "<<d.timeStep<<"]";
+    return out;
+}
+
 // ****************************************************************************
 //  Method: avtStreamlineWrapper constructor
 //
@@ -202,18 +209,24 @@ avtStreamlineWrapper::Serialize(MemStream::Mode mode, MemStream &buff,
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
-avtStreamlineWrapper::GetStartPoint(avtVector &pt) const
+avtStreamlineWrapper::GetStartPoint(avtVector &pt, double &t) const
 {
     avtVec p = sl->PtStart();
     
     pt.x = p.values()[0];
     pt.y = p.values()[1];
     pt.z = p.values()[2];
+    t = sl->TMin();
 
-    debug5<<"avtStreamlineWrapper::GetStartPoint() = "<<pt<<endl;
+    debug5<<"avtStreamlineWrapper::GetStartPoint() = "<<pt<<" T= "<<t<<endl;
 }
 
 
@@ -231,10 +244,13 @@ avtStreamlineWrapper::GetStartPoint(avtVector &pt) const
 //    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //    No longer have fwd/bwd solvers.
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
-avtStreamlineWrapper::GetEndPoint(avtVector &pt) const
+avtStreamlineWrapper::GetEndPoint(avtVector &pt, double &t) const
 {
     avtVec end;
     
@@ -242,7 +258,9 @@ avtStreamlineWrapper::GetEndPoint(avtVector &pt) const
     pt.x = end.values()[0];
     pt.y = end.values()[1];
     pt.z = end.values()[2];
-    debug5<<"avtStreamlineWrapper::GetEndPoint() = "<<pt<<endl;
+    t = sl->TMax();
+
+    debug5<<"avtStreamlineWrapper::GetEndPoint() = "<<pt<<" T= "<<endl;
 }
 
 
@@ -255,15 +273,20 @@ avtStreamlineWrapper::GetEndPoint(avtVector &pt) const
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifictaions:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time. Pathine cleanup.
+//
 // ****************************************************************************
 
 void
-avtStreamlineWrapper::UpdateDomainCount(int dom)
+avtStreamlineWrapper::UpdateDomainCount(DomainType &dom)
 {
-    if (dom+1 > domainVisitCnts.size())
-        domainVisitCnts.resize(dom+1, 0);
+    if (dom.domain+1 > domainVisitCnts.size())
+        domainVisitCnts.resize(dom.domain+1, 0);
 
-    domainVisitCnts[dom]++; 
+    domainVisitCnts[dom.domain]++;
 }
 
 

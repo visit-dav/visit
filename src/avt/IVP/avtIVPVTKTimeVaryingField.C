@@ -47,7 +47,7 @@
 #include <vtkInterpolatedVelocityField.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
-
+#include <DebugStream.h>
 
 // ****************************************************************************
 //  Method: avtIVPVTKTimeVaryingField constructor
@@ -57,8 +57,10 @@
 //
 // ****************************************************************************
 
-avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkInterpolatedVelocityField* velocity1,
-    vtkInterpolatedVelocityField *velocity2, double t1, double t2)
+avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkInterpolatedVelocityField *velocity1,
+                                                      vtkInterpolatedVelocityField *velocity2,
+                                                      double t1,
+                                                      double t2)
 {
     iv1 = velocity1;
     iv1->Register( NULL );
@@ -94,28 +96,38 @@ avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 //  Programmer:  Dave Pugmire (on behalf of Hank Childs)
 //  Creation:    Tue Feb 24 09:24:49 EST 2009
 //
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Check time bounds and throw execption.
+//
 // ****************************************************************************
 
 avtVec
 avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
 {
-    avtVec y1( x.dim() ), param( pad(x,t));
-    avtVec y2( x.dim() );
-    
-    int result = iv1->FunctionValues( param.values(), y1.values() );
-    
-    if( !result )
-        throw Undefined();
-    
-    iv2->FunctionValues( param.values(), y2.values() );
-cerr << "Times = " << time1 << ", " << time2 << endl;
-cerr <<"Y1 = " << y1 << endl;
-cerr <<"Y2 = " << y2 << endl;
+    debug5<<"Eval( "<<t<<", "<<x<<") = ";
 
+    // Check for inclusion in this time boundary.
+    if (t < time1 || t > time2)
+    {
+        debug5<<"  **OUT of TIME**\n";
+        throw Undefined();
+    }
+
+    // Evaluate the field at both timesteps.
+    avtVec y1(x.dim()), param(pad(x,t)), y2(x.dim());
+    if ( ! iv1->FunctionValues(param.values(), y1.values()) ||
+         ! iv2->FunctionValues(param.values(), y2.values()) )
+    {
+        debug5<<"  **OUT of BOUNDS**\n";
+        throw Undefined();
+    }
+    
     double prop1 = 1. - (t - time1) / (time2 - time1);
-    avtVec y( x.dim() );
+    
+    avtVec y(x.dim());
     y = prop1*y1 + (1-prop1)*y2;
-cerr << "Y = " << y << endl;
+
+    debug5<<"T= "<<t<<" ["<<time1<<" "<<time2<<"]"<<" Y1 = "<<y1<<" Y2= "<<y2<<" y= "<<y<<endl;
 
     if ( normalized )
     {
@@ -123,6 +135,7 @@ cerr << "Y = " << y << endl;
         if ( len > 0.0 )
             y /= len;
     }
+
     return y;
 }
 
@@ -196,7 +209,7 @@ EXCEPTION0(ImproperUseException); // didn't do this.
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::IsInsider
+//  Method: avtIVPVTKTimeVaryingField::IsInside
 //
 //  Purpose:
 //      Determines if a point is inside a field.
@@ -204,13 +217,26 @@ EXCEPTION0(ImproperUseException); // didn't do this.
 //  Programmer:  Dave Pugmire (on behalf of Hank Childs)
 //  Creation:    Tue Feb 24 09:24:49 EST 2009
 //
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Check time bounds.
+//
 // ****************************************************************************
 
 bool
 avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
 {
-    avtVec y( x.dim() );
-    return iv1->FunctionValues( pad( x, t ).values(), y.values() );
+    avtVec y(x.dim());
+    avtVec param = pad(x,t);
+
+    bool b = (t >= time1 && t <= time2 &&
+              iv1->FunctionValues(param.values(), y.values()) &&
+              iv2->FunctionValues(param.values(), y.values()));
+    debug5<<"IsInside("<<t<<", "<<x<<") = "<<b<<" T["<<time1<<", "<<time2<<"]"<<endl;
+
+    
+    return (t >= time1 && t <= time2 &&
+            iv1->FunctionValues(param.values(), y.values()) &&
+            iv2->FunctionValues(param.values(), y.values()));
 }
 
 
@@ -246,4 +272,23 @@ void
 avtIVPVTKTimeVaryingField::SetNormalized( bool v )
 {
     normalized = v;
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKTimeVaryingField::GetValidTimeRange
+//
+//  Purpose:
+//      Return the time boundaries.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    Tue Mar 10 2009
+//
+// ****************************************************************************
+
+bool
+avtIVPVTKTimeVaryingField::GetValidTimeRange(double range[]) const
+{
+    range[0] = time1;
+    range[1] = time2;
+    return true;
 }

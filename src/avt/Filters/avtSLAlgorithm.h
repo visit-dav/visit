@@ -63,6 +63,9 @@
 //   Dave Pugmire, Fri Feb  6 14:42:07 EST 2009
 //   Add histogram to the statistics.
 //
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Generalized domain to include domain/time.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -79,21 +82,21 @@ class avtSLAlgorithm
   protected:
     avtStreamlineFilter *streamlineFilter;
     std::list<avtStreamlineWrapper *> terminatedSLs;
-    int                       numDomains, numSeedPoints;
+    int                       numDomains, numTimeSteps, numSeedPoints;
     virtual const char*       AlgoName() const = 0;
     
     //Helper accessor funcstions to the filter.
     avtIVPSolver *            GetSolver() {return streamlineFilter->solver; }
-    virtual bool              PointInDomain(avtVector &pt, int dom)
+    virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
                             { return streamlineFilter->PointInDomain(pt, dom); }
     virtual void              IntegrateStreamline(avtStreamlineWrapper *slSeg);
-    vtkDataSet               *GetDomain(int dom);
-    virtual bool              DomainLoaded(int dom) const
+    vtkDataSet               *GetDomain(DomainType &dom);
+    virtual bool              DomainLoaded(DomainType &dom) const
                                  { return streamlineFilter->DomainLoaded(dom); }
     
-    bool                      OwnDomain(int dom)
+    bool                      OwnDomain(DomainType &dom)
                                      {return streamlineFilter->OwnDomain(dom); }
-    int                       DomainToRank(int dom)
+    int                       DomainToRank(DomainType &dom)
                                      {return streamlineFilter->DomainToRank(dom); }
 
     //Utility functions.

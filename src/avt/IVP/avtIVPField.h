@@ -64,6 +64,11 @@
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//   Add GetValidTimeRange.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPField
@@ -87,8 +92,8 @@ class IVP_API avtIVPField
 
     virtual bool         IsInside(const double& t, 
                                   const avtVecRef& x) const = 0;
-    
     virtual unsigned int GetDimension() const = 0;
+    virtual bool         GetValidTimeRange(double range[]) const = 0;
 };
 
 #endif

@@ -446,6 +446,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
         if (end < 0)
             t_max = -t_max;
     }
+
     debug5<<"End= "<<end<<" t_max= "<<t_max<<endl;
     
     const double direction = sign( 1.0, t_max - t );
