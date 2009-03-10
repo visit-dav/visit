@@ -67,6 +67,10 @@ class vtkRenderer;
 //    Eric Brugger, Tue Dec  9 16:16:49 PST 2008
 //    Added the ability to display a marker instead of a text string.
 //
+//    Eric Brugger, Mon Mar  9 17:26:13 PDT 2009
+//    Added an overloaded version of SetForegroundColor that allows setting
+//    rgba instead of just rgb.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtLabelActor
@@ -86,6 +90,8 @@ class PLOTTER_API avtLabelActor
     void               SetDesignator(const char *l);
     void               SetMarker(const int index);
     void               SetForegroundColor(double fgr, double fgg, double fgb);
+    void               SetForegroundColor(double fgr, double fgg, double fgb,
+                           double fga);
     void               SetForegroundColor(double fg[3]);
     void               Shift(const double vec[3]);
     double             ComputeScaleFactor();

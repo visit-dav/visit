@@ -330,6 +330,11 @@ avtMultiCurvePlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Eric Brugger, Fri Feb 20 16:21:57 PST 2009
 //    I added a legend to the plot.
 //
+//    Eric Brugger, Mon Mar  9 18:08:26 PDT 2009
+//    I enhanced the plot so that the markers and identifiers displayed for
+//    the points are in the same color as the curve, instead of always in
+//    black.
+//
 // ****************************************************************************
 
 void
@@ -351,6 +356,7 @@ avtMultiCurvePlot::SetAtts(const AttributeGroup *a)
         cal.AddColors(atts.GetSingleColor());
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
         levelsMapper->SetColors(cal);
+        decoMapper->SetColors(cal);
     }
     else // ColorByMultipleColors
     {
@@ -367,6 +373,7 @@ avtMultiCurvePlot::SetAtts(const AttributeGroup *a)
 
         avtLUT->SetLUTColorsWithOpacity(colors, cal.GetNumColors());
         levelsMapper->SetColors(cal);
+        decoMapper->SetColors(cal);
 
         delete [] colors;
     }
