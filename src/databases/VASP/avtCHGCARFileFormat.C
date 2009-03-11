@@ -166,6 +166,9 @@ avtCHGCARFileFormat::FreeUpResources(void)
 //    Added a special case where axis-aligned unit cell vectors
 //    construct a *true* rectilinear grid, not a transformed one.
 //
+//    Jeremy Meredith, Wed Mar 11 10:45:25 EDT 2009
+//    Added cycles.
+//
 // ****************************************************************************
 
 void
@@ -227,6 +230,12 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->Add(mmd);
 
     AddScalarVarToMetaData(md, "charge", "mesh", AVT_NODECENT);
+
+    vector<int> cycles;
+    for (int i=0; i<ntimesteps; i++)
+        cycles.push_back(i);
+    md->SetCycles(cycles);
+    md->SetCyclesAreAccurate(true);
 }
 
 

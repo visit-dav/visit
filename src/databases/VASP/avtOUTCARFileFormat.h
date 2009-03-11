@@ -72,6 +72,9 @@ struct Atom
 //    Jeremy Meredith, Fri Apr 20 15:01:36 EDT 2007
 //    Added support for magnetization fields.
 //
+//    Jeremy Meredith, Tue Mar 10 17:42:20 EDT 2009
+//    Added support for POTIM field to get time values.
+//
 // ****************************************************************************
 
 class avtOUTCARFileFormat : public avtMTSDFileFormat
@@ -116,6 +119,7 @@ class avtOUTCARFileFormat : public avtMTSDFileFormat
     std::vector< std::vector<Atom> > allatoms;
 
     double unitCell[3][3];
+    double potim;
 
     std::vector<std::string> element_names;
     std::vector<int>         element_types;

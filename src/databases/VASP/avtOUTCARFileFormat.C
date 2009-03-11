@@ -42,6 +42,9 @@ using std::vector;
 //    Jeremy Meredith, Fri Apr 20 15:01:36 EDT 2007
 //    Added support for magnetization fields.
 //
+//    Jeremy Meredith, Tue Mar 10 17:42:52 EDT 2009
+//    Initialize potim.
+//
 // ****************************************************************************
 
 avtOUTCARFileFormat::avtOUTCARFileFormat(const char *fn)
@@ -55,6 +58,7 @@ avtOUTCARFileFormat::avtOUTCARFileFormat(const char *fn)
 
     natoms = 0;
     ntimesteps = 0;
+    potim = 1.0; // delta-t per timestep
     unitCell[0][0] = 1;    unitCell[0][1] = 0;    unitCell[0][2] = 0;
     unitCell[1][0] = 0;    unitCell[1][1] = 1;    unitCell[1][2] = 0;
     unitCell[2][0] = 0;    unitCell[2][1] = 0;    unitCell[2][2] = 1;
@@ -137,6 +141,10 @@ avtOUTCARFileFormat::OpenFileAtBeginning()
 //
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Changed interface to enum scalars
+//
+//    Jeremy Meredith, Tue Mar 10 17:43:05 EDT 2009
+//    Added cycles and times.
+//
 // ****************************************************************************
 
 void
@@ -197,6 +205,18 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
     md->Add(cmd1);
     avtCurveMetaData *cmd2 = new avtCurveMetaData("curves/partial/energy");
     md->Add(cmd2);
+
+    vector<int> cycles;
+    for (int i=0; i<ntimesteps; i++)
+        cycles.push_back(i);
+    md->SetCycles(cycles);
+    md->SetCyclesAreAccurate(true);
+
+    vector<double> times;
+    for (int i=0; i<ntimesteps; i++)
+        times.push_back(double(i) * potim);
+    md->SetTimes(times);
+    md->SetTimesAreAccurate(true);
 }
 
 
@@ -558,6 +578,14 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    like "ions per type =  40 5006000" should be parsed as resulting in
 //    ion counts of 40, 500, and 6000.
 //
+//    Jeremy Meredith, Tue Mar 10 17:29:47 EDT 2009
+//    Changed it to determine the width of the "ions per type" field
+//    instead of assuming it's 4.  Starts with whitespace parsing now,
+//    double-checks the count against the "NIONS" listed in the file, and
+//    if that fails, goes to fixed-width.  If that still fails, it just
+//    assumes all atoms are of the first species.
+//    Also, read "POTIM" field used to calculate time values.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -574,6 +602,7 @@ avtOUTCARFileFormat::ReadAllMetaData()
 
     bool read_lattice = false;
     bool all_ions_read = false;
+    int nions_doublecheck = -1;
 
     ntimesteps = 0;
     while (in)
@@ -720,32 +749,76 @@ avtOUTCARFileFormat::ReadAllMetaData()
             element_names.push_back(element);
             element_types.push_back(number);
         }
+        else if (!strncmp(line+58,"NIONS =",7))
+        {
+            istringstream sin(line+65);
+            string arg1;
+            sin >> arg1;
+            nions_doublecheck = atoi(arg1.c_str());
+        }
         else if (!all_ions_read && !strncmp(line,"   ions per type =",18))
         {
             all_ions_read = true;
-            int index = 30;
-            int len = strlen(line);
-            int count = (len-30)/4;
-            for (int i=0; i<count; i++)
+
+            // Try the whitespace-delimited approach first
+            natoms = 0;
+            element_counts.clear();
+            istringstream sin(&(line[18]));
+            int n;
+            sin >> n;
+            while (sin)
             {
-                char tmp[5] = {line[index+0],
-                               line[index+1],
-                               line[index+2],
-                               line[index+3],
-                               '\0'};
-                int n = atoi(tmp);
                 natoms += n;
                 element_counts.push_back(n);
-                index += 4;
+                sin >> n;
             }
 
-            if (element_counts.size() != element_types.size())
+            // If that fails, try fixed-width
+            if (nions_doublecheck>0 && natoms != nions_doublecheck)
             {
-                cerr << "Error: parsed number of ions per type didn't match "
-                     << "number of TITEL species found.  Suspect a problem "
-                     << "parsing 'ions per type'.\n";
+                cerr << "Warning: Got natoms="<<natoms<<" and nions="<<nions_doublecheck<<endl;
+                cerr << "  Attempting fixed-width ions-per-type parsing.\n";
+                natoms = 0;
+                element_counts.clear();
+                int index = 30;
+                int len = strlen(line) - index;
+                int count = element_types.size();
+                int perSpecies = len/element_types.size();
+                char tmp[100];
+                for (int i=0; i<count; i++)
+                {
+                    int j = 0;
+                    for ( ; j<perSpecies; j++)
+                    {
+                        tmp[j] = line[index];
+                        index++;
+                    }
+                    tmp[j] = '\0';
+                    int n = atoi(tmp);
+                    natoms += n;
+                    element_counts.push_back(n);
+                }
+            }
+
+            // If that still fails, just fix it as best we can
+            if (nions_doublecheck>0 && natoms != nions_doublecheck)
+            {
+                cerr << "Error: Got natoms="<<natoms<<" and nions="<<nions_doublecheck<<endl;
+                cerr << "  Incorrectly assuming all atoms are of first species to fix it.\n";
+                natoms = nions_doublecheck;
+                element_counts.clear();
+                element_counts.resize(element_types.size(), 0);
+                element_counts[0] = natoms;
             }
         }
+        else if (!strncmp(line,"   POTIM",8))
+        {
+            istringstream sin(line);
+            string arg1,arg2,arg3;
+            sin >> arg1 >> arg2 >> arg3;
+            potim = strtod(arg3.c_str(), NULL);
+        }
+
 
         in.getline(line, 132);
     }
