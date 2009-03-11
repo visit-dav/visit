@@ -879,6 +879,9 @@ QvisVolumePlotWindow::CreateOptions(int maxWidth)
 // Creation:   Thu Dec 18 16:42:34 PST 2008
 //
 // Modifications:
+//
+//   Tom Fogal, Tue Mar 10 17:22:11 MST 2009
+//   Don't try to pass empty histograms to the widgets.
 //   
 // ****************************************************************************
 
@@ -895,16 +898,26 @@ QvisVolumePlotWindow::UpdateHistogram()
         int hist_size = vhist["histogram_size"].AsInt();
 
         const floatVector &hist = vhist["histogram_1d"].AsFloatVector();
-        alphaWidget->setHistogramTexture(&hist[0], hist_size);
-        scribbleAlphaWidget->setHistogramTexture(&hist[0], hist_size);
+        if(!hist.empty())
+        {
+            alphaWidget->setHistogramTexture(&hist[0], hist_size);
+            scribbleAlphaWidget->setHistogramTexture(&hist[0], hist_size);
+        }
 
 #ifdef HAVE_LIBSLIVR
         const unsignedCharVector &hist2 = vhist["histogram_2d"].AsUnsignedCharVector();
-        unsignedCharVector decompressed;
-        VolumeRLEDecompress(hist2, decompressed);
-        transferFunc2D->setHistogramTexture(&decompressed[0], hist_size);
+        if(!hist2.empty())
+        {
+            unsignedCharVector decompressed;
+            VolumeRLEDecompress(hist2, decompressed);
+            transferFunc2D->setHistogramTexture(&decompressed[0], hist_size);
+        }
 #endif
-        invalid = false;
+        // Ugh.  Sorry this looks so gross.
+        if(!hist.empty() SLIVR_ONLY(&& !hist2.empty()))
+        {
+            invalid = false;
+        }
     }
 
     if(invalid)
