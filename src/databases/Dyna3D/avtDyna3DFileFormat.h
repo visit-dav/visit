@@ -63,6 +63,9 @@ class vtkFloatArray;
 //    Brad Whitlock, Fri Aug  1 11:41:18 PDT 2008
 //    Added support for material strength.
 //
+//    Brad Whitlock, Wed Mar 11 16:18:45 PDT 2009
+//    I changed how materials are read.
+//
 // ****************************************************************************
 
 class avtDyna3DFileFormat : public avtSTSDFileFormat
@@ -117,13 +120,15 @@ protected:
         Card2_t card2;
     } ControlCards_t;
 
-    typedef struct
+    struct MaterialCard_t
     {
+        MaterialCard_t();
+
         int         materialNumber;
         std::string materialName;
         double      density;
         double      strength;
-    } MaterialCard_t;
+    };
 
     typedef std::vector<MaterialCard_t> MaterialCardVector;
 
@@ -142,6 +147,7 @@ protected:
     void ReadControlCard8(ifstream &);
     void ReadControlCard9(ifstream &);
     void ReadMaterialCards(ifstream &);
+    void ReadOneMaterialCard(ifstream &, MaterialCard_t &);
 
     bool ReadFile(const char *, int nLines);
 

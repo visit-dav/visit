@@ -68,6 +68,27 @@ using     std::string;
 #define ALL_LINES -1
 
 // ****************************************************************************
+// Method: avtDyna3DFileFormat::MaterialCard_t::MaterialCard_t
+//
+// Purpose: 
+//   Constructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  9 16:04:53 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtDyna3DFileFormat::MaterialCard_t::MaterialCard_t() : 
+    materialNumber(0),
+    materialName(),
+    density(0.),
+    strength(0.)
+{
+}
+
+// ****************************************************************************
 //  Method: avtDyna3DFileFormat constructor
 //
 //  Programmer: Brad Whitlock
@@ -463,6 +484,71 @@ avtDyna3DFileFormat::ReadControlCard9(ifstream &ifile)
 }
 
 // ****************************************************************************
+// Method: avtDyna3DFileFormat::ReadOneMaterialCard
+//
+// Purpose: 
+//   Read one material card
+//
+// Arguments:
+//   ifile : The input file.
+//   mat   : The material card to fill in.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  9 16:12:45 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtDyna3DFileFormat::ReadOneMaterialCard(ifstream &ifile, 
+    avtDyna3DFileFormat::MaterialCard_t &mat)
+{
+    const char *mName = "avtDyna3DFileFormat::ReadOneMaterialCard: ";
+    debug5 << mName << "0: " << line << endl;
+    sscanf(line, "%d", &mat.materialNumber);
+
+    // Get the material density out of cols 11-20.
+    line[20] = '\0';
+    mat.density = atof(line + 10);
+
+    // Read the name line of the material card and strip out
+    // extra spaces from the name.
+    GetLine(ifile);
+    debug5 << mName << "1: " << line << endl;
+    char matNameBuf[1024];
+    memset(matNameBuf, 0, 1024);
+    char *s = matNameBuf, *ptr = line;
+    while(*ptr != '\0' && ((s - matNameBuf) < 1024))
+    {
+        if(*ptr == ' ')
+        {
+           *s++ = *ptr;
+           while(*ptr == ' ')
+               ptr++;
+        }
+        else if(*ptr != '\n')
+        {
+           *s++ = *ptr++;
+        }
+    }
+    mat.materialName = matNameBuf;
+
+    // If there's no material name then use the number.
+    if(mat.materialName.size() == 0 || mat.materialName == " ")
+    {
+        SNPRINTF(matNameBuf, 1024, "%d", mat.materialNumber);
+        mat.materialName = matNameBuf;
+    }
+
+    // Get the next line since it contains the strength
+    GetLine(ifile);
+    debug5 << mName << "2: " << line << endl;
+    double tmp;
+    sscanf(line, "%lg %lg", &tmp, &mat.strength);
+}
+
+// ****************************************************************************
 // Method: avtDyna3DFileFormat::ReadMaterialCards
 //
 // Purpose: 
@@ -482,6 +568,9 @@ avtDyna3DFileFormat::ReadControlCard9(ifstream &ifile)
 //   Brad Whitlock, Fri Aug  1 11:49:57 PDT 2008
 //   Added code to read material strength.
 //
+//   Brad Whitlock, Mon Mar  9 16:31:41 PDT 2009
+//   I rewrote the routine so it can handle variable line material cards.
+//
 // ****************************************************************************
 
 void
@@ -498,83 +587,107 @@ avtDyna3DFileFormat::ReadMaterialCards(ifstream &ifile)
     debug5 << "Reading materials..." << endl;
 
     std::set<std::string> uniqueNames;
-    for(int i = 0; i < cards.card2.nMaterials; ++i)
+    bool notFirstLine = false;
+    bool keepReading = true;
+    do
     {
-        MaterialCard_t mat;
-
-        // Read the first line of a material card.
-        if(i > 0)
-        {
-            // Take care of comments.
-            do
-            {
-                GetLine(ifile);
-            } while(line[0] == '*');
-        }
-        
-        sscanf(line, "%d", &mat.materialNumber);
-
-        // Get the material density out of cols 11-20.
-        line[20] = '\0';
-        mat.density = atof(line + 10);
-
-        // Read the name line of the material card and strip out
-        // extra spaces from the name.
-        GetLine(ifile);
-        char matNameBuf[1024];
-        memset(matNameBuf, 0, 1024);
-        char *s = matNameBuf, *ptr = line;
-        while(*ptr != '\0' && ((s - matNameBuf) < 1024))
-        {
-            if(*ptr == ' ')
-            {
-               *s++ = *ptr;
-               while(*ptr == ' ')
-                   ptr++;
-            }
-            else if(*ptr != '\n')
-            {
-               *s++ = *ptr++;
-            }
-        }
-
-        // Make sure that the material name is unique.
-        std::string matName(matNameBuf);
-        if(uniqueNames.find(matName) != uniqueNames.end())
-        {
-            // Find a unique name.
-            int index = 2;
-            std::string tmpName(matName);
-            do
-            {
-                SNPRINTF(matNameBuf, 1024, "%s %d", matName.c_str(), index++);
-                debug4 << "Searching for " << matNameBuf << endl;
-                tmpName = std::string(matNameBuf);
-            } while(uniqueNames.find(tmpName) != uniqueNames.end());
-            matName = tmpName;
-        }
-
-        uniqueNames.insert(matName);
-        mat.materialName = matName;
-
-        // Get the next line since it contains the strength
-        GetLine(ifile);
-        double tmp;
-        sscanf(line, "%lg %lg", &tmp, &mat.strength);
-
-        // Read past the other material information.
-        for(int j = 0; j < 9; ++j)
+        if(notFirstLine)
             GetLine(ifile);
+        notFirstLine = true;
 
-        // Add to the list of materials.
+        // See if the line ends like a material
+        int len = strlen(line);
+        const char *end_of_matline = "0    0    0";
+        bool endsLikeMat = (strcmp(line + 69, end_of_matline) == 0);
+        bool startsLikeMat = false;
+        if(!endsLikeMat)
+        {
+            // See if the line starts like a material.
+            if(line[0] == ' ' && line[1] == ' ' && line[6] == ' ')
+            {
+                line[6] = '\0';
+                int matno; 
+                if(sscanf(line, "%d", &matno) == 1)
+                {
+                    startsLikeMat = (matno == materialCards.size()+1);
+                }
+                line[6] = ' ';
+            }
+        }
+        if(startsLikeMat || endsLikeMat)
+        {
+            debug4 << "Reading material " << (materialCards.size()+1) << endl;
+            MaterialCard_t mat;
+            ReadOneMaterialCard(ifile, mat);
+
+            // Make sure that the material name is unique.
+            std::string matName(mat.materialName);
+            if(uniqueNames.find(matName) != uniqueNames.end())
+            {
+                // Find a unique name.
+                int index = 2;
+                std::string tmpName(matName);
+                char *matNameBuf = new char[1024];
+                do
+                {
+                    SNPRINTF(matNameBuf, 1024, "%s %d", matName.c_str(), index++);
+                    tmpName = std::string(matNameBuf);
+                } while(uniqueNames.find(tmpName) != uniqueNames.end());
+                matName = tmpName;
+                delete [] matNameBuf;
+            }
+            uniqueNames.insert(matName);
+            mat.materialName = matName;
+
+            // Add to the list of materials.
+            materialCards.push_back(mat);
+        }
+
+        // Read until we have the proper number of materials or we
+        // run inth the "NODE DEFINITIONS" section.
+        keepReading = (materialCards.size() < cards.card2.nMaterials) &&
+                      (strstr(line, "NODE DEFINITIONS") == NULL);
+    } while(keepReading);
+
+    // Fill out the material list in case we didn't get to read them all
+    int n = 1;
+    while(materialCards.size() < cards.card2.nMaterials)
+    {
+        char badname[100];
+        SNPRINTF(badname, 100, "invalid %d", n++);
+        MaterialCard_t mat;
+        mat.materialName = badname;
+        mat.materialNumber = (int)(materialCards.size() + 1);
         materialCards.push_back(mat);
+    }
 
-        debug4 << "Added material (" << mat.materialNumber << "): "
-               << mat.materialName.c_str() << ", density="
-               << mat.density << ", strength=" << mat.strength << endl;
-    }    
+    // Check the material numbers. If the stored material number does not
+    // match the material index then assume that the material numbers are
+    // wrong and renumber them.
+    size_t i, diff = 0;
+    for(i = 0; i < materialCards.size(); ++i)
+    {
+        if(materialCards[i].materialNumber != i+1)
+            diff++;
+    }
+    if(diff > materialCards.size()/2)
+    {
+        debug5 << "Renumbering materials" << endl;
+        for(i = 0; i < materialCards.size(); ++i)
+            materialCards[i].materialNumber = i+1;
+    }
+
+    debug5 << "********************** MATERIALS *************************" << endl;
+    for(i = 0; i < materialCards.size(); ++i)
+    {
+        debug5 << "Added material (" << materialCards[i].materialNumber << "): "
+               << materialCards[i].materialName.c_str() << ", density="
+               << materialCards[i].density << ", strength=" << materialCards[i].strength << endl;
+    }
+    debug5 << "**********************************************************" << endl;
+
+    SkipToSection(ifile, "NODE DEFINITIONS");
 }
-
 
 // ****************************************************************************
 // Method: avtDyna3DFileFormat::ReadFile
@@ -593,6 +706,9 @@ avtDyna3DFileFormat::ReadMaterialCards(ifstream &ifile)
 // Creation:   Mon Nov 27 16:25:13 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Mon Mar  9 16:32:16 PDT 2009
+//   I changed how we do materials. I also put in some diagnostic code so we
+//   can see the start and end of node and cell sequences.
 //
 // ****************************************************************************
 
@@ -651,11 +767,12 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
                 // we can re-use the line that we read already.
                 if(node > 0)
                     GetLine(ifile);
-                else if(materialCards.size() > 0)
-                    GetLine(ifile);
 
                 if(line[0] != '*')
                 {
+                    if(node < 10 || node >= nPoints-10)
+                        debug5 << line << endl;
+
                     // It's a valid point line.
                     char *valstart = line + 53;
                     char *valend = valstart + 73;
@@ -694,6 +811,9 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
                 GetLine(ifile);
                 if(line[0] != '*')
                 {
+                    if(cellid < 10 || cellid >= nCells-10)
+                        debug5 << line << endl;
+
 #define INDEX_FIELD_WIDTH 8
                     char *valstart = line + 69;
                     char *valend = valstart + INDEX_FIELD_WIDTH;
@@ -752,6 +872,8 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
             bool inIC = SkipToSection(ifile, "INITIAL CONDITIONS");
             if(inIC)
             {
+                debug4 << mName << "Found INITIAL CONDITIONS section. "
+                       "Creating velocities." << endl;
                 velocity = vtkFloatArray::New();
                 velocity->SetNumberOfComponents(3);
                 velocity->SetNumberOfTuples(nPoints);
@@ -780,6 +902,11 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
                     velocity->SetTuple(node, vel);
                 }
             }
+            else
+            {
+                debug4 << mName << "Could not find INITIAL CONDITIONS section."
+                       << endl;
+            }
 
             meshDS = ugrid;
         }
@@ -792,8 +919,15 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
             // variable to the metadata.
             if(SkipToSection(ifile, "INITIAL CONDITIONS"))
             {
+                debug4 << mName << "Found INITIAL CONDITIONS section. "
+                       "Creating velocities." << endl;
                 velocity = vtkFloatArray::New();
                 velocity->SetNumberOfTuples(1);
+            }
+            else
+            {
+                debug4 << mName << "Could not find INITIAL CONDITIONS section."
+                       << endl;
             }
         }
     }
