@@ -310,6 +310,10 @@
 #
 #   Mark C. Miller, Fri Feb 13 09:11:34 PST 2009
 #   Added Rect_test_data to BINSRC
+#
+#   Brad Whitlock, Wed Mar 11 10:48:23 PDT 2009
+#   Added multidir test program.
+#
 ##############################################################################
 
 ##
@@ -337,7 +341,7 @@ SILOSRC=bigsil.C csg.C emptydomains.C fullframe.C galaxy.C ghost.C \
         global_node.C globe.C largefile.C lineout_test.C lowfrac.C \
         meshorigin.C multi_test.C noise.C noise2d.C one_quad.C \
         quad_disk.C sid97.C specmix.C testall.C thinplane.C tire.C \
-        wave.C mat_3x3_3across.C mat_3x3x3_3across.C
+        wave.C mat_3x3_3across.C mat_3x3x3_3across.C multidir.C
 SILO_TARGET=$(SILOSRC:.C=)
 #SILO_TARGET=`echo $(SILOSRC) | sed -e 's/\.C//g'` is an alternative
 
@@ -370,7 +374,7 @@ CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/
 ##
 ## Files...
 ##
-SRC=$(EZSRC) $(SILOSRC) $(PDBSRC) $(HDF5SRC)
+SRC=$(EZSRC) $(SILOSRC) QuadMesh.C $(PDBSRC) $(HDF5SRC)
 OBJ=$(SRC:.C=.o)
 
 ##
@@ -410,6 +414,7 @@ test: $(EZ_TARGET)  @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET) $(BINSRC)
 	./thinplane
 	./meshorigin
 	./lineout_test
+	./multidir
 	-@if test -e /home/visit/data/sesame.pdb; then \
 	    ln -sf /home/visit/data/sesame.pdb . ;\
         elif test -e /project/projectdirs/visit/data/sesame.pdb; then \
@@ -472,6 +477,7 @@ testh5: @SILO_TARGET@ @HDF5_TARGET@
 	   ./thinplane -driver DB_HDF5; \
            ./meshorigin -driver DB_HDF5; \
            ./lineout_test -driver DB_HDF5; \
+           ./multidir -driver DB_HDF5; \
 	else \
 	   echo "HDF5 driver for Silo not available in this configuration" ;\
 	   exit 1;\
@@ -487,6 +493,7 @@ gen_data_clean:
 	$(RM) curve.visit wave*.visit *.bov multi00*.values *_indices*.values
 	$(RM) wave_1file* wave_tv_1file*
 	$(RM) [a-z]*.xmf mesh.h5
+	$(RM) -rf multidir_data
 
 src_clean:
 	$(RM) $(OBJ) $(EZ_TARGET) @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET)
@@ -520,11 +527,14 @@ clean: bin_data_clean gen_data_clean src_clean
 ./multi_test: multi_test.o
 	$(CXX) -o $@ multi_test.o $(LDFLAGS) $(LIBS)
 
-./noise: noise.o
-	$(CXX) -o $@ noise.o $(LDFLAGS) $(LIBS)
+./noise: noise.o QuadMesh.o
+	$(CXX) -o $@ noise.o QuadMesh.o $(LDFLAGS) $(LIBS)
 
 ./noise2d: noise2d.o
 	$(CXX) -o $@ noise2d.o $(LDFLAGS) $(LIBS)
+
+./multidir: multidir.o QuadMesh.o
+	$(CXX) -o $@ multidir.o QuadMesh.o $(LDFLAGS) $(LIBS)
 
 ./bov: bov.o
 	$(CXX) -o $@ bov.o $(LDFLAGS) $(LIBS)
@@ -600,7 +610,7 @@ clean: bin_data_clean gen_data_clean src_clean
 ./xdmf: xdmf.o
 	$(CXX) -o $@ xdmf.o $(LDFLAGS) $(HDF5_LIB) $(ZLIB_LIB) @LIBS@
 
-install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test
+install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test ./multidir
 	$(INSTALL) ./bigsil $(bindir)
 	$(INSTALL) ./distribution_curves $(bindir)
 	$(INSTALL) ./degen_meshes $(bindir)
@@ -625,6 +635,7 @@ install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test .
 	$(INSTALL) ./thinplane $(bindir)
 	$(INSTALL) ./meshorigin $(bindir)
 	$(INSTALL) ./lineout_test $(bindir)
+	$(INSTALL) ./multidir $(bindir)
 
 #
 # Inference rules for compressed binary data files
