@@ -525,6 +525,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Hank Childs, Mon Feb 16 15:00:30 PST 2009
 //    Added time iteration expressions.
 //
+//    Jeremy Meredith, Wed Mar 11 12:14:38 EDT 2009
+//    Added "cycle" and "timestep" expressions.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -838,7 +841,11 @@ avtFunctionExpr::CreateFilters(string functionName)
     if (functionName == "symm_point")
         return new avtSymmPointExpression;
     if (functionName == "time")
-        return new avtTimeExpression;
+        return new avtTimeExpression(avtTimeExpression::MODE_TIME);
+    if (functionName == "cycle")
+        return new avtTimeExpression(avtTimeExpression::MODE_CYCLE);
+    if (functionName == "timestep")
+        return new avtTimeExpression(avtTimeExpression::MODE_INDEX);
     if (functionName == "surface_normal" || 
              functionName == "point_surface_normal")
     {

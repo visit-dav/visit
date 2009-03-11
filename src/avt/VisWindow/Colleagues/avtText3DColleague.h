@@ -64,6 +64,8 @@ class vtkVectorText;
 // Creation:   Wed Nov 7 14:09:57 PST 2007
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
 //   
 // ****************************************************************************
 
@@ -102,6 +104,7 @@ protected:
         char           *textFormatString;
         char           *textString;
         double          currentTime;
+        int             currentCycle;
 
         bool            useForegroundForTextColor;
         bool            useRelativeHeight;

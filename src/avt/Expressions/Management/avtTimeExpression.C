@@ -58,10 +58,15 @@
 //  Programmer: Hank Childs
 //  Creation:   March 5, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:35:29 EDT 2009
+//    Added support for cycle and timestep values.
+//
 // ****************************************************************************
 
-avtTimeExpression::avtTimeExpression()
+avtTimeExpression::avtTimeExpression(TimeMode m)
 {
+    mode = m;
 }
 
 
@@ -99,15 +104,31 @@ avtTimeExpression::~avtTimeExpression()
 //  Programmer: Hank Childs
 //  Creation:   March 5, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:35:29 EDT 2009
+//    Added support for cycle and timestep values.
+//
 // ****************************************************************************
  
 void
 avtTimeExpression::DoOperation(vtkDataArray *, vtkDataArray *out,
                                int ncomponents, int ntuples)
 {
-    float ftime = (float) GetInput()->GetInfo().GetAttributes().GetTime();
+    float val;
+    switch (mode)
+    {
+      case MODE_TIME:
+        val = (float) GetInput()->GetInfo().GetAttributes().GetTime();
+        break;
+      case MODE_CYCLE:
+        val = (float) GetInput()->GetInfo().GetAttributes().GetCycle();
+        break;
+      case MODE_INDEX:
+        val = (float)(GetInput()->GetContractFromPreviousExecution()->GetDataRequest()->GetTimestep());
+        break;
+    }
     for (int i = 0 ; i < ntuples ; i++)
-        out->SetTuple1(i, ftime);
+        out->SetTuple1(i, val);
 }
 
 

@@ -51,6 +51,7 @@
 #include <vtkTextProperty.h>
 
 #define TIME_IDENTIFIER "$time"
+#define CYCLE_IDENTIFIER "$cycle"
 
 // ****************************************************************************
 // Method: avtText2DColleague::avtText2DColleague
@@ -65,6 +66,8 @@
 // Creation:   Wed Nov 5 14:13:14 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
 //   
 // ****************************************************************************
 
@@ -76,6 +79,7 @@ avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m)
     textFormatString = 0;
     textString = 0;
     currentTime = 0.;
+    currentCycle = 0;
 
     //
     // Create and position the actor.
@@ -491,6 +495,8 @@ avtText2DColleague::NoPlots(void)
 // Creation:   Wed Dec 3 12:46:37 PDT 2003
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
 //   
 // ****************************************************************************
 
@@ -501,10 +507,12 @@ avtText2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
     {
         avtDataAttributes &atts = lst[0]->GetBehavior()->GetInfo().GetAttributes();
         currentTime = atts.GetTime();
+        currentCycle = atts.GetCycle();
 
         std::string formatString(textFormatString);
         std::string::size_type pos;
-        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos)
+        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
+           (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
             SetText(textFormatString);
     }
 }
@@ -521,6 +529,8 @@ avtText2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 // Creation:   Wed Nov 5 14:17:22 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
 //
 // ****************************************************************************
 
@@ -544,14 +554,25 @@ avtText2DColleague::SetText(const char *formatString)
     // Replace $time with the time if the format string contains $time.
     delete [] textString;
     std::string fmtStr(textFormatString);
-    std::string::size_type pos = fmtStr.find(TIME_IDENTIFIER);
-    if(pos != std::string::npos)
+    std::string::size_type pos;
+    if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
     {
         int tlen = strlen(TIME_IDENTIFIER);
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
         SNPRINTF(tmp, 100, "%g", currentTime);
+        len = left.size() + strlen(tmp) + right.size() + 1;
+        textString = new char[len];
+        SNPRINTF(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+    }
+    else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
+    {
+        int tlen = strlen(CYCLE_IDENTIFIER);
+        std::string left(fmtStr.substr(0, pos));
+        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
+        char tmp[100];
+        SNPRINTF(tmp, 100, "%d", currentCycle);
         len = left.size() + strlen(tmp) + right.size() + 1;
         textString = new char[len];
         SNPRINTF(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
