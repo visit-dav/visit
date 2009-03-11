@@ -57,6 +57,7 @@
 #include <DebugStream.h>
 
 #define TIME_IDENTIFIER "$time"
+#define CYCLE_IDENTIFIER "$cycle"
 
 // Macros that let us access the AnnotationObject and store the fields
 // we care about into the available fields.
@@ -92,6 +93,8 @@
 // Creation:   Wed Nov 7 14:13:14 PST 2007
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
 //   
 // ****************************************************************************
 
@@ -104,6 +107,7 @@ avtText3DColleague::avtText3DColleague(VisWindowColleagueProxy &m)
     info->textFormatString = 0;
     info->textString = 0;
     info->currentTime = 0.;
+    info->currentCycle = 0;
 
     info->useForegroundForTextColor = true;
     info->useRelativeHeight = true;
@@ -611,6 +615,8 @@ avtText3DColleague::NoPlots(void)
 // Creation:   Wed Nov 7 12:46:37 PDT 2007
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
 //   
 // ****************************************************************************
 
@@ -621,10 +627,12 @@ avtText3DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
     {
         avtDataAttributes &atts = lst[0]->GetBehavior()->GetInfo().GetAttributes();
         info->currentTime = atts.GetTime();
+        info->currentCycle = atts.GetCycle();
 
         std::string formatString(info->textFormatString);
         std::string::size_type pos;
-        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos)
+        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
+           (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
             SetText(info->textFormatString);
     }
 
@@ -645,6 +653,9 @@ avtText3DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 // Creation:   Wed Nov 7 14:17:22 PST 2007
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
+//    Fixed off-by-one error in length.
 //
 // ****************************************************************************
 
@@ -670,15 +681,26 @@ avtText3DColleague::SetText(const char *formatString)
     if(info->textString != 0)
         delete [] info->textString;
     std::string fmtStr(info->textFormatString);
-    std::string::size_type pos = fmtStr.find(TIME_IDENTIFIER);
-    if(pos != std::string::npos)
+    std::string::size_type pos;
+    if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
     {
         int tlen = strlen(TIME_IDENTIFIER);
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
         SNPRINTF(tmp, 100, "%g", info->currentTime);
-        len = left.size() + strlen(tmp) + right.size();
+        len = left.size() + strlen(tmp) + right.size() + 1;
+        info->textString = new char[len + 1];
+        SNPRINTF(info->textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+    }
+    else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
+    {
+        int tlen = strlen(CYCLE_IDENTIFIER);
+        std::string left(fmtStr.substr(0, pos));
+        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
+        char tmp[100];
+        SNPRINTF(tmp, 100, "%d", info->currentCycle);
+        len = left.size() + strlen(tmp) + right.size() + 1;
         info->textString = new char[len + 1];
         SNPRINTF(info->textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
     }

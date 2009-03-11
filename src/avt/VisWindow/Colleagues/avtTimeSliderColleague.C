@@ -54,6 +54,7 @@
 #define DEFAULT_WIDTH   0.4
 #define DEFAULT_HEIGHT  0.04
 #define TIME_IDENTIFIER "$time"
+#define CYCLE_IDENTIFIER "$cycle"
 
 // ****************************************************************************
 // Method: avtTimeSliderColleague::avtTimeSliderColleague
@@ -78,6 +79,9 @@
 //    Brad Whitlock, Mon Mar  2 14:21:54 PST 2009
 //    I added timeScale and timeOffset.
 //
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
+//
 // ****************************************************************************
 
 avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
@@ -90,6 +94,7 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     textString = 0;
     timeDisplayMode = 0;
     currentTime = 0.;
+    currentCycle = 0;
     timeScale = 1.;
     timeOffset = 0.;
 
@@ -662,6 +667,9 @@ avtTimeSliderColleague::SetFrameAndState(int nFrames,
 //   Brad Whitlock, Tue May 30 14:33:05 PST 2006
 //   I made it look for a plot that is time-varying.
 //
+//   Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//   Added $cycle support.
+//
 // ****************************************************************************
 
 void
@@ -683,10 +691,12 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         }
         avtDataAttributes &atts = lst[plotIndex]->GetBehavior()->GetInfo().GetAttributes();
         currentTime = atts.GetTime();
+        currentCycle = atts.GetCycle();
 
         std::string formatString(textFormatString);
         std::string::size_type pos;
-        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos)
+        if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
+           (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
             SetText(textFormatString, timeFormatString);
     }
 }
@@ -708,6 +718,9 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 //
 //   Brad Whitlock, Mon Mar  2 14:22:34 PST 2009
 //   I added timeScale and timeOffset.
+//
+//   Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//   Added $cycle support.
 //
 // ****************************************************************************
 
@@ -738,8 +751,8 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
     // Replace $time with the time if the format string contains $time.
     delete [] textString;
     std::string fmtStr(textFormatString);
-    std::string::size_type pos = fmtStr.find(TIME_IDENTIFIER);
-    if(pos != std::string::npos)
+    std::string::size_type pos;
+    if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
     {
         int tlen = strlen(TIME_IDENTIFIER);
         std::string left(fmtStr.substr(0, pos));
@@ -747,6 +760,17 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
         char tmp[100];
         double t = currentTime * timeScale + timeOffset;
         SNPRINTF(tmp, 100, timeFormat, t);
+        len = left.size() + strlen(tmp) + right.size() + 1;
+        textString = new char[len];
+        SNPRINTF(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+    }
+    else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
+    {
+        int tlen = strlen(CYCLE_IDENTIFIER);
+        std::string left(fmtStr.substr(0, pos));
+        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
+        char tmp[100];
+        SNPRINTF(tmp, 100, "%d", currentCycle);
         len = left.size() + strlen(tmp) + right.size() + 1;
         textString = new char[len];
         SNPRINTF(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());

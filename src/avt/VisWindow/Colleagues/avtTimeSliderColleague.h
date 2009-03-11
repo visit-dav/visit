@@ -64,6 +64,9 @@ class vtkTimeSliderActor;
 //   Brad Whitlock, Mon Mar  2 14:21:17 PST 2009
 //   Added SetTimeScaleAndOffset.
 //
+//   Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//   Added $cycle support.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtTimeSliderColleague : public avtAnnotationColleague
@@ -106,6 +109,7 @@ private:
     int                timeDisplayMode;
 
     double             currentTime;
+    int                currentCycle;
     double             timeScale;
     double             timeOffset;
     bool               useForegroundForTextColor;

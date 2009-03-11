@@ -60,6 +60,8 @@ class vtkTextActor;
 // Creation:   Wed Nov 5 14:09:57 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
+//    Added $cycle support.
 //   
 // ****************************************************************************
 
@@ -92,6 +94,7 @@ protected:
     char           *textFormatString;
     char           *textString;
     double          currentTime;
+    int             currentCycle;
 
     bool            useForegroundForTextColor;
     bool            addedToRenderer;
