@@ -3719,6 +3719,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Cyrus Harrison, Wed Jul 16 12:05:54 PDT 2008
 //    Moved the Shapelet Decomposition Query into the Shape-Related category.
 //
+//    Jeremy Meredith, Wed Mar 11 17:53:13 EDT 2009
+//    Added Sample and Population statistics queries.
+//
 // ****************************************************************************
 
 void
@@ -3844,6 +3847,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("TrajectoryByNode", dq, vr, dnv, 1, TrajVars, to, 2);
     queryTypes->AddQuery("Best Fit Line", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Memory Usage", dq, misc_r, basic, 1, 0, qo);
+    queryTypes->AddQuery("Sample Statistics", dq, vr, ad, 1, 0, qo);
+    queryTypes->AddQuery("Population Statistics", dq, vr, ad, 1, 0, qo);
     queryTypes->SelectAll();
 }
 

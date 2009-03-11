@@ -82,6 +82,7 @@
 #include <avtOriginalDataNumNodesQuery.h>
 #include <avtOriginalDataNumZonesQuery.h>
 #include <avtOriginalDataSpatialExtentsQuery.h>
+#include <avtSampleStatisticsQuery.h>
 #include <avtShapeletDecompositionQuery.h>
 #include <avtSkewnessQuery.h>
 #include <avtSphericalCompactnessFactorQuery.h>
@@ -270,6 +271,9 @@ avtQueryFactory::Instance()
 //
 //    Cyrus Harrison, Wed Mar  5 08:56:01 PST 2008
 //    Added Memory Usage Query. 
+//
+//    Jeremy Meredith, Wed Mar 11 17:49:06 EDT 2009
+//    Added sample and population statistics.
 //
 // ****************************************************************************
 
@@ -623,6 +627,14 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if( qname == "Memory Usage")
     {
         query = new avtMemoryUsageQuery();
+    }
+    else if (qname == "Sample Statistics")
+    {
+        query = new avtSampleStatisticsQuery(false);
+    }
+    else if (qname == "Population Statistics")
+    {
+        query = new avtSampleStatisticsQuery(true);
     }
     
     if (query == NULL && !foundAQuery)
