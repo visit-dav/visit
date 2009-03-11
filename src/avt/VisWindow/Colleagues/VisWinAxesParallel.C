@@ -191,9 +191,14 @@ LabelExponent(double min, double max)
 //    I implemented autoSetTicks, labelVisibility, titleVisibility,
 //    tickVisibility and setting the major and minor tick locations.
 //
+//    Tom Fogal, Mon Mar  9 09:26:31 MST 2009
+//    Initialize axisPow to avoid reading uninitialized memory later.
+//
 // ****************************************************************************
 
-VisWinAxesParallel::VisWinAxesParallel(VisWindowColleagueProxy &p) : VisWinColleague(p)
+VisWinAxesParallel::VisWinAxesParallel(VisWindowColleagueProxy &p) :
+    VisWinColleague(p),
+    axisPow(0)
 {
     addedAxes = false;
     axisVisibility = true;
