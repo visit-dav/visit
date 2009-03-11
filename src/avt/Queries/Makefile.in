@@ -175,6 +175,9 @@
 #   Cyrus Harrison, Wed Mar  5 08:54:06 PST 2008
 #   Added avtMemoryUsageQuery
 #
+#   Jeremy Meredith, Wed Mar 11 16:26:41 EDT 2009
+#   Added sample statistics queries (mean, variance, skewness, kurtosis).
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -256,6 +259,7 @@ Queries_src= \
  Queries/avtOriginalDataNumNodesQuery.C  \
  Queries/avtOriginalDataNumZonesQuery.C  \
  Queries/avtOriginalDataSpatialExtentsQuery.C  \
+ Queries/avtSampleStatisticsQuery.C  \
  Queries/avtShapeletDecompositionQuery.C  \
  Queries/avtSkewnessQuery.C  \
  Queries/avtSphericalCompactnessFactorQuery.C  \
