@@ -36,18 +36,6 @@
 *
 *****************************************************************************/
 
-// Modifications:
-//   Tom Fogal, Sat Feb  7 18:22:56 EST 2009
-//   Added missing includes and modernize them.
-
-#include <cmath>
-#include <cstdio>
-#include <cstring>
-#include <string>
-#include <vector>
-#include <silo.h>
-#include <visitstream.h>
-
 // ****************************************************************************
 // File: noise.C
 //
@@ -63,8 +51,22 @@
 // Creation:   Fri Jun 21 14:02:16 PST 2002
 //
 // Modifications:
-//   
+//   Tom Fogal, Sat Feb  7 18:22:56 EST 2009
+//   Added missing includes and modernize them.
+//
+//   Brad Whitlock, Tue Mar 10 13:13:01 PST 2009
+//   I moved the mesh code to QuadMesh3D.h and QuadMesh3D.C so it can be reused.
+//
 // ****************************************************************************
+
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <vector>
+#include <silo.h>
+#include <visitstream.h>
+#include "QuadMesh.h"
 
 //
 // The size of the mesh i,j,k range
@@ -84,1311 +86,6 @@
 #define YMAX 10.
 #define ZMIN -10.
 #define ZMAX 10.
-
-//
-// Template function for memory reallocation.
-//
-
-template <class T>
-T *remake(T *ptr, int oldsize, int size)
-{
-    T *retval = new T[size];
-    T *iptr = retval;
-    for(int i = 0; i < oldsize; ++i)
-        *iptr++ = ptr[i];
-    delete [] ptr;
-    return retval;
-}
-
-// ****************************************************************************
-// Class: MaterialList
-//
-// Purpose:
-//   Keeps track of mixed material information.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jun 21 13:53:35 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Wed Mar 17 16:43:34 PST 2004
-//   I fixed an off by one error.
-//
-// ****************************************************************************
-
-class MaterialList
-{
-public:
-    MaterialList() : matNames()
-    {
-        have_mixed = false;
-        mix_zone = NULL;
-        mix_mat = NULL;
-        mix_vf = NULL;
-        mix_next = NULL;
-        matlist = NULL;
-
-        // initialize private members.
-        _array_size = 0;
-        _array_index = 1;
-        _array_growth = 1000;
-    }
-
-    ~MaterialList()
-    {
-       delete [] matlist;
-       if (have_mixed)
-       {
-           delete [] mix_zone;   
-           delete [] mix_mat;    
-           delete [] mix_vf;      
-           delete [] mix_next;    
-       }
-    }
-
-    void AddMaterial(const std::string &mat)
-    {
-        matNames.push_back(mat);
-    }
-
-    void AddClean(int siloZone, int matNumber)
-    {
-        matlist[siloZone] = matNumber;
-    }
-
-    void AddMixed(int siloZone, int *matNumbers, double *matVf, int nMats)
-    {
-        int i;
-
-        /* Grow the arrays if they will not fit nMats materials. */
-        Resize(nMats);
-
-        /* Record the mixed zone as a negative offset into the mix arrays. */
-        matlist[siloZone] = -_array_index;
-
-        /* Update the mix arrays. */
-        for(i = 0; i < nMats; ++i)
-        {
-            int index = _array_index - 1;
-
-            mix_zone[index] = siloZone;
-            mix_mat[index]  = matNumbers[i];
-            mix_vf[index]   = matVf[i];
-
-            if(i < nMats - 1)
-                mix_next[index] = index + 2;
-            else
-                mix_next[index] = 0;
-
-            ++(_array_index);
-        }
-
-        /* indicate that we have mixed materials. */
-        have_mixed = true;
-    }
-
-    void AllocClean(int nZones)
-    {
-        matlist = new int[nZones];
-    }
-
-    int GetMixedSize() const { return _array_index - 1; };
-
-    void WriteMaterial(DBfile *db, const char *matvarname, const char *meshName, int nx, int ny, int nz)
-    {
-        int i, mdims[3] = {nx,ny,nz};
-
-        /* Create a 1..nTotalMaterials material number array. */
-        int *allmats = new int[matNames.size()];
-        for(i = 0; i < matNames.size(); ++i)
-            allmats[i] = i + 1;
-
-        DBoptlist *optList = DBMakeOptlist(2);
-
-        // Add material names.
-        char **matnames = new char *[4];
-        for(i = 0; i < matNames.size(); ++i)
-            matnames[i] = (char *)matNames[i].c_str();
-        DBAddOption(optList, DBOPT_MATNAMES, matnames);
-
-        if (have_mixed)
-        {
-            DBPutMaterial(db, (char *)matvarname, (char *)meshName,
-                          matNames.size(), allmats,
-                          matlist, mdims, 3, mix_next,
-                          mix_mat, mix_zone,
-                          (float*)mix_vf , GetMixedSize(),
-                          DB_DOUBLE, optList);
-        }
-        else
-        {         
-            DBPutMaterial(db, (char *)matvarname, (char *)meshName,
-                          matNames.size(), allmats,
-                          matlist, mdims, 3, NULL,
-                          NULL, NULL, NULL , 0,
-                          DB_INT, optList);
-        }
-
-        DBFreeOptlist(optList);
-        delete [] matnames;
-        delete [] allmats;
-    }
-private:
-    void Resize(int nMats)
-    { 
-        if(_array_index + nMats >= _array_size)
-        {
-            int new_size = _array_size + _array_growth;
-
-            if(_array_size == 0)
-            {
-                /* Reallocate arrays in large increments. */
-                mix_zone = new int[new_size];
-                mix_mat  = new int[new_size];
-                mix_vf   = new double[new_size];
-                mix_next = new int[new_size];
-            }
-            else
-            {
-                /* Reallocate arrays in large increments. */
-                mix_zone = remake(mix_zone, _array_size, new_size);
-                mix_mat  = remake(mix_mat, _array_size,  new_size);
-                mix_vf   = remake(mix_vf, _array_size, new_size);
-                mix_next = remake(mix_next, _array_size, new_size);
-            }
-
-            _array_size = new_size;
-        }
-    }
-
-    int    have_mixed;
-    int    *mix_zone;
-    int    *mix_mat;
-    double *mix_vf;
-    int    *mix_next;
-    int    *matlist;
-    int    _array_size;
-    int    _array_index;
-    int    _array_growth;
-    std::vector<std::string> matNames;
-};
-
-// ****************************************************************************
-// Class: QuadMesh3D
-//
-// Purpose:
-//   Abstract base class for 3D quad meshes.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jun 21 13:53:59 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Fri Oct 4 14:25:40 PST 2002
-//   I added methods to create the gradient of a scalar field.
-//
-//   Eric Brugger, Tue Mar 25 15:56:59 PST 2003
-//   I corrected an out of range index error in ZonalGradientAt.
-//
-//   Hank Childs, Mon Dec  1 09:24:23 PST 2003
-//   Added support for tensors.
-//
-//   Hank Childs, Thu Jul 21 16:49:02 PDT 2005
-//   Added support for array variables.
-//
-// ****************************************************************************
-
-class QuadMesh3D
-{
-protected:
-    class TensorData;
-    class VectorData
-    {
-    public:
-        VectorData(const std::string &n, int nx, int ny, int nz, bool node) : name(n)
-        {
-            xdim = nx;
-            ydim = ny;
-            zdim = nz;
-            int ndata;
-            if(node)
-               ndata = xdim * ydim * zdim;
-            else
-               ndata = (xdim-1) * (ydim-1) * (zdim-1);
-            xd = new float[ndata];
-            yd = new float[ndata];
-            zd = new float[ndata];
-            nodal = node;
-        }
-
-        ~VectorData()
-        {
-            delete [] xd;
-            delete [] yd;
-            delete [] zd;
-        }
-
-        void SetZonalValue(int x, int y, int z, float val[3])
-        {
-            int index = z*((ydim-1)*(xdim-1)) + y*(xdim-1) + x;
-            xd[index] = val[0];
-            yd[index] = val[1];
-            zd[index] = val[2];
-        }
-
-        void SetNodalValue(int x, int y, int z, float val[3])
-        {
-            int index = z*(ydim*xdim) + y*xdim + x;
-            xd[index] = val[0];
-            yd[index] = val[1];
-            zd[index] = val[2];
-        }
-
-        void WriteFile(DBfile *db, const char *meshName)
-        {
-             // Create subvar names.
-             std::string xvar(name + std::string("_X"));
-             std::string yvar(name + std::string("_Y"));
-             std::string zvar(name + std::string("_Z"));
-             char *varnames[3];
-             varnames[0] = (char *)xvar.c_str();
-             varnames[1] = (char *)yvar.c_str();
-             varnames[2] = (char *)zvar.c_str();
-             float *vars[] = {xd, yd, zd};
-
-             DBoptlist *optList = DBMakeOptlist(2);
-             DBAddOption(optList, DBOPT_UNITS, (void*)"cm/s");
-             if(nodal)
-             {
-                 int ndims[] = {xdim, ydim, zdim};
-                 DBPutQuadvar(db, (char *)name.c_str(), (char *)meshName,
-                              3, varnames, vars, ndims, 3,  NULL, 0, DB_FLOAT,
-                              DB_NODECENT, optList);
-             }
-             else
-             {
-                 int zdims[] = {xdim-1, ydim-1, zdim-1};
-                 DBPutQuadvar(db, (char *)name.c_str(), (char *)meshName,
-                              3, varnames, vars, zdims, 3,  NULL, 0, DB_FLOAT,
-                              DB_ZONECENT, optList);
-             }
-             DBFreeOptlist(optList);
-        }
-
-    protected:
-        int xdim, ydim, zdim;
-        bool nodal;
-        float *xd, *yd, *zd;
-        std::string name;
-    };
-
-    class ScalarData
-    {
-    public:
-        ScalarData(const std::string &n, int nx, int ny, int nz, bool node) : name(n)
-        {
-            xdim = nx;
-            ydim = ny;
-            zdim = nz;
-            int ndata;
-            if(node)
-               ndata = xdim * ydim * zdim;
-            else
-               ndata = (xdim-1) * (ydim-1) * (zdim-1);
-            data = new float[ndata];
-            nodal = node;
-        }
-
-        ~ScalarData()
-        {
-            delete [] data;
-        }
-
-        const std::string &GetName() const { return name; };
-
-        int ZonalIndex(int x, int y, int z) const
-        {
-            return z*((ydim-1)*(xdim-1)) + y*(xdim-1) + x;
-        }
-
-        int NodalIndex(int x, int y, int z) const
-        {
-            return z*(ydim*xdim) + y*xdim + x;
-        }
-
-        void SetZonalValue(int x, int y, int z, float val)
-        {
-            data[ZonalIndex(x,y,z)] = val;
-        }
-
-        void SetNodalValue(int x, int y, int z, float val)
-        {
-            data[NodalIndex(x,y,z)] = val;
-        }
-
-        void WriteFile(DBfile *db, const char *meshName)
-        {
-             DBoptlist *optList = DBMakeOptlist(2);
-             DBAddOption(optList, DBOPT_UNITS, (void*)"Joules");
-             if(nodal)
-             {
-                 int ndims[] = {xdim, ydim, zdim};
-                 DBPutQuadvar1(db, (char *)name.c_str(), (char *)meshName, data,
-                               ndims, 3, NULL, 0, DB_FLOAT, DB_NODECENT, optList);
-             }
-             else
-             {
-                 int zdims[] = {xdim-1, ydim-1, zdim-1};
-                 DBPutQuadvar1(db, (char *)name.c_str(), (char *)meshName, data,
-                               zdims, 3, NULL, 0, DB_FLOAT, DB_ZONECENT, optList);
-             }
-             DBFreeOptlist(optList);
-        }
-
-        void WriteDataSlice(DBfile *db, const std::string &newMeshName,
-            const std::string &newVarName, int sliceVal, int sliceDimension)
-        {
-             DBoptlist *optList = DBMakeOptlist(1);
-             DBAddOption(optList, DBOPT_UNITS, (void*)"Joules");
-             float *sliceData;
-
-             if(nodal)
-             {
-                 int ndata, index = 0;
-                 int ndims[2];
-                 if(sliceDimension == 0)
-                 {
-                     ndata = zdim * ydim;
-                     ndims[0] = zdim; ndims[1] = ydim;
-                     sliceData = new float[ndata];
-                     for(int y = 0; y < ydim; ++y)
-                         for(int z = 0; z < zdim; ++z)
-                         {
-                             int originalIndex = NodalIndex(sliceVal, y, z);
-                             sliceData[index++] = data[originalIndex];
-                         }
-                 }
-                 else if(sliceDimension == 1)
-                 {
-                     ndata = zdim * xdim;
-                     sliceData = new float[ndata];
-                     ndims[0] = xdim; ndims[1] = zdim;
-                     for(int z = 0; z < zdim; ++z)
-                         for(int x = 0; x < xdim; ++x)
-                         {
-                             int originalIndex = NodalIndex(x, sliceVal, z);
-                             sliceData[index++] = data[originalIndex];
-                         }
-                 }
-                 else
-                 {
-                     ndata = xdim * ydim;
-                     sliceData = new float[ndata];
-                     ndims[0] = xdim; ndims[1] = ydim;
-                     for(int y = 0; y < ydim; ++y)
-                         for(int x = 0; x < xdim; ++x)
-                         {
-                             int originalIndex = NodalIndex(x, y, sliceVal);
-                             sliceData[index++] = data[originalIndex];
-                         }
-                 }
-
-                 DBPutQuadvar1(db, (char *)newVarName.c_str(), (char *)newMeshName.c_str(),
-                               sliceData, ndims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, optList);
-
-                 delete [] sliceData;
-             }
-             else
-             {
-                 int ndata, index = 0;
-                 int zdims[2];
-                 if(sliceDimension == 0)
-                 {
-                     ndata = (zdim-1) * (ydim-1);
-                     zdims[0] = zdim-1; zdims[1] = ydim-1;
-                     sliceData = new float[ndata];
-                     for(int y = 0; y < ydim-1; ++y)
-                         for(int z = 0; z < zdim-1; ++z)
-                         {
-                             int originalIndex = ZonalIndex(sliceVal, y, z);
-                             sliceData[index++] = data[originalIndex];
-                         }
-                 }
-                 else if(sliceDimension == 1)
-                 {
-                     ndata = (zdim-1) * (xdim-1);
-                     sliceData = new float[ndata];
-                     zdims[0] = xdim-1; zdims[1] = zdim-1;
-                     for(int z = 0; z < zdim-1; ++z)
-                         for(int x = 0; x < xdim-1; ++x)
-                         {
-                             int originalIndex = ZonalIndex(x, sliceVal, z);
-                             sliceData[index++] = data[originalIndex];
-                         }
-                 }
-                 else
-                 {
-                     ndata = (xdim-1) * (ydim-1);
-                     sliceData = new float[ndata];
-                     zdims[0] = xdim-1; zdims[1] = ydim-1;
-                     for(int y = 0; y < ydim-1; ++y)
-                         for(int x = 0; x < xdim-1; ++x)
-                         {
-                             int originalIndex = ZonalIndex(x, y, sliceVal);
-                             sliceData[index++] = data[originalIndex];
-                         }
-                 }
-
-                 DBPutQuadvar1(db, (char *)newVarName.c_str(), (char *)newMeshName.c_str(),
-                               sliceData, zdims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, optList);
-
-                 delete [] sliceData;
-             }
-             DBFreeOptlist(optList);
-        }
-
-        void ZonalGradientAt(int i, int j, int k, float grad[3]) const
-        {
-            if(i == 0)
-                grad[0] = (data[ZonalIndex(i+1,j,k)]-data[ZonalIndex(i,j,k)]);
-            else if(i == xdim-2)
-                grad[0] = (data[ZonalIndex(i,j,k)]-data[ZonalIndex(i-1,j,k)]);
-            else
-                grad[0] = (data[ZonalIndex(i+1,j,k)]-data[ZonalIndex(i-1,j,k)]) * 0.5;
-
-            if(j == 0)
-                grad[1] = (data[ZonalIndex(i,j+1,k)]-data[ZonalIndex(i,j,k)]);
-            else if(j == ydim-2)
-                grad[1] = (data[ZonalIndex(i,j,k)]-data[ZonalIndex(i,j-1,k)]);
-            else
-                grad[1] = (data[ZonalIndex(i,j+1,k)]-data[ZonalIndex(i,j-1,k)]) * 0.5;
-
-            if(k == 0)
-                grad[2] = (data[ZonalIndex(i,j,k+1)]-data[ZonalIndex(i,j,k)]);
-            else if(k == zdim-2)
-                grad[2] = (data[ZonalIndex(i,j,k)]-data[ZonalIndex(i,j,k-1)]);
-            else
-                grad[2] = (data[ZonalIndex(i,j,k+1)]-data[ZonalIndex(i,j,k-1)]) * 0.5;
-        }
-
-        void NodalGradientAt(int i, int j, int k, float grad[3]) const
-        {
-            if(i == 0)
-                grad[0] = (data[NodalIndex(i+1,j,k)]-data[NodalIndex(i,j,k)]);
-            else if(i == xdim-1)
-                grad[0] = (data[NodalIndex(i,j,k)]-data[NodalIndex(i-1,j,k)]);
-            else
-                grad[0] = (data[NodalIndex(i+1,j,k)]-data[NodalIndex(i-1,j,k)]) * 0.5;
-
-            if(j == 0)
-                grad[1] = (data[NodalIndex(i,j+1,k)]-data[NodalIndex(i,j,k)]);
-            else if(j == ydim-1)
-                grad[1] = (data[NodalIndex(i,j,k)]-data[NodalIndex(i,j-1,k)]);
-            else
-                grad[1] = (data[NodalIndex(i,j+1,k)]-data[NodalIndex(i,j-1,k)]) * 0.5;
-
-            if(k == 0)
-                grad[2] = (data[NodalIndex(i,j,k+1)]-data[NodalIndex(i,j,k)]);
-            else if(k == zdim-1)
-                grad[2] = (data[NodalIndex(i,j,k)]-data[NodalIndex(i,j,k-1)]);
-            else
-                grad[2] = (data[NodalIndex(i,j,k+1)]-data[NodalIndex(i,j,k-1)]) * 0.5;
-        }
-
-        void ZonalTensorGradientAt(int i, int j, int k, float grad[9]) const
-        {
-            // ii
-            if(i == 0)
-                grad[0] = (data[ZonalIndex(i+1,j,k)]-data[ZonalIndex(i,j,k)]);
-            else if(i == xdim-2)
-                grad[0] = (data[ZonalIndex(i,j,k)]-data[ZonalIndex(i-1,j,k)]);
-            else
-                grad[0] = (data[ZonalIndex(i+1,j,k)]-data[ZonalIndex(i-1,j,k)]) * 0.5;
-
-            // ij
-            if((i == 0) || (j == 0) || (i == xdim-2) || (j == ydim-2))
-                grad[1] = 0.;
-            else 
-                grad[1] = (data[ZonalIndex(i-1,j-1,k)]-data[ZonalIndex(i+1,j+1,k)]) * 0.5;
-
-            // ik
-            if((i == 0) || (k == 0) || (i == xdim-2) || (k == zdim-2))
-                grad[2] = 0.;
-            else 
-                grad[2] = (data[ZonalIndex(i-1,j,k-1)]-data[ZonalIndex(i+1,j,k+1)]) * 0.5;
-
-            // ji
-            grad[3] = grad[1];
-
-            // jj
-            if(j == 0)
-                grad[4] = (data[ZonalIndex(i,j+1,k)]-data[ZonalIndex(i,j,k)]);
-            else if(j == ydim-2)
-                grad[4] = (data[ZonalIndex(i,j,k)]-data[ZonalIndex(i,j-1,k)]);
-            else
-                grad[4] = (data[ZonalIndex(i,j+1,k)]-data[ZonalIndex(i,j-1,k)]) * 0.5;
-
-            // jk
-            if((j == 0) || (k == 0) || (j == ydim-2) || (k == zdim-2))
-                grad[5] = 0.;
-            else 
-                grad[5] = (data[ZonalIndex(i,j-1,k-1)]-data[ZonalIndex(i,j+1,k+1)]) * 0.5;
-
-            // ki
-            grad[6] = grad[2];
-
-            // kj
-            grad[7] = grad[5];
-
-            // kk
-            if(k == 0)
-                grad[8] = (data[ZonalIndex(i,j,k+1)]-data[ZonalIndex(i,j,k)]);
-            else if(k == zdim-2)
-                grad[8] = (data[ZonalIndex(i,j,k)]-data[ZonalIndex(i,j,k-1)]);
-            else
-                grad[8] = (data[ZonalIndex(i,j,k+1)]-data[ZonalIndex(i,j,k-1)]) * 0.5;
-        }
-
-        void NodalTensorGradientAt(int i, int j, int k, float grad[9]) const
-        {
-            // ii
-            if(i == 0)
-                grad[0] = (data[NodalIndex(i+1,j,k)]-data[NodalIndex(i,j,k)]);
-            else if(i == xdim-1)
-                grad[0] = (data[NodalIndex(i,j,k)]-data[NodalIndex(i-1,j,k)]);
-            else
-                grad[0] = (data[NodalIndex(i+1,j,k)]-data[NodalIndex(i-1,j,k)]) * 0.5;
-
-            // ij
-            if((i == 0) || (j == 0) || (i == xdim-1) || (j == ydim-1))
-                grad[1] = 0.;
-            else 
-                grad[1] = (data[NodalIndex(i-1,j-1,k)]-data[NodalIndex(i+1,j+1,k)]) * 0.5;
-
-            // ik
-            if((i == 0) || (k == 0) || (i == xdim-1) || (k == zdim-1))
-                grad[2] = 0.;
-            else 
-                grad[2] = (data[NodalIndex(i-1,j,k-1)]-data[NodalIndex(i+1,j,k+1)]) * 0.5;
-
-            // ji
-            grad[3] = grad[1];
-
-            // jj
-            if(j == 0)
-                grad[4] = (data[NodalIndex(i,j+1,k)]-data[NodalIndex(i,j,k)]);
-            else if(j == ydim-1)
-                grad[4] = (data[NodalIndex(i,j,k)]-data[NodalIndex(i,j-1,k)]);
-            else
-                grad[4] = (data[NodalIndex(i,j+1,k)]-data[NodalIndex(i,j-1,k)]) * 0.5;
-
-            // jk
-            if((j == 0) || (k == 0) || (j == ydim-1) || (k == zdim-1))
-                grad[5] = 0.;
-            else 
-                grad[5] = (data[NodalIndex(i,j-1,k-1)]-data[NodalIndex(i,j+1,k+1)]) * 0.5;
-
-            // ki
-            grad[6] = grad[2];
-
-            // kj
-            grad[7] = grad[5];
-
-            // kk
-            if(k == 0)
-                grad[8] = (data[NodalIndex(i,j,k+1)]-data[NodalIndex(i,j,k)]);
-            else if(k == zdim-1)
-                grad[8] = (data[NodalIndex(i,j,k)]-data[NodalIndex(i,j,k-1)]);
-            else
-                grad[8] = (data[NodalIndex(i,j,k+1)]-data[NodalIndex(i,j,k-1)]) * 0.5;
-        }
-
-        VectorData *CreateGradient(const char *name)
-        {
-            VectorData *vec = new VectorData(name, xdim, ydim, zdim, nodal);
-            float grad[3];
-
-            if(!nodal)
-            {
-                // Create the data.
-                for(int i = 0; i < xdim-1; ++i)
-                    for(int j = 0; j < ydim-1; ++j)
-                        for(int k = 0; k < zdim-1; ++k)
-                        {
-                            ZonalGradientAt(i, j, k, grad);
-
-                            // If the zonal gradient is zero then make it a small
-                            // gradient in the up direction.
-                            if(grad[0] == 0. && grad[1] == 0. && grad[2] == 0.)
-                            {
-                                grad[1] = 0.01;
-                            }
-
-                            vec->SetZonalValue(i, j, k, grad);
-                        }
-            }
-            else
-            {
-                // Create the data.
-                for(int i = 0; i < xdim; ++i)
-                    for(int j = 0; j < ydim; ++j)
-                        for(int k = 0; k < zdim; ++k)
-                        {
-                            NodalGradientAt(i, j, k, grad);
-                            vec->SetNodalValue(i, j, k, grad);
-                        }
-            }
-
-            return vec;
-        }
-
-        TensorData *CreateGradientTensor(const char *name)
-        {
-            ScalarData *sub_comps[9];
-
-            for (int i = 0 ; i < 9 ; i++)
-            {
-                char comp1;
-                char comp2;
-                switch (i%3)
-                {
-                   case 0: comp1 = 'i'; break;
-                   case 1: comp1 = 'j'; break;
-                   default: comp1 = 'k'; break;
-                }
-                switch (i/3)
-                {
-                   case 0: comp2 = 'i'; break;
-                   case 1: comp2 = 'j'; break;
-                   default: comp2 = 'k'; break;
-                }
-                char comp_name[1024];
-                sprintf(comp_name, "tensor_comps/%s_%c%c", name, comp1, comp2);
-                sub_comps[i] = new ScalarData(comp_name, xdim, ydim, zdim, nodal);
-            }
-            if(!nodal)
-            {
-                // Create the data.
-                for(int i = 0; i < xdim-1; ++i)
-                    for(int j = 0; j < ydim-1; ++j)
-                        for(int k = 0; k < zdim-1; ++k)
-                        {
-                            float vals[9];
-                            ZonalTensorGradientAt(i,j,k, vals);
-                            for(int l = 0 ; l < 9 ; l++)
-                                sub_comps[l]->SetZonalValue(i, j, k, vals[l]);
-                        }
-            }
-            else
-            {
-                // Create the data.
-                for(int i = 0; i < xdim; ++i)
-                    for(int j = 0; j < ydim; ++j)
-                        for(int k = 0; k < zdim; ++k)
-                        {
-                            float vals[9];
-                            NodalTensorGradientAt(i,j,k, vals);
-                            for(int l = 0 ; l < 9 ; l++)
-                                sub_comps[l]->SetNodalValue(i, j, k, vals[l]);
-                        }
-            }
-
-            return new TensorData(name, sub_comps);
-        }
-
-    protected:
-        int xdim, ydim, zdim;
-        bool nodal;
-        float *data;
-        std::string name;
-    };
-
-    class TensorData {
-    public:
-        TensorData(const std::string &n, ScalarData *comps[9]) : name(n)
-        {
-            for (int i = 0 ; i < 9 ; i++)
-                components[i] = comps[i];
-        }
-        ~TensorData()
-        {
-            for (int i = 0 ; i < 9 ; i++)
-                delete components[i];
-        }
-
-        void WriteFile(DBfile *db, const char *meshName)
-        {
-             DBMkDir(db, "tensor_comps");
-             char absolute_meshname[1024];
-             sprintf(absolute_meshname, "/%s", meshName);
-             for (int i = 0 ; i < 9 ; i++)
-                 components[i]->WriteFile(db, absolute_meshname);
-             char defvars[1024];
-             sprintf(defvars, "%s tensor { { <%s>, <%s>, <%s> }, { <%s>, <%s>, <%s> }, { <%s>, <%s>, <%s> } }; %s_diagonal array array_compose(<%s>, <%s>, <%s>)",
-                     name.c_str(), components[0]->GetName().c_str(),
-                     components[1]->GetName().c_str(), components[2]->GetName().c_str(),
-                     components[3]->GetName().c_str(), components[4]->GetName().c_str(), 
-                     components[5]->GetName().c_str(), components[6]->GetName().c_str(),
-                     components[7]->GetName().c_str(), components[8]->GetName().c_str(), 
-                     name.c_str(), components[0]->GetName().c_str(),
-                     components[4]->GetName().c_str(), components[8]->GetName().c_str());
-             int len = strlen(defvars)+1;
-             DBWrite(db, "_visit_defvars", defvars, &len, 1, DB_CHAR);
-        }
-
-    protected:
-        ScalarData *components[9];
-        std::string name;
-    };
-
-    class SliceInfo
-    {
-    public:
-        SliceInfo(const std::string &nm, const std::string &nvn,
-            int sv, int sd, ScalarData *d) : newMeshName(nm), newVarName(nvn)
-        {
-            sliceVal = sv;
-            sliceDimension = sd;
-            scalars = d;
-        }
-
-        ~SliceInfo()
-        {
-        }
-
-        void WriteFile(DBfile *db, QuadMesh3D *qm)
-        {
-            // Write a slice of the mesh
-            qm->WriteMeshSlice(db, newMeshName, sliceVal, sliceDimension);
-
-            // Write the sliced data on that mesh.
-            scalars->WriteDataSlice(db, newMeshName, newVarName, sliceVal, sliceDimension);
-        }
-
-    protected:
-        std::string newMeshName;
-        std::string newVarName;
-        int sliceVal;
-        int sliceDimension;
-        ScalarData *scalars;
-    };
-
-    typedef std::vector<ScalarData *> ScalarDataVector;
-    typedef std::vector<VectorData *> VectorDataVector;
-    typedef std::vector<TensorData *> TensorDataVector;
-    typedef std::vector<SliceInfo *>  SliceInfoVector;
-
-    friend class SliceInfo;
-public:
-    QuadMesh3D(int nx, int ny, int nz, bool rect = true) : scalarData(),
-        vectorData(), tensorData(), sliceInfo(), meshName("Mesh")
-    {
-        xdim = nx;
-        ydim = ny;
-        zdim = nz;
-        if(rect)
-        {
-            coordX = new float[nx];
-            coordY = new float[ny];
-            coordZ = new float[nz];
-        }
-        else
-        {
-            int nels = xdim * ydim * zdim;
-            coordX = new float[nels];
-            coordY = new float[nels];
-            coordZ = new float[nels];
-        }
-
-        // Allocate storage for the material cells.
-        mats.AllocClean((xdim-1) * (ydim-1) * (zdim-1));
-        writeMaterial = false;
-    }
-
-    virtual ~QuadMesh3D()
-    {
-        delete [] coordX;
-        delete [] coordY;
-        delete [] coordZ;
-
-        int i;
-        for(i = 0; i < scalarData.size(); ++i)
-            delete scalarData[i];
-        for(i = 0; i < vectorData.size(); ++i)
-            delete vectorData[i];
-        for(i = 0; i < tensorData.size(); ++i)
-            delete tensorData[i];
-        for(i = 0; i < sliceInfo.size(); ++i)
-            delete sliceInfo[i];
-    }
-
-    void SetMeshName(const std::string &name)
-    {
-        meshName = name;
-    }
-
-    int XDim() const { return xdim; };
-    int YDim() const { return ydim; };
-    int ZDim() const { return zdim; };
-
-    virtual float GetX(int, int, int) const = 0;
-    virtual float GetY(int, int, int) const = 0;
-    virtual float GetZ(int, int, int) const = 0;
-
-    void CreateZonalData(const char *name, float (*zonal)(int,int,int, QuadMesh3D *))
-    {
-        ScalarData *m = new ScalarData(name, xdim, ydim, zdim, false);
-        scalarData.push_back(m);
-
-        // Create the data.
-        for(int i = 0; i < xdim-1; ++i)
-            for(int j = 0; j < ydim-1; ++j)
-                for(int k = 0; k < zdim-1; ++k)
-                    m->SetZonalValue(i,j,k, (*zonal)(i,j,k, this));
-    }
-
-    void CreateNodalData(const char *name, float (*nodal)(float *, QuadMesh3D *))
-    {
-        ScalarData *m = new ScalarData(name, xdim, ydim, zdim, true);
-        scalarData.push_back(m);
-
-        // Create the data.
-        for(int i = 0; i < xdim; ++i)
-            for(int j = 0; j < ydim; ++j)
-                for(int k = 0; k < zdim; ++k)
-                {
-                    float pt[3];
-                    pt[0] = GetX(i,j,k);
-                    pt[1] = GetY(i,j,k);
-                    pt[2] = GetZ(i,j,k);
-                    m->SetNodalValue(i, j, k, (*nodal)(pt, this));
-                }
-    }
-
-    void CreateNodalVectorData(const char *name, void (*nodal)(float *, int, int, int, QuadMesh3D *))
-    {
-        VectorData *m = new VectorData(name, xdim, ydim, zdim, true);
-        vectorData.push_back(m);
-
-        // Create the data.
-        for(int i = 0; i < xdim; ++i)
-            for(int j = 0; j < ydim; ++j)
-                for(int k = 0; k < zdim; ++k)
-                {
-                    float vec[3];
-                    // Get the vector value.
-                    (*nodal)(vec, i, j, k, this);
-                    m->SetNodalValue(i, j, k, vec);
-                }
-    }
-
-    void CreateGradient(const char *name, const char *gradName)
-    {
-        for(int i = 0; i < scalarData.size(); ++i)
-        {
-            if(scalarData[i]->GetName() == name)
-            {
-                VectorData *gradient = scalarData[i]->CreateGradient(gradName);
-                vectorData.push_back(gradient);
-                break;
-            }
-        }
-    }
-
-    void CreateGradientTensor(const char *varName, const char *outputName)
-    {
-        for(int i = 0; i < scalarData.size(); ++i)
-        {
-            if(scalarData[i]->GetName() == varName)
-            {
-                TensorData *tensor = scalarData[i]->CreateGradientTensor(outputName);
-                tensorData.push_back(tensor);
-                break;
-            }
-        }
-    }
-
-    void AddMaterial(const char *matname)
-    {
-        mats.AddMaterial(matname);
-    }
-
-    void CreateMaterialData(void (*createmat)(int,int,int, int *, double*, int *, QuadMesh3D *))
-    {
-        int nMats = 1;
-        int matnos[100];
-        double matVf[100];
-
-        // Create the data.
-        for(int i = 0; i < xdim-1; ++i)
-            for(int j = 0; j < ydim-1; ++j)
-                for(int k = 0; k < zdim-1; ++k)
-                {
-                    int zoneid = k*((ydim-1)*(xdim-1)) + j*(xdim-1) + i;
-                    (*createmat)(i,j,k, matnos, matVf, &nMats, this);
-                    if(nMats > 1)
-                        mats.AddMixed(zoneid, matnos, matVf, nMats);
-                    else
-                        mats.AddClean(zoneid, matnos[0]);
-                }
-
-         writeMaterial = true;
-    }
-
-    void AddSlice(const std::string &varName, const std::string &nmn, const std::string &nvn,
-        int sliceVal, int sliceDimension)
-    {
-        // Look for the variable name in the scalars array.
-        for(int i = 0; i < scalarData.size(); ++i)
-        {
-            if(scalarData[i]->GetName() == varName)
-            {
-                SliceInfo *slice = new SliceInfo(nmn, nvn, sliceVal, sliceDimension, scalarData[i]);
-                sliceInfo.push_back(slice);
-                return;
-            }
-        }
-
-        cerr << "The variable " << varName.c_str() << " is not a scalar variable." << endl;
-    }
-
-    void WriteFile(DBfile *db)
-    {
-         // Write the mesh.
-         WriteMesh(db);
-
-         // Write the scalar mesh data
-         int i;
-         for(i = 0; i < scalarData.size(); ++i)
-             scalarData[i]->WriteFile(db, meshName.c_str());
-
-         // Write the vector mesh data
-         for(i = 0; i < vectorData.size(); ++i)
-             vectorData[i]->WriteFile(db, meshName.c_str());
-
-         // Write the tensor mesh data
-         for(i = 0; i < tensorData.size(); ++i)
-             tensorData[i]->WriteFile(db, meshName.c_str());
-
-         // Write the material data
-         if(writeMaterial)
-             mats.WriteMaterial(db, "mat1", meshName.c_str(), xdim-1, ydim-1, zdim-1);
-
-         // Write the slices
-         for(i = 0; i < sliceInfo.size(); ++i)
-             sliceInfo[i]->WriteFile(db, this);
-    }
-
-protected:
-    virtual void WriteMesh(DBfile *db) = 0;
-    virtual void WriteMeshSlice(DBfile *db, const std::string &, int, int) = 0;
-
-    int xdim;
-    int ydim;
-    int zdim;
-    float *coordX;
-    float *coordY;
-    float *coordZ;
-    ScalarDataVector scalarData;
-    VectorDataVector vectorData;
-    TensorDataVector tensorData;
-    SliceInfoVector  sliceInfo;
-    MaterialList     mats;
-    bool             writeMaterial;
-    std::string      meshName;
-};
-
-// ****************************************************************************
-// Class: RectilinearMesh3D
-//
-// Purpose:
-//   Represents a 3D rectilinear mesh.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jun 21 13:54:28 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Fri Mar 14 09:33:46 PDT 2003
-//   I added the WriteMeshSlice method.
-//
-// ****************************************************************************
-
-class RectilinearMesh3D : public QuadMesh3D
-{
-public:
-    RectilinearMesh3D(int nx, int ny, int nz) : QuadMesh3D(nx, ny, nz, true)
-    {
-    }
-
-    virtual ~RectilinearMesh3D()
-    {
-    }
-
-    virtual float GetX(int x, int, int) const
-    {
-        return coordX[x];
-    }
-
-    virtual float GetY(int, int y, int) const
-    {
-        return coordY[y];
-    }
-
-    virtual float GetZ(int, int, int z) const
-    {
-        return coordZ[z];
-    }
-
-    void SetX(int x, float val)
-    {
-        coordX[x] = val;
-    }
-
-    void SetY(int y,float val)
-    {
-        coordY[y] = val;
-    }
-
-    void SetZ(int z, float val)
-    {
-        coordZ[z] = val;
-    }
-
-    void SetXValues(float minX, float maxX)
-    {
-        SetRange(coordX, minX, maxX, xdim);
-    }
-
-    void SetYValues(float minY, float maxY)
-    {
-        SetRange(coordY, minY, maxY, ydim);
-    }
-
-    void SetZValues(float minZ, float maxZ)
-    {
-        SetRange(coordZ, minZ, maxZ, zdim);
-    }
-
-protected:
-    virtual void WriteMesh(DBfile *db)
-    {
-         float *coords[3] = {coordX, coordY, coordZ};
-         int dims[3] = {xdim, ydim, zdim};
-
-         DBoptlist *optList = DBMakeOptlist(6);
-         DBAddOption(optList, DBOPT_XLABEL, (void*)"Width");
-         DBAddOption(optList, DBOPT_YLABEL, (void*)"Height");
-         DBAddOption(optList, DBOPT_ZLABEL, (void*)"Depth");
-         DBAddOption(optList, DBOPT_XUNITS, (void*)"parsec");
-         DBAddOption(optList, DBOPT_YUNITS, (void*)"parsec");
-         DBAddOption(optList, DBOPT_ZUNITS, (void*)"parsec");
-         DBPutQuadmesh(db, (char *)meshName.c_str(), NULL, coords, dims, 3,
-                       DB_FLOAT, DB_COLLINEAR, optList);
-         DBFreeOptlist(optList);
-    }
-
-    virtual void WriteMeshSlice(DBfile *db, const std::string &newMeshName,
-         int sliceVal, int sliceDimension)
-    {
-        float *slice_coordX, *slice_coordY;
-        int i, dims[2];
-
-        if(sliceDimension == 0)
-        {
-            dims[0] = zdim; dims[1] = ydim;
-            slice_coordX = new float[zdim];
-            for(i = 0; i < zdim; ++i)
-                slice_coordX[i] = coordZ[i];
-            slice_coordY = new float[ydim];
-            for(i = 0; i < ydim; ++i)
-                slice_coordY[i] = coordY[i];
-        }
-        else if(sliceDimension == 1)
-        {
-            dims[0] = xdim; dims[1] = zdim;
-            slice_coordX = new float[xdim];
-            for(i = 0; i < xdim; ++i)
-                slice_coordX[i] = coordX[i];
-            slice_coordY = new float[zdim];
-            for(i = 0; i < zdim; ++i)
-                slice_coordY[i] = coordZ[i];
-        }
-        else
-        {
-            dims[0] = xdim; dims[1] = ydim;
-            slice_coordX = new float[xdim];
-            for(i = 0; i < xdim; ++i)
-                slice_coordX[i] = coordX[i];
-            slice_coordY = new float[ydim];
-            for(i = 0; i < ydim; ++i)
-                slice_coordY[i] = coordY[i];
-        }
-
-         float *coords[] = {slice_coordX, slice_coordY};
-
-         DBoptlist *optList = DBMakeOptlist(6);
-         DBAddOption(optList, DBOPT_XLABEL, (void*)"Width");
-         DBAddOption(optList, DBOPT_YLABEL, (void*)"Height");
-         DBAddOption(optList, DBOPT_ZLABEL, (void*)"Depth");
-         DBAddOption(optList, DBOPT_XUNITS, (void*)"parsec");
-         DBAddOption(optList, DBOPT_YUNITS, (void*)"parsec");
-         DBPutQuadmesh(db, (char *)newMeshName.c_str(), NULL, coords, dims, 2,
-                       DB_FLOAT, DB_COLLINEAR, optList);
-         DBFreeOptlist(optList);
-
-         delete [] slice_coordX;
-         delete [] slice_coordY;
-    }
-
-    void SetRange(float *coord, float minval, float maxval, int steps)
-    {
-         for(int i = 0; i < steps; ++i)
-         {
-             float t = float(i) / float(steps - 1);
-             coord[i] = t*maxval + (1. - t)*minval;
-         }
-    }
-};
-
-// ****************************************************************************
-// Class: CurveMesh3D
-//
-// Purpose:
-//   Represents a 3D curvilinear mesh
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jun 21 13:55:27 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Fri Mar 14 09:33:32 PDT 2003
-//   I added the WriteMeshSlice method.
-//
-// ****************************************************************************
-
-class CurveMesh3D : public QuadMesh3D
-{
-public:
-    CurveMesh3D(int X, int Y, int Z) : QuadMesh3D(X, Y, Z, false)
-    {
-    }
-
-    virtual ~CurveMesh3D()
-    {
-    }
-
-    virtual float GetX(int x, int y, int z) const
-    {
-        return coordX[z*(ydim*xdim) + y*xdim + x];
-    }
-
-    virtual float GetY(int x, int y, int z) const
-    {
-        return coordY[z*(ydim*xdim) + y*xdim + x];
-    }
-
-    virtual float GetZ(int x, int y, int z) const
-    {
-        return coordZ[z*(ydim*xdim) + y*xdim + x];
-    }
-
-    void SetX(int x, int y, int z, float val)
-    {
-        coordX[z*(ydim*xdim) + y*xdim + x] = val;
-    }
-
-    void SetY(int x, int y, int z, float val)
-    {
-        coordY[z*(ydim*xdim) + y*xdim + x] = val;
-    }
-
-    void SetZ(int x, int y, int z, float val)
-    {
-        coordZ[z*(ydim*xdim) + y*xdim + x] = val;
-    }
-
-private:
-    virtual void WriteMesh(DBfile *db, const char *name)
-    {
-         float *coords[3] = {coordX, coordY, coordZ};
-         int dims[3] = {xdim, ydim, zdim};
-         DBoptlist *optList = DBMakeOptlist(6);
-         DBAddOption(optList, DBOPT_XLABEL, (void*)"Width");
-         DBAddOption(optList, DBOPT_YLABEL, (void*)"Height");
-         DBAddOption(optList, DBOPT_ZLABEL, (void*)"Depth");
-         DBAddOption(optList, DBOPT_XUNITS, (void*)"parsec");
-         DBAddOption(optList, DBOPT_YUNITS, (void*)"parsec");
-         DBAddOption(optList, DBOPT_ZUNITS, (void*)"parsec");
-         DBPutQuadmesh(db, (char *)meshName.c_str(), NULL, coords, dims,
-                       3, DB_FLOAT, DB_NONCOLLINEAR, NULL);
-         DBFreeOptlist(optList);
-    }
-
-    virtual void WriteMeshSlice(DBfile *db, const std::string &newMeshName,
-         int sliceVal, int sliceDimension)
-    {
-        float *slice_coordX, *slice_coordY;
-        int index = 0;
-        int dims[2];
-
-        if(sliceDimension == 0)
-        {
-            dims[0] = zdim; dims[1] = ydim;
-            slice_coordX = new float[zdim * ydim];
-            slice_coordY = new float[zdim * ydim];
-            for(int y = 0; y < ydim; ++y)
-                for(int z = 0; z < zdim; ++z, ++index)
-                {
-                    slice_coordX[index] = GetZ(sliceVal, y, z);
-                    slice_coordY[index] = GetY(sliceVal, y, z);
-                }
-        }
-        else if(sliceDimension == 1)
-        {
-            dims[0] = xdim; dims[1] = zdim;
-            slice_coordX = new float[xdim * zdim];
-            slice_coordY = new float[xdim * zdim];
-            for(int z = 0; z < zdim; ++z)
-                for(int x = 0; x < xdim; ++x, ++index)
-                {
-                    slice_coordX[index] = GetX(x, sliceVal, z);
-                    slice_coordY[index] = GetZ(x, sliceVal, z);
-                }
-        }
-        else
-        {
-            dims[0] = xdim; dims[1] = ydim;
-            slice_coordX = new float[xdim * ydim];
-            slice_coordY = new float[xdim * ydim];
-            for(int y = 0; y < ydim; ++y)
-                for(int x = 0; x < xdim; ++x, ++index)
-                {
-                    slice_coordX[index] = GetX(x, y, sliceVal);
-                    slice_coordY[index] = GetY(x, y, sliceVal);
-                }
-        }
-
-         float *coords[] = {slice_coordX, slice_coordY};
-
-         DBoptlist *optList = DBMakeOptlist(6);
-         DBAddOption(optList, DBOPT_XLABEL, (void*)"Width");
-         DBAddOption(optList, DBOPT_YLABEL, (void*)"Height");
-         DBAddOption(optList, DBOPT_ZLABEL, (void*)"Depth");
-         DBAddOption(optList, DBOPT_XUNITS, (void*)"parsec");
-         DBAddOption(optList, DBOPT_YUNITS, (void*)"parsec");
-         DBPutQuadmesh(db, (char *)newMeshName.c_str(), NULL, coords, dims, 2,
-                       DB_FLOAT, DB_COLLINEAR, optList);
-         DBFreeOptlist(optList);
-
-         delete [] slice_coordX;
-         delete [] slice_coordY;
-    }
-};
 
 // 
 // Template based matrix solver class.
@@ -1569,438 +266,6 @@ public:
 
 typedef matrix<double> DoubleMatrix;
 
-//
-// Global values
-//
-static int G_nPoints = 100;
-static float *G_coords[3] = {0,0,0};
-static float *G_values = 0;
-
-static double *G_Ci = 0;
-static double G_r = 1.;
-static double G_rSquared = 1.;
-static double G_alpha = -0.5;
-
-// ****************************************************************************
-// Function: ShepardGlobal
-//
-// Purpose:
-//   Callback function that creates data by interpolating scattered data
-//   points using Shepard's global method.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jun 21 13:56:07 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-float
-ShepardGlobal(float *pt, QuadMesh3D *)
-{
-    // Find the value using global shepard's method.
-    double sum_di2inv = 0.;
-    double sum_fi_di2inv = 0.;
-
-    for(int i = 0; i < G_nPoints; ++i)
-    {
-        double dX = pt[0] - G_coords[0][i];
-        double dY = pt[1] - G_coords[1][i];
-        double dZ = pt[2] - G_coords[2][i];
-
-        double di2inv = 1. / (dX*dX + dY*dY + dZ*dZ);
-        double fi_di2inv = double(G_values[i]) * di2inv;
-
-        // Add them to the sums.
-        sum_di2inv += di2inv;
-        sum_fi_di2inv += fi_di2inv;
-    }
-
-    float S = float(sum_fi_di2inv / sum_di2inv);
-    return S;
-}
-
-// ****************************************************************************
-// Function: HardyGlobal
-//
-// Purpose:
-//   Callback function that creates data by interpolating scattered data
-//   points using Hardy's global method.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jun 21 13:56:07 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-float
-HardyGlobal(float *pt, QuadMesh3D *)
-{
-    double sum = 0.;
-
-    for(int i = 0; i < G_nPoints; ++i)
-    {
-        double dX = pt[0] - G_coords[0][i];
-        double dY = pt[1] - G_coords[1][i];
-        double dZ = pt[2] - G_coords[2][i];
-        double di2 = (dX*dX + dY*dY + dZ*dZ);
-
-        // G_alpha is 0.5 or -0.5
-        sum += (G_Ci[i] * pow(G_rSquared + di2, G_alpha));
-    }
-
-    return float(sum);
-}
-
-// ****************************************************************************
-// Function: Radial
-//
-// Purpose: 
-//   Callback function that creates data that is the distance from one
-//   opposite corner to another.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Oct 4 14:20:37 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-float
-Radial(float *pt, QuadMesh3D *)
-{
-    float dX = pt[0] - XMAX;
-    float dY = pt[1] - YMAX;
-    float dZ = pt[2] - ZMAX;
-    return (float)sqrt(dX*dX + dY*dY + dZ*dZ);
-}
-
-// ****************************************************************************
-// Method: IncreasingX
-//
-// Purpose: 
-//   Callback function that creates scalar data that is the same as the X coord.
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Oct 4 14:21:32 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-float
-IncreasingX(float *pt, QuadMesh3D *)
-{
-    return pt[0];
-}
-
-// ****************************************************************************
-//   Functions for creating the material.
-// ****************************************************************************
-
-bool
-PointInSphere(float pt[3], float origin[3], float rad)
-{
-    float dX = pt[0] - origin[0];
-    float dY = pt[1] - origin[1];
-    float dZ = pt[2] - origin[2];
-    
-    return (sqrt(dX*dX + dY*dY + dZ*dZ) <= rad);
-}
-
-void
-MatRule(float *pt, int *matnos, double *matVf, int *nMats, int *dims)
-{
-    float origin1[] = {0.,0.,0.};
-    float rad1 = 1.3 * 7.;
-    float rad2 = 1.1 * 7.;
-
-    float dX = pt[0] - origin1[0];
-    float dY = pt[1] - origin1[1];
-    float dZ = pt[2] - origin1[2];
-    float dist = sqrt(dX*dX + dY*dY + dZ*dZ);
-
-    float idX = (XMAX-XMIN) / float(dims[0]);
-    float idY = (YMAX-YMIN) / float(dims[1]);
-    float idZ = (ZMAX-ZMIN) / float(dims[2]);
-    float hyp = sqrt(idX*idX + idY*idY + idZ*idZ);
-
-    if(dist < (rad2 - hyp))
-    {
-        // Clean inner air
-        matnos[0] = 1;
-        matVf[0] = 1.;
-        *nMats = 1;
-    }
-    else if(dist > (rad1 + hyp))
-    {
-        // Clean outer air
-        matnos[0] = 1;
-        matVf[0] = 1.;
-        *nMats = 1;
-    }
-    else
-    {
-        // probably mixed
-        float tetrad = 1.6 * 7.;
-        float holerad = 1.2 * 7.;
-        float tetdX = tetrad * cos(30. * 6.28/360.);
-        float tetdY = tetrad * sin(30. * 6.28/360.);
-        float origin_a[] = {origin1[0], origin1[1]+tetrad, origin1[2]};
-        float origin_b[] = {origin1[0]-tetdX, origin1[1]-tetdY, origin1[2]+tetdY};
-        float origin_c[] = {origin1[0]+tetdX, origin1[1]-tetdY, origin1[2]+tetdY};
-        float origin_d[] = {origin1[0], origin1[1]-tetdY, origin1[2]-tetrad};
-
-#define SUBDIV 4.
-        int air = 0;
-        int chrome = 0;
-        int count = 0;
-
-        for(float x = pt[0]; x < pt[0] + idX; x += (idX / SUBDIV))
-            for(float y = pt[1]; y < pt[1] + idY; y += (idY / SUBDIV))
-                for(float z = pt[2]; z < pt[2] + idY; z += (idZ / SUBDIV))
-                {
-                    float pt2[] = {x,y,z};
-                    if(PointInSphere(pt2, origin1, rad1) &&
-                       !PointInSphere(pt2, origin1, rad2))
-                    {
-                        // The point is in the chrome
-                        if(PointInSphere(pt2, origin_a, holerad) ||
-                           PointInSphere(pt2, origin_b, holerad) ||
-                           PointInSphere(pt2, origin_c, holerad) ||
-                           PointInSphere(pt2, origin_d, holerad))
-                        {
-                            // The point is in an area that is subtracted
-                            // away. Make it air.
-                            ++air;
-                        }
-                        else
-                            ++chrome;
-                    }
-                    else
-                        ++air;
-                    ++count;
-                }
-
-         // Figure out the volume fractions
-         if(air == 0)
-         {
-             matnos[0] = 2; // totally chrome
-             matVf[0] = 1.;
-             *nMats = 1;
-         }
-         else if(chrome == 0)
-         {
-             matnos[0] = 1; // totally air
-             matVf[0] = 1.;
-             *nMats = 1;
-         }
-         else
-         {
-             matnos[0] = 1;
-             matnos[1] = 2;
-             matVf[0] = float(air) / float(count);
-             matVf[1] = 1. - matVf[0];
-             *nMats = 2;
-         }
-    }
-}
-
-void
-CreateMaterial(int i, int j, int k, int *matnos, double *matVf, int *nMats,
-    QuadMesh3D *m)
-{
-    float pt[3];
-    pt[0] = m->GetX(i,j,k);
-    pt[1] = m->GetY(i,j,k);
-    pt[2] = m->GetZ(i,j,k);
-
-    int dims[3];
-    dims[0] = m->XDim();
-    dims[1] = m->YDim();
-    dims[2] = m->ZDim();
-
-    MatRule(pt, matnos, matVf, nMats, dims);
-}
-
-float
-AirVf(int i, int j, int k, QuadMesh3D *m)
-{
-    int    matnos[2];
-    double matVf[2];
-    int    nMats;
-
-    float pt[3];
-    pt[0] = m->GetX(i,j,k);
-    pt[1] = m->GetY(i,j,k);
-    pt[2] = m->GetZ(i,j,k);
-
-    int dims[3];
-    dims[0] = m->XDim();
-    dims[1] = m->YDim();
-    dims[2] = m->ZDim();
-
-    MatRule(pt, matnos, matVf, &nMats, dims);
-
-    float retval = float(matVf[0]);
-    if(nMats == 1)
-    {
-        if(matnos[0] == 1)
-            retval = 1.;
-        else
-            retval = 0.;
-    }
-
-    return retval;
-}
-
-float
-ChromeVf(int i, int j, int k, QuadMesh3D *m)
-{
-    int    matnos[2];
-    double matVf[2];
-    int    nMats;
-
-    float pt[3];
-    pt[0] = m->GetX(i,j,k);
-    pt[1] = m->GetY(i,j,k);
-    pt[2] = m->GetZ(i,j,k);
-
-    int dims[3];
-    dims[0] = m->XDim();
-    dims[1] = m->YDim();
-    dims[2] = m->ZDim();
-
-    MatRule(pt, matnos, matVf, &nMats, dims);
-
-    float retval;
-    if(nMats == 1)
-    {
-        if(matnos[0] == 2)
-            retval = 1.;
-        else
-            retval = 0.;
-    }
-    else
-        retval = float(matVf[1]);
-
-    return retval;
-}
-
-// ****************************************************************************
-// Function: InitializeHardyGlobal
-//
-// Purpose:
-//   Finds coefficients required for Hardy's method.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jun 21 13:57:09 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-InitializeHardyGlobal()
-{
-    int    i, j;
-
-    //
-    // Find coefficients for the system.
-    //
-    G_rSquared = G_r * G_r;
-
-    // Create the F vector.
-    double *F = new double[G_nPoints];
-    for(i = 0; i < G_nPoints; ++i)
-        F[i] = double(G_values[i]);
-
-    // Create and fill the M matrix.
-    DoubleMatrix M(G_nPoints, G_nPoints);
-    for(j = 0; j < G_nPoints; ++j)
-    {
-        float p1[3] = {G_coords[0][j], G_coords[1][j], G_coords[2][j]};
-
-        double *rowptr = M.getrowpointer(j);
-
-        for(i = 0; i < G_nPoints; ++i)
-        {
-            double dX = p1[0] - G_coords[0][i];
-            double dY = p1[1] - G_coords[1][i];
-            double dZ = p1[2] - G_coords[2][i];
-            double di2 = dX*dX + dY*dY + dZ*dZ;
-
-            // Put the value into the element m[j][i].
-            *rowptr++ = pow(G_rSquared + di2, G_alpha);
-        }
-    }
-
-    // Invert the matrix to find the coefficients Ci.
-    M.invert();
-    G_Ci = new double[G_nPoints];
-    for(j = 0; j < G_nPoints; ++j)
-    {
-        G_Ci[j] = 0.;
-        double *rowptr = M.getrowpointer(j);
-        for(i = 0; i < G_nPoints; ++i)
-            G_Ci[j] += (rowptr[i] * F[i]);
-    }
-
-    delete [] F;
-}
-
-// ****************************************************************************
-// Function:  WritePoints
-//
-// Purpose:
-//   Writes the point mesh and the point var that represent the scattered data.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jun 21 13:58:56 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Wed Jul 21 14:39:02 PST 2004
-//   Added units for the pointmesh and pointvar.
-//
-// ****************************************************************************
-
-void WritePoints(DBfile *db)
-{
-    // Write the point mesh
-    DBoptlist *optlist = DBMakeOptlist(6);
-    DBAddOption(optlist, DBOPT_XLABEL, (void*)"Width");
-    DBAddOption(optlist, DBOPT_YLABEL, (void*)"Height");
-    DBAddOption(optlist, DBOPT_ZLABEL, (void*)"Depth");
-    DBAddOption(optlist, DBOPT_XUNITS, (void *)"parsec");
-    DBAddOption(optlist, DBOPT_YUNITS, (void *)"parsec");
-    DBAddOption(optlist, DBOPT_ZUNITS, (void *)"parsec");
-    float *pcoords[3] = {G_coords[0], G_coords[1], G_coords[2]};
-    DBPutPointmesh(db, "PointMesh", 3, pcoords, G_nPoints, DB_FLOAT, optlist);
-    DBFreeOptlist(optlist);
-
-    // Write the point var
-    optlist = DBMakeOptlist(1);
-    DBAddOption(optlist, DBOPT_UNITS, (void *)"Joules");
-    float *vals[1] = {G_values};
-    DBPutPointvar(db, "PointVar", "PointMesh", 1, vals, G_nPoints, DB_FLOAT, optlist);
-    DBFreeOptlist(optlist);
-}
-
 // ****************************************************************************
 // Function: GetRandomNumber
 //
@@ -2170,6 +435,437 @@ double GetRandomNumber()
 #endif
 }
 
+//
+// Global values
+//
+static int G_nPoints = 100;
+static float *G_coords[3] = {0,0,0};
+static float *G_values = 0;
+
+static double *G_Ci = 0;
+static double G_r = 1.;
+static double G_rSquared = 1.;
+static double G_alpha = -0.5;
+
+// ****************************************************************************
+// Function: ShepardGlobal
+//
+// Purpose:
+//   Callback function that creates data by interpolating scattered data
+//   points using Shepard's global method.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 21 13:56:07 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+float
+ShepardGlobal(float *pt, QuadMesh *)
+{
+    // Find the value using global shepard's method.
+    double sum_di2inv = 0.;
+    double sum_fi_di2inv = 0.;
+
+    for(int i = 0; i < G_nPoints; ++i)
+    {
+        double dX = pt[0] - G_coords[0][i];
+        double dY = pt[1] - G_coords[1][i];
+        double dZ = pt[2] - G_coords[2][i];
+
+        double di2inv = 1. / (dX*dX + dY*dY + dZ*dZ);
+        double fi_di2inv = double(G_values[i]) * di2inv;
+
+        // Add them to the sums.
+        sum_di2inv += di2inv;
+        sum_fi_di2inv += fi_di2inv;
+    }
+
+    float S = float(sum_fi_di2inv / sum_di2inv);
+    return S;
+}
+
+// ****************************************************************************
+// Function: HardyGlobal
+//
+// Purpose:
+//   Callback function that creates data by interpolating scattered data
+//   points using Hardy's global method.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 21 13:56:07 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+float
+HardyGlobal(float *pt, QuadMesh *)
+{
+    double sum = 0.;
+
+    for(int i = 0; i < G_nPoints; ++i)
+    {
+        double dX = pt[0] - G_coords[0][i];
+        double dY = pt[1] - G_coords[1][i];
+        double dZ = pt[2] - G_coords[2][i];
+        double di2 = (dX*dX + dY*dY + dZ*dZ);
+
+        // G_alpha is 0.5 or -0.5
+        sum += (G_Ci[i] * pow(G_rSquared + di2, G_alpha));
+    }
+
+    return float(sum);
+}
+
+// ****************************************************************************
+// Function: Radial
+//
+// Purpose: 
+//   Callback function that creates data that is the distance from one
+//   opposite corner to another.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 4 14:20:37 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+float
+Radial(float *pt, QuadMesh *)
+{
+    float dX = pt[0] - XMAX;
+    float dY = pt[1] - YMAX;
+    float dZ = pt[2] - ZMAX;
+    return (float)sqrt(dX*dX + dY*dY + dZ*dZ);
+}
+
+// ****************************************************************************
+// Method: IncreasingX
+//
+// Purpose: 
+//   Callback function that creates scalar data that is the same as the X coord.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 4 14:21:32 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+float
+IncreasingX(float *pt, QuadMesh *)
+{
+    return pt[0];
+}
+
+// ****************************************************************************
+//   Functions for creating the material.
+// ****************************************************************************
+
+bool
+PointInSphere(float pt[3], float origin[3], float rad)
+{
+    float dX = pt[0] - origin[0];
+    float dY = pt[1] - origin[1];
+    float dZ = pt[2] - origin[2];
+    
+    return (sqrt(dX*dX + dY*dY + dZ*dZ) <= rad);
+}
+
+void
+MatRule(float *pt, int *matnos, double *matVf, int *nMats, int *dims)
+{
+    float origin1[] = {0.,0.,0.};
+    float rad1 = 1.3 * 7.;
+    float rad2 = 1.1 * 7.;
+
+    float dX = pt[0] - origin1[0];
+    float dY = pt[1] - origin1[1];
+    float dZ = pt[2] - origin1[2];
+    float dist = sqrt(dX*dX + dY*dY + dZ*dZ);
+
+    float idX = (XMAX-XMIN) / float(dims[0]);
+    float idY = (YMAX-YMIN) / float(dims[1]);
+    float idZ = (ZMAX-ZMIN) / float(dims[2]);
+    float hyp = sqrt(idX*idX + idY*idY + idZ*idZ);
+
+    if(dist < (rad2 - hyp))
+    {
+        // Clean inner air
+        matnos[0] = 1;
+        matVf[0] = 1.;
+        *nMats = 1;
+    }
+    else if(dist > (rad1 + hyp))
+    {
+        // Clean outer air
+        matnos[0] = 1;
+        matVf[0] = 1.;
+        *nMats = 1;
+    }
+    else
+    {
+        // probably mixed
+        float tetrad = 1.6 * 7.;
+        float holerad = 1.2 * 7.;
+        float tetdX = tetrad * cos(30. * 6.28/360.);
+        float tetdY = tetrad * sin(30. * 6.28/360.);
+        float origin_a[] = {origin1[0], origin1[1]+tetrad, origin1[2]};
+        float origin_b[] = {origin1[0]-tetdX, origin1[1]-tetdY, origin1[2]+tetdY};
+        float origin_c[] = {origin1[0]+tetdX, origin1[1]-tetdY, origin1[2]+tetdY};
+        float origin_d[] = {origin1[0], origin1[1]-tetdY, origin1[2]-tetrad};
+
+#define SUBDIV 4.
+        int air = 0;
+        int chrome = 0;
+        int count = 0;
+
+        for(float x = pt[0]; x < pt[0] + idX; x += (idX / SUBDIV))
+            for(float y = pt[1]; y < pt[1] + idY; y += (idY / SUBDIV))
+                for(float z = pt[2]; z < pt[2] + idY; z += (idZ / SUBDIV))
+                {
+                    float pt2[] = {x,y,z};
+                    if(PointInSphere(pt2, origin1, rad1) &&
+                       !PointInSphere(pt2, origin1, rad2))
+                    {
+                        // The point is in the chrome
+                        if(PointInSphere(pt2, origin_a, holerad) ||
+                           PointInSphere(pt2, origin_b, holerad) ||
+                           PointInSphere(pt2, origin_c, holerad) ||
+                           PointInSphere(pt2, origin_d, holerad))
+                        {
+                            // The point is in an area that is subtracted
+                            // away. Make it air.
+                            ++air;
+                        }
+                        else
+                            ++chrome;
+                    }
+                    else
+                        ++air;
+                    ++count;
+                }
+
+         // Figure out the volume fractions
+         if(air == 0)
+         {
+             matnos[0] = 2; // totally chrome
+             matVf[0] = 1.;
+             *nMats = 1;
+         }
+         else if(chrome == 0)
+         {
+             matnos[0] = 1; // totally air
+             matVf[0] = 1.;
+             *nMats = 1;
+         }
+         else
+         {
+             matnos[0] = 1;
+             matnos[1] = 2;
+             matVf[0] = float(air) / float(count);
+             matVf[1] = 1. - matVf[0];
+             *nMats = 2;
+         }
+    }
+}
+
+void
+CreateMaterial(int i, int j, int k, int *matnos, double *matVf, int *nMats,
+    QuadMesh *m)
+{
+    float pt[3];
+    pt[0] = m->GetX(i,j,k);
+    pt[1] = m->GetY(i,j,k);
+    pt[2] = m->GetZ(i,j,k);
+
+    int dims[3];
+    dims[0] = m->XDim();
+    dims[1] = m->YDim();
+    dims[2] = m->ZDim();
+
+    MatRule(pt, matnos, matVf, nMats, dims);
+}
+
+float
+AirVf(int i, int j, int k, QuadMesh *m)
+{
+    int    matnos[2];
+    double matVf[2];
+    int    nMats;
+
+    float pt[3];
+    pt[0] = m->GetX(i,j,k);
+    pt[1] = m->GetY(i,j,k);
+    pt[2] = m->GetZ(i,j,k);
+
+    int dims[3];
+    dims[0] = m->XDim();
+    dims[1] = m->YDim();
+    dims[2] = m->ZDim();
+
+    MatRule(pt, matnos, matVf, &nMats, dims);
+
+    float retval = float(matVf[0]);
+    if(nMats == 1)
+    {
+        if(matnos[0] == 1)
+            retval = 1.;
+        else
+            retval = 0.;
+    }
+
+    return retval;
+}
+
+float
+ChromeVf(int i, int j, int k, QuadMesh *m)
+{
+    int    matnos[2];
+    double matVf[2];
+    int    nMats;
+
+    float pt[3];
+    pt[0] = m->GetX(i,j,k);
+    pt[1] = m->GetY(i,j,k);
+    pt[2] = m->GetZ(i,j,k);
+
+    int dims[3];
+    dims[0] = m->XDim();
+    dims[1] = m->YDim();
+    dims[2] = m->ZDim();
+
+    MatRule(pt, matnos, matVf, &nMats, dims);
+
+    float retval;
+    if(nMats == 1)
+    {
+        if(matnos[0] == 2)
+            retval = 1.;
+        else
+            retval = 0.;
+    }
+    else
+        retval = float(matVf[1]);
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: InitializeHardyGlobal
+//
+// Purpose:
+//   Finds coefficients required for Hardy's method.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 21 13:57:09 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+InitializeHardyGlobal()
+{
+    int    i, j;
+
+    //
+    // Find coefficients for the system.
+    //
+    G_rSquared = G_r * G_r;
+
+    // Create the F vector.
+    double *F = new double[G_nPoints];
+    for(i = 0; i < G_nPoints; ++i)
+        F[i] = double(G_values[i]);
+
+    // Create and fill the M matrix.
+    DoubleMatrix M(G_nPoints, G_nPoints);
+    for(j = 0; j < G_nPoints; ++j)
+    {
+        float p1[3] = {G_coords[0][j], G_coords[1][j], G_coords[2][j]};
+
+        double *rowptr = M.getrowpointer(j);
+
+        for(i = 0; i < G_nPoints; ++i)
+        {
+            double dX = p1[0] - G_coords[0][i];
+            double dY = p1[1] - G_coords[1][i];
+            double dZ = p1[2] - G_coords[2][i];
+            double di2 = dX*dX + dY*dY + dZ*dZ;
+
+            // Put the value into the element m[j][i].
+            *rowptr++ = pow(G_rSquared + di2, G_alpha);
+        }
+    }
+
+    // Invert the matrix to find the coefficients Ci.
+    M.invert();
+    G_Ci = new double[G_nPoints];
+    for(j = 0; j < G_nPoints; ++j)
+    {
+        G_Ci[j] = 0.;
+        double *rowptr = M.getrowpointer(j);
+        for(i = 0; i < G_nPoints; ++i)
+            G_Ci[j] += (rowptr[i] * F[i]);
+    }
+
+    delete [] F;
+}
+
+// ****************************************************************************
+// Function:  WritePoints
+//
+// Purpose:
+//   Writes the point mesh and the point var that represent the scattered data.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 21 13:58:56 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Wed Jul 21 14:39:02 PST 2004
+//   Added units for the pointmesh and pointvar.
+//
+// ****************************************************************************
+
+void WritePoints(DBfile *db)
+{
+    // Write the point mesh
+    DBoptlist *optlist = DBMakeOptlist(6);
+    DBAddOption(optlist, DBOPT_XLABEL, (void*)"Width");
+    DBAddOption(optlist, DBOPT_YLABEL, (void*)"Height");
+    DBAddOption(optlist, DBOPT_ZLABEL, (void*)"Depth");
+    DBAddOption(optlist, DBOPT_XUNITS, (void *)"parsec");
+    DBAddOption(optlist, DBOPT_YUNITS, (void *)"parsec");
+    DBAddOption(optlist, DBOPT_ZUNITS, (void *)"parsec");
+    float *pcoords[3] = {G_coords[0], G_coords[1], G_coords[2]};
+    DBPutPointmesh(db, "PointMesh", 3, pcoords, G_nPoints, DB_FLOAT, optlist);
+    DBFreeOptlist(optlist);
+
+    // Write the point var
+    optlist = DBMakeOptlist(1);
+    DBAddOption(optlist, DBOPT_UNITS, (void *)"Joules");
+    float *vals[1] = {G_values};
+    DBPutPointvar(db, "PointVar", "PointMesh", 1, vals, G_nPoints, DB_FLOAT, optlist);
+    DBFreeOptlist(optlist);
+}
 
 // ****************************************************************************
 // Function: main
@@ -2273,10 +969,12 @@ main(int argc, char *argv[])
     DBfile *db;
     db = DBCreate("noise.silo", DB_CLOBBER, DB_LOCAL, "VisIt noise dataset", driver);
 
-    RectilinearMesh3D B(isteps, jsteps, ksteps);
+    RectilinearMesh B(isteps, jsteps, ksteps);
     B.SetXValues(XMIN, XMAX);
     B.SetYValues(YMIN, YMAX);
     B.SetZValues(ZMIN, ZMAX);
+    B.SetMeshLabels("Width", "Height", "Depth");
+    B.SetMeshUnits("parsec", "parsec", "parsec");
 
     // Create some scattered points with values.
     G_coords[0] = new float[G_nPoints];
@@ -2299,15 +997,19 @@ main(int argc, char *argv[])
     // Initialize the hardy global matrix
     InitializeHardyGlobal();
 
-    B.CreateNodalData("shepardglobal", ShepardGlobal);
-    B.CreateNodalData("hardyglobal", HardyGlobal);
-    B.CreateGradient("hardyglobal", "grad");
+    // Create the fields. We pass the units in now. Note that the units
+    // don't really make sense and their more correct units appear in
+    // comments. I'm not changing them because that would mess up the
+    // VisIt test suite.
+    B.CreateNodalData("shepardglobal", ShepardGlobal, "Joules");
+    B.CreateNodalData("hardyglobal", HardyGlobal, "Joules");
+    B.CreateGradient("hardyglobal", "grad", "cm/s"); // Joules/parsec
     B.CreateGradientTensor("hardyglobal", "grad_tensor");
-    B.CreateNodalData("x", IncreasingX);
-    B.CreateNodalData("radial", Radial);
-    B.CreateZonalData("airVf", AirVf);
-    B.CreateGradient("airVf", "airVfGradient");
-    B.CreateZonalData("chromeVf", ChromeVf);
+    B.CreateNodalData("x", IncreasingX, "Joules"); // parsec
+    B.CreateNodalData("radial", Radial, "Joules"); // parsec
+    B.CreateZonalData("airVf", AirVf, "Joules"); // VF 
+    B.CreateGradient("airVf", "airVfGradient", "cm/s"); // VF / parsec
+    B.CreateZonalData("chromeVf", ChromeVf, "Joules"); // VF
     B.AddMaterial("air");
     B.AddMaterial("chrome");
     B.CreateMaterialData(CreateMaterial);
@@ -2316,7 +1018,6 @@ main(int argc, char *argv[])
     if(writePoints)
         WritePoints(db);
     DBClose(db);
-
 
     // Delete the global arrays
     delete [] G_coords[0];
