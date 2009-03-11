@@ -539,6 +539,10 @@
 #
 #     Mark C. Miller, Thu Mar  5 16:33:45 PST 2009
 #     I fixed problems that arose due to a bad commit.
+#
+#     Mark C. Miller, Wed Mar 11 14:24:36 PDT 2009
+#     Fixed convenience logic for enabling ALL third party I/O libs for
+#     dbio-only builds.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -8188,7 +8192,7 @@ fi
 # As a temporary convenience, for a dbio-only build, we turn on almost all
 # of the 3rd party I/O libs used by database plugins.
 #
-if [[ "$DO_DBIO_ONLY" ]]; then
+if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
     DO_HDF4="yes"
     ON_HDF4="on"
     DO_HDF5="yes"
