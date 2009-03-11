@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/sh
 #
 #  Script: co_rctrunk
 # 
@@ -16,6 +16,9 @@
 #    Sean Ahern, Thu May 15 16:53:56 EDT 2008
 #    Fixed \t printing problems by turning them into spaces.
 #
+#    Tom Fogal, Wed Mar 11 10:09:20 MST 2009
+#    Converted from Korn shell to Bourne shell
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -23,7 +26,7 @@ issueHelp="no"
 # Supresses print statement when you change directories
 CDPATH=""
 
-P=$(whence $0)
+P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
@@ -160,6 +163,3 @@ echo ""
 echo "Your check out is ready"
 echo "cd to the \"${1}_trunk\" directory to access the working copy"
 echo ""
-
-return 0
-
