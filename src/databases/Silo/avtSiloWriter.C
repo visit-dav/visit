@@ -65,6 +65,7 @@
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <Utility.h>
 
 #include <silo.h>
 
@@ -84,6 +85,11 @@ using std::vector;
 //
 //  Programmer: Mark C. Miller, Tue Aug 26 14:18:13 PDT 2008
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 6 09:56:33 PDT 2009
+//    Allow / since we'll get rid of them using another method where we use
+//    them to create directories.
+//
 // ****************************************************************************
 static const char *VN(const string &n)
 {
@@ -95,12 +101,107 @@ static const char *VN(const string &n)
     vn[km] = n;
     for (size_t i = 0; i < vn[km].size(); i++)
     {
-        if (isalnum(vn[km][i]) || vn[km][i] == '_')
+        if (isalnum(vn[km][i]) || vn[km][i] == '_' || vn[km][i] == '/')
             continue;
         vn[km][i] = '_';
     }
 
     return vn[km].c_str();
+}
+
+// ****************************************************************************
+// Function: BeginVar
+//
+// Purpose: 
+//   Splits a name containing '/' into separate names and makes Silo directories
+//   for the names up to the last name, which is the name of an object.
+//
+// Arguments:
+//   dbfile  : The Silo file.
+//   name    : The name to be split.
+//   nlevels : The number of levels in the name.
+//
+// Returns:    The object name.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 6 15:31:08 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+string 
+BeginVar(DBfile *dbfile, const string &name, int &nlevels)
+{
+    stringVector names = SplitValues(name, '/');
+    nlevels = 0;
+    for(size_t i = 0; i < names.size()-1; ++i)
+    {
+        int t = DBInqVarType(dbfile, names[i].c_str());
+        if(t != DB_DIR)
+            DBMkDir(dbfile, names[i].c_str());
+        DBSetDir(dbfile, names[i].c_str());
+        ++nlevels;
+    }
+    string s(name);
+    if(names.size() > 0)
+        s = names[names.size()-1];
+    VN(s);
+    return s;
+}
+
+// ****************************************************************************
+// Function: EndVar
+//
+// Purpose: 
+//   Back out of Silo subdirectories when we're done writing a variable.
+//
+// Arguments:
+//   dbfile : The Silo file.
+//   nlevels : The number of levels to back up.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 6 15:34:57 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EndVar(DBfile *dbfile, int nlevels)
+{
+    for(int i = 0; i < nlevels; ++i)
+        DBSetDir(dbfile, "..");
+}
+
+// ****************************************************************************
+// Function: AbsoluteName 
+//
+// Purpose: 
+//   Prepends a '/' on the name when the number of levels > 0. This is good for
+//   determining a mesh name for a variable.
+//
+// Arguments:
+//   name    : The name to decorate.
+//   nlevels : The number of levels.
+//  
+// Returns:    The name to use
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 6 15:40:00 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+string
+AbsoluteName(const string &name, int nlevels)
+{
+    return (nlevels > 0) ? (string("/") + name) : name;
 }
 
 // ****************************************************************************
@@ -288,12 +389,19 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 15:00:31 PST 2009
+//    Allow subdirectories.
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
 {
     int   i,j,k;
+
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, mmd->name, nlevels);
 
     //
     // Determine what the Silo type is.
@@ -335,7 +443,12 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
         meshtypes[i] = silo_mesh_type;
         char tmp[1024];
         if (singleFile)
-            sprintf(tmp, "domain_%d/%s", i, VN(mmd->name));
+        {
+            if(nlevels > 0)
+                sprintf(tmp, "/domain_%d/%s", i, VN(mmd->name));
+            else
+                sprintf(tmp, "domain_%d/%s", i, VN(mmd->name));
+        }
         else
             sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i,VN(mmd->name));
         mesh_names[i] = new char[strlen(tmp)+1];
@@ -380,9 +493,8 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
     //
     // Write the actual header information.
     //
-    DBPutMultimesh(dbfile, (char *) VN(mmd->name),
+    DBPutMultimesh(dbfile, (char *) meshName.c_str(),
         nblocks, mesh_names, meshtypes, tmpOptlist);
-
 
     //
     // Clean up memory.
@@ -396,6 +508,8 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
     delete [] meshtypes;
     delete [] extents;
     delete [] zone_counts;
+
+    EndVar(dbfile, nlevels);
 }
 
 
@@ -425,6 +539,12 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
 //
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 15:00:31 PST 2009
+//    Allow subdirectories. I also fixed a bug with adding extentsize to the
+//    option list. The address of a temporary variable was taken and then
+//    it went out of scope.
+//
 // ****************************************************************************
 
 void
@@ -432,6 +552,12 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
                                  const avtMeshMetaData *mmd)
 {
     int   i,j,k;
+
+    //
+    // Begin the variable
+    //
+    int nlevels = 0;
+    string varName = BeginVar(dbfile, sname, nlevels);
 
     //
     // Determine what the Silo type is.
@@ -486,7 +612,12 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
         vartypes[i] = silo_var_type;
         char tmp[1024];
         if (singleFile)
-            sprintf(tmp, "domain_%d/%s", i, VN(sname));
+        {
+            if(nlevels > 0)
+                sprintf(tmp, "/domain_%d/%s", i, VN(sname));
+            else
+                sprintf(tmp, "domain_%d/%s", i, VN(sname));
+        }
         else
             sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, VN(sname));
         var_names[i] = new char[strlen(tmp)+1];
@@ -495,9 +626,9 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
         if (extents != 0)
         {
             for (j = 0; j < ncomps; j++)
-               extents[k++] = minVals[i*ncomps+j];
+                extents[k++] = minVals[i*ncomps+j];
             for (j = 0; j < ncomps; j++)
-               extents[k++] = maxVals[i*ncomps+j];
+                extents[k++] = maxVals[i*ncomps+j];
         }
     }
 
@@ -518,10 +649,10 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
         DBAddOption(tmpOptlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
 
     // the following silo options exist only for silo 4.4 and later
+    int extsize = ncomps * 2;
     if (extents != 0)
     {
 #if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
-        int extsize = ncomps * 2;
         DBAddOption(tmpOptlist, DBOPT_EXTENTS_SIZE, &extsize);
         DBAddOption(tmpOptlist, DBOPT_EXTENTS, extents);
 #endif
@@ -530,7 +661,7 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     //
     // Write the actual header information.
     //
-    DBPutMultivar(dbfile, (char *) VN(sname),
+    DBPutMultivar(dbfile, (char *) varName.c_str(),
         nblocks, var_names, vartypes, tmpOptlist);
 
     //
@@ -545,6 +676,11 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     delete [] vartypes;
     if (extents != 0)
         delete [] extents;
+
+    //
+    // End the variable
+    //
+    EndVar(dbfile, nlevels);
 }
 
 
@@ -567,6 +703,10 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
 //
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 15:00:31 PST 2009
+//    Allow subdirectories.
+//
 // ****************************************************************************
 
 void
@@ -574,6 +714,9 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
                                  const avtMeshMetaData *mmd)
 {
     int   i;
+
+    int nlevels = 0;
+    string matName = BeginVar(dbfile, mname, nlevels);
 
     //
     // Construct the names for each mat
@@ -583,7 +726,12 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
     {
         char tmp[1024];
         if (singleFile)
-            sprintf(tmp, "domain_%d/%s", i, VN(mname));
+        {
+            if(nlevels > 0)
+                sprintf(tmp, "/domain_%d/%s", i, VN(mname));
+            else
+                sprintf(tmp, "domain_%d/%s", i, VN(mname));
+        }
         else
             sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, VN(mname));
         mat_names[i] = new char[strlen(tmp)+1];
@@ -593,7 +741,7 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
     //
     // Write the actual header information.
     //
-    DBPutMultimat(dbfile, (char *) VN(mname), nblocks, mat_names, optlist);
+    DBPutMultimat(dbfile, (char *) matName.c_str(), nblocks, mat_names, optlist);
 
     //
     // Clean up memory.
@@ -603,6 +751,8 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
         delete [] mat_names[i];
     }
     delete [] mat_names;
+
+    EndVar(dbfile, nlevels);
 }
 
 
@@ -790,6 +940,11 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
 //    Added option to write all data to a single file 
+//
+//    Brad Whitlock, Wed Mar 11 11:10:14 PDT 2009
+//    Added code to write expressions that came from the database back out
+//    to the master file.
+//
 // ****************************************************************************
 
 void
@@ -853,7 +1008,7 @@ avtSiloWriter::CloseFile(void)
             ConstructMultivar(dbfile, headerVectors[i], mmd);
         for (i = 0 ; i < headerMaterials.size() ; i++)
             ConstructMultimat(dbfile, headerMaterials[i], mmd);
-
+        WriteExpressions(dbfile);
         DBClose(dbfile);
     }
 }
@@ -893,6 +1048,10 @@ avtSiloWriter::CloseFile(void)
 //
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
 // ****************************************************************************
 
 void
@@ -1019,9 +1178,12 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         }
     }
     
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, meshname, nlevels);
+
     if (npointcells == nzones && npointcells == npts)
     {
-        DBPutPointmesh(dbfile, VN(meshname), dim, coords,
+        DBPutPointmesh(dbfile, meshName.c_str(), dim, coords,
             npts, DB_FLOAT, optlist);
     }
     else
@@ -1042,12 +1204,10 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         //
         // Now write the actual mesh.
         //
-        DBPutUcdmesh(dbfile, (char *) VN(meshname), dim, NULL, coords, npts,
+        DBPutUcdmesh(dbfile, (char *) meshName.c_str(), dim, NULL, coords, npts,
                      nzones, "zonelist", NULL, DB_FLOAT, optlist);
     }
-
-    WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData(), npointcells == nzones);
-    WriteMaterials(dbfile, ug->GetCellData(), chunk);
+    EndVar(dbfile, nlevels);
 
     //
     // Free up memory.
@@ -1058,6 +1218,9 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         delete [] coords[1];
     if (coords[2] != NULL)
         delete [] coords[2];
+
+    WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData(), npointcells == nzones);
+    WriteMaterials(dbfile, ug->GetCellData(), chunk);
 }
 
 
@@ -1081,6 +1244,10 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
 //
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
 // ****************************************************************************
 
 void
@@ -1126,11 +1293,11 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
     //
     // Write the curvilinear mesh to the Silo file.
     //
-    DBPutQuadmesh(dbfile, (char *) VN(meshname), NULL, coords, dims, ndims,
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, meshname, nlevels);
+    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, coords, dims, ndims,
                   DB_FLOAT, DB_NONCOLLINEAR, optlist);
-
-    WriteQuadvars(dbfile, sg->GetPointData(), sg->GetCellData(),ndims,dims);
-    WriteMaterials(dbfile, sg->GetCellData(), chunk);
+    EndVar(dbfile, nlevels);
 
     //
     // Free up memory.
@@ -1141,6 +1308,9 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
         delete [] coords[1];
     if (coords[2] != NULL)
         delete [] coords[2];
+
+    WriteQuadvars(dbfile, sg->GetPointData(), sg->GetCellData(),ndims,dims);
+    WriteMaterials(dbfile, sg->GetCellData(), chunk);
 }
 
 
@@ -1164,6 +1334,10 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
 //
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
 // ****************************************************************************
 
 void
@@ -1218,11 +1392,11 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
     //
     // Write the rectilinear mesh to the Silo file.
     //
-    DBPutQuadmesh(dbfile, (char *) VN(meshname), NULL, coords, dims, ndims,
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, meshname, nlevels);
+    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, coords, dims, ndims,
                   DB_FLOAT, DB_COLLINEAR, optlist);
-
-    WriteQuadvars(dbfile, rg->GetPointData(), rg->GetCellData(),ndims,dims);
-    WriteMaterials(dbfile, rg->GetCellData(), chunk);
+    EndVar(dbfile, nlevels);
 
     //
     // Free up memory.
@@ -1233,6 +1407,9 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
         delete [] coords[1];
     if (coords[2] != NULL)
         delete [] coords[2];
+
+    WriteQuadvars(dbfile, rg->GetPointData(), rg->GetCellData(),ndims,dims);
+    WriteMaterials(dbfile, rg->GetCellData(), chunk);
 }
 
 
@@ -1258,6 +1435,10 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
 //
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
 // ****************************************************************************
 
 void
@@ -1340,9 +1521,11 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
         }
     }
 
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, meshname, nlevels);
     if (npointcells == nzones && npointcells == npts)
     {
-        DBPutPointmesh(dbfile, (char *) VN(meshname), ndims, coords,
+        DBPutPointmesh(dbfile, (char *) meshName.c_str(), ndims, coords,
             npts, DB_FLOAT, optlist);
     }
     else
@@ -1362,13 +1545,10 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
         //
         // Now write the actual mesh.
         //
-        DBPutUcdmesh(dbfile, (char *) VN(meshname), ndims, NULL, coords, npts,
+        DBPutUcdmesh(dbfile, (char *) meshName.c_str(), ndims, NULL, coords, npts,
                      nzones, "zonelist", NULL, DB_FLOAT, optlist);
     }
-
-    WriteUcdvars(dbfile, pd->GetPointData(), pd->GetCellData(),
-        npointcells == nzones);
-    WriteMaterials(dbfile, pd->GetCellData(), chunk);
+    EndVar(dbfile, nlevels);
 
     //
     // Free up memory.
@@ -1379,11 +1559,15 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
         delete [] coords[1];
     if (coords[2] != NULL)
         delete [] coords[2];
+
+    WriteUcdvars(dbfile, pd->GetPointData(), pd->GetCellData(),
+        npointcells == nzones);
+    WriteMaterials(dbfile, pd->GetCellData(), chunk);
 }
 
 
 // ****************************************************************************
-//  Method: avtSiloWriter::WriteUcdvars
+//  Method: avtSiloWriter::WriteUcdvarsHelper
 //
 //  Purpose:
 //      Writes out unstructured cell data variables.
@@ -1400,20 +1584,21 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
 //
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
 // ****************************************************************************
 
 void
-avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
-                               vtkCellData *cd, bool isPointMesh)
+avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds, 
+    bool isPointMesh, int centering)
 {
-    int   i, j, k;
+    int i,j,k;
 
-    //
-    // Write out the nodal variables.
-    //
-    for (i = 0 ; i < pd->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < ds->GetNumberOfArrays() ; i++)
     {
-         vtkDataArray *arr = pd->GetArray(i);
+         vtkDataArray *arr = ds->GetArray(i);
 
          //
          // find the associated extents vectors to update
@@ -1432,15 +1617,20 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
              continue;
          if (strstr(arr->GetName(), "avt") != NULL)
              continue;
-         int npts = arr->GetNumberOfTuples();
+         int nTuples = arr->GetNumberOfTuples();
          int ncomps = arr->GetNumberOfComponents();
+
+         int nlevels = 0;
+         string varName = BeginVar(dbfile, arr->GetName(), nlevels);
+         string meshName = AbsoluteName(meshname, nlevels);
+
          if (ncomps == 1)
          {
              // find min,max in this variable
              double dimMin = +DBL_MAX;
              double dimMax = -DBL_MAX;
              float *ptr    = (float *) arr->GetVoidPointer(0);
-             for (k = 0 ; k < npts ; k++)
+             for (k = 0 ; k < nTuples ; k++)
              {
                  if (ptr[k] < dimMin)
                      dimMin = ptr[k];
@@ -1450,32 +1640,30 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
              varMins.push_back(dimMin);
              varMaxs.push_back(dimMax);
 
-             if (isPointMesh)
-                 DBPutPointvar1(dbfile, (char *) VN(arr->GetName()),
-                          (char *) VN(meshname),
+             if (isPointMesh && centering == DB_NODECENT)
+                 DBPutPointvar1(dbfile, (char *) varName.c_str(),
+                          (char *) meshName.c_str(),
                           (float *) arr->GetVoidPointer(0),
-                          npts, DB_FLOAT, optlist); 
+                          nTuples, DB_FLOAT, optlist); 
              else
-                 DBPutUcdvar1(dbfile, (char *) VN(arr->GetName()),
-                          (char *) VN(meshname),
-                          (float *) arr->GetVoidPointer(0), npts, NULL, 0,
-                          DB_FLOAT, DB_NODECENT, optlist);
+                 DBPutUcdvar1(dbfile, (char *) varName.c_str(),
+                          (char *) meshName.c_str(),
+                          (float *) arr->GetVoidPointer(0), nTuples, NULL, 0,
+                          DB_FLOAT, centering, optlist);
          }
          else
          {
              float **vars     = new float*[ncomps];
              float *ptr       = (float *) arr->GetVoidPointer(0);
              char  **varnames = new char*[ncomps];
-             vector<double> varMins;
-             vector<double> varMaxs;
              for (j = 0 ; j < ncomps ; j++)
              {
                  double dimMin = +DBL_MAX;
                  double dimMax = -DBL_MAX;
-                 vars[j] = new float[npts];
+                 vars[j] = new float[nTuples];
                  varnames[j] = new char[1024];
-                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
-                 for (k = 0 ; k < npts ; k++)
+                 sprintf(varnames[j], "%s_comp%d", varName.c_str(), j);
+                 for (k = 0 ; k < nTuples ; k++)
                  {
                      vars[j][k] = ptr[k*ncomps + j];
                      if (vars[j][k] < dimMin)
@@ -1487,15 +1675,15 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
                  varMaxs.push_back(dimMax);
              }
 
-             if (isPointMesh)
-                 DBPutPointvar(dbfile, (char *) VN(arr->GetName()),
-                          (char *) VN(meshname),
-                          ncomps, vars, npts, DB_FLOAT, optlist);
+             if (isPointMesh && centering == DB_NODECENT)
+                 DBPutPointvar(dbfile, (char *) varName.c_str(),
+                          (char *) meshName.c_str(),
+                          ncomps, vars, nTuples, DB_FLOAT, optlist);
              else
-                 DBPutUcdvar(dbfile, (char *) VN(arr->GetName()),
-                         (char *) VN(meshname),
-                         ncomps, varnames, vars, npts, NULL, 0, DB_FLOAT,
-                         DB_NODECENT, optlist);
+                 DBPutUcdvar(dbfile, (char *) varName.c_str(),
+                         (char *) meshName.c_str(),
+                         ncomps, varnames, vars, nTuples, NULL, 0, DB_FLOAT,
+                         centering, optlist);
 
              for (j = 0 ; j < ncomps ; j++)
              {
@@ -1506,100 +1694,152 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
              delete [] varnames;
          }
 
-         dataMins[arr->GetName()] = varMins;
-         dataMaxs[arr->GetName()] = varMaxs;
-    }
-
-    //
-    // Write out the zonal variables.
-    //
-    for (i = 0 ; i < cd->GetNumberOfArrays() ; i++)
-    {
-         vtkDataArray *arr = cd->GetArray(i);
-
-         //
-         // find the associated extents vectors to update
-         //
-         vector<double> varMins;
-         vector<double> varMaxs;
-         std::map<string, vector<double> >::iterator minsMap;
-         minsMap = dataMins.find(arr->GetName());
-         if (minsMap != dataMins.end())
-         {
-             varMins = minsMap->second;
-             varMaxs = dataMaxs[arr->GetName()];
-         }
-
-         if (strstr(arr->GetName(), "vtk") != NULL)
-             continue;
-         if (strstr(arr->GetName(), "avt") != NULL)
-             continue;
-         int ncomps = arr->GetNumberOfComponents();
-         int nzones = arr->GetNumberOfTuples();
-         if (ncomps == 1)
-         {
-
-             // find min,max in this variable
-             double dimMin = +DBL_MAX;
-             double dimMax = -DBL_MAX;
-             float *ptr    = (float *) arr->GetVoidPointer(0);
-             for (k = 0 ; k < nzones ; k++)
-             {
-                 if (ptr[k] < dimMin)
-                     dimMin = ptr[k];
-                 if (ptr[k] > dimMax)
-                     dimMax = ptr[k];
-             }
-             varMins.push_back(dimMin);
-             varMaxs.push_back(dimMax);
-
-             DBPutUcdvar1(dbfile, (char *) VN(arr->GetName()),
-                          (char *) VN(meshname),
-                          (float *) arr->GetVoidPointer(0), nzones, NULL, 0,
-                          DB_FLOAT, DB_ZONECENT, optlist);
-         }
-         else
-         {
-             float **vars     = new float*[ncomps];
-             float *ptr       = (float *) arr->GetVoidPointer(0);
-             char  **varnames = new char*[ncomps];
-             for (j = 0 ; j < ncomps ; j++)
-             {
-                 double dimMin = +DBL_MAX;
-                 double dimMax = -DBL_MAX;
-                 vars[j] = new float[nzones];
-                 varnames[j] = new char[1024];
-                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
-                 for (k = 0 ; k < nzones ; k++)
-                 {
-                     vars[j][k] = ptr[k*ncomps + j];
-                     if (vars[j][k] < dimMin)
-                         dimMin = vars[j][k];
-                     if (vars[j][k] > dimMax)
-                         dimMax = vars[j][k];
-                 }
-                 varMins.push_back(dimMin);
-                 varMaxs.push_back(dimMax);
-             }
-
-             DBPutUcdvar(dbfile, (char *) VN(arr->GetName()),
-                         (char *) VN(meshname),
-                         ncomps, varnames, vars, nzones, NULL, 0, DB_FLOAT,
-                         DB_ZONECENT, optlist);
-             for (j = 0 ; j < ncomps ; j++)
-             {
-                  delete [] vars[j];
-                  delete [] varnames[j];
-             }
-             delete [] vars;
-             delete [] varnames;
-         }
+         EndVar(dbfile, nlevels);
 
          dataMins[arr->GetName()] = varMins;
          dataMaxs[arr->GetName()] = varMaxs;
     }
 }
 
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteUcdvars
+//
+//  Purpose:
+//      Writes out unstructured cell data variables.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Fri Mar 6 14:32:43 PST 2009
+//    Use helper functions.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
+                               vtkCellData *cd, bool isPointMesh)
+{
+    WriteUcdvarsHelper(dbfile, pd, isPointMesh, DB_NODECENT);
+    WriteUcdvarsHelper(dbfile, cd, isPointMesh, DB_ZONECENT);
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteQuadvarsHelper
+//
+//  Purpose:
+//      Writes out quadvars.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 14:39:51 PST 2009
+//    Allow for subdirectories.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
+   int ndims, int *dims, int centering)
+{
+    int i,j,k;
+
+    for (i = 0 ; i < ds->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = ds->GetArray(i);
+
+         //
+         // find the associated extents vectors to update
+         //
+         vector<double> varMins;
+         vector<double> varMaxs;
+         std::map<string, vector<double> >::iterator minsMap;
+         minsMap = dataMins.find(arr->GetName());
+         if (minsMap != dataMins.end())
+         {
+             varMins = minsMap->second;
+             varMaxs = dataMaxs[arr->GetName()];
+         }
+
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+         int ncomps = arr->GetNumberOfComponents();
+         int nTuples = arr->GetNumberOfTuples();
+
+         int nlevels = 0;
+         string varName = BeginVar(dbfile, arr->GetName(), nlevels);
+         string meshName = AbsoluteName(meshname, nlevels);
+
+         if (ncomps == 1)
+         {
+             // find min,max in this variable
+             double dimMin = +DBL_MAX;
+             double dimMax = -DBL_MAX;
+             float *ptr    = (float *) arr->GetVoidPointer(0);
+             for (k = 0 ; k < nTuples ; k++)
+             {
+                 if (ptr[k] < dimMin)
+                     dimMin = ptr[k];
+                 if (ptr[k] > dimMax)
+                     dimMax = ptr[k];
+             }
+             varMins.push_back(dimMin);
+             varMaxs.push_back(dimMax);
+
+             DBPutQuadvar1(dbfile, (char *) varName.c_str(),
+                           (char *) meshName.c_str(),
+                           (float *) ptr, dims, ndims, NULL,
+                           0, DB_FLOAT, centering, optlist);
+         }
+         else
+         {
+             float **vars     = new float*[ncomps];
+             float *ptr       = (float *) arr->GetVoidPointer(0);
+             char  **varnames = new char*[ncomps];
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                 double dimMin = +DBL_MAX;
+                 double dimMax = -DBL_MAX;
+                 vars[j] = new float[nTuples];
+                 varnames[j] = new char[1024];
+                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
+                 for (k = 0 ; k < nTuples ; k++)
+                 {
+                     vars[j][k] = ptr[k*ncomps + j];
+                     if (vars[j][k] < dimMin)
+                         dimMin = vars[j][k];
+                     if (vars[j][k] > dimMax)
+                         dimMax = vars[j][k];
+                 }
+                 varMins.push_back(dimMin);
+                 varMaxs.push_back(dimMax);
+             }
+
+             DBPutQuadvar(dbfile, (char *) varName.c_str(),
+                          (char *) meshName.c_str(),
+                          ncomps, varnames, vars, dims, ndims, NULL, 0, 
+                          DB_FLOAT, centering, optlist);
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                  delete [] vars[j];
+                  delete [] varnames[j];
+             }
+             delete [] vars;
+             delete [] varnames;
+         }
+
+         EndVar(dbfile, nlevels);
+
+         dataMins[arr->GetName()] = varMins;
+         dataMaxs[arr->GetName()] = varMaxs;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSiloWriter::WriteQuadvars
@@ -1611,198 +1851,23 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
 //  Creation:   September 12, 2003
 //
 //  Modifications:
-//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
-//    Made it construct valid variable name(s) for silo objects.
+//    Brad Whitlock, Fri Mar 6 14:39:51 PST 2009
+//    Use helper functions.
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::WriteQuadvars(DBfile *dbfile, vtkPointData *pd,
                                 vtkCellData *cd, int ndims, int *dims)
 {
-    int   i, j, k;
-
     int zdims[3];
     zdims[0] = (ndims > 0 ? dims[0]-1 : 0);
     zdims[1] = (ndims > 1 ? dims[1]-1 : 0);
     zdims[2] = (ndims > 2 ? dims[2]-1 : 0);
 
-    //
-    // Write out the nodal variables.
-    //
-    for (i = 0 ; i < pd->GetNumberOfArrays() ; i++)
-    {
-         vtkDataArray *arr = pd->GetArray(i);
-
-         //
-         // find the associated extents vectors to update
-         //
-         vector<double> varMins;
-         vector<double> varMaxs;
-         std::map<string, vector<double> >::iterator minsMap;
-         minsMap = dataMins.find(arr->GetName());
-         if (minsMap != dataMins.end())
-         {
-             varMins = minsMap->second;
-             varMaxs = dataMaxs[arr->GetName()];
-         }
-
-         if (strstr(arr->GetName(), "vtk") != NULL)
-             continue;
-         if (strstr(arr->GetName(), "avt") != NULL)
-             continue;
-         int ncomps = arr->GetNumberOfComponents();
-         int npts = arr->GetNumberOfTuples();
-         if (ncomps == 1)
-         {
-             // find min,max in this variable
-             double dimMin = +DBL_MAX;
-             double dimMax = -DBL_MAX;
-             float *ptr    = (float *) arr->GetVoidPointer(0);
-             for (k = 0 ; k < npts ; k++)
-             {
-                 if (ptr[k] < dimMin)
-                     dimMin = ptr[k];
-                 if (ptr[k] > dimMax)
-                     dimMax = ptr[k];
-             }
-             varMins.push_back(dimMin);
-             varMaxs.push_back(dimMax);
-
-             DBPutQuadvar1(dbfile, (char *) VN(arr->GetName()),
-                           (char *) VN(meshname),
-                           (float *) ptr, dims, ndims, NULL,
-                           0, DB_FLOAT, DB_NODECENT, optlist);
-         }
-         else
-         {
-             float **vars     = new float*[ncomps];
-             float *ptr       = (float *) arr->GetVoidPointer(0);
-             char  **varnames = new char*[ncomps];
-             for (j = 0 ; j < ncomps ; j++)
-             {
-                 double dimMin = +DBL_MAX;
-                 double dimMax = -DBL_MAX;
-                 vars[j] = new float[npts];
-                 varnames[j] = new char[1024];
-                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
-                 for (k = 0 ; k < npts ; k++)
-                 {
-                     vars[j][k] = ptr[k*ncomps + j];
-                     if (vars[j][k] < dimMin)
-                         dimMin = vars[j][k];
-                     if (vars[j][k] > dimMax)
-                         dimMax = vars[j][k];
-                 }
-                 varMins.push_back(dimMin);
-                 varMaxs.push_back(dimMax);
-             }
-
-             DBPutQuadvar(dbfile, (char *) VN(arr->GetName()),
-                          (char *) VN(meshname),
-                          ncomps, varnames, vars, dims, ndims, NULL, 0, 
-                          DB_FLOAT, DB_NODECENT, optlist);
-             for (j = 0 ; j < ncomps ; j++)
-             {
-                  delete [] vars[j];
-                  delete [] varnames[j];
-             }
-             delete [] vars;
-             delete [] varnames;
-         }
-
-         dataMins[arr->GetName()] = varMins;
-         dataMaxs[arr->GetName()] = varMaxs;
-    }
-
-    //
-    // Write out the zonal variables.
-    //
-    for (i = 0 ; i < cd->GetNumberOfArrays() ; i++)
-    {
-         vtkDataArray *arr = cd->GetArray(i);
-
-         //
-         // find the associated extents vectors to update
-         //
-         vector<double> varMins;
-         vector<double> varMaxs;
-         std::map<string, vector<double> >::iterator minsMap;
-         minsMap = dataMins.find(arr->GetName());
-         if (minsMap != dataMins.end())
-         {
-             varMins = minsMap->second;
-             varMaxs = dataMaxs[arr->GetName()];
-         }
-
-         if (strstr(arr->GetName(), "vtk") != NULL)
-             continue;
-         if (strstr(arr->GetName(), "avt") != NULL)
-             continue;
-         int ncomps = arr->GetNumberOfComponents();
-         int nzones = arr->GetNumberOfTuples();
-         if (ncomps == 1)
-         {
-             // find min,max in this variable
-             double dimMin = +DBL_MAX;
-             double dimMax = -DBL_MAX;
-             float *ptr    = (float *) arr->GetVoidPointer(0);
-             for (k = 0 ; k < nzones ; k++)
-             {
-                 if (ptr[k] < dimMin)
-                     dimMin = ptr[k];
-                 if (ptr[k] > dimMax)
-                     dimMax = ptr[k];
-             }
-             varMins.push_back(dimMin);
-             varMaxs.push_back(dimMax);
-
-             DBPutQuadvar1(dbfile, (char *) VN(arr->GetName()),
-                           (char *) VN(meshname),
-                           (float *) arr->GetVoidPointer(0), zdims, ndims,
-                           NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
-         }
-         else
-         {
-             float **vars     = new float*[ncomps];
-             float *ptr       = (float *) arr->GetVoidPointer(0);
-             char  **varnames = new char*[ncomps];
-             for (j = 0 ; j < ncomps ; j++)
-             {
-                 double dimMin = +DBL_MAX;
-                 double dimMax = -DBL_MAX;
-                 vars[j] = new float[nzones];
-                 varnames[j] = new char[1024];
-                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
-                 for (k = 0 ; k < nzones ; k++)
-                 {
-                     vars[j][k] = ptr[k*ncomps + j];
-                     if (vars[j][k] < dimMin)
-                         dimMin = vars[j][k];
-                     if (vars[j][k] > dimMax)
-                         dimMax = vars[j][k];
-                 }
-                 varMins.push_back(dimMin);
-                 varMaxs.push_back(dimMax);
-             }
-
-             DBPutQuadvar(dbfile, (char *) VN(arr->GetName()),
-                          (char *) VN(meshname),
-                          ncomps, varnames, vars, zdims, ndims, NULL, 0, 
-                          DB_FLOAT, DB_ZONECENT, optlist);
-             for (j = 0 ; j < ncomps ; j++)
-             {
-                  delete [] vars[j];
-                  delete [] varnames[j];
-             }
-             delete [] vars;
-             delete [] varnames;
-         }
-
-         dataMins[arr->GetName()] = varMins;
-         dataMaxs[arr->GetName()] = varMaxs;
-    }
+    WriteQuadvarsHelper(dbfile, pd, ndims, dims, DB_NODECENT);
+    WriteQuadvarsHelper(dbfile, cd, ndims, zdims, DB_ZONECENT);
 }
-
 
 // ****************************************************************************
 //  Method: avtSiloWriter::WriteMaterials
@@ -1817,6 +1882,10 @@ avtSiloWriter::WriteQuadvars(DBfile *dbfile, vtkPointData *pd,
 //  Modifications:
 //    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
 //    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 14:43:31 PST 2009
+//    Allow for subdirectories.
+//
 // ****************************************************************************
 
 void
@@ -1847,13 +1916,20 @@ avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
             matnos[i] = i;
         int nzones[1];
         nzones[0] = mat->GetNZones();
-        DBPutMaterial(dbfile, (char *) VN(matname.c_str()),
-                      (char *) VN(meshname), nmats, matnos,
+
+        int nlevels = 0;
+        string matName = BeginVar(dbfile, matname, nlevels);
+        string meshName = AbsoluteName(meshname, nlevels);
+
+        DBPutMaterial(dbfile, (char *) matName.c_str(),
+                      (char *) meshName.c_str(), nmats, matnos,
                        (int *) mat->GetMatlist(), nzones, 1, 
                        (int *) mat->GetMixNext(), (int *) mat->GetMixMat(),
                        (int *) mat->GetMixZone(), (float *) mat->GetMixVF(),
                        mat->GetMixlen(), DB_FLOAT, optlist);
         delete [] matnos;
+
+        EndVar(dbfile, nlevels);
     }
     else
     {
@@ -1908,14 +1984,97 @@ avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
         // Do the actual write.  This isn't too bad since we have all
         // clean zones.
         //
-        DBPutMaterial(dbfile, (char *) VN(matname.c_str()),
-                      (char *) VN(meshname), nmats, matnos,
+        int nlevels = 0;
+        string matName = BeginVar(dbfile, matname, nlevels);
+        string meshName = AbsoluteName(meshname, nlevels);
+
+        DBPutMaterial(dbfile, (char *) matName.c_str(),
+                      (char *) meshName.c_str(), nmats, matnos,
                        ia->GetPointer(0), &nzones, 1, NULL, NULL, NULL,
                        NULL, 0, DB_FLOAT, optlist);
         delete [] matnos;
+
+        EndVar(dbfile, nlevels);
     }
 }
 
+// ****************************************************************************
+// Method: avtSiloWriter::WriteExpressions
+//
+// Purpose: 
+//   This method writes out the expressions that originally came from the
+//   database to Silo.
+//
+// Arguments:
+//   dbfile : The Silo file that we're outputting.
+//
+// Returns:    
+//
+// Note:       This is primarily meant to export expressions for the master file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 11 11:26:22 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteExpressions(DBfile *dbfile)
+{
+    const ExpressionList &expr = headerDbMd->GetExprList();
+    int i, ecount = 0;
+    for(i = 0; i < expr.GetNumExpressions(); ++i)
+        ecount += (expr.GetExpressions(i).GetFromDB() ? 1 : 0);
+    if(ecount > 0)
+    {
+        // Pack up the definitions into arrays that we can write out.
+        char **exprNames = new char*[ecount];
+        int   *exprTypes = new int[ecount];
+        char **exprDefs  = new char*[ecount];
+        ecount = 0;
+        for(i = 0; i < expr.GetNumExpressions(); ++i)
+        {
+            const Expression &e = expr.GetExpressions(i);
+            if(e.GetFromDB())
+            {
+                exprNames[ecount] = new char[e.GetName().size()+1];
+                strcpy(exprNames[ecount], e.GetName().c_str());
+
+                int vartype = 0;
+                switch(e.GetType())
+                {
+                case Expression::ScalarMeshVar: vartype = DB_VARTYPE_SCALAR;   break;
+                case Expression::VectorMeshVar: vartype = DB_VARTYPE_VECTOR;   break;
+                case Expression::TensorMeshVar: vartype = DB_VARTYPE_TENSOR;   break;
+                case Expression::ArrayMeshVar:  vartype = DB_VARTYPE_ARRAY;    break;
+                case Expression::Material:      vartype = DB_VARTYPE_MATERIAL; break;
+                case Expression::Species :      vartype = DB_VARTYPE_SPECIES;  break;
+                default:                        vartype = DB_VARTYPE_SCALAR;   break;
+                }
+                exprTypes[ecount] = vartype;
+
+                exprDefs[ecount] = new char[e.GetDefinition().size()+1];
+                strcpy(exprDefs[ecount], e.GetDefinition().c_str());
+
+                ++ecount;
+            }
+        }
+
+        // Write the definitions
+        DBPutDefvars(dbfile, "expressions", ecount, exprNames, exprTypes, exprDefs, NULL);
+
+        // Clean up
+        for(i = 0; i < ecount; ++i)
+        {
+            delete [] exprNames[i];
+            delete [] exprDefs[i];
+        }
+        delete [] exprNames;
+        delete [] exprTypes;
+        delete [] exprDefs;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSiloWriter::VTKZoneTypeToSiloZoneType

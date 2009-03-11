@@ -543,6 +543,17 @@
 #     Mark C. Miller, Wed Mar 11 14:24:36 PDT 2009
 #     Fixed convenience logic for enabling ALL third party I/O libs for
 #     dbio-only builds.
+#
+#     Patrick Shinpaugh, Wed Mar 11 11:38:55 MST 2009
+#     Set flags + Mesa && Qt targets for ppc64 systems.
+#
+#     Tom Fogal, Wed Mar 11 11:45:59 MST 2009
+#     Incorporated a patch from Patrick Shinpaugh which fixes the BoxLib build
+#     on Linux-ppc64.
+#
+#     Tom Fogal, Wed Mar 11 11:52:09 MST 2009
+#     Incorporated a patch from Patrick which fixes the Linux-ppc64 HDF4 build.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -593,6 +604,11 @@ elif [[ "$OPSYS" == "Linux" ]]; then
 ###   export MESA_TARGET=${MESA_TARGET-"linux-x86-64"} # Mesa-6.x
       export MESA_TARGET=${MESA_TARGET-"linux"}
       QT_PLATFORM="linux-g++-64"
+   elif [[ "$(uname -m)" == "ppc64" ]] ; then
+      C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+      CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
+      export MESA_TARGET=${MESA_TARGET-"linux"}
+      QT_PLATFORM="linux-g++"
    elif [[ "$(uname -m)" == "ia64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
@@ -5102,6 +5118,71 @@ EOF
    fi
 }
 
+# Sets up defines so that HDF4 can build on Linux-ppc64.
+function apply_hdf4_421_ppc_patch
+{
+    patch -p0 << \EOF
+--- HDF4.1r5/hdf/src/hdfi.h.bak	2004-06-11 21:28:20.763821223 +0200
++++ HDF4.1r5/hdf/src/hdfi.h	2004-06-11 21:43:34.853673152 +0200
+@@ -1318,6 +1318,55 @@
+ 
+ #endif /* IA-64 */
+ 
++#if defined(__powerpc__)
++
++#ifdef GOT_MACHINE
++#error If you get an error on this line more than one machine type has been defined. Please check your Makefile.
++#endif
++#define GOT_MACHINE
++
++#include <sys/file.h>               /* for unbuffered i/o stuff */
++#include <sys/stat.h>
++#define DF_MT           DFMT_MAC
++typedef void            VOID;
++typedef void *          VOIDP;
++typedef char *          _fcd;
++typedef char            char8;
++typedef unsigned char   uchar8;
++typedef char            int8;
++typedef unsigned char   uint8;
++typedef short int       int16;
++typedef unsigned short  uint16;
++typedef int             int32;
++typedef unsigned int    uint32;
++typedef int             intn;
++typedef unsigned int    uintn;
++typedef long            intf;       /* size of INTEGERs in Fortran compiler  */
++typedef float           float32;
++typedef double          float64;
++typedef int             hdf_pint_t; /* an integer the same size as a pointer */
++#define FNAME_POST_UNDERSCORE
++#define _fcdtocp(desc) (desc)
++#ifdef  HAVE_FMPOOL
++#define FILELIB PAGEBUFIO  /* enable page buffering */
++#else
++#define FILELIB UNIXBUFIO
++#endif
++
++/* JPEG #define's - Look in the JPEG docs before changing - (Q) */
++
++/* Determine the memory manager we are going to use. Valid values are: */
++/*  MEM_DOS, MEM_ANSI, MEM_NAME, MEM_NOBS.  See the JPEG docs for details on */
++/*  what each does */
++#define JMEMSYS         MEM_ANSI
++
++#ifdef __GNUC__
++#define HAVE_STDC
++#define INCLUDES_ARE_ANSI
++#endif
++
++#endif /* ppc */
++
+ #ifndef GOT_MACHINE
+ #error No machine type has been defined.  Your Makefile needs to have someing like -DSUN or -DUNICOS in order for the HDF internal structures to be defined correctly.
+ #endif
+EOF
+}
+
 function apply_hdf4_421_patch
 {
    if [[ "$OPSYS" == "Darwin" ]]; then
@@ -5122,6 +5203,9 @@ function apply_hdf4_patch
            return 1
        fi
    fi
+    if test `uname -m` = "ppc64" ; then
+        apply_hdf4_421_ppc_patch
+    fi
 
    return 0
 }
@@ -6155,6 +6239,42 @@ function apply_boxlib_25_fPIC_patch
 EOF
 }
 
+# Adds some defines so that boxlib builds properly on linux-ppc64
+function apply_boxlib_25_ppc_patch
+{
+    patch -u -p1 << \EOF
+--- visit-build-old/CCSEApps/BoxLib/FPC.cpp	2006-01-11 14:13:06.000000000 -0500
++++ visit-build/CCSEApps/BoxLib/FPC.cpp	2009-02-19 18:41:26.616492453 -0500
+@@ -64,7 +64,7 @@
+ #endif
+ 
+ #if defined(__sgi) || \
+-    defined(__sun) || \
++    defined(__sun) || defined powerpc || defined __powerpc || defined ppc || defined __ppc || \
+     defined(_AIX)  || \
+     defined(_CRAYT3E)  || \
+     defined(__hpux)
+@@ -91,7 +91,7 @@
+ #endif
+ 
+ #if defined(__sgi) || \
+-    defined(__sun) || \
++    defined(__sun) || defined powerpc || defined __powerpc || defined ppc || defined __ppc || \
+     defined(_AIX)  || \
+     defined(_CRAYT3E)  || \
+     defined(__hpux)
+@@ -137,7 +137,7 @@
+       defined(_CRAY1)     || \
+       defined(_CRAYT3E)   || \
+       defined(__sgi)      || \
+-      defined(__sun)      || \
++      defined(__sun)      || defined powerpc || defined __powerpc || defined ppc || defined __ppc || \
+       defined(__i486__)   || \
+       defined(i386)       || \
+       defined(__i386__)   || \
+EOF
+}
+
 
 function apply_boxlib_25_patch
 {
@@ -6183,6 +6303,8 @@ function apply_boxlib_25_patch
        if [[ $? != 0 ]] ; then
            return 1
        fi
+   elif test `uname -m` = "ppc64" ; then
+       apply_boxlib_25_ppc_patch
    fi
 
    return 0

@@ -84,8 +84,16 @@ enhancements and bug-fixes that were added to this release.</p>
       visualize.
   </li>
   <li>VisIt's Pixie reader was fixed so moving meshes work properly.</li>
-  <li></li>
-  <li></li>
+  <li>VisIt's Silo plugin was enhanced so it can preserve directory
+      hierarchies for variables when exporting databases. This means that 
+      variables that contain slashes "/" in the names will cause intermediate
+      directories to be created, which is most often how those variables 
+      acquired the "/" characters.</li>
+  <li>VisIt can accept expression definitions from files that it opens.
+      VisIt's Silo plugin was enhanced so it saves those expression definitions
+      when exporting databases. This permits VisIt to transform an input
+      database, export, and still retain the expression definitions from
+      the original database.</li>
   <li></li>
 </ul>
 

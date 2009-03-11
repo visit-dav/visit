@@ -373,6 +373,9 @@
 #    Brad Whitlock, Fri Feb  6 14:50:41 PST 2009
 #    Added installation of libsimV2.
 #
+#    Patrick Shinpaugh, Wed Mar 11 11:34:16 MST 2009
+#    Fix directories to account for linux-ppc64.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -783,6 +786,10 @@ if ("$ArchGiven" == "FALSE") then
          case x86_64:
             set osver = linux-x86_64
             set visitbindir = linux-x86_64
+            breaksw
+         case ppc64:
+            set osver = linux-ppc64
+            set visitbindir = linux-ppc64
             breaksw
       endsw
       breaksw

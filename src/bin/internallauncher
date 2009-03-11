@@ -432,6 +432,10 @@ exec perl -x $0 ${1+"$@"};
 #
 #    Mark C. Miller, Wed Mar  4 18:02:40 PST 2009
 #    Added logic to run _lite versions of convert tool.
+#
+#    Patrick Shinpaugh, Wed Mar 11 11:39:36 MST 2009
+#    Add ppc64 to the launcher types we support / know of.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1519,6 +1523,9 @@ for ($os) {
         }
         elsif ($mach =~ /x86_64/) {
             push @supportedarchs, "linux-x86_64";
+        }
+        elsif ($mach =~ /ppc64/) {
+            push @supportedarchs, "linux-ppc64";
         }
         else {
             if ($req_compiler eq "icc") {
