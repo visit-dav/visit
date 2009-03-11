@@ -56,6 +56,7 @@ using std::string;
 using std::vector;
 
 class vtkCellData;
+class vtkDataSetAttributes;
 class vtkPointData;
 class vtkPolyData;
 class vtkRectilinearGrid;
@@ -99,6 +100,11 @@ class DBOptionsAttributes;
 //
 //    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
 //    Added option to write all data to a single file 
+//
+//    Brad Whitlock, Fri Mar 6 15:30:16 PST 2009
+//    I added helper functions so we can share code when writing variables.
+//    I also added code to export expressions.
+//
 // ****************************************************************************
 
 class
@@ -159,6 +165,12 @@ avtSiloWriter : public virtual avtDatabaseWriter
                                     int, int *);
     void           WriteMaterials(DBfile *, vtkCellData *, int);
     int            VTKZoneTypeToSiloZoneType(int);
+    void           WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds, 
+                                      bool isPointMesh, int centering);
+    void           WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
+                                       int ndims, int *dims, int centering);
+
+    void           WriteExpressions(DBfile *dbfile);
 };
 
 
