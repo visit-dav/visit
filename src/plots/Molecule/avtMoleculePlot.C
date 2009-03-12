@@ -393,6 +393,11 @@ avtMoleculePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Jeremy Meredith, Mon Aug 28 18:25:52 EDT 2006
 //    Account for model number directory prefix.
 //
+//    Jeremy Meredith, Thu Mar 12 17:32:34 EDT 2009
+//    Allow any variable starting with "element" to be treated as
+//    an atomic number -- this makes creating new element expressions
+//    to override ones in the file possible.
+//
 // ****************************************************************************
 
 void
@@ -402,6 +407,7 @@ avtMoleculePlot::CustomizeBehavior(void)
 
     string v(varname);
     if (v == "element" ||
+        (v.length()>7 && v.substr(0,7) == "element") ||
         v == "resseq"  ||
         v == "restype" ||
         (v.length()>8 && v.substr(v.length()-8) == "/element") ||
@@ -472,6 +478,11 @@ avtMoleculePlot::ReleaseData(void)
 //    Bonds are now line segments cells, and atoms are both points and
 //    vertex cells.  This means we cannot look at cell data when looking
 //    for atom arrays.  Also, account for model number directory prefix.
+//
+//    Jeremy Meredith, Thu Mar 12 17:32:34 EDT 2009
+//    Allow any variable starting with "element" to be treated as
+//    an atomic number -- this makes creating new element expressions
+//    to override ones in the file possible.
 //
 // ****************************************************************************
 
@@ -553,12 +564,18 @@ avtMoleculePlot::EnhanceSpecification(avtContract_p spec)
 //    Jeremy Meredith, Mon Aug 28 18:25:52 EDT 2006
 //    Account for model number directory prefix.
 //
+//    Jeremy Meredith, Thu Mar 12 17:32:34 EDT 2009
+//    Allow any variable starting with "element" to be treated as
+//    an atomic number -- this makes creating new element expressions
+//    to override ones in the file possible.
+//
 // ****************************************************************************
 avtLegend_p
 avtMoleculePlot::GetLegend(void)
 {
     string v(varname);
     if (v == "element" ||
+        (v.length()>7 && v.substr(0,7) == "element") ||
         v == "resseq"  ||
         v == "restype" ||
         (v.length()>8 && v.substr(v.length()-8) == "/element") ||
@@ -596,6 +613,11 @@ avtMoleculePlot::GetLegend(void)
 //
 //    Jeremy Meredith, Mon Aug 28 18:27:19 EDT 2006
 //    Account for model number directory prefix.
+//
+//    Jeremy Meredith, Thu Mar 12 17:32:34 EDT 2009
+//    Allow any variable starting with "element" to be treated as
+//    an atomic number -- this makes creating new element expressions
+//    to override ones in the file possible.
 //
 // ****************************************************************************
 
@@ -642,6 +664,7 @@ avtMoleculePlot::SetLegendRange()
         int    numcolors = 0;
 
         if (varName == "element" ||
+            (varName.length()>7 && varName.substr(0,7) == "element") ||
             (varName.length()>8 && varName.substr(varName.length()-8) == "/element"))
         {
             colortablename = atts.GetElementColorTable();

@@ -287,13 +287,20 @@ avtMoleculeFilter::PreExecute()
 //    Jeremy Meredith, Mon Aug 28 18:29:47 EDT 2006
 //    Account for model number directory prefix.
 //
+//    Jeremy Meredith, Thu Mar 12 17:32:34 EDT 2009
+//    Allow any variable starting with "element" to be treated as
+//    an atomic number -- this makes creating new element expressions
+//    to override ones in the file possible.
+//
 // ****************************************************************************
 void
 avtMoleculeFilter::PostExecute()
 {
     vector<string> labels;
 
-    if (name == "element" || (name.length()>8 && name.substr(name.length()-8)=="/element"))
+    if (name == "element" ||
+        (name.length()>7 && name.substr(0,7) == "element") ||
+        (name.length()>8 && name.substr(name.length()-8)=="/element"))
     {
         for (set<int>::iterator it = used_values.begin();
              it != used_values.end();
