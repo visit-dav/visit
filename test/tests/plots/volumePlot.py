@@ -21,6 +21,9 @@
 #    Brad Whitlock, Wed Mar 14 17:18:05 PST 2007
 #    Added tests for color control points and gaussian control points.
 #
+#    Brad Whitlock, Thu Mar 12 09:17:57 PDT 2009
+#    I changed freeformFlag to opacityMode to reflect changes to the plot
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations():
@@ -204,7 +207,7 @@ def TestVolumeGaussianControlPoints():
     AddPlot("Volume", "hardyglobal")
 
     v = VolumeAttributes()
-    v.freeformFlag = 0
+    v.opacityMode = v.GaussianMode
     v.opacityControlPoints.ClearControlPoints()
     tmp = GaussianControlPoint()
     # Design gaussians
