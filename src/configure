@@ -19933,6 +19933,7 @@ if test "$enable_dbio_only" = yes; then
         third_party_builtin/bilib/Makefile
         third_party_builtin/bow/Makefile"
     TOOLS_FILES="
+        tools/Makefile
         tools/convert/Makefile
         bin/topdir"
     VISIT_VTK_FILES="
