@@ -40,6 +40,9 @@
 #   Cyrus Harrison, Tue Dec 16 14:42:52 PST 2008
 #   Added *.cmake files to the list of files we permit tabs in.
 #
+#   Mark C. Miller, Thu Mar 12 09:23:57 PDT 2009
+#   Shortened switch statement for exception cases. Added bin/db_mktmpl as
+#   an exception
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -64,16 +67,10 @@ while read fline; do
     # Filter out other cases HandleCommonSkipCases doesn't catch
     #
     case $fname in
-        *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake)
+        *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake|*.tcl)
             continue
             ;;
-        *.tcl)
-            continue
-            ;;
-        */src/configure)
-            continue
-            ;;
-        */svn_bin/build_visit)
+        */src/configure|*/svn_bin/build_visit|*/bin/db_mktmpl)
             continue
             ;;
         *Makefile)
