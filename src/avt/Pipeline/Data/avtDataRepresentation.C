@@ -937,6 +937,10 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Hank Childs, Wed Aug 27 11:42:57 PDT 2008
 //    Print the array type.
 //
+//    Brad Whitlock, Thu Mar 12 14:00:00 PST 2009
+//    I changed the naming scheme so the numbers come first, making the
+//    resulting files sorted by default in "ls" results.
+//
 // **************************************************************************** 
 
 const char *
@@ -989,20 +993,24 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         const string &dump_dir = avtDebugDumpOptions::GetDumpDirectory();
         
         ostringstream oss_vtk_fname;
-        
         if (PAR_Size() > 1)
         {
-            // %s%d.%d.vtk
-            oss_vtk_fname << prefix
-                          << times << "."
-                          << PAR_Rank() << ".vtk";
+            // %04d.%04d.%s.vtk
+            oss_vtk_fname.fill('0');
+            oss_vtk_fname.width(4);
+            oss_vtk_fname << std::right << PAR_Rank()
+                          << "." << times
+                          << "." << prefix << ".vtk";
         }
         else
         {
-            // %s%d.vtk
-            oss_vtk_fname << prefix
-                          << times << ".vtk";
+            // %04d.%s.vtk
+            oss_vtk_fname.fill('0');
+            oss_vtk_fname.width(4);
+            oss_vtk_fname << std::right << times << "." << prefix
+                          << ".vtk";
         }
+
         times++;
         vtk_fname = oss_vtk_fname.str();
         string vtk_fpath = dump_dir + vtk_fname;
@@ -1048,7 +1056,8 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 
     if (dataset_dump)
     {
-        oss << vtk_fname << "<br> " << mesh_type << " ";
+        const string &dump_dir = avtDebugDumpOptions::GetDumpDirectory();
+        oss << "<a href=\"" << (dump_dir + vtk_fname) << "\">" << vtk_fname << "</a><br> " << mesh_type << " ";
     }
     
     if (dims[0] > 0)
