@@ -4,7 +4,7 @@
 
 /* Helper functions for setting up a VisIt_MaterialData */
 
-VisIt_MaterialData *VisIt_MaterialData_alloc(int nCells, int *arrlen);
+void VisIt_MaterialData_init(VisIt_MaterialData *m, int nCells, int *arrlen);
 
 int VisIt_MaterialData_addMaterial(VisIt_MaterialData *m, const char *matname);
 

@@ -256,14 +256,18 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Hank Childs, Thu Jan 15 11:07:53 CST 2009
 //    Changed GetSize call to GetCaptureRegion, since that works for 2D.
 //
+//    Brad Whitlock, Mon Mar  2 16:38:53 PST 2009
+//    I made the routine return an avtDataObject_p.
+//
 // ****************************************************************************
 
-avtDataObjectWriter_p
-IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
+avtDataObject_p
+IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
                            int annotMode, int windowID, bool leftEye)
 {
     int t0 = visitTimer->StartTimer();
     DataNetwork *origWorkingNet = workingNet;
+    avtDataObject_p retval;
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
@@ -384,13 +388,9 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         //
         this->RenderPostProcess(imageBasedPlots, dob, windowID);
 
-        avtDataObjectWriter_p writer;  // where the PPing output goes.
-        writer = dob->InstantiateWriter();
-        writer->SetInput(dob);
+        retval = dob;
 
         this->RenderCleanup(windowID);
-
-        CATCH_RETURN2(1, writer);
     }
     CATCHALL(...)
     {
@@ -400,6 +400,7 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
 
     workingNet = origWorkingNet;
     visitTimer->StopTimer(t0, "Ice-T Render");
+    return retval;
 }
 
 // ****************************************************************************

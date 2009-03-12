@@ -46,7 +46,7 @@
 static int lastSigConnection =0;
 sigInfoConnect sigConnections[MAX_SIG_CONNECTIONS];
 
-
+    
  /*****************************************************************************
 ** Function: void VisItParseCommandValue( char *cmd, double *retVal )
 **
@@ -72,7 +72,7 @@ void VisItParseCommandValue( char *cmd, double *retVal)
     tok = strtok(str, ";" );
     for ( i = 0; i < 4; i++)
     {
-    	tok = strtok(NULL, ";" );
+        tok = strtok(NULL, ";" );
         if ( tok ) strncpy( value,tok,MAX_CMD_STR_LEN );
     }
     *retVal = atof ( value );
@@ -146,9 +146,9 @@ int VisItGetCommandValue( char *cmd, double *retVal)
     tok = strtok(str, ";" );
     for ( i = 0; i < 4; i++)
     {
-    	tok = strtok(NULL, ";" );
+        tok = strtok(NULL, ";" );
         if ( tok ) strncpy( value,tok,MAX_CMD_STR_LEN );
-	else return 0;
+    else return 0;
     }
     *retVal = atof ( value );
     return 1;

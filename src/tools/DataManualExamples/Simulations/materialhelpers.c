@@ -28,14 +28,9 @@
  *
  *****************************************************************************/
 
- 
-VisIt_MaterialData *
-VisIt_MaterialData_alloc(int nCells, int *arrlen)
+void
+VisIt_MaterialData_init(VisIt_MaterialData *m, int nCells, int *arrlen)
 {
-    size_t sz = sizeof(VisIt_MaterialData);
-    VisIt_MaterialData *m = (VisIt_MaterialData*)malloc(sz);
-    memset(m, 0, sz);
-
     m->nzones = nCells;
     m->matlist.dataType = VISIT_DATATYPE_INT;
     m->matlist.owner = VISIT_OWNER_VISIT;
@@ -58,8 +53,6 @@ VisIt_MaterialData_alloc(int nCells, int *arrlen)
     m->mix_vf.dataType = VISIT_DATATYPE_FLOAT;
     m->mix_vf.owner = VISIT_OWNER_VISIT;
     m->mix_vf.fArray =   (float*)malloc(sizeof(float) * *arrlen);
-
-    return m;
 }
 
 /******************************************************************************

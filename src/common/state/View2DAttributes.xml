@@ -33,6 +33,8 @@
     </Function>
     <Function name="SetUseFullFrame" user="true" member="true">
     </Function>
+    <Function name="ResetView" user="true" member="true">
+    </Function>
     <Constant name="DEFAULT_FULL_FRAME_AUTO_THRESHOLD" member="true">
     </Constant>
     <Include file="header" quoted="false">

@@ -44,6 +44,7 @@
 
 #include <string>
 #include <vector>
+#include <snprintf.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>
@@ -86,12 +87,6 @@ using std::vector;
 #include <avtParallel.h>
 #endif
 
-#ifndef __APPLE__
-#ifndef MDSERVER
-extern "C" VisIt_SimulationCallback visitCallbacks;
-#endif
-#endif
-
 #ifndef MDSERVER
 vtkDataSet *SimV2_GetMesh_Curvilinear(VisIt_CurvilinearMesh *);
 vtkDataSet *SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *);
@@ -100,8 +95,9 @@ vtkDataSet *SimV2_GetMesh_Point(VisIt_PointMesh *);
 vtkDataSet *SimV2_GetMesh_CSG(VisIt_CSGMesh *csgm);
 #endif
 
-// For now, include the c file directly
-#include "VisItDataInterface_V2.c"
+#include <VisItControlInterfaceRuntime.h>
+#include <VisItDataInterfaceRuntime.h>
+
 
 // ****************************************************************************
 //  Function:  FreeDataArray
@@ -149,9 +145,6 @@ void FreeDataArray(VisIt_DataArray &da)
 //  Creation:   March 17, 2005
 //
 //  Modifications:
-//
-//    Jeremy Meredith, Fri Nov  2 18:00:15 EDT 2007
-//    On OSX, use dlsym to retrieve the visitCallbacks.
 //
 // ****************************************************************************
 
@@ -212,23 +205,6 @@ avtSimV2FileFormat::avtSimV2FileFormat(const char *filename)
         EXCEPTION2(InvalidFilesException,filename,
                    "Did not find 'port' in the file.");
     }
-#else // ENGINE
-
-    // On OSX, we want to check for the visitCallbacks via dlsym
-    // because we're not currently allowing unresolved symbols in our
-    // plugins, which the old method requires.  Theoretically, we could
-    // use the dlsym method on other platforms, too, but it hasn't been
-    // thoroughly tested.
-#ifdef __APPLE__
-    void *cbptr = dlsym(RTLD_DEFAULT, "visitCallbacks");
-    if (!cbptr)
-        EXCEPTION2(InvalidFilesException,filename,
-                   "Could not find 'visitCallbacks' in the current exe.");
-    cb = *((VisIt_SimulationCallback*)cbptr);
-#else
-    cb = visitCallbacks;
-#endif
-
 #endif
 }
 
@@ -251,6 +227,38 @@ avtSimV2FileFormat::FreeUpResources(void)
 {
 }
 
+// Make sure that the variable metadata is not crap.
+static bool
+VisIt_VariableMetaData_valid(const VisIt_VariableMetaData *obj, std::string &err)
+{
+    char tmp[100];
+    bool valid = true;
+    if(obj->name == NULL)
+    {
+        err += "The name field was not set. ";
+        valid = false;
+    }
+    if(obj->meshName == NULL)
+    {
+        err += "The meshName field was not set. ";
+        valid = false;
+    }
+    if(obj->centering != VISIT_VARCENTERING_NODE &&
+       obj->centering != VISIT_VARCENTERING_ZONE)
+    {
+        SNPRINTF(tmp, 100, "Invalid centering (%d). ", (int)obj->centering);
+        err += tmp;
+        valid = false;
+    }
+    if(!(obj->type >= VISIT_VARTYPE_SCALAR &&
+         obj->type <= VISIT_VARTYPE_ARRAY))
+    {
+        SNPRINTF(tmp, 100, "Invalid type (%d). ", (int)obj->type);
+        err += tmp;
+        valid = false;
+    }
+    return valid;
+}
 
 // ****************************************************************************
 //  Method: avtSimV2FileFormat::PopulateDatabaseMetaData
@@ -276,12 +284,9 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->SetSimInfo(simInfo);
 #else
 
-    if (!cb.GetMetaData)
-    {
+    VisIt_SimulationMetaData *vsmd = visit_invoke_GetMetaData();
+    if(vsmd == NULL)
         return;
-    }
-
-    VisIt_SimulationMetaData *vsmd = cb.GetMetaData();
 
     md->SetCycle(timestep, vsmd->currentCycle);
     md->SetTime(timestep, vsmd->currentTime);
@@ -318,9 +323,6 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             break;
           case VISIT_MESHTYPE_POINT:
             mesh->meshType = AVT_POINT_MESH;
-            break;
-          case VISIT_MESHTYPE_SURFACE:
-            mesh->meshType = AVT_SURFACE_MESH;
             break;
           case VISIT_MESHTYPE_CSG:
             mesh->meshType = AVT_CSG_MESH;
@@ -370,31 +372,105 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(mesh);
     }
 
-    for (int s=0; s<vsmd->numScalars; s++)
+    for (int s=0; s<vsmd->numVariables; s++)
     {
-        VisIt_ScalarMetaData *smd = &vsmd->scalars[s];
-        avtScalarMetaData *scalar = new avtScalarMetaData;
-        scalar->name = smd->name;
-        scalar->originalName = smd->name;
-        scalar->meshName = smd->meshName;
-        switch (smd->centering)
-        {
-          case VISIT_VARCENTERING_NODE:
-            scalar->centering = AVT_NODECENT;
-            break;
-          case VISIT_VARCENTERING_ZONE:
-            scalar->centering = AVT_ZONECENT;
-            break;
-          default:
-            VisIt_SimulationMetaData_free(vsmd);
-            EXCEPTION1(ImproperUseException,
-                       "Invalid centering type in VisIt_ScalarMetaData.");
-        }
-        scalar->treatAsASCII = smd->treatAsASCII;
-        scalar->hasDataExtents = false;
-        scalar->hasUnits = false;
+        VisIt_VariableMetaData *vmd = &vsmd->variables[s];
 
-        md->Add(scalar);
+        avtCentering centering;
+        if(vmd->centering == VISIT_VARCENTERING_NODE)
+            centering = AVT_NODECENT;
+        else
+            centering = AVT_ZONECENT;
+
+        // Create the appropriate metadata based on the variable type.
+        if(vmd->type == VISIT_VARTYPE_SCALAR)
+        {
+            avtScalarMetaData *scalar = new avtScalarMetaData;
+            scalar->name = vmd->name;
+            scalar->originalName = vmd->name;
+            scalar->meshName = vmd->meshName;
+            scalar->centering = centering;
+            scalar->treatAsASCII = vmd->treatAsASCII;
+            scalar->hasDataExtents = false;
+            scalar->hasUnits = false;
+
+            md->Add(scalar);
+        }
+        else if(vmd->type == VISIT_VARTYPE_VECTOR)
+        {
+            avtVectorMetaData *vector = new avtVectorMetaData;
+            vector->name = vmd->name;
+            vector->originalName = vmd->name;
+            vector->meshName = vmd->meshName;
+            vector->centering = centering;
+            vector->hasUnits = false;
+
+            md->Add(vector);
+        }
+        else if(vmd->type == VISIT_VARTYPE_TENSOR)
+        {
+            avtTensorMetaData *tensor = new avtTensorMetaData;
+            tensor->name = vmd->name;
+            tensor->originalName = vmd->name;
+            tensor->meshName = vmd->meshName;
+            tensor->centering = centering;
+            tensor->hasUnits = false;
+
+            md->Add(tensor);
+        }
+        else if(vmd->type == VISIT_VARTYPE_SYMMETRIC_TENSOR)
+        {
+            avtSymmetricTensorMetaData *tensor = new avtSymmetricTensorMetaData;
+            tensor->name = vmd->name;
+            tensor->originalName = vmd->name;
+            tensor->meshName = vmd->meshName;
+            tensor->centering = centering;
+            tensor->hasUnits = false;
+
+            md->Add(tensor);
+        }
+        else if(vmd->type == VISIT_VARTYPE_LABEL)
+        {
+            avtLabelMetaData *label = new avtLabelMetaData;
+            label->name = vmd->name;
+            label->originalName = vmd->name;
+            label->meshName = vmd->meshName;
+            label->centering = centering;
+
+            md->Add(label);
+        }
+#if 0
+        else if(vmd->type == VISIT_VARTYPE_ARRAY)
+        {
+            avtArrayMetaData *arr = new avtArrayMetaData;
+            arr->name = vmd->name;
+            arr->originalName = vmd->name;
+            arr->meshName = vmd->meshName;
+            switch (vmd->centering)
+            {
+              case VISIT_VARCENTERING_NODE:
+                arr->centering = AVT_NODECENT;
+                break;
+              case VISIT_VARCENTERING_ZONE:
+                arr->centering = AVT_ZONECENT;
+                break;
+              default:
+                VisIt_SimulationMetaData_free(vsmd);
+                EXCEPTION1(ImproperUseException,
+                           "Invalid centering type in VisIt_VariableMetaData.");
+            }
+            arr->nVars = vmd->nComponents;
+            for(int c = 0; c < vmd->nComponents; ++c)
+            { 
+                char compname[100];
+                sprintf(compname, "%d", c);
+                arr->compNames.push_back(compname);
+            }
+            arr->hasUnits = false;
+
+            md->Add(arr);
+        }
+#endif
     }
 
     for (int c=0; c<vsmd->numGenericCommands; c++)
@@ -529,6 +605,8 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             newexp->SetType(Expression::Material);
         else if(vsmd->expressions[e].vartype == VISIT_VARTYPE_MATSPECIES)
             newexp->SetType(Expression::Species);
+        else if(vsmd->expressions[e].vartype == VISIT_VARTYPE_CURVE)
+            newexp->SetType(Expression::CurveMeshVar);
         else
             newexp->SetType(Expression::Unknown);
 
@@ -572,11 +650,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
         return GetCurve(meshname);
     }
 
-    if (!cb.GetMesh)
-        return NULL;
-
-    // Call into the simulation to get the mesh
-    VisIt_MeshData *vmesh = cb.GetMesh(domain, meshname);
+    VisIt_MeshData *vmesh = visit_invoke_GetMesh(domain, meshname);
 
     // If the mesh could not be created then throw an exception.
     if(vmesh == NULL)
@@ -623,6 +697,56 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
 #endif
 }
 
+#ifndef MDSERVER
+// ****************************************************************************
+// Method: CopyVariableData
+//
+// Purpose: 
+//   Copy memory into the new vtkDataArray, taking 2-tuple to 3-tuple conversion
+//   into account.
+//
+// Arguments:
+//   array       : The destination vtkDataArray.
+//   src         : The source data array.
+//   nComponents : The number of components in the data.
+//   nTuples     : The numebr of tuples in the data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 11:12:21 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+void
+CopyVariableData(vtkDataArray *array, const T *src, int nComponents, int nTuples)
+{
+    if(nComponents == 2)
+    {
+        // Reorder 2-tuple vector data into 3-tuple vector data because VisIt
+        // can't deal with 2-tuple vectors appropriately.
+        array->SetNumberOfComponents(3);
+        array->SetNumberOfTuples(nTuples);
+        T *dest = (T *)array->GetVoidPointer(0);
+        const T *s = src;
+        const T *end = src + (nTuples * 2);
+        while(s < end)
+        {
+            *dest++ = *s++;
+            *dest++ = *s++;
+            *dest++ = (T)0;
+        }
+    }
+    else
+    {
+        array->SetNumberOfComponents(nComponents);
+        array->SetNumberOfTuples(nTuples);
+        memcpy(array->GetVoidPointer(0), src, 
+               sizeof(T) * nTuples * nComponents);
+    }
+}
+#endif
 
 // ****************************************************************************
 //  Method: avtSimV2FileFormat::GetVar
@@ -665,53 +789,46 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
 #ifdef MDSERVER
     return NULL;
 #else
-    if (!cb.GetScalar)
-        return NULL;
 
-    VisIt_ScalarData *sd = cb.GetScalar(domain,varname);
-    if (!sd || sd->len<=0)
+    VisIt_VariableData *sd = visit_invoke_GetVariable(domain,varname);
+    if (sd == NULL || sd->nTuples<=0)
         return NULL;
 
     vtkDataArray *array = 0;
     if (sd->data.dataType == VISIT_DATATYPE_FLOAT)
     {
         array = vtkFloatArray::New();
-        array->SetNumberOfTuples(sd->len);
-        memcpy(array->GetVoidPointer(0), sd->data.fArray, sizeof(float) * sd->len);
+        CopyVariableData(array, sd->data.fArray, sd->nComponents, sd->nTuples);
     }
     else if (sd->data.dataType == VISIT_DATATYPE_DOUBLE)
     {
         array = vtkDoubleArray::New();
-        array->SetNumberOfTuples(sd->len);
-        memcpy(array->GetVoidPointer(0), sd->data.dArray, sizeof(double) * sd->len);
+        CopyVariableData(array, sd->data.dArray, sd->nComponents, sd->nTuples);
     }
     else if (sd->data.dataType == VISIT_DATATYPE_INT)
     {
         array = vtkIntArray::New();
-        array->SetNumberOfTuples(sd->len);
-        memcpy(array->GetVoidPointer(0), sd->data.iArray, sizeof(int) * sd->len);
+        CopyVariableData(array, sd->data.iArray, sd->nComponents, sd->nTuples);
     }
     else // (sd->data.dataType == VISIT_DATATYPE_CHAR)
     {
         array = vtkUnsignedCharArray::New();
-        array->SetNumberOfTuples(sd->len);
-        memcpy(array->GetVoidPointer(0), sd->data.cArray, sizeof(unsigned char) * sd->len);
+        CopyVariableData(array, sd->data.cArray, sd->nComponents, sd->nTuples);
     }
 
-    VisIt_ScalarData_free(sd);
+    VisIt_VariableData_free(sd);
 
     // Try and read mixed scalar data.
-    VisIt_MixedScalarData *mixed_sd = NULL;
-    if(cb.GetMixedScalar != NULL)
-         mixed_sd = cb.GetMixedScalar(domain,varname);
+    VisIt_MixedVariableData *mixed_sd = 
+        visit_invoke_GetMixedVariable(domain,varname);
     if (mixed_sd != NULL)
     {
-        if(mixed_sd->len > 0 &&
+        if(mixed_sd->nTuples > 0 &&
            (mixed_sd->data.dataType == VISIT_DATATYPE_FLOAT ||
             mixed_sd->data.dataType == VISIT_DATATYPE_DOUBLE)
            )
         {
-            int mixlen = mixed_sd->len;
+            int mixlen = mixed_sd->nTuples * mixed_sd->nComponents;
             float *mixvar = new float[mixlen];
             debug1 << "SimV1 copying mixvar data: " << mixlen
                    << " values" << endl;
@@ -738,7 +855,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
             delete [] mixvar;
         }
 
-        VisIt_MixedScalarData_free(mixed_sd);
+        VisIt_MixedVariableData_free(mixed_sd);
     }
 
     return array;
@@ -762,12 +879,16 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 17, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Sat Feb 14 15:49:02 PST 2009
+//    I made it call GetVar.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtSimV2FileFormat::GetVectorVar(int domain, const char *varname)
 {
-    return NULL;
+    return GetVar(domain, varname);
 }
 
 // ****************************************************************************
@@ -846,10 +967,8 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
     return NULL;
 #else
     const char *mName = "avtSimV2FileFormat::GetMaterial: ";
-    if (!cb.GetMaterial)
-        return NULL;
 
-    VisIt_MaterialData *md = cb.GetMaterial(domain,varname);
+    VisIt_MaterialData *md = visit_invoke_GetMaterial(domain,varname);
     if (!md)
         return NULL;
 
@@ -996,10 +1115,7 @@ avtSimV2FileFormat::GetCurve(const char *name)
 #ifdef MDSERVER
     return NULL;
 #else
-    if (!cb.GetCurve)
-        return NULL;
-
-    VisIt_CurveData *cd = cb.GetCurve(name);
+    VisIt_CurveData *cd = visit_invoke_GetCurve(name);
     if (!cd)
         return NULL;
 
@@ -1092,10 +1208,7 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
 #ifdef MDSERVER
     return NULL;
 #else
-    if (!cb.GetSpecies)
-        return NULL;
-
-    VisIt_SpeciesData *spec = cb.GetSpecies(domain, varname);
+    VisIt_SpeciesData *spec = visit_invoke_GetSpecies(domain, varname);
     if (!spec)
         return NULL;
 
@@ -1193,10 +1306,7 @@ void
 avtSimV2FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
 {
 #ifndef MDSERVER
-    if (!cb.GetDomainList)
-        return;
-
-    VisIt_DomainList *dl = cb.GetDomainList();
+    VisIt_DomainList *dl = visit_invoke_GetDomainList();
     if (!dl)
         return;
 

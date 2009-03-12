@@ -99,7 +99,6 @@ class avtSimV2FileFormat : public avtSTMDFileFormat
     avtSpecies            *GetSpecies(int, const char *);
 
     avtSimulationInformation simInfo;
-    VisIt_SimulationCallback cb;
     std::set<std::string>    curveMeshes;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);

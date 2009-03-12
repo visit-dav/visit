@@ -43,6 +43,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Data Access function prototypes. */
+int VisItGetMetaData(VisIt_SimulationMetaData *, void *);
+int VisItGetMesh(int domain, const char *name, VisIt_MeshData *, void *);
+int VisItGetMaterial(int domain, const char *name, VisIt_MaterialData *, void *);
+int VisItGetVariable(int domain, const char *name, VisIt_VariableData *, void *);
+int VisItGetCurve(const char *name, VisIt_CurveData *, void *);
+int VisItGetDomainList(VisIt_DomainList *, void *);
+
 /******************************************************************************
  ******************************************************************************
  ******************************************************************************
@@ -94,8 +102,7 @@
 #define ALLOC(T,N) (T*)malloc(sizeof(T) * (N))
 #define FREE(ptr)  if(ptr != NULL) free(ptr);
 #define VISIT_INVALID_HANDLE -1
-#define VISIT_ERROR           1
-#define VISIT_OKAY            0
+
 
 /* This is a new owner type for arrays that can be passed to the mesh functions to
  * cause the input arrays to be copied to new storage. We have this option to make
@@ -470,6 +477,9 @@ F_VISITDETECTINPUT(int *blocking, int *consoledesc)
  *   Brad Whitlock, Wed Jan 10 16:01:58 PST 2007
  *   Applied David Stuebe's change.
  *
+ *   Brad Whitlock, Fri Feb 13 16:49:04 PST 2009
+ *   Register the functions explicitly when the sim connects to VisIt.
+ *
  *****************************************************************************/
 
 FORTRAN
@@ -482,6 +492,17 @@ F_VISITATTEMPTCONNECTION(void)
     VisItSetBroadcastStringFunction(f_visit_internal_broadcaststringfunction);
 
     ret = VisItAttemptToCompleteConnection();
+
+    /* Hook up the VisIt callback functions if VisIt connected. */
+    if(ret == 1)
+    {
+        VisItSetGetMetaData(VisItGetMetaData, NULL);
+        VisItSetGetMesh(VisItGetMesh, NULL);
+        VisItSetGetMaterial(VisItGetMaterial, NULL);
+        VisItSetGetVariable(VisItGetVariable, NULL);
+        VisItSetGetCurve(VisItGetCurve, NULL);
+        VisItSetGetDomainList(VisItGetDomainList, NULL);
+    }
 
     /* These functions need to be set up but they can't be set up until after
      * the VisItAttemptToCompleteConnection function completes.
@@ -666,6 +687,30 @@ AllocFortranPointer(void **ptr, size_t sz)
     return VISIT_INVALID_HANDLE;    
 }
 
+int
+StoreFortranPointer(void *ptr)
+{
+    int i;
+
+    if(!f_pointers_initialized)
+    {
+        memset(f_pointers, 0, MAX_F_POINTERS * sizeof(void*));
+        f_pointers_initialized = 1;
+    }
+
+    /* Look for the first non-NULL value. */
+    for(i = 0; i < MAX_F_POINTERS; ++i)
+    {
+        if(f_pointers[i] == NULL)
+        {
+            f_pointers[i] = ptr;
+            return i;
+        }
+    }
+
+    return VISIT_INVALID_HANDLE;    
+}
+
 void
 FreeFortranPointer(int index)
 {
@@ -714,13 +759,13 @@ void MaterialList_Resize(MaterialList *, int);
 /* Functions to be provided in the Fortran application */
 #define F_VISITGETMETADATA   F77_ID(visitgetmetadata_,visitgetmetadata,VISITGETMETADATA)
 #define F_VISITGETMESH       F77_ID(visitgetmesh_,visitgetmesh,VISITGETMESH)
-#define F_VISITGETSCALAR     F77_ID(visitgetscalar_,visitgetscalar,VISITGETSCALAR)
+#define F_VISITGETVARIABLE     F77_ID(visitgetscalar_,visitgetscalar,VISITGETSCALAR)
 #define F_VISITGETMATERIAL   F77_ID(visitgetmaterial_,visitgetmaterial,VISITGETMATERIAL)
 #define F_VISITGETCURVE      F77_ID(visitgetcurve_,visitgetcurve,VISITGETCURVE)
 #define F_VISITGETDOMAINLIST F77_ID(visitgetdomainlist_,visitgetdomainlist,VISITGETDOMAINLIST)
 extern int F_VISITGETMETADATA(int *);
 extern int F_VISITGETMESH(int *, int *, const char *, int *);
-extern int F_VISITGETSCALAR(int *, int *, const char *, int *);
+extern int F_VISITGETVARIABLE(int *, int *, const char *, int *);
 extern int F_VISITGETMATERIAL(int *, int *, const char *, int *);
 extern int F_VISITGETCURVE(int *, const char *, int *);
 extern int F_VISITGETDOMAINLIST(int *);
@@ -754,11 +799,11 @@ extern int F_VISITGETDOMAINLIST(int *);
 #define F_VISITMESHUNSTRUCTURED  F77_ID(visitmeshunstructured_,visitmeshunstructured,VISITMESHUNSTRUCTURED)
 #define F_VISITMESHUNSTRUCTURED2 F77_ID(visitmeshunstructured2_,visitmeshunstructured2,VISITMESHUNSTRUCTURED2)
 
-#define F_VISITSCALARSETDATA    F77_ID(visitscalarsetdata_,visitscalarsetdata,VISITSCALARSETDATA)
-#define F_VISITSCALARSETDATAC   F77_ID(visitscalarsetdatac_,visitscalarsetdatac,VISITSCALARSETDATAC)
-#define F_VISITSCALARSETDATAI   F77_ID(visitscalarsetdatai_,visitscalarsetdatai,VISITSCALARSETDATAI)
-#define F_VISITSCALARSETDATAF   F77_ID(visitscalarsetdataf_,visitscalarsetdataf,VISITSCALARSETDATAF)
-#define F_VISITSCALARSETDATAD   F77_ID(visitscalarsetdatad_,visitscalarsetdatad,VISITSCALARSETDATAD)
+#define F_VISITVARIABLESETDATA    F77_ID(VISITVARIABLESETdata_,VISITVARIABLESETdata,VISITVARIABLESETDATA)
+#define F_VISITVARIABLESETDATAC   F77_ID(VISITVARIABLESETdatac_,VISITVARIABLESETdatac,VISITVARIABLESETDATAC)
+#define F_VISITVARIABLESETDATAI   F77_ID(VISITVARIABLESETdatai_,VISITVARIABLESETdatai,VISITVARIABLESETDATAI)
+#define F_VISITVARIABLESETDATAF   F77_ID(VISITVARIABLESETdataf_,VISITVARIABLESETdataf,VISITVARIABLESETDATAF)
+#define F_VISITVARIABLESETDATAD   F77_ID(VISITVARIABLESETdatad_,VISITVARIABLESETdatad,VISITVARIABLESETDATAD)
 
 #define F_VISITSETDOMAINLIST    F77_ID(visitsetdomainlist_,visitsetdomainlist,VISITSETDOMAINLIST)
 
@@ -795,11 +840,12 @@ extern int F_VISITGETDOMAINLIST(int *);
  *
  *****************************************************************************/
 
-VisIt_SimulationMetaData *VisItGetMetaData()
+int
+VisItGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
 {
-    /* Allocate a metadata object. */
-    VisIt_SimulationMetaData *md = NULL;
-    int mdi = AllocFortranPointer((void**)&md, sizeof(VisIt_SimulationMetaData));
+    /* Store our pointer where we can find it from Fortran */
+    int ret = VISIT_ERROR;
+    int mdi = StoreFortranPointer((void*)md);
 
     /* Pass the handle to the metadata object into the visitgetmetadata
        function.
@@ -809,19 +855,14 @@ VisIt_SimulationMetaData *VisItGetMetaData()
         fprintf(stderr, "VisItGetMetaData: Could not allocate meta-data.\n");
     }
     else
-    {
-        if(F_VISITGETMETADATA(&mdi) != VISIT_OKAY)
-        {
-            fprintf(stderr, "visitgetmetadata did not return VISIT_OKAY\n");
-        }
-    }
+        ret = F_VISITGETMETADATA(&mdi);
 
     /* Remove the pointer from the Fortran pointer array since we're going to
      * donate it to the caller.
      */
     FreeFortranPointer(mdi);
 
-    return md;
+    return ret;
 }
 
 /******************************************************************************
@@ -832,6 +873,8 @@ VisIt_SimulationMetaData *VisItGetMetaData()
  * Arguments:
  *   domain : The domain for which we want the scalar.
  *   name   : The name of the mesh to return.
+ *   mesh   : The mesh object we're filling in.
+ *   cbdata : Programmer callback data.
  *
  * Programmer: Brad Whitlock
  * Date:       Fri Jan 27 16:15:11 PST 2006
@@ -840,10 +883,11 @@ VisIt_SimulationMetaData *VisItGetMetaData()
  *
  *****************************************************************************/
 
-VisIt_MeshData *VisItGetMesh(int domain, const char *name)
+int
+VisItGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
 {
-    VisIt_MeshData *mesh = NULL;
-    int meshid = AllocFortranPointer((void**)&mesh, sizeof(VisIt_MeshData));
+    int ret = VISIT_ERROR;
+    int meshid = StoreFortranPointer((void*)mesh);
     
     if(meshid == VISIT_INVALID_HANDLE)
     {
@@ -851,31 +895,24 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
     }
     else
     {
-        int okay;
         int lname;
 
         mesh->meshType = VISIT_MESHTYPE_UNKNOWN;
 
         /* Get the mesh */
-        okay = VISIT_ERROR;
         lname = strlen(name);
-        if((okay = F_VISITGETMESH(&meshid, &domain, name, &lname)) != VISIT_OKAY)
+        ret = F_VISITGETMESH(&meshid, &domain, name, &lname);
+        if(ret == VISIT_OKAY && mesh->meshType == VISIT_MESHTYPE_UNKNOWN)
         {
-            FREE(mesh);
-            mesh = NULL;
-        }
-        else if(mesh->meshType == VISIT_MESHTYPE_UNKNOWN)
-        {
-            FREE(mesh);
-            mesh = NULL;
-            fprintf(stderr, "VisItGetMesh: The mesh type is unknown so the "
+            ret = VISIT_ERROR;
+            fprintf(stderr, "visitgetmesh: The mesh type is unknown so the "
                 "mesh will not be used.\n");
         }
 
         FreeFortranPointer(meshid);
     }
 
-    return mesh;
+    return ret;
 }
 
 /******************************************************************************
@@ -886,6 +923,8 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
  * Arguments:
  *   domain : The domain for which we want the material.
  *   name   : The name of the material to return.
+ *   mat    : The material object we're filling in.
+ *   cbdata : Programmer callback data.
  *
  * Programmer: Brad Whitlock
  * Date:       Fri Jan 27 16:15:11 PST 2006
@@ -896,9 +935,10 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
  *
  *****************************************************************************/
 
-VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
+int
+VisItGetMaterial(int domain, const char *name, VisIt_MaterialData *mat, void *cbdata)
 {
-    VisIt_MaterialData *mat = NULL;
+    int ret = VISIT_ERROR;
     MaterialList *ml = NULL;
 
     int matid = AllocFortranPointer((void**)&ml, sizeof(MaterialList));
@@ -909,15 +949,12 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
     else
     {
         /* Get the material */
-        int okay = VISIT_ERROR;
         int lname = strlen(name);
         MaterialList_Create(ml);
-        if((okay = F_VISITGETMATERIAL(&matid, &domain, name, &lname)) == VISIT_OKAY)
+        if((ret = F_VISITGETMATERIAL(&matid, &domain, name, &lname)) == VISIT_OKAY)
         {
             /* Convert the MaterialList object into VisIt_MaterialData */
             int i, sz = 1;
-            mat = ALLOC(VisIt_MaterialData,1);
-            memset(mat, 0, sizeof(VisIt_MaterialData));
             mat->nMaterials = ml->nmatnames;
             mat->materialNumbers = (int*)malloc(ml->nmatnames * sizeof(int));
             for(i = 0; i < ml->nmatnames; ++i)
@@ -954,17 +991,19 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
         FreeFortranPointer(matid);
     }
 
-    return mat;
+    return ret;
 }
 
 /******************************************************************************
- * Function: VisItGetScalar
+ * Function: VisItGetVariable
  *
  * Purpose:   Calls FORTRAN "visitgetscalar" to populate a scalar object.
  *
  * Arguments:
  *   domain : The domain for which we want the scalar.
  *   name   : The name of the scalar to return.
+ *   var    : The variable object we're filling in.
+ *   cbdata : Programmer callback data.
  *
  * Programmer: Brad Whitlock
  * Date:       Fri Jan 27 16:15:11 PST 2006
@@ -973,10 +1012,11 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
  *
  *****************************************************************************/
 
-VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
+int
+VisItGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbdata)
 {
-    VisIt_ScalarData *scalar = NULL;
-    int sid = AllocFortranPointer((void**)&scalar, sizeof(VisIt_ScalarData));
+    int ret = VISIT_ERROR;
+    int sid = StoreFortranPointer((void*)var);
     
     if(sid == VISIT_INVALID_HANDLE)
     {
@@ -984,19 +1024,14 @@ VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
     }
     else
     {
-        /* Get the scalar */
-        int okay = VISIT_ERROR;
+        /* Get the variable */
         int lname = strlen(name);
-        if((okay = F_VISITGETSCALAR(&sid, &domain, name, &lname)) != VISIT_OKAY)
-        {
-            FREE(scalar);
-            scalar = NULL;
-        }
+        ret = F_VISITGETVARIABLE(&sid, &domain, name, &lname);
 
         FreeFortranPointer(sid);
     }
 
-    return scalar;
+    return ret;
 }
 
 /******************************************************************************
@@ -1006,6 +1041,8 @@ VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
  *
  * Arguments:
  *   name   : The name of the curve to return.
+ *   curve  : The curve object we're filling in.
+ *   cbdata : Programmer callback data.
  *
  * Programmer: Brad Whitlock
  * Date:       Fri Jan 27 16:15:11 PST 2006
@@ -1014,10 +1051,11 @@ VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
  *
  *****************************************************************************/
 
-VisIt_CurveData *VisItGetCurve(const char *name)
+int
+VisItGetCurve(const char *name, VisIt_CurveData *curve, void *cbdata)
 {
-    VisIt_CurveData *curve = NULL;
-    int cid = AllocFortranPointer((void**)&curve, sizeof(VisIt_CurveData));
+    int ret = VISIT_ERROR;
+    int cid = StoreFortranPointer((void*)curve);
     
     if(cid == VISIT_INVALID_HANDLE)
     {
@@ -1025,19 +1063,14 @@ VisIt_CurveData *VisItGetCurve(const char *name)
     }
     else
     {
-        /* Get the scalar */
-        int okay = VISIT_ERROR;
+        /* Get the curve */
         int lname = strlen(name);
-        if((okay = F_VISITGETCURVE(&cid, name, &lname)) != VISIT_OKAY)
-        {
-            FREE(curve);
-            curve = NULL;
-        }
+        ret = F_VISITGETCURVE(&cid, name, &lname);
 
         FreeFortranPointer(cid);
     }
 
-    return curve;
+    return ret;
 }
 
 /******************************************************************************
@@ -1052,56 +1085,27 @@ VisIt_CurveData *VisItGetCurve(const char *name)
  *
  *****************************************************************************/
 
-VisIt_DomainList *VisItGetDomainList()
+int
+VisItGetDomainList(VisIt_DomainList *dl, void *cbdata)
 {
-    VisIt_DomainList *dl = NULL;
-    int dlid = AllocFortranPointer((void**)&dl, sizeof(VisIt_DomainList));
+    int ret = VISIT_ERROR;
+    int dlid = StoreFortranPointer((void*)dl);
 
     /* Get the domain list */
     if(dlid == VISIT_INVALID_HANDLE)
     {
         fprintf(stderr, "VisItGetDomainList: Could not allocate a pointer\n");
     }
-    else if(F_VISITGETDOMAINLIST(&dlid) == VISIT_OKAY)
+    else 
     {
-        /* The Fortran code must call visitsetdomainlist*/
-        FreeFortranPointer(dlid);
-    }
-    else
-    {
-        fprintf(stderr, "visitgetdomainlist returned an invalid handle, indicating that "
-                "no scalar was created\n");
+        /* Get the domain list. */
+        ret = F_VISITGETDOMAINLIST(&dlid);
+
         FreeFortranPointer(dlid);
     }
 
-    return dl;
+    return ret;
 }
-
-/*
- * The SimV2 database plugin looks for this structure in the executable in order
- * to have access to the simulation's functions to return data.
- */
-VisIt_SimulationCallback visitCallbacks =
-{
-    /* reader functions */
-    &VisItGetMetaData,
-    &VisItGetMesh,
-    &VisItGetMaterial,
-    NULL, /* species */
-    &VisItGetScalar,
-    &VisItGetCurve,
-    NULL,  /* mixed scalar */
-    VisItGetDomainList,
-
-    /* writer functions */
-    NULL, /* WriteBegin */
-    NULL, /* WriteEnd */
-    NULL, /* WriteCurvilinearMesh */
-    NULL, /* WriteRectilinearMesh */
-    NULL, /* WritePointMesh */
-    NULL, /* WriteUnstructuredMesh */
-    NULL  /* WriteDataArray */
-};
 
 /*****************************************************************************
  *****************************************************************************
@@ -1563,32 +1567,32 @@ F_VISITMDSCALARCREATE(int *mdhandle, VISIT_F77STRING scalarname, int *lscalarnam
     if(md)
     {
         int index = VISIT_INVALID_HANDLE;
-        VisIt_ScalarMetaData *smd = NULL;
+        VisIt_VariableMetaData *smd = NULL;
         char *f_scalarname = NULL;
         char *f_meshname = NULL;
         COPY_FORTRAN_STRING(f_scalarname, scalarname, lscalarname);
         COPY_FORTRAN_STRING(f_meshname, meshname, lmeshname);
 
-        smd = ALLOC(VisIt_ScalarMetaData, 1 + md->numScalars);
+        smd = ALLOC(VisIt_VariableMetaData, 1 + md->numVariables);
         if(smd)
         {
             /* Grow the scalar array. */
-            if(md->numScalars > 0)
+            if(md->numVariables > 0)
             {
-                memcpy(smd, md->scalars, sizeof(VisIt_ScalarMetaData) * md->numScalars);
-                free(md->scalars);
+                memcpy(smd, md->variables, sizeof(VisIt_VariableMetaData) * md->numVariables);
+                free(md->variables);
             }
-            md->scalars = smd;
-            index = md->numScalars++;
+            md->variables = smd;
+            index = md->numVariables++;
 
             /* Set some properties about the new scalar. */
-            md->scalars[index].name = f_scalarname;
-            md->scalars[index].meshName = f_meshname;
-            md->scalars[index].centering = (*centering==VISIT_VARCENTERING_ZONE) ?
+            md->variables[index].name = f_scalarname;
+            md->variables[index].meshName = f_meshname;
+            md->variables[index].centering = (*centering==VISIT_VARCENTERING_ZONE) ?
                 VISIT_VARCENTERING_ZONE : VISIT_VARCENTERING_NODE;
 
-            /* Finish initializing the new VisIt_ScalarMetaData. */
-            md->scalars[index].treatAsASCII = 0;
+            /* Finish initializing the new VisIt_VariableMetaData. */
+            md->variables[index].treatAsASCII = 0;
         }
         else
         {
@@ -1633,12 +1637,12 @@ F_VISITMDSCALARSETUNITS(int *mdhandle, int *sindex, VISIT_F77STRING units, int *
     VisIt_SimulationMetaData *md = (VisIt_SimulationMetaData *)GetFortranPointer(*mdhandle);
     if(md)
     {
-        if(*sindex >= 0 && *sindex < md->numScalars)
+        if(*sindex >= 0 && *sindex < md->numVariables)
         {
             char *f_units = NULL;
             COPY_FORTRAN_STRING(f_units, units, lunits);
-            FREE(md->scalars[*sindex].units);
-            md->scalars[*sindex].units = f_units;
+            FREE(md->variables[*sindex].units);
+            md->variables[*sindex].units = f_units;
             retval = VISIT_OKAY;
         }
         else
@@ -1869,7 +1873,7 @@ F_VISITMDMATERIALCREATE(int *mdhandle, VISIT_F77STRING matname, int *lmatname,
             md->materials[index].name = f_matname;
             md->materials[index].meshName = f_meshname;
 
-            /* Finish initializing the new VisIt_ScalarMetaData. */
+            /* Finish initializing the new VisIt_VariableMetaData. */
             md->materials[index].numMaterials = 0;
             md->materials[index].materialNames = NULL;
         }
@@ -2454,7 +2458,7 @@ F_VISITMESHUNSTRUCTURED(int *meshid, int *ndims, int *nnodes, int *nzones,
 }
 
 /******************************************************************************
- * Function: F_VISITSCALARSETDATA
+ * Function: F_VISITVARIABLESETDATA
  *
  * Purpose:   Allows FORTRAN to pass back scalar data.
  *
@@ -2475,17 +2479,17 @@ F_VISITMESHUNSTRUCTURED(int *meshid, int *ndims, int *nnodes, int *nzones,
  *****************************************************************************/
 
 FORTRAN
-F_VISITSCALARSETDATA(int *sid, void *scalar, int *dims, int *ndims,
+F_VISITVARIABLESETDATA(int *sid, void *scalar, int *dims, int *ndims,
     int *datatype, int *owner)
 {
     int retval = VISIT_ERROR;
-    VisIt_ScalarData *sd = (VisIt_ScalarData *)GetFortranPointer(*sid);
+    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
     if(sd)
     {
         int i, sz = 1;
         for(i = 0; i < *ndims; ++i)
             sz *= dims[i];
-        sd->len = sz;
+        sd->nTuples = sz;
 
         if(*owner == VISIT_OWNER_SIM)
         {
@@ -2500,7 +2504,7 @@ F_VISITSCALARSETDATA(int *sid, void *scalar, int *dims, int *ndims,
                 sd->data = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_SIM, scalar);
             else
             {
-                fprintf(stderr, "visitsetscalardata: Invalid data type value.\n");
+                fprintf(stderr, "visitsetvariabledata: Invalid data type value.\n");
                 retval = VISIT_ERROR;
             }
         }
@@ -2533,99 +2537,99 @@ F_VISITSCALARSETDATA(int *sid, void *scalar, int *dims, int *ndims,
             }
             else
             {
-                fprintf(stderr, "visitsetscalardata: Invalid data type value.\n");
+                fprintf(stderr, "visitsetvariabledata: Invalid data type value.\n");
                 retval = VISIT_ERROR;
             }
         }
         else
-            fprintf(stderr, "visitsetscalardata: Invalid owner value.\n");
+            fprintf(stderr, "visitsetvariabledata: Invalid owner value.\n");
     }
     else
-        fprintf(stderr, "visitsetscalardata: Could not set scalar data\n");
+        fprintf(stderr, "visitsetvariabledata: Could not set scalar data\n");
 
     return retval;
 }
 
 FORTRAN
-F_VISITSCALARSETDATAC(int *sid, char *scalar, int *dims, int *ndims)
+F_VISITVARIABLESETDATAC(int *sid, char *scalar, int *dims, int *ndims)
 {
     int retval = VISIT_ERROR;
-    VisIt_ScalarData *sd = (VisIt_ScalarData *)GetFortranPointer(*sid);
+    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
     if(sd)
     {
         int i;
-        sd->len = 1;
+        sd->nTuples = 1;
         for(i = 0; i < *ndims; ++i)
-            sd->len *= dims[i];
+            sd->nTuples *= dims[i];
 
         sd->data = VisIt_CreateDataArrayFromChar(VISIT_OWNER_SIM, scalar);
         retval = VISIT_OKAY;
     }
     else
-        fprintf(stderr, "visitscalarsetdatac: Could not set scalar data\n");
+        fprintf(stderr, "visitvariablesetdatac: Could not set scalar data\n");
 
     return retval;
 }
 
 FORTRAN
-F_VISITSCALARSETDATAI(int *sid, int *scalar, int *dims, int *ndims)
+F_VISITVARIABLESETDATAI(int *sid, int *scalar, int *dims, int *ndims)
 {
     int retval = VISIT_ERROR;
-    VisIt_ScalarData *sd = (VisIt_ScalarData *)GetFortranPointer(*sid);
+    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
     if(sd)
     {
         int i;
-        sd->len = 1;
+        sd->nTuples = 1;
         for(i = 0; i < *ndims; ++i)
-            sd->len *= dims[i];
+            sd->nTuples *= dims[i];
 
         sd->data = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM, scalar);
         retval = VISIT_OKAY;
     }
     else
-        fprintf(stderr, "visitscalarsetdatai: Could not set scalar data\n");
+        fprintf(stderr, "visitvariablesetdatai: Could not set scalar data\n");
 
     return retval;
 }
 
 FORTRAN
-F_VISITSCALARSETDATAF(int *sid, float *scalar, int *dims, int *ndims)
+F_VISITVARIABLESETDATAF(int *sid, float *scalar, int *dims, int *ndims)
 {
     int retval = VISIT_ERROR;
-    VisIt_ScalarData *sd = (VisIt_ScalarData *)GetFortranPointer(*sid);
+    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
     if(sd)
     {
         int i;
-        sd->len = 1;
+        sd->nTuples = 1;
         for(i = 0; i < *ndims; ++i)
-            sd->len *= dims[i];
+            sd->nTuples *= dims[i];
 
         sd->data = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, scalar);
         retval = VISIT_OKAY;
     }
     else
-        fprintf(stderr, "visitscalarsetdataf: Could not set scalar data\n");
+        fprintf(stderr, "visitvariablesetdataf: Could not set scalar data\n");
 
     return retval;
 }
 
 FORTRAN
-F_VISITSCALARSETDATAD(int *sid, double *scalar, int *dims, int *ndims)
+F_VISITVARIABLESETDATAD(int *sid, double *scalar, int *dims, int *ndims)
 {
     int retval = VISIT_ERROR;
-    VisIt_ScalarData *sd = (VisIt_ScalarData *)GetFortranPointer(*sid);
+    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
     if(sd)
     {
         int i;
-        sd->len = 1;
+        sd->nTuples = 1;
         for(i = 0; i < *ndims; ++i)
-            sd->len *= dims[i];
+            sd->nTuples *= dims[i];
 
         sd->data = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_SIM, scalar);
         retval = VISIT_OKAY;
     }
     else
-        fprintf(stderr, "visitscalarsetdatad: Could not set scalar data\n");
+        fprintf(stderr, "visitvariablesetdatad: Could not set scalar data\n");
 
     return retval;
 }

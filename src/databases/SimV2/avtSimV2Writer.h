@@ -88,7 +88,6 @@ private:
     std::string                    objectName;
     stringVector                   varList;
     int                            numblocks;
-    VisIt_SimulationCallback       cb;
 
     void           WriteCurvilinearMesh(vtkStructuredGrid *,
                                        int, VisIt_MeshMetaData *);

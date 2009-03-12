@@ -53,56 +53,7 @@
 
 #include <DebugStream.h>
 
-#ifdef __APPLE__
-#include <dlfcn.h>
-#endif
-
-#ifndef __APPLE__
-#ifndef MDSERVER
-extern "C" VisIt_SimulationCallback visitCallbacks;
-#endif
-#endif
-
-#define VISIT_OKAY 0
-
-// ****************************************************************************
-//  Function:  FreeDataArray
-//
-//  Purpose:
-//    Safely (i.e. only if we own it) frees a VisIt_DataArray.
-//
-//  Arguments:
-//    da         the data array structure
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    April 28, 2005
-//
-// ****************************************************************************
-static void FreeDataArray(VisIt_DataArray &da)
-{
-    if (da.owner != VISIT_OWNER_VISIT)
-        return;
-
-    switch (da.dataType)
-    {
-      case VISIT_DATATYPE_CHAR:
-        free(da.cArray);
-        da.cArray = NULL;
-        break;
-      case VISIT_DATATYPE_INT:
-        free(da.iArray);
-        da.iArray = NULL;
-        break;
-      case VISIT_DATATYPE_FLOAT:
-        free(da.fArray);
-        da.fArray = NULL;
-        break;
-      case VISIT_DATATYPE_DOUBLE:
-        free(da.dArray);
-        da.dArray = NULL;
-        break;
-    }
-}
+#include <VisItDataInterfaceRuntime.h>
 
 // ****************************************************************************
 // Method: avtSimV2Writer::avtSimV2Writer
@@ -120,21 +71,6 @@ static void FreeDataArray(VisIt_DataArray &da)
 avtSimV2Writer::avtSimV2Writer() : avtDatabaseWriter(), objectName(), varList()
 {
     metadata = 0;
-
-#ifdef MDSERVER
-    memset((void*)&cb, 0, sizeof(VisIt_SimulationCallback));
-#else
-    // Hook up the writer callbacks on the compute engine.
-#ifdef __APPLE__
-    void *cbptr = dlsym(RTLD_DEFAULT, "visitCallbacks");
-    if (!cbptr)
-        EXCEPTION1(ImproperUseException,
-                   "Could not find 'visitCallbacks' in the current exe.");
-    cb = *((VisIt_SimulationCallback*)cbptr);
-#else
-    cb = visitCallbacks;
-#endif
-#endif
 }
 
 // ****************************************************************************
@@ -190,8 +126,7 @@ avtSimV2Writer::OpenFile(const std::string &objName, int nb)
         objectName = "mesh";
 
     debug1 << "avtSimV2Writer::OpenFile(\"" << objName.c_str() << "\")\n";
-    if(cb.WriteBegin != 0)
-        cb.WriteBegin(objName.c_str());
+    visit_invoke_WriteBegin(objName.c_str());
 }
 
 // ****************************************************************************
@@ -312,14 +247,7 @@ avtSimV2Writer::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     // Free the mesh metadata.
-    free((void*)vmmd->name);
-    free((void*)vmmd->blockTitle);
-    free((void*)vmmd->blockPieceName);
-    free((void*)vmmd->groupTitle);
-    free((void*)vmmd->units);
-    free((void*)vmmd->xLabel);
-    free((void*)vmmd->yLabel);
-    free((void*)vmmd->zLabel);
+    VisIt_MeshMetaData_free(vmmd);
     free(vmmd);
 }
 
@@ -342,8 +270,7 @@ void
 avtSimV2Writer::CloseFile(void)
 {
     debug1 << "avtSimV2Writer::CloseFile()\n";
-    if(cb.WriteEnd != 0)
-        cb.WriteEnd(objectName.c_str());
+    visit_invoke_WriteEnd(objectName.c_str());
 }
 
 // ****************************************************************************
@@ -374,87 +301,81 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
     // Set the mesh type in the sim1 metadata.
     vmmd->meshType = VISIT_MESHTYPE_CURVILINEAR;
 
-    if(cb.WriteCurvilinearMesh != 0)
-    {
-        // Translate the VTK structure back into VisIt_CurvilinearMesh.
-        VisIt_CurvilinearMesh *cmesh = new VisIt_CurvilinearMesh;
-        memset((void*)cmesh, 0, sizeof(VisIt_CurvilinearMesh));
-        cmesh->ndims = ds->GetDataDimension();
-        ds->GetDimensions(cmesh->dims);
+    // Translate the VTK structure back into VisIt_CurvilinearMesh.
+    VisIt_CurvilinearMesh *cmesh = (VisIt_CurvilinearMesh *)malloc(sizeof(VisIt_CurvilinearMesh));
+    memset((void*)cmesh, 0, sizeof(VisIt_CurvilinearMesh));
+    cmesh->ndims = ds->GetDataDimension();
+    ds->GetDimensions(cmesh->dims);
 
-        cmesh->baseIndex[0] = 0;
-        cmesh->baseIndex[1] = 0;
-        cmesh->baseIndex[2] = 0;
+    cmesh->baseIndex[0] = 0;
+    cmesh->baseIndex[1] = 0;
+    cmesh->baseIndex[2] = 0;
 
-        cmesh->minRealIndex[0] = 0;
-        cmesh->minRealIndex[1] = 0;
-        cmesh->minRealIndex[2] = 0;
+    cmesh->minRealIndex[0] = 0;
+    cmesh->minRealIndex[1] = 0;
+    cmesh->minRealIndex[2] = 0;
     
-        cmesh->maxRealIndex[0] = cmesh->dims[0]-1;
-        cmesh->maxRealIndex[1] = cmesh->dims[1]-1;
-        cmesh->maxRealIndex[2] = cmesh->dims[2]-1;
+    cmesh->maxRealIndex[0] = cmesh->dims[0]-1;
+    cmesh->maxRealIndex[1] = cmesh->dims[1]-1;
+    cmesh->maxRealIndex[2] = cmesh->dims[2]-1;
 
-        if(cmesh->ndims == 1)
-        {
-            double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-            for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
-            {
-                double *pt = ds->GetPoint(i);
-                x[i] = pt[0];
-            }
-            cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-        }
-        else if(cmesh->ndims == 2)
-        {
-            double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-            double *y = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-            for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
-            {
-                double *pt = ds->GetPoint(i);
-                x[i] = pt[0];
-                y[i] = pt[1];
-            }
-            cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-            cmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-        }
-        else if(cmesh->ndims == 3)
-        {
-            double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-            double *y = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-            double *z = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-            for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
-            {
-                double *pt = ds->GetPoint(i);
-                x[i] = pt[0];
-                y[i] = pt[1];
-                z[i] = pt[2];
-            }
-            cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-            cmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-            cmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
-        }
-
-        // Call into the simulation to write the data back.
-        int ret = cb.WriteCurvilinearMesh(objectName.c_str(), chunk, cmesh, vmmd);
-        if(ret != VISIT_OKAY)
-        {
-            debug1 << "WriteCurvilinearMesh callback returned " << ret
-                   << " instead of VISIT_OKAY." << endl;
-        }
-
-        FreeDataArray(cmesh->xcoords);
-        FreeDataArray(cmesh->ycoords);
-        FreeDataArray(cmesh->zcoords);
-        delete cmesh;
- 
-        // Write the data arrays into the simulation.
-        WriteDataArrays(ds, chunk);   
-    }
-    else
+    if(cmesh->ndims == 1)
     {
-        debug1 << "Simulation did not provide WriteCurvilinearMesh function."
-               << endl;
+        double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
+        for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
+        {
+            double *pt = ds->GetPoint(i);
+            x[i] = pt[0];
+        }
+        cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
     }
+    else if(cmesh->ndims == 2)
+    {
+        double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
+        double *y = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
+        for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
+        {
+            double *pt = ds->GetPoint(i);
+            x[i] = pt[0];
+            y[i] = pt[1];
+        }
+        cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
+        cmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
+    }
+    else if(cmesh->ndims == 3)
+    {
+        double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
+        double *y = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
+        double *z = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
+        for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
+        {
+            double *pt = ds->GetPoint(i);
+            x[i] = pt[0];
+            y[i] = pt[1];
+            z[i] = pt[2];
+        }
+        cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
+        cmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
+        cmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
+    }
+
+    VisIt_MeshData *mesh = new VisIt_MeshData;
+    memset((void *)mesh, 0, sizeof(VisIt_MeshData));
+    mesh->meshType = VISIT_MESHTYPE_CURVILINEAR;
+    mesh->cmesh = cmesh;
+
+    // Call into the simulation to write the data back.
+    int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+    if(ret != VISIT_OKAY)
+    {
+        debug1 << "WriteMesh callback returned " << ret
+               << " instead of VISIT_OKAY." << endl;
+    }
+
+    VisIt_MeshData_free(mesh);
+ 
+    // Write the data arrays into the simulation.
+    WriteDataArrays(ds, chunk);   
 }
 
 // ****************************************************************************
@@ -485,74 +406,68 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
     // Set the mesh type in the sim1 metadata.
     vmmd->meshType = VISIT_MESHTYPE_RECTILINEAR;
 
-    if(cb.WriteRectilinearMesh != 0)
-    {
-        // Translate the VTK structure back into VisIt_RectilinearMesh.
-        VisIt_RectilinearMesh *rmesh = new VisIt_RectilinearMesh;
-        memset((void*)rmesh, 0, sizeof(VisIt_RectilinearMesh));
-        rmesh->ndims = ds->GetDataDimension();
-        ds->GetDimensions(rmesh->dims);
+    // Translate the VTK structure back into VisIt_RectilinearMesh.
+    VisIt_RectilinearMesh *rmesh = (VisIt_RectilinearMesh *)malloc(sizeof(VisIt_RectilinearMesh));
+    memset((void*)rmesh, 0, sizeof(VisIt_RectilinearMesh));
+    rmesh->ndims = ds->GetDataDimension();
+    ds->GetDimensions(rmesh->dims);
 
-        rmesh->baseIndex[0] = 0;
-        rmesh->baseIndex[1] = 0;
-        rmesh->baseIndex[2] = 0;
+    rmesh->baseIndex[0] = 0;
+    rmesh->baseIndex[1] = 0;
+    rmesh->baseIndex[2] = 0;
 
-        rmesh->minRealIndex[0] = 0;
-        rmesh->minRealIndex[1] = 0;
-        rmesh->minRealIndex[2] = 0;
+    rmesh->minRealIndex[0] = 0;
+    rmesh->minRealIndex[1] = 0;
+    rmesh->minRealIndex[2] = 0;
     
-        rmesh->maxRealIndex[0] = rmesh->dims[0]-1;
-        rmesh->maxRealIndex[1] = rmesh->dims[1]-1;
-        rmesh->maxRealIndex[2] = rmesh->dims[2]-1;
+    rmesh->maxRealIndex[0] = rmesh->dims[0]-1;
+    rmesh->maxRealIndex[1] = rmesh->dims[1]-1;
+    rmesh->maxRealIndex[2] = rmesh->dims[2]-1;
 
-        if(rmesh->ndims >= 1)
-        {
-            vtkDataArray *xc = ds->GetXCoordinates();
-            double *x = (double*)malloc(xc->GetNumberOfTuples() * sizeof(double));
-            for(vtkIdType i = 0; i < xc->GetNumberOfTuples(); ++i)
-                x[i] = xc->GetTuple1(i);
-            rmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-        }
-
-        if(rmesh->ndims >= 2)
-        {
-            vtkDataArray *yc = ds->GetYCoordinates();
-            double *y = (double*)malloc(yc->GetNumberOfTuples() * sizeof(double));
-            for(vtkIdType i = 0; i < yc->GetNumberOfTuples(); ++i)
-                y[i] = yc->GetTuple1(i);
-            rmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-        }
-
-        if(rmesh->ndims >= 3)
-        {
-            vtkDataArray *zc = ds->GetZCoordinates();
-            double *z = (double*)malloc(zc->GetNumberOfTuples() * sizeof(double));
-            for(vtkIdType i = 0; i < zc->GetNumberOfTuples(); ++i)
-                z[i] = zc->GetTuple1(i);
-            rmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
-        }
-
-        // Call into the simulation to write the data back.
-        int ret = cb.WriteRectilinearMesh(objectName.c_str(), chunk, rmesh, vmmd);
-        if(ret != VISIT_OKAY)
-        {
-            debug1 << "WriteRectilinearMesh callback returned " << ret
-                   << " instead of VISIT_OKAY." << endl;
-        }
-
-        FreeDataArray(rmesh->xcoords);
-        FreeDataArray(rmesh->ycoords);
-        FreeDataArray(rmesh->zcoords);
-        delete rmesh;
-
-        // Write the data arrays into the simulation.
-        WriteDataArrays(ds, chunk);
-    }
-    else
+    if(rmesh->ndims >= 1)
     {
-        debug1 << "Simulation did not provide WriteRectilinearMesh function."
-               << endl;
+        vtkDataArray *xc = ds->GetXCoordinates();
+        double *x = (double*)malloc(xc->GetNumberOfTuples() * sizeof(double));
+        for(vtkIdType i = 0; i < xc->GetNumberOfTuples(); ++i)
+            x[i] = xc->GetTuple1(i);
+        rmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
     }
+
+    if(rmesh->ndims >= 2)
+    {
+        vtkDataArray *yc = ds->GetYCoordinates();
+        double *y = (double*)malloc(yc->GetNumberOfTuples() * sizeof(double));
+        for(vtkIdType i = 0; i < yc->GetNumberOfTuples(); ++i)
+            y[i] = yc->GetTuple1(i);
+        rmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
+    }
+
+    if(rmesh->ndims >= 3)
+    {
+        vtkDataArray *zc = ds->GetZCoordinates();
+        double *z = (double*)malloc(zc->GetNumberOfTuples() * sizeof(double));
+        for(vtkIdType i = 0; i < zc->GetNumberOfTuples(); ++i)
+            z[i] = zc->GetTuple1(i);
+        rmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
+    }
+
+    VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
+    memset((void *)mesh, 0, sizeof(VisIt_MeshData));
+    mesh->meshType = VISIT_MESHTYPE_RECTILINEAR;
+    mesh->rmesh = rmesh;
+
+    // Call into the simulation to write the data back.
+    int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+    if(ret != VISIT_OKAY)
+    {
+        debug1 << "WriteRectilinearMesh callback returned " << ret
+               << " instead of VISIT_OKAY." << endl;
+    }
+
+    VisIt_MeshData_free(mesh);
+
+    // Write the data arrays into the simulation.
+    WriteDataArrays(ds, chunk);
 }
 
 // ****************************************************************************
@@ -628,175 +543,162 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
         debug1 << mName << "Write the mesh as a point mesh" << endl;
 
         // Do a point mesh callback.
-        if(cb.WritePointMesh != 0)
+        VisIt_PointMesh *pmesh = new VisIt_PointMesh;
+        memset((void*)pmesh, 0, sizeof(VisIt_PointMesh));
+        pmesh->ndims = 3;
+        pmesh->nnodes = ds->GetNumberOfCells();
+        double *x = (double*)malloc(pmesh->nnodes * sizeof(double));
+        double *y = (double*)malloc(pmesh->nnodes * sizeof(double));
+        double *z = (double*)malloc(pmesh->nnodes * sizeof(double));
+        for(vtkIdType i = 0; i < ds->GetNumberOfCells(); ++i)
         {
-            VisIt_PointMesh *pmesh = new VisIt_PointMesh;
-            memset((void*)pmesh, 0, sizeof(VisIt_PointMesh));
-            pmesh->ndims = 3;
-            pmesh->nnodes = ds->GetNumberOfCells();
-            double *x = (double*)malloc(pmesh->nnodes * sizeof(double));
-            double *y = (double*)malloc(pmesh->nnodes * sizeof(double));
-            double *z = (double*)malloc(pmesh->nnodes * sizeof(double));
-            for(vtkIdType i = 0; i < ds->GetNumberOfCells(); ++i)
-            {
-                vtkIdType npts;
-                double pt[3];
+            vtkIdType npts;
+            double pt[3];
 
-                ds->GetCellPoints(i, npts, pts);
-                ds->GetPoint(pts[0], pt);
+            ds->GetCellPoints(i, npts, pts);
+            ds->GetPoint(pts[0], pt);
 
-                x[i] = pt[0];
-                y[i] = pt[1];
-                z[i] = pt[2];
-            }
-            pmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-            pmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-            pmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
-
-            // Set the mesh type in the sim1 metadata.
-            vmmd->meshType = VISIT_MESHTYPE_POINT;
-
-            // Call into the simulation to write the data back.
-            int ret = cb.WritePointMesh(objectName.c_str(), chunk, pmesh, vmmd);
-            if(ret != VISIT_OKAY)
-            {
-                debug1 << "WritePointMesh callback returned " << ret
-                       << " instead of VISIT_OKAY." << endl;
-            }
-
-            FreeDataArray(pmesh->xcoords);
-            FreeDataArray(pmesh->ycoords);
-            FreeDataArray(pmesh->zcoords);
-            delete pmesh;
-
-            // Write the data arrays into the simulation.
-            WriteDataArrays(ds, chunk);
+            x[i] = pt[0];
+            y[i] = pt[1];
+            z[i] = pt[2];
         }
-        else
+        pmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
+        pmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
+        pmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
+
+        // Set the mesh type in the sim1 metadata.
+        vmmd->meshType = VISIT_MESHTYPE_POINT;
+
+        VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
+        memset((void *)mesh, 0, sizeof(VisIt_MeshData));
+        mesh->meshType = VISIT_MESHTYPE_POINT;
+        mesh->pmesh = pmesh;
+
+        // Call into the simulation to write the data back.
+        int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        if(ret != VISIT_OKAY)
         {
-            debug1 << "Simulation did not provide WritePointMesh function."
-                   << endl;
+            debug1 << "WritePointMesh callback returned " << ret
+                   << " instead of VISIT_OKAY." << endl;
         }
+
+        VisIt_MeshData_free(mesh);
+
+        // Write the data arrays into the simulation.
+        WriteDataArrays(ds, chunk);
     }
     else
     {
         debug1 << mName << "Write the mesh as an unstructured mesh" << endl;
 
         // Do a more general unstructured mesh callback.
-        if(cb.WriteUnstructuredMesh != 0)
+        // Create an array of cell behaviors. 0=remove, 1=repeat once, 
+        // 2=repeat 2x, ...
+        unsigned char *cellCopy = new unsigned char[ct->GetNumberOfTuples()];
+        memset(cellCopy, 0, ct->GetNumberOfTuples());
+
+        // Now, assemble the connectivity.
+        int *conn = (int*)malloc(connLen * sizeof(int));
+        cptr = (unsigned char *)ct->GetVoidPointer(0);
+        int *connPtr = conn;
+        connLen = 0;
+        int cellCount = 0;
+        for(vtkIdType i = 0; i < ct->GetNumberOfTuples(); ++i)
         {
-            // Create an array of cell behaviors. 0=remove, 1=repeat once, 
-            // 2=repeat 2x, ...
-            unsigned char *cellCopy = new unsigned char[ct->GetNumberOfTuples()];
-            memset(cellCopy, 0, ct->GetNumberOfTuples());
+            vtkIdType npts, *pts = 0;
+            ds->GetCellPoints(i, npts, pts);
 
-            // Now, assemble the connectivity.
-            int *conn = (int*)malloc(connLen * sizeof(int));
-            cptr = (unsigned char *)ct->GetVoidPointer(0);
-            int *connPtr = conn;
-            connLen = 0;
-            int cellCount = 0;
-            for(vtkIdType i = 0; i < ct->GetNumberOfTuples(); ++i)
+            // Store the cell type in terms of the VISIT simulation types.
+            int vtktype = *cptr++;
+            switch(vtktype)
             {
-                vtkIdType npts, *pts = 0;
-                ds->GetCellPoints(i, npts, pts);
-
-                // Store the cell type in terms of the VISIT simulation types.
-                int vtktype = *cptr++;
-                switch(vtktype)
+            case VTK_LINE:
+            case VTK_TRIANGLE:
+            case VTK_QUAD:
+            case VTK_TETRA:
+            case VTK_PYRAMID:
+            case VTK_WEDGE:
+            case VTK_HEXAHEDRON:
+            case VTK_VERTEX:
                 {
-                case VTK_LINE:
-                case VTK_TRIANGLE:
-                case VTK_QUAD:
-                case VTK_TETRA:
-                case VTK_PYRAMID:
-                case VTK_WEDGE:
-                case VTK_HEXAHEDRON:
-                case VTK_VERTEX:
-                    {
-                    *connPtr++ = celltype_idtype[vtktype];
+                *connPtr++ = celltype_idtype[vtktype];
 
-                    // Store the connectivity.
-                    for(vtkIdType j = 0; j < npts; ++j)
-                        *connPtr++ = pts[j];
+                // Store the connectivity.
+                for(vtkIdType j = 0; j < npts; ++j)
+                    *connPtr++ = pts[j];
 
-                    // Let's recalculate the connetivity size in case there
-                    // were cell types that we had to skip.
-                    connLen += (npts + 1);
+                // Let's recalculate the connetivity size in case there
+                // were cell types that we had to skip.
+                connLen += (npts + 1);
 
-                    // Indicate that the cell should be copied.
-                    cellCopy[i] = 1;
-                    ++cellCount;
-                    }
-                    break;
-                default:
-                    debug5 << mName << "Unsupported VTK cell type " << vtktype
-                           << ". Skipping cell." << endl;
+                // Indicate that the cell should be copied.
+                cellCopy[i] = 1;
+                ++cellCount;
                 }
+                break;
+            default:
+                debug5 << mName << "Unsupported VTK cell type " << vtktype
+                       << ". Skipping cell." << endl;
+            }
+        }
+
+        if(cellCount > 0)
+        {
+            VisIt_UnstructuredMesh *umesh = (VisIt_UnstructuredMesh *)malloc(sizeof(VisIt_UnstructuredMesh));
+            memset((void*)umesh, 0, sizeof(VisIt_UnstructuredMesh));
+            umesh->ndims = 3;
+            umesh->nnodes = ds->GetNumberOfPoints();
+            umesh->nzones = cellCount;
+            double *x = (double*)malloc(umesh->nnodes * sizeof(double));
+            double *y = (double*)malloc(umesh->nnodes * sizeof(double));
+            double *z = (double*)malloc(umesh->nnodes * sizeof(double));
+            for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
+            {
+                double pt[3];
+                ds->GetPoint(i, pt);
+                x[i] = pt[0];
+                y[i] = pt[1];
+                z[i] = pt[2];
+            }
+            umesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
+            umesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
+            umesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
+            umesh->connectivity = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, conn);
+            umesh->connectivityLen = connLen;
+
+            // Set the mesh type in the sim1 metadata.
+            vmmd->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
+
+            VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
+            memset((void *)mesh, 0, sizeof(VisIt_MeshData));
+            mesh->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
+            mesh->umesh = umesh;
+
+            // Call into the simulation to write the data back.
+            int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+            if(ret != VISIT_OKAY)
+            {
+                debug1 << "WriteUnstructuredMesh callback returned " << ret
+                       << " instead of VISIT_OKAY." << endl;
             }
 
-            if(cellCount > 0)
-            {
-                VisIt_UnstructuredMesh *umesh = new VisIt_UnstructuredMesh;
-                memset((void*)umesh, 0, sizeof(VisIt_UnstructuredMesh));
-                umesh->ndims = 3;
-                umesh->nnodes = ds->GetNumberOfPoints();
-                umesh->nzones = cellCount;
-                double *x = (double*)malloc(umesh->nnodes * sizeof(double));
-                double *y = (double*)malloc(umesh->nnodes * sizeof(double));
-                double *z = (double*)malloc(umesh->nnodes * sizeof(double));
-                for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
-                {
-                    double pt[3];
-                    ds->GetPoint(i, pt);
-                    x[i] = pt[0];
-                    y[i] = pt[1];
-                    z[i] = pt[2];
-                }
-                umesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-                umesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-                umesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
-                umesh->connectivity = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, conn);
-                umesh->connectivityLen = connLen;
+            VisIt_MeshData_free(mesh);
 
-                // Set the mesh type in the sim1 metadata.
-                vmmd->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
-
-                // Call into the simulation to write the data back.
-                int ret = cb.WriteUnstructuredMesh(objectName.c_str(), chunk, umesh, vmmd);
-                if(ret != VISIT_OKAY)
-                {
-                    debug1 << "WriteUnstructuredMesh callback returned " << ret
-                           << " instead of VISIT_OKAY." << endl;
-                }
-
-                FreeDataArray(umesh->xcoords);
-                FreeDataArray(umesh->ycoords);
-                FreeDataArray(umesh->zcoords);
-                FreeDataArray(umesh->connectivity);
-                delete umesh;
-
-                // Write the data arrays into the simulation.
-                if(cellCount == ds->GetNumberOfCells())
-                    WriteDataArrays(ds, chunk);
-                else
-                    WriteDataArraysConditionally(ds, chunk, cellCopy);
-            }
+            // Write the data arrays into the simulation.
+            if(cellCount == ds->GetNumberOfCells())
+                WriteDataArrays(ds, chunk);
             else
-            {
-                debug1 << mName << "WriteUnstructuredMesh function not called "
-                       << "because the mesh had no cells that SimV1 could "
-                       << "represent." << endl;
-                free(conn);
-            }
-
-            delete [] cellCopy;
+                WriteDataArraysConditionally(ds, chunk, cellCopy);
         }
         else
         {
-            debug1 << "Simulation did not provide WriteUnstructuredMesh function."
-                   << endl;
+            debug1 << mName << "WriteUnstructuredMesh function not called "
+                   << "because the mesh had no cells that SimV1 could "
+                   << "represent." << endl;
+            free(conn);
         }
+
+        delete [] cellCopy;
     }
 }
 
@@ -849,7 +751,7 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
     {
         // It's a point mesh.
         debug1 << "Write polydata as point mesh" << endl;
-        VisIt_PointMesh *pmesh = new VisIt_PointMesh;
+        VisIt_PointMesh *pmesh = (VisIt_PointMesh *)malloc(sizeof(VisIt_PointMesh));
         memset((void*)pmesh, 0, sizeof(VisIt_PointMesh));
         pmesh->ndims = 3;
         pmesh->nnodes = ds->GetNumberOfPoints();
@@ -860,29 +762,23 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
         // Set the mesh type in the sim1 metadata.
         vmmd->meshType = VISIT_MESHTYPE_POINT;
 
+        VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
+        memset((void *)mesh, 0, sizeof(VisIt_MeshData));
+        mesh->meshType = VISIT_MESHTYPE_POINT;
+        mesh->pmesh = pmesh;
+
         // Call into the simulation to write the data back.
-        if(cb.WritePointMesh != 0)
+        int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        if(ret != VISIT_OKAY)
         {
-            int ret = cb.WritePointMesh(objectName.c_str(), chunk, pmesh, vmmd);
-            if(ret != VISIT_OKAY)
-            {
-                debug1 << "WritePointMesh callback returned " << ret
-                       << " instead of VISIT_OKAY." << endl;
-            }
-
-            // Write the data arrays into the simulation.
-            WriteDataArrays(ds, chunk);
-        }
-        else
-        {
-            debug1 << "Simulation did not provide WritePointMesh function."
-                   << endl;
+            debug1 << "WritePointMesh callback returned " << ret
+                   << " instead of VISIT_OKAY." << endl;
         }
 
-        FreeDataArray(pmesh->xcoords);
-        FreeDataArray(pmesh->ycoords);
-        FreeDataArray(pmesh->zcoords);
-        delete pmesh;
+        VisIt_MeshData_free(mesh);
+
+        // Write the data arrays into the simulation.
+        WriteDataArrays(ds, chunk);
     }
     else
     {
@@ -975,7 +871,7 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
                 debug5 << "Cell has " << npts << " points!" << endl;
         }
 
-        VisIt_UnstructuredMesh *umesh = new VisIt_UnstructuredMesh;
+        VisIt_UnstructuredMesh *umesh = (VisIt_UnstructuredMesh *)malloc(sizeof(VisIt_UnstructuredMesh));
         memset((void*)umesh, 0, sizeof(VisIt_UnstructuredMesh));
         umesh->ndims = 3;
         umesh->nnodes = ds->GetNumberOfPoints();
@@ -992,30 +888,25 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
         // Set the mesh type in the sim1 metadata.
         vmmd->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
 
-        // Call into the simulation to write the data back.
-        if(cb.WriteUnstructuredMesh != 0)
-        {
-            int ret = cb.WriteUnstructuredMesh(objectName.c_str(), chunk, umesh, vmmd);
-            if(ret != VISIT_OKAY)
-            {
-                debug1 << "WriteUnstructuredMesh callback returned " << ret
-                       << " instead of VISIT_OKAY." << endl;
-            }
+        VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
+        memset((void *)mesh, 0, sizeof(VisIt_MeshData));
+        mesh->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
+        mesh->umesh = umesh;
 
+        // Call into the simulation to write the data back.
+        int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        if(ret != VISIT_OKAY)
+        {
+            debug1 << "WriteUnstructuredMesh callback returned " << ret
+                   << " instead of VISIT_OKAY." << endl;
+        }
+        else
+        {
             // Write the data arrays into the simulation.
             WriteDataArrays(ds, chunk);
         } 
-        else
-        {
-            debug1 << "Simulation did not provide WriteUnstructuredMesh function."
-                   << endl;
-        }
 
-        FreeDataArray(umesh->xcoords);
-        FreeDataArray(umesh->ycoords);
-        FreeDataArray(umesh->zcoords);
-        FreeDataArray(umesh->connectivity);
-        delete umesh;
+        VisIt_MeshData_free(mesh);
     }
 }
 
@@ -1061,34 +952,25 @@ avtSimV2Writer::WriteOneDataArray(vtkDataArray *arr, const std::string &objectNa
 
     // Assemble a scalar metadata object.
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();    
-    VisIt_ScalarMetaData *smd = (VisIt_ScalarMetaData*)malloc(
-        sizeof(VisIt_ScalarMetaData));
-    memset(smd, 0, sizeof(VisIt_ScalarMetaData));
+    VisIt_VariableMetaData *smd = (VisIt_VariableMetaData*)malloc(
+        sizeof(VisIt_VariableMetaData));
+    memset(smd, 0, sizeof(VisIt_VariableMetaData));
     smd->name = strdup(arr->GetName());
     smd->meshName = strdup(objectName.c_str());
     smd->centering = cent;
     smd->treatAsASCII = atts.GetTreatAsASCII(arr->GetName());
 
-    if(cb.WriteDataArray != 0)
+    int ret = visit_invoke_WriteVariable(objectName.c_str(), arr->GetName(), chunk, t,
+        arr->GetVoidPointer(0), arr->GetNumberOfTuples(),
+        arr->GetNumberOfComponents(), smd);
+    if(ret != VISIT_OKAY)
     {
-        int ret = cb.WriteDataArray(objectName.c_str(), arr->GetName(), chunk, t,
-            arr->GetVoidPointer(0), arr->GetNumberOfTuples(),
-            arr->GetNumberOfComponents(), smd);
-        if(ret != VISIT_OKAY)
-        {
-            debug1 << "WriteDataArray callback returned " << ret
-                   << " instead of VISIT_OKAY." << endl;
-        }
-    }
-    else
-    {
-        debug1 << "Simulation did not provide WriteDataArray method."
-               << endl;
+        debug1 << "WriteDataArray callback returned " << ret
+               << " instead of VISIT_OKAY." << endl;
     }
 
-    // Free the scalar metadata.
-    free((void*)smd->name);
-    free((void*)smd->meshName);
+    // Free the variable metadata.
+    VisIt_VariableMetaData_free(smd);
     free(smd);
 }
 
@@ -1195,15 +1077,15 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
 
     // Assemble a scalar metadata object.
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();    
-    VisIt_ScalarMetaData *smd = (VisIt_ScalarMetaData*)malloc(
-        sizeof(VisIt_ScalarMetaData));
-    memset(smd, 0, sizeof(VisIt_ScalarMetaData));
+    VisIt_VariableMetaData *smd = (VisIt_VariableMetaData*)malloc(
+        sizeof(VisIt_VariableMetaData));
+    memset(smd, 0, sizeof(VisIt_VariableMetaData));
     smd->name = strdup(arr->GetName());
     smd->meshName = strdup(objectName.c_str());
     smd->centering = VISIT_VARCENTERING_ZONE;
     smd->treatAsASCII = atts.GetTreatAsASCII(arr->GetName());
 
-    int ret = cb.WriteDataArray(objectName.c_str(), arr->GetName(), 
+    int ret = visit_invoke_WriteVariable(objectName.c_str(), arr->GetName(), 
          chunk, t, S, sum, arr->GetNumberOfComponents(), smd);
 
     if(ret != VISIT_OKAY)
@@ -1215,9 +1097,8 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
     // Free the temporary copy of the array.
     free(S);
 
-    // Free the scalar metadata.
-    free((void*)smd->name);
-    free((void*)smd->meshName);
+    // Free the variable metadata.
+    VisIt_VariableMetaData_free(smd);
     free(smd);
 }
 
@@ -1241,33 +1122,26 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
 void
 avtSimV2Writer::WriteDataArrays(vtkDataSet *ds, int chunk)
 {
-    if(cb.WriteDataArray != 0)
+    for (int v = 0 ; v < varList.size() ; v++)
     {
-        for (int v = 0 ; v < varList.size() ; v++)
+        vtkDataArray *arr = ds->GetCellData()->GetArray(varList[v].c_str());
+        if (arr != 0)
         {
-            vtkDataArray *arr = ds->GetCellData()->GetArray(varList[v].c_str());
+            WriteOneDataArray(arr, objectName, chunk, VISIT_VARCENTERING_ZONE);
+        }
+        else
+        {
+            arr = ds->GetPointData()->GetArray(varList[v].c_str());
             if (arr != 0)
             {
-                WriteOneDataArray(arr, objectName, chunk, VISIT_VARCENTERING_ZONE);
+                WriteOneDataArray(arr, objectName, chunk, VISIT_VARCENTERING_NODE);
             }
             else
             {
-                arr = ds->GetPointData()->GetArray(varList[v].c_str());
-                if (arr != 0)
-                {
-                    WriteOneDataArray(arr, objectName, chunk, VISIT_VARCENTERING_NODE);
-                }
-                else
-                {
-                    EXCEPTION1(ImproperUseException,
-                               string("Couldn't find array ")+varList[v]+".");
-                }
+                EXCEPTION1(ImproperUseException,
+                           string("Couldn't find array ")+varList[v]+".");
             }
         }
-    }
-    else
-    {
-        debug1 << "Simulation did not provide WriteDataArray function." << endl;
     }
 }
 
@@ -1295,32 +1169,25 @@ void
 avtSimV2Writer::WriteDataArraysConditionally(vtkDataSet *ds, int chunk,
     const unsigned char *cellCopy)
 {
-    if(cb.WriteDataArray != 0)
+    for (int v = 0 ; v < varList.size() ; v++)
     {
-        for (int v = 0 ; v < varList.size() ; v++)
+        vtkDataArray *arr = ds->GetCellData()->GetArray(varList[v].c_str());
+        if (arr != 0)
         {
-            vtkDataArray *arr = ds->GetCellData()->GetArray(varList[v].c_str());
+            WriteCellDataArrayConditionally(arr, objectName, chunk, cellCopy);
+        }
+        else
+        {
+            arr = ds->GetPointData()->GetArray(varList[v].c_str());
             if (arr != 0)
             {
-                WriteCellDataArrayConditionally(arr, objectName, chunk, cellCopy);
+                WriteOneDataArray(arr, objectName, chunk, VISIT_VARCENTERING_NODE);
             }
             else
             {
-                arr = ds->GetPointData()->GetArray(varList[v].c_str());
-                if (arr != 0)
-                {
-                    WriteOneDataArray(arr, objectName, chunk, VISIT_VARCENTERING_NODE);
-                }
-                else
-                {
-                    EXCEPTION1(ImproperUseException,
-                               string("Couldn't find array ")+varList[v]+".");
-                }
+                EXCEPTION1(ImproperUseException,
+                           string("Couldn't find array ")+varList[v]+".");
             }
         }
-    }
-    else
-    {
-        debug1 << "Simulation did not provide WriteDataArray function." << endl;
     }
 }

@@ -1,3 +1,6 @@
+#include <VisItDataInterface_V2.h>
+#include <stdlib.h>
+
 /* This is a temporary file but it contains functions for deleting the various
  * types of objects that are returned by the libsim callback functions. Eventually,
  * these will probably be in a different library.
@@ -81,7 +84,7 @@ VisIt_MeshMetaData_free(VisIt_MeshMetaData *obj)
 }
 
 void
-VisIt_ScalarMetaData_free(VisIt_ScalarMetaData *obj)
+VisIt_VariableMetaData_free(VisIt_VariableMetaData *obj)
 {
     if(obj == NULL)
         return;
@@ -160,11 +163,11 @@ VisIt_SimulationMetaData_free(VisIt_SimulationMetaData *obj)
         FREE(obj->meshes);
     }
 
-    if(obj->scalars != NULL)
+    if(obj->variables != NULL)
     {
-        for(i = 0; i < obj->numScalars; ++i)
-            VisIt_ScalarMetaData_free(&obj->scalars[i]);
-        FREE(obj->scalars);
+        for(i = 0; i < obj->numVariables; ++i)
+            VisIt_VariableMetaData_free(&obj->variables[i]);
+        FREE(obj->variables);
     }
 
     if(obj->materials != NULL)
@@ -303,8 +306,10 @@ VisIt_MeshData_free(VisIt_MeshData *obj)
         VisIt_UnstructuredMesh_free(obj->umesh);
         break;
     case VISIT_MESHTYPE_POINT:
+        VisIt_PointMesh_free(obj->pmesh);
         break;
     case VISIT_MESHTYPE_CSG:
+        VisIt_CSGMesh_free(obj->csgmesh);
         break;
     default:
         break;
@@ -319,13 +324,13 @@ VisIt_CurveData_free(VisIt_CurveData *obj)
         return;
 
     VisIt_DataArray_free(&obj->x);
-    VisIt_DataArray_free(&obj->x);
+    VisIt_DataArray_free(&obj->y);
 
     FREE(obj);
 }
 
 void
-VisIt_ScalarData_free(VisIt_ScalarData *obj)
+VisIt_VariableData_free(VisIt_VariableData *obj)
 {
     if(obj == NULL)
         return;
@@ -336,7 +341,7 @@ VisIt_ScalarData_free(VisIt_ScalarData *obj)
 }
 
 void
-VisIt_MixedScalarData_free(VisIt_MixedScalarData *obj)
+VisIt_MixedVariableData_free(VisIt_MixedVariableData *obj)
 {
     if(obj == NULL)
         return;

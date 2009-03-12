@@ -2167,13 +2167,18 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    Hank Childs, Fri Nov 14 09:32:03 PST 2008
 //    Add a bunch of timings statements.
 //
+//    Brad Whitlock, Tue Mar  3 09:37:58 PST 2009
+//    I added the checkThreshold argument and made the routine return
+//    avtDataObject_p.
+//
 // ****************************************************************************
 
-avtDataObjectWriter_p
-NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
-    int windowID, bool leftEye)
+avtDataObject_p
+NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
+    int annotMode, int windowID, bool leftEye)
 {
     DataNetwork *origWorkingNet = workingNet;
+    avtDataObject_p retval;
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
@@ -2195,10 +2200,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         // the misfortune of oscillating switching of modes around the
         // threshold)
         int scalableThreshold = GetScalableThreshold(windowID);
-        if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
+        if (checkThreshold && GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
         {
             this->RenderCleanup(windowID);
-            CATCH_RETURN2(1, this->CreateNullDataWriter(windowID));
+            CATCH_RETURN2(1, retval);
         }
 
         debug5 << "Rendering " << viswin->GetNumPrimitives()
@@ -2337,18 +2342,13 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                                 windowID);
         visitTimer->StopTimer(t1F, "Render postprocessing step (often volume rendering)");
 
-        writer = compositedImageAsDataObject->InstantiateWriter();
-        writer->SetInput(compositedImageAsDataObject);
-
+        retval = compositedImageAsDataObject;
         if (dump_renders)
-            DumpImage(compositedImageAsDataObject,
+            DumpImage(retval,
                       "after_AllComposites", false);
         delete imageCompositer;
         
         this->RenderCleanup(windowID);
-
-        // return it
-        CATCH_RETURN2(1, writer);
     }
     CATCHALL(...)
     {
@@ -2358,6 +2358,150 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     ENDTRY
 
     workingNet = origWorkingNet;
+    return retval;
+}
+
+// ****************************************************************************
+// Method: NetworkManager::SaveWindow
+//
+// Purpose: 
+//   This method tries to save the plots in the first vis window to an image
+//   file.
+//
+// Arguments:
+//   filename : The name of the file to save.
+//   format   : The file format to use for saving the image.
+//
+// Returns:    True on success; false on failure.
+//
+// Note:       This method needs to be called on all processors. This method
+//             can save a picture of the last network that was executed if no
+//             SR request has been generated.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  2 16:54:08 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imageHeight,
+    SaveWindowAttributes::FileFormat format)
+{
+    const char *mName = "NetworkManager::SaveWindow: ";
+    bool retval = false;
+    debug1 << mName << "arguments("
+           << filename << ", "
+           << imageWidth << ", "
+           << imageHeight << ", "
+           << SaveWindowAttributes::FileFormat_ToString(format)
+           << ")" << endl;
+
+    TRY
+    {
+        std::map<int, EngineVisWinInfo>::iterator it = viswinMap.begin();
+        if(it != viswinMap.end())
+        {
+            intVector networkIds = it->second.plotsCurrentlyInWindow;
+            bool getZBuffer = false;
+            int annotMode = 2; // all annotations
+            int windowID = it->first;
+            bool leftEye = true;
+
+            // If there are no plots in the window then we have not done
+            // scalable rendering yet. Let's add the most recent pipeline
+            // to the networkIds.
+            double extents[6];
+            bool extentsInit = false;
+            if(networkIds.size() == 0)
+            {
+                if(networkCache.size() > 0)
+                {
+                    DataNetwork *net = networkCache[networkCache.size()-1];
+                    int id = net->GetNetID();
+                    networkIds.push_back(id);
+                    debug1 << mName << "networkIds vector was empty so add network "
+                           << id << endl;
+
+                    // We need to update the view so we can see what we have. This is
+                    // not quite the method I wanted to use to get the data attributes
+                    // but it's the best I could find for now.
+                    avtDataObject_p obj = net->GetPlot()->GetIntermediateDataObject();
+                    if (*obj != NULL)
+                    {
+                        avtDataAttributes &atts = obj->GetInfo().GetAttributes();
+                        atts.GetCumulativeTrueSpatialExtents()->CopyTo(extents);
+                        extentsInit = true;
+                        // Override the view so it's set to something valid.
+                        View3DAttributes newView3D; newView3D.ResetView(extents);
+                        it->second.windowAttributes.SetView3D(newView3D);
+                        View2DAttributes newView2D; newView2D.ResetView(extents);
+                        it->second.windowAttributes.SetView2D(newView2D);
+                    }
+                }
+            }
+
+            // Set the new image size into the window attributes.
+            if(imageWidth > 0 && imageHeight > 0)
+            {
+                WindowAttributes windowAtts(it->second.windowAttributes);
+                int newSize[2];
+                newSize[0] = imageWidth;
+                newSize[1] = imageHeight;
+                windowAtts.SetSize(newSize);
+                if(!extentsInit)
+                    it->second.viswin->GetBounds(extents);
+                SetWindowAttributes(windowAtts,
+                                    it->second.extentTypeString,
+                                    extents,
+                                    it->second.changedCtName,
+                                    it->first);
+            }
+
+            // Print the arguments to Render
+            debug1 << "Calling Render with: checkThreshold=false networkIds={";
+            for(size_t i = 0; i < networkIds.size(); ++i)
+                debug1 << networkIds[i] << " ";
+            debug1 << "} getZBuffer=" << (getZBuffer ? "true" : "false")
+                   << " annotMode=" << annotMode
+                   << " windowID=" << windowID
+                   << " leftEye=" << (leftEye?"true":"false") << endl;
+
+            // Do scalable rendering.
+            avtDataObject_p image = Render(false, networkIds, getZBuffer, annotMode,
+                                           windowID, leftEye);
+
+            // Save out the image.
+            if(PAR_Rank() == 0)
+            {
+                avtFileWriter *fileWriter = new avtFileWriter();
+                fileWriter->SetFormat(format);
+                int compress = 1;
+                fileWriter->Write(filename.c_str(), image, 100, false, compress, false);
+                delete fileWriter;
+            }
+
+            retval = true;
+        }
+        else
+            debug1 << mName << "No plots have been set up for scalable rendering." << endl;
+    }
+    CATCHALL(...)
+    {
+        retval = false;
+    }
+    ENDTRY
+
+#ifdef PARALLEL
+    // See if any processors had false return values.
+    int r = retval ? 0 : 1;
+    SumIntAcrossAllProcessors(r);
+    retval = (r == 0);
+#endif
+    debug1 << mName << "returning " << (retval ? "true" : "false") << endl;
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -3054,7 +3198,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             //
             intVector pids;
             pids.push_back(id);
-            Render(pids, false, 0, winId, true);
+            Render(true, pids, false, 0, winId, true);
         }
         int d = -1, e = -1;
         double t = +FLT_MAX; 
@@ -4720,7 +4864,7 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
 
     if (needRender)
     {
-        Render(validIds, false, 0, winId, true);
+        Render(true, validIds, false, 0, winId, true);
     }
     int x, y; 
     double isect[3];
@@ -5478,7 +5622,7 @@ NetworkManager::RenderCleanup(int windowID)
 //
 // ****************************************************************************
 avtDataObjectWriter_p
-NetworkManager::CreateNullDataWriter(int windowID) const
+NetworkManager::CreateNullDataWriter() const
 {
     // Sending back a null result from the render process is used as a
     // special case to indicate that the viewer should set the rendering

@@ -36,62 +36,43 @@
 *
 *****************************************************************************/
 
-#ifndef VISIT_CONTROL_INTERFACE_V2_H
-#define VISIT_CONTROL_INTERFACE_V2_H
+#ifndef VISIT_DATA_INTERFACE_RUNTIME_H
+#define VISIT_DATA_INTERFACE_RUNTIME_H
+#include <VisItDataInterface_V2.h>
 
-/*****************************************************************************
- *  File:  VisItControlInterfave_V2.h
- *
- *  Purpose:
- *    Abstraction of VisIt Engine wrapper library.  Handles the
- *    grunt work of actually connecting to visit that must be done
- *    outside of the VisItEngine DLL.
- *
- *  Programmer:  Jeremy Meredith
- *  Creation:    April  4, 2005
- *
- *  Modifications:
- *    Shelly Prevost, Wed Jan 25 08:52:18 PST 2006
- *    Added a guifile argument to VisItInitializeSocketAndDumpSimFile.
- *
- *    Brad Whitlock, Thu Jan 25 14:53:11 PST 2007
- *    Added VisItUpdatePlots and VisItExecuteCommand.
- *
- *    Brad Whitlock, Mon Feb  9 10:04:49 PST 2009
- *    Added new functions, upped version to "V2".
- *
- *****************************************************************************/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void  VisItSetBroadcastIntFunction(int (*)(int *, int));
-void  VisItSetBroadcastStringFunction(int (*)(char *, int, int));
-void  VisItSetParallel(int);
-void  VisItSetParallelRank(int);
+// ****************************************************************************
+//  Library:  libsimV2runtime
+//
+//  Purpose:
+//    Data-related simV2 runtime functions that we can call from the SimV2
+//    reader or from libsim.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Fri Feb 13 16:06:04 PST 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
 
-void  VisItSetDirectory(char *);
-void  VisItSetOptions(char *);
-int   VisItSetupEnvironment(void);
-int   VisItInitializeSocketAndDumpSimFile(const char *name,
-                                          const char *comment,
-                                          const char *path,
-                                          const char *inputfile,
-                                          const char *guifile,
-                                          const char *absoluteFilename);
-int   VisItDetectInput(int blocking, int consoledesc);
-int   VisItAttemptToCompleteConnection(void);
-void  VisItSetSlaveProcessCallback(void(*)(void));
-void  VisItSetCommandCallback(void(*)(const char*,int,float,const char*));
-int   VisItProcessEngineCommand(void);
-void  VisItTimeStepChanged(void);
-void  VisItUpdatePlots(void);
-void  VisItExecuteCommand(const char *);
-void  VisItDisconnect(void);
-char *VisItGetLastError(void);
+// Data functions callable from SimV2 reader
 
-void  VisItOpenTraceFile(const char *);
-void  VisItCloseTraceFile(void);
+VisIt_SimulationMetaData *visit_invoke_GetMetaData();
+VisIt_MeshData           *visit_invoke_GetMesh(int, const char *);
+VisIt_MaterialData       *visit_invoke_GetMaterial(int, const char *);
+VisIt_SpeciesData        *visit_invoke_GetSpecies(int, const char *);
+VisIt_VariableData       *visit_invoke_GetVariable(int, const char *);
+VisIt_MixedVariableData  *visit_invoke_GetMixedVariable(int, const char *);
+VisIt_CurveData          *visit_invoke_GetCurve(const char *);
+VisIt_DomainList         *visit_invoke_GetDomainList();
+
+int visit_invoke_WriteBegin(const char *);
+int visit_invoke_WriteEnd(const char *);
+int visit_invoke_WriteMesh(const char *, int, const VisIt_MeshData *, const VisIt_MeshMetaData *);
+int visit_invoke_WriteVariable(const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *);
 
 #ifdef __cplusplus
 }
