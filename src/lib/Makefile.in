@@ -173,6 +173,13 @@
 #    Fixed logic to clean links so that 'make clean' cleans only the links
 #    created by this Makefile (and not those links created during configure)
 #    while 'make distclean' cleans those created by configure.
+#
+#    Mark C. Miller, Thu Mar 12 09:16:57 PDT 2009
+#    Fixed dangerous code using '*' when calling rm and ln. In cases where
+#    the associated make variables are emtpy, which can happen for dbio-only
+#    builds, this can lead to very bad things, like removing everything in
+#    this directory! So, I added logic for all these cases to test for
+#    non-empty string before doing something with it.
 ##############################################################################
 
 @SET_MAKE@
@@ -214,112 +221,112 @@ all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      @CREATE_CCMIO_LINK@ @CREATE_TCMALLOC_LINK@
 
 libvtkcommon:
-	$(RM) $(LIBVTKCOMMON)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKCOMMON)*   .
+	-test -n "$(LIBVTKCOMMON)" && $(RM) $(LIBVTKCOMMON)*
+	-test -n "$(LIBVTKCOMMON)" && ln -s @VTK_DIR@/lib/$(LIBVTKCOMMON)*   .
 
 libvtkdicom:
-	$(RM) $(LIBVTKDICOM)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKDICOM)*   .
+	-test -n "$(LIBVTKDICOM)" && $(RM) $(LIBVTKDICOM)*
+	-test -n "$(LIBVTKDICOM)" && ln -s @VTK_DIR@/lib/$(LIBVTKDICOM)*   .
 
 libvtkfiltering:
-	$(RM) $(LIBVTKFILTERING)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKFILTERING)*   .
+	-test -n "$(LIBVTKFILTERING)" && $(RM) $(LIBVTKFILTERING)*
+	-test -n "$(LIBVTKFILTERING)" && ln -s @VTK_DIR@/lib/$(LIBVTKFILTERING)*   .
 
 libvtkgraphics:
-	$(RM) $(LIBVTKGRAPHICS)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKGRAPHICS)* .
+	-test -n "$(LIBVTKGRAPHICS)" && $(RM) $(LIBVTKGRAPHICS)*
+	-test -n "$(LIBVTKGRAPHICS)" && ln -s @VTK_DIR@/lib/$(LIBVTKGRAPHICS)* .
 
 libvtkhybrid:
-	$(RM) $(LIBVTKHYBRID)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKHYBRID)* .
+	-test -n "$(LIBVTKHYBRID)" && $(RM) $(LIBVTKHYBRID)*
+	-test -n "$(LIBVTKHYBRID)" && ln -s @VTK_DIR@/lib/$(LIBVTKHYBRID)* .
 
 libvtkio:
-	$(RM) $(LIBVTKIO)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKIO)* .
+	-test -n "$(LIBVTKIO)" && $(RM) $(LIBVTKIO)*
+	-test -n "$(LIBVTKIO)" && ln -s @VTK_DIR@/lib/$(LIBVTKIO)* .
 
 libvtkimaging:
-	$(RM) $(LIBVTKIMAGING)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKIMAGING)*  .
+	-test -n "$(LIBVTKIMAGING)" && $(RM) $(LIBVTKIMAGING)*
+	-test -n "$(LIBVTKIMAGING)" && ln -s @VTK_DIR@/lib/$(LIBVTKIMAGING)*  .
 
 libvtkrendering:
-	$(RM) $(LIBVTKRENDERING)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKRENDERING)*  .
+	-test -n "$(LIBVTKRENDERING)" && $(RM) $(LIBVTKRENDERING)*
+	-test -n "$(LIBVTKRENDERING)" && ln -s @VTK_DIR@/lib/$(LIBVTKRENDERING)*  .
 
 libvtkzlib:
-	$(RM) $(LIBVTKZLIB)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKZLIB)*  .
+	-test -n "$(LIBVTKZLIB)" && $(RM) $(LIBVTKZLIB)*
+	-test -n "$(LIBVTKZLIB)" && ln -s @VTK_DIR@/lib/$(LIBVTKZLIB)*  .
 
 libvtkjpeg:
-	$(RM) $(LIBVTKJPEG)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKJPEG)*  .
+	-test -n "$(LIBVTKJPEG)" && $(RM) $(LIBVTKJPEG)*
+	-test -n "$(LIBVTKJPEG)" && ln -s @VTK_DIR@/lib/$(LIBVTKJPEG)*  .
 
 libvtkpng:
-	$(RM) $(LIBVTKPNG)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKPNG)*  .
+	-test -n "$(LIBVTKPNG)" && $(RM) $(LIBVTKPNG)*
+	-test -n "$(LIBVTKPNG)" && ln -s @VTK_DIR@/lib/$(LIBVTKPNG)*  .
 
 libvtkexpat:
-	$(RM) $(LIBVTKEXPAT)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKEXPAT)*  .
+	-test -n "$(LIBVTKEXPAT)" && $(RM) $(LIBVTKEXPAT)*
+	-test -n "$(LIBVTKEXPAT)" && ln -s @VTK_DIR@/lib/$(LIBVTKEXPAT)*  .
 
 libvtktiff:
-	$(RM) $(LIBVTKTIFF)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKTIFF)*  .
+	-test -n "$(LIBVTKTIFF)" && $(RM) $(LIBVTKTIFF)*
+	-test -n "$(LIBVTKTIFF)" && ln -s @VTK_DIR@/lib/$(LIBVTKTIFF)*  .
 
 libvtkfreetype:
-	$(RM) $(LIBVTKFREETYPE)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKFREETYPE)*  .
+	-test -n "$(LIBVTKFREETYPE)" && $(RM) $(LIBVTKFREETYPE)*
+	-test -n "$(LIBVTKFREETYPE)" && ln -s @VTK_DIR@/lib/$(LIBVTKFREETYPE)*  .
 
 libvtkftgl:
-	$(RM) $(LIBVTKFTGL)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKFTGL)*  .
+	-test -n "$(LIBVTKFTGL)" && $(RM) $(LIBVTKFTGL)*
+	-test -n "$(LIBVTKFTGL)" && ln -s @VTK_DIR@/lib/$(LIBVTKFTGL)*  .
 
 libvtksys:
-	$(RM) $(LIBVTKSYS)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKSYS)*  .
+	-test -n "$(LIBVTKSYS)" && $(RM) $(LIBVTKSYS)*
+	-test -n "$(LIBVTKSYS)" && ln -s @VTK_DIR@/lib/$(LIBVTKSYS)*  .
 
 libvtkmpeg2encode:
-	$(RM) $(LIBVTKMPEG2ENCODE)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKMPEG2ENCODE)*  .
+	-test -n "$(LIBVTKMPEG2ENCODE)" && $(RM) $(LIBVTKMPEG2ENCODE)*
+	-test -n "$(LIBVTKMPEG2ENCODE)" && ln -s @VTK_DIR@/lib/$(LIBVTKMPEG2ENCODE)*  .
 
 libmesagl:
-	$(RM) $(LIBMESAGL)*
-	ln -s @MESA_DIR@/lib/$(LIBMESAGL)*  .
+	-test -n "$(LIBMESAGL)" && $(RM) $(LIBMESAGL)*
+	-test -n "$(LIBMESAGL)" && ln -s @MESA_DIR@/lib/$(LIBMESAGL)*  .
 
 libGLU:
-	$(RM) $(LIBGLU)
-	ln -s @MESA_DIR@/lib/$(LIBGLU)  .
+	-test -n "$(LIBGLU)" && $(RM) $(LIBGLU)
+	-test -n "$(LIBGLU)" && ln -s @MESA_DIR@/lib/$(LIBGLU)  .
 
 libosmesa:
-	$(RM) $(LIBOSMESA)*
-	ln -s @MESA_DIR@/lib/$(LIBOSMESA)*  .
+	-test -n "$(LIBOSMESA)" && $(RM) $(LIBOSMESA)*
+	-test -n "$(LIBOSMESA)" && ln -s @MESA_DIR@/lib/$(LIBOSMESA)*  .
 
 libqt:
-	$(RM) $(QT_CORE)*
-	ln -s @QT_LIB@/$(QT_CORE)* .
-	$(RM) $(QT_GUI)*
-	ln -s @QT_LIB@/$(QT_GUI)* .
-	$(RM) $(QT_HELP)*
-	ln -s @QT_LIB@/$(QT_HELP)* .
-	$(RM) $(QT_CLUCENE)*
-	ln -s @QT_LIB@/$(QT_CLUCENE)* .
-	$(RM) $(QT_NETWORK)*
-	ln -s @QT_LIB@/$(QT_NETWORK)* .
-	$(RM) $(QT_OPENGL)*
-	ln -s @QT_LIB@/$(QT_OPENGL)* .
-	$(RM) $(QT_SCRIPT)*
-	ln -s @QT_LIB@/$(QT_SCRIPT)* .
-	$(RM) $(QT_SQL)*
-	ln -s @QT_LIB@/$(QT_SQL)* .
-	$(RM) $(QT_SVG)*
-	ln -s @QT_LIB@/$(QT_SVG)* .
-	$(RM) $(QT_TEST)*
-	ln -s @QT_LIB@/$(QT_TEST)* .
-	$(RM) $(QT_XML)*
-	ln -s @QT_LIB@/$(QT_XML)* .
+	-test -n "$(QT_CORE)" && $(RM) $(QT_CORE)*
+	-test -n "$(QT_CORE)" && ln -s @QT_LIB@/$(QT_CORE)* .
+	-test -n "$(QT_GUI)" && $(RM) $(QT_GUI)*
+	-test -n "$(QT_GUI)" && ln -s @QT_LIB@/$(QT_GUI)* .
+	-test -n "$(QT_HELP)" && $(RM) $(QT_HELP)*
+	-test -n "$(QT_HELP)" && ln -s @QT_LIB@/$(QT_HELP)* .
+	-test -n "$(QT_CLUCENE)" && $(RM) $(QT_CLUCENE)*
+	-test -n "$(QT_CLUCENE)" && ln -s @QT_LIB@/$(QT_CLUCENE)* .
+	-test -n "$(QT_NETWORK)" && $(RM) $(QT_NETWORK)*
+	-test -n "$(QT_NETWORK)" && ln -s @QT_LIB@/$(QT_NETWORK)* .
+	-test -n "$(QT_OPENGL)" && $(RM) $(QT_OPENGL)*
+	-test -n "$(QT_OPENGL)" && ln -s @QT_LIB@/$(QT_OPENGL)* .
+	-test -n "$(QT_SCRIPT)" && $(RM) $(QT_SCRIPT)*
+	-test -n "$(QT_SCRIPT)" && ln -s @QT_LIB@/$(QT_SCRIPT)* .
+	-test -n "$(QT_SQL)" && $(RM) $(QT_SQL)*
+	-test -n "$(QT_SQL)" && ln -s @QT_LIB@/$(QT_SQL)* .
+	-test -n "$(QT_SVG)" && $(RM) $(QT_SVG)*
+	-test -n "$(QT_SVG)" && ln -s @QT_LIB@/$(QT_SVG)* .
+	-test -n "$(QT_TEST)" && $(RM) $(QT_TEST)*
+	-test -n "$(QT_TEST)" && ln -s @QT_LIB@/$(QT_TEST)* .
+	-test -n "$(QT_XML)" && $(RM) $(QT_XML)*
+	-test -n "$(QT_XML)" && ln -s @QT_LIB@/$(QT_XML)* .
 
 libqui:
-	$(RM) $(QT_QUI)
-	ln -s @QT_LIB@/$(QT_QUI) .
+	-test -n "$(QT_QUI)" && $(RM) $(QT_QUI)
+	-test -n "$(QT_QUI)" && ln -s @QT_LIB@/$(QT_QUI) .
 	
 pythondir:
 	if test -n "@PYDIR@"; then                                     \
@@ -394,42 +401,40 @@ clean_make_links:
 	find . -type l -newer Makefile -maxdepth 1 -exec $(RM) {} \;
 
 clean: clean_make_links
-	$(RM) \
-	$(LIBMESAGL)* \
-	$(LIBGLU) \
-	$(LIBOSMESA)* \
-        $(QT_CORE)* \
-        $(QT_GUI)* \
-        $(QT_HELP)* \
-        $(QT_CLUCENE)*\
-        $(QT_NETWORK)* \
-        $(QT_OPENGL)* \
-        $(QT_SCRIPT)* \
-        $(QT_SQL)* \
-        $(QT_SVG)* \
-        $(QT_TEST)* \
-        $(QT_XML)* \
-        $(QT_QUI) \
-	$(LIBVTKCOMMON)* \
-	$(LIBVTKDICOM)* \
-	$(LIBVTKFILTERING)* \
-	$(LIBVTKHYBRID)* \
-	$(LIBVTKIMAGING)* \
-	$(LIBVTKIO)* \
-	$(LIBVTKJPEG)* \
-	$(LIBVTKPNG)* \
-	$(LIBVTKTIFF)* \
-	$(LIBVTKFREETYPE)* \
-	$(LIBVTKFTGL)* \
-	$(LIBVTKZLIB)* \
-	$(LIBVTKSYS)* \
-	$(LIBVTKMPEG2ENCODE)* \
-	$(LIBPYTHON) \
-	$(LIBVTKEXPAT)* \
-	$(LIBVTKGRAPHICS)* \
-	$(LIBVTKRENDERING)* \
-	visit.so \
-	visitmodule.so
+	-test -n "$(LIBMESAGL)" && $(RM) $(LIBMESAGL)*
+	-test -n "$(LIBGLU)" && $(RM) $(LIBGLU)*
+	-test -n "$(LIBOSMESA)" && $(RM) $(LIBOSMESA)*
+	-test -n "$(QT_CORE)" && $(RM) $(QT_CORE)*
+	-test -n "$(QT_GUI)" && $(RM) $(QT_GUI)*
+	-test -n "$(QT_HELP)" && $(RM) $(QT_HELP)*
+	-test -n "$(QT_CLUCENE)" && $(RM) $(QT_CLUCENE)*
+	-test -n "$(QT_NETWORK)" && $(RM) $(QT_NETWORK)*
+	-test -n "$(QT_OPENGL)" && $(RM) $(QT_OPENGL)*
+	-test -n "$(QT_SCRIPT)" && $(RM) $(QT_SCRIPT)*
+	-test -n "$(QT_SQL)" && $(RM) $(QT_SQL)*
+	-test -n "$(QT_SVG)" && $(RM) $(QT_SVG)*
+	-test -n "$(QT_TEST)" && $(RM) $(QT_TEST)*
+	-test -n "$(QT_XML)" && $(RM) $(QT_XML)*
+	-test -n "$(QT_QUI)" && $(RM) $(QT_QUI)
+	-test -n "$(LIBVTKCOMMON)" && $(RM) $(LIBVTKCOMMON)*
+	-test -n "$(LIBVTKDICOM)" && $(RM) $(LIBVTKDICOM)*
+	-test -n "$(LIBVTKFILTERING)" && $(RM) $(LIBVTKFILTERING)*
+	-test -n "$(LIBVTKHYBRID)" && $(RM) $(LIBVTKHYBRID)*
+	-test -n "$(LIBVTKIMAGING)" && $(RM) $(LIBVTKIMAGING)*
+	-test -n "$(LIBVTKIO)" && $(RM) $(LIBVTKIO)*
+	-test -n "$(LIBVTKJPEG)" && $(RM) $(LIBVTKJPEG)*
+	-test -n "$(LIBVTKPNG)" && $(RM) $(LIBVTKPNG)*
+	-test -n "$(LIBVTKTIFF)" && $(RM) $(LIBVTKTIFF)*
+	-test -n "$(LIBVTKFREETYPE)" && $(RM) $(LIBVTKFREETYPE)*
+	-test -n "$(LIBVTKFTGL)" && $(RM) $(LIBVTKFTGL)*
+	-test -n "$(LIBVTKZLIB)" && $(RM) $(LIBVTKZLIB)*
+	-test -n "$(LIBVTKSYS)" && $(RM) $(LIBVTKSYS)*
+	-test -n "$(LIBVTKMPEG2ENCODE)" && $(RM) $(LIBVTKMPEG2ENCODE)*
+	-test -n "$(LIBPYTHON)" && $(RM) $(LIBPYTHON)*
+	-test -n "$(LIBVTKEXPAT)" && $(RM) $(LIBVTKEXPAT)*
+	-test -n "$(LIBVTKGRAPHICS)" && $(RM) $(LIBVTKGRAPHICS)*
+	-test -n "$(LIBVTKRENDERING)" && $(RM) $(LIBVTKRENDERING)*
+	$(RM) visit.so visitmodule.so
 
 distclean: clean_make_links clean_config_links
 	$(RM) python Makefile

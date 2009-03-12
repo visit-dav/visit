@@ -1,0 +1,179 @@
+#!/bin/sh
+
+#
+# Purpose: Provide Qt-free, xml-free mechanism for generating database plugin
+# makefiles for dbio-only builds. This shell script reads and digests the
+# database plugin's .xml file and, like config.status, defines a bunch of
+# sed substitution commands to run on a Makefile template, db_mktmpl to
+# produce the resulting Makefile.
+#
+# $1 xml input file name
+#
+# Programmer: Mark C. Miller
+# Created:    Wed Mar 11 22:50:38 PDT 2009
+#
+
+function load_xml_file
+{
+    # $1 is file name
+    # contents of file are returned in global $rawXMLContent
+    local line
+    rawXMLContent=""
+    while read line; do
+        # Adjust <Files... tag by inserting an underscore
+        if test -n "`echo $line | grep 'Files components='`"; then
+            line=`echo $line | sed -e 's/Files components=/Files_components=/'`
+        fi
+        rawXMLContent="$rawXMLContent $line"
+    done < $1
+}
+
+function get_xml_section
+{
+    # $1 is section tag
+    # $2 is optional end-section tag 
+    # Attributes of tag are returned in global $attContent
+    # Stuff between start/end tags is returned in global $secContent
+    local tagName=$1
+    local endName=$2
+    local word
+    local insec=0
+    local inatt=0
+    attContent=""
+    secContent=""
+    if test -z "$endName"; then
+        endName=$tagName
+    fi
+    for word in $rawXMLContent; do
+        if test "$word" = "<${tagName}>"; then
+            insec=1
+            continue
+        fi
+        if test "$word" = "<${tagName}"; then
+            insec=1
+            inatt=1
+            continue
+        fi
+        if test $insec -eq 1 -a "$word" = "</${endName}>"; then
+            return
+        fi
+        if test $inatt -eq 1; then
+            if test "${word:${#word}-1:1}" = ">"; then
+                inatt=0
+                attContent="$attContent ${word:0:${#word}-1}"
+            else
+                attContent="$attContent $word"
+            fi
+        elif test $insec -eq 1; then
+            secContent="$secContent $word"
+        fi
+    done
+}
+
+function get_xml_attr
+{
+    # $1 is sec tag
+    # $2 is attr name
+    # result returned in global, $attrVal
+    local sname=$1
+    local aname=$2
+    local word
+    get_xml_section $sname
+    attrVal=""
+    for word in $attContent; do
+        if test "`echo $word | cut -d'=' -f1`" = "$aname"; then
+            attrVal="`echo $word | cut -d'=' -f2 | tr -d '"'`"
+            return
+        fi
+    done
+}
+
+binDir=`dirname $0`
+source $binDir/topdir
+xmlFile=$1
+
+load_xml_file $xmlFile
+
+# use adjusted Files tag to get MDserver/Engine custom files
+get_xml_section Files_components=\"M,E\" Files
+if test -z "$secContent"; then
+    get_xml_section Files_components=\"E,M\" Files
+    if test -z "$secContent"; then
+        get_xml_section Files_components=\"M\" Files
+        CUSTOMMFILES=$secContent
+        get_xml_section Files_components=\"E\" Files
+        CUSTOMEFILES=$secContent
+    else
+        CUSTOMMFILES=$secContent
+        CUSTOMEFILES=$secContent
+    fi
+else
+    CUSTOMMFILES=$secContent
+    CUSTOMEFILES=$secContent
+fi
+
+get_xml_section CXXFLAGS
+CXXFLAGS=$secContent
+
+get_xml_section LIBS 
+LIBS=$secContent
+
+get_xml_attr Plugin name
+NAME=$attrVal
+
+HASOPTIONS=
+get_xml_attr Plugin hasoptions
+if test "$attrVal" = "true"; then
+    HASOPTIONS="avt${NAME}Options.C"
+fi
+
+HASWRITER=
+get_xml_attr Plugin haswriter
+if test "$attrVal" = "true"; then
+    HASWRITER="avt${NAME}Writer.C"
+fi
+
+MSRC=
+MSPECIFICSRC=
+get_xml_attr Plugin mdspecificcode 
+if test "$attrVal" = "true"; then
+    if test -n "$CUSTOMMFILES"; then
+        MSPECIFICSRC=$CUSTOMMFILES
+    else
+        MSPECIFICSRC=avt${NAME}FileFormat.C
+    fi
+else
+    if test -n "$CUSTOMMFILES"; then
+        MSRC=$CUSTOMMFILES
+    else
+        MSRC=avt${NAME}FileFormat.C
+    fi
+fi
+
+ESRC=
+ESPECIFICSRC=
+get_xml_attr Plugin engspecificcode 
+if test "$attrVal" = "true"; then
+    if test -n "$CUSTOEMFILES"; then
+        ESPECIFICSRC=$CUSTOMEFILES
+    else
+        ESPECIFICSRC="avt${NAME}FileFormat.C $HASWRITER"
+    fi
+else
+    if test -n "$CUSTOMEFILES"; then
+        ESRC=$CUSTOMEFILES
+    else
+        ESRC="avt${NAME}FileFormat.C $HASWRITER"
+    fi
+fi
+
+sed -e "s%@TOPDIR@%$TOPDIR%" \
+    -e "s%@CXXFLAGS@%$CXXFLAGS%g" \
+    -e "s%@LIBS@%$LIBS%g" \
+    -e "s%@NAME@%$NAME%g" \
+    -e "s%@HASOPTIONS@%$HASOPTIONS%g" \
+    -e "s%@MSRC@%$MSRC%g" \
+    -e "s%@MSPECIFICSRC@%$MSPECIFICSRC%g" \
+    -e "s%@ESRC@%$ESRC%g" \
+    -e "s%@ESPECIFICSRC@%$ESPECIFICSRC%g" \
+    $binDir/db_mktmpl > Makefile 

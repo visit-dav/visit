@@ -339,6 +339,9 @@
 #   samples that should have been put in data dir instead. But, it was easier
 #   just to remove the plugin entirely. And, I don't think anyone has been
 #   using it for a while.
+#
+#   Mark C. Miller, Thu Mar 12 09:20:07 PDT 2009
+#   Added dirmakefiles_dbio_only target
 ##############################################################################
 
 @SET_MAKE@
@@ -459,6 +462,9 @@ dirmakefiles_old:
 dirmakefiles:
 	@files=""; for dir in $(ALLSUBDIRS); do if test -d $$dir; then files="$$files $$dir/$${dir}.xml"; fi; done; \
         ../bin/xml2makefile -noprint -clobber -outputtoinputdir $$files
+
+dirmakefiles_dbio_only:
+	for dir in $(ALLSUBDIRS); do if test -d $$dir; then (cd $$dir && ../../bin/db_xml2makefile $${dir}.xml) || exit 1; fi; done
 
 clean:
 	-$(RM) $(LIB)

@@ -554,6 +554,9 @@
 #     Tom Fogal, Wed Mar 11 11:52:09 MST 2009
 #     Incorporated a patch from Patrick which fixes the Linux-ppc64 HDF4 build.
 #
+#     Mark C. Miller, Thu Mar 12 00:24:18 PDT 2009
+#     Eliminated Qt dependence for dbio-only builds.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -2754,11 +2757,6 @@ function build_qt
     #
     # Call configure
     #
-    EXTRA_QT_FLAGS=""
-    if [[ "${DO_DBIO_ONLY}" == "yes" ]] ; then
-       EXTRA_QT_FLAGS="-no-openssl -no-nas-sound -no-opengl -no-xshape -no-xinerama -no-xcursor -no-xfixes -no-xrandr -no-xrender -no-fontconfig -no-tablet -no-gif -no-libtiff -no-libpng -no-libmng -no-libjpeg"
-    fi
-    
     info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/" \
          "-platform ${QT_PLATFORM}" \
          "-make libs -make tools -fast -no-separate-debug-info" \
@@ -2767,11 +2765,7 @@ function build_qt
 
     echo "yes" | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
                              -platform ${QT_PLATFORM} \
-                             -make libs -make tools -fast -no-separate-debug-info -no-openssl \
-                             -no-nas-sound -no-opengl -no-xshape -no-xinerama -no-xcursor \
-                             -no-xfixes -no-xrandr -no-xrender -no-fontconfig -no-tablet \
-                             -no-gif -no-libtiff -no-libpng -no-libmng -no-libjpeg \
-                             ${EXTRA_QT_FLAGS} \
+                             -make libs -make tools -fast -no-separate-debug-info \
                              -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite | tee qt.config.out
     
     if [[ $? != 0 ]] ; then
@@ -8622,8 +8616,9 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
     DO_VTK="yes"
     DO_PYTHON="yes"
     if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
-        DO_PYTHON="no"
         DO_MESA="no"
+        DO_QT="no"
+        DO_PYTHON="no"
     fi
 fi
 if [[ "$DO_ICET" == "yes" ]] ; then

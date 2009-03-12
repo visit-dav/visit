@@ -83,7 +83,6 @@ if ($ARGV[0] eq "-dbio-only")
     push @files, get_svn_recursive    "./src/avt/Pipeline";
     push @files, get_svn_recursive    "./src/databases";
     push @files, get_svn_norecursive  "./src/tools";
-    push @files, get_svn_recursive    "./src/tools/xml";
     push @files, get_svn_recursive    "./src/tools/convert";
     push @files, get_svn_recursive    "./src/include";
     push @files, get_svn_norecursive  "./src/bin";
