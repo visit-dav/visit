@@ -256,6 +256,11 @@ SetColor3ubv(const unsigned char *c)
 //    vertex cells.  This means we cannot look at cell data when looking
 //    for atom arrays.  Also, account for model number directory prefix.
 //
+//    Jeremy Meredith, Thu Mar 12 17:32:34 EDT 2009
+//    Allow any variable starting with "element" to be treated as
+//    an atomic number -- this makes creating new element expressions
+//    to override ones in the file possible.
+//
 // ****************************************************************************
 
 void
@@ -280,6 +285,8 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 
     string primaryname = primary->GetName();
     bool primary_is_element = (primaryname == "element" ||
+                    (primaryname.length() > 7 &&
+                     primaryname.substr(0,7) == "element") ||
                     (primaryname.length() > 8 &&
                      primaryname.substr(primaryname.length()-8) == "/element"));
     bool primary_is_resseq = (primaryname == "resseq" ||
@@ -504,6 +511,11 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 //    - Don't shorten the bonds if it's a cell-centered variable, because
 //      in that case we're not drawing the atoms at all.
 //
+//    Jeremy Meredith, Thu Mar 12 17:32:34 EDT 2009
+//    Allow any variable starting with "element" to be treated as
+//    an atomic number -- this makes creating new element expressions
+//    to override ones in the file possible.
+//
 // ****************************************************************************
 
 void
@@ -536,6 +548,8 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
 
     string primaryname = primary->GetName();
     bool primary_is_element = (primaryname == "element" ||
+                    (primaryname.length() > 7 &&
+                     primaryname.substr(0,7) == "element") ||
                     (primaryname.length() > 8 &&
                      primaryname.substr(primaryname.length()-8) == "/element"));
     bool primary_is_resseq = (primaryname == "resseq" ||
@@ -955,6 +969,11 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
 //    vertex cells.  This means we cannot look at cell data when looking
 //    for atom arrays.  Also, account for model number directory prefix.
 //
+//    Jeremy Meredith, Thu Mar 12 17:32:34 EDT 2009
+//    Allow any variable starting with "element" to be treated as
+//    an atomic number -- this makes creating new element expressions
+//    to override ones in the file possible.
+//
 // ****************************************************************************
 
 void
@@ -987,6 +1006,7 @@ avtOpenGLMoleculeRenderer::SetColors(vtkPolyData *data,
         new_numcolors = 0;
     }
     else if (varName == "element" ||
+             (varName.length()>7 && varName.substr(0,7)=="element") ||
              (varName.length()>8 && varName.substr(varName.length()-8)=="/element"))
     {
         new_colortablename = atts.GetElementColorTable();
