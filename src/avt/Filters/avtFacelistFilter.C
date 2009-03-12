@@ -761,6 +761,9 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
 //    Hank Childs, Wed Dec 10 10:03:46 PST 2008
 //    Add support for quadratic elements.
 //
+//    Jeremy Meredith, Thu Mar 12 12:39:30 EDT 2009
+//    Tessellate quadratic triangles and quads.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -811,7 +814,7 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     out_ds->SetPoints(pts);
     pts->Delete();
     out_ds->GetPointData()->PassData(in_ds->GetPointData());
-    out_ds->GetCellData()->PassData(in_ds->GetCellData());
+    // We're tessellating quadratic cells, so we can't just pass the data
     out_ds->GetFieldData()->PassData(in_ds->GetFieldData());
 
     //
@@ -820,6 +823,9 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
 
     if (dstype == VTK_RECTILINEAR_GRID)
     {
+        // no tessellation here; pass the cell data
+        out_ds->GetCellData()->PassData(in_ds->GetCellData());
+
         vtkRectilinearGridFacelistFilter *rf = 
                                        vtkRectilinearGridFacelistFilter::New();
         rf->SetForceFaceConsolidation(forceFaceConsolidation ? 1 : 0);
@@ -832,6 +838,9 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     }
     else if (dstype == VTK_STRUCTURED_GRID)
     {
+        // no tessellation here; pass the cell data
+        out_ds->GetCellData()->PassData(in_ds->GetCellData());
+
         int dims[3];
         ((vtkStructuredGrid *) in_ds)->GetDimensions(dims);
 
@@ -879,38 +888,98 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     }
     else if (dstype == VTK_UNSTRUCTURED_GRID)
     {
+        // okay, *now* we might tessellate; create the cell data as we go
+
+        // First, count the output cells
         vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) in_ds;
         int ncells = ug->GetNumberOfCells();
-        out_ds->Allocate(ncells);
+        int noutcells = ncells;
+        for (int i = 0 ; i < ncells ; i++)
+        {
+            int cellType = ug->GetCellType(i);
+            switch (cellType)
+            {
+              case VTK_QUADRATIC_TRIANGLE: noutcells += 4; break;
+              case VTK_QUADRATIC_QUAD:     noutcells += 6; break;
+              default:                     noutcells++;    break;
+            }
+        }
+
+
+        out_ds->Allocate(noutcells);
+        vtkCellData *in_cd = ug->GetCellData();
+        vtkCellData *out_cd = out_ds->GetCellData();
+        out_cd->CopyAllocate(in_cd, noutcells);
         vtkIdList *idlist     = vtkIdList::New();
         vtkIdList *idlist_cor = vtkIdList::New();
         for (int i = 0 ; i < ncells ; i++)
         {
+            int newid;
             ug->GetCellPoints(i, idlist);
-            vtkIdList *idlist_to_use = idlist;
             int cellType = ug->GetCellType(i);
-            // We really should be triangulating these...
             if (cellType == VTK_QUADRATIC_TRIANGLE)
             {
                 idlist_cor->SetNumberOfIds(3);
                 idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(3));
+                idlist_cor->SetId(2, idlist->GetId(5));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(3));
                 idlist_cor->SetId(1, idlist->GetId(1));
+                idlist_cor->SetId(2, idlist->GetId(4));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(5));
+                idlist_cor->SetId(1, idlist->GetId(4));
                 idlist_cor->SetId(2, idlist->GetId(2));
-                idlist_to_use = idlist_cor;
-                cellType = VTK_TRIANGLE; 
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(3));
+                idlist_cor->SetId(1, idlist->GetId(4));
+                idlist_cor->SetId(2, idlist->GetId(5));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
             }
             else if (cellType == VTK_QUADRATIC_QUAD)
             {
-                idlist_cor->SetNumberOfIds(4);
+                idlist_cor->SetNumberOfIds(3);
                 idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(4));
+                idlist_cor->SetId(2, idlist->GetId(7));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(4));
                 idlist_cor->SetId(1, idlist->GetId(1));
-                idlist_cor->SetId(2, idlist->GetId(2));
-                idlist_cor->SetId(3, idlist->GetId(3));
-                idlist_to_use = idlist_cor;
-                cellType = VTK_QUAD; 
+                idlist_cor->SetId(2, idlist->GetId(5));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(5));
+                idlist_cor->SetId(1, idlist->GetId(2));
+                idlist_cor->SetId(2, idlist->GetId(6));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(6));
+                idlist_cor->SetId(1, idlist->GetId(3));
+                idlist_cor->SetId(2, idlist->GetId(7));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(4));
+                idlist_cor->SetId(1, idlist->GetId(6));
+                idlist_cor->SetId(2, idlist->GetId(7));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(4));
+                idlist_cor->SetId(1, idlist->GetId(5));
+                idlist_cor->SetId(2, idlist->GetId(6));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
             }
-
-            out_ds->InsertNextCell(cellType, idlist_to_use);
+            else
+            {
+                newid = out_ds->InsertNextCell(cellType, idlist);
+                out_cd->CopyData(in_cd, i, newid);
+            }
         }
         idlist->Delete();
         idlist_cor->Delete();
