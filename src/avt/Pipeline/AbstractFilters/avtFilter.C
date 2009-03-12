@@ -1343,6 +1343,9 @@ avtFilter::FinalizeWebpage(void)
 //    Cyrus Harrison, Wed Feb 13 13:51:32 PST 2008
 //    Output dir should not be included dump reference. 
 //
+//    Brad Whitlock, Thu Mar 12 13:58:59 PST 2009
+//    I changed before/after to input/output in the constructed prefix.
+//
 // ****************************************************************************
 
 void
@@ -1373,7 +1376,7 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
 
         std::string input_string;
         char prefix[128];
-        sprintf(prefix, "before_%s", GetType());
+        sprintf(prefix, "input.%s", GetType());
         webpage->AddSectionForLinks("input_data_object");
         webpage->AddHeading("INPUT DATA OBJECT");
         dob->DebugDump(webpage, prefix);
@@ -1383,7 +1386,7 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
  
         std::string output_string;
         char prefix[128];
-        sprintf(prefix, "after_%s", GetType());
+        sprintf(prefix, "output.%s", GetType());
         webpage->AddSectionForLinks("output_data_object");
         webpage->AddHeading("OUTPUT DATA OBJECT");
         dob->DebugDump(webpage, prefix);
