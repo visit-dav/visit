@@ -139,6 +139,14 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
 //    Initial Qt4 Port. 
 //
+//    Jeremy Meredith, Wed Feb 25 12:55:54 EST 2009
+//    Added number of bins for line drawing.
+//    Allow user to force into the mode using individual data point lines
+//    for the focus instead of using a histogram.
+//
+//    Jeremy Meredith, Thu Mar 12 13:12:37 EDT 2009
+//    Qt4 port of new additions.
+//
 // ****************************************************************************
 
 void
@@ -228,6 +236,24 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
             this, SLOT(linesColorChanged(const QColor&)));
     linesLayout->addWidget(linesColor, 1,1);
 
+    // Number of partitions
+    linesNumPartitionsLabel = new QLabel(tr("Vertical screen resolution"),
+                                         drawLines);
+    linesLayout->addWidget(linesNumPartitionsLabel,2,0);
+    linesNumPartitions = new QNarrowLineEdit(drawLines);
+    connect(linesNumPartitions, SIGNAL(returnPressed()),
+            this, SLOT(linesNumPartitionsProcessText()));
+    linesLayout->addWidget(linesNumPartitions, 2,1);
+    linesNumPartitionsSlider = new QSlider(Qt::Horizontal,drawLines);
+    linesNumPartitionsSlider->setRange(1,7);
+    linesNumPartitionsSlider->setPageStep(1);
+    linesNumPartitionsSlider->setValue(4);
+    connect(linesNumPartitionsSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(linesNumPartitionsSliderChanged(int)));
+    connect(linesNumPartitionsSlider, SIGNAL(sliderReleased()),
+            this, SLOT(linesNumPartitionsSliderReleased()));
+    linesLayout->addWidget(linesNumPartitionsSlider, 2,2);
+
     //
     // Draw context, and the needed settings
     //
@@ -294,6 +320,14 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     connect(unifyAxisExtents, SIGNAL(toggled(bool)),
             this, SLOT(unifyAxisExtentsToggled(bool)));
     topLayout->addWidget(unifyAxisExtents);
+
+    // Force individual data point lines for focus
+    forceIndividualLineFocusToggle =
+        new QCheckBox(tr("Force individual data point lines for focus"),
+                      central);
+    connect(forceIndividualLineFocusToggle, SIGNAL(toggled(bool)),
+            this, SLOT(forceIndividualLineFocusToggled(bool)));
+    topLayout->addWidget(forceIndividualLineFocusToggle);
 }
 
 
@@ -344,6 +378,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
 //    Initial Qt4 Port. 
+//
+//    Jeremy Meredith, Thu Mar 12 13:12:37 EDT 2009
+//    Qt4 port of new additions.
 //
 // ****************************************************************************
 
@@ -412,6 +449,17 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
             linesColor->setButtonColor(tempcolor);
             linesColor->blockSignals(false);
             break;
+          case ParallelCoordinatesAttributes::ID_linesNumPartitions:
+            linesNumPartitions->blockSignals(true);
+            linesNumPartitionsSlider->blockSignals(true);
+            temp.sprintf("%d", atts->GetLinesNumPartitions());
+            sliderpos = int(log(float(atts->GetLinesNumPartitions()))/log(2.f)+.5)-5;
+            sliderpos = qMin(qMax(1, sliderpos), 10);
+            linesNumPartitionsSlider->setValue(sliderpos);
+            linesNumPartitions->setText(temp);
+            linesNumPartitions->blockSignals(false);
+            linesNumPartitionsSlider->blockSignals(false);
+            break;
           case ParallelCoordinatesAttributes::ID_drawContext:
             drawContext->blockSignals(true);
             drawContext->setChecked(atts->GetDrawContext());
@@ -456,6 +504,11 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
             unifyAxisExtents->blockSignals(true);
             unifyAxisExtents->setChecked(atts->GetUnifyAxisExtents());
             unifyAxisExtents->blockSignals(false);
+            break;
+          case ParallelCoordinatesAttributes::ID_forceFullDataFocus:
+            forceIndividualLineFocusToggle->blockSignals(true);
+            forceIndividualLineFocusToggle->setChecked(atts->GetForceFullDataFocus());
+            forceIndividualLineFocusToggle->blockSignals(false);
             break;
         }
     }
@@ -505,6 +558,14 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
 //    Initial Qt4 Port. 
 //
+//    Jeremy Meredith, Wed Feb 25 13:00:02 EST 2009
+//    Added number of bins for line drawing.
+//    Added fields for iterating over time.
+//    Switched to named indexes.
+//
+//    Jeremy Meredith, Thu Mar 12 13:12:37 EDT 2009
+//    Qt4 port of new additions.
+//
 // ****************************************************************************
 
 void
@@ -514,7 +575,7 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do contextGamma
-    if(which_widget == 18 || doAll)
+    if(which_widget == ParallelCoordinatesAttributes::ID_contextGamma || doAll)
     {
         temp = contextGamma->displayText().simplified();
         okay = !temp.isEmpty();
@@ -538,7 +599,7 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do contextNumPartitions
-    if(which_widget == 19 || doAll)
+    if(which_widget == ParallelCoordinatesAttributes::ID_contextNumPartitions || doAll)
     {
         temp = contextNumPartitions->displayText().simplified();
         okay = !temp.isEmpty();
@@ -558,6 +619,30 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
                   arg(atts->GetContextNumPartitions());
             Message(msg);
             atts->SetContextNumPartitions(atts->GetContextNumPartitions());
+        }
+    }
+
+    // Do linesNumPartitionsSlider
+    if(which_widget == ParallelCoordinatesAttributes::ID_linesNumPartitions || doAll)
+    {
+        temp = linesNumPartitions->displayText().simplified();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            int val = temp.toInt(&okay);
+            if (val>0 && val<10000)
+                atts->SetLinesNumPartitions(val);
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of linesNumPartitions was invalid. "
+                "Resetting to the last good value of %d.",
+                atts->GetLinesNumPartitions());
+            Message(msg);
+            atts->SetLinesNumPartitions(atts->GetLinesNumPartitions());
         }
     }
 }
@@ -682,6 +767,14 @@ QvisParallelCoordinatesPlotWindow::linesColorChanged(const QColor &color)
 
 
 void
+QvisParallelCoordinatesPlotWindow::linesNumPartitionsProcessText()
+{
+    GetCurrentValues(ParallelCoordinatesAttributes::ID_linesNumPartitions);
+    Apply();
+}
+
+
+void
 QvisParallelCoordinatesPlotWindow::drawContextChanged(bool val)
 {
     atts->SetDrawContext(val);
@@ -693,7 +786,7 @@ QvisParallelCoordinatesPlotWindow::drawContextChanged(bool val)
 void
 QvisParallelCoordinatesPlotWindow::contextGammaProcessText()
 {
-    GetCurrentValues(18);
+    GetCurrentValues(ParallelCoordinatesAttributes::ID_contextGamma);
     Apply();
 }
 
@@ -701,7 +794,7 @@ QvisParallelCoordinatesPlotWindow::contextGammaProcessText()
 void
 QvisParallelCoordinatesPlotWindow::contextNumPartitionsProcessText()
 {
-    GetCurrentValues(19);
+    GetCurrentValues(ParallelCoordinatesAttributes::ID_contextNumPartitions);
     Apply();
 }
 
@@ -1117,3 +1210,74 @@ QvisParallelCoordinatesPlotWindow::GetSelectedAxisIndex()
     }
     return -1;
 }
+
+// ****************************************************************************
+//  Method:  QvisParallelCoordinatesPlotWindow::forceIndividualLineFocusToggled
+//
+//  Purpose:
+//    Executed when the toggle button for forcing focus to be draw
+//    using individual data points is toggled.
+//
+//  Arguments:
+//    val        the new state
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 27, 2008
+//
+// ****************************************************************************
+
+void
+QvisParallelCoordinatesPlotWindow::forceIndividualLineFocusToggled(bool val)
+{
+    atts->SetForceFullDataFocus(val);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelCoordinatesPlotWindow::linesNumPartitionsSliderChanged
+//
+//  Purpose:
+//    Set the number of partitions based on the integral slider position
+//
+//  Arguments:
+//    val        the position of the slider (currently [1,7])
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March  4, 2008
+//
+// ****************************************************************************
+
+void
+QvisParallelCoordinatesPlotWindow::linesNumPartitionsSliderChanged(int val)
+{
+    // 1 maps to 2^6, i.e. 64, 7 maps to 2^12, i.e. 4096
+    int nparts = 1<<(val+5);
+    atts->SetLinesNumPartitions(nparts);
+
+    // Set the value in the line edit.
+    QString tmp;
+    tmp.sprintf("%d", nparts);
+    linesNumPartitions->setText(tmp);
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelCoordinatesPlotWindow::linesNumPartitionsSliderReleased
+//
+//  Purpose:
+//    When the slider is released, update the plot atts as necessary.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March  4, 2008
+//
+// ****************************************************************************
+
+void
+QvisParallelCoordinatesPlotWindow::linesNumPartitionsSliderReleased()
+{
+    Apply();
+}
+
+
