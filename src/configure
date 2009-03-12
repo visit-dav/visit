@@ -9600,9 +9600,9 @@ echo "$as_me: error: \"Configure needs to remove ITAPS implementation copy datab
         # exactly how the following sed commands want it with, for example,
         # <CXXFLAGS> and </CXXFLAGS> on the same line.
         #
-        sed -i -e "s%<Extensions>\(.*\)</Extensions>%<Extensions>${impl_exts}</Extensions>%" databases/$impl_name/$impl_name.xml
-        sed -i -e "s%<CXXFLAGS>\(.*\)</CXXFLAGS>%<CXXFLAGS>-D${impl_name} $\(ITAPS_C${itaps_impl_id}_INCLUDE\)</CXXFLAGS>%" databases/$impl_name/$impl_name.xml
-        sed -i -e "s%<LIBS>\(.*\)</LIBS>%<LIBS>$\(ITAPS_C${itaps_impl_id}_LIB\)</LIBS>%" databases/$impl_name/$impl_name.xml
+        sed -i -e "s%<Extensions>\(.*\)</Extensions>%<Extensions> ${impl_exts} </Extensions>%" databases/$impl_name/$impl_name.xml
+        sed -i -e "s%<CXXFLAGS>\(.*\)</CXXFLAGS>%<CXXFLAGS> -D${impl_name} $\(ITAPS_C${itaps_impl_id}_INCLUDE\) </CXXFLAGS>%" databases/$impl_name/$impl_name.xml
+        sed -i -e "s%<LIBS>\(.*\)</LIBS>%<LIBS> $\(ITAPS_C${itaps_impl_id}_LIB\) </LIBS>%" databases/$impl_name/$impl_name.xml
 
         #
         # Fix the extensions in the PluginInfo.C file
@@ -9842,6 +9842,7 @@ VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $VTK_INCLUDES"
 VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $SILO_INCLUDE"
 
 
+if test ! "$enable_dbio_only" = yes; then
 if test -z "$QT_BIN" || test -z "$QT_INCLUDE" || test -z "$QT_LIB"; then
    { { echo "$as_me:$LINENO: error: The QT_BIN, QT_INCLUDE and QT_LIB environment variables must be set in order to find Qt" >&5
 echo "$as_me: error: The QT_BIN, QT_INCLUDE and QT_LIB environment variables must be set in order to find Qt" >&2;}
@@ -10012,6 +10013,7 @@ QT_CXXFLAGS="-I$""(TOPDIR)/include/qt -I$""(TOPDIR)/include/qt/Qt -I$""(TOPDIR)/
 # Path to moc
 QT_MOC="$""(TOPDIR)/bin/moc"
 
+fi # if test ! "$enable_dbio_only" = yes; then
 
 #
 # Only enable VTKQT if we're building the viewer.
@@ -19931,9 +19933,8 @@ if test "$enable_dbio_only" = yes; then
         third_party_builtin/bilib/Makefile
         third_party_builtin/bow/Makefile"
     TOOLS_FILES="
-        tools/Makefile
-        tools/xml/Makefile
-        tools/convert/Makefile"
+        tools/convert/Makefile
+        bin/topdir"
     VISIT_VTK_FILES="
         visit_vtk/Makefile
         visit_vtk/lightweight/Makefile
@@ -21514,8 +21515,10 @@ fi
 (cd include   && ${MAKE-make})
 (cd lib       && ${MAKE-make})
 (cd bin       && ${MAKE-make})
-rm -f $TOPDIR/exe/xml2makefile
-(cd tools/xml && ${MAKE-make} $TOPDIR/exe/xml2makefile)
+if test ! "$enable_dbio_only" = yes; then
+    rm -f $TOPDIR/exe/xml2makefile
+    (cd tools/xml && ${MAKE-make} $TOPDIR/exe/xml2makefile)
+fi
 
 # If we 're on a Darwin system, make bundles for the gui and the viewer.
 if test "$UNAME" = "Darwin";  then
@@ -21523,10 +21526,12 @@ if test "$UNAME" = "Darwin";  then
 fi
 
 if test ! "$enable_dbio_only" = yes; then
-(cd plots     && ${MAKE-make} dirmakefiles)
-(cd operators && ${MAKE-make} dirmakefiles)
+    (cd plots     && ${MAKE-make} dirmakefiles)
+    (cd operators && ${MAKE-make} dirmakefiles)
+    (cd databases && ${MAKE-make} dirmakefiles)
+else
+    (cd databases && ${MAKE-make} dirmakefiles_dbio_only)
 fi
-(cd databases && ${MAKE-make} dirmakefiles)
 if test -n "$JAVA_TARGET"; then
 (cd java      && ${MAKE-make} version)
 fi
