@@ -4073,7 +4073,12 @@ fi
 SIMULATION_PROTOTYPE_FILES="sim/Makefile
                             sim/examples/Makefile
                             sim/V1/Makefile
-                            sim/V2/Makefile"
+                            sim/V1/lib/Makefile
+                            sim/V1/runtime/Makefile
+                            sim/V2/Makefile
+                            sim/V2/lib/Makefile
+                            sim/V2/runtime/Makefile"
+
 CQSCORE_FILES="cqscore/Makefile"
 THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/zlib/Makefile

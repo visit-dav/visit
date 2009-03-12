@@ -83,6 +83,7 @@ class Xfer;
 #include <avtDataObjectWriter.h>
 #include <ParentProcess.h>
 #include <BufferConnection.h>
+#include <SaveWindowAttributes.h>
 
 #ifdef PARALLEL
 #include <parallel.h>
@@ -189,6 +190,12 @@ class Xfer;
 //    Instance variable to store what kind of display we'll render with, and
 //    made SetupDisplay a method.
 //
+//    Brad Whitlock, Thu Feb 26 14:03:25 PST 2009
+//    I added Message and Error so we can send messages to the simulation user.
+//
+//    Brad Whitlock, Mon Mar  2 16:11:36 PST 2009
+//    I added a SaveWindow method.
+//
 // ****************************************************************************
 
 class Engine
@@ -207,12 +214,16 @@ class Engine
     void            PopulateSimulationMetaData(const std::string &db,
                                                const std::string &fmt);
     void            SimulationTimeStepChanged();
-    void            SimulationInitiateCommand(const char *);
+    void            SimulationInitiateCommand(const std::string &);
     void            SetSimulationCommandCallback(void(*)(const char*,
                                                        int,float,const char*));
     void            ExecuteSimulationCommand(const std::string&,
                                              int,float,const std::string&);
     static void     DisconnectSimulation();
+    void            Message(const std::string &msg);
+    void            Error(const std::string &msg);
+    bool            SaveWindow(const std::string &, int, int, 
+                               SaveWindowAttributes::FileFormat);
 
     // Two event loops
     bool            EventLoop();

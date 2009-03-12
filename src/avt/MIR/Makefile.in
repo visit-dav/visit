@@ -92,7 +92,7 @@ Zoo_src= \
   Zoo/ResampledMat.C \
   Zoo/ZooMIR.C
 
-CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
+CPPFLAGS=-I../../include -I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)

@@ -2289,6 +2289,10 @@ Engine::EngineAbortCallback(void *data)
 //    Jeremy Meredith, Thu Aug  7 16:23:46 EDT 2008
 //    Removed unused vars.
 //
+//    Brad Whitlock, Tue Mar  3 10:37:02 PST 2009
+//    I made it okay to call this function without an RPC since RPC's are no
+//    longer the only way to instigate engine functions into being called.
+//
 // ****************************************************************************
 
 void
@@ -2296,9 +2300,8 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
                              int cur, int total)
 {
     NonBlockingRPC *rpc = (NonBlockingRPC*)data;
-    if (!rpc)
-        EXCEPTION1(VisItException,
-                   "EngineUpdateProgressCallback called with no RPC set.");
+    if (rpc == 0)
+        return;
 
     if (total == 0 && rpc->GetMaxStageNum() < 30)
     {
@@ -2370,18 +2373,21 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Brad Whitlock, Tue Mar  3 10:37:02 PST 2009
+//    I made it okay to call this function without an RPC since RPC's are no
+//    longer the only way to instigate engine functions into being called.
+//
 // ****************************************************************************
 
 void
 Engine::EngineInitializeProgressCallback(void *data, int nStages)
 {
     NonBlockingRPC *rpc = (NonBlockingRPC*)data;
-    if (!rpc)
-        EXCEPTION1(VisItException,
-                   "EngineInitializeProgressCallback called with no RPC set.");
-
     if (nStages > 0)
-        rpc->SendStatus(0, 1, "Starting execution", nStages+1);
+    {
+        if(rpc != 0)
+            rpc->SendStatus(0, 1, "Starting execution", nStages+1);
+    }
     else
         debug1 << "ERROR: EngineInitializeProgressCallback called "
                << "with nStages == 0" << endl;
@@ -2559,17 +2565,63 @@ Engine::SimulationTimeStepChanged()
 // Creation:   Thu Jan 25 15:07:29 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 26 13:59:36 PST 2009
+//   I changed the argument to std::string.
+//
 // ****************************************************************************
 
 void
-Engine::SimulationInitiateCommand(const char *command)
+Engine::SimulationInitiateCommand(const std::string &command)
 {
     if(!quitRPC->GetQuit())
     {
         commandFromSim->SetCommand(command);
         commandFromSim->Notify();
     }
+}
+
+// ****************************************************************************
+// Method: Engine::Message
+//
+// Purpose: 
+//   This method lets the engine send a message back to the viewer.
+//
+// Arguments:
+//   msg : The message to send back to the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 26 13:59:47 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Engine::Message(const std::string &msg)
+{
+    SimulationInitiateCommand(std::string("Message:") + msg);
+}
+
+// ****************************************************************************
+// Method: Engine::Error
+//
+// Purpose: 
+//   This method lets the engine send an error message back to the viewer.
+//
+// Arguments:
+//   msg : The message to send back to the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 26 13:59:47 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Engine::Error(const std::string &msg)
+{
+    SimulationInitiateCommand(std::string("Error:") + msg);
 }
 
 // ****************************************************************************
@@ -2848,4 +2900,35 @@ ResetEngineTimeout(void *p, int secs)
         debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
     }
     e->ResetTimeout(secs);
+}
+
+// ****************************************************************************
+// Method: Engine::SaveWindow
+//
+// Purpose: 
+//   Tells the network manager to render and save a window.
+//
+// Arguments:
+//   filename   : The filename in which to save an image.
+//   imageWidth : The width of the image to save.
+//   imageHeight: The height of the image to save.
+//   fmt        : The file format to use for the saved image.
+//
+// Returns:    True if the image was saved; false otherwise.
+//
+// Note:       If imageWidth and imageHeight are <=0 then they are ignored and
+//             the previous image resolution is used.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  2 16:14:07 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+Engine::SaveWindow(const std::string &filename, int imageWidth, int imageHeight,
+    SaveWindowAttributes::FileFormat fmt)
+{
+    return netmgr->SaveWindow(filename, imageWidth, imageHeight, fmt);
 }

@@ -36,8 +36,9 @@
 *
 *****************************************************************************/
 
-#include "VisItControlInterface_V1.h"
+#include "VisItControlInterface_V2.h"
 #include "SimV2Tracing.h"
+#include "DeclareDataCallbacks.h"
 
 #include <dlfcn.h>
 #include <errno.h>
@@ -95,21 +96,35 @@
 /* VisIt Engine Library function pointers */
 typedef struct
 {
-    void *(*v_getengine)(void);
-    int   (*v_getdescriptor)(void*);
-    int   (*v_processinput)(void*);
-    int   (*v_initialize)(void*,int,char**);
-    int   (*v_connectviewer)(void*,int,char**);
-    void  (*v_time_step_changed)(void*);
-    void  (*v_update_plots)(void*);
-    void  (*v_execute_command)(void*,const char*);
-    void  (*v_disconnect)();
-    void  (*v_set_slave_process_callback)(void(*)());
-    void  (*v_set_command_callback)(void*,void(*)(const char*,int,
+    void *(*get_engine)(void);
+    int   (*get_descriptor)(void*);
+    int   (*process_input)(void*);
+    int   (*initialize)(void*,int,char**);
+    int   (*connect_viewer)(void*,int,char**);
+    void  (*time_step_changed)(void*);
+    void  (*update_plots)(void*);
+    void  (*execute_command)(void*,const char*);
+    void  (*disconnect)();
+    void  (*set_slave_process_callback)(void(*)());
+    void  (*set_command_callback)(void*,void(*)(const char*,int,
                                                   float,const char*));
+    int   (*save_window)(void*,const char *, int, int, int);
 } control_callback_t;
 
-static control_callback_t *callbacks = NULL;
+#define STRUCT_MEMBER(F,T)  void (*set_##F)(T, void*);
+
+typedef struct
+{
+    DECLARE_DATA_CALLBACKS(STRUCT_MEMBER, NO_ARGS)
+} data_callback_t;
+
+typedef struct
+{
+    control_callback_t control;
+    data_callback_t    data;
+} visit_callback_t;
+
+static visit_callback_t *callbacks = NULL;
 
 
 /* Internal Variables */
@@ -542,8 +557,8 @@ static int CreateEngineAndConnectToViewer(void)
     LIBSIM_API_ENTER(CreateEngineAndConnectToViewer);
 
     /* get the engine */
-    LIBSIM_MESSAGE("Calling v_engine");
-    engine = (*callbacks->v_getengine)();
+    LIBSIM_MESSAGE("Calling visit_engine");
+    engine = (*callbacks->control.get_engine)();
     if (!engine)
     {
         LIBSIM_API_LEAVE1(CreateEngineAndConnectToViewer,
@@ -552,24 +567,24 @@ static int CreateEngineAndConnectToViewer(void)
         return FALSE;
     }
 
-    LIBSIM_MESSAGE_STRINGLIST("Calling v_initialize: argv",
+    LIBSIM_MESSAGE_STRINGLIST("Calling visit_initialize: argv",
                               engine_argc, engine_argv);
-    if (!(*callbacks->v_initialize)(engine, engine_argc, engine_argv))
+    if (!(*callbacks->control.initialize)(engine, engine_argc, engine_argv))
     {
         VisItDisconnect();
         LIBSIM_API_LEAVE1(CreateEngineAndConnectToViewer,
-                         "v_initialize failed. return %d",
+                         "visit_initialize failed. return %d",
                          FALSE);
         return FALSE;
     }
 
-    LIBSIM_MESSAGE_STRINGLIST("Calling v_connectviewer: argv",
+    LIBSIM_MESSAGE_STRINGLIST("Calling visit_connectviewer: argv",
                               engine_argc, engine_argv);
-    if (!(*callbacks->v_connectviewer)(engine, engine_argc, engine_argv))
+    if (!(*callbacks->control.connect_viewer)(engine, engine_argc, engine_argv))
     {
         VisItDisconnect();
         LIBSIM_API_LEAVE1(CreateEngineAndConnectToViewer,
-                         "v_connectviewer failed. return %d", 
+                         "visit_connectviewer failed. return %d", 
                          FALSE);
         return FALSE;
     }
@@ -861,61 +876,70 @@ static function_pointer dlsym_function(void *h, const char *n)
 *   Jeremy Meredith, Fri Nov  2 18:06:42 EDT 2007
 *   Use dylib as the extension for OSX.
 *
+*   Brad Whitlock, Fri Feb 13 09:54:47 PST 2009
+*   I added code to get data callback setting functions from the library.
+*
 *******************************************************************************/
 static int LoadVisItLibrary(void)
 {
-   char lib[256];
+    char lib[256];
 
-   /* For a while, something was hanging if you tried to re-use the same
-      engine library for a second connection.  Things seem better now, so
-      there's no need to enable this next line of code.  It is left in as
-      a reminder that we may run into the same issue on other platforms.
+    /* For a while, something was hanging if you tried to re-use the same
+       engine library for a second connection.  Things seem better now, so
+       there's no need to enable this next line of code.  It is left in as
+       a reminder that we may run into the same issue on other platforms.
 
-    if (dl_handle)
-        return;
-   */
+     if (dl_handle)
+         return;
+    */
 
-   /* load library */
+    /* load library */
 #ifdef __APPLE__
-   const char *extension = "dylib";
+    const char *extension = "dylib";
+    const char *LD_LIBRARY_PATH = "DYLD_LIBRARY_PATH";
 #else
-   const char *extension = "so";
+    const char *extension = "so";
+    const char *LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
 #endif
-   LIBSIM_API_ENTER(LoadVisItLibrary);
+    LIBSIM_API_ENTER(LoadVisItLibrary);
 
-   callbacks = (control_callback_t *)malloc(sizeof(control_callback_t));
-   memset(callbacks, 0, sizeof(control_callback_t));
+    callbacks = (visit_callback_t *)malloc(sizeof(visit_callback_t));
+    memset(callbacks, 0, sizeof(visit_callback_t));
 
-   if (isParallel)
-   {
-       sprintf(lib, "libvisitenginev1_par.%s", extension);
+    if (isParallel)
+    {
+        sprintf(lib, "libsimV2runtime_par.%s", extension);
+    }
+    else
+    {
+        sprintf(lib, "libsimV2runtime_ser.%s", extension);
+    }
+
+    LIBSIM_MESSAGE1("Calling dlopen(%s)", lib);
+    dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
+
+    if (dl_handle == NULL)
+    {
+        LIBSIM_MESSAGE1("Failed to open the VisIt library: %s\n", dlerror())
+
+        if(getenv(LD_LIBRARY_PATH))
+        {
+            char *libpath = strdup(getenv(LD_LIBRARY_PATH));
+            char *ptr = strstr(libpath, ":");
+            if (ptr)
+            {
+                *ptr = 0;
+
+                if (isParallel) 
+                    sprintf(lib, "%s/libsimV2runtime_par.%s", libpath, extension);
+                else
+                    sprintf(lib, "%s/libsimV2runtime_ser.%s", libpath, extension);
+
+                LIBSIM_MESSAGE1("Calling dlopen(%s)", lib);
+                dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
+            }
+        }
    }
-   else
-   {
-       sprintf(lib, "libvisitenginev1_ser.%s", extension);
-   }
-
-   LIBSIM_MESSAGE1("Calling dlopen(%s)", lib);
-   dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
-
-   if (!dl_handle && getenv("LD_LIBRARY_PATH"))
-   {
-      char *libpath = strdup(getenv("LD_LIBRARY_PATH"));
-      char *ptr = strstr(libpath, ":");
-      if (ptr)
-      {
-         *ptr = 0;
-
-         if (isParallel) 
-             sprintf(lib, "%s/libvisitenginev1_par.%s", libpath, extension);
-         else
-             sprintf(lib, "%s/libvisitenginev1_ser.%s", libpath, extension);
-
-         LIBSIM_MESSAGE1("Calling dlopen(%s)", lib);
-         dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
-      }
-   }
-
    if (!dl_handle)
    {
       sprintf(lastError, "Failed to open the VisIt library: %s\n", dlerror());
@@ -923,27 +947,37 @@ static int LoadVisItLibrary(void)
       return FALSE;
    }
 
-#define SAFE_DLSYM(f,t,n)                \
-   callbacks->f = (t)dlsym_function(dl_handle, n); \
-   if (!callbacks->f) \
+#define SAFE_DLSYM(D,F,T,N,DECORATE) \
+   callbacks->D.F = (DECORATE(T))dlsym_function(dl_handle, N); \
+   if (!callbacks->D.F) \
    { \
       sprintf(lastError, "Failed to open the VisIt library: "\
-              "couldn't find symbol '%s': %s\n", n, dlerror()); \
+              "couldn't find symbol '%s': %s\n", N, dlerror()); \
       dl_handle = NULL; LIBSIM_API_LEAVE2(LoadVisItLibrary, "%s: return %d", lastError, FALSE); \
       return FALSE; \
    }
+#define NO_DECORATE(A) A
+#define SET_DECORATE(A) void (*)(A,void*)
+#define QUOTED(A) #A
+#define CONTROL_DLSYM(F,T) SAFE_DLSYM(control,F,T,QUOTED(visit_##F),NO_DECORATE)
+#define DATA_DLSYM(F,T)    SAFE_DLSYM(data,set_##F,T,QUOTED(visit_set_##F),SET_DECORATE)
 
-   SAFE_DLSYM(v_getengine, void *(*)(void), "get_engine");
-   SAFE_DLSYM(v_getdescriptor, int (*)(void *), "get_descriptor");
-   SAFE_DLSYM(v_processinput, int (*)(void *), "process_input");
-   SAFE_DLSYM(v_initialize, int (*)(void *, int, char **), "initialize");
-   SAFE_DLSYM(v_connectviewer, int (*)(void *, int, char **), "connect_to_viewer");
-   SAFE_DLSYM(v_time_step_changed, void (*)(void *), "time_step_changed");
-   SAFE_DLSYM(v_update_plots, void (*)(void *), "update_plots");
-   SAFE_DLSYM(v_execute_command, void (*)(void *,const char*), "execute_command");
-   SAFE_DLSYM(v_disconnect, void (*)(), "disconnect");
-   SAFE_DLSYM(v_set_slave_process_callback, void (*)(void (*)()), "set_slave_process_callback");
-   SAFE_DLSYM(v_set_command_callback, void (*)(void*,void (*)(const char*,int,float,const char*)), "set_command_callback");
+   /* Get the control functions fom the library. */
+   CONTROL_DLSYM(get_engine,                 void *(*)(void));
+   CONTROL_DLSYM(get_descriptor,             int (*)(void *));
+   CONTROL_DLSYM(process_input,              int (*)(void *));
+   CONTROL_DLSYM(initialize,                 int (*)(void *, int, char **));
+   CONTROL_DLSYM(connect_viewer,             int (*)(void *, int, char **));
+   CONTROL_DLSYM(time_step_changed,          void (*)(void *));
+   CONTROL_DLSYM(update_plots,               void (*)(void *));
+   CONTROL_DLSYM(execute_command,            void (*)(void *,const char*));
+   CONTROL_DLSYM(disconnect,                 void (*)());
+   CONTROL_DLSYM(set_slave_process_callback, void (*)(void (*)()));
+   CONTROL_DLSYM(set_command_callback,       void (*)(void*,void (*)(const char*,int,float,const char*)));
+   CONTROL_DLSYM(save_window,                int (*)(void*,const char *,int,int,int));
+
+   /* Get the data functions from the library. */
+   DECLARE_DATA_CALLBACKS(DATA_DLSYM, NO_ARGS)
 
 #ifdef VISIT_QUERIES_VIA_LIBSIM
    /* Load the VisIt query functions.*/
@@ -1519,9 +1553,9 @@ int VisItAttemptToCompleteConnection(void)
     /* get the socket for listening from the viewer */
     if (parallelRank == 0)
     {
-        LIBSIM_MESSAGE("Calling v_getdescriptor");
-        engineSocket = callbacks->v_getdescriptor(engine);
-        LIBSIM_MESSAGE1("v_getdescriptor returned %d", (int)engineSocket);
+        LIBSIM_MESSAGE("Calling visit_getdescriptor");
+        engineSocket = callbacks->control.get_descriptor(engine);
+        LIBSIM_MESSAGE1("visit_getdescriptor returned %d", (int)engineSocket);
     }
 
     LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, "return %d", TRUE);
@@ -1545,8 +1579,8 @@ int VisItAttemptToCompleteConnection(void)
 void VisItSetSlaveProcessCallback(void (*spic)())
 {
     LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback, "spic=%p", (void*)spic);
-    LIBSIM_MESSAGE("Calling v_set_slave_process_callback");
-    (*callbacks->v_set_slave_process_callback)(spic);
+    LIBSIM_MESSAGE("Calling visit_set_slave_process_callback");
+    (*callbacks->control.set_slave_process_callback)(spic);
     LIBSIM_API_LEAVE(VisItSetSlaveProcessCallback);
 }
 
@@ -1566,8 +1600,8 @@ void VisItSetSlaveProcessCallback(void (*spic)())
 void VisItSetCommandCallback(void (*scc)(const char*,int,float,const char*))
 {
     LIBSIM_API_ENTER1(VisItSetCommandCallback, "scc=%p", (void*)scc);
-    LIBSIM_MESSAGE("Calling v_set_command_callback");
-    (*callbacks->v_set_command_callback)(engine,scc);
+    LIBSIM_MESSAGE("Calling visit_set_command_callback");
+    (*callbacks->control.set_command_callback)(engine,scc);
     LIBSIM_API_LEAVE(VisItSetCommandCallback);
 }
 
@@ -1595,8 +1629,8 @@ int VisItProcessEngineCommand(void)
     }
     else
     {
-        LIBSIM_MESSAGE("Calling v_processinput");
-        retval = (*callbacks->v_processinput)(engine);
+        LIBSIM_MESSAGE("Calling visit_processinput");
+        retval = (*callbacks->control.process_input)(engine);
     }
     LIBSIM_API_LEAVE1(VisItProcessEngineCommand, "return %d", retval);
     return retval;
@@ -1619,10 +1653,10 @@ void VisItTimeStepChanged(void)
 {
     LIBSIM_API_ENTER(VisItTimeStepChanged);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks->v_time_step_changed)
+    if (engine && callbacks->control.time_step_changed)
     {
-        LIBSIM_MESSAGE("Calling v_time_step_changed");
-        (*callbacks->v_time_step_changed)(engine);
+        LIBSIM_MESSAGE("Calling visit_time_step_changed");
+        (*callbacks->control.time_step_changed)(engine);
     }
     LIBSIM_API_LEAVE(VisItTimeStepChanged);
 }
@@ -1645,10 +1679,10 @@ void VisItUpdatePlots(void)
     LIBSIM_API_ENTER(VisItUpdatePlots);
 
     /* Make sure the function exists before using it. */
-    if (engine && callbacks->v_update_plots)
+    if (engine && callbacks->control.update_plots)
     {
-        LIBSIM_MESSAGE("Calling v_update_plots");
-        (*callbacks->v_update_plots)(engine);
+        LIBSIM_MESSAGE("Calling visit_update_plots");
+        (*callbacks->control.update_plots)(engine);
     }
     LIBSIM_API_LEAVE(VisItUpdatePlots);
 }
@@ -1670,10 +1704,10 @@ void VisItExecuteCommand(const char *command)
 {
     LIBSIM_API_ENTER(VisItExecuteCommand);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks->v_execute_command)
+    if (engine && callbacks->control.execute_command)
     {
-        LIBSIM_MESSAGE("Calling v_execute_command");
-        (*callbacks->v_execute_command)(engine, command);
+        LIBSIM_MESSAGE("Calling visit_execute_command");
+        (*callbacks->control.execute_command)(engine, command);
     }
     LIBSIM_API_LEAVE(VisItExecuteCommand);
 }
@@ -1690,17 +1724,46 @@ void VisItExecuteCommand(const char *command)
 *  Brad Whitlock, Fri Jul 25 16:00:32 PDT 2008
 *  Trace information.
 *
+*  Brad Whitlock, Fri Feb 13 09:45:14 PST 2009
+*  Delete the callbacks structure and set it to NULL.
+*
 *******************************************************************************/
 void VisItDisconnect(void)
 {
     LIBSIM_API_ENTER(VisItDisconnect);
-    LIBSIM_MESSAGE("Calling v_disconnect");
-    (*callbacks->v_disconnect)();
+    LIBSIM_MESSAGE("Calling visit_disconnect");
+    (*callbacks->control.disconnect)();
     engineSocket = -1;
     engine = 0;
+    free(callbacks);
+    callbacks = NULL;
     LIBSIM_API_LEAVE(VisItDisconnect);
 }
 
+/*******************************************************************************
+*
+* Name: VisItSaveImage
+*
+* Purpose: Tell VisIt to save the active network as an image.
+*
+* Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*
+*******************************************************************************/
+int VisItSaveWindow(const char *filename, int w, int h, int format)
+{
+    int ret = VISIT_ERROR;
+    LIBSIM_API_ENTER(VisItSaveWindow);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks->control.save_window)
+    {
+        LIBSIM_MESSAGE("Calling visit_save_window");
+        ret = (*callbacks->control.save_window)(engine, filename, w, h, format);
+    }
+    LIBSIM_API_LEAVE(VisItSaveWindow);
+    return ret;
+}
 
 /*******************************************************************************
 *
@@ -1737,7 +1800,7 @@ char *VisItGetLastError()
 *
 * Modifications:
 *
- *****************************************************************************/
+******************************************************************************/
 void VisItOpenTraceFile(const char *filename)
 {
     simv2_set_trace_file(fopen(filename, "wt"));
@@ -1754,8 +1817,41 @@ void VisItOpenTraceFile(const char *filename)
 *
 * Modifications:
 *
- *****************************************************************************/
+******************************************************************************/
 void VisItCloseTraceFile(void)
 {
     simv2_set_trace_file(NULL);
 }
+
+/******************************************************************************
+*
+* Name: VisItSet*
+*
+* Purpose: Define the bodies of all of the functions that let the user
+*          register their libsim callback function.
+*
+* Programmer: Brad Whitlock
+* Date:       Mon Feb  9 10:01:08 PST 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+#define VISIT_SET_CALLBACK_BODY(F, T) \
+int VisItSet##F(T, void *cbdata) \
+{ \
+    int retval = VISIT_ERROR; \
+    LIBSIM_API_ENTER(VisIt##F);\
+    if (engine && callbacks->data.set_##F)\
+    {\
+        LIBSIM_MESSAGE("Calling VisIt"#F);\
+        (*callbacks->data.set_##F)(cb, cbdata);\
+        retval = VISIT_OKAY; \
+    }\
+    else\
+        fprintf(stderr, "VisIt"#F" should not be called until VisIt connects to the simulation.\n");\
+    LIBSIM_API_LEAVE(VisIt##F); \
+    return retval;\
+}
+
+DECLARE_DATA_CALLBACKS(VISIT_SET_CALLBACK_BODY, CB_ARGS)

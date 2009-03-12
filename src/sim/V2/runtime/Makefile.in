@@ -36,18 +36,62 @@
 #
 ##############################################################################
 
+##
+## Programs and options...
+##
 @SET_MAKE@
 @VARIABLES@
-@DIRTARGETS@
+@MPI_CC@
+@MPI_CXX@
 
-SUBDIRS=lib runtime
+CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @PLATFORM_CPPFLAGS@ @CPPFLAGS@ \
+         -I. -I../../../include/visit -I../lib
 
-message:
-	@echo
-	@echo "****************************************************************************"
-	@echo "****************************************************************************"
-	@echo "***"
-	@echo "*** Building SimV1"
-	@echo "***"
-	@echo "****************************************************************************"
-	@echo "****************************************************************************"
+LDFLAGS=@VISITWRAPPER_RPATH@ @LDFLAGS@
+
+LIB=libsimV2runtime
+
+##
+## Files...
+##
+SRC=VisItControlInterfaceRuntime.C VisItDataInterfaceRuntime.C VisItDataInterface_V2P.C
+SEROBJ=$(SRC:.C=.o)
+PAROBJ=$(SRC:.C=_par.o)
+
+##
+## Libraries that we need to link with
+##
+COMMONLIBS=-L../../../lib -lplugin -lavtview \
+        -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lvisit_verdict \
+	-lenginerpc -lutility -lmisc -lcomm -lstate \
+        -ldbatts -lavtexceptions -lexpr -lexpr -lparser \
+	$(VISIT_VTK_LDFLAGS)
+
+SERLIBS=$(COMMONLIBS) -lviswindow_ser -lplotter_ser -lmir_ser -lavtwriter_ser \
+        -lavtddf_ser -lavtivp_ser -lavtmath_ser -lavtshapelets_ser -ldatabase_ser -lquery_ser \
+        -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
+        -lengine_ser -lengineparstate_ser -lparallel_visit_vtk_ser \
+        $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) \
+	@LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
+
+PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
+        -lavtddf_par -lavtivp_par -lavtmath_par -lavtshapelets_par -ldatabase_par -lquery_par\
+        -lexpressions_par -lavtfilters_par -lpipeline_par \
+        -lengine_par -lengineparstate_par -lparallel_visit_vtk_par \
+        $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
+	$(ZLIB_LIB) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
+
+##
+## Standard targets...
+##
+all: $(LIBSHAREDSER) @LIBSHAREDPAR@
+
+clean:
+	$(RM) $(LIBSHAREDSER) @LIBSHAREDPAR@
+	$(RM) $(SEROBJ) $(PAROBJ)
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@PARLIBTARGETS@

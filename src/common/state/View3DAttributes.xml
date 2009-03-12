@@ -50,6 +50,8 @@
     </Field>
     <Function name="RotateAxis" user="true" member="true">
     </Function>
+    <Function name="ResetView" user="true" member="true">
+    </Function>
     <Function name="View3DAttributes_RotateAxis" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">

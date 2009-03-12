@@ -887,3 +887,31 @@ View2DAttributes::SetUseFullFrame(bool ff)
         fullFrameActivationMode = Off;
 }
 
+#include <math.h>
+// ****************************************************************************
+// Method: View2DAttributes::ResetView
+//
+// Purpose: 
+//   Resets the view to something that can accommodate the bbox.
+//
+// Arguments:
+//   bbox : The 2D extents that we're trying to look at.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  3 16:21:14 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+View2DAttributes::ResetView(const double *bbox)
+{
+    const double vpc[] = {0.2, 0.95, 0.15, 0.95};
+    View2DAttributes view2D;
+    view2D.SetWindowCoords(bbox);
+    view2D.SetViewportCoords(vpc);
+
+    // Copy the object into this.
+    *this = view2D;
+}
+

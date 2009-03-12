@@ -32,22 +32,71 @@
 # (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN ANY  WAY OUT OF  THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# Modifications:
+#  Modifications:
 #
 ##############################################################################
-
+##
+## Programs and options...
+##
 @SET_MAKE@
 @VARIABLES@
-@DIRTARGETS@
 
-SUBDIRS=lib runtime
+##
+## Files...
+##
+
+SRC= \
+  VisItControlInterface_V2.c \
+  SimHelperFunc.c \
+  UI_Connection.c \
+  SimV2Tracing.c
+FSRC= \
+  visitfortransimV2interface.c
+
+
+OBJ=$(SRC:.c=.o)
+SIMLIB=libsimV2
+SIMLIBNAME=$(TOPDIR)/archives/$(SIMLIB).a
+FOBJ=$(FSRC:.c=.o)
+SIMFLIB=libsimV2f
+SIMFLIBNAME=$(TOPDIR)/archives/$(SIMFLIB).a
+
+##
+## Override the certain variables with values from configure.
+##
+LDFLAGS=-L../../../lib @PY_LDFLAGS@ @LDFLAGS@ @EXE_LDFLAGS@
+LIBS=@LIBS@ 
+CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../../../include/visit
+CFLAGS=@CFLAGS@ -I. -I../../../include/visit
+
+
+##
+## Standard targets...
+##
+all:  message $(SIMLIBNAME) $(SIMFLIBNAME)
+
+$(SIMLIBNAME): $(OBJ)
+	$(AR) -rc $(SIMLIBNAME) $(OBJ) 
+
+$(SIMFLIBNAME): $(FOBJ)
+	$(AR) -rc $(SIMFLIBNAME) $(FOBJ) 
+
+clean:
+	$(RM) $(SIMLIBNAME) $(SIMFLIBNAME)
+	$(RM) $(OBJ) $(FOBJ)
 
 message:
 	@echo
 	@echo "****************************************************************************"
 	@echo "****************************************************************************"
 	@echo "***"
-	@echo "*** Building SimV1"
+	@echo "*** Building libsimV2 and libsimV2f"
 	@echo "***"
 	@echo "****************************************************************************"
 	@echo "****************************************************************************"
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@LIBTARGETS@

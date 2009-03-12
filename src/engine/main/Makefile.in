@@ -286,6 +286,9 @@
 #    Jeremy Meredith, Wed Feb 11 16:38:42 EST 2009
 #    Added link to visit_verdict library.
 #
+#    Brad Whitlock, Thu Mar 12 16:25:03 PDT 2009
+#    I removed the enginewrapper targets.
+#
 ##############################################################################
 
 ##
@@ -353,26 +356,20 @@ SRC=                    \
 
 MAINSRC=main.C
 
-LIBRARYSRC=VisItEngineV1.C
-
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o) @ICET_ENG_MAIN_OBJ@
 
 MAINSEROBJ=$(MAINSRC:.C=.o)
 MAINPAROBJ=$(MAINSRC:.C=_par.o)
 
-LIBRARYSEROBJ=$(LIBRARYSRC:.C=.o)
-LIBRARYPAROBJ=$(LIBRARYSRC:.C=_par.o)
-
 ##
 ## Standard targets...
 ##
-all: @ENGINE_SER@ @ENGINE_PAR@ $(ENGINEWRAPSER) $(ENGINEWRAPPAR)
+all: @ENGINE_SER@ @ENGINE_PAR@ 
 
 clean:
-	$(RM) $(SEROBJ) $(LIBSHAREDSER) @ENGINE_SER@ $(MAINSEROBJ) $(LIBRARYSEROBJ)
-	$(RM) $(PAROBJ) $(LIBSHAREDPAR) @ENGINE_PAR@ $(MAINPAROBJ) $(LIBRARYPAROBJ)
-	$(RM) $(libdir)/libvisitengine*
+	$(RM) $(SEROBJ) $(LIBSHAREDSER) @ENGINE_SER@ $(MAINSEROBJ)
+	$(RM) $(PAROBJ) $(LIBSHAREDPAR) @ENGINE_PAR@ $(MAINPAROBJ)
 
 ##
 ## Other targets...
@@ -383,13 +380,6 @@ clean:
 @ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	$(CXX) -o $@ $(LDFLAGS) @EXE_LDFLAGS@  $(MAINPAROBJ) -lengine_par $(PARLIBS) \
 	@MPI_LIBS@ @ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
-
-$(ENGINEWRAPSER) or_no_ser_wrapper: $(SERLIBDEP) $(SEROBJ) $(LIBRARYSEROBJ) $(LIBSHAREDSER)
-	@SHLIB_CREATEPROG@ $(libdir)/$@ @VISITWRAPPER_RPATH@ $(LDFLAGS) $(LIBRARYSEROBJ) -lengine_ser $(SERLIBS)
-
-$(ENGINEWRAPPAR) or_no_par_wrapper: $(PARLIBDEP) $(PAROBJ) $(LIBRARYPAROBJ) $(LIBSHAREDPAR)
-	@SHLIB_CREATEPROG@ $(libdir)/$@ @VISITWRAPPER_RPATH@ $(LDFLAGS) $(LIBRARYPAROBJ) -lengine_par $(PARLIBS) \
-	@ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 purify: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64	$(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)

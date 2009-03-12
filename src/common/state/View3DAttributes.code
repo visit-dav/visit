@@ -302,6 +302,95 @@ void View3DAttributes::RotateAxis(int axis, double angle)
     }
 }
 
+Function: ResetView
+Declaration: void View3DAttributes::ResetView(const double *bbox);
+Definition:
+#include <math.h>
+// ****************************************************************************
+// Method: View3DAttributes::ResetView
+//
+// Purpose: 
+//   Resets the view to something that can accommodate the bbox.
+//
+// Arguments:
+//   bbox : The 3D extents that we're trying to look at.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  3 16:21:14 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+View3DAttributes::ResetView(const double *bbox)
+{
+    View3DAttributes view3D;
+
+    //
+    // Set the scale.  They are choosen such that the object should fit
+    // within a square window no matter the orientation when doing an
+    // orthographic projection.  The parallelScale controls the scale
+    // with orthographic projections, whereas the distance controls the
+    // scale with perspective projections.
+    //
+    double    width;
+    double    distance;
+
+    width = 0.5 * sqrt(((bbox[1] - bbox[0]) *
+                        (bbox[1] - bbox[0])) +
+                       ((bbox[3] - bbox[2]) *
+                        (bbox[3] - bbox[2])) +
+                       ((bbox[5] - bbox[4]) *
+                        (bbox[5] - bbox[4])));
+
+    view3D.viewAngle = 30.;
+    distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
+
+    view3D.parallelScale = width;
+
+    //
+    // Set the view up vector, the focal point and the camera position.
+    //
+    view3D.viewNormal[0] = 0.;
+    view3D.viewNormal[1] = 0.;
+    view3D.viewNormal[2] = 1.;
+
+    view3D.focus[0] = (bbox[1] + bbox[0]) / 2.;
+    view3D.focus[1] = (bbox[3] + bbox[2]) / 2.;
+    view3D.focus[2] = (bbox[5] + bbox[4]) / 2.;
+
+    view3D.viewUp[0] = 0.;
+    view3D.viewUp[1] = 1.;
+    view3D.viewUp[2] = 0.;
+
+    //
+    // Calculate the near and far clipping planes.  The clipping planes are
+    // set such that the object should not get clipped in the front or
+    // back no matter the orientation when doing an orthographic projection.
+    //
+    view3D.nearPlane = - 2.0 * width;
+    view3D.farPlane  =   2.0 * width;
+
+    //
+    // Reset the image pan and image zoom.
+    //
+    view3D.imagePan[0] = 0.;
+    view3D.imagePan[1] = 0.;
+    view3D.imageZoom = 1.;
+
+    //
+    // Reset the center of rotation.
+    //
+    view3D.centerOfRotationSet = false;
+    view3D.centerOfRotation[0] = view3D.focus[0];
+    view3D.centerOfRotation[1] = view3D.focus[1];
+    view3D.centerOfRotation[2] = view3D.focus[2];
+
+    // Copy the object into this.
+    *this = view3D;
+}
+
+
 Target: xml2python
 Function: View3DAttributes_RotateAxis
 Declaration: View3DAttributes_RotateAxis

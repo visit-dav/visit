@@ -135,8 +135,13 @@
 #    Hank Childs, Sat Feb  9 15:31:35 PST 2008
 #    Renamed components directory to avt.
 #
+#    Brad Whitlock, Fri Feb 13 11:50:03 PST 2009
+#    I made sim be built before plugins since the SimV2 reader has a
+#    dependency on libsimV2runtime.
+#
 #    Mark C. Miller, Wed Mar  4 18:02:00 PST 2009
 #    Made it work for dbio-only build.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -146,8 +151,9 @@
 SUBDIRS_DBIO_ONLY=include lib bin third_party_builtin common visit_vtk avt databases tools
 SUBDIRS_STD=include lib bin third_party_builtin common @VTKQT@ visit_vtk \
         avt engine launcher @METADATA_SERVER@ winutil @VIEWER@ \
-	@GUI@ @VISITPY@ @JAVA_TARGET@ plots operators databases @HELP@ \
-	sim tools
+	@GUI@ @VISITPY@ @JAVA_TARGET@ sim plots operators databases @HELP@ \
+	tools
+SUBDIRS=@SUBDIRS@
 SUBDIRS=@SUBDIRS@
 
 #

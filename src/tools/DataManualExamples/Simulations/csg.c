@@ -44,11 +44,14 @@
 #include <stdlib.h>
 #include <math.h>
 
+/* Data Access Function prototypes */
+int SimGetMetaData(VisIt_SimulationMetaData *, void *);
+int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
+
 /* Is the simulation in run mode (not waiting for VisIt input) */
 static int    runFlag = 1;
 static int    simcycle = 0;
 static double simtime = 0.;
-static int    simUpdatePlots = 0;
 static int    simDone = 0;
 
 void simulate_one_timestep(void);
@@ -125,12 +128,27 @@ void ControlCommandCallback(const char *cmd,
     int int_data, float float_data,
     const char *string_data)
 {
-    if(strcmp(cmd, "halt") == 0)
+#define IS_COMMAND(C) (strstr(cmd, C) != NULL) 
+    if(IS_COMMAND("halt"))
         runFlag = 0;
-    else if(strcmp(cmd, "step") == 0)
+    else if(IS_COMMAND("step"))
         simulate_one_timestep();
-    else if(strcmp(cmd, "run") == 0)
+    else if(IS_COMMAND("run"))
         runFlag = 1;
+    else if(IS_COMMAND("update"))
+    {
+        VisItTimeStepChanged();
+        VisItUpdatePlots();
+    }
+    else if(IS_COMMAND("saveimage"))
+    {
+        char filename[100];
+        sprintf(filename, "csg%04d.png", simcycle);
+        if(VisItSaveWindow(filename, 600, 600, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY)
+            printf("Saved %s\n", filename);
+        else
+            printf("The image could not be saved to %s\n", filename);
+    }
 }
 
 /* Called to handle case 3 from VisItDetectInput where we have console
@@ -140,29 +158,76 @@ void
 ProcessConsoleCommand()
 {
     /* Read A Command */
-    char buff[1000];
+    char cmd[1000];
 
-    int iseof = (fgets(buff, 1000, stdin) == NULL);
+    int iseof = (fgets(cmd, 1000, stdin) == NULL);
     if (iseof)
     {
-        sprintf(buff, "quit");
+        sprintf(cmd, "quit");
         printf("quit\n");
     }
 
-    if (strlen(buff)>0 && buff[strlen(buff)-1] == '\n')
-        buff[strlen(buff)-1] = '\0';
+    if (strlen(cmd)>0 && cmd[strlen(cmd)-1] == '\n')
+        cmd[strlen(cmd)-1] = '\0';
 
-    if(strcmp(buff, "run") == 0)
-        runFlag = 1;
-    else if(strcmp(buff, "halt") == 0)
-        runFlag = 0;
-    else if(strcmp(buff, "step") == 0)
-        simulate_one_timestep();
-    else if(strcmp(buff, "quit") == 0)
-    {
+    if(strcmp(cmd, "quit") == 0)
         simDone = 1;
-        simUpdatePlots = 1;
+    else if(strcmp(cmd, "halt") == 0)
+        runFlag = 0;
+    else if(strcmp(cmd, "step") == 0)
+        simulate_one_timestep();
+    else if(strcmp(cmd, "run") == 0)
+        runFlag = 1;
+    else if(strcmp(cmd, "update") == 0)
+    {
+        VisItTimeStepChanged();
+        VisItUpdatePlots();
     }
+    else if(strcmp(cmd, "saveimage") == 0)
+    {
+        char filename[100];
+        sprintf(filename, "csg%04d.png", simcycle);
+        if(VisItSaveWindow(filename, 600, 600, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY)
+            printf("Saved %s\n", filename);
+        else
+            printf("The image could not be saved to %s\n", filename);
+    }
+}
+
+/* SIMULATE ONE TIME STEP */
+#include <unistd.h>
+void simulate_one_timestep(void)
+{
+    ++simcycle;
+    simtime += (M_PI / 30.);
+    printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
+
+    /* Update the plane equations in the CSG mesh information to make
+     * the planes rotate about the Y-Axis.
+     */
+    {
+    double angle, cosA, sinA, cosB, sinB;
+    angle = simtime;
+    cosA = cos(angle);
+    sinA = sin(angle);
+    cosB = cos(angle + M_PI);
+    sinB = sin(angle + M_PI);
+    csg_bound_coeffs[PLANE3_COEFF] = 2.* cosA;
+    csg_bound_coeffs[PLANE3_COEFF+1] = 0.;
+    csg_bound_coeffs[PLANE3_COEFF+2] = 2.* sinA;
+    csg_bound_coeffs[PLANE3_COEFF+3] = cosA;
+    csg_bound_coeffs[PLANE3_COEFF+4] = 0.;
+    csg_bound_coeffs[PLANE3_COEFF+5] = sinA;
+
+    csg_bound_coeffs[PLANE4_COEFF] = 2.* cosB;
+    csg_bound_coeffs[PLANE4_COEFF+1] = 0.;
+    csg_bound_coeffs[PLANE4_COEFF+2] = 2.* sinB;;
+    csg_bound_coeffs[PLANE4_COEFF+3] = cosA;
+    csg_bound_coeffs[PLANE4_COEFF+4] = 0.;
+    csg_bound_coeffs[PLANE4_COEFF+5] = sinA;
+    }
+
+    sleep(1);
 }
 
 /******************************************************************************
@@ -179,10 +244,30 @@ ProcessConsoleCommand()
 void mainloop(void)
 {
     int blocking, visitstate, err = 0;
-    
+
+    /* Let's initialize some mesh metadata here to show that we can pass
+     * user-defined data pointers to the various data access functions. In this
+     * case, we'll pass the address of this "mmd" structure and use it in the
+     * data access function to initialize metadata that we pass back to VisIt.
+     */
+    VisIt_MeshMetaData mmd;
+    memset(&mmd, 0, sizeof(VisIt_MeshMetaData));
+    mmd.name = "csg";
+    mmd.meshType = VISIT_MESHTYPE_CSG;
+    mmd.topologicalDimension = 3;
+    mmd.spatialDimension = 3;
+    mmd.numBlocks = 1;
+    mmd.blockTitle = "Domains";
+    mmd.blockPieceName = "domain";
+    mmd.numGroups = 0;
+    mmd.units = "cm";
+    mmd.xLabel = "Width";
+    mmd.yLabel = "Height";
+    mmd.zLabel = "Depth";
+
+    /* main loop */
     fprintf(stderr, "command> ");
     fflush(stderr);
-
     do
     {
         blocking = runFlag ? 0 : 1;
@@ -205,9 +290,12 @@ void mainloop(void)
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection())
             {
-                simUpdatePlots = 1;
+                runFlag = 0;
                 fprintf(stderr, "VisIt connected\n");
                 VisItSetCommandCallback(ControlCommandCallback);
+
+                VisItSetGetMetaData(SimGetMetaData, (void*)&mmd);
+                VisItSetGetMesh(SimGetMesh, NULL);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -275,52 +363,20 @@ int main(int argc, char **argv)
     return 0;
 }
 
-/* SIMULATE ONE TIME STEP */
-#include <unistd.h>
-void simulate_one_timestep(void)
-{
-    ++simcycle;
-    simtime += (M_PI / 30.);
-    printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
-
-    /* Update the plane equations in the CSG mesh information to make
-     * the planes rotate about the Y-Axis.
-     */
-    {
-    double angle, cosA, sinA, cosB, sinB;
-    angle = simtime;
-    cosA = cos(angle);
-    sinA = sin(angle);
-    cosB = cos(angle + M_PI);
-    sinB = sin(angle + M_PI);
-    csg_bound_coeffs[PLANE3_COEFF] = 2.* cosA;
-    csg_bound_coeffs[PLANE3_COEFF+1] = 0.;
-    csg_bound_coeffs[PLANE3_COEFF+2] = 2.* sinA;
-    csg_bound_coeffs[PLANE3_COEFF+3] = cosA;
-    csg_bound_coeffs[PLANE3_COEFF+4] = 0.;
-    csg_bound_coeffs[PLANE3_COEFF+5] = sinA;
-
-    csg_bound_coeffs[PLANE4_COEFF] = 2.* cosB;
-    csg_bound_coeffs[PLANE4_COEFF+1] = 0.;
-    csg_bound_coeffs[PLANE4_COEFF+2] = 2.* sinB;;
-    csg_bound_coeffs[PLANE4_COEFF+3] = cosA;
-    csg_bound_coeffs[PLANE4_COEFF+4] = 0.;
-    csg_bound_coeffs[PLANE4_COEFF+5] = sinA;
-    }
-
-    sleep(1);
-
-    if(simUpdatePlots == 1)
-    {
-        /* Tell VisIt that the timestep changed. */
-        VisItTimeStepChanged();
-
-        /* Tell VisIt that we should update the plots. */
-        VisItUpdatePlots();
-    }
-}
-
 /* DATA ACCESS FUNCTIONS */
+static void
+copy_VisIt_MeshMetaData(VisIt_MeshMetaData *dest, VisIt_MeshMetaData *src)
+{
+#define STRDUP(s) ((s == NULL) ? NULL : strdup(s))
+    memcpy(dest, src, sizeof(VisIt_MeshMetaData));
+    dest->name           = STRDUP(src->name);
+    dest->blockTitle     = STRDUP(src->blockTitle);
+    dest->blockPieceName = STRDUP(src->blockPieceName);
+    dest->units          = STRDUP(src->units);
+    dest->xLabel         = STRDUP(src->xLabel);
+    dest->yLabel         = STRDUP(src->yLabel);
+    dest->zLabel         = STRDUP(src->zLabel);
+}
 
 /******************************************************************************
  *
@@ -333,13 +389,10 @@ void simulate_one_timestep(void)
  *
  *****************************************************************************/
 
-VisIt_SimulationMetaData *VisItGetMetaData(void)
+int
+SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
 {
-    /* Create a metadata object with no variables. */
-    size_t sz = sizeof(VisIt_SimulationMetaData);
-    VisIt_SimulationMetaData *md = 
-        (VisIt_SimulationMetaData *)malloc(sz);
-    memset(md, 0, sz);
+    size_t sz;
 
     /* Set the simulation state. */
     md->currentMode = runFlag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
@@ -352,22 +405,13 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->meshes = (VisIt_MeshMetaData *)malloc(sz);
     memset(md->meshes, 0, sz);
 
-    /* Set the first mesh's properties.*/
-    md->meshes[0].name = strdup("csg");
-    md->meshes[0].meshType = VISIT_MESHTYPE_CSG;
-    md->meshes[0].topologicalDimension = 3;
-    md->meshes[0].spatialDimension = 3;
-    md->meshes[0].numBlocks = 1;
-    md->meshes[0].blockTitle = strdup("Domains");
-    md->meshes[0].blockPieceName = strdup("domain");
-    md->meshes[0].numGroups = 0;
-    md->meshes[0].units = strdup("cm");
-    md->meshes[0].xLabel = strdup("Width");
-    md->meshes[0].yLabel = strdup("Height");
-    md->meshes[0].zLabel = strdup("Depth");
+    /* Set the first mesh's properties based on data that we passed in
+     * as callback data.
+     */
+    copy_VisIt_MeshMetaData(&md->meshes[0], (VisIt_MeshMetaData *)cbdata);
 
     /* Add some custom commands. */
-    md->numGenericCommands = 3;
+    md->numGenericCommands = 5;
     sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
     md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
     memset(md->genericCommands, 0, sz);
@@ -384,7 +428,15 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->genericCommands[2].argType = VISIT_CMDARG_NONE;
     md->genericCommands[2].enabled = 1;
 
-    return md;
+    md->genericCommands[3].name = strdup("update");
+    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
+    md->genericCommands[3].enabled = 1;
+
+    md->genericCommands[4].name = strdup("saveimage");
+    md->genericCommands[4].argType = VISIT_CMDARG_NONE;
+    md->genericCommands[4].enabled = 1;
+
+    return VISIT_OKAY;
 }
 
 /******************************************************************************
@@ -398,18 +450,15 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
  *
  *****************************************************************************/
 
-VisIt_MeshData *VisItGetMesh(int domain, const char *name)
+int
+SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
 {
-    VisIt_MeshData *mesh = NULL;
-    size_t sz = sizeof(VisIt_MeshData);
+    int ret = VISIT_ERROR;
 
     if(strcmp(name, "csg") == 0)
     {
-        /* Allocate VisIt_MeshData. */
-        mesh = (VisIt_MeshData *)malloc(sz);
-        memset(mesh, 0, sz);
         /* Make VisIt_MeshData contain a VisIt_CSGMesh. */
-        sz = sizeof(VisIt_CSGMesh);
+        size_t sz = sizeof(VisIt_CSGMesh);
         mesh->csgmesh = (VisIt_CSGMesh *)malloc(sz);
         memset(mesh->csgmesh, 0, sz);
 
@@ -442,29 +491,10 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
         mesh->csgmesh->zones.nzones = 1;
         mesh->csgmesh->zones.zonelist = VisIt_CreateDataArrayFromInt(
             VISIT_OWNER_SIM, csg_zonelist);
+
+        ret = VISIT_OKAY;
     }
 
-    return mesh;
+    return ret;
 }
 
-VisIt_SimulationCallback visitCallbacks =
-{
-    /* reader functions */
-    &VisItGetMetaData,
-    &VisItGetMesh,
-    NULL, /* GetMaterial */
-    NULL, /* GetSpecies */
-    NULL, /* GetScalar */
-    NULL, /* GetCurve */
-    NULL, /* GetMixedScalar */
-    NULL, /* GetDomainList */
-
-    /* writer functions */
-    NULL, /* WriteBegin */
-    NULL, /* WriteEnd */
-    NULL, /* WriteCurvilinearMesh */
-    NULL, /* WriteRectilinearMesh */
-    NULL, /* WritePointMesh */
-    NULL, /* WriteUnstructuredMesh */
-    NULL  /* WriteDataArray */
-};

@@ -43,6 +43,7 @@
 #include <avtPlot.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
+#include <SaveWindowAttributes.h>
 #include <VisualCueList.h>
 #include <WindowAttributes.h>
 #include <vectortypes.h>
@@ -398,6 +399,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Fri Jan 30 09:09:33 PST 2009
 //    Added methods for named selections.
 //
+//    Brad Whitlock, Mon Mar  2 16:56:35 PST 2009
+//    I added a SaveWindow method.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -483,10 +487,14 @@ class NetworkManager
     avtDataObjectWriter_p GetOutput(bool respondWithNullData,
                                     bool calledForRender,
                                     float *cellCountMultiplier);
-    virtual avtDataObjectWriter_p
-                  Render(intVector networkIds, bool getZBuffer, int annotMode,
-                         int windowID, bool leftEye);
- 
+    virtual avtDataObject_p Render(bool checkThreshold, intVector networkIds, 
+                                   bool getZBuffer, int annotMode,
+                                   int windowID, bool leftEye);
+    avtDataObjectWriter_p CreateNullDataWriter() const;
+
+    bool          SaveWindow(const std::string &, int, int, 
+                             SaveWindowAttributes::FileFormat);
+
     void          StartPickMode(const bool);
     void          StopPickMode(void);
     void          StartQueryMode(void);
@@ -520,7 +528,6 @@ class NetworkManager
     void               RenderSetup(intVector& networkIds, bool getZBuffer,
                                    int annotMode, int windowID, bool leftEye);
     void               RenderCleanup(int windowID);
-    avtDataObjectWriter_p CreateNullDataWriter(int windowID) const;
     size_t             RenderingStages(int windowID);
     void               RenderShadows(int windowID,
                                      avtDataObject_p& input_as_dob) const;

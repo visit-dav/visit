@@ -42,8 +42,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#define USE_VERSION2_DATA_INTERFACE
-#include "materialhelpers.c"
+#include "materialhelpers.h"
+
+/* Data Access Function prototypes. */
+int SimGetMetaData(VisIt_SimulationMetaData *, void *);
+int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
+int SimGetMaterial(int, const char *, VisIt_MaterialData *, void *);
+int SimGetSpecies(int domain, const char *name, VisIt_SpeciesData *spec, void *cbdata);
+int SimGetVariable(int, const char *, VisIt_VariableData *, void *);
+int SimGetMixedVariable(int, const char *, VisIt_MixedVariableData *, void *);
 
 void simulate_one_timestep(void);
 void read_input_deck(void) { }
@@ -81,6 +88,16 @@ void ControlCommandCallback(const char *cmd,
         simulate_one_timestep();
     else if(strcmp(cmd, "run") == 0)
         runFlag = 1;
+}
+
+/* SIMULATE ONE TIME STEP */
+#include <unistd.h>
+void simulate_one_timestep(void)
+{
+    ++simcycle;
+    simtime += 0.0134;
+    printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
+    sleep(1);
 }
 
 /******************************************************************************
@@ -121,7 +138,14 @@ void mainloop(void)
             if(VisItAttemptToCompleteConnection())
             {
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback);
+                VisItSetCommandCallback(ControlCommandCallback); 
+
+                VisItSetGetMetaData(SimGetMetaData, NULL);
+                VisItSetGetMesh(SimGetMesh, NULL);
+                VisItSetGetMaterial(SimGetMaterial, NULL);
+                VisItSetGetSpecies(SimGetSpecies, NULL);
+                VisItSetGetVariable(SimGetVariable, NULL);
+                VisItSetGetMixedVariable(SimGetMixedVariable, NULL);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -173,16 +197,6 @@ int main(int argc, char **argv)
     mainloop();
 
     return 0;
-}
-
-/* SIMULATE ONE TIME STEP */
-#include <unistd.h>
-void simulate_one_timestep(void)
-{
-    ++simcycle;
-    simtime += 0.0134;
-    printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
-    sleep(1);
 }
 
 /* DATA ACCESS FUNCTIONS */
@@ -259,14 +273,11 @@ SpeciesNames(void)
  *
  *****************************************************************************/
 
-VisIt_SimulationMetaData *VisItGetMetaData(void)
+int
+SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
 {
     int i, j;
-    /* Create a metadata object with no variables. */
-    size_t sz = sizeof(VisIt_SimulationMetaData);
-    VisIt_SimulationMetaData *md = 
-        (VisIt_SimulationMetaData *)malloc(sz);
-    memset(md, 0, sz);
+    size_t sz;
 
     /* Set the simulation state. */
     md->currentMode = runFlag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
@@ -306,16 +317,17 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->materials[0].materialNames[1] = strdup(matNames[1]);
     md->materials[0].materialNames[2] = strdup(matNames[2]);
 
-    /* Add a scalar. */
-    md->numScalars = 1;
-    sz = sizeof(VisIt_ScalarMetaData) * md->numScalars;
-    md->scalars = (VisIt_ScalarMetaData *)malloc(sz);
-    memset(md->scalars, 0, sz);
+    /* Add a variable. */
+    md->numVariables = 1;
+    sz = sizeof(VisIt_VariableMetaData) * md->numVariables;
+    md->variables = (VisIt_VariableMetaData *)malloc(sz);
+    memset(md->variables, 0, sz);
 
     /* Add a zonal variable on mesh2d. */
-    md->scalars[0].name = strdup("scalar");
-    md->scalars[0].meshName = strdup("mesh2d");
-    md->scalars[0].centering = VISIT_VARCENTERING_ZONE;
+    md->variables[0].name = strdup("scalar");
+    md->variables[0].meshName = strdup("mesh2d");
+    md->variables[0].type = VISIT_VARTYPE_SCALAR;
+    md->variables[0].centering = VISIT_VARCENTERING_ZONE;
 
     /* Add species */
     sz = sizeof(VisIt_SpeciesMetaData);
@@ -346,7 +358,7 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->genericCommands[2].argType = VISIT_CMDARG_NONE;
     md->genericCommands[2].enabled = 1;
 
-    return md;
+    return VISIT_OKAY;
 }
 
 /******************************************************************************
@@ -360,18 +372,16 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
  *
  *****************************************************************************/
 
-VisIt_MeshData *VisItGetMesh(int domain, const char *name)
+int
+SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
 {
-    VisIt_MeshData *mesh = NULL;
-    size_t sz = sizeof(VisIt_MeshData);
+    size_t sz;
+    int ret = VISIT_ERROR;
 
     if(strcmp(name, "mesh2d") == 0)
     {
         int i;
 
-        /* Allocate VisIt_MeshData. */
-        mesh = (VisIt_MeshData *)malloc(sz);
-        memset(mesh, 0, sz);
         /* Make VisIt_MeshData contain a VisIt_RectilinearMesh. */
         sz = sizeof(VisIt_RectilinearMesh);
         mesh->rmesh = (VisIt_RectilinearMesh *)malloc(sz);
@@ -417,9 +427,10 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
            VISIT_OWNER_SIM, rmesh_x);
         mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat(
            VISIT_OWNER_SIM, rmesh_y);
+        ret = VISIT_OKAY;
     }
 
-    return mesh;
+    return ret;
 }
 
 /******************************************************************************
@@ -433,7 +444,8 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
  *
  *****************************************************************************/
 
-VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
+int
+SimGetMaterial(int domain, const char *name, VisIt_MaterialData *mat, void *cbdata)
 {
     int i, j, m, cell = 0, arrlen = 0;
     VisIt_MaterialData *handle = NULL;
@@ -441,12 +453,12 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
     float cellmatvf[10];
 
     /* Allocate a VisIt_MaterialData */
-    handle = VisIt_MaterialData_alloc((NX-1)*(NY-1), &arrlen);
+    VisIt_MaterialData_init(mat, (NX-1)*(NY-1), &arrlen);
 
     /* Fill in the VisIt_MaterialData */
-    matnos[0] = VisIt_MaterialData_addMaterial(handle, matNames[0]);
-    matnos[1] = VisIt_MaterialData_addMaterial(handle, matNames[1]);
-    matnos[2] = VisIt_MaterialData_addMaterial(handle, matNames[2]);
+    matnos[0] = VisIt_MaterialData_addMaterial(mat, matNames[0]);
+    matnos[1] = VisIt_MaterialData_addMaterial(mat, matNames[1]);
+    matnos[2] = VisIt_MaterialData_addMaterial(mat, matNames[2]);
 
     for(j = 0; j < NY-1; ++j)
     {
@@ -463,13 +475,13 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
                 }
             }        
             if(nmats > 1)
-                VisIt_MaterialData_addMixedCell(handle, cell, cellmat, cellmatvf, nmats, &arrlen);
+                VisIt_MaterialData_addMixedCell(mat, cell, cellmat, cellmatvf, nmats, &arrlen);
             else
-                VisIt_MaterialData_addCleanCell(handle, cell, cellmat[0]);
+                VisIt_MaterialData_addCleanCell(mat, cell, cellmat[0]);
         }
     }
 
-    return handle;
+    return VISIT_OKAY;
 }
 
 /******************************************************************************
@@ -483,15 +495,12 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
  *
  *****************************************************************************/
 
-VisIt_SpeciesData *VisItGetSpecies(int domain, const char *name)
+int
+SimGetSpecies(int domain, const char *name, VisIt_SpeciesData *spec, void *cbdata)
 {
     int *species = NULL, *mixedSpecies = NULL;
     int c, mixc, mfc, i, j;
     float *speciesMF = NULL;
-    VisIt_SpeciesData *spec = NULL;
-
-    spec = (VisIt_SpeciesData *)malloc(sizeof(VisIt_SpeciesData));
-    memset(spec, 0, sizeof(VisIt_SpeciesData));
 
     spec->ndims = 2;
     spec->dims[0] = NX-1;
@@ -581,7 +590,7 @@ VisIt_SpeciesData *VisItGetSpecies(int domain, const char *name)
     spec->nspeciesMF = mfc;
     spec->nmixedSpecies = mixc;
 
-    return spec;
+    return VISIT_OKAY;
 }
 
 /******************************************************************************
@@ -608,22 +617,20 @@ float zonal_scalar[NY-1][NX-1] = {
 {C1*1.f, C2*1.f, C3*1.f, C4*1.f}
 };
 
-VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
+int
+SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbdata)
 {
-    VisIt_ScalarData *scalar = NULL;
+    int ret = VISIT_ERROR;
 
     if(strcmp(name, "scalar") == 0)
     { 
-        size_t sz = sizeof(VisIt_ScalarData);
-        scalar = (VisIt_ScalarData*)malloc(sz);
-        memset(scalar, 0, sz);
-
-        scalar->len = (NX-1) * (NY-1);
-        scalar->data = VisIt_CreateDataArrayFromFloat(
+        var->nTuples = (NX-1) * (NY-1);
+        var->data = VisIt_CreateDataArrayFromFloat(
             VISIT_OWNER_SIM, &zonal_scalar[0][0]);
+        ret = VISIT_OKAY;
     }
 
-    return scalar;
+    return ret;
 }
 
 
@@ -652,42 +659,19 @@ float mixvar[] = {
 /*cell 2,0*/ /*cell 2,1*/ C2*0.3,C2*0.7,    /*cell 2,2*/ C3*0.2,C3*0.4,C3*0.4,   /*cell 2,3*/C4*0.55,C4*0.45
 };
 
-VisIt_MixedScalarData *VisItGetMixedScalar(int domain, const char *name)
+int
+SimGetMixedVariable(int domain, const char *name, VisIt_MixedVariableData *mvar, void *cbdata)
 {
-    VisIt_MixedScalarData *mscalar = NULL;
+    int ret = VISIT_ERROR;
 
     if(strcmp(name, "scalar") == 0)
     {
-        size_t sz = sizeof(VisIt_MixedScalarData);
-        mscalar = (VisIt_MixedScalarData*)malloc(sz);
-        memset(mscalar, 0, sz);
-
-        mscalar->len = sizeof(mixvar) / sizeof(float);
-        mscalar->data = VisIt_CreateDataArrayFromFloat(
+        mvar->nTuples = sizeof(mixvar) / sizeof(float);
+        mvar->data = VisIt_CreateDataArrayFromFloat(
             VISIT_OWNER_SIM, mixvar);
+        ret = VISIT_OKAY;
     }
 
-    return mscalar;
+    return ret;
 }
 
-VisIt_SimulationCallback visitCallbacks =
-{
-    /* reader functions */
-    &VisItGetMetaData,
-    &VisItGetMesh,
-    &VisItGetMaterial,
-    &VisItGetSpecies,
-    &VisItGetScalar,
-    NULL, /* GetCurve */
-    &VisItGetMixedScalar,
-    NULL, /* GetDomainList */
-
-    /* writer functions */
-    NULL, /* WriteBegin */
-    NULL, /* WriteEnd */
-    NULL, /* WriteCurvilinearMesh */
-    NULL, /* WriteRectilinearMesh */
-    NULL, /* WritePointMesh */
-    NULL, /* WriteUnstructuredMesh */
-    NULL  /* WriteDataArray */
-};

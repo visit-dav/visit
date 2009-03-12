@@ -51,139 +51,12 @@
 
 #ifndef VISIT_DATA_INTERFACE_V2_H
 #define VISIT_DATA_INTERFACE_V2_H
+#include <VisItInterfaceTypes_V2.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-/* Mesh Types */
-typedef enum {
-    VISIT_MESHTYPE_RECTILINEAR = 0,
-    VISIT_MESHTYPE_CURVILINEAR,
-    VISIT_MESHTYPE_UNSTRUCTURED,
-    VISIT_MESHTYPE_POINT,
-    VISIT_MESHTYPE_SURFACE,
-    VISIT_MESHTYPE_CSG,
-    VISIT_MESHTYPE_UNKNOWN
-} VisIt_MeshType;
-
-/* Centering */
-typedef enum {
-    VISIT_VARCENTERING_NODE = 0,
-    VISIT_VARCENTERING_ZONE
-} VisIt_VarCentering;
-
-/* Variable Type */
-typedef enum {
-    VISIT_VARTYPE_MESH = 0,
-    VISIT_VARTYPE_SCALAR,
-    VISIT_VARTYPE_VECTOR,
-    VISIT_VARTYPE_TENSOR,
-    VISIT_VARTYPE_SYMMETRIC_TENSOR,
-    VISIT_VARTYPE_MATERIAL,
-    VISIT_VARTYPE_MATSPECIES,
-    VISIT_VARTYPE_CURVE,
-    VISIT_VARTYPE_UNKNOWN
-} VisIt_VarType;
-
-/* Command Argument Type */
-#define VISIT_CMDARG_NONE                 0
-#define VISIT_CMDARG_INT                  1
-#define VISIT_CMDARG_FLOAT                2
-#define VISIT_CMDARG_STRING               3
-
-/* Simulation Mode */
-#define VISIT_SIMMODE_UNKNOWN             0
-#define VISIT_SIMMODE_RUNNING             1
-#define VISIT_SIMMODE_STOPPED             2
-
-/* Data Type */
-#define VISIT_DATATYPE_CHAR               0
-#define VISIT_DATATYPE_INT                1
-#define VISIT_DATATYPE_FLOAT              2
-#define VISIT_DATATYPE_DOUBLE             3
-
-/* Array Owner */
-#define VISIT_OWNER_SIM                   0
-#define VISIT_OWNER_VISIT                 1
-
-/* Cell Types */
-#define VISIT_CELL_BEAM                   0
-#define VISIT_CELL_TRI                    1
-#define VISIT_CELL_QUAD                   2
-#define VISIT_CELL_TET                    3
-#define VISIT_CELL_PYR                    4
-#define VISIT_CELL_WEDGE                  5
-#define VISIT_CELL_HEX                    6
-#define VISIT_CELL_POINT                  7
-
-/* Definitions for CSG boundary types 
-   Designed so low-order 16 bits are unused
-   and can be included in silo.inc for Fortran 
-
-   The last few characters of the symbol are intended
-   to indicate the representational form of the surface type
-
-   G = generalized form  (n values, depends on surface type)
-   P = point (3 values, x,y,z in 3D, 2 values in 2D x,y)
-   N = normal (3 values, Nx,Ny,Nz in 3D, 2 values in 2D Nx,Ny)
-   R = radius (1 value)
-   A = angle (1 value in degrees)
-   L = length (1 value)
-   X = x-intercept (1 value)
-   Y = y-intercept (1 value)
-   Z = z-intercept (1 value)
-   K = arbitrary integer
-   F = planar face defined by point-normal pair (6 values)
-   */
-#define VISIT_CSG_QUADRIC_G         16777216   /* 0x01000000 */
-#define VISIT_CSG_SPHERE_PR         33619968   /* 0x02010000 */
-#define VISIT_CSG_ELLIPSOID_PRRR    33685504   /* 0x02020000 */
-#define VISIT_CSG_PLANE_G           50331648   /* 0x03000000 */
-#define VISIT_CSG_PLANE_X           50397184   /* 0x03010000 */
-#define VISIT_CSG_PLANE_Y           50462720   /* 0x03020000 */
-#define VISIT_CSG_PLANE_Z           50528256   /* 0x03030000 */
-#define VISIT_CSG_PLANE_PN          50593792   /* 0x03040000 */
-#define VISIT_CSG_PLANE_PPP         50659328   /* 0x03050000 */
-#define VISIT_CSG_CYLINDER_PNLR     67108864   /* 0x04000000 */
-#define VISIT_CSG_CYLINDER_PPR      67174400   /* 0x04010000 */
-#define VISIT_CSG_BOX_XYZXYZ        83886080   /* 0x05000000 */
-#define VISIT_CSG_CONE_PNLA         100663296  /* 0x06000000 */
-#define VISIT_CSG_CONE_PPA          100728832  /* 0x06010000 */
-#define VISIT_CSG_POLYHEDRON_KF     117440512  /* 0x07000000 */
-#define VISIT_CSG_HEX_6F            117506048  /* 0x07010000 */
-#define VISIT_CSG_TET_4F            117571584  /* 0x07020000 */
-#define VISIT_CSG_PYRAMID_5F        117637120  /* 0x07030000 */
-#define VISIT_CSG_PRISM_5F          117702656  /* 0x07040000 */
-
-/* Definitions for 2D CSG boundary types */
-#define VISIT_CSG_QUADRATIC_G       134217728  /* 0x08000000 */
-#define VISIT_CSG_CIRCLE_PR         150994944  /* 0x09000000 */
-#define VISIT_CSG_ELLIPSE_PRR       151060480  /* 0x09010000 */
-#define VISIT_CSG_LINE_G            167772160  /* 0x0A000000 */
-#define VISIT_CSG_LINE_X            167837696  /* 0x0A010000 */
-#define VISIT_CSG_LINE_Y            167903232  /* 0x0A020000 */
-#define VISIT_CSG_LINE_PN           167968768  /* 0x0A030000 */
-#define VISIT_CSG_LINE_PP           168034304  /* 0x0A040000 */
-#define VISIT_CSG_BOX_XYXY          184549376  /* 0x0B000000 */
-#define VISIT_CSG_ANGLE_PNLA        201326592  /* 0x0C000000 */
-#define VISIT_CSG_ANGLE_PPA         201392128  /* 0x0C010000 */
-#define VISIT_CSG_POLYGON_KP        218103808  /* 0x0D000000 */
-#define VISIT_CSG_TRI_3P            218169344  /* 0x0D010000 */
-#define VISIT_CSG_QUAD_4P           218234880  /* 0x0D020000 */
-
-/* Definitions for CSG Region operators */
-#define VISIT_CSG_INNER             2130706432 /* 0x7F000000 */
-#define VISIT_CSG_OUTER             2130771968 /* 0x7F010000 */
-#define VISIT_CSG_ON                2130837504 /* 0x7F020000 */
-#define VISIT_CSG_UNION             2130903040 /* 0x7F030000 */
-#define VISIT_CSG_INTERSECT         2130968576 /* 0x7F040000 */
-#define VISIT_CSG_DIFF              2131034112 /* 0x7F050000 */
-#define VISIT_CSG_COMPLIMENT        2131099648 /* 0x7F060000 */
-#define VISIT_CSG_XFORM             2131165184 /* 0x7F070000 */
-#define VISIT_CSG_SWEEP             2131230720 /* 0x7F080000 */
-
 
 typedef struct VisIt_DataArray
 {
@@ -243,14 +116,15 @@ typedef struct VisIt_MeshMetaData
     const char *zLabel;
 } VisIt_MeshMetaData;
 
-typedef struct VisIt_ScalarMetaData
+typedef struct VisIt_VariableMetaData
 {
     const char *name;
     const char *meshName;
 
     VisIt_VarCentering centering;
-    int         treatAsASCII; /* boolean */
-} VisIt_ScalarMetaData;
+    VisIt_VarType      type;
+    int                treatAsASCII; /* boolean */
+} VisIt_VariableMetaData;
 
 typedef struct VisIt_MaterialMetaData
 {
@@ -295,14 +169,14 @@ typedef struct VisIt_SimulationMetaData
     double   currentTime;
 
     int numMeshes;
-    int numScalars;
+    int numVariables;
     int numMaterials;
     int numCurves;
     int numExpressions;
     int numSpecies;
 
     VisIt_MeshMetaData       *meshes;
-    VisIt_ScalarMetaData     *scalars;
+    VisIt_VariableMetaData   *variables;
     VisIt_MaterialMetaData   *materials;
     VisIt_CurveMetaData      *curves;
     VisIt_ExpressionMetaData *expressions;
@@ -410,17 +284,19 @@ typedef struct VisIt_MeshData
     VisIt_CSGMesh          *csgmesh;
 } VisIt_MeshData;
 
-typedef struct VisIt_ScalarData
+typedef struct VisIt_VariableData
 {
-    int len;
+    int             nTuples;
+    int             nComponents;
     VisIt_DataArray data;
-} VisIt_ScalarData;
+} VisIt_VariableData;
 
-typedef struct VisIt_MixedScalarData
+typedef struct VisIt_MixedVariableData
 {
-    int len;
+    int             nTuples;
+    int             nComponents;
     VisIt_DataArray data;
-} VisIt_MixedScalarData;
+} VisIt_MixedVariableData;
 
 typedef struct VisIt_MaterialData
 {
@@ -472,6 +348,7 @@ typedef struct VisIt_DomainList
     VisIt_DataArray myDomains;
 } VisIt_DomainList;
 
+#if 0
 typedef struct
 {
     /* Reader methods */
@@ -481,7 +358,7 @@ typedef struct
     VisIt_SpeciesData        *(*GetSpecies)(int,const char*);
     VisIt_ScalarData         *(*GetScalar)(int,const char*);
     VisIt_CurveData          *(*GetCurve)(const char*);
-    VisIt_MixedScalarData    *(*GetMixedScalar)(int,const char*);
+    VisIt_MixedVariableData    *(*GetMixedScalar)(int,const char*);
     VisIt_DomainList         *(*GetDomainList)();
 
     /* Writer methods. */
@@ -493,6 +370,7 @@ typedef struct
     int (*WriteUnstructuredMesh)(const char *, int, VisIt_UnstructuredMesh*, const VisIt_MeshMetaData *);
     int (*WriteDataArray)(const char *, const char *, int, int, void *, int, int, const VisIt_ScalarMetaData *);
 } VisIt_SimulationCallback;
+#endif
 
 /* Helper Methods */
 
@@ -531,6 +409,44 @@ static VisIt_DataArray VisIt_CreateDataArrayFromDouble(int o, double *d)
     da.dArray   = d;
     return da;
 }
+
+/****************************************************************************/
+
+/* Some functions that operate on the declared data types... here is where
+ * we'd have the long list of various accessor functions for the opaque types
+ * that we're manipulating
+ */
+#ifdef VISIT_RUNTIME_IMPLEMENTATION
+#define VISIT_P(N) impl_##N
+#else
+#define VISIT_P(N) N
+#endif
+
+void VisIt_DataArray_free(VisIt_DataArray *obj);
+void VisIt_NameList_free(VisIt_NameList *obj);
+void VisIt_SimulationControlCommand_free(VisIt_SimulationControlCommand *obj);
+void VisIt_MeshMetaData_free(VisIt_MeshMetaData *obj);
+void VisIt_VariableMetaData_free(VisIt_VariableMetaData *obj);
+void VisIt_MaterialMetaData_free(VisIt_MaterialMetaData *obj);
+void VisIt_CurveMetaData_free(VisIt_CurveMetaData *obj);
+void VisIt_ExpressionMetaData_free(VisIt_ExpressionMetaData *obj);
+void VisIt_SpeciesMetaData_free(VisIt_SpeciesMetaData *obj);
+void VisIt_SimulationMetaData_free(VisIt_SimulationMetaData *obj);
+
+void VISIT_P(VisIt_CurvilinearMesh_free)(VisIt_CurvilinearMesh *obj);
+void VISIT_P(VisIt_RectilinearMesh_free)(VisIt_RectilinearMesh *obj);
+void VISIT_P(VisIt_UnstructuredMesh_free)(VisIt_UnstructuredMesh *obj);
+void VISIT_P(VisIt_PointMesh_free)(VisIt_PointMesh *obj);
+void VISIT_P(VisIt_CSGMesh_free)(VisIt_CSGMesh *obj);
+void VISIT_P(VisIt_MeshData_free)(VisIt_MeshData *obj);
+void VISIT_P(VisIt_CurveData_free)(VisIt_CurveData *obj);
+void VISIT_P(VisIt_VariableData_free)(VisIt_VariableData *obj);
+void VISIT_P(VisIt_MixedVariableData_free)(VisIt_MixedVariableData *obj);
+void VISIT_P(VisIt_MaterialData_free)(VisIt_MaterialData *obj);
+void VISIT_P(VisIt_SpeciesData_free)(VisIt_SpeciesData *obj);
+void VISIT_P(VisIt_DomainList_free)(VisIt_DomainList *obj);
+
+/****************************************************************************/
 
 #ifdef __cplusplus
 }

@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#include "VisItEngineV1.h"
-#include "TimingsManager.h"
+#include "VisItControlInterfaceRuntime.h"
+#include <VisItInterfaceTypes_V2.h>
 
 #include <Engine.h>
 #include <LostConnectionException.h>
@@ -45,9 +45,12 @@
 #ifdef PARALLEL
 #include <MPIXfer.h>
 #endif
+#include <TimingsManager.h>
 #include <VisItException.h>
 
 #include <visitstream.h>
+
+extern void DataCallbacksCleanup(void);
 
 // ****************************************************************************
 //  Library:  VisItEngine, Version 1
@@ -59,36 +62,10 @@
 //  Creation:    August 25, 2004
 //
 //  Modifications:
-//    Jeremy Meredith, Mon Nov  1 17:19:02 PST 2004
-//    Added parallel simulation support.
-//
-//    Hank Childs, Fri Jan 28 13:40:20 PST 2005
-//    Use exception macros.
-//
-//    Hank Childs, Sun Mar  6 08:42:50 PST 2005
-//    Removed ForceStatic call.  That is now the default.
-//
-//    Jeremy Meredith, Fri Mar 18 08:36:54 PST 2005
-//    Added simulation command control.
-//
-//    Jeremy Meredith, Mon Apr 25 10:00:06 PDT 2005
-//    Added versioning.
-//
-//    Jeremy Meredith, Wed May 11 09:17:44 PDT 2005
-//    Forced the RESTRICTED load balancer mode.
-//
-//    Jeremy Meredith, Wed May 25 13:25:45 PDT 2005
-//    Disabled our own signal handlers.
-//
-//    Shelly Prevost, Tue Sep 12 15:59:51 PDT 2006
-//    I initialize the timer if it isn't already initialized by now.
-//
-//    Brad Whitlock, Thu Jan 25 15:08:59 PST 2007
-//    Added new functions.
 //
 // ****************************************************************************
 
-void *get_engine()
+void *visit_get_engine()
 {
     // Make sure the timer is initialized. In visit this is normally
     // done in the main function but for the simulation it's done here.
@@ -98,14 +75,14 @@ void *get_engine()
     return (void*)engine;
 }
 
-int initialize(void *e, int argc, char *argv[])
+int visit_initialize(void *e, int argc, char *argv[])
 {
     Engine *engine = (Engine*)(e);
     engine->Initialize(&argc, &argv, false);
     return 1;
 }
 
-int connect_to_viewer(void *e, int argc, char *argv[])
+int visit_connect_viewer(void *e, int argc, char *argv[])
 {
     Engine *engine = (Engine*)(e);
     bool success = engine->ConnectViewer(&argc, &argv);
@@ -121,7 +98,7 @@ int connect_to_viewer(void *e, int argc, char *argv[])
     }
 }
 
-int get_descriptor(void *e)
+int visit_get_descriptor(void *e)
 {
     Engine *engine = (Engine*)(e);
     return engine->GetInputSocket();
@@ -129,7 +106,7 @@ int get_descriptor(void *e)
 
 #include <DebugStream.h>
 
-int process_input(void *e)
+int visit_process_input(void *e)
 {
     Engine *engine = (Engine*)(e);
 
@@ -147,7 +124,7 @@ int process_input(void *e)
     }
     CATCH2(VisItException, e)
     {
-        debug1 << "Caught a damn VisIt exception: " << e.Message() << endl;
+        debug1 << "Caught a VisIt exception: " << e.Message() << endl;
     }
     CATCHALL (...)
     {
@@ -159,19 +136,19 @@ int process_input(void *e)
     return 1;
 }
 
-void time_step_changed(void *e)
+void visit_time_step_changed(void *e)
 {
     Engine *engine = (Engine*)(e);
     engine->SimulationTimeStepChanged();
 }
 
-void update_plots(void *e)
+void visit_update_plots(void *e)
 {
     Engine *engine = (Engine*)(e);
     engine->SimulationInitiateCommand("UpdatePlots");
 }
 
-void execute_command(void *e, const char *command)
+void visit_execute_command(void *e, const char *command)
 {
     if(command != NULL)
     {
@@ -179,29 +156,51 @@ void execute_command(void *e, const char *command)
         std::string cmd("Interpret:");
         cmd += command;
         
-        engine->SimulationInitiateCommand(cmd.c_str());
+        engine->SimulationInitiateCommand(cmd);
     }
 }
 
-void disconnect()
+void visit_disconnect()
 {
     Engine::DisconnectSimulation();
+
+    DataCallbacksCleanup();
 }
 
-void set_slave_process_callback(void(*spic)())
+void visit_set_slave_process_callback(void(*spic)())
 {
 #ifdef PARALLEL
     MPIXfer::SetSlaveProcessInstructionCallback(spic);
 #endif
 }
 
-void set_command_callback(void *e,void(*sc)(const char*,int,float,const char*))
+void visit_set_command_callback(void *e,void(*sc)(const char*,int,float,const char*))
 {
     Engine *engine = (Engine*)(e);
     engine->SetSimulationCommandCallback(sc);
 }
 
-//  Needed for some reason on some platforms.
-int main()
+int
+visit_save_window(void *e, const char *filename, int w, int h, int format)
 {
+    Engine *engine = (Engine*)(e);
+
+    SaveWindowAttributes::FileFormat fmt;
+    if(format == VISIT_IMAGEFORMAT_BMP)
+        fmt = SaveWindowAttributes::BMP;
+    else if(format == VISIT_IMAGEFORMAT_JPEG)
+        fmt = SaveWindowAttributes::JPEG;
+    else if(format == VISIT_IMAGEFORMAT_PNG)
+        fmt = SaveWindowAttributes::PNG;
+    else if(format == VISIT_IMAGEFORMAT_POVRAY)
+        fmt = SaveWindowAttributes::POVRAY;
+    else if(format == VISIT_IMAGEFORMAT_PPM)
+        fmt = SaveWindowAttributes::PPM;
+    else if(format == VISIT_IMAGEFORMAT_RGB)
+        fmt = SaveWindowAttributes::RGB;
+    else
+        fmt = SaveWindowAttributes::TIFF;
+
+    int ret = engine->SaveWindow(filename, w, h, fmt);
+    return ret ? VISIT_OKAY : VISIT_ERROR;
 }

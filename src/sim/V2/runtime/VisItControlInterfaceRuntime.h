@@ -36,71 +36,41 @@
 *
 *****************************************************************************/
 
-#ifndef ICET_NETWORK_MANAGER_H
-#define ICET_NETWORK_MANAGER_H
+#ifndef VISIT_CONTROL_INTERFACE_RUNTIME_H
+#define VISIT_CONTROL_INTERFACE_RUNTIME_H
 
-#include <NetworkManager.h>
-#include <GL/ice-t.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // ****************************************************************************
-//  Class: IceTNetworkManager
+//  Library:  libsimV2runtime
 //
 //  Purpose:
-//      NetworkManager which uses IceT for rendering/readback of image data.
+//    Wrapper for simulations to control an engine.
 //
-//  Programmer: Tom Fogal
-//  Creation:   June 17, 2008
+//  Programmer:  Brad Whitlock
+//  Creation:    Fri Feb 13 16:06:04 PST 2009
 //
 //  Modifications:
 //
-//    Tom Fogal, Tue Jun 24 13:27:48 EDT 2008
-//    Defined `Readback' function.
-//
-//    Tom Fogal, Mon Jul 14 12:27:23 PDT 2008
-//    Override parent's timer information.
-//
-//    Tom Fogal, Wed Jul 16 12:59:37 EDT 2008
-//    Oops, destructor should be virtual.
-//
-//    Tom Fogal, Sat Jul 26 23:07:15 EDT 2008
-//    Override RenderGeometry for a potential IceT-only optimization.
-//
-//    Tom Fogal, Sat Jul 26 23:07:15 EDT 2008
-//    Override RenderTranslucent so we can avoid an avtImageCompositor.
-//
-//    Brad Whitlock, Mon Mar  2 16:38:12 PST 2009
-//    I made Render return an avtDataObject_p.
-//
 // ****************************************************************************
 
-class IceTNetworkManager: public NetworkManager
-{
- public:
-               IceTNetworkManager(void);
-    virtual   ~IceTNetworkManager(void);
+void   *visit_get_engine();
+int     visit_get_descriptor(void*);
+int     visit_initialize(void*, int argc, char *argv[]);
+int     visit_connect_viewer(void*, int argc, char *argv[]);
+int     visit_process_input(void*);
+void    visit_time_step_changed(void*);
+void    visit_update_plots(void *);
+void    visit_execute_command(void *, const char *);
+void    visit_disconnect();
+void    visit_set_slave_process_callback(void(*)());
+void    visit_set_command_callback(void*,void(*)(const char*,int,float,const char*));
+int     visit_save_window(void*, const char *, int, int, int);
 
-    void       TileLayout(size_t width, size_t height) const;
+#ifdef __cplusplus
+}
+#endif
 
-    virtual avtDataObject_p Render(bool, intVector networkIds, bool getZBuffer,
-                                   int annotMode, int windowID, bool leftEye);
-    void       RealRender(); /// OpenGL calls sourced from here
-
- protected:
-
-    virtual avtImage_p RenderGeometry();
-    virtual avtDataObject_p
-                       RenderTranslucent(int windowID,
-                                         const avtImage_p& input);
-    virtual avtImage_p Readback(VisWindow * const, bool) const;
-    virtual void       StopTimer(int windowID);
-
- private:
-
-    void  VerifyColorFormat() const;
-
- private:
-    IceTCommunicator comm;
-    IceTContext context;
-};
-
-#endif /* ICET_NETWORK_MANAGER_H */
+#endif

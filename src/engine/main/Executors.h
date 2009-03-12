@@ -1242,14 +1242,21 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 //    Brad Whitlock, Tue Jun 24 16:02:10 PDT 2008
 //    Changed how the database plugin manager is accessed.
 //
+//    Brad Whitlock, Thu Feb 26 14:05:27 PST 2009
+//    I added code to send engine error messages back to the viewer. It's
+//    done differently than some other RPC's because this RPC is non-blocking.
+//    This means we can't send the message back to the viewer via RPC results.
+//    This mechanism is probably only good for simulations presently.
+//
 // ****************************************************************************
 template<>
 void
 RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 {
+    Engine *engine = Engine::Instance();
+
     TRY
     {
-        Engine         *engine = Engine::Instance();
         NetworkManager *netmgr = engine->GetNetMgr();
 
         debug2 << "Executing OpenDatabaseRPC: db=" 
@@ -1273,8 +1280,9 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
         engine->PopulateSimulationMetaData(rpc->GetDatabaseName(),
                                            rpc->GetFileFormat());
     }
-    CATCH(VisItException)
+    CATCH2(VisItException, e)
     {
+        engine->Error((e.GetExceptionType() + ": ") + e.Message());
         debug1 << "An error occurred while opening the database." << endl;
     }
     ENDTRY
@@ -1381,6 +1389,11 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye to Render call to support stereo SR
+//
+//    Brad Whitlock, Mon Mar  2 16:35:50 PST 2009
+//    I changed the code to account for NetworkManager::Render now returning
+//    an avtDataObject_p.
+//
 // ****************************************************************************
 template<>
 void
@@ -1408,16 +1421,23 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
     TRY 
     {
         // do the render
-        avtDataObjectWriter_p writer =
-            netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer(),
-                           rpc->GetAnnotMode(), rpc->GetWindowID(),
-                           rpc->GetLeftEye());
+        avtDataObject_p image = netmgr->Render(true,
+            rpc->GetIDs(),rpc->GetSendZBuffer(), rpc->GetAnnotMode(), 
+            rpc->GetWindowID(), rpc->GetLeftEye());
+        
+        avtDataObjectWriter_p writer;
+        if(*image != NULL)
+        {
+            writer = image->InstantiateWriter();
+            writer->SetInput(image);
+        }
+        else
+            writer = netmgr->CreateNullDataWriter();
 
         // Send the data back to the viewer.
         bool useCompression = netmgr->GetShouldUseCompression(rpc->GetWindowID());
         engine->WriteData(rpc, writer, useCompression);
         visitTimer->OutputAllTimings();
-
     }
     CATCH2(VisItException, e)
     {

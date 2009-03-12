@@ -36,19 +36,16 @@
 *
 *****************************************************************************/
 
+/* SIMPLE SIMULATION SKELETON */
 #include <VisItControlInterface_V2.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
-#include <materialhelpers.h>
 
 /* Data Access Function prototypes. */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
-int SimGetMaterial(int, const char *, VisIt_MaterialData *, void *);
 int SimGetVariable(int, const char *, VisIt_VariableData *, void *);
-int SimGetMixedVariable(int, const char *, VisIt_MixedVariableData *, void *);
 
 void simulate_one_timestep(void);
 void read_input_deck(void) { }
@@ -64,7 +61,7 @@ static double simtime = 0.;
  * Purpose: Callback function for control commands.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Fri Jan 12 13:39:59 PST 2007
  *
  * Input Arguments:
  *   cmd         : The command string that we want the sim to execute.
@@ -80,6 +77,8 @@ void ControlCommandCallback(const char *cmd,
     int int_data, float float_data,
     const char *string_data)
 {
+printf("ControlCommandCallback cmd=%s\n", cmd);
+
     if(strcmp(cmd, "halt") == 0)
         runFlag = 0;
     else if(strcmp(cmd, "step") == 0)
@@ -93,11 +92,9 @@ void ControlCommandCallback(const char *cmd,
  * Purpose: This is the main event loop function.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Fri Jan 12 13:35:53 PST 2007
  *
  * Modifications:
- *  Brad Whitlock, Thu Feb 26 10:12:14 PST 2009
- *  I registered the data access functions using the V2 API.
  *
  *****************************************************************************/
 
@@ -132,9 +129,7 @@ void mainloop(void)
 
                 VisItSetGetMetaData(SimGetMetaData, NULL);
                 VisItSetGetMesh(SimGetMesh, NULL);
-                VisItSetGetMaterial(SimGetMaterial, NULL);
                 VisItSetGetVariable(SimGetVariable, NULL);
-                VisItSetGetMixedVariable(SimGetMixedVariable, NULL);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -159,7 +154,7 @@ void mainloop(void)
  * Purpose: This is the main function for the program.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Fri Jan 12 13:36:17 PST 2007
  *
  * Input Arguments:
  *   argc : The number of command line arguments.
@@ -174,8 +169,8 @@ int main(int argc, char **argv)
     /* Initialize environment variables. */
     VisItSetupEnvironment();
     /* Write out .sim file that VisIt uses to connect. */
-    VisItInitializeSocketAndDumpSimFile("material",
-        "Demonstrates material data access function",
+    VisItInitializeSocketAndDumpSimFile("var",
+        "Demonstrates variable data access function",
         "/path/to/where/sim/was/started",
         NULL, NULL, NULL);
 
@@ -199,37 +194,16 @@ void simulate_one_timestep(void)
 }
 
 /* DATA ACCESS FUNCTIONS */
-
-/* Values to match the Fortran example. */
-#define NX 5
-#define NY 4
-#define XMIN 0.f
-#define XMAX 4.f
-#define YMIN 0.f
-#define YMAX 3.f
-const char *matNames[] = {"Water", "Membrane", "Air"};
-
-#define DX (XMAX - XMIN)
-
-/* Rectilinear mesh */
-static float rmesh_x[NX];
-static float rmesh_y[NY];
-static const int   rmesh_dims[] = {NX, NY, 1};
-static const int   rmesh_ndims = 2;
+#include <VisItDataInterface_V2.h>
 
 /******************************************************************************
  *
  * Purpose: This callback function returns simulation metadata.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:40:23 PST 2008
+ * Date:       Fri Jan 12 13:37:17 PST 2007
  *
  * Modifications:
- *   Brad Whitlock, Thu Apr 10 11:59:07 PDT 2008
- *   Added a scalar variable so we can demonstrate mixed scalars.
- *
- *   Brad Whitlock, Thu Feb 26 10:21:57 PST 2009
- *   Use SimV2 API.
  *
  *****************************************************************************/
 
@@ -244,8 +218,8 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     md->currentTime = simtime;
 
 #define NDOMAINS 1
-    /* Allocate enough room for 1 mesh in the metadata. */
-    md->numMeshes = 1;
+    /* Allocate enough room for 2 meshes in the metadata. */
+    md->numMeshes = 2;
     sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
     md->meshes = (VisIt_MeshMetaData *)malloc(sz);
     memset(md->meshes, 0, sz);
@@ -264,29 +238,55 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     md->meshes[0].yLabel = strdup("Height");
     md->meshes[0].zLabel = strdup("Depth");
 
-    /* Add a material */
-    sz = sizeof(VisIt_MaterialMetaData);
-    md->numMaterials = 1;
-    md->materials = (VisIt_MaterialMetaData *)malloc(sz);
-    md->materials[0].name = strdup("Material");
-    md->materials[0].meshName = strdup("mesh2d");
-    md->materials[0].numMaterials = 3;
-    md->materials[0].materialNames = (const char **)malloc(3*sizeof(const char*));
-    md->materials[0].materialNames[0] = strdup(matNames[0]);
-    md->materials[0].materialNames[1] = strdup(matNames[1]);
-    md->materials[0].materialNames[2] = strdup(matNames[2]);
+    /* Set the second mesh's properties.*/
+    md->meshes[1].name = strdup("mesh3d");
+    md->meshes[1].meshType = VISIT_MESHTYPE_CURVILINEAR;
+    md->meshes[1].topologicalDimension = 3;
+    md->meshes[1].spatialDimension = 3;
+    md->meshes[1].numBlocks = NDOMAINS;
+    md->meshes[1].blockTitle = strdup("Domains");
+    md->meshes[1].blockPieceName = strdup("domain");
+    md->meshes[1].numGroups = 0;
+    md->meshes[1].units = strdup("Miles");
+    md->meshes[1].xLabel = strdup("Width");
+    md->meshes[1].yLabel = strdup("Height");
+    md->meshes[1].zLabel = strdup("Depth");
 
-    /* Add a scalar. */
-    md->numVariables = 1;
+    /* Add some variables. */
+    md->numVariables = 5;
     sz = sizeof(VisIt_VariableMetaData) * md->numVariables;
     md->variables = (VisIt_VariableMetaData *)malloc(sz);
     memset(md->variables, 0, sz);
 
-    /* Add a zonal variable on mesh2d. */
-    md->variables[0].name = strdup("scalar");
+    /* Add a zonal scalar variable on mesh2d. */
+    md->variables[0].name = strdup("zonal_scalar");
     md->variables[0].meshName = strdup("mesh2d");
     md->variables[0].type = VISIT_VARTYPE_SCALAR;
     md->variables[0].centering = VISIT_VARCENTERING_ZONE;
+
+    /* Add a nodal scalar variable on mesh3d. */
+    md->variables[1].name = strdup("nodal_scalar");
+    md->variables[1].meshName = strdup("mesh3d");
+    md->variables[1].type = VISIT_VARTYPE_SCALAR;
+    md->variables[1].centering = VISIT_VARCENTERING_NODE;
+
+    /* Add a zonal vector variable on mesh2d. */
+    md->variables[2].name = strdup("zonal_vector");
+    md->variables[2].meshName = strdup("mesh2d");
+    md->variables[2].type = VISIT_VARTYPE_VECTOR;
+    md->variables[2].centering = VISIT_VARCENTERING_ZONE;
+
+    /* Add a nodal vector variable on mesh3d. */
+    md->variables[3].name = strdup("nodal_vector");
+    md->variables[3].meshName = strdup("mesh3d");
+    md->variables[3].type = VISIT_VARTYPE_VECTOR;
+    md->variables[3].centering = VISIT_VARCENTERING_NODE;
+
+    /* Add a zonal label variable on mesh2d. */
+    md->variables[4].name = strdup("zonal_label");
+    md->variables[4].meshName = strdup("mesh2d");
+    md->variables[4].type = VISIT_VARTYPE_LABEL;
+    md->variables[4].centering = VISIT_VARCENTERING_ZONE;
 
     /* Add some custom commands. */
     md->numGenericCommands = 3;
@@ -309,6 +309,48 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     return VISIT_OKAY;
 }
 
+/* Rectilinear mesh */
+float rmesh_x[] = {0., 1., 2.5, 5.};
+float rmesh_y[] = {0., 2., 2.25, 2.55,  5.};
+int   rmesh_dims[] = {4, 5, 1};
+int   rmesh_ndims = 2;
+float zonal[] = {1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.};
+float zonal_vector[][2] = {
+   { 1., 2.},{ 3., 4.},{ 5., 6.},{ 7., 8.},{ 9.,10.},{11.,12.},
+   {13.,14.},{15.,16.},{17.,18.},{19.,20.},{21.,22.},{23.,24.}
+};
+const char *zonal_labels = "zone1\0\0zone2\0\0zone3\0\0zone4\0\0zone5\0\0zone6\0\0zone7\0\0zone8\0\0zone9\0\0zone10\0zone11\0zone12";
+
+/* Curvilinear mesh */
+float cmesh_x[2][3][4] = {
+   {{0.,1.,2.,3.},{0.,1.,2.,3.}, {0.,1.,2.,3.}},
+   {{0.,1.,2.,3.},{0.,1.,2.,3.}, {0.,1.,2.,3.}}
+};
+float cmesh_y[2][3][4] = {
+   {{0.5,0.,0.,0.5},{1.,1.,1.,1.}, {1.5,2.,2.,1.5}},
+   {{0.5,0.,0.,0.5},{1.,1.,1.,1.}, {1.5,2.,2.,1.5}}
+};
+float cmesh_z[2][3][4] = {
+   {{0.,0.,0.,0.},{0.,0.,0.,0.},{0.,0.,0.,0.}},
+   {{1.,1.,1.,1.},{1.,1.,1.,1.},{1.,1.,1.,1.}}
+};
+int cmesh_dims[] = {4, 3, 2};
+int cmesh_ndims = 3;
+double nodal[2][3][4] = {
+   {{1.,2.,3.,4.},{5.,6.,7.,8.},{9.,10.,11.,12}},
+   {{13.,14.,15.,16.},{17.,18.,19.,20.},{21.,22.,23.,24.}}
+};
+double nodal_vector[2][3][4][3] = {
+   { {{ 0., 1., 2.},{ 3., 4., 5.},{ 6., 7., 8.},{ 9.,10.,11.}},
+     {{12.,13.,14.},{15.,16.,17.},{18.,19.,20.},{21.,22.,23.}},
+     {{24.,25.,26.},{27.,28.,29.},{30.,31.,32.},{33.,34.,35.}} },
+
+   { {{36.,37.,38.},{39.,40.,41.},{42.,43.,44.},{45.,46.,47.}},
+     {{48.,49.,50.},{51.,52.,53.},{54.,55.,56.},{57.,58.,59.}},
+     {{60.,61.,62.},{63.,64.,65.},{66.,67.,68.},{69.,70.,71}} }
+};
+
+
 /******************************************************************************
  *
  * Purpose: This callback function returns meshes.
@@ -317,8 +359,6 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
  * Date:       Fri Jan 12 13:37:17 PST 2007
  *
  * Modifications:
- *   Brad Whitlock, Thu Feb 26 10:21:57 PST 2009
- *   Use SimV2 API.
  *
  *****************************************************************************/
 
@@ -326,13 +366,12 @@ int
 SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
 {
     int ret = VISIT_ERROR;
+    size_t sz;
 
     if(strcmp(name, "mesh2d") == 0)
     {
-        int i;
-
         /* Make VisIt_MeshData contain a VisIt_RectilinearMesh. */
-        size_t sz = sizeof(VisIt_RectilinearMesh);
+        sz = sizeof(VisIt_RectilinearMesh);
         mesh->rmesh = (VisIt_RectilinearMesh *)malloc(sz);
         memset(mesh->rmesh, 0, sz);
 
@@ -358,19 +397,6 @@ SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
         mesh->rmesh->maxRealIndex[1] = rmesh_dims[1]-1;
         mesh->rmesh->maxRealIndex[2] = rmesh_dims[2]-1;
 
-        /* Initialize X coords. */
-        for(i = 0; i < NX; ++i)
-        {
-            float t = (float)i / (float)(NX-1);
-            rmesh_x[i] = (1.f-t)*XMIN + t*XMAX;
-        }
-        /* Initialize Y coords. */
-        for(i = 0; i < NY; ++i) 
-        {
-            float t = (float)i / (float)(NY-1);
-            rmesh_y[i] = (1.f-t)*YMIN + t*YMAX;
-        }
-
         /* Let VisIt use the simulation's copy of the mesh coordinates. */
         mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat(
            VISIT_OWNER_SIM, rmesh_x);
@@ -379,167 +405,104 @@ SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
 
         ret = VISIT_OKAY;
     }
+    else if(strcmp(name, "mesh3d") == 0)
+    {
+        /* Make VisIt_MeshData contain a VisIt_CurvilinearMesh. */
+        sz = sizeof(VisIt_CurvilinearMesh);
+        mesh->cmesh = (VisIt_CurvilinearMesh *)malloc(sz);
+        memset(mesh->cmesh, 0, sz);
+
+        /* Tell VisIt which mesh object to use. */
+        mesh->meshType = VISIT_MESHTYPE_CURVILINEAR;
+
+        /* Set the mesh's number of dimensions. */
+        mesh->cmesh->ndims = cmesh_ndims;
+
+        /* Set the mesh dimensions. */
+        mesh->cmesh->dims[0] = cmesh_dims[0];
+        mesh->cmesh->dims[1] = cmesh_dims[1];
+        mesh->cmesh->dims[2] = cmesh_dims[2];
+
+        mesh->cmesh->baseIndex[0] = 0;
+        mesh->cmesh->baseIndex[1] = 0;
+        mesh->cmesh->baseIndex[2] = 0;
+
+        mesh->cmesh->minRealIndex[0] = 0;
+        mesh->cmesh->minRealIndex[1] = 0;
+        mesh->cmesh->minRealIndex[2] = 0;
+        mesh->cmesh->maxRealIndex[0] = cmesh_dims[0]-1;
+        mesh->cmesh->maxRealIndex[1] = cmesh_dims[1]-1;
+        mesh->cmesh->maxRealIndex[2] = cmesh_dims[2]-1;
+
+        /* Let VisIt use the simulation's copy of the mesh coordinates. */
+        mesh->cmesh->xcoords = VisIt_CreateDataArrayFromFloat(
+           VISIT_OWNER_SIM, (float *)cmesh_x);
+        mesh->cmesh->ycoords = VisIt_CreateDataArrayFromFloat(
+           VISIT_OWNER_SIM, (float *)cmesh_y);
+        mesh->cmesh->zcoords = VisIt_CreateDataArrayFromFloat(
+           VISIT_OWNER_SIM, (float *)cmesh_z);
+
+        ret = VISIT_OKAY;
+    }
 
     return ret;
 }
 
 /******************************************************************************
  *
- * Purpose: This callback function returns material data.
+ * Purpose: This callback function returns variables.
  *
  * Programmer: Brad Whitlock
  * Date:       Fri Jan 12 13:37:17 PST 2007
  *
  * Modifications:
- *   Brad Whitlock, Thu Feb 26 10:21:57 PST 2009
- *   Use SimV2 API.
  *
  *****************************************************************************/
-
-int
-SimGetMaterial(int domain, const char *name, VisIt_MaterialData *mat,
-    void *cbdata)
-{
-    int i, j, m, cell = 0, arrlen = 0;
-    int nmats, cellmat[10], matnos[3];
-    float cellmatvf[10];
-
-    /* Allocate a VisIt_MaterialData */
-    VisIt_MaterialData_init(mat, (NX-1)*(NY-1), &arrlen);
-
-    /* Fill in the VisIt_MaterialData */
-    matnos[0] = VisIt_MaterialData_addMaterial(mat, matNames[0]);
-    matnos[1] = VisIt_MaterialData_addMaterial(mat, matNames[1]);
-    matnos[2] = VisIt_MaterialData_addMaterial(mat, matNames[2]);
-
-    /* The matlist table indicates the material numbers that are found in
-     * each cell. Every 3 numbers indicates the material numbers in a cell.
-     * A material number of 0 means that the material entry is not used.
-     */
-    int matlist[NY-1][NX-1][3] = {
-        {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
-        {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
-        {{3,0,0},{2,3,0},{1,2,3},{1,2,0}}
-    };
-
-    /* The mat_vf table indicates the material volume fractions that are
-     * found in a cell.
-     */
-    float mat_vf[NY-1][NX-1][3] = {
-        {{1.,0.,0.},{0.75,0.25,0.},  {0.8125,0.1875, 0.},{1.,0.,0.}},
-        {{1.,0.,0.},{0.625,0.375,0.},{0.5625,0.4375,0.}, {1.,0.,0.}},
-        {{1.,0.,0.},{0.3,0.7,0.},    {0.2,0.4,0.4},      {0.55,0.45,0.}}
-    };
-
-    for(j = 0; j < NY-1; ++j)
-    {
-        for(i = 0; i < NX-1; ++i, ++cell)
-        {
-            nmats = 0;
-            for(m = 0; m < 3; ++m)
-            {
-                if(matlist[j][i][m] > 0)
-                {
-                    cellmat[nmats] = matnos[matlist[j][i][m] - 1];
-                    cellmatvf[nmats] = mat_vf[j][i][m];
-                    nmats++;
-                }
-            }        
-            if(nmats > 1)
-                VisIt_MaterialData_addMixedCell(mat, cell, cellmat, cellmatvf, nmats, &arrlen);
-            else
-                VisIt_MaterialData_addCleanCell(mat, cell, cellmat[0]);
-        }
-    }
-
-    return VISIT_OKAY;
-}
-
-/******************************************************************************
- *
- * Purpose: This callback function returns scalars.
- *
- * Programmer: Brad Whitlock
- * Date:       Thu Apr 10 11:47:56 PDT 2008
- *
- * Modifications:
- *   Brad Whitlock, Thu Feb 26 10:21:57 PST 2009
- *   Use SimV2 API.
- *
- *****************************************************************************/
-
-/* Make a constant field of 1. on the mesh. We'll break up the 1.0 into
- * pieces in the mixvar.
- */
-#define C1 1.f
-#define C2 2.f
-#define C3 3.f
-#define C4 4.f
-float zonal_scalar[NY-1][NX-1] = {
-{C1*1.f, C2*1.f, C3*1.f, C4*1.f},
-{C1*1.f, C2*1.f, C3*1.f, C4*1.f},
-{C1*1.f, C2*1.f, C3*1.f, C4*1.f}
-};
 
 int
 SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    int ret = VISIT_OKAY;
 
-    if(strcmp(name, "scalar") == 0)
-    { 
-        var->nTuples = (NX-1) * (NY-1);
-        var->data = VisIt_CreateDataArrayFromFloat(
-            VISIT_OWNER_SIM, &zonal_scalar[0][0]);
-
-        ret = VISIT_OKAY;
-    }
-
-    return ret;
-}
-
-
-/******************************************************************************
- *
- * Purpose: This callback function returns mixed scalars.
- *
- * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
- *
- * Modifications:
- *   Brad Whitlock, Thu Feb 26 10:21:57 PST 2009
- *   Use SimV2 API.
- *
- *****************************************************************************/
-
-/* The mesh has some mixed cells. Mixed scalars are only defined for
- * those mixed cells. That means that clean cells have no entries
- * in the mixed scalar array. For this example, we're reproducing the
- * volume fractions for the mixed cells as the mixvar data. All cells in
- * mesh have a comment indicating their location, even if they add no data.
- * Cells that have data provide their data after the comment. See the
- * mat_vf array in the GetMaterial function to draw comparisons.
- */
-float mixvar[] = {
-/*cell 0,0*/ /*cell 0,1*/ C2*0.75,C2*0.25,  /*cell 0,2*/ C3*0.8125,C3*0.1875, /*cell 0,3*/
-/*cell 1,0*/ /*cell 1,1*/ C2*0.625,C2*0.375,/*cell 1,2*/ C3*0.5625,C3*0.4375, /*cell 1,3*/
-/*cell 2,0*/ /*cell 2,1*/ C2*0.3,C2*0.7,    /*cell 2,2*/ C3*0.2,C3*0.4,C3*0.4,   /*cell 2,3*/C4*0.55,C4*0.45
-};
-
-int
-SimGetMixedVariable(int domain, const char *name, VisIt_MixedVariableData *mvar,
-    void *cbdata)
-{
-    int ret = VISIT_ERROR;
-
-    if(strcmp(name, "scalar") == 0)
+    if(strcmp(name, "zonal_scalar") == 0)
     {
-        mvar->nTuples = sizeof(mixvar) / sizeof(float);
-        mvar->data = VisIt_CreateDataArrayFromFloat(
-            VISIT_OWNER_SIM, mixvar);
-        ret = VISIT_OKAY;
+        var->nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
+        var->data = VisIt_CreateDataArrayFromFloat(
+            VISIT_OWNER_SIM, zonal);
+    }
+    else if(strcmp(name, "nodal_scalar") == 0)
+    {
+        var->nTuples = cmesh_dims[0] * cmesh_dims[1] *
+            cmesh_dims[2];
+        var->data = VisIt_CreateDataArrayFromDouble(
+            VISIT_OWNER_SIM, (double*)nodal);
+    }
+    else if(strcmp(name, "zonal_vector") == 0)
+    {
+        var->nComponents = 2;
+        var->nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
+        var->data = VisIt_CreateDataArrayFromFloat(
+            VISIT_OWNER_SIM, (float *)zonal_vector);
+    }
+    else if(strcmp(name, "nodal_vector") == 0)
+    {
+        var->nComponents = 3;
+        var->nTuples = cmesh_dims[0] * cmesh_dims[1] *
+            cmesh_dims[2];
+        var->data = VisIt_CreateDataArrayFromDouble(
+            VISIT_OWNER_SIM, (double *)nodal_vector);
+    }
+    else if(strcmp(name, "zonal_label") == 0)
+    {
+        var->nComponents = 7;
+        var->nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
+        var->data = VisIt_CreateDataArrayFromChar(
+            VISIT_OWNER_SIM, (char *)zonal_labels);
+    }
+    else 
+    {
+        ret = VISIT_ERROR;
     }
 
     return ret;
 }
-

@@ -9103,6 +9103,9 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //   Brad Whitlock, Mon Jun 11 11:55:03 PDT 2007
 //   Made it use the InterpretCommands method.
 //
+//   Brad Whitlock, Thu Feb 26 13:57:58 PST 2009
+//   I added Message and Error commands from the simulation.
+//
 // ****************************************************************************
 
 void
@@ -9118,6 +9121,14 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         // The simulation told us that it wants us to update all of the plots 
         // that use it as a source.
         ViewerWindowManager::Instance()->ReplaceDatabase(key, db, 0, false, true);
+    }
+    else if(command.substr(0,8) == "Message:")
+    {
+        Message(command.substr(8,command.size()-8).c_str());
+    }
+    else if(command.substr(0,6) == "Error:")
+    {
+        Error(command.substr(6,command.size()-6).c_str());
     }
     else if(command.substr(0,10) == "Interpret:")
     {

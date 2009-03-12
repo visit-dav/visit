@@ -259,8 +259,13 @@ void mainloop(void)
                 VisItSetCommandCallback(ControlCommandCallback);
                 VisItSetSlaveProcessCallback(SlaveProcessCallback);
             }
-            else
-                fprintf(stderr, "VisIt did not connect\n");
+            else 
+            {
+                /* Print the error message */
+                char *err = VisItGetLastError();
+                fprintf(stderr, "VisIt did not connect: %s\n", err);
+                free(err);
+            }
             break;
         case 2:
             /* VisIt wants to tell the engine something. */
@@ -378,6 +383,8 @@ void simulate_one_timestep(void)
 
     if(par_rank == 0)
         printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
+
+    sleep(1);
 
     if(simUpdatePlots == 1)
     {
