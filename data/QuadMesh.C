@@ -952,6 +952,7 @@ QuadMesh::ScalarData::CreateGradientTensor(const std::string &name)
         char comp_name[1024];
         sprintf(comp_name, "tensor_comps/%s_%c%c", name.c_str(), comp1, comp2);
         sub_comps[i] = new ScalarData(comp_name, xdim, ydim, zdim, nodal);
+        sub_comps[i]->SetUnits(units);
     }
     if(!nodal)
     {
