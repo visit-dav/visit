@@ -494,6 +494,14 @@ DebugStream::~DebugStream()
 //    Changed strspn to scan progname, not filename (which would already
 //    have a 'level' sprintf'd into it.
 //
+//    Mark C. Miller, Thu Mar 12 18:20:34 PDT 2009
+//    Changed the case of existing, older vlogs are handled. Before, it would
+//    create a unique name by incrimenting a counter. Now, it will maintain
+//    the 5 most recent logs named A.progname.level.vlog, B.progname.level.vlog
+//    etc. with A always being the most recent and E the least recent. 
+//    This has some undesirable behavior if you happening to be editing a vlog
+//    and re-run VisIt as it may cause the editor to save a swap file because
+//    the file's name is getting changed out from underneath the editor.
 // ****************************************************************************
 
 
@@ -501,29 +509,26 @@ void
 DebugStream::open(const char *progname, bool clobber)
 {
     char filename[256];
-    sprintf(filename, "%s.%d.vlog", progname, level);
+    sprintf(filename, "A.%s.%d.vlog", progname, level);
 
-    // only search for a unique name if we don't have pids
-    bool findUnique = !clobber && (strspn(progname, ".0123456789") == 0);
+    // only rename old vlogs if we don't have pids
+    bool renameOld = !clobber && (strspn(progname, ".0123456789") == 0);
 
-    // loop until we create a name for which stat returns 0
-    int n = 1;
-    while (findUnique)
+    // Move all older filenames by one letter
+    if (renameOld)
     {
-        // We don't use VisItStat() here to avoid lib interdependence. Also,
-	// we don't really need to worry about the 32/64 bit file size issue
-	// for log files.
-#if defined(_WIN32)
-	struct _stat stbuf;
-        if (_stat(filename, &stbuf) != 0)
-	    break;
-#else
-        struct stat stbuf;
-        if (stat(filename, &stbuf) != 0)
-	    break;
-#endif
-        sprintf(filename, "%s.%d.%d.vlog", progname, n, level);
-        n++;
+        char filenametmp1[256];
+        char filenametmp2[256];
+        sprintf(filenametmp1, "E.%s.%d.vlog", progname, level);
+        unlink(filenametmp1);               // E->deleted 
+        sprintf(filenametmp2, "D.%s.%d.vlog", progname, level);
+        rename(filenametmp2, filenametmp1); // D->E
+        sprintf(filenametmp1, "C.%s.%d.vlog", progname, level);
+        rename(filenametmp1, filenametmp2); // C->D
+        sprintf(filenametmp2, "B.%s.%d.vlog", progname, level);
+        rename(filenametmp2, filenametmp1); // B->C
+        sprintf(filenametmp1, "A.%s.%d.vlog", progname, level);
+        rename(filenametmp1, filenametmp2); // A->B
     }
 
     // ok, open the stream
