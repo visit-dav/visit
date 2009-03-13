@@ -342,6 +342,10 @@
 #
 #   Mark C. Miller, Thu Mar 12 09:20:07 PDT 2009
 #   Added dirmakefiles_dbio_only target
+#
+#   Jeremy Meredith, Fri Mar 13 12:49:47 EDT 2009
+#   Added MatrixMarket reader. ( http://math.nist.gov/MatrixMarket/ )
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -407,6 +411,7 @@ REQUIRED=\
  LAMMPS \
  Lines \
  MFIX \
+ MatrixMarket \
  Miranda \
  MM5 \
  NASTRAN \
