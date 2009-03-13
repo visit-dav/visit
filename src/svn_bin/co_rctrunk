@@ -19,6 +19,9 @@
 #    Tom Fogal, Wed Mar 11 10:09:20 MST 2009
 #    Converted from Korn shell to Bourne shell
 #
+#    Gunther H. Weber, Fri Mar 13 11:04:00 PDT 2009
+#    Replaced bashisms with POSIX so that script runs on Ubuntu with dash   
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -30,11 +33,11 @@ P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
-if [[ $# != 2 ]] ; then
+if [ $# != 2 ] ; then
    issueHelp="yes"
 fi
 
-if [[ "$issueHelp" == "yes" ]] ; then
+if [ "$issueHelp" = "yes" ] ; then
    echo ""
    echo "Usage:   ${0##*/} RC_NAME <dir>"
    echo "Usage:   ${0##*/} RC_NAME <known-dir-combo>"
@@ -64,7 +67,7 @@ if [[ "$issueHelp" == "yes" ]] ; then
 fi
 
 svn ls ${VISIT_SVN_BRANCHES}/${1} 2>/dev/null > /dev/null
-if [[ $? != 0 ]] ; then
+if [ $? != 0 ] ; then
    echo "The RC trunk location $1 does not appear to exist."
    echo "Aborting checkout"
    exit 1
@@ -73,25 +76,25 @@ fi
 
 DIR=""
 ROOT="/"
-if [[ "$2" != "all" && "$2" != "sdt"  ]] ; then
+if [ "$2" != "all" -a "$2" != "sdt"  ] ; then
     svn ls ${VISIT_SVN_BRANCHES}/${1}/${2} 2>/dev/null > /dev/null
-    if [[ $? != 0 ]] ; then
+    if [ $? -ne 0 ] ; then
        echo "The trunk location $1/$2 does not appear to exist."
        echo "Aborting checkout"
        exit 1
     fi
-    if [[ "${2#/}" == "${2}" ]] ; then
+    if [ "${2#/}" = "${2}" ] ; then
        TMP="/${2}"
        ROOT="${TMP%/*}"
     else
        ROOT="${2%/*}"
     fi
-    if [[ "$ROOT" == "" ]] ; then
+    if [ "$ROOT" = "" ] ; then
        ROOT="/"
     fi
 fi
 
-function checkout_dir
+checkout_dir()
 {
     cd ${1}_trunk
     echo "Getting files for \"${2}\" from remote repo..."
@@ -99,25 +102,25 @@ function checkout_dir
     cd ..
 }
 
-if [[ -d ${1}_trunk ]] ; then
+if [ -d ${1}_trunk ] ; then
   cd ${1}_trunk
-  if [[ ! -f .branchname ]] ; then
+  if [ ! -f .branchname ] ; then
      echo "The subdirectory I want to place the check out in (${1}_trunk) does not appear "
      echo "to be a valid check out."
      exit 1
   fi
   NAME=$(cat .branchname)
-  if [[ "$NAME" != "${1}_trunk" ]] ; then
+  if [ "$NAME" != "${1}_trunk" ] ; then
      echo "The subdirectory I want to place the check out in (${1}_trunk) does not appear "
      echo "to be a valid check out."
      exit 1
   fi
-  if [[ ! -f .rootpath ]] ; then
+  if [ ! -f .rootpath ] ; then
      echo "The subdirectory I want to place the check out in is not consistent"
      exit 1
   fi
   ROOT2=$(cat .rootpath)
-  if [[ "$ROOT" != "$ROOT2" ]] ; then
+  if [ "$ROOT" != "$ROOT2" ] ; then
      echo "The directory you are requesting is from a different directory in the repo."
      echo "This is not allowed."
      echo "Your previous checkout(s) have been from ${ROOT2}"
@@ -135,14 +138,14 @@ else
   cd ..
 fi
 
-if [[ "$2" == "sdt" ]] ; then
+if [ "$2" = "sdt" ] ; then
    echo "Checking out /src"
    checkout_dir $1 "/src"
    echo "Checking out /data"
    checkout_dir $1 "/data"
    echo "Checking out /test"
    checkout_dir $1 "/test"
-elif [[ "$2" == "all" ]] ; then
+elif [ "$2" == "all" ] ; then
    echo "Checking out /src"
    checkout_dir $1 "/src"
    echo "Checking out /data"

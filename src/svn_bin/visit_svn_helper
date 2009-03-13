@@ -14,6 +14,9 @@
 #    Hank Childs, Thu Aug  7 08:41:15 PDT 2008
 #    Add support for two digit minor releases, such as 1.10 or 1.10.1.
 #
+#    Gunther H. Weber, Fri Mar 13 11:04:00 PDT 2009
+#    Replaced bashisms with POSIX so that script runs on Ubuntu with dash   
+#
 # *****************************************************************************
 
 
@@ -23,7 +26,7 @@
 ##
 ##
 
-if [[ "$SVN_NERSC_NAME" == "" ]] ; then
+if [ "$SVN_NERSC_NAME" = "" ] ; then
    echo "You must define the environment variable SVN_NERSC_NAME to use these scripts."
    echo "This should be your username on svn.nersc.gov"
    exit 1
@@ -48,7 +51,7 @@ VISIT_SVN_TAGS=${VISIT_SVN_REPO}/tags
 ##
 ##
 
-function get_latest_rev
+get_latest_rev()
 {
     # This assumes a certain format for SVN log.  It gets the second line,
     # which has "r<REV> | ...", and then strips off the "| ...", and then 
@@ -71,18 +74,18 @@ function get_latest_rev
 
 # Note that the is_version_string test would fail for numbers bigger than 9,
 # such as 1.6.10.  If this ever comes up, it should be easy to fix.
-function is_version_string
+is_version_string()
 {
-    if [[ ${#1} == 3 ]] ; then
+    if [ ${#1} -eq 3 ] ; then
        is_two_digit_version_string $1
        return $?
-    elif [[ ${#1} == 4 ]] ; then
+    elif [ ${#1} -eq 4 ] ; then
        is_two_digit_version_string $1
        return $?
-    elif [[ ${#1} == 5 ]] ; then
+    elif [ ${#1} -eq 5 ] ; then
        is_three_digit_version_string $1
        return $?
-    elif [[ ${#1} == 6 ]] ; then
+    elif [ ${#1} -eq 6 ] ; then
        is_three_digit_version_string $1
        return $?
     fi
@@ -90,36 +93,36 @@ function is_version_string
     return 0
 }
 
-function is_two_digit_version_string
+is_two_digit_version_string()
 {
-    if [[ ${#1} != 3 ]] ; then
-        if [[ ${#1} != 4 ]] ; then
+    if [ ${#1} -ne 3 ] ; then
+        if [ ${#1} -ne 4 ] ; then
             return 0
         fi
     fi
 
     typeset X
     typeset -L1 X=$1
-    if [[ "$X" != [0-9] ]] ; then
+    if [ "$X" != [0-9] ] ; then
         return 0
     fi
 
     typeset -L2 X=$1
     typeset -R1 X
-    if [[ "$X" != "." ]] ; then
+    if [ "$X" != "." ] ; then
         return 0
     fi
 
     typeset -L3 X=$1
     typeset -R1 X
-    if [[ "$X" != [0-9] ]] ; then
+    if [ "$X" != [0-9] ] ; then
         return 0
     fi
 
-    if [[ ${#1} == 4 ]] ; then
+    if [ ${#1} = 4 ] ; then
         typeset -L4 X=$1
         typeset -R1 X
-        if [[ "$X" != [0-9] ]] ; then
+        if [ "$X" != [0-9] ] ; then
             return 0
         fi
     fi
@@ -127,50 +130,50 @@ function is_two_digit_version_string
     return 1
 }
 
-function is_three_digit_version_string
+is_three_digit_version_string()
 {
-    if [[ ${#1} != 5 ]] ; then
+    if [ ${#1} != 5 ] ; then
         return 0
     fi
 
     typeset X
     typeset -L1 X=$1
-    if [[ "$X" != [0-9] ]] ; then
+    if [ "$X" != [0-9] ] ; then
         return 0
     fi
 
     typeset -L2 X=$1
     typeset -R1 X
-    if [[ "$X" != "." ]] ; then
+    if [ "$X" != "." ] ; then
         return 0
     fi
 
     typeset -L3 X=$1
     typeset -R1 X
-    if [[ "$X" != [0-9] ]] ; then
+    if [ "$X" != [0-9] ] ; then
         return 0
     fi
 
     typeset -L4 X=$1
     typeset -R1 X
-    if [[ "$X" == "." ]] ; then
+    if [ "$X" = "." ] ; then
         typeset -L5 X=$1
         typeset -R1 X
-        if [[ "$X" != [0-9] ]] ; then
+        if [ "$X" != [0-9] ] ; then
             return 0
         fi
-    elif [[ "$X" != "." ]] ; then
-        if [[ "$X" != [0-9] ]] ; then
+    elif [ "$X" != "." ] ; then
+        if [ "$X" != [0-9] ] ; then
             return 0
         fi
         typeset -L5 X=$1
         typeset -R1 X
-        if [[ "$X" != "." ]] ; then
+        if [ "$X" != "." ] ; then
             return 0
         fi
         typeset -L6 X=$1
         typeset -R1 X
-        if [[ "$X" != [0-9] ]] ; then
+        if [ "$X" != [0-9] ] ; then
             return 0
         fi
     fi
@@ -178,51 +181,51 @@ function is_three_digit_version_string
     return 1
 }
 
-function is_four_digit_version_string
+is_four_digit_version_string()
 {
-    if [[ ${#1} != 7 ]] ; then
+    if [ ${#1} != 7 ] ; then
         return 0
     fi
 
     typeset X
     typeset -L1 X=$1
-    if [[ "$X" != [0-9] ]] ; then
+    if [ "$X" != [0-9] ] ; then
         return 0
     fi
 
     typeset -L2 X=$1
     typeset -R1 X
-    if [[ "$X" != "." ]] ; then
+    if [ "$X" != "." ] ; then
         return 0
     fi
 
     typeset -L3 X=$1
     typeset -R1 X
-    if [[ "$X" != [0-9] ]] ; then
+    if [ "$X" != [0-9] ] ; then
         return 0
     fi
 
     typeset -L4 X=$1
     typeset -R1 X
-    if [[ "$X" != "." ]] ; then
+    if [ "$X" != "." ] ; then
         return 0
     fi
 
     typeset -L5 X=$1
     typeset -R1 X
-    if [[ "$X" != [0-9] ]] ; then
+    if [ "$X" != [0-9] ] ; then
         return 0
     fi
 
     typeset -L6 X=$1
     typeset -R1 X
-    if [[ "$X" != "." ]] ; then
+    if [ "$X" != "." ] ; then
         return 0
     fi
 
     typeset -L7 X=$1
     typeset -R1 X
-    if [[ "$X" != [0-9] ]] ; then
+    if [ "$X" != [0-9] ] ; then
         return 0
     fi
 
@@ -230,14 +233,14 @@ function is_four_digit_version_string
 }
 
 
-function svn_cp_dir
+svn_cp_dir()
 {
    SRC=$1
    DEST=$2
 
    # Confirm presence of $SRC
    svn ls $SRC 2>/dev/null > /dev/null
-   if [[ $? != 0 ]] ; then
+   if [ $? -ne 0 ] ; then
       echo "Cannot locate directory ($SRC) for copying.  Aborting!"
       echo "(Try using ls_branches to locate the directory.)"
       exit 1
@@ -245,14 +248,14 @@ function svn_cp_dir
 
    # Confirm that $DEST does not already exist
    svn ls $DEST 2>/dev/null > /dev/null
-   if [[ $? == 0 ]] ; then
+   if [ $? -ne 0 ] ; then
       echo "Destination ($DEST) already exists.  Aborting!"
       exit 1
    fi
 
    echo "Creating ${DEST}...."
    svn copy $SRC $DEST -m "Making copy of $SRC as $DEST"
-   if [[ $? == 0 ]] ; then
+   if [ $? -ne 0 ] ; then
       echo "Successful."
    else
       echo "Not successful."
@@ -261,14 +264,14 @@ function svn_cp_dir
 }
 
 
-function svn_mv_dir
+svn_mv_dir()
 {
    SRC=$1
    DEST=$2
 
    # Confirm presence of $SRC
    svn ls $SRC 2>/dev/null > /dev/null
-   if [[ $? != 0 ]] ; then
+   if [ $? -ne 0 ] ; then
       echo "Cannot locate directory ($SRC) for moving.  Aborting!"
       echo "(Try using ls_branches to locate the directory.)"
       exit 1
@@ -276,14 +279,14 @@ function svn_mv_dir
 
    # Confirm that $DEST does not already exist
    svn ls $DEST 2>/dev/null > /dev/null
-   if [[ $? == 0 ]] ; then
+   if [ $? -ne 0 ] ; then
       echo "Destination ($DEST) already exists.  Aborting!"
       exit 1
    fi
 
    echo "Creating ${DEST}...."
    svn move $SRC $DEST -m "Making copy of $SRC as $DEST"
-   if [[ $? == 0 ]] ; then
+   if [ $? -ne 0 ] ; then
       echo "Successful."
    else
       echo "Not successful."
@@ -292,12 +295,12 @@ function svn_mv_dir
 }
 
 
-function svn_rm_dir
+svn_rm_dir()
 {
    DIR=$1
    # Confirm presence of $DIR
    svn ls $DIR 2>/dev/null > /dev/null
-   if [[ $? != 0 ]] ; then
+   if [ $? -ne 0 ] ; then
       echo "Cannot locate release candidate ($DIR) for deleting.  Aborting!"
       exit 1
    fi
