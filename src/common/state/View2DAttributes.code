@@ -100,7 +100,7 @@ View2DAttributes::SetUseFullFrame(bool ff)
 }
 
 Function: ResetView
-Declaration: void View2DAttributes::ResetView(const double *bbox);
+Declaration: void ResetView(const double *bbox);
 Definition:
 #include <math.h>
 // ****************************************************************************

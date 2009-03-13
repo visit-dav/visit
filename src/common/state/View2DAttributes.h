@@ -125,7 +125,7 @@ public:
     // User-defined methods
     bool GetUseFullFrame(const double *limits=0) const;
     void SetUseFullFrame(bool ff);
-    void View2DAttributes::ResetView(const double *bbox);
+    void ResetView(const double *bbox);
 
     // IDs that can be used to identify fields in case statements
     enum {
