@@ -355,11 +355,11 @@ def test4():
 
 
 # Call the tests
-#test0()
-#test1()
-#test2()
-#test3()
-test4()
+test0()
+test1()
+test2()
+test3()
+#test4()
 
 Exit()
 
