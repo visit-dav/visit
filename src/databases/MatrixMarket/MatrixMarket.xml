@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+  <Plugin name="MatrixMarket" type="database" label="MatrixMarket" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" specifiedFilenames="false">
+    <Extensions>
+      mpiPpv
+      mpippv
+      mtx
+    </Extensions>
+    <Files components="M">
+      avtMatrixMarketFileFormat.C
+      mmio.c
+    </Files>
+    <Files components="E">
+      avtMatrixMarketFileFormat.C
+      mmio.c
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
