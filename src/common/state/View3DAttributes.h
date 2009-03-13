@@ -127,8 +127,8 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    void View3DAttributes::RotateAxis(int axis, double angle);
-    void View3DAttributes::ResetView(const double *bbox);
+    void RotateAxis(int axis, double angle);
+    void ResetView(const double *bbox);
 
     // IDs that can be used to identify fields in case statements
     enum {

@@ -1,5 +1,5 @@
 Function: RotateAxis
-Declaration: void View3DAttributes::RotateAxis(int axis, double angle);
+Declaration: void RotateAxis(int axis, double angle);
 Definition:
 // **************************************************************************
 // Function: RotateAxis
@@ -303,7 +303,7 @@ void View3DAttributes::RotateAxis(int axis, double angle)
 }
 
 Function: ResetView
-Declaration: void View3DAttributes::ResetView(const double *bbox);
+Declaration: void ResetView(const double *bbox);
 Definition:
 #include <math.h>
 // ****************************************************************************
