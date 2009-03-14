@@ -56,6 +56,8 @@
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtIOInformation.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtVariableCache.h>
 
 #include <Expression.h>
 
@@ -1896,6 +1898,12 @@ avtDDCMDFileFormat::GetPointMesh()
 //  Programmer: Eric Brugger
 //  Creation:   Thu Nov 20 10:44:45 PST 2008
 //
+//  Modifications:
+//    Eric Brugger, Thu Mar 12 14:25:26 PDT 2009
+//    I modified the routine so that in the case of a 2d mesh it would
+//    return 1 for the z dimension instead of 2, which it was erroneously
+//    doing before.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1930,8 +1938,8 @@ avtDDCMDFileFormat::GetRectilinearMesh()
         iYMin = iZBlock * deltaZ;
         iYMax = iYMin + deltaZ < nZFile ? iYMin + deltaZ : nZFile;
 
-        iZMin = iXBlock * deltaX;
-        iZMax = iZMin + deltaX < nXFile ? iZMin + deltaX : nXFile;
+        iZMin = 0;
+        iZMax = 0;
     }
     else
     {
@@ -2395,6 +2403,10 @@ avtDDCMDFileFormat::ActivateTimestep(void)
 //    I added the ability to read atom files, which required being able to
 //    read multiple files to get all the data.
 //
+//    Eric Brugger, Fri Mar 13 17:07:47 PDT 2009
+//    I added rectilinear domain boundaries so that ghost zones would be
+//    automatically added when necessary.
+//
 // ****************************************************************************
 
 void
@@ -2418,6 +2430,70 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
                           spatial_dimension, topological_dimension);
         md->SetFormatCanDoDomainDecomposition(true);
+
+        //
+        // Create the appropriate domain boundary information.
+        //
+        if (!avtDatabase::OnlyServeUpMetaData())
+        {
+            avtRectilinearDomainBoundaries *rdb =
+                new avtRectilinearDomainBoundaries(true);
+
+            rdb->SetNumDomains(nBlocks);
+            for (int j = 0; j < nBlocks; j++)
+            {
+                int extents[6];
+
+                int deltaX = (nXFile + nXFileBlocks - 1) / nXFileBlocks;
+                int deltaY = (nYFile + nYFileBlocks - 1) / nYFileBlocks;
+                int deltaZ = (nZFile + nZFileBlocks - 1) / nZFileBlocks;
+
+                int iBlock = j;
+                int iXBlock = iBlock / (nYFileBlocks * nZFileBlocks);
+                iBlock %= (nYFileBlocks * nZFileBlocks);
+                int iYBlock = iBlock / nZFileBlocks;
+                int iZBlock = iBlock % nZFileBlocks;
+
+                int iXMin, iXMax, iYMin, iYMax, iZMin, iZMax;
+                if (nDims == 2)
+                {
+                    iXMin = iYBlock * deltaY;
+                    iXMax = iXMin + deltaY < nYFile ? iXMin + deltaY : nYFile;
+
+                    iYMin = iZBlock * deltaZ;
+                    iYMax = iYMin + deltaZ < nZFile ? iYMin + deltaZ : nZFile;
+
+                    iZMin = 0;
+                    iZMax = 0;
+                }
+                else
+                {
+                    iXMin = iXBlock * deltaX;
+                    iXMax = iXMin + deltaX < nXFile ? iXMin + deltaX : nXFile;
+
+                    iYMin = iYBlock * deltaY;
+                    iYMax = iYMin + deltaY < nYFile ? iYMin + deltaY : nYFile;
+
+                    iZMin = iZBlock * deltaZ;
+                    iZMax = iZMin + deltaZ < nZFile ? iZMin + deltaZ : nZFile;
+                }
+
+                extents[0] = iXMin;
+                extents[1] = iXMax;
+                extents[2] = iYMin;
+                extents[3] = iYMax;
+                extents[4] = iZMin;
+                extents[5] = iZMax;
+
+                rdb->SetIndicesForRectGrid(j, extents);
+            }
+            rdb->CalculateBoundaries();
+
+            void_ref_ptr vr = void_ref_ptr(rdb,
+                avtStructuredDomainBoundaries::Destruct);
+            cache->CacheVoidRef("any_mesh",
+                AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+        }
 
         //
         // Set the variable information.
