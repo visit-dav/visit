@@ -109,7 +109,7 @@ avtSLAlgorithm::~avtSLAlgorithm()
 // ****************************************************************************
 
 vtkDataSet *
-avtSLAlgorithm::GetDomain(DomainType &dom)
+avtSLAlgorithm::GetDomain(const DomainType &dom)
 {
     int timerHandle = visitTimer->StartTimer();
 

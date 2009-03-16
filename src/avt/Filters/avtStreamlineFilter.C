@@ -383,10 +383,13 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
+//   Make DomainType a const reference.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtStreamlineFilter::GetDomain(DomainType &domain)
+avtStreamlineFilter::GetDomain(const DomainType &domain)
 {
     //debug5<<"GetDomain("<<domain<<");\n";
     vtkDataSet *ds = NULL;
@@ -1308,7 +1311,9 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
         //If we don't have ghost zones, then we can rest assured that the
         //point is in this domain. For ghost zones, we have to check cells.
         if (ds->GetCellData()->GetArray("avtGhostZones") == NULL)
+        {
             return true;
+        }
     }
 
     vtkVisItCellLocator *cellLocator = domainToCellLocatorMap[domain];

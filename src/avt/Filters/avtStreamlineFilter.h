@@ -165,6 +165,9 @@ class DomainType;
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
+//   Make DomainType a const reference.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -261,7 +264,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
                                               vtkDataSet *ds,
                                               double *extents,
                                               int maxSteps=-1);
-    virtual vtkDataSet        *GetDomain(DomainType &);
+    virtual vtkDataSet        *GetDomain(const DomainType &);
     virtual int               GetTimeStep(double &t) const;
     virtual bool              DomainLoaded(DomainType &) const;
 
