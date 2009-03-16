@@ -149,6 +149,9 @@
 //    Hank Childs, Sun Feb 22 08:56:33 PST 2009
 //    Added category for time iterating expressions.
 //
+//    Jeremy Meredith, Mon Mar 16 14:40:13 EDT 2009
+//    Added timestep and cycle.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -314,6 +317,7 @@ const char *expr_misc[] = {
     "cell_constant",
     "conn_components",
     "curl",
+    "cycle",
     "divergence",
     "enumerate",
     "gauss_curvature",
@@ -329,6 +333,7 @@ const char *expr_misc[] = {
     "   point_surface_normal",
     "   cell_surface_normal",
     "time",
+    "timestep",
     NULL
 };
 
