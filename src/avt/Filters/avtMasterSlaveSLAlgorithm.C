@@ -924,6 +924,9 @@ avtMasterSLAlgorithm::Case2(int &counter)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
+//   Bug fix. Didn't use new DomainType structure for MSG_SEND_SL.
+//
 // ****************************************************************************
 
 void
@@ -1005,7 +1008,10 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
         vector<int> msg;
         msg.push_back(MSG_SEND_SL);
         msg.push_back(recvSlave.rank);
-        msg.push_back(d);
+
+        DomainType dd = IdxToDom(d);
+        msg.push_back(dd.domain);
+        msg.push_back(dd.timeStep);
         msg.push_back(n);
         
         for (int i = 0; i < n; i++)
@@ -1433,6 +1439,9 @@ avtSlaveSLAlgorithm::Execute()
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
+//   Bug fix. Didn't use new DomainType structure for MSG_SEND_SL.
+//
 // ****************************************************************************
 
 void
@@ -1468,8 +1477,8 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         else if (msgType == MSG_SEND_SL)
         {
             int dst = msg[2];
-            int dom = msg[3];
-            int num = msg[4];
+            DomainType dom(msg[3], msg[4]);
+            int num = msg[5];
 
             debug1<<"MSG: Send dom= "<<dom<<" to "<<dst<<endl;
             list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();

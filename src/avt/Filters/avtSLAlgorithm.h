@@ -90,7 +90,7 @@ class avtSLAlgorithm
     virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
                             { return streamlineFilter->PointInDomain(pt, dom); }
     virtual void              IntegrateStreamline(avtStreamlineWrapper *slSeg);
-    vtkDataSet               *GetDomain(DomainType &dom);
+    vtkDataSet               *GetDomain(const DomainType &dom);
     virtual bool              DomainLoaded(DomainType &dom) const
                                  { return streamlineFilter->DomainLoaded(dom); }
     
