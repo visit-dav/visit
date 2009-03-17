@@ -14,20 +14,36 @@
 <p>Welcome to VisIt's release notes page. Release 1.11.2 is primarily a bug fix release to release 1.11.  It fixes additional bugs in release 1.11. Look <a href="relnotes1.11.0.html">here</a> to see a complete list of bugs fixed in release 1.11.</p>
 <p><b><font size="4">Enhancements in version 1.11.2</font></b></p>
 <ul>
-<li>Added support for ANNOTATION_INT nodelists in Silo plugin.</li>
-<li>Host profiles were added for Princeton clusters.</li>
+<li>Support was added for ANNOTATION_INT nodelists in the Silo database reader.</li>
+<li>The transform manager was enhanced to cache CSG grids that do not vary with time to avoid re-discretizing the same CSG mesh each time the time step was changed.</li>
+<li>Host profiles were added for the Princeton clusters.</li>
+<li>The host profiles for the Eureka cluster at ANL were modified to support client-server mode.</li>
+<li> The file open options for the Silo database reader were enhanced to allow specifying the <i>Ignore spatial extents</i> as either <i>always</i>, <i>auto</i>, or <i>never</i>. The default is <i>auto</i>, which results in ignoring spatial extents for data from Ale3d.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.11.2</font></b></p>
 <ul>
 <li>The file depcomp was added to the binary distributions so that plugins could be built against the binary distributions.</li>
-<li>Fixed speed issues seen on a Silo file, using the HDF driver, with lots of domains and the standard (non-packed, directory-based) structured connectivity info</li>
-<li>Fixed problem with revolved surface area query returning 0 on a mesh of beam elements. Note, it is important for the database to indicate that topological dimension of the mesh is 1. For a Silo database, one would use the DBOPT_TOPO_DIM option to the DBPutUcdmesh() call.</li>
-<li>Added support for VTK meshes which contain non-zero count of points but zero count of cells. The transform manager will now add VTK_VERTEX cells to such datasets.</li>
+<li>A bug was fixed with the revolved surface area query returning 0 for a mesh of beam elements. Note, it is important for the database to indicate that the topological dimension of the mesh is 1. For a Silo database, one would use the DBOPT_TOPO_DIM option to the DBPutUcdmesh() call.</li>
+<li>A bug was fixed with smoothing polydata to allow it to work with rectilinear and structured grids.</li>
+<li>A bug was fixed with the ray casted volume renderer not properly handling log scaling.</li>
+<li>A bug was fixed with plot and operator attribute windows not retaining their posted state across sessions when their names contained spaces (e.g. <i>Index Select</i>).</li>
+<li>A bug was fixed where it wasn't possible to add new log scaled plots to a window already in log scale mode that contained plots that were not yet rendered.</li>
+<li>Support was added for VTK meshes which contain a non-zero count of points but a zero count of cells. The transform manager will now add VTK_VERTEX cells to such datasets.</li>
+<li>The performance of the Silo database reader was improved when reading HDF5 files with lots of domains and the standard (non-packed, directory-based) structured connectivity information.</li>
+<li>A bug was fixed in the Silo database reader where it did not properly read 2d nodelists.</li>
+<li>A bug was fixed in the DDCMD database reader where only the first file in a multi-file database was being read.</li>
+<li>A bug was fixed in the DDCMD database reader where the z dimension was erroneously set to 2 instead of 1 for 2d cgrid files. This resulted in blank contour plots.</li>
+<li>A bug was fixed in the DDCMD database reader where discontinuities would appear at processor boundaries displaying results that required ghost zones when run in parallel.</li>
+<li>A bug was fixed in the VASP database reader so that it would properly parse the number of atoms in an OUTCAR file.</li>
+<li>The VASP database reader now supports reading the cycle in the OUTCAR and CHGCAR files.</li>
+<li>The VASP database reader now supports reading the time in the OUTCAR file using the "POTIM" delta-T keyword.</li>
+<li>The WaveFront OBJ database reader was modified to support lines with up to 8192 characters. The previous limit was 1024 characters.</li>
 <li>A memory leak was fixed with ray-casted volume rendering.</li>
-<li>Fixed problem with build_visit failing to install Silo on Darwin because it was using a C compiler to link code with C++ dependencies.</li>
-<li>A bug was corrected in the DDCMD database reader where only the first file in a multi-file database was being read.</li>
-<li>The ray casted volume renderer now correctly works with log scaling.</li>
-<li>Fixed a problem with plot and operator attribute windows with spaces in their names (e.g. <i>Index Select</i>) not retaining their posted state across sessions.</li>
+<li>A memory leak was fixed with the DualMesh operator.</li>
+<li>A memory error was corrected in the Silo database reader.</li>
+<li>A bug was fixed with build_visit failing to install Silo on Darwin because it was using a C compiler to link code with C++ dependencies.</li>
+<li>A bug was fixed with build_visit not properly patching Mesa 6.4.2.</li>
+<li>Build_visit was modified to use HDF5 1.8.1 and Silo 4.6.2.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.11.1.html">VisIt 1.11.1 Release Notes</a>.</p>
