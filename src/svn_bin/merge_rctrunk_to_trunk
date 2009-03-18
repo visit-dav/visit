@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #
 #  Script: merge_rctrunk_to_trunk
 # 
@@ -23,12 +23,15 @@
 #    Hank Childs, Thu Dec 20 09:21:03 PST 2007
 #    Renamed -allow_checkouts to -allow_local_mods
 #
+#    Tom Fogal, Tue Mar 17 21:55:56 MST 2009
+#    Updated whence to which, to allow use on systems w/o ksh.
+#
 # *****************************************************************************
 
 issueHelp="no"
 allowLocalMods="no"
 
-P=$(whence $0)
+P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
