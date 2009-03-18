@@ -477,3 +477,45 @@ DBOptionsAttributes::GetName(int idx) const
     return names[idx];
 }
 
+Function: SetObsolete
+Declaration: void SetObsolete(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetObsolete
+//
+//  Purpose: Indicate that a given option is obsolete.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   March 4, 2009
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetObsolete(const std::string &name)
+{
+    obsoleteNames.push_back(name);
+}
+
+Function: IsObsolete
+Declaration: bool IsObsolete(const std::string &name) const;
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::IsObsolete
+//
+//  Purpose: Returns whether a given option name is obsolete.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   March 16, 2009
+// ****************************************************************************
+
+bool
+DBOptionsAttributes::IsObsolete(const std::string &name) const
+{
+    for (size_t i = 0 ; i < obsoleteNames.size() ; i++)
+    {
+        if (obsoleteNames[i] == name)
+            return true;
+    }
+    return false;
+}
+

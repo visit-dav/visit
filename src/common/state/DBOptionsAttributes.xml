@@ -28,6 +28,8 @@
     </Field>
     <Field name="enumStringsSizes" label="enumStringsSizes" type="intVector" internal="true">
     </Field>
+    <Field name="obsoleteNames" label="Names of obsolete options" type="stringVector" internal="true">
+    </Field>
     <Function name="FindIndex" user="true" member="true">
     </Function>
     <Function name="SetBool" user="true" member="true">
@@ -63,5 +65,9 @@
     <Function name="GetEnumStrings" user="true" member="true">
     </Function>
     <Function name="GetName" user="true" member="true">
+    </Function>
+    <Function name="SetObsolete" user="true" member="true">
+    </Function>
+    <Function name="IsObsolete" user="true" member="true">
     </Function>
   </Attribute>

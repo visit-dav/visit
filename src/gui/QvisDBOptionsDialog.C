@@ -68,6 +68,9 @@
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Mark C. Miller, Mon Mar 16 23:10:47 PDT 2009
+//    Added logic to skip obsolete options. Fixed issue setting current
+//    index for Enums (combo boxes).
 // ****************************************************************************
 
 QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
@@ -87,6 +90,8 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
     {
         QString txt;
         std::string name = atts->GetName(i);
+        if (atts->IsObsolete(name))
+            continue;
         DBOptionsAttributes::OptionType t = atts->GetType(i);
         switch (t)
         {
@@ -129,17 +134,12 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
           case DBOptionsAttributes::Enum:
             { // new scope
             QComboBox *cbo_box = new QComboBox(this);
-            int cindex = -1;
-            QString sel_name(atts->GetEnum(name));
             for (size_t j=0; j<atts->GetEnumStrings(name).size(); j++)
             {
                 QString curr_name(atts->GetEnumStrings(name)[j].c_str());
                 cbo_box->addItem(curr_name);
-                if(curr_name == sel_name)
-                    cindex = j;
             }
-            if(cindex >= 0)
-                cbo_box->setCurrentIndex(cindex);
+            cbo_box->setCurrentIndex(atts->GetEnum(name));
             
             grid->addWidget(new QLabel(name.c_str(), this), i, 0);
             grid->addWidget(cbo_box, i, 1);
@@ -193,6 +193,8 @@ QvisDBOptionsDialog::~QvisDBOptionsDialog()
 //    Brad Whitlock, Wed Dec  3 08:52:25 PST 2008
 //    Index into the widget arrays using different indices. Added debugging code.
 //
+//    Mark C. Miller, Mon Mar 16 23:10:47 PDT 2009
+//    Added logic to skip obsolete options.
 // ****************************************************************************
 
 void
@@ -207,6 +209,8 @@ QvisDBOptionsDialog::okayClicked()
     {
         QString txt;
         std::string name = atts->GetName(i);
+        if (atts->IsObsolete(name))
+            continue;
         DBOptionsAttributes::OptionType t = atts->GetType(i);
         switch (t)
         {

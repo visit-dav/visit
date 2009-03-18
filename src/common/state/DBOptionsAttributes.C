@@ -79,7 +79,7 @@ DBOptionsAttributes::OptionType_FromString(const std::string &s, DBOptionsAttrib
 }
 
 // Type map format string
-const char *DBOptionsAttributes::TypeMapFormatString = "i*s*i*d*d*i*s*i*s*i*";
+const char *DBOptionsAttributes::TypeMapFormatString = "i*s*i*d*d*i*s*i*s*i*s*";
 
 // ****************************************************************************
 // Method: DBOptionsAttributes::DBOptionsAttributes
@@ -129,6 +129,7 @@ DBOptionsAttributes::DBOptionsAttributes(const DBOptionsAttributes &obj) :
     optEnums = obj.optEnums;
     enumStrings = obj.enumStrings;
     enumStringsSizes = obj.enumStringsSizes;
+    obsoleteNames = obj.obsoleteNames;
 
     SelectAll();
 }
@@ -182,6 +183,7 @@ DBOptionsAttributes::operator = (const DBOptionsAttributes &obj)
     optEnums = obj.optEnums;
     enumStrings = obj.enumStrings;
     enumStringsSizes = obj.enumStringsSizes;
+    obsoleteNames = obj.obsoleteNames;
 
     SelectAll();
     return *this;
@@ -215,7 +217,8 @@ DBOptionsAttributes::operator == (const DBOptionsAttributes &obj) const
             (optStrings == obj.optStrings) &&
             (optEnums == obj.optEnums) &&
             (enumStrings == obj.enumStrings) &&
-            (enumStringsSizes == obj.enumStringsSizes));
+            (enumStringsSizes == obj.enumStringsSizes) &&
+            (obsoleteNames == obj.obsoleteNames));
 }
 
 // ****************************************************************************
@@ -369,6 +372,7 @@ DBOptionsAttributes::SelectAll()
     Select(ID_optEnums,         (void *)&optEnums);
     Select(ID_enumStrings,      (void *)&enumStrings);
     Select(ID_enumStringsSizes, (void *)&enumStringsSizes);
+    Select(ID_obsoleteNames,    (void *)&obsoleteNames);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -461,6 +465,12 @@ DBOptionsAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("enumStringsSizes", enumStringsSizes));
     }
 
+    if(completeSave || !FieldsEqual(ID_obsoleteNames, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("obsoleteNames", obsoleteNames));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -517,6 +527,8 @@ DBOptionsAttributes::SetFromNode(DataNode *parentNode)
         SetEnumStrings(node->AsStringVector());
     if((node = searchNode->GetNode("enumStringsSizes")) != 0)
         SetEnumStringsSizes(node->AsIntVector());
+    if((node = searchNode->GetNode("obsoleteNames")) != 0)
+        SetObsoleteNames(node->AsStringVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -591,6 +603,13 @@ DBOptionsAttributes::SetEnumStringsSizes(const intVector &enumStringsSizes_)
 {
     enumStringsSizes = enumStringsSizes_;
     Select(ID_enumStringsSizes, (void *)&enumStringsSizes);
+}
+
+void
+DBOptionsAttributes::SetObsoleteNames(const stringVector &obsoleteNames_)
+{
+    obsoleteNames = obsoleteNames_;
+    Select(ID_obsoleteNames, (void *)&obsoleteNames);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -717,6 +736,18 @@ DBOptionsAttributes::GetEnumStringsSizes()
     return enumStringsSizes;
 }
 
+const stringVector &
+DBOptionsAttributes::GetObsoleteNames() const
+{
+    return obsoleteNames;
+}
+
+stringVector &
+DBOptionsAttributes::GetObsoleteNames()
+{
+    return obsoleteNames;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -781,6 +812,12 @@ DBOptionsAttributes::SelectEnumStringsSizes()
     Select(ID_enumStringsSizes, (void *)&enumStringsSizes);
 }
 
+void
+DBOptionsAttributes::SelectObsoleteNames()
+{
+    Select(ID_obsoleteNames, (void *)&obsoleteNames);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -815,6 +852,7 @@ DBOptionsAttributes::GetFieldName(int index) const
     case ID_optEnums:         return "optEnums";
     case ID_enumStrings:      return "enumStrings";
     case ID_enumStringsSizes: return "enumStringsSizes";
+    case ID_obsoleteNames:    return "obsoleteNames";
     default:  return "invalid index";
     }
 }
@@ -849,6 +887,7 @@ DBOptionsAttributes::GetFieldType(int index) const
     case ID_optEnums:         return FieldType_intVector;
     case ID_enumStrings:      return FieldType_stringVector;
     case ID_enumStringsSizes: return FieldType_intVector;
+    case ID_obsoleteNames:    return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -883,6 +922,7 @@ DBOptionsAttributes::GetFieldTypeName(int index) const
     case ID_optEnums:         return "intVector";
     case ID_enumStrings:      return "stringVector";
     case ID_enumStringsSizes: return "intVector";
+    case ID_obsoleteNames:    return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -957,6 +997,11 @@ DBOptionsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_enumStringsSizes:
         {  // new scope
         retval = (enumStringsSizes == obj.enumStringsSizes);
+        }
+        break;
+    case ID_obsoleteNames:
+        {  // new scope
+        retval = (obsoleteNames == obj.obsoleteNames);
         }
         break;
     default: retval = false;
@@ -1392,5 +1437,41 @@ std::string
 DBOptionsAttributes::GetName(int idx) const
 {
     return names[idx];
+}
+
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetObsolete
+//
+//  Purpose: Indicate that a given option is obsolete.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   March 4, 2009
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetObsolete(const std::string &name)
+{
+    obsoleteNames.push_back(name);
+}
+
+// ****************************************************************************
+//  Method: DBOptionsAttributes::IsObsolete
+//
+//  Purpose: Returns whether a given option name is obsolete.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   March 16, 2009
+// ****************************************************************************
+
+bool
+DBOptionsAttributes::IsObsolete(const std::string &name) const
+{
+    for (size_t i = 0 ; i < obsoleteNames.size() ; i++)
+    {
+        if (obsoleteNames[i] == name)
+            return true;
+    }
+    return false;
 }
 

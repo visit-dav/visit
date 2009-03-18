@@ -70,7 +70,7 @@ public class DBOptionsAttributes extends AttributeSubject
 
     public DBOptionsAttributes()
     {
-        super(10);
+        super(11);
 
         types = new Vector();
         names = new Vector();
@@ -82,11 +82,12 @@ public class DBOptionsAttributes extends AttributeSubject
         optEnums = new Vector();
         enumStrings = new Vector();
         enumStringsSizes = new Vector();
+        obsoleteNames = new Vector();
     }
 
     public DBOptionsAttributes(DBOptionsAttributes obj)
     {
-        super(10);
+        super(11);
 
         int i;
 
@@ -146,6 +147,10 @@ public class DBOptionsAttributes extends AttributeSubject
             Integer iv = (Integer)obj.enumStringsSizes.elementAt(i);
             enumStringsSizes.addElement(new Integer(iv.intValue()));
         }
+        obsoleteNames = new Vector(obj.obsoleteNames.size());
+        for(i = 0; i < obj.obsoleteNames.size(); ++i)
+            obsoleteNames.addElement(new String((String)obj.obsoleteNames.elementAt(i)));
+
 
         SelectAll();
     }
@@ -244,6 +249,15 @@ public class DBOptionsAttributes extends AttributeSubject
             Integer enumStringsSizes2 = (Integer)obj.enumStringsSizes.elementAt(i);
             enumStringsSizes_equal = enumStringsSizes1.equals(enumStringsSizes2);
         }
+        // Compare the elements in the obsoleteNames vector.
+        boolean obsoleteNames_equal = (obj.obsoleteNames.size() == obsoleteNames.size());
+        for(i = 0; (i < obsoleteNames.size()) && obsoleteNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String obsoleteNames1 = (String)obsoleteNames.elementAt(i);
+            String obsoleteNames2 = (String)obj.obsoleteNames.elementAt(i);
+            obsoleteNames_equal = obsoleteNames1.equals(obsoleteNames2);
+        }
         // Create the return value
         return (types_equal &&
                 names_equal &&
@@ -254,7 +268,8 @@ public class DBOptionsAttributes extends AttributeSubject
                 optStrings_equal &&
                 optEnums_equal &&
                 enumStrings_equal &&
-                enumStringsSizes_equal);
+                enumStringsSizes_equal &&
+                obsoleteNames_equal);
     }
 
     // Property setting methods
@@ -318,6 +333,12 @@ public class DBOptionsAttributes extends AttributeSubject
         Select(9);
     }
 
+    public void SetObsoleteNames(Vector obsoleteNames_)
+    {
+        obsoleteNames = obsoleteNames_;
+        Select(10);
+    }
+
     // Property getting methods
     public Vector GetTypes() { return types; }
     public Vector GetNames() { return names; }
@@ -329,6 +350,7 @@ public class DBOptionsAttributes extends AttributeSubject
     public Vector GetOptEnums() { return optEnums; }
     public Vector GetEnumStrings() { return enumStrings; }
     public Vector GetEnumStringsSizes() { return enumStringsSizes; }
+    public Vector GetObsoleteNames() { return obsoleteNames; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -353,6 +375,8 @@ public class DBOptionsAttributes extends AttributeSubject
             buf.WriteStringVector(enumStrings);
         if(WriteSelect(9, buf))
             buf.WriteIntVector(enumStringsSizes);
+        if(WriteSelect(10, buf))
+            buf.WriteStringVector(obsoleteNames);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -392,6 +416,9 @@ public class DBOptionsAttributes extends AttributeSubject
             case 9:
                 SetEnumStringsSizes(buf.ReadIntVector());
                 break;
+            case 10:
+                SetObsoleteNames(buf.ReadStringVector());
+                break;
             }
         }
     }
@@ -409,6 +436,7 @@ public class DBOptionsAttributes extends AttributeSubject
         str = str + intVectorToString("optEnums", optEnums, indent) + "\n";
         str = str + stringVectorToString("enumStrings", enumStrings, indent) + "\n";
         str = str + intVectorToString("enumStringsSizes", enumStringsSizes, indent) + "\n";
+        str = str + stringVectorToString("obsoleteNames", obsoleteNames, indent) + "\n";
         return str;
     }
 
@@ -424,5 +452,6 @@ public class DBOptionsAttributes extends AttributeSubject
     private Vector optEnums; // vector of Integer objects
     private Vector enumStrings; // vector of String objects
     private Vector enumStringsSizes; // vector of Integer objects
+    private Vector obsoleteNames; // vector of String objects
 }
 

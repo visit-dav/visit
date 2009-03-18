@@ -47,6 +47,24 @@ class DBOptionsAttributes;
 
 #include <string>
 
+namespace SiloDBOptions
+{
+    // Read options
+    const char *const SILO_RDOPT_FORCE_SINGLE = "Force Single";
+    const char *const SILO_RDOPT_SEARCH_ANNOTINT = "Search For ANNOTATION_INT (!!Slow!!)";
+    const char *const SILO_RDOPT_IGNORE_SEXTS = "Ignore spatial extents";
+    const char *const SILO_RDOPT_IGNORE_DEXTS = "Ignore data extents";
+
+    // Old (obsolete) read option names. Note case difference between these strings
+    // and the current options. This is to maintain distinction between old and
+    // new interfaces for read options for extents.
+    const char *const SILO_RDOPT_IGNORE_SEXTS2 = "Ignore Spatial Extents";
+    const char *const SILO_RDOPT_IGNORE_DEXTS2 = "Ignore Data Extents";
+
+    // Write options
+    const char *const SILO_WROPT_SINGLE_FILE = "Single File";
+    const char *const SILO_WROPT_DRIVER = "Driver";
+}
 
 // ****************************************************************************
 //  Functions: avtSiloOptions

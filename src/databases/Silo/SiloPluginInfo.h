@@ -84,6 +84,7 @@ class SiloCommonPluginInfo : public virtual CommonDatabasePluginInfo, public vir
 
     virtual DBOptionsAttributes *GetReadOptions() const;
     virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual void SetReadOptions(DBOptionsAttributes *);
 };
 
 class SiloMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual SiloCommonPluginInfo

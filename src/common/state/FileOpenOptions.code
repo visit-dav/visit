@@ -1,13 +1,34 @@
 Function: MergeNewFromPluginInfo
 Declaration: void MergeNewFromPluginInfo(const DBPluginInfoAttributes*);
 Definition:
+#include <DebugStream.h> // needed for debug output in this function
+
+// ****************************************************************************
+//  Method: FileOpenOptions::MergeFromPluginInfo
+//
+//  Purpose: Merge options defined from config file with options defined by
+//  plugins. The net effect of calling this function is to change the options
+//  associated with 'this' object.
+//
+//  Programmer: Unknown
+//  Creation:   Unknown
+//
+//  Modifications:
+//    Mark C. Miller, Mon Mar 16 22:55:44 PDT 2009
+//    Re-structured to make it clearer what was getting merged with
+//    what. The options defined by the plugins are coming in via the
+//    dbinfo function argument while the options read from the config file
+//    are basically part of 'this' object. Adjusted logic to deal with
+//    options that have been made obsolete.
+// ****************************************************************************
+
 void
 FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
 {
     int n = dbinfo->GetNumDbReadOptions();
     for (int i=0; i<n; i++)
     {
-        DBOptionsAttributes opts_from = dbinfo->GetDbReadOptions(i);
+        DBOptionsAttributes plugin_opts = dbinfo->GetDbReadOptions(i);
         const std::string &id = dbinfo->GetTypesFullNames()[i];
         const std::string &name = dbinfo->GetTypes()[i];
         int index = -1;
@@ -21,57 +42,91 @@ FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
             typeNames.push_back(name);
             typeIDs.push_back(id);
             Enabled.push_back(true);
-            AddOpenOptions(opts_from);
+            AddOpenOptions(plugin_opts);
         }
         else
         {
-            DBOptionsAttributes &opts_cur = GetOpenOptions(index);
-            int n_cur  = opts_cur.GetNumberOfOptions();
-            int n_from = opts_from.GetNumberOfOptions();
-            for (int j=0; j<n_from; j++)
+            //
+            // Get the options that are part of this object, make a
+            // copy of them and then over-write 'this' with the options
+            // defined by the plugins.
+            //
+            DBOptionsAttributes &this_opts = GetOpenOptions(index);
+            DBOptionsAttributes config_opts = this_opts; // copy
+            this_opts = plugin_opts; // overwrite 'this'
+
+            //
+            // Ok, now this loop basically iterates over options defined
+            // in the config file, checking them against those defined by
+            // the plugin. When it finds a match, it overwrites it with
+            // whatever value it found in the config file. When it does NOT
+            // find a match, that means that the config file defines an
+            // option that the plugin is no longer coded to know about. This
+            // most likely indicates an obsolete option.
+            //
+            int n_config  = config_opts.GetNumberOfOptions();
+            int n_this = this_opts.GetNumberOfOptions();
+            for (int j=0; j<n_config; j++)
             {
-                std::string optname = opts_from.GetName(j);
+                std::string optname = config_opts.GetName(j);
                 int match = -1;
-                for (int k=0; k<n_cur; k++)
+                for (int k=0; k<n_this; k++)
                 {
-                    if (opts_cur.GetName(k) == optname)
+                    if (this_opts.GetName(k) == optname)
                     {
                         match = k;
                         break;
                     }
                 }
-                if (match < 0)
+                if (match < 0 && !this_opts.IsObsolete(optname))
                 {
-                    // We didn't have this option yet; add the new
-                    // default value we just got
-                    switch (opts_from.GetType(j))
-                    {
-                      case DBOptionsAttributes::Bool:
-                        opts_cur.SetBool(optname, opts_from.GetBool(optname));
-                        break;
-                      case DBOptionsAttributes::Int:
-                        opts_cur.SetInt(optname, opts_from.GetInt(optname));
-                        break;
-                      case DBOptionsAttributes::Float:
-                        opts_cur.SetFloat(optname, opts_from.GetFloat(optname));
-                        break;
-                      case DBOptionsAttributes::Double:
-                        opts_cur.SetDouble(optname, opts_from.GetDouble(optname));
-                        break;
-                      case DBOptionsAttributes::String:
-                        opts_cur.SetString(optname, opts_from.GetString(optname));
-                        break;
-                      case DBOptionsAttributes::Enum:
-                        opts_cur.SetEnum(optname, opts_from.GetEnum(optname));
-                        opts_cur.SetEnumStrings(optname, opts_from.GetEnumStrings(optname));
-                        break;
-                    }
+                    //
+                    // If we get here, it means the option is defined
+                    // in the config file but is NOT defined by the plugin.
+                    // and probably never has been defined by the plugin at
+                    // any time in the past. 
+                    //
+                    debug1 << "Got unknown option \"" << optname
+                           << "\" from config file for plugin \"" << id
+                           << "\"" << endl;
                 }
                 else
                 {
-                    // We have this one already; don't override it
-                    // because we could be overriding something the
-                    // user had already set, e.g. via a config file
+                    //
+                    // If we get here, the config file defines a value for an
+                    // option. So, overwrite whatever we have stored in 'this'
+                    // object (which because of the copy, this_opts=plugin_opts,
+                    // above is currently set to whatever the plugin defines as
+                    // the default value) with whatever the config file says.
+                    // If the option was obsolete, the succeeding calls will
+                    // define create it and that is fine because 'this_opts'
+                    // already knows its obsolete and now only needs to obtain
+                    // the value for it from the config file. Otherwise, the
+                    // succeeding calls just overwrite the default value with
+                    // the value from the config file.
+                    //
+                    switch (config_opts.GetType(j))
+                    {
+                      case DBOptionsAttributes::Bool:
+                        this_opts.SetBool(optname, config_opts.GetBool(optname));
+                        break;
+                      case DBOptionsAttributes::Int:
+                        this_opts.SetInt(optname, config_opts.GetInt(optname));
+                        break;
+                      case DBOptionsAttributes::Float:
+                        this_opts.SetFloat(optname, config_opts.GetFloat(optname));
+                        break;
+                      case DBOptionsAttributes::Double:
+                        this_opts.SetDouble(optname, config_opts.GetDouble(optname));
+                        break;
+                      case DBOptionsAttributes::String:
+                        this_opts.SetString(optname, config_opts.GetString(optname));
+                        break;
+                      case DBOptionsAttributes::Enum:
+                        this_opts.SetEnum(optname, config_opts.GetEnum(optname));
+                        this_opts.SetEnumStrings(optname, config_opts.GetEnumStrings(optname));
+                        break;
+                    }
                 }
             }
         }
