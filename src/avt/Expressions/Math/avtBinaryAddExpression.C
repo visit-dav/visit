@@ -172,3 +172,56 @@ avtBinaryAddExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 }
 
 
+// ****************************************************************************
+//  Method:  avtBinaryAddExpression::GetVariableType
+//
+//  Purpose:
+//    Better support for array variables.  We actually return the output
+//    type to be the same as the input type (assuming they are the same,
+//    or if one has 1 compoent).
+//
+//  Note:
+//    This can't yet be pulled up into avtBinaryMathExpression because
+//    mult and div do non-elementwise operations.  If that changes,
+//    we should pull this up.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 18, 2009
+//
+// ****************************************************************************
+avtVarType
+avtBinaryAddExpression::GetVariableType()
+{
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (varnames.size() != 2)
+        return AVT_UNKNOWN_TYPE;
+
+    if (!atts.ValidVariable(varnames[0]) ||
+        !atts.ValidVariable(varnames[1]))
+        return AVT_UNKNOWN_TYPE;
+
+    int ncomp1 = atts.GetVariableDimension(varnames[0]);
+    int ncomp2 = atts.GetVariableDimension(varnames[1]);
+    avtVarType type1 = atts.GetVariableType(varnames[0]);
+    avtVarType type2 = atts.GetVariableType(varnames[1]);
+
+    if (type1 == type2)
+    {
+        return type1;
+    }
+    else if (ncomp1 == 1)
+    {
+        return type2;
+    }
+    else if (ncomp2 == 1)
+    {
+        return type1;
+    }
+    else
+    {
+        return AVT_UNKNOWN_TYPE;
+    }
+}

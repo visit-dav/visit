@@ -66,6 +66,10 @@ class     vtkDataArray;
 //    Hank Childs, Mon Jan 14 17:58:58 PST 2008
 //    Allow constants to be created as singletons.
 //
+//    Jeremy Meredith, Wed Mar 18 14:27:33 EDT 2009
+//    Added better support for array vars by returning a real
+//    output variable type (when possible).
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinarySubtractExpression : public avtBinaryMathExpression
@@ -80,6 +84,7 @@ class EXPRESSION_API avtBinarySubtractExpression : public avtBinaryMathExpressio
                                   { return "Calculating binary subtraction"; };
 
   protected:
+    virtual avtVarType        GetVariableType();
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                  vtkDataArray *out, int ncomps, int ntuples);
     virtual bool     CanHandleSingletonConstants(void) {return true;};

@@ -419,3 +419,31 @@ avtTimeIteratorDataTreeIteratorExpression::ConvertIntermediateArrayToFinalArray
 }
 
 
+// ****************************************************************************
+//  Method:  avtTimeIteratorDataTreeIteratorExpression::GetVariableType
+//
+//  Purpose:
+//    Try to do better than unknown type for the output type.
+//    Specifically, the time iteration stuff typically makes the output
+//    num components the same as the input, so we try to re-use the
+//    input data type.
+//
+//  Arguments:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 18, 2009
+//
+// ****************************************************************************
+avtVarType
+avtTimeIteratorDataTreeIteratorExpression::GetVariableType()
+{
+    if (varnames.size() != 1)
+        return AVT_UNKNOWN_TYPE;
+
+    avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+    if (!inatts.ValidVariable(varnames[0]))
+        return AVT_UNKNOWN_TYPE;
+
+    return inatts.GetVariableType(varnames[0].c_str());
+}

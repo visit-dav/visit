@@ -57,6 +57,10 @@
 //  Programmer: Hank Childs
 //  Creation:   February 14, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 18 14:06:58 EDT 2009
+//    Added support for variable types other than scalars.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtTimeIteratorDataTreeIteratorExpression 
@@ -87,6 +91,7 @@ class EXPRESSION_API avtTimeIteratorDataTreeIteratorExpression
     virtual vtkDataArray     *ConvertIntermediateArrayToFinalArray(vtkDataArray *);
 
     avtDataTree_p             ConstructOutput(avtDataTree_p);
+    virtual avtVarType        GetVariableType();
 };
 
 
