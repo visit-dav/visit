@@ -478,6 +478,11 @@ avtExpressionFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Thu Sep 20 11:39:28 PDT 2007
 //    Vectors of size 2 were being tagged as scalars.  Make them be vectors.
 //
+//    Jeremy Meredith, Wed Mar 18 14:09:25 EDT 2009
+//    If we have more than 3 components, guess its type to be an array.
+//    If our output type is an array, initialize its subnames with valid
+//    values.
+//
 // ****************************************************************************
 
 void
@@ -522,8 +527,21 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
         else if (dim == 9)
             outAtts.SetVariableType(AVT_TENSOR_VAR);
         else
-            outAtts.SetVariableType(AVT_SCALAR_VAR);
+            outAtts.SetVariableType(AVT_ARRAY_VAR);
     }
+
+    if (outAtts.GetVariableType() == AVT_ARRAY_VAR)
+    {
+        stringVector subnames;
+        char str[256];
+        for (int i=0; i<dim; i++)
+        {
+            snprintf(str, 256, "subvar%d", i);
+            subnames.push_back(str);
+        }
+        outAtts.SetVariableSubnames(subnames, outputVariableName);
+    }
+
     outAtts.SetCentering(IsPointVariable()?AVT_NODECENT:AVT_ZONECENT);
 }
 
