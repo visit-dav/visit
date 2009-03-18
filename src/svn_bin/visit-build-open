@@ -79,8 +79,6 @@ esac
 hoth=true
 sunspot=true
 up=true
-alc=true
-thunder=true
 yana=true
 xchem=true
 davinci=true
@@ -100,8 +98,6 @@ do
          hoth=false
          sunspot=false
          up=false
-         alc=false
-         thunder=false
          yana=false
          xchem=false
          davinci=false
@@ -130,22 +126,6 @@ do
          ;;
       +up)
          up=true
-         shift
-         ;;
-      -alc)
-         alc=false
-         shift
-         ;;
-      +alc)
-         alc=true
-         shift
-         ;;
-      -thunder)
-         thunder=false
-         shift
-         ;;
-      +thunder)
-         thunder=true
          shift
          ;;
       -yana)
@@ -197,8 +177,6 @@ then
    echo "    hoth (B-Div, Linux),"
    echo "    sunspot (B-Div, Solaris),"
    echo "    up (LC, AIX),"
-   echo "    alc (LC, Linux, x86),"
-   echo "    thunder (LC, Linux, ia64),"
    echo "    yana (LC, Linux, x86_64),"
    echo "    xchem (HEAF, Linux),"
    echo "    davinci (LBNL, Altix),"
@@ -402,108 +380,6 @@ then
       scp up up:up_buildit
       scp $dist.tar.gz up:up_$dist.tar.gz
       ssh up "chmod 750 up_buildit;./up_buildit" &
-   fi
-fi
-
-#
-# Build on alc.
-#
-rm -f alc
-cat <<EOF > alc
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/alc ; then
-   mkdir /usr/tmp/$user/alc
-fi
-rm -rf /usr/tmp/$user/alc/visitbuild
-mkdir /usr/tmp/$user/alc/visitbuild
-mv alc_$dist.tar.gz /usr/tmp/$user/alc/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/alc/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
-make -j 3 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist >> ../../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "          build of visit on alc"        > resultlog 2>&1
-echo "         -----------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): alc" $emailName < resultlog
-EOF
-
-if [ $alc = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on alc"
-      scp alc alc1:alc_buildit
-      scp $dist.tar.gz alc1:alc_$dist.tar.gz
-      ssh alc1 "chmod 750 alc_buildit;./alc_buildit" &
-   fi
-fi
-
-#
-# Build on thunder.
-#
-rm -f thunder
-cat <<EOF > thunder
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/thunder ; then
-   mkdir /usr/tmp/$user/thunder
-fi
-rm -rf /usr/tmp/$user/thunder/visitbuild
-mkdir /usr/tmp/$user/thunder/visitbuild
-mv thunder_$dist.tar.gz /usr/tmp/$user/thunder/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/thunder/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-parallel --enable-visitmodule --enable-slivr >> ../../buildlog 2>&1
-make -j 3 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist >> ../../buildlog 2>&1
-mv visit\$ver2.linux-ia64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on thunder"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): thunder" $emailName < resultlog
-EOF
-
-if [ $thunder = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on thunder"
-      scp thunder thunder2:thunder_buildit
-      scp $dist.tar.gz thunder2:thunder_$dist.tar.gz
-      ssh thunder2 "chmod 750 thunder_buildit;./thunder_buildit" &
    fi
 fi
 
@@ -733,5 +609,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot up alc thunder yana xchem davinci ellipse
+   rm -f hoth sunspot up yana xchem davinci ellipse
 fi
