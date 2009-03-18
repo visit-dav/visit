@@ -60,6 +60,9 @@
 //   Dave Pugmire, Thu Feb 12 08:43:01 EST 2009
 //   Removed ComputeStatistics. (Moved to avtSLAlgorithm)
 //
+//   Dave Pugmire, Tue Mar 17 12:02:10 EDT 2009
+//   Create a new RecvSLs method that doesn't check for domain inclusion.
+//
 // ****************************************************************************
 
 class avtParSLAlgorithm : public avtSLAlgorithm
@@ -72,21 +75,22 @@ class avtParSLAlgorithm : public avtSLAlgorithm
     virtual void              PostExecute();
 
   protected:
-    void                       InitRequests();
-    void                       CheckPendingSendRequests();
-    void                       CleanupAsynchronous();
-    void                       PostRecvStatusReq( int proc );
-    void                       PostRecvSLReq( int proc );
-    void                       SendMsg(int dest, std::vector<int> &msg);
-    void                       SendAllMsg(std::vector<int> &msg);
-    void                       RecvMsgs(std::vector<std::vector<int> > &msgs);
-    void                       SendSLs(int dst,
-                                       std::vector<avtStreamlineWrapper*> &);
-    int                        RecvSLs(std::list<avtStreamlineWrapper*> &,
-                                       int &earlyTerminations);
-    bool                       ExchangeSLs( std::list<avtStreamlineWrapper *> &,
-                                            std::vector<std::vector<avtStreamlineWrapper *> >&,
-                                            int &earlyTerminations );
+    void                      InitRequests();
+    void                      CheckPendingSendRequests();
+    void                      CleanupAsynchronous();
+    void                      PostRecvStatusReq( int proc );
+    void                      PostRecvSLReq( int proc );
+    void                      SendMsg(int dest, std::vector<int> &msg);
+    void                      SendAllMsg(std::vector<int> &msg);
+    void                      RecvMsgs(std::vector<std::vector<int> > &msgs);
+    void                      SendSLs(int dst,
+                                      std::vector<avtStreamlineWrapper*> &);
+    int                       RecvSLs(std::list<avtStreamlineWrapper*> &);
+    int                       RecvSLs(std::list<avtStreamlineWrapper*> &,
+                                      int &earlyTerminations);
+    bool                      ExchangeSLs( std::list<avtStreamlineWrapper *> &,
+                                           std::vector<std::vector<avtStreamlineWrapper *> >&,
+                                           int &earlyTerminations );
     
     int                       rank, nProcs;
     std::map<MPI_Request, unsigned char*> sendSLBufferMap, recvSLBufferMap;

@@ -476,7 +476,8 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
     os<<"Method= "<<AlgoName()<<" nCPUs= "<<nCPUs<<" nDom= "<<numDomains;
     os<<" nPts= "<<numSeedPoints<<endl;
     os<<" maxCount= "<<streamlineFilter->maxCount;
-    os<<" domCache= "<<streamlineFilter->cacheQLen<<endl;
+    os<<" domCache= "<<streamlineFilter->cacheQLen;
+    os<<" workGrp=  "<<streamlineFilter->workGroupSz<<endl;
     os<<endl;
 
     ReportTimings(os, true);
@@ -486,6 +487,7 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
     os<<endl<<"Per Proccess:"<<endl;
     ReportTimings(os, false);
     ReportCounters(os, false);
+    os<<endl;
 }
 
 // ****************************************************************************

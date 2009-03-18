@@ -207,6 +207,11 @@ avtParSLAlgorithm::CleanupAsynchronous()
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Wed Mar 18 17:07:07 EDT 2009
+//    Delete entry from map after send is complete.
+//
 // ****************************************************************************
 void
 avtParSLAlgorithm::CheckPendingSendRequests()
@@ -249,8 +254,9 @@ avtParSLAlgorithm::CheckPendingSendRequests()
                        << (void *)buff << endl;
                 if (buff)
                     delete [] buff;
-                debug5 << "Delete done!\n";
+
                 sendSLBufferMap[r] = NULL;
+                sendSLBufferMap.erase(r);
             }
             
             delete [] indices;
@@ -293,7 +299,9 @@ avtParSLAlgorithm::CheckPendingSendRequests()
                        << (void *)buff << endl;
                 if (buff)
                     delete [] buff;
+
                 sendIntBufferMap[r] = NULL;
+                sendIntBufferMap.erase(r);
             }
             
             delete [] indices;
@@ -554,7 +562,7 @@ avtParSLAlgorithm::SendSLs(int dst,
     int err = MPI_Isend(msg, sz, MPI_UNSIGNED_CHAR, dst,
                         avtParSLAlgorithm::STREAMLINE_TAG,
                         VISIT_MPI_COMM, &req);
-    debug5<<err<<" = MPI_Isend(msg, "<<sz<<", MPI_UNSIGNED_CHAR, "<<dst<<", req= "<<req<<endl;
+    debug5<<err<<" = MPI_Isend(msg, "<<sz<<", MPI_UNSIGNED_CHAR, to "<<dst<<", req= "<<req<<endl;
     sendSLBufferMap[req] = msg;
 
     BytesCnt.value += sz;
@@ -570,16 +578,18 @@ avtParSLAlgorithm::SendSLs(int dst,
 //      Recv streamlines.
 //
 //  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
+//  Creation:   Mon Mar 16 15:45:11 EDT 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//  RecvSLs broken into two methods.
 //
 // ****************************************************************************
 int
-avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
-                           int &earlyTerminations )
+avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
 {
     int slCount = 0;
-    earlyTerminations = 0;
 
     while (true)
     {
@@ -598,11 +608,11 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
             for (int i = 0; i < num; i++)
             {
                 int idx = indices[i];
-                
                 MPI_Request req = slRecvRequests[idx];
                 if (req == MPI_REQUEST_NULL)
                     continue;
                 
+                //Grab the bytes, unserialize them, add to list.
                 unsigned char *msg = recvSLBufferMap[req];
                 recvSLBufferMap.erase(req);
                 if (msg == NULL)
@@ -615,33 +625,12 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
                 size_t numSLs;
                 buff.read(numSLs);
 
-                vector<avtStreamlineWrapper *> recvSLs;
                 for (int j = 0; j < numSLs; j++)
                 {
                     avtStreamlineWrapper *slSeg = new avtStreamlineWrapper;
                     slSeg->Serialize(MemStream::READ, buff, GetSolver());
                     recvSLs.push_back(slSeg);
-                }
-
-                // Make sure the streamline is one one of my domains.
-                for (int j = 0; j < recvSLs.size(); j++)
-                {
-                    avtStreamlineWrapper *slSeg = recvSLs[j];
-
-                    avtVector pt;
-                    slSeg->GetEndPoint(pt);
-
-                    if (PointInDomain(pt, slSeg->domain))
-                    {
-                        streamlines.push_back(slSeg);
-                        slCount++;
-                    }
-                    else
-                    {
-                        // Point not in domain.
-                        delete slSeg;
-                        earlyTerminations++;
-                    }
+                    slCount++;
                 }
             }
 
@@ -654,6 +643,56 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
         
         if (num == 0)
             break;
+    }
+
+    return slCount;
+}
+
+// ****************************************************************************
+//  Method: avtParSLAlgorithm::RecvSLs
+//
+//  Purpose:
+//      Recv streamlines.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 16, 2008
+//
+//  Modifications:
+//
+//    Dave Pugmire, Mon Mar 16 15:45:11 EDT 2009
+//    Call the other RecvSLs and then check for domain inclusion.
+//
+//    Dave Pugmire, Tue Mar 17 12:02:10 EDT 2009
+//    Use new new RecvSLs method, then check for terminations.
+//
+// ****************************************************************************
+int
+avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
+                           int &earlyTerminations )
+{
+    list<avtStreamlineWrapper *> recvSLs;
+    RecvSLs(recvSLs);
+
+    earlyTerminations = 0;
+    int slCount = 0;
+    //Check to see if they in this domain.
+    list<avtStreamlineWrapper *>::iterator s;
+    for (s = recvSLs.begin(); s != recvSLs.end(); ++s)
+    {
+        avtVector pt;
+        (*s)->GetEndPoint(pt);
+
+        if (PointInDomain(pt, (*s)->domain))
+        {
+            streamlines.push_back(*s);
+            slCount++;
+        }
+        else
+        {
+            // Point not in domain.
+            delete *s;
+            earlyTerminations++;
+        }
     }
 
     return slCount;
