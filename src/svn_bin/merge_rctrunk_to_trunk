@@ -25,6 +25,7 @@
 #
 #    Tom Fogal, Tue Mar 17 21:55:56 MST 2009
 #    Updated whence to which, to allow use on systems w/o ksh.
+#    Got rid of a 'return 0', which broke on bash.
 #
 # *****************************************************************************
 
@@ -214,6 +215,3 @@ echo ""
 echo "  set_branch_to_trunk_revision $RCTRUNKNAME $REV"
 echo "  (The RC Trunk is technically a branch, so this is the right script)"
 echo ""
-
-return 0
-
