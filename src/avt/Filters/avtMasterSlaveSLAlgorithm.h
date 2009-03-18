@@ -63,6 +63,9 @@ class SlaveInfo;
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//   Allow masters to share work loads.  
+//
 // ****************************************************************************
 
 class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
@@ -102,8 +105,10 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
     int                        sleepMicroSec;
     void                       Sleep();
     
-    static int                 MSG_STATUS, MSG_DONE, MSG_SEND_SL, MSG_LOAD_DOMAIN,
-                               MSG_SEND_SL_HINT, MSG_FORCE_SEND_STATUS;
+    static int                 MSG_STATUS, MSG_DONE, MSG_SEND_SL,
+                               MSG_LOAD_DOMAIN, MSG_SEND_SL_HINT,
+                               MSG_FORCE_SEND_STATUS, MSG_MASTER_STATUS,
+                               MSG_OFFLOAD_SL;
 
     //Statistics and coutners.
     int                       latencyTimer;
@@ -133,7 +138,9 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
                          int maxCount,
                          int workGrpSz,
-                         std::vector<int> &slaves);
+                         std::vector<int> &slaves,
+                         int master,
+                         std::vector<int> &masters);
     virtual ~avtMasterSLAlgorithm();
 
     virtual const char*       AlgoName() const {return "MasterSlave";}
@@ -141,11 +148,25 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual void              Execute();
 
   protected:
+    virtual void              ProcessMessages();
+    virtual void              PostLoopProcessing();    
+    std::vector<int>          status, prevStatus;
+    virtual void              UpdateStatus();
+    virtual void              SendStatus(bool forceSend=false);
+    virtual void              ProcessSlaveUpdate(std::vector<int> &);
+    virtual void              ProcessMasterUpdate(std::vector<int> &);
+    virtual void              ProcessOffloadSL(std::vector<int> &);
+    virtual void              ProcessNewStreamlines();
+    virtual void              ManageWorkgroup();
+    virtual void              ManageSlaves();
+    virtual void              ManageMasters();
     virtual void              CalculateStatistics();
 
-    int                       totalNumStreamlines, workGroupSz;
+    int                       workGroupActiveSLs, workGroupSz;
+    bool                      done, slaveUpdate, masterUpdate;
     int                       case1Cnt, case2Cnt, case3Cnt, case4Cnt, case5Cnt;
-    std::vector<SlaveInfo>    slaveInfo;
+    int                       master;
+    std::vector<SlaveInfo>    slaveInfo, masterInfo;
     std::vector<int>          slDomCnts, domLoaded, slackers;
     std::list<avtStreamlineWrapper *> activeSLs;
 
@@ -155,7 +176,6 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     void                      FindSlackers(int oobFactor=-1,
                                            bool randomize= true,
                                            bool checkJustUpdated=false);
-    bool                      UpdateStatus();
     bool                      UpdateSlaveStatus(std::vector<int> &);
     void                      PrintStatus();
 
@@ -217,6 +237,11 @@ class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
 //
+// Modifications:
+// 
+//   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//   Allow masters to share work loads.
+//
 // ****************************************************************************
 class SlaveInfo
 {
@@ -231,13 +256,31 @@ class SlaveInfo
     void Reset() { justUpdated = false; }
     void Debug();
 
-    bool justUpdated;
+    bool justUpdated, initialized;
     int canGive, canAccept, slCount, slLoadedCount, slOOBCount, rank;
     int domLoadedCount;
     vector<int> domainCnt;
     vector<bool> domainLoaded;
     vector<int> domainHistory;
 };
+
+template<class T>
+inline std::ostream& operator<<(std::ostream& out, const std::vector<T> &v);
+
+template<class T>
+inline std::ostream& operator<<(std::ostream& out, const std::vector<T> &v)
+{
+    out<<"[";
+    for (int i = 0; i < v.size(); i++)
+    {
+        out<<v[i];
+        if (i != (v.size()-1))
+            out<<" ";
+    }
+    out << "]";
+    return out;
+}
+
 
 #endif
 

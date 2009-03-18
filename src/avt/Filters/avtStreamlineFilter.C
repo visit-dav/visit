@@ -2133,10 +2133,10 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
                 continue;
         }
 
-        debug1<<"Candidate pt: "<<i<<" "<<candidatePts[i];
-        debug1<<" id= "<<i<<" dom =[";
-        for (int j = 0; j < dl.size();j++)debug1<<dl[j]<<", ";
-        debug1<<"]\n";
+        debug5<<"Candidate pt: "<<i<<" "<<candidatePts[i];
+        debug5<<" id= "<<i<<" dom =[";
+        for (int j = 0; j < dl.size();j++)debug5<<dl[j]<<", ";
+        debug5<<"]\n";
         
         // Add seed for each domain/pt. At this point, we don't know where 
         // the pt belongs....

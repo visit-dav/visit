@@ -55,6 +55,8 @@ int avtMasterSlaveSLAlgorithm::MSG_SEND_SL = 420005;
 int avtMasterSlaveSLAlgorithm::MSG_LOAD_DOMAIN = 420006;
 int avtMasterSlaveSLAlgorithm::MSG_SEND_SL_HINT = 420007;
 int avtMasterSlaveSLAlgorithm::MSG_FORCE_SEND_STATUS = 420008;
+int avtMasterSlaveSLAlgorithm::MSG_MASTER_STATUS = 420009;
+int avtMasterSlaveSLAlgorithm::MSG_OFFLOAD_SL = 420010;
 
 // ****************************************************************************
 //  Method: avtMasterSlaveSLAlgorithm::Create
@@ -64,6 +66,11 @@ int avtMasterSlaveSLAlgorithm::MSG_FORCE_SEND_STATUS = 420008;
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
+//
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//  Allow masters to share work loads.
 //
 // ****************************************************************************
 
@@ -115,11 +122,24 @@ avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
         for (int i = masterList[rank][0]; i <= masterList[rank][1]; i++)
             slaves.push_back(i);
         
-        algo = new avtMasterSLAlgorithm(slFilter, maxCount, workGroupSz, slaves);
-        debug1<<"I am a master. My slaves are: [";
-        for(int i = 0; i < slaves.size(); i++) debug1<<slaves[i]<<" ";
-        debug1<<"]\n";
+        vector<int> masters;
+        int master;
+        if (rank == 0)
+        {
+            master = -1;
+            if (numMasters > 1)
+                for (int i = 0; i < numMasters; i++)
+                    masters.push_back(i);
+        }
+        else
+        {
+            master = 0;
+        }
+        
+        algo = new avtMasterSLAlgorithm(slFilter, maxCount, workGroupSz, slaves, master, masters);
 
+        debug1<<"I am a master. My slaves are: "<<slaves<<endl;
+        debug1<<"My masterMaster is "<<master<<". Masters= "<<masters<<endl;
     }
     
     // I'm a slave. Look for my master.
@@ -323,19 +343,29 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 //
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
-//
+//   
+//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//  Allow masters to share work loads.
+//  
 // ****************************************************************************
 
 avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
                                            int maxCount,
                                            int workGrpSz,
-                                           vector<int> &slaves)
+                                           vector<int> &slaves,
+                                           int mst,
+                                           vector<int> &masters)
     : avtMasterSlaveSLAlgorithm(slFilter, maxCount)
 {
     workGroupSz = workGrpSz;
     //Create my slaves.
     for (int i = 0; i < slaves.size(); i++)
         slaveInfo.push_back(SlaveInfo(slaves[i], NUM_DOMAINS));
+
+    //Create any masters to manage.
+    master = mst;
+    for (int i = 0; i < masters.size(); i++)
+        masterInfo.push_back(SlaveInfo(masters[i], NUM_DOMAINS));
     
     slDomCnts.resize(NUM_DOMAINS,0);
     domLoaded.resize(NUM_DOMAINS,0);
@@ -372,6 +402,11 @@ avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//  
+//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//  Allow masters to share work loads.  
+//
 // ****************************************************************************
 
 void
@@ -392,6 +427,7 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
     int i1 = i0+ptsPerMaster;
     if (rank == (numMasters-1))
         i1 = nSeeds;
+
     debug1<<"I have seeds: "<<i0<<" --> "<<i1<<endl;
     
     //Delete the seeds I don't need.
@@ -403,7 +439,12 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
     for (int i = i0; i < i1; i++)
         activeSLs.push_back(seedPts[i]);
     
-    totalNumStreamlines = activeSLs.size();
+    workGroupActiveSLs = activeSLs.size();
+    done = false;
+    slaveUpdate = false;
+    masterUpdate = false;
+    status.resize(NUM_DOMAINS,0);
+    prevStatus.resize(NUM_DOMAINS,0);
 }
 
 // ****************************************************************************
@@ -436,51 +477,6 @@ avtMasterSLAlgorithm::CalculateStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::UpdateStatus
-//
-//  Purpose:
-//      Update the status of any slaves.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   January 27, 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Generalized domain to include domain/time. Pathine cleanup.
-//
-// ****************************************************************************
-
-bool
-avtMasterSLAlgorithm::UpdateStatus()
-{
-    //Clean and update SL/Domain counts.
-    for (int i = 0; i < NUM_DOMAINS; i++)
-    {
-        slDomCnts[i] = 0;
-        domLoaded[i] = 0;
-    }
-    list<avtStreamlineWrapper *>::const_iterator s;
-    for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
-        slDomCnts[DomToIdx( (*s)->domain )] ++;
-
-    // See if any slaves have sent a status.
-    vector<vector<int> > msgs;
-    RecvMsgs(msgs);
-    bool newStatus = (msgs.size() > 0);
-    
-    for (int i = 0; i < msgs.size(); i++)
-        UpdateSlaveStatus(msgs[i]);
-    
-    for (int i = 0; i < slaveInfo.size(); i++)
-        for ( int d = 0; d < NUM_DOMAINS; d++)
-            if (slaveInfo[i].domainLoaded[d])
-                domLoaded[d]++;
-
-    return newStatus;
-}
-
-// ****************************************************************************
 //  Method: avtMasterSLAlgorithm::PrintStatus
 //
 //  Purpose:
@@ -493,12 +489,23 @@ avtMasterSLAlgorithm::UpdateStatus()
 //
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
-//
+//   
+//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//  Allow masters to share work loads.
+//  
 // ****************************************************************************
 
 void
 avtMasterSLAlgorithm::PrintStatus()
 {
+    if (masterInfo.size() > 0)
+    {
+        debug1<<"Masters:\n";
+        for (int i = 0; i < masterInfo.size(); i++)
+            masterInfo[i].Debug();
+        debug1<<endl;
+    }
+
     debug1<<"DOM:               [";
     for ( int i = 0; i < NUM_DOMAINS; i++)
         debug1<<setw(4)<<i<<" ";
@@ -540,25 +547,27 @@ avtMasterSLAlgorithm::PrintStatus()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//  
+//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//  Allow masters to share work loads.    
+//
 // ****************************************************************************
 bool
 avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
 {
-    int rank = status[0];
+    int src = status[0];
     int msg = status[1];
     int nTerm = status[2];
     
-    totalNumStreamlines -= nTerm;
-
-    debug5<<"Status: "<<rank<<" "<<nTerm<<" [";
-    for (int i = 3; i<status.size(); i++) debug5<<status[i]<<" ";
-    debug5<<"]\n";
+    workGroupActiveSLs -= nTerm;
+    debug1<<"SlaveStatus: "<<src<<" "<<status<<endl;
     
     for (int i = 0; i < slaveInfo.size(); i++)
     {
-        if (slaveInfo[i].rank == rank)
+        if (slaveInfo[i].rank == src)
         {
-            debug5<<"Update for rank= "<<rank<<endl;
+            debug5<<"Update for rank= "<<src<<endl;
             vector<int> domStatus;
             for (int j = 3; j < status.size(); j++)
                 domStatus.push_back(status[j]);
@@ -582,6 +591,9 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
 //   Add call to check for sent buffers.
 //
+//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//  Allow masters to share work loads.       
+//
 // ****************************************************************************
 
 void
@@ -592,48 +604,515 @@ avtMasterSLAlgorithm::Execute()
     //Each slave has to send information. Don't proceed until they have.
     Barrier();
 
-    while (totalNumStreamlines > 0)
+    while (!done)
     {
-        debug1<<"while ("<<totalNumStreamlines<<" > 0)\n";
-        if (UpdateStatus())
-        {
-            //PrintStatus();
-            /*
-            Case1(case1Cnt);
-            Case2(case2Cnt);
-            int case3OverloadFactor = 10*maxCnt, case3NDomainFactor = 3*maxCnt;
-            Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
-            Case4(0,case4Cnt);
-            */
-            
-            Case4(3*maxCnt, case4Cnt);
-            Case1(case1Cnt);
-            //Case4(1*maxCnt, case4Cnt); //Remove this KILLED performance. ODD.
-            Case2(case2Cnt);
-            int case3OverloadFactor = 10*maxCnt, case3NDomainFactor = 3*maxCnt;
-            Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
-            Case4(0, case4Cnt);
-            
-            //Case5(2*maxCount, true, case5Acnt);
-            //Case5(2*maxCount, false, case5Bcnt);
-
-            debug1<<endl<<"Post-Mortem"<<endl;
-            //PrintStatus();
-            
-            for (int i = 0; i < slaveInfo.size(); i++)
-                slaveInfo[i].Reset();
-        }
-        else
-        {
-            debug1<<"Nothing to do: "<<totalNumStreamlines<<endl;
-            Sleep();
-        }
+        debug1<<"Looping SLs= "<<workGroupActiveSLs<<endl;
+        ProcessMessages();
+        ProcessNewStreamlines();
+        ManageWorkgroup();
+        
         CheckPendingSendRequests();
+
+        //See if we are done.
+        PostLoopProcessing();
     }
-    
+
+    // We are done, tell all slaves to pack it up.
     SendAllSlavesMsg(MSG_DONE);
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::PostLoopProcessing()
+//
+//  Purpose:
+//      See if we are done.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::PostLoopProcessing()
+{
+    SendStatus();
+
+    //See if we are done.
+    if (master == -1) //I'm root master.
+    {
+        debug1<<"See if we are done.\n";
+        if (workGroupActiveSLs == 0)
+        {
+            debug1<<"I'm done!\n";
+            done = true;
+            for (int i = 0; i < masterInfo.size(); i++)
+                if (masterInfo[i].slCount != 0)
+                {
+                    done = false;
+                    break;
+                }
+            
+            debug1<<"Done= "<<done<<endl;
+            if (done)
+            {
+                for (int i = 0; i < masterInfo.size(); i++)
+                {
+                    vector<int> msg(1, MSG_DONE);
+                    SendMsg(masterInfo[i].rank, msg);
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::UpdateStatus
+//
+//  Purpose:
+//      Update my status.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//  
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::UpdateStatus()
+{
+    for (int i = 0; i < status.size(); i++)
+        status[i] = 0;
+    
+    status[0] = workGroupActiveSLs;
+    for (int i = 0; i < NUM_DOMAINS; i++)
+        status[i+1] = domLoaded[i];
+}
+
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::SendStatus
+//
+//  Purpose:
+//      Send master status to my master.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::SendStatus(bool forceSend)
+{
+    UpdateStatus();
+
+    bool statusChanged = false;
+    
+    //See if anything changed.
+    if (!forceSend)
+    {
+        for (int i = 0; i < status.size(); i++)
+            if (status[i] != prevStatus[i])
+            {
+                statusChanged = true;
+                break;
+            }
+    }
+    
+    if (statusChanged)
+    {
+        vector<int> msg(NUM_DOMAINS+2);
+        msg[0] = MSG_MASTER_STATUS;
+        msg[1] = workGroupActiveSLs;
+        for (int i = 0; i < NUM_DOMAINS; i++)
+            msg[i+2] = domLoaded[i];
+
+        debug1<<"MasterStatusSend: "<<msg<<endl;
+        
+        if (master != -1)
+            SendMsg(master, msg);
+        else
+        {
+            msg.insert(msg.begin(), rank);
+            ProcessMasterUpdate(msg);
+        }
+
+        
+        for (int i = 0; i < status.size(); i++)
+            prevStatus[i] = status[i];
+    }
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::ProcessMessages
+//
+//  Purpose:
+//      Handle incoming messages.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ProcessMessages()
+{
+    debug1<<"avtMasterSLAlgorithm::ProcessMessages()\n";
+    
+    vector<vector<int> > msgs;
+    RecvMsgs(msgs);
+
+    for (int i = 0; i < msgs.size(); i++)
+    {
+        vector<int> &msg = msgs[i];
+        int src = msg[0];
+        int msgType = msg[1];
+
+        if (msgType == MSG_DONE)
+        {
+            done = true;
+            break;
+        }
+        else if (msgType == MSG_STATUS)
+            ProcessSlaveUpdate(msg);
+        else if (msgType == MSG_MASTER_STATUS)
+            ProcessMasterUpdate(msg);
+        else if (msgType == MSG_OFFLOAD_SL)
+            ProcessOffloadSL(msg);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::ProcessSlaveUpdate
+//
+//  Purpose:
+//      Process status messages from slaves.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ProcessSlaveUpdate(vector<int> &status)
+{
+    UpdateSlaveStatus(status);
+    slaveUpdate = true;
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::ProcessMasterUpdate
+//
+//  Purpose:
+//      Process status messages from masters.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ProcessMasterUpdate(vector<int> &status)
+{
+    int src = status[0];
+    int msg = status[1];
+    int nSLs = status[2];
+
+    debug1<<"MasterUpdateStatus: "<<src<<status<<endl;
+    
+    for (int i = 0; i < masterInfo.size(); i++)
+    {
+        if (masterInfo[i].rank == src)
+        {
+            debug5<<"Update for rank= "<<src<<endl;
+            vector<int> domStatus;
+            for (int j = 3; j < status.size(); j++)
+                domStatus.push_back(status[j]);
+            masterInfo[i].Update(domStatus, false);
+            masterInfo[i].slCount = nSLs;
+            break;
+        }
+    }
+
+    masterUpdate = true;
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::ProcessOffloadSL
+//
+//  Purpose:
+//      Offload work to another master.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
+{
+    int src = status[0];
+    int msg = status[1];
+    int dst = status[2];
+
+    debug1<<"Offload some work to "<<dst<<" domInfo= "<<status<<endl;
+
+    vector<int> doms;
+    for (int i = 3; i < status.size(); i++)
+        if (status[i] != 0)
+            doms.push_back(i-3);
+
+    debug1<<"Doms to consider: "<<doms<<endl;
+
+    bool flag = false;
+    for (int i = 0; !flag && i < slaveInfo.size(); i++)
+    {
+        debug1<<" "<<slaveInfo[i].rank<<": "<<slaveInfo[i].slCount<<endl;
+        if (slaveInfo[i].slCount > 0)
+        {
+            for (int d = 0; !flag && d < doms.size(); d++)
+            {
+                if (slaveInfo[i].domainCnt[doms[d]] > 0)
+                {
+                    debug1<<"Send OFFLOAD MSG: "<<slaveInfo[i].rank<<" ==> "<<dst<<endl;
+                    vector<int> msg;
+                    msg.push_back(MSG_OFFLOAD_SL);
+                    msg.push_back(dst);
+                    DomainType dd = IdxToDom(doms[d]);
+                    msg.push_back(dd.domain);
+                    msg.push_back(dd.timeStep);
+                    msg.push_back(10*maxCnt); //TODO. Fix this!
+                    
+                    slaveInfo[i].RemoveSL(doms[d]);
+                    SendMsg(slaveInfo[i].rank, msg);
+                    
+                    flag = true;
+                }
+            }
+        }
+    }
+
+    masterUpdate = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::NewStreamlines
+//
+//  Purpose:
+//      Handle incoming streamlines.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ProcessNewStreamlines()
+{
+    list<avtStreamlineWrapper*> newSLs;
+    RecvSLs(newSLs);
+    if (!newSLs.empty())
+    {
+        debug1<<"avtMasterSLAlgorithm::ProcessNewStreamlines() cnt "<<workGroupActiveSLs<<" ==> ";
+        workGroupActiveSLs += newSLs.size();
+        debug1<<workGroupActiveSLs<<endl;
+
+        activeSLs.splice(activeSLs.end(), newSLs);
+
+        // We need to process for slaves now.
+        slaveUpdate = true;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::ManageWorkgroup
+//
+//  Purpose:
+//      Manage workgroup.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ManageWorkgroup()
+{
+    if (slaveUpdate)
+    {
+        //Update our counters.
+        for (int i = 0; i < NUM_DOMAINS; i++)
+        {
+            slDomCnts[i] = 0;
+            domLoaded[i] = 0;
+        }
+        
+        list<avtStreamlineWrapper *>::const_iterator s;
+        for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
+            slDomCnts[DomToIdx( (*s)->domain )] ++;
+    
+        for (int i = 0; i < slaveInfo.size(); i++)
+            for ( int d = 0; d < NUM_DOMAINS; d++)
+                if (slaveInfo[i].domainLoaded[d])
+                    domLoaded[d]++;
+    }
+    
+    PrintStatus();
+
+    if (slaveUpdate)
+        ManageSlaves();
+    if (masterUpdate)
+        ManageMasters();
+
+    debug1<<endl<<"Post-Mortem"<<endl;
+    PrintStatus();
+
+    slaveUpdate = false;
+    masterUpdate = false;
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::ManageSlaves
+//
+//  Purpose:
+//      Manage slaves workgroup.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ManageSlaves()
+{
+    /*
+      Case1(case1Cnt);
+      Case2(case2Cnt);
+      int case3OverloadFactor = 10*maxCnt, case3NDomainFactor = 3*maxCnt;
+      Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
+      Case4(0,case4Cnt);
+    */
+    
+    Case4(3*maxCnt, case4Cnt);
+    Case1(case1Cnt);
+    //Case4(1*maxCnt, case4Cnt); //Remove this KILLED performance. ODD.
+    Case2(case2Cnt);
+    int case3OverloadFactor = 10*maxCnt, case3NDomainFactor = 3*maxCnt;
+    Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
+    Case4(0, case4Cnt);
+    
+    //Case5(2*maxCount, true, case5Acnt);
+    //Case5(2*maxCount, false, case5Bcnt);
+    
+    //Resets.
+    for (int i = 0; i < slaveInfo.size(); i++)
+        slaveInfo[i].Reset();
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::ManageMasters
+//
+//  Purpose:
+//      Manage slaves workgroup.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 18, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ManageMasters()
+{
+    // Don't bother if no masters...
+    if (masterInfo.size() == 0)
+        return;
+
+    // Get all the masters with no work.
+    vector<int> idleMasters, busyMasters;
+    for (int i = 0; i < masterInfo.size(); i++)
+    {
+        if (masterInfo[i].initialized)
+        {
+            if (masterInfo[i].slCount == 0)
+                idleMasters.push_back(masterInfo[i].rank);
+            else
+                busyMasters.push_back(masterInfo[i].rank);
+        }
+    }
+
+    debug1<<"IdleMasters: "<<idleMasters<<endl;
+    debug1<<"BusyMasters: "<<busyMasters<<endl;
+
+    // Everyone busy, leave them be.
+    if (idleMasters.size() == 0)
+        return;
+
+    // Randomly pair busy w/ an idle, share info.
+    //random_shuffle(idleMasters.begin(), idleMasters.end());
+    //random_shuffle(busyMasters.begin(), busyMasters.end());
+
+    int N = idleMasters.size();
+    if (busyMasters.size() < N)
+        N = busyMasters.size();
+
+    for (int i = 0; i < N; i++)
+    {
+        // Have busy
+        vector<int> msg(NUM_DOMAINS+2,0);
+        msg[0] = MSG_OFFLOAD_SL;
+        msg[1] = idleMasters[i];
+        for (int j = 0; j < NUM_DOMAINS; j++)
+            msg[2+j] = masterInfo[idleMasters[i]].domainLoaded[j];
+        
+        debug1<<"Send Offload to "<<busyMasters[i]<<" : "<<msg<<endl;
+        if (busyMasters[i] == rank)
+        {
+            msg.insert(msg.begin(), rank);
+            ProcessOffloadSL(msg);
+        }
+        else
+            SendMsg(busyMasters[i], msg);
+    }
+    
+    return;
+    
+    
+    // I have SLs, give some away!
+    if (! activeSLs.empty())
+    {
+        for (int i = 0; i < masterInfo.size(); i++)
+            if (masterInfo[i].slCount == 0)
+            {
+
+                vector< avtStreamlineWrapper *> sendSLs;
+                list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
+                while (s != activeSLs.end() &&
+                       sendSLs.size() < 5)
+                {
+                    //if (masterInfo[0].domainLoaded[DomToIdx((*s)->domain)])
+                    if(1)
+                    {
+                        sendSLs.push_back(*s);
+                        workGroupActiveSLs--;
+                        s = activeSLs.erase(s);
+                    }
+                    else
+                        ++s;
+                }
+                
+                if (sendSLs.size() > 0)
+                {
+                    debug1<<"Send SLs to master: "<<masterInfo[i].rank<<endl;
+                    SendSLs(masterInfo[i].rank, sendSLs);
+                }
+            }
+    }
+
+    //Resets.
+    for (int i = 0; i < masterInfo.size(); i++)
+        masterInfo[i].Reset();
+}
+
 
 // ****************************************************************************
 //  Method: avtMasterSLAlgorithm::SendAllSlavesMsg
@@ -830,7 +1309,6 @@ avtMasterSLAlgorithm::Case2(int &counter)
 
         if (slDomCnts.size() == 0)
             continue;
-
         //Sort on SL count per domain.
         sort(domCnts.begin(),domCnts.end(), domCntCompare);
         if (false)
@@ -902,11 +1380,11 @@ avtMasterSLAlgorithm::Case2(int &counter)
     
     if (streamlinesToSend)
     {
-        int earlyTerminations = 0;
-        ExchangeSLs(activeSLs, distributeSLs, earlyTerminations);
-        
-        if (earlyTerminations != 0)
-            EXCEPTION0(ImproperUseException);
+        for (int i = 0; i < nProcs; i++)
+        {
+            if (distributeSLs[i].size() > 0)
+                SendSLs(i, distributeSLs[i]);
+        }
     }    
 }
 
@@ -926,6 +1404,9 @@ avtMasterSLAlgorithm::Case2(int &counter)
 //
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
 //   Bug fix. Didn't use new DomainType structure for MSG_SEND_SL.
+//   
+//   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//   Allow masters to share work loads.
 //
 // ****************************************************************************
 
@@ -1260,10 +1741,7 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
         for (int i = 0; i < status.size(); i++)
             msg.push_back(status[i]);
 
-        debug5<<"Send: [";
-        for(int i=0; i<msg.size();i++)debug5<<msg[i]<<" ";
-        debug5<<"]\n";
-        
+        debug1<<"Slave SendStatus: "<<msg<<endl;
         SendMsg(master, msg);
         
         //Status just sent, reset.
@@ -1283,6 +1761,9 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//   Allow masters to share work loads.
+//   
 // ****************************************************************************
 
 void
@@ -1296,6 +1777,69 @@ avtSlaveSLAlgorithm::Execute()
     Barrier();
 
 #if 1
+    while ( 1 )
+    {
+        //Fill oobSLs list.
+        list<avtStreamlineWrapper *>::iterator si = activeSLs.begin();
+        while (si != activeSLs.end())
+        {
+            if (!DomainLoaded((*si)->domain))
+            {
+                oobSLs.push_back(*si);
+                si = activeSLs.erase(si);
+            }
+            else
+                ++si;
+        }
+
+        bool done = false, newMsgs = false;
+        while (!activeSLs.empty())
+        {
+            avtStreamlineWrapper *s = activeSLs.front();
+            activeSLs.pop_front();
+            
+            debug1<<"Integrate "<<s->domain<<endl;
+            IntegrateStreamline(s);
+            if (s->status == avtStreamlineWrapper::TERMINATE)
+            {
+                terminatedSLs.push_back(s);
+                numTerminated++;
+            }
+            else
+            {
+                if (DomainLoaded(s->domain))
+                    activeSLs.push_back(s);
+                else
+                    oobSLs.push_back(s);
+            }
+            
+            ProcessMessages(done, newMsgs);
+        }
+        
+        if (done)
+            break;
+
+        activeSLs.splice(activeSLs.end(), oobSLs);
+        oobSLs.clear();
+        
+        //See if we have any SLs.
+        int earlyTerminations = 0;
+        bool newSLs = RecvSLs(activeSLs, earlyTerminations);
+        numTerminated += earlyTerminations;
+        ProcessMessages(done, newMsgs);
+        CheckPendingSendRequests();
+
+        if (done)
+            break;
+        SendStatus();
+        
+        //Nothing to do, take a snooze....
+        if (activeSLs.empty())
+            Sleep();
+    }
+#endif
+
+#if 0
     bool sendStatus = true;
 
     while ( 1 )
@@ -1312,6 +1856,8 @@ avtSlaveSLAlgorithm::Execute()
             else
                 ++si;
         }
+
+        bool done = false, newMsgs = false;
 
         while (!activeSLs.empty())
         {
@@ -1340,14 +1886,22 @@ avtSlaveSLAlgorithm::Execute()
                 else
                     oobSLs.push_back(s);
             }
+            bool newM;
+            ProcessMessages(done, newM);
+            if (done)
+                break;
+            if (newM)
+                newMsgs = true;
         }
 
         activeSLs.splice(activeSLs.end(), oobSLs);
         
-        bool done, newMsgs;
-        ProcessMessages(done, newMsgs);
+        bool newM;
+        ProcessMessages(done, newM);
         if (done)
             break;
+        if (newM)
+            newMsgs = true;
         
         //See if we have any SLs.
         int earlyTerminations = 0;
@@ -1474,13 +2028,14 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             GetDomain(dom);
         }
         
-        else if (msgType == MSG_SEND_SL)
+        else if (msgType == MSG_SEND_SL ||
+                 msgType == MSG_OFFLOAD_SL)
         {
             int dst = msg[2];
             DomainType dom(msg[3], msg[4]);
             int num = msg[5];
 
-            debug1<<"MSG: Send dom= "<<dom<<" to "<<dst<<endl;
+            debug1<<"MSG: Send "<<num<<" x dom= "<<dom<<" to "<<dst;
             list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
             vector< avtStreamlineWrapper *> sendSLs;
             while (s != activeSLs.end() &&
@@ -1495,8 +2050,19 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
                     ++s;
             }
 
+            debug1<<" sent "<<sendSLs.size()<<endl;
             if (sendSLs.size() > 0)
+            {
+                int numSent = sendSLs.size();
                 SendSLs(dst, sendSLs);
+                
+                // A streamline offload actually counts as a termination.
+                if (msgType == MSG_OFFLOAD_SL)
+                {
+                    numTerminated += numSent;
+                    debug1<<"Slave offloading "<<numSent<<" sls to "<<dst<<endl;
+                }
+            }
         }
     }
 }
@@ -1511,11 +2077,15 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//   Allow masters to share work loads.
+//   
 // ****************************************************************************
 
 SlaveInfo::SlaveInfo( int r, int nDomains )
 {
     justUpdated = false;
+    initialized = false;
     canGive = canAccept = slCount = slLoadedCount = slOOBCount = 0;
     domLoadedCount = 0;
     domainCnt.resize(nDomains, 0);
@@ -1618,12 +2188,16 @@ SlaveInfo::RemoveSL( int dom )
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//   Allow masters to share work loads.
+//   
 // ****************************************************************************
 
 void
 SlaveInfo::Update( vector<int> &status, bool debug )
 {
     justUpdated = true;
+    initialized = true;
     slCount = 0;
     slLoadedCount = 0;
     slOOBCount = 0;
