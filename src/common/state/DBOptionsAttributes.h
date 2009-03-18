@@ -95,6 +95,7 @@ public:
     void SelectOptEnums();
     void SelectEnumStrings();
     void SelectEnumStringsSizes();
+    void SelectObsoleteNames();
 
     // Property setting methods
     void SetTypes(const intVector &types_);
@@ -107,6 +108,7 @@ public:
     void SetOptEnums(const intVector &optEnums_);
     void SetEnumStrings(const stringVector &enumStrings_);
     void SetEnumStringsSizes(const intVector &enumStringsSizes_);
+    void SetObsoleteNames(const stringVector &obsoleteNames_);
 
     // Property getting methods
     const intVector    &GetTypes() const;
@@ -129,6 +131,8 @@ public:
           stringVector &GetEnumStrings();
     const intVector    &GetEnumStringsSizes() const;
           intVector    &GetEnumStringsSizes();
+    const stringVector &GetObsoleteNames() const;
+          stringVector &GetObsoleteNames();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -166,6 +170,8 @@ public:
     DBOptionsAttributes::OptionType GetType(int) const;
     std::vector<std::string> GetEnumStrings(const std::string &name) const;
     std::string GetName(int) const;
+    void SetObsolete(const std::string &name);
+    bool IsObsolete(const std::string &name) const;
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -178,7 +184,8 @@ public:
         ID_optStrings,
         ID_optEnums,
         ID_enumStrings,
-        ID_enumStringsSizes
+        ID_enumStringsSizes,
+        ID_obsoleteNames
     };
 
 private:
@@ -192,6 +199,7 @@ private:
     intVector    optEnums;
     stringVector enumStrings;
     intVector    enumStringsSizes;
+    stringVector obsoleteNames;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

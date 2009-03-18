@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtSiloWriter.h>
+#include <avtSiloOptions.h>
 
 #include <float.h>
 #include <ctype.h>
@@ -73,6 +74,7 @@
 using std::map;
 using std::string;
 using std::vector;
+using namespace SiloDBOptions;
 
 
 // ****************************************************************************
@@ -220,6 +222,9 @@ AbsoluteName(const string &name, int nlevels)
 //
 //    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
 //    Added option to write all data to a single file 
+//
+//    Mark C. Miller, Tue Mar 17 18:09:10 PDT 2009
+//    Use const char option names defined in avtSiloOptions.h
 // ****************************************************************************
 
 avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
@@ -232,17 +237,17 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
 
     for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
     {
-        if (dbopts->GetName(i) == "Driver")
+        if (dbopts->GetName(i) == SILO_WROPT_DRIVER)
         {
-            switch (dbopts->GetEnum("Driver"))
+            switch (dbopts->GetEnum(SILO_WROPT_DRIVER))
             {
                 case 0: driver = DB_PDB; break;
 	        case 1: driver = DB_HDF5; break;
             }
         }
-        else if (dbopts->GetName(i) == "Single File")
+        else if (dbopts->GetName(i) == SILO_WROPT_SINGLE_FILE)
         {
-            singleFile = dbopts->GetBool("Single File");
+            singleFile = dbopts->GetBool(SILO_WROPT_SINGLE_FILE);
 #if defined(PARALLEL)
             if (singleFile)
             {

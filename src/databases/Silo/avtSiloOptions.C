@@ -49,7 +49,7 @@
 
 using std::string;
 using std::vector;
-
+using namespace SiloDBOptions;
 
 // ****************************************************************************
 //  Function: GetSiloReadOptions
@@ -74,6 +74,10 @@ using std::vector;
 //
 //    Mark C. Miller, Wed Mar  4 08:56:57 PST 2009
 //    Made controls for ignoring extents tri-state.
+//
+//    Mark C. Miller, Mon Mar 16 23:31:58 PDT 2009
+//    Added logic for obsolete options.
+//    Added const names of options to SiloDBOptions namespace
 // ****************************************************************************
 
 DBOptionsAttributes *
@@ -84,12 +88,18 @@ GetSiloReadOptions(void)
     ignoreOpts.push_back("Always"); // 0
     ignoreOpts.push_back("Auto");   // 1
     ignoreOpts.push_back("Never");  // 2
-    rv->SetEnum("Ignore Spatial Extents", 1); // Auto
-    rv->SetEnumStrings("Ignore Spatial Extents", ignoreOpts);
-    rv->SetEnum("Ignore Data Extents", 1); // Auto 
-    rv->SetEnumStrings("Ignore Data Extents", ignoreOpts);
-    rv->SetBool("Force Single", true);
-    rv->SetBool("Search For ANNOTATION_INT (!!Slow!!)", false);
+    ignoreOpts.push_back("Undef");  // 3
+    rv->SetEnum(SILO_RDOPT_IGNORE_SEXTS, 3); // Undef 
+    rv->SetEnumStrings(SILO_RDOPT_IGNORE_SEXTS, ignoreOpts);
+    rv->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 3); // Undef 
+    rv->SetEnumStrings(SILO_RDOPT_IGNORE_DEXTS, ignoreOpts);
+    rv->SetBool(SILO_RDOPT_FORCE_SINGLE, true);
+    rv->SetBool(SILO_RDOPT_SEARCH_ANNOTINT, false);
+
+    // Specify obsolete options and their default values
+    rv->SetObsolete(SILO_RDOPT_IGNORE_SEXTS2);
+    rv->SetObsolete(SILO_RDOPT_IGNORE_DEXTS2);
+
     return rv;
 }
 
@@ -110,6 +120,9 @@ GetSiloReadOptions(void)
 //
 //    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
 //    Added option to write all data to a single file 
+//
+//    Mark C. Miller, Tue Mar 17 18:13:22 PDT 2009
+//    Use const char * option name symbols defined in avtSiloOptions.h
 // ****************************************************************************
 
 DBOptionsAttributes *
@@ -120,12 +133,12 @@ GetSiloWriteOptions(void)
     //
     // Driver type options
     //
-    rv->SetEnum("Driver", 0);
+    rv->SetEnum(SILO_WROPT_DRIVER, 0);
     vector<string> drivers;
     drivers.push_back("PDB");  // 0
     drivers.push_back("HDF5"); // 1
-    rv->SetEnumStrings("Driver", drivers);
-    rv->SetBool("Single File", false);
+    rv->SetEnumStrings(SILO_WROPT_DRIVER, drivers);
+    rv->SetBool(SILO_WROPT_SINGLE_FILE, false);
 
     return rv;
 }

@@ -36,11 +36,18 @@
 *
 *****************************************************************************/
 
+#include <string>
+
 #include <SiloPluginInfo.h>
 #include <avtSiloFileFormat.h>
 #include <avtSTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 #include <avtSiloOptions.h>
+#include <DBOptionsAttributes.h>
+#include <DebugStream.h>
+
+using namespace SiloDBOptions;
+using std::string;
 
 // ****************************************************************************
 //  Method:  SiloCommonPluginInfo::GetDatabaseType
@@ -101,3 +108,87 @@ SiloCommonPluginInfo::GetWriteOptions() const
     return GetSiloWriteOptions();
 }
 
+// ****************************************************************************
+//  Method: SiloCommonPluginInfo::SetReadOptions
+//
+//  Purpose: Override default method so can provide a way of handling obsolete
+//  options.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   Mon Mar 16 23:32:25 PDT 2009
+// ****************************************************************************
+void
+SiloCommonPluginInfo::SetReadOptions(DBOptionsAttributes *opts)
+{
+    DBOptionsAttributes *defaultReadOptions = GetReadOptions();
+
+    for (int i = 0; i < opts->GetNumberOfOptions(); i++)
+    {
+        string optname = opts->GetName(i);
+
+        // We only care about handling obsolete options here
+        if (!opts->IsObsolete(optname) && !defaultReadOptions->IsObsolete(optname))
+            continue;
+
+        if (optname == SILO_RDOPT_IGNORE_SEXTS2)
+        {
+            int enumval = -1;
+            for (int j = 0; j < opts->GetNumberOfOptions(); j++)
+            {
+                if (opts->GetName(j) == SILO_RDOPT_IGNORE_SEXTS)
+                {
+                    enumval = opts->GetEnum(SILO_RDOPT_IGNORE_SEXTS);
+                    break;
+                }
+            }
+            if (enumval == -1 || enumval == 3) // Undef
+            {
+                debug1 << "Using old option \"" << SILO_RDOPT_IGNORE_SEXTS2
+                       << "\" to set new option \"" << SILO_RDOPT_IGNORE_SEXTS;
+                if (opts->GetBool(SILO_RDOPT_IGNORE_SEXTS2))
+                {
+                    debug1 << "\" to Always" << endl;
+                    opts->SetEnum(SILO_RDOPT_IGNORE_SEXTS, 0); // Always
+                }
+                else
+                {
+                    debug1 << "\" to Never" << endl;
+                    opts->SetEnum(SILO_RDOPT_IGNORE_SEXTS, 2); // Never 
+                }
+                opts->SetEnumStrings(SILO_RDOPT_IGNORE_SEXTS, defaultReadOptions->GetEnumStrings(SILO_RDOPT_IGNORE_SEXTS));
+            }
+        }
+        else if (optname == SILO_RDOPT_IGNORE_DEXTS2)
+        {
+            int enumval = -1;
+            for (int j = 0; j < opts->GetNumberOfOptions(); j++)
+            {
+                if (opts->GetName(j) == SILO_RDOPT_IGNORE_DEXTS)
+                {
+                    enumval = opts->GetEnum(SILO_RDOPT_IGNORE_DEXTS);
+                    break;
+                }
+            }
+            if (enumval == -1 || enumval == 3) // Undef
+            {
+                debug1 << "Using old option \"" << SILO_RDOPT_IGNORE_DEXTS2
+                       << "\" to set new option \"" << SILO_RDOPT_IGNORE_DEXTS;
+                if (opts->GetBool(SILO_RDOPT_IGNORE_DEXTS2))
+                {
+                    debug1 << "\" to Always" << endl;
+                    opts->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 0); // Always
+                }
+                else
+                {
+                    debug1 << "\" to Never" << endl;
+                    opts->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 2); // Never 
+                }
+                opts->SetEnumStrings(SILO_RDOPT_IGNORE_DEXTS, defaultReadOptions->GetEnumStrings(SILO_RDOPT_IGNORE_DEXTS));
+            }
+        }
+    }
+
+    delete defaultReadOptions;
+
+    readOptions = opts;
+}

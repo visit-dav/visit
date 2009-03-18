@@ -211,6 +211,11 @@ typedef struct
 //
 //    Mark C. Miller, Wed Mar  4 08:54:57 PST 2009
 //    Added tri-state variables to better manage ignoring of extents. 
+//
+//    Mark C. Miller, Mon Mar 16 23:33:32 PDT 2009
+//    Removed usingOldExtents. Moved logic for 'old' extents interface to
+//    CommonPluginInfo where old (obsolete) options can be merged with current
+//    interface.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat

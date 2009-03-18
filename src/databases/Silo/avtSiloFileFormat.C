@@ -40,6 +40,7 @@
 //                           avtSiloFileFormat.C                             //
 // ************************************************************************* //
 #include <avtSiloFileFormat.h>
+#include <avtSiloOptions.h>
 
 // includes from visit_vtk/full
 #ifndef MDSERVER
@@ -113,6 +114,7 @@ using std::string;
 using std::vector;
 using std::map;
 using std::set;
+using namespace SiloDBOptions;
 
 static void      ExceptionGenerator(char *);
 static char     *GenerateName(const char *, const char *, const char *);
@@ -211,6 +213,11 @@ static const int maxCoincidentNodelists = 12;
 //    Mark C. Miller, Wed Mar  4 12:05:45 PST 2009
 //    Made option processing for extents compatible with 'old' way of doing
 //    them.
+//
+//    Mark C. Miller, Mon Mar 16 23:33:32 PDT 2009
+//    Moved logic for 'old' extents interface to CommonPluginInfo where 
+//    old (obsolete) options can be merged with current interface. Also, use
+//    const char* symbol names for options defined in avtSiloOptions.h.
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -245,40 +252,14 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     //
     for (int i = 0; rdatts != 0 && i < rdatts->GetNumberOfOptions(); ++i)
     {
-        if (rdatts->GetName(i) == "Force Single")
-            dontForceSingle = rdatts->GetBool("Force Single") ? 0 : 1;
-        else if (rdatts->GetName(i) == "Search For ANNOTATION_INT (!!Slow!!)")
-            searchForAnnotInt = rdatts->GetBool("Search For ANNOTATION_INT (!!Slow!!)");
-        else if (rdatts->GetName(i) == "Ignore Spatial Extents")
-        {
-            // Handle the old (bool) way of doing this
-            if (rdatts->GetType(i) == DBOptionsAttributes::Bool)
-            {
-                if (rdatts->GetBool("Ignore Spatial Extents"))
-                    ignoreSpatialExtentsAAN = Always;
-                else
-                    ignoreSpatialExtentsAAN = Never;
-            }
-            else
-            {
-                ignoreSpatialExtentsAAN = (AANTriState) rdatts->GetEnum("Ignore Spatial Extents");
-            }
-        }
-        else if (rdatts->GetName(i) == "Ignore Data Extents")
-        {
-            // Handle the old (bool) way of doing this
-            if (rdatts->GetType(i) == DBOptionsAttributes::Bool)
-            {
-                if (rdatts->GetBool("Ignore Data Extents"))
-                    ignoreDataExtentsAAN = Always;
-                else
-                    ignoreDataExtentsAAN = Never;
-            }
-            else
-            {
-                ignoreDataExtentsAAN = (AANTriState) rdatts->GetEnum("Ignore Data Extents");
-            }
-        }
+        if (rdatts->GetName(i) == SILO_RDOPT_FORCE_SINGLE)
+            dontForceSingle = rdatts->GetBool(SILO_RDOPT_FORCE_SINGLE) ? 0 : 1;
+        else if (rdatts->GetName(i) == SILO_RDOPT_SEARCH_ANNOTINT)
+            searchForAnnotInt = rdatts->GetBool(SILO_RDOPT_SEARCH_ANNOTINT);
+        else if (rdatts->GetName(i) == SILO_RDOPT_IGNORE_SEXTS)
+            ignoreSpatialExtentsAAN = (AANTriState) rdatts->GetEnum(SILO_RDOPT_IGNORE_SEXTS);
+        else if (rdatts->GetName(i) == SILO_RDOPT_IGNORE_DEXTS)
+            ignoreDataExtentsAAN = (AANTriState) rdatts->GetEnum(SILO_RDOPT_IGNORE_DEXTS);
         else
             debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
     }
@@ -1233,6 +1214,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Wed Mar  4 08:54:57 PST 2009
 //    Improved logic to handle ignoring of spatial/data extents so that user
 //    can override explicitly or let plugin handle automatically.
+//
+//    Mark C. Miller, Mon Mar 16 23:33:32 PDT 2009
+//    Moved logic for 'old' extents interface to CommonPluginInfo where
+//    old (obsolete) options can be merged with current interface.
 // ****************************************************************************
 
 void
@@ -5424,6 +5409,9 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
 //
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Handle special case for 'Nodelists' variable
+//
+//    Mark C. Miller, Tue Dec 23 22:13:00 PST 2008
+//    Handle special case of ANNOTATION_INT nodelists.
 // ****************************************************************************
 
 vtkDataArray *
