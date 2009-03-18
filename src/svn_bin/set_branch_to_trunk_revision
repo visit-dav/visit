@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #
 #  Script: set_branch_to_trunk_revision
 # 
@@ -17,6 +17,9 @@
 #    Hank Childs, Mon Dec 17 15:22:36 PST 2007
 #    Fix bug with release candidates.
 #
+#    Tom Fogal, Tue Mar 17 22:01:44 MST 2009
+#    Changed kshisms to bashisms.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -24,7 +27,7 @@ issueHelp="no"
 # Make sure we don't get superfluous print statements when changing dirs
 CDPATH=""
 
-P=$(whence $0)
+P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
@@ -86,5 +89,3 @@ rm -Rf tmp_forRev$$
 
 echo ""
 echo "Completed!"
-return 0
-
