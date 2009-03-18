@@ -57,28 +57,6 @@
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
-                    <Field name="host" type="string">ace.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">ace#.llnl.gov ace##.llnl.gov</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">1</Field>
-                    <Field name="numNodesSet" type="bool">false</Field>
-                    <Field name="numNodes" type="int">0</Field>
-                    <Field name="partitionSet" type="bool">false</Field>
-                    <Field name="partition" type="string"></Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">false</Field>
-                    <Field name="launchMethod" type="string"></Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
-                    <Field name="parallel" type="bool">false</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">eos.llnl.gov</Field>
                     <Field name="hostAliases" type="string">eos#.llnl.gov eos##.llnl.gov eos###.llnl.gov eos# eos## eos###</Field>
                     <Field name="timeout" type="int">480</Field>
@@ -548,50 +526,6 @@
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
-                    <Field name="host" type="string">sc7.llnl.gov sc8.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">sc#.llnl.gov sc##.llnl.gov</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">1</Field>
-                    <Field name="numNodesSet" type="bool">false</Field>
-                    <Field name="numNodes" type="int">0</Field>
-                    <Field name="partitionSet" type="bool">false</Field>
-                    <Field name="partition" type="string"></Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">false</Field>
-                    <Field name="launchMethod" type="string"></Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
-                    <Field name="parallel" type="bool">false</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">parallel</Field>
-                    <Field name="host" type="string">sc7.llnl.gov sc8.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">sc#.llnl.gov sc##.llnl.gov</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">2</Field>
-                    <Field name="numNodesSet" type="bool">false</Field>
-                    <Field name="numNodes" type="int">0</Field>
-                    <Field name="partitionSet" type="bool">false</Field>
-                    <Field name="partition" type="string"></Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">dmpirun</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">tempest.llnl.gov</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-objectmode" "64" </Field>
                     <Field name="hostAliases" type="string">tempest#.llnl.gov tempest##.llnl.gov tempest# tempest##</Field>
@@ -645,97 +579,9 @@
                     <Field name="parallel" type="bool">false</Field>
                 </Object>
                 <Object name="HostProfile">
-                    <Field name="profileName" type="string">parallel pbatch</Field>
-                    <Field name="host" type="string">um.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">um#.llnl.gov um##.llnl.gov um###.llnl.gov um#.asci.llnl.gov um##.asci.llnl.gov um###.asci.llnl.gov um# um## um###</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">16</Field>
-                    <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">2</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">pbatch</Field>
-                    <Field name="bankSet" type="bool">true</Field>
-                    <Field name="bank" type="string">bdivp</Field>
-                    <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">30:00</Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">msub</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-objectmode" "64" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel pdebug</Field>
                     <Field name="host" type="string">um.llnl.gov</Field>
                     <Field name="hostAliases" type="string">um#.llnl.gov um##.llnl.gov um###.llnl.gov um#.asci.llnl.gov um##.asci.llnl.gov um###.asci.llnl.gov um# um## um###</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">8</Field>
-                    <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">1</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">pdebug</Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">poe</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-objectmode" "64" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">serial</Field>
-                    <Field name="host" type="string">uv.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">uv#.llnl.gov uv##.llnl.gov uv###.llnl.gov uv#.asci.llnl.gov uv##.asci.llnl.gov uv###.asci.llnl.gov uv# uv## uv###</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">1</Field>
-                    <Field name="numNodesSet" type="bool">false</Field>
-                    <Field name="numNodes" type="int">0</Field>
-                    <Field name="partitionSet" type="bool">false</Field>
-                    <Field name="partition" type="string"></Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">false</Field>
-                    <Field name="launchMethod" type="string"></Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
-                    <Field name="parallel" type="bool">false</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">parallel pbatch</Field>
-                    <Field name="host" type="string">uv.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">uv#.llnl.gov uv##.llnl.gov uv###.llnl.gov uv#.asci.llnl.gov uv##.asci.llnl.gov uv###.asci.llnl.gov uv# uv## uv###</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">16</Field>
-                    <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">2</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">pbatch</Field>
-                    <Field name="bankSet" type="bool">true</Field>
-                    <Field name="bank" type="string">bdivp</Field>
-                    <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">30:00</Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">msub</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-objectmode" "64" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">parallel pdebug</Field>
-                    <Field name="host" type="string">uv.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">uv#.llnl.gov uv##.llnl.gov uv###.llnl.gov uv#.asci.llnl.gov uv##.asci.llnl.gov uv###.asci.llnl.gov uv# uv## uv###</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
