@@ -48,6 +48,9 @@
 #include <shlwapi.h>
 #include <snprintf.h>
 
+#include <vector>
+#include <string>
+#include <iostream>
 #if _MSC_VER <= 1310
 #define _VISIT_MSVC "MSVC7.Net"
 #elif _MSC_VER <= 1400
@@ -55,6 +58,19 @@
 #else
 #define _VISIT_MSVC ""
 #endif
+
+using std::vector;
+using std::string;
+typedef vector<int> intVector;
+typedef vector<intVector> intIntVector;
+
+/* Uncomment these definitions if you need to debug the functions. */
+/*
+#define DEBUG_GetPathToOlderConfigFiles
+#define DEBUG_MigrateConfigFiles
+#define DEBUG_VisItPath
+*/
+
 
 /*
  * Macros
@@ -111,8 +127,9 @@ static const char usage[] =
  * Prototypes
  */
 char *AddEnvironment(int);
-void AddPath(char *, const char *, const char*);
-int ReadKey(const char *key, char **keyval);
+void  AddPath(char *, const char *, const char*);
+int   ReadKey(const char *key, char **keyval);
+void  TestForConfigFiles(const char *component);
 
 /******************************************************************************
  *
@@ -198,6 +215,9 @@ int ReadKey(const char *key, char **keyval);
  *   Brad Whitlock, Mon Nov 17 12:11:35 PST 2008
  *   I fixed a bug with host renaming that caused invalid security keys on
  *   machines with short hostnames.
+ *
+ *   Kathleen Bonnell, Tue Mar 17 16:55:32 MST 2009 
+ *   Added 'TestForConfigFiles' and attendant methods.
  *
  *****************************************************************************/
 
@@ -384,6 +404,15 @@ main(int argc, char *argv[])
      */
     visitpath = AddEnvironment(useShortFileName);
 
+    /*
+     * Migrate config files 
+     */
+    if ((strcmp(component, "gui") == 0) || 
+        (strcmp(component, "cli") == 0)) 
+    {
+        TestForConfigFiles(component);
+    }
+    
     /*
      * Get additional VisIt arguments.
      */
@@ -996,3 +1025,613 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
 
     putenv(tmp);
 }
+
+
+
+/******************************************************************************
+ *  The following were extracted from VIKit, because it was determined that
+ *  that migrating config-files should be done on a per-user basis upon first
+ *  run of a new VisIt version, rather than at install-time.
+******************************************************************************/
+
+/******************************************************************************
+ *
+ * Purpose: Reads a directory and calls a callback function for each .ini
+ *          or session file in the directory.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jul 8 14:35:57 PST 2005
+ *
+ * Input Arguments:
+ *   path   : The path to the directory where we should read files.
+ *   cb     : The callback function to call.
+ *   cbData : The callback function data.
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+static void
+HandleConfigFiles(const char *path, void (*cb)(const char *, void *), 
+                  void *cbData)
+{
+    int pathlen = 0;
+    WIN32_FIND_DATA fd;
+    HANDLE dirHandle = INVALID_HANDLE_VALUE;
+    char path2[1024], search[1024];    
+    FILE *log = NULL;
+  
+
+    strcpy(path2, path);
+    pathlen = strlen(path2);
+    if(path2[pathlen-1] != '\\')
+    {
+        path2[pathlen] = '\\';
+        path2[++pathlen] = '\0';
+    }
+    strcpy(search, path2);
+    search[pathlen] = '*';
+    search[pathlen+1] = '\0';
+
+    log = (FILE *)(((void **)cbData)[0]);
+    if(log != NULL)
+       fprintf(log, "search = \"%s\"\n", search);
+
+    /* List the files in the old path and for each one of them that starts
+       with "config ", copy the file to the new directory.
+     */
+    dirHandle = FindFirstFile(search, &fd);
+    if(dirHandle != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            int len = strlen(fd.cFileName);
+            char *ini = fd.cFileName + len-4;
+            char *vses = fd.cFileName + len-5;
+            char *vsesgui = fd.cFileName + len-5-4;
+
+            if(log != NULL)
+            {
+                fprintf(log, "\t%s\n", fd.cFileName);
+                if(ini >= fd.cFileName)     fprintf(log, "\t\t%s\n", ini);
+                if(vses >= fd.cFileName)    fprintf(log, "\t\t%s\n", vses);
+                if(vsesgui >= fd.cFileName) fprintf(log, "\t\t%s\n", vsesgui);
+            }
+
+            if((ini >= fd.cFileName && _stricmp(ini, ".ini") == 0)   ||
+               (vses >= fd.cFileName && _stricmp(vses, ".vses") == 0) ||
+               (vsesgui >= fd.cFileName && _stricmp(vsesgui, ".vses.gui") == 0)
+              )
+            {
+                if(_strnicmp(fd.cFileName, "visit-config", 12) == 0)
+                {
+                    /* We want to skip visit-config files because those get
+                     * updated each version and copying over them would be
+                     * bad.
+                     */
+                    if(log != NULL)
+                        fprintf(log, "Skipping %s\n", fd.cFileName);
+                }
+                else
+                    (*cb)(fd.cFileName, cbData);
+            }
+        } while(FindNextFile(dirHandle, &fd));
+        FindClose(dirHandle);
+    }
+    else
+    {
+       if(log != NULL)
+           fprintf(log, "INVALID_HANDLE!\n");
+    }
+}
+
+/******************************************************************************
+ *
+ * Purpose: Reads a directory and returns 1 if there are config files in it
+ *          or 0 if there are no config files.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jul 8 14:35:57 PST 2005
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+static void
+has_config_files(const char *filename, void *cbData)
+{
+    void **cbd = (void**)cbData;
+    FILE *log = (FILE *)(cbd[0]);
+    int *ival = (int *)(cbd[1]);
+    
+    if(log != NULL)
+        fprintf(log, "%s\n", filename);
+
+    *ival = 1;
+}
+
+static int
+HasConfigFiles(const char *path, FILE *log)
+{
+    int  retval = 0;
+    void *cbData[2];
+    cbData[0] = (void *)log;
+    cbData[1] = (void *)&retval;
+
+    HandleConfigFiles(path, has_config_files, (void *)cbData);
+
+    return retval;
+}
+
+/******************************************************************************
+ *
+ * Purpose: Copies config files from 1 directory to another directory.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jul 8 14:35:57 PST 2005
+ *
+ * Modifications:
+ *   Kathleen Bonnell, Tue Oct 7 16:19:07 PDT 2008
+ *   Stat newPath and create it if necessary.
+ *
+ *****************************************************************************/
+
+static void
+copy_config_files(const char *filename, void *cbData)
+{
+    char oldFile[1024], toFile[1024];
+    const char *oldpath = 0;
+    const char *newpath = 0;
+    int len = 0;
+    struct _stat fs;
+
+    FILE *log = (FILE *)(((void **)(cbData))[0]);
+    oldpath = (const char *)(((void **)(cbData))[1]);
+    newpath = (const char *)(((void **)(cbData))[2]);
+
+    if (_stat(newpath, &fs) == -1)
+    {
+        mkdir(newpath);
+    }
+
+    len = strlen(oldpath);
+    if(oldpath[len-1] == '\\')
+        _snprintf(oldFile, 1024, "%s%s",  oldpath, filename);
+    else
+        _snprintf(oldFile, 1024, "%s\\%s",  oldpath, filename);
+
+    len = strlen(newpath);
+    if(newpath[len-1] == '\\')
+        _snprintf(toFile, 1024, "%s%s",  newpath, filename);
+    else
+        _snprintf(toFile, 1024, "%s\\%s",  newpath, filename);
+
+    if(log != NULL)
+        fprintf(log, "copy file %s to %s\n", oldFile, toFile);
+
+    CopyFile(oldFile, toFile, FALSE);
+}
+
+static void
+CopyConfigFiles(const char *oldpath, const char *newpath, FILE *log)
+{
+    void *cbData[3];
+    cbData[0] = (void *)log;
+    cbData[1] = (void *)oldpath;
+    cbData[2] = (void *)newpath;
+
+    HandleConfigFiles(oldpath, copy_config_files, (void *)cbData);
+}
+
+/******************************************************************************
+ *
+ * Purpose: compares two VisIt versions of the form major.minor.patch, 
+ *          stored as ints in a std vector.
+ *
+ * Returns:  -1 if v1 < v2
+ *            0 if v1 == v2
+ *            1 if v1 > v2
+ *
+ * Programmer: Kathleen Bonnell 
+ * Date:       October 8, 2008
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+int 
+compareVersions(const intVector &v1, const intVector &v2)
+{
+    if (v1[0] == v2[0]) /* major */
+    {
+        if (v1[1] == v2[1]) /*minor */
+        {
+            if (v1[2] == v2[2]) /*patch */
+            {
+                return 0;
+            }
+            else if (v1[2] < v2[2])
+            {
+                return -1;
+            }
+            else 
+            {
+                return 1;
+            }
+        }
+        else if (v1[1] < v2[1])
+        {
+            return -1;
+        }
+        else 
+        {
+            return 1;
+        }
+    }
+    else if (v1[0] < v2[0])
+    {
+        return -1;
+    }
+    else 
+    {
+        return 1;
+    }
+}
+
+
+/******************************************************************************
+ *
+ * Purpose: sorts (descending) a list (vector) of VisIt versions of the form 
+ *          major.minor.patch, stored as ints in a std vector.
+ *
+ * Programmer: Kathleen Bonnell 
+ * Date:       October 8, 2008
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+
+void
+sortVersions(intIntVector &versions)
+{
+    intVector temp;
+    for (size_t i = 0; i < versions.size() -1; ++i)
+        for (size_t j = i+1; j < versions.size(); ++j)
+    {
+        if (compareVersions(versions[i], versions[j]) < 0)
+        {
+            temp = versions[i];
+            versions[i] = versions[j];
+            versions[j] = temp;
+        } 
+    }
+}
+
+
+/******************************************************************************
+ *
+ * Purpose: Searches the passed directory for folders representing versions of
+ *          VisIt ("VisIt 1.9.1", "VisIt 1.10.0" etc).
+ *
+ * Returns: A list (vector) of VisIt version numbers.
+ *
+ * Programmer: Kathleen Bonnell 
+ * Date:       October 8, 2008
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+intIntVector
+FindOldVisItVersions(const char *basePath, FILE *log)
+{
+    char search[1024];
+    WIN32_FIND_DATA fd;
+    HANDLE dirHandle = INVALID_HANDLE_VALUE;
+
+    sprintf(search, "%s\\*", basePath);
+    dirHandle = FindFirstFile(search, &fd);
+    intIntVector versions;
+
+    if(dirHandle != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            int len = strlen(fd.cFileName);
+            char *visit = strstr(fd.cFileName, "VisIt ");
+            if (visit != NULL)
+            {
+                intVector v(3);
+                if(log != NULL)
+                {
+                    fprintf(log, " \tfound possibility at: %s\n", visit);
+                }
+                if (sscanf(visit+6, "%d.%d.%d", &v[0], &v[1], &v[2]) == 3)
+                    versions.push_back(v);
+            }
+        } while(FindNextFile(dirHandle, &fd));
+        FindClose(dirHandle);
+    }
+    else
+    {
+       if(log != NULL)
+           fprintf(log, "INVALID_HANDLE!\n");
+    }
+    if (versions.size() > 0)
+        sortVersions(versions);
+    return versions;
+}
+
+/******************************************************************************
+ *
+ * Purpose: This function is a custom extension for the NSIS installer that
+ *          allows it to determine the path to the most recent older config
+ *          files from previously installed versions of VisIt.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Jun 6 16:55:54 PST 2005
+ *
+ * Precondition:
+ *   The string containing the current version of VisIt and a string 
+ *   containing the path to the user's 'My Documents' folder is to be passed 
+ *   on the stack.
+ *
+ * Postcondition:
+ *   2 values are returned on the stack. The top value is the last version of
+ *   VisIt to have config files that we want to copy. 
+ *   The value at top-1 in the stack is a message box prompt that is
+ *   populated if we found config files.
+ *
+ *   If no config files were found for any version of VisIt, 2 blank strings
+ *   are pushed onto the stack.
+ *
+ * Modifications:
+ *   Kathleen Bonnell, Tue Oct 7 16:28:43 PDT 2008
+ *   Modified pre and post conditions to reflect that 'My Documents' is now
+ *   the place to store user config files (not install dir).  Create a list of
+ *   VisIt versions present in My Documents, rather than storing versions in a 
+ *   table which needs to be updated frequently as new versions are created.
+ *
+ *   Kathleen Bonnell, Fri Nov 7 15:50:12 PST 2008
+ *   Retrieve users' home dir for location of log file.  Precondition is now
+ *   only currentVersion.  basePath retrieved as user's home dir. Post
+ *   condition is <top> msg, ver, basePath if old configs found, <top> "" 
+ *   if no config files found.
+ *
+ *****************************************************************************/
+
+int 
+GetPathToOlderConfigFiles(const char *basePath, 
+    const char *currentVersion, char *oldVersion, char *msg)
+{
+    int  found = 0;
+    char oldPath[2048];
+    FILE *log = NULL;
+
+#ifdef DEBUG_GetPathToOlderConfigFiles
+    string logFile = string(basePath) + string("\\VIkit_GetPathToOlderConfigFiles.txt"); 
+    log = fopen(logFile.c_str(), "wt");
+    if(log != NULL)
+    {
+        fprintf(log, "currentVersion = \"%s\"\n", currentVersion);
+        fprintf(log, "basePath = \"%s\"\n", basePath);
+    }
+#endif
+
+    intVector cV(3);
+    sscanf(currentVersion, "%d.%d.%d", &cV[0], &cV[1], &cV[2]);
+
+    intIntVector versions = FindOldVisItVersions(basePath, log);
+    
+    /* Look through the versions until we find one that is installed 
+       that is not the current version. If we find one then push its
+       installation directory onto the stack.
+     */
+
+    char ver[100];
+
+    for(size_t i = 0; i < versions.size() && !found; ++i)
+    {
+        sprintf(ver, "%d.%d.%d", versions[i][0], versions[i][1], versions[i][2]);
+        if(log != NULL)
+        {
+            fprintf(log, "ver = \"%s\"\n", ver);
+        }
+        if(compareVersions(versions[i], cV) < 0)
+        {
+            sprintf(oldPath, "%s\\VisIt %s\\", basePath, ver); 
+            found = HasConfigFiles(oldPath, log);
+            
+            if(found)
+            {
+                _snprintf(msg, 1024, "There are config files from VisIt %s.\n"
+                    "Would you like to copy them to your new VisIt "
+                    "installation? (y/n)", ver);
+            
+                _snprintf(oldVersion, 512, ver);
+
+                if(log != NULL)
+                    fprintf(log, "msg=%s\noldPath=%s\n", msg, oldPath);
+                break;
+            }
+        }
+    }
+
+#ifdef DEBUG_GetPathToOlderConfigFiles
+    if(!found)
+    {
+        if(log != NULL)
+            fprintf(log, "No config files from older versions!\n");
+    }
+
+    if(log != NULL)
+        fclose(log);
+#endif
+    return found;
+}
+
+
+/******************************************************************************
+ *
+ * Purpose: This function is a custom extension for the NSIS installer that
+ *          allows it to determine the path to the most recent older config
+ *          files from previously installed versions of VisIt.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Jun 6 16:55:54 PST 2005
+ *
+ * Precondition:
+ *   The string containing the path to the 'My Documents' folder must be on
+ *   the top of the stack.
+ *   The string containing the old version of VisIt from which to copy config
+ *   files from must be on the top of the stack -1. 
+ *   The string containing the current version of VisIt must be on the top 
+ *   of the stack -2. 
+ *
+ * Postcondition:
+ *   The values are popped from the stack and config files are copied.
+ *
+ * Modifications:
+ *   Kathleen Bonnell, Tue Oct 7 16:28:43 PDT 2008
+ *   Modified pre and post conditions to reflect that 'My Documents' is now
+ *   the place to store user config files (not install dir).
+ *
+ *   Kathleen Bonnell, Fri Nov 7 15:54:21 PST 2008 
+ *   Preconditions are now: <top> currentVersion, oldVersion, basePath 
+ * 
+ *****************************************************************************/
+
+void 
+MigrateConfigFiles(const char *basePath, char *currentVersion, char* oldVersion)
+{
+    char newPath[1024];
+    char oldPath[1024];
+    FILE *log = NULL;
+
+
+    sprintf(oldPath, "%s\\VisIt %s\\", basePath, oldVersion);
+    sprintf(newPath, "%s\\VisIt %s\\", basePath, currentVersion);
+#ifdef DEBUG_MigrateConfigFiles
+    string logFile = basePath + "\\VIkit_MigrateConfigFiles.txt"; 
+    log = fopen(logFile.c_str(), "wt");
+    if(log != NULL)
+    {
+        fprintf(log, "basePath = \"%s\"\n", basePath);
+        fprintf(log, "oldPath = \"%s\"\n", oldPath);
+        fprintf(log, "newPath = \"%s\"\n", newPath);
+    }
+#endif
+
+    /* Copy the config files. */
+    if(strlen(oldPath) > 0)
+        CopyConfigFiles(oldPath, newPath, log);
+
+#ifdef DEBUG_MigrateConfigFiles
+    if(log != NULL)
+        fclose(log);
+#endif
+}
+
+/******************************************************************************
+ *
+ * Purpose: Finds the users' home directory.
+ *
+ * Programmer: Kathleen Bonnell 
+ * Date:       November 6, 2008
+ *
+ * Modifications:
+ *   Kathleen Bonnell, Fri Nov 7 15:48:57 PST 2008
+ *   GetUserProfileDirectory requires user name, so use SHGetFolderPath 
+ *   instead.
+ *
+ *****************************************************************************/
+string
+GetUserHomeDir()
+{
+    char *profPath = new char[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
+                                  SHGFP_TYPE_CURRENT, profPath)))
+        return string(profPath);
+    if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 
+                                  SHGFP_TYPE_CURRENT, profPath)))
+        return string(profPath);
+    return string("C:\\");
+}
+
+/******************************************************************************
+ *  End extraction from VIKit. 
+******************************************************************************/
+
+/******************************************************************************
+ * TestForConfigFiles
+ *
+ * Purpose: If this is the first run of VisIt, determine if config files for
+ *          older versions of VisIt exist, and prompt user if they want
+ *          to copy them to current version.
+ *
+ * Programmer: Kathleen Bonnell 
+ * Date:       March 17, 2009 
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+#include <io.h>
+
+void
+TestForConfigFiles(const char *component)
+{
+    FILE *f = NULL;
+    char *visItUserHome = getenv("VISITUSERHOME");
+    char rcNamegui[512];
+    char rcNamecli[512];
+    // Has this version of visit already been run and this question asked? 
+    sprintf(rcNamegui, "%s\\state%s.txt", visItUserHome, VERSION);
+    sprintf(rcNamecli, "%s\\clistate%s.txt", visItUserHome, VERSION);
+
+    if ((_access(rcNamegui, 0) == 0) ||  (_access(rcNamecli, 0) == 0))
+    {
+        return;
+    }
+
+    // do we already have config files for the current version?
+    if (HasConfigFiles(visItUserHome, NULL))
+    {
+        return;
+    }
+
+    char oldVersion[512];
+    char msg[512];
+
+    string userHome = GetUserHomeDir();
+    if (GetPathToOlderConfigFiles(userHome.c_str(), VERSION, oldVersion, msg))
+    {
+        if (strcmp(component, "gui") == 0) 
+        {
+            int msgboxID = MessageBox(NULL, msg, "Migrate Config Files",
+                                       MB_ICONEXCLAMATION | MB_YESNO);
+
+            if (msgboxID == IDYES)
+            {
+                MigrateConfigFiles(userHome.c_str(), VERSION, oldVersion);
+            }
+        }
+        else
+        {
+            std::cout << msg;
+            char copyConfigs;
+            std::cin >> copyConfigs;
+            if (copyConfigs == 'y' || copyConfigs == 'Y')
+            {
+                MigrateConfigFiles(userHome.c_str(), VERSION, oldVersion);
+            }
+            // Create the clistate file.  Cannot use state.txt, as that is
+            // needed by the gui to determine whether or not release notes
+            // should be displayed.
+            f = fopen(rcNamecli, "w"); 
+            fprintf(f, "1\n");
+            fclose(f);
+        }
+    }
+}
+
