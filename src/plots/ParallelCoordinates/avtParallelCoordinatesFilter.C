@@ -444,6 +444,9 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
 //    Port to trunk.
 //    Removed time support (not added to this plot yet).
 //
+//    Jeremy Meredith, Wed Mar 18 12:30:52 EDT 2009
+//    Check for a zero axis count and report as an error.
+//
 // *****************************************************************************
 
 void
@@ -455,6 +458,11 @@ avtParallelCoordinatesFilter::PreExecute(void)
 
     axisCount = parCoordsAtts.GetScalarAxisNames().size();
     PrepareForArrayVariable();
+    if (axisCount == 0)
+        EXCEPTION1(ImproperUseException, "Could not determine number of "
+                   "variables in plot; wasn't either a collection of "
+                   "variables, or an array variable.");
+
 
     if (!parCoordsAtts.AttributesAreConsistent())
     {
