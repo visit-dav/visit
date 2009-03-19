@@ -62,6 +62,18 @@ get(const char *variable)
     return std::string(value);
 }
 
+/// Predicate to determine whether a variable is defined.
+bool
+exists(const char *variable)
+{
+    char *value = getenv(variable);
+    if(value == NULL)
+    {
+        return false;
+    }
+    return true;
+}
+
 /// Sets a value in the enviroment.  Avoid using putenv, since it requires
 /// static memory.
 void
@@ -91,6 +103,8 @@ unset(const char *variable)
     }
 # endif
 #else
+    // level 5 because it doesn't usually matter if we clean up our environment
+    // correctly; OS will do it when our process exits anyway.
     debug5 << "unsetenv(" << variable << ") ignored; unsetenv not supported "
            << "on this platform." << std::endl;
 #endif
