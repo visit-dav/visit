@@ -86,11 +86,13 @@ avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
 //
 //  Tom Fogal, Thu Mar  5 14:35:43 MST 2009
 //  Add renderer instance.
+//  Tidy up after our renderer.
 //
 // ****************************************************************************
 avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer()
 {
     if(this->renderer) {
+        this->renderer->Cleanup();
         Controller::Instance().ReleaseVolumerenderer(this->renderer);
         this->renderer = NULL;
     }
@@ -150,6 +152,9 @@ avtOpenGLTuvokVolumeRenderer::Render(vtkRectilinearGrid *grid,
 //
 //  Modifications:
 //
+//    Tom Fogal, Thu Mar  5 20:15:10 MST 2009
+//    Initialize the renderer before returning it.
+//
 // ****************************************************************************
 static AbstrRenderer *
 CreateRenderer(const VolumeAttributes &)
@@ -160,7 +165,10 @@ CreateRenderer(const VolumeAttributes &)
     const bool disable_border = false;
 
     MasterController &mc = Controller::Instance();
-    return mc.RequestNewVolumerenderer(MasterController::OPENGL_SBVR,
-                                       use_only_PoT_textures, downsample,
-                                       disable_border);
+    AbstrRenderer *ren = mc.RequestNewVolumerenderer(
+                            MasterController::OPENGL_SBVR,
+                            use_only_PoT_textures, downsample,
+                            disable_border);
+    ren->Initialize();
+    return ren;
 }
