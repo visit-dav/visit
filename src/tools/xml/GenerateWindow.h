@@ -1080,6 +1080,8 @@ class WindowGeneratorLineWidth : public virtual LineWidth , public virtual Windo
 //    Hank Childs, Tue Jul 19 14:00:57 PDT 2005
 //    Added support for labels.
 //
+//    Jeremy Meredith, Thu Mar 19 12:11:54 EDT 2009
+//    Added missing comma, which led to a poorly formed array.
 
 class WindowGeneratorVariableName : public virtual VariableName , public virtual WindowGeneratorField
 {
@@ -1107,9 +1109,9 @@ class WindowGeneratorVariableName : public virtual VariableName , public virtual
             "QvisVariableButton::Species",
             "QvisVariableButton::Curves",
             "QvisVariableButton::Tensors",
-            "QvisVariableButton::SymmetricTensors"
+            "QvisVariableButton::SymmetricTensors",
             "QvisVariableButton::Labels",
-            "QvisVariableButton::Arrays",
+            "QvisVariableButton::Arrays"
         };
 
         // Write the mask.
