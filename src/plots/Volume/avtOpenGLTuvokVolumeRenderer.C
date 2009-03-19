@@ -43,51 +43,10 @@
 #include "avtOpenGLTuvokVolumeRenderer.h"
 
 #include <vtkDataArray.h>
-#include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkCamera.h>
-#include <vtkMath.h>
-#include <vtkMatrix4x4.h>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
-#include <BoundingBoxContourer.h>
-#include <VolumeAttributes.h>
 #include <avtViewInfo.h>
-#include <avtCallback.h>
-#include <LightList.h>
+#include <VolumeAttributes.h>
 #include <DebugStream.h>
-
-#include <float.h>
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  // Include GLEW.
-  #include <visit-config.h>
-  #ifdef HAVE_LIBGLEW
-     #include <GL/glew.h>
-     static bool glew_initialized = false;
-  #endif
-
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-       // On Windows, we have to access glTexImage3D as an OpenGL extension.
-       // In case texture3D extension is NOT available.
-       static PFNGLTEXIMAGE3DEXTPROC glTexImage3D_ptr = 0;
-    #endif
-    #include <GL/gl.h>
-  #endif
-#else
-  #include <GL/gl.h>
-#endif
-
-#ifndef MAX
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-#endif
-#ifndef MIN
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif
 
 // ****************************************************************************
 //  Method: avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer
@@ -103,7 +62,6 @@
 
 avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
 {
-    /// \todo FIXME -- implement
 }
 
 
@@ -118,14 +76,13 @@ avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
 // ****************************************************************************
 avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer()
 {
-    /// \todo FIXME -- implement
 }
 
 
 // ****************************************************************************
 //  Method:  avtOpenGLTuvokVolumeRenderer::Render
 //
-//  Purpose:
+//  Purpose: Renders the dataset using Tuvok.
 //
 //  Arguments:
 //    grid      : the data set to render
@@ -146,15 +103,13 @@ avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer()
 
 void
 avtOpenGLTuvokVolumeRenderer::Render(vtkRectilinearGrid *grid,
-                                         vtkDataArray *data,
-                                         vtkDataArray *opac,
-                                         const avtViewInfo &view,
-                                         const VolumeAttributes &atts,
-                                         float vmin, float vmax, float vsize,
-                                         float omin, float omax, float osize,
-                                         float *gx, float *gy, float *gz,
-                                         float *gmn, bool reducedDetail)
+                                     vtkDataArray *data,
+                                     vtkDataArray *opac,
+                                     const avtViewInfo &view,
+                                     const VolumeAttributes &atts,
+                                     float vmin, float vmax, float vsize,
+                                     float omin, float omax, float osize,
+                                     float *gx, float *gy, float *gz,
+                                     float *gmn, bool reducedDetail)
 {
-    cout << "Rendering with Tuvok" << endl;
-    /// \todo FIXME -- implement
 }
