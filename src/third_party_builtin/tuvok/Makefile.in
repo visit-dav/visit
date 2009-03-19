@@ -45,6 +45,9 @@
 #   Assume a shared Qt...
 #   Cripple Tuvok IO subsystem to avoid a Qt dependence.
 #
+#   Tom Fogal, Fri Mar  6 15:33:45 MST 2009
+#   Add GLEW to the include paths.
+#
 ##############################################################################
 
 
@@ -57,9 +60,11 @@
 include source_files
 TUVOK_SRCS := $(TUVOK_SRCS) VisItDebugOut.C
 
-INCLUDE:=-I./tuvok -I./tuvok/3rdParty -I$(TOPDIR)/include/visit
-CXXFLAGS += $(QT_CXXFLAGS) $(INCLUDE) -DQT_SHARED -DTUVOK_NO_IO
-CFLAGS += -I./tuvok -DQT_SHARED -DTUVOK_NO_IO
+INCLUDE:=-I./tuvok -I./tuvok/3rdParty -I$(TOPDIR)/include/visit \
+         -I$(TOPDIR)/include/glew
+DEFINES:=-DQT_SHARED -DTUVOK_NO_IO -DGLSL_DEBUG
+CXXFLAGS += $(QT_CXXFLAGS) $(INCLUDE) $(DEFINES)
+CFLAGS += -I./tuvok $(DEFINES)
 TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
 TUVOK_OBJS:=$(TUVOK_OBJS:.c=.o)
 TUVOK_OBJS:=$(TUVOK_OBJS:.C=.o)
