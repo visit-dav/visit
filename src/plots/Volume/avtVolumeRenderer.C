@@ -242,6 +242,9 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Tom Fogal, Thu Mar  5 18:56:05 MST 2009
 //    Add debug stmts detailing which VolumeRenderer we instantiate.
 //
+//    Tom Fogal, Wed Mar 18 22:46:29 MST 2009
+//    Allow creating a Tuvok renderer even if we think we're using Mesa.
+//
 // ****************************************************************************
 
 void
@@ -272,11 +275,8 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 #endif
             else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
             {
-                // Tuvok may work fine in Mesa but for now use previous texture slicer
-                debug5 << "Creating a (Mesa) 3DTexture renderer." << std::endl;
-                rendererImplementation = new avtMesa3DTextureVolumeRenderer;
-                avtCallback::IssueWarning("Tuvok is not currently supported for "
-                    "offscreen rendering. VisIt is reverting to 3D texturing.");
+                debug5 << "Creating a (Mesa) Tuvok renderer." << std::endl;
+                rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
             }
             else // it == VolumeAttributes::Texture3D
             {
