@@ -42,6 +42,7 @@
 #   Implement `clean' target.
 #   Fix C file flags + object file names.
 #   Build new VisItDebugOut.C file && add + simplify includes.
+#   Assume a shared Qt...
 #
 ##############################################################################
 
@@ -56,8 +57,8 @@ include source_files
 TUVOK_SRCS := $(TUVOK_SRCS) VisItDebugOut.C
 
 INCLUDE:=-I./tuvok -I./tuvok/3rdParty -I$(TOPDIR)/include/visit
-CXXFLAGS += $(QT_CXXFLAGS) $(INCLUDE)
-CFLAGS += -I./tuvok
+CXXFLAGS += $(QT_CXXFLAGS) $(INCLUDE) -DQT_SHARED
+CFLAGS += -I./tuvok -DQT_SHARED
 TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
 TUVOK_OBJS:=$(TUVOK_OBJS:.c=.o)
 TUVOK_OBJS:=$(TUVOK_OBJS:.C=.o)
