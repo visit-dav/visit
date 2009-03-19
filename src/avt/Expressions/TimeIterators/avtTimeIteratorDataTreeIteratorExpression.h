@@ -92,6 +92,7 @@ class EXPRESSION_API avtTimeIteratorDataTreeIteratorExpression
 
     avtDataTree_p             ConstructOutput(avtDataTree_p);
     virtual avtVarType        GetVariableType();
+    virtual int               GetVariableDimension();
 };
 
 
