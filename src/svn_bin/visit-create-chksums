@@ -107,11 +107,9 @@ do
    $cmd visit$version2.darwin-i386.tar.gz          >> $output
    $cmd visit$version2.linux-altix.tar.gz          >> $output
    $cmd visit$version2.linux-ellipse.tar.gz        >> $output
-   $cmd visit$version2.linux-ia64.tar.gz           >> $output
    $cmd visit$version2.linux-x86_64-fedora4.tar.gz >> $output
    $cmd visit$version2.linux-x86_64.tar.gz         >> $output
    $cmd visit$version2.linux_rhel3.tar.gz          >> $output
-   $cmd visit$version2.sunos5.tar.gz               >> $output
 
    echo ""                                         >> $output
    echo "The VisIt source code $property"          >> $output
