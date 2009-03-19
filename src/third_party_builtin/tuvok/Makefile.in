@@ -36,6 +36,9 @@
 #
 #   Tom Fogal, Thu Mar  5 12:35:10 MST 2009
 #   Get list of source files from an external file.
+#   Build a static library.
+#   Fix dependencies.
+#   Add 3rdParty to list of included directories.
 #
 ##############################################################################
 
@@ -48,15 +51,17 @@
 
 include source_files
 
-CXXFLAGS += $(QT_CXXFLAGS) -I./tuvok
+CXXFLAGS += $(QT_CXXFLAGS) -I./tuvok -I./tuvok/3rdParty
 TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
 ##.cpp.o:
 ##	g++ $(TUVOK_SRCS) -c $< $(CXXFLAGS)
+ARCHIVE:=$(TOPDIR)/lib/libtuvok.a
+INC:=$(TOPDIR)/include/tuvok
 
 ##
 ## Standard targets...
 ##
-all: message tuvok
+all: message $(ARCHIVE) $(INC)
 
 clean:
 ##	$(RM) -rf slivr
@@ -66,9 +71,11 @@ clean:
 ##	$(RM) $(TOPDIR)/lib/libslivrV.@SHLIB_SOEXT@
 ##	$(RM) -rf *.o
 
-tuvok: $(TUVOK_OBJS)
-	g++ -shared -fPIC -o $(TOPDIR)/lib/libtuvok.so $(TUVOK_OBJS)
-	ln -sf $(TOPDIR)/third_party_builtin/tuvok/tuvok $(TOPDIR)/include/tuvok
+$(ARCHIVE): $(TUVOK_OBJS)
+	ar crs $(ARCHIVE) $(TUVOK_OBJS)
+
+$(INC): tuvok
+	ln -sf $(TOPDIR)/third_party_builtin/tuvok/tuvok $(INC)
 
 ##
 ## Other targets
