@@ -40,6 +40,7 @@
 #   Fix dependencies.
 #   Add 3rdParty to list of included directories.
 #   Implement `clean' target.
+#   Fix C file flags + object file names.
 #
 ##############################################################################
 
@@ -53,7 +54,9 @@
 include source_files
 
 CXXFLAGS += $(QT_CXXFLAGS) -I./tuvok -I./tuvok/3rdParty
+CFLAGS += -I./tuvok
 TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
+TUVOK_OBJS:=$(TUVOK_OBJS:.c=.o)
 ##.cpp.o:
 ##	g++ $(TUVOK_SRCS) -c $< $(CXXFLAGS)
 ARCHIVE:=$(TOPDIR)/lib/libtuvok.a
