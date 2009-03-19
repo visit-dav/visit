@@ -71,6 +71,8 @@ static AbstrRenderer* CreateRenderer(const VolumeAttributes &);
 avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
 {
     Controller::Instance().AddDebugOut(new VisItDebugOut());
+    // enable tuvok logging output -- very slow, do not leave enabled!
+    Controller::Debug::Out().SetOutput(true, true, true, true);
     this->renderer = NULL;
 }
 
