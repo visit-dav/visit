@@ -63,7 +63,7 @@
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
 #           H5part   1.4.0    H5Part-1.4.0.tar.gz    -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
-#           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
+#           HDF5     1.6.5    hdf5-1.8.1.tar.gz      -5
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
 #           Silo     4.7      silo-4.7.tar.gz
@@ -565,6 +565,12 @@
 #     Merged from RC. Added web path for fastbit.
 #     Fixed cut-n-paste typos in error messages from ITAPS configures.
 #     Set VisIt version number to 2.0.0
+#
+#     Mark C. Miller, Thu Mar 19 09:39:41 PDT 2009
+#     Merged from RC.
+#     Added ITAPS to graphical options for 3rd party libs. Updated HDF5 to
+#     1.8.1 and added web-links for HDF5 and HDF4 and GDAL. Made download_file
+#     fallback to getting from other sites if gets from svn/visit site fails.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -867,10 +873,10 @@ export SZIP_VERSION=${SZIP_VERSION-"2.1"}
 export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION-"2.0"}
 export SZIP_BUILD_DIR=${SZIP_BUILD_DIR-"szip-2.1"}
 
-export HDF5_FILE=${HDF5_FILE-"hdf5-1.6.5.tar.gz"}
-export HDF5_VERSION=${HDF5_VERSION-"1.6.5"}
+export HDF5_FILE=${HDF5_FILE-"hdf5-1.8.1.tar.gz"}
+export HDF5_VERSION=${HDF5_VERSION-"1.8.1"}
 export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION-"1.6"}
-export HDF5_BUILD_DIR=${HDF5_BUILD_DIR-"hdf5-1.6.5"}
+export HDF5_BUILD_DIR=${HDF5_BUILD_DIR-"hdf5-1.8.1"}
 
 export HDF4_FILE=${HDF4_FILE-"HDF4.2r1.tar.gz"}
 export HDF4_VERSION=${HDF4_VERSION-"4.2.1"}
@@ -1152,6 +1158,9 @@ function uncompress_untar
 #
 #   Mark C. Miller, Thu Feb 19 12:21:55 PST 2009
 #   Changed to support multiple sites as well as default visit places.
+#
+#   Mark C. Miller, Thu Mar 19 10:25:38 PDT 2009
+#   Adjusted logic to allow fallback to general web places.
 # *************************************************************************** #
 
 function download_file
@@ -1181,15 +1190,16 @@ function download_file
 	if [[ $? == 0 ]] ; then
 	    return 0
 	fi
-    else
-        # try all sites listed incl. falling back to visit's 3rd_party
-        for site in $* https://wci.llnl.gov/codes/visit/3rd_party; do
-            try_download_file $site/$dfile 
-	    if [[ $? == 0 ]] ; then
-	        return 0
-	    fi
-	done
     fi
+    # Ok, if any of above had succeeded, they would have returned early.
+    # So, now try various places listed.
+    # try all sites listed incl. falling back to visit's 3rd_party
+    for site in $* https://wci.llnl.gov/codes/visit/3rd_party; do
+        try_download_file $site/$dfile 
+	if [[ $? == 0 ]] ; then
+	    return 0
+	fi
+    done
     info "Failed to download $dfile" 
     return 1 
 }
@@ -1611,7 +1621,7 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_GDAL" == "yes" ]] ; then
-        ensure_built_or_ready "gdal" $GDAL_VERSION $GDAL_BUILD_DIR $GDAL_FILE
+        ensure_built_or_ready "gdal" $GDAL_VERSION $GDAL_BUILD_DIR $GDAL_FILE http://dl.maptools.org/dl/gdal
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_GDAL="no"
@@ -1629,7 +1639,7 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_HDF4" == "yes" ]] ; then
-        ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_BUILD_DIR $HDF4_FILE
+        ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_BUILD_DIR $HDF4_FILE http://www.hdfgroup.org/ftp/HDF/prev-releases
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_HDF4="no"
@@ -1638,7 +1648,7 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        ensure_built_or_ready "hdf5" $HDF5_VERSION $HDF5_BUILD_DIR $HDF5_FILE
+        ensure_built_or_ready "hdf5" $HDF5_VERSION $HDF5_BUILD_DIR $HDF5_FILE ftp://ftp.hdfgroup.org/HDF5/prev-releases/hdf5-1.8.1/src
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_HDF5="no"
@@ -8488,22 +8498,22 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     --checklist \
 "Select the optional 3rd party libraries "\
 "to be built and installed:" 0 0 0 \
-           "Boxlib"   "2.5    $BOXLIB_FILE"    $ON_BOXLIB \
-           "CCMIO"    "2.6.1  $CCMIO_FILE"     $ON_CCMIO \
-           "CFITSIO"  "3006   $CFITSIO_FILE"   $ON_CFITSIO \
-           "CGNS"     "2.4.3  $CGNS_FILE"      $ON_CGNS \
-           "ExodusII" "4.46   $EXODUS_FILE"    $ON_EXODUS \
-           "FastBit"  "0.99   $FASTBIT_FILE"   $ON_FASTBIT \
-           "GDAL"     "1.3.2  $GDAL_FILE"      $ON_GDAL \
-           "H5Part"   "1.3.3  $H5PART_FILE"    $ON_H5PART \
-           "HDF4"     "2.4.1  $HDF4_FILE"      $ON_HDF4 \
-           "HDF5"     "1.6.5  $HDF5_FILE"      $ON_HDF5 \
-           "IceT"     "0.5.4  $ICET_FILE"      $ON_ICET \
-           "Mili"     "1.10   $MILI_FILE (not available from the web)"      $ON_MILI \
-           "TCMALLOC" "0.97   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
-           "Silo"     "4.7    $SILO_FILE"      $ON_SILO \
-           "SZip"     "2.1    $SZIP_FILE"      $ON_SZIP \
-           "NetCDF"   "3.6.0  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
+           "Boxlib"   "$BOXLIB_VERSION    $BOXLIB_FILE"    $ON_BOXLIB \
+           "CCMIO"    "$CCMIO_VERSION  $CCMIO_FILE"     $ON_CCMIO \
+           "CFITSIO"  "$CFITSIO_VERSION   $CFITSIO_FILE"   $ON_CFITSIO \
+           "CGNS"     "$CGNS_VERSION    $CGNS_FILE"      $ON_CGNS \
+           "ExodusII" "$EXODUS_VERSION   $EXODUS_FILE"    $ON_EXODUS \
+           "FastBit"  "$FASTBIT_VERSION  $FASTBIT_FILE"   $ON_FASTBIT \
+           "GDAL"     "$GDAL_VERSION  $GDAL_FILE"      $ON_GDAL \
+           "H5Part"   "$H5PART_VERSION  $H5PART_FILE"    $ON_H5PART \
+           "HDF4"     "$HDF4_VERSION  $HDF4_FILE"      $ON_HDF4 \
+           "HDF5"     "$HDF5_VERSION  $HDF5_FILE"      $ON_HDF5 \
+           "IceT"     "$ICET_VERSION  $ICET_FILE"      $ON_ICET \
+           "Mili"     "$MILI_VERSION $MILI_FILE (not available from the web)"      $ON_MILI \
+           "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
+           "SZip"     "$SZIP_VERSION    $SZIP_FILE"      $ON_SZIP \
+           "ITAPS"    "31Dec08 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
+           "NetCDF"   "$NETCDF_VERSION  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
     retval=$?
 
     # Remove the extra quoting, new dialog has --single-quoted
@@ -8525,6 +8535,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_NETCDF="no"
         DO_SILO="no"
         DO_SZIP="no"
+        DO_ITAPS="no"
         for OPTION in $choice
         do
             case $OPTION in
@@ -8563,6 +8574,8 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_SILO="yes";;
               SZip)
                  DO_SZIP="yes";;
+              ITAPS)
+                 DO_ITAPS="yes";;
             esac
         done
         ;;
