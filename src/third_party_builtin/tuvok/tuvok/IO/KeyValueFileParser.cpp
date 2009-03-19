@@ -28,9 +28,9 @@
 
 /**
   \file    KeyValueFileParser.cpp
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
   \date    September 2008
 */
 
@@ -41,81 +41,103 @@
 #include <algorithm>
 #include <sstream>
 
-#include "../Basics/SysTools.h"
+#include <Basics/SysTools.h>
 
 using namespace std;
+using namespace SysTools;
 
 
 KeyValPair::KeyValPair() : 
-	strKey(""),
-	wstrKey(L""),
-	strKeyUpper(""),
-	wstrKeyUpper(L""),
-
-	strValue(""),
-	wstrValue(L""),
-	strValueUpper(""),
-	wstrValueUpper(L""),
-	uiValue(0),
-	iValue(0),
-	fValue(0),
-	viValue(0,0,0),
-	vfValue(0,0,0)
-
+  strKey(""),
+  wstrKey(L""),
+  strKeyUpper(""),
+  wstrKeyUpper(L""),
+  strValue(""),
+  wstrValue(L""),
+  strValueUpper(""),
+  wstrValueUpper(L"")
 {}
 
 KeyValPair::KeyValPair(const string& key, const string& value) :
-	strKey(key),
-	wstrKey(key.begin(), key.end()),
+  strKey(key),
+  wstrKey(key.begin(), key.end()),
 
-	strValue(value),
-	wstrValue(value.begin(), value.end())
+  strValue(value),
+  wstrValue(value.begin(), value.end())
 {
-	istringstream ss1( value ), ss2( value ), ss3( value ), ss4( value ), ss5( value ), ss6( value );
-	ss1 >> uiValue;
-	ss2 >> iValue;
-	ss3 >> fValue;
-	ss4 >> viValue.x >> viValue.y >> viValue.z;
-	ss5 >> vuiValue.x >> vuiValue.y >> vuiValue.z;
-	ss6 >> vfValue.x >> vfValue.y >> vfValue.z;
-
-	strKeyUpper  = strKey; transform(strKeyUpper.begin(), strKeyUpper.end(), strKeyUpper.begin(), ::toupper);
-	wstrKeyUpper = wstrKey; transform(wstrKeyUpper.begin(), wstrKeyUpper.end(), wstrKeyUpper.begin(), ::toupper);
-	strValueUpper  = strValue; transform(strValueUpper.begin(), strValueUpper.end(), strValueUpper.begin(), ::toupper);
-	wstrValueUpper  = wstrValue; transform(wstrValueUpper.begin(), wstrValueUpper.end(), wstrValueUpper.begin(), ::toupper);
+  vstrValue = Tokenize(value);
+  for (size_t i = 0;i<vstrValue.size();i++) {
+    vwstrValue.push_back(wstring(vstrValue[i].begin(), vstrValue[i].end()));
+  }    
+  FillDerivedData();
 }
 
 KeyValPair::KeyValPair(const wstring& key, const wstring& value) :
-	strKey(key.begin(), key.end()),
-	wstrKey(key),
+  strKey(key.begin(), key.end()),
+  wstrKey(key),
 
-	strValue(value.begin(), value.end()),
-	wstrValue(value)
+  strValue(value.begin(), value.end()),
+  wstrValue(value)
 {
-	wistringstream ss1( value ), ss2( value ), ss3( value ), ss4( value ), ss5( value ), ss6( value );
-	ss1 >> uiValue;
-	ss2 >> iValue;
-	ss3 >> fValue;
-	ss4 >> viValue.x >> viValue.y >> viValue.z;
-	ss5 >> vuiValue.x >> vuiValue.y >> vuiValue.z;
-	ss6 >> vfValue.x >> vfValue.y >> vfValue.z;
+  vwstrValue = Tokenize(value);
+  for (size_t i = 0;i<vwstrValue.size();i++) {
+    vstrValue.push_back(string(vwstrValue[i].begin(), vwstrValue[i].end()));
+  }
+  FillDerivedData();
+}
 
-	strKeyUpper  = strKey; transform(strKeyUpper.begin(), strKeyUpper.end(), strKeyUpper.begin(), ::toupper);
-	wstrKeyUpper = wstrKey; transform(wstrKeyUpper.begin(), wstrKeyUpper.end(), wstrKeyUpper.begin(), ::toupper);
-	strValueUpper  = strValue; transform(strValueUpper.begin(), strValueUpper.end(), strValueUpper.begin(), ::toupper);
-	wstrValueUpper  = wstrValue; transform(wstrValueUpper.begin(), wstrValueUpper.end(), wstrValueUpper.begin(), ::toupper);
+void KeyValPair::FillDerivedData() {
+  int    _iValue;
+  UINT32 _uiValue;
+  float  _fValue;
+
+
+  for (size_t i = 0;i<vwstrValue.size();i++) {
+    if (FromString(_iValue, vstrValue[i])) 
+      viValue.push_back(_iValue);
+    else 
+      viValue.push_back(0);
+
+    if (FromString(_uiValue, vstrValue[i])) 
+      vuiValue.push_back(_uiValue);
+    else 
+      vuiValue.push_back(0);
+
+    if (FromString(_fValue, vstrValue[i])) 
+      vfValue.push_back(_fValue);
+    else 
+      vfValue.push_back(0.0f);
+  }
+
+  if (vwstrValue.size() > 0) {
+    iValue  = viValue[0];
+    uiValue = vuiValue[0];
+    fValue  = vfValue[0];
+  } else {
+    iValue  = 0;
+    uiValue = 0;
+    fValue  = 0.0f;
+  }
+
+  strKeyUpper  = ToUpperCase(strKey);
+  wstrKeyUpper = ToUpperCase(wstrKey);
+  strValueUpper  = ToUpperCase(strValue);
+  wstrValueUpper  = ToUpperCase(wstrValue);
 }
 
 
-KeyValueFileParser::KeyValueFileParser(const string& strFilename, char cToken)
+KeyValueFileParser::KeyValueFileParser(const string& strFilename, bool bStopOnEmptyLine, const string& strToken, const std::string& strEndToken)
 {
-	wstring wstrFilename(strFilename.begin(), strFilename.end());
-	m_bFileReadable = ParseFile(wstrFilename,wchar_t(cToken));
+  m_bFileReadable = ParseFile(strFilename, bStopOnEmptyLine, strToken, strEndToken);
 }
 
-KeyValueFileParser::KeyValueFileParser(const wstring& wstrFilename, wchar_t cToken)
+KeyValueFileParser::KeyValueFileParser(const wstring& wstrFilename, bool bStopOnEmptyLine, const wstring& wstrToken, const std::wstring& wstrEndToken)
 {
-	m_bFileReadable = ParseFile(wstrFilename,cToken);
+  string strFilename(wstrFilename.begin(), wstrFilename.end());
+  string strToken(wstrToken.begin(), wstrToken.end());
+  string strEndToken(wstrEndToken.begin(), wstrEndToken.end());
+  
+  m_bFileReadable = ParseFile(strFilename, bStopOnEmptyLine, strToken, strEndToken);
 }
 
 KeyValueFileParser::~KeyValueFileParser()
@@ -123,58 +145,67 @@ KeyValueFileParser::~KeyValueFileParser()
 }
 
 KeyValPair* KeyValueFileParser::GetData(const string&  strKey, const bool bCaseSensitive) {
-	if (!bCaseSensitive) {
-		string upperKey(strKey);
-		transform(upperKey.begin(), upperKey.end(), upperKey.begin(), ::toupper);
-		for (uint i = 0;i<m_vecTokens.size();i++) if (m_vecTokens[i].strKeyUpper == upperKey) return &m_vecTokens[i];
-	} else {
-		for (uint i = 0;i<m_vecTokens.size();i++) if (m_vecTokens[i].strKey == strKey) return &m_vecTokens[i];
-	}
-	return NULL;
+  if (!bCaseSensitive) {
+    string upperKey(strKey);
+    transform(upperKey.begin(), upperKey.end(), upperKey.begin(), ::toupper);
+    for (UINT32 i = 0;i<m_vecTokens.size();i++) if (m_vecTokens[i].strKeyUpper == upperKey) return &m_vecTokens[i];
+  } else {
+    for (UINT32 i = 0;i<m_vecTokens.size();i++) if (m_vecTokens[i].strKey == strKey) return &m_vecTokens[i];
+  }
+  return NULL;
 }
 
 KeyValPair* KeyValueFileParser::GetData(const wstring& wstrKey, const bool bCaseSensitive) {
-	if (!bCaseSensitive) {
-		wstring wupperKey(wstrKey);
-		transform(wupperKey.begin(), wupperKey.end(), wupperKey.begin(), ::toupper);
-		for (uint i = 0;i<m_vecTokens.size();i++) if (m_vecTokens[i].wstrKeyUpper == wupperKey) return &m_vecTokens[i];
-	} else {
-		for (uint i = 0;i<m_vecTokens.size();i++) if (m_vecTokens[i].wstrKey == wstrKey) return &m_vecTokens[i];
-	}
-	return NULL;
+  if (!bCaseSensitive) {
+    wstring wupperKey(wstrKey);
+    transform(wupperKey.begin(), wupperKey.end(), wupperKey.begin(), ::toupper);
+    for (UINT32 i = 0;i<m_vecTokens.size();i++) if (m_vecTokens[i].wstrKeyUpper == wupperKey) return &m_vecTokens[i];
+  } else {
+    for (UINT32 i = 0;i<m_vecTokens.size();i++) if (m_vecTokens[i].wstrKey == wstrKey) return &m_vecTokens[i];
+  }
+  return NULL;
 }
 
 
-bool KeyValueFileParser::ParseFile(wstring wstrFilename, wchar_t cToken) {
-	wstring line;
+bool KeyValueFileParser::ParseFile(const std::string& strFilename, bool bStopOnEmptyLine, const std::string& strToken, const std::string& strEndToken) {
+  string line;
+  ifstream fileData(strFilename.c_str(),ios::binary);  
 
-	string strFilename(wstrFilename.begin(), wstrFilename.end());
-	wifstream fileData(strFilename.c_str());	
+  m_iStopPos = 0;
+  if (fileData.is_open())
+  {
+    while (! fileData.eof() )
+    {
+      getline (fileData,line);
+      RemoveLeadingWhitespace(line);
 
-	if (fileData.is_open())
-	{
-		while (! fileData.eof() )
-		{
-			getline (fileData,line);
-			SysTools::RemoveLeadingWhitespace(line);
+      // remove windows line endings
+      if (line.length() > 0 && line[line.length()-1] == 13) 
+        line = line.substr(0,line.length()-1);
 
-			if (line[0] == '#') continue;				// skip comments
-			if (line.find_first_of(cToken) == string::npos) continue;  // skip invalid lines
+      if ((strEndToken != "" && strEndToken == line) ||
+          (bStopOnEmptyLine && line.empty()))  {
+        m_iStopPos = fileData.tellg();
+        break;
+      }
 
-			wstring strKey = line.substr(0, line.find_first_of(cToken));
-			SysTools::RemoveTailingWhitespace(strKey);
+      if (line[0] == '#') continue;        // skip comments
+      if (line.find_first_of(strToken) == string::npos) continue;  // skip invalid lines
 
-			line = line.substr(line.find_first_of(cToken)+1, line.length());
-			SysTools::RemoveLeadingWhitespace(line);
-			SysTools::RemoveTailingWhitespace(line);
+      string strKey = line.substr(0, line.find_first_of(strToken));
+      RemoveTailingWhitespace(strKey);
 
-			if (strKey.length() == 0 || line.length() == 0) continue;
+      line = line.substr(line.find_first_of(strToken)+strToken.length(), line.length());
+      RemoveLeadingWhitespace(line);
+      RemoveTailingWhitespace(line);
 
-			KeyValPair newKey(strKey, line);
-			m_vecTokens.push_back(newKey);
-		}
-		fileData.close();
-	} else return false;
+      if (strKey.length() == 0 || line.length() == 0) continue;
 
-	return true;
+      KeyValPair newKey(strKey, line);
+      m_vecTokens.push_back(newKey);
+    }
+    fileData.close();
+  } else return false;
+
+  return true;
 }

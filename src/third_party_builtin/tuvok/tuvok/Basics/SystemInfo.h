@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,9 +28,9 @@
 
 /**
   \file    SystemInfo.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
   \date    August 2008
 */
 
@@ -39,33 +39,43 @@
 #ifndef SYSTEMINFO_H
 #define SYSTEMINFO_H
 
+#include "../StdTuvokDefines.h"
 #include "../Basics/MathTools.h"
 
 class SystemInfo
 {
 public:
-  SystemInfo();
+  SystemInfo(UINT64 iDefaultCPUMemSize=UINT64(32)*UINT64(1024)*UINT64(1024)*UINT64(1024), UINT64 iDefaultGPUMemSize=UINT64(8)*UINT64(1024)*UINT64(1024)*UINT64(1024));
 
-  unsigned int GetProgrammBitWith() {return m_iProgrammBitWith;}
-  UINT64 GetCPUMemSize() {return m_iCPUMemSize;}
-  UINT64 GetGPUMemSize() {return m_iGPUMemSize;}
-  UINT64 GetMaxUsableCPUMem() {return m_iUseMaxCPUMem;}
-  UINT64 GetMaxUsableGPUMem() {return m_iUseMaxGPUMem;}
+  UINT32 GetProgrammBitWith() const {return m_iProgrammBitWith;}
+  UINT64 GetCPUMemSize() const {return m_iCPUMemSize;}
+  UINT64 GetGPUMemSize() const {return m_iGPUMemSize;}
+  bool IsCPUSizeComputed() const {return m_bIsCPUSizeComputed;}
+  bool IsGPUSizeComputed() const {return m_bIsGPUSizeComputed;}
+  UINT64 GetMaxUsableCPUMem() const {return m_iUseMaxCPUMem;}
+  UINT64 GetMaxUsableGPUMem() const {return m_iUseMaxGPUMem;}
   void SetMaxUsableCPUMem(UINT64 iUseMaxCPUMem) {m_iUseMaxCPUMem = iUseMaxCPUMem;}
   void SetMaxUsableGPUMem(UINT64 iUseMaxGPUMem) {m_iUseMaxGPUMem = iUseMaxGPUMem;}
-  unsigned int GetNumberOfCPUs() {return m_iNumberOfCPUs;}
+  bool IsNumberOfCPUsComputed() const {return m_bIsNumberOfCPUsComputed;}
+  UINT32 GetNumberOfCPUs() const {return m_iNumberOfCPUs;}
+  bool IsDirectX10Capable() const {return m_bIsDirectX10Capable; }
 
 private:
-  unsigned ComputeNumCPUs();
+  UINT32 ComputeNumCPUs();
   UINT64 ComputeCPUMemSize();
   UINT64 ComputeGPUMemory();
 
-  unsigned int  m_iProgrammBitWith;
-  UINT64        m_iCPUMemSize;
-  UINT64        m_iUseMaxCPUMem;
-  UINT64        m_iGPUMemSize;
-  UINT64        m_iUseMaxGPUMem;
-  unsigned int  m_iNumberOfCPUs;
+  UINT32  m_iProgrammBitWith;
+  UINT64  m_iUseMaxCPUMem;
+  UINT64  m_iUseMaxGPUMem;
+  UINT64  m_iCPUMemSize;
+  UINT64  m_iGPUMemSize;
+  UINT32  m_iNumberOfCPUs;
+
+  bool m_bIsCPUSizeComputed;
+  bool m_bIsGPUSizeComputed;
+  bool m_bIsNumberOfCPUsComputed;
+  bool m_bIsDirectX10Capable;
 };
 
 #endif // SYSTEMINFO_H

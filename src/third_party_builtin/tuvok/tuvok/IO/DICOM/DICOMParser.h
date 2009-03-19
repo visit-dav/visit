@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,10 +28,10 @@
 
 /**
   \file    DICOMParser.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.2
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 1.2
   \date    September 2008
 */
 
@@ -41,7 +41,8 @@
 #ifndef DICOMPARSER_H
 #define DICOMPARSER_H
 
-#include "../../IO/DirectoryParser.h"
+#include "../../StdTuvokDefines.h"
+#include <IO/DirectoryParser.h>
 
 // if the following define is set, the DICOM parser putputs detailed parsing information
 // be carfull with this option it may create a huge amount of output
@@ -65,11 +66,11 @@ public:
 
   FLOATVECTOR3 m_fvPatientPosition; // this data is needed to fix aspect ratio which is brocken in many DICOM files ... idiots
 
-  virtual bool GetData(void* pData, unsigned int iLength, unsigned int iOffset);
+  virtual bool GetData(void* pData, UINT32 iLength, UINT32 iOffset);
   virtual SimpleFileInfo* clone();
 
 protected:
-  unsigned int m_iOffsetToData;
+  UINT32 m_iOffsetToData;
 };
 
 class DICOMFileInfo : public SimpleDICOMFileInfo {
@@ -80,32 +81,33 @@ public:
   DICOMFileInfo(const std::wstring& wstrFileName);
   virtual ~DICOMFileInfo() {}
 
-  unsigned int m_iSeries;
+  UINT32       m_iSeries;
   UINTVECTOR3  m_ivSize;
   FLOATVECTOR3 m_fvfAspect;
-  unsigned int m_iAllocated;
-  unsigned int m_iStored;
-  unsigned int m_iComponentCount;
+  UINT32       m_iAllocated;
+  UINT32       m_iStored;
+  UINT32       m_iComponentCount;
   bool         m_bIsBigEndian;
+  bool         m_bIsJPEGEncoded;
   std::string  m_strAcquDate;
   std::string  m_strAcquTime;
   std::string  m_strModality;
   std::string  m_strDesc;
 
-  void SetOffsetToData(const unsigned int iOffset);
+  void SetOffsetToData(const UINT32 iOffset);
 };
 
 
 class DICOMStackInfo : public FileStackInfo {
 public:
-  
+
   DICOMStackInfo();
   DICOMStackInfo(const DICOMFileInfo* info);
   DICOMStackInfo(const DICOMStackInfo* other);
   virtual ~DICOMStackInfo() {}
   bool Match(const DICOMFileInfo* info);
 
-  unsigned int m_iSeries;
+  UINT32       m_iSeries;
   std::string  m_strAcquDate;
   std::string  m_strAcquTime;
   std::string  m_strModality;
@@ -138,7 +140,7 @@ enum DICOM_eType {
   TYPE_UL, // Unsigned Long binary 4 bytes fixed
   TYPE_US, // Unsigned Short binary 2 bytes fixed
   TYPE_UT, // Unlimited Text string 232-2
-  TYPE_UN, // Unknown 
+  TYPE_UN, // Unknown
   TYPE_Implicit // Implict File no type
 };
 
@@ -155,12 +157,12 @@ public:
   static bool GetDICOMFileInfo(const std::string& fileName, DICOMFileInfo& info);
 protected:
 
-  static void SkipUnusedElement(std::ifstream& fileDICOM, std::string& value, const unsigned int iElemLength);
-  static void ReadHeaderElemStart(std::ifstream& fileDICOM, short& iGroupID, short& iElementID, DICOM_eType& eElementType, unsigned int& iElemLength, bool bImplicit, bool bNeedsEndianConversion);
-  static unsigned int GetUInt(std::ifstream& fileDICOM, const DICOM_eType eElementType, const unsigned int iElemLength, const bool bNeedsEndianConversion);
+  static void SkipUnusedElement(std::ifstream& fileDICOM, std::string& value, const UINT32 iElemLength);
+  static void ReadHeaderElemStart(std::ifstream& fileDICOM, short& iGroupID, short& iElementID, DICOM_eType& eElementType, UINT32& iElemLength, bool bImplicit, bool bNeedsEndianConversion);
+  static UINT32 GetUInt(std::ifstream& fileDICOM, const DICOM_eType eElementType, const UINT32 iElemLength, const bool bNeedsEndianConversion);
 
   #ifdef DEBUG_DICOM
-  static void ParseUndefLengthSequence(std::ifstream& fileDICOM, short& iSeqGroupID, short& iSeqElementID, DICOMFileInfo& info, const bool bImplicit, const bool bNeedsEndianConversion, unsigned int iDepth);
+  static void ParseUndefLengthSequence(std::ifstream& fileDICOM, short& iSeqGroupID, short& iSeqElementID, DICOMFileInfo& info, const bool bImplicit, const bool bNeedsEndianConversion, UINT32 iDepth);
   #else
   static void ParseUndefLengthSequence(std::ifstream& fileDICOM, short& iSeqGroupID, short& iSeqElementID, DICOMFileInfo& info, const bool bImplicit, const bool bNeedsEndianConversion);
   #endif

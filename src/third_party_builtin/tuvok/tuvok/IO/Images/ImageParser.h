@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -41,7 +41,8 @@
 #ifndef IMAGEPARSER_H
 #define IMAGEPARSER_H
 
-#include "../../IO/DirectoryParser.h"
+#include "../../StdTuvokDefines.h"
+#include <IO/DirectoryParser.h>
 
 // if the following define is set, the DICOM parser putputs detailed parsing information
 // be carfull with this option it may create a huge amount of output
@@ -63,7 +64,7 @@ public:
   SimpleImageFileInfo(const SimpleImageFileInfo* info);
   virtual ~SimpleImageFileInfo() {}
 
-  virtual bool GetData(void* pData, unsigned int iLength, unsigned int iOffset);
+  virtual bool GetData(void* pData, UINT32 iLength, UINT32 iOffset);
   virtual SimpleFileInfo* clone();
 };
 
@@ -74,16 +75,16 @@ public:
   ImageFileInfo(const std::wstring& wstrFileName);
   virtual ~ImageFileInfo() {}
 
-  UINTVECTOR2  m_ivSize;
-  unsigned int m_iAllocated;
-  unsigned int m_iComponentCount;
+  UINTVECTOR2 m_ivSize;
+  UINT32      m_iAllocated;
+  UINT32      m_iComponentCount;
 
   void ComputeSize();
 
 };
 
 class ImageStackInfo : public FileStackInfo {
-public:  
+public:
   ImageStackInfo();
   ImageStackInfo(const ImageFileInfo* info);
   ImageStackInfo(const ImageStackInfo* other);

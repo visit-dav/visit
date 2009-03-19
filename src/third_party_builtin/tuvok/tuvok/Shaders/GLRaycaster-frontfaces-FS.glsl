@@ -39,5 +39,5 @@ varying vec3 vEyePos;
 
 void main(void)
 {
-  gl_FragColor = vec4(vEyePos,0);
+  gl_FragColor = vec4(vEyePos,1);
 }

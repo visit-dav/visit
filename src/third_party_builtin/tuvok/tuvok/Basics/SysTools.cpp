@@ -38,13 +38,21 @@
 
 #include "SysTools.h"
 #include <algorithm>
-#include <sstream>
+#include <cstdio>
+#include <cstring>
 #include <iostream>
+#include <sstream>
 
-#include <sys/stat.h>
 #include <errno.h>
+#include <sys/stat.h>
 
-#if defined(macintosh) || (defined(__MACH__) && defined(__APPLE__))
+#ifndef _WIN32
+  #include <regex.h>
+  #include <dirent.h>
+  #include <unistd.h>
+#endif
+
+#ifdef TUVOK_OS_APPLE
   #include <CoreFoundation/CoreFoundation.h>
 #endif
 
@@ -56,20 +64,77 @@
   #define MIN(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
-#ifndef _WIN32
-  #include <regex.h>
-  #include <dirent.h>
-  #include <unistd.h>
-#endif
-
 using namespace std;
+#include "../DebugOut/AbstrDebugOut.h"
 
 namespace SysTools {
+
+  vector< string > Tokenize(const string& strInput, bool bQuoteprotect) {
+    if (bQuoteprotect) {
+      string buf;
+      stringstream ss(strInput); 
+      vector<string> strElements;
+      bool bProtected = false;
+      while (ss >> buf) {
+        string cleanBuf = buf;
+        if (cleanBuf[0] == '\"')
+          cleanBuf = cleanBuf.substr(1, cleanBuf.length()-1);
+        if (cleanBuf[cleanBuf.size()-1] == '\"')
+          cleanBuf = cleanBuf.substr(0, cleanBuf.length()-1);
+
+        if (bProtected) {
+          size_t end = strElements.size()-1;
+          strElements[end] = strElements[end] + " " + cleanBuf;
+        }
+        else
+          strElements.push_back(cleanBuf);
+
+        if (buf[0] == '\"')            bProtected = true;
+        if (buf[buf.size()-1] == '\"') bProtected = false;
+      }
+      return strElements;
+    } else {
+      string buf;
+      stringstream ss(strInput); 
+      vector<string> strElements;
+      while (ss >> buf) strElements.push_back(buf);
+      return strElements;
+    }
+  }
+
+  vector< wstring > Tokenize(const wstring& strInput, bool bQuoteprotect) {
+    if (bQuoteprotect) {
+      wstring buf;
+      wstringstream ss(strInput); 
+      vector<wstring> strElements;
+      bool bProtected = false;
+      while (ss >> buf) {
+        wstring cleanBuf = buf;
+        if (cleanBuf[0] == '\"') cleanBuf = cleanBuf.substr(1, cleanBuf.length()-1);
+        if (cleanBuf[cleanBuf.size()-1] == '\"') cleanBuf = cleanBuf.substr(0, cleanBuf.length()-1);
+
+        if (bProtected)
+          strElements[strElements.size()-1] = strElements[strElements.size()-1] + L" " + cleanBuf;
+        else
+          strElements.push_back(cleanBuf);
+
+        if (buf[0] == '\"')            bProtected = true;
+        if (buf[buf.size()-1] == '\"') bProtected = false;
+      }
+      return strElements;
+    } else {
+      wstring buf;
+      wstringstream ss(strInput); 
+      vector<wstring> strElements;
+      while (ss >> buf) strElements.push_back(buf);
+      return strElements;
+    }
+  }
 
   string GetFromResourceOnMac(const string& strFileName) {
 
 
-    #if defined(macintosh) || (defined(__MACH__) && defined(__APPLE__))
+    #ifdef TUVOK_OS_APPLE
       CFStringRef cfFilename = CFStringCreateWithCString(kCFAllocatorDefault, RemoveExt(GetFilename(strFileName)).c_str(), CFStringGetSystemEncoding());   
       CFStringRef cfExt = CFStringCreateWithCString(kCFAllocatorDefault, GetExt(GetFilename(strFileName)).c_str(), CFStringGetSystemEncoding());   
 
@@ -88,7 +153,7 @@ namespace SysTools {
   }
 
   wstring GetFromResourceOnMac(const wstring& wstrFileName) {
-    #if defined(macintosh) || (defined(__MACH__) && defined(__APPLE__))
+    #ifdef TUVOK_OS_APPLE
       // for now just call the string method by converting the unicode string down to an 8bit string
       string strFileName(wstrFileName.begin(), wstrFileName.end());
       string strResult = GetFromResourceOnMac(strFileName);
@@ -156,6 +221,24 @@ namespace SysTools {
     reverse(str.begin(), str.end());
     RemoveLeadingWhitespace(str);
     reverse(str.begin(), str.end());
+  }
+
+  /// Uses remove(3) to remove the file.
+  /// @return true if the remove succeeded.
+  bool Remove(const std::string &path, AbstrDebugOut &dbg)
+  {
+    if(std::remove(path.c_str()) == -1) {
+#ifdef _WIN32
+      char buffer[200];
+      strerror_s(buffer, 200, errno);
+      dbg.Warning(_func_, "Could not remove `%s': %s", path.c_str(), buffer);
+#else
+      dbg.Warning(_func_, "Could not remove `%s': %s", path.c_str(),
+                  strerror(errno));
+#endif
+      return false;
+    }
+    return true;
   }
 
   bool GetFileStats(const string& strFileName, struct ::stat& stat_buf) {
@@ -302,7 +385,7 @@ namespace SysTools {
     return fileName.substr(0,fileName.find_last_of(L"."));
   }
 
-  string  ChangeExt(const std::string& fileName, const std::string& newext) {
+  string  ChangeExt(const string& fileName, const std::string& newext) {
     return RemoveExt(fileName)+ "." + newext;
   }
 
@@ -310,6 +393,37 @@ namespace SysTools {
     return RemoveExt(fileName)+ L"." + newext;
   }
 
+  string  CheckExt(const string& fileName, const std::string& newext) {
+    string currentExt = GetExt(fileName);
+#ifdef _WIN32  // do a case insensitive check on windows systems
+    if (ToLowerCase(currentExt) != ToLowerCase(newext)) 
+#else
+    if (currentExt != newext) 
+#endif
+      return fileName + "." + newext;
+    else 
+      return fileName;
+  }
+
+  wstring CheckExt(const std::wstring& fileName, const std::wstring& newext) {
+    wstring currentExt = GetExt(fileName);
+#ifdef _WIN32  // do a case insensitive check on windows systems
+    if (ToLowerCase(currentExt) != ToLowerCase(newext)) 
+#else
+    if (currentExt != newext) 
+#endif
+      return fileName + L"." + newext;
+    else 
+      return fileName;
+  }
+
+  string  AppendFilename(const string& fileName, const int iTag) {
+    return AppendFilename(fileName, ToString(iTag));
+  }
+
+  wstring AppendFilename(const wstring& fileName, const int iTag) {
+    return AppendFilename(fileName, ToWString(iTag));
+  }
 
   string  AppendFilename(const string& fileName, const string& tag) {
     return RemoveExt(fileName) + tag + "." + GetExt(fileName);
@@ -343,7 +457,7 @@ namespace SysTools {
     if (hFind != INVALID_HANDLE_VALUE) {
       do {
         wstring wstrFilename = FindFileData.cFileName;
-        if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && wstrFilename != L"." && wstrFilename != L"..") {
+        if( (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && wstrFilename != L"." && wstrFilename != L"..") {
           subDirs.push_back(wstrFilename);
         }
       }while ( FindNextFileW(hFind, &FindFileData) );
@@ -418,7 +532,7 @@ namespace SysTools {
     if (hFind != INVALID_HANDLE_VALUE) {
       do {
         string strFilename = FindFileData.cFileName;
-        if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && strFilename != "." && strFilename != "..") {
+        if( (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strFilename != "." && strFilename != "..") {
           subDirs.push_back(strFilename);
         }
       }while ( FindNextFileA(hFind, &FindFileData) );
@@ -482,7 +596,7 @@ namespace SysTools {
 
     if (hFind != INVALID_HANDLE_VALUE) {
       do {
-        if( FindFileData.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY ) {
+        if( 0 == (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ) {
           files.push_back(FindFileData.cFileName);
         }
       }while ( FindNextFileW(hFind, &FindFileData) );
@@ -570,7 +684,7 @@ namespace SysTools {
 
     if (hFind != INVALID_HANDLE_VALUE) {
       do {
-        if( FindFileData.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY ) {
+        if( 0 == (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ) {
           files.push_back(FindFileData.cFileName);
         }
       }while ( FindNextFileA(hFind, &FindFileData) );
@@ -610,7 +724,6 @@ namespace SysTools {
   DIR* dirData=opendir(strDir.c_str());
 
   if (dirData != NULL) {
-
     struct dirent *inode;
   
     while ((inode=readdir(dirData)) != NULL) {
@@ -618,27 +731,56 @@ namespace SysTools {
       strFilename = strDir + strFilename;
 
       struct ::stat st;
-      if (::stat(strFilename.c_str(), &st) != -1) 
-        if (!S_ISDIR(st.st_mode) && !regexec(&preg, inode->d_name, size_t(0), NULL, 0)) {
-          files.push_back(inode->d_name);
+      if (::stat(strFilename.c_str(), &st) != -1) {
+        if (!S_ISDIR(st.st_mode) &&
+            !regexec(&preg, inode->d_name, size_t(0), NULL, 0)) {
+          files.push_back(strdup(strFilename.c_str()));
         }
+      }
     }
+    closedir(dirData);
   }
   regfree(&preg);
-  closedir(dirData);
 #endif
 
     return files;
+  }
+
+  std::string  FindNextSequenceName(const std::string& strFilename) {
+    std::string dir = SysTools::GetPath(strFilename);
+    std::string fileName = SysTools::RemoveExt(SysTools::GetFilename(strFilename));
+    std::string ext = SysTools::GetExt(strFilename);
+
+    return FindNextSequenceName(fileName, ext, dir);
+  }
+  
+  std::wstring FindNextSequenceName(const std::wstring& wStrFilename) {
+    std::wstring dir = SysTools::GetPath(wStrFilename);
+    std::wstring fileName = SysTools::RemoveExt(SysTools::GetFilename(wStrFilename));
+    std::wstring ext = SysTools::GetExt(wStrFilename);
+
+    return FindNextSequenceName(fileName, ext, dir);
   }
 
   string  FindNextSequenceName(const string& fileName, const string& ext, const string& dir) {
     stringstream out;
     vector<string> files = GetDirContents(dir, fileName+"*", ext);
 
-    unsigned int iMaxIndex = 0;
-    for (unsigned int i = 0; i<files.size();i++) {
+    UINT32 iMaxIndex = 0;
+    for (size_t i = 0; i<files.size();i++) {
       string curFilename = RemoveExt(files[i]);
-      unsigned int iCurrIndex = atoi(curFilename.substr(fileName.length()).c_str());
+
+      string rest = RemoveExt(curFilename).substr(fileName.length());
+      for (size_t j = 0; j<rest.size();j++) {
+        if (rest[j] != '0' && rest[j] != '1' && rest[j] != '2' && rest[j] != '3' &&
+            rest[j] != '4' && rest[j] != '5' && rest[j] != '6' && rest[j] != '7' &&
+            rest[j] != '8' && rest[j] != '9') {
+              rest.clear();
+              break;
+        }
+      }
+      if (rest.length() == 0) continue;
+      UINT32 iCurrIndex = UINT32(atoi(rest.c_str()));
       iMaxIndex = (iMaxIndex <= iCurrIndex) ? iCurrIndex+1 : iMaxIndex;
     }
 
@@ -654,11 +796,23 @@ namespace SysTools {
     wstringstream out;
     vector<wstring> files = GetDirContents(dir, fileName+L"*", ext);
 
-    unsigned int iMaxIndex = 0;
-    for (unsigned int i = 0; i<files.size();i++) {
+    UINT32 iMaxIndex = 0;
+    for (size_t i = 0; i<files.size();i++) {
       wstring wcurFilename = RemoveExt(files[i]);
       string curFilename(wcurFilename.begin(), wcurFilename.end());
-      unsigned int iCurrIndex = atoi(curFilename.substr(fileName.length()).c_str());
+
+      string rest = RemoveExt(curFilename).substr(fileName.length());
+      for (size_t j = 0; j<rest.size();j++) {
+        if (rest[j] != '0' && rest[j] != '1' && rest[j] != '2' && rest[j] != '3' &&
+            rest[j] != '4' && rest[j] != '5' && rest[j] != '6' && rest[j] != '7' &&
+            rest[j] != '8' && rest[j] != '9') {
+              rest.clear();
+              break;
+        }
+      }
+      if (rest.length() == 0) continue;
+
+      UINT32 iCurrIndex = UINT32(atoi(rest.c_str()));
       iMaxIndex = (iMaxIndex <= iCurrIndex) ? iCurrIndex+1 : iMaxIndex;
     }
 
@@ -671,27 +825,27 @@ namespace SysTools {
   }
 
 
-  unsigned int  FindNextSequenceIndex(const string& fileName, const string& ext, const string& dir) {
+  UINT32 FindNextSequenceIndex(const string& fileName, const string& ext, const string& dir) {
     vector<string> files = GetDirContents(dir, fileName+"*", ext);
 
-    unsigned int iMaxIndex = 0;
-    for (unsigned int i = 0; i<files.size();i++) {
+    UINT32 iMaxIndex = 0;
+    for (size_t i = 0; i<files.size();i++) {
       string curFilename = RemoveExt(files[i]);
-      unsigned int iCurrIndex = atoi(curFilename.substr(fileName.length()).c_str());
+      UINT32 iCurrIndex = UINT32(atoi(curFilename.substr(fileName.length()).c_str()));
       iMaxIndex = (iMaxIndex <= iCurrIndex) ? iCurrIndex+1 : iMaxIndex;
     }
 
     return iMaxIndex;
   }
    
-  unsigned int FindNextSequenceIndex(const wstring& fileName, const wstring& ext, const wstring& dir) {
+  UINT32 FindNextSequenceIndex(const wstring& fileName, const wstring& ext, const wstring& dir) {
     vector<wstring> files = GetDirContents(dir, fileName+L"*", ext);
 
-    unsigned int iMaxIndex = 0;
-    for (unsigned int i = 0; i<files.size();i++) {
+    UINT32 iMaxIndex = 0;
+    for (size_t i = 0; i<files.size();i++) {
       wstring wcurFilename = RemoveExt(files[i]);
       string curFilename(wcurFilename.begin(), wcurFilename.end());
-      unsigned int iCurrIndex = atoi(curFilename.substr(fileName.length()).c_str());
+      UINT32 iCurrIndex = UINT32(atoi(curFilename.substr(fileName.length()).c_str()));
       iMaxIndex = (iMaxIndex <= iCurrIndex) ? iCurrIndex+1 : iMaxIndex;
     }
 
@@ -891,7 +1045,7 @@ namespace SysTools {
     string lowerParameter(parameter), lowerListParameter;
 
     transform(parameter.begin(), parameter.end(), lowerParameter.begin(), myTolower);
-    for (unsigned int i = 0;i<m_strArrayParameters.size();i++) {
+    for (size_t i = 0;i<m_strArrayParameters.size();i++) {
 
       lowerListParameter.resize(m_strArrayParameters[i].length());
 

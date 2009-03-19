@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-  
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,9 +28,9 @@
 
 /**
   \file    KeyValueFileParser.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
   \date    September 2008
 */
 
@@ -40,61 +40,70 @@
 #define KEYVALUEFILEPARSER_H
 
 #ifdef _WIN32
-	#pragma warning (disable : 4995)
+  #pragma warning (disable : 4995)
 #endif
 #include <vector>
 #include <string>
 #ifdef _WIN32
-	#pragma warning (default : 4995)
+  #pragma warning (default : 4995)
 #endif
 
-#include "../Basics/Vectors.h"
+#include "../StdTuvokDefines.h"
+#include <Basics/Vectors.h>
 
 class KeyValPair {
 public:
-	
-	KeyValPair();
-	KeyValPair(const std::string& key, const std::string& value);
-	KeyValPair(const std::wstring& key, const std::wstring& value);
 
-	// keys
-	std::string		strKey;
-	std::wstring	wstrKey;
-	std::string		strKeyUpper;
-	std::wstring	wstrKeyUpper;
+  KeyValPair();
+  KeyValPair(const std::string& key, const std::string& value);
+  KeyValPair(const std::wstring& key, const std::wstring& value);
 
-	// values
-	std::string		strValue;
-	std::wstring	wstrValue;
-	std::string		strValueUpper;
-	std::wstring	wstrValueUpper;
-	unsigned int	uiValue;
-	int				iValue;
-	float			fValue;
-	INTVECTOR3		viValue;
-	UINTVECTOR3		vuiValue;
-	FLOATVECTOR3	vfValue;
+  // keys
+  std::string   strKey;
+  std::wstring  wstrKey;
+  std::string   strKeyUpper;
+  std::wstring  wstrKeyUpper;
+
+  // values
+  std::string               strValue;
+  std::wstring              wstrValue;
+  std::string               strValueUpper;
+  std::wstring              wstrValueUpper;
+  int                       iValue;
+  UINT32                    uiValue;
+  float                     fValue;
+  std::vector<int>          viValue;
+  std::vector<UINT32>       vuiValue;
+  std::vector<float>        vfValue;
+  std::vector<std::string>  vstrValue;
+  std::vector<std::wstring> vwstrValue;
+
+private:
+  void FillDerivedData();
 };
 
 
 class KeyValueFileParser
 {
 public:
-	KeyValueFileParser(const std::string& strFilename, char cToken = ':');
-	KeyValueFileParser(const std::wstring& wstrFilename, wchar_t cToken = ':');
+  KeyValueFileParser(const std::string& strFilename, bool bStopOnEmptyLine=false, const std::string& strToken = ":", const std::string& strEndToken = "");
+  KeyValueFileParser(const std::wstring& wstrFilename, bool bStopOnEmptyLine=false, const std::wstring& wstrToken = L":", const std::wstring& wstrEndToken = L"");
 
-	~KeyValueFileParser(void);
+  ~KeyValueFileParser(void);
 
-	KeyValPair* GetData(const std::string&  strKey, const bool bCaseSensitive=false);
-	KeyValPair* GetData(const std::wstring& wstrKey, const bool bCaseSensitive=false); 
+  KeyValPair* GetData(const std::string&  strKey, const bool bCaseSensitive=false);
+  KeyValPair* GetData(const std::wstring& wstrKey, const bool bCaseSensitive=false);
 
-	bool FileReadable() const {return m_bFileReadable;}
+  bool FileReadable() const {return m_bFileReadable;}
+
+  size_t GetStopPos() {return m_iStopPos;}
 
 protected:
-	std::vector<KeyValPair> m_vecTokens;
-	bool m_bFileReadable;
+  std::vector<KeyValPair> m_vecTokens;
+  bool m_bFileReadable;
+  size_t m_iStopPos;
 
-  bool ParseFile(std::wstring wstrFilename, wchar_t cToken);
+  bool ParseFile(const std::string& strFilename, bool bStopOnEmptyLine, const std::string& strToken, const std::string& strEndToken);
 };
 
 #endif // KEYVALUEFILEPARSER_H

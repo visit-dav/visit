@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -40,11 +40,20 @@
 #ifndef MEMMAPPEDFILE_H
 #define MEMMAPPEDFILE_H
 
+#include "../StdTuvokDefines.h"
 #include <string>
 #include "../Basics/MathTools.h"
 
 #ifdef _WIN32
   #include <windows.h>
+  // undef stupid windows defines to max and min
+  #ifdef max
+  #undef max
+  #endif
+
+  #ifdef min
+  #undef min
+  #endif
 #endif
 
 enum MMFILE_ACCESS {
@@ -65,7 +74,7 @@ public:
   UINT64  GetFileMappingSize() const {return m_dwFileMappingSize;}
   UINT64  GetFileLength() const {return m_dwFileSize;}
   bool  IsOpen() const {return m_bIsOpen;}
-  
+
   void  Flush();
   void  Close();
   void  Erase();
@@ -96,9 +105,9 @@ private:
     DWORD  m_dwDesiredAccessMap;
   #else
     long  m_AllocationGranularity;
-    int    m_fdes;  
+    int    m_fdes;
     int    m_dwMmmapMode;
-  #endif  
+  #endif
 
 };
 

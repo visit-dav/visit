@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,10 +28,9 @@
 
 /**
   \file    TextfileOut.cpp
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
   \date    August 2008
 */
 
@@ -56,7 +55,7 @@ TextfileOut::~TextfileOut() {
   this->printf("MESSAGE (TextfileOut::~TextfileOut:): Shutting down\n\n\n");
 }
 
-void TextfileOut::printf(const char* format, ...)
+void TextfileOut::printf(const char* format, ...) const
 {
   if (!m_bShowOther) return;
 
@@ -77,7 +76,7 @@ void TextfileOut::printf(const char* format, ...)
   fs.close();
 }
 
-void TextfileOut::_printf(const char* format, ...)
+void TextfileOut::_printf(const char* format, ...) const
 {
   char buff[16384];
   va_list args;

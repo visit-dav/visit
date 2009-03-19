@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -41,12 +41,13 @@
 
 #include <deque>
 #include <string>
+#include "../../StdTuvokDefines.h"
 #include "../AbstrRenderer.h"
-#include "../GLTexture1D.h"
-#include "../GLTexture2D.h"
-#include "../GLTexture3D.h"
-#include "../GLFBOTex.h"
-#include "../GLSLProgram.h"
+#include "../GL/GLTexture1D.h"
+#include "../GL/GLTexture2D.h"
+#include "../GL/GLTexture3D.h"
+#include "../GL/GLFBOTex.h"
+#include "../GL/GLSLProgram.h"
 #include "../../IO/VolumeDataset.h"
 #include "../../IO/TransferFunction1D.h"
 #include "../../IO/TransferFunction2D.h"
@@ -58,7 +59,7 @@ typedef AbstrRendererList::iterator AbstrRendererListIter;
 class VolDataListElem {
 public:
   VolDataListElem(VolumeDataset* _pVolumeDataset, AbstrRenderer* pUser) :
-    pVolumeDataset(_pVolumeDataset) 
+    pVolumeDataset(_pVolumeDataset)
   {
     qpUser.push_back(pUser);
   }
@@ -72,15 +73,15 @@ typedef VolDataList::iterator VolDataListIter;
 // simple textures
 class SimpleTextureListElem {
 public:
-  SimpleTextureListElem(unsigned int _iAccessCounter, GLTexture2D* _pTexture, std::string _strFilename) :
-    iAccessCounter(_iAccessCounter), 
-    pTexture(_pTexture), 
+  SimpleTextureListElem(UINT32 _iAccessCounter, GLTexture2D* _pTexture, std::string _strFilename) :
+    iAccessCounter(_iAccessCounter),
+    pTexture(_pTexture),
     strFilename(_strFilename)
   {}
 
-  unsigned int  iAccessCounter;
+  UINT32        iAccessCounter;
   GLTexture2D*  pTexture;
-  std::string    strFilename;
+  std::string   strFilename;
 };
 typedef std::deque<SimpleTextureListElem> SimpleTextureList;
 typedef SimpleTextureList::iterator SimpleTextureListIter;
@@ -122,11 +123,24 @@ typedef Trans2DList::iterator Trans2DListIter;
 // 3D textures
 class Texture3DListElem {
 public:
-  Texture3DListElem(VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD, const std::vector<UINT64>& _vBrick, bool bIsPaddedToPowerOfTwo, UINT64 iIntraFrameCounter, UINT64 iFrameCounter);
+  Texture3DListElem(VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD,
+                    const std::vector<UINT64>& _vBrick,
+                    bool bIsPaddedToPowerOfTwo, bool bDisableBorder,
+                    bool bIsDownsampledTo8Bits, UINT64 iIntraFrameCounter,
+                    UINT64 iFrameCounter, MasterController* pMasterController);
   ~Texture3DListElem();
-  bool Equals(VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD, const std::vector<UINT64>& _vBrick, bool bIsPaddedToPowerOfTwo);
-  bool Replace(VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD, const std::vector<UINT64>& _vBrick, bool bIsPaddedToPowerOfTwo, UINT64 iIntraFrameCounter, UINT64 iFrameCounter);
-  bool BestMatch(const std::vector<UINT64>& vDimension, bool bIsPaddedToPowerOfTwo, UINT64& iIntraFrameCounter, UINT64& iFrameCounter);
+
+  bool Equals(const VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD,
+              const std::vector<UINT64>& _vBrick, bool bIsPaddedToPowerOfTwo,
+              bool bIsDownsampledTo8Bits, bool bDisableBorder);
+  bool Replace(VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD,
+               const std::vector<UINT64>& _vBrick, bool bIsPaddedToPowerOfTwo,
+               bool bIsDownsampledTo8Bits, bool bDisableBorder,
+               UINT64 iIntraFrameCounter, UINT64 iFrameCounter);
+  bool BestMatch(const std::vector<UINT64>& vDimension,
+                 bool bIsPaddedToPowerOfTwo, bool bIsDownsampledTo8Bits,
+                 bool bDisableBorder, UINT64& iIntraFrameCounter,
+                 UINT64& iFrameCounter);
   GLTexture3D* Access(UINT64& iIntraFrameCounter, UINT64& iFrameCounter);
 
   bool LoadData();
@@ -137,31 +151,35 @@ public:
   unsigned char*      pData;
   GLTexture3D*        pTexture;
   VolumeDataset*      pDataset;
-  unsigned int        iUserCount;
+  UINT32              iUserCount;
 
-  UINT64 GetIntraFrameCounter() {return m_iIntraFrameCounter;}
-  UINT64 GetFrameCounter() {return m_iFrameCounter;}
+  UINT64 GetIntraFrameCounter() const {return m_iIntraFrameCounter;}
+  UINT64 GetFrameCounter() const {return m_iFrameCounter;}
 
 private:
   bool Match(const std::vector<UINT64>& vDimension);
 
   UINT64 m_iIntraFrameCounter;
   UINT64 m_iFrameCounter;
+  MasterController* m_pMasterController;
 
   std::vector<UINT64> vLOD;
   std::vector<UINT64> vBrick;
   bool m_bIsPaddedToPowerOfTwo;
-
+  bool m_bIsDownsampledTo8Bits;
+  bool m_bDisableBorder;
 };
+
 typedef std::deque<Texture3DListElem*> Texture3DList;
 typedef Texture3DList::iterator Texture3DListIter;
+typedef Texture3DList::const_iterator Texture3DListConstIter;
 
 // framebuffer objects
 class FBOListElem {
 public:
   FBOListElem(GLFBOTex* _pFBOTex) : pFBOTex(_pFBOTex)
   {}
-  FBOListElem(MasterController* pMasterController, GLenum minfilter, GLenum magfilter, GLenum wrapmode, GLsizei width, GLsizei height, GLenum intformat, unsigned int iSizePerElement, bool bHaveDepth, int iNumBuffers) :
+  FBOListElem(MasterController* pMasterController, GLenum minfilter, GLenum magfilter, GLenum wrapmode, GLsizei width, GLsizei height, GLenum intformat, UINT32 iSizePerElement, bool bHaveDepth, int iNumBuffers) :
     pFBOTex(new GLFBOTex(pMasterController, minfilter, magfilter, wrapmode, width, height, intformat, iSizePerElement, bHaveDepth, iNumBuffers))
   {}
 
@@ -195,10 +213,10 @@ public:
     delete pGLSLProgram;
   }
 
-  std::string strVSFile; 
-  std::string strFSFile;
-  unsigned int iAccessCounter;
-  GLSLProgram* pGLSLProgram;
+  std::string   strVSFile;
+  std::string   strFSFile;
+  UINT32        iAccessCounter;
+  GLSLProgram*  pGLSLProgram;
 };
 typedef std::deque<GLSLListElem*> GLSLList;
 typedef GLSLList::iterator GLSLListIter;

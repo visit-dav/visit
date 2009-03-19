@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -41,6 +41,7 @@
 #ifndef ENDIANCONVERT_H
 #define ENDIANCONVERT_H
 
+#include "../StdTuvokDefines.h"
 #include <cassert>
 
 #ifndef WIN32
@@ -54,20 +55,20 @@ namespace EndianConvert {
    * Swap routine to convert between little and big-endian.
    * x is converted in situ.
    * \param x pointer to data we should swap.
-   * \return void 
+   * \return void
    * \date October.2004
    */
   template<class TYPE>
   inline void Swap(TYPE* x) {
   #ifndef ENDIANCONVERT_THREAD_SAFE
-    static 
+    static
   #endif
     union {
       TYPE t;
       char c[sizeof(TYPE)];
     } uSwapSpace;
   #ifndef ENDIANCONVERT_THREAD_SAFE
-    static 
+    static
   #endif
     char c;
     uSwapSpace.t=*x;
@@ -91,14 +92,14 @@ namespace EndianConvert {
   template<class TYPE>
   inline TYPE Swap(const TYPE x) {
   #ifndef ENDIANCONVERT_THREAD_SAFE
-    static 
+    static
   #endif
     union {
       TYPE t;
       char c[sizeof(TYPE)];
     } uSwapSpace;
   #ifndef ENDIANCONVERT_THREAD_SAFE
-    static 
+    static
   #endif
     char c;
     uSwapSpace.t=x;
@@ -113,7 +114,7 @@ namespace EndianConvert {
 
 
   /**
-   * Checks whether this machine is big-endian. 
+   * Checks whether this machine is big-endian.
    * \return true if the machine is big-endian, false otherwise
    * \date December.2004
    */
@@ -130,7 +131,7 @@ namespace EndianConvert {
 
 
   /**
-   * Checks whether this machine is little-endian. 
+   * Checks whether this machine is little-endian.
    * \return true if the machine is little-endian, false otherwise
    * \date December.2004
    */
@@ -189,7 +190,7 @@ namespace EndianConvert {
           }
           AVG/=double(NumElements);
           VAR=(VAR-double(NumElements)*AVG*AVG)/double(NumElements-1);
-  #ifdef _DEBUG        
+  #ifdef _DEBUG
           printf("%s (%.3f vs NaN) ",IsBigEndian() ? "big endian" : "little endian",VAR);
   #endif
           return VAR;

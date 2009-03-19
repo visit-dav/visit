@@ -8,11 +8,15 @@
 //
 // Copyright (c) Microsoft Corp. All rights reserved.
 //-----------------------------------------------------------------------------
+
+#if defined(_WIN32) && defined(USE_DIRECTX)
+
 #define INITGUID
 #include <windows.h>
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+
 #include <ddraw.h>
 #define COMPILE_MULTIMON_STUBS
 #include <multimon.h>
@@ -170,3 +174,4 @@ HRESULT GetDeviceIDFromHMonitor( HMONITOR hm, WCHAR* strDeviceID, int cchDeviceI
 
     return E_FAIL;
 }
+#endif

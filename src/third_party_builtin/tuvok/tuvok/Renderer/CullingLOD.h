@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,11 +28,11 @@
 
 /**
   \file    CullingLOD.h
-  \brief    Simple routines for filename handling
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.4
+  \brief   Simple routines for filename handling
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 1.4
   \date    July 2008
 */
 
@@ -42,19 +42,21 @@
 #define CULLINGLOD_H
 
 #include "../Basics/Vectors.h"
+#include "../StdTuvokDefines.h"
 
 class CullingLOD
 {
   public:
     CullingLOD(float fScreenSpaceError=1.0f);
-    void SetScreenParams(float fFOVY, float fAspect, float fNearPlane, float fFarPlane, unsigned int iPixelCountY);
-	  void SetProjectionMatrix(const FLOATMATRIX4& mProjectionMatrix);
+    void SetScreenParams(float fFOVY, float fAspect, float fNearPlane, float fFarPlane, UINT32 iPixelCountY);
+    void SetProjectionMatrix(const FLOATMATRIX4& mProjectionMatrix);
     void SetModelMatrix(const FLOATMATRIX4& mModelMatrix);
     void SetViewMatrix(const FLOATMATRIX4& mViewMatrix);
-	  void Update();
-    
+    void Update();
+    void SetPassAll(bool bPassAll) {m_bPassAll = bPassAll;}
+
     int GetLODLevel(const FLOATVECTOR3& vfCenter, const FLOATVECTOR3& vfExtent, const UINTVECTOR3& viVoxelCount) const;
-	  bool IsVisible(const FLOATVECTOR3& vCenter, const FLOATVECTOR3& vfExtent) const;
+    bool IsVisible(const FLOATVECTOR3& vCenter, const FLOATVECTOR3& vfExtent) const;
 
     FLOATVECTOR2 GetDepthScaleParams() const;
     float        GetNearPlane() const {return m_fNearPlane;}
@@ -62,18 +64,19 @@ class CullingLOD
 
   private:
     FLOATMATRIX4 m_mModelViewProjectionMatrix;
-	  FLOATMATRIX4 m_mModelViewMatrix;
-	  FLOATMATRIX4 m_mProjectionMatrix;
-	  FLOATMATRIX4 m_mViewMatrix;
-	  FLOATMATRIX4 m_mModelMatrix;
-	  FLOATVECTOR4 m_Planes[6];
+    FLOATMATRIX4 m_mModelViewMatrix;
+    FLOATMATRIX4 m_mProjectionMatrix;
+    FLOATMATRIX4 m_mViewMatrix;
+    FLOATMATRIX4 m_mModelMatrix;
+    FLOATVECTOR4 m_Planes[6];
     float        m_fFOVY;
     float        m_fAspect;
     float        m_fNearPlane;
     float        m_fFarPlane;
-    unsigned int m_iPixelCountY;
+    UINT32       m_iPixelCountY;
     float        m_fScreenSpaceError;
-    float        m_fLODFactor;          /// < the magic LOD factor !
+    float        m_fLODFactor;
+    bool         m_bPassAll;
 };
 
 #endif // CULLINGLOD_H

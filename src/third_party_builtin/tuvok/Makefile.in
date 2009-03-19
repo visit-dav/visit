@@ -34,6 +34,9 @@
 #
 # Modifications:
 #
+#   Tom Fogal, Thu Mar  5 12:35:10 MST 2009
+#   Get list of source files from an external file.
+#
 ##############################################################################
 
 
@@ -43,50 +46,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-TUVOK_SRCS = \
-./tuvok/3rdParty/GLEW/glew.c \
-./tuvok/Basics/SystemInfo.cpp \
-./tuvok/Basics/SysTools.cpp \
-./tuvok/Basics/MathTools.cpp \
-./tuvok/Basics/ArcBall.cpp \
-./tuvok/Basics/Checksums/MD5.cpp \
-./tuvok/IO/KeyValueFileParser.cpp \
-./tuvok/IO/TransferFunction1D.cpp \
-./tuvok/IO/TransferFunction2D.cpp \
-./tuvok/IO/VolumeDataset.cpp \
-./tuvok/IO/IOManager.cpp \
-./tuvok/IO/DirectoryParser.cpp \
-./tuvok/IO/DICOM/DICOMParser.cpp \
-./tuvok/IO/Images/ImageParser.cpp \
-./tuvok/IO/UVF/DataBlock.cpp \
-./tuvok/IO/UVF/GlobalHeader.cpp \
-./tuvok/IO/UVF/KeyValuePairDataBlock.cpp \
-./tuvok/IO/UVF/LargeRAWFile.cpp \
-./tuvok/IO/UVF/RasterDataBlock.cpp \
-./tuvok/IO/UVF/UVF.cpp \
-./tuvok/IO/UVF/UVFTables.cpp \
-./tuvok/IO/UVF/Histogram1DDataBlock.cpp \
-./tuvok/IO/UVF/Histogram2DDataBlock.cpp \
-./tuvok/IO/UVF/MaxMinDataBlock.cpp \
-./tuvok/Controller/MasterController.cpp \
-./tuvok/DebugOut/TextfileOut.cpp \
-./tuvok/DebugOut/ConsoleOut.cpp \
-./tuvok/DebugOut/MultiplexOut.cpp \
-./tuvok/Renderer/CullingLOD.cpp \
-./tuvok/Renderer/GLFrameCapture.cpp \
-./tuvok/Renderer/GLSLProgram.cpp \
-./tuvok/Renderer/GLTexture.cpp \
-./tuvok/Renderer/GLTexture1D.cpp \
-./tuvok/Renderer/GLTexture2D.cpp \
-./tuvok/Renderer/GLTexture3D.cpp \
-./tuvok/Renderer/GLRenderer.cpp \
-./tuvok/Renderer/AbstrRenderer.cpp \
-./tuvok/Renderer/GLRaycaster.cpp \
-./tuvok/Renderer/GLSBVR.cpp \
-./tuvok/Renderer/GPUMemMan/GPUMemMan.cpp \
-./tuvok/Renderer/GPUMemMan/GPUMemManDataStructs.cpp \
-./tuvok/Renderer/SBVRGeogen.cpp \
-./tuvok/Renderer/GLFBOTex.cpp
+include source_files
 
 CXXFLAGS += $(QT_CXXFLAGS) -I./tuvok
 TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
