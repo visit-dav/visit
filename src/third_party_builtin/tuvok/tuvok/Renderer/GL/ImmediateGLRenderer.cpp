@@ -27,47 +27,20 @@
 */
 
 /**
-  \file    MultiplexOut.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
-  \date    September 2008
+  \file    ImmediateGLRenderer.cpp
+  \author  Tom Fogal
+           SCI Institute
+           University of Utah
+  \brief   Handles non-LOD'd, individual volumes.  Essentially a brick
+           renderer.
 */
+#include "ImmediateGLRenderer.h"
+#include "Controller/Controller.h"
 
-
-#pragma once
-
-#ifndef MULTIPLEXOUT_H
-#define MULTIPLEXOUT_H
-
-#include "../StdTuvokDefines.h"
-#include "AbstrDebugOut.h"
-#include <vector>
-
-class MultiplexOut : public AbstrDebugOut {
-  public:
-    MultiplexOut() {}
-    ~MultiplexOut();
-
-    void AddDebugOut(AbstrDebugOut* pDebugger);
-    void RemoveDebugOut(AbstrDebugOut* pDebugger);
-
-    virtual void printf(const char* format, ...) const;
-    virtual void Message(const char* source, const char* format, ...);
-    virtual void Warning(const char* source, const char* format, ...);
-    virtual void Error(const char* source, const char* format, ...);
-
-    virtual void SetShowMessages(bool bShowMessages);
-    virtual void SetShowWarnings(bool bShowWarnings);
-    virtual void SetShowErrors(bool bShowErrors);
-    virtual void SetShowOther(bool bShowOther);
-
-    size_t size() const { return m_vpDebugger.size(); }
-    void clear();
-
-  private:
-    std::vector<AbstrDebugOut*> m_vpDebugger;
-};
-
-#endif // MULTIPLEXOUT_H
+ImmediateGLRenderer::ImmediateGLRenderer(bool bUseOnlyPowerOfTwo,
+                                         bool bDownSample,
+                                         bool bDisableBorder) :
+    GLRenderer(&(Controller::Instance()), bUseOnlyPowerOfTwo, bDownSample,
+               bDisableBorder)
+{
+}

@@ -40,7 +40,8 @@
 #include "GLSLProgram.h"
 #include <Controller/Controller.h>
 
-bool GLSLProgram::m_bGlewInitialized=true;    ///< GL Extension Wrangler (glew) is initialized on first instantiation
+//bool GLSLProgram::m_bGlewInitialized=true;    ///< GL Extension Wrangler (glew) is initialized on first instantiation
+bool GLSLProgram::m_bGlewInitialized=false;    ///< GL Extension Wrangler (glew) is initialized on first instantiation
 bool GLSLProgram::m_bGLChecked=false;         ///< GL extension check
 bool GLSLProgram::m_bGLUseARB=false;          ///< use pre GL 2.0 syntax
 

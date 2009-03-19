@@ -31,8 +31,6 @@
   \author  Jens Krueger
            SCI Institute
            University of Utah
-  \version 1.0
-  \date    August 2008
 */
 
 
@@ -107,7 +105,7 @@ class GLRenderer : public AbstrRenderer {
 
     void SetRenderTargetArea(ERenderArea eREnderArea);
     void SetRenderTargetAreaScissor(ERenderArea eREnderArea);
-    void SetViewPort(UINTVECTOR2 viLowerLeft, UINTVECTOR2 viUpperRight);
+    virtual void SetViewPort(UINTVECTOR2 viLowerLeft, UINTVECTOR2 viUpperRight);
 
     bool Render2DView(ERenderArea eREnderArea, EWindowMode eDirection, UINT64 iSliceIndex);
     void RenderBBox(const FLOATVECTOR4 vColor = FLOATVECTOR4(1,0,0,1));
@@ -120,6 +118,10 @@ class GLRenderer : public AbstrRenderer {
     void DrawLogo();
     void DrawBackGradient();
 
+    /// Defines a value to use for scaling the TF.  Client apps which hand us
+    /// over the raw data will usually want to override this to be 1, since
+    /// they generally won't support any notion of TF scaling.
+    virtual float CalculateScaling() const;
     virtual void SetDataDepShaderVars();
 
     virtual void Render3DView();
@@ -144,6 +146,10 @@ class GLRenderer : public AbstrRenderer {
 
     virtual void StartFrame();
     virtual void EndFrame(bool bNewDataToShow);
+
+    void PreSubframe(ERenderArea);
+    void PostSubframe();
+
   private:
     GLSLProgram*    m_pProgramTrans;
     GLSLProgram*    m_pProgram1DTransSlice;
@@ -157,7 +163,5 @@ class GLRenderer : public AbstrRenderer {
     void SetBrickDepShaderVarsSlice(const UINTVECTOR3& vVoxelCount);
     void RenderSeperatingLines();
     void RenderCoordArrows();
-    void PreSubframe(ERenderArea);
-    void PostSubframe();
 };
 #endif // GLRenderer_H

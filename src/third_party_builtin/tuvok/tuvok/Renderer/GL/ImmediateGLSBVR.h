@@ -27,47 +27,45 @@
 */
 
 /**
-  \file    MultiplexOut.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
-  \date    September 2008
+  \file    ImmediateGLSBVR.h
+  \author  Tom Fogal
+           SCI Institute
+           University of Utah
 */
-
-
 #pragma once
 
-#ifndef MULTIPLEXOUT_H
-#define MULTIPLEXOUT_H
+#ifndef TUVOK_IMMEDIATE_GL_SBVR_H
+#define TUVOK_IMMEDIATE_GL_SBVR_H
 
-#include "../StdTuvokDefines.h"
-#include "AbstrDebugOut.h"
-#include <vector>
+#include "GLSBVR.h"
 
-class MultiplexOut : public AbstrDebugOut {
+class ImmediateGLSBVR : public GLSBVR {
   public:
-    MultiplexOut() {}
-    ~MultiplexOut();
+    ImmediateGLSBVR(bool bUseOnlyPowerOfTwo, bool bDownSample,
+                    bool bDisableBorder);
+    virtual ~ImmediateGLSBVR() { }
 
-    void AddDebugOut(AbstrDebugOut* pDebugger);
-    void RemoveDebugOut(AbstrDebugOut* pDebugger);
+    virtual void Paint();
+    void Render();
 
-    virtual void printf(const char* format, ...) const;
-    virtual void Message(const char* source, const char* format, ...);
-    virtual void Warning(const char* source, const char* format, ...);
-    virtual void Error(const char* source, const char* format, ...);
+    void Hack(float fov, float zNear, float zFar,
+              float eye[3], float ref[3], float vup[3]);
 
-    virtual void SetShowMessages(bool bShowMessages);
-    virtual void SetShowWarnings(bool bShowWarnings);
-    virtual void SetShowErrors(bool bShowErrors);
-    virtual void SetShowOther(bool bShowOther);
+  protected:
+    /// This rendering path takes the raw data && TF; we don't want to do any
+    /// sort of scaling inside the shader.
+    virtual float CalculateScaling() const { return 1.0f; }
 
-    size_t size() const { return m_vpDebugger.size(); }
-    void clear();
+    virtual void SetViewPort(UINTVECTOR2 viLowerLeft,
+                             UINTVECTOR2 viUpperRight);
 
   private:
-    std::vector<AbstrDebugOut*> m_vpDebugger;
+    float fov;
+    float z_near;
+    float z_far;
+    float eye[3];
+    float ref[3];
+    float vup[3];
 };
 
-#endif // MULTIPLEXOUT_H
+#endif // TUVOK_IMMEDIATE_GL_SBVR_H

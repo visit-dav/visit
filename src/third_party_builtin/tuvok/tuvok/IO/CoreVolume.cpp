@@ -40,23 +40,31 @@ typedef std::vector<std::vector<UINT32> > hist2d;
 CoreVolume::CoreVolume()
 {
   // setup some default histograms.
-  // default value is 1, since the `FilledSize' ignores 0-valued elements, so
+  // default value is 1, since the `FilledSize' ignores 0-valued elements:
   // other code would think a histogram filled with 0's is empty.
-  std::vector<UINT32> h1d(8,1);
+  std::vector<UINT32> h1d(256,1);
   hist2d h2d;
-  h2d.resize(8);
+  h2d.resize(256);
   for(hist2d::iterator iter = h2d.begin(); iter < h2d.end(); ++iter) {
-    iter->resize(8,1);
+    iter->resize(256,1);
   }
   SetHistogram(h1d);
   SetHistogram(h2d);
 }
 CoreVolume::~CoreVolume() {}
 
-bool CoreVolume::GetBrick(unsigned char**,
+bool CoreVolume::GetBrick(unsigned char** ppData,
                           const std::vector<UINT64>&,
                           const std::vector<UINT64>&) const {
-  return false;
+  if(*ppData == NULL) {
+    *ppData = new unsigned char[m_vScalar.size()];
+  }
+  // arguments to GetBrickSize are garbage, only to satisfy interface
+  UINT64VECTOR3 sz = GetInfo()->GetBrickSize(0, UINT64VECTOR3(0,0,0));
+  MESSAGE("Copying brick of size %zu, dimensions %lu %lu %lu...",
+          m_vScalar.size(), sz[0], sz[1], sz[2]);
+  std::memcpy(*ppData, &m_vScalar.at(0), m_vScalar.size());
+  return true;
 }
 
 void CoreVolume::SetHistogram(const std::vector<UINT32>& hist)
@@ -65,6 +73,12 @@ void CoreVolume::SetHistogram(const std::vector<UINT32>& hist)
   m_pHist1D = new Histogram1D(hist.size());
   std::memcpy(m_pHist1D->GetDataPointer(), &(hist.at(0)),
               sizeof(UINT32)*hist.size());
+}
+
+float CoreVolume::GetMaxGradMagnitude() const
+{
+  return *std::max_element(m_vGradientMagnitude.begin(),
+                           m_vGradientMagnitude.end());
 }
 
 void CoreVolume::SetHistogram(const std::vector<std::vector<UINT32> >& hist)
@@ -78,5 +92,31 @@ void CoreVolume::SetHistogram(const std::vector<std::vector<UINT32> >& hist)
   for(hist2d::const_iterator iter = hist.begin(); iter < hist.end(); ++iter) {
     std::memcpy(data, &(iter->at(0)), sizeof(UINT32)*iter->size());
     data += iter->size();
+  }
+}
+
+void CoreVolume::SetData(float *data, size_t len)
+{
+  m_vScalar.resize(len*sizeof(float));
+  std::memcpy(&m_vScalar.at(0), data, sizeof(float) * len);
+
+  Recalculate1DHistogram();
+}
+
+void CoreVolume::SetGradientMagnitude(float *gmn, size_t len)
+{
+  m_vGradientMagnitude.resize(len);
+  std::memcpy(&m_vGradientMagnitude.at(0), gmn, sizeof(float) * len);
+}
+
+void CoreVolume::Recalculate1DHistogram()
+{
+  if(m_pHist1D) { delete m_pHist1D; }
+  m_pHist1D = new Histogram1D(m_vScalar.size());
+  std::fill(m_pHist1D->GetDataPointer(),
+            m_pHist1D->GetDataPointer()+m_pHist1D->GetSize(), 0);
+  for(std::vector<unsigned char>::const_iterator scalar = m_vScalar.begin();
+      scalar != m_vScalar.end(); ++scalar) {
+    ++m_pHist1D->GetDataPointer()[*scalar];
   }
 }

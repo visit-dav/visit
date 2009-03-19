@@ -40,6 +40,7 @@
 #include <Basics/SysTools.h>
 #include <ctime>
 #include "../GPUMemMan/GPUMemMan.h"
+#include "GLDebug.h"
 
 using namespace std;
 
@@ -261,32 +262,34 @@ void GLRenderer::RenderSeperatingLines() {
 }
 
 void GLRenderer::ClearDepthBuffer() {
-  glClear(GL_DEPTH_BUFFER_BIT);
+  GL(glClear(GL_DEPTH_BUFFER_BIT));
 }
 
 void GLRenderer::ClearColorBuffer() {
-  glDepthMask(GL_FALSE);
+  GL(glDepthMask(GL_FALSE));
   if (m_bDoStereoRendering) {
-    // render anaglyphs agains a black background only
-    glClearColor(0,0,0,0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // render anaglyphs against a black background only
+    GL(glClearColor(0,0,0,0));
+    GL(glClear(GL_COLOR_BUFFER_BIT));
   } else {
     if (m_vBackgroundColors[0] == m_vBackgroundColors[1]) {
-      glClearColor(m_vBackgroundColors[0].x,m_vBackgroundColors[0].y,m_vBackgroundColors[0].z,0);
-      glClear(GL_COLOR_BUFFER_BIT);
+      GL(glClearColor(m_vBackgroundColors[0].x,m_vBackgroundColors[0].y,m_vBackgroundColors[0].z,0));
+      GL(glClear(GL_COLOR_BUFFER_BIT));
     } else {
-      glDisable(GL_BLEND);
+      GL(glDisable(GL_BLEND));
       DrawBackGradient();
     }
   }
   DrawLogo();
-  glDepthMask(GL_TRUE);
+  GL(glDepthMask(GL_TRUE));
 }
 
 
 void GLRenderer::StartFrame() {
   // clear the framebuffer (if requested)
   if (m_bClearFramebuffer) ClearDepthBuffer();
+  GL(glEnable(GL_TEXTURE_3D));
+  assert(glIsEnabled(GL_TEXTURE_3D) != GL_FALSE);
 
   if (m_eRenderMode == RM_ISOSURFACE) {
     FLOATVECTOR2 vfWinSize = FLOATVECTOR2(m_vWinSize);
@@ -305,7 +308,6 @@ void GLRenderer::StartFrame() {
     // if m_bDownSampleTo8Bits is enabled the full range from 0..255 -> 0..1 is used
     m_fScaledIsovalue       = (m_pDataset->GetInfo()->GetBitWidth() != 8 && m_bDownSampleTo8Bits) ? 1.0f : m_fIsovalue * float(iMaxValue)/float(iMaxRange);
     m_fScaledCVIsovalue     = (m_pDataset->GetInfo()->GetBitWidth() != 8 && m_bDownSampleTo8Bits) ? 1.0f : m_fCVIsovalue * float(iMaxValue)/float(iMaxRange);
-
   }
 }
 
@@ -409,7 +411,7 @@ void GLRenderer::EndFrame(bool bNewDataToShow) {
       m_pFBO3DImageCurrent[1]->Read(1);
 
       m_TargetBinder.Bind(m_pFBO3DImageLast);
-      glClear(GL_COLOR_BUFFER_BIT);
+      GL(glClear(GL_COLOR_BUFFER_BIT));
 
       m_pProgramComposeAnaglyphs->Enable();
       glDisable(GL_DEPTH_TEST);
@@ -1191,51 +1193,125 @@ void GLRenderer::Cleanup() {
 }
 
 void GLRenderer::CreateOffscreenBuffers() {
-  if (m_pFBO3DImageLast)      {m_pMasterController->MemMan()->FreeFBO(m_pFBO3DImageLast); m_pFBO3DImageLast =NULL;}
-  for (UINT32 i = 0;i<2;i++) {
-    if (m_pFBO3DImageCurrent[i])   {m_pMasterController->MemMan()->FreeFBO(m_pFBO3DImageCurrent[i]); m_pFBO3DImageCurrent[i] = NULL;}
-    if (m_pFBOIsoHit[i])           {m_pMasterController->MemMan()->FreeFBO(m_pFBOIsoHit[i]);m_pFBOIsoHit[i] = NULL;}
-    if (m_pFBOCVHit[i])            {m_pMasterController->MemMan()->FreeFBO(m_pFBOCVHit[i]);m_pFBOCVHit[i] = NULL;}
+  GPUMemMan &mm = *(Controller::Instance().MemMan());
+
+  if (m_pFBO3DImageLast) {
+    mm.FreeFBO(m_pFBO3DImageLast);
+    m_pFBO3DImageLast = NULL;
   }
+
+  for (UINT32 i=0; i < 2; i++) {
+    if (m_pFBO3DImageCurrent[i]) {
+      mm.FreeFBO(m_pFBO3DImageCurrent[i]);
+      m_pFBO3DImageCurrent[i] = NULL;
+    }
+    if (m_pFBOIsoHit[i]) {
+      mm.FreeFBO(m_pFBOIsoHit[i]);
+      m_pFBOIsoHit[i] = NULL;
+    }
+    if (m_pFBOCVHit[i]) {
+      mm.FreeFBO(m_pFBOCVHit[i]);
+      m_pFBOCVHit[i] = NULL;
+    }
+  }
+  MESSAGE("Creating FBOs...");
 
   if (m_vWinSize.area() > 0) {
     for (UINT32 i = 0;i<2;i++) {
       switch (m_eBlendPrecision) {
-        case BP_8BIT  : if (i==0) m_pFBO3DImageLast = m_pMasterController->MemMan()->GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP, m_vWinSize.x, m_vWinSize.y, GL_RGBA8, 4, true);
-                        m_pFBO3DImageCurrent[i] = m_pMasterController->MemMan()->GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP, m_vWinSize.x, m_vWinSize.y, GL_RGBA8, 4, true);
+        case BP_8BIT  : if (i==0) {
+                          m_pFBO3DImageLast = mm.GetFBO(GL_NEAREST, GL_NEAREST,
+                                                        GL_CLAMP, m_vWinSize.x,
+                                                        m_vWinSize.y, GL_RGBA8,
+                                                        4, true);
+                        }
+                        m_pFBO3DImageCurrent[i] = mm.GetFBO(GL_NEAREST,
+                                                            GL_NEAREST,
+                                                            GL_CLAMP,
+                                                            m_vWinSize.x,
+                                                            m_vWinSize.y,
+                                                            GL_RGBA8, 4, true);
                         break;
-        case BP_16BIT : if (i==0)m_pFBO3DImageLast = m_pMasterController->MemMan()->GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP, m_vWinSize.x, m_vWinSize.y, GL_RGBA16F_ARB, 2*4, true);
-                        m_pFBO3DImageCurrent[i] = m_pMasterController->MemMan()->GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP, m_vWinSize.x, m_vWinSize.y, GL_RGBA16F_ARB, 2*4, true);
+
+        case BP_16BIT : if (i==0) {
+                          m_pFBO3DImageLast = mm.GetFBO(GL_NEAREST, GL_NEAREST,
+                                                        GL_CLAMP, m_vWinSize.x,
+                                                        m_vWinSize.y,
+                                                        GL_RGBA16F_ARB, 2*4,
+                                                        true);
+                        }
+                        m_pFBO3DImageCurrent[i] = mm.GetFBO(GL_NEAREST,
+                                                            GL_NEAREST,
+                                                            GL_CLAMP,
+                                                            m_vWinSize.x,
+                                                            m_vWinSize.y,
+                                                            GL_RGBA16F_ARB,
+                                                            2*4, true);
                         break;
-        case BP_32BIT : if (i==0)m_pFBO3DImageLast = m_pMasterController->MemMan()->GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP, m_vWinSize.x, m_vWinSize.y, GL_RGBA32F_ARB, 4*4, true);
-                        m_pFBO3DImageCurrent[i] = m_pMasterController->MemMan()->GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP, m_vWinSize.x, m_vWinSize.y, GL_RGBA32F_ARB, 4*4, true);
+
+        case BP_32BIT : if (i==0) {
+                          m_pFBO3DImageLast = mm.GetFBO(GL_NEAREST, GL_NEAREST,
+                                                        GL_CLAMP, m_vWinSize.x,
+                                                        m_vWinSize.y,
+                                                        GL_RGBA32F_ARB, 4*4,
+                                                        true);
+                        }
+                        m_pFBO3DImageCurrent[i] = mm.GetFBO(GL_NEAREST,
+                                                            GL_NEAREST,
+                                                            GL_CLAMP,
+                                                            m_vWinSize.x,
+                                                            m_vWinSize.y,
+                                                            GL_RGBA32F_ARB,
+                                                            4*4, true);
                         break;
+
         default       : MESSAGE("Invalid Blending Precision");
                         if (i==0) m_pFBO3DImageLast = NULL;
                         m_pFBO3DImageCurrent[i] = NULL;
                         break;
       }
-      m_pFBOIsoHit[i]   = m_pMasterController->MemMan()->GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP, m_vWinSize.x, m_vWinSize.y, GL_RGBA16F_ARB, 2*4, true, 2);
-      m_pFBOCVHit[i]    = m_pMasterController->MemMan()->GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP, m_vWinSize.x, m_vWinSize.y, GL_RGBA16F_ARB, 2*4, true, 2);
+      m_pFBOIsoHit[i]   = mm.GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP,
+                                    m_vWinSize.x, m_vWinSize.y, GL_RGBA16F_ARB,
+                                    2*4, true, 2);
+      m_pFBOCVHit[i]    = mm.GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP,
+                                    m_vWinSize.x, m_vWinSize.y, GL_RGBA16F_ARB,
+                                    2*4, true, 2);
     }
+  } else {
+    WARNING("Window has no area; could not create FBOs.");
   }
 }
 
 void GLRenderer::SetBrickDepShaderVarsSlice(const UINTVECTOR3& vVoxelCount) {
-  if (m_eRenderMode ==  RM_2DTRANS) {
+  if (m_eRenderMode == RM_2DTRANS) {
     FLOATVECTOR3 vStep = 1.0f/FLOATVECTOR3(vVoxelCount);
     m_pProgram2DTransSlice->SetUniformVector("vVoxelStepsize", vStep.x, vStep.y, vStep.z);
   }
 }
 
+// If we're downsampling the data, no scaling is needed, but otherwise we need
+// to scale the TF in the same manner that we've scaled the data.
+float GLRenderer::CalculateScaling() const
+{
+  size_t iMaxValue     = (m_pDataset->GetInfo()->GetBitWidth() != 8 &&
+                          m_bDownSampleTo8Bits) ? 65536
+                                                : m_p1DTrans->GetSize();
+  UINT32 iMaxRange     = UINT32(1<<m_pDataset->GetInfo()->GetBitWidth());
+
+  return (m_pDataset->GetInfo()->GetBitWidth() != 8 && m_bDownSampleTo8Bits)
+         ? 1.0f
+         : float(iMaxRange)/float(iMaxValue);
+}
+
 void GLRenderer::SetDataDepShaderVars() {
   MESSAGE("Setting up vars");
 
-  size_t iMaxValue     = (m_pDataset->GetInfo()->GetBitWidth() != 8 && m_bDownSampleTo8Bits) ? 65536 : m_p1DTrans->GetSize();
-  UINT32 iMaxRange     = UINT32(1<<m_pDataset->GetInfo()->GetBitWidth());
   // if m_bDownSampleTo8Bits is enabled the full range from 0..255 -> 0..1 is used
-  float fScale         = (m_pDataset->GetInfo()->GetBitWidth() != 8 && m_bDownSampleTo8Bits) ? 1.0f : float(iMaxRange)/float(iMaxValue);
+  float fScale         = CalculateScaling();
   float fGradientScale = 1.0f/m_pDataset->GetMaxGradMagnitude();
+
+  MESSAGE("Transfer function scaling factor: %5.3f", fScale);
+  MESSAGE("Gradient scaling factor: %5.3f", fGradientScale);
 
   m_pProgramTransMIP->Enable();
   m_pProgramTransMIP->SetUniformVector("fTransScale",fScale);
@@ -1265,7 +1341,9 @@ void GLRenderer::SetDataDepShaderVars() {
                             break;
                           }
     case RM_ISOSURFACE : {
-                            // as we are rendering the 2 slices with the 1d transferfunction in iso mode update that shader also
+                            // since we are rendering the 2 slices with the 1d
+                            // transfer function in iso mode, update that
+                            // shader also
                             m_pProgram1DTransSlice->Enable();
                             m_pProgram1DTransSlice->SetUniformVector("fTransScale",fScale);
                             m_pProgram1DTransSlice->Disable();

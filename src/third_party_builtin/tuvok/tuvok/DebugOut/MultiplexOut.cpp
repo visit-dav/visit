@@ -34,6 +34,7 @@
   \date    September 2008
 */
 
+#include <functional>
 #include "MultiplexOut.h"
 
 #ifdef WIN32
@@ -148,3 +149,16 @@ void MultiplexOut::SetShowOther(bool bShowOther) {
   for (size_t i = 0;i<m_vpDebugger.size();i++) m_vpDebugger[i]->SetShowOther(bShowOther);
 }
 
+template <class T>
+struct deleter : std::unary_function<T, void> {
+  void operator()(T* p) const {
+    delete p;
+  }
+};
+
+void MultiplexOut::clear()
+{
+  std::for_each(m_vpDebugger.begin(), m_vpDebugger.end(),
+                deleter<AbstrDebugOut>());
+  m_vpDebugger.clear();
+}

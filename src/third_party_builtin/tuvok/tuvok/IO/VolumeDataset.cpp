@@ -160,31 +160,31 @@ DOUBLEVECTOR3 VolumeDatasetInfo::GetScale() const {
   return m_aScale * DOUBLEVECTOR3(m_vfRescale[0], m_vfRescale[1], m_vfRescale[2]);
 }
 
-const vector<UINT64>& VolumeDatasetInfo::GetBrickCountND(const vector<UINT64>& vLOD) const {
+vector<UINT64> VolumeDatasetInfo::GetBrickCountND(const vector<UINT64>& vLOD) const {
   return m_pVolumeDataBlock->GetBrickCount(vLOD);
 }
 
-const vector<UINT64>& VolumeDatasetInfo::GetBrickSizeND(const vector<UINT64>& vLOD, const vector<UINT64>& vBrick) const {
+vector<UINT64> VolumeDatasetInfo::GetBrickSizeND(const vector<UINT64>& vLOD, const vector<UINT64>& vBrick) const {
   return m_pVolumeDataBlock->GetBrickSize(vLOD, vBrick);
 }
 
-const vector<UINT64>& VolumeDatasetInfo::GetDomainSizeND() const {
+vector<UINT64> VolumeDatasetInfo::GetDomainSizeND() const {
   return m_pVolumeDataBlock->ulDomainSize;
 }
 
-const vector<UINT64>& VolumeDatasetInfo::GetMaxBrickSizeND() const {
+vector<UINT64> VolumeDatasetInfo::GetMaxBrickSizeND() const {
   return m_pVolumeDataBlock->ulBrickSize;
 }
 
-const vector<UINT64>& VolumeDatasetInfo::GetBrickOverlapSizeND() const {
+vector<UINT64> VolumeDatasetInfo::GetBrickOverlapSizeND() const {
   return m_pVolumeDataBlock->ulBrickOverlap;
 }
 
-const vector<UINT64>& VolumeDatasetInfo::GetLODLevelCountND() const {
+vector<UINT64> VolumeDatasetInfo::GetLODLevelCountND() const {
   return m_pVolumeDataBlock->ulLODLevelCount;
 }
 
-const vector<double> VolumeDatasetInfo::GetScaleND() const {
+vector<double> VolumeDatasetInfo::GetScaleND() const {
   vector<double> vfScale;
   size_t iSize = m_pVolumeDataBlock->ulDomainSize.size();
   for (size_t i = 0;i<iSize;i++) vfScale.push_back(m_pVolumeDataBlock->dDomainTransformation[i+(iSize+1)*i] * m_vfRescale[i]);
@@ -420,7 +420,7 @@ UINTVECTOR3 VolumeDataset::GetBrickSize(const vector<UINT64>& vLOD,
   vector<UINT64> vSizeUVF = m_pVolumeDatasetInfo->GetBrickSizeND(vLOD, vBrick);
 
   /// \todo: this code assumes that x,y,z are the first coords in the dataset
-  // which is not strictly true; should check this at load time.
+  /// which is not strictly true; should check this at load time.
   vSize[0] = UINT32(vSizeUVF[0]);
   vSize[1] = UINT32(vSizeUVF[1]);
   vSize[2] = UINT32(vSizeUVF[2]);

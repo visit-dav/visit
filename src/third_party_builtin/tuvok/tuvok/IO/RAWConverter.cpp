@@ -492,7 +492,7 @@ bz_err_test(int bz_err)
             /* FALL THROUGH */
         case BZ_DATA_ERROR:
             T_ERROR("Bzip data integrity error; this usually means the "
-                  "compressed file is corrupt.");
+                    "compressed file is corrupt.");
             break;
         case BZ_IO_ERROR: {
             const char *err_msg = strerror(errno);
