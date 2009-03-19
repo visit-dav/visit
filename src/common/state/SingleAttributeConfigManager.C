@@ -110,6 +110,9 @@ SingleAttributeConfigManager::Export(const std::string &filename)
 // Creation:   January  2, 2009
 //
 // Modifications:
+//
+//   Tom Fogal, Fri Mar  6 10:26:12 MST 2009
+//   Fix: function wasn't returning anything in the `success' case.
 //   
 // ****************************************************************************
 
@@ -121,8 +124,8 @@ SingleAttributeConfigManager::Import(const std::string &filename)
     if (!node)
         return false;
 
-
     attribute->SetFromNode(node);
+    return true;
 }
 
 // ****************************************************************************
