@@ -172,6 +172,7 @@ XMLEditFields::XMLEditFields(QWidget *p)
     QGridLayout *vnLayout = new QGridLayout();
     vnLayout->setSpacing(5);
     varNameButtons = new QButtonGroup(this);
+    varNameButtons->setExclusive(false);
     connect(varNameButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(variableTypeClicked(int)));
     QCheckBox *cb = new QCheckBox(tr("Meshes"), variableNameGroup);
@@ -383,8 +384,11 @@ XMLEditFields::UpdateWindowSensitivity()
 //     Brad Whitlock, Thu Mar 6 15:00:08 PST 2008
 //     Deal with multi-target init codes.
 //
-//    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
-//    First pass at porting to Qt 4.4.0
+//     Cyrus Harrison, Thu May 15 16:00:46 PDT 200
+//     First pass at porting to Qt 4.4.0
+//
+//     Jeremy Meredith, Thu Mar 19 12:01:02 EDT 2009
+//     Finish Qt4 port -- ids for variable type buttons weren't used.
 //
 // ****************************************************************************
 
@@ -477,12 +481,10 @@ XMLEditFields::UpdateWindowSingleItem()
             access->button(2)->setChecked(true);
         if(f->type == "variablename")
         {
-            int mask = 1;
-
             foreach (QAbstractButton *b, varNameButtons->buttons())
             {
+                int mask = (1 << varNameButtons->id(b));
                 b->setChecked((f->varTypes & mask) != 0);
-                mask = mask << 1;
             }
         }
 
@@ -960,32 +962,28 @@ XMLEditFields::accessChanged(int btn)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Jeremy Meredith, Thu Mar 19 12:01:02 EDT 2009
+//    Finish Qt4 port.
+//
 // ****************************************************************************
 
 void
 XMLEditFields::variableTypeClicked(int bIndex)
 {
-    /*
-    QButton *b = varNameButtons->find(bIndex);
-    if(b != 0 && b->isA("QCheckBox"))
-    {
+    QAbstractButton *b = varNameButtons->button(bIndex);
 
     Attribute *a = xmldoc->attribute;
     int index = fieldlist->currentRow();
     if (index == -1)
         return;
 
-        Field *f = a->fields[index];
-        if(f->type == "variablename")
-        {
-            QCheckBox *cb = (QCheckBox *)b;
-
-            int mask = ~(1 << bIndex);
-            int bit = (cb->isChecked() ? 1 : 0) << bIndex;
-            f->varTypes = (f->varTypes & mask) | bit;
-        }
+    Field *f = a->fields[index];
+    if(f->type == "variablename")
+    {
+        int mask = ~(1 << bIndex);
+        int bit = (b->isChecked() ? 1 : 0) << bIndex;
+        f->varTypes = (f->varTypes & mask) | bit;
     }
-    */
 }
 
 // ****************************************************************************
