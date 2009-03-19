@@ -47,9 +47,6 @@
 
 #include <VolumeAttributes.h>
 #include <LightList.h>
-#ifdef USE_TUVOK
-#   include <Tuvok/Controller/MasterController.h>
-#endif
 
 // ****************************************************************************
 //  Class: avtOpenGLTuvokVolumeRenderer
@@ -81,9 +78,5 @@ class avtOpenGLTuvokVolumeRenderer : public avtVolumeRendererImplementation
                                    float omin, float omax, float osize,
                                    float *gx, float *gy, float *gz, float *gmn,
                                    bool reducedDetail);
-
-#ifdef USE_TUVOK
-    MasterController        controller;
-#endif
 };
 #endif
