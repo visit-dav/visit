@@ -3,6 +3,7 @@
     <CXXFLAGS>
       $(SLIVR_INCLUDE)
       $(GLEW_INCLUDE)
+      -I$(TOPDIR)/include/tuvok/3rdParty
     </CXXFLAGS>
     <LDFLAGS>
       $(TUVOK_LIB)
