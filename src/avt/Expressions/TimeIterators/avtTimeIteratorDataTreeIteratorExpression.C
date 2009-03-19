@@ -447,3 +447,33 @@ avtTimeIteratorDataTreeIteratorExpression::GetVariableType()
 
     return inatts.GetVariableType(varnames[0].c_str());
 }
+
+// ****************************************************************************
+//  Method:  avtTimeIteratorDataTreeIteratorExpression::GetVariableType
+//
+//  Purpose:
+//    Try to do better than use the "primary" variable for the dimension
+//    since we're not getting the right primary variable.  Similar to 
+//    GetVariableType, our output dimension should be the same as the
+//    input dimension.
+//
+//  Arguments:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 18, 2009
+//
+// ****************************************************************************
+int
+avtTimeIteratorDataTreeIteratorExpression::GetVariableDimension(void)
+{
+    if (varnames.size() != 1)
+        return 1;
+
+    avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+    if (!inatts.ValidVariable(varnames[0]))
+        return 1;
+
+    return inatts.GetVariableDimension(varnames[0].c_str());
+}
+
