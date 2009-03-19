@@ -64,6 +64,9 @@
 #    Eric Brugger, Fri Jun 29 09:34:38 PDT 2007
 #    Removed the setting of the NOT_DISTRIB variable.
 #
+#    Tom Fogal, Sat Nov 22 16:48:20 MST 2008
+#    Added Environment
+#
 ##############################################################################
 
 ##
@@ -78,8 +81,10 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-SRC=DebugStream.C VisItInit.C VisItException.C TimingsManager.C PTY.C StackTimer.C
-HDR=DebugStream.h VisItInit.h VisItException.h TimingsManager.h PTY.h StackTimer.h
+SRC=DebugStream.C Environment.C PTY.C StackTimer.C \
+    TimingsManager.C VisItException.C VisItInit.C
+HDR=DebugStream.h Environment.h PTY.h StackTimer.h \
+    TimingsManager.h VisItException.h VisItInit.h
 OBJ=$(SRC:.C=.o)
 LIB=libmisc
 
