@@ -39,6 +39,7 @@
 #   Build a static library.
 #   Fix dependencies.
 #   Add 3rdParty to list of included directories.
+#   Implement `clean' target.
 #
 ##############################################################################
 
@@ -64,12 +65,7 @@ INC:=$(TOPDIR)/include/tuvok
 all: message $(ARCHIVE) $(INC)
 
 clean:
-##	$(RM) -rf slivr
-##	$(RM) -rf $(TOPDIR)/include/slivr
-##	$(RM) -rf $(TOPDIR)/lib/slivr
-##	$(RM) $(TOPDIR)/lib/libslivrG.@SHLIB_SOEXT@
-##	$(RM) $(TOPDIR)/lib/libslivrV.@SHLIB_SOEXT@
-##	$(RM) -rf *.o
+	rm -f $(ARCHIVE) $(TUVOK_OBJS) $(INC)
 
 $(ARCHIVE): $(TUVOK_OBJS)
 	ar crs $(ARCHIVE) $(TUVOK_OBJS)
