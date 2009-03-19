@@ -135,8 +135,12 @@ GLSLProgram::operator GLuint(void) const {
  */
 bool GLSLProgram::Initialize(void) {
   if (!m_bGlewInitialized) {
-    if (GLEW_OK!=glewInit()) T_ERROR("GLEW initialization failed!");
-    m_bGlewInitialized=true;
+    GLenum err = glewInit();
+    if(err != GLEW_OK) {
+      T_ERROR("GLEW initialization failed: %s", glewGetErrorString(err));
+    } else {
+      m_bGlewInitialized=true;
+    }
   }
 #ifdef GLSL_DEBUG  // just in case someone wants to handle GLEW himself (by setting the static var to true) but failed to do so properly
   else {
