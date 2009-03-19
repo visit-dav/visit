@@ -7,6 +7,7 @@
     </CXXFLAGS>
     <LDFLAGS>
       $(TUVOK_LIB)
+      $(QT_LDFLAGS) $(QT_CORE_LIB) $(QT_GUI_LIB)
     </LDFLAGS>
     <Files components="G">
       $(SLIVR_GUI_IMPL)
