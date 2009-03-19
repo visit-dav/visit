@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+  <Plugin name="DeformSphereGlyph" type="operator" label="DeformSphereGlyph" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false">
+    <Attribute name="DeformSphereGlyphAttributes" purpose="Attributes for the DeformSphereGlyph" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="var" label="var" type="variablename" vartypes="00000000001">
+        Default
+      </Field>
+      <Field name="scale" label="Scale Factor" type="double">
+        1.000000
+      </Field>
+      <Field name="minSize" label="Minimum Size" type="double">
+        1.000000
+      </Field>
+    </Attribute>
+  </Plugin>
