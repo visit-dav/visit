@@ -41,6 +41,7 @@
 #   Add 3rdParty to list of included directories.
 #   Implement `clean' target.
 #   Fix C file flags + object file names.
+#   Build new VisItDebugOut.C file && add + simplify includes.
 #
 ##############################################################################
 
@@ -52,11 +53,14 @@
 @VARIABLES@
 
 include source_files
+TUVOK_SRCS := $(TUVOK_SRCS) VisItDebugOut.C
 
-CXXFLAGS += $(QT_CXXFLAGS) -I./tuvok -I./tuvok/3rdParty
+INCLUDE:=-I./tuvok -I./tuvok/3rdParty -I$(TOPDIR)/include/visit
+CXXFLAGS += $(QT_CXXFLAGS) $(INCLUDE)
 CFLAGS += -I./tuvok
 TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
 TUVOK_OBJS:=$(TUVOK_OBJS:.c=.o)
+TUVOK_OBJS:=$(TUVOK_OBJS:.C=.o)
 ##.cpp.o:
 ##	g++ $(TUVOK_SRCS) -c $< $(CXXFLAGS)
 ARCHIVE:=$(TOPDIR)/lib/libtuvok.a
