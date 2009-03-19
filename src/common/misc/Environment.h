@@ -49,6 +49,9 @@ namespace Environment {
     /// Obtains a value from the environment.
     std::string UTILITY_API get(const char *);
 
+    /// Predicate to determine whether a variable is defined.
+    bool UTILITY_API exists(const char *);
+
     /// Sets a value in the enviroment.  Overwrites any existing value.
     void UTILITY_API set(const char *k, const char *v);
 
