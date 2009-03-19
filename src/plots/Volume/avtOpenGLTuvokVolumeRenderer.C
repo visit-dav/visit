@@ -47,6 +47,8 @@
 #include <avtViewInfo.h>
 #include <VolumeAttributes.h>
 #include <DebugStream.h>
+#include <tuvok/../VisItDebugOut.h>
+#include <tuvok/Controller/Controller.h>
 
 // ****************************************************************************
 //  Method: avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer
@@ -58,12 +60,15 @@
 //
 //  Modifications:
 //
+//    Tom Fogal, Thu Mar  5 14:31:42 MST 2009
+//    Connect the appropriate type of debug output.
+//
 // ****************************************************************************
 
 avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
 {
+    Controller::Instance().AddDebugOut(new VisItDebugOut());
 }
-
 
 // ****************************************************************************
 //  Method: avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer
@@ -77,7 +82,6 @@ avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
 avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer()
 {
 }
-
 
 // ****************************************************************************
 //  Method:  avtOpenGLTuvokVolumeRenderer::Render
