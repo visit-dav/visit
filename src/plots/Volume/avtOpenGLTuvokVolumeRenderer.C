@@ -50,6 +50,8 @@
 #include <tuvok/../VisItDebugOut.h>
 #include <tuvok/Controller/Controller.h>
 
+static AbstrRenderer* CreateRenderer(const VolumeAttributes &);
+
 // ****************************************************************************
 //  Method: avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer
 //
@@ -62,12 +64,14 @@
 //
 //    Tom Fogal, Thu Mar  5 14:31:42 MST 2009
 //    Connect the appropriate type of debug output.
+//    NULL out our renderer, until we know what kind of one to make.
 //
 // ****************************************************************************
 
 avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
 {
     Controller::Instance().AddDebugOut(new VisItDebugOut());
+    this->renderer = NULL;
 }
 
 // ****************************************************************************
@@ -78,9 +82,16 @@ avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
 //  Programmer:  Josh Stratton
 //  Creation:    Wed Dec 17 15:00:34 MST 2008
 //
+//  Tom Fogal, Thu Mar  5 14:35:43 MST 2009
+//  Add renderer instance.
+//
 // ****************************************************************************
 avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer()
 {
+    if(this->renderer) {
+        Controller::Instance().ReleaseVolumerenderer(this->renderer);
+        this->renderer = NULL;
+    }
 }
 
 // ****************************************************************************
@@ -103,6 +114,9 @@ avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer()
 //
 //  Modifications:
 //
+//   Tom Fogal, Thu Mar  5 15:57:43 MST 2009
+//   Create the underlying renderer.
+//
 // ****************************************************************************
 
 void
@@ -116,4 +130,35 @@ avtOpenGLTuvokVolumeRenderer::Render(vtkRectilinearGrid *grid,
                                      float *gx, float *gy, float *gz,
                                      float *gmn, bool reducedDetail)
 {
+    if(NULL == this->renderer) {
+        this->renderer = CreateRenderer(atts);
+    }
+}
+
+// ****************************************************************************
+//  Function: CreateRenderer
+//
+//  Purpose: Gets the appropriate type of renderer considering the information
+//           given in the VolumeAttributes.
+//
+//  Returns:    The requested renderer, or NULL if request is nonsensical.
+//
+//  Programmer: Tom Fogal
+//  Creation:   Thu Mar  5 14:55:14 MST 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+static AbstrRenderer *
+CreateRenderer(const VolumeAttributes &)
+{
+    // hack, for now -- always return a `bad' OGL SBVR.
+    const bool use_only_PoT_textures = true;
+    const bool downsample = false;
+    const bool disable_border = false;
+
+    MasterController &mc = Controller::Instance();
+    return mc.RequestNewVolumerenderer(MasterController::OPENGL_SBVR,
+                                       use_only_PoT_textures, downsample,
+                                       disable_border);
 }
