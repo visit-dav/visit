@@ -57,6 +57,7 @@
 #include <InvalidMergeException.h>
 
 #include <cstring>
+#include <snprintf.h>
 
 using     std::string;
 using     std::vector;
@@ -4735,6 +4736,10 @@ avtDataAttributes::AddPlotInformation(const std::string &key,
 //    Hank Childs, Mon Jul 21 12:35:31 PDT 2008
 //    Put whether or not a variable is active in the debug dump.
 //
+//    Jeremy Meredith, Thu Mar 19 13:37:07 EDT 2009
+//    More aggressive about not overwriting stack string.
+//    Increase the length a bit as well.
+//
 // ****************************************************************************
 
 static const char *
@@ -4748,7 +4753,7 @@ YesOrNo(bool b)
     return no_str;
 }
 
-static void ExtentsToString(avtExtents *exts, char *str)
+static void ExtentsToString(avtExtents *exts, char *str, int maxlen)
 {
     int dim = exts->GetDimension();
     double *e = new double[dim*2];
@@ -4761,7 +4766,12 @@ static void ExtentsToString(avtExtents *exts, char *str)
         char tmp[1000];
         for (int i=0; i<dim; i++)
         {
-            sprintf(tmp, "%e -> %e", e[i*2+0], e[i*2+1]);
+            SNPRINTF(tmp, 1000, "%e -> %e", e[i*2+0], e[i*2+1]);
+            if (strlen(tmp)+strlen(str)+6 > maxlen)
+            {
+                strcat(str, "...");
+                break;
+            }
             strcat(str, tmp);
             if (i<dim-1)
                 strcat(str, ", ");
@@ -4776,18 +4786,18 @@ static void ExtentsToString(avtExtents *exts, char *str)
 void
 avtDataAttributes::DebugDump(avtWebpage *webpage)
 {
-    char str[1024];
+    char str[4096];
 
     webpage->AddSubheading("Basic data attributes");
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
-    sprintf(str, "%d", spatialDimension);
+    SNPRINTF(str, 4096, "%d", spatialDimension);
     webpage->AddTableEntry2("Spatial Dimension", str);
-    sprintf(str, "%d", topologicalDimension);
+    SNPRINTF(str, 4096, "%d", topologicalDimension);
     webpage->AddTableEntry2("Topological Dimension", str);
-    sprintf(str, "%d", cellOrigin);
+    SNPRINTF(str, 4096, "%d", cellOrigin);
     webpage->AddTableEntry2("Cell Origin", str);
-    sprintf(str, "%d", nodeOrigin);
+    SNPRINTF(str, 4096, "%d", nodeOrigin);
     webpage->AddTableEntry2("Node Origin", str);
     switch (containsGhostZones)
     {
@@ -4816,10 +4826,9 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
                             YesOrNo(containsGlobalZoneIds));
     webpage->AddTableEntry2("Contains global node ids?", 
                             YesOrNo(containsGlobalNodeIds));
-    webpage->AddTableEntry2("Cell Origin", str);
-    sprintf(str, "%d", blockOrigin);
+    SNPRINTF(str, 4096, "%d", blockOrigin);
     webpage->AddTableEntry2("Block Origin", str);
-    sprintf(str, "%d", groupOrigin);
+    SNPRINTF(str, 4096, "%d", groupOrigin);
     webpage->AddTableEntry2("Group Origin", str);
     webpage->AddTableEntry2("Contains original cells?", 
                             YesOrNo(containsOriginalCells));
@@ -4895,32 +4904,32 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("Database name", fullDBName.c_str());
     webpage->AddTableEntry2("File name", filename.c_str());
     webpage->AddTableEntry2("Mesh name", meshname.c_str());
-    sprintf(str, "%d", numStates);
+    SNPRINTF(str, 4096, "%d", numStates);
     webpage->AddTableEntry2("Number of time slices?", str);
     if (timeIsAccurate)
-        sprintf(str, "%f", dtime);
+        SNPRINTF(str, 4096, "%f", dtime);
     else
-        sprintf(str, "%f (guess)", dtime);
+        SNPRINTF(str, 4096, "%f (guess)", dtime);
     webpage->AddTableEntry2("Time", str);
     if (cycleIsAccurate)
-        sprintf(str, "%d", cycle);
+        SNPRINTF(str, 4096, "%d", cycle);
     else
-        sprintf(str, "%d (guess)", cycle);
+        SNPRINTF(str, 4096, "%d (guess)", cycle);
     webpage->AddTableEntry2("Cycle", str);
     webpage->EndTable();
 
     webpage->AddSubheading("Spatial extents attributes");
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
-    ExtentsToString(trueSpatial, str);
+    ExtentsToString(trueSpatial, str, 4096);
     webpage->AddTableEntry2("True spatial extents", str);
-    ExtentsToString(cumulativeTrueSpatial, str);
+    ExtentsToString(cumulativeTrueSpatial, str, 4096);
     webpage->AddTableEntry2("Cumulative true spatial extents", str);
-    ExtentsToString(effectiveSpatial, str);
+    ExtentsToString(effectiveSpatial, str, 4096);
     webpage->AddTableEntry2("Effective spatial extents", str);
-    ExtentsToString(currentSpatial, str);
+    ExtentsToString(currentSpatial, str, 4096);
     webpage->AddTableEntry2("Current spatial extents", str);
-    ExtentsToString(cumulativeCurrentSpatial, str);
+    ExtentsToString(cumulativeCurrentSpatial, str, 4096);
     webpage->AddTableEntry2("Cumulative current spatial extents", str);
     webpage->AddTableEntry2("Can use the cumulative extents are true or current extents?", 
                             YesOrNo(canUseCumulativeAsTrueOrCurrent));
@@ -4938,7 +4947,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Type", 
                                    avtVarTypeToString(variables[i].vartype).c_str());
             webpage->AddTableEntry3(NULL, "Units", variables[i].varunits.c_str());
-            sprintf(str, "%d", variables[i].dimension);
+            SNPRINTF(str, 4096, "%d", variables[i].dimension);
             webpage->AddTableEntry3(NULL, "Dimension", str);
             switch (variables[i].centering)
             {
@@ -4955,23 +4964,23 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Centering", str);
             webpage->AddTableEntry3(NULL, "Treat variable as ASCII characters?",
                                     YesOrNo(variables[i].treatAsASCII));
-            sprintf(str, "%d", variables[i].useForAxis);
+            SNPRINTF(str, 4096, "%d", variables[i].useForAxis);
             webpage->AddTableEntry3(NULL, "Use for axis", str);
-            ExtentsToString(variables[i].cumulativeTrueData, str);
+            ExtentsToString(variables[i].cumulativeTrueData, str, 4096);
             webpage->AddTableEntry3(NULL, "Cumulative true data extents", str);
-            ExtentsToString(variables[i].effectiveData, str);
+            ExtentsToString(variables[i].effectiveData, str, 4096);
             webpage->AddTableEntry3(NULL, "Effective data extents", str);
-            ExtentsToString(variables[i].currentData, str);
+            ExtentsToString(variables[i].currentData, str, 4096);
             webpage->AddTableEntry3(NULL, "Current data extents", str);
-            ExtentsToString(variables[i].cumulativeCurrentData, str);
+            ExtentsToString(variables[i].cumulativeCurrentData, str, 4096);
             webpage->AddTableEntry3(NULL, "Cumulative current data extents", str);
-            ExtentsToString(variables[i].componentExtents, str);
+            ExtentsToString(variables[i].componentExtents, str, 4096);
             webpage->AddTableEntry3(NULL, "Component extents", str);
             if (variables[i].subnames.size() != 0)
             {
                 for (int j = 0 ; j < variables[i].subnames.size() ; j++)
                 {
-                    sprintf(str, "Variable subname[%d]", j);
+                    SNPRINTF(str, 4096, "Variable subname[%d]", j);
                     webpage->AddTableEntry3(NULL, str,
                                             variables[i].subnames[j].c_str());
                 }
