@@ -49,6 +49,7 @@
 #include <DebugStream.h>
 #include <tuvok/../VisItDebugOut.h>
 #include <tuvok/Controller/Controller.h>
+#include <tuvok/IO/CoreVolume.h>
 
 static AbstrRenderer* CreateRenderer(const VolumeAttributes &);
 
@@ -155,6 +156,9 @@ avtOpenGLTuvokVolumeRenderer::Render(vtkRectilinearGrid *grid,
 //    Tom Fogal, Thu Mar  5 20:15:10 MST 2009
 //    Initialize the renderer before returning it.
 //
+//    Tom Fogal, Fri Mar  6 10:39:04 MST 2009
+//    Set an empty `CoreVolume' to the dataset.
+//
 // ****************************************************************************
 static AbstrRenderer *
 CreateRenderer(const VolumeAttributes &)
@@ -169,6 +173,7 @@ CreateRenderer(const VolumeAttributes &)
                             MasterController::OPENGL_SBVR,
                             use_only_PoT_textures, downsample,
                             disable_border);
+    ren->SetDataSet(new CoreVolume());
     ren->Initialize();
     return ren;
 }
