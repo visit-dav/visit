@@ -600,7 +600,7 @@ QvisIndexSelectWindow::threeDMinChanged(int)
 void
 QvisIndexSelectWindow::threeDMaxChanged(int )
 {
-    GetCurrentValues(IndexSelectAttributes::ID_xMax);
+    GetCurrentValues(IndexSelectAttributes::ID_zMax);
     Apply();
 }
 
