@@ -561,6 +561,10 @@
 #     Added a patch which sets the endianness properly on Linux-ppc systems
 #     (based on a patch from Patrick Shinpaugh).
 #
+#     Mark C. Miller, Thu Mar 19 09:08:28 PDT 2009
+#     Merged from RC. Added web path for fastbit.
+#     Fixed cut-n-paste typos in error messages from ITAPS configures.
+#     Set VisIt version number to 2.0.0
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -815,7 +819,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION-"1.11.0"}
+export VISIT_VERSION=${VISIT_VERSION-"2.0.0"}
 export VISIT_FILE=${VISIT_FILE-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
@@ -1588,7 +1592,7 @@ function check_optional_3rdparty
         fi
     fi
     if [[ "$DO_FASTBIT" == "yes" ]] ; then
-        ensure_built_or_ready "fastbit" $FASTBIT_VERSION $FASTBIT_DIR $FASTBIT_FILE
+        ensure_built_or_ready "fastbit" $FASTBIT_VERSION $FASTBIT_DIR $FASTBIT_FILE https://codeforge.lbl.gov/frs/download.php/33
         if [[ $? != 0 ]] ; then
             warn "Unable to build FastBit.  ${FASTBIT_FILE} not found."
             warn "FastBit is not available for download from the VisIt build site"
@@ -7224,7 +7228,7 @@ function build_itaps_moab
         --enable-imesh=nofortran --with-zlib \
         $WITHHDF5ARG "$WITHSZIPARG" "$WITHNETCDFARG"
     if [[ $? != 0 ]] ; then
-       warn "Silo configure failed.  Giving up"
+       warn "ITAPS_MOAB configure failed.  Giving up"
        return 1
     fi
 
@@ -7289,7 +7293,7 @@ function build_itaps_fmdb
         --prefix="$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH" \
         --enable-iMesh
     if [[ $? != 0 ]] ; then
-       warn "Silo configure failed.  Giving up"
+       warn "ITAPS_FMBD configure failed.  Giving up"
        return 1
     fi
 
@@ -7354,7 +7358,7 @@ function build_itaps_grummp
         --prefix="$VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
         --enable-iBase --enable-iMesh
     if [[ $? != 0 ]] ; then
-       warn "Silo configure failed.  Giving up"
+       warn "ITAPS_GRUMMP configure failed.  Giving up"
        return 1
     fi
 
