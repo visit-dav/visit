@@ -2822,6 +2822,9 @@ Engine::GetProcessAttributes()
 //    Tom Fogal, Mon Sep  1 12:54:29 EDT 2008
 //    Change to a method from a static function, and delegate to VisItDisplay.
 //
+//    Tom Fogal, Sun Mar  8 00:25:52 MST 2009
+//    Allow a HW context even in serial mode.
+//
 // ****************************************************************************
 
 void
@@ -2853,6 +2856,12 @@ Engine::SetupDisplay()
                 this->renderingDisplay = Display::Create(Display::D_X);
             }
         }
+    }
+#else
+    if(this->nDisplays > 0)
+    {
+        this->renderingDisplay = Display::Create(Display::D_X);
+        display = 0;
     }
 #endif
     if(this->renderingDisplay == NULL)
