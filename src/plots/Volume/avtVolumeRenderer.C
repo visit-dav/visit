@@ -60,11 +60,11 @@
 #include <avtOpenGLSLIVRVolumeRenderer.h>
 #endif
 
-#include <StackTimer.h>
-#include <VolumeFunctions.h>
-
+#include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
+#include <StackTimer.h>
+#include <VolumeFunctions.h>
 
 
 // ****************************************************************************
@@ -239,6 +239,9 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Brad Whitlock, Mon Dec 15 13:30:45 PST 2008
 //    I removed histogramming and changed the code to call helpers.
 //
+//    Tom Fogal, Thu Mar  5 18:56:05 MST 2009
+//    Add debug stmts detailing which VolumeRenderer we instantiate.
+//
 // ****************************************************************************
 
 void
@@ -254,10 +257,14 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         if (avtCallback::GetSoftwareRendering())
         {
             if (atts.GetRendererType() == VolumeAttributes::Splatting)
+            {
+                debug5 << "Creating a (Mesa) Splatting renderer." << std::endl;
                 rendererImplementation = new avtMesaSplattingVolumeRenderer;
+            }
 #ifdef HAVE_LIBSLIVR
             else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
             {
+                debug5 << "Creating a (Mesa) 3DTexture renderer." << std::endl;
                 rendererImplementation = new avtMesa3DTextureVolumeRenderer;
                 avtCallback::IssueWarning("SLIVR is not currently supported for "
                     "offscreen rendering. VisIt is reverting to 3D texturing.");
@@ -265,27 +272,42 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 #endif
             else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
             {
-              // Tuvok may work fine in Mesa but for now use previous texture slicer 
+                // Tuvok may work fine in Mesa but for now use previous texture slicer
+                debug5 << "Creating a (Mesa) 3DTexture renderer." << std::endl;
                 rendererImplementation = new avtMesa3DTextureVolumeRenderer;
                 avtCallback::IssueWarning("Tuvok is not currently supported for "
                     "offscreen rendering. VisIt is reverting to 3D texturing.");
-
             }
             else // it == VolumeAttributes::Texture3D
+            {
+                debug5 << "Creating a (Mesa) 3DTexture renderer." << std::endl;
                 rendererImplementation = new avtMesa3DTextureVolumeRenderer;
+            }
         }
         else
         { 
             if (atts.GetRendererType() == VolumeAttributes::Splatting)
+            {
+                debug5 << "Creating a (HW) Splatting renderer." << std::endl;
                 rendererImplementation = new avtOpenGLSplattingVolumeRenderer;
+            }
 #ifdef HAVE_LIBSLIVR
             else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
+            {
+                debug5 << "Creating a (HW) SLIVR renderer." << std::endl;
                 rendererImplementation = new avtOpenGLSLIVRVolumeRenderer;
+            }
 #endif
             else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
+            {
+                debug5 << "Creating a (HW) Tuvok renderer." << std::endl;
                 rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
+            }
             else // it == VolumeAttributes::Texture3D
+            {
+                debug5 << "Creating a (HW) 3DTexture renderer." << std::endl;
                 rendererImplementation = new avtOpenGL3DTextureVolumeRenderer;
+            }
         }
         currentRendererIsValid = true;
     }
