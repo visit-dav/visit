@@ -171,6 +171,7 @@
 #include <avtPerMaterialValueExpression.h>
 #include <avtApplyEnumerationExpression.h>
 #include <avtConstantFunctionExpression.h>
+#include <avtGeodesicVectorQuantizeExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -949,6 +950,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         mm->SetDoMinimum(false);
         return mm;
     }
+    if (functionName == "geodesic_vector_quantize")
+        return new avtGeodesicVectorQuantizeExpression();
     if (functionName == "color")
         return new avtColorComposeExpression(3);
     if (functionName == "color4")

@@ -317,6 +317,7 @@ General_src= \
   General/avtDominantMaterialExpression.C \
   General/avtExpressionComponentMacro.C \
   General/avtExternalNodeExpression.C \
+  General/avtGeodesicVectorQuantizeExpression.C \
   General/avtGradientExpression.C \
   General/avtHSVColorComposeExpression.C \
   General/avtLaplacianExpression.C \
