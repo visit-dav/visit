@@ -34,11 +34,15 @@
   \date    August 2008
 */
 
+#include <cassert>
 #include "GLTexture3D.h"
+#include "GLDebug.h"
 
-
-GLTexture3D::GLTexture3D(UINT32 iSizeX, UINT32 iSizeY, UINT32 iSizeZ, GLint internalformat, GLenum format, GLenum type,
-             UINT32 iSizePerElement, const GLvoid *pixels, GLint iMagFilter, GLint iMinFilter, GLint wrapX, GLint wrapY, GLint wrapZ) :
+GLTexture3D::GLTexture3D(UINT32 iSizeX, UINT32 iSizeY, UINT32 iSizeZ,
+                         GLint internalformat, GLenum format, GLenum type,
+                         UINT32 iSizePerElement, const GLvoid *pixels,
+                         GLint iMagFilter, GLint iMinFilter, GLint wrapX,
+                         GLint wrapY, GLint wrapZ) :
   GLTexture(iSizePerElement),
   m_iSizeX(GLuint(iSizeX)),
   m_iSizeY(GLuint(iSizeY)),
@@ -47,6 +51,10 @@ GLTexture3D::GLTexture3D(UINT32 iSizeX, UINT32 iSizeY, UINT32 iSizeZ, GLint inte
   m_format(format),
   m_type(type)
 {
+  GL();
+  GL(glEnable(GL_TEXTURE_3D));
+  assert(glIsEnabled(GL_TEXTURE_3D) != GL_FALSE);
+
   glGenTextures(1, &m_iGLID);
   glBindTexture(GL_TEXTURE_3D, m_iGLID);
 
@@ -56,16 +64,20 @@ GLTexture3D::GLTexture3D(UINT32 iSizeX, UINT32 iSizeY, UINT32 iSizeZ, GLint inte
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, iMagFilter);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, iMinFilter);
 
-  glPixelStorei(GL_PACK_ALIGNMENT ,1);
-  glPixelStorei(GL_UNPACK_ALIGNMENT ,1);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  glTexImage3D(GL_TEXTURE_3D, 0, m_internalformat, m_iSizeX, m_iSizeY, m_iSizeZ, 0, m_format, m_type, (GLvoid*)pixels);
+  glTexImage3D(GL_TEXTURE_3D, 0, m_internalformat,
+               m_iSizeX, m_iSizeY, m_iSizeZ,
+               0, m_format, m_type, (GLvoid*)pixels);
 }
 
 void GLTexture3D::SetData(const void *pixels) {
-  glPixelStorei(GL_PACK_ALIGNMENT ,1);
-  glPixelStorei(GL_UNPACK_ALIGNMENT ,1);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   glBindTexture(GL_TEXTURE_3D, m_iGLID);
-  glTexImage3D(GL_TEXTURE_3D, 0, m_internalformat, m_iSizeX, m_iSizeY, m_iSizeZ, 0, m_format, m_type, (GLvoid*)pixels);
+  glTexImage3D(GL_TEXTURE_3D, 0, m_internalformat,
+               m_iSizeX, m_iSizeY, m_iSizeZ,
+               0, m_format, m_type, (GLvoid*)pixels);
 }

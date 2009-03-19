@@ -1,84 +1,87 @@
 TUVOK_SRCS = \
-	./tuvok/3rdParty/bzip2/blocksort.c \
-	./tuvok/3rdParty/bzip2/bzip2.c \
-	./tuvok/3rdParty/bzip2/bzip2recover.c \
-	./tuvok/3rdParty/bzip2/bzlib.c \
-	./tuvok/3rdParty/bzip2/compress.c \
-	./tuvok/3rdParty/bzip2/crctable.c \
-	./tuvok/3rdParty/bzip2/decompress.c \
-	./tuvok/3rdParty/bzip2/dlltest.c \
-	./tuvok/3rdParty/bzip2/huffman.c \
-	./tuvok/3rdParty/bzip2/mk251.c \
-	./tuvok/3rdParty/bzip2/randtable.c \
-	./tuvok/3rdParty/bzip2/spewG.c \
-	./tuvok/3rdParty/bzip2/unzcrash.c \
-	./tuvok/Basics/Checksums/MD5.cpp \
-	./tuvok/Basics/Systeminfo/VidMemViaDDraw.cpp \
-	./tuvok/Basics/Systeminfo/VidMemViaDXGI.cpp \
-	./tuvok/Basics/Appendix.cpp \
-	./tuvok/Basics/ArcBall.cpp \
-	./tuvok/Basics/DynamicDX.cpp \
-	./tuvok/Basics/GeometryGenerator.cpp \
-	./tuvok/Basics/MC.cpp \
-	./tuvok/Basics/MathTools.cpp \
-	./tuvok/Basics/MemMappedFile.cpp \
-	./tuvok/Basics/Plane.cpp \
-	./tuvok/Basics/SysTools.cpp \
-	./tuvok/Basics/SystemInfo.cpp \
-	./tuvok/Controller/MasterController.cpp \
-	./tuvok/DebugOut/MultiplexOut.cpp \
-	./tuvok/DebugOut/TextfileOut.cpp \
 	./tuvok/DebugOut/AbstrDebugOut.cpp \
 	./tuvok/DebugOut/ConsoleOut.cpp \
+	./tuvok/DebugOut/TextfileOut.cpp \
+	./tuvok/DebugOut/MultiplexOut.cpp \
+	./tuvok/Controller/MasterController.cpp \
+	./tuvok/Basics/Appendix.cpp \
+	./tuvok/Basics/Checksums/MD5.cpp \
+	./tuvok/Basics/GeometryGenerator.cpp \
+	./tuvok/Basics/MathTools.cpp \
+	./tuvok/Basics/MemMappedFile.cpp \
+	./tuvok/Basics/SystemInfo.cpp \
+	./tuvok/Basics/Systeminfo/VidMemViaDDraw.cpp \
+	./tuvok/Basics/Systeminfo/VidMemViaDXGI.cpp \
+	./tuvok/Basics/DynamicDX.cpp \
+	./tuvok/Basics/MC.cpp \
+	./tuvok/Basics/Plane.cpp \
+	./tuvok/Basics/ArcBall.cpp \
+	./tuvok/Basics/SysTools.cpp \
 	./tuvok/IO/DICOM/DICOMParser.cpp \
+	./tuvok/IO/DirectoryParser.cpp \
 	./tuvok/IO/Images/ImageParser.cpp \
+	./tuvok/IO/TiffVolumeConverter.cpp \
 	./tuvok/IO/UVF/DataBlock.cpp \
 	./tuvok/IO/UVF/GlobalHeader.cpp \
 	./tuvok/IO/UVF/Histogram1DDataBlock.cpp \
 	./tuvok/IO/UVF/Histogram2DDataBlock.cpp \
 	./tuvok/IO/UVF/KeyValuePairDataBlock.cpp \
-	./tuvok/IO/UVF/LargeRAWFile.cpp \
-	./tuvok/IO/UVF/UVF.cpp \
 	./tuvok/IO/UVF/MaxMinDataBlock.cpp \
-	./tuvok/IO/UVF/RasterDataBlock.cpp \
+	./tuvok/IO/UVF/UVF.cpp \
 	./tuvok/IO/UVF/UVFTables.cpp \
-	./tuvok/IO/RAWConverter.cpp \
-	./tuvok/IO/TransferFunction1D.cpp \
+	./tuvok/IO/UVF/LargeRAWFile.cpp \
+	./tuvok/IO/UVF/RasterDataBlock.cpp \
 	./tuvok/IO/gzio.c \
+	./tuvok/IO/VFFConverter.cpp \
+	./tuvok/IO/QVISConverter.cpp \
+	./tuvok/IO/StkConverter.cpp \
+	./tuvok/IO/RAWConverter.cpp \
 	./tuvok/IO/CoreVolume.cpp \
 	./tuvok/IO/AbstrConverter.cpp \
-	./tuvok/IO/DirectoryParser.cpp \
-	./tuvok/IO/IOManager.cpp \
-	./tuvok/IO/KeyValueFileParser.cpp \
-	./tuvok/IO/QVISConverter.cpp \
-	./tuvok/IO/TiffVolumeConverter.cpp \
-	./tuvok/IO/VolumeDataset.cpp \
 	./tuvok/IO/CoreVolumeInfo.cpp \
+	./tuvok/IO/TransferFunction1D.cpp \
+	./tuvok/IO/IOManager.cpp \
+	./tuvok/IO/VolumeDataset.cpp \
+	./tuvok/IO/KeyValueFileParser.cpp \
 	./tuvok/IO/NRRDConverter.cpp \
-	./tuvok/IO/StkConverter.cpp \
 	./tuvok/IO/TransferFunction2D.cpp \
-	./tuvok/IO/VFFConverter.cpp \
-	./tuvok/Renderer/GPUMemMan/GPUMemMan.cpp \
-	./tuvok/Renderer/GPUMemMan/GPUMemManDataStructs.cpp \
+	./tuvok/Renderer/CullingLOD.cpp \
 	./tuvok/Renderer/DX/DXRaycaster.cpp \
-	./tuvok/Renderer/DX/DXRenderer.cpp \
 	./tuvok/Renderer/DX/DXSBVR.cpp \
 	./tuvok/Renderer/DX/DXTexture.cpp \
 	./tuvok/Renderer/DX/DXTexture1D.cpp \
 	./tuvok/Renderer/DX/DXTexture2D.cpp \
 	./tuvok/Renderer/DX/DXTexture3D.cpp \
-	./tuvok/Renderer/GL/GLFBOTex.cpp \
+	./tuvok/Renderer/DX/DXRenderer.cpp \
 	./tuvok/Renderer/GL/GLFrameCapture.cpp \
-	./tuvok/Renderer/GL/GLRaycaster.cpp \
-	./tuvok/Renderer/GL/GLRenderer.cpp \
-	./tuvok/Renderer/GL/GLSBVR.cpp \
-	./tuvok/Renderer/GL/GLSLProgram.cpp \
-	./tuvok/Renderer/GL/GLTargetBinder.cpp \
 	./tuvok/Renderer/GL/GLTexture.cpp \
-	./tuvok/Renderer/GL/GLTexture2D.cpp \
 	./tuvok/Renderer/GL/GLTexture1D.cpp \
+	./tuvok/Renderer/GL/GLTexture2D.cpp \
+	./tuvok/Renderer/GL/GLFBOTex.cpp \
 	./tuvok/Renderer/GL/GLTexture3D.cpp \
-	./tuvok/Renderer/AbstrRenderer.cpp \
-	./tuvok/Renderer/CullingLOD.cpp \
+	./tuvok/Renderer/GL/GLRaycaster.cpp \
+	./tuvok/Renderer/GL/GLTargetBinder.cpp \
+	./tuvok/Renderer/GL/ImmediateGLSBVR.cpp \
+	./tuvok/Renderer/GL/GLRenderer.cpp \
+	./tuvok/Renderer/GL/GLSLProgram.cpp \
+	./tuvok/Renderer/GL/ImmediateGLRenderer.cpp \
+	./tuvok/Renderer/GL/GLSBVR.cpp \
+	./tuvok/Renderer/GPUMemMan/GPUMemMan.cpp \
+	./tuvok/Renderer/GPUMemMan/GPUMemManDataStructs.cpp \
 	./tuvok/Renderer/SBVRGeogen.cpp \
-	./tuvok/Scripting/Scripting.cpp
+	./tuvok/Renderer/SimpleRenderer.cpp \
+	./tuvok/Renderer/AbstrRenderer.cpp \
+	./tuvok/Scripting/Scripting.cpp \
+	./tuvok/3rdParty/bzip2/mk251.c \
+	./tuvok/3rdParty/bzip2/bzlib.c \
+	./tuvok/3rdParty/bzip2/blocksort.c \
+	./tuvok/3rdParty/bzip2/decompress.c \
+	./tuvok/3rdParty/bzip2/dlltest.c \
+	./tuvok/3rdParty/bzip2/bzip2recover.c \
+	./tuvok/3rdParty/bzip2/crctable.c \
+	./tuvok/3rdParty/bzip2/huffman.c \
+	./tuvok/3rdParty/bzip2/spewG.c \
+	./tuvok/3rdParty/bzip2/bzip2.c \
+	./tuvok/3rdParty/bzip2/compress.c \
+	./tuvok/3rdParty/bzip2/randtable.c \
+	./tuvok/3rdParty/bzip2/unzcrash.c

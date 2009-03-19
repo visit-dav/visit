@@ -27,47 +27,35 @@
 */
 
 /**
-  \file    MultiplexOut.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
-  \date    September 2008
+  \file    ImmediateGLRenderer.h
+  \author  Tom Fogal
+           SCI Institute
+           University of Utah
+  \brief   Handles non-LOD'd, individual volumes.  Essentially a brick
+           renderer.
 */
-
-
 #pragma once
 
-#ifndef MULTIPLEXOUT_H
-#define MULTIPLEXOUT_H
+#ifndef TUVOK_IMMEDIATE_GL_RENDERER_H
+#define TUVOK_IMMEDIATE_GL_RENDERER_H
 
-#include "../StdTuvokDefines.h"
-#include "AbstrDebugOut.h"
-#include <vector>
+#include "Renderer/SimpleRenderer.h"
+#include "GLRenderer.h"
 
-class MultiplexOut : public AbstrDebugOut {
+class ImmediateGLRenderer : public GLRenderer {
   public:
-    MultiplexOut() {}
-    ~MultiplexOut();
+    ImmediateGLRenderer(bool bUseOnlyPowerOfTwo, bool bDownSample,
+                        bool bDisableBorder);
+    virtual ~ImmediateGLRenderer() { }
 
-    void AddDebugOut(AbstrDebugOut* pDebugger);
-    void RemoveDebugOut(AbstrDebugOut* pDebugger);
+    /// does the render.
+    virtual void Paint() = 0;
 
-    virtual void printf(const char* format, ...) const;
-    virtual void Message(const char* source, const char* format, ...);
-    virtual void Warning(const char* source, const char* format, ...);
-    virtual void Error(const char* source, const char* format, ...);
+    /// Deallocates GPU memory
+//    virtual void Cleanup();
 
-    virtual void SetShowMessages(bool bShowMessages);
-    virtual void SetShowWarnings(bool bShowWarnings);
-    virtual void SetShowErrors(bool bShowErrors);
-    virtual void SetShowOther(bool bShowOther);
-
-    size_t size() const { return m_vpDebugger.size(); }
-    void clear();
-
-  private:
-    std::vector<AbstrDebugOut*> m_vpDebugger;
+//    virtual void ClearDepthBuffer();
+//    virtual void ClearColorBuffer();
 };
 
-#endif // MULTIPLEXOUT_H
+#endif // TUVOK_IMMEDIATE_GL_RENDERER_H

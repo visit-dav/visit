@@ -398,6 +398,7 @@ void SBVRGeogen::SetLODData(const UINTVECTOR3& vSize) {
   m_vLODSize = vSize;
 }
 
+#include "Controller/Controller.h"
 void SBVRGeogen::SetBrickData(const FLOATVECTOR3& vAspect,
                               const UINTVECTOR3& vSize,
                               const FLOATVECTOR3& vTexCoordMin,
@@ -406,10 +407,14 @@ void SBVRGeogen::SetBrickData(const FLOATVECTOR3& vAspect,
   m_vSize         = vSize;
   m_vTexCoordMin  = vTexCoordMin;
   m_vTexCoordMax  = vTexCoordMax;
+  MESSAGE("SBVRgeom: aspect (%f,%f,%f)", vAspect.x, vAspect.y, vAspect.z);
+  MESSAGE("SBVRgeom: size   (%u,%u,%u)", vSize.x, vSize.y, vSize.z);
+  MESSAGE("SBVRgeom: texmin (%f,%f,%f)", vTexCoordMin.x, vTexCoordMin.y, vTexCoordMin.z);
+  MESSAGE("SBVRgeom: texmax (%f,%f,%f)", vTexCoordMax.x, vTexCoordMax.y, vTexCoordMax.z);
   InitBBOX();
 }
 
-// Checks the ordering of two points relative to another.
+// Checks the ordering of two points relative to a third.
 static bool CheckOrdering(const FLOATVECTOR3& a,
                           const FLOATVECTOR3& b,
                           const FLOATVECTOR3& c) {

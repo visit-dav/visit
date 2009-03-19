@@ -3,7 +3,7 @@
 
    The MIT License
 
-   Copyright (c) 2008 Scientific Computing and Imaging Institute,
+   Copyright (c) 2009 Scientific Computing and Imaging Institute,
    University of Utah.
 
 
@@ -61,6 +61,9 @@ public:
 
   void SetStdFunction(float fCenterPoint=0.5f, float fInvGradient=0.5f);
   void SetStdFunction(float fCenterPoint, float fInvGradient, int iComponent);
+  /// Set the transfer function from an external source.  Assumes the vector
+  /// has 4-components per element, in RGBA order.
+  void Set(const std::vector<unsigned char>&);
 
   size_t GetSize() const {return vColorData.size();}
   void Resize(size_t iSize);

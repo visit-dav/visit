@@ -36,6 +36,7 @@
 
 
 #include "MasterController.h"
+#include "Controller.h"
 #include "../Basics/SystemInfo.h"
 #include "../DebugOut/TextfileOut.h"
 #include "../DebugOut/MultiplexOut.h"
@@ -43,6 +44,7 @@
 #include "../Renderer/GPUMemMan/GPUMemMan.h"
 #include "../Renderer/GL/GLRaycaster.h"
 #include "../Renderer/GL/GLSBVR.h"
+#include "../Renderer/GL/ImmediateGLSBVR.h"
 
 #if defined(_WIN32) && defined(USE_DIRECTX)
 #include "../Renderer/DX/DXSBVR.h"
@@ -72,6 +74,7 @@ MasterController::~MasterController() {
   delete m_pSystemInfo;
   delete m_pIOManager;
   delete m_pGPUMemMan;
+  m_DebugOut.clear();
 }
 
 
@@ -106,42 +109,59 @@ const AbstrDebugOut *MasterController::DebugOut() const {
 }
 
 AbstrRenderer* MasterController::
-RequestNewVolumerenderer(EVolumeRendererType eRendererType, bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits, bool bDisableBorder) {
+RequestNewVolumerenderer(EVolumeRendererType eRendererType,
+                         bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits,
+                         bool bDisableBorder, bool bSimple) {
+  std::string msg("Starting up new renderer ");
 
   switch (eRendererType) {
-
-  case OPENGL_SBVR :
-    m_DebugOut.Message(_func_,"Starting up new renderer (API=OpenGL, Method=Slice Based Volume Rendering)");
-    m_vVolumeRenderer.push_back(new GLSBVR(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits, bDisableBorder));
-    return m_vVolumeRenderer[m_vVolumeRenderer.size()-1];
-
-  case OPENGL_RAYCASTER :
-    m_DebugOut.Message(_func_,"Starting up new renderer (API=OpenGL, Method=Raycaster)");
-    m_vVolumeRenderer.push_back(new GLRaycaster(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits, bDisableBorder));
-    return m_vVolumeRenderer[m_vVolumeRenderer.size()-1];
-
-
+    case OPENGL_SBVR:
+      msg += "(API=OpenGL, Method=Slice Based)";
+      AbstrRenderer *ren;
+      if(bSimple) {
+        ren = new ImmediateGLSBVR(bUseOnlyPowerOfTwo, bDownSampleTo8Bits,
+                                  bDisableBorder);
+      } else {
+        ren = new GLSBVR(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits,
+                         bDisableBorder);
+      }
+      m_vVolumeRenderer.push_back(ren);
+      break;
+    case OPENGL_RAYCASTER:
+      msg += "(API=OpenGL, Method=Raycaster)";
+      /// @todo implement simplified raycaster!
+      if(bSimple) { WARNING("simple raycaster unimplemented"); }
+      m_vVolumeRenderer.push_back(new GLRaycaster(this, bUseOnlyPowerOfTwo,
+                                                  bDownSampleTo8Bits,
+                                                  bDisableBorder));
+      break;
 #if defined(_WIN32) && defined(USE_DIRECTX)
-  case DIRECTX_SBVR : 
-    m_DebugOut.Message(_func_,"Starting up new renderer (API=DirectX, Method=SBVR)");
-    m_vVolumeRenderer.push_back(new DXSBVR(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits, bDisableBorder));
-    return m_vVolumeRenderer[m_vVolumeRenderer.size()-1];
-
-  case DIRECTX_RAYCASTER :
-    m_DebugOut.Message(_func_,"Starting up new renderer (API=DirectX, Method=Raycaster)");
-    m_vVolumeRenderer.push_back(new DXRaycaster(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits, bDisableBorder));
-    return m_vVolumeRenderer[m_vVolumeRenderer.size()-1];
+    case DIRECTX_SBVR :
+      msg += "(API=DirectX, Method=SBVR)");
+      m_vVolumeRenderer.push_back(new DXSBVR(this, bUseOnlyPowerOfTwo,
+                                             bDownSampleTo8Bits,
+                                             bDisableBorder));
+      break;
+    case DIRECTX_RAYCASTER :
+      msg += "(API=DirectX, Method=Raycaster)");
+      m_vVolumeRenderer.push_back(new DXRaycaster(this, bUseOnlyPowerOfTwo,
+                                                  bDownSampleTo8Bits,
+                                                  bDisableBorder));
+      break;
 #else
-  case DIRECTX_RAYCASTER :
-  case DIRECTX_SBVR : 
-    m_DebugOut.Error(_func_,"DirectX 10 renderer not yet implemented. Please select OpenGL as the render API in the settings dialog.");
-    return NULL;
+    case DIRECTX_SBVR: // FALL THROUGH
+    case DIRECTX_RAYCASTER:
+      m_DebugOut.Error(_func_,"DirectX 10 renderer not yet implemented. "
+                       "Please select OpenGL as the render API in the "
+                       "settings dialog.");
+      return NULL;
 #endif
-
-  default :
-    m_DebugOut.Error(_func_,"Unsupported Volume renderer requested");
-    return NULL;
+    default:
+      m_DebugOut.Error(_func_,"Unsupported Volume renderer requested");
+      return NULL;
   };
+  m_DebugOut.Message(_func_, "%s", msg.c_str());
+  return m_vVolumeRenderer[m_vVolumeRenderer.size()-1];
 }
 
 

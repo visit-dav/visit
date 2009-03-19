@@ -45,6 +45,7 @@
   #endif
 #endif
 
+#include "GLDebug.h"
 
 GLuint  GLFBOTex::m_hFBO = 0;
 int    GLFBOTex::m_iCount = 0;
@@ -92,30 +93,30 @@ GLFBOTex::GLFBOTex(MasterController* pMasterController, GLenum minfilter, GLenum
 
   if (GL_NO_ERROR!=glGetError()) {
     T_ERROR("Error during creation!");
-    glDeleteFramebuffersEXT(1,&m_hFBO);
+    GL(glDeleteFramebuffersEXT(1,&m_hFBO));
     m_hFBO=0;
     return;
   }
   initTextures(minfilter,magfilter,wrapmode,width,height,intformat);
   if (GL_NO_ERROR!=glGetError()) {
     T_ERROR("Error during texture init!");
-    glDeleteTextures(m_iNumBuffers,m_hTexture);
+    GL(glDeleteTextures(m_iNumBuffers,m_hTexture));
     delete[] m_hTexture;
     m_hTexture=NULL;
     return;
   }
   if (bHaveDepth) {
 #ifdef GLFBOTEX_DEPTH_RENDERBUFFER
-    glGenRenderbuffersEXT(1,&m_hDepthBuffer);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24,width,height);
+    GL(glGenRenderbuffersEXT(1,&m_hDepthBuffer));
+    GL(glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,GL_DEPTH_COMPONENT24,width,height));
 #else
-    glGenTextures(1,&m_hDepthBuffer);
-    glBindTexture(GL_TEXTURE_2D,m_hDepthBuffer);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D,0,GL_DEPTH_COMPONENT,width,height,0,GL_DEPTH_COMPONENT,GL_FLOAT,NULL);
+    GL(glGenTextures(1,&m_hDepthBuffer));
+    GL(glBindTexture(GL_TEXTURE_2D,m_hDepthBuffer));
+    GL(glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE));
+    GL(glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE));
+    GL(glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST));
+    GL(glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST));
+    GL(glTexImage2D(GL_TEXTURE_2D,0,GL_DEPTH_COMPONENT,width,height,0,GL_DEPTH_COMPONENT,GL_FLOAT,NULL));
 #endif
   }
   else m_hDepthBuffer=0;
@@ -130,7 +131,7 @@ GLFBOTex::GLFBOTex(MasterController* pMasterController, GLenum minfilter, GLenum
  */
 GLFBOTex::~GLFBOTex(void) {
   if (m_hTexture) {
-    glDeleteTextures(m_iNumBuffers,m_hTexture);
+    GL(glDeleteTextures(m_iNumBuffers,m_hTexture));
     delete[] m_hTexture;
     m_hTexture=NULL;
   }
@@ -143,15 +144,16 @@ GLFBOTex::~GLFBOTex(void) {
     m_LastAttachment=NULL;
   }
 #ifdef GLFBOTEX_DEPTH_RENDERBUFFER
-  if (m_hDepthBuffer) glDeleteRenderbuffersEXT(1,&m_hDepthBuffer);
+  if (m_hDepthBuffer) GL(glDeleteRenderbuffersEXT(1,&m_hDepthBuffer));
 #else
-  if (m_hDepthBuffer) glDeleteTextures(1,&m_hDepthBuffer);
+  if (m_hDepthBuffer) GL(glDeleteTextures(1,&m_hDepthBuffer));
 #endif
   m_hDepthBuffer=0;
   --m_iCount;
   if (m_iCount==0) {
-    MESSAGE("FBO released via destructor call.");
-    glDeleteFramebuffersEXT(1,&m_hFBO);
+    m_pMasterController->DebugOut()->Message(_func_, "FBO released via "
+                                                     "destructor call.");
+    GL(glDeleteFramebuffersEXT(1,&m_hFBO));
     m_hFBO=0;
   }
 }
@@ -162,14 +164,14 @@ GLFBOTex::~GLFBOTex(void) {
  * Build a dummy texture according to the parameters.
  */
 void GLFBOTex::initTextures(GLenum minfilter,GLenum magfilter,GLenum wrapmode, GLsizei width, GLsizei height, GLenum intformat) {
-  glDeleteTextures(m_iNumBuffers,m_hTexture);
-  glGenTextures(m_iNumBuffers,m_hTexture);
+  GL(glDeleteTextures(m_iNumBuffers,m_hTexture));
+  GL(glGenTextures(m_iNumBuffers,m_hTexture));
   for (int i=0; i<m_iNumBuffers; i++) {
-    glBindTexture(GL_TEXTURE_2D, m_hTexture[i]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minfilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magfilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapmode);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapmode);
+    GL(glBindTexture(GL_TEXTURE_2D, m_hTexture[i]));
+    GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minfilter));
+    GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magfilter));
+    GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapmode));
+    GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapmode));
     int level=0;
     switch (minfilter) {
       case GL_NEAREST_MIPMAP_NEAREST:
@@ -177,7 +179,7 @@ void GLFBOTex::initTextures(GLenum minfilter,GLenum magfilter,GLenum wrapmode, G
       case GL_NEAREST_MIPMAP_LINEAR:
       case GL_LINEAR_MIPMAP_LINEAR:
         do {
-          glTexImage2D(GL_TEXTURE_2D, level, intformat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+          GL(glTexImage2D(GL_TEXTURE_2D, level, intformat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL));
           width/=2;
           height/=2;
           if (width==0 && height>0) width=1;
@@ -186,7 +188,7 @@ void GLFBOTex::initTextures(GLenum minfilter,GLenum magfilter,GLenum wrapmode, G
         } while (width>=1 && height>=1);
         break;
       default:
-        glTexImage2D(GL_TEXTURE_2D, 0, intformat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        GL(glTexImage2D(GL_TEXTURE_2D, 0, intformat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL));
     }
   }
 }
@@ -197,7 +199,8 @@ void GLFBOTex::initTextures(GLenum minfilter,GLenum magfilter,GLenum wrapmode, G
  */
 void GLFBOTex::initFBO(void) {
   MESSAGE("FBO initialized.");
-  glGenFramebuffersEXT(1, &m_hFBO);
+  ++m_hFBO;
+  GL(glGenFramebuffersEXT(1, &m_hFBO));
 }
 
 /**
@@ -239,12 +242,12 @@ void GLFBOTex::Write(unsigned int iTargetBuffer, int iBuffer, bool bCheckBuffer)
   }
 #endif
 
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,m_hFBO);
+  GL(glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,m_hFBO));
   assert(iBuffer>=0);
   assert(iBuffer<m_iNumBuffers);
   m_LastAttachment[iBuffer]=target;
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, target, GL_TEXTURE_2D, m_hTexture[iBuffer], 0);
-  if (m_hDepthBuffer) glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D,m_hDepthBuffer,0);
+  GL(glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, target, GL_TEXTURE_2D, m_hTexture[iBuffer], 0));
+  if (m_hDepthBuffer) GL(glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D,m_hDepthBuffer,0));
   if (bCheckBuffer) {
 #ifdef _DEBUG
   if (!CheckFBO("Write")) return;
@@ -256,9 +259,9 @@ void GLFBOTex::FinishWrite(int iBuffer) {
   glGetError();
   assert(iBuffer>=0);
   assert(iBuffer<m_iNumBuffers);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,m_LastAttachment[iBuffer],GL_TEXTURE_2D,0,0);
-  if (m_hDepthBuffer) glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D,0,0);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
+  GL(glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,m_LastAttachment[iBuffer],GL_TEXTURE_2D,0,0));
+  if (m_hDepthBuffer) GL(glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D,0,0));
+  GL(glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0));
 }
 
 void GLFBOTex::Read(unsigned int iTargetUnit, int iBuffer) {
@@ -271,8 +274,8 @@ void GLFBOTex::Read(unsigned int iTargetUnit, int iBuffer) {
   assert(iBuffer>=0);
   assert(iBuffer<m_iNumBuffers);
   m_LastTexUnit[iBuffer]=texunit;
-  glActiveTextureARB(texunit);
-  glBindTexture(GL_TEXTURE_2D,m_hTexture[iBuffer]);
+  GL(glActiveTextureARB(texunit));
+  GL(glBindTexture(GL_TEXTURE_2D,m_hTexture[iBuffer]));
 }
 
 void GLFBOTex::ReadDepth(unsigned int iTargetUnit) {
@@ -283,14 +286,14 @@ void GLFBOTex::ReadDepth(unsigned int iTargetUnit) {
   }
 #endif
   m_LastDepthTextUnit=texunit;
-  glActiveTextureARB(texunit);
-  glBindTexture(GL_TEXTURE_2D,m_hDepthBuffer);
+  GL(glActiveTextureARB(texunit));
+  GL(glBindTexture(GL_TEXTURE_2D,m_hDepthBuffer));
 }
 
 // Finish reading from the depth texture
 void GLFBOTex::FinishDepthRead() {
-  glActiveTextureARB(m_LastDepthTextUnit);
-  glBindTexture(GL_TEXTURE_2D,0);
+  GL(glActiveTextureARB(m_LastDepthTextUnit));
+  GL(glBindTexture(GL_TEXTURE_2D,0));
   m_LastDepthTextUnit=0;
 }
 
@@ -298,7 +301,7 @@ void GLFBOTex::FinishDepthRead() {
 void GLFBOTex::FinishRead(int iBuffer) {
   assert(iBuffer>=0);
   assert(iBuffer<m_iNumBuffers);
-  glActiveTextureARB(m_LastTexUnit[iBuffer]);
-  glBindTexture(GL_TEXTURE_2D,0);
+  GL(glActiveTextureARB(m_LastTexUnit[iBuffer]));
+  GL(glBindTexture(GL_TEXTURE_2D,0));
   m_LastTexUnit[iBuffer]=0;
 }

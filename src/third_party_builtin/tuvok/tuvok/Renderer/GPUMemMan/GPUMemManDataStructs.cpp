@@ -166,6 +166,7 @@ void  Texture3DListElem::FreeData() {
 }
 
 
+#include <sstream>
 bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
   if (bDeleteOldTexture) FreeTexture();
 
@@ -173,11 +174,23 @@ bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
     if (!LoadData()) return false;
 
   const std::vector<UINT64> vSize = pDataset->GetInfo()->GetBrickSizeND(vLOD, vBrick);
+  {
+    std::ostringstream oss;
+    oss << "vsize: " << vSize.size() << " elements, [";
+    for(std::vector<UINT64>::const_iterator iter = vSize.begin();
+        iter != vSize.end(); ++iter) {
+      oss << *iter << ", ";
+    }
+    oss << "]";
+    MESSAGE("%s", oss.str().c_str());
+  }
 
   bool bToggleEndian = !pDataset->GetInfo()->IsSameEndianess();
 
   UINT64 iBitWidth  = pDataset->GetInfo()->GetBitWidth();
   UINT64 iCompCount = pDataset->GetInfo()->GetComponentCount();
+
+  MESSAGE("%llu components of width %llu", iCompCount, iBitWidth);
 
   GLint glInternalformat;
   GLenum glFormat;
@@ -240,16 +253,31 @@ bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
         case 4 : glInternalformat = GL_RGBA16; break;
         default : FreeData(); return false;
       }
-
     } else {
+      if(iBitWidth == 32) {
+        glType = GL_FLOAT;
+        glInternalformat = GL_LUMINANCE;
+      } else {
+        T_ERROR("Cannot handle data of width %d", iBitWidth);
         FreeData();
         return false;
+      }
     }
   }
 
   glGetError();
-  if (!m_bIsPaddedToPowerOfTwo || (MathTools::IsPow2(UINT32(vSize[0])) && MathTools::IsPow2(UINT32(vSize[1])) && MathTools::IsPow2(UINT32(vSize[2])))) {
-    pTexture = new GLTexture3D(UINT32(vSize[0]), UINT32(vSize[1]), UINT32(vSize[2]), glInternalformat, glFormat, glType, UINT32(iBitWidth/8*iCompCount), pData, GL_LINEAR, GL_LINEAR, m_bDisableBorder ? GL_CLAMP_TO_EDGE : GL_CLAMP, m_bDisableBorder ? GL_CLAMP_TO_EDGE : GL_CLAMP, m_bDisableBorder ? GL_CLAMP_TO_EDGE : GL_CLAMP);
+  if (!m_bIsPaddedToPowerOfTwo ||
+      (MathTools::IsPow2(UINT32(vSize[0])) &&
+       MathTools::IsPow2(UINT32(vSize[1])) &&
+       MathTools::IsPow2(UINT32(vSize[2])))) {
+    pTexture = new GLTexture3D(UINT32(vSize[0]), UINT32(vSize[1]),
+                               UINT32(vSize[2]),
+                               glInternalformat, glFormat, glType,
+                               UINT32(iBitWidth/8*iCompCount), pData,
+                               GL_LINEAR, GL_LINEAR,
+                               m_bDisableBorder ? GL_CLAMP_TO_EDGE : GL_CLAMP,
+                               m_bDisableBorder ? GL_CLAMP_TO_EDGE : GL_CLAMP,
+                               m_bDisableBorder ? GL_CLAMP_TO_EDGE : GL_CLAMP);
   } else {
     // pad the data to a power of two
     UINTVECTOR3 vPaddedSize(MathTools::NextPow2(UINT32(vSize[0])), MathTools::NextPow2(UINT32(vSize[1])), MathTools::NextPow2(UINT32(vSize[2])));

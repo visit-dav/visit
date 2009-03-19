@@ -70,7 +70,7 @@ typedef unsigned char BYTE;
 #define UINT32_INVALID (std::numeric_limits<UINT32>::max())
 #define UINT64_INVALID (std::numeric_limits<UINT64>::max())
 
-#define TUVOK_VERSION 0.054
+#define TUVOK_VERSION 0.06
 #define TUVOK_VERSION_TYPE "beta"
 
 // undef all OS types first

@@ -53,6 +53,10 @@ public:
                              const UINT64VECTOR3&) const {
     return GetDomainSize(); // one brick for the whole domain
   }
+  UINT64VECTOR3 GetBrickSize() const {
+    UINT64VECTOR3 unused(0,0,0);
+    return GetBrickSize(0, unused);
+  }
   FLOATVECTOR3 GetEffectiveBrickSize(const UINT64,
                                      const UINT64VECTOR3&) const {
     const UINT64VECTOR3 domain = GetDomainSize();
@@ -75,6 +79,19 @@ public:
   void SetDomainSize(UINT64 x, UINT64 y, UINT64 z) {
     m_vDomainSize = UINT64VECTOR3(x,y,z);
   }
+
+  std::vector<UINT64> GetBrickCountND(const std::vector<UINT64>& vLOD) const;
+  std::vector<UINT64> GetBrickSizeND(const std::vector<UINT64>& vLOD,
+                                     const std::vector<UINT64>& vBrick) const;
+  std::vector<UINT64> GetDomainSizeND() const;
+  std::vector<UINT64> GetMaxBrickSizeND() const;
+  std::vector<UINT64> GetBrickOverlapSizeND() const;
+  std::vector<UINT64> GetLODLevelCountND() const;
+  std::vector<double> GetScaleND() const;
+
+  virtual UINT64 GetBitWidth() const { return 32; }
+  virtual bool GetIsSigned() const { return true; }
+  virtual bool GetIsFloat() const { return true; }
 
 private:
   UINT64VECTOR3 m_vDomainSize;

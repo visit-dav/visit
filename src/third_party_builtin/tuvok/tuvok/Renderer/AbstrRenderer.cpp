@@ -273,8 +273,7 @@ void AbstrRenderer::SetIsoValue(float fIsovalue) {
 bool AbstrRenderer::CheckForRedraw() {
   if (m_vCurrentBrickList.size() > m_iBricksRenderedInThisSubFrame || m_iCurrentLODOffset > m_iMinLODForCurrentView) {
     if (m_iCheckCounter == 0)  {
-      AbstrDebugOut *dbg = m_pMasterController->DebugOut();
-      dbg->Message(_func_,"Still drawing...");
+      MESSAGE("Still drawing...");
       return true;
     } else m_iCheckCounter--;
   }

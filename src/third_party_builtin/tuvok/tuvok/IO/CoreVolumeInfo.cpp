@@ -34,12 +34,16 @@
 
 #include "CoreVolumeInfo.h"
 
+template <typename T>
+static std::vector<T> vector3_to_vector(const VECTOR3<T> &);
+
 CoreVolumeInfo::CoreVolumeInfo()
 {
   m_aOverlap = UINT64VECTOR3(0,0,0);
   m_vfRescale.push_back(1); // data should not be scaled
   m_vfRescale.push_back(1);
   m_vfRescale.push_back(1);
+  m_aScale = DOUBLEVECTOR3(1,1,1);
 }
 
 bool CoreVolumeInfo::ContainsData(const UINT64,
@@ -62,4 +66,61 @@ bool CoreVolumeInfo::ContainsData(const UINT64,
                                   double, double) const
 {
   return true;
+}
+
+std::vector<UINT64>
+CoreVolumeInfo::GetBrickCountND(const std::vector<UINT64>&) const
+{
+    std::vector<UINT64> ret;
+    ret.push_back(1);
+    return ret;
+}
+std::vector<UINT64>
+CoreVolumeInfo::GetBrickSizeND(const std::vector<UINT64>&,
+                               const std::vector<UINT64>&) const
+{
+  return vector3_to_vector(GetBrickSize());
+}
+
+std::vector<UINT64>
+CoreVolumeInfo::GetDomainSizeND() const
+{
+  return vector3_to_vector(GetDomainSize());
+}
+
+std::vector<UINT64>
+CoreVolumeInfo::GetMaxBrickSizeND() const
+{
+  return vector3_to_vector(GetBrickSize());
+}
+
+std::vector<UINT64>
+CoreVolumeInfo::GetBrickOverlapSizeND() const
+{
+  return vector3_to_vector(UINT64VECTOR3(1,1,1));
+}
+
+std::vector<UINT64>
+CoreVolumeInfo::GetLODLevelCountND() const
+{
+  std::vector<UINT64> ret;
+  ret.push_back(0);
+  return ret;
+}
+
+std::vector<double>
+CoreVolumeInfo::GetScaleND() const
+{
+  return vector3_to_vector(VECTOR3<double>(1.,1.,1.));
+}
+
+template <typename T>
+static std::vector<T>
+vector3_to_vector(const VECTOR3<T> &src)
+{
+  std::vector<T> target;
+  target.push_back(src[0]);
+  target.push_back(src[1]);
+  target.push_back(src[2]);
+  return target;
 }

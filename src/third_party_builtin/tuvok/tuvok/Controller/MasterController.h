@@ -83,7 +83,8 @@ public:
   AbstrRenderer* RequestNewVolumerenderer(EVolumeRendererType eRendererType,
                                           bool bUseOnlyPowerOfTwo,
                                           bool bDownSampleTo8Bits,
-                                          bool bDisableBorder);
+                                          bool bDisableBorder,
+                                          bool simple);
   /// Indicate that a renderer is no longer needed.
   void ReleaseVolumerenderer(AbstrRenderer* pVolumeRenderer);
 

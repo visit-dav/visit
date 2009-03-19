@@ -67,11 +67,25 @@ public:
   virtual bool GetBrick(unsigned char** ppData,
                         const std::vector<UINT64>& vLOD,
                         const std::vector<UINT64>& vBrick) const;
+  virtual float GetMaxGradMagnitude() const;
 
   void SetHistogram(const std::vector<UINT32>&);
   void SetHistogram(const std::vector<std::vector<UINT32> >&);
 
   void SetInfo(VolumeDatasetInfo *vds_i) { m_pVolumeDatasetInfo = vds_i; }
+
+//  void SetData(unsigned short*, size_t len);
+  void SetData(float*, size_t len);
+  void SetGradientMagnitude(float *gmn, size_t len);
+
+protected:
+  /// Should the data change and the client isn't going to supply a histogram,
+  /// we should supply one ourself.
+  void Recalculate1DHistogram();
+
+private:
+  std::vector<unsigned char> m_vScalar;
+  std::vector<float> m_vGradientMagnitude;
 };
 
 #endif // TUVOK_CORE_VOLUME_H

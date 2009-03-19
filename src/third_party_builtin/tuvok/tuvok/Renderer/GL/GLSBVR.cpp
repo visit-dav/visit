@@ -42,6 +42,7 @@
 #include <Basics/SysTools.h>
 #include <Controller/Controller.h>
 #include "../GPUMemMan/GPUMemMan.h"
+#include "GLDebug.h"
 
 using namespace std;
 
@@ -200,13 +201,13 @@ void GLSBVR::Render3DPreLoop() {
   switch (m_eRenderMode) {
     case RM_1DTRANS    :  m_p1DTransTex->Bind(1);
                           m_pProgram1DTrans[m_bUseLighting ? 1 : 0]->Enable();
-                          glEnable(GL_BLEND);
-                          glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+                          GL(glEnable(GL_BLEND));
+                          GL(glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE));
                           break;
     case RM_2DTRANS    :  m_p2DTransTex->Bind(1);
                           m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->Enable();
-                          glEnable(GL_BLEND);
-                          glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+                          GL(glEnable(GL_BLEND));
+                          GL(glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE));
                           break;
     case RM_ISOSURFACE :  if (m_bAvoidSeperateCompositing) {
                             m_pProgramIsoNoCompose->Enable();
@@ -224,6 +225,7 @@ void GLSBVR::Render3DPreLoop() {
 }
 
 void GLSBVR::RenderProxyGeometry() {
+  MESSAGE("Rendering %zu triangles.", m_SBVRGeogen.m_vSliceTriangles.size());
   glBegin(GL_TRIANGLES);
     for (int i = int(m_SBVRGeogen.m_vSliceTriangles.size())-1;i>=0;i--) {
       glTexCoord3f(m_SBVRGeogen.m_vSliceTriangles[i].m_vTex.x,
@@ -232,8 +234,17 @@ void GLSBVR::RenderProxyGeometry() {
       glVertex3f(m_SBVRGeogen.m_vSliceTriangles[i].m_vPos.x,
                  m_SBVRGeogen.m_vSliceTriangles[i].m_vPos.y,
                  m_SBVRGeogen.m_vSliceTriangles[i].m_vPos.z);
+#if 0
+      MESSAGE("tri(tex): %3.3f,%3.3f,%3.3f (%3.3f,%3.3f,%3.3f)",
+              m_SBVRGeogen.m_vSliceTriangles[i].m_vPos.x,
+              m_SBVRGeogen.m_vSliceTriangles[i].m_vPos.y,
+              m_SBVRGeogen.m_vSliceTriangles[i].m_vPos.z,
+              m_SBVRGeogen.m_vSliceTriangles[i].m_vTex.x,
+              m_SBVRGeogen.m_vSliceTriangles[i].m_vTex.y,
+              m_SBVRGeogen.m_vSliceTriangles[i].m_vTex.z);
+#endif
     }
-  glEnd();
+  GL(glEnd());
 }
 
 void GLSBVR::Render3DInLoop(size_t iCurrentBrick, int iStereoID) {
@@ -273,10 +284,10 @@ void GLSBVR::Render3DInLoop(size_t iCurrentBrick, int iStereoID) {
   } else {
     m_TargetBinder.Bind(m_pFBO3DImageCurrent[iStereoID]);
 
-    glDepthMask(GL_FALSE);
+    GL(glDepthMask(GL_FALSE));
     SetBrickDepShaderVars(b);
     RenderProxyGeometry();
-    glDepthMask(GL_TRUE);
+    GL(glDepthMask(GL_TRUE));
   }
   m_TargetBinder.Unbind();
 }
@@ -288,7 +299,7 @@ void GLSBVR::Render3DPostLoop() {
   // disable the shader
   switch (m_eRenderMode) {
     case RM_1DTRANS    :  m_pProgram1DTrans[m_bUseLighting ? 1 : 0]->Disable();
-                          glDisable(GL_BLEND);
+                          GL(glDisable(GL_BLEND));
                           break;
     case RM_2DTRANS    :  m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->Disable();
                           glDisable(GL_BLEND);
