@@ -46,6 +46,7 @@
 #include <avtVolumeRendererImplementation.h>
 
 class VolumeAttributes;
+class AbstrRenderer;
 
 // ****************************************************************************
 //  Class: avtOpenGLTuvokVolumeRenderer
@@ -58,6 +59,9 @@ class VolumeAttributes;
 //  Creation:   Thu Dec 18 09:58:53 MST 2008
 //
 //  Modifications:
+//
+//    Tom Fogal, Thu Mar  5 14:32:13 MST 2009
+//    Add a Tuvok renderer instance.
 //
 // ****************************************************************************
 
@@ -77,5 +81,7 @@ class avtOpenGLTuvokVolumeRenderer : public avtVolumeRendererImplementation
                                    float omin, float omax, float osize,
                                    float *gx, float *gy, float *gz, float *gmn,
                                    bool reducedDetail);
+  private:
+    AbstrRenderer *renderer;
 };
 #endif // AVT_OPEN_GL_TUVOK_VOLUME_RENDERER_H
