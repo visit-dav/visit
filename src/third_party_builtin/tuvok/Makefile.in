@@ -33,8 +33,6 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Modifications:
-#   Brad Whitlock, Fri Oct 10 15:05:43 PST 2008
-#   I updated slivr.
 #
 ##############################################################################
 
@@ -46,51 +44,51 @@
 @VARIABLES@
 
 TUVOK_SRCS = \
-./Tuvok/3rdParty/GLEW/glew.c \
-./Tuvok/Basics/SystemInfo.cpp \
-./Tuvok/Basics/SysTools.cpp \
-./Tuvok/Basics/MathTools.cpp \
-./Tuvok/Basics/ArcBall.cpp \
-./Tuvok/Basics/Checksums/MD5.cpp \
-./Tuvok/IO/KeyValueFileParser.cpp \
-./Tuvok/IO/TransferFunction1D.cpp \
-./Tuvok/IO/TransferFunction2D.cpp \
-./Tuvok/IO/VolumeDataset.cpp \
-./Tuvok/IO/IOManager.cpp \
-./Tuvok/IO/DirectoryParser.cpp \
-./Tuvok/IO/DICOM/DICOMParser.cpp \
-./Tuvok/IO/Images/ImageParser.cpp \
-./Tuvok/IO/UVF/DataBlock.cpp \
-./Tuvok/IO/UVF/GlobalHeader.cpp \
-./Tuvok/IO/UVF/KeyValuePairDataBlock.cpp \
-./Tuvok/IO/UVF/LargeRAWFile.cpp \
-./Tuvok/IO/UVF/RasterDataBlock.cpp \
-./Tuvok/IO/UVF/UVF.cpp \
-./Tuvok/IO/UVF/UVFTables.cpp \
-./Tuvok/IO/UVF/Histogram1DDataBlock.cpp \
-./Tuvok/IO/UVF/Histogram2DDataBlock.cpp \
-./Tuvok/IO/UVF/MaxMinDataBlock.cpp \
-./Tuvok/Controller/MasterController.cpp \
-./Tuvok/DebugOut/TextfileOut.cpp \
-./Tuvok/DebugOut/ConsoleOut.cpp \
-./Tuvok/DebugOut/MultiplexOut.cpp \
-./Tuvok/Renderer/CullingLOD.cpp \
-./Tuvok/Renderer/GLFrameCapture.cpp \
-./Tuvok/Renderer/GLSLProgram.cpp \
-./Tuvok/Renderer/GLTexture.cpp \
-./Tuvok/Renderer/GLTexture1D.cpp \
-./Tuvok/Renderer/GLTexture2D.cpp \
-./Tuvok/Renderer/GLTexture3D.cpp \
-./Tuvok/Renderer/GLRenderer.cpp \
-./Tuvok/Renderer/AbstrRenderer.cpp \
-./Tuvok/Renderer/GLRaycaster.cpp \
-./Tuvok/Renderer/GLSBVR.cpp \
-./Tuvok/Renderer/GPUMemMan/GPUMemMan.cpp \
-./Tuvok/Renderer/GPUMemMan/GPUMemManDataStructs.cpp \
-./Tuvok/Renderer/SBVRGeogen.cpp \
-./Tuvok/Renderer/GLFBOTex.cpp
+./tuvok/3rdParty/GLEW/glew.c \
+./tuvok/Basics/SystemInfo.cpp \
+./tuvok/Basics/SysTools.cpp \
+./tuvok/Basics/MathTools.cpp \
+./tuvok/Basics/ArcBall.cpp \
+./tuvok/Basics/Checksums/MD5.cpp \
+./tuvok/IO/KeyValueFileParser.cpp \
+./tuvok/IO/TransferFunction1D.cpp \
+./tuvok/IO/TransferFunction2D.cpp \
+./tuvok/IO/VolumeDataset.cpp \
+./tuvok/IO/IOManager.cpp \
+./tuvok/IO/DirectoryParser.cpp \
+./tuvok/IO/DICOM/DICOMParser.cpp \
+./tuvok/IO/Images/ImageParser.cpp \
+./tuvok/IO/UVF/DataBlock.cpp \
+./tuvok/IO/UVF/GlobalHeader.cpp \
+./tuvok/IO/UVF/KeyValuePairDataBlock.cpp \
+./tuvok/IO/UVF/LargeRAWFile.cpp \
+./tuvok/IO/UVF/RasterDataBlock.cpp \
+./tuvok/IO/UVF/UVF.cpp \
+./tuvok/IO/UVF/UVFTables.cpp \
+./tuvok/IO/UVF/Histogram1DDataBlock.cpp \
+./tuvok/IO/UVF/Histogram2DDataBlock.cpp \
+./tuvok/IO/UVF/MaxMinDataBlock.cpp \
+./tuvok/Controller/MasterController.cpp \
+./tuvok/DebugOut/TextfileOut.cpp \
+./tuvok/DebugOut/ConsoleOut.cpp \
+./tuvok/DebugOut/MultiplexOut.cpp \
+./tuvok/Renderer/CullingLOD.cpp \
+./tuvok/Renderer/GLFrameCapture.cpp \
+./tuvok/Renderer/GLSLProgram.cpp \
+./tuvok/Renderer/GLTexture.cpp \
+./tuvok/Renderer/GLTexture1D.cpp \
+./tuvok/Renderer/GLTexture2D.cpp \
+./tuvok/Renderer/GLTexture3D.cpp \
+./tuvok/Renderer/GLRenderer.cpp \
+./tuvok/Renderer/AbstrRenderer.cpp \
+./tuvok/Renderer/GLRaycaster.cpp \
+./tuvok/Renderer/GLSBVR.cpp \
+./tuvok/Renderer/GPUMemMan/GPUMemMan.cpp \
+./tuvok/Renderer/GPUMemMan/GPUMemManDataStructs.cpp \
+./tuvok/Renderer/SBVRGeogen.cpp \
+./tuvok/Renderer/GLFBOTex.cpp
 
-CXXFLAGS += $(QT_CXXFLAGS) -I./Tuvok
+CXXFLAGS += $(QT_CXXFLAGS) -I./tuvok
 TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
 ##.cpp.o:
 ##	g++ $(TUVOK_SRCS) -c $< $(CXXFLAGS)
@@ -98,7 +96,7 @@ TUVOK_OBJS = $(TUVOK_SRCS:.cpp=.o)
 ##
 ## Standard targets...
 ##
-all: message Tuvok
+all: message tuvok
 
 clean:
 ##	$(RM) -rf slivr
@@ -108,9 +106,9 @@ clean:
 ##	$(RM) $(TOPDIR)/lib/libslivrV.@SHLIB_SOEXT@
 ##	$(RM) -rf *.o
 
-Tuvok: $(TUVOK_OBJS)
-	g++ -shared -fPIC -o $(TOPDIR)/lib/libTuvok.so $(TUVOK_OBJS)
-	ln -sf $(TOPDIR)/third_party_builtin/Tuvok/Tuvok $(TOPDIR)/include/Tuvok
+tuvok: $(TUVOK_OBJS)
+	g++ -shared -fPIC -o $(TOPDIR)/lib/libtuvok.so $(TUVOK_OBJS)
+	ln -sf $(TOPDIR)/third_party_builtin/tuvok/tuvok $(TOPDIR)/include/tuvok
 
 ##
 ## Other targets
@@ -118,7 +116,7 @@ Tuvok: $(TUVOK_OBJS)
 message:
 	@echo
 	@echo "****************************************************************************"
-	@echo "*** Building Tuvok (libTuvok)"
+	@echo "*** Building tuvok (libtuvok)"
 	@echo "****************************************************************************"
 
 @TARGETS@

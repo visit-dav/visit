@@ -919,12 +919,16 @@ dnl    Enabled dbio-only build. Add logic to set SVN_REVISION to 'unknown'
 dnl    if being built from a dist hierarchy. Removed clearmake. Sent stderr
 dnl    output of qmake command to /dev/null.
 dnl
+dnl    Tom Fogal, Thu Mar  5 11:31:16 MST 2009
+dnl    Lowercased `Tuvok'.
+dnl
 dnl    Mark C. Miller, Thu Mar 12 00:16:49 PDT 2009
 dnl    Removed Qt and xml tool dependencies for dbio-only builds. Changed
 dnl    makefile generation for database plugins for dbio-only builds to use
 dnl    bin/db_xml2makefile shell script. Adjusted sed commands for generating
 dnl    ITAPS implementations .xml files to include spaces for db_xml2makefile
 dnl    to work properly.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -4090,7 +4094,7 @@ THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/slivr/teem/Makefile
                            third_party_builtin/bow/Makefile
                            third_party_builtin/cognomen/Makefile
-                           third_party_builtin/Tuvok/Makefile
+                           third_party_builtin/tuvok/Makefile
                            third_party_builtin/verdict/Makefile"
 
 if test "$enable_scripting" = "yes"; then

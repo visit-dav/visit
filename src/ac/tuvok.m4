@@ -31,6 +31,11 @@ dnl States Government  or the University of  California, and shall not be used
 dnl for advertising or product endorsement purposes.
 dnl
 dnl Macros related to the Tuvok volume rendering library.
+dnl
+dnl Modifications:
+dnl
+dnl   Tom Fogal, Thu Mar  5 11:26:51 MST 2009
+dnl   s/Tuvok/tuvok/, where appropriate.
 
 dnl provide an --enable-tuvok option and an environment variable to enable
 dnl Tuvok.  If Tuvok is enabled:
@@ -58,9 +63,9 @@ AC_DEFUN([AX_TUVOK], [
     TUVOK_INCLUDE=
     AS_IF([test "x${enable_tuvok}" != "xno"],
           [
-            AC_SUBST([BUILD_TUVOK], ["Tuvok"])
-            AC_SUBST([TUVOK_LIB], ["-lTuvok"])
-            AC_SUBST([TUVOK_INCLUDE], ["-I$""(TOPDIR)/include/Tuvok"])
+            AC_SUBST([BUILD_TUVOK], ["tuvok"])
+            AC_SUBST([TUVOK_LIB], ["-ltuvok"])
+            AC_SUBST([TUVOK_INCLUDE], ["-I$""(TOPDIR)/include/tuvok"])
             AC_DEFINE([USE_TUVOK], [1], [Define to enable Tuvok-based code])
             report_tuvok="yes"
           ],

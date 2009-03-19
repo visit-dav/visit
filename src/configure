@@ -6909,11 +6909,11 @@ fi;
     TUVOK_INCLUDE=
     if test "x${enable_tuvok}" != "xno"; then
 
-            BUILD_TUVOK="Tuvok"
+            BUILD_TUVOK="tuvok"
 
-            TUVOK_LIB="-lTuvok"
+            TUVOK_LIB="-ltuvok"
 
-            TUVOK_INCLUDE="-I$""(TOPDIR)/include/Tuvok"
+            TUVOK_INCLUDE="-I$""(TOPDIR)/include/tuvok"
 
 
 cat >>confdefs.h <<\_ACEOF
@@ -19940,7 +19940,7 @@ THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/slivr/teem/Makefile
                            third_party_builtin/bow/Makefile
                            third_party_builtin/cognomen/Makefile
-                           third_party_builtin/Tuvok/Makefile
+                           third_party_builtin/tuvok/Makefile
                            third_party_builtin/verdict/Makefile"
 
 if test "$enable_scripting" = "yes"; then
