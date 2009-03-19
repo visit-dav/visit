@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -40,34 +40,28 @@
 #ifndef MATHTOOLS_H
 #define MATHTOOLS_H
 
+#include "../StdTuvokDefines.h"
 #include <cmath>
 
 #define ROOT3 1.732050f
 
-#ifdef _WIN32
-  typedef unsigned __int64 UINT64;
-#else
-  typedef unsigned long long UINT64;
-#endif
-
 namespace MathTools {
-  unsigned int Log(unsigned int value, unsigned int base);
+  UINT32 Log(UINT32 value, UINT32 base);
   float Log(float value, float base);
-  unsigned int Pow(unsigned int base, unsigned int exponent);
+  UINT32 Pow(UINT32 base, UINT32 exponent);
   UINT64 Pow(UINT64 base, UINT64 exponent);
 
-  unsigned int Log2(unsigned int n);
-  unsigned int Pow2(unsigned int e);
+  UINT32 Log2(UINT32 n);
+  UINT32 Pow2(UINT32 e);
   UINT64 Log2(UINT64 n);
-  UINT64 Pow2(UINT64 e);  
-  unsigned int GaussianSum(unsigned int n);
-  bool IsPow2(unsigned int n);
-  unsigned int NextPow2(unsigned int n, bool bReturn_ID_on_Pow2=true);
+  UINT64 Pow2(UINT64 e);
+  UINT32 GaussianSum(UINT32 n);
+  bool IsPow2(UINT32 n);
+  UINT32 NextPow2(UINT32 n, bool bReturn_ID_on_Pow2=true);
 
   template<class T> inline T sign(T v){return T((v > T(0)) - (v < T(0)));}
 
   template<class T> inline T MakeMultiple(T v, T m){return v + (((v%m) == T(0)) ? T(0) : m-(v%m));}
-
 };
 
 #endif // MATHTOOLS_H

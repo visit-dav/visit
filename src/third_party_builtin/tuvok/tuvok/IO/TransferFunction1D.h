@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-  
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,10 +28,10 @@
 
 /**
   \file    TransferFunction1D.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 1.0
   \date    September 2008
 */
 
@@ -40,14 +40,14 @@
 #ifndef TRANSFERFUNCTION1D
 #define TRANSFERFUNCTION1D
 
-#include "../StdDefines.h"
+#include "../StdTuvokDefines.h"
 #include <string>
 #include <vector>
 #include "../Basics/Vectors.h"
 #include "../Basics/Grids.h"
 
 typedef VECTOR2<UINT64> UINT64VECTOR2;
-typedef Grid1D<unsigned int> Histogram1D;
+typedef Grid1D<UINT32> Histogram1D;
 typedef Grid1D<float> NormalizedHistogram1D;
 
 class TransferFunction2D;
@@ -58,11 +58,11 @@ public:
   TransferFunction1D(size_t iSize = 0);
   TransferFunction1D(const std::string& filename);
   ~TransferFunction1D(void);
-  
+
   void SetStdFunction(float fCenterPoint=0.5f, float fInvGradient=0.5f);
   void SetStdFunction(float fCenterPoint, float fInvGradient, int iComponent);
 
-  const size_t GetSize() const {return vColorData.size();}
+  size_t GetSize() const {return vColorData.size();}
   void Resize(size_t iSize);
   void Resample(size_t iTargetSize);
 
@@ -70,14 +70,16 @@ public:
   bool Load(const std::string& filename, size_t iTargetSize);
   bool Load(std::ifstream& file);
   bool Load(std::ifstream& file, size_t iTargetSize);
-  bool Save(const std::string& filename);
-  bool Save(std::ofstream& file);
+  bool Save(const std::string& filename) const;
+  bool Save(std::ofstream& file) const;
 
   void Clear();
 
-  void GetByteArray(unsigned char** pcData, unsigned char cUsedRange = 255);
-  void GetShortArray(unsigned short** psData, unsigned short sUsedRange=4095);
-  void GetFloatArray(float** pfData);
+  void GetByteArray(unsigned char** pcData,
+                    unsigned char cUsedRange = 255) const;
+  void GetShortArray(unsigned short** psData,
+                     unsigned short sUsedRange=4095) const;
+  void GetFloatArray(float** pfData) const;
 
   std::vector< FLOATVECTOR4 > vColorData;
 
@@ -87,7 +89,7 @@ public:
 private:
   UINT64VECTOR2 m_vValueBBox;
 
-  float Smoothstep(float x);
+  float Smoothstep(float x) const;
 
 };
 

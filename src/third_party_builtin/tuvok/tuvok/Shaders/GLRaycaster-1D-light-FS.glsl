@@ -50,6 +50,8 @@ uniform vec3 vLightDiffuse;
 uniform vec3 vLightSpecular;
 uniform vec3 vLightDir;
 
+uniform vec4 vClipPlane;
+
 varying vec3 vEyePos;
 
 vec4 ColorBlend(vec4 src, vec4 dst) {
@@ -72,6 +74,32 @@ vec3 ComputeNormal(vec3 vHitPosTex) {
   return vNormal;
 }
 
+
+bool ClipByPlane(inout vec3 vRayEntry, inout vec3 vRayExit) {
+  float denom = dot(vClipPlane.xyz , (vRayEntry-vRayExit));
+  float tPlane = (dot(vClipPlane.xyz, vRayEntry) + vClipPlane.w) / denom;
+
+  if (tPlane > 1.0) {
+    if (denom < 0.0) 
+      return true;
+    else
+      return false;
+  } else {
+    if (tPlane < 0.0) {
+      if (denom <= 0.0) 
+        return false;
+      else
+        return true;
+    } else {
+      if (denom > 0.0)
+        vRayEntry = vRayEntry + (vRayExit-vRayEntry)*tPlane;
+      else
+        vRayExit  = vRayEntry + (vRayExit-vRayEntry)*tPlane;
+      return true;
+    }
+  } 
+}
+
 void main(void)
 {
   // compute the coordinates to look up the previous pass
@@ -80,48 +108,54 @@ void main(void)
   // compute the ray parameters
   vec3  vRayEntry    = vEyePos;  
   vec3  vRayExit     = texture2D(texRayExitPos, vFragCoords).xyz;  
-  vec3  vRayEntryTex = (gl_TextureMatrix[0] * vec4(vRayEntry,1.0)).xyz;
-  vec3  vRayExitTex  = (gl_TextureMatrix[0] * vec4(vRayExit,1.0)).xyz;
-  vec3  vRayDir      = vRayExit - vRayEntry;
-  
-  float fRayLength = length(vRayDir);
-  vRayDir /= fRayLength;
 
-  // compute the maximum number of steps before the domain is left
-  int iStepCount = int(fRayLength/fRayStepsize)+1;
-  
-  vec3  fRayInc    = vRayDir*fRayStepsize;
-  vec3  vRayIncTex = (vRayExitTex-vRayEntryTex)/(fRayLength/fRayStepsize);
+  if (ClipByPlane(vRayEntry, vRayExit)) {
 
-  // do the actual raycasting
-  vec4  vColor = vec4(0.0,0.0,0.0,0.0);
-  vec3  vCurrentPosTex = vRayEntryTex;
-  vec3  vCurrentPos    = vRayEntry;
-  for (int i = 0;i<iStepCount;i++) {
-    float fVolumVal = texture3D(texVolume, vCurrentPosTex).x;	
-
-    /// apply 1D transfer function
-	  vec4  vTransVal = texture1D(texTrans1D, fVolumVal*fTransScale);
-  
-    // compute lighting
-    vec3 vNormal     = ComputeNormal(vCurrentPosTex);
-    vec3 vViewDir    = normalize(vec3(0,0,0)-vCurrentPos);
-    vec3 vReflection = normalize(reflect(vViewDir, vNormal));
-    vec3 vLightColor = vLightAmbient+
-                       vLightDiffuse*max(dot(vNormal, -vLightDir),0.0)*vTransVal.xyz+
-                       vLightSpecular*pow(max(dot(vReflection, vLightDir),0.0),8.0);
+    vec3  vRayEntryTex = (gl_TextureMatrix[0] * vec4(vRayEntry,1.0)).xyz;
+    vec3  vRayExitTex  = (gl_TextureMatrix[0] * vec4(vRayExit,1.0)).xyz;
+    vec3  vRayDir      = vRayExit - vRayEntry;
     
+    float fRayLength = length(vRayDir);
+    vRayDir /= fRayLength;
+
+    // compute the maximum number of steps before the domain is left
+    int iStepCount = int(fRayLength/fRayStepsize)+1;
     
-    /// apply opacity correction
-    vTransVal.a = 1.0 - pow(1.0 - vTransVal.a, fStepScale);    
-  	vTransVal = vec4(vLightColor.x, vLightColor.y, vLightColor.z, vTransVal.a);
-    vColor = ColorBlend(vTransVal,vColor);
+    vec3  fRayInc    = vRayDir*fRayStepsize;
+    vec3  vRayIncTex = (vRayExitTex-vRayEntryTex)/(fRayLength/fRayStepsize);
 
-    vCurrentPos    += fRayInc;
-    vCurrentPosTex += vRayIncTex;
+    // do the actual raycasting
+    vec4  vColor = vec4(0.0,0.0,0.0,0.0);
+    vec3  vCurrentPosTex = vRayEntryTex;
+    vec3  vCurrentPos    = vRayEntry;
+    for (int i = 0;i<iStepCount;i++) {
+      float fVolumVal = texture3D(texVolume, vCurrentPosTex).x;	
 
-    if (vColor.a >= 0.99) break;
+      /// apply 1D transfer function
+	    vec4  vTransVal = texture1D(texTrans1D, fVolumVal*fTransScale);
+    
+      // compute lighting
+      vec3 vNormal     = ComputeNormal(vCurrentPosTex);
+      vec3 vViewDir    = normalize(vec3(0,0,0)-vCurrentPos);
+      vec3 vReflection = normalize(reflect(vViewDir, vNormal));
+      vec3 vLightColor = vLightAmbient+
+                         vLightDiffuse*max(dot(vNormal, -vLightDir),0.0)*vTransVal.xyz+
+                         vLightSpecular*pow(max(dot(vReflection, vLightDir),0.0),8.0);
+      
+      
+      /// apply opacity correction
+      vTransVal.a = 1.0 - pow(1.0 - vTransVal.a, fStepScale);    
+  	  vTransVal = vec4(vLightColor.x, vLightColor.y, vLightColor.z, vTransVal.a);
+      vColor = ColorBlend(vTransVal,vColor);
+
+      vCurrentPos    += fRayInc;
+      vCurrentPosTex += vRayIncTex;
+
+      if (vColor.a >= 0.99) break;
+    }
+    
+    gl_FragColor = vColor;
+  } else {
+    discard;
   }
-  
-  gl_FragColor = vColor;
 }

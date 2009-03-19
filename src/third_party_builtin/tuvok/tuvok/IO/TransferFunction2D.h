@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,10 +28,10 @@
 
 /**
   \file    TransferFunction2D.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 1.0
   \date    July 2008
 */
 
@@ -40,7 +40,7 @@
 #ifndef TRANSFERFUNCTION2D
 #define TRANSFERFUNCTION2D
 
-#include "../StdDefines.h"
+#include "../StdTuvokDefines.h"
 #include <fstream>
 #include <string>
 #include <vector>
@@ -52,7 +52,7 @@
 #include "TransferFunction1D.h"
 
 typedef VECTOR4<UINT64> UINT64VECTOR4;
-typedef Grid2D<unsigned int> Histogram2D;
+typedef Grid2D<UINT32> Histogram2D;
 typedef Grid2D<float> NormalizedHistogram2D;
 typedef Grid2D<FLOATVECTOR4> ColorData2D;
 typedef Grid2D< VECTOR4<char> > ColorData2D8Bit;
@@ -64,7 +64,7 @@ class TFPolygon {
     TFPolygon() {}
 
     void Load(std::ifstream& file);
-    void Save(std::ofstream& file);
+    void Save(std::ofstream& file) const;
 
     std::vector< FLOATVECTOR2 > pPoints;
     FLOATVECTOR2 pGradientCoords[2];
@@ -79,18 +79,20 @@ public:
   TransferFunction2D(const VECTOR2<size_t>& iSize);
   TransferFunction2D(const std::string& filename);
   ~TransferFunction2D(void);
-  
+
   void Resize(const Histogram2D& hist) {Resize(hist.GetSize());}
   void Resize(const NormalizedHistogram2D& hist) {Resize(hist.GetSize());}
   void Resize(const VECTOR2<size_t>& iSize);
 
   bool Load(const std::string& filename);
-  bool Save(const std::string& filename);
+  bool Load(const std::string& filename, const VECTOR2<size_t>& vTargetSize);
+  bool Save(const std::string& filename) const;
 
   void InvalidateCache() {m_bUseCachedData = false;}
   void GetByteArray(unsigned char** pcData);
   void GetByteArray(unsigned char** pcData, unsigned char cUsedRange);
-  void GetShortArray(unsigned short** psData, unsigned short sUsedRange=4095);
+  void GetShortArray(unsigned short** psData,
+                     unsigned short sUsedRange=4095);
   void GetFloatArray(float** pfData);
 
   std::vector< TFPolygon > m_Swatches;
@@ -110,12 +112,12 @@ protected:
   VECTOR2<size_t> m_iSize;
   ColorData2D* RenderTransferFunction();
   unsigned char* RenderTransferFunction8Bit();
-  INTVECTOR2 Rel2Abs(FLOATVECTOR2 vfCoord);
+  INTVECTOR2 Rel2Abs(FLOATVECTOR2 vfCoord) const;
 
 private:
   ColorData2D*      m_pColorData;
   QImage*           m_pCanvas;
-  QPainter*         m_pPainter;  
+  QPainter*         m_pPainter;
   UINT64VECTOR4     m_vValueBBox;
   bool              m_bUseCachedData;
 

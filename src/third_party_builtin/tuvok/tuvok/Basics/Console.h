@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -41,6 +41,7 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include "../StdTuvokDefines.h"
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -50,7 +51,8 @@
   #include <iostream>
 #endif
 
-#if defined(__GNUC__) && __GNUC__ >= 3
+#if defined(__GNUC__) && __GNUC__ > 3 || \
+    (__GNUC__ == 3 && __GNUC_MINOR_ >= 4)
 #   define FQN_UNUSED __attribute__ ((unused))
 #   define FQN_PRINTF __attribute__ ((format (printf, 1, 2)))
 #else
@@ -61,12 +63,20 @@
 namespace Console {
   #ifdef WIN32
     #include <windows.h>
+    // undef stupid windows defines to max and min
+    #ifdef max
+    #undef max
+    #endif
+
+    #ifdef min
+    #undef min
+    #endif
 
     static void printf(const WCHAR* format, ...)
     {
       // output string
       WCHAR buff[16384];
-         
+
       // arguments
       va_list args;
       va_start(args, format);
@@ -83,7 +93,7 @@ namespace Console {
       #ifdef _DEBUG
           // output string
           WCHAR buff[16384];
-             
+
           // arguments
           va_list args;
           va_start(args, format);
@@ -103,7 +113,7 @@ namespace Console {
     {
       // output string
       CHAR buff[16384];
-         
+
       // arguments
       va_list args;
       va_start(args, format);
@@ -120,7 +130,7 @@ namespace Console {
       #ifdef _DEBUG
           // output string
           CHAR buff[16384];
-             
+
           // arguments
           va_list args;
           va_start(args, format);
@@ -148,7 +158,7 @@ namespace Console {
     {
       // output string
       wchar_t buff[16384];
-         
+
       // arguments
       va_list args;
       va_start(args, format);
@@ -162,13 +172,13 @@ namespace Console {
       {
           // output string
           wchar_t buff[16384];
-             
+
           // arguments
           va_list args;
           va_start(args, format);
 
           vswprintf( buff, sizeof(buff), format, args);
-          cout << buff;
+          std::cout << buff;
       }
     #else
       static void printfd(const wchar_t*, ...) {}
@@ -178,7 +188,7 @@ namespace Console {
     {
       // output string
       char buff[16384];
-         
+
       // arguments
       va_list args;
       va_start(args, format);
@@ -192,7 +202,7 @@ namespace Console {
       {
           // output string
           char buff[16384];
-             
+
           // arguments
           va_list args;
           va_start(args, format);

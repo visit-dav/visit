@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -40,19 +40,21 @@
 #ifndef MASTERCONTROLLER_H
 #define MASTERCONTROLLER_H
 
+#include "../StdTuvokDefines.h"
 #include <vector>
 #include <string>
-#include "../IO/IOManager.h"
-#include "../IO/TransferFunction1D.h"
-#include "../IO/TransferFunction2D.h"
 
-#include "../DebugOut/AbstrDebugOut.h"
+#include "../DebugOut/MultiplexOut.h"
 #include "../DebugOut/ConsoleOut.h"
 
-#include "../Renderer/GPUMemMan/GPUMemMan.h"
 #include "../Renderer/AbstrRenderer.h"
-#include "../Renderer/GLSBVR.h"
-#include "../Renderer/GLRaycaster.h"
+#include "../Renderer/GPUMemMan/GPUMemManDataStructs.h"
+
+#include "../Scripting/Scriptable.h"
+class IOManager;
+class GPUMemMan;
+class Scripting;
+class SystemInfo;
 
 /** \class MasterController
  * Centralized controller for ImageVis3D.
@@ -64,7 +66,7 @@
  * Instead, it informs the abstract interface through this controller,
  * and the renderer implementation decides on its own how it wants to
  * handle the resize event. */
-class MasterController {
+class MasterController : public Scriptable {
 public:
   enum EVolumeRendererType {
     OPENGL_SBVR = 0,
@@ -78,44 +80,70 @@ public:
   virtual ~MasterController();
 
   /// Create a new renderer.
-  AbstrRenderer* RequestNewVolumerenderer(EVolumeRendererType eRendererType, bool bUseOnlyPowerOfTwo);
+  AbstrRenderer* RequestNewVolumerenderer(EVolumeRendererType eRendererType,
+                                          bool bUseOnlyPowerOfTwo,
+                                          bool bDownSampleTo8Bits,
+                                          bool bDisableBorder);
   /// Indicate that a renderer is no longer needed.
   void ReleaseVolumerenderer(AbstrRenderer* pVolumeRenderer);
-    
-  /// Connects a new debug output stream.
-  /// If necessary, the old stream is deallocated.
+
+  /// Add another debug output
   /// \param debugOut      the new stream
-  /// \param bDeleteOnExit ownership information
-  void SetDebugOut(AbstrDebugOut* debugOut, bool bDeleteOnExit = false);
+  void AddDebugOut(AbstrDebugOut* debugOut);
+
   /// Removes the given debug output stream.
   /// The stream must be the currently connected/used one.
   void RemoveDebugOut(AbstrDebugOut* debugOut);
 
   /// Access the currently-active debug stream.
-  AbstrDebugOut* DebugOut() {return m_pDebugOut;}
-  /// Whether this controller owns the debug stream.
-  bool           DoDeleteDebugOut() {return m_bDeleteDebugOutOnExit;}
+  ///@{
+  AbstrDebugOut* DebugOut();
+  const AbstrDebugOut *DebugOut() const;
+  ///@}
+
   /// The GPU memory manager moves data from CPU to GPU memory, and
   /// removes data from GPU memory.
-  GPUMemMan*     MemMan()   {return m_pGPUMemMan;}
+  ///@{
+  GPUMemMan*       MemMan()       { return m_pGPUMemMan; }
+  const GPUMemMan* MemMan() const { return m_pGPUMemMan; }
+  ///@}
+
   /// The IO manager is responsible for loading data into host memory.
-  IOManager*     IOMan()    {return m_pIOManager;}
+  ///@{
+  IOManager*       IOMan()       { return m_pIOManager;}
+  const IOManager* IOMan() const { return m_pIOManager;}
+  ///@}
+
   /// System information is for looking up host parameters, such as the
   /// amount of memory available.
-  SystemInfo*    SysInfo()  {return m_pSystemInfo;}
+  ///@{
+  SystemInfo*       SysInfo()       { return m_pSystemInfo; }
+  const SystemInfo* SysInfo() const { return m_pSystemInfo; }
+  ///@}
+
+  Scripting*       ScriptEngine()       { return m_pScriptEngine; }
+  const Scripting* ScriptEngine() const { return m_pScriptEngine; }
 
   /// \todo this should return a pointer to memory.
-  void Filter( std::string datasetName,
-	       unsigned int filter,
-	       void *var0 = 0, void *var1 = 0,
-	       void *var2 = 0, void *var3 = 0 );
+  void Filter(std::string datasetName,
+              UINT32 filter,
+              void *var0 = 0, void *var1 = 0,
+              void *var2 = 0, void *var3 = 0 );
+
+  // Scriptable implementation
+  virtual void RegisterCalls(Scripting* pScriptEngine);
+  virtual bool Execute(const std::string& strCommand,
+                       const std::vector< std::string >& strParams,
+                       std::string& strMessage);
 
 private:
   SystemInfo*    m_pSystemInfo;
   GPUMemMan*     m_pGPUMemMan;
   IOManager*     m_pIOManager;
-  AbstrDebugOut* m_pDebugOut;
-  bool           m_bDeleteDebugOutOnExit;  
+  MultiplexOut   m_DebugOut;
+  ConsoleOut     m_DefaultOut;
+  Scripting*     m_pScriptEngine;
+  bool           m_bDeleteDebugOutOnExit;
 
   AbstrRendererList m_vVolumeRenderer;
 };

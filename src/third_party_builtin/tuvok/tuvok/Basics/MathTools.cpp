@@ -37,29 +37,29 @@
 
 #include "MathTools.h"
 
-unsigned int MathTools::Log(unsigned int value, unsigned int base) {
-  return (unsigned int)(log(float(value)) / log(float(base)));
+UINT32 MathTools::Log(UINT32 value, UINT32 base) {
+  return UINT32(log(float(value)) / log(float(base)));
 }
 
 float MathTools::Log(float value, float base) {
   return log(value) / log(base);
 }
 
-unsigned int MathTools::Pow(unsigned int base, unsigned int exponent) {
-  return (unsigned int)(0.5f+pow(float(base), float(exponent)));
+UINT32 MathTools::Pow(UINT32 base, UINT32 exponent) {
+  return UINT32(0.5f+pow(float(base), float(exponent)));
 }
 
 UINT64 MathTools::Pow(UINT64 base, UINT64 exponent) {
-  return (UINT64)(0.5+pow(double(base), double(exponent)));
+  return UINT64(0.5+pow(double(base), double(exponent)));
 }
 
-unsigned int MathTools::Log2(unsigned int n) {
+UINT32 MathTools::Log2(UINT32 n) {
   int iLog=0;
   while( n>>=1 ) iLog++;
   return iLog;
 }
 
-unsigned int MathTools::Pow2(unsigned int e) {
+UINT32 MathTools::Pow2(UINT32 e) {
   return 1<<e;
 }
 
@@ -78,15 +78,15 @@ UINT64 MathTools::Pow2(UINT64 e) {
 #endif
 }
 
-unsigned int MathTools::GaussianSum(unsigned int n) {
+UINT32 MathTools::GaussianSum(UINT32 n) {
   return n*(n+1)/2;
 }
 
-bool MathTools::IsPow2(unsigned int n) { 
+bool MathTools::IsPow2(UINT32 n) { 
     return ((n&(n-1))==0); 
 };
 
-unsigned int MathTools::NextPow2(unsigned int n, bool bReturn_ID_on_Pow2) {
+UINT32 MathTools::NextPow2(UINT32 n, bool bReturn_ID_on_Pow2) {
     if (bReturn_ID_on_Pow2 && IsPow2(n)) return n;
     return Pow2(Log2(n)+1);
 }

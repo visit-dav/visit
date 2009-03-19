@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -26,6 +26,7 @@
    DEALINGS IN THE SOFTWARE.
 */
 
+
 /**
   \file    ArcBall.cpp
   \author  Jens Krueger
@@ -37,6 +38,10 @@
 
 #pragma once
 
+#ifndef ARCBALL_H
+#define ARCBALL_H
+
+#include "../StdTuvokDefines.h"
 #include <vector>
 #include "../Basics/Vectors.h"
 
@@ -44,12 +49,12 @@
 class ArcBall
 {
 public:
-	ArcBall(unsigned int iWinWidth=0, unsigned int iWinHeight=0, int iWinOffsetX=0, int iWinOffsetY=0);
+  ArcBall(UINT32 iWinWidth=0, UINT32 iWinHeight=0, int iWinOffsetX=0, int iWinOffsetY=0);
 
   void SetRadius(float fRadius) {m_fRadius = fRadius;}
   void SetTranslation(const FLOATMATRIX4& mTranslation) {m_mTranslation = mTranslation;}
   const FLOATMATRIX4& GetTranslation() const {return m_mTranslation;}
-  void SetWindowSize(unsigned int iWinWidth, unsigned int iWinHeight);
+  void SetWindowSize(UINT32 iWinWidth, UINT32 iWinHeight);
   void SetWindowOffset(int iWinOffsetX, int iWinOffsetY);
   void Click(UINTVECTOR2 vPosition);
   FLOATQUATERNION4 Drag(UINTVECTOR2 vPosition);
@@ -66,3 +71,5 @@ protected:
 
   FLOATVECTOR3 MapToSphere(UINTVECTOR2 vPosition) const;
 };
+
+#endif // ARCBALL_H

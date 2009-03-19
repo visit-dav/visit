@@ -28,10 +28,10 @@
 
 /**
   \file    TransferFunction1D.cpp
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 1.0
   \date    September 2008
 */
 
@@ -59,7 +59,7 @@ void TransferFunction1D::Resize(size_t iSize) {
   vColorData.resize(iSize);
 }
 
-float TransferFunction1D::Smoothstep(float x) {
+float TransferFunction1D::Smoothstep(float x) const {
   return 3*x*x-2*x*x*x;
 }
 
@@ -87,11 +87,15 @@ void TransferFunction1D::SetStdFunction(float fCenterPoint, float fInvGradient, 
 
   for (size_t i = iRampEndPoint;i<vColorData.size();i++)
     vColorData[i][iComponent] = 1;
+
+  ComputeNonZeroLimits();
 }
 
 void TransferFunction1D::Clear() {
   for (size_t i = 0;i<vColorData.size();i++)
     vColorData[i] = FLOATVECTOR4(0,0,0,0);
+
+  m_vValueBBox = UINT64VECTOR2(0,0);
 }
 
 void TransferFunction1D::Resample(size_t iTargetSize) {
@@ -133,6 +137,7 @@ void TransferFunction1D::Resample(size_t iTargetSize) {
   }
 
   vColorData = vTmpColorData;
+  ComputeNonZeroLimits();
 }
 
 bool TransferFunction1D::Load(const std::string& filename, size_t iTargetSize) {
@@ -149,6 +154,7 @@ bool TransferFunction1D::Load(const std::string& filename) {
   ifstream file(filename.c_str());
   if (!Load(file)) return false;
   file.close();
+  ComputeNonZeroLimits();
   return true;
 }
 
@@ -161,7 +167,7 @@ bool TransferFunction1D::Load(ifstream& file, size_t iTargetSize) {
   }
 }
 
-bool TransferFunction1D::Save(const std::string& filename) {
+bool TransferFunction1D::Save(const std::string& filename) const {
   ofstream file(filename.c_str());
   if (!Save(file)) return false;
   file.close();
@@ -169,26 +175,27 @@ bool TransferFunction1D::Save(const std::string& filename) {
 }
 
 bool TransferFunction1D::Load(ifstream& file) {
-  unsigned int iSize;
+  UINT32 iSize;
   file >> iSize;
   vColorData.resize(iSize);
 
-  for(unsigned int i=0;i<vColorData.size();++i){
-    for(unsigned int j=0;j<4;++j){
+  for(size_t i=0;i<vColorData.size();++i){
+    for(size_t j=0;j<4;++j){
       file >> vColorData[i][j];
     }
   }
+
   return true;
 }
 
 
-bool TransferFunction1D::Save(ofstream& file) {
+bool TransferFunction1D::Save(ofstream& file) const {
   if (!file.is_open()) return false;
 
   file << vColorData.size() << endl;
 
-  for(unsigned int i=0;i<vColorData.size();++i){
-    for(unsigned int j=0;j<4;++j){
+  for(size_t i=0;i<vColorData.size();++i){
+    for(size_t j=0;j<4;++j){
       file << vColorData[i][j] << " ";
     }
     file << endl;
@@ -198,11 +205,12 @@ bool TransferFunction1D::Save(ofstream& file) {
 }
 
 
-void TransferFunction1D::GetByteArray(unsigned char** pcData, unsigned char cUsedRange) {
+void TransferFunction1D::GetByteArray(unsigned char** pcData,
+                                      unsigned char cUsedRange) const {
   if (*pcData == NULL) *pcData = new unsigned char[vColorData.size()*4];
 
   unsigned char *pcDataIterator = *pcData;
-  for (unsigned int i = 0;i<vColorData.size();i++) {
+  for (size_t i = 0;i<vColorData.size();i++) {
     *pcDataIterator++ = (unsigned char)(vColorData[i][0]*cUsedRange);
     *pcDataIterator++ = (unsigned char)(vColorData[i][1]*cUsedRange);
     *pcDataIterator++ = (unsigned char)(vColorData[i][2]*cUsedRange);
@@ -210,11 +218,12 @@ void TransferFunction1D::GetByteArray(unsigned char** pcData, unsigned char cUse
   }
 }
 
-void TransferFunction1D::GetShortArray(unsigned short** psData, unsigned short sUsedRange) {
+void TransferFunction1D::GetShortArray(unsigned short** psData,
+                                       unsigned short sUsedRange) const {
   if (*psData == NULL) *psData = new unsigned short[vColorData.size()*4];
 
   unsigned short *psDataIterator = *psData;
-  for (unsigned int i = 0;i<vColorData.size();i++) {
+  for (size_t i = 0;i<vColorData.size();i++) {
     *psDataIterator++ = (unsigned short)(vColorData[i][0]*sUsedRange);
     *psDataIterator++ = (unsigned short)(vColorData[i][1]*sUsedRange);
     *psDataIterator++ = (unsigned short)(vColorData[i][2]*sUsedRange);
@@ -222,7 +231,7 @@ void TransferFunction1D::GetShortArray(unsigned short** psData, unsigned short s
   }
 }
 
-void TransferFunction1D::GetFloatArray(float** pfData) {
+void TransferFunction1D::GetFloatArray(float** pfData) const {
   if (*pfData == NULL) *pfData = new float[4*vColorData.size()];
   memcpy(*pfData, &pfData[0], sizeof(float)*4*vColorData.size());
 }

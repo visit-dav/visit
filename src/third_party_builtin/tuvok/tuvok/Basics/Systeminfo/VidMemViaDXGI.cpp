@@ -9,6 +9,8 @@
 //
 // Copyright (c) Microsoft Corp. All rights reserved.
 //-----------------------------------------------------------------------------
+#if defined(_WIN32) && defined(USE_DIRECTX)
+
 #define INITGUID
 #include <windows.h>
 #include <string.h>
@@ -16,22 +18,7 @@
 #include <assert.h>
 #include <dxgi.h>
 
-
-//-----------------------------------------------------------------------------
-// Defines, and constants
-//-----------------------------------------------------------------------------
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(p)       { if (p) { delete (p);     (p)=NULL; } }
-#endif
-#ifndef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY(p) { if (p) { delete[] (p);   (p)=NULL; } }
-#endif
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=NULL; } }
-#endif
-
-typedef HRESULT ( WINAPI* LPCREATEDXGIFACTORY )( REFIID, void** );
-
+#include "../DynamicDX.h"
 
 HRESULT GetVideoMemoryViaDXGI( HMONITOR hMonitor,
                                SIZE_T* pDedicatedVideoMemory,
@@ -44,14 +31,10 @@ HRESULT GetVideoMemoryViaDXGI( HMONITOR hMonitor,
     *pDedicatedSystemMemory = 0;
     *pSharedSystemMemory = 0;
 
-    HINSTANCE hDXGI = LoadLibrary( L"dxgi.dll" );
-    if( hDXGI )
+    if( DynamicDX::IsInitialized() )
     {
-        LPCREATEDXGIFACTORY pCreateDXGIFactory = NULL;
         IDXGIFactory* pDXGIFactory = NULL;
-
-        pCreateDXGIFactory = ( LPCREATEDXGIFACTORY )GetProcAddress( hDXGI, "CreateDXGIFactory" );
-        pCreateDXGIFactory( __uuidof( IDXGIFactory ), ( LPVOID* )&pDXGIFactory );
+        DynamicDX::CreateDXGIFactory( __uuidof( IDXGIFactory ), ( LPVOID* )&pDXGIFactory );
 
         for( int index = 0; ; ++index )
         {
@@ -93,8 +76,6 @@ HRESULT GetVideoMemoryViaDXGI( HMONITOR hMonitor,
                 break;
             }
         }
-
-        FreeLibrary( hDXGI );
     }
 
     if( bGotMemory )
@@ -103,3 +84,5 @@ HRESULT GetVideoMemoryViaDXGI( HMONITOR hMonitor,
         return E_FAIL;
 }
 
+
+#endif

@@ -28,19 +28,19 @@ MaxMinDataBlock::MaxMinDataBlock(const MaxMinDataBlock &other) :
 }
 
 MaxMinDataBlock& MaxMinDataBlock::operator=(const MaxMinDataBlock& other) {
-	strBlockID = other.strBlockID;
-	ulBlockSemantics = other.ulBlockSemantics;
-	ulCompressionScheme = other.ulCompressionScheme;
-	ulOffsetToNextDataBlock = other.ulOffsetToNextDataBlock;
+  strBlockID = other.strBlockID;
+  ulBlockSemantics = other.ulBlockSemantics;
+  ulCompressionScheme = other.ulCompressionScheme;
+  ulOffsetToNextDataBlock = other.ulOffsetToNextDataBlock;
 
   m_vfMaxMinData = other.m_vfMaxMinData;
 
-	return *this;
+  return *this;
 }
 
 
 MaxMinDataBlock::MaxMinDataBlock(LargeRAWFile* pStreamFile, UINT64 iOffset, bool bIsBigEndian) {
-	GetHeaderFromFile(pStreamFile, iOffset, bIsBigEndian);	
+  GetHeaderFromFile(pStreamFile, iOffset, bIsBigEndian);
 }
 
 MaxMinDataBlock::~MaxMinDataBlock() 
@@ -48,41 +48,41 @@ MaxMinDataBlock::~MaxMinDataBlock()
 }
 
 DataBlock* MaxMinDataBlock::Clone() {
-	return new MaxMinDataBlock(*this);
+  return new MaxMinDataBlock(*this);
 }
 
 UINT64 MaxMinDataBlock::GetHeaderFromFile(LargeRAWFile* pStreamFile, UINT64 iOffset, bool bIsBigEndian) {
   UINT64 iStart = iOffset + DataBlock::GetHeaderFromFile(pStreamFile, iOffset, bIsBigEndian);
-	pStreamFile->SeekPos(iStart);
+  pStreamFile->SeekPos(iStart);
 
   UINT64 ulElementCount;
-	pStreamFile->ReadData(ulElementCount, bIsBigEndian);
+  pStreamFile->ReadData(ulElementCount, bIsBigEndian);
 
   m_vfMaxMinData.resize(size_t(ulElementCount));
   pStreamFile->ReadRAW((unsigned char*)&m_vfMaxMinData[0], ulElementCount*sizeof(InternalMaxMinElemen));
 
-	return pStreamFile->GetPos() - iOffset;
+  return pStreamFile->GetPos() - iOffset;
 }
 
 UINT64 MaxMinDataBlock::CopyToFile(LargeRAWFile* pStreamFile, UINT64 iOffset, bool bIsBigEndian, bool bIsLastBlock) {
   UINT64 iStart = iOffset + DataBlock::CopyToFile(pStreamFile, iOffset, bIsBigEndian, bIsLastBlock);
-	pStreamFile->SeekPos(iStart);
+  pStreamFile->SeekPos(iStart);
 
   UINT64 ulElementCount = UINT64(m_vfMaxMinData.size());
   pStreamFile->WriteData(ulElementCount, bIsBigEndian);
   pStreamFile->WriteRAW((unsigned char*)&m_vfMaxMinData[0], ulElementCount*sizeof(InternalMaxMinElemen));
 
-	return pStreamFile->GetPos() - iOffset;  
+  return pStreamFile->GetPos() - iOffset;
 }
 
 
 UINT64 MaxMinDataBlock::GetOffsetToNextBlock() const {
-	return DataBlock::GetOffsetToNextBlock() + ComputeDataSize();
+  return DataBlock::GetOffsetToNextBlock() + ComputeDataSize();
 }
 
 UINT64 MaxMinDataBlock::ComputeDataSize() const {
-	return sizeof(UINT64) +		                                      // length of the vector
-		     sizeof(InternalMaxMinElemen) * m_vfMaxMinData.size();    // the vector itself
+  return sizeof(UINT64) +                                          // length of the vector
+         sizeof(InternalMaxMinElemen) * m_vfMaxMinData.size();    // the vector itself
 }
 
 

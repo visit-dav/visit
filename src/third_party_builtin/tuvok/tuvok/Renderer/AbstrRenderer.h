@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,10 +28,10 @@
 
 /**
   \file    AbstrRenderer.h
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 1.0
   \date    August 2008
 */
 
@@ -43,26 +43,30 @@
 
 #include <string>
 
-#include "../StdDefines.h"
+#include "../StdTuvokDefines.h"
 #include "../IO/VolumeDataset.h"
-#include "../IO/TransferFunction1D.h"
-#include "../IO/TransferFunction2D.h"
 #include "../Renderer/CullingLOD.h"
+#include "../Basics/GeometryGenerator.h"
+#include "../Basics/Plane.h"
+
+class TransferFunction1D;
+class TransferFunction2D;
 
 class Brick {
 public:
   Brick() :
     vCenter(0,0,0),
-    vExtension(0,0,0), 
-    vCoords(0,0,0) 
+    vExtension(0,0,0),
+    vCoords(0,0,0)
   {
   }
 
-  Brick(unsigned int x, unsigned int y, unsigned int z, unsigned int iSizeX, unsigned int iSizeY, unsigned int iSizeZ) :
+  Brick(UINT32 x, UINT32 y, UINT32 z,
+        UINT32 iSizeX, UINT32 iSizeY, UINT32 iSizeZ) :
     vCenter(0,0,0),
-    vExtension(0,0,0), 
+    vExtension(0,0,0),
     vVoxelCount(iSizeX, iSizeY, iSizeZ),
-    vCoords(x,y,z) 
+    vCoords(x,y,z)
   {
   }
 
@@ -76,7 +80,7 @@ public:
 };
 
 inline bool operator < (const Brick& left, const Brick& right) {
-	if  (left.fDistance < right.fDistance) return true;
+  if  (left.fDistance < right.fDistance) return true;
   return false;
 }
 
@@ -115,20 +119,21 @@ class AbstrRenderer {
 
     enum EWindowMode {
       WM_CORONAL = 0,
-      WM_AXIAL,   
-      WM_SAGITTAL,   
+      WM_AXIAL,
+      WM_SAGITTAL,
       WM_3D,
       WM_INVALID
     };
-    EWindowMode Get2x2Windowmode(ERenderArea eArea) {return m_e2x2WindowMode[size_t(eArea)];}
+    EWindowMode Get2x2Windowmode(ERenderArea eArea) const
+        { return m_e2x2WindowMode[size_t(eArea)]; }
     virtual void Set2x2Windowmode(ERenderArea eArea, EWindowMode eWindowMode);
-    EWindowMode GetFullWindowmode() {return m_eFullWindowMode;}
+    EWindowMode GetFullWindowmode() const { return m_eFullWindowMode; }
     virtual void SetFullWindowmode(EWindowMode eWindowMode);
-    EWindowMode GetWindowUnderCursor(FLOATVECTOR2 vPos);
-    FLOATVECTOR2 GetLocalCursorPos(FLOATVECTOR2 vPos);
-    
+    EWindowMode GetWindowUnderCursor(FLOATVECTOR2 vPos) const;
+    FLOATVECTOR2 GetLocalCursorPos(FLOATVECTOR2 vPos) const;
+
     enum EBlendPrecision {
-      BP_8BIT = 0,      
+      BP_8BIT = 0,
       BP_16BIT,
       BP_32BIT,
       BP_INVALID
@@ -136,12 +141,19 @@ class AbstrRenderer {
     EBlendPrecision GetBlendPrecision() {return m_eBlendPrecision;}
     virtual void SetBlendPrecision(EBlendPrecision eBlendPrecision);
 
-    bool GetUseLigthing() {return m_bUseLigthing;}
-    virtual void SetUseLigthing(bool bUseLigthing);
+    bool GetUseLighting() const { return m_bUseLighting; }
+    virtual void SetUseLighting(bool bUseLighting);
 
-    /** Default settings: 1D transfer function, one by three view, white text, black BG.
-     * @param pMasterController message router */
-    AbstrRenderer(MasterController* pMasterController, bool bUseOnlyPowerOfTwo);
+    /** Default settings: 1D transfer function, single-image view, white text,
+     * black BG.
+     * @param pMasterController message router
+     * @param bUseOnlyPowerOfTwo force power of two textures, for systems that
+     *                           do not support npot textures.
+     * @param bDownSampleTo8Bits force 8bit textures, for systems that do not
+     *                           support 16bit textures (or 16bit linear
+     *                           interpolation). */
+    AbstrRenderer(MasterController* pMasterController, bool bUseOnlyPowerOfTwo,
+                  bool bDownSampleTo8Bits, bool bDisableBorder);
     /** Deallocates dataset and transfer functions. */
     virtual ~AbstrRenderer();
     /** Sends a message to the master to ask for a dataset to be loaded.
@@ -149,28 +161,43 @@ class AbstrRenderer {
      * @param strFilename path to a file */
     virtual bool LoadDataset(const std::string& strFilename);
     /** Query whether or not we should redraw the next frame, else we should
-     * reuse what is already rendered or cintinue with the current frame if it
+     * reuse what is already rendered or continue with the current frame if it
      * is not complete yet. */
     virtual bool CheckForRedraw();
 
-    virtual void Paint() = 0;
+    virtual void Paint() {
+      // check if we are rendering a stereo frame
+      m_bDoStereoRendering = m_bRequestStereoRendering &&
+                             m_eViewMode == VM_SINGLE &&
+                             m_eFullWindowMode == WM_3D;
+    }
 
     virtual bool Initialize();
 
-    VolumeDataset*      GetDataSet() {return m_pDataset;}
+    /** Deallocates GPU memory allocated during the rendering process. */
+    virtual void Cleanup() = 0;
+
+    /// Sets the dataset from external source; only meant to be used by clients
+    /// which don't want to use the LOD subsystem.
+    void SetDataSet(VolumeDataset *vds);
+
+    const VolumeDataset*      GetDataSet() const {return m_pDataset;}
     TransferFunction1D* Get1DTrans() {return m_p1DTrans;}
     TransferFunction2D* Get2DTrans() {return m_p2DTrans;}
 
-    /** Force a redraw if we're currently using a one dimensional TF. */ 
+    /** Notify renderer that 1D TF has changed.  In most cases, this will cause
+     * the renderer to start anew. */
     virtual void Changed1DTrans();
-    /** Force a redraw if we're currently using a two dimensional TF. */ 
+    /** Notify renderer that 2D TF has changed.  In most cases, this will cause
+     * the renderer to start anew. */
     virtual void Changed2DTrans();
 
     /** Sets up a gradient background which fades vertically.
      * @param vColors[0] is the color at the bottom;
      * @param vColors[1] is the color at the top. */
     virtual bool SetBackgroundColors(FLOATVECTOR3 vColors[2]) {
-      if (vColors[0] != m_vBackgroundColors[0] || vColors[1] != m_vBackgroundColors[1]) {
+      if (vColors[0] != m_vBackgroundColors[0] ||
+          vColors[1] != m_vBackgroundColors[1]) {
         m_vBackgroundColors[0]=vColors[0];
         m_vBackgroundColors[1]=vColors[1];
         ScheduleCompleteRedraw();
@@ -185,58 +212,102 @@ class AbstrRenderer {
       } return false;
     }
 
-    FLOATVECTOR3 GetBackgroundColor(int i) const {return m_vBackgroundColors[i];}
+    FLOATVECTOR3 GetBackgroundColor(int i) const {
+      return m_vBackgroundColors[i];
+    }
     FLOATVECTOR4 GetTextColor() const {return m_vTextColor;}
 
     virtual void SetSampleRateModifier(float fSampleRateModifier);
-    float GetSampleRateModifier() {return m_fSampleRateModifier;}
+    float GetSampleRateModifier() const { return m_fSampleRateModifier; }
 
     virtual void SetIsoValue(float fIsovalue);
-    float GetIsoValue() {return m_fIsovalue;}
+    float GetIsoValue() const { return m_fIsovalue; }
 
     virtual void SetIsosufaceColor(const FLOATVECTOR3& vColor);
-    virtual FLOATVECTOR3 GetIsosufaceColor()  const {return m_vIsoColor;}
+    virtual FLOATVECTOR3 GetIsosufaceColor() const { return m_vIsoColor; }
 
+    virtual void SetOrthoView(bool bOrthoView);
+    virtual bool GetOrthoView() const {return m_bOrthoView;}
+
+    virtual void SetRenderCoordArrows(bool bRenderCoordArrows);
+    virtual bool GetRenderCoordArrows() const {return m_bRenderCoordArrows;}
 
     /** Change the size of the render window.  Any previous image is
      * destroyed, causing a full redraw on the next render.
      * \param vWinSize  new width and height of the view window */
     virtual void Resize(const UINTVECTOR2& vWinSize);
-    
+
     virtual void SetRotation(const FLOATMATRIX4& mRotation);
     virtual void SetTranslation(const FLOATMATRIX4& mTranslation);
+    void SetClipPlane(const ExtendedPlane& plane);
+    virtual void EnableClipPlane();
+    virtual void DisableClipPlane();
+    virtual void ShowClipPlane(bool);
+    virtual void ClipPlaneRelativeLock(bool);
+    bool ClipPlaneEnabled() const { return m_bClipPlaneOn; }
+    bool ClipPlaneShown() const   { return m_bClipPlaneDisplayed; }
+    bool ClipPlaneLocked() const  { return m_bClipPlaneLocked; }
+
+    /// slice parameter for slice views.
     virtual void SetSliceDepth(EWindowMode eWindow, UINT64 fSliceDepth);
     virtual UINT64 GetSliceDepth(EWindowMode eWindow);
 
-    void SetClearFramebuffer(bool bClearFramebuffer) {m_bClearFramebuffer = bClearFramebuffer;}
+    void SetClearFramebuffer(bool bClearFramebuffer) {
+      m_bClearFramebuffer = bClearFramebuffer;
+    }
     bool GetClearFramebuffer() {return m_bClearFramebuffer;}
     void SetGlobalBBox(bool bRenderBBox);
     bool GetGlobalBBox() {return m_bRenderGlobalBBox;}
     void SetLocalBBox(bool bRenderBBox);
     bool GetLocalBBox() {return m_bRenderLocalBBox;}
-  
+
     virtual void SetLogoParams(std::string strLogoFilename, int iLogoPos);
     void Set2DFlipMode(EWindowMode eWindow, bool bFlipX, bool bFlipY);
-    void Get2DFlipMode(EWindowMode eWindow, bool& bFlipX, bool& bFlipY);
-    void GetUseMIP(EWindowMode eWindow, bool& bUseMIP);
+    void Get2DFlipMode(EWindowMode eWindow, bool& bFlipX, bool& bFlipY) const;
+    bool GetUseMIP(EWindowMode eWindow) const;
     void SetUseMIP(EWindowMode eWindow, bool bUseMIP);
 
     // scheduling routines
-    UINT64 GetCurrentSubFrameCount() {return 1+m_iMaxLODIndex-m_iMinLODForCurrentView;}
-    unsigned int GetWorkingSubFrame() {return 1+m_iMaxLODIndex-m_iCurrentLOD;}
+    UINT64 GetCurrentSubFrameCount() const
+        { return 1+m_iMaxLODIndex-m_iMinLODForCurrentView; }
+    UINT32 GetWorkingSubFrame() const
+        { return 1+m_iMaxLODIndex-m_iCurrentLOD; }
 
-    unsigned int GetCurrentBrickCount() {return (unsigned int)(m_vCurrentBrickList.size());}
-    unsigned int GetWorkingBrick() {return m_iBricksRenderedInThisSubFrame;}
+    UINT32 GetCurrentBrickCount() const
+        { return UINT32(m_vCurrentBrickList.size()); }
+    UINT32 GetWorkingBrick() const
+        { return m_iBricksRenderedInThisSubFrame; }
 
-    unsigned int GetFrameProgress() {return (unsigned int)(100.0f * float(GetWorkingSubFrame()) / float(GetCurrentSubFrameCount()));}
-    unsigned int GetSubFrameProgress() {return (m_vCurrentBrickList.size() == 0) ? 100 : (unsigned int)(100.0f * m_iBricksRenderedInThisSubFrame / float(m_vCurrentBrickList.size()));}
-    
-    void SetTimeSlice(unsigned int iMSecs) {m_iTimeSliceMSecs = iMSecs;}
-    void SetPerfMeasures(unsigned int iMinFramerate, unsigned int iStartDelay) {m_iMinFramerate = iMinFramerate; m_iStartDelay = iStartDelay;}
-    void SetRescaleFactors(const DOUBLEVECTOR3& vfRescale) {m_pDataset->GetInfo()->SetRescaleFactors(vfRescale); ScheduleCompleteRedraw();}
-    DOUBLEVECTOR3 GetRescaleFactors() {return m_pDataset->GetInfo()->GetRescaleFactors();}
+    UINT32 GetFrameProgress() const {
+        return UINT32(100.0f * float(GetWorkingSubFrame()) /
+                      float(GetCurrentSubFrameCount()));
+    }
+    UINT32 GetSubFrameProgress() const {
+        return (m_vCurrentBrickList.empty()) ? 100 :
+                UINT32(100.0f * m_iBricksRenderedInThisSubFrame /
+                float(m_vCurrentBrickList.size()));
+    }
 
-	  void DisableLOD(bool bLODDisabled) {m_bLODDisabled = bLODDisabled;}
+    void SetTimeSlice(UINT32 iMSecs) {m_iTimeSliceMSecs = iMSecs;}
+    void SetPerfMeasures(UINT32 iMinFramerate, UINT32 iStartDelay) {
+      m_iMinFramerate = iMinFramerate; m_iStartDelay = iStartDelay;
+    }
+    void SetRescaleFactors(const DOUBLEVECTOR3& vfRescale) {
+      m_pDataset->GetInfo()->SetRescaleFactors(vfRescale); ScheduleCompleteRedraw();
+    }
+    DOUBLEVECTOR3 GetRescaleFactors() {
+      return m_pDataset->GetInfo()->GetRescaleFactors();
+    }
+
+    void SetCaptureMode(bool bCaptureMode) {m_bCaptureMode = bCaptureMode;}
+    void SetMIPLOD(bool bMIPLOD) {m_bMIPLOD = bMIPLOD;}
+
+    virtual void  SetStereo(bool bStereoRendering);
+    virtual void  SetStereoEyeDist(float fStereoEyeDist);
+    virtual void  SetStereoFocalLength(float fStereoFocalLength);
+    virtual bool  GetStereo() {return m_bRequestStereoRendering;}
+    virtual float GetStereoEyeDist() {return m_fStereoEyeDist;}
+    virtual float GetStereoFocalLength() {return m_fStereoFocalLength;}
 
     // ClearView
     virtual bool SupportsClearView() {return false;}
@@ -253,13 +324,24 @@ class AbstrRenderer {
     virtual void SetCVBorderScale(float fScale);
     virtual float GetCVBorderScale() const {return m_fCVBorderScale;}
     virtual void SetCVFocusPos(FLOATVECTOR2 vPos);
-    virtual FLOATVECTOR2 GetCVFocusPos() const {return FLOATVECTOR2(m_vCVPos.x, 1.0f-m_vCVPos.y);}
+    virtual FLOATVECTOR2 GetCVFocusPos() const {
+      return FLOATVECTOR2(m_vCVPos.x, 1.0f-m_vCVPos.y);
+    }
 
     virtual void ScheduleCompleteRedraw();
     virtual void ScheduleWindowRedraw(EWindowMode eWindow);
 
-    void SetAvoidSeperateCompositing(bool bAvoidSeperateCompositing) {m_bAvoidSeperateCompositing = bAvoidSeperateCompositing;}
-    bool GetAvoidSeperateCompositing() const {return m_bAvoidSeperateCompositing;}
+    void SetAvoidSeperateCompositing(bool bAvoidSeperateCompositing) {
+      m_bAvoidSeperateCompositing = bAvoidSeperateCompositing;
+    }
+    bool GetAvoidSeperateCompositing() const {
+      return m_bAvoidSeperateCompositing;
+    }
+
+    void SetMIPRotationAngle(float fAngle) {
+      m_fMIPRotationAngle = fAngle;
+      m_bPerformRedraw = true;
+    }
 
   protected:
     MasterController*   m_pMasterController;
@@ -273,7 +355,7 @@ class AbstrRenderer {
     EWindowMode         m_eFullWindowMode;
     UINT64              m_piSlice[3];
     EBlendPrecision     m_eBlendPrecision;
-    bool                m_bUseLigthing;
+    bool                m_bUseLighting;
     VolumeDataset*      m_pDataset;
     TransferFunction1D* m_p1DTrans;
     TransferFunction2D* m_p2DTrans;
@@ -290,14 +372,14 @@ class AbstrRenderer {
     int                 m_iLogoPos;
     std::string         m_strLogoFilename;
 
-    unsigned int        m_iMinFramerate;
-    unsigned int        m_iStartDelay;
+    UINT32              m_iMinFramerate;
+    UINT32              m_iStartDelay;
     UINT64              m_iMinLODForCurrentView;
-    unsigned int        m_iTimeSliceMSecs;
+    UINT32              m_iTimeSliceMSecs;
 
     UINT64              m_iIntraFrameCounter;
     UINT64              m_iFrameCounter;
-    unsigned int        m_iCheckCounter;
+    UINT32              m_iCheckCounter;
     UINT64              m_iMaxLODIndex;
     UINT64              m_iCurrentLODOffset;
     CullingLOD          m_FrustumCullingLOD;
@@ -305,7 +387,13 @@ class AbstrRenderer {
     UINT64              m_iCurrentLOD;
     UINT64              m_iBricksRenderedInThisSubFrame;
     std::vector<Brick>  m_vCurrentBrickList;
-  	bool				        m_bLODDisabled;
+    std::vector<Brick>  m_vLeftEyeBrickList;
+    bool                m_bCaptureMode;
+    bool                m_bMIPLOD;
+    float               m_fMIPRotationAngle;
+    FLOATMATRIX4        m_maMIPRotation;
+    bool                m_bOrthoView;
+    bool                m_bRenderCoordArrows;
 
     bool                m_bDoClearView;
     float               m_fCVIsovalue;
@@ -315,21 +403,36 @@ class AbstrRenderer {
     float               m_fCVBorderScale;
     FLOATVECTOR2        m_vCVPos;
     bool                m_bPerformReCompose;
+    bool                m_bRequestStereoRendering;
+    bool                m_bDoStereoRendering;
+    float               m_fStereoEyeDist;
+    float               m_fStereoFocalLength;
+    std::vector<Triangle> m_vArrowGeometry;
 
     // compatibility settings
     bool                m_bUseOnlyPowerOfTwo;
+    bool                m_bDownSampleTo8Bits;
+    bool                m_bDisableBorder;
     bool                m_bAvoidSeperateCompositing;
 
-    virtual void ScheduleRecompose();
-    void ComputeMinLODForCurrentView();
+    FLOATMATRIX4        m_mProjection[2];
+    FLOATMATRIX4        m_mView[2];
+    FLOATMATRIX4        m_matModelView[2];
+    std::vector<std::string> m_vShaderSearchDirs;
 
-    FLOATMATRIX4        m_matModelView;
+    ExtendedPlane       m_ClipPlane;
+    bool                m_bClipPlaneOn;
+    bool                m_bClipPlaneDisplayed;
+    bool                m_bClipPlaneLocked;
 
+    virtual void        ScheduleRecompose();
+    void                ComputeMinLODForCurrentView();
     void                Plan3DFrame();
-    std::vector<Brick>  BuildFrameBrickList();
-
-    virtual void ClearDepthBuffer() = 0;
-    virtual void ClearColorBuffer() = 0;
+    void                PlanHQMIPFrame();
+    std::vector<Brick>  BuildSubFrameBrickList(bool bUseResidencyAsDistanceCriterion=false);
+    std::vector<Brick>  BuildLeftEyeSubFrameBrickList(const std::vector<Brick>& vRightEyeBrickList);
+    virtual void        ClearDepthBuffer() = 0;
+    virtual void        ClearColorBuffer() = 0;
 };
 
 #endif // ABSTRRENDERER_H

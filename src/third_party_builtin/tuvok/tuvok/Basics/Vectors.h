@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -28,12 +28,12 @@
 
 /**
   \file    Vectors.h
-  \brief    Simple vector and matrix templates
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  2.4
-  \date    July 2008
+  \brief   Vector, matrix, and quaternion templates with additional OpenGL and Direct3D features
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 3.0
+  \date    December 2008
 */
 
 #pragma once
@@ -41,8 +41,16 @@
 #ifndef VECTORS_H
 #define VECTORS_H
 
+#if defined DIRECT3D_VERSION
+  #define USEDX
+#endif
+
+#if defined __GL_H__
+  #define USEGL
+#endif
+
 // some DX files define min/max but that interferes
-// with the numerical_limits so undef them
+// with the numeric_limits so undef them
 #ifdef min
   #undef min
 #endif
@@ -59,27 +67,30 @@
   #define MIN(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
-#include <math.h>
-#include <assert.h>
+#include "../StdTuvokDefines.h"
+#include <cassert>
+#include <cmath>
+#include <limits>
+#include <vector>
 
 #ifdef WIN32
-  #pragma warning( disable : 4995 ) // disable deprecated warning 
+  #pragma warning( disable : 4995 ) // disable deprecated warning
 #endif
 #include <ostream>
 #ifdef WIN32
-  #pragma warning( default : 4995 ) 
+  #pragma warning( default : 4995 )
 #endif
 
 #ifdef WIN32
   #pragma warning( disable : 4201 )  // Disable warning messages about nameless union
-  
-  #ifdef __D3DX9MATH_H__
+
+  #ifdef USEDX
     #pragma message("    [vectors.h] Using DX extensions.\n")
 //  #else
 //    #pragma message("    [vectors.h] NOT using DX extensions.\n")
   #endif
-  
-  #ifdef __GL_H__
+
+  #ifdef USEGL
     #pragma message("    [vectors.h] Using GL extensions.\n")
 //  #else
 //    #pragma message("    [vectors.h] NOT using GL extensions.\n")
@@ -95,13 +106,17 @@ public:
   T x,y;
 
   VECTOR2<T>(): x(0), y(0) {}
+  template <class S> explicit VECTOR2<T>( const std::vector<S>& v ) {
+    x = T(v.size()>0 ? v[0] : 0);
+    y = T(v.size()>1 ? v[1] : 0);
+  }
   VECTOR2<T>(const VECTOR2<T> &other): x(other.x), y(other.y) {}
   template <class S> explicit VECTOR2<T>(const VECTOR2<S> &other): x(T(other.x)), y(T(other.y)) {}
   VECTOR2<T>(const T _x, const T _y) : x(_x), y(_y) {}
   VECTOR2<T>(const T* vec) : x(vec[0]), y(vec[1]) {}
 
   bool operator == ( const VECTOR2<T>& other ) const {return (other.x==x && other.y==y); }
-  bool operator != ( const VECTOR2<T>& other ) const {return (other.x!=x || other.y!=y); } 
+  bool operator != ( const VECTOR2<T>& other ) const {return (other.x!=x || other.y!=y); }
 
     // binary operators with scalars
   VECTOR2<T> operator + ( T scalar ) const {return VECTOR2<T>(x+scalar,y+scalar);}
@@ -141,9 +156,14 @@ public:
 
   friend std::ostream& operator<<(std::ostream &os,const VECTOR2<T>& v){os << v.x << '\t' << v.y; return os;}
 
-  operator T*(void) {return &x;}
-  const T *operator *(void) const {return &x;}
-  T *operator *(void) {return &x;}
+  T& operator [](size_t i) {
+    assert(i <= 1);
+    return (i == 0) ? this->x : this->y;
+  }
+  const T& operator [](size_t i) const {
+    assert(i <= 1);
+    return (i == 0) ? this->x : this->y;
+  }
 
   VECTOR2<T> abs() const {return VECTOR2<T>(fabs(x),fabs(y));}
   T area() const {return x*y;}
@@ -159,7 +179,7 @@ public:
     return vOut;
   }
 
-  void StoreMin(const VECTOR2<T> &other) {  
+  void StoreMin(const VECTOR2<T> &other) {
     x = std::min(x,other.x);
     y = std::min(y,other.y);
   }
@@ -169,7 +189,7 @@ public:
     y = std::max(y,other.y);
   }
 
-  #ifdef __D3DX9MATH_H__
+  #ifdef USEDX
     VECTOR2<T>(const D3DXVECTOR2 &other): x(T(other.x)), y(T(other.y)) {}
     D3DXVECTOR2 toD3DXVEC() const {return D3DXVECTOR2(float(x),float(y));}
     bool operator == ( const D3DXVECTOR2& other ) const {return (other.x==T(x) && other.y== T(y)); }
@@ -178,7 +198,7 @@ public:
   #endif
 
   // OpenGL
-  #ifdef __GL_H__
+  #ifdef USEGL
     void glVertex() {
       glVertex2f(GLfloat(x),GLfloat(y));
     }
@@ -198,6 +218,12 @@ public:
   T x,y,z;
 
   VECTOR3<T>(): x(0), y(0),z(0) {}
+  template <class S> explicit VECTOR3<T>( const std::vector<S>& v ) {
+    x = T(v.size()>0 ? v[0] : 0);
+    y = T(v.size()>1 ? v[1] : 0);
+    z = T(v.size()>2 ? v[2] : 0);
+  }
+
   VECTOR3<T>(const VECTOR3<T> &other): x(other.x), y(other.y), z(other.z) {}
   template <class S> explicit VECTOR3<T>(const VECTOR3<S> &other): x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
   VECTOR3<T>(const VECTOR2<T> &other, const T _z): x(other.x), y(other.y), z(_z) {}
@@ -206,7 +232,7 @@ public:
 
 
   bool operator == ( const VECTOR3<T>& other ) const {return (other.x==x && other.y==y && other.z==z); }
-  bool operator != ( const VECTOR3<T>& other ) const {return (other.x!=x || other.y!=y || other.z!=z); } 
+  bool operator != ( const VECTOR3<T>& other ) const {return (other.x!=x || other.y!=y || other.z!=z); }
 
     // binary operators with scalars
   VECTOR3<T> operator + ( T scalar ) const {return VECTOR3<T>(x+scalar,y+scalar,z+scalar);}
@@ -248,9 +274,22 @@ public:
 
   friend std::ostream& operator<<(std::ostream &os,const VECTOR3<T>& v){os << v.x << '\t' << v.y << '\t' << v.z; return os;}
 
-  operator T*(void) {return &x;}
-  const T *operator *(void) const {return &x;}
-  T *operator *(void) {return &x;}
+  T& operator [](size_t i) {
+    assert(i <= 2);
+    switch(i) {
+      case 0: return this->x;
+      case 1: return this->y;
+      default: return this->z;
+    }
+  }
+  const T& operator [](size_t i) const {
+    assert(i <= 2);
+    switch(i) {
+      case 0: return this->x;
+      case 1: return this->y;
+      default: return this->z;
+    }
+  }
 
   VECTOR3<T> abs() const {return VECTOR3<T>(fabs(x),fabs(y),fabs(z));}
   T maxVal() const {return MAX(x,MAX(y,z));}
@@ -289,7 +328,7 @@ public:
     return vOut;
   }
 
-  void StoreMin(const VECTOR3<T> &other) {  
+  void StoreMin(const VECTOR3<T> &other) {
     x = std::min(x,other.x);
     y = std::min(y,other.y);
     z = std::min(z,other.z);
@@ -300,8 +339,8 @@ public:
     y = std::max(y,other.y);
     z = std::max(z,other.z);
   }
-  
-  #ifdef __D3DX9MATH_H__
+
+  #ifdef USEDX
     VECTOR3(const D3DXVECTOR3 &other): x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
     VECTOR3(const D3DXVECTOR4 &other): x(T(other.x)), y(T(other.y)), z(T(other.z)) {}
     D3DXVECTOR3 toD3DXVEC() const {return D3DXVECTOR3(float(x),float(y),float(z));}
@@ -311,7 +350,7 @@ public:
   #endif
 
   // OpenGL
-  #ifdef __GL_H__
+  #ifdef USEGL
     void glVertex() {
       glVertex3f(GLfloat(x),GLfloat(y),GLfloat(z));
     }
@@ -334,10 +373,15 @@ template <class T> VECTOR3<T> operator % ( T scalar, const VECTOR3<T>& vec ) {re
 
 template <class T=int> class VECTOR4 {
 public:
-
   T x,y,z,w;
 
   VECTOR4<T>(): x(0), y(0),z(0), w(0) {}
+  template <class S> explicit VECTOR4<T>( const std::vector<S>& v ) {
+    x = T(v.size()>0 ? v[0] : 0);
+    y = T(v.size()>1 ? v[1] : 0);
+    z = T(v.size()>2 ? v[2] : 0);
+    w = T(v.size()>3 ? v[3] : 0);
+  }
   VECTOR4<T>(const VECTOR2<T> &other, const T _z, const T _w): x(other.x), y(other.y), z(_z), w(_w) {}
   VECTOR4<T>(const VECTOR3<T> &other, const T _w): x(other.x), y(other.y), z(other.z), w(_w) {}
   VECTOR4<T>(const VECTOR4<T> &other): x(other.x), y(other.y), z(other.z), w(other.w) {}
@@ -347,7 +391,7 @@ public:
   VECTOR4<T>(const T* vec) : x(vec[0]), y(vec[1]), z(vec[2]), w(vec[3]) {}
 
   bool operator == ( const VECTOR4<T>& other ) const {return (other.x==x && other.y==y && other.z==z && other.w==w); }
-  bool operator != ( const VECTOR4<T>& other ) const {return (other.x!=x || other.y!=y || other.z!=z || other.w!=w); } 
+  bool operator != ( const VECTOR4<T>& other ) const {return (other.x!=x || other.y!=y || other.z!=z || other.w!=w); }
 
     // binary operators with scalars
   VECTOR4<T> operator + ( T scalar ) const {return VECTOR4<T>(x+scalar,y+scalar,z+scalar,w+scalar);}
@@ -361,6 +405,7 @@ public:
   VECTOR4<T> operator - ( const VECTOR4<T>& other ) const {return VECTOR4<T>(x-other.x,y-other.y,z-other.z,w-other.w);}
   VECTOR4<T> operator * ( const VECTOR4<T>& other ) const {return VECTOR4<T>(x*other.x,y*other.y,z*other.z,w*other.w);}
   VECTOR4<T> operator / ( const VECTOR4<T>& other ) const {return VECTOR4<T>(x/other.x,y/other.y,z/other.z,w/other.w);}
+  T operator ^ ( const VECTOR4<T>& other ) const {return T(x*other.x+y*other.y+z*other.z+w*other.w);} // dot product
 
   // binary operators with a matrix
   VECTOR4<T> operator * ( const MATRIX4<T>& matrix ) const {
@@ -375,9 +420,24 @@ public:
   VECTOR4<T> operator - () const {return *this * -1;}
   VECTOR4<T> operator ~ () const {return VECTOR4<T>(T(1)/x,T(1)/y,T(1)/z,T(1)/w);}
 
-  operator T*(void) {return &x;}
-  const T *operator *(void) const {return &x;}
-  T *operator *(void) {return &x;}
+  T& operator [](size_t i) {
+    assert(i <= 3);
+    switch(i) {
+      case 0: return this->x;
+      case 1: return this->y;
+      case 2: return this->z;
+      default: return this->w;
+    }
+  }
+  const T& operator [](size_t i) const {
+    assert(i <= 3);
+    switch(i) {
+      case 0: return this->x;
+      case 1: return this->y;
+      case 2: return this->z;
+      default: return this->w;
+    }
+  }
 
   VECTOR4<T>& operator=(const VECTOR4<T>& other)  { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
   VECTOR4<T>& operator+=(const VECTOR4<T>& other) { x += other.x; y += other.y; z += other.z; w += other.w; return *this; }
@@ -415,7 +475,7 @@ public:
     return vOut;
   }
 
-  void StoreMin(const VECTOR4<T> &other) {  
+  void StoreMin(const VECTOR4<T> &other) {
     x = std::min(x,other.x);
     y = std::min(y,other.y);
     z = std::min(z,other.z);
@@ -442,7 +502,7 @@ public:
   VECTOR3<T> xyz() const {return VECTOR3<T>(x,y,z);}
 
   // DirectX
-  #ifdef __D3DX9MATH_H__
+  #ifdef USEDX
     VECTOR4<T>(const D3DXVECTOR4 &other): x(T(other.x)), y(T(other.y)), z(T(other.z)), w(T(other.w)){}
     D3DXVECTOR4 toD3DXVEC() const {return D3DXVECTOR4(float(x),float(y),float(z),float(w));}
 
@@ -452,7 +512,7 @@ public:
   #endif
 
   // OpenGL
-  #ifdef __GL_H__
+  #ifdef USEGL
     void glVertex() {
       glVertex4f(GLfloat(x),GLfloat(y),GLfloat(z),GLfloat(w));
     }
@@ -469,21 +529,17 @@ template <class T> VECTOR4<T> operator * ( T scalar, const VECTOR4<T>& vec ) {re
 template <class T> VECTOR4<T> operator / ( T scalar, const VECTOR4<T>& vec ) {return VECTOR4<T>(scalar/vec.x,scalar/vec.y,scalar/vec.z,scalar/vec.w);}
 template <class T> VECTOR4<T> operator % ( T scalar, const VECTOR4<T>& vec ) {return VECTOR4<T>(scalar%vec.x,scalar%vec.y,scalar%vec.z,scalar%vec.w);}
 
-
-typedef unsigned int uint;
-typedef unsigned short ushort;
-
 typedef VECTOR4<> INTVECTOR4;
 typedef VECTOR3<> INTVECTOR3;
 typedef VECTOR2<> INTVECTOR2;
 
-typedef VECTOR4<uint> UINTVECTOR4;
-typedef VECTOR3<uint> UINTVECTOR3;
-typedef VECTOR2<uint> UINTVECTOR2;
+typedef VECTOR4<UINT32> UINTVECTOR4;
+typedef VECTOR3<UINT32> UINTVECTOR3;
+typedef VECTOR2<UINT32> UINTVECTOR2;
 
-typedef VECTOR4<ushort> USHORTVECTOR4;
-typedef VECTOR3<ushort> USHORTVECTOR3;
-typedef VECTOR2<ushort> USHORTVECTOR2;
+typedef VECTOR4<unsigned short> USHORTVECTOR4;
+typedef VECTOR3<unsigned short> USHORTVECTOR3;
+typedef VECTOR2<unsigned short> USHORTVECTOR2;
 
 typedef VECTOR4<float> FLOATVECTOR4;
 typedef VECTOR3<float> FLOATVECTOR3;
@@ -502,7 +558,7 @@ public:
     };
     T array[9];
   };
-  
+
   MATRIX2() : m11(1), m12(0),
         m21(0), m22(1) {};
   MATRIX2( const T *e ) : m11(e[0]),  m12(e[1]),
@@ -515,18 +571,13 @@ public:
                                   m21(other.m21), m22(other.m22) {};
   MATRIX2( const VECTOR2<T> *rows ) : m11(rows[0].x), m12(rows[0].y),
                     m21(rows[1].x), m22(rows[1].y) {};
-    MATRIX2(T _m11, T _m12, T _m21, T _m22) : m11(_m11), m12(_m12), 
+    MATRIX2(T _m11, T _m12, T _m21, T _m22) : m11(_m11), m12(_m12),
                         m21(_m21), m22(_m22) {};
 
   bool operator == ( const MATRIX2<T>& other ) const {return (other.m11==m11 && other.m12==m12 && other.m21==m21 && other.m22==m22); }
   bool operator != ( const MATRIX2<T>& other ) const {return (other.m11!=m11 || other.m12!=m12 || other.m21!=m21 || other.m22!=m22); }
 
   friend std::ostream& operator<<(std::ostream &os,const MATRIX2<T>& m){os << m.m11 << '\t' << m.m12 << '\n' << m.m21 << '\t' << m.m22; return os;}
-
-  operator T*(void) {return &m11;}
-  const T *operator *(void) const {return &m11;}
-  T *operator *(void) {return &m11;}
-
 
   // binary operators with scalars
   MATRIX2<T> operator * ( T scalar ) const {return MATRIX2<T>(m11*scalar,m12*scalar,
@@ -544,7 +595,7 @@ public:
     MATRIX2<T> result;
 
     for (int x = 0;x<4;x+=2)
-      for (int y = 0;y<2;y++) 
+      for (int y = 0;y<2;y++)
         result[x+y] = array[0+x]*other.array[0+y] + array[1+x]*other.array[2+y];
 
     return result;
@@ -576,7 +627,7 @@ public:
     MATRIX3() : m11(1), m12(0), m13(0),
         m21(0), m22(1), m23(0),
         m31(0), m32(0), m33(1) {};
-  MATRIX3( const T *e ) : m11(e[0]), m12(e[1]), m13(e[2]),
+    MATRIX3( const T *e ) : m11(e[0]), m12(e[1]), m13(e[2]),
               m21(e[3]), m22(e[4]), m23(e[5]),
               m31(e[6]), m32(e[7]), m33(e[8]) {};
     MATRIX3( const MATRIX3<T>& other ) : m11(other.m11), m12(other.m12), m13(other.m13),
@@ -585,7 +636,7 @@ public:
     MATRIX3( const MATRIX4<T>& other ) : m11(other.m11), m12(other.m12), m13(other.m13),
                                   m21(other.m21), m22(other.m22), m23(other.m23),
                     m31(other.m31), m32(other.m32), m33(other.m33) {};
-  MATRIX3( const VECTOR3<T> *rows ) : m11(rows[0].x), m12(rows[0].y), m13(rows[0].z),
+    MATRIX3( const VECTOR3<T> *rows ) : m11(rows[0].x), m12(rows[0].y), m13(rows[0].z),
                     m21(rows[1].x), m22(rows[1].y), m23(rows[1].z),
                     m31(rows[2].x), m32(rows[2].y), m33(rows[2].z) {};
     MATRIX3(T _m11, T _m12, T _m13,
@@ -602,19 +653,15 @@ public:
                                 other.m31!=m31 || other.m32!=m32 || other.m33!=m33); }
 
 
-  friend std::ostream& operator<<(std::ostream &os,const MATRIX3<T>& m){os << m.m11 << '\t' << m.m12 << '\t' << m.m13 << '\n' 
-                                       << m.m21 << '\t' << m.m22 << '\t' << m.m23 << '\n' 
+  friend std::ostream& operator<<(std::ostream &os,const MATRIX3<T>& m){os << m.m11 << '\t' << m.m12 << '\t' << m.m13 << '\n'
+                                       << m.m21 << '\t' << m.m22 << '\t' << m.m23 << '\n'
                                        << m.m31 << '\t' << m.m32 << '\t' << m.m33; return os;}
-
-  operator T*(void) {return &m11;}
-  const T *operator *(void) const {return &m11;}
-  T *operator *(void) {return &m11;}
 
   // binary operators with matrices
   MATRIX3<T> operator * ( const MATRIX3<T>& other ) const {
     MATRIX3<T> result;
     for (int x = 0;x<9;x+=3)
-      for (int y = 0;y<3;y++) 
+      for (int y = 0;y<3;y++)
         result[x+y] = array[1+x]  * other.array[0+y]+
                       array[2+x]  * other.array[3+y]+
                       array[3+x]  * other.array[6+y];
@@ -707,7 +754,7 @@ public:
   }
 
   // DirectX
-  #ifdef __D3DX9MATH_H__
+  #ifdef USEDX
     MATRIX3( const D3DXMATRIX& other ) : m11(other(0,0)), m12(other(0,1)), m13(other(0,2)),
                        m21(other(1,0)), m22(other(1,1)), m23(other(1,2)),
                        m31(other(2,0)), m32(other(2,1)), m33(other(2,2)) {};
@@ -717,7 +764,7 @@ public:
   #endif
 
   // OpenGL
-  #ifdef __GL_H__
+  #ifdef USEGL
     void getProjection() {
       float P[16];
       glGetFloatv(GL_PROJECTION_MATRIX,P);
@@ -743,7 +790,7 @@ public:
       glMatrixMode(GL_MODELVIEW);
       glMultMatrixf(M);
     }
-    
+
     void setModelview() {
       float M[16];
       M[0] = float(m11);  M[1] = float(m12);  M[2] = float(m13);  M[3] = 0;
@@ -768,7 +815,7 @@ public:
     };
     T array[16];
   };
-  
+
   MATRIX4() : m11(1), m12(0), m13(0), m14(0),
               m21(0), m22(1), m23(0), m24(0),
               m31(0), m32(0), m33(1), m34(0),
@@ -792,7 +839,7 @@ public:
   MATRIX4(T _m11, T _m12, T _m13, T _m14,
           T _m21, T _m22, T _m23, T _m24,
           T _m31, T _m32, T _m33, T _m34,
-          T _m41, T _m42, T _m43, T _m44) : 
+          T _m41, T _m42, T _m43, T _m44) :
       m11(_m11), m12(_m12), m13(_m13), m14(_m14),
       m21(_m21), m22(_m22), m23(_m23), m24(_m24),
       m31(_m31), m32(_m32), m33(_m33), m34(_m34),
@@ -807,15 +854,14 @@ public:
                                 other.m31!=m31 || other.m32!=m32 || other.m33!=m33 || other.m34!=m34 ||
                                 other.m41!=m41 || other.m42!=m42 || other.m43!=m43 || other.m44!=m44); }
 
-  friend std::ostream& operator<<(std::ostream &os,const MATRIX4<T>& m){os << m.m11 << '\t' << m.m12 << '\t' << m.m13 << '\t' << m.m14 << '\n' 
-                                       << m.m21 << '\t' << m.m22 << '\t' << m.m23 << '\t' << m.m24 << '\n' 
-                                       << m.m31 << '\t' << m.m32 << '\t' << m.m33 << '\t' << m.m34 << '\n' 
+  friend std::ostream& operator<<(std::ostream &os,const MATRIX4<T>& m){os << m.m11 << '\t' << m.m12 << '\t' << m.m13 << '\t' << m.m14 << '\n'
+                                       << m.m21 << '\t' << m.m22 << '\t' << m.m23 << '\t' << m.m24 << '\n'
+                                       << m.m31 << '\t' << m.m32 << '\t' << m.m33 << '\t' << m.m34 << '\n'
                                        << m.m41 << '\t' << m.m42 << '\t' << m.m43 << '\t' << m.m44 ; return os;}
 
   operator T*(void) {return &m11;}
   const T *operator *(void) const {return &m11;}
   T *operator *(void) {return &m11;}
-
 
   // binary operators with scalars
   MATRIX4<T> operator * ( T scalar ) const {return MATRIX4<T>(m11*scalar,m12*scalar,m13*scalar,m14*scalar,
@@ -840,7 +886,7 @@ public:
   MATRIX4<T> operator * ( const MATRIX4<T>& other ) const {
     MATRIX4<T> result;
     for (int x = 0;x<16;x+=4)
-      for (int y = 0;y<4;y++) 
+      for (int y = 0;y<4;y++)
         result[x+y] = array[0+x] * other.array[0+y]+
                       array[1+x] * other.array[4+y]+
                       array[2+x] * other.array[8+y]+
@@ -956,7 +1002,7 @@ public:
           m14* (m23 *( m32 * m41 - m42 * m31)+
             m22 *( m31 * m43 - m41 * m33));
 
-    result.m11 =  ( m24  * m32  * m43 
+    result.m11 =  ( m24  * m32  * m43
         + m44 * m22  * m33
         - m44 * m23  * m32
         - m34 * m22  * m43
@@ -969,9 +1015,9 @@ public:
         + m24  * m31  * m43
         - m24  * m41 * m33)/Q;
     result.m31 = (- m21  * m34 * m42
-        + m21  * m44 * m32 
-        - m44 * m31  * m22 
-        - m24  * m41 * m32 
+        + m21  * m44 * m32
+        - m44 * m31  * m22
+        - m24  * m41 * m32
         + m34 * m41 * m22
         + m24  * m31  * m42)/Q;
       result.m41 =  -(m21  * m32  * m43
@@ -981,21 +1027,21 @@ public:
         - m31  * m22  * m43
         + m42 * m23  * m31)/Q;
     /// 2
-    result.m12 = (- m12  * m44 * m33 
-        + m12  * m34 * m43 
-        - m34 * m13  * m42 
-        - m14  * m32  * m43 
-        + m44 * m13  * m32 
+    result.m12 = (- m12  * m44 * m33
+        + m12  * m34 * m43
+        - m34 * m13  * m42
+        - m14  * m32  * m43
+        + m44 * m13  * m32
         + m14  * m42 * m33)/Q;
 
-    result.m22 = (- m44 * m13  * m31 
-        + m44 * m11  * m33 
-        - m34 * m11  * m43 
-        - m14  * m41 * m33 
-        + m34 * m13  * m41 
+    result.m22 = (- m44 * m13  * m31
+        + m44 * m11  * m33
+        - m34 * m11  * m43
+        - m14  * m41 * m33
+        + m34 * m13  * m41
         + m14  * m31  * m43)/Q;
 
-    result.m32 = -(-m12  * m44 * m31 
+    result.m32 = -(-m12  * m44 * m31
         + m12  * m34 * m41
         + m44 * m11  * m32
         - m14  * m32  * m41
@@ -1035,7 +1081,7 @@ public:
         - m13  * m41 * m22
         - m23  * m11  * m42
         + m23  * m12  * m41
-        + m13  * m21  * m42)/Q;  
+        + m13  * m21  * m42)/Q;
     /// 4
     result.m14 = (- m12  * m34 * m23
         + m12  * m24  * m33
@@ -1068,7 +1114,7 @@ public:
   }
 
   // DirectX
-  #ifdef __D3DX9MATH_H__
+  #ifdef USEDX
     MATRIX4( const D3DXMATRIX& other ) : m11(other(0,0)), m12(other(0,1)), m13(other(0,2)),m14(other(0,3)),
                        m21(other(1,0)), m22(other(1,1)), m23(other(1,2)),m24(other(1,3)),
                        m31(other(2,0)), m32(other(2,1)), m33(other(2,2)),m34(other(2,3)),
@@ -1081,60 +1127,145 @@ public:
   #endif
 
   // OpenGL
-  #ifdef __GL_H__
+  #ifdef USEGL
 
-    void BuildLookAt(const FLOATVECTOR3 eye, const FLOATVECTOR3 center, const FLOATVECTOR3 up) {
-      FLOATVECTOR3 F = center-eye;  
-      FLOATVECTOR3 U = up;
-      FLOATVECTOR3 S = F % U;
+
+    static void BuildStereoLookAtAndProjection(const VECTOR3<T> vEye, const VECTOR3<T> vAt, const VECTOR3<T> vUp,
+                                              T fFOVY, T fAspect, T fZNear, T fZFar, T fFocalLength,
+                                              T fEyeDist, int iEyeID, MATRIX4<T>& mView, MATRIX4<T>& mProj) {
+
+      T radians = T(3.14159265358979323846/180.0) * fFOVY/T(2);
+      T wd2     = fZNear * T(tan(radians));
+      T nfdl    = fZNear / fFocalLength;
+      T fShift  =   fEyeDist * nfdl;
+      T left    = - fAspect * wd2 + T(iEyeID)*fShift;
+      T right   =   fAspect * wd2 + T(iEyeID)*fShift;
+      T top     =   wd2;
+      T bottom  = - wd2;
+
+      // projection matrix
+      mProj.MatrixPerspectiveOffCenter(left, right, bottom, top, fZNear, fZFar);
+
+      // view matrix
+      mView.BuildLookAt(vEye, vAt, vUp);
+      MATRIX4<T> mTranslate;
+      mTranslate.Translation(fEyeDist*T(iEyeID), 0.0f, 0.0f);
+      mView= mTranslate * mView;
+    }
+
+
+    static void BuildStereoLookAtAndProjection(const VECTOR3<T> vEye, const VECTOR3<T> vAt, const VECTOR3<T> vUp,
+                                              T fFOVY, T fAspect, T fZNear, T fZFar, T fFocalLength,
+                                              T fEyeDist, MATRIX4<T>& mViewLeft, MATRIX4<T>& mViewRight, MATRIX4<T>& mProjLeft, MATRIX4<T>& mProjRight) {
+
+      T radians = T(3.14159265358979323846/180.0) *  fFOVY/2;
+      T wd2     = fZNear * T(tan(radians));
+      T nfdl    = fZNear / fFocalLength;
+      T fShift  =   fEyeDist * nfdl;
+      T left    = - fAspect * wd2 + fShift;
+      T right   =   fAspect * wd2 + fShift;
+      T top     =   wd2;
+      T bottom  = - wd2;
+
+      // projection matrices
+      mProjLeft.MatrixPerspectiveOffCenter(left, right, bottom, top, fZNear, fZFar);
+      left    = - fAspect * wd2 - fShift;
+      right   =   fAspect * wd2 - fShift;
+      mProjRight.MatrixPerspectiveOffCenter(left, right, bottom, top, fZNear, fZFar);
+
+      // view matrices
+      mViewLeft.BuildLookAt(vEye, vAt, vUp);
+      mViewRight.BuildLookAt(vEye, vAt, vUp);
+
+      // eye translation
+      MATRIX4<T> mTranslate;
+
+      mTranslate.Translation(fEyeDist, 0.0f, 0.0f);
+      mViewLeft = mTranslate * mViewLeft;
+
+      mTranslate.Translation(-fEyeDist, 0.0f, 0.0f);
+      mViewRight = mTranslate * mViewRight;
+    }
+
+    void BuildLookAt(const VECTOR3<T> vEye, const VECTOR3<T> vAt, const VECTOR3<T> vUp) {
+      VECTOR3<T> F = vAt-vEye;
+      VECTOR3<T> U = vUp;
+      VECTOR3<T> S = F % U;
       U = S % F;
 
       F.normalize();
       U.normalize();
       S.normalize();
 
-      array[ 0]= S[0];  array[ 4]= S[1];  array[ 8]= S[2];  array[12]=-(S^eye);
-      array[ 1]= U[0];  array[ 5]= U[1];  array[ 9]= U[2];  array[13]=-(U^eye);
-      array[ 2]=-F[0];  array[ 6]=-F[1];  array[10]=-F[2];  array[14]= (F^eye);
-      array[ 3]=0.0f;    array[ 7]=0.0f;    array[11]=0.0f;    array[15]= 1.0f;
+      array[ 0]= S[0];  array[ 4]= S[1];  array[ 8]= S[2];  array[12]=-(S^vEye);
+      array[ 1]= U[0];  array[ 5]= U[1];  array[ 9]= U[2];  array[13]=-(U^vEye);
+      array[ 2]=-F[0];  array[ 6]=-F[1];  array[10]=-F[2];  array[14]= (F^vEye);
+      array[ 3]= T(0);  array[ 7]=T(0);   array[11]=T(0);   array[15]= T(1);
     }
 
-    void MatrixPerspectiveOffCenter(float left, float right, float bottom, float top, float n, float f) {
-      array[ 0]= 2.0f*n/(right-left);   array[ 4]=0.0f;          array[ 8]=(right+left)/(right-left);  array[12]=0.0f;
-      array[ 1]= 0.0f;         array[ 5]=2.0f*n/(top-bottom);    array[ 9]=(top+bottom)/(top-bottom);  array[13]=0.0f;
-      array[ 2]= 0.0f;         array[ 6]=0.0f;          array[10]=-(f+n)/(f-n);          array[14]=-2.0f*(f*n)/(f-n);
-      array[ 3]= 0.0f;         array[ 7]=0.0f;          array[11]=-1.0f;            array[15]=0.0f;
+    void Perspective(T fovy, T aspect, T n, T f) {
+      // deg 2 rad
+      fovy = fovy * T(3.14159265358979323846/180.0);
+
+      T cotan = T(1.0/tan(double(fovy)/2.0));
+
+      array[ 0]= cotan/aspect;  array[ 4]=T(0);     array[ 8]=T(0);             array[12]=T(0);
+      array[ 1]= T(0);          array[ 5]=cotan;    array[ 9]=T(0);             array[13]=T(0);
+      array[ 2]= T(0);          array[ 6]=T(0);     array[10]=-(f+n)/(f-n);     array[14]=T(-2)*(f*n)/(f-n);
+      array[ 3]= T(0);          array[ 7]=T(0);     array[11]=T(-1);            array[15]=T(0);
+    }
+
+    void Ortho(T left, T right, T bottom, T top, T znear, T zfar ) {
+      array[ 0]= T(2)/(right-left);  array[ 4]=T(0);                array[ 8]=T(0);               array[12]=-(right+left)/(right-left);
+      array[ 1]= T(0);               array[ 5]=T(2)/(top-bottom);   array[ 9]=T(0);               array[13]=-(top+bottom)/(top-bottom);
+      array[ 2]= T(0);               array[ 6]=T(0);                array[10]=-T(2)/(zfar-znear); array[14]=-(zfar+znear)/(zfar-znear);
+      array[ 3]= T(0);               array[ 7]=T(0);                array[11]=T(0);               array[15]=T(1);
+    }
+
+    void MatrixPerspectiveOffCenter(T left, T right, T bottom, T top, T n, T f) {
+      array[ 0]= T(2)*n/(right-left);   array[ 4]=T(0);                   array[ 8]=(right+left)/(right-left);  array[12]=T(0);
+      array[ 1]= T(0);                  array[ 5]=T(2)*n/(top-bottom);    array[ 9]=(top+bottom)/(top-bottom);  array[13]=T(0);
+      array[ 2]= T(0);                  array[ 6]=T(0);                   array[10]=-(f+n)/(f-n);               array[14]=T(-2)*(f*n)/(f-n);
+      array[ 3]= T(0);                  array[ 7]=T(0);                   array[11]=T(-1);                      array[15]=T(0);
     }
 
     void getProjection() {
       float P[16];
       glGetFloatv(GL_PROJECTION_MATRIX,P);
-      for (int i=0;i<16;i++) array[i] = P[i];
+      for (int i=0;i<16;i++) array[i] = T(P[i]);
     }
 
     void getModelview() {
       float M[16];
       glGetFloatv(GL_MODELVIEW_MATRIX,M);
-      for (int i=0;i<16;i++) array[i] = M[i];
+      for (int i=0;i<16;i++) array[i] = T(M[i]);
     }
 
     void multModelview() {
       float M[16];
-      for (int i=0;i<16;i++) M[i] = array[i];
+      for (int i=0;i<16;i++) M[i] = float(array[i]);
       glMatrixMode(GL_MODELVIEW);
       glMultMatrixf(M);
     }
 
+    void setProjection() {
+      float M[16];
+      for (int i=0;i<16;i++) M[i] = float(array[i]);
+      glMatrixMode(GL_PROJECTION);
+      glLoadMatrixf(M);
+    }
+
     void setModelview() {
       float M[16];
-      for (int i=0;i<16;i++) M[i] = array[i];
+      for (int i=0;i<16;i++) M[i] = float(array[i]);
       glMatrixMode(GL_MODELVIEW);
       glLoadMatrixf(M);
     }
 
-    void setTextureMatrix() {
+    void setTextureMatrix(int iUnit = 0) {
       float M[16];
-      for (int i=0;i<16;i++) M[i] = array[i];
+      for (int i=0;i<16;i++) M[i] = float(array[i]);
+      glActiveTextureARB(GL_TEXTURE0_ARB+iUnit);
       glMatrixMode(GL_TEXTURE);
       glLoadMatrixf(M);
     }
@@ -1154,7 +1285,7 @@ typedef MATRIX4<double> DOUBLEMATRIX4;
 
 template <class T> class QUATERNION4 {
 public:
-  float x, y, z, w;  
+  float x, y, z, w;
 
   QUATERNION4<T>(): x(0), y(0),z(0), w(0) {}
   QUATERNION4<T>(T _x, T _y, T _z, T _w): x(_x), y(_y), z(_z), w(_w) {}
@@ -1191,7 +1322,7 @@ public:
   }
 
   bool operator == ( const QUATERNION4<T>& other ) const {return (other.x==x && other.y==y && other.z==z && other.w==w); }
-  bool operator != ( const QUATERNION4<T>& other ) const {return (other.x!=x || other.y!=y || other.z!=z || other.w!=w); } 
+  bool operator != ( const QUATERNION4<T>& other ) const {return (other.x!=x || other.y!=y || other.z!=z || other.w!=w); }
 
   // binary operators with other quaternions
   QUATERNION4<T> operator + ( const QUATERNION4<T>& other ) const {return QUATERNION4<T>(x+other.x,y+other.y,z+other.z,w+other.w);}
@@ -1202,7 +1333,7 @@ public:
 
     T _w = w * other.w - (v1 ^ v2);
     VECTOR3<T> _v = (v2 * w) + (v1 * other.w) + (v1 % v2);
-    
+
     return QUATERNION4<T>(_v.x, _v.y, _v.z, _w);
   }
 
@@ -1215,14 +1346,89 @@ public:
   QUATERNION4<T>& operator=(const QUATERNION4<T>& other)  { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
   QUATERNION4<T>& operator+=(const T& other) { x += other; y += other; z += other;  w += other; return *this; }
   QUATERNION4<T>& operator-=(const T& other) { x -= other; y -= other; z -= other;  w -= other; return *this; }
-
-  operator T*(void) {return &x;}
-  const T *operator *(void) const {return &x;}
-  T *operator *(void) {return &x;}
 };
 
 typedef QUATERNION4<float>  FLOATQUATERNION4;
 typedef QUATERNION4<double> DOUBLEQUATERNION4;
 
+
+/// Tests to see if the two values are basically the same.
+template <class T> static bool EpsilonEqual(T a, T b) {
+  /// @todo FIXME provide specializations for types; currently this would only
+  ///       be correct if instantiated as a float!
+  return fabs(a-b) <= std::numeric_limits<T>::epsilon();
+}
+
+/// a PLANE is a VECTOR4 which is always normalized.
+template <class T> class PLANE : public VECTOR4<T> {
+public:
+  PLANE<T>(): VECTOR4<T>(0,0,0,0) {}
+  template <class S> explicit PLANE<T>( const std::vector<S>& v ) {
+    this->x = T(v.size()>0 ? v[0] : 0);
+    this->y = T(v.size()>1 ? v[1] : 0);
+    this->z = T(v.size()>2 ? v[2] : 0);
+    this->w = T(v.size()>3 ? v[3] : 0);
+  }
+  PLANE<T>(const VECTOR2<T> &other, const T _z, const T _w):
+    VECTOR4<T>(other, _z, _w) {}
+  PLANE<T>(const VECTOR3<T> &other, const T _w = 1): VECTOR4<T>(other, _w) {}
+  PLANE<T>(const VECTOR4<T> &other): VECTOR4<T>(other) {}
+
+  template <class S> explicit PLANE<T>(const PLANE<S> &other):
+    VECTOR4<T>(other) {}
+
+  PLANE<T>(const T _x, const T _y, const T _z, const T _w) :
+    VECTOR4<T>(_x,_y,_z,_w) {}
+  PLANE<T>(const T* vec) : VECTOR4<T>(vec) {}
+
+  /// @return true if the given point is clipped by this plane.
+  bool clip(VECTOR3<T> point) const {
+    return ((FLOATVECTOR4::xyz() ^ point)+this->w >= 0);
+  }
+
+  /// Transform the plane by the given matrix.
+  void transform(const MATRIX4<T> &m) {
+    FLOATMATRIX4 mIT(m.inverse());
+    mIT = mIT.Transpose();
+    transformIT(mIT);
+  }
+
+  /// Transform the plane by the inverse transpose of the given matrix.
+  void transformIT(const MATRIX4<T> &M) {
+    (*this) = FLOATVECTOR4::operator*(M);
+    normalize();
+  }
+
+  void normalize() {
+    const T x = this->x;
+    const T y = this->y;
+    const T z = this->z;
+    T length = sqrt(x*x + y*y + z*z);
+    (*this) /= length;
+  }
+  T d() const { return this->w; }
+  VECTOR3<T> normal() { return this->xyz(); }
+
+  // binary operators with a matrix
+  PLANE<T> operator * ( const MATRIX4<T>& matrix ) const {
+    PLANE<T> tmp(*this);
+    tmp.transform(matrix);
+    return tmp;
+  }
+
+  /// Determine the intersection point of the plane and a line `ab'.
+  /// @return whether or not the two intersect.  If false, `hit' will not be
+  ///         valid.
+  bool intersect(const FLOATVECTOR3& a, const FLOATVECTOR3& b,
+                 FLOATVECTOR3& hit) const {
+    const float denom = (*this) ^ (a - b);
+    if(EpsilonEqual(denom, 0.0f)) {
+      return false;
+    }
+    const float t = (((*this) ^ a) + this->d()) / denom;
+    hit = a + (t*(b - a));
+    return true;
+  }
+};
 
 #endif // VECTORS_H

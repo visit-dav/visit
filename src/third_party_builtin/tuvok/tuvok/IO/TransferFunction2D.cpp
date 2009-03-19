@@ -28,10 +28,10 @@
 
 /**
   \file    TransferFunction2D.cpp
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 1.0
   \date    September 2008
 */
 
@@ -55,7 +55,8 @@ TransferFunction2D::TransferFunction2D(const std::string& filename):
   m_iSize(0,0),
   m_pColorData(NULL),
   m_pCanvas(NULL),
-  m_pPainter(NULL)
+  m_pPainter(NULL),
+  m_bUseCachedData(false)
 {
   Load(filename);
 }
@@ -64,7 +65,8 @@ TransferFunction2D::TransferFunction2D(const VECTOR2<size_t>& iSize):
   m_iSize(iSize),
   m_pColorData(NULL),
   m_pCanvas(NULL),
-  m_pPainter(NULL)
+  m_pPainter(NULL),
+  m_bUseCachedData(false)
 {
   Resize(m_iSize);
 }
@@ -90,6 +92,33 @@ void TransferFunction2D::Resize(const VECTOR2<size_t>& iSize) {
   DeleteCanvasData();
 }
 
+bool TransferFunction2D::Load(const std::string& filename, const VECTOR2<size_t>& vTargetSize) {
+  ifstream file(filename.c_str());
+
+  if (!file.is_open()) return false;
+
+  m_iSize = vTargetSize;
+
+  // ignore the size in the file (read it but never use it again)
+  VECTOR2<size_t> vSizeInFile;
+  file >> vSizeInFile.x >> vSizeInFile.y;
+
+  // load 1D Trans
+  m_Trans1D.Load(file, vTargetSize.x);
+
+  // load swatch count
+  UINT32 iSwatchCount;
+  file >> iSwatchCount;
+  m_Swatches.resize(iSwatchCount);
+
+  // load Swatches
+  for (size_t i = 0;i<m_Swatches.size();i++) m_Swatches[i].Load(file);
+
+  file.close();
+
+  return true;
+}
+
 
 bool TransferFunction2D::Load(const std::string& filename) {
   ifstream file(filename.c_str());
@@ -103,19 +132,19 @@ bool TransferFunction2D::Load(const std::string& filename) {
   m_Trans1D.Load(file, m_iSize.x);
 
   // load swatch count
-  unsigned int iSwatchCount;
+  UINT32 iSwatchCount;
   file >> iSwatchCount;
   m_Swatches.resize(iSwatchCount);
 
   // load Swatches
-  for (unsigned int i = 0;i<m_Swatches.size();i++) m_Swatches[i].Load(file);
+  for (size_t i = 0;i<m_Swatches.size();i++) m_Swatches[i].Load(file);
 
   file.close();
 
   return true;
 }
 
-bool TransferFunction2D::Save(const std::string& filename) {
+bool TransferFunction2D::Save(const std::string& filename) const {
   ofstream file(filename.c_str());
 
   if (!file.is_open()) return false;
@@ -130,7 +159,7 @@ bool TransferFunction2D::Save(const std::string& filename) {
   file << m_Swatches.size() << endl;
 
   // save Swatches
-  for (unsigned int i = 0;i<m_Swatches.size();i++) m_Swatches[i].Save(file);
+  for (size_t i = 0;i<m_Swatches.size();i++) m_Swatches[i].Save(file);
 
   file.close();
 
@@ -156,7 +185,8 @@ void TransferFunction2D::GetByteArray(unsigned char** pcData) {
 }
 
 
-void TransferFunction2D::GetByteArray(unsigned char** pcData, unsigned char cUsedRange) {
+void TransferFunction2D::GetByteArray(unsigned char** pcData,
+                                      unsigned char cUsedRange) {
   if (*pcData == NULL) *pcData = new unsigned char[m_iSize.area()*4];
 
   float fScale = 255.0f/float(cUsedRange);
@@ -180,13 +210,14 @@ void TransferFunction2D::GetByteArray(unsigned char** pcData, unsigned char cUse
   }
 }
 
-void TransferFunction2D::GetShortArray(unsigned short** psData, unsigned short sUsedRange) {
+void TransferFunction2D::GetShortArray(unsigned short** psData,
+                                       unsigned short sUsedRange) {
   if (*psData == NULL) *psData = new unsigned short[m_iSize.area()*4];
 
   RenderTransferFunction();
   unsigned short *psDataIterator = *psData;
   FLOATVECTOR4  *piSourceIterator = m_pColorData->GetDataPointer();
-  for (unsigned int i = 0;i<m_pColorData->GetSize().area();i++) {
+  for (size_t i = 0;i<m_pColorData->GetSize().area();i++) {
     *psDataIterator++ = (unsigned short)((*piSourceIterator)[0]*sUsedRange);
     *psDataIterator++ = (unsigned short)((*piSourceIterator)[1]*sUsedRange);
     *psDataIterator++ = (unsigned short)((*piSourceIterator)[2]*sUsedRange);
@@ -205,9 +236,9 @@ void TransferFunction2D::GetFloatArray(float** pfData) {
 int m_iSwatchBorderSize = 0;
 int m_iBorderSize  = 0;
 
-INTVECTOR2 TransferFunction2D::Rel2Abs(FLOATVECTOR2 vfCoord) {
+INTVECTOR2 TransferFunction2D::Rel2Abs(FLOATVECTOR2 vfCoord) const {
   return INTVECTOR2(int(m_iSwatchBorderSize/2+ m_iBorderSize/2+vfCoord.x* (m_iSize.x-m_iBorderSize-m_iSwatchBorderSize)),
-		                int(m_iSwatchBorderSize/2+m_iBorderSize/2+vfCoord.y*(m_iSize.y-m_iBorderSize-m_iSwatchBorderSize)));
+                    int(m_iSwatchBorderSize/2+m_iBorderSize/2+vfCoord.y*(m_iSize.y-m_iBorderSize-m_iSwatchBorderSize)));
 }
 
 unsigned char* TransferFunction2D::RenderTransferFunction8Bit() {
@@ -298,24 +329,24 @@ void TransferFunction2D::Update1DTrans(const TransferFunction1D* p1DTrans) {
   size_t iSize = min<size_t>(m_iSize.x,  m_Trans1D.GetSize());
 
   m_Trans1DImage = QImage(int(iSize), 1, QImage::Format_ARGB32);
-  for (unsigned int i = 0;i<iSize;i++) {
-    m_Trans1DImage.setPixel(i,0,qRgba(int(m_Trans1D.vColorData[i][0]*255),
-                                    int(m_Trans1D.vColorData[i][1]*255),
-                                    int(m_Trans1D.vColorData[i][2]*255),
-                                    int(m_Trans1D.vColorData[i][3]*255)));
+  for (size_t i = 0;i<iSize;i++) {
+    m_Trans1DImage.setPixel(int(i),0,qRgba(int(m_Trans1D.vColorData[i][0]*255),
+                                           int(m_Trans1D.vColorData[i][1]*255),
+                                           int(m_Trans1D.vColorData[i][2]*255),
+                                           int(m_Trans1D.vColorData[i][3]*255)));
   }
 
 }
 
-// ************************************************************************************************************
+// ***************************************************************************
 
 void TFPolygon::Load(ifstream& file) {
-  unsigned int iSize;
+  UINT32 iSize;
   file >> iSize;
   pPoints.resize(iSize);
 
-  for(unsigned int i=0;i<pPoints.size();++i){
-    for(unsigned int j=0;j<2;++j){
+  for(size_t i=0;i<pPoints.size();++i){
+    for(size_t j=0;j<2;++j){
       file >> pPoints[i][j];
     }
   }
@@ -325,20 +356,20 @@ void TFPolygon::Load(ifstream& file) {
 
   file >> iSize;
   pGradientStops.resize(iSize);
-  for(unsigned int i=0;i<pGradientStops.size();++i){
+  for(size_t i=0;i<pGradientStops.size();++i){
     file >> pGradientStops[i].first;
-    for(unsigned int j=0;j<4;++j){
+    for(size_t j=0;j<4;++j){
       file >> pGradientStops[i].second[j];
     }
   }
 
 }
 
-void TFPolygon::Save(ofstream& file) {
-  file << pPoints.size() << endl;
+void TFPolygon::Save(ofstream& file) const {
+  file << UINT32(pPoints.size()) << endl;
 
-  for(unsigned int i=0;i<pPoints.size();++i){
-    for(unsigned int j=0;j<2;++j){
+  for(size_t i=0;i<pPoints.size();++i){
+    for(size_t j=0;j<2;++j){
       file << pPoints[i][j] << " ";
     }
     file << endl;
@@ -349,9 +380,9 @@ void TFPolygon::Save(ofstream& file) {
   file << endl;
   file << pGradientStops.size() << endl;
 
-  for(unsigned int i=0;i<pGradientStops.size();++i){
+  for(size_t i=0;i<pGradientStops.size();++i){
     file << pGradientStops[i].first << "  ";
-    for(unsigned int j=0;j<4;++j){
+    for(size_t j=0;j<4;++j){
       file << pGradientStops[i].second[j] << " ";
     }
     file << endl;

@@ -1,0 +1,14 @@
+This is a small and relatively arbitrary subset of the Boost libraries which we
+have found useful in developing Tuvok.  The full Boost distribution is
+available online:
+
+  http://www.boost.org/
+
+If you want to use any of this code in your own software, we strongly
+discourage you from using this version of the source.  Tuvok and Boost are
+distributed under different but compatible license; for more details, visit
+  http://www.boost.org/users/license.html
+for more information.
+
+Please report issues with this code to the Tuvok development team, NOT the
+Boost library maintainers!

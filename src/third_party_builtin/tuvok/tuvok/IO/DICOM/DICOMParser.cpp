@@ -28,22 +28,22 @@
 
 /**
   \file    DICOMParser.cpp
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.2
+  \author  Jens Krueger
+           SCI Institute
+           University of Utah
+  \version 1.2
   \date    September 2008
 */
 
 #include "DICOMParser.h"
 
 #ifdef DEBUG_DICOM
-  #include "../../Basics/Console.h"
+  #include <Basics/Console.h>
   #include <sstream>
 #endif
 
 #include <sys/stat.h>
-#include "../../Basics/SysTools.h"
+#include <Basics/SysTools.h>
 #include <algorithm>
 
 std::string DICOM_TypeStrings[28] = {
@@ -101,19 +101,19 @@ void DICOMParser::GetDirInfo(string  strDirectory) {
   vector<DICOMFileInfo> fileInfos;
 
   // query directory for DICOM files
-  for (unsigned int i = 0;i<files.size();i++) {
+  for (size_t i = 0;i<files.size();i++) {
     DICOMFileInfo info;
     if (GetDICOMFileInfo(strDirectory+"/"+files[i], info)) fileInfos.push_back(info);
   }
 
   // sort results into stacks
-  for (unsigned int i = 0; i<m_FileStacks.size(); i++) delete m_FileStacks[i];
+  for (size_t i = 0; i<m_FileStacks.size(); i++) delete m_FileStacks[i];
   m_FileStacks.clear();
 
 
-  for (unsigned int i = 0; i<fileInfos.size(); i++) {
+  for (size_t i = 0; i<fileInfos.size(); i++) {
     bool bFoundMatch = false;
-    for (unsigned int j = 0; j<m_FileStacks.size(); j++) {
+    for (size_t j = 0; j<m_FileStacks.size(); j++) {
       if (((DICOMStackInfo*)m_FileStacks[j])->Match(&fileInfos[i])) {
         bFoundMatch = true;
         break;
@@ -129,7 +129,7 @@ void DICOMParser::GetDirInfo(string  strDirectory) {
   sort( m_FileStacks.begin( ), m_FileStacks.end( ), StacksSmaller );
 
   // fix Z aspect ratio - which is broken in many DICOMs - using the patient position
-  for (unsigned int i = 0; i<m_FileStacks.size(); i++) {
+  for (size_t i = 0; i<m_FileStacks.size(); i++) {
     if (m_FileStacks[i]->m_Elements.size() < 2) continue;    
     float fZDistance = fabs(((SimpleDICOMFileInfo*)m_FileStacks[i]->m_Elements[1])->m_fvPatientPosition.z - 
                             ((SimpleDICOMFileInfo*)m_FileStacks[i]->m_Elements[0])->m_fvPatientPosition.z);
@@ -142,7 +142,7 @@ void DICOMParser::GetDirInfo(wstring wstrDirectory) {
   GetDirInfo(strDirectory);
 }
 
-void DICOMParser::ReadHeaderElemStart(ifstream& fileDICOM, short& iGroupID, short& iElementID, DICOM_eType& eElementType, unsigned int& iElemLength, bool bImplicit, bool bNeedsEndianConversion) {
+void DICOMParser::ReadHeaderElemStart(ifstream& fileDICOM, short& iGroupID, short& iElementID, DICOM_eType& eElementType, UINT32& iElemLength, bool bImplicit, bool bNeedsEndianConversion) {
   string typeString = "  ";
 
   fileDICOM.read((char*)&iGroupID,2);
@@ -161,7 +161,7 @@ void DICOMParser::ReadHeaderElemStart(ifstream& fileDICOM, short& iGroupID, shor
   if (bImplicit) {
     eElementType = TYPE_Implicit;
     fileDICOM.read((char*)&iElemLength,4);
-    if (bNeedsEndianConversion) iElemLength = EndianConvert::Swap<unsigned int>(iElemLength);
+    if (bNeedsEndianConversion) iElemLength = EndianConvert::Swap<UINT32>(iElemLength);
   } else {
     fileDICOM.read(&typeString[0],2);    
     short tmp;
@@ -169,16 +169,16 @@ void DICOMParser::ReadHeaderElemStart(ifstream& fileDICOM, short& iGroupID, shor
     if (bNeedsEndianConversion) tmp = EndianConvert::Swap<short>(tmp);
     iElemLength = tmp;
     eElementType = TYPE_UN;
-    for (uint i = 0;i<27;i++) {
+    for (UINT32 i = 0;i<27;i++) {
       if (typeString == DICOM_TypeStrings[i]) eElementType = DICOM_eType(i);
     }
   }
 }
 
 
-unsigned int DICOMParser::GetUInt(ifstream& fileDICOM, const DICOM_eType eElementType, const unsigned int iElemLength, const bool bNeedsEndianConversion) {
+UINT32 DICOMParser::GetUInt(ifstream& fileDICOM, const DICOM_eType eElementType, const UINT32 iElemLength, const bool bNeedsEndianConversion) {
   string value;
-  unsigned int result;
+  UINT32 result;
   switch (eElementType) {
     case TYPE_Implicit :
     case TYPE_IS  : {
@@ -189,7 +189,7 @@ unsigned int DICOMParser::GetUInt(ifstream& fileDICOM, const DICOM_eType eElemen
             }
     case TYPE_UL  : {
               fileDICOM.read((char*)&result,4);
-              if (bNeedsEndianConversion) result = EndianConvert::Swap<unsigned int>(result);
+              if (bNeedsEndianConversion) result = EndianConvert::Swap<UINT32>(result);
               break;
             }
     case TYPE_US  : {
@@ -206,14 +206,14 @@ unsigned int DICOMParser::GetUInt(ifstream& fileDICOM, const DICOM_eType eElemen
 
 
 #ifdef DEBUG_DICOM
-void DICOMParser::ParseUndefLengthSequence(ifstream& fileDICOM, short& iSeqGroupID, short& iSeqElementID, DICOMFileInfo& info, const bool bImplicit, const bool bNeedsEndianConversion, unsigned int iDepth) {
+void DICOMParser::ParseUndefLengthSequence(ifstream& fileDICOM, short& iSeqGroupID, short& iSeqElementID, DICOMFileInfo& info, const bool bImplicit, const bool bNeedsEndianConversion, UINT32 iDepth) {
   for (int i = 0;i<int(iDepth)-1;i++) Console::printf("  ");
   Console::printf("iGroupID=%x iElementID=%x elementType=SEQUENCE (undef length)\n", iSeqGroupID, iSeqElementID);
 #else
 void DICOMParser::ParseUndefLengthSequence(ifstream& fileDICOM, short& , short& , DICOMFileInfo& info, const bool bImplicit, const bool bNeedsEndianConversion) {
 #endif
   int iItemCount = 0;
-  unsigned int iData;
+  UINT32 iData;
 
   string value;
   short iGroupID, iElementID;
@@ -226,14 +226,14 @@ void DICOMParser::ParseUndefLengthSequence(ifstream& fileDICOM, short& , short& 
       iItemCount++;
       fileDICOM.read((char*)&iData,4);
       #ifdef DEBUG_DICOM
-        for (unsigned int i = 0;i<iDepth;i++) Console::printf("  ");
+        for (UINT32 i = 0;i<iDepth;i++) Console::printf("  ");
         Console::printf("START ITEM\n");
       #endif
     } else if (iData == 0xE00DFFFE) {
       iItemCount--;
       fileDICOM.read((char*)&iData,4);
       #ifdef DEBUG_DICOM
-        for (unsigned int i = 0;i<iDepth;i++) Console::printf("  ");
+        for (UINT32 i = 0;i<iDepth;i++) Console::printf("  ");
         Console::printf("END ITEM\n");
       #endif
     } else if (iData != 0xE0DDFFFE) fileDICOM.seekg(-4, ios_base::cur);
@@ -268,7 +268,7 @@ void DICOMParser::ParseUndefLengthSequence(ifstream& fileDICOM, short& , short& 
           value.resize(iData);
           fileDICOM.read(&value[0],iData);
           #ifdef DEBUG_DICOM
-            for (unsigned int i = 0;i<iDepth;i++) Console::printf("  ");
+            for (UINT32 i = 0;i<iDepth;i++) Console::printf("  ");
             Console::printf("iGroupID=%x iElementID=%x elementType=%s value=%s\n", iGroupID, iElementID, DICOM_TypeStrings[int(elementType)].c_str(), value.c_str());
           #endif
         }
@@ -279,13 +279,13 @@ void DICOMParser::ParseUndefLengthSequence(ifstream& fileDICOM, short& , short& 
   fileDICOM.read((char*)&iData,4);
 
 #ifdef DEBUG_DICOM
-  for (unsigned int i = 0;i<iDepth;i++) Console::printf("  ");
+  for (UINT32 i = 0;i<iDepth;i++) Console::printf("  ");
   Console::printf("END SEQUENCE\n");
 #endif
 
 }
 
-void DICOMParser::SkipUnusedElement(ifstream& fileDICOM, string& value, const unsigned int iElemLength) {
+void DICOMParser::SkipUnusedElement(ifstream& fileDICOM, string& value, const UINT32 iElemLength) {
   value.resize(iElemLength);
   fileDICOM.read(&value[0],iElemLength);
 }
@@ -298,7 +298,8 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename, DICOMFileInfo& inf
 
   struct stat stat_buf;
   
-  bool bImplicit = false;
+  bool bImplicit    = false;
+  info.m_bIsJPEGEncoded = false;
   bool bNeedsEndianConversion = EndianConvert::IsBigEndian();
 
   info.m_strFileName = strFilename;
@@ -323,7 +324,7 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename, DICOMFileInfo& inf
   string value;
   float fSliceSpacing = 0;
   short iGroupID, iElementID;
-  unsigned int iElemLength;
+  UINT32 iElemLength;
   DICOM_eType elementType;
 
   // read metadata block
@@ -365,8 +366,25 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename, DICOMFileInfo& inf
               #ifdef DEBUG_DICOM
                 Console::printf("DICOM file is Explicit VR Big Endian\n");
               #endif
+            } else if (value == "1.2.840.10008.1.2.4.50" ||   // JPEG Baseline            ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.51" ||   // JPEG Extended            ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.55" ||   // JPEG Progressive         ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.57" ||   // JPEG Lossless            ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.58" ||   // JPEG Lossless            ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.70" ||   // JPEG Lossless            ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.80" ||   // JPEG-LS Lossless         ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.81" ||   // JPEG-LS Near-lossless    ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.90" ||   // JPEG 2000 Lossless       ( untested due to lack of example DICOMS)
+                       value == "1.2.840.10008.1.2.4.90" ) {  // JPEG 2000                ( untested due to lack of example DICOMS)
+              info.m_bIsJPEGEncoded = true;
+              bImplicit = false;
+              bNeedsEndianConversion = EndianConvert::IsBigEndian();
+              info.m_bIsBigEndian = false;
+              #ifdef DEBUG_DICOM
+                Console::printf("DICOM file is Explicit VR Big Endian\n");
+              #endif
             } else {
-              return false; // unsupported file format, must be some JPEG compressed stuff
+              return false; // unsupported file format
             }
            } break;
       default : {
@@ -640,14 +658,23 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename, DICOMFileInfo& inf
     
     if (!bImplicit) {
       // for an explicit file we can actually check if we found the pixel data block (and not some color table)
-      unsigned int iPixelDataSize = info.m_ivSize.volume() * info.m_iAllocated / 8;
-      unsigned int iDataSizeInFile;
+      UINT32 iPixelDataSize = info.m_ivSize.volume() * info.m_iAllocated / 8;
+      UINT32 iDataSizeInFile;
       fileDICOM.read((char*)&iDataSizeInFile,4);
 
-      if (iPixelDataSize != iDataSizeInFile) {
-        elementType = TYPE_UN;
-      } else info.SetOffsetToData((unsigned int)fileDICOM.tellg());
-    } else info.SetOffsetToData((unsigned int)fileDICOM.tellg());  // otherwise just believe we have found the right data block
+      if (info.m_bIsJPEGEncoded) {
+        unsigned char iJPEGID[2];
+        while (!fileDICOM.eof()) {
+          fileDICOM.read((char*)iJPEGID,2);
+          if (iJPEGID[0] == 0xFF && iJPEGID[1] == 0xE0 ) break;
+        }
+        info.SetOffsetToData(UINT32(int(fileDICOM.tellg())-4));
+      } else {
+        if (iPixelDataSize != iDataSizeInFile) {
+          elementType = TYPE_UN;
+        } else info.SetOffsetToData(UINT32(fileDICOM.tellg()));
+      }
+    } else info.SetOffsetToData(UINT32(fileDICOM.tellg()));  // otherwise just believe we have found the right data block
   } 
 
   if (elementType == TYPE_UN) {
@@ -659,7 +686,7 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename, DICOMFileInfo& inf
     size_t iFileLength = fileDICOM.tellg();
     fileDICOM.seekg(iPosition,ios::beg);
 
-    unsigned int iPixelDataSize = info.m_iComponentCount * info.m_ivSize.volume() * info.m_iAllocated / 8;
+    UINT32 iPixelDataSize = info.m_iComponentCount * info.m_ivSize.volume() * info.m_iAllocated / 8;
 
     bool bOK = false;
     do {
@@ -679,8 +706,8 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename, DICOMFileInfo& inf
 
         if (bOK) {
           if (!bImplicit) {
-            unsigned int iPixelDataSize = info.m_ivSize.volume() * info.m_iAllocated / 8;
-            unsigned int iDataSizeInFile;
+            UINT32 iPixelDataSize = info.m_ivSize.volume() * info.m_iAllocated / 8;
+            UINT32 iDataSizeInFile;
             fileDICOM.read((char*)&iDataSizeInFile,4);
 
             if (iPixelDataSize != iDataSizeInFile) bOK = false;
@@ -696,7 +723,7 @@ bool DICOMParser::GetDICOMFileInfo(const string& strFilename, DICOMFileInfo& inf
     } while(iGroupID == 0x7fe0);
 
     if (!bOK) { // ok everthing failed than let's just use the data we have so far, and let's hope that the file ends with the data
-      info.SetOffsetToData((unsigned int)iFileLength - iPixelDataSize);
+      info.SetOffsetToData(UINT32(iFileLength - size_t(iPixelDataSize)));
     }
 
   }
@@ -737,7 +764,7 @@ SimpleDICOMFileInfo::SimpleDICOMFileInfo(const SimpleDICOMFileInfo* other) :
 {
 }
 
-bool SimpleDICOMFileInfo::GetData(void* pData, unsigned int iLength, unsigned int iOffset) {
+bool SimpleDICOMFileInfo::GetData(void* pData, UINT32 iLength, UINT32 iOffset) {
   ifstream fs;
   fs.open(m_strFileName.c_str(),fstream::binary);
   if (fs.fail()) return false;
@@ -766,6 +793,7 @@ DICOMFileInfo::DICOMFileInfo() :
   m_iStored(0),
   m_iComponentCount(1),
   m_bIsBigEndian(false),
+  m_bIsJPEGEncoded(false),
   m_strAcquDate(""),
   m_strAcquTime(""),
   m_strModality(""),
@@ -781,6 +809,7 @@ DICOMFileInfo::DICOMFileInfo(const std::string& strFileName) :
   m_iStored(0),
   m_iComponentCount(1),
   m_bIsBigEndian(false),
+  m_bIsJPEGEncoded(false),
   m_strAcquDate(""),
   m_strAcquTime(""),
   m_strModality(""),
@@ -797,13 +826,14 @@ DICOMFileInfo::DICOMFileInfo(const std::wstring& wstrFileName) :
   m_iStored(0),
   m_iComponentCount(1),
   m_bIsBigEndian(false),
+  m_bIsJPEGEncoded(false),
   m_strAcquDate(""),
   m_strAcquTime(""),
   m_strModality(""),
   m_strDesc("")
 {}
 
-void DICOMFileInfo::SetOffsetToData(const unsigned int iOffset) {
+void DICOMFileInfo::SetOffsetToData(const UINT32 iOffset) {
   m_iOffsetToData = iOffset;
   m_iDataSize = m_iComponentCount*m_ivSize.volume()*m_iAllocated/8;
 }
@@ -820,7 +850,7 @@ DICOMStackInfo::DICOMStackInfo() :
 
 DICOMStackInfo::DICOMStackInfo(const DICOMFileInfo* fileInfo) :
   FileStackInfo(fileInfo->m_ivSize, fileInfo->m_fvfAspect, fileInfo->m_iAllocated, fileInfo->m_iStored,
-                fileInfo->m_iComponentCount, fileInfo->m_bIsBigEndian, fileInfo->m_strDesc, "DICOM"),
+                fileInfo->m_iComponentCount, fileInfo->m_bIsBigEndian, fileInfo->m_bIsJPEGEncoded, fileInfo->m_strDesc, "DICOM"),
   m_iSeries(fileInfo->m_iSeries),
   m_strAcquDate(fileInfo->m_strAcquDate),
   m_strAcquTime(fileInfo->m_strAcquTime),
@@ -841,10 +871,11 @@ DICOMStackInfo::DICOMStackInfo(const DICOMStackInfo* other) :
   m_iStored         = other->m_iStored;
   m_iComponentCount = other->m_iComponentCount;
   m_bIsBigEndian    = other->m_bIsBigEndian;
+  m_bIsJPEGEncoded  = other->m_bIsJPEGEncoded;
   m_strDesc         = other->m_strDesc;
   m_strFileType     = other->m_strFileType;
 
-  for (unsigned int i=0;i<other->m_Elements.size();i++) {
+  for (size_t i=0;i<other->m_Elements.size();i++) {
     SimpleDICOMFileInfo* e = new SimpleDICOMFileInfo((SimpleDICOMFileInfo*)other->m_Elements[i]);
     m_Elements.push_back(e);
   }
@@ -859,6 +890,7 @@ bool DICOMStackInfo::Match(const DICOMFileInfo* info) {
     m_iComponentCount == info->m_iComponentCount &&
     m_fvfAspect       == info->m_fvfAspect &&
     m_bIsBigEndian    == info->m_bIsBigEndian &&
+    m_bIsJPEGEncoded  == info->m_bIsJPEGEncoded &&
     m_strAcquDate     == info->m_strAcquDate &&
     //m_strAcquTime   == info->m_strAcquTime &&
     m_strModality     == info->m_strModality &&

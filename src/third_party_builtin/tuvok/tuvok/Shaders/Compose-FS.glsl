@@ -56,7 +56,7 @@ void main(void){
   if (vPosition.a == 0.0) discard;
   
   // get hit normal
-  vec3  vNormal  = texture2D(texRayHitNormal, vFragCoords).xyz;  
+  vec3  vNormal  = abs(texture2D(texRayHitNormal, vFragCoords).xyz);
 
 	// compute lighting
 	vec3 vViewDir    = normalize(vec3(0.0,0.0,0.0)-vPosition.xyz);
