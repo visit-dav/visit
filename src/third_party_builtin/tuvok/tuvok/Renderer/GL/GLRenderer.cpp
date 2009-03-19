@@ -1295,7 +1295,10 @@ bool GLRenderer::LoadAndVerifyShader(string strVSFile, string strFSFile, const s
     string strCompleteVSFile = strDirs[i] + "/" + strVSFile;
     string strCompleteFSFile = strDirs[i] + "/" + strFSFile;
 
-    if (LoadAndVerifyShader(strCompleteVSFile, strCompleteFSFile, pShaderProgram, false)) return true;
+    if (LoadAndVerifyShader(strCompleteVSFile, strCompleteFSFile, pShaderProgram, false))
+      return true;
+
+    MESSAGE("Shader %s not found.", strCompleteVSFile.c_str());
   }
 
   // if all else fails probe current directory and all of its subdirectories

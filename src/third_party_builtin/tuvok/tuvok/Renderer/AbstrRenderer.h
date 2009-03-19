@@ -181,7 +181,9 @@ class AbstrRenderer {
     /// which don't want to use the LOD subsystem.
     void SetDataSet(VolumeDataset *vds);
 
-    const VolumeDataset*      GetDataSet() const {return m_pDataset;}
+    VolumeDataset&       GetDataSet()       { return *m_pDataset; }
+    const VolumeDataset& GetDataSet() const { return *m_pDataset; }
+
     TransferFunction1D* Get1DTrans() {return m_p1DTrans;}
     TransferFunction2D* Get2DTrans() {return m_p2DTrans;}
 
@@ -341,6 +343,12 @@ class AbstrRenderer {
     void SetMIPRotationAngle(float fAngle) {
       m_fMIPRotationAngle = fAngle;
       m_bPerformRedraw = true;
+    }
+
+    /// Appends the given directory to the list of paths Tuvok will try to find
+    /// shaders in.
+    void AddShaderPath(const std::string &path) {
+      m_vShaderSearchDirs.push_back(path);
     }
 
   protected:

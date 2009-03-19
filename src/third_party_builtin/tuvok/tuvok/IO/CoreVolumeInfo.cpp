@@ -3,7 +3,7 @@
 
    The MIT License
 
-   Copyright (c) 2008 Scientific Computing and Imaging Institute,
+   Copyright (c) 2009 Scientific Computing and Imaging Institute,
    University of Utah.
 
 
@@ -27,40 +27,39 @@
 */
 
 /**
-  \file    GLInclude.h
-  \author  Jens Krueger
+  \author  Tom Fogal
            SCI Institute
            University of Utah
-  \date    August 2008
 */
 
-#pragma once
+#include "CoreVolumeInfo.h"
 
-#ifndef GLINCLUDE_H
-#define GLINCLUDE_H
+CoreVolumeInfo::CoreVolumeInfo()
+{
+  m_aOverlap = UINT64VECTOR3(0,0,0);
+  m_vfRescale.push_back(1); // data should not be scaled
+  m_vfRescale.push_back(1);
+  m_vfRescale.push_back(1);
+}
 
-#include "../../StdTuvokDefines.h"
-#include <GL/glew.h>
+bool CoreVolumeInfo::ContainsData(const UINT64,
+                                  const UINT64VECTOR3&,
+                                  double) const
+{
+  return true;
+}
 
-#ifdef WIN32
-  #include <GL/wglew.h>
-  #include <windows.h>
-  // undef stupid windows defines to max and min
-  #ifdef max
-  #undef max
-  #endif
+bool CoreVolumeInfo::ContainsData(const UINT64,
+                                  const UINT64VECTOR3&,
+                                  double, double) const
+{
+  return true;
+}
 
-  #ifdef min
-  #undef min
-  #endif
-#else
-  // #include "../../3rdParty/GLEW/glxew.h" // glxew and QT do not really like each other
-#endif
-
-#ifdef TUVOK_OS_APPLE
-  #include <OpenGL/gl.h>
-#else
-  #include <GL/gl.h>
-#endif
-
-#endif // GLINCLUDE_H
+bool CoreVolumeInfo::ContainsData(const UINT64,
+                                  const UINT64VECTOR3&,
+                                  double, double,
+                                  double, double) const
+{
+  return true;
+}

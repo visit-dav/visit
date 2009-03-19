@@ -69,23 +69,23 @@ class VolumeDatasetInfo {
       return DOUBLEVECTOR3(m_vfRescale[0], m_vfRescale[1], m_vfRescale[2]);
     }
 
-    UINT64VECTOR3 GetBrickCount(const UINT64 iLOD) const;
-    UINT64VECTOR3 GetBrickSize(const UINT64 iLOD,
-                               const UINT64VECTOR3& vBrick) const;
-    FLOATVECTOR3 GetEffectiveBrickSize(const UINT64 iLOD,
+    virtual UINT64VECTOR3 GetBrickCount(const UINT64 iLOD) const;
+    virtual UINT64VECTOR3 GetBrickSize(const UINT64 iLOD,
                                        const UINT64VECTOR3& vBrick) const;
-    UINT64VECTOR3 GetDomainSize(const UINT64 iLOD=0) const;
+    virtual FLOATVECTOR3 GetEffectiveBrickSize(const UINT64 iLOD,
+                                               const UINT64VECTOR3& vBrick) const;
+    virtual UINT64VECTOR3 GetDomainSize(const UINT64 iLOD=0) const;
     UINT64VECTOR3 GetMaxBrickSize() const;
     UINT64VECTOR3 GetBrickOverlapSize() const;
     UINT64 GetLODLevelCount() const;
     DOUBLEVECTOR3 GetScale() const;
-    bool ContainsData(const UINT64 iLOD, const UINT64VECTOR3& vBrick,
-                      double fIsoval) const;
-    bool ContainsData(const UINT64 iLOD, const UINT64VECTOR3& vBrick,
-                      double fMin, double fMax) const;
-    bool ContainsData(const UINT64 iLOD, const UINT64VECTOR3& vBrick,
-                      double fMin, double fMax,
-                      double fMinGrad, double fMaxGrad) const;
+    virtual bool ContainsData(const UINT64 iLOD, const UINT64VECTOR3& vBrick,
+                              double fIsoval) const;
+    virtual bool ContainsData(const UINT64 iLOD, const UINT64VECTOR3& vBrick,
+                              double fMin, double fMax) const;
+    virtual bool ContainsData(const UINT64 iLOD, const UINT64VECTOR3& vBrick,
+                              double fMin, double fMax,
+                              double fMinGrad, double fMaxGrad) const;
 
     void SetRescaleFactorsND(std::vector<double> vfRescale) {
       m_vfRescale = vfRescale;
@@ -117,6 +117,11 @@ class VolumeDatasetInfo {
     }
     bool IsSameEndianess() const {return m_bIsSameEndianess;}
 
+  protected:
+    UINT64VECTOR3               m_aOverlap;
+    // set externally by the user
+    std::vector<double>         m_vfRescale;
+
   private:
     VolumeDatasetInfo(RasterDataBlock* pVolumeDataBlock,
                       MaxMinDataBlock* pMaxMinData, bool bIsSameEndianess);
@@ -126,16 +131,12 @@ class VolumeDatasetInfo {
     // read from the dataset
     bool                        m_bIsSameEndianess;
     std::vector<UINT64VECTOR3>  m_aDomainSize;
-    UINT64VECTOR3               m_aOverlap;
     UINT64VECTOR3               m_aMaxBrickSize;
     UINT64                      m_iLODLevel;
     DOUBLEVECTOR3               m_aScale;
     std::vector<UINT64VECTOR3>  m_vaBrickCount;
     std::vector< std::vector< std::vector<std::vector<UINT64VECTOR3> > > >m_vvaBrickSize;
     std::vector< std::vector< std::vector<std::vector<InternalMaxMinElemen> > > >m_vvaMaxMin;
-
-    // set externally by the user
-    std::vector<double>         m_vfRescale;
 
     friend class VolumeDataset;
 };
@@ -178,6 +179,7 @@ public:
 protected:
   Histogram1D*        m_pHist1D;
   Histogram2D*        m_pHist2D;
+  VolumeDatasetInfo*  m_pVolumeDatasetInfo;
 
 private:
   RasterDataBlock*         m_pVolumeDataBlock;
@@ -188,7 +190,6 @@ private:
 
   bool                m_bIsOpen;
   std::string         m_strFilename;
-  VolumeDatasetInfo*  m_pVolumeDatasetInfo;
 
   bool Open(bool bVerify);
 };
