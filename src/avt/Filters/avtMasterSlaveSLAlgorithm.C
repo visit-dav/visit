@@ -845,6 +845,11 @@ avtMasterSLAlgorithm::ProcessMasterUpdate(vector<int> &status)
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
+//  Modify how masters handle offloading work to other masters.
+//
 // ****************************************************************************
 
 void
@@ -863,30 +868,32 @@ avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
 
     debug1<<"Doms to consider: "<<doms<<endl;
 
-    bool flag = false;
-    for (int i = 0; !flag && i < slaveInfo.size(); i++)
+    // Find slaves with domains send offload message.
+    for (int i = 0; i < slaveInfo.size(); i++)
     {
         debug1<<" "<<slaveInfo[i].rank<<": "<<slaveInfo[i].slCount<<endl;
         if (slaveInfo[i].slCount > 0)
         {
-            for (int d = 0; !flag && d < doms.size(); d++)
+            vector<int> domsToSend;
+            for (int d = 0; d < doms.size(); d++)
             {
                 if (slaveInfo[i].domainCnt[doms[d]] > 0)
-                {
-                    debug1<<"Send OFFLOAD MSG: "<<slaveInfo[i].rank<<" ==> "<<dst<<endl;
-                    vector<int> msg;
-                    msg.push_back(MSG_OFFLOAD_SL);
-                    msg.push_back(dst);
-                    DomainType dd = IdxToDom(doms[d]);
-                    msg.push_back(dd.domain);
-                    msg.push_back(dd.timeStep);
-                    msg.push_back(10*maxCnt); //TODO. Fix this!
-                    
-                    slaveInfo[i].RemoveSL(doms[d]);
-                    SendMsg(slaveInfo[i].rank, msg);
-                    
-                    flag = true;
-                }
+                    domsToSend.push_back(doms[d]);
+            }
+
+            // This slave has some domains that this master has loaded.
+            if (domsToSend.size() > 0)
+            {
+                vector<int> msg;
+                msg.push_back(MSG_OFFLOAD_SL);
+                msg.push_back(dst);
+                msg.push_back(domsToSend.size());
+                for (int j = 0; j < domsToSend.size(); j++)
+                    msg.push_back(domsToSend[j]);
+                //slaveInfo[i].RemoveSL(doms[d]);
+                
+                debug1<<"Send OFFLOAD MSG: "<<slaveInfo[i].rank<<" ==> "<<dst<<" "<<msg<<endl;
+                SendMsg(slaveInfo[i].rank, msg);
             }
         }
     }
@@ -1018,6 +1025,11 @@ avtMasterSLAlgorithm::ManageSlaves()
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
+//  Randomize the idle/busy pairings. This should provide better balancing.
+//
 // ****************************************************************************
 
 void
@@ -1040,21 +1052,24 @@ avtMasterSLAlgorithm::ManageMasters()
         }
     }
 
+    // Nothing to do!
+    if (idleMasters.size() == 0 ||
+        busyMasters.size() == 0)
+        return;
+    
+    //Randomize things.
+    random_shuffle(idleMasters.begin(), idleMasters.end());
+    random_shuffle(busyMasters.begin(), busyMasters.end());
+    
     debug1<<"IdleMasters: "<<idleMasters<<endl;
     debug1<<"BusyMasters: "<<busyMasters<<endl;
 
-    // Everyone busy, leave them be.
-    if (idleMasters.size() == 0)
-        return;
-
-    // Randomly pair busy w/ an idle, share info.
-    //random_shuffle(idleMasters.begin(), idleMasters.end());
-    //random_shuffle(busyMasters.begin(), busyMasters.end());
-
+    // Tell each busyMaster to offload to an idleMaster.
     int N = idleMasters.size();
     if (busyMasters.size() < N)
         N = busyMasters.size();
-
+    
+    //TODO: Should we wrap around?
     for (int i = 0; i < N; i++)
     {
         // Have busy
@@ -1064,7 +1079,7 @@ avtMasterSLAlgorithm::ManageMasters()
         for (int j = 0; j < NUM_DOMAINS; j++)
             msg[2+j] = masterInfo[idleMasters[i]].domainLoaded[j];
         
-        debug1<<"Send Offload to "<<busyMasters[i]<<" : "<<msg<<endl;
+        debug1<<busyMasters[i]<<": MasterOffload to "<<idleMasters[i]<<" : "<<msg<<endl;
         if (busyMasters[i] == rank)
         {
             msg.insert(msg.begin(), rank);
@@ -1073,44 +1088,6 @@ avtMasterSLAlgorithm::ManageMasters()
         else
             SendMsg(busyMasters[i], msg);
     }
-    
-    return;
-    
-    
-    // I have SLs, give some away!
-    if (! activeSLs.empty())
-    {
-        for (int i = 0; i < masterInfo.size(); i++)
-            if (masterInfo[i].slCount == 0)
-            {
-
-                vector< avtStreamlineWrapper *> sendSLs;
-                list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
-                while (s != activeSLs.end() &&
-                       sendSLs.size() < 5)
-                {
-                    //if (masterInfo[0].domainLoaded[DomToIdx((*s)->domain)])
-                    if(1)
-                    {
-                        sendSLs.push_back(*s);
-                        workGroupActiveSLs--;
-                        s = activeSLs.erase(s);
-                    }
-                    else
-                        ++s;
-                }
-                
-                if (sendSLs.size() > 0)
-                {
-                    debug1<<"Send SLs to master: "<<masterInfo[i].rank<<endl;
-                    SendSLs(masterInfo[i].rank, sendSLs);
-                }
-            }
-    }
-
-    //Resets.
-    for (int i = 0; i < masterInfo.size(); i++)
-        masterInfo[i].Reset();
 }
 
 
@@ -1491,8 +1468,7 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
         msg.push_back(recvSlave.rank);
 
         DomainType dd = IdxToDom(d);
-        msg.push_back(dd.domain);
-        msg.push_back(dd.timeStep);
+        msg.push_back(d);
         msg.push_back(n);
         
         for (int i = 0; i < n; i++)
@@ -1996,6 +1972,10 @@ avtSlaveSLAlgorithm::Execute()
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
 //   Bug fix. Didn't use new DomainType structure for MSG_SEND_SL.
 //
+//  Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
+//  Improve the logic for streamline offloading. Only offload streamlines
+//  in unloaded domains.
+//
 // ****************************************************************************
 
 void
@@ -2021,19 +2001,60 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             break;
         }
         
+        //Load this domain.
         else if (msgType == MSG_LOAD_DOMAIN)
         {
             DomainType dom(msg[2], msg[3]);
             debug1<<"MSG: LoadDomain( "<<dom<<")\n";
             GetDomain(dom);
         }
+
+        //Offload unloaded domains.
+        else if (msgType == MSG_OFFLOAD_SL)
+        {
+            debug1<<"Slave: MSG_OFFLOAD_SL I have "<<activeSLs.size()<<" to offer"<<endl;
+            debug1<<msg<<endl;
+            
+            int dst = msg[2];
+            int numDoms = msg[3];
+            int num = 10*maxCnt;
+
+            vector< avtStreamlineWrapper *> sendSLs;
+
+            for (int d = 0; d < numDoms; d++)
+            {
+                int domIdx = msg[4+d];
+                DomainType dom = IdxToDom(domIdx);
+                
+                list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
+                while (s != activeSLs.end() &&
+                       sendSLs.size() < num)
+                {
+                    if ((*s)->domain == dom &&
+                        !DomainLoaded(dom))
+                    {
+                        sendSLs.push_back(*s);
+                        s = activeSLs.erase(s);
+                        numTerminated++;
+                    }
+                    else
+                        s++;
+                }
+            }
+            
+            if (sendSLs.size() > 0)
+            {
+                debug1<<"OFFLOAD: Send "<<sendSLs.size()<<" to "<<dst<<endl;
+                SendSLs(dst, sendSLs);
+            }
+        }
         
-        else if (msgType == MSG_SEND_SL ||
-                 msgType == MSG_OFFLOAD_SL)
+        //Send streamlines to another slave.
+        else if (msgType == MSG_SEND_SL)
         {
             int dst = msg[2];
-            DomainType dom(msg[3], msg[4]);
-            int num = msg[5];
+            DomainType dom = IdxToDom(msg[3]);
+            int num = msg[4];
 
             debug1<<"MSG: Send "<<num<<" x dom= "<<dom<<" to "<<dst;
             list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
@@ -2052,17 +2073,7 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 
             debug1<<" sent "<<sendSLs.size()<<endl;
             if (sendSLs.size() > 0)
-            {
-                int numSent = sendSLs.size();
                 SendSLs(dst, sendSLs);
-                
-                // A streamline offload actually counts as a termination.
-                if (msgType == MSG_OFFLOAD_SL)
-                {
-                    numTerminated += numSent;
-                    debug1<<"Slave offloading "<<numSent<<" sls to "<<dst<<endl;
-                }
-            }
         }
     }
 }
