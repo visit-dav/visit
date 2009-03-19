@@ -64,6 +64,9 @@ static const size_t DBG_BUFFER_SIZE = 8192;
 //
 // Modifications:
 //
+//   Tom Fogal, Thu Mar  5 16:44:49 MST 2009
+//   Give messages a clear label to disambiguate their source.
+//
 // ****************************************************************************
 void
 VisItDebugOut::printf(const char *format, ...) const
@@ -78,7 +81,7 @@ VisItDebugOut::printf(const char *format, ...) const
         vsnprintf(buffer, sizeof(buffer), format, args);
 #endif
     va_end(args);
-    debug5 << buffer << std::endl;
+    debug5 << "[TUVOK] " << buffer << std::endl;
 }
 
 // ****************************************************************************
@@ -96,6 +99,9 @@ VisItDebugOut::printf(const char *format, ...) const
 //
 // Modifications:
 //
+//   Tom Fogal, Thu Mar  5 16:44:49 MST 2009
+//   Give messages a clear label to disambiguate their source.
+//
 // ****************************************************************************
 void
 VisItDebugOut::Message(const char *src, const char *format, ...)
@@ -109,7 +115,7 @@ VisItDebugOut::Message(const char *src, const char *format, ...)
         vsnprintf(buffer, sizeof(buffer), format, args);
 #endif
     va_end(args);
-    debug5 << buffer << std::endl;
+    debug5 << "[TUVOK] " << buffer << std::endl;
 }
 
 // ****************************************************************************
@@ -127,6 +133,9 @@ VisItDebugOut::Message(const char *src, const char *format, ...)
 //
 // Modifications:
 //
+//   Tom Fogal, Thu Mar  5 16:44:49 MST 2009
+//   Give messages a clear label to disambiguate their source.
+//
 // ****************************************************************************
 void
 VisItDebugOut::Warning(const char* src, const char* format, ...)
@@ -140,7 +149,7 @@ VisItDebugOut::Warning(const char* src, const char* format, ...)
         vsnprintf(buffer, sizeof(buffer), format, args);
 #endif
     va_end(args);
-    debug2 << buffer << std::endl;
+    debug2 << "[TUVOK] " << buffer << std::endl;
 }
 
 // ****************************************************************************
@@ -158,6 +167,9 @@ VisItDebugOut::Warning(const char* src, const char* format, ...)
 //
 // Modifications:
 //
+//   Tom Fogal, Thu Mar  5 16:44:49 MST 2009
+//   Give messages a clear label to disambiguate their source.
+//
 // ****************************************************************************
 void
 VisItDebugOut::Error(const char* src, const char* format, ...)
@@ -171,5 +183,5 @@ VisItDebugOut::Error(const char* src, const char* format, ...)
         vsnprintf(buffer, sizeof(buffer), format, args);
 #endif
     va_end(args);
-    debug1 << buffer << std::endl;
+    debug1 << "[TUVOK] " << buffer << std::endl;
 }
