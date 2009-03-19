@@ -39,6 +39,7 @@
 // ************************************************************************* //
 //                      avtOpenGLTuvokVolumeRenderer.C                       //
 // ************************************************************************* //
+#ifdef USE_TUVOK
 
 #include "avtOpenGLTuvokVolumeRenderer.h"
 
@@ -516,3 +517,5 @@ tuvok_set_view(AbstrRenderer &ren, const avtViewInfo &v)
         eye, ref, vup
     );
 }
+
+#endif // USE_TUVOK
