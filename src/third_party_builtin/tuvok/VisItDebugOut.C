@@ -102,6 +102,9 @@ VisItDebugOut::printf(const char *format, ...) const
 //   Tom Fogal, Thu Mar  5 16:44:49 MST 2009
 //   Give messages a clear label to disambiguate their source.
 //
+//   Tom Fogal, Sat Mar  7 22:02:18 MST 2009
+//   Print the function name where this came from.
+//
 // ****************************************************************************
 void
 VisItDebugOut::Message(const char *src, const char *format, ...)
@@ -115,7 +118,7 @@ VisItDebugOut::Message(const char *src, const char *format, ...)
         vsnprintf(buffer, sizeof(buffer), format, args);
 #endif
     va_end(args);
-    debug5 << "[TUVOK] " << buffer << std::endl;
+    debug5 << "[TUVOK] (" << src << ") " << buffer << std::endl;
 }
 
 // ****************************************************************************
@@ -136,6 +139,9 @@ VisItDebugOut::Message(const char *src, const char *format, ...)
 //   Tom Fogal, Thu Mar  5 16:44:49 MST 2009
 //   Give messages a clear label to disambiguate their source.
 //
+//   Tom Fogal, Sat Mar  7 22:02:18 MST 2009
+//   Print the function name where this came from.
+//
 // ****************************************************************************
 void
 VisItDebugOut::Warning(const char* src, const char* format, ...)
@@ -149,7 +155,7 @@ VisItDebugOut::Warning(const char* src, const char* format, ...)
         vsnprintf(buffer, sizeof(buffer), format, args);
 #endif
     va_end(args);
-    debug2 << "[TUVOK] " << buffer << std::endl;
+    debug2 << "[TUVOK] (" << src << ") " << buffer << std::endl;
 }
 
 // ****************************************************************************
@@ -170,6 +176,9 @@ VisItDebugOut::Warning(const char* src, const char* format, ...)
 //   Tom Fogal, Thu Mar  5 16:44:49 MST 2009
 //   Give messages a clear label to disambiguate their source.
 //
+//   Tom Fogal, Sat Mar  7 22:02:18 MST 2009
+//   Print the function name where this came from.
+//
 // ****************************************************************************
 void
 VisItDebugOut::Error(const char* src, const char* format, ...)
@@ -183,5 +192,5 @@ VisItDebugOut::Error(const char* src, const char* format, ...)
         vsnprintf(buffer, sizeof(buffer), format, args);
 #endif
     va_end(args);
-    debug1 << "[TUVOK] " << buffer << std::endl;
+    debug1 << "[TUVOK] (" << src << ") " << buffer << std::endl;
 }
