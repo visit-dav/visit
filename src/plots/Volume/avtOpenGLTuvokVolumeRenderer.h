@@ -45,8 +45,7 @@
 
 #include <avtVolumeRendererImplementation.h>
 
-#include <VolumeAttributes.h>
-#include <LightList.h>
+class VolumeAttributes;
 
 // ****************************************************************************
 //  Class: avtOpenGLTuvokVolumeRenderer
@@ -79,4 +78,4 @@ class avtOpenGLTuvokVolumeRenderer : public avtVolumeRendererImplementation
                                    float *gx, float *gy, float *gz, float *gmn,
                                    bool reducedDetail);
 };
-#endif
+#endif // AVT_OPEN_GL_TUVOK_VOLUME_RENDERER_H
