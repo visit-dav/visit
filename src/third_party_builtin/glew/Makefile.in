@@ -51,6 +51,9 @@
 #    Brad Whitlock, Fri Oct 10 15:07:49 PST 2008
 #    Remove the glew link on make clean.
 #
+#    Tom Fogal, Wed Mar 18 20:56:48 MST 2009
+#    Updated the version of GLEW; tarball name changed.
+#
 ##############################################################################
 
 ##
@@ -84,7 +87,7 @@ clean:
 DISTCLEAN_FILES=-rf glew ../../include/glew
 
 credits.html:
-	gunzip < glew-1.3.4-src.tgz | tar xvf - > /dev/null
+	gunzip < glew-1.5.1-tjf.tar.gz | tar xvf - > /dev/null
 	cp glew/doc/credits.html .
 	cd ../../include/ && \
 	rm glew; ln -s ../third_party_builtin/glew/glew/include glew
