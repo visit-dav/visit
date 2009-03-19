@@ -59,6 +59,10 @@
 #
 #   Mark C. Miller, Wed Mar  4 18:01:23 PST 2009
 #   Enabled dbio-only build.
+#
+#   Tom Fogal, Thu Mar  5 11:22:35 MST 2009
+#   Lowercased `Tuvok'.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -70,7 +74,7 @@ ALLSUBDIRS_DBIO_ONLY=@BUILD_BILIB@ bow
 
 SUBDIRS_STD=@BUILD_MESA_STUB@ @BUILD_ZLIB@ @BUILD_GLEW@ @BUILD_BILIB@ \
     @BUILD_SLIVR@ @BUILD_COGNOMEN@ @BUILD_TUVOK@ bow verdict
-ALLSUBDIRS_STD=mesa_stub zlib glew bilib slivr bow cognomen Tuvok verdict
+ALLSUBDIRS_STD=mesa_stub zlib glew bilib slivr bow cognomen tuvok verdict
 
 SUBDIRS=@SUBDIRS@
 ALLSUBDIRS=@ALLSUBDIRS@
