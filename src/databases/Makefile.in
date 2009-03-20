@@ -346,6 +346,10 @@
 #   Jeremy Meredith, Fri Mar 13 12:49:47 EDT 2009
 #   Added MatrixMarket reader. ( http://math.nist.gov/MatrixMarket/ )
 #
+#   Sean Ahern, Fri Mar 20 14:07:16 EDT 2009
+#   Enzo won't link without HDF5, so it must have HDF5 dependencies.  Moved it
+#   to the HDF5 target.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -359,7 +363,7 @@ CFITSIO=FITS
 CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
-HDF4=Cosmos Enzo ZeusMP
+HDF4=Cosmos ZeusMP
 HDF5_TARGET= \
 	Chombo \
 	CosmosPP \
@@ -372,7 +376,8 @@ HDF5_TARGET= \
 	SAMRAI \
 	Tetrad \
 	UNIC \
-	XDMF
+	XDMF \
+	Enzo
 
 MILI=Mili
 SILO_TARGET=Silo SAMI Vista
