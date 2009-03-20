@@ -73,10 +73,15 @@
 //  Programmer: Jeremy Meredith
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Mar 20 15:54:48 EDT 2009
+//    Make the second argument optional.
+//
 // ****************************************************************************
 
 avtGeodesicVectorQuantizeExpression::avtGeodesicVectorQuantizeExpression()
 {
+    nargs = 0;
 }
 
 
@@ -112,15 +117,17 @@ avtGeodesicVectorQuantizeExpression::~avtGeodesicVectorQuantizeExpression()
 //  Programmer:   Jeremy Meredith
 //  Creation:     March 18, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Mar 20 15:50:10 EDT 2009
+//    Allowed spread to be 0, in which case it quantizes the entire
+//    vector to the closest point only instead of spreading it out.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtGeodesicVectorQuantizeExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i, j;
-
     vtkDataArray *var;
-    avtCentering centering;
     const char *varname = varnames[0];
 
     var = in_ds->GetPointData()->GetArray(varname);
@@ -146,7 +153,7 @@ avtGeodesicVectorQuantizeExpression::DeriveVariable(vtkDataSet *in_ds)
     rv->SetNumberOfComponents(geodesic_sphere_npts);
     int nvals = var->GetNumberOfTuples();
     rv->SetNumberOfTuples(nvals);
-    for (i = 0 ; i < nvals ; i++)
+    for (int i = 0 ; i < nvals ; i++)
     {
         double tmp[geodesic_sphere_npts];
 
@@ -166,16 +173,35 @@ avtGeodesicVectorQuantizeExpression::DeriveVariable(vtkDataSet *in_ds)
 
             // accumulate at all points within "spread" units of a dp of 1.0,
             // weighted by dot product squared
+            int maxindex = -1;
+            double maxvlen = -1e9;
+            double maxdp = -1e9;
             for (int j=0; j<geodesic_sphere_npts; j++)
             {
                 double *gs = geodesic_sphere_points[j];
                 double dp = vunit[0]*gs[0] + vunit[1]*gs[1] + vunit[2]*gs[2];
-                dp = ((dp - (1-spread)) / spread);
-                if (dp > 0)
+                if (spread == 0)
                 {
-                    double accumval = dp*dp * vlen;
-                    tmp[j] += accumval;
+                    if (dp > maxdp)
+                    {
+                        maxdp = dp;
+                        maxvlen = vlen;
+                        maxindex = j;
+                    }
                 }
+                else
+                {
+                    dp = ((dp - (1-spread)) / spread);
+                    if (dp > 0)
+                    {
+                        double accumval = dp*dp * vlen;
+                        tmp[j] += accumval;
+                    }
+                }
+            }
+            if (spread == 0)
+            {
+                tmp[maxindex] += vlen;
             }
         }
 
@@ -203,6 +229,11 @@ avtGeodesicVectorQuantizeExpression::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer:   Jeremy Meredith
 //  Creation:     March 18, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Mar 20 15:55:17 EDT 2009
+//    Allow a 0 spread (which means pick the single closest point).
+//    Made the spread argument optional, with a default of 0.
+//
 // ****************************************************************************
 
 void
@@ -211,24 +242,33 @@ avtGeodesicVectorQuantizeExpression::ProcessArguments(ArgsExpr *args,
 {
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
+    nargs = arguments->size();
 
-    int idx_of_list = arguments->size()-1;
-    ArgExpr *listarg = (*arguments)[idx_of_list];
-    ExprParseTreeNode *spreadTree = listarg->GetExpr();
-    spread = -1; // bad value
-    if (spreadTree->GetTypeName() == "IntegerConst")
-    {
-        spread = dynamic_cast<IntegerConstExpr*>(spreadTree)->GetValue();
-    }
-    else if (spreadTree->GetTypeName() == "FloatConst")
-    {
-        spread = dynamic_cast<FloatConstExpr*>(spreadTree)->GetValue();
-    }
-
-    if (spread <= 0 || spread > 1)
-    {
+    if (nargs > 2)
         EXCEPTION2(ExpressionException, outputVariableName,
-              "Expected a spread (in the range (0,1]) as the final argument.");
+                   "Expected only one or two arguments.");
+
+    spread = 0; // default if no spread is given
+
+    // get the spread if they gave it
+    if (nargs == 2)
+    {
+        ArgExpr *listarg = (*arguments)[1];
+        ExprParseTreeNode *spreadTree = listarg->GetExpr();
+        if (spreadTree->GetTypeName() == "IntegerConst")
+        {
+            spread = dynamic_cast<IntegerConstExpr*>(spreadTree)->GetValue();
+        }
+        else if (spreadTree->GetTypeName() == "FloatConst")
+        {
+            spread = dynamic_cast<FloatConstExpr*>(spreadTree)->GetValue();
+        }
+
+        if (spread < 0 || spread > 1)
+        {
+            EXCEPTION2(ExpressionException, outputVariableName,
+                       "Expected a spread (in the range [0,1]) as the final argument.");
+        }
     }
 
     // Let the base class do the rest of the processing.  We only had to

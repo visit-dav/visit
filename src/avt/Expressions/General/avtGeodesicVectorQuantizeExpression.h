@@ -61,6 +61,11 @@ class     ExprPipelineState;
 //  Programmer: Jeremy Meredith
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Mar 20 15:55:17 EDT 2009
+//    Allow a 0 spread (which means pick the single closest point).
+//    Made the spread argument optional, with a default of 0.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtGeodesicVectorQuantizeExpression 
@@ -75,10 +80,11 @@ class EXPRESSION_API avtGeodesicVectorQuantizeExpression
     virtual const char       *GetDescription(void)
                           { return "Quantizing vector onto geodesic sphere"; };
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
-    virtual int               NumVariableArguments(void) { return 2; };
+    virtual int               NumVariableArguments(void) { return nargs; };
 
   protected:
-    double                    spread;
+    int       nargs;
+    double    spread;
 
     virtual void              UpdateDataObjectInfo(void);
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
