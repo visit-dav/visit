@@ -61,11 +61,16 @@
 //  Programmer:   Hank Childs
 //  Creation:     October 4, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar 19 17:45:21 PDT 2009
+//    Set flag to force curve construction.
+//
 // ****************************************************************************
 
 avtCurveQuery::avtCurveQuery()
 {
     ccf = new avtCurveConstructorFilter;
+    ccf->ForceConstruction();
 }
 
 

@@ -72,6 +72,9 @@
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
 //    Add PostExecute and outputArray.
 //
+//    Kathleen Bonnell, Thu Mar 19 17:42:14 PDT 2009
+//    Added 'ForceConstruction', needed by curve queries.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
@@ -85,6 +88,7 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
     virtual const char       *GetDescription(void)
                                   { return "Constructing Curve"; };
 
+    void                      ForceConstruction(){ forceConstruct = true; }
  
   protected:
     doubleVector              outputArray;
@@ -94,6 +98,8 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
     avtContract_p
                            ModifyContract(avtContract_p spec);
     virtual void              UpdateDataObjectInfo(void);
+
+    bool                      forceConstruct;
 };
 
 
