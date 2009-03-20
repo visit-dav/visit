@@ -581,12 +581,12 @@
 # etc.  Note that this script is really only known to work with gcc.          #
 # *************************************************************************** #
 
-export OPSYS=${OPSYS-$(uname -s)}
-export PROC=${PROC-$(uname -p)}
-export REL=${REL-$(uname -r)}
+export OPSYS=${OPSYS:-$(uname -s)}
+export PROC=${PROC:-$(uname -p)}
+export REL=${REL:-$(uname -r)}
 # Determine architecture
 if [[ "$OPSYS" == "Darwin" ]]; then
-   export ARCH=${ARCH-"${PROC}-apple-darwin${REL%%.*}"}
+   export ARCH=${ARCH:-"${PROC}-apple-darwin${REL%%.*}"}
 #  export VISITARCH=${VISITARCH-${ARCH}}
    export SO_EXT="dylib"
    VER=$(uname -r)
@@ -600,74 +600,74 @@ if [[ "$OPSYS" == "Darwin" ]]; then
    else
       export MACOSX_DEPLOYMENT_TARGET=10.5
    fi
-   export C_COMPILER=${C_COMPILER-"gcc"}
-   export CXX_COMPILER=${CXX_COMPILER-"g++"}
-   export C_OPT_FLAGS=${C_OPT_FLAGS-"-O2 -fno-common -fexceptions"}
-   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS-"-O2 -fno-common -fexceptions"}
-   export MESA_TARGET=${MESA_TARGET-"darwin"}
-   export QT_PLATFORM=${QT_PLATFORM-"macx-g++"}
+   export C_COMPILER=${C_COMPILER:-"gcc"}
+   export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+   export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2 -fno-common -fexceptions"}
+   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2 -fno-common -fexceptions"}
+   export MESA_TARGET=${MESA_TARGET:-"darwin"}
+   export QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
 elif [[ "$OPSYS" == "Linux" ]]; then
-   export ARCH=${ARCH-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
+   export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
    if [[ "$(uname -m)" == "i386" ]] ; then
-###   export MESA_TARGET=${MESA_TARGET-"linux-x86"} # Mesa-6.x
-      export MESA_TARGET=${MESA_TARGET-"linux"}
+###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
+      export MESA_TARGET=${MESA_TARGET:-"linux"}
    elif [[ "$(uname -m)" == "i686" ]] ; then
-###   export MESA_TARGET=${MESA_TARGET-"linux-x86"} # Mesa-6.x
-      export MESA_TARGET=${MESA_TARGET-"linux"}
+###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
+      export MESA_TARGET=${MESA_TARGET:-"linux"}
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
-###   export MESA_TARGET=${MESA_TARGET-"linux-x86-64"} # Mesa-6.x
-      export MESA_TARGET=${MESA_TARGET-"linux"}
+###   export MESA_TARGET=${MESA_TARGET:-"linux-x86-64"} # Mesa-6.x
+      export MESA_TARGET=${MESA_TARGET:-"linux"}
       QT_PLATFORM="linux-g++-64"
    elif [[ "$(uname -m)" == "ppc64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
-      export MESA_TARGET=${MESA_TARGET-"linux"}
+      export MESA_TARGET=${MESA_TARGET:-"linux"}
       QT_PLATFORM="linux-g++"
    elif [[ "$(uname -m)" == "ia64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
       QT_PLATFORM="linux-g++"
    fi
-   export C_COMPILER=${C_COMPILER-"gcc"}
-   export CXX_COMPILER=${CXX_COMPILER-"g++"}
-   export C_OPT_FLAGS=${C_OPT_FLAGS-"-O2"}
-   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS-"-O2"}
-   export MESA_TARGET=${MESA_TARGET-"linux"}
-   export QT_PLATFORM=${QT_PLATFORM-"linux-g++"}
+   export C_COMPILER=${C_COMPILER:-"gcc"}
+   export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+   export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
+   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
+   export MESA_TARGET=${MESA_TARGET:-"linux"}
+   export QT_PLATFORM=${QT_PLATFORM:-"linux-g++"}
 elif [[ "$OPSYS" == "AIX" ]]; then
    export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
    export SO_EXT="so"
-   export C_COMPILER=${C_COMPILER-"xlc"}
-   export CXX_COMPILER=${CXX_COMPILER-"xlC"}
-   export C_OPT_FLAGS=${C_OPT_FLAGS-"-O2"}
-   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS-"-O2"}
-   export MAKE=${MAKE-"gmake"}
-   export MESA_TARGET=${MESA_TARGET-"aix"}
-   export QT_PLATFORM=${QT_PLATFORM-"aix-xlc-64"}
+   export C_COMPILER=${C_COMPILER:-"xlc"}
+   export CXX_COMPILER=${CXX_COMPILER:-"xlC"}
+   export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
+   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
+   export MAKE=${MAKE:-"gmake"}
+   export MESA_TARGET=${MESA_TARGET:-"aix"}
+   export QT_PLATFORM=${QT_PLATFORM:-"aix-xlc-64"}
 elif [[ "$OPSYS" == "IRIX64" ]]; then
    export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
    export SO_EXT="so"
-   export C_COMPILER=${C_COMPILER-"gcc"}
-   export CXX_COMPILER=${CXX_COMPILER-"g++"}
-   export C_OPT_FLAGS=${C_OPT_FLAGS-"-O2"}
-   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS-"-O2"}
-   export MAKE=${MAKE-"gmake"}
-   export MESA_TARGET=${MESA_TARGET-"irix6-64-dso"}
+   export C_COMPILER=${C_COMPILER:-"gcc"}
+   export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+   export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
+   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
+   export MAKE=${MAKE:-"gmake"}
+   export MESA_TARGET=${MESA_TARGET:-"irix6-64-dso"}
 elif [[ "$OPSYS" == "SunOS" ]]; then
-   export ARCH=${ARCH-"sunos5"}
+   export ARCH=${ARCH:-"sunos5"}
    export SO_EXT="so"
-   export C_COMPILER=${C_COMPILER-"gcc"}
-   export CXX_COMPILER=${CXX_COMPILER-"g++"}
-   export C_OPT_FLAGS=${C_OPT_FLAGS-"-O2"}
-   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS-"-O2"}
-   export MAKE=${MAKE-"make"}
-   export MESA_TARGET=${MESA_TARGET-"sunos5-gcc"}
+   export C_COMPILER=${C_COMPILER:-"gcc"}
+   export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+   export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
+   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
+   export MAKE=${MAKE:-"make"}
+   export MESA_TARGET=${MESA_TARGET:-"sunos5-gcc"}
    export QT_PLATFORM="solaris-g++"
 else
-   export ARCH=${ARCH-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
+   export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
    if [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
@@ -679,17 +679,17 @@ else
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
       QT_PLATFORM="linux-g++-64"
    fi
-   export C_COMPILER=${C_COMPILER-"gcc"}
-   export CXX_COMPILER=${CXX_COMPILER-"g++"}
-   export C_OPT_FLAGS=${C_OPT_FLAGS-"-O2"}
-   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS-"-O2"}
-   export QT_PLATFORM=${QT_PLATFORM-"linux-g++"}
+   export C_COMPILER=${C_COMPILER:-"gcc"}
+   export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+   export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
+   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
+   export QT_PLATFORM=${QT_PLATFORM:-"linux-g++"}
 fi
-export MAKE=${MAKE-"make"}
-export THIRD_PARTY_PATH=${THIRD_PARTY_PATH-"./visit"}
-export GROUP=${GROUP-"visit"}
-export LOG_FILE=${LOG_FILE-"build_visit_log"}
-export SVNREVISION=${SVNREVISION-"HEAD"}
+export MAKE=${MAKE:-"make"}
+export THIRD_PARTY_PATH=${THIRD_PARTY_PATH:-"./visit"}
+export GROUP=${GROUP:-"visit"}
+export LOG_FILE=${LOG_FILE:-"build_visit_log"}
+export SVNREVISION=${SVNREVISION:-"HEAD"}
 # Created a temporary value because the user can override most of 
 # the components, which for the GUI happens at a later time.
 # the tmp value is useful for user feedback.
@@ -813,9 +813,9 @@ if [[ "$OPSYS" != "Darwin" ]]; then
     if [[ "${WGET_MINOR_VERSION}" == "8" ]] ; then
        export WGET_OPTS=${WGET_OPTS=""}
     elif [[ "${WGET_MINOR_VERSION}" == "9" ]] ; then
-       export WGET_OPTS=${WGET_OPTS="--sslcheckcert=0"}
+       export WGET_OPTS=${WGET_OPTS:="--sslcheckcert=0"}
     else
-       export WGET_OPTS=${WGET_OPTS-"--no-check-certificate"}
+       export WGET_OPTS=${WGET_OPTS:-"--no-check-certificate"}
     fi
 fi
 #
@@ -825,147 +825,147 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION-"2.0.0"}
-export VISIT_FILE=${VISIT_FILE-"visit${VISIT_VERSION}.tar.gz"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.0.0"}
+export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
-export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
-export VTK_VERSION=${VTK_VERSION-"5.0.0c"}
-export VTK_BUILD_DIR=${VTK_BUILD_DIR-"VTK"}
+export VTK_FILE=${VTK_FILE:-"vtk-5.0.0c.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"5.0.0c"}
+export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK"}
 
-export CMAKE_FILE=${CMAKE_FILE-"cmake-2.4.5.tar.gz"}
-export CMAKE_VERSION=${CMAKE_VERSION-"2.4.5"}
-export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR-"cmake-2.4.5"}
+export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.4.5.tar.gz"}
+export CMAKE_VERSION=${CMAKE_VERSION:-"2.4.5"}
+export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.4.5"}
 
 if [[ "$OPSYS" == "Linux" ]]; then
-export MESA_FILE=${MESA_FILE-"Mesa-5.0-mangled.tar.gz"}
-export MESA_VERSION=${MESA_VERSION-"5.0"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR-"Mesa-5.0"}  # The directory in the tarball
+export MESA_FILE=${MESA_FILE:-"Mesa-5.0-mangled.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"5.0"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-5.0"}  # The directory in the tarball
 else
-export MESA_FILE=${MESA_FILE-"MesaLib-6.4.2.tar.gz"}
-export MESA_VERSION=${MESA_VERSION-"6.4.2"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR-"Mesa-6.4.2"}  # The directory in the tarball
+export MESA_FILE=${MESA_FILE:-"MesaLib-6.4.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"6.4.2"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-6.4.2"}  # The directory in the tarball
 fi
 
 # The old Python version at LLNL does not work on Mac, we need a newer version
 export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. 
-export PYTHON_VERSION=${PYTHON_VERSION-"2.5"}
+export PYTHON_VERSION=${PYTHON_VERSION:-"2.5"}
 # Need this for the dylib build
-export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION-"2.5"}
-export PYTHON_FILE=${PYTHON_FILE-"Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"}
-export PYTHON_BUILD_DIR=${PYTHON_BUILD_DIR-"Python-$PYTHON_VERSION"}
+export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.5"}
+export PYTHON_FILE=${PYTHON_FILE:-"Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"}
+export PYTHON_BUILD_DIR=${PYTHON_BUILD_DIR:-"Python-$PYTHON_VERSION"}
 
-export PIL_URL=${PIL_URL-"http://effbot.org/media/downloads"}
-export PIL_FILE=${PIL_FILE-"Imaging-1.1.6.tar.gz"}
-export PIL_BUILD_DIR=${PIL_BUILD_DIR-"Imaging-1.1.6"}
+export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
+export PIL_FILE=${PIL_FILE:-"Imaging-1.1.6.tar.gz"}
+export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 
 if [[ "$OPSYS" == "Darwin" ]] ; then
-   export QT_FILE=${QT_FILE-"qt-mac-opensource-src-4.4.3.tar.gz"}
-   export QT_VERSION=${QT_VERSION-"4.4.3"}
+   export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.4.3.tar.gz"}
+   export QT_VERSION=${QT_VERSION:-"4.4.3"}
 else
-   export QT_FILE=${QT_FILE-"qt-x11-opensource-src-4.4.3.tar.gz"}
-   export QT_VERSION=${QT_VERSION-"4.4.3"}
+   export QT_FILE=${QT_FILE:-"qt-x11-opensource-src-4.4.3.tar.gz"}
+   export QT_VERSION=${QT_VERSION:-"4.4.3"}
 fi
 
-export QT_BUILD_DIR=${QT_BUILD_DIR-"${QT_FILE%.tar*}"}
+export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
 
-export SZIP_FILE=${SZIP_FILE-"szip-2.1.tar.gz"}
-export SZIP_VERSION=${SZIP_VERSION-"2.1"}
-export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION-"2.0"}
-export SZIP_BUILD_DIR=${SZIP_BUILD_DIR-"szip-2.1"}
+export SZIP_FILE=${SZIP_FILE:-"szip-2.1.tar.gz"}
+export SZIP_VERSION=${SZIP_VERSION:-"2.1"}
+export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION:-"2.0"}
+export SZIP_BUILD_DIR=${SZIP_BUILD_DIR:-"szip-2.1"}
 
-export HDF5_FILE=${HDF5_FILE-"hdf5-1.8.1.tar.gz"}
-export HDF5_VERSION=${HDF5_VERSION-"1.8.1"}
-export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION-"1.6"}
-export HDF5_BUILD_DIR=${HDF5_BUILD_DIR-"hdf5-1.8.1"}
+export HDF5_FILE=${HDF5_FILE:-"hdf5-1.8.1.tar.gz"}
+export HDF5_VERSION=${HDF5_VERSION:-"1.8.1"}
+export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.6"}
+export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-1.8.1"}
 
-export HDF4_FILE=${HDF4_FILE-"HDF4.2r1.tar.gz"}
-export HDF4_VERSION=${HDF4_VERSION-"4.2.1"}
-export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION-"4.0"}
-export HDF4_BUILD_DIR=${HDF4_BUILD_DIR-"HDF4.2r1"}
+export HDF4_FILE=${HDF4_FILE:-"HDF4.2r1.tar.gz"}
+export HDF4_VERSION=${HDF4_VERSION:-"4.2.1"}
+export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.0"}
+export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"HDF4.2r1"}
 
-export MILI_FILE=${MILI_FILE-"mili-1.10a.tar.gz"}
-export MILI_VERSION=${MILI_VERSION-"1.10.0"}
-export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION-"1.0"}
-export MILI_BUILD_DIR=${MILI_BUILD_DIR-"mili"}
+export MILI_FILE=${MILI_FILE:-"mili-1.10a.tar.gz"}
+export MILI_VERSION=${MILI_VERSION:-"1.10.0"}
+export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"1.0"}
+export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
 
-export NETCDF_FILE=${NETCDF_FILE-"netcdf.tar.gz"}
-export NETCDF_VERSION=${NETCDF_VERSION-"3.6.0"}
-export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"3.6"}
-export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-3.6.0-p1/src"}
+export NETCDF_FILE=${NETCDF_FILE:-"netcdf.tar.gz"}
+export NETCDF_VERSION=${NETCDF_VERSION:-"3.6.0"}
+export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION:-"3.6"}
+export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR:-"netcdf-3.6.0-p1/src"}
 
-export CGNS_FILE=${CGNS_FILE-"cgnslib_2.4-3.tar.gz"}
-export CGNS_VERSION=${CGNS_VERSION-"2.4"}
-export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION-"2.4"}
-export CGNS_BUILD_DIR=${CGNS_BUILD_DIR-${CGNS_FILE%-3.tar*}}
+export CGNS_FILE=${CGNS_FILE:-"cgnslib_2.4-3.tar.gz"}
+export CGNS_VERSION=${CGNS_VERSION:-"2.4"}
+export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"2.4"}
+export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-${CGNS_FILE%-3.tar*}}
 
-export GDAL_FILE=${GDAL_FILE-"gdal-1.3.2.tar.gz"}
-export GDAL_VERSION=${GDAL_VERSION-"1.3.2"}
-export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION-"1.3"}
-export GDAL_BUILD_DIR=${GDAL_BUILD_DIR-"gdal-1.3.2"}
+export GDAL_FILE=${GDAL_FILE:-"gdal-1.3.2.tar.gz"}
+export GDAL_VERSION=${GDAL_VERSION:-"1.3.2"}
+export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"1.3"}
+export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-1.3.2"}
 
-export EXODUS_FILE=${EXODUS_FILE-"exodusii-4.46.tar.gz"}
-export EXODUS_VERSION=${EXODUS_VERSION-"4.46"}
-export EXODUS_COMPATIBILITY_VERSION=${EXODUS_COMPATIBILITY_VERSION-"4.0"}
-export EXODUS_BUILD_DIR=${EXODUS_BUILD_DIR-"exodusii-4.46"}
+export EXODUS_FILE=${EXODUS_FILE:-"exodusii-4.46.tar.gz"}
+export EXODUS_VERSION=${EXODUS_VERSION:-"4.46"}
+export EXODUS_COMPATIBILITY_VERSION=${EXODUS_COMPATIBILITY_VERSION:-"4.0"}
+export EXODUS_BUILD_DIR=${EXODUS_BUILD_DIR:-"exodusii-4.46"}
 
-export BOXLIB_FILE=${BOXLIB_FILE-"boxlib.tar.gz"}
-export BOXLIB_VERSION=${BOXLIB_VERSION-"2.5"}
-export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION-"2.0"}
-export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR-"CCSEApps/BoxLib"}
+export BOXLIB_FILE=${BOXLIB_FILE:-"boxlib.tar.gz"}
+export BOXLIB_VERSION=${BOXLIB_VERSION:-"2.5"}
+export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"2.0"}
+export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"CCSEApps/BoxLib"}
 
-export CFITSIO_FILE=${CFITSIO_FILE-"cfitsio3006.tar.gz"}
-export CFITSIO_VERSION=${CFITSIO_VERSION-"3006"}
-export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION-"3.0"}
-export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR-"cfitsio"}
+export CFITSIO_FILE=${CFITSIO_FILE:-"cfitsio3006.tar.gz"}
+export CFITSIO_VERSION=${CFITSIO_VERSION:-"3006"}
+export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION:-"3.0"}
+export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio"}
 
-export H5PART_FILE=${H5PART_FILE-"H5Part-1.4.0.tar.gz"}
-export H5PART_VERSION=${H5PART_VERSION-"1.4.0"}
-export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION-"1.0"}
-export H5PART_BUILD_DIR=${H5PART_BUILD_DIR-"H5Part-1.4.0"}
+export H5PART_FILE=${H5PART_FILE:-"H5Part-1.4.0.tar.gz"}
+export H5PART_VERSION=${H5PART_VERSION:-"1.4.0"}
+export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.0"}
+export H5PART_BUILD_DIR=${H5PART_BUILD_DIR:-"H5Part-1.4.0"}
 
-export FASTBIT_FILE=${FASTBIT_FILE-"fastbit-b0.9.9.tar.gz"}
-export FASTBIT_VERSION=${FASTBIT_VERSION-"0.9.9"}
-export FASTBIT_DIR=${FASTBIT_DIR-"fastbit-b0.9.9"}
+export FASTBIT_FILE=${FASTBIT_FILE:-"fastbit-b0.9.9.tar.gz"}
+export FASTBIT_VERSION=${FASTBIT_VERSION:-"0.9.9"}
+export FASTBIT_DIR=${FASTBIT_DIR:-"fastbit-b0.9.9"}
 
-export CCMIO_FILE=${CCMIO_FILE-"libccmio-2.6.1.tar.gz"}
-export CCMIO_VERSION=${CCMIO_VERSION-"2.6.1"}
-export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION-"2.0"}
-export CCMIO_BUILD_DIR=${CCMIO_BUILD_DIR-"libccmio-2.6.1"}
+export CCMIO_FILE=${CCMIO_FILE:-"libccmio-2.6.1.tar.gz"}
+export CCMIO_VERSION=${CCMIO_VERSION:-"2.6.1"}
+export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION:-"2.0"}
+export CCMIO_BUILD_DIR=${CCMIO_BUILD_DIR:-"libccmio-2.6.1"}
 
-export SILO_FILE=${SILO_FILE-"silo-4.7.tar.gz"}
-export SILO_VERSION=${SILO_VERSION-"4.7"}
-export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.7"}
-export SILO_BUILD_DIR=${SILO_BUILD_DIR-"silo-4.7"}
+export SILO_FILE=${SILO_FILE:-"silo-4.7.tar.gz"}
+export SILO_VERSION=${SILO_VERSION:-"4.7"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.7"}
+export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-4.7"}
 
-export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE-"ITAPS-MOAB-3.99_04Dec08.tar.gz"}
-export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION-"3.99_04Dec08"}
-export ITAPS_MOAB_COMPATIBILITY_VERSION=${ITAPS_MOAB_COMPATIBILITY_VERSION-"3.99_04Dec08"}
-export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR-"${ITAPS_MOAB_FILE%.tar*}"}
+export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE:-"ITAPS-MOAB-3.99_04Dec08.tar.gz"}
+export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"3.99_04Dec08"}
+export ITAPS_MOAB_COMPATIBILITY_VERSION=${ITAPS_MOAB_COMPATIBILITY_VERSION:-"3.99_04Dec08"}
+export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"${ITAPS_MOAB_FILE%.tar*}"}
 
-export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE-"ITAPS-FMDB_14Jan09.tar.gz"}
-export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION-"14Jan09"}
-export ITAPS_FMDB_COMPATIBILITY_VERSION=${ITAPS_FMDB_COMPATIBILITY_VERSION-"14Jan09"}
-export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR-"${ITAPS_FMDB_FILE%.tar*}"}
+export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"ITAPS-FMDB_14Jan09.tar.gz"}
+export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"14Jan09"}
+export ITAPS_FMDB_COMPATIBILITY_VERSION=${ITAPS_FMDB_COMPATIBILITY_VERSION:-"14Jan09"}
+export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
 
-export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE-"ITAPS-GRUMMP-13Jan09.tar.gz"}
-export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION-"13Jan09"}
-export ITAPS_GRUMMP_COMPATIBILITY_VERSION=${ITAPS_GRUMMP_COMPATIBILITY_VERSION-"13Jan09"}
-export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR-"${ITAPS_GRUMMP_FILE%.tar*}"}
+export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"ITAPS-GRUMMP-13Jan09.tar.gz"}
+export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"13Jan09"}
+export ITAPS_GRUMMP_COMPATIBILITY_VERSION=${ITAPS_GRUMMP_COMPATIBILITY_VERSION:-"13Jan09"}
+export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR:-"${ITAPS_GRUMMP_FILE%.tar*}"}
 
-export VISUS_FILE=${VISUS_FILE-"visus_26Feb07.tar.gz"}
-export VISUS_VERSION=${VISUS_VERSION-"1.0.0"}
-export VISUS_COMPATIBILITY_VERSION=${VISUS_COMPATIBILITY_VERSION-"1.0"}
-export VISUS_BUILD_DIR=${VISUS_BUILD_DIR-"visus"}
+export VISUS_FILE=${VISUS_FILE:-"visus_26Feb07.tar.gz"}
+export VISUS_VERSION=${VISUS_VERSION:-"1.0.0"}
+export VISUS_COMPATIBILITY_VERSION=${VISUS_COMPATIBILITY_VERSION:-"1.0"}
+export VISUS_BUILD_DIR=${VISUS_BUILD_DIR:-"visus"}
 
-export TCMALLOC_FILE=${TCMALLOC_FILE-"google-perftools-0.97.tar.gz"}
-export TCMALLOC_VERSION=${TCMALLOC_VERSION-"0.97"}
-export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION-"0.97"}
-export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR-"google-perftools-0.97"}
+export TCMALLOC_FILE=${TCMALLOC_FILE:-"google-perftools-0.97.tar.gz"}
+export TCMALLOC_VERSION=${TCMALLOC_VERSION:-"0.97"}
+export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION:-"0.97"}
+export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR:-"google-perftools-0.97"}
 
-export ICET_FILE=${ICET_FILE-"IceT-0-5-4.tar.gz"}
-export ICET_VERSION=${ICET_VERSION-"0.5.4"}
-export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION-"0.5.4"}
-export ICET_BUILD_DIR=${ICET_BUILD_DIR-"IceT-0-5-4"}
+export ICET_FILE=${ICET_FILE:-"IceT-0-5-4.tar.gz"}
+export ICET_VERSION=${ICET_VERSION:-"0.5.4"}
+export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"0.5.4"}
+export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"IceT-0-5-4"}
 
 # Dialog-related variables.
 DLG="dialog"
