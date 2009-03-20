@@ -16,8 +16,10 @@
 <ul>
 <li>Support was added for ANNOTATION_INT nodelists in the Silo database reader.</li>
 <li>The transform manager was enhanced to cache CSG grids that do not vary with time to avoid re-discretizing the same CSG mesh each time the time step was changed.</li>
+<li>Transform manager was enhanced to add VTK_VERTEX cells to meshes consisting only of points.</li>
 <li>Host profiles were added for the Princeton clusters.</li>
 <li>The host profiles for the Eureka cluster at ANL were modified to support client-server mode.</li>
+<li>The Silo plugin was enhanced to allow more efficiency in chracterization of multi-material objects so that if the parent multi-material object contains enough of the global material information (total number of materials, their numbers, names and, optionally colors), then the individual material objects do NOT also require that information.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.11.2</font></b></p>
 <ul>
@@ -29,7 +31,7 @@
 <li>A bug was fixed where it wasn't possible to add new log scaled plots to a window already in log scale mode that contained plots that were not yet rendered.</li>
 <li>Support was added for VTK meshes which contain a non-zero count of points but a zero count of cells. The transform manager will now add VTK_VERTEX cells to such datasets.</li>
 <li>The performance of the Silo database reader was improved when reading HDF5 files with lots of domains and the standard (non-packed, directory-based) structured connectivity information.</li>
-<li>A bug was fixed in the Silo database reader where it did not properly read 2d nodelists.</li>
+<li>A bug was fixed in the Silo database reader where it did not properly 2d nodelists.</li>
 <li>A bug was fixed in the DDCMD database reader where only the first file in a multi-file database was being read.</li>
 <li>A bug was fixed in the DDCMD database reader where the z dimension was erroneously set to 2 instead of 1 for 2d cgrid files. This resulted in blank contour plots.</li>
 <li>A bug was fixed in the DDCMD database reader where discontinuities would appear at processor boundaries displaying results that required ghost zones when run in parallel.</li>
@@ -42,8 +44,12 @@
 <li>A memory error was corrected in the Silo database reader.</li>
 <li>A bug was fixed with build_visit failing to install Silo on Darwin because it was using a C compiler to link code with C++ dependencies.</li>
 <li>A bug was fixed with build_visit not properly patching Mesa 6.4.2.</li>
-<li>Build_visit was modified to use HDF5 1.8.1 and Silo 4.6.2.</li>
+<li>Build_visit was modified to use HDF5 1.8.1 and Silo 4.7.</li>
+<li>Numerous imporvements/fixes to build_visit currently only available on the trunk version of VisIt were incorporated into this version</li>
 <li>On Windows, the prompt for copying older version user config files to the new version of VisIt will happen on first-time execution instead of at installation, as installation may be done by admins.</li>
+<li>A memory leak was fixed in the DualMesh operator.</li>
+<li>Data extents from Ale3d files were summarily disabled in the Silo plugin. The next full release of VisIt will provide better controls for this.</li>
+<li>A bug was fixed in the Silo database reader nodelists selections in the presence of materials had no effect.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.11.1.html">VisIt 1.11.1 Release Notes</a>.</p>
