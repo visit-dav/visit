@@ -259,6 +259,9 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Brad Whitlock, Mon Mar  2 16:38:53 PST 2009
 //    I made the routine return an avtDataObject_p.
 //
+//    Hank Childs, Sat Mar 21 10:34:16 PST 2009
+//    Fix compilation error.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -330,7 +333,8 @@ IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
         if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
         {
             this->RenderCleanup(windowID);
-            CATCH_RETURN2(1, this->CreateNullDataWriter(windowID));
+            avtDataObject_p dobj = NULL;
+            CATCH_RETURN2(1, dobj);
         }
 
         debug5 << "Rendering " << viswin->GetNumPrimitives()
