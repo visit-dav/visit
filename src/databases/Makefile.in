@@ -350,6 +350,13 @@
 #   Enzo won't link without HDF5, so it must have HDF5 dependencies.  Moved it
 #   to the HDF5 target.
 #
+#   Mark C. Miller, Fri Mar 20 16:14:23 PST 2009
+#   Putting Enzo in HDF5 breaks HDF5-only builds, where HDF4 is NOT present.
+#   Since visit-config.h defines HAVE_LIBHDF5, HDF5 dependencies can be
+#   dealt with via conditional compilation in Enzo plugin itself. So, Enzo
+#   is moved back to HDF4 targets. Enzo REQUIRES HDF4 and, if HDF5 is present
+#   will also use that. But, if HDF4 is NOT present, Enzo will NOT be built
+#   and that is current best behavior.
 ##############################################################################
 
 @SET_MAKE@
@@ -363,7 +370,7 @@ CFITSIO=FITS
 CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
-HDF4=Cosmos ZeusMP
+HDF4=Cosmos ZeusMP Enzo
 HDF5_TARGET= \
 	Chombo \
 	CosmosPP \
@@ -376,8 +383,7 @@ HDF5_TARGET= \
 	SAMRAI \
 	Tetrad \
 	UNIC \
-	XDMF \
-	Enzo
+	XDMF
 
 MILI=Mili
 SILO_TARGET=Silo SAMI Vista

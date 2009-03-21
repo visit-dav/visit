@@ -42,6 +42,8 @@
 
 #include <avtEnzoFileFormat.h>
 
+#include <visit-config.h>
+
 #include <string>
 
 #include <vtkFloatArray.h>
@@ -62,16 +64,18 @@
 #include <Expression.h>
 #include <DebugStream.h>
 
+#include <hdf.h>
+#include <mfhdf.h>
+
+#ifdef HAVE_LIBHDF5
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
 // versions of HDF5 before 1.8 and ensures correct compilation with
 // version 1.8 and thereafter. When, and if, the HDF5 code in this file
 // is explicitly upgraded to the 1.8 API, this symbol should be removed.
 #define H5_USE_16_API
-#include <hdf.h>
-#include <mfhdf.h>
-
 #include <hdf5.h>
+#endif
 
 using std::string;
 
@@ -496,6 +500,8 @@ avtEnzoFileFormat::ReadParameterFile()
 //    Brad Whitlock, Mon Apr 3 11:04:09 PDT 2006
 //    Added tracer particle support.
 //
+//    Mark C. Miller, Fri Mar 20 16:07:14 PST 2009
+//    Made HDF5 related code conditionally compiled on HAVE_LIBHDF5
 // ****************************************************************************
 void
 avtEnzoFileFormat::DetermineVariablesFromGridFile()
@@ -574,6 +580,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
     }
     else
     {
+#if HAVE_LIBHDF5
         hid_t fileId = H5Fopen(gridFileName, H5F_ACC_RDONLY, H5P_DEFAULT);
         if (fileId < 0)
         {
@@ -628,6 +635,14 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 
         H5Gclose(rootId);
         H5Fclose(fileId);
+#else
+        char msg[1024];
+        SNPRINTF(msg, sizeof(msg), "The HDF4 library failed to open \"%s\" "
+            "and this installation of the Enzo plugin is NOT compiled with "
+            "HDF5 support. So, the file may be an HDF5 file but if so, it "
+            "cannot be opened with this installation.", gridFileName);
+        EXCEPTION1(InvalidFilesException, msg);
+#endif
     }
 }
 
@@ -1106,6 +1121,8 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Mon Apr 3 11:00:15 PDT 2006
 //    Added support for tracer_particles.
 //
+//    Mark C. Miller, Fri Mar 20 16:07:14 PST 2009
+//    Made HDF5 related code conditionally compiled on HAVE_LIBHDF5
 // ****************************************************************************
 
 vtkDataSet *
@@ -1303,6 +1320,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
     }
     else if (fileType == ENZO_FT_HDF5)
     {
+#ifdef HAVE_LIBHDF5
         // particle mesh
         char gridFileName[1000];
         sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
@@ -1398,6 +1416,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         // For now, always close the file
         H5Fclose(fileId);
         return ugrid;
+#endif
     }
 
     return NULL;
@@ -1590,6 +1609,8 @@ avtEnzoFileFormat::BuildDomainNesting()
 //    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
 //    Added support for 2D files.
 //
+//    Mark C. Miller, Fri Mar 20 16:07:14 PST 2009
+//    Made HDF5 related code conditionally compiled on HAVE_LIBHDF5
 // ****************************************************************************
 
 vtkDataArray *
@@ -1692,6 +1713,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
     }
     else
     {
+#ifdef HAVE_LIBHDF5
         // HDF5 STUFF
         char gridFileName[1000];
         sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
@@ -1795,6 +1817,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         H5Fclose(fileId);
 
         return fa;
+#endif
     }
 }
 
