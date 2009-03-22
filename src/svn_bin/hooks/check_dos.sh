@@ -20,6 +20,10 @@
 #   Re-factored a lot of skip logic to HandleCommonSkipCases. Adjusted
 #   main file loop to account for fact that FLIST file now includes file
 #   status chars as well as file name.
+#
+#   Tom Fogal, Sun Mar 22 16:10:25 MST 2009
+#   I added a case for build_visit to be ignored.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -96,6 +100,9 @@ while read fline; do
             continue
             ;;
         *docs/WebSite/*)
+            continue
+            ;;
+        *svn_bin/build_visit)
             continue
             ;;
     esac
