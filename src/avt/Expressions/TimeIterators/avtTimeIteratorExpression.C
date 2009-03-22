@@ -46,6 +46,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtExprNode.h>
 #include <avtExpressionEvaluatorFilter.h>
+#include <avtParallel.h>
 
 #include <Expression.h>
 #include <ParsingExprList.h>
@@ -252,6 +253,13 @@ avtTimeIteratorExpression::ModifyContract(avtContract_p c)
 //  Programmer:   Hank Childs
 //  Creation:     February 14, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 21 19:57:02 CDT 2009
+//    Reset the timeout, since many operations take more than thirty minutes.
+//    Also add a barrier, since otherwise one processor may finish well before 
+//    the another (like 30 minutes before) and ultimately timeout.
+//
 // ****************************************************************************
 
 void
@@ -282,12 +290,14 @@ avtTimeIteratorExpression::Execute(void)
             timeSlice = actualLastTimeSlice;
         debug1 << "Time iterating expression working on time slice " 
                << timeSlice << endl;
-cerr << "WORKING ON TIME " << timeSlice << endl;
         UpdateExpressions(timeSlice);
         // won't re-execute without setting modified to true, because
         // it doesn't check to see if expression definitions change.
         myeef.ReleaseData();
         myeef.GetOutput()->Update(contract);
+        avtCallback::ResetTimeout(5*60);
+        Barrier();
+        avtCallback::ResetTimeout(5*60);
 
         avtDatabaseMetaData *md = dbp->GetMetaData(timeSlice, false,
                                                    false, false);
@@ -354,7 +364,6 @@ avtTimeIteratorExpression::UpdateExpressions(int ts)
         std::string exp_name = GetInternalVarname(i);
         
         bool alreadyInList = false;
-cerr << "DEFINITION = " << expr_defn << endl;
         for (int j = 0 ; j < new_list.GetNumExpressions() ; j++)
         {
             if (new_list[j].GetName() == exp_name)
