@@ -67,6 +67,7 @@
 #include <avtNekDomainBoundaries.h>
 #include <avtParallel.h>
 #include <avtPlaneSelection.h>
+#include <avtPointSelection.h>
 #include <avtSpatialBoxSelection.h>
 #include <avtVariableCache.h>
 #include <snprintf.h>
@@ -2892,6 +2893,11 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
 //  Programmer: Hank Childs
 //  Creation:   December 18, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Mar 22 14:40:49 CDT 2009
+//    Add support for point selections.
+//
 // ****************************************************************************
 
 void
@@ -2945,6 +2951,20 @@ avtNek5000FileFormat::RegisterDataSelections(
             double D = normal[0]*origin[0] + normal[1]*origin[1] +
                      normal[2]*origin[2];
             itree->GetElementsList(normal, D, domainsToUse[i]);
+            if (domainsToUse[i].size() == 0)
+                noMatches = true;
+        }
+        if (string(selList[i]->GetType()) == "Point Selection")
+        {
+            avtPointSelection *sel = (avtPointSelection *) *(selList[i]);
+
+            const double *pt = sel->GetPoint();
+            avtIntervalTree *itree = 
+                              GetBoundingBoxIntervalTree(timestepToUseForMesh);
+            if (itree == NULL)
+                continue;
+
+            itree->GetElementsListFromRange(pt, pt, domainsToUse[i]);
             if (domainsToUse[i].size() == 0)
                 noMatches = true;
         }

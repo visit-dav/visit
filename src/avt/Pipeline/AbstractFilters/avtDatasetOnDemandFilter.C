@@ -48,6 +48,7 @@
 #include <avtDataTree.h>
 #include <avtExtents.h>
 #include <avtOriginatingSource.h>
+#include <avtPointSelection.h>
 
 #include <ImproperUseException.h>
 #include <IncompatibleDomainListsException.h>
@@ -194,6 +195,45 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
         purgeDS->Delete();
         purgeDSCount++;
     }
+
+    return rv;
+}
+
+// ****************************************************************************
+//  Method: avtDatasetOnDemandFilter::GetDataAroundPoint
+//
+//  Purpose:
+//      Forces a pipeline update to fetch the data around a point.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 22, 2009
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
+                                             int timeStep)
+{
+    debug1<<"avtDatasetOnDemandFilter::GetDataAroundPoint("<<X<<", "<<Y<<", "<<Z<<", "<<timeStep<<");"<<endl;
+    if ( ! OperatingOnDemand() )
+        EXCEPTION0(ImproperUseException);
+
+    debug5<<"     Update->GetDataAroundPoint, time= "<<timeStep<<endl;
+    avtContract_p new_contract = new avtContract(firstContract);
+    new_contract->GetDataRequest()->GetRestriction()->TurnOnAll();
+    avtPointSelection *ptsel = new avtPointSelection;
+    double p[3] = { X, Y, Z };
+    ptsel->SetPoint(p);
+
+    // data selection will be deleted by contract.
+    new_contract->GetDataRequest()->AddDataSelection(ptsel);
+
+    if (timeStep >= 0)
+        new_contract->GetDataRequest()->SetTimestep(timeStep);
+    new_contract->SetOnDemandStreaming(true);
+
+    GetInput()->Update(new_contract);
+    vtkDataSet *rv = GetInputDataTree()->GetSingleLeaf();
 
     return rv;
 }

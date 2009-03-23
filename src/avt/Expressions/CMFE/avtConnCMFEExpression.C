@@ -128,8 +128,11 @@ avtConnCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
 //    Hank Childs, Fri Oct  7 11:07:33 PDT 2005
 //    Modify warning message to account for material selection.
 //
-//   Cyrus Harrison, Tue Mar 27 15:37:22 PDT 200
-//   Fixed unreachable else statement and incorrect error message
+//    Cyrus Harrison, Tue Mar 27 15:37:22 PDT 200
+//    Fixed unreachable else statement and incorrect error message
+//
+//    Hank Childs, Sun Mar 22 14:13:16 CDT 2009
+//    Beef up debug statements in exception case.
 //
 // ****************************************************************************
 
@@ -309,6 +312,9 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             }
             else
             {
+                debug1 << "Number of children = " << nc1 << endl;
+                debug1 << "In1(j) " << (int) in1->ChildIsPresent(j) << endl;
+                debug1 << "In2(j) " << (int) in2->ChildIsPresent(j) << endl;
                 EXCEPTION1(InvalidMergeException, "The databases cannot be "
                   "compared because they have a different number of domains.");
             }

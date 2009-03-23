@@ -119,6 +119,10 @@ typedef avtDDF *   (*GetDDFCallback)(void *, const char *);
 //   Hank Childs, Mon Dec 10 17:49:02 PST 2007
 //   Add data member for keeping track of expressions generated.
 //
+//   Hank Childs, Mon Mar 23 11:02:55 CDT 2009
+//   Add data member for keeping track of whether we are doing on demand
+//   processing.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -164,7 +168,7 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
 
   protected:
     ExprPipelineState            pipelineState;
-    avtContract_p   lastUsedSpec;
+    avtContract_p                lastUsedSpec;
     avtSourceFromAVTDataset     *termsrc;
     std::vector<std::string>     expr_list_fromLastTime;
 
@@ -173,6 +177,7 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
 
   private:
     int                          currentTimeState;
+    bool                         onDemandProcessing;
 
     void                         VerifyVariableTypes(void);
 };
