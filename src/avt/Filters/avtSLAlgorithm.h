@@ -65,6 +65,9 @@
 //
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time.
+//   
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Change how timings are reported/calculated.
 //
 // ****************************************************************************
 
@@ -106,8 +109,9 @@ class avtSLAlgorithm
     class SLStatistics
     {
       public:
-        SLStatistics()
+        SLStatistics(std::string s="")
         {
+            nm = s;
             value = 0.0;
             min=max=mean=sigma=total=0.0;
             histogram.resize(0);
@@ -115,12 +119,22 @@ class avtSLAlgorithm
         float min, max, mean, sigma, total;
         std::vector<float> histogram;
         float value;
+        std::string nm;
+
+        friend ostream& operator<<(std::ostream &out, const avtSLAlgorithm::SLStatistics &s)
+        //friend ostream& operator<<(std::ostream &out)
+        {
+            out<<s.nm<<" V: "<<s.value<<" "<<s.total<<" ["<<s.min<<", "<<s.max<<", "<<s.mean<<" : "<<s.sigma<<"]";
+            return out;
+        }
     };
 
     virtual void              ReportStatistics();
-    virtual void              CalculateStatistics();
+    void                      CompileAlgorithmStatistics();
+    virtual void              CompileTimingStatistics();
+    virtual void              CompileCounterStatistics();
     virtual void              CalculateExtraTime();    
-    virtual void              ComputeStatistics(SLStatistics &stats);
+    virtual void              ComputeStatistic(SLStatistics &stats);
     virtual void              ReportStatistics(ostream &os);
     virtual void              ReportTimings(ostream &os, bool totals);
     virtual void              ReportCounters(ostream &os, bool totals);

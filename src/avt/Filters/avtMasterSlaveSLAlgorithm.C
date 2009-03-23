@@ -174,12 +174,17 @@ avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
 //
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
-//
+//   
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
+//  
 // ****************************************************************************
 
 avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtStreamlineFilter *slFilter,
                                                      int maxCount)
-    : avtParSLAlgorithm(slFilter)
+    : avtParSLAlgorithm(slFilter),
+      SleepTime("sleepT"), LatencyTime("latT"), MaxLatencyTime("maxLatT"), SleepCnt("sleepC"),
+      LatencySavingCnt("latSaveCnt")
 {
     NUM_DOMAINS = numDomains * numTimeSteps;
     maxCnt = maxCount;
@@ -240,7 +245,6 @@ avtMasterSlaveSLAlgorithm::Sleep()
     if (sleepMicroSec > 0)
     {
         //debug1<<"Sleep for "<<sleepMicroSec<<" microSec\n";
-        
         int sleepTimer = visitTimer->StartTimer();
         struct timespec ts = {0, sleepMicroSec*1000};
         nanosleep(&ts, 0);
@@ -250,7 +254,31 @@ avtMasterSlaveSLAlgorithm::Sleep()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::CalculateStatistics
+//  Method: avtMasterSlaveSLAlgorithm::CompileTimingStatistics
+//
+//  Purpose:
+//      Calculate statistics.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//  
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
+//  
+// ****************************************************************************
+
+void
+avtMasterSlaveSLAlgorithm::CompileTimingStatistics()
+{
+    avtParSLAlgorithm::CompileTimingStatistics();
+
+    ComputeStatistic(SleepTime);
+    ComputeStatistic(LatencyTime);
+    ComputeStatistic(MaxLatencyTime);
+}
+
+// ****************************************************************************
+//  Method: avtMasterSlaveSLAlgorithm::CompileCounterStatistics
 //
 //  Purpose:
 //      Calculate statistics.
@@ -261,14 +289,11 @@ avtMasterSlaveSLAlgorithm::Sleep()
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::CalculateStatistics()
+avtMasterSlaveSLAlgorithm::CompileCounterStatistics()
 {
-    avtParSLAlgorithm::CalculateStatistics();
-
-    ComputeStatistics(SleepTime);
-    ComputeStatistics(LatencyTime);
-    ComputeStatistics(MaxLatencyTime);
-    ComputeStatistics(SleepCnt);
+    avtParSLAlgorithm::CompileCounterStatistics();
+    ComputeStatistic(SleepCnt);
+    ComputeStatistic(LatencySavingCnt);
 }
 
 // ****************************************************************************
@@ -279,6 +304,9 @@ avtMasterSlaveSLAlgorithm::CalculateStatistics()
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
+//  
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
 //
 // ****************************************************************************
 
@@ -286,8 +314,9 @@ void
 avtMasterSlaveSLAlgorithm::CalculateExtraTime()
 {
     avtParSLAlgorithm::CalculateExtraTime();
-    ExtraTime.value -= SleepTime.value;
-    ExtraTime.value -= LatencyTime.value;
+    
+    if (SleepTime.value > 0.0)
+        ExtraTime.value -= SleepTime.value;
 }
 
 // ****************************************************************************
@@ -319,7 +348,10 @@ avtMasterSlaveSLAlgorithm::ReportTimings(ostream &os, bool totals)
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
-//
+//  
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
+//  
 // ****************************************************************************
 
 void
@@ -327,6 +359,7 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 {
     avtParSLAlgorithm::ReportCounters(os, totals);
     PrintCounter(os, "SleepCnt", SleepCnt, totals);
+    PrintCounter(os, "LSaveCnt", LatencySavingCnt, totals);
 }
 
 
@@ -448,7 +481,35 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::CalculateStatistics
+//  Method: avtMasterSLAlgorithm::CompileTimingStatistics
+//
+//  Purpose:
+//      Calculate statistics. For the master, we need to be a little tricky.
+//      The master doesn't do a lot of things, so we don't want to skew the
+//      statistics. So, set the timer/counters to -1 and then ignore these values
+//      when reporting statistics.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//  
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
+//  
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::CompileTimingStatistics()
+{
+    LatencyTime.value = -1;
+    MaxLatencyTime.value = -1;
+    IOTime.value = -1;
+    IntegrateTime.value = -1;
+    SortTime.value = -1;
+    avtMasterSlaveSLAlgorithm::CompileTimingStatistics();
+}
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::CompileCounterStatistics
 //
 //  Purpose:
 //      Calculate statistics. For the master, we need to be a little tricky.
@@ -462,18 +523,12 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::CalculateStatistics()
+avtMasterSLAlgorithm::CompileCounterStatistics()
 {
-    LatencyTime.value = -1;
-    MaxLatencyTime.value = -1;
-    IOTime.value = -1;
-    IntegrateTime.value = -1;
-    SortTime.value = -1;
     IntegrateCnt.value = -1;
     DomLoadCnt.value = -1;
     DomPurgeCnt.value = -1;
-
-    avtMasterSlaveSLAlgorithm::CalculateStatistics();
+    avtMasterSlaveSLAlgorithm::CompileCounterStatistics();
 }
 
 // ****************************************************************************
@@ -966,10 +1021,15 @@ avtMasterSLAlgorithm::ManageWorkgroup()
     
     PrintStatus();
 
-    if (slaveUpdate)
-        ManageSlaves();
-    if (masterUpdate)
-        ManageMasters();
+    if (!slaveUpdate && !masterUpdate)
+        Sleep();
+    else
+    {
+        if (slaveUpdate)
+            ManageSlaves();
+        if (masterUpdate)
+            ManageMasters();
+    }
 
     debug1<<endl<<"Post-Mortem"<<endl;
     PrintStatus();
@@ -1659,23 +1719,10 @@ avtSlaveSLAlgorithm::UpdateStatus()
             status[DomToIdx( (*s)->domain )] --;
     }
 
-
-    
-    //Start/stop the latency timer.
-    if (prevWorkToDo && !workToDo)
-    {
-        latencyTimer = visitTimer->StartTimer();
-    }
-    else if (!prevWorkToDo && workToDo && latencyTimer != -1)
-    {
-        double t = visitTimer->StopTimer(latencyTimer, "Latency");
-        LatencyTime.value += t;
-        if (t > MaxLatencyTime.value)
-            MaxLatencyTime.value = t;
-    }
-    
     if (!workToDo)
+    {
         debug1<<"Nothing to do.....\n";
+    }
 }
 
 
@@ -1739,6 +1786,9 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //   Allow masters to share work loads.
+//
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Changes related to trying to hide latency with slaves.
 //   
 // ****************************************************************************
 
@@ -1752,7 +1802,6 @@ avtSlaveSLAlgorithm::Execute()
     SendStatus(true);
     Barrier();
 
-#if 1
     while ( 1 )
     {
         //Fill oobSLs list.
@@ -1767,12 +1816,30 @@ avtSlaveSLAlgorithm::Execute()
             else
                 ++si;
         }
-
+        
+        if (latencyTimer != -1 && !activeSLs.empty())
+        {
+            double t = visitTimer->StopTimer(latencyTimer, "Latency");
+            debug1<<"End latency: time= "<<t<<endl;
+            LatencyTime.value += t;
+            if (t > MaxLatencyTime.value)
+                MaxLatencyTime.value = t;
+            latencyTimer = -1;
+        }
+        
         bool done = false, newMsgs = false;
-        while (!activeSLs.empty())
+        while (!activeSLs.empty() && !done)
         {
             avtStreamlineWrapper *s = activeSLs.front();
             activeSLs.pop_front();
+
+            bool doThis = false;
+            if (doThis && activeSLs.empty())
+            {
+                debug1<<"Latency saving sendStatus"<<endl;
+                LatencySavingCnt.value++;
+                SendStatus();
+            }
             
             debug1<<"Integrate "<<s->domain<<endl;
             IntegrateStreamline(s);
@@ -1810,146 +1877,16 @@ avtSlaveSLAlgorithm::Execute()
         SendStatus();
         
         //Nothing to do, take a snooze....
-        if (activeSLs.empty())
+        if (!workToDo)
+        {
+            if (latencyTimer == -1)
+            {
+                latencyTimer = visitTimer->StartTimer();
+                debug1<<"Begin latency!\n";
+            }
             Sleep();
+        }
     }
-#endif
-
-#if 0
-    bool sendStatus = true;
-
-    while ( 1 )
-    {
-        //Fill oobSLs list.
-        list<avtStreamlineWrapper *>::iterator si = activeSLs.begin();
-        while (si != activeSLs.end())
-        {
-            if (!DomainLoaded((*si)->domain))
-            {
-                oobSLs.push_back(*si);
-                si = activeSLs.erase(si);
-            }
-            else
-                ++si;
-        }
-
-        bool done = false, newMsgs = false;
-
-        while (!activeSLs.empty())
-        {
-            avtStreamlineWrapper *s = activeSLs.front();
-            activeSLs.pop_front();
-            debug1<<"Actives= "<<activeSLs.size()<<endl;
-
-            sendStatus = true;
-            if (activeSLs.empty())
-            {
-                debug1<<"Latency saving status send\n";
-                SendStatus();
-                sendStatus = false;
-            }
-                
-            IntegrateStreamline(s);
-            if (s->status == avtStreamlineWrapper::TERMINATE)
-            {
-                terminatedSLs.push_back(s);
-                numTerminated++;
-            }
-            else
-            {
-                if (DomainLoaded(s->domain))
-                    activeSLs.push_back(s);
-                else
-                    oobSLs.push_back(s);
-            }
-            bool newM;
-            ProcessMessages(done, newM);
-            if (done)
-                break;
-            if (newM)
-                newMsgs = true;
-        }
-
-        activeSLs.splice(activeSLs.end(), oobSLs);
-        
-        bool newM;
-        ProcessMessages(done, newM);
-        if (done)
-            break;
-        if (newM)
-            newMsgs = true;
-        
-        //See if we have any SLs.
-        int earlyTerminations = 0;
-        bool newSLs = RecvSLs(activeSLs, earlyTerminations);
-        numTerminated += earlyTerminations;
-
-        if (newSLs)
-            debug1<<"Recv some SLs. sz= "<<activeSLs.size()<<endl;
-
-        if (sendStatus || newSLs || newMsgs || numTerminated > 0)
-            SendStatus();
-        else
-        {
-            if (!workToDo)
-            {
-                timeout++;
-                if (timeout > 1000)
-                {
-                    debug1<<"TIMEOUT FORCE SEND STATUS\n";
-                    SendStatus(true);
-                    Sleep();
-                    timeout = 0;
-                }
-                else if (timeout % 200 == 0)
-                    Sleep();
-            }
-        }
-        CheckPendingSendRequests();
-    }
-#endif
-
-#if 0
-    while ( 1 )
-    {
-        // Integrate while I have work to do.
-        int cnt = 0;
-        while (cnt < maxCnt && !activeSLs.empty())
-        {
-            avtStreamlineWrapper *s = activeSLs.front();
-            activeSLs.pop_front();
-
-            if (DomainLoaded(s->domain))
-            {
-                IntegrateStreamline(s);
-                if (s->status == avtStreamlineWrapper::TERMINATE)
-                {
-                    terminatedSLs.push_back(s);
-                    numTerminated++;
-                }
-                else
-                    activeSLs.push_back(s);
-                
-                cnt++;
-            }
-            else
-                oobSLs.push_back(s);
-        }
-        activeSLs.splice(activeSLs.end(), oobSLs);
-        
-        bool done, newMsgs;
-        ProcessMessages(done, newMsgs);
-        if (done)
-            break;
-        
-        //See if we have any SLs.
-        int earlyTerminations = 0;
-        RecvSLs(activeSLs, earlyTerminations);
-        numTerminated += earlyTerminations;
-        
-        SendStatus();
-    }
-#endif
 
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }

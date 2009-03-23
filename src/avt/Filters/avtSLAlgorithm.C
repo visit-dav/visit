@@ -67,9 +67,14 @@ static bool slDomainCompare(const avtStreamlineWrapper *slA,
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
+//     
 // ****************************************************************************
 
-avtSLAlgorithm::avtSLAlgorithm( avtStreamlineFilter *slFilter )
+avtSLAlgorithm::avtSLAlgorithm( avtStreamlineFilter *slFilter ) :
+    TotalTime("totT"), IOTime("ioT"), IntegrateTime("intT"), SortTime("sorT"), ExtraTime("extT"),
+    IntegrateCnt("intC"), DomLoadCnt("domLC"), DomPurgeCnt("domPC")
 {
     streamlineFilter = slFilter;
     numDomains = streamlineFilter->numDomains;
@@ -277,40 +282,74 @@ avtSLAlgorithm::SortStreamlines(vector<avtStreamlineWrapper *> &sl)
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::CalculateStatistics
+//  Method: avtStreamlineFilter::CalculateTimingStatistics
 //
 //  Purpose:
-//      Calculate the statistics
+//      Calculate the timings.
 //
 //  Programmer: Dave Pugmire
-//  Creation:   January 27, 2009
+//  Creation:   March 23, 2009
 //
 //
 // ****************************************************************************
 
 void
-avtSLAlgorithm::CalculateStatistics()
+avtSLAlgorithm::CompileTimingStatistics()
 {
-    ComputeStatistics(TotalTime);
-    ComputeStatistics(IOTime);
-    ComputeStatistics(IntegrateTime);
-    ComputeStatistics(SortTime);
-    ComputeStatistics(IntegrateCnt);
-    
-    DomLoadCnt.value += streamlineFilter->GetLoadDSCount();
-    DomPurgeCnt.value += streamlineFilter->GetPurgeDSCount();
-    ComputeStatistics(DomLoadCnt);
-    ComputeStatistics(DomPurgeCnt);
-    
-    ComputeStatistics(DomPurgeCnt);
-
-    //Make sure this is last!
-    CalculateExtraTime();
-    ComputeStatistics(ExtraTime);
+    ComputeStatistic(TotalTime);
+    ComputeStatistic(IOTime);
+    ComputeStatistic(IntegrateTime);
+    ComputeStatistic(SortTime);
 }
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::ComputeStatistics
+//  Method: avtStreamlineFilter::CalculateCounterStatistics
+//
+//  Purpose:
+//      Calculate the statistics
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 23, 2009
+//
+//
+// ****************************************************************************
+
+void
+avtSLAlgorithm::CompileCounterStatistics()
+{
+    ComputeStatistic(IntegrateCnt);
+    DomLoadCnt.value += streamlineFilter->GetLoadDSCount();
+    DomPurgeCnt.value += streamlineFilter->GetPurgeDSCount();
+    ComputeStatistic(DomLoadCnt);
+    ComputeStatistic(DomPurgeCnt);
+}
+
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::CompileAlgorithmStatistics
+//
+//  Purpose:
+//      Calculate the statistics
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 19, 2009
+//
+//
+// ****************************************************************************
+
+void
+avtSLAlgorithm::CompileAlgorithmStatistics()
+{
+    CompileTimingStatistics();
+    CompileCounterStatistics();
+    
+    //Once all the timings have been computed, calc the extra time.
+    CalculateExtraTime();
+    ComputeStatistic(ExtraTime);
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::ComputeStatistic
 //
 //  Purpose:
 //      Compute statistics over a value.
@@ -329,7 +368,7 @@ avtSLAlgorithm::CalculateStatistics()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::ComputeStatistics(SLStatistics &stats)
+avtSLAlgorithm::ComputeStatistic(SLStatistics &stats)
 {
 #ifndef PARALLEL
 
@@ -413,9 +452,12 @@ void
 avtSLAlgorithm::CalculateExtraTime()
 {
     ExtraTime.value = TotalTime.value;
-    ExtraTime.value -= IOTime.value;
-    ExtraTime.value -= IntegrateTime.value;
-    ExtraTime.value -= SortTime.value;
+    if (IOTime.value > 0.0)
+        ExtraTime.value -= IOTime.value;
+    if (IntegrateTime.value > 0.0)
+        ExtraTime.value -= IntegrateTime.value;
+    if (SortTime.value > 0.0)
+        ExtraTime.value -= SortTime.value;
 }
 
 // ****************************************************************************
@@ -432,7 +474,7 @@ avtSLAlgorithm::CalculateExtraTime()
 void
 avtSLAlgorithm::ReportStatistics()
 {
-    CalculateStatistics();
+    CompileAlgorithmStatistics();
 
     char f[128];
     int rank = 0;
@@ -510,13 +552,11 @@ avtSLAlgorithm::ReportTimings(ostream &os, bool totals)
 {
     os<<"Timings: *********************************************"<<endl;
     if (totals)
-    {
         os<<"t_Time       = "<<TotalTime.max<<endl;
-        os<<"t_TotalTime  = "<<TotalTime.total<<endl;
-    }
     else
         os<<"l_Time      = "<<TotalTime.value<<endl;
 
+    PrintTiming(os, "TotalTime", TotalTime, TotalTime, totals);
     PrintTiming(os, "IntgTime", IntegrateTime, TotalTime, totals);
     PrintTiming(os, "IOTime", IOTime, TotalTime, totals);
     PrintTiming(os, "SortTime", SortTime, TotalTime, totals);

@@ -64,7 +64,10 @@ class SlaveInfo;
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//   Allow masters to share work loads.  
+//   Allow masters to share work loads.
+//   
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
 //
 // ****************************************************************************
 
@@ -113,8 +116,9 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
     //Statistics and coutners.
     int                       latencyTimer;
     SLStatistics              SleepTime, LatencyTime, MaxLatencyTime;
-    SLStatistics              SleepCnt;
-    virtual void              CalculateStatistics();
+    SLStatistics              SleepCnt, LatencySavingCnt;
+    virtual void              CompileTimingStatistics();
+    virtual void              CompileCounterStatistics();
     virtual void              CalculateExtraTime();
     virtual void              ReportTimings(ostream &os, bool totals);
     virtual void              ReportCounters(ostream &os, bool totals);
@@ -160,7 +164,8 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual void              ManageWorkgroup();
     virtual void              ManageSlaves();
     virtual void              ManageMasters();
-    virtual void              CalculateStatistics();
+    virtual void              CompileTimingStatistics();
+    virtual void              CompileCounterStatistics();
 
     int                       workGroupActiveSLs, workGroupSz;
     bool                      done, slaveUpdate, masterUpdate;
