@@ -79,11 +79,13 @@
 //    Kathleen Bonnell, Thu Mar 19 17:42:48 PDT 2009
 //    Added forceConstruct.
 //
+//    Kathleen Bonnell, Mon Mar 23 09:53:41 PDT 2009
+//    Removed forceConstruct.
+//
 // ****************************************************************************
 
 avtCurveConstructorFilter::avtCurveConstructorFilter()
 {
-    forceConstruct = false;
 }
 
 
@@ -161,7 +163,10 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Replaced Exception with continue
 //
 //    Kathleen Bonnell, Thu Mar 19 17:42:48 PDT 2009
-//    Don't use unique-leaf test for early terminatio if forceConstruct is set.
+//    Don't use unique-leaf test for early termination if forceConstruct is set.
+//
+//    Kathleen Bonnell, Mon Mar 23 09:54:09 PDT 2009
+//    Removed unique-leaf test and forceConstruct.
 //
 // ****************************************************************************
 
@@ -274,25 +279,6 @@ void avtCurveConstructorFilter::Execute()
         delete [] ds;
         SetOutputDataTree(inTree);
         return;
-    }
-
-    // Some operators (like Box) may split a curve into discontinuous
-    // pieces.  Those pieces will be specified by a label, thus if
-    // there is more than 1 unique label for this tree, don't process.
-    
-    // The curve queries will set forceConstruct and skip the early
-    // return since they require a single data set.
-
-    if (!forceConstruct)
-    {
-        stringVector ul;
-        inTree->GetAllUniqueLabels(ul);
-        if (ul.size()  > 1)
-        {
-            delete [] ds;
-            SetOutputDataTree(inTree);
-            return;
-        }
     }
 
     DoubleIntMap minX;

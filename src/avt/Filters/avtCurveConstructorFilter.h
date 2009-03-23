@@ -75,6 +75,9 @@
 //    Kathleen Bonnell, Thu Mar 19 17:42:14 PDT 2009
 //    Added 'ForceConstruction', needed by curve queries.
 //
+//    Kathleen Bonnell, Mon Mar 23 09:53:17 PDT 2009
+//    Removed 'ForceConstruction'.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
@@ -88,8 +91,6 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
     virtual const char       *GetDescription(void)
                                   { return "Constructing Curve"; };
 
-    void                      ForceConstruction(){ forceConstruct = true; }
- 
   protected:
     doubleVector              outputArray;
     virtual void              Execute(void);
@@ -98,8 +99,6 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
     avtContract_p
                            ModifyContract(avtContract_p spec);
     virtual void              UpdateDataObjectInfo(void);
-
-    bool                      forceConstruct;
 };
 
 
