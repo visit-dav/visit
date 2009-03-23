@@ -579,6 +579,9 @@
 #     Tom Fogal, Sun Mar 22 15:34:39 MST 2009
 #     Fix CCMIO builds on Linux-PPC. -- thanks to Patrick Shinpaugh.
 #
+#     Tom Fogal, Sun Mar 22 20:00:46 MST 2009
+#     Correct an earlier patch I had made to PPC HDF4 -- thanks P.S.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -5142,8 +5145,8 @@ EOF
 function apply_hdf4_421_ppc_patch
 {
     patch -p0 << \EOF
---- HDF4.1r5/hdf/src/hdfi.h.bak	2004-06-11 21:28:20.763821223 +0200
-+++ HDF4.1r5/hdf/src/hdfi.h	2004-06-11 21:43:34.853673152 +0200
+--- HDF4.2r1/hdf/src/hdfi.h.bak	2004-06-11 21:28:20.763821223 +0200
++++ HDF4.2r1/hdf/src/hdfi.h	2004-06-11 21:43:34.853673152 +0200
 @@ -1318,6 +1318,55 @@
  
  #endif /* IA-64 */
@@ -5240,7 +5243,7 @@ function apply_hdf4_patch
            return 1
        fi
    fi
-    if test `uname -m` = "ppc64" ; then
+    if [[ `uname -m` == "ppc64" ]]; then
         apply_hdf4_421_ppc_patch
         apply_hdf4_421_ppc_patch_endianness
     fi
