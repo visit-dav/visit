@@ -62,6 +62,9 @@
 //
 //   Dave Pugmire, Tue Mar 17 12:02:10 EDT 2009
 //   Create a new RecvSLs method that doesn't check for domain inclusion.
+//   
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
 //
 // ****************************************************************************
 
@@ -99,7 +102,8 @@ class avtParSLAlgorithm : public avtSLAlgorithm
     std::vector<MPI_Request>  statusRecvRequests, slRecvRequests;
     int                       statusMsgSz, slMsgSz;
 
-    virtual void              CalculateStatistics();
+    virtual void              CompileTimingStatistics();
+    virtual void              CompileCounterStatistics();
     virtual void              CalculateExtraTime();
     virtual void              ReportTimings(ostream &os, bool totals);
     virtual void              ReportCounters(ostream &os, bool totals);

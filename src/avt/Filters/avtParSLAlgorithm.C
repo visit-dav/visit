@@ -59,10 +59,14 @@ int avtParSLAlgorithm::STREAMLINE_TAG = 420001;
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Change how timings are reported/calculated.
+//   
 // ****************************************************************************
 
 avtParSLAlgorithm::avtParSLAlgorithm(avtStreamlineFilter *slFilter)
-    : avtSLAlgorithm(slFilter)
+    : avtSLAlgorithm(slFilter),
+      CommTime("comT"), MsgCnt("msgC"), SLCommCnt("slcC"), BytesCnt("byteC")
 {
     nProcs = PAR_Size();
     rank = PAR_Rank();
@@ -212,12 +216,16 @@ avtParSLAlgorithm::CleanupAsynchronous()
 //    Dave Pugmire, Wed Mar 18 17:07:07 EDT 2009
 //    Delete entry from map after send is complete.
 //
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Change how timings are reported/calculated.
+//   
 // ****************************************************************************
 void
 avtParSLAlgorithm::CheckPendingSendRequests()
 {
     debug5<<"avtParSLAlgorithm::CheckPendingSendRequests()\n";
-
+    int communicationTimer = visitTimer->StartTimer();
+    
     if (sendSLBufferMap.size() > 0)
     {
         vector<MPI_Request> req, copy;
@@ -309,6 +317,8 @@ avtParSLAlgorithm::CheckPendingSendRequests()
         }
     }
 
+    CommTime.value += visitTimer->StopTimer(communicationTimer, 
+                                            "CheckPending");
     debug5 << "DONE  CheckPendingSendRequests()\n";
 }
 
@@ -439,13 +449,16 @@ avtParSLAlgorithm::SendAllMsg(vector<int> &msg)
 //
 // Modifications:
 //
-//
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Change how timings are reported/calculated.
+//   
 // ****************************************************************************
 
 void
 avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
 {
     debug5<<"avtParSLAlgorithm::RecvMsgs()\n";
+    int communicationTimer = visitTimer->StartTimer();
     
     msgs.resize(0);
     while (true)
@@ -502,6 +515,8 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
         if (num == 0)
             break;
     }
+    CommTime.value += visitTimer->StopTimer(communicationTimer,
+                                            "RecvMsgs");
 }
 
 
@@ -567,7 +582,7 @@ avtParSLAlgorithm::SendSLs(int dst,
 
     BytesCnt.value += sz;
     CommTime.value += visitTimer->StopTimer(communicationTimer,
-                                            "StreamlineCommunication");
+                                            "SendSLs");
 }
 
 
@@ -584,11 +599,15 @@ avtParSLAlgorithm::SendSLs(int dst,
 //
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //  RecvSLs broken into two methods.
+//  
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
 //
 // ****************************************************************************
 int
 avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
 {
+    int communicationTimer = visitTimer->StartTimer();
     int slCount = 0;
 
     while (true)
@@ -644,7 +663,9 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
         if (num == 0)
             break;
     }
-
+    
+    CommTime.value += visitTimer->StopTimer(communicationTimer,
+                                            "RecvSLs");
     return slCount;
 }
 
@@ -743,25 +764,42 @@ avtParSLAlgorithm::ExchangeSLs(list<avtStreamlineWrapper *> &streamlines,
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::CalculateStatistics
+//  Method: avtParSLAlgorithm::CalculateTimingStatistics
 //
 //  Purpose:
 //      Compute statistics over a value.
 //
 //  Programmer: Dave Pugmire
-//  Creation:   January 28, 2009
+//  Creation:   March 23, 2009
+//
+// ****************************************************************************
+
+void
+avtParSLAlgorithm::CompileTimingStatistics()
+{
+    avtSLAlgorithm::CompileTimingStatistics();
+    ComputeStatistic(CommTime);
+}
+
+// ****************************************************************************
+//  Method: avtParSLAlgorithm::CalculateCounterStatistics
+//
+//  Purpose:
+//      Compute statistics over a value.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 23, 2009
 //
 //
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::CalculateStatistics()
+avtParSLAlgorithm::CompileCounterStatistics()
 {
-    avtSLAlgorithm::CalculateStatistics();
-    ComputeStatistics(CommTime);
-    ComputeStatistics(MsgCnt);
-    ComputeStatistics(SLCommCnt);
-    ComputeStatistics(BytesCnt);
+    avtSLAlgorithm::CompileCounterStatistics();
+    ComputeStatistic(MsgCnt);
+    ComputeStatistic(SLCommCnt);
+    ComputeStatistic(BytesCnt);
 }
 
 // ****************************************************************************
@@ -773,13 +811,17 @@ avtParSLAlgorithm::CalculateStatistics()
 //  Programmer: Dave Pugmire
 //  Creation:   January 28, 2009
 //
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
+//  
 // ****************************************************************************
 
 void
 avtParSLAlgorithm::CalculateExtraTime()
 {
     avtSLAlgorithm::CalculateExtraTime();
-    ExtraTime.value -= CommTime.value;
+    if (CommTime.value > 0.0)
+        ExtraTime.value -= CommTime.value;
 }
 
 // ****************************************************************************
