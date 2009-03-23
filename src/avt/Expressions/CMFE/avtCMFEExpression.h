@@ -80,6 +80,9 @@ class     avtDatabase;
 //    Hank Childs, Thu Apr 10 16:10:33 PDT 2008
 //    Add a data member to manage making consistent ghost zone requests.
 //
+//    Hank Childs, Mon Mar 23 11:02:55 CDT 2009
+//    Add data member for on demand streaming.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -110,6 +113,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     int                       firstDBTime;
     avtSILRestriction_p       firstDBSIL;
     avtGhostDataType          ghostNeeds;
+    bool                      onDemandProcessing;
     std::string               argument_expression;
     int                       varDim;
     bool                      isNodal;

@@ -153,6 +153,9 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Hank Childs, Sun Mar 22 11:30:40 CDT 2009
+//   Initialize specifyPoint.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -176,6 +179,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     relTol = 1e-7;
     absTol = 0;
     intervalTree = NULL;
+    specifyPoint = false;
     solver = NULL;
     dataSpatialDimension = 3;
 
@@ -386,10 +390,14 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
 //   Make DomainType a const reference.
 //
+//   Hank Childs, Sun Mar 22 13:31:08 CDT 2009
+//   Add support for getting the "domain" by using a point.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtStreamlineFilter::GetDomain(const DomainType &domain)
+avtStreamlineFilter::GetDomain(const DomainType &domain, double X, double Y,
+                               double Z)
 {
     //debug5<<"GetDomain("<<domain<<");\n";
     vtkDataSet *ds = NULL;
@@ -397,8 +405,16 @@ avtStreamlineFilter::GetDomain(const DomainType &domain)
     debug5<<"OperatingOnDemand() = "<<OperatingOnDemand()<<endl;
     if (OperatingOnDemand())
     {
-        ds = avtDatasetOnDemandFilter::GetDomain(domain.domain,
-                                                 domain.timeStep);
+        if (specifyPoint)
+        {
+            ds = avtDatasetOnDemandFilter::GetDataAroundPoint(X,Y,Z,
+                                                              domain.timeStep);
+        }
+        else
+        {
+            ds = avtDatasetOnDemandFilter::GetDomain(domain.domain,
+                                                     domain.timeStep);
+        }
     }
     else
     {
@@ -1095,9 +1111,9 @@ avtStreamlineFilter::Execute(void)
 //
 //  Modifications:
 //
-//    Hank Childs, Mon Jul 21 13:09:13 PDT 2008
-//    Remove the "area code" from the initialization so it will compile on
-//    my box.
+//   Hank Childs, Mon Jul 21 13:09:13 PDT 2008
+//   Remove the "area code" from the initialization so it will compile on
+//   my box.
 //
 //   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
 //   Add dataSpatialDimension
@@ -1114,6 +1130,10 @@ avtStreamlineFilter::Execute(void)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Hank Childs, Mon Mar 23 11:02:55 CDT 2009
+//   Add handling for the case where we load data on demand using point
+//   selections.
+//
 // ****************************************************************************
 
 void
@@ -1124,22 +1144,42 @@ avtStreamlineFilter::Initialize()
 
     // Get/Compute the interval tree.
     avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents();
+    bool dontUseIntervalTree = false;
     if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition())
     {
         // The reader returns an interval tree with one domain (for everything).
         // This is not what we want.  So forget about this one, as we will be 
         // better off calculating one.
-        it_tmp = NULL;
-        debug1<<"HANK's CHANGE\n";
+        dontUseIntervalTree = true;
     }
-    if (it_tmp == NULL)
+    if (it_tmp == NULL || dontUseIntervalTree)
     {
         if (OperatingOnDemand())
         {
-            // It should be there, or else we would have precluded 
-            // OnDemand processing in the method CheckOnDemandViability.
-            // Basically, this should never happen, so throw an exception.
-            EXCEPTION0(ImproperUseException);
+            if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition())
+            {
+                // We are going to assume that the format that operates on
+                // demand can accept hints about where the data lies and return
+                // that data.
+                // (This was previously an exception, so we haven't taken too
+                //  far of a step backwards with this assumption.)
+                debug1 << "This file format reader does dynamic decomposition." << endl;
+                debug1 << "We are assuming it can handle hints about what data "
+                       << "to read." << endl;
+                specifyPoint = true;
+
+                // Use the dummy interval tree, so we have something that fits
+                // the existing interface.
+                // Make a copy so it doesn't get deleted out from underneath us.
+                intervalTree = new avtIntervalTree(it_tmp);
+            }
+            else
+            {
+                // It should be there, or else we would have precluded 
+                // OnDemand processing in the method CheckOnDemandViability.
+                // Basically, this should never happen, so throw an exception.
+                EXCEPTION0(ImproperUseException);
+            }
         }
         else 
             intervalTree = GetTypedInput()->CalculateSpatialIntervalTree();
@@ -1282,6 +1322,7 @@ bool
 avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
 {
     debug5<< "avtStreamlineFilter::PointInDomain("<<pt<<", dom= "<<domain<<");\n";
+    // DAVE: HERE'S A SPOT
     vtkDataSet *ds = GetDomain(domain);
 
     if (ds == NULL)
@@ -1668,6 +1709,7 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
 
     slSeg->status = avtStreamlineWrapper::UNSET;
     //Get the required domain.
+    // DAVE: HERE'S A SPOT
     vtkDataSet *ds = GetDomain(slSeg->domain);
     if (ds == NULL)
     {

@@ -93,12 +93,16 @@ void              *avtExpressionEvaluatorFilter::getDDFCallbackArgs = NULL;
 //    Hank Childs, Fri Dec 31 11:47:01 PST 2004
 //    Initialize termsrc.
 //
+//    Hank Childs, Mon Mar 23 11:02:55 CDT 2009
+//    Initialize onDemandProcessing.
+//
 // ****************************************************************************
 
 avtExpressionEvaluatorFilter::avtExpressionEvaluatorFilter()
 {
     termsrc = NULL;
     currentTimeState = 0;
+    onDemandProcessing = false;
 }
 
 
@@ -160,6 +164,9 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //    Hank Childs, Mon Sep 15 16:30:50 PST 2008
 //    Deleted termsrc to free up memory for the next pipeline operations.
 //
+//    Hank Childs, Mon Mar 23 11:02:55 CDT 2009
+//    Set contract with whether we are doing "onDemandProcessing".
+//
 // ****************************************************************************
 
 void
@@ -193,6 +200,7 @@ avtExpressionEvaluatorFilter::Execute(void)
                 new avtDataRequest(lastUsedSpec->GetDataRequest());
         new_dataRequest->SetTimestep(currentTimeState);
         contract = new avtContract(contract, new_dataRequest);
+        contract->SetOnDemandStreaming(onDemandProcessing);
         bottom->Update(contract);
         GetOutput()->Copy(*(bottom->GetOutput()));
     } else {
@@ -861,12 +869,16 @@ avtExpressionEvaluatorFilter::QueryCoords(const std::string &var,
 //
 //  Modifications:
 //
+//    Hank Childs, Mon Mar 23 11:02:55 CDT 2009
+//    Examine whether we are doing on demand processing.
+//
 // ****************************************************************************
 
 void
 avtExpressionEvaluatorFilter::ExamineContract(avtContract_p contract)
 {
     currentTimeState = contract->GetDataRequest()->GetTimestep();
+    onDemandProcessing = contract->DoingOnDemandStreaming();
 }
 
 // ****************************************************************************

@@ -88,6 +88,9 @@ typedef struct
 //    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //    Added support for time/domain.
 //
+//    Hank Childs, Sun Mar 22 13:31:08 CDT 2009
+//    Add support for getting data around a point.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
@@ -102,6 +105,7 @@ class PIPELINE_API avtDatasetOnDemandFilter : virtual public
     void                         GetLoadedDomains(std::vector<std::vector<int> > &domains);
     void                         SetMaxQueueLength(int len) { maxQueueLength = len; }
     virtual vtkDataSet           *GetDomain(int, int);
+    virtual vtkDataSet           *GetDataAroundPoint(double, double, double, int);
     avtContract_p                ModifyContract(avtContract_p);
     virtual void                 UpdateDataObjectInfo(void);
 

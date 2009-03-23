@@ -84,12 +84,16 @@
 //    Hank Childs, Thu Jan  5 15:36:14 PST 2006
 //    Initialized isNodal.
 //
+//    Hank Childs, Sun Mar 22 14:13:16 CDT 2009
+//    Initialized onDemandProcessing.
+//
 // ****************************************************************************
 
 avtCMFEExpression::avtCMFEExpression()
 {
     varDim = 1;;
     isNodal = false;
+    onDemandProcessing = false;
 }
 
 
@@ -352,6 +356,9 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    Allow for expressions to be the "CMFE var" 
 //    (example: <conn_cmfe([1]id:p+1> ... p+1 is an expression)
 //
+//    Hank Childs, Sun Mar 22 14:13:16 CDT 2009
+//    Add support for on demand streaming.
+//
 // ****************************************************************************
 
 void
@@ -404,6 +411,7 @@ avtCMFEExpression::Execute()
     }
     spec->GetDataRequest()->SetTimestep(actualTimestep);
     spec->GetDataRequest()->SetDesiredGhostDataType(ghostNeeds);
+    spec->SetOnDemandStreaming(onDemandProcessing);
 
     avtExpressionEvaluatorFilter *eef = new avtExpressionEvaluatorFilter;
     eef->SetInput(dob);
@@ -638,6 +646,7 @@ avtCMFEExpression::ExamineContract(avtContract_p spec)
     firstDBTime = spec->GetDataRequest()->GetTimestep();
     firstDBSIL  = spec->GetDataRequest()->GetRestriction();
     ghostNeeds  = spec->GetDataRequest()->GetDesiredGhostDataType();
+    onDemandProcessing = spec->DoingOnDemandStreaming();
 }
 
 

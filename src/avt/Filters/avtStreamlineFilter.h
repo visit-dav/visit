@@ -168,6 +168,9 @@ class DomainType;
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
 //   Make DomainType a const reference.
 //
+//   Hank Childs, Sun Mar 22 11:30:40 CDT 2009
+//   Added specifyPoint data member.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -230,6 +233,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     bool   doPathlines;
 
     avtIntervalTree *intervalTree;
+    bool             specifyPoint;
     avtIVPSolver *solver;
 
     int numDomains, numTimeSteps, cacheQLen;
@@ -264,7 +268,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
                                               vtkDataSet *ds,
                                               double *extents,
                                               int maxSteps=-1);
-    virtual vtkDataSet        *GetDomain(const DomainType &);
+    virtual vtkDataSet        *GetDomain(const DomainType &, double = 0.0, double = 0.0, double = 0.0);
     virtual int               GetTimeStep(double &t) const;
     virtual bool              DomainLoaded(DomainType &) const;
 

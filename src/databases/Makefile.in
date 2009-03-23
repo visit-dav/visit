@@ -357,6 +357,10 @@
 #   is moved back to HDF4 targets. Enzo REQUIRES HDF4 and, if HDF5 is present
 #   will also use that. But, if HDF4 is NOT present, Enzo will NOT be built
 #   and that is current best behavior.
+#
+#   Hank Childs, Sun Mar 22 14:45:21 CDT 2009
+#   Remove Nek3D target ... reader is in the process of becoming deprecated.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -426,7 +430,6 @@ REQUIRED=\
  Miranda \
  MM5 \
  NASTRAN \
- Nek3D \
  Nek5000 \
  OpenFOAM \
  OVERFLOW \
