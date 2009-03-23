@@ -555,7 +555,7 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
                                                counts);
                                                
   //std::cout << "HDF_FQ:: returned from First New 2DAdaptiveDistribution call with err=" 
-            << err << std::endl;
+  //          << err << std::endl;
   ibis::gVerbose = 0;
   return err;
 }

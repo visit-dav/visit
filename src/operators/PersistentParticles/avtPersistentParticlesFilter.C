@@ -41,6 +41,21 @@
 // ************************************************************************* //
 
 #include <avtPersistentParticlesFilter.h>
+#include <ImproperUseException.h>
+#include <vtkDataSet.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkPointData.h>
+#include <vtkCellType.h>
+#include <vtkIdList.h>
+#include <vtkPoints.h>
+#include <vtkFloatArray.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+
+//Use of named selection
+#include <avtCallback.h>
+#include <avtContract.h>
+#include <avtIdentifierSelection.h>
 
 
 // ****************************************************************************
@@ -53,6 +68,7 @@
 
 avtPersistentParticlesFilter::avtPersistentParticlesFilter()
 {
+      particlePathData = NULL;
 }
 
 
@@ -68,6 +84,11 @@ avtPersistentParticlesFilter::avtPersistentParticlesFilter()
 
 avtPersistentParticlesFilter::~avtPersistentParticlesFilter()
 {
+      if( particlePathData ){
+            particlePathData->Delete();
+            particlePathData = NULL;
+      }
+      particlePaths.clear();
 }
 
 
@@ -151,7 +172,13 @@ avtPersistentParticlesFilter::InspectPrincipalData(void)
 //
 //  Purpose:
 //      This method is the mechanism where the base class shares the data from
-//      the current time slice with the derived type.
+//      the current time slice with the derived type. Here the operator adds
+//      the information from the current time slice to the new dataset with
+//      the particle paths. 
+//
+//  Modifications:
+//    Oliver Ruebel, Mo Mar 28 2009
+//    Clean-up. Removed cout statements used for debugging and added comments
 //
 //  Programmer: Hank Childs
 //  Creation:   January 25, 2008
@@ -161,11 +188,118 @@ avtPersistentParticlesFilter::InspectPrincipalData(void)
 void
 avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
 {
-    // Just hold onto the tree for now.
     bool success;
     int nzones = -1;
     tree->Traverse(CGetNumberOfZones, &nzones, success);
-    trees.push_back(tree);
+
+    //Merge the datasets but do not connect the particles
+    if( ! atts.GetConnectParticles() ){
+          trees.push_back(tree);
+          return;
+    }
+
+    //if connectParticles is set then compute a new dataset describing
+    //the geometry of particle paths's
+
+    //Ask for the dataset
+    vtkDataSet **dsets;
+    int nds;
+    dsets = tree->GetAllLeaves(nds);
+    if (nds != 1)
+    {
+        EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
+                                         " in avtDataTree");
+    }
+    vtkDataSet *currDs = dsets[0];
+    vtkUnstructuredGrid *uGrid = dynamic_cast<vtkUnstructuredGrid*>(currDs);
+    if (uGrid == 0)
+    {
+        EXCEPTION1(ImproperUseException, "Filter only supports "
+                                         "vtkUnstructuredGrid data");    
+    }
+
+    //Get the data from the current timestep
+    vtkPoints*    currPoints = uGrid->GetPoints();
+    vtkDataArray* currWeight = uGrid->GetPointData()->GetArray( atts.GetIndexVariable().c_str() );
+    vtkPointData* currData   = uGrid->GetPointData();
+    if (currWeight == 0)
+    {
+        EXCEPTION1(ImproperUseException, "Index variable not found.");    
+    }
+
+    //Create a new output dataset if needed
+    //If first timestep or if output dataset has not been created yet
+    if( ts == atts.GetStartIndex() || !particlePathData ){
+          //Delete the current output dataset if necessary
+          if( particlePathData ){
+            particlePathData->Delete();
+            particlePathData = NULL;
+          }
+          //Create and initalize the new dataset
+          particlePathData = vtkUnstructuredGrid::New();
+          particlePathData->SetPoints( vtkPoints::New() );
+          vtkPointData* allData = uGrid->GetPointData();
+          for( int i=0 ; i<allData->GetNumberOfArrays() ; i++)
+          {
+            vtkFloatArray* newArray = vtkFloatArray::New();
+            newArray->SetName( allData->GetArray(i)->GetName()        );
+            particlePathData->GetPointData()->AddArray( newArray );
+            newArray->Delete(); 
+          }
+    }
+
+    //Write the current particles into a map to decide which ones should be traced
+    int nPoints = uGrid->GetNumberOfPoints(); 
+    std::map<double , bool> trace;
+    int numSkipped = 0;
+    for( unsigned int i=0 ; i<nPoints ;++i )
+    {
+            std::map<double , bool >::iterator fP = trace.find( currWeight->GetTuple1(i) );
+            trace[currWeight->GetTuple1(i)] = (fP==trace.end());
+            if( fP!=trace.end() ){
+                  numSkipped++;
+            }
+    }
+
+    //Traverse all points
+    for( unsigned int i=0 ; i<nPoints ; ++i ) {
+          //trace only if particle id is unique
+          if( trace[ currWeight->GetTuple1(i)] )
+          {
+                //Get the current particle path if it is already defined
+                std::map<double , int >::iterator lastPoint = particlePaths.find( currWeight->GetTuple1(i) );
+                //Add the point to the map
+                vtkPoints* pathPoints = particlePathData->GetPoints();
+                pathPoints->InsertNextPoint( currPoints->GetPoint(i) );
+                particlePathData->SetPoints( pathPoints );
+
+                //The index of the new point
+                int  newPointIndex = particlePathData->GetPoints()->GetNumberOfPoints()-1;
+
+                //Copy the pointdata from the input mesh to the output mesh
+                vtkPointData* allData = particlePathData->GetPointData();
+                for( int j=0 ; j<allData->GetNumberOfArrays() ; j++) {
+                      allData->GetArray(j)->InsertTuple1(
+                      newPointIndex  ,
+                              currData->GetArray(j)->GetTuple1(i)
+                      );
+                }
+
+                //add a new line segment
+                if( lastPoint != particlePaths.end() ){
+                      //define the points of the lines
+                      int* pointList = new int[2];
+                      pointList[0]   = (*lastPoint).second;
+                      pointList[1]   = newPointIndex;
+                      //add a new line segment
+                      particlePathData->InsertNextCell( VTK_LINE , 2 , pointList );
+                      delete[] pointList;
+                }
+
+                //Update the map
+                particlePaths[ currWeight->GetTuple1(i) ] = newPointIndex;
+          }
+    }
 }
 
 
@@ -175,7 +309,14 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
 //  Purpose:
 //      This method is the mechanism for the base class to tell its derived
 //      types that no more time slices are coming and it should put together
-//      its final output.
+//      its final output. This method creates the final output dataset with
+//      either all points of the different time slices or the dataset with
+//      the particle paths.
+//
+//  Modifications:
+//    Oliver Ruebel, Mo Mar 28 2009
+//    Clean-up. Removed cout statements used for debugging and added comments.
+//
 //
 //  Programmer: Hank Childs
 //  Creation:   January 25, 2008
@@ -185,8 +326,79 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
 void
 avtPersistentParticlesFilter::Finalize(void)
 {
-    avtDataTree_p newTree = new avtDataTree(trees.size(), &(trees[0]));
-    SetOutputDataTree(newTree);
+      //Merge the data but do not connect the traces of particles
+      if( ! atts.GetConnectParticles() ){
+          avtDataTree_p newTree = new avtDataTree(trees.size(), &(trees[0]));
+          SetOutputDataTree(newTree);
+          trees.clear();
+      }
+      else{
+            //Find the index of the main variable in the new path datasets
+            int index =0;
+            vtkPointData* pointData = particlePathData->GetPointData();
+            //find the main variable
+            for( int i=0 ; i<pointData->GetNumberOfArrays() ; ++i ){
+                  if( mainVariable.compare( pointData->GetArray(i)->GetName() ) == 0 ){
+                        index =i;
+                        break;
+                  }
+            }
+            //Set the according array to be the active array
+            pointData->SetScalars( pointData->GetArray(index) );
+            avtDataTree_p newTree = new avtDataTree( particlePathData , 0 );
+            SetOutputDataTree(newTree);
+            particlePaths.clear(); //Clear the map for the next run
+            particlePaths = std::map<double , int>();
+            particlePathData->Delete();
+            particlePathData = NULL;
+      } 
+}
+
+
+// ****************************************************************************
+//  Method: avtPersistentParticlesFilter::ModifyContract
+//
+//  Purpose:
+//      This method makes any necessay modification to the VisIt contract
+//      to, e.g., request that the index variable is also loaded if it 
+//      is not already part of the contract.
+//
+//  Modifications:
+//    Oliver Ruebel, Mo Mar 28 2009
+//    Clean-up. Removed cout statements used for debugging and added comments.
+//
+// ****************************************************************************
+
+avtContract_p
+avtPersistentParticlesFilter::ModifyContract(avtContract_p in_contract)
+{
+    //Create the output contract
+    avtContract_p out_contract = new avtContract(in_contract);
+
+    //add the index variable to the contract if necessay
+    if( atts.GetIndexVariable() != "default")
+       out_contract->GetDataRequest()->AddSecondaryVariable( atts.GetIndexVariable().c_str() );
+
+    mainVariable = string( out_contract->GetDataRequest()->GetVariable());
+    SetContract(out_contract);
+    return out_contract;
+}
+
+
+// ****************************************************************************
+//  Method: avtPersistentParticlesFilter::UpdateDataObjectInfo
+//
+//  Purpose:
+//
+// ****************************************************************************
+void
+avtPersistentParticlesFilter::UpdateDataObjectInfo(void)
+{
+    avtDataObject_p           out_data_object = GetOutput();
+    avtDataObjectInformation &out_data_info   = out_data_object->GetInfo();
+    avtDataAttributes        &out_data_atts   = out_data_info.GetAttributes();
+    out_data_atts.SetTopologicalDimension(2); //we have lines as output
+    out_data_atts.SetCentering( AVT_NODECENT );
 }
 
 
