@@ -219,6 +219,9 @@
 #    Jeremy Meredith, Wed Feb 25 14:32:04 EST 2009
 #    Added Delaunay operator.
 #
+#    Jeremy Meredith, Tue Mar 24 16:41:59 EDT 2009
+#    Added DeformSphereGlyph
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -232,7 +235,7 @@ OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells @SILO_TARGET@ \
          SubdivideQuads SurfCompPrep 
 
 REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \
-         Decimate DeferExpression Delaunay Displace DualMesh \
+         Decimate DeferExpression DeformSphereGlyph Delaunay Displace DualMesh \
 	 Edge Elevate ExternalSurface \
          IndexSelect InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
          PDF PersistentParticles Project Reflect Replicate Resample Revolve Slice Smooth \
