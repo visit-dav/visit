@@ -27,7 +27,6 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 crier=true
-sunset=true
 purple=true
 hopi=true
 
@@ -43,7 +42,6 @@ do
    case $1 in
       -none)
          crier=false
-         sunset=false
          purple=false
          hopi=false
          shift
@@ -54,14 +52,6 @@ do
          ;;
       +crier)
          crier=true
-         shift
-         ;;
-      -sunset)
-         sunset=false
-         shift
-         ;;
-      +sunset)
-         sunset=true
          shift
          ;;
       -purple)
@@ -142,43 +132,6 @@ then
       scp -P 22 visit-install crier:
       scp -P 22 crier crier:crier_install
       ssh -p 22 crier "chmod 750 crier_install;./crier_install"
-   fi
-fi
-
-#
-# Install on sunset.
-#
-rm -f sunset
-cat <<EOF > sunset
-#!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                            > resultlog 2>&1
-echo "        install of visit on sunset"          >> resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/sun4-sunos5-sparc/bin >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/sun4-sunos5-sparc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.sunset
-EOF
-
-if [ $sunset = true ]
-then
-   if [ $test = no ]
-   then
-      scp sunset:/export/scratch/$user/sunset/visitbuild/visit$ver2.sunos5.tar.gz .
-      scp visit$ver2.sunos5.tar.gz sunset:
-      scp visit-install sunset:
-      scp sunset sunset:sunset_install
-      ssh sunset "chmod 750 sunset_install;./sunset_install"
    fi
 fi
 
@@ -277,5 +230,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier sunset purple hopi
+   rm -f crier purple hopi
 fi
