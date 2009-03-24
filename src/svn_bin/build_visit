@@ -1168,52 +1168,60 @@ function uncompress_untar
 #   Hank Childs, Fri Dec 12 09:28:35 PST 2008                                 #
 #   Add special logic for Ice-T.                                              #
 #                                                                             #
-#   Mark C. Miller, Thu Feb 19 09:16:46 PST 2009
-#   Added argument to specify a download_path. Removed special IceT coding.
-#
-#   Mark C. Miller, Thu Feb 19 12:21:55 PST 2009
-#   Changed to support multiple sites as well as default visit places.
-#
-#   Mark C. Miller, Thu Mar 19 10:25:38 PDT 2009
-#   Adjusted logic to allow fallback to general web places.
+#   Mark C. Miller, Thu Feb 19 09:16:46 PST 2009                              #
+#   Added argument to specify a download_path. Removed special IceT coding.   #
+#                                                                             #
+#   Mark C. Miller, Thu Feb 19 12:21:55 PST 2009                              #
+#   Changed to support multiple sites as well as default visit places.        #
+#                                                                             #
+#   Cyrus Harrison, Thu Feb 19 12:21:55 PST 2009                              #
+#   Fixed problem where if a download path was given, svn mode was skipped    #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
 {
 # $1 is the file name to download
 # $2...$* [OPTIONAL] list of sites to obtain the file from
-# If no sites are specified, tries SVN (if that is allowed) followed by
-# known visit web places.
+#
+# Since we always pass optional download sites to this function for
+# some third party libs - we can't skip svn mode just b/c this info is given.
+#
     typeset dfile=$1
     info "Downloading $dfile . . ." 
     shift
-    if [[ "$1" == "" ]] ; then
-        # If SVN is requested, try that first before anything else
-        if [[ "$DO_SVN" == "yes" ]] ; then
-            svn cat $SVN_ROOT_PATH/trunk/third_party/$dfile > $dfile
-            if [[ $? == 0 && -e $dfile ]] ; then
-	        return 0
-            fi
-	    rm -f $dfile
+    
+    # If SVN is requested, try that first before anything else
+    if [[ "$DO_SVN" == "yes" ]] ; then
+        svn cat $SVN_ROOT_PATH/trunk/third_party/$dfile > $dfile
+        if [[ $? == 0 && -e $dfile ]] ; then
+            info "SVN download succeeded: $SVN_ROOT_PATH/trunk/third_party/$dfile"
+            return 0
         fi
-	# If SVN was not requested or if it failed...
+        warn "SVN download attempt failed: $SVN_ROOT_PATH/trunk/third_party/$dfile"
+        rm -f $dfile
+    fi
+    
+    if [[ "$1" == "" ]] ; then
+        # If SVN was not requested or if it failed...
         if [[ "$dfile" == "$VISIT_FILE" ]] ; then
             try_download_file https://wci.llnl.gov/codes/visit/$VISIT_VERSION/$dfile
-	else
+        else
             try_download_file https://wci.llnl.gov/codes/visit/3rd_party/$dfile
         fi
-	if [[ $? == 0 ]] ; then
-	    return 0
-	fi
+        
+        if [[ $? == 0 ]] ; then
+            return 0
+        fi
     fi
     # Ok, if any of above had succeeded, they would have returned early.
     # So, now try various places listed.
     # try all sites listed incl. falling back to visit's 3rd_party
     for site in $* https://wci.llnl.gov/codes/visit/3rd_party; do
         try_download_file $site/$dfile 
-	if [[ $? == 0 ]] ; then
-	    return 0
-	fi
+    if [[ $? == 0 ]] ; then
+        return 0
+    fi
     done
     info "Failed to download $dfile" 
     return 1 
@@ -1227,6 +1235,10 @@ function download_file
 #
 # Programmer: Refactored from other sources (Mark C. Miller)
 # Creation: February 19, 2009
+#
+#  Cyrus Harrison, 
+#   As an extra guard, check that the downloaded file actually exisits. 
+#   (Firewalls can cause strange files to be created.)
 #
 # *************************************************************************** 
 
@@ -1244,12 +1256,14 @@ function try_download_file
         wget $WGET_OPTS -o /dev/null $1
     fi
 
-    if [[ $? != 0 ]] ; then
+    if [[ $? == 0 && -e `basename $1` ]] ; then
+        info "Download succeeded: $1"
+        return 0
+    else    
+        warn "Download attempt failed: $1"
         rm -f `basename $1`
         return 1
     fi
-
-    return 0
 }
 
 
