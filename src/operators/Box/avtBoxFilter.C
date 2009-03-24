@@ -52,7 +52,6 @@
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVisItUtility.h>
 
 #include <avtExtents.h>
 #include <avtIntervalTree.h>
@@ -60,7 +59,6 @@
 #include <avtSpatialBoxSelection.h>
 
 #include <DebugStream.h>
-#include <snprintf.h>
 
 using std::string;
 
@@ -568,7 +566,7 @@ avtBoxFilter::Equivalent(const AttributeGroup *a)
 
 
 // ****************************************************************************
-//  Method: avtBoxFilter::ExecuteDataTree
+//  Method: avtBoxFilter::ExecuteData
 //
 //  Purpose:
 //      Sends the specified input and output through the Box filter.
@@ -596,23 +594,18 @@ avtBoxFilter::Equivalent(const AttributeGroup *a)
 //
 // ****************************************************************************
 
-avtDataTree_p
-avtBoxFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string label)
+vtkDataSet *
+avtBoxFilter::ExecuteData(vtkDataSet *in_ds, int, string)
 {
-    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 ||
-        in_ds->GetNumberOfCells() == 0)
-        return NULL; 
-
     //
     // If the selection this filter exists to create has already been handled,
     // then we can skip execution
     //
     if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
     {
-        debug4 << "Bypassing Box operator because database plugin "
+        debug1 << "Bypassing Box operator because database plugin "
                   "claims to have applied the selection already" << endl;
-        avtDataTree_p outDT = new avtDataTree(in_ds, dom, label);
-        return outDT;
+        return in_ds;
     }
 
     vtkDataSet *outDS = NULL;
@@ -623,7 +616,7 @@ avtBoxFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string label)
         if (dims[1] <= 1 && dims[2] <= 1 &&
           GetInput()->GetInfo().GetAttributes().GetVariableType() == AVT_CURVE)
         {
-            return CurveExecute((vtkRectilinearGrid *) in_ds, dom, label);
+            outDS = CurveExecute((vtkRectilinearGrid *) in_ds);
         }
         else
         {
@@ -635,23 +628,17 @@ avtBoxFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string label)
         outDS = GeneralExecute(in_ds);
     }
 
-    avtDataTree_p outDT;
-    if (outDS == NULL)
-        return NULL;
-
-    if (outDS->GetNumberOfCells() <= 0)
+    vtkDataSet *rv = outDS;
+    if (outDS != NULL)
     {
-        outDS->Delete();
-        return NULL;
-    }
-    else
-    {
-        outDT = new avtDataTree(outDS, dom, label);
+        if (outDS->GetNumberOfCells() <= 0)
+            rv = NULL;
+        else
+            ManageMemory(outDS);
+        outDS->Delete();  // We have to remove the extra reference.
     }
 
-    outDS->Delete();
-
-    return outDT;
+    return rv;
 }
 
 
@@ -946,12 +933,14 @@ avtBoxFilter::ModifyContract(avtContract_p spec)
 //  Modifications:
 //    Kathleen Bonnell, Thu Aug  7, 08:00:00 PDT 2008
 //    Changed creation of curves.
-//  
+//
+//    Kathleen Bonnell, Mon Mar 23 15:38:23 PDT 2009
+//    Modified code to create single curve.
 //
 // ****************************************************************************
 
-avtDataTree_p
-avtBoxFilter::CurveExecute(vtkRectilinearGrid *in_ds, int dom, string label)
+vtkRectilinearGrid *
+avtBoxFilter::CurveExecute(vtkRectilinearGrid *in_ds)
 {
     bool needAll = (atts.GetAmount() == BoxAttributes::All);
     float minX = atts.GetMinx();
@@ -965,69 +954,47 @@ avtBoxFilter::CurveExecute(vtkRectilinearGrid *in_ds, int dom, string label)
     float maxY = atts.GetMaxy();
 
     vtkDataArray *y = in_ds->GetPointData()->GetScalars();
+    int nPts = lastCellX - firstCellX + 1;
 
-    intVector curveEndPoints;
-    int start = -1, end = -1;
+
+    vtkDataArray *xc = x->NewInstance();
+    xc->SetNumberOfComponents(1);
+    xc->SetNumberOfTuples(nPts);
+
+    vtkDataArray *yv = y->NewInstance();
+    yv->SetNumberOfComponents(1);
+    yv->SetNumberOfTuples(nPts);
+    yv->SetName(y->GetName());
+
+    int count = 0;
     for (int i = firstCellX; i <= lastCellX; ++i)
     {
         float val = (float)y->GetComponent(i, 0);
         if (val >= minY && val <= maxY)
         {
-            if (start == -1)
-            {
-                start = i;
-            }
-        }
-        else
-        {
-             if (start != -1)
-             {
-                 curveEndPoints.push_back(start);
-                 curveEndPoints.push_back(i-1);
-                 start = -1;
-             }
+            xc->SetTuple1(count, x->GetTuple1(i));
+            yv->SetTuple1(count, y->GetTuple1(i));
+            count++;
         }
     }
-    if (start != -1 && curveEndPoints.size() == 0)
-    {
-        curveEndPoints.push_back(start);
-        curveEndPoints.push_back(lastCellX);
-    }
-    
-    const int nCurves = curveEndPoints.size()/2;
-    vtkDataSet **curves = new vtkDataSet *[nCurves];
-    stringVector labels;
+    xc->Resize(count);
+    yv->Resize(count);
 
-    char l[25];
-    for ( int i = 0; i < nCurves; ++i)
-    {
-        start = curveEndPoints[2*i];
-        end = curveEndPoints[2*i+1];
-        SNPRINTF(l, 25, "curve%02d", i);
-        labels.push_back(l);
-        int npts = end-start+1;
-        curves[i] = vtkVisItUtility::Create1DRGrid(npts, x->GetDataType());
-        vtkDataArray *xc = vtkRectilinearGrid::SafeDownCast(curves[i])->
-                              GetXCoordinates();
-        vtkDataArray *yv = y->NewInstance();
-        yv->SetNumberOfComponents(1);
-        yv->SetNumberOfTuples(npts);
-        yv->SetName(y->GetName());
-        curves[i]->GetPointData()->SetScalars(yv);
-        for (int j = start, count=0; j<= end; j++, count++)
-        {
-            xc->SetTuple1(count, x->GetTuple1(j));
-            yv->SetTuple1(count, y->GetTuple1(j));
-        }
-        yv->Delete();
-    }
-    avtDataTree_p outDT = new avtDataTree(nCurves, curves, dom, labels);
-    GetOutput()->GetInfo().GetAttributes().SetLabels(labels);
-    for ( int i = 0; i < nCurves; ++i)
-    {
-        curves[i]->Delete();
-    }
-    delete [] curves;
-    return outDT;
+    vtkDataArray *yz = vtkDataArray::CreateDataArray(x->GetDataType());
+    yz->SetNumberOfComponents(1);
+    yz->SetNumberOfTuples(1);
+    yz->SetTuple1(0, 0.);
+
+    vtkRectilinearGrid  *curve = vtkRectilinearGrid::New();
+    curve->SetDimensions(count, 1,1 );
+    curve->SetXCoordinates(xc);
+    curve->SetYCoordinates(yz);
+    curve->SetZCoordinates(yz);
+    curve->GetPointData()->SetScalars(yv);
+    xc->Delete();
+    yz->Delete();
+    yv->Delete();
+    curve->Register(NULL);
+    return curve;
 }
 
