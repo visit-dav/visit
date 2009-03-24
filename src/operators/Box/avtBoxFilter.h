@@ -43,8 +43,7 @@
 #ifndef AVT_Box_FILTER_H
 #define AVT_Box_FILTER_H
 
-#include <avtSIMODataTreeIterator.h>
-#include <avtPluginFilter.h>
+#include <avtPluginDataTreeIterator.h>
 #include <BoxAttributes.h>
 
 class     vtkDataSet;
@@ -69,10 +68,13 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Sun Apr 24 11:11:46 PDT 2005
 //    Add special support for rectilinear grids. ['6155]
 //
+//    Kathleen Bonnell, Mon Mar 23 18:26:59 PDT 2009
+//    Made this derive again from avtPluginDataTreeIterator instead of
+//    avtSIMODataTreeIterator.
+// 
 // ****************************************************************************
 
-class avtBoxFilter : public avtSIMODataTreeIterator,
-                     public virtual avtPluginFilter
+class avtBoxFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtBoxFilter();
@@ -91,12 +93,12 @@ class avtBoxFilter : public avtSIMODataTreeIterator,
     BoxAttributes   atts;
     int             selID;
 
-    virtual avtDataTree_p  ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual vtkDataSet    *ExecuteData(vtkDataSet *, int, std::string);
     vtkRectilinearGrid    *RectilinearExecute(vtkRectilinearGrid *);
     vtkUnstructuredGrid   *GeneralExecute(vtkDataSet *);
     virtual void           UpdateDataObjectInfo(void);
     virtual avtContract_p  ModifyContract(avtContract_p);
-    avtDataTree_p          CurveExecute(vtkRectilinearGrid *, int, std::string);
+    vtkRectilinearGrid    *CurveExecute(vtkRectilinearGrid *);
 
 };
 
