@@ -122,6 +122,11 @@ static const bool StateAcceptance[13] = {
 //    Jeremy Meredith, Wed Jul 23 13:13:42 EDT 2008
 //    Allow backslashes.  Add quoting support.
 //
+//    Jeremy Meredith, Tue Mar 24 11:19:04 EDT 2009
+//    Added a whole bunch of symbols that should be supported inside
+//    quoted strings.  These don't have associated tokens, however, so
+//    will still result in parse errors outside of strings.
+//
 // ****************************************************************************
 int
 ExprScanner::GetCharType(const char c, bool escaped) const
@@ -142,7 +147,7 @@ ExprScanner::GetCharType(const char c, bool escaped) const
             type = Quo;
         else if (c == '+' || c == '-')
             type = Sgn;
-        else if (strchr("*/+-[]{}()<>=,^%@:#&\\", c))
+        else if (strchr("*/+-[]{}()<>=,^%@:#&\\';!|~?`$", c))
             type = Sym;
         else if (c == 'e' || c == 'E')
             type = Eee;
