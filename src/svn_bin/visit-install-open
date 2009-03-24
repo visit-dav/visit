@@ -52,7 +52,6 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 hoth=true
-sunspot=true
 up=true
 yana=true
 xchem=true
@@ -71,7 +70,6 @@ do
    case $1 in
       -none)
          hoth=false
-         sunspot=false
          up=false
          yana=false
          xchem=false
@@ -85,14 +83,6 @@ do
          ;;
       +hoth)
          hoth=true
-         shift
-         ;;
-      -sunspot)
-         sunspot=false
-         shift
-         ;;
-      +sunspot)
-         sunspot=true
          shift
          ;;
       -up)
@@ -196,42 +186,6 @@ then
       scp visit-install kickit:
       scp hoth kickit:hoth_install
       ssh kickit "chmod 750 hoth_install;./hoth_install"
-   fi
-fi
-
-#
-# Install on sunspot.
-#
-rm -f sunspot
-cat <<EOF > sunspot
-#!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on sunspot"         > resultlog 2>&1
-echo "       -----------------------------"        >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/sun4-sunos5-sparc/bin >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/sun4-sunos5-sparc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): sunspot" $emailName < resultlog
-EOF
-
-if [ $sunspot = true ]
-then
-   if [ $test = no ]
-   then
-      scp sunspot:/export/scratch/$user/sunspot/visitbuild/visit$ver2.sunos5.tar.gz .
-      scp visit$ver2.sunos5.tar.gz kickit:
-      scp visit-install kickit:
-      scp sunspot kickit:sunspot_install
-      ssh kickit "chmod 750 sunspot_install;./sunspot_install"
    fi
 fi
 
@@ -437,5 +391,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot up yana xchem davinci ellipse
+   rm -f hoth up yana xchem davinci ellipse
 fi
