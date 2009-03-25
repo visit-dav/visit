@@ -39,6 +39,8 @@
 // ************************************************************************* //
 //                      avtOpenGLTuvokVolumeRenderer.C                       //
 // ************************************************************************* //
+#include <visit-config.h>
+
 #ifdef USE_TUVOK
 
 #include "avtOpenGLTuvokVolumeRenderer.h"
