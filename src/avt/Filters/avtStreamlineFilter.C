@@ -312,14 +312,12 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
     t = t+1e-7; //DRP FIX THIS! The avtStreamline::Advance() needs to set this!
     int timeStep = GetTimeStep(t);
 
-    debug5<<"SetDomain(): pt= "<<endPt<<" T= "<<t<<" step= "<<timeStep<<endl;
-    
     slSeg->seedPtDomainList.resize(0);
     vector<int> doms;
     intervalTree->GetElementsListFromRange(xyz, xyz, doms);
+    debug5<<"SetDomain(): pt= "<<endPt<<" T= "<<t<<" step= "<<timeStep<<endl;
     for (int i = 0; i < doms.size(); i++)
         slSeg->seedPtDomainList.push_back(DomainType(doms[i], timeStep));
-
     slSeg->domain = DomainType(-1,0);
     // 1 domain, easy.
     if (slSeg->seedPtDomainList.size() == 1)
@@ -396,13 +394,14 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
 // ****************************************************************************
 
 vtkDataSet *
-avtStreamlineFilter::GetDomain(const DomainType &domain, double X, double Y,
-                               double Z)
+avtStreamlineFilter::GetDomain(const DomainType &domain,
+                               double X, double Y, double Z)
 {
-    //debug5<<"GetDomain("<<domain<<");\n";
+    debug5<<"avtStreamlineFilter::GetDomain("<<domain<<" "<<X<<" "<<Y<<" "<<Z<<");"<<endl;
     vtkDataSet *ds = NULL;
 
     debug5<<"OperatingOnDemand() = "<<OperatingOnDemand()<<endl;
+
     if (OperatingOnDemand())
     {
         if (specifyPoint)
@@ -1316,14 +1315,16 @@ avtStreamlineFilter::Initialize()
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
+//   Make changes for point decomposed domain databases.
+//
 // ****************************************************************************
 
 bool
 avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
 {
     debug5<< "avtStreamlineFilter::PointInDomain("<<pt<<", dom= "<<domain<<");\n";
-    // DAVE: HERE'S A SPOT
-    vtkDataSet *ds = GetDomain(domain);
+    vtkDataSet *ds = GetDomain(domain, pt.x, pt.y, pt.z);
 
     if (ds == NULL)
     {
@@ -1375,6 +1376,7 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
     debug5<< "suc = "<<success<<" dist = "<<dist<<" resPt= ["<<resPt[0]
           <<" "<<resPt[1]<<" "<<resPt[2]<<"]\n\n";
 
+    debug5<< "PointInDomain() = "<<(success?"TRUE":"FALSE")<<endl;
     return (success == 1 ? true : false);
 }
 
@@ -1631,14 +1633,15 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     bool doVorticity = ((coloringMethod == STREAMLINE_COLOR_VORTICITY)
                         || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
 
+    int numSteps = slSeg->sl->size();
     avtIVPSolver::Result result = slSeg->sl->Advance(field,
                                                      terminationType,
                                                      end,
                                                      doVorticity,
                                                      haveGhostZones,
                                                      extents);
+    numSteps = slSeg->sl->size() - numSteps;
     //slSeg->Debug();
-    debug5<<"Back from advance: result= "<<result<<endl;
     if (result == avtIVPSolver::OUTSIDE_DOMAIN)
     {
         slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
@@ -1658,10 +1661,14 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
             if (doPathlines && slSeg->domain.timeStep == -1)
                 slSeg->status = avtStreamlineWrapper::TERMINATE;
 
-            if (slSeg->domain == oldDomain)
+            if (slSeg->domain == oldDomain && numSteps == 0)
+            {
                  slSeg->status = avtStreamlineWrapper::TERMINATE;
+            }
             else
+            {
                 slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
+            }
         }
         else
             slSeg->status = avtStreamlineWrapper::TERMINATE;
@@ -1699,18 +1706,23 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 //   Hank Childs, Tue Aug 19 14:41:44 PDT 2008
 //   Make sure we initialize the bounds, especially if we are in 2D.
 //
+//   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
+//   Make changes for point decomposed domain databases.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps)
 {
-    debug5 << "\navtStreamlineFilter::IntegrateStreamline(dom= "
-           << slSeg->domain<<")\n";
-
     slSeg->status = avtStreamlineWrapper::UNSET;
+    
     //Get the required domain.
-    // DAVE: HERE'S A SPOT
-    vtkDataSet *ds = GetDomain(slSeg->domain);
+    avtVector pt;
+    slSeg->GetEndPoint(pt);
+    vtkDataSet *ds = GetDomain(slSeg->domain, pt.x, pt.y, pt.z);
+
+    debug5 << "avtStreamlineFilter::IntegrateStreamline("<<pt<<" "<<slSeg->domain<<")"<<endl;
+
     if (ds == NULL)
     {
         slSeg->status = avtStreamlineWrapper::TERMINATE;

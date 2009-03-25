@@ -1068,8 +1068,15 @@ avtMasterSLAlgorithm::ManageSlaves()
     Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
     Case4(0, case4Cnt);
     
-    //Case5(2*maxCount, true, case5Acnt);
-    //Case5(2*maxCount, false, case5Bcnt);
+    /*
+    Case5(maxCnt, true, case5Cnt);
+    Case5(maxCnt, false, case5Cnt);
+
+    //See who else still doesn't have work....
+    FindSlackers();
+    if (slackers.size() > 0)
+        debug1<<"WE STILL HAVE SLACKERS\n";
+    */
     
     //Resets.
     for (int i = 0; i < slaveInfo.size(); i++)
@@ -1603,6 +1610,135 @@ avtMasterSLAlgorithm::Case4(int oobThreshold,
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::Case5
+//
+//  Purpose:
+//      Case5 of masterslave algorithm. Advise slave to send SLs to other slave.
+//  
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Mar 23, 2009
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counter)
+{
+    vector<int> slackers, overWorked;
+    vector<int *> overWorkedCnt;
+    //Get folks with too much work to do.
+    for (int i = 0; i < slaveInfo.size(); i++)
+        if (slaveInfo[i].slCount > overworkThreshold)
+        {
+            int *v = new int[2];
+            v[0] = i;
+            v[1] = slaveInfo[i].slCount;
+            overWorkedCnt.push_back(v);
+        }
+
+    if (overWorkedCnt.size() == 0)
+        return;
+    sort(overWorkedCnt.begin(), overWorkedCnt.end(), domCntCompare);
+    for (int i = 0; i < overWorkedCnt.size(); i++)
+        overWorked.push_back(overWorkedCnt[i][0]);
+
+    //Get slackers with no work and no unloaded domains.
+    for (int i = 0; i < slaveInfo.size(); i++)
+        if (!slaveInfo[i].justUpdated && slaveInfo[i].slCount == 0)
+            slackers.push_back(i);
+    if (slackers.size() == 0)
+        return;
+
+    random_shuffle(slackers.begin(), slackers.end());
+
+    debug1<<"C5: dc= "<<domainCheck<<endl;
+    debug1<<"C5 Slackers: "<<slackers<<endl;
+    debug1<<"C5 Overworked: "<<overWorked<<endl;
+
+    vector<int> senders, receivers;
+    vector<vector<int> > doms;
+    // Find the first send w/
+    for (int w = 0; w < overWorked.size(); w++)
+    {
+        for (int s = 0; s < slackers.size(); s++)
+        {
+            if (domainCheck)
+            {
+                vector<int> commonDoms;
+                for (int d = 0; d < NUM_DOMAINS; d++)
+                {
+                    if (slaveInfo[overWorked[w]].domainCnt[d] > 0 &&
+                        slaveInfo[slackers[s]].domainLoaded[d])
+                        commonDoms.push_back(d);
+                }
+                
+                if (commonDoms.size() > 0)
+                {
+                    senders.push_back(slaveInfo[overWorked[w]].rank);
+                    receivers.push_back(slaveInfo[slackers[s]].rank);
+                    doms.push_back(commonDoms);
+                }
+            }
+            else
+            {
+                senders.push_back(slaveInfo[overWorked[w]].rank);
+                receivers.push_back(slaveInfo[slackers[s]].rank);
+            }
+        }
+    }
+
+    //Nobody to send....
+    if (senders.size() == 0 || receivers.size() == 0)
+    {
+        debug1<<"... No matches.\n";
+        return;
+    }
+
+    for (int i = 0; i < senders.size(); i++)
+    {
+        debug1<<"Case5: "<<senders[i]<<" ===> "<<receivers[i];
+        if (doms.size() > 0)
+            debug1<<" doms= "<<doms[i];
+        debug1<<endl;
+    }
+
+#if 0
+
+    // Tell overWorked: Send SLs to slacker.
+    vector<int> info(1);
+    info[0] = recv;
+    if (domainCheck)
+    {
+        for ( int i = 0; i < numDomains; i++)
+            if (slaveInfo[recv].domainLoaded[i])
+                info.push_back(i);
+        info.push_back(-1);
+    }
+    else
+        info.push_back(-1);
+
+    debug1<<"Case 5: "<<sender<<" ==[";
+    for (int i = 1; i < info.size()-1; i++) debug1<<info[i]<<" ";
+    debug1<<"] ==> "<<recv<<endl;
+    AsyncSendSlaveMsgs(sender, MSG_SEND_SL_HINT, info);
+
+    // Update status. We're not sure which domains will be sent.
+    // We need to update status with something, so use 'dom'.
+    for (int i = 0; i < maxCount; i++)
+    {
+        slaveInfo[recv].AddSL(dom);
+        if (slaveInfo[sender].domainCnt[dom] > 0)
+            slaveInfo[sender].RemoveSL(dom);
+    }
+#endif
+}
+
+
 // ****************************************************************************
 //  Method: avtSlaveSLAlgorithm::avtSlaveSLAlgorithm
 //
@@ -1789,6 +1925,9 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //
 //   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //   Changes related to trying to hide latency with slaves.
+//
+//   Dave Pugmire, Wed Mar 25 09:10:52 EDT 2009
+//   Enable latency.
 //   
 // ****************************************************************************
 
@@ -1833,7 +1972,7 @@ avtSlaveSLAlgorithm::Execute()
             avtStreamlineWrapper *s = activeSLs.front();
             activeSLs.pop_front();
 
-            bool doThis = false;
+            bool doThis = true;
             if (doThis && activeSLs.empty())
             {
                 debug1<<"Latency saving sendStatus"<<endl;
@@ -1886,6 +2025,14 @@ avtSlaveSLAlgorithm::Execute()
             }
             Sleep();
         }
+    }
+
+    if (latencyTimer != -1)
+    {
+        double t = visitTimer->StopTimer(latencyTimer, "Latency");
+        debug1<<"End latency: time= "<<t<<endl;
+        LatencyTime.value += t;
+        latencyTimer = -1;
     }
 
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");

@@ -69,6 +69,9 @@
 //   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //   Change how timings are reported/calculated.
 //
+//   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
+//   Make changes for point decomposed domain databases.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -93,7 +96,9 @@ class avtSLAlgorithm
     virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
                             { return streamlineFilter->PointInDomain(pt, dom); }
     virtual void              IntegrateStreamline(avtStreamlineWrapper *slSeg);
-    vtkDataSet               *GetDomain(const DomainType &dom);
+    vtkDataSet               *GetDomain(avtStreamlineWrapper *slSeg);
+    vtkDataSet               *GetDomain(const DomainType &dom,
+                                        double X=0, double Y=0, double Z=0);
     virtual bool              DomainLoaded(DomainType &dom) const
                                  { return streamlineFilter->DomainLoaded(dom); }
     

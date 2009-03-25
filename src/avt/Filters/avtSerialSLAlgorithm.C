@@ -85,6 +85,11 @@ avtSerialSLAlgorithm::~avtSerialSLAlgorithm()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
+//   Make changes for point decomposed domain databases.
+//
 // ****************************************************************************
 
 void
@@ -130,7 +135,7 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
     if (!activeSLs.empty())
     {
         avtStreamlineWrapper *s = activeSLs.front();
-        GetDomain(s->domain);
+        GetDomain(s);
     }
 }
 
@@ -142,6 +147,11 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
+//
+//  Modifications:
+//
+//   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
+//   Make changes for point decomposed domain databases.
 //
 // ****************************************************************************
 
@@ -181,7 +191,7 @@ avtSerialSLAlgorithm::Execute()
         
         SortStreamlines(activeSLs);
         avtStreamlineWrapper *s = activeSLs.front();
-        GetDomain(s->domain);
+        GetDomain(s);
     }
 
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
