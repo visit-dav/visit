@@ -48,6 +48,8 @@
 using namespace std;
 
 #ifdef PARALLEL
+static int MAX_DOMAIN_PRINT = 30;
+static bool MASTER_BALANCING = true;
 
 int avtMasterSlaveSLAlgorithm::MSG_STATUS = 420003;
 int avtMasterSlaveSLAlgorithm::MSG_DONE = 420004;
@@ -71,6 +73,9 @@ int avtMasterSlaveSLAlgorithm::MSG_OFFLOAD_SL = 420010;
 //
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //  Allow masters to share work loads.
+//
+//  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
+//  Add flag that enables master balancing.
 //
 // ****************************************************************************
 
@@ -123,17 +128,19 @@ avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
             slaves.push_back(i);
         
         vector<int> masters;
-        int master;
-        if (rank == 0)
+        int master = -1;
+
+        if (MASTER_BALANCING)
         {
-            master = -1;
-            if (numMasters > 1)
-                for (int i = 0; i < numMasters; i++)
-                    masters.push_back(i);
-        }
-        else
-        {
-            master = 0;
+            if (rank == 0)
+            {
+                master = -1;
+                if (numMasters > 1)
+                    for (int i = 0; i < numMasters; i++)
+                        masters.push_back(i);
+            }
+            else
+                master = 0;
         }
         
         algo = new avtMasterSLAlgorithm(slFilter, maxCount, workGroupSz, slaves, master, masters);
@@ -547,6 +554,9 @@ avtMasterSLAlgorithm::CompileCounterStatistics()
 //   
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //  Allow masters to share work loads.
+//
+//  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
+//  Control print information for large domain problems.
 //  
 // ****************************************************************************
 
@@ -562,19 +572,28 @@ avtMasterSLAlgorithm::PrintStatus()
     }
 
     debug1<<"DOM:               [";
-    for ( int i = 0; i < NUM_DOMAINS; i++)
-        debug1<<setw(4)<<i<<" ";
+    if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
+    {
+        for ( int i = 0; i < NUM_DOMAINS; i++)
+            debug1<<setw(4)<<i<<" ";
+    }
     debug1<<"]\n";
     debug1<<"Master:            [";
-    for ( int i = 0; i < NUM_DOMAINS; i++)
-        debug1<<setw(4)<<slDomCnts[i]<<" ";
+    if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
+    {
+        for ( int i = 0; i < NUM_DOMAINS; i++)
+            debug1<<setw(4)<<slDomCnts[i]<<" ";
+    }
     debug1<<"]\n";
     
     for (int i = 0; i < slaveInfo.size(); i++)
         slaveInfo[i].Debug();
     debug1<<"DCounts:           [";
-    for ( int i = 0; i < NUM_DOMAINS; i++)
-        debug1<<setw(4)<<domLoaded[i]<<" ";
+    if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
+    {
+        for ( int i = 0; i < NUM_DOMAINS; i++)
+            debug1<<setw(4)<<domLoaded[i]<<" ";
+    }
     debug1<<"]\n";
 
     vector<int> slaveSLs(NUM_DOMAINS,0);
@@ -583,10 +602,13 @@ avtMasterSLAlgorithm::PrintStatus()
             slaveSLs[j] += slaveInfo[i].domainCnt[j];
     debug1<<"SCounts:           [";
     int cnt = 0;
-    for ( int i = 0; i < NUM_DOMAINS; i++)
+    if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
     {
-        debug1<<setw(4)<<slaveSLs[i]<<" ";
-        cnt += slaveSLs[i];
+        for ( int i = 0; i < NUM_DOMAINS; i++)
+        {
+            debug1<<setw(4)<<slaveSLs[i]<<" ";
+            cnt += slaveSLs[i];
+        }
     }
     debug1<<"] ("<<cnt<<")"<<endl;
     debug1<<endl;
@@ -607,6 +629,9 @@ avtMasterSLAlgorithm::PrintStatus()
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //  Allow masters to share work loads.    
 //
+//  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
+//  Control print information for large domain problems.
+//
 // ****************************************************************************
 bool
 avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
@@ -616,7 +641,9 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
     int nTerm = status[2];
     
     workGroupActiveSLs -= nTerm;
-    debug1<<"SlaveStatus: "<<src<<" "<<status<<endl;
+    debug1<<"SlaveStatus: "<<src<<" ";
+    if (NUM_DOMAINS < MAX_DOMAIN_PRINT)  debug1<<status;
+    debug1<<endl;
     
     for (int i = 0; i < slaveInfo.size(); i++)
     {
@@ -753,6 +780,11 @@ avtMasterSLAlgorithm::UpdateStatus()
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
+//  Control print information for large domain problems.
+//
 // ****************************************************************************
 
 void
@@ -781,7 +813,9 @@ avtMasterSLAlgorithm::SendStatus(bool forceSend)
         for (int i = 0; i < NUM_DOMAINS; i++)
             msg[i+2] = domLoaded[i];
 
-        debug1<<"MasterStatusSend: "<<msg<<endl;
+        debug1<<"MasterStatusSend: ";
+        if (NUM_DOMAINS < MAX_DOMAIN_PRINT) debug1<<msg;
+        debug1<<endl;
         
         if (master != -1)
             SendMsg(master, msg);
@@ -811,8 +845,6 @@ avtMasterSLAlgorithm::SendStatus(bool forceSend)
 void
 avtMasterSLAlgorithm::ProcessMessages()
 {
-    debug1<<"avtMasterSLAlgorithm::ProcessMessages()\n";
-    
     vector<vector<int> > msgs;
     RecvMsgs(msgs);
 
@@ -863,6 +895,11 @@ avtMasterSLAlgorithm::ProcessSlaveUpdate(vector<int> &status)
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
+//  Control print information for large domain problems.
+//
 // ****************************************************************************
 
 void
@@ -872,7 +909,9 @@ avtMasterSLAlgorithm::ProcessMasterUpdate(vector<int> &status)
     int msg = status[1];
     int nSLs = status[2];
 
-    debug1<<"MasterUpdateStatus: "<<src<<status<<endl;
+    debug1<<"MasterUpdateStatus: "<<src<<" "<<msg<<" "<<nSLs<<" ";
+    if (NUM_DOMAINS < MAX_DOMAIN_PRINT) debug1<<status;
+    debug1<<endl;
     
     for (int i = 0; i < masterInfo.size(); i++)
     {
@@ -1871,6 +1910,11 @@ avtSlaveSLAlgorithm::UpdateStatus()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
+//  Control print information for large domain problems.
+//
 // ****************************************************************************
 
 void
@@ -1900,7 +1944,9 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
         for (int i = 0; i < status.size(); i++)
             msg.push_back(status[i]);
 
-        debug1<<"Slave SendStatus: "<<msg<<endl;
+        debug1<<"Slave SendStatus: "<<numTerminated;
+        if (NUM_DOMAINS < MAX_DOMAIN_PRINT) debug1<<msg;
+        debug1<<endl;
         SendMsg(master, msg);
         
         //Status just sent, reset.
@@ -2067,8 +2113,6 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 {
     vector<vector<int> > msgs;
     RecvMsgs(msgs);
-
-    debug5<<"avtSlave::ProcessMessages()  msgs= "<<msgs.size()<<endl;
     
     done = false;
     newMsgs = (msgs.size() > 0);
@@ -2338,6 +2382,11 @@ SlaveInfo::Update( vector<int> &status, bool debug )
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
+//  Control print information for large domain problems.
+//
 // ****************************************************************************
 
 void
@@ -2346,16 +2395,19 @@ SlaveInfo::Debug()
     bool slacker = (slLoadedCount == 0);
     debug1<<setw(2)<<rank;
     debug1<<": "<<setw(3)<<slCount<<" ("<<setw(3)<<slLoadedCount<<", "<<setw(3)<<slOOBCount<<") [";
-    for (int i = 0; i < domainCnt.size(); i++)
+    if (domainCnt.size() < MAX_DOMAIN_PRINT)
     {
-        int N = 0;
-        int cnt = domainCnt[i];
-        if (domainLoaded[i])
-            N = (cnt > 0 ? cnt+1 : 1);
-        else
-            N = -cnt;
-        
-        debug1<<setw(4)<<N<<" ";
+        for (int i = 0; i < domainCnt.size(); i++)
+        {
+            int N = 0;
+            int cnt = domainCnt[i];
+            if (domainLoaded[i])
+                N = (cnt > 0 ? cnt+1 : 1);
+            else
+                N = -cnt;
+            
+            debug1<<setw(4)<<N<<" ";
+        }
     }
     debug1<<"] ("<<domLoadedCount<<")";
     debug1<< (slacker ? "S" : " ");
