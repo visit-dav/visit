@@ -191,6 +191,9 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
                                     int &counter );
     void                      Case4(int oobThreshold,
                                     int &counter);
+    void                      Case5(int overworkThreshold,
+                                    bool domainCheck,
+                                    int &counter);
 };
 
 

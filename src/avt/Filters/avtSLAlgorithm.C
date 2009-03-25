@@ -111,17 +111,39 @@ avtSLAlgorithm::~avtSLAlgorithm()
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
+//   Make changes for point decomposed domain databases.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtSLAlgorithm::GetDomain(const DomainType &dom)
+avtSLAlgorithm::GetDomain(avtStreamlineWrapper *slSeg)
+{
+    avtVector pt;
+    slSeg->GetEndPoint(pt);
+    return GetDomain(slSeg->domain, pt.x, pt.y, pt.z);
+}
+
+// ****************************************************************************
+//  Method: avtSLAlgorithm::GetDomain
+//
+//  Purpose:
+//      Retrieve a domain.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 23, 2009
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 {
     int timerHandle = visitTimer->StartTimer();
-
-    vtkDataSet *ds = streamlineFilter->GetDomain(dom);
-
+    vtkDataSet *ds = streamlineFilter->GetDomain(dom, X, Y, Z);
     IOTime.value += visitTimer->StopTimer(timerHandle, "GetDomain()");
+    
     return ds;
+    
 }
 
 // ****************************************************************************
@@ -181,6 +203,11 @@ avtSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Mar 24 08:15:04 EDT 2009
+//   Report stats if timer is enabled.
+//
 // ****************************************************************************
 
 void
@@ -201,7 +228,8 @@ avtSLAlgorithm::PostExecute()
     for (int i = 0; i < v.size(); i++)
         delete v[i];
     
-    //ReportStatistics();
+    if (visitTimer->Enabled())
+        ReportStatistics();
 }
 
 // ****************************************************************************
