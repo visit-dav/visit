@@ -10,5 +10,9 @@
       <Field name="stride" label="Skip rate between time slices" type="int">
         1
       </Field>
+      <Field name="indexVariable" label="Index Variable" type="variablename" vartypes="01000000000">
+      </Field>
+      <Field name="connectParticles" label="Connect Particles" type="bool">
+      </Field>
     </Attribute>
   </Plugin>
