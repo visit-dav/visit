@@ -83,6 +83,9 @@ class     avtDatabase;
 //    Hank Childs, Mon Mar 23 11:02:55 CDT 2009
 //    Add data member for on demand streaming.
 //
+//    Hank Childs, Tue Mar 24 13:18:10 CDT 2009
+//    Add data member for data selections.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -114,6 +117,9 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     avtSILRestriction_p       firstDBSIL;
     avtGhostDataType          ghostNeeds;
     bool                      onDemandProcessing;
+    //std::vector<avtDataSelection_p> dataSels;
+    double p1,p2,p3;
+    bool doPoint;
     std::string               argument_expression;
     int                       varDim;
     bool                      isNodal;

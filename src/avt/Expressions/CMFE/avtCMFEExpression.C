@@ -1,3 +1,4 @@
+#include <avtPointSelection.h>
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
@@ -412,6 +413,15 @@ avtCMFEExpression::Execute()
     spec->GetDataRequest()->SetTimestep(actualTimestep);
     spec->GetDataRequest()->SetDesiredGhostDataType(ghostNeeds);
     spec->SetOnDemandStreaming(onDemandProcessing);
+// HACK ... need new data member in avtDataRequest.
+    if (doPoint)
+    {
+        avtPointSelection *ps = new avtPointSelection();
+        double p[3] = { p1, p2, p3 };
+        ps->SetPoint(p);
+        spec->GetDataRequest()->AddDataSelection(ps);
+    }
+// END HACK
 
     avtExpressionEvaluatorFilter *eef = new avtExpressionEvaluatorFilter;
     eef->SetInput(dob);
@@ -636,6 +646,9 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
 //    Hank Childs, Thu Apr 10 16:10:33 PDT 2008
 //    Make sure that consistent ghost levels are requested.
 //
+//    Hank Childs, Tue Mar 24 13:18:10 CDT 2009
+//    Store the data selections so we can put them in the new contract.
+//
 // ****************************************************************************
 
 void
@@ -646,6 +659,17 @@ avtCMFEExpression::ExamineContract(avtContract_p spec)
     firstDBTime = spec->GetDataRequest()->GetTimestep();
     firstDBSIL  = spec->GetDataRequest()->GetRestriction();
     ghostNeeds  = spec->GetDataRequest()->GetDesiredGhostDataType();
+    const std::vector<avtDataSelection_p> ds    = spec->GetDataRequest()->GetAllDataSelections();
+    if (ds.size() == 1 && strcmp(ds[0]->GetType(), "Point Selection") == 0)
+    {
+        const avtPointSelection *ps = (avtPointSelection *) (*ds[0]);
+        p1 = ps->GetPoint()[0];
+        p2 = ps->GetPoint()[1];
+        p3 = ps->GetPoint()[2];
+        doPoint = true;
+    }
+    else
+        doPoint = false;
     onDemandProcessing = spec->DoingOnDemandStreaming();
 }
 

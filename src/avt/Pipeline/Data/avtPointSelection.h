@@ -74,10 +74,11 @@ class PIPELINE_API avtPointSelection : public avtDataSelection
     virtual const char *    GetType() const
                                 { return "Point Selection"; }; 
 
-    void                    SetPoint(double *pt_) { pt[0] = pt_[0];
+    void                    SetPoint(const double *pt_) 
+                                                  { pt[0] = pt_[0];
                                                     pt[1] = pt_[1];
                                                     pt[2] = pt_[2]; };
-    const double           *GetPoint(void) { return pt; };
+    const double           *GetPoint(void) const { return pt; };
 
     bool                    operator==(const avtPointSelection &) const;
 
