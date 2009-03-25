@@ -55,9 +55,7 @@ while read fline; do
         *src/configure)
             theConfigureFile=$fname
             ;;
-        *src/configure.in)
-        *src/*m4)
-        *src/ac/*)
+        *src/configure.in|*src/*m4|*src/ac/*)
             configureInputFiles="$configureInputFiles $fname"
             ;;
     esac
