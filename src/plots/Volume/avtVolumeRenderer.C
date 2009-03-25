@@ -55,9 +55,11 @@
 #include <avtMesaSplattingVolumeRenderer.h>
 #include <avtOpenGL3DTextureVolumeRenderer.h>
 #include <avtMesa3DTextureVolumeRenderer.h>
-#include <avtOpenGLTuvokVolumeRenderer.h>
+#ifdef USE_TUVOK
+# include <avtOpenGLTuvokVolumeRenderer.h>
+#endif
 #ifdef HAVE_LIBSLIVR
-#include <avtOpenGLSLIVRVolumeRenderer.h>
+# include <avtOpenGLSLIVRVolumeRenderer.h>
 #endif
 
 #include <DebugStream.h>
@@ -245,6 +247,9 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Tom Fogal, Wed Mar 18 22:46:29 MST 2009
 //    Allow creating a Tuvok renderer even if we think we're using Mesa.
 //
+//    Tom Fogal, Wed Mar 25 13:19:40 MST 2009
+//    Don't try to instantiate a Tuvok renderer unless USE_TUVOK is defined.
+//
 // ****************************************************************************
 
 void
@@ -273,11 +278,13 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
                     "offscreen rendering. VisIt is reverting to 3D texturing.");
             }
 #endif
+#ifdef USE_TUVOK
             else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
             {
                 debug5 << "Creating a (Mesa) Tuvok renderer." << std::endl;
                 rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
             }
+#endif
             else // it == VolumeAttributes::Texture3D
             {
                 debug5 << "Creating a (Mesa) 3DTexture renderer." << std::endl;
@@ -298,11 +305,13 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
                 rendererImplementation = new avtOpenGLSLIVRVolumeRenderer;
             }
 #endif
+#ifdef USE_TUVOK
             else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
             {
                 debug5 << "Creating a (HW) Tuvok renderer." << std::endl;
                 rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
             }
+#endif
             else // it == VolumeAttributes::Texture3D
             {
                 debug5 << "Creating a (HW) 3DTexture renderer." << std::endl;
