@@ -49,6 +49,7 @@
 #include <avtExtents.h>
 #include <avtOriginatingSource.h>
 #include <avtPointSelection.h>
+#include <vtkVisItCellLocator.h>
 
 #include <ImproperUseException.h>
 #include <IncompatibleDomainListsException.h>
@@ -95,6 +96,9 @@ avtDatasetOnDemandFilter::avtDatasetOnDemandFilter()
 //   Dave Pugmire, Thu Mar 13 08:44:18 EDT 2008
 //   Change domain cache from map to list.
 //
+//    Dave Pugmire, Wed Mar 25 09:15:23 EDT 2009
+//    Add domain caching for point decomposed domains.
+//
 // ****************************************************************************
 
 avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
@@ -104,6 +108,10 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
         domainQueue.front().ds->Delete();
         domainQueue.pop_front();
     }
+
+    std::map<int, vtkVisItCellLocator*>::const_iterator it;
+    for ( it = pointSelDomainToCellLocatorMap.begin(); it != pointSelDomainToCellLocatorMap.end(); it++ )
+        it->second->Delete();
 }
 
 
@@ -139,7 +147,7 @@ vtkDataSet *
 avtDatasetOnDemandFilter::GetDomain(int domainId,
                                     int timeStep)
 {
-    debug1<<"avtDatasetOnDemandFilter::GetDomain("<<domainId<<", "<<timeStep<<");"<<endl;
+    debug5<<"avtDatasetOnDemandFilter::GetDomain("<<domainId<<", "<<timeStep<<");"<<endl;
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
 
@@ -208,6 +216,10 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
 //  Programmer: Hank Childs
 //  Creation:   March 22, 2009
 //
+//  Modifications:
+//    Dave Pugmire, Wed Mar 25 09:15:23 EDT 2009
+//    Add domain caching for point decomposed domains.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -216,7 +228,81 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
 {
     debug1<<"avtDatasetOnDemandFilter::GetDataAroundPoint("<<X<<", "<<Y<<", "<<Z<<", "<<timeStep<<");"<<endl;
     if ( ! OperatingOnDemand() )
+    {
         EXCEPTION0(ImproperUseException);
+    }
+
+    int domainId = 0; //Need to hash XYZ to domainId ???
+
+    debug5<<"Look in cache: "<<domainId<<" sz= "<<domainQueue.size()<<endl;
+#if 0
+
+    //See if it's in the cache.
+    std::list<DomainCacheEntry>::iterator it;
+    for ( it = domainQueue.begin(); it != domainQueue.end(); it++ )
+    {
+        // Found it. Move it to the front of the list.
+        if (it->domainID == domainId &&
+            it->timeStep == timeStep)
+        {
+            //Do a bbox check.
+            double bbox[6];
+            it->ds->GetBounds(bbox);
+            debug5<<"BBOX ["<<bbox[0]<<", "<<bbox[1]<<"]["<<bbox[2]<<", "<<bbox[3]<<"]["<<bbox[4]<<", "<<bbox[5]<<"]"<<endl;
+
+            if (! (X >= bbox[0] && X <= bbox[1] &&
+                   Y >= bbox[2] && Y <= bbox[3] &&
+                   Z >= bbox[4] && Z <= bbox[5]))
+                continue;
+            
+            bool foundIt = false;
+            
+            // If rectilinear, we found the domain.
+            if (it->ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+                foundIt = true;
+            else
+            {
+                //Do a cell check....
+                debug5<<"It's in the bbox. Check the cell.\n";
+
+                vtkVisItCellLocator *cellLocator = pointSelDomainToCellLocatorMap[domainId];
+                if ( cellLocator == NULL )
+                {
+                    cellLocator = vtkVisItCellLocator::New();
+                    cellLocator->SetDataSet(it->ds);
+                    cellLocator->IgnoreGhostsOn();
+                    cellLocator->BuildLocator();
+                    pointSelDomainToCellLocatorMap[domainId] = cellLocator;
+                }
+                
+                double rad = 1e-6, dist=0.0;
+                double p[3] = {X,Y,Z}, resPt[3]={0.0,0.0,0.0};
+                int foundCell = -1, subId = 0;
+
+                if (cellLocator->FindClosestPointWithinRadius(p, rad, resPt,
+                                                              foundCell, subId, dist))
+                {
+                    foundIt = true;
+                    debug5<<"Cell locate: We found the domain!\n";
+                }
+            }
+
+
+            if (foundIt)
+            {
+                DomainCacheEntry entry;
+                entry.ds = it->ds;
+                entry.domainID = it->domainID;
+                entry.timeStep = timeStep;
+
+                //Remove, then move to front.
+                domainQueue.erase( it );
+                domainQueue.push_front( entry );
+                return entry.ds;
+            }
+        }
+    }
+#endif
 
     debug5<<"     Update->GetDataAroundPoint, time= "<<timeStep<<endl;
     avtContract_p new_contract = new avtContract(firstContract);
@@ -234,6 +320,24 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
 
     GetInput()->Update(new_contract);
     vtkDataSet *rv = GetInputDataTree()->GetSingleLeaf();
+
+    // Add it to the cache.
+    DomainCacheEntry entry;
+    entry.domainID = domainId;
+    entry.timeStep = timeStep;
+    entry.ds = rv;
+    rv->Register(NULL);
+    loadDSCount++;
+
+    domainQueue.push_front(entry);
+    if ( domainQueue.size() > maxQueueLength )
+    {
+        vtkDataSet *purgeDS = domainQueue.back().ds;
+        int purgeDomainID = domainQueue.back().domainID;
+        domainQueue.pop_back();
+        purgeDS->Delete();
+        purgeDSCount++;
+    }
 
     return rv;
 }

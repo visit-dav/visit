@@ -49,6 +49,7 @@
 #include <list>
 
 class  avtExtents;
+class vtkVisItCellLocator;
 
 typedef struct
 {
@@ -91,6 +92,9 @@ typedef struct
 //    Hank Childs, Sun Mar 22 13:31:08 CDT 2009
 //    Add support for getting data around a point.
 //
+//    Dave Pugmire, Wed Mar 25 09:15:23 EDT 2009
+//    Add domain caching for point decomposed domains.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
@@ -127,6 +131,7 @@ protected:
     avtContract_p                firstContract;
     bool                         operatingOnDemand;
     int                          purgeDSCount, loadDSCount;
+    std::map<int, vtkVisItCellLocator*> pointSelDomainToCellLocatorMap;
 };
 
 
