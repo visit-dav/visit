@@ -34,6 +34,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "CoreVolume.h"
+#include "CoreVolumeInfo.h"
 
 typedef std::vector<std::vector<UINT32> > hist2d;
 
@@ -101,6 +102,20 @@ void CoreVolume::SetData(float *data, size_t len)
   std::memcpy(&m_vScalar.at(0), data, sizeof(float) * len);
 
   Recalculate1DHistogram();
+  dynamic_cast<CoreVolumeInfo&>(*(this->GetInfo())).SetDataType(
+    CoreVolumeInfo::CVI_FLOAT
+  );
+}
+
+void CoreVolume::SetData(unsigned char *data, size_t len)
+{
+  m_vScalar.resize(len);
+  std::memcpy(&m_vScalar.at(0), data, len);
+
+  Recalculate1DHistogram();
+  dynamic_cast<CoreVolumeInfo&>(*(this->GetInfo())).SetDataType(
+    CoreVolumeInfo::CVI_BYTE
+  );
 }
 
 void CoreVolume::SetGradientMagnitude(float *gmn, size_t len)
