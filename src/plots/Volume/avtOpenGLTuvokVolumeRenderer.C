@@ -83,6 +83,7 @@ static void tuvok_set_data(AbstrRenderer *, vtkRectilinearGrid *,
                            vtkDataArray *, float *, size_t);
 static void tuvok_set_transfer_fqn(AbstrRenderer &, const VolumeAttributes &);
 static void tuvok_set_view(AbstrRenderer &, const avtViewInfo &);
+static std::vector<unsigned char> float_to_8bit(float *, size_t);
 
 static bool glew_initialized = false;
 
@@ -434,8 +435,18 @@ tuvok_set_data(AbstrRenderer *ren, vtkRectilinearGrid *grid,
 
     // This will break if we're not given float data, but that's guaranteed
     // for now!
+#if 0
     vol.SetData(static_cast<float*>(data->GetVoidPointer(0)),
                 data->GetNumberOfTuples());
+#else
+    debug5 << "Converting to 32bit data to 8bit data." << std::endl;
+    std::vector<unsigned char> eight_bit_data;
+    eight_bit_data = float_to_8bit(
+                         static_cast<float*>(data->GetVoidPointer(0)),
+                         data->GetNumberOfTuples()
+                     );
+    vol.SetData(&eight_bit_data.at(0), data->GetNumberOfTuples());
+#endif
 }
 
 // ****************************************************************************
@@ -518,6 +529,35 @@ tuvok_set_view(AbstrRenderer &ren, const avtViewInfo &v)
         static_cast<float>(v.farPlane),
         eye, ref, vup
     );
+}
+
+// ****************************************************************************
+//  Function: float_to_8bit
+//
+//  Purpose: Temporary hack to convert an FP dataset to an 8bit dataset.
+//           Does so in an absolutely terrible way.
+//
+//  Programmer: Tom Fogal
+//  Creation:   Wed Mar 25 12:33:53 MST 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+struct lerpf_8 : std::unary_function<float, unsigned char> {
+  unsigned char operator()(float f) const {
+    return lerp(f, std::numeric_limits<float>::min(),
+                   std::numeric_limits<float>::max(),
+                   std::numeric_limits<unsigned char>::min(),
+                   std::numeric_limits<unsigned char>::max());
+  }
+};
+
+static std::vector<unsigned char>
+float_to_8bit(float *data, size_t v)
+{
+  std::vector<unsigned char> ret(v);
+  std::transform(data, data + v, ret.begin(), lerpf_8());
+  return ret;
 }
 
 #endif // USE_TUVOK
