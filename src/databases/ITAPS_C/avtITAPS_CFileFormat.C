@@ -183,6 +183,11 @@ avtITAPS_CFileFormat::FreeUpResources(void)
 //
 //    Mark C. Miller, Tue Jan  6 18:48:22 PST 2009
 //    Added check for has_data==0 in loop to find tags (variables) centering.
+//
+//    Mark C. Miller, Wed Mar 25 22:02:06 PDT 2009
+//    Made it so the entity iterator in the loop to find dense tags for
+//    variable centering is NOT ended until AFTER the returned entity has
+//    been queried.
 // ****************************************************************************
 
 void
@@ -390,26 +395,28 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             int has_data;
             iMesh_getNextEntIter(itapsMesh, entIt, &oneEntity, &has_data, &itapsError);
             CheckITAPSError(itapsMesh, iMesh_getNextEntIter, NoL);
+
+            if (has_data && itapsError == iBase_SUCCESS)
+            {
+                // get all the tags defined on this one entity
+                iBase_TagHandle *tagsOnOneEntity = 0; int tagsOnOneEntity_allocated = 0;
+                int tagsOnOneEntity_size = 0;
+                iMesh_getAllTags(itapsMesh, oneEntity, &tagsOnOneEntity,
+                    &tagsOnOneEntity_allocated, &tagsOnOneEntity_size, &itapsError);
+                CheckITAPSError(itapsMesh, iMesh_getAllTags, (0,tagsOnOneEntity,EoL));
+
+                // make a vector of the found handles and copy it
+                // to the saved list of primitive tag handles
+                vector<iBase_TagHandle> tmpTagHandles;
+                for (int kk = 0; kk < tagsOnOneEntity_size; kk++)
+                    tmpTagHandles.push_back(tagsOnOneEntity[kk]);
+                primitiveTagHandles[entTypeClass] = tmpTagHandles;
+                if (tagsOnOneEntity_allocated)
+                    free(tagsOnOneEntity);
+            }
+
             iMesh_endEntIter(itapsMesh, entIt, &itapsError);
             CheckITAPSError(itapsMesh, iMesh_endEntIter, NoL);
-            if (!has_data)
-                continue;
-
-            // get all the tags defined on this one entity
-            iBase_TagHandle *tagsOnOneEntity = 0; int tagsOnOneEntity_allocated = 0;
-            int tagsOnOneEntity_size = 0;
-            iMesh_getAllTags(itapsMesh, oneEntity, &tagsOnOneEntity,
-                &tagsOnOneEntity_allocated, &tagsOnOneEntity_size, &itapsError);
-            CheckITAPSError(itapsMesh, iMesh_getAllTags, (0,tagsOnOneEntity,EoL));
-
-            // make a vector of the found handles and copy it
-            // to the saved list of primitive tag handles
-            vector<iBase_TagHandle> tmpTagHandles;
-            for (int kk = 0; kk < tagsOnOneEntity_size; kk++)
-                tmpTagHandles.push_back(tagsOnOneEntity[kk]);
-            primitiveTagHandles[entTypeClass] = tmpTagHandles;
-            if (tagsOnOneEntity_allocated)
-                free(tagsOnOneEntity);
         }
 
         for (entTypeClass = 0; entTypeClass < 4; entTypeClass++)
