@@ -36,6 +36,7 @@
 #ifndef TUVOK_CORE_VOLUME_INFO__H
 #define TUVOK_CORE_VOLUME_INFO_H
 
+#include <cassert>
 #include "VolumeDataset.h"
 
 /** CoreVolumeInfo provides metadata information for a dataset which exists
@@ -89,12 +90,26 @@ public:
   std::vector<UINT64> GetLODLevelCountND() const;
   std::vector<double> GetScaleND() const;
 
-  virtual UINT64 GetBitWidth() const { return 32; }
+  enum CVI_Data_Type {
+    CVI_FLOAT=0,
+    CVI_BYTE,
+  };
+  void SetDataType(CVI_Data_Type dt) { this->m_dataType = dt; }
+
+  virtual UINT64 GetBitWidth() const {
+    switch(m_dataType) {
+      case CVI_FLOAT: return 32;
+      case CVI_BYTE:  return  8;
+    }
+    assert(1==0);
+    return 42;
+  }
   virtual bool GetIsSigned() const { return true; }
   virtual bool GetIsFloat() const { return true; }
 
 private:
   UINT64VECTOR3 m_vDomainSize;
+  CVI_Data_Type m_dataType;
 };
 
 #endif // TUVOK_CORE_VOLUME_INFO_H

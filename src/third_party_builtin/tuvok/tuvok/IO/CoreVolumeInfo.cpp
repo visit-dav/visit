@@ -37,7 +37,8 @@
 template <typename T>
 static std::vector<T> vector3_to_vector(const VECTOR3<T> &);
 
-CoreVolumeInfo::CoreVolumeInfo()
+CoreVolumeInfo::CoreVolumeInfo() :
+  m_dataType(CVI_FLOAT)
 {
   m_aOverlap = UINT64VECTOR3(0,0,0);
   m_vfRescale.push_back(1); // data should not be scaled

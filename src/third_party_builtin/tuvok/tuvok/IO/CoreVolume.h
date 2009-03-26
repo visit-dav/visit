@@ -76,6 +76,7 @@ public:
 
 //  void SetData(unsigned short*, size_t len);
   void SetData(float*, size_t len);
+  void SetData(unsigned char*, size_t len);
   void SetGradientMagnitude(float *gmn, size_t len);
 
 protected:
