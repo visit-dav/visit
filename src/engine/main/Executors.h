@@ -1535,6 +1535,10 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
+//    Renamed NamedSelectionRPC enum names to compile on windows.
+//
 // ****************************************************************************
 template<>
 void
@@ -1554,19 +1558,19 @@ RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
         NamedSelectionRPC::NamedSelectionType t = rpc->GetNamedSelectionType();
         switch (t)
         {
-          case NamedSelectionRPC::APPLY:
+          case NamedSelectionRPC::NS_APPLY:
             netmgr->ApplyNamedSelection(rpc->GetPlotNames(), rpc->GetSelectionName());
             break;
-          case NamedSelectionRPC::CREATE:
+          case NamedSelectionRPC::NS_CREATE:
             netmgr->CreateNamedSelection(rpc->GetPlotID(), rpc->GetSelectionName());
             break;
-          case NamedSelectionRPC::DELETE:
+          case NamedSelectionRPC::NS_DELETE:
             netmgr->DeleteNamedSelection(rpc->GetSelectionName());
             break;
-          case NamedSelectionRPC::LOAD:
+          case NamedSelectionRPC::NS_LOAD:
             netmgr->LoadNamedSelection(rpc->GetSelectionName());
             break;
-          case NamedSelectionRPC::SAVE:
+          case NamedSelectionRPC::NS_SAVE:
             netmgr->SaveNamedSelection(rpc->GetSelectionName());
             break;
         }

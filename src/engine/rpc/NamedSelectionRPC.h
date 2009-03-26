@@ -52,6 +52,10 @@
 //  Programmer:  Hank Childs 
 //  Creation:    January 29, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
+//    Renamed NamedSelectionType enum names to compile on windows.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API NamedSelectionRPC : public BlockingRPC
@@ -59,11 +63,11 @@ class ENGINE_RPC_API NamedSelectionRPC : public BlockingRPC
   public:
     typedef enum
     {
-        APPLY       = 0,
-        CREATE,    /* 1 */
-        DELETE,    /* 2 */
-        LOAD,      /* 3 */
-        SAVE       /* 4 */
+        NS_APPLY       = 0,
+        NS_CREATE,    /* 1 */
+        NS_DELETE,    /* 2 */
+        NS_LOAD,      /* 3 */
+        NS_SAVE       /* 4 */
     } NamedSelectionType;
 
     NamedSelectionRPC();

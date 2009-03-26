@@ -43,7 +43,7 @@
 #ifndef AVT_EXECUTE_THEN_TIME_LOOP_FILTER_H
 #define AVT_EXECUTE_THEN_TIME_LOOP_FILTER_H
 
-#include <pipeline_exports.h>
+#include <expression_exports.h>
 
 #include <vectortypes.h>
 
@@ -77,9 +77,12 @@
 //    Hank Childs, Mon Feb 23 19:19:41 PST 2009
 //    Added infrastructure for using the contract for the first execution.
 //
+//    Kathleen Bonnell, Thu Mar 26 08:13:26 MST 2009 
+//    Changed API from PIPELINE to EXPRESSION.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtExecuteThenTimeLoopFilter 
+class EXPRESSION_API avtExecuteThenTimeLoopFilter 
     : virtual public avtDatasetToDatasetFilter
 {
   public:

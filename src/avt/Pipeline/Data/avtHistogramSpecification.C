@@ -373,7 +373,7 @@ avtHistogramSpecification::SpecifyHistogram(int                      timestep,
     cm_ConditionExact = exact;
     valid     = variables.size()>0              &&
                 variables.size()==bounds.size();
-    for (int i=0 ; i<bounds.size() ; ++i )
+    for (size_t i=0 ; i<bounds.size() ; ++i )
     {
         valid = valid && bounds[i].size() > 1;
         cm_NumberOfBins.push_back(bounds[i].size() - 1);        
@@ -516,7 +516,7 @@ avtHistogramSpecification::SetCounts(const vector<unsigned int>& counts )
     if( cm_Counts != NULL)
         delete[] cm_Counts;
     cm_Counts = new VISIT_LONG_LONG[ counts.size() ];
-    for (int i=0; i<counts.size(); i++)
+    for (size_t i=0; i<counts.size(); i++)
         cm_Counts[i] = counts[i];
 
     // Prabhat-- take this out after debugging
@@ -555,7 +555,7 @@ avtHistogramSpecification::GetTotalNumberOfBins() const
         return 0;
 
     int count = cm_NumberOfBins[0];
-    for (int i=1; i<cm_NumberOfBins.size(); i++)
+    for (size_t i=1; i<cm_NumberOfBins.size(); i++)
         count *= cm_NumberOfBins[i];
     return count;
 }
@@ -597,7 +597,7 @@ avtHistogramSpecification::SetBoundsSpecified()
 {
       cm_BoundsSpecified = true;
       //TODO remove later
-      for( int i=0 ; i<cm_NumberOfBins.size() ; i++){
+      for( size_t i=0 ; i<cm_NumberOfBins.size() ; i++){
             cm_NumberOfBins[i] = cm_Bounds[i].size()-1;
       }
 }
@@ -626,7 +626,7 @@ avtHistogramSpecification::copyInfo( avtHistogramSpecification* input)
       int numBins = input->GetTotalNumberOfBins();
       cm_Counts = new VISIT_LONG_LONG[ numBins  ];
       VISIT_LONG_LONG* inputCounts = input->GetCounts();
-      for(unsigned int i=0; i<numBins; ++i){
+      for(int i=0; i<numBins; ++i){
             cm_Counts[i] = inputCounts[i];
       }
 }
@@ -644,7 +644,7 @@ avtHistogramSpecification::Print(ostream &out) const
     out << "Condition exact " << cm_ConditionExact << endl;
     out << "Regular binning " << cm_RegularBinning << endl;
     out << "Bounds specified " << cm_BoundsSpecified << endl;
-    for (int i = 0 ; i < cm_Variables.size() ; i++)
+    for (size_t i = 0 ; i < cm_Variables.size() ; i++)
     {
         out << "Var = " << cm_Variables[i] << endl;
         out << "\tnumbins = " << cm_NumberOfBins[i] << endl;

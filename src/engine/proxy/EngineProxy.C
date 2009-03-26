@@ -1400,13 +1400,17 @@ EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
+//    Renamed NamedSelectionRPC enum names to compile on windows.
+//
 // ****************************************************************************
 
 void
 EngineProxy::ApplyNamedSelection(const std::vector<std::string> &ids, 
                                  const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::APPLY, ids, selName);
+    namedSelectionRPC(NamedSelectionRPC::NS_APPLY, ids, selName);
     if (namedSelectionRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
@@ -1428,12 +1432,16 @@ EngineProxy::ApplyNamedSelection(const std::vector<std::string> &ids,
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
+//    Renamed NamedSelectionRPC enum names to compile on windows.
+//
 // ****************************************************************************
 
 void
 EngineProxy::CreateNamedSelection(int id, const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::CREATE, id, selName);
+    namedSelectionRPC(NamedSelectionRPC::NS_CREATE, id, selName);
     if (namedSelectionRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
@@ -1455,12 +1463,16 @@ EngineProxy::CreateNamedSelection(int id, const std::string selName)
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
+//    Renamed NamedSelectionRPC enum names to compile on windows.
+//
 // ****************************************************************************
 
 void
 EngineProxy::DeleteNamedSelection(const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::DELETE, selName);
+    namedSelectionRPC(NamedSelectionRPC::NS_DELETE, selName);
     if (namedSelectionRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
@@ -1482,12 +1494,16 @@ EngineProxy::DeleteNamedSelection(const std::string selName)
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
+//    Renamed NamedSelectionRPC enum names to compile on windows.
+//
 // ****************************************************************************
 
 void
 EngineProxy::LoadNamedSelection(const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::LOAD, selName);
+    namedSelectionRPC(NamedSelectionRPC::NS_LOAD, selName);
     if (namedSelectionRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
@@ -1509,12 +1525,16 @@ EngineProxy::LoadNamedSelection(const std::string selName)
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
+//    Renamed NamedSelectionRPC enum names to compile on windows.
+//
 // ****************************************************************************
 
 void
 EngineProxy::SaveNamedSelection(const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::SAVE, selName);
+    namedSelectionRPC(NamedSelectionRPC::NS_SAVE, selName);
     if (namedSelectionRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),

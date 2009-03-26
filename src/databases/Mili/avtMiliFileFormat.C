@@ -861,13 +861,17 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 //    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
 //    Changed names of free_node variables from 'xxx_free_nodes' to
 //    'free_nodes/xxx' to put them in a submenu in GUI.
+//
+//    Kathleen Bonnell, Thur Mar 26 08:14:54 MST 2009
+//    Made 'p' const for compiling on windows.
+// 
 // ****************************************************************************
 
 int
 avtMiliFileFormat::GetVariableIndex(const char *varname)
 {
     string tmpname = varname;
-    char *p = strstr(varname, free_nodes_str);
+    const char *p = strstr(varname, free_nodes_str);
 
     if (p)
         tmpname = string(varname, free_nodes_strlen+1,
@@ -902,13 +906,17 @@ avtMiliFileFormat::GetVariableIndex(const char *varname)
 //    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
 //    Changed names of free_node variables from 'xxx_free_nodes' to
 //    'free_nodes/xxx' to put them in a submenu in GUI.
+//
+//    Kathleen Bonnell, Thur Mar 26 08:14:54 MST 2009
+//    Made 'p' const for compiling on windows.
+// 
 // ****************************************************************************
 
 int
 avtMiliFileFormat::GetVariableIndex(const char *varname, int mesh_id)
 {
     string tmpname = varname;
-    char *p = strstr(varname, free_nodes_str);
+    const char *p = strstr(varname, free_nodes_str);
 
     if (p)
         tmpname = string(varname, free_nodes_strlen+1,
