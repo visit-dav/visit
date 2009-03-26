@@ -86,7 +86,8 @@ NamedSelectionRPC::~NamedSelectionRPC()
 // ****************************************************************************
 
 void
-NamedSelectionRPC::operator()(NamedSelectionType t, const std::vector<std::string> &ids,
+NamedSelectionRPC::operator()(NamedSelectionType t, 
+                              const std::vector<std::string> &ids,
                               const std::string &n)
 {
     SetPlotNames(ids);
