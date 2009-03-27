@@ -98,11 +98,17 @@ def onOpenDatabase(database, timestate, addDefaultPlots, forcedFileType):
         time.sleep(0.1) 
         filename = GetWindowInformation().activeSource
 
-    # Set up initial plot
-    SetupSlice()
-
-    # Draw the plots
-    DrawPlots()
+    # Check if there is already a plot for opened database. If there is,
+    # we do not add further plots. If there are not any plots, we
+    # automatically create a slice
+    plotExists = False
+    for plotNo in range(0, GetNumPlots()):
+        if GetPlotList().GetPlots(plotNo).databaseName == filename:
+            plotExists = True
+            break
+    if not plotExists:
+        SetupSlice()
+        DrawPlots()
 
 RegisterCallback("OpenDatabaseRPC", onOpenDatabase)
 
@@ -171,6 +177,7 @@ def SetupBoundary():
         AddPlot("Boundary", materialsname)
         BoundaryAtts = BoundaryAttributes()
         BoundaryAtts.colorType = BoundaryAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
+        BoundaryAtts.legendFlag = 0
         if m.GetMeshes(0).spatialDimension == 2:
             BoundaryAtts.singleColor = (0, 0, 0, 255)
             BoundaryAtts.lineWidth = 1
