@@ -354,6 +354,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Hank Childs, Sun Jan 25 15:43:03 PST 2009
 //    Set proper Boolean if we find evidence of ghost data.
 //
+//    Gunther H. Weber, Wed Mar 25 13:31:56 PDT 2009
+//    Close file to prevent file handle depletion
+//
 // ****************************************************************************
 
 void
@@ -914,6 +917,8 @@ avtChomboFileFormat::InitializeReader(void)
         visitTimer->StopTimer(t0, "Chombo calculating domain nesting");
     }
 
+    H5Fclose(file_handle);
+    file_handle = -1;
     initializedReader = true;
 
     //
@@ -1840,6 +1845,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Hank Childs, Sun Jan 25 15:55:58 PST 2009
 //    Change test for whether or not we are allowed to use ghost data.
 //
+//    Gunther H. Weber, Wed Mar 25 13:31:56 PDT 2009
+//    Open and close file to prevent file handle depletion
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1940,6 +1948,15 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
     //
     char name[1024];
     SNPRINTF(name, 1024, "level_%d", level);
+    if (file_handle < 0)
+    {
+        file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+        if (file_handle < 0)
+        {
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
+                                               "it is not even an HDF5 file.");
+        }
+    }
     hid_t level_id = H5Gopen(file_handle, name);
     if (level_id < 0)
     {
