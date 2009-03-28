@@ -72,6 +72,9 @@
 //   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
 //   Make changes for point decomposed domain databases.
 //
+//   Dave Pugmire, Thu Mar 26 12:02:27 EDT 2009
+//   Add counters for domain loading
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -106,6 +109,7 @@ class avtSLAlgorithm
                                      {return streamlineFilter->OwnDomain(dom); }
     int                       DomainToRank(DomainType &dom)
                                      {return streamlineFilter->DomainToRank(dom); }
+    int                       DomCacheSize() const { return streamlineFilter->cacheQLen; }
 
     //Utility functions.
     virtual void              SortStreamlines(std::list<avtStreamlineWrapper *> &);
@@ -140,6 +144,7 @@ class avtSLAlgorithm
     virtual void              CompileCounterStatistics();
     virtual void              CalculateExtraTime();    
     virtual void              ComputeStatistic(SLStatistics &stats);
+    virtual void              ComputeDomainLoadStatistic();
     virtual void              ReportStatistics(ostream &os);
     virtual void              ReportTimings(ostream &os, bool totals);
     virtual void              ReportCounters(ostream &os, bool totals);
@@ -159,6 +164,11 @@ class avtSLAlgorithm
                               ExtraTime;
     //Counters.
     SLStatistics              IntegrateCnt, DomLoadCnt, DomPurgeCnt;
+
+    //Special counters.
+    int                       domainsUsed, totDomainsLoaded, domainLoadedMin, domainLoadedMax;
+    int                       globalDomainsUsed, globalTotDomainsLoaded, globalDomainLoadedMin, globalDomainLoadedMax;
+    float                     avgDomainLoaded, globalAvgDomainLoaded;
 };
 
 #endif

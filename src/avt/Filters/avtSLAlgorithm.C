@@ -44,6 +44,7 @@
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -339,6 +340,10 @@ avtSLAlgorithm::CompileTimingStatistics()
 //  Programmer: Dave Pugmire
 //  Creation:   March 23, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Mar 26 12:02:27 EDT 2009
+//   Add counters for domain loading.
 //
 // ****************************************************************************
 
@@ -350,6 +355,8 @@ avtSLAlgorithm::CompileCounterStatistics()
     DomPurgeCnt.value += streamlineFilter->GetPurgeDSCount();
     ComputeStatistic(DomLoadCnt);
     ComputeStatistic(DomPurgeCnt);
+
+    ComputeDomainLoadStatistic();
 }
 
 
@@ -466,6 +473,106 @@ avtSLAlgorithm::ComputeStatistic(SLStatistics &stats)
 
 
 // ****************************************************************************
+//  Method: avtStreamlineFilter::ComputeDomainLoadStatistic
+//
+//  Purpose:
+//      Compute domain loading statistics.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 26, 2009
+//
+// ****************************************************************************
+
+void
+avtSLAlgorithm::ComputeDomainLoadStatistic()
+{
+    //Figure out the domain loads...
+    std::map<unsigned long, int>::iterator it;
+    int *domLoads = new int[numDomains];
+    for (int i = 0; i < numDomains; i++)
+        domLoads[i] = 0;
+
+    domainsUsed = streamlineFilter->domainLoadCount.size();
+    totDomainsLoaded = 0;
+    domainLoadedMin = 0;
+    domainLoadedMax = 0;
+    avgDomainLoaded = 0.0;
+    
+    for (it = streamlineFilter->domainLoadCount.begin(); it != streamlineFilter->domainLoadCount.end(); it++)
+    {
+        domLoads[it->first] = it->second;
+        totDomainsLoaded += it->second;
+        
+        if (it == streamlineFilter->domainLoadCount.begin())
+        {
+            domainLoadedMin = it->second;
+            domainLoadedMax = it->second;
+        }
+        else
+        {
+            if (it->second < domainLoadedMin)
+                domainLoadedMin = it->second;
+            if (it->second > domainLoadedMax)
+                domainLoadedMax = it->second;
+        }
+    }
+
+    if (totDomainsLoaded > 0)
+        avgDomainLoaded = (float)domainsUsed / (float)totDomainsLoaded;
+
+    debug1<<"Local Dom report:"<<endl;
+    for (int i = 0; i < numDomains; i++) debug1<<setw(3)<<i<<": "<<domLoads[i]<<endl;
+
+#if PARALLEL
+    globalDomainsUsed = 0;
+    globalTotDomainsLoaded = 0;
+    globalDomainLoadedMin = 0;
+    globalDomainLoadedMax = 0;
+    globalAvgDomainLoaded = 0.0;
+
+    int *sums = new int[numDomains];
+    SumIntArrayAcrossAllProcessors(domLoads, sums, numDomains);
+    
+    debug1<<"Global Dom report:"<<endl;
+    for (int i = 0; i < numDomains; i++) debug1<<setw(3)<<i<<": "<<sums[i]<<endl;
+        
+    for (int i = 0; i < numDomains; i++)
+    {
+        if (sums[i] != 0)
+        {
+            globalDomainsUsed++;
+            globalTotDomainsLoaded += sums[i];
+            
+            if (globalDomainLoadedMin == 0) //First one.
+            {
+                globalDomainLoadedMin = sums[i];
+                globalDomainLoadedMax = sums[i];
+            }
+            else
+            {
+                if (sums[i] < globalDomainLoadedMin)
+                    globalDomainLoadedMin = sums[i];
+                if (sums[i] > globalDomainLoadedMax)
+                    globalDomainLoadedMax = sums[i];
+            }
+        }
+    }
+        
+    if (globalTotDomainsLoaded > 0)
+        globalAvgDomainLoaded = (float)globalDomainsUsed / (float)globalTotDomainsLoaded;
+    delete [] sums;
+#else
+    globalDomainsUsed = domainsUsed;
+    globalDomainLoadedMin = domainLoadedMin;
+    globalDomainLoadedMax = domainLoadedMax;
+    globalAvgDomainLoaded = avgDomainLoaded;
+#endif
+    
+    delete [] domLoads;
+}
+
+
+// ****************************************************************************
 //  Method: avtStreamlineFilter::CalculateExtraTime
 //
 //  Purpose:
@@ -551,6 +658,7 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
     os<<endl;
 
     ReportTimings(os, true);
+
     os<<endl;
     ReportCounters(os, true);
 
@@ -601,6 +709,11 @@ avtSLAlgorithm::ReportTimings(ostream &os, bool totals)
 //  Programmer: Dave Pugmire
 //  Creation:   January 28, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Mar 26 12:02:27 EDT 2009
+//   Add counters for domain loading.
+//
 // ****************************************************************************
 void
 avtSLAlgorithm::ReportCounters(ostream &os, bool totals)
@@ -610,6 +723,17 @@ avtSLAlgorithm::ReportCounters(ostream &os, bool totals)
     PrintCounter(os, "DomLoad", DomLoadCnt, totals);
     PrintCounter(os, "DomPurge", DomPurgeCnt, totals);
     PrintCounter(os, "IntgrCnt", IntegrateCnt, totals);
+
+    //Report domain loads.
+    if (totals)
+    {
+        os<<"t_DomUsed    = #Dom: "<<globalDomainsUsed<<" TLoads: "<<globalTotDomainsLoaded<<" ["<<globalDomainLoadedMin<<", "<<globalDomainLoadedMax<<", "<<globalAvgDomainLoaded<<"]"<<endl;
+    }
+    else
+    {
+        os<<"l_DomUsed    = #Dom: "<<domainsUsed<<" TLoads: "<<totDomainsLoaded<<" ["<<domainLoadedMin<<", "<<domainLoadedMax<<", "<<avgDomainLoaded<<"]"<<endl;
+    }
+
 }
 
 // ****************************************************************************

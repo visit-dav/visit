@@ -134,6 +134,14 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
 //
+// Modifications:
+//
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Report case counter information. Temporary fix for a sporadic bug where
+//  it looks like messages are not being delivered to the master. Master will
+//  detect when slave set is done and mark done. Modify logic in how masters
+//  make decisions. Add domainOffloading (case 5).
+//
 // ****************************************************************************
 
 class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
@@ -166,10 +174,11 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual void              ManageMasters();
     virtual void              CompileTimingStatistics();
     virtual void              CompileCounterStatistics();
+    virtual void              ReportCounters(ostream &os, bool totals);
 
     int                       workGroupActiveSLs, workGroupSz;
     bool                      done, slaveUpdate, masterUpdate;
-    int                       case1Cnt, case2Cnt, case3Cnt, case4Cnt, case5Cnt;
+    int                       case1Cnt, case2Cnt, case3Cnt, case4Cnt, case5Cnt, case6Cnt;
     int                       master;
     std::vector<SlaveInfo>    slaveInfo, masterInfo;
     std::vector<int>          slDomCnts, domLoaded, slackers;
@@ -257,7 +266,7 @@ class SlaveInfo
     SlaveInfo( int r, int nDomains );
     ~SlaveInfo() {}
 
-    void AddSL( int slDomain);
+    void AddSL(int slDomain, int domCache);
     void LoadDom( int slDomain );
     void RemoveSL( int dom );
     void Update( vector<int> &status, bool debug=false );

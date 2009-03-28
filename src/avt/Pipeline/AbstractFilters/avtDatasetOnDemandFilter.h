@@ -95,6 +95,9 @@ typedef struct
 //    Dave Pugmire, Wed Mar 25 09:15:23 EDT 2009
 //    Add domain caching for point decomposed domains.
 //
+//    Dave Pugmire, Sat Mar 28 09:42:15 EDT 2009
+//    Counter to keep track of how many times a domain is loaded.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
@@ -124,6 +127,8 @@ class PIPELINE_API avtDatasetOnDemandFilter : virtual public
 protected:
     int                          GetPurgeDSCount() const { return purgeDSCount; }
     int                          GetLoadDSCount() const { return loadDSCount; }
+
+    std::map<unsigned long, int>           domainLoadCount;
 
   private:
     std::list<DomainCacheEntry>  domainQueue;
