@@ -141,6 +141,9 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 //    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //    Added support for time/domain.
 //
+//    Dave Pugmire, Sat Mar 28 09:42:15 EDT 2009
+//    Counter to keep track of how many times a domain is loaded.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -193,6 +196,16 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     entry.ds = rv;
     rv->Register(NULL);
     loadDSCount++;
+    
+    //Update the domainLoadCount.
+    //Turn two ints into a long. Put timeStep in upper, domain in lower.
+    unsigned long A =  (((unsigned long)timeStep)<<32);
+    unsigned long B =  ((unsigned long)domainId);
+    unsigned long long idx = A | B;
+
+    if (domainLoadCount.find(idx) == domainLoadCount.end())
+        domainLoadCount[idx] = 0;
+    domainLoadCount[idx] ++;
 
     domainQueue.push_front(entry);
     if ( domainQueue.size() > maxQueueLength )

@@ -195,7 +195,7 @@ avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtStreamlineFilter *slFilt
 {
     NUM_DOMAINS = numDomains * numTimeSteps;
     maxCnt = maxCount;
-    sleepMicroSec = 100;
+    sleepMicroSec = 1;
     latencyTimer = -1;
 
     // Msg type, numTerminated, domain vector.
@@ -415,6 +415,7 @@ avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
     case3Cnt = 0;
     case4Cnt = 0;
     case5Cnt = 0;
+    case6Cnt = 0;
 }
 
 
@@ -538,6 +539,44 @@ avtMasterSLAlgorithm::CompileCounterStatistics()
     avtMasterSlaveSLAlgorithm::CompileCounterStatistics();
 }
 
+
+// ****************************************************************************
+//  Method: avtMasterSLAlgorithm::ReportCounters
+//
+//  Purpose:
+//      Report counters.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   March 25, 2009
+//
+// ****************************************************************************
+
+void
+avtMasterSLAlgorithm::ReportCounters(ostream &os, bool totals)
+{
+    avtMasterSlaveSLAlgorithm::ReportCounters(os, totals);
+    
+    if (!totals)
+    {
+        float tot = case1Cnt+case2Cnt+case3Cnt+case4Cnt+case5Cnt+case6Cnt;
+        
+        os<<"Cases:";
+        os<<" C1: "<<case1Cnt;
+        os<<"("<<setprecision(3)<<(float)case1Cnt/tot*100.0<<"%)";
+        os<<" C2: "<<case2Cnt;
+        os<<"("<<setprecision(3)<<(float)case2Cnt/tot*100.0<<"%)";
+        os<<" C3: "<<case3Cnt;
+        os<<"("<<setprecision(3)<<(float)case3Cnt/tot*100.0<<"%)";
+        os<<" C4: "<<case4Cnt;
+        os<<"("<<setprecision(3)<<(float)case4Cnt/tot*100.0<<"%)";
+        os<<" C5: "<<case5Cnt;
+        os<<"("<<setprecision(3)<<(float)case5Cnt/tot*100.0<<"%)";
+        os<<" C6: "<<case6Cnt;
+        os<<"("<<setprecision(3)<<(float)case6Cnt/tot*100.0<<"%)";
+        os<<endl;
+    }
+}
+
 // ****************************************************************************
 //  Method: avtMasterSLAlgorithm::PrintStatus
 //
@@ -586,22 +625,26 @@ avtMasterSLAlgorithm::PrintStatus()
     }
     debug1<<"]\n";
     
+    debug1<<" R:  T ( L, OOB)"<<endl;
     for (int i = 0; i < slaveInfo.size(); i++)
         slaveInfo[i].Debug();
     debug1<<"DCounts:           [";
+    int cnt = 0;
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
     {
         for ( int i = 0; i < NUM_DOMAINS; i++)
+        {
             debug1<<setw(4)<<domLoaded[i]<<" ";
+            cnt += domLoaded[i];
+        }
     }
-    debug1<<"]\n";
+    debug1<<"] ("<<cnt<<")"<<endl;
 
     vector<int> slaveSLs(NUM_DOMAINS,0);
     for (int i = 0; i < slaveInfo.size(); i++)
         for (int j = 0; j < NUM_DOMAINS; j++)
             slaveSLs[j] += slaveInfo[i].domainCnt[j];
     debug1<<"SCounts:           [";
-    int cnt = 0;
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
     {
         for ( int i = 0; i < NUM_DOMAINS; i++)
@@ -713,12 +756,37 @@ avtMasterSLAlgorithm::Execute()
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Temporary fix for a sporadic bug where it looks like messages are not
+//  being delivered to the master. Detect this case, and signal done.
+//
 // ****************************************************************************
 
 void
 avtMasterSLAlgorithm::PostLoopProcessing()
 {
     SendStatus();
+    
+    //This is a hack....
+    if (activeSLs.empty() && workGroupActiveSLs > 0)
+    {
+        bool haveActiveSlaves = false;
+        for (int i = 0; i < slaveInfo.size(); i++)
+            if (slaveInfo[i].slCount != 0)
+            {
+                haveActiveSlaves = true;
+                break;
+            }
+        if (!haveActiveSlaves)
+        {
+            debug1<<"HACK: Need to figure out how the count got messed up!"<<endl;
+            workGroupActiveSLs = 0;
+            SendStatus(true);
+        }
+    }
+    //end hack....
 
     //See if we are done.
     if (master == -1) //I'm root master.
@@ -795,7 +863,9 @@ avtMasterSLAlgorithm::SendStatus(bool forceSend)
     bool statusChanged = false;
     
     //See if anything changed.
-    if (!forceSend)
+    if (forceSend)
+        statusChanged = true;
+    else
     {
         for (int i = 0; i < status.size(); i++)
             if (status[i] != prevStatus[i])
@@ -1086,6 +1156,13 @@ avtMasterSLAlgorithm::ManageWorkgroup()
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Modifications to the logic that made a big impact on domain loading.
+//  After a domain is loaded, there is opportunity to send SLs to it (case 3)
+//  Do this after each case 4.  Increase the case3 overload factor. Add case5.
+//
 // ****************************************************************************
 
 void
@@ -1099,23 +1176,29 @@ avtMasterSLAlgorithm::ManageSlaves()
       Case4(0,case4Cnt);
     */
     
-    Case4(3*maxCnt, case4Cnt);
-    Case1(case1Cnt);
-    //Case4(1*maxCnt, case4Cnt); //Remove this KILLED performance. ODD.
-    Case2(case2Cnt);
-    int case3OverloadFactor = 10*maxCnt, case3NDomainFactor = 3*maxCnt;
+    int case3OverloadFactor = 20*maxCnt, case3NDomainFactor = 3*maxCnt;
     Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
-    Case4(0, case4Cnt);
+
+    Case4(10*maxCnt, case4Cnt);
+    Case1(case1Cnt);
+    //Case2(case2Cnt);
     
-    /*
+    Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
+    
+    Case2(case2Cnt);
+    Case4(0, case4Cnt);
+    Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
+    
     Case5(maxCnt, true, case5Cnt);
     Case5(maxCnt, false, case5Cnt);
 
     //See who else still doesn't have work....
     FindSlackers();
     if (slackers.size() > 0)
-        debug1<<"WE STILL HAVE SLACKERS\n";
-    */
+    {
+        case6Cnt++;
+        debug1<<"Case 6: "<<slackers<<endl;
+    }
     
     //Resets.
     for (int i = 0; i < slaveInfo.size(); i++)
@@ -1242,6 +1325,12 @@ avtMasterSLAlgorithm::SendAllSlavesMsg(vector<int> &msg)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Latency saving sends can leave us a count of 2 or less. So, consider these
+//  as slackers.
+//
 // ****************************************************************************
 
 void
@@ -1251,8 +1340,10 @@ avtMasterSLAlgorithm::FindSlackers(int oobFactor,
 {
     slackers.resize(0);
 
+    //if oobFactor != -1, find slaves with between 0 and oobFactor OOB streamlines.
+
     for (int i = 0; i < slaveInfo.size(); i++)
-        if (slaveInfo[i].slLoadedCount == 0 ||
+        if (slaveInfo[i].slLoadedCount <= 2 ||
             (slaveInfo[i].justUpdated && checkJustUpdated))
         {
             if ( oobFactor != -1 &&
@@ -1283,6 +1374,9 @@ avtMasterSLAlgorithm::FindSlackers(int oobFactor,
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Bug fix. Case1 never happened. forgot the "not" empty.
+//
 // ****************************************************************************
 
 void
@@ -1305,13 +1399,13 @@ avtMasterSLAlgorithm::Case1(int &counter)
         int slackerRank = slaveInfo[slackers[i]].rank;
         list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
 
-        while ( activeSLs.empty() && cnt < maxCnt)
+        while ( !activeSLs.empty() && cnt < maxCnt)
         {
             int sDom = DomToIdx( (*s)->domain );
             if (slaveInfo[slackers[i]].domainLoaded[sDom])
             {
                 distributeSLs[slackerRank].push_back(*s);
-                slaveInfo[slackers[i]].AddSL(sDom);
+                slaveInfo[slackers[i]].AddSL(sDom, DomCacheSize());
                 s = activeSLs.erase(s);
                 streamlinesToSend = true;
                 cnt++;
@@ -1369,7 +1463,6 @@ avtMasterSLAlgorithm::Case2(int &counter)
     
     FindSlackers();
     
-    debug1<<"Case2: slackers: "<<slackers.size()<<endl;
     vector< vector< avtStreamlineWrapper *> > distributeSLs(nProcs);
     bool streamlinesToSend = false;
 
@@ -1433,7 +1526,7 @@ avtMasterSLAlgorithm::Case2(int &counter)
             if (sDom == domToLoad && cnt < maxCnt)
             {
                 distributeSLs[slackerRank].push_back(*sl);
-                slaveInfo[slackers[s]].AddSL(sDom);
+                slaveInfo[slackers[s]].AddSL(sDom, DomCacheSize());
                 cnt++;
                 slDomCnts[domToLoad]--;
                 sl = activeSLs.erase(sl);
@@ -1499,7 +1592,9 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
                             int &counter )
 {
     FindSlackers(NDomainFactor, true, true);
-
+    if (slackers.size() == 0)
+        return;
+    
     vector<int> sender, recv, dom;
     for (int i = 0; i < slackers.size(); i++)
     {
@@ -1579,7 +1674,7 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
         
         for (int i = 0; i < n; i++)
         {
-            recvSlave.AddSL(d);
+            recvSlave.AddSL(d, DomCacheSize());
             sendSlave.RemoveSL(d);
         }
 
@@ -1607,6 +1702,9 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Look for domains with max oob count.
+//
 // ****************************************************************************
 
 void
@@ -1624,13 +1722,14 @@ avtMasterSLAlgorithm::Case4(int oobThreshold,
     for (int i = 0; i < slackers.size(); i++)
     {
         int idx = slackers[i];
-        int domToLoad = -1, maxCnt=-1;
+        int domToLoad = -1, maxOOBCnt=-1;
         for (int j = 0; j < slaveInfo[idx].domainCnt.size(); j++)
         {
-            if (slaveInfo[idx].domainCnt[j] > 0 && slaveInfo[idx].domainCnt[j] > maxCnt)
+            if (slaveInfo[idx].domainCnt[j] > 0 && slaveInfo[idx].domainCnt[j] > maxOOBCnt &&
+                slaveInfo[idx].domainCnt[j] > oobThreshold)
             {
                 domToLoad = j;
-                maxCnt = slaveInfo[idx].domainCnt[j];
+                maxOOBCnt = slaveInfo[idx].domainCnt[j];
             }
         }
         
@@ -1662,6 +1761,8 @@ avtMasterSLAlgorithm::Case4(int oobThreshold,
 //
 //  Modifications:
 //
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Finish implementation.
 //
 // ****************************************************************************
 
@@ -1695,10 +1796,6 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 
     random_shuffle(slackers.begin(), slackers.end());
 
-    debug1<<"C5: dc= "<<domainCheck<<endl;
-    debug1<<"C5 Slackers: "<<slackers<<endl;
-    debug1<<"C5 Overworked: "<<overWorked<<endl;
-
     vector<int> senders, receivers;
     vector<vector<int> > doms;
     // Find the first send w/
@@ -1727,6 +1824,8 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
             {
                 senders.push_back(slaveInfo[overWorked[w]].rank);
                 receivers.push_back(slaveInfo[slackers[s]].rank);
+                vector<int> commonDoms;
+                doms.push_back(commonDoms);
             }
         }
     }
@@ -1738,43 +1837,25 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
         return;
     }
 
+    /*
+    debug1<<"C5: dc= "<<domainCheck<<endl;
+    debug1<<"C5 Slackers: "<<slackers<<endl;
+    debug1<<"C5 Overworked: "<<overWorked<<endl;
+    */
+
     for (int i = 0; i < senders.size(); i++)
     {
-        debug1<<"Case5: "<<senders[i]<<" ===> "<<receivers[i];
-        if (doms.size() > 0)
-            debug1<<" doms= "<<doms[i];
-        debug1<<endl;
+        vector<int> msg;
+        msg.push_back(MSG_SEND_SL_HINT);
+        msg.push_back(receivers[i]);
+        msg.push_back(doms[i].size());
+        for (int j = 0; j < doms[i].size(); j++)
+            msg.push_back(doms[i][j]);
+
+        debug1<<"Case 5: "<<senders[i]<<" ===> "<<receivers[i]<<" "<<doms[i]<<endl;
+        SendMsg(senders[i], msg);
+        counter++;
     }
-
-#if 0
-
-    // Tell overWorked: Send SLs to slacker.
-    vector<int> info(1);
-    info[0] = recv;
-    if (domainCheck)
-    {
-        for ( int i = 0; i < numDomains; i++)
-            if (slaveInfo[recv].domainLoaded[i])
-                info.push_back(i);
-        info.push_back(-1);
-    }
-    else
-        info.push_back(-1);
-
-    debug1<<"Case 5: "<<sender<<" ==[";
-    for (int i = 1; i < info.size()-1; i++) debug1<<info[i]<<" ";
-    debug1<<"] ==> "<<recv<<endl;
-    AsyncSendSlaveMsgs(sender, MSG_SEND_SL_HINT, info);
-
-    // Update status. We're not sure which domains will be sent.
-    // We need to update status with something, so use 'dom'.
-    for (int i = 0; i < maxCount; i++)
-    {
-        slaveInfo[recv].AddSL(dom);
-        if (slaveInfo[sender].domainCnt[dom] > 0)
-            slaveInfo[sender].RemoveSL(dom);
-    }
-#endif
 }
 
 
@@ -1974,6 +2055,10 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //
 //   Dave Pugmire, Wed Mar 25 09:10:52 EDT 2009
 //   Enable latency.
+//
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Resend status if getting no work from master. This is related to the tmp fix
+//  above in the master.
 //   
 // ****************************************************************************
 
@@ -1986,6 +2071,8 @@ avtSlaveSLAlgorithm::Execute()
     //Send initial status.
     SendStatus(true);
     Barrier();
+
+    int slackerCount = 0;
 
     while ( 1 )
     {
@@ -2013,28 +2100,31 @@ avtSlaveSLAlgorithm::Execute()
         }
         
         bool done = false, newMsgs = false;
+        slackerCount++;
         while (!activeSLs.empty() && !done)
         {
+            slackerCount = 0;
             avtStreamlineWrapper *s = activeSLs.front();
             activeSLs.pop_front();
 
-            bool doThis = true;
-            if (doThis && activeSLs.empty())
+            if (activeSLs.size() <= 1)
             {
                 debug1<<"Latency saving sendStatus"<<endl;
                 LatencySavingCnt.value++;
                 SendStatus();
             }
             
-            debug1<<"Integrate "<<s->domain<<endl;
+            debug1<<"Integrate "<<s->domain<<".....";
             IntegrateStreamline(s);
             if (s->status == avtStreamlineWrapper::TERMINATE)
             {
                 terminatedSLs.push_back(s);
                 numTerminated++;
+                debug1<<"TERM. nT= "<<numTerminated<<endl;
             }
             else
             {
+                debug1<<"OOB. dom= "<<s->domain<<endl;
                 if (DomainLoaded(s->domain))
                     activeSLs.push_back(s);
                 else
@@ -2064,6 +2154,11 @@ avtSlaveSLAlgorithm::Execute()
         //Nothing to do, take a snooze....
         if (!workToDo)
         {
+            if (slackerCount > 100)
+            {
+                SendStatus(true);
+                slackerCount = 0;
+            }
             if (latencyTimer == -1)
             {
                 latencyTimer = visitTimer->StartTimer();
@@ -2079,6 +2174,18 @@ avtSlaveSLAlgorithm::Execute()
         debug1<<"End latency: time= "<<t<<endl;
         LatencyTime.value += t;
         latencyTimer = -1;
+    }
+
+    debug1<<"Slave done: activeSLs= "<<activeSLs.size()<<" oobSLs= "<<oobSLs.size()<<endl;
+    if (!activeSLs.empty())
+    {
+        debug1<<"activeproblem "<<endl;
+        terminatedSLs.splice(terminatedSLs.end(), activeSLs);
+    }
+    if (!oobSLs.empty())
+    {
+        debug1<<"oobproblem "<<endl;
+        terminatedSLs.splice(terminatedSLs.end(), oobSLs);
     }
 
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
@@ -2105,6 +2212,9 @@ avtSlaveSLAlgorithm::Execute()
 //  Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
 //  Improve the logic for streamline offloading. Only offload streamlines
 //  in unloaded domains.
+//
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Handle streamline offloading (case5).
 //
 // ****************************************************************************
 
@@ -2138,7 +2248,8 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         }
 
         //Offload unloaded domains.
-        else if (msgType == MSG_OFFLOAD_SL)
+        else if (msgType == MSG_OFFLOAD_SL ||
+                 msgType == MSG_SEND_SL_HINT)
         {
             debug1<<"Slave: MSG_OFFLOAD_SL I have "<<activeSLs.size()<<" to offer"<<endl;
             debug1<<msg<<endl;
@@ -2146,6 +2257,10 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             int dst = msg[2];
             int numDoms = msg[3];
             int num = 10*maxCnt;
+            if (msgType == MSG_OFFLOAD_SL)
+                num = 10*maxCnt;
+            else
+                num = maxCnt;
 
             vector< avtStreamlineWrapper *> sendSLs;
 
@@ -2158,15 +2273,28 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
                 while (s != activeSLs.end() &&
                        sendSLs.size() < num)
                 {
-                    if ((*s)->domain == dom &&
-                        !DomainLoaded(dom))
+                    if (msgType == MSG_OFFLOAD_SL)
                     {
-                        sendSLs.push_back(*s);
-                        s = activeSLs.erase(s);
-                        numTerminated++;
+                        if ((*s)->domain == dom &&
+                            !DomainLoaded(dom))
+                        {
+                            sendSLs.push_back(*s);
+                            s = activeSLs.erase(s);
+                            numTerminated++;
+                        }
+                        else
+                            s++;
                     }
                     else
-                        s++;
+                    {
+                        if ((*s)->domain == dom)
+                        {
+                            sendSLs.push_back(*s);
+                            s = activeSLs.erase(s);
+                        }
+                        else
+                            s++;
+                    }
                 }
             }
             
@@ -2241,12 +2369,17 @@ SlaveInfo::SlaveInfo( int r, int nDomains )
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//  Use the domainCache to report coming purges.
+//
 // ****************************************************************************
 
 void
-SlaveInfo::AddSL( int slDomain)
+SlaveInfo::AddSL(int slDomain, int domCache)
 {
-    bool underPurgeLimit = (domLoadedCount <= 3);
+    bool underPurgeLimit = (domLoadedCount <= domCache);
     //We assume that it will get loaded..
     if (domainLoaded[slDomain] == false)
         domLoadedCount++;
@@ -2256,8 +2389,8 @@ SlaveInfo::AddSL( int slDomain)
     slLoadedCount++;
     justUpdated = false;
     
-    if (underPurgeLimit && domLoadedCount > 3)
-        debug1<<"WARNING: "<<rank<<" Purge is coming!\n";
+    if (underPurgeLimit && domLoadedCount > domCache)
+        debug1<<"WARNING: "<<rank<<" Purge is coming. "<<domLoadedCount<<endl;
     if (domainHistory.size() == 0 ||
         (domainHistory.size() > 0 && slDomain != domainHistory[domainHistory.size()-1]))
         domainHistory.push_back(slDomain);      
