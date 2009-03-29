@@ -218,6 +218,9 @@ avtParSLAlgorithm::CleanupAsynchronous()
 //
 //   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //   Change how timings are reported/calculated.
+//
+//   Dave Pugmire, Sat Mar 28 22:21:49 EDT 2009
+//   Bug fix. "notCompleted" wasn't in an else clause for the INT messages.
 //   
 // ****************************************************************************
 void
@@ -285,7 +288,8 @@ avtParSLAlgorithm::CheckPendingSendRequests()
                 req.push_back(it->first);
                 copy.push_back(it->first);
             }
-            notCompleted++;
+            else
+                notCompleted++;
         }
 
         debug5 << "\tCheckPendingSendRequests() INT completed = "<<req.size()
