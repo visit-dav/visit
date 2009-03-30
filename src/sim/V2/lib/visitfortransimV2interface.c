@@ -164,7 +164,7 @@ char *visit_fstring_to_cstring(char *ptr, int len)
 extern void F_VISITSLAVEPROCESSCALLBACK(void);
 extern int  F_VISITBROADCASTINTFUNCTION(int *, int *);
 extern int  F_VISITBROADCASTSTRINGFUNCTION(char *, int *, int *);
-extern void F_VISITCOMMANDCALLBACK(const char*, int*, int*, float*, const char*, int *);
+extern void F_VISITCOMMANDCALLBACK(const char*, int*, const char*, int *);
 
 /* Functions provided by this module. */
 #define F_VISITSETDIRECTORY         F77_ID(visitsetdirectory_,visitsetdirectory,VISITSETDIRECTORY)
@@ -216,8 +216,7 @@ f_visit_internal_broadcaststringfunction(char *str, int lstr, int sender)
 }
 
 void
-f_visit_internal_commandcallback(const char *cmd, int intdata, float floatdata,
-    const char *stringdata)
+f_visit_internal_commandcallback(const char *cmd, const char *stringdata, void *cbdata)
 {
     /* Call the fortran function. */
     char *realcmd = NULL;
@@ -250,7 +249,7 @@ f_visit_internal_commandcallback(const char *cmd, int intdata, float floatdata,
         strcpy(realcmd, cmd);
     }
 
-    F_VISITCOMMANDCALLBACK(realcmd, &lcmd, &intdata, &floatdata, stringdata, &lstringdata);
+    F_VISITCOMMANDCALLBACK(realcmd, &lcmd, stringdata, &lstringdata);
 
     FREE(realcmd);
 }
@@ -508,7 +507,7 @@ F_VISITATTEMPTCONNECTION(void)
      * the VisItAttemptToCompleteConnection function completes.
      */
     VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
-    VisItSetCommandCallback(f_visit_internal_commandcallback);
+    VisItSetCommandCallback(f_visit_internal_commandcallback, NULL);
 
     return ret;
 }
@@ -967,7 +966,7 @@ VisItGetMaterial(int domain, const char *name, VisIt_MaterialData *mat, void *cb
             mat->matlist = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT,
                                                         ml->matlist);
             ml->matlist = NULL;
-            mat->materialNames = (const char **)ml->matnames; ml->matnames = NULL;
+            mat->materialNames = (char **)ml->matnames; ml->matnames = NULL;
             ml->nmatnames = 0;
             mat->mixlen = MaterialList_GetMixedSize(ml);
 
@@ -1926,12 +1925,12 @@ F_VISITMDMATERIALADD(int *mdhandle, int *mhandle, VISIT_F77STRING matname, int *
 
             if(mmd->numMaterials == 0)
             {
-                mmd->materialNames = (const char **)malloc(sizeof(char*));
+                mmd->materialNames = (char **)malloc(sizeof(char*));
                 mmd->materialNames[0] = f_matname;
             }
             else
             {
-                mmd->materialNames = (const char **)realloc(
+                mmd->materialNames = (char **)realloc(
                     mmd->materialNames, sizeof(char*) * (mmd->numMaterials + 1));
                 mmd->materialNames[mmd->numMaterials] = f_matname;
             }

@@ -7,6 +7,7 @@
 #include <ImproperUseException.h>
 
 #define ALLOC(T) (T*)calloc(1, sizeof(T))
+#define FREE(PTR) if(PTR != NULL) free(PTR)
 
 //
 // Define a structure that we can use to contain all of the callback function
@@ -15,6 +16,9 @@
 typedef struct
 {
     /* Reader functions */
+    int  (*cb_ActivateTimestep)(void *);
+    void  *cbdata_ActivateTimestep;
+
     int  (*cb_GetMetaData)(VisIt_SimulationMetaData *, void *);
     void  *cbdata_GetMetaData;
 
@@ -38,6 +42,12 @@ typedef struct
 
     int  (*cb_GetDomainList)(VisIt_DomainList *, void *);
     void  *cbdata_GetDomainList;
+
+    int  (*cb_GetDomainBoundaries)(const char *, visit_handle, void *);
+    void  *cbdata_GetDomainBoundaries;
+
+    int  (*cb_GetDomainNesting)(const char *, visit_handle, void *);
+    void  *cbdata_GetDomainNesting;
 
     /* Writer functions */
     int (*cb_WriteBegin)(const char *, void *);
@@ -79,6 +89,7 @@ DataCallbacksCleanup(void)
 
 extern "C" 
 {
+void visit_set_ActivateTimestep(int (*cb) (void *), void *cbdata);
 void visit_set_GetMetaData(int (*cb) (VisIt_SimulationMetaData *, void *), void *cbdata);
 void visit_set_GetMesh(int (*cb) (int, const char *, VisIt_MeshData *, void *), void *cbdata);
 void visit_set_GetMaterial(int (*cb) (int, const char *, VisIt_MaterialData *, void *), void *cbdata);
@@ -87,11 +98,24 @@ void visit_set_GetVariable(int (*cb) (int, const char *, VisIt_VariableData *, v
 void visit_set_GetMixedVariable(int (*cb) (int, const char *, VisIt_MixedVariableData *, void *), void *cbdata);
 void visit_set_GetCurve(int (*cb) (const char *, VisIt_CurveData *, void *), void *cbdata);
 void visit_set_GetDomainList(int (*cb) (VisIt_DomainList *, void *), void *cbdata);
+void visit_set_GetDomainBoundaries(int (*cb) (const char *, visit_handle, void *), void *cbdata);
+void visit_set_GetDomainNesting(int (*cb) (const char *, visit_handle, void *), void *cbdata);
 
 void visit_set_WriteBegin(int (*cb)(const char *, void *), void *cbdata);
 void visit_set_WriteEnd(int (*cb)(const char *, void *), void *cbdata);
 void visit_set_WriteMesh(int (*cb)(const char *, int, const VisIt_MeshData *, const VisIt_MeshMetaData *, void *), void *cbdata);
 void visit_set_WriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *, void *), void *cbdata);
+}
+
+void
+visit_set_ActivateTimestep(int (*cb) (void *), void *cbdata)
+{
+    data_callback_t *callbacks = GetDataCallbacks();
+    if(callbacks != NULL)
+    {
+        callbacks->cb_ActivateTimestep = cb;
+        callbacks->cbdata_ActivateTimestep = cbdata;
+    }
 }
 
 void
@@ -179,6 +203,28 @@ visit_set_GetDomainList(int (*cb) (VisIt_DomainList *, void *), void *cbdata)
     {
         callbacks->cb_GetDomainList = cb;
         callbacks->cbdata_GetDomainList = cbdata;
+    }
+}
+
+void
+visit_set_GetDomainBoundaries(int (*cb) (const char *, visit_handle, void *), void *cbdata)
+{
+    data_callback_t *callbacks = GetDataCallbacks();
+    if(callbacks != NULL)
+    {
+        callbacks->cb_GetDomainBoundaries = cb;
+        callbacks->cbdata_GetDomainBoundaries = cbdata;
+    }
+}
+
+void
+visit_set_GetDomainNesting(int (*cb) (const char *, visit_handle, void *), void *cbdata)
+{
+    data_callback_t *callbacks = GetDataCallbacks();
+    if(callbacks != NULL)
+    {
+        callbacks->cb_GetDomainNesting = cb;
+        callbacks->cbdata_GetDomainNesting = cbdata;
     }
 }
 
@@ -422,6 +468,31 @@ VisIt_MeshData_check(const VisIt_MeshData *obj, std::string &err)
 /******************************************************************************/
 
 // ****************************************************************************
+// Method: visit_invoke_ActivateTimeStep
+//
+// Purpose: 
+//   This function invokes the simulation's ActivateTimeStep callback function.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 16 16:12:44 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+visit_invoke_ActivateTimestep(void)
+{
+    int retval = VISIT_OKAY;
+    data_callback_t *callbacks = GetDataCallbacks();
+    if(callbacks != NULL && callbacks->cb_ActivateTimestep != NULL)
+    {
+        retval = (*callbacks->cb_ActivateTimestep)(callbacks->cbdata_ActivateTimestep);
+    }
+    return retval;
+}
+
+// ****************************************************************************
 // Method: visit_invoke_GetMetaData
 //
 // Purpose: 
@@ -446,7 +517,7 @@ VisIt_MeshData_check(const VisIt_MeshData *obj, std::string &err)
 // ****************************************************************************
 
 VisIt_SimulationMetaData *
-visit_invoke_GetMetaData()
+visit_invoke_GetMetaData(void)
 {
     VisIt_SimulationMetaData *obj = NULL;
     data_callback_t *callbacks = GetDataCallbacks();
@@ -599,7 +670,7 @@ visit_invoke_GetCurve(const char *name)
 }
 
 VisIt_DomainList *
-visit_invoke_GetDomainList()
+visit_invoke_GetDomainList(void)
 {
     VisIt_DomainList *obj = NULL;
     data_callback_t *callbacks = GetDataCallbacks();
@@ -613,6 +684,44 @@ visit_invoke_GetDomainList()
         }
     }
     return obj;
+}
+
+visit_handle 
+visit_invoke_GetDomainBoundaries(const char *name)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    data_callback_t *callbacks = GetDataCallbacks();
+    if(callbacks != NULL && callbacks->cb_GetDomainBoundaries != NULL)
+    {
+        if(visit_DomainBoundaries_alloc(&h) == VISIT_OKAY)
+        {
+            if((*callbacks->cb_GetDomainBoundaries)(name, h, callbacks->cbdata_GetDomainBoundaries) == VISIT_ERROR)
+            {
+                visit_DomainBoundaries_free(h);
+                h = VISIT_INVALID_HANDLE;
+            }
+        }
+    }
+    return h;
+}
+
+visit_handle 
+visit_invoke_GetDomainNesting(const char *name)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    data_callback_t *callbacks = GetDataCallbacks();
+    if(callbacks != NULL && callbacks->cb_GetDomainNesting != NULL)
+    {
+        if(visit_DomainNesting_alloc(&h) == VISIT_OKAY)
+        {
+            if((*callbacks->cb_GetDomainNesting)(name, h, callbacks->cbdata_GetDomainNesting) == VISIT_ERROR)
+            {
+                visit_DomainNesting_free(h);
+                h = VISIT_INVALID_HANDLE;
+            }
+        }
+    }
+    return h;
 }
 
 /* Writer functions. */

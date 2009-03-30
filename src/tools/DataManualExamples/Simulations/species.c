@@ -78,9 +78,7 @@ static double simtime = 0.;
  *
  *****************************************************************************/
 
-void ControlCommandCallback(const char *cmd,
-    int int_data, float float_data,
-    const char *string_data)
+void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
     if(strcmp(cmd, "halt") == 0)
         runFlag = 0;
@@ -138,7 +136,7 @@ void mainloop(void)
             if(VisItAttemptToCompleteConnection())
             {
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback); 
+                VisItSetCommandCallback(ControlCommandCallback, NULL); 
 
                 VisItSetGetMetaData(SimGetMetaData, NULL);
                 VisItSetGetMesh(SimGetMesh, NULL);
@@ -255,7 +253,7 @@ SpeciesNames(void)
     for(i = 0; i < 3; ++i)
     {
         elem[i].numNames = nmaterialSpecies[i];
-        elem[i].names = (const char **)malloc(sizeof(char*)*nmaterialSpecies[i]);
+        elem[i].names = (char **)malloc(sizeof(char*)*nmaterialSpecies[i]);
         for(j = 0; j < nmaterialSpecies[i]; ++j)
             elem[i].names[j] = strdup(materialSpecies[i][j]);
     }
@@ -312,7 +310,7 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     md->materials[0].name = strdup("Material");
     md->materials[0].meshName = strdup("mesh2d");
     md->materials[0].numMaterials = 3;
-    md->materials[0].materialNames = (const char **)malloc(3*sizeof(const char*));
+    md->materials[0].materialNames = (char **)malloc(3*sizeof(char*));
     md->materials[0].materialNames[0] = strdup(matNames[0]);
     md->materials[0].materialNames[1] = strdup(matNames[1]);
     md->materials[0].materialNames[2] = strdup(matNames[2]);

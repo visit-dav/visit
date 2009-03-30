@@ -196,6 +196,10 @@ class Xfer;
 //    Brad Whitlock, Mon Mar  2 16:11:36 PST 2009
 //    I added a SaveWindow method.
 //
+//    Brad Whitlock, Fri Mar 27 11:32:32 PDT 2009
+//    I changed the command callback mechanism so it only accepts string
+//    arguments and it also accepts user-provided callback data.
+//
 // ****************************************************************************
 
 class Engine
@@ -215,10 +219,9 @@ class Engine
                                                const std::string &fmt);
     void            SimulationTimeStepChanged();
     void            SimulationInitiateCommand(const std::string &);
-    void            SetSimulationCommandCallback(void(*)(const char*,
-                                                       int,float,const char*));
+    void            SetSimulationCommandCallback(void(*)(const char*, const char*, void*), void*);
     void            ExecuteSimulationCommand(const std::string&,
-                                             int,float,const std::string&);
+                                             const std::string&);
     static void     DisconnectSimulation();
     void            Message(const std::string &msg);
     void            Error(const std::string &msg);
@@ -355,8 +358,8 @@ class Engine
     avtDatabaseMetaData      *metaData;
     SILAttributes            *silAtts;
     SimulationCommand        *commandFromSim;
-    void                    (*simulationCommandCallback)(const char*,
-                                                        int,float,const char*);
+    void                    (*simulationCommandCallback)(const char*,const char*,void*);
+    void                     *simulationCommandCallbackData;
 
     // unix process attributes
     ProcessAttributes        *procAtts;

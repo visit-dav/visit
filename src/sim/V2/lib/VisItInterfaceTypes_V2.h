@@ -42,6 +42,10 @@
 extern "C" {
 #endif
 
+typedef int visit_handle;
+
+#define VISIT_INVALID_HANDLE -1
+
 #define VISIT_ERROR  0
 #define VISIT_OKAY   1
 #define VISIT_NODATA 2
@@ -53,7 +57,8 @@ typedef enum {
     VISIT_MESHTYPE_CURVILINEAR      = 2,
     VISIT_MESHTYPE_UNSTRUCTURED     = 3,
     VISIT_MESHTYPE_POINT            = 4,
-    VISIT_MESHTYPE_CSG              = 5
+    VISIT_MESHTYPE_CSG              = 5,
+    VISIT_MESHTYPE_AMR              = 6
 } VisIt_MeshType;
 
 /* Centering */

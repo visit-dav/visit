@@ -47,9 +47,8 @@
 CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @PLATFORM_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../../include/visit
 
-LDFLAGS=@VISITWRAPPER_RPATH@ @LDFLAGS@
-
-LIB=libvisitenginev1
+LIBSIM_RUNTIME_SER=libvisitenginev1_ser.@SHLIB_SOEXT@
+LIBSIM_RUNTIME_PAR=libvisitenginev1_par.@SHLIB_SOEXT@
 
 ##
 ## Files...
@@ -79,16 +78,23 @@ PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
         -lexpressions_par -lavtfilters_par -lpipeline_par \
         -lengine_par -lengineparstate_par -lparallel_visit_vtk_par \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
-	$(ZLIB_LIB) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
+	$(ZLIB_LIB) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@ 
 
 ##
 ## Standard targets...
 ##
-all: $(LIBSHAREDSER) @LIBSHAREDPAR@
+all: @LIBSIM_RUNTIME_SER@ @LIBSIM_RUNTIME_PAR@
 
 clean:
-	$(RM) $(LIBSHAREDSER) @LIBSHAREDPAR@
+	$(RM)  $(libdir)/$(LIBSIM_RUNTIME_SER)  $(libdir)/$(LIBSIM_RUNTIME_PAR)
 	$(RM) $(SEROBJ) $(PAROBJ)
+
+$(LIBSIM_RUNTIME_SER) or_no_ser_wrapper: $(SEROBJ)
+	@SHLIB_CREATEPROG@ $(libdir)/$@ @VISITWRAPPER_RPATH@ $(LDFLAGS) $(SEROBJ) $(SERLIBS)
+
+$(LIBSIM_RUNTIME_PAR) or_no_par_wrapper: $(PAROBJ)
+	@SHLIB_CREATEPROG@ $(libdir)/$@ @VISITWRAPPER_RPATH@ $(LDFLAGS) $(PAROBJ) $(PARLIBS) \
+	@ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 ##
 ## Automatic dependency stuff

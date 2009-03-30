@@ -83,13 +83,22 @@ int   VisItInitializeSocketAndDumpSimFile(const char *name,
 int   VisItDetectInput(int blocking, int consoledesc);
 int   VisItAttemptToCompleteConnection(void);
 void  VisItSetSlaveProcessCallback(void(*)(void));
-void  VisItSetCommandCallback(void(*)(const char*,int,float,const char*));
+void  VisItSetCommandCallback(void(*)(const char*,const char*,void*), void*);
 int   VisItProcessEngineCommand(void);
 void  VisItTimeStepChanged(void);
 void  VisItUpdatePlots(void);
 void  VisItExecuteCommand(const char *);
 void  VisItDisconnect(void);
+int   VisItIsConnected(void);
 char *VisItGetLastError(void);
+int   VisItSynchronize(void);
+void  VisItEnableSynchronize(int);
+
+void  VisItDebug1(const char *format, ...);
+void  VisItDebug2(const char *format, ...);
+void  VisItDebug3(const char *format, ...);
+void  VisItDebug4(const char *format, ...);
+void  VisItDebug5(const char *format, ...);
 
 void  VisItOpenTraceFile(const char *);
 void  VisItCloseTraceFile(void);
@@ -101,6 +110,9 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
 #include <VisItDataInterface_V2.h>
 
 /* Functions that install data access callback functions */
+
+/* This is needed to do collective communication before we call the other callbacks. */
+int VisItSetActivateTimestep(int (*cb)(void *), void *cbdata);
 int VisItSetGetMetaData(int (*cb)(VisIt_SimulationMetaData *, void *), void *cbdata);
 int VisItSetGetMesh(int (*cb)(int, const char *, VisIt_MeshData *, void *), void *cbdata);
 int VisItSetGetMaterial(int (*cb)(int, const char *, VisIt_MaterialData *, void *), void *cbdata);
@@ -109,6 +121,12 @@ int VisItSetGetVariable(int (*cb)(int, const char *, VisIt_VariableData *, void 
 int VisItSetGetMixedVariable(int (*cb)(int, const char *, VisIt_MixedVariableData *, void *), void *cbdata);
 int VisItSetGetCurve(int (*cb)(const char *, VisIt_CurveData *, void *), void *cbdata);
 int VisItSetGetDomainList(int (*cb)(VisIt_DomainList *, void *), void *cbdata);
+
+/* This is needed for VisIt to create ghost zones in between the domains. */
+int VisItSetGetDomainBoundaries(int (*cb)(const char *, visit_handle, void *), void *cbdata);
+
+/* This is needed to tell VisIt how AMR patches are nested. */
+int VisItSetGetDomainNesting(int (*cb)(const char *, visit_handle, void *), void *cbdata);
 
 /* Functions that install data writer callback functions */
 int VisItSetWriteBegin(int (*cb)(void *, const char *), void *cbdata);

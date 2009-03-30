@@ -38,6 +38,7 @@
 
 #include <silo.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void
 write_curv3d(DBfile *dbfile)
@@ -108,7 +109,7 @@ write_defvars(DBfile *dbfile)
     const char *names[] = {"velocity", "speed"};
     const char *defs[] = {"{xc,yc,zc}", "magnitude(velocity)"};
     int types[] = {DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR};
-    DBPutDefvars(dbfile, "defvars", 2, names, types, defs, NULL);
+    DBPutDefvars(dbfile, "defvars", 2, (char**)names, types, (char**)defs, NULL);
 }
 
 int

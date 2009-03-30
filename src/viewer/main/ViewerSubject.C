@@ -9106,6 +9106,9 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //   Brad Whitlock, Thu Feb 26 13:57:58 PST 2009
 //   I added Message and Error commands from the simulation.
 //
+//   Brad Whitlock, Fri Mar 27 11:27:40 PDT 2009
+//   I added INTERNALSYNC so we can sync with the simulation.
+//
 // ****************************************************************************
 
 void
@@ -9133,6 +9136,13 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
     else if(command.substr(0,10) == "Interpret:")
     {
         InterpretCommands(command.substr(10, command.size()-10));
+    }
+    else if(command.substr(0,12) == "INTERNALSYNC")
+    {
+        // Send the command back to the engine so it knows we're done syncing.
+        std::string cmd("INTERNALSYNC");
+        std::string args(command.substr(13, command.size()-1));
+        ViewerEngineManager::Instance()->SendSimulationCommand(key, cmd, args);
     }
 }
 

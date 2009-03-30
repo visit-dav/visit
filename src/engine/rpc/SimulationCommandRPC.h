@@ -53,9 +53,14 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 18, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 27 11:29:39 PDT 2009
+//    I simplified it so it only accepts string arguments. I also changed it
+//    to nonblocking.
+//
 // ****************************************************************************
 
-class ENGINE_RPC_API SimulationCommandRPC : public BlockingRPC
+class ENGINE_RPC_API SimulationCommandRPC : public NonBlockingRPC
 {
   public:
     SimulationCommandRPC();
@@ -64,33 +69,21 @@ class ENGINE_RPC_API SimulationCommandRPC : public BlockingRPC
     virtual const std::string TypeName() const { return "SimulationCommandRPC"; }
 
     // Invokation methods
-    /*
-    void operator()(const std::string &command);
-    void operator()(const std::string &command, int);
-    void operator()(const std::string &command, float);
     void operator()(const std::string &command, const std::string&);
-    */
-    void operator()(const std::string &command, int,float,const std::string&);
 
     // Property selection methods
     virtual void SelectAll();
 
     // Property setting methods
     void SetCommand(const std::string&);
-    void SetIntData(int);
-    void SetFloatData(float);
     void SetStringData(const std::string&);
 
     // Property getting methods
     std::string GetCommand()  const;
-    int         GetIntData() const;
-    float       GetFloatData() const;
     std::string GetStringData() const;
 
   private:
     std::string command;
-    int         int_data;
-    float       float_data;
     std::string string_data;
 };
 

@@ -67,18 +67,15 @@ static double simtime = 0.;
  * Date:       Thu Jan 17 15:25:37 PST 2008
  *
  * Input Arguments:
- *   cmd         : The command string that we want the sim to execute.
- *   int_data    : Integer argument for the command.
- *   float_data  : Float argument for the command.
- *   string_data : String argument for the command.
+ *   cmd    : The command string that we want the sim to execute.
+ *   args   : String argument for the command.
+ *   cbdata : User-provided callback data.
  *
  * Modifications:
  *
  *****************************************************************************/
 
-void ControlCommandCallback(const char *cmd,
-    int int_data, float float_data,
-    const char *string_data)
+void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
     if(strcmp(cmd, "halt") == 0)
         runFlag = 0;
@@ -128,7 +125,7 @@ void mainloop(void)
             if(VisItAttemptToCompleteConnection())
             {
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback);
+                VisItSetCommandCallback(ControlCommandCallback, NULL);
 
                 VisItSetGetMetaData(SimGetMetaData, NULL);
                 VisItSetGetMesh(SimGetMesh, NULL);
@@ -271,7 +268,7 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     md->materials[0].name = strdup("Material");
     md->materials[0].meshName = strdup("mesh2d");
     md->materials[0].numMaterials = 3;
-    md->materials[0].materialNames = (const char **)malloc(3*sizeof(const char*));
+    md->materials[0].materialNames = (char **)malloc(3*sizeof(char*));
     md->materials[0].materialNames[0] = strdup(matNames[0]);
     md->materials[0].materialNames[1] = strdup(matNames[1]);
     md->materials[0].materialNames[2] = strdup(matNames[2]);

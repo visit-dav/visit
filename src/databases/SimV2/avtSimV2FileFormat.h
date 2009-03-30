@@ -46,7 +46,6 @@
 #include <database_exports.h>
 
 #include <avtSTMDFileFormat.h>
-#include <VisItDataInterface_V2.h>
 #include <avtSimulationInformation.h>
 #include <avtMaterial.h>
 
@@ -82,6 +81,8 @@ class avtSimV2FileFormat : public avtSTMDFileFormat
     virtual const char    *GetType(void)   { return "SimV2"; };
     virtual void           FreeUpResources(void); 
     virtual int            GetCycle() { return -1; }
+
+    virtual void           ActivateTimestep(void);
 
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);

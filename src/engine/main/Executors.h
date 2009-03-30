@@ -1503,6 +1503,10 @@ RPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 18, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 27 11:31:31 PDT 2009
+//    I made the arguments only be type string.
+//
 // ****************************************************************************
 template<>
 void
@@ -1514,8 +1518,6 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
     TRY
     {
         engine->ExecuteSimulationCommand(rpc->GetCommand(),
-                                         rpc->GetIntData(),
-                                         rpc->GetFloatData(),
                                          rpc->GetStringData());
         rpc->SendReply();
     }

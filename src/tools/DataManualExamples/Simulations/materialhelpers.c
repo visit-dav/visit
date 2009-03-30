@@ -84,7 +84,7 @@ VisIt_MaterialData_addMaterial(VisIt_MaterialData *m, const char *matname)
         m->materialNumbers = (int*)malloc(sizeof(int));
         m->materialNumbers[0] = id;
 
-        m->materialNames = (const char **)malloc(sizeof(char *));
+        m->materialNames = (char **)malloc(sizeof(char *));
         m->materialNames[0] = strdup(matname);
     }
     else
@@ -92,7 +92,7 @@ VisIt_MaterialData_addMaterial(VisIt_MaterialData *m, const char *matname)
         m->materialNumbers = (int*)realloc(m->materialNumbers, (m->nMaterials+1) * sizeof(int));
         m->materialNumbers[m->nMaterials] = id;
 
-        m->materialNames = (const char **)realloc(m->materialNames, (m->nMaterials+1) * sizeof(char *));
+        m->materialNames = (char **)realloc(m->materialNames, (m->nMaterials+1) * sizeof(char *));
         m->materialNames[m->nMaterials] = strdup(matname);
     }
     ++m->nMaterials;

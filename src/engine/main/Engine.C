@@ -180,6 +180,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Tom Fogal, Mon Sep  1 12:48:36 EDT 2008
 //    Initialize the display for rendering.
 //
+//    Brad Whitlock, Fri Mar 27 11:33:52 PDT 2009
+//    I initialized simulationCommandCallbackData.
+//
 // ****************************************************************************
 
 Engine::Engine()
@@ -195,6 +198,7 @@ Engine::Engine()
     lb = NULL;
     procAtts = NULL;
     simulationCommandCallback = NULL;
+    simulationCommandCallbackData = NULL;
     metaData = NULL;
     silAtts = NULL;
     commandFromSim = NULL;
@@ -2476,6 +2480,11 @@ Engine::ResetTimeout(int timeout)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 27 14:12:16 PDT 2009
+//    Allow xfer's updates so we can send the data back to the viewer in
+//    case we're already responding to an update from the viewer.
+//
 // ****************************************************************************
 void
 Engine::PopulateSimulationMetaData(const std::string &db,
@@ -2503,6 +2512,7 @@ Engine::PopulateSimulationMetaData(const std::string &db,
     // Send the metadata and SIL to the viewer
     if(!quitRPC->GetQuit())
     {
+        xfer->SetUpdate(true);
         metaData->Notify();
         silAtts->SelectAll();
         silAtts->Notify();
@@ -2568,6 +2578,9 @@ Engine::SimulationTimeStepChanged()
 //   Brad Whitlock, Thu Feb 26 13:59:36 PST 2009
 //   I changed the argument to std::string.
 //
+//   Brad Whitlock, Fri Mar 27 13:55:27 PDT 2009
+//   Enable xfer updates.
+//
 // ****************************************************************************
 
 void
@@ -2575,6 +2588,10 @@ Engine::SimulationInitiateCommand(const std::string &command)
 {
     if(!quitRPC->GetQuit())
     {
+        // Allow the command to be sent, even if we're in the middle of an
+        // Xfer::Process. This fixes a synchronization bug.
+        xfer->SetUpdate(true);
+
         commandFromSim->SetCommand(command);
         commandFromSim->Notify();
     }
@@ -2656,16 +2673,21 @@ Engine::DisconnectSimulation()
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 18, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 27 11:34:54 PDT 2009
+//    I changed the function pointer type and added a callback data pointer.
+//
 // ****************************************************************************
 void
-Engine::SetSimulationCommandCallback(void (*scc)(const char*,
-                                                 int,float,const char*))
+Engine::SetSimulationCommandCallback(void (*scc)(const char*,const char*,void*),
+    void *sccdata)
 {
     simulationCommandCallback = scc;
+    simulationCommandCallbackData = sccdata;
 }
 
 // ****************************************************************************
-//  Method:  Engine::SetSimulationCommandCallback
+//  Method:  Engine::ExecuteSimulationCommand
 //
 //  Purpose:
 //    Set the callback to control a simulation.
@@ -2676,18 +2698,21 @@ Engine::SetSimulationCommandCallback(void (*scc)(const char*,
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 18, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 27 11:35:59 PDT 2009
+//    I added simulationCommandCallbackData.
+//
 // ****************************************************************************
 void
 Engine::ExecuteSimulationCommand(const std::string &command,
-                                 int int_data,
-                                 float float_data,
                                  const std::string &string_data)
 {
     if (!simulationCommandCallback)
         return;
 
     simulationCommandCallback(command.c_str(),
-                              int_data,float_data,string_data.c_str());
+                              string_data.c_str(),
+                              simulationCommandCallbackData);
 }
 
 // ****************************************************************************

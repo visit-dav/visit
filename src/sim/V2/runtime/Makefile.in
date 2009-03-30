@@ -47,14 +47,19 @@
 CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @PLATFORM_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../../include/visit -I../lib
 
-LDFLAGS=@VISITWRAPPER_RPATH@ @LDFLAGS@
-
-LIB=libsimV2runtime
+LIBSIM_RUNTIME_SER=libsimV2runtime_ser.@SHLIB_SOEXT@
+LIBSIM_RUNTIME_PAR=libsimV2runtime_par.@SHLIB_SOEXT@
 
 ##
 ## Files...
 ##
-SRC=VisItControlInterfaceRuntime.C VisItDataInterfaceRuntime.C VisItDataInterface_V2P.C
+SRC=VisItControlInterfaceRuntime.C \
+    VisItDataInterfaceRuntime.C \
+    VisItDataInterfaceRuntimeP.C \
+    VisItDataInterface_V2P.C \
+    visit_DomainBoundaries.C \
+    visit_DomainNesting.C
+
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
@@ -84,11 +89,18 @@ PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
 ##
 ## Standard targets...
 ##
-all: $(LIBSHAREDSER) @LIBSHAREDPAR@
+all: @LIBSIM_RUNTIME_SER@ @LIBSIM_RUNTIME_PAR@
 
 clean:
-	$(RM) $(LIBSHAREDSER) @LIBSHAREDPAR@
+	$(RM)  $(libdir)/$(LIBSIM_RUNTIME_SER)  $(libdir)/$(LIBSIM_RUNTIME_PAR)
 	$(RM) $(SEROBJ) $(PAROBJ)
+
+$(LIBSIM_RUNTIME_SER) or_no_ser_wrapper: $(SEROBJ)
+	@SHLIB_CREATEPROG@ $(libdir)/$@ @VISITWRAPPER_RPATH@ $(LDFLAGS) $(SEROBJ) $(SERLIBS)
+
+$(LIBSIM_RUNTIME_PAR) or_no_par_wrapper: $(PAROBJ)
+	@SHLIB_CREATEPROG@  $(libdir)/$@ @VISITWRAPPER_RPATH@ $(LDFLAGS) $(PAROBJ) $(PARLIBS) \
+	@ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 ##
 ## Automatic dependency stuff

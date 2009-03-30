@@ -100,7 +100,7 @@ c Close the Silo file
       real xc(NX), yc(NY), zc(NZ)
       character*9 dirname  /'DomainXXX'/
       data dims/NX, NY, NZ/
-      data vardims/NX-1, NY-1, NZ-1/
+      data vardims/NX1, NY1, NZ1/
 
       ndims = 3
       dom = 1

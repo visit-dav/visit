@@ -195,10 +195,20 @@ void set_slave_process_callback(void(*spic)())
 #endif
 }
 
+// This is needed to keep the old command callbacks still working even though the
+// engine's command callback signature has changed.
+static void
+internal_command_callback_bridge(const char *cmd, const char *args, void *cbdata)
+{
+    void(*sc)(const char*,int,float,const char*) = (void(*)(const char*,int,float,const char*))cbdata;
+    if(sc != NULL)
+        (*sc)(cmd, 0, 0.f, args);
+}
+
 void set_command_callback(void *e,void(*sc)(const char*,int,float,const char*))
 {
     Engine *engine = (Engine*)(e);
-    engine->SetSimulationCommandCallback(sc);
+    engine->SetSimulationCommandCallback(internal_command_callback_bridge, (void *)sc);
 }
 
 //  Needed for some reason on some platforms.

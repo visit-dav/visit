@@ -38,6 +38,8 @@
 
 #ifndef VISIT_DATA_INTERFACE_RUNTIME_H
 #define VISIT_DATA_INTERFACE_RUNTIME_H
+
+#define VISIT_DECORATE(NAME) visit_##NAME
 #include <VisItDataInterface_V2.h>
 
 #ifdef __cplusplus
@@ -59,15 +61,17 @@ extern "C" {
 // ****************************************************************************
 
 // Data functions callable from SimV2 reader
-
-VisIt_SimulationMetaData *visit_invoke_GetMetaData();
+int                       visit_invoke_ActivateTimestep(void);
+VisIt_SimulationMetaData *visit_invoke_GetMetaData(void);
 VisIt_MeshData           *visit_invoke_GetMesh(int, const char *);
 VisIt_MaterialData       *visit_invoke_GetMaterial(int, const char *);
 VisIt_SpeciesData        *visit_invoke_GetSpecies(int, const char *);
 VisIt_VariableData       *visit_invoke_GetVariable(int, const char *);
 VisIt_MixedVariableData  *visit_invoke_GetMixedVariable(int, const char *);
 VisIt_CurveData          *visit_invoke_GetCurve(const char *);
-VisIt_DomainList         *visit_invoke_GetDomainList();
+VisIt_DomainList         *visit_invoke_GetDomainList(void);
+visit_handle              visit_invoke_GetDomainBoundaries(const char *name);
+visit_handle              visit_invoke_GetDomainNesting(const char *name);
 
 int visit_invoke_WriteBegin(const char *);
 int visit_invoke_WriteEnd(const char *);
