@@ -124,6 +124,10 @@ avtConnComponentsSummaryQuery::
 //  Programmer: Cyrus Harrison
 //  Creation:   March 1, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added support for per component bounding box info.
+//
 // ****************************************************************************
 
 void
@@ -141,7 +145,17 @@ avtConnComponentsSummaryQuery::PreExecute(void)
     xCentroidPerComp.resize(nComps);
     yCentroidPerComp.resize(nComps);
     zCentroidPerComp.resize(nComps);
-
+    
+    // bounding box vectors
+    xMinPerComp.resize(nComps);
+    xMaxPerComp.resize(nComps);
+    
+    yMinPerComp.resize(nComps);
+    yMaxPerComp.resize(nComps);
+    
+    zMinPerComp.resize(nComps);
+    zMaxPerComp.resize(nComps);
+    
     // area & volume vectors
     if(findArea)
         areaPerComp.resize(nComps);
@@ -152,6 +166,7 @@ avtConnComponentsSummaryQuery::PreExecute(void)
     sumPerComp.resize(nComps);
     wsumPerComp.resize(nComps);
 
+    // init per comp vals
     for(int i=0;i<nComps;i++)
     {
         nCellsPerComp[i] = 0;
@@ -159,7 +174,15 @@ avtConnComponentsSummaryQuery::PreExecute(void)
         xCentroidPerComp[i] = 0;
         yCentroidPerComp[i] = 0;
         zCentroidPerComp[i] = 0;
-
+    
+        xMinPerComp[i] =  DBL_MAX;
+        yMinPerComp[i] =  DBL_MAX;
+        zMinPerComp[i] =  DBL_MAX;        
+        
+        xMaxPerComp[i] = -DBL_MAX;
+        yMaxPerComp[i] = -DBL_MAX;
+        zMaxPerComp[i] = -DBL_MAX;
+        
         if(findArea)
             areaPerComp[i] = 0;
         if(findVolume)
@@ -180,6 +203,10 @@ avtConnComponentsSummaryQuery::PreExecute(void)
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   March 1, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added support for per component bounding box info.
 //
 // ****************************************************************************
 
@@ -241,7 +268,28 @@ avtConnComponentsSummaryQuery::PostExecute(void)
     SumDoubleArrayAcrossAllProcessors(&wsumPerComp[0], sum_res_dbl, nComps);
     memcpy(&wsumPerComp[0],sum_res_dbl,nComps * sizeof(double));
 
-
+    
+    // per component bounding box reduce
+    // bb min values
+    UnifyMinimumDoubleArrayAcrossAllProcessors(&xMinPerComp[0],sum_res_dbl,nComps);
+    memcpy(&xMinPerComp[0],sum_res_dbl,nComps * sizeof(double));
+    
+    UnifyMinimumDoubleArrayAcrossAllProcessors(&yMinPerComp[0],sum_res_dbl,nComps);
+    memcpy(&yMinPerComp[0],sum_res_dbl,nComps * sizeof(double));
+    
+    UnifyMinimumDoubleArrayAcrossAllProcessors(&zMinPerComp[0],sum_res_dbl,nComps);
+    memcpy(&zMinPerComp[0],sum_res_dbl,nComps * sizeof(double));
+    
+    // bb max values
+    UnifyMaximumDoubleArrayAcrossAllProcessors(&xMaxPerComp[0],sum_res_dbl,nComps);
+    memcpy(&xMaxPerComp[0],sum_res_dbl,nComps * sizeof(double));
+    
+    UnifyMaximumDoubleArrayAcrossAllProcessors(&yMaxPerComp[0],sum_res_dbl,nComps);
+    memcpy(&yMaxPerComp[0],sum_res_dbl,nComps * sizeof(double));
+    
+    UnifyMaximumDoubleArrayAcrossAllProcessors(&zMaxPerComp[0],sum_res_dbl,nComps);
+    memcpy(&zMaxPerComp[0],sum_res_dbl,nComps * sizeof(double));
+    
     delete [] sum_res_int;
     delete [] sum_res_dbl;
 
@@ -261,8 +309,6 @@ avtConnComponentsSummaryQuery::PostExecute(void)
         outputFileName = "cc_summary.okc";
 
     // create output message
-
-
     std::string msg = "";
     char buff[2048];
 
@@ -305,6 +351,10 @@ avtConnComponentsSummaryQuery::PostExecute(void)
 // 
 //  Programmer: Cyrus Harrison
 //  Creation:   February 8, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added support for per component bounding box info.
 //
 // ****************************************************************************
 
@@ -358,6 +408,7 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
 
 
     double pt_val[3];
+    double bounds[6];
 
     // loop over all cells
     for (int i = 0 ; i < ncells ; i++)
@@ -376,7 +427,20 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
         xCentroidPerComp[comp_id]+= pt_val[0];
         yCentroidPerComp[comp_id]+= pt_val[1];
         zCentroidPerComp[comp_id]+= pt_val[2];
+        
+        // get the bounding box of the cell
+        cell->GetBounds(bounds);
 
+        // update bb min vals
+        if(xMinPerComp[comp_id] > bounds[0])  xMinPerComp[comp_id] = bounds[0];
+        if(yMinPerComp[comp_id] > bounds[2])  yMinPerComp[comp_id] = bounds[2];
+        if(zMinPerComp[comp_id] > bounds[4])  zMinPerComp[comp_id] = bounds[4];
+        
+        // update bb max vals
+        if(xMaxPerComp[comp_id] < bounds[1])  xMaxPerComp[comp_id] = bounds[1];
+        if(yMaxPerComp[comp_id] < bounds[3])  yMaxPerComp[comp_id] = bounds[3];
+        if(zMaxPerComp[comp_id] < bounds[5])  zMaxPerComp[comp_id] = bounds[5];
+        
         // update sum value
         double val    = (double) values->GetTuple1(i);
         sumPerComp[comp_id] += val;
@@ -521,6 +585,10 @@ avtConnComponentsSummaryQuery::VerifyInput(void)
 //  Programmer: Cyrus Harrison
 //  Creation:   March 1, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added support for per component bounding box info.
+//
 // ****************************************************************************
 
 void
@@ -550,7 +618,7 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     //
 
     int nrows = nComps;
-    int ncols = 7;
+    int ncols = 13;
 
     // inc # of columns if we are including area and/or volume
     if(findArea)
@@ -577,6 +645,15 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
    
     outs << "comp_sum" << endl;
     outs << "comp_weighted_sum" << endl;
+    
+    outs << "comp_bb_x_min" << endl;
+    outs << "comp_bb_x_max" << endl;
+    
+    outs << "comp_bb_y_min" << endl;
+    outs << "comp_bb_y_max" << endl;
+    
+    outs << "comp_bb_z_min" << endl;
+    outs << "comp_bb_z_max" << endl;
    
     // find component ranges
     int ncells_min    =  INT_MAX;
@@ -602,70 +679,66 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
 
     double wsum_min   =  DBL_MAX;
     double wsum_max   = -DBL_MAX;    
+    
+    double comp_bb_min[6]  = {DBL_MAX,DBL_MAX,DBL_MAX,DBL_MAX,DBL_MAX,DBL_MAX};
+    double comp_bb_max[6]  = {-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX};
 
     for(i = 0; i < nComps;i++)
     {
         //  update # of cells range
-        if(ncells_min > nCellsPerComp[i])
-            ncells_min = nCellsPerComp[i];
+        if(ncells_min > nCellsPerComp[i]) ncells_min = nCellsPerComp[i];
 
-        if(ncells_max < nCellsPerComp[i])
-            ncells_max = nCellsPerComp[i];
+        if(ncells_max < nCellsPerComp[i]) ncells_max = nCellsPerComp[i];
 
         //  update x centroid range
-        if(cent_x_min > xCentroidPerComp[i])
-            cent_x_min = xCentroidPerComp[i];
-
-        if(cent_x_max < xCentroidPerComp[i])
-            cent_x_max = xCentroidPerComp[i];
+        if(cent_x_min > xCentroidPerComp[i]) cent_x_min = xCentroidPerComp[i];
+        if(cent_x_max < xCentroidPerComp[i]) cent_x_max = xCentroidPerComp[i];
 
         //  update y centroid range
-        if(cent_y_min > yCentroidPerComp[i])
-            cent_y_min = yCentroidPerComp[i];
-
-        if(cent_y_max < yCentroidPerComp[i])
-            cent_y_max = yCentroidPerComp[i];
+        if(cent_y_min > yCentroidPerComp[i]) cent_y_min = yCentroidPerComp[i];
+        if(cent_y_max < yCentroidPerComp[i]) cent_y_max = yCentroidPerComp[i];
 
         //  update z centroid range
-        if(cent_z_min > yCentroidPerComp[i])
-            cent_z_min = yCentroidPerComp[i];
-
-        if(cent_z_max < zCentroidPerComp[i])
-            cent_z_max = zCentroidPerComp[i];
+        if(cent_z_min > yCentroidPerComp[i]) cent_z_min = yCentroidPerComp[i];
+        if(cent_z_max < zCentroidPerComp[i]) cent_z_max = zCentroidPerComp[i];
         
         if(findArea)
         {
             // update area range
-            if(area_min > areaPerComp[i])
-                area_min = areaPerComp[i];
-
-            if(area_max < areaPerComp[i])
-                area_max = areaPerComp[i];
+            if(area_min > areaPerComp[i]) area_min = areaPerComp[i];
+            if(area_max < areaPerComp[i]) area_max = areaPerComp[i];
         }
 
         if(findVolume)
         {
             // update area range
-            if(volume_min > volPerComp[i])
-                volume_min = volPerComp[i];
-                    
-            if(volume_max < volPerComp[i])
-                volume_max = volPerComp[i];
+            if(volume_min > volPerComp[i]) volume_min = volPerComp[i];
+            if(volume_max < volPerComp[i]) volume_max = volPerComp[i];
         }
 
         // update var sum
-        if(sum_min > sumPerComp[i])
-            sum_min = sumPerComp[i];
-
-        if(sum_max < sumPerComp[i])
-            sum_max = sumPerComp[i];
+        if(sum_min > sumPerComp[i]) sum_min = sumPerComp[i];
+        if(sum_max < sumPerComp[i]) sum_max = sumPerComp[i];
 
         // update weighted var sum
-        if(wsum_min > wsumPerComp[i])
-            wsum_min = wsumPerComp[i];
-
-        if(wsum_max < wsumPerComp[i])
-            wsum_max = wsumPerComp[i];
+        if(wsum_min > wsumPerComp[i]) wsum_min = wsumPerComp[i];
+        if(wsum_max < wsumPerComp[i]) wsum_max = wsumPerComp[i];
+        
+        // min range over bb values    
+        if(xMinPerComp[i] < comp_bb_min[0]) comp_bb_min[0] = xMinPerComp[i];
+        if(xMaxPerComp[i] < comp_bb_min[1]) comp_bb_min[1] = xMaxPerComp[i];
+        if(yMinPerComp[i] < comp_bb_min[2]) comp_bb_min[2] = yMinPerComp[i];
+        if(yMaxPerComp[i] < comp_bb_min[3]) comp_bb_min[3] = yMaxPerComp[i];
+        if(zMinPerComp[i] < comp_bb_min[4]) comp_bb_min[4] = zMinPerComp[i];
+        if(zMaxPerComp[i] < comp_bb_min[5]) comp_bb_min[5] = zMaxPerComp[i];
+        
+        // max range over bb values
+        if(xMinPerComp[i] > comp_bb_max[0]) comp_bb_max[0] = xMinPerComp[i];
+        if(xMaxPerComp[i] > comp_bb_max[1]) comp_bb_max[1] = xMaxPerComp[i];
+        if(yMinPerComp[i] > comp_bb_max[2]) comp_bb_max[2] = yMinPerComp[i];
+        if(yMaxPerComp[i] > comp_bb_max[3]) comp_bb_max[3] = yMaxPerComp[i];
+        if(zMinPerComp[i] > comp_bb_max[4]) comp_bb_max[4] = zMinPerComp[i];
+        if(zMaxPerComp[i] > comp_bb_max[5]) comp_bb_max[5] = zMaxPerComp[i];
 
     }
     // write column ranges
@@ -693,6 +766,10 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
 
     // weighted var sum range
     outs << wsum_min << "\t" << wsum_max << "\t10"<< endl;
+    
+    // bounding box ranges
+    for(i=0; i < 6; i++)
+        outs << comp_bb_min[i] << "\t" << comp_bb_max[i] << "\t10"<< endl;    
 
     // write each component as a line
     for( i = 0; i < nrows; i++)
@@ -721,6 +798,12 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
 
         // weighted var sum
         outs << wsumPerComp[i] << "\t"; 
+        
+        // bounding box values
+        outs  << xMinPerComp[i] <<"\t" << xMaxPerComp[i] << "\t";
+        outs  << yMinPerComp[i] <<"\t" << yMaxPerComp[i] << "\t";
+        outs  << zMinPerComp[i] <<"\t" << zMaxPerComp[i] << "\t";
+
         outs << endl;        
     }
 
@@ -737,6 +820,10 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
 //  Programmer: Cyrus Harrison
 //  Creation:   March 2, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added support for per component bounding box info.
+//
 // ****************************************************************************
 
 void
@@ -749,7 +836,7 @@ avtConnComponentsSummaryQuery::PrepareComponentResults(vector<double> &results)
     // They are set to zero if vals do not exist
     //
 
-    results.resize(nComps *9);
+    results.resize(nComps *15);
 
     // loop index
     int i;
@@ -786,5 +873,13 @@ avtConnComponentsSummaryQuery::PrepareComponentResults(vector<double> &results)
 
         // var weighted sum
         results[idx++] = wsumPerComp[i];
+        
+        // bounding box vals
+        results[idx++] = xMinPerComp[i];
+        results[idx++] = xMaxPerComp[i];
+        results[idx++] = yMinPerComp[i];
+        results[idx++] = yMaxPerComp[i];
+        results[idx++] = zMinPerComp[i];
+        results[idx++] = zMaxPerComp[i];
     }
 }

@@ -850,6 +850,37 @@ SumFloatAcrossAllProcessors(float &value)
 #endif
 }
 
+// ****************************************************************************
+//  Function: UnifyMinimumDoubleArrayAcrossAllProcessors
+//
+//  Purpose:
+//      Finds the minimum for each element of an array of doubles
+//      across all processors.
+//
+//  Arguments:
+//      inArray    The input.
+//      outArray   The minimums of the inArrays across all processors.
+//      nArray     The number of entries in inArray/outArray.
+//
+//  Programmer:    Cyrus Harrison
+//  Creation:      March 27, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+UnifyMinimumDoubleArrayAcrossAllProcessors(double *inArray, double *outArray, 
+                                           int nArray)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(inArray, outArray, nArray, MPI_DOUBLE, MPI_MIN,
+                  VISIT_MPI_COMM);
+#else
+    memcpy(outArray, inArray, nArray*sizeof(double));
+#endif
+}
+
 
 // ****************************************************************************
 //  Function: UnifyMinimumFloatArrayAcrossAllProcessors
@@ -883,6 +914,39 @@ UnifyMinimumFloatArrayAcrossAllProcessors(float *inArray, float *outArray,
     memcpy(outArray, inArray, nArray*sizeof(float));
 #endif
 }
+
+
+// ****************************************************************************
+//  Function: UnifyMaximumDoubleArrayAcrossAllProcessors
+//
+//  Purpose:
+//      Finds the maximum for each element of an array of doubles
+//      across all processors.
+//
+//  Arguments:
+//      inArray    The input.
+//      outArray   The maximums of the inArrays across all processors.
+//      nArray     The number of entries in inArray/outArray.
+//
+//  Programmer:    Cyrus Harrison
+//  Creation:      March 27, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+UnifyMaximumDoubleArrayAcrossAllProcessors(double *inArray, double *outArray, 
+                                            int nArray)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(inArray, outArray, nArray, MPI_DOUBLE, MPI_MAX,
+                  VISIT_MPI_COMM);
+#else
+    memcpy(outArray, inArray, nArray*sizeof(double));
+#endif
+}
+
 
 
 // ****************************************************************************
