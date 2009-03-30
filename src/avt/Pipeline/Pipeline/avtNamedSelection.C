@@ -247,7 +247,6 @@ avtZoneIdNamedSelection::GetDomainList(std::vector<int> &domains)
 //  Creation:   February 3, 2009
 //
 //  Modifications:
-//
 //    Tom Fogal, Sat Feb  7 17:13:46 EST 2009
 //    Fix declaration of iterator, and make it const.
 //

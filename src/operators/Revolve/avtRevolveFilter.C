@@ -196,6 +196,10 @@ avtRevolveFilter::GetMeshType(void)
 //  Programmer: Hank Childs
 //  Creation:   March 18, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Mon Mar 30 10:00:45 PDT 2009
+//    Added a missing return. I also added a default case.
+//
 // ****************************************************************************
 
 void
@@ -206,20 +210,22 @@ avtRevolveFilter::GetAxis(avtMeshCoordType mt, double *axis)
         axis[0] = atts.GetAxis()[0];
         axis[1] = atts.GetAxis()[1];
         axis[2] = atts.GetAxis()[2];
+        return;
     }
     switch (mt)
     {
-      case AVT_XY:
+    default:
+    case AVT_XY:
         axis[0] = 1.;
         axis[1] = 0.;
         axis[2] = 0.;
         break;
-      case AVT_RZ:
+    case AVT_RZ:
         axis[0] = 0.;
         axis[1] = 0.;
         axis[2] = 1.;
         break;
-      case AVT_ZR:
+    case AVT_ZR:
         axis[0] = 0.;
         axis[1] = 0.;
         axis[2] = 1.;
