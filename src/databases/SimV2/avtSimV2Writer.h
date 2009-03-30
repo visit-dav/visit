@@ -40,7 +40,7 @@
 
 #include <avtDatabaseWriter.h>
 #include <vectortypes.h>
-#include <VisItDataInterface_V2.h>
+#include <VisItDataInterfaceRuntime.h>
 
 class vtkDataSet;
 class vtkRectilinearGrid;

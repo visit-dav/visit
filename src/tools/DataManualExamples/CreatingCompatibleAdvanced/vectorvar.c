@@ -38,6 +38,7 @@
 
 #include <silo.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void
 write_curv3d(DBfile *dbfile)

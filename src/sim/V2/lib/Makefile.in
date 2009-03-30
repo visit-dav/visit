@@ -49,7 +49,10 @@ SRC= \
   VisItControlInterface_V2.c \
   SimHelperFunc.c \
   UI_Connection.c \
-  SimV2Tracing.c
+  SimV2Tracing.c \
+  VisIt_DomainBoundaries.c \
+  VisIt_DomainNesting.c
+
 FSRC= \
   visitfortransimV2interface.c
 

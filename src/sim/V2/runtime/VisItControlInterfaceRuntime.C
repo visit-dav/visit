@@ -142,21 +142,12 @@ void visit_time_step_changed(void *e)
     engine->SimulationTimeStepChanged();
 }
 
-void visit_update_plots(void *e)
-{
-    Engine *engine = (Engine*)(e);
-    engine->SimulationInitiateCommand("UpdatePlots");
-}
-
 void visit_execute_command(void *e, const char *command)
 {
     if(command != NULL)
     {
-        Engine *engine = (Engine*)(e);
-        std::string cmd("Interpret:");
-        cmd += command;
-        
-        engine->SimulationInitiateCommand(cmd);
+        Engine *engine = (Engine*)(e);       
+        engine->SimulationInitiateCommand(command);
     }
 }
 
@@ -174,10 +165,11 @@ void visit_set_slave_process_callback(void(*spic)())
 #endif
 }
 
-void visit_set_command_callback(void *e,void(*sc)(const char*,int,float,const char*))
+void visit_set_command_callback(void *e,void(*sc)(const char*,const char*,void*),
+    void *scdata)
 {
     Engine *engine = (Engine*)(e);
-    engine->SetSimulationCommandCallback(sc);
+    engine->SetSimulationCommandCallback(sc, scdata);
 }
 
 int
@@ -203,4 +195,19 @@ visit_save_window(void *e, const char *filename, int w, int h, int format)
 
     int ret = engine->SaveWindow(filename, w, h, fmt);
     return ret ? VISIT_OKAY : VISIT_ERROR;
+}
+
+void
+visit_debug_logs(int level, const char *msg)
+{
+    if(level == 1)
+        debug1 << msg;
+    else if(level == 2)
+        debug2 << msg;
+    else if(level == 3)
+        debug3 << msg;
+    else if(level == 4)
+        debug4 << msg;
+    else if(level == 5)
+        debug5 << msg;
 }

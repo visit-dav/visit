@@ -114,10 +114,10 @@ c Close the Silo file
       implicit none
       include "silo.inc"
       integer err, ierr, dbfile, nmesh
-      character*25 meshnames(4) /'fdataextents.1:quadmesh   ',
-     .                           'fdataextents.2:quadmesh   ',
-     .                           'fdataextents.3:quadmesh   ',
-     .                           'fdataextents.4:quadmesh   '/
+      character*25 meshnames(4) /'fdataextents.1:quadmesh  ',
+     .                           'fdataextents.2:quadmesh  ',
+     .                           'fdataextents.3:quadmesh  ',
+     .                           'fdataextents.4:quadmesh  '/
       integer lmeshnames(4) /23,23,23,23/
       integer meshtypes(4) /DB_QUAD_RECT, DB_QUAD_RECT,
      .                      DB_QUAD_RECT, DB_QUAD_RECT/
@@ -132,10 +132,10 @@ c Close the Silo file
       include "silo.inc"
       double precision extents(2,4)
       integer err, ierr, dbfile, nvar, optlist
-      character*25 varnames(4)  /'fdataextents.1:var        ',
-     .                           'fdataextents.2:var        ',
-     .                           'fdataextents.3:var        ',
-     .                           'fdataextents.4:var        '/
+      character*25 varnames(4)  /'fdataextents.1:var       ',
+     .                           'fdataextents.2:var       ',
+     .                           'fdataextents.3:var       ',
+     .                           'fdataextents.4:var       '/
       integer lvarnames(4) /18,18,18,18/
       integer vartypes(4) /DB_QUADVAR,DB_QUADVAR,
      .                     DB_QUADVAR,DB_QUADVAR/

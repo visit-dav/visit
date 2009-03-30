@@ -103,10 +103,10 @@ c Close the Silo file.
      . 3, 4, 5,
      . 6, 7, 8,
      . 9, 10, 11/
-      data var4/0,1,2,
-     . 3, 4, 5,
-     . 6, 7, 8,
-     . 9, 10, 11/
+      data var4/'a','b','c',
+     . 'd', 'e', 'f',
+     . 'g', 'h', 'i',
+     . 'j', 'k', 'l'/
       data dims/ZX, ZY/
       ndims = 2
       err = dbputqv1(dbfile, "var1", 4, "quadmesh", 8, var1, dims, 

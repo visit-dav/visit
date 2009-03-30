@@ -77,11 +77,13 @@ c Close the Silo file.
       implicit none
       integer dbfile
       include "silo.inc"
-      integer NX, NY
+      integer NX, NY, NX1, NY1
       parameter (NX = 5)
       parameter (NY = 4)
+      parameter (NX1 = NX-1)
+      parameter (NY1 = NY-1)
       integer err, ierr, optlist, ndims, nmats, mixlen
-      integer mdims(2) /NX-1, NY-1/
+      integer mdims(2) /NX1, NY1/
       integer matnos(3) /1,2,3/
 
       integer matlist(12) /3, -1, -3, 1,

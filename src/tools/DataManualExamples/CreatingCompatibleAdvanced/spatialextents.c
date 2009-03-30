@@ -38,7 +38,9 @@
 
 #include <silo.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define NZDOMS 5
 #define NYDOMS 5

@@ -57,6 +57,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdarg.h>
 
 #include <visit-config.h> /* For HAVE_SOCKLEN_T */
 
@@ -92,6 +93,8 @@
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
+static int BroadcastInt(int *value, int sender);
+
 
 /* VisIt Engine Library function pointers */
 typedef struct
@@ -102,13 +105,12 @@ typedef struct
     int   (*initialize)(void*,int,char**);
     int   (*connect_viewer)(void*,int,char**);
     void  (*time_step_changed)(void*);
-    void  (*update_plots)(void*);
     void  (*execute_command)(void*,const char*);
     void  (*disconnect)();
     void  (*set_slave_process_callback)(void(*)());
-    void  (*set_command_callback)(void*,void(*)(const char*,int,
-                                                  float,const char*));
+    void  (*set_command_callback)(void*,void(*)(const char*,const char*,void*),void*);
     int   (*save_window)(void*,const char *, int, int, int);
+    void  (*debug_logs)(int,const char *);
 } control_callback_t;
 
 #define STRUCT_MEMBER(F,T)  void (*set_##F)(T, void*);
@@ -124,8 +126,14 @@ typedef struct
     data_callback_t    data;
 } visit_callback_t;
 
-static visit_callback_t *callbacks = NULL;
+typedef struct
+{
+    int    id;
+    void (*cb)(void*);
+    void  *cbdata;
+} SyncCallback;
 
+static visit_callback_t *callbacks = NULL;
 
 /* Internal Variables */
 static int       (*BroadcastInt_internal)(int *value, int sender) = NULL;
@@ -146,6 +154,12 @@ static int         isParallel = FALSE;
 static int         parallelRank = 0;
 static void       *dl_handle;
 static char        lastError[1024] = "";
+static int           visit_sync_enabled = 1;
+static SyncCallback *visit_sync_callbacks = NULL;
+static int           visit_sync_callbacks_size = 0;
+static int           visit_sync_id = 1;
+static void        (*visit_command_callback)(const char*,const char*,void*) = NULL;
+static void         *visit_command_callback_data = NULL;
 
 
 /*******************************************************************************
@@ -156,7 +170,232 @@ static char        lastError[1024] = "";
  *******************************************************************************
  ******************************************************************************/
 
+/******************************************************************************
+*
+* Name: visit_get_sync
+*
+* Purpose: This function returns a slot in the sync table, creating one if needed.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
 
+static SyncCallback *
+visit_get_sync(void)
+{
+    SyncCallback *retval = NULL;
+
+    if(visit_sync_callbacks == NULL)
+    {
+        visit_sync_callbacks = (SyncCallback *)calloc(20, sizeof(SyncCallback));
+        visit_sync_callbacks_size = 20;
+        retval = visit_sync_callbacks;
+    }
+    else
+    {
+        /* return first empty slot. */
+        int i;
+        for(i = 0; i < visit_sync_callbacks_size; ++i)
+        {
+            if(visit_sync_callbacks[i].id == 0)
+                return &visit_sync_callbacks[i];
+        }
+
+        /* resize */
+        SyncCallback *ptr = (SyncCallback *)calloc(visit_sync_callbacks_size+20, sizeof(SyncCallback));
+        memcpy(ptr, visit_sync_callbacks, visit_sync_callbacks_size * sizeof(SyncCallback));
+        free(visit_sync_callbacks);
+        visit_sync_callbacks = ptr;
+        retval = &visit_sync_callbacks[visit_sync_callbacks_size];
+        visit_sync_callbacks_size += 20;
+    }
+    return retval;
+}
+
+/******************************************************************************
+*
+* Name: visit_get_sync2
+*
+* Purpose: This function returns the slot with a given id.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+static SyncCallback *
+visit_get_sync2(int id)
+{
+    int i;
+    for(i = 0; i < visit_sync_callbacks_size; ++i)
+    {
+        if(visit_sync_callbacks[i].id == id)
+            return &visit_sync_callbacks[i];
+    }
+    return NULL;
+}
+
+/******************************************************************************
+*
+* Name: visit_add_sync
+*
+* Purpose: This function adds a callback function to the sync table and sends
+*          a sync message to VisIt. When we get that message back, via the 
+*          command callback mechanism, we execute the callback.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+static void
+visit_add_sync(void (*cb)(void*), void *cbdata)
+{
+    if(cb != NULL && callbacks->control.execute_command != NULL)
+    {
+        SyncCallback *sync = visit_get_sync();
+        sync->id = visit_sync_id++;
+        sync->cb = cb;
+        sync->cbdata = cbdata;
+        char cmd[30];
+        sprintf(cmd, "INTERNALSYNC %d", sync->id);
+
+        (*callbacks->control.execute_command)(engine, cmd);
+    }
+}
+
+/******************************************************************************
+*
+* Name: visit_do_sync
+*
+* Purpose: This function executes a callback function for the given sync id
+*          and then removes the callback from the sync table.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+static void
+visit_do_sync(int id)
+{
+    SyncCallback *sync = visit_get_sync2(id);
+    if(sync != NULL)
+    {
+        (*sync->cb)(sync->cbdata);
+        sync->id = 0;
+    }
+}
+
+/******************************************************************************
+*
+* Name: visit_handle_command_callback
+*
+* Purpose: This function gets installed as the engine's command callback and
+*          it lets us intercept sync messages from the viewer. If we did not
+*          get a sync message then we forward the command to the user-provided
+*          command callback.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+static void
+visit_handle_command_callback(const char *cmd, const char *args, void *cbdata)
+{
+    if(strcmp(cmd, "INTERNALSYNC") == 0)
+    {
+        int id = -1;
+        if(sscanf(args, "%d", &id) == 1)
+            visit_do_sync(id);
+    }
+    else if(visit_command_callback != NULL)
+    {
+        (*visit_command_callback)(cmd, args, visit_command_callback_data);
+    }
+}
+
+/******************************************************************************
+*
+* Name: visit_process_engine_command
+*
+* Purpose: This function processes commands from the viewer on all processors.
+*          We use this function to help implement synchronization with the 
+*          viewer.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+#define VISIT_COMMAND_PROCESS 0
+#define VISIT_COMMAND_SUCCESS 1
+#define VISIT_COMMAND_FAILURE 2
+
+static int
+visit_process_engine_command(void)
+{
+    int command;
+    LIBSIM_API_ENTER(visit_process_engine_command); 
+    if(isParallel)
+    {
+        if (parallelRank == 0)
+        {
+            int success = VisItProcessEngineCommand();
+
+            if (success)
+            {
+                command = VISIT_COMMAND_SUCCESS;
+                BroadcastInt(&command, 0);
+                return 1;
+            }
+            else
+            {
+                command = VISIT_COMMAND_FAILURE;
+                BroadcastInt(&command, 0);
+                return 0;
+            }
+        }
+        else
+        {
+            /* Note: only through the SlaveProcessCallback callback
+             * above can the rank 0 process send a VISIT_COMMAND_PROCESS
+             * instruction to the non-rank 0 processes. */
+            while (1)
+            {
+                BroadcastInt(&command, 0);
+                switch (command)
+                {
+                case VISIT_COMMAND_PROCESS:
+                    VisItProcessEngineCommand();
+                    break;
+                case VISIT_COMMAND_SUCCESS:
+                    return 1;
+                case VISIT_COMMAND_FAILURE:
+                    return 0;
+                }
+            }
+        }
+    }
+
+    command = VisItProcessEngineCommand() ? 1 : 0;
+    LIBSIM_API_LEAVE(visit_process_engine_command); 
+    return command;
+}
 
 /*******************************************************************************
 *
@@ -860,6 +1099,21 @@ static function_pointer dlsym_function(void *h, const char *n)
     return f;
 }
 
+void *
+visit_get_runtime_function(const char *name)
+{
+    void *f = NULL;
+
+    LIBSIM_API_ENTER2(visit_get_runtime_function, "handle=%p, name=%s", dl_handle, name);
+    f = dlsym(dl_handle, name);
+    if(f == NULL)
+    {
+        fprintf(stderr, "Function %s could not be located in the runtime.\n", name);
+    }
+    LIBSIM_API_LEAVE1(visit_get_runtime_function, "func=%p", (void*)f);
+    return f;
+}
+
 /*******************************************************************************
 *
 * Name: LoadVisItLibrary
@@ -969,12 +1223,12 @@ static int LoadVisItLibrary(void)
    CONTROL_DLSYM(initialize,                 int (*)(void *, int, char **));
    CONTROL_DLSYM(connect_viewer,             int (*)(void *, int, char **));
    CONTROL_DLSYM(time_step_changed,          void (*)(void *));
-   CONTROL_DLSYM(update_plots,               void (*)(void *));
    CONTROL_DLSYM(execute_command,            void (*)(void *,const char*));
    CONTROL_DLSYM(disconnect,                 void (*)());
    CONTROL_DLSYM(set_slave_process_callback, void (*)(void (*)()));
-   CONTROL_DLSYM(set_command_callback,       void (*)(void*,void (*)(const char*,int,float,const char*)));
+   CONTROL_DLSYM(set_command_callback,       void (*)(void*,void (*)(const char*,const char*,void*),void*));
    CONTROL_DLSYM(save_window,                int (*)(void*,const char *,int,int,int));
+   CONTROL_DLSYM(debug_logs,                 void (*)(int,const char *));
 
    /* Get the data functions from the library. */
    DECLARE_DATA_CALLBACKS(DATA_DLSYM, NO_ARGS)
@@ -1046,8 +1300,6 @@ static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
    LIBSIM_API_LEAVE1(ReadEnvironmentFromCommand, "return %d", (ptr-output));
    return (ptr - output);
 }
-
-
 
 /*******************************************************************************
  *******************************************************************************
@@ -1498,6 +1750,9 @@ int  VisItDetectInput(int blocking, int consoleFileDescriptor)
 *   Brad Whitlock, Fri Jul 25 15:54:14 PDT 2008
 *   Trace information.
 *
+*   Brad Whitlock, Thu Mar 26 13:38:50 PDT 2009
+*   Install our command callback handler.
+*
 *******************************************************************************/
 int VisItAttemptToCompleteConnection(void)
 {
@@ -1558,6 +1813,13 @@ int VisItAttemptToCompleteConnection(void)
         LIBSIM_MESSAGE1("visit_getdescriptor returned %d", (int)engineSocket);
     }
 
+    /* Install our local command callback handler so we can monitor the
+     * callbacks before handing them off to the user's command callback. This
+     * lets us implement synchronization for the user.
+     */
+    if(callbacks->control.set_command_callback != NULL)
+        (*callbacks->control.set_command_callback)(engine, visit_handle_command_callback, NULL);
+
     LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, "return %d", TRUE);
     return TRUE;
 }
@@ -1597,11 +1859,15 @@ void VisItSetSlaveProcessCallback(void (*spic)())
 *  Trace information.
 *
 *******************************************************************************/
-void VisItSetCommandCallback(void (*scc)(const char*,int,float,const char*))
+void VisItSetCommandCallback(void (*scc)(const char*,const char*,void*),
+    void *sccdata)
 {
     LIBSIM_API_ENTER1(VisItSetCommandCallback, "scc=%p", (void*)scc);
     LIBSIM_MESSAGE("Calling visit_set_command_callback");
-    (*callbacks->control.set_command_callback)(engine,scc);
+
+    visit_command_callback = scc;
+    visit_command_callback_data = sccdata;
+
     LIBSIM_API_LEAVE(VisItSetCommandCallback);
 }
 
@@ -1679,10 +1945,13 @@ void VisItUpdatePlots(void)
     LIBSIM_API_ENTER(VisItUpdatePlots);
 
     /* Make sure the function exists before using it. */
-    if (engine && callbacks->control.update_plots)
+    if (engine && callbacks->control.execute_command)
     {
-        LIBSIM_MESSAGE("Calling visit_update_plots");
-        (*callbacks->control.update_plots)(engine);
+        LIBSIM_MESSAGE("Calling visit_execute_command: UpdatePlots");
+        (*callbacks->control.execute_command)(engine, "UpdatePlots");
+
+        if(visit_sync_enabled)
+            VisItSynchronize();
     }
     LIBSIM_API_LEAVE(VisItUpdatePlots);
 }
@@ -1706,8 +1975,15 @@ void VisItExecuteCommand(const char *command)
     /* Make sure the function exists before using it. */
     if (engine && callbacks->control.execute_command)
     {
+        char *cmd2 = NULL;
         LIBSIM_MESSAGE("Calling visit_execute_command");
-        (*callbacks->control.execute_command)(engine, command);
+        cmd2 = (char *)malloc(strlen(command) + 1 + 10);
+        sprintf(cmd2, "Interpret:%s", command);
+        (*callbacks->control.execute_command)(engine, cmd2);
+        free(cmd2);
+
+        if(visit_sync_enabled)
+            VisItSynchronize();
     }
     LIBSIM_API_LEAVE(VisItExecuteCommand);
 }
@@ -1738,6 +2014,22 @@ void VisItDisconnect(void)
     free(callbacks);
     callbacks = NULL;
     LIBSIM_API_LEAVE(VisItDisconnect);
+}
+
+/*******************************************************************************
+*
+* Name: VisItIsConnected
+*
+* Purpose: Returns whether VisIt is connected
+*
+* Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*
+*******************************************************************************/
+int VisItIsConnected(void)
+{
+    return ((engine != 0) && (callbacks != NULL)) ? 1 : 0;
 }
 
 /*******************************************************************************
@@ -1855,3 +2147,142 @@ int VisItSet##F(T, void *cbdata) \
 }
 
 DECLARE_DATA_CALLBACKS(VISIT_SET_CALLBACK_BODY, CB_ARGS)
+
+/******************************************************************************
+*
+* Name: VisItSynchronize
+*
+* Purpose: Sends a synchronize message to VisIt if we're connected to VisIt
+*          and spawns a sub-eventloop to wait for the sync message to be
+*          returned from VisIt. This permits us to write code in the sim that
+*          blocks until it's done and still processes events from VisIt needed
+*          to get us to the point where the message gets read.
+*
+* Note:    This function has not been tried for sims that use polling.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+static void
+visit_sync_helper(void *cbdata)
+{
+    int *syncing = (int *)cbdata;
+    *syncing = 0;
+}
+
+int
+VisItSynchronize(void)
+{
+    int blocking = 1;
+    int syncing = 1;
+    int visitstate = 0, err = 0;
+
+    LIBSIM_API_ENTER(VisItSynchronize);
+
+    if(!VisItIsConnected())
+    {
+        return VISIT_OKAY;
+    }
+
+    /* Send a sync to the viewer. When we get it back the loop will end. */
+    visit_add_sync(visit_sync_helper, &syncing);
+
+    do
+    {
+        /* Get input from VisIt. */
+        if(parallelRank == 0)
+            visitstate = VisItDetectInput(blocking, -1);
+        BroadcastInt(&visitstate, 0);
+
+        /* Do different things depending on the output from VisItDetectInput. */
+        if(visitstate >= -5 && visitstate <= -1)
+        {
+            fprintf(stderr, "Can't recover from error!\n");
+            err = 1;
+        }
+        else if(visitstate == 0)
+        {
+            /* There was no input from VisIt. We're blocking so this should not happen. */
+        }
+        else if(visitstate == 1)
+        {
+            /* VisIt is trying to connect to the sim. We're already connected 
+             * so this can't happen.
+             */
+        }
+        else if(visitstate == 2)
+        {
+            /* VisIt wants to tell the engine something. */
+            if(!visit_process_engine_command())
+            {
+                /* Disconnect on an error or closed connection. */
+                VisItDisconnect();
+                err = 1;
+            }
+        }
+        else if(visitstate == 3)
+        {
+            /* We're not trapping for console input. */
+        }
+    } while(syncing && err == 0);
+
+    LIBSIM_API_LEAVE(VisItSynchronize);
+    return (err==0) ? VISIT_OKAY : VISIT_ERROR;
+}
+
+/******************************************************************************
+*
+* Name: VisItEnableSynchronize
+*
+* Purpose: This method lets us turn off automatic synchronization for functions
+*          that communicate with VisIt's viewer.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+void
+VisItEnableSynchronize(int mode)
+{
+    visit_sync_enabled = mode ? 1 : 0;
+}
+
+/******************************************************************************
+*
+* Name: VisItDebug*
+*
+* Purpose: Let the user write to the VisIt debug logs.
+*
+* Programmer: Brad Whitlock
+* Date:       Thu Mar 26 13:28:11 PDT 2009
+*
+* Modifications:
+*
+******************************************************************************/
+
+#define DBG_BUFFER_SIZE 1000
+#define VISIT_DEBUG_FUNCTION(N)\
+void \
+VisItDebug##N(const char *format, ...)\
+{\
+    char buffer[DBG_BUFFER_SIZE]; \
+    va_list args; \
+    va_start(args, format); \
+    vsnprintf(buffer, DBG_BUFFER_SIZE, format, args);\
+    va_end(args);\
+    if(engine && callbacks->control.debug_logs != NULL)\
+        (*callbacks->control.debug_logs)(N, buffer);\
+}
+
+VISIT_DEBUG_FUNCTION(1)
+VISIT_DEBUG_FUNCTION(2)
+VISIT_DEBUG_FUNCTION(3)
+VISIT_DEBUG_FUNCTION(4)
+VISIT_DEBUG_FUNCTION(5)

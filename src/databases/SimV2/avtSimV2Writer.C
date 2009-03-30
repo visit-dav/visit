@@ -53,8 +53,6 @@
 
 #include <DebugStream.h>
 
-#include <VisItDataInterfaceRuntime.h>
-
 // ****************************************************************************
 // Method: avtSimV2Writer::avtSimV2Writer
 //

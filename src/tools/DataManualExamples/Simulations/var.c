@@ -64,18 +64,15 @@ static double simtime = 0.;
  * Date:       Fri Jan 12 13:39:59 PST 2007
  *
  * Input Arguments:
- *   cmd         : The command string that we want the sim to execute.
- *   int_data    : Integer argument for the command.
- *   float_data  : Float argument for the command.
- *   string_data : String argument for the command.
+ *   cmd    : The command string that we want the sim to execute.
+ *   args   : String argument for the command.
+ *   cbdata : User-provided callback data.
  *
  * Modifications:
  *
  *****************************************************************************/
 
-void ControlCommandCallback(const char *cmd,
-    int int_data, float float_data,
-    const char *string_data)
+void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
 printf("ControlCommandCallback cmd=%s\n", cmd);
 
@@ -125,7 +122,7 @@ void mainloop(void)
             if(VisItAttemptToCompleteConnection())
             {
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback);
+                VisItSetCommandCallback(ControlCommandCallback, NULL);
 
                 VisItSetGetMetaData(SimGetMetaData, NULL);
                 VisItSetGetMesh(SimGetMesh, NULL);

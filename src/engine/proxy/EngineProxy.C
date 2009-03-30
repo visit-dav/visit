@@ -1747,7 +1747,7 @@ EngineProxy::UpdateExpressions(const ExpressionList &expressions)
 void
 EngineProxy::ExecuteSimulationControlCommand(const std::string &cmd)
 {
-    simulationCommandRPC(cmd, 0,0,"");
+    simulationCommandRPC(cmd, "");
 }
 
 // ****************************************************************************
@@ -1769,7 +1769,7 @@ void
 EngineProxy::ExecuteSimulationControlCommand(const std::string &cmd,
                                              const std::string &arg)
 {
-    simulationCommandRPC(cmd, 0,0,arg);
+    simulationCommandRPC(cmd, arg);
 }
 
 // ****************************************************************************

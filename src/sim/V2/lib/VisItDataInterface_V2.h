@@ -71,7 +71,7 @@ typedef struct VisIt_DataArray
 typedef struct VisIt_NameList
 {
     int          numNames;
-    const char **names;
+    char **names;
 } VisIt_NameList;
 
 /*****************************************************************************
@@ -94,32 +94,33 @@ typedef struct VisIt_SimulationControlCommand
 
 typedef struct VisIt_MeshMetaData
 {
-    const char    *name;
+    char    *name;
  
     VisIt_MeshType meshType;
     int            topologicalDimension;
     int            spatialDimension;
 
-    int         numBlocks;
-    const char *blockTitle;
-    const char *blockPieceName;
+    int            numBlocks;
+    char          *blockTitle;
+    char          *blockPieceName;
+    char         **blockNames;
 
-    int         numGroups;
-    const char *groupTitle;
-    const char *groupPieceName;
-    int        *groupIds;
+    int            numGroups;
+    char          *groupTitle;
+    char          *groupPieceName;
+    int           *groupIds;
 
-    const char *units;
+    char *units;
 
-    const char *xLabel;
-    const char *yLabel;
-    const char *zLabel;
+    char *xLabel;
+    char *yLabel;
+    char *zLabel;
 } VisIt_MeshMetaData;
 
 typedef struct VisIt_VariableMetaData
 {
-    const char *name;
-    const char *meshName;
+    char *name;
+    char *meshName;
 
     VisIt_VarCentering centering;
     VisIt_VarType      type;
@@ -128,35 +129,35 @@ typedef struct VisIt_VariableMetaData
 
 typedef struct VisIt_MaterialMetaData
 {
-    const char  *name;
-    const char  *meshName;
+    char  *name;
+    char  *meshName;
     int          numMaterials;
-    const char **materialNames;
+    char **materialNames;
 } VisIt_MaterialMetaData;
 
 typedef struct VisIt_CurveMetaData
 {
-    const char *name;
+    char *name;
 
-    const char *xUnits;
-    const char *yUnits;
+    char *xUnits;
+    char *yUnits;
 
-    const char *xLabel;
-    const char *yLabel;
+    char *xLabel;
+    char *yLabel;
 } VisIt_CurveMetaData;
 
 typedef struct VisIt_ExpressionMetaData
 {
-    const char    *name;
-    const char    *definition;
+    char    *name;
+    char    *definition;
     VisIt_VarType  vartype;
 } VisIt_ExpressionMetaData;
 
 typedef struct VisIt_SpeciesMetaData
 {
-    const char *name;
-    const char *meshName;
-    const char *materialName;
+    char *name;
+    char *meshName;
+    char *materialName;
     int             nmaterialSpecies;
     VisIt_NameList *materialSpeciesNames;
 } VisIt_SpeciesMetaData;
@@ -302,7 +303,7 @@ typedef struct VisIt_MaterialData
 {
     int nMaterials;
     int *materialNumbers;
-    const char **materialNames;
+    char **materialNames;
 
     int  nzones;
     VisIt_DataArray matlist;
@@ -348,29 +349,11 @@ typedef struct VisIt_DomainList
     VisIt_DataArray myDomains;
 } VisIt_DomainList;
 
-#if 0
-typedef struct
-{
-    /* Reader methods */
-    VisIt_SimulationMetaData *(*GetMetaData)();
-    VisIt_MeshData           *(*GetMesh)(int,const char*);
-    VisIt_MaterialData       *(*GetMaterial)(int,const char*);
-    VisIt_SpeciesData        *(*GetSpecies)(int,const char*);
-    VisIt_ScalarData         *(*GetScalar)(int,const char*);
-    VisIt_CurveData          *(*GetCurve)(const char*);
-    VisIt_MixedVariableData    *(*GetMixedScalar)(int,const char*);
-    VisIt_DomainList         *(*GetDomainList)();
-
-    /* Writer methods. */
-    int (*WriteBegin)(const char *);
-    int (*WriteEnd)(const char *);
-    int (*WriteCurvilinearMesh)(const char *, int, VisIt_CurvilinearMesh*, const VisIt_MeshMetaData *);
-    int (*WriteRectilinearMesh)(const char *, int, VisIt_RectilinearMesh*, const VisIt_MeshMetaData *);
-    int (*WritePointMesh)(const char *, int, VisIt_PointMesh*, const VisIt_MeshMetaData *);
-    int (*WriteUnstructuredMesh)(const char *, int, VisIt_UnstructuredMesh*, const VisIt_MeshMetaData *);
-    int (*WriteDataArray)(const char *, const char *, int, int, void *, int, int, const VisIt_ScalarMetaData *);
-} VisIt_SimulationCallback;
+#ifndef VISIT_DECORATE
+#define VISIT_DECORATE(NAME) VisIt_##NAME
 #endif
+#include <VisIt_DomainBoundaries.h>
+#include <VisIt_DomainNesting.h>
 
 /* Helper Methods */
 

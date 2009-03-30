@@ -1817,7 +1817,10 @@ dnl Determine the installation path to VisIt's lib directory. We take --prefix
 dnl into account if it has been specified.
 dnl
 VISITWRAPPER_RPATH=
+VISIT_LIB_DIR="$""(libdir)"
+COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
 if test "x$prefix" != xNONE; then
+    COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
     PLATFORM=
     case "$UNAME" in
     Linux)
@@ -1852,23 +1855,21 @@ if test "x$prefix" != xNONE; then
         esac
         ;;
     esac
-    COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
     VISIT_LIB_DIR="$prefix/$COMPATIBILITY_VERSION/$PLATFORM/lib"
-
-    dnl
-    dnl Set up "rpath" flags that let the visit wrapper library know where it will be 
-    dnl installed so we don't have to specify a LD_LIBRARY_PATH or rpath to the 
-    dnl client simulation.
-    dnl
-    case $UNAME in
-    Linux)
-        VISITWRAPPER_RPATH="-Wl,-rpath,$VISIT_LIB_DIR"
-        ;;
-    Darwin)
-        VISITWRAPPER_RPATH="-Wl,-install_name,$VISIT_LIB_DIR/\$@,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
-        ;;
-    esac
 fi
+dnl
+dnl Set up "rpath" flags that let the visit wrapper library know where it will be 
+dnl installed so we don't have to specify a LD_LIBRARY_PATH or rpath to the 
+dnl client simulation.
+dnl
+case $UNAME in
+Linux)
+    VISITWRAPPER_RPATH="-Wl,-rpath,$VISIT_LIB_DIR"
+    ;;
+Darwin)
+    VISITWRAPPER_RPATH="-Wl,-install_name,$VISIT_LIB_DIR/\$@,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
+    ;;
+esac
 AC_SUBST(VISITWRAPPER_RPATH)
 
 dnl
@@ -3717,13 +3718,13 @@ AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}", [Shared library extensio
 # This is versioned to ensure compatibility with future changes.
 #
 if test -d engine; then
-    ENGINEWRAPSER="libvisitenginev1_ser.${SHLIB_SOEXT}"
+    LIBSIM_RUNTIME_SER="$""{LIBSIM_RUNTIME_SER}"
     if test -n "$PARALLEL"; then
-        ENGINEWRAPPAR="libvisitenginev1_par.${SHLIB_SOEXT}"
+        LIBSIM_RUNTIME_PAR="$""{LIBSIM_RUNTIME_PAR}"
     fi
 fi
-AC_SUBST(ENGINEWRAPSER)
-AC_SUBST(ENGINEWRAPPAR)
+AC_SUBST(LIBSIM_RUNTIME_SER)
+AC_SUBST(LIBSIM_RUNTIME_PAR)
 
 #
 # This helps the Makefile in the lib directory make the right links

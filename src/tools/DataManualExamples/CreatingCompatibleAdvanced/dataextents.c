@@ -39,6 +39,8 @@
 #include <silo.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <math.h>
 
 void
 write_domains(double extents[4][2])

@@ -71,6 +71,13 @@ VisIt_MeshMetaData_free(VisIt_MeshMetaData *obj)
  
     FREE(obj->blockTitle);
     FREE(obj->blockPieceName);
+    if(obj->blockNames != NULL)
+    {
+        int i;
+        for(i = 0; i < obj->numBlocks; ++i)
+            FREE(obj->blockNames[i]);
+        FREE(obj->blockNames);
+    }
 
     FREE(obj->groupTitle);
     FREE(obj->groupPieceName);

@@ -115,18 +115,15 @@ int csg_nzones = sizeof(csg_zonelist) / sizeof(csg_zonelist[0]);
  * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Input Arguments:
- *   cmd         : The command string that we want the sim to execute.
- *   int_data    : Integer argument for the command.
- *   float_data  : Float argument for the command.
- *   string_data : String argument for the command.
+ *   cmd    : The command string that we want the sim to execute.
+ *   args   : String argument for the command.
+ *   cbdata : User-provided callback data.
  *
  * Modifications:
  *
  *****************************************************************************/
 
-void ControlCommandCallback(const char *cmd,
-    int int_data, float float_data,
-    const char *string_data)
+void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
 #define IS_COMMAND(C) (strstr(cmd, C) != NULL) 
     if(IS_COMMAND("halt"))
@@ -257,8 +254,10 @@ void mainloop(void)
     mmd.topologicalDimension = 3;
     mmd.spatialDimension = 3;
     mmd.numBlocks = 1;
-    mmd.blockTitle = "Domains";
-    mmd.blockPieceName = "domain";
+    mmd.blockTitle = "Regions";
+    mmd.blockPieceName = "region";
+    mmd.blockNames = (char**)malloc(sizeof(char*));
+    mmd.blockNames[0] = "Clipped Hollow Sphere";
     mmd.numGroups = 0;
     mmd.units = "cm";
     mmd.xLabel = "Width";
@@ -292,7 +291,7 @@ void mainloop(void)
             {
                 runFlag = 0;
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback);
+                VisItSetCommandCallback(ControlCommandCallback, NULL);
 
                 VisItSetGetMetaData(SimGetMetaData, (void*)&mmd);
                 VisItSetGetMesh(SimGetMesh, NULL);
@@ -368,10 +367,18 @@ static void
 copy_VisIt_MeshMetaData(VisIt_MeshMetaData *dest, VisIt_MeshMetaData *src)
 {
 #define STRDUP(s) ((s == NULL) ? NULL : strdup(s))
+    int i;
+
     memcpy(dest, src, sizeof(VisIt_MeshMetaData));
     dest->name           = STRDUP(src->name);
     dest->blockTitle     = STRDUP(src->blockTitle);
     dest->blockPieceName = STRDUP(src->blockPieceName);
+    if(src->blockNames != NULL)
+    {
+        dest->blockNames = (char**)malloc(src->numBlocks*sizeof(char*));
+        for(i = 0; i < src->numBlocks; ++i)
+            dest->blockNames[i] = STRDUP(src->blockNames[i]);
+    }
     dest->units          = STRDUP(src->units);
     dest->xLabel         = STRDUP(src->xLabel);
     dest->yLabel         = STRDUP(src->yLabel);

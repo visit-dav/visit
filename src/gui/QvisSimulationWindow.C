@@ -1751,8 +1751,9 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
 
-    QString cmd("clicked();" + btncmd + ";QPushButton;Simulations;NONE");
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString());
+    QString cmd(btncmd);
+    QString args(QString("clicked();%1;QPushButton;Simulations;NONE").arg(cmd));
+    GetViewerMethods()->SendSimulationCommand(host, sim, btncmd.toStdString(), args.toStdString());
 }
 
 // ****************************************************************************
@@ -1780,8 +1781,9 @@ QvisSimulationWindow::executeEnableTimeRange(const QString &value)
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
 
-    QString cmd("clicked();TimeLimitsEnabled;QCheckBox;Simulations;" + value);
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString());
+    QString cmd("TimeLimitsEnabled");
+    QString args(QString("clicked();%1;QCheckBox;Simulations;%2").arg(cmd).arg(value));
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
 }
 
 
@@ -1815,8 +1817,9 @@ QvisSimulationWindow::executeStartCommand(const QString &value)
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
 
-    QString cmd(QString("returnedPressed();StartCycle;QLineEdit;Simulations;") + value);
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString());
+    QString cmd("StartCycle");
+    QString args(QString("returnedPressed();%1;QLineEdit;Simulations;%2").arg(cmd).arg(value));
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
 }
 
 // ****************************************************************************
@@ -1849,8 +1852,9 @@ QvisSimulationWindow::executeStepCommand(const QString &value)
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
 
-    QString cmd(QString("returnedPressed();StepCycle;QLineEdit;Simulations;") + value);
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString());
+    QString cmd("StepCycle");
+    QString args(QString("returnedPressed();%1;QLineEdit;Simulations;%2").arg(cmd).arg(value));
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
 }
 
 // ****************************************************************************
@@ -1878,9 +1882,10 @@ QvisSimulationWindow::executeStopCommand(const QString &value)
     int index = simulationToEngineListMap[simindex];
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
-    
-    QString cmd(QString("returnedPressed();StopCycle;QLineEdit;Simulations;") + value);
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString()); 
+
+    QString cmd("StopCycle");
+    QString args(QString("returnedPressed();%1;QLineEdit;Simulations;%2").arg(cmd).arg(value));
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString()); 
 }
 
 

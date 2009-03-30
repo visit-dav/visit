@@ -52,6 +52,8 @@
 #include <avtMixedVariable.h>
 #include <avtSimulationInformation.h>
 #include <avtSimulationCommandSpecification.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtStructuredDomainNesting.h>
 #include <avtSpecies.h>
 #include <avtVariableCache.h>
 
@@ -75,10 +77,6 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>
 
-#ifdef __APPLE__
-#include <dlfcn.h>
-#endif
-
 using std::string;
 using std::vector;
 
@@ -87,6 +85,9 @@ using std::vector;
 #include <avtParallel.h>
 #endif
 
+#include <VisItControlInterfaceRuntime.h>
+#include <VisItDataInterfaceRuntime.h>
+
 #ifndef MDSERVER
 vtkDataSet *SimV2_GetMesh_Curvilinear(VisIt_CurvilinearMesh *);
 vtkDataSet *SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *);
@@ -94,10 +95,6 @@ vtkDataSet *SimV2_GetMesh_Unstructured(VisIt_UnstructuredMesh *);
 vtkDataSet *SimV2_GetMesh_Point(VisIt_PointMesh *);
 vtkDataSet *SimV2_GetMesh_CSG(VisIt_CSGMesh *csgm);
 #endif
-
-#include <VisItControlInterfaceRuntime.h>
-#include <VisItDataInterfaceRuntime.h>
-
 
 // ****************************************************************************
 //  Function:  FreeDataArray
@@ -227,6 +224,27 @@ avtSimV2FileFormat::FreeUpResources(void)
 {
 }
 
+// ****************************************************************************
+// Method: avtSimV2FileFormat::ActivateTimestep
+//
+// Purpose: 
+//   Calls ActivateTimestep on all of the simulation processors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 16 16:51:20 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtSimV2FileFormat::ActivateTimestep()
+{
+#ifndef MDSERVER
+    visit_invoke_ActivateTimestep();
+#endif
+}
+
 // Make sure that the variable metadata is not crap.
 static bool
 VisIt_VariableMetaData_valid(const VisIt_VariableMetaData *obj, std::string &err)
@@ -274,6 +292,9 @@ VisIt_VariableMetaData_valid(const VisIt_VariableMetaData *obj, std::string &err
 //   Brad Whitlock, Mon Feb  9 14:21:08 PST 2009
 //   I added species and deletion of metadata objects.
 //
+//   Brad Whitlock, Wed Mar 25 14:18:07 PDT 2009
+//   I added domain nesting and domain boundaries.
+//
 // ****************************************************************************
 
 void
@@ -283,6 +304,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 #ifdef MDSERVER
     md->SetSimInfo(simInfo);
 #else
+    const char *mName = "avtSimV2FileFormat::PopulateDatabaseMetaData: ";
 
     VisIt_SimulationMetaData *vsmd = visit_invoke_GetMetaData();
     if(vsmd == NULL)
@@ -327,6 +349,9 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
           case VISIT_MESHTYPE_CSG:
             mesh->meshType = AVT_CSG_MESH;
             break;
+          case VISIT_MESHTYPE_AMR:
+            mesh->meshType = AVT_AMR_MESH;
+            break;
           default:
             VisIt_SimulationMetaData_free(vsmd);
             EXCEPTION1(ImproperUseException,
@@ -342,6 +367,11 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             mesh->blockTitle = mmd->blockTitle;
         if (mmd->blockPieceName)
             mesh->blockPieceName = mmd->blockPieceName;
+        if(mmd->blockNames != NULL)
+        {
+            for(int i = 0; i < mmd->numBlocks; ++i)
+                mesh->blockNames.push_back(mmd->blockNames[i]);
+        }
 
         mesh->numGroups = mmd->numGroups;
         if (mesh->numGroups > 0 && mmd->groupTitle)
@@ -349,11 +379,11 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (mesh->numGroups > 0 && mmd->groupPieceName)
             mesh->groupPieceName = mmd->groupPieceName;
 
-        mesh->groupIds.resize(mesh->numGroups);
-        for (int g = 0; g<mesh->numGroups; g++)
-        {
+        int groupLen = (mmd->meshType == VISIT_MESHTYPE_AMR) ? 
+            mmd->numBlocks : mmd->numGroups;
+        mesh->groupIds.resize(groupLen);
+        for (int g = 0; g<groupLen; g++)
             mesh->groupIds[g] = mmd->groupIds[g];
-        }
 
         if (mmd->xLabel)
             mesh->xLabel = mmd->xLabel;
@@ -612,6 +642,105 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         md->AddExpression(newexp);
     }
+
+    // Get domain boundary information
+    int numMultiblock = 0;
+    for (int m=0; m<vsmd->numMeshes; m++)
+    {
+        VisIt_MeshMetaData *mmd = &vsmd->meshes[m];
+        if(mmd->numBlocks > 1)
+            numMultiblock++;
+    }
+    if(numMultiblock > 0)
+    {
+        for (int m=0; m<vsmd->numMeshes; m++)
+        {
+            VisIt_MeshMetaData *mmd = &vsmd->meshes[m];
+            if(mmd->numBlocks > 1)
+            {
+                debug4 << mName << "Getting domain boundaries for mesh: " << mmd->name << endl;
+                visit_handle boundaries = visit_invoke_GetDomainBoundaries(mmd->name);
+                if(boundaries != VISIT_INVALID_HANDLE)
+                {
+                    // Cache the domain boundary information
+                    avtStructuredDomainBoundaries *sdb = (avtStructuredDomainBoundaries *)
+                        visit_DomainBoundaries_avt(boundaries);
+                    if(sdb != NULL)
+                    {
+                        sdb->CalculateBoundaries();
+                        void_ref_ptr vr = void_ref_ptr(sdb,avtStructuredDomainBoundaries::Destruct);
+                        const char *cache_meshname = (numMultiblock > 1) ? mmd->name : "any_mesh";
+                        debug4 << mName << "Caching domain boundaries for mesh:" << cache_meshname << endl;
+                        cache->CacheVoidRef(cache_meshname,
+                                AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                                timestep, -1, vr);
+                    }
+                    else
+                    {
+                        debug4 << mName << "Could not obtain domain boundaries from returned "
+                                           "simulation object."
+                               << endl;
+                    }
+                    visit_DomainBoundaries_free(boundaries);
+                }
+                else
+                {
+                    debug4 << mName << "The simulation did not return a valid "
+                                       "domain boundaries object for mesh "
+                           << mmd->name << endl;
+                }
+            }
+        }
+    }
+
+    // Get domain nesting information
+    int numAMR = 0;
+    for (int m=0; m<vsmd->numMeshes; m++)
+    {
+        VisIt_MeshMetaData *mmd = &vsmd->meshes[m];
+        if(mmd->meshType == VISIT_MESHTYPE_AMR)
+            numAMR++;
+    }
+    if(numAMR > 0)
+    {
+        for (int m=0; m<vsmd->numMeshes; m++)
+        {
+            VisIt_MeshMetaData *mmd = &vsmd->meshes[m];
+            if(mmd->meshType == VISIT_MESHTYPE_AMR)
+            {
+                debug4 << mName << "Getting domain nesting for mesh: " << mmd->name << endl;
+                visit_handle nesting = visit_invoke_GetDomainNesting(mmd->name);
+                if(nesting != VISIT_INVALID_HANDLE)
+                {
+                    avtStructuredDomainNesting *sdn = (avtStructuredDomainNesting *)
+                        visit_DomainNesting_avt(nesting);
+                    if(sdn != NULL)
+                    {
+                        void_ref_ptr vr = void_ref_ptr(sdn, avtStructuredDomainNesting::Destruct);
+                        const char *cache_meshname = (numAMR > 1) ? mmd->name : "any_mesh";
+                        debug4 << mName << "Caching domain nesting for mesh:" << cache_meshname << endl;
+                        cache->CacheVoidRef(cache_meshname,
+                                            AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                            timestep, -1, vr);
+                    }
+                    else
+                    {
+                        debug4 << mName << "Could not obtain domain nesting from returned "
+                                           "simulation object."
+                               << endl;
+                    }
+                    visit_DomainNesting_free(nesting);
+                }
+                else
+                {
+                    debug4 << mName << "The simulation did not return a valid "
+                                       "domain nesting object for mesh "
+                           << mmd->name << endl;
+                }
+            }
+        }
+    }
+
     //md->Print(cout);
     VisIt_SimulationMetaData_free(vsmd);
 #endif
