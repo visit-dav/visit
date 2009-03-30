@@ -172,6 +172,7 @@
 #include <avtApplyEnumerationExpression.h>
 #include <avtConstantFunctionExpression.h>
 #include <avtGeodesicVectorQuantizeExpression.h>
+#include <avtKeyAggregatorExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -529,6 +530,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Jeremy Meredith, Wed Mar 11 12:14:38 EDT 2009
 //    Added "cycle" and "timestep" expressions.
 //
+//    Cyrus Harrison, Thu Mar 26 17:08:32 PDT 2009
+//    Added "key_aggregate" expression.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -676,6 +680,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         g->SetAlgorithm(NODAL_TO_ZONAL_QUAD_HEX);
         return g;
     }
+    if (functionName == "key_aggregate" || functionName == "key_agg")
+        return new avtKeyAggregatorExpression;
     if (functionName == "gradient")
         return new avtGradientExpression();
     if (functionName == "curl")
