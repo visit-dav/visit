@@ -71,10 +71,15 @@ class vtkDataSet;
 //       comp_volume        Component volume (if 3D or revolved volume data)
 //       comp_sum           Component variable sum 
 //       comp_weighted_sum  Component weighted variable sum
+//       comp_bb_{x,y,z}_{min,max} Component bounding box values.
 //
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   March 1, 2007 
+//
+//  Modifications:
+//    Cyrus Harrison, Mon Mar 30 11:34:27 PDT 2009
+//    Added support for per component bounding boxes.
 //
 // ****************************************************************************
 
@@ -107,7 +112,15 @@ class QUERY_API avtConnComponentsSummaryQuery
     vector<double>             xCentroidPerComp;
     vector<double>             yCentroidPerComp;
     vector<double>             zCentroidPerComp;
-
+    
+    // for computing per component bounds
+    vector<double>             xMinPerComp;
+    vector<double>             xMaxPerComp;
+    vector<double>             yMinPerComp;
+    vector<double>             yMaxPerComp;
+    vector<double>             zMinPerComp;
+    vector<double>             zMaxPerComp;
+    
     vector<double>             areaPerComp;
     vector<double>             volPerComp;
 

@@ -81,6 +81,8 @@ PIPELINE_API float   UnifyMinimumValue(float);
 PIPELINE_API void    UnifyMaximumValue(std::vector<int>&, std::vector<int>&);
 PIPELINE_API void    UnifyMinimumFloatArrayAcrossAllProcessors(float *, float *, int);
 PIPELINE_API void    UnifyMaximumFloatArrayAcrossAllProcessors(float *, float *, int);
+PIPELINE_API void    UnifyMinimumDoubleArrayAcrossAllProcessors(double *, double *, int);
+PIPELINE_API void    UnifyMaximumDoubleArrayAcrossAllProcessors(double *, double *, int);
 
 PIPELINE_API void    BroadcastInt(int &i);
 PIPELINE_API void    BroadcastBool(bool &b);
