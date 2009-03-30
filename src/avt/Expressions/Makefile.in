@@ -238,6 +238,9 @@
 #   Hank Childs, Mon Feb 16 07:34:34 PST 2009
 #   Added TimeIterators directory.
 #
+#   Cyrus Harrison, Thu Mar 26 16:29:52 PDT 2009
+#   Added Key Aggregator Expression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -320,6 +323,7 @@ General_src= \
   General/avtGeodesicVectorQuantizeExpression.C \
   General/avtGradientExpression.C \
   General/avtHSVColorComposeExpression.C \
+  General/avtKeyAggregatorExpression.C \
   General/avtLaplacianExpression.C \
   General/avtMIRvfExpression.C \
   General/avtMatvfExpression.C \
