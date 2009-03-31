@@ -1318,6 +1318,9 @@ avtStreamlineFilter::Initialize()
 //   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
 //   Make changes for point decomposed domain databases.
 //
+//   Hank Childs, Tue Mar 31 12:43:05 CDT 2009
+//   Early return for 0 cells.
+//
 // ****************************************************************************
 
 bool
@@ -1331,6 +1334,9 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
         EXCEPTION0(ImproperUseException);
         return false;
     }
+
+    if (ds->GetNumberOfCells() == 0)
+        return false;
 
     // If it's rectilinear, we can do bbox test...
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
