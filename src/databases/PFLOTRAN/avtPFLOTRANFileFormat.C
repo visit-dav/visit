@@ -600,6 +600,15 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
 //    Added support for automatic parallel decomposition and parallel I/O
 //    via hyperslab reading.
 //
+//    Jeremy Meredith, Tue Mar 31 11:09:37 EDT 2009
+//    Don't try reading integral data into doubles; instead read to ints,
+//    the convert to double using the compiler.  At least in the version
+//    of HDF5 I used, 1.6.5 x64, trying to read an integer array to a double
+//    looked like it worked, but gave garbage for much of the last portion
+//    of data.  The HDF5 docs for 1.6 claim they can't do this operation
+//    at all, so while I'm surprised it looked even partly okay, I'm
+//    confident reading to ints is the correct solution.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -634,23 +643,45 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 
     hid_t memSpace = H5Screate_simple(3,count,NULL);
 
-    double *in = new double[nvals];
-    herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
-                         H5P_DEFAULT, in);
-
     // Set up the VTK object.
     vtkDoubleArray *array = vtkDoubleArray::New();
     array->SetNumberOfTuples(nvals);
     double *out = (double*)array->GetVoidPointer(0);
 
-    // Input is in a different ordering (Fortran) than VTK wants (C).
-    // Reshuffle.
-    for (int k=0;k<nz;k++)
-        for (int j=0;j<ny;j++)
-            for (int i=0;i<nx;i++)
-                out[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+    // Read the data -- read to ints or doubles directly, as
+    // some versions of HDF5 seem to have problems converting
+    // ints to doubles directly.
+    hid_t intype = H5Dget_type(ds);
+    if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
+        H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
+        H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+    {        
+        double *in = new double[nvals];
+        herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
+                             H5P_DEFAULT, in);
 
-    delete [] in;
+        // Input is in a different ordering (Fortran) than VTK wants (C).
+        for (int i=0;i<nx;i++)
+            for (int j=0;j<ny;j++)
+                for (int k=0;k<nz;k++)
+                    out[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+
+        delete [] in;
+    }
+    else
+    {
+        int *in = new int[nvals];
+        herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
+                             H5P_DEFAULT, in);
+        // Input is in a different ordering (Fortran) than VTK wants (C).
+        for (int i=0;i<nx;i++)
+            for (int j=0;j<ny;j++)
+                for (int k=0;k<nz;k++)
+                    out[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+
+        delete [] in;
+    }
+
     return array;
 }
 
