@@ -29,6 +29,12 @@
 #    Modified for the case where the ITAPS plugin is linked against multiple
 #    implementations of the ITAPS interfaces and added tests to test those
 #    implementations.
+#
+#    Mark C. Miller, Mon Mar 30 16:56:03 PDT 2009
+#    Replaced bricks.cub input file with brick_cubit10.cub because MOAB
+#    was failing to read bricks.cub (a version 9.1 Cubit file).
+#    Added threshold operator to mbtest1 because new version of MOAB is
+#    serving up 3D mesh with some 2D zones in it. Enabled ptest.cube test.
 # ----------------------------------------------------------------------------
 
 def RestrictSetsInCategory(silr, className, setIds):
@@ -36,14 +42,13 @@ def RestrictSetsInCategory(silr, className, setIds):
     if className == "Vertex":
         catName = "Verticies"
     i = 0
+    # want everything ON except sets NOT listed in setIds
     silr.TurnOnAll()
     for set in silr.SetsInCategory(catName):
-        if i < len(setIds) and silr.SetName(set) == "%s_%03d"%(className, setIds[i]):
-            i = i + 1;
-            silr.TurnOnSet(set)
-        elif i < len(setIds) and silr.SetName(set) == "%s%d"%(className, setIds[i]):
-            i = i + 1;
-            silr.TurnOnSet(set)
+        if i < len(setIds) and \
+            (silr.SetName(set) == "%s_%03d"%(className, setIds[i]) or \
+             silr.SetName(set) == "%s%d"%(className, setIds[i])):
+            i = i + 1
         else:
             silr.TurnOffSet(set)
 
@@ -51,6 +56,13 @@ def RestrictSetsInCategory(silr, className, setIds):
 OpenDatabase("../data/iTaps_test_data/MOAB/mbtest1", 0, "ITAPS_MOAB_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
+# use threshold to display only 3D zones (upper case ASCII range)
+th = ThresholdAttributes()
+th.listedVarNames = ("zonetype")
+th.lowerBounds = (65)
+th.upperBounds = (90)
+SetDefaultOperatorOptions(th)
+AddOperator("Threshold")
 DrawPlots()
 v=GetView3D()
 v.viewNormal = (-0.761903, 0.456228, -0.45974)
@@ -61,7 +73,7 @@ DeleteAllPlots()
 CloseDatabase("../data/iTaps_test_data/MOAB/mbtest1")
 
 # open a database with some interesting sets
-OpenDatabase("../data/iTaps_test_data/MOAB/bricks.cub", 0, "ITAPS_MOAB_1.0")
+OpenDatabase("../data/iTaps_test_data/MOAB/brick_cubit10.cub", 0, "ITAPS_MOAB_1.0")
 AddPlot("Mesh","mesh")
 DrawPlots()
 ResetView()
@@ -75,12 +87,12 @@ SetActivePlots((0,1))
 silr=SILRestriction()
 
 # turn off some curves 
-RestrictSetsInCategory(silr, "Curve", (0,1,2,3,4,5,6,7,8,9,10,11))
+RestrictSetsInCategory(silr, "Curve", (0,1,2,6,7,11))
 SetPlotSILRestriction(silr)
 Test("itaps_03")
 
 # turn off some surfaces
-RestrictSetsInCategory(silr, "Surface", (1,2,7))
+RestrictSetsInCategory(silr, "Surface", (1,2))
 SetPlotSILRestriction(silr)
 Test("itaps_04")
 
@@ -89,16 +101,16 @@ DrawPlots()
 Test("itaps_05")
 
 DeleteAllPlots()
-CloseDatabase("../data/iTaps_test_data/MOAB/bricks.cub")
+CloseDatabase("../data/iTaps_test_data/MOAB/brick_cubit10.cub.cub")
 
-#OpenDatabase("../data/iTaps_test_data/MOAB/ptest.cub", 0, "ITAPS_MOAB_1.0")
-#AddPlot("Mesh","mesh")
-#DrawPlots()
-#ResetView()
-#silr=SILRestriction()
-#RestrictSetsInCategory(silr, "Volume", (0,2,4,6))
-#SetPlotSILRestriction(silr)
-#Test("itaps_06")
+OpenDatabase("../data/iTaps_test_data/MOAB/ptest.cub", 0, "ITAPS_MOAB_1.0")
+AddPlot("Mesh","mesh")
+DrawPlots()
+ResetView()
+silr=SILRestriction()
+RestrictSetsInCategory(silr, "Volume", (0,2,4,6))
+SetPlotSILRestriction(silr)
+Test("itaps_06")
 
 DeleteAllPlots()
 CloseDatabase("../data/iTaps_test_data/MOAB/ptest.cub")
@@ -155,14 +167,15 @@ n=13
 for imp in (("MOAB","mixed-hex-pyr-tet"),("FMDB","human-1-fmdb.sms"),("GRUMMP","tire.vmesh")):
     OpenDatabase("../data/iTaps_test_data/%s/%s"%imp, 0, "ITAPS_%s_1.0"%imp[0])
     AddPlot("Mesh","mesh")
-    ResetView()
     DrawPlots()
+    ResetView()
     if imp[0] == "FMDB":
         v = GetView3D()
         v.RotateAxis(0,90.0)
         SetView3D(v)
     Test("itaps_%d"%n)
     DeleteAllPlots()
+    CloseDatabase("../data/iTaps_test_data/%s/%s"%imp)
     n = n + 1
     
 Exit()
