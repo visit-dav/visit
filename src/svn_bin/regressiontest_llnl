@@ -68,6 +68,9 @@
 #
 #    Mark C. Miller, Wed Feb  4 07:50:54 PST 2009
 #    Added 'killed' to grep filter on summary file to produce summary email.
+#
+#    Mark C. Miller, Tue Mar 31 08:53:37 PDT 2009
+#    Removed itaps tests from skip lists
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -391,10 +394,7 @@ skipList_dueTo_temporaryBugs="\
 	  nersc,scalable,parallel:tests/operators/transform.py:ops_transform05 \
 	  nersc,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
 	  nersc,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-	  nersc,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-          nersc,serial:tests/databases/itaps.py:itaps_02,itaps_03,itaps_04,itaps_05 \
-          nersc,parallel:tests/databases/itaps.py:itaps_02,itaps_03,itaps_04,itaps_05 \
-          nersc,scalable,parallel:tests/databases/itaps.py:itaps_02,itaps_03,itaps_04,itaps_05"
+	  nersc,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
 
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs"
 
