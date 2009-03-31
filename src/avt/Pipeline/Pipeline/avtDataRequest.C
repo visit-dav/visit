@@ -1295,6 +1295,31 @@ avtDataRequest::GetSecondaryVariablesWithoutDuplicates(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtDataRequest::AddDataSelectionRefPtr
+//
+//  Purpose: Adds a data selection to the specification
+//
+//  Notes:
+//     This method is highly related to the one that does not take a ref_ptr.
+//     I gave it its own name because I didn't want there to be namespace
+//     conflict.  I should probably unify the two methods (by deprecating the
+//     non-refptr method), but I'm chasing a publication and don't have time
+//     to pursue.  (Also, bad code got checked into the repo and this checkin
+//     will correct it.)
+//
+//  Programmer: Hank Childs
+//  Creation:   March 31, 2009
+//
+// ****************************************************************************
+
+int
+avtDataRequest::AddDataSelectionRefPtr(avtDataSelection_p sel)
+{
+    selList.push_back(sel);
+    return selList.size()-1;
+}
+
 
 // ****************************************************************************
 //  Method: avtDataRequest::AddDataSelection

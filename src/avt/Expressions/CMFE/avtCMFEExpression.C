@@ -1,4 +1,3 @@
-#include <avtPointSelection.h>
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
@@ -413,15 +412,8 @@ avtCMFEExpression::Execute()
     spec->GetDataRequest()->SetTimestep(actualTimestep);
     spec->GetDataRequest()->SetDesiredGhostDataType(ghostNeeds);
     spec->SetOnDemandStreaming(onDemandProcessing);
-// HACK ... need new data member in avtDataRequest.
-    if (doPoint)
-    {
-        avtPointSelection *ps = new avtPointSelection();
-        double p[3] = { p1, p2, p3 };
-        ps->SetPoint(p);
-        spec->GetDataRequest()->AddDataSelection(ps);
-    }
-// END HACK
+    for (int i = 0 ; i < dataSels.size() ; i++)
+        spec->GetDataRequest()->AddDataSelectionRefPtr(dataSels[i]);
 
     avtExpressionEvaluatorFilter *eef = new avtExpressionEvaluatorFilter;
     eef->SetInput(dob);
@@ -659,17 +651,11 @@ avtCMFEExpression::ExamineContract(avtContract_p spec)
     firstDBTime = spec->GetDataRequest()->GetTimestep();
     firstDBSIL  = spec->GetDataRequest()->GetRestriction();
     ghostNeeds  = spec->GetDataRequest()->GetDesiredGhostDataType();
-    const std::vector<avtDataSelection_p> ds    = spec->GetDataRequest()->GetAllDataSelections();
-    if (ds.size() == 1 && strcmp(ds[0]->GetType(), "Point Selection") == 0)
-    {
-        const avtPointSelection *ps = (avtPointSelection *) (*ds[0]);
-        p1 = ps->GetPoint()[0];
-        p2 = ps->GetPoint()[1];
-        p3 = ps->GetPoint()[2];
-        doPoint = true;
-    }
-    else
-        doPoint = false;
+    const std::vector<avtDataSelection_p> ds = spec->GetDataRequest()->GetAllDataSelections();
+    int numSels = ds.size();
+    dataSels.clear();
+    for (int i = 0 ; i < numSels ; i++)
+        dataSels.push_back(spec->GetDataRequest()->GetDataSelection(i));
     onDemandProcessing = spec->DoingOnDemandStreaming();
 }
 
