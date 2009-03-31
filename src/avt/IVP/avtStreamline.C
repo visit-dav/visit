@@ -299,7 +299,10 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //    More debug statements.
 //
 //    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//    Code cleanup.    
+//    Code cleanup. 
+//
+//    Dave Pugmire,  Tue Mar 31 17:08:29 EDT 2009
+//    Set the step's T value when leaping out.  
 //
 // ****************************************************************************
 
@@ -356,10 +359,15 @@ avtStreamline::HandleGhostZones(bool forward,
     debug5<< "Leap: "<<pt;
     dir *= leapingDistance;
     avtVec newPt = pt + dir;
-    debug5<<" ==> "<<newPt<<endl;
-
     _ivpSolver->SetCurrentY(newPt);
     _ivpSolver->SetCurrentT(_ivpSolver->GetCurrentT() + leapingDistance);
+    
+    if (forward)
+        (*(--_steps.end()))->tEnd += leapingDistance;
+    else
+        (*_steps.begin())->tEnd -= leapingDistance;
+    
+    debug5<<" ==> "<<newPt<<" T: "<<_ivpSolver->GetCurrentT()<<endl;
 }
 
 

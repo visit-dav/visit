@@ -260,7 +260,7 @@ avtStreamlineWrapper::GetEndPoint(avtVector &pt, double &t) const
     pt.z = end.values()[2];
     t = sl->TMax();
 
-    debug5<<"avtStreamlineWrapper::GetEndPoint() = "<<pt<<" T= "<<endl;
+    debug5<<"avtStreamlineWrapper::GetEndPoint() = "<<pt<<" T= "<<t<<endl;
 }
 
 

@@ -228,12 +228,6 @@ avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
     avtVec y(x.dim());
     avtVec param = pad(x,t);
 
-    bool b = (t >= time1 && t <= time2 &&
-              iv1->FunctionValues(param.values(), y.values()) &&
-              iv2->FunctionValues(param.values(), y.values()));
-    debug5<<"IsInside("<<t<<", "<<x<<") = "<<b<<" T["<<time1<<", "<<time2<<"]"<<endl;
-
-    
     return (t >= time1 && t <= time2 &&
             iv1->FunctionValues(param.values(), y.values()) &&
             iv2->FunctionValues(param.values(), y.values()));
