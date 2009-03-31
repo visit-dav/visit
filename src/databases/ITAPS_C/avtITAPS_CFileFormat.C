@@ -134,6 +134,8 @@ avtITAPS_CFileFormat::~avtITAPS_CFileFormat()
 //    Mark C. Miller, Tue Jun 26 11:27:48 PDT 2007
 //    Modified for C interface to ITAPS
 //
+//    Mark C. Miller, Thu Mar 26 17:30:15 PDT 2009
+//    Added call to destroy the iMesh instance (duh!)
 // ****************************************************************************
 
 void
@@ -155,6 +157,7 @@ avtITAPS_CFileFormat::FreeUpResources(void)
         free(regnEnts);
     regnEnts = 0;
     regnEnts_allocated = 0;
+    iMesh_dtor(itapsMesh, &itapsError);
 }
 
 
@@ -188,6 +191,12 @@ avtITAPS_CFileFormat::FreeUpResources(void)
 //    Made it so the entity iterator in the loop to find dense tags for
 //    variable centering is NOT ended until AFTER the returned entity has
 //    been queried.
+//
+//    Mark C. Miller, Thu Mar 26 17:32:01 PDT 2009
+//    Added logic to destroy the iMesh instance if we're on the mdserver.
+//
+//    Mark C. Miller, Mon Mar 30 17:35:44 PDT 2009
+//    Ensure dummyStr is initialized.
 // ****************************************************************************
 
 void
@@ -206,7 +215,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
              vmeshFileName[q-4] == 'u' && vmeshFileName[q-3] == 'b')
         tmpFileName = string(vmeshFileName, 0, q-4);
 
-    char dummyStr[32];
+    char dummyStr[32] = "";
     iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, 0);
     CheckITAPSError(itapsMesh, iMesh_newMesh, NoL);
     iMesh_getRootSet(itapsMesh, &rootSet, &itapsError);
@@ -491,6 +500,11 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             cerr << msg << endl;
     }
 funcEnd: ;
+
+#ifdef MDSERVER
+    // We don't need to keep this thing around on the mdserver, so free it up
+    iMesh_dtor(itapsMesh, &itapsError);
+#endif
 }
 
 // ****************************************************************************
