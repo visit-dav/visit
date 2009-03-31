@@ -156,11 +156,16 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //   Hank Childs, Sun Mar 22 11:30:40 CDT 2009
 //   Initialize specifyPoint.
 //
+//   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
+//   Initialize seedTimeStep0 and seedTime0.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
 {
     doPathlines = false;
+    seedTimeStep0 = 0;
+    seedTime0 = 0.0;
     pathlineNextTimeVar = "__pathlineNextTimeVar__";
     pathlineVar = "";
 
@@ -309,7 +314,6 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
     slSeg->GetEndPoint(endPt, t);
     double xyz[3] = {endPt.x, endPt.y, endPt.z};
 
-    t = t+1e-7; //DRP FIX THIS! The avtStreamline::Advance() needs to set this!
     int timeStep = GetTimeStep(t);
 
     slSeg->seedPtDomainList.resize(0);
@@ -620,13 +624,18 @@ avtStreamlineFilter::SetTermination(int type, double term)
 // Programmer: Dave Pugmire
 // Creation:   Thu Mar  5 09:51:00 EST 2009
 //
+// Modifications:
+//
+//   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
+//   Initialize seedTime0.
 //
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetPathlines(bool pathlines)
+avtStreamlineFilter::SetPathlines(bool pathlines, double time0)
 {
     doPathlines = pathlines;
+    seedTime0 = time0;
 }
 
 
@@ -1133,6 +1142,9 @@ avtStreamlineFilter::Execute(void)
 //   Add handling for the case where we load data on demand using point
 //   selections.
 //
+//   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
+//   Set seedTimeStep0 from input time value.
+//
 // ****************************************************************************
 
 void
@@ -1289,6 +1301,21 @@ avtStreamlineFilter::Initialize()
         numTimeSteps = domainTimeIntervals.size();
         if (numTimeSteps == 1)
             doPathlines = false;
+
+        if (doPathlines)
+        {
+            seedTimeStep0 = -1;
+            for (int i = 0; i < domainTimeIntervals.size(); i++)
+                if (seedTime0 >= domainTimeIntervals[i][0] &&
+                    seedTime0 <= domainTimeIntervals[i][1])
+                {
+                    seedTimeStep0 = i;
+                    break;
+                }
+            
+            if (seedTimeStep0 == -1)
+                EXCEPTION1(ImproperUseException, "Invalid pathline time value.");
+        }
     }
 }
 
@@ -1534,13 +1561,16 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
+//   Fix memory leak.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
 avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg, 
-                                        vtkDataSet *ds,
-                                        double *extents,
-                                        int maxSteps )
+                                     vtkDataSet *ds,
+                                     double *extents,
+                                     int maxSteps )
 {
     avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
     bool haveGhostZones = false; //(a.GetContainsGhostZones()==AVT_NO_GHOSTS ? false : true);
@@ -1625,12 +1655,6 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         }
     }
 
-    avtIVPField *field = NULL;
-    if (doPathlines)
-        field = new avtIVPVTKTimeVaryingField(velocity1, velocity2, t1, t2);
-    else
-        field = new avtIVPVTKField(velocity1);
-
     double end = termination;
     if (slSeg->dir == avtStreamlineWrapper::BWD)
         end = - end;
@@ -1640,12 +1664,29 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                         || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
 
     int numSteps = slSeg->sl->size();
-    avtIVPSolver::Result result = slSeg->sl->Advance(field,
-                                                     terminationType,
-                                                     end,
-                                                     doVorticity,
-                                                     haveGhostZones,
-                                                     extents);
+    avtIVPSolver::Result result;
+
+    if (doPathlines)
+    {
+        avtIVPVTKTimeVaryingField field(velocity1, velocity2, t1, t2);
+        result = slSeg->sl->Advance(&field,
+                                    terminationType,
+                                    end,
+                                    doVorticity,
+                                    haveGhostZones,
+                                    extents);
+    }
+    else
+    {
+        avtIVPVTKField field(velocity1);
+        result = slSeg->sl->Advance(&field,
+                                    terminationType,
+                                    end,
+                                    doVorticity,
+                                    haveGhostZones,
+                                    extents);
+    }
+    
     numSteps = slSeg->sl->size() - numSteps;
     //slSeg->Debug();
     if (result == avtIVPSolver::OUTSIDE_DOMAIN)
@@ -1989,6 +2030,9 @@ randMinus1_1()
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
+//   Initialize time step in domain and start time of streamlines.
+//
 // ****************************************************************************
 
 void
@@ -2219,25 +2263,26 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         if (streamlineDirection == VTK_INTEGRATE_FORWARD ||
              streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
-            avtStreamline *sl = new avtStreamline(solver, 0.0, pt);
+            avtStreamline *sl = new avtStreamline(solver, seedTimeStep0, pt);
             avtStreamlineWrapper *slSeg;
             slSeg = new avtStreamlineWrapper(sl,
                                              avtStreamlineWrapper::FWD,
                                              ptDom[i].id);
             slSeg->domain.domain = ptDom[i].domain;
-            slSeg->domain.timeStep = 0; //DRP FIX THIS!
+            slSeg->domain.timeStep = seedTimeStep0;
             pts.push_back(slSeg);
         }
         
         if (streamlineDirection == VTK_INTEGRATE_BACKWARD ||
              streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
-            avtStreamline *sl = new avtStreamline(solver, 0.0, pt);
+            avtStreamline *sl = new avtStreamline(solver, seedTimeStep0, pt);
             avtStreamlineWrapper *slSeg;
             slSeg = new avtStreamlineWrapper(sl, 
                                              avtStreamlineWrapper::BWD,
                                              ptDom[i].id);
             slSeg->domain = ptDom[i].domain;
+            slSeg->domain.timeStep = seedTimeStep0;
             pts.push_back(slSeg);
         }
     }

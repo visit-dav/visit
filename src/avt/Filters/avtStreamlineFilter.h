@@ -171,6 +171,9 @@ class DomainType;
 //   Hank Childs, Sun Mar 22 11:30:40 CDT 2009
 //   Added specifyPoint data member.
 //
+//   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
+//   Added seedTime0 and seedTimeStep0 member data.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -187,7 +190,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     void                      SetSourceType(int sourceType);
     void                      SetMaxStepLength(double len);
     void                      SetTermination(int type, double term);
-    void                      SetPathlines(bool pathlines);
+    void                      SetPathlines(bool pathlines, double time0=0.0);
     void                      SetIntegrationType(int algo);
     void                      SetStreamlineAlgorithm(int algo, int maxCnt,
                                                      int domainCache,
@@ -231,6 +234,8 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     std::vector<std::vector<double> > domainTimeIntervals;
     std::string pathlineVar, pathlineNextTimeVar;
     bool   doPathlines;
+    double seedTime0;
+    int    seedTimeStep0;
 
     avtIntervalTree *intervalTree;
     bool             specifyPoint;
