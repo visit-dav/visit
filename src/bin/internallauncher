@@ -436,6 +436,8 @@ exec perl -x $0 ${1+"$@"};
 #    Patrick Shinpaugh, Wed Mar 11 11:39:36 MST 2009
 #    Add ppc64 to the launcher types we support / know of.
 #
+#    Mark C. Miller, Mon Mar 30 17:55:08 PDT 2009
+#    Added cli to list of component names in IsAVisItComponentName
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2738,6 +2740,7 @@ sub IsAVisItComponentName {
     elsif ($theName eq "engine_ser") { return 1; }
     elsif ($theName eq "engine_par") { return 1; }
     elsif ($theName eq "viewer")     { return 1; }
+    elsif ($theName eq "cli")        { return 1; }
     elsif ($theName =~ m/engine*/i) {
         warnings::warn("You passed in a string " . $theName . " which " .
                        "you might have intended to be a VisIt component " .
