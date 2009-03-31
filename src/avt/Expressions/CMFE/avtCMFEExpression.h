@@ -117,9 +117,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     avtSILRestriction_p       firstDBSIL;
     avtGhostDataType          ghostNeeds;
     bool                      onDemandProcessing;
-    //std::vector<avtDataSelection_p> dataSels;
-    double p1,p2,p3;
-    bool doPoint;
+    std::vector<avtDataSelection_p> dataSels;
     std::string               argument_expression;
     int                       varDim;
     bool                      isNodal;

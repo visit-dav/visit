@@ -389,6 +389,10 @@ class PIPELINE_API avtDataRequest
     bool                         VariablesAreTheSame(const avtDataRequest &);
 
     int                          AddDataSelection(avtDataSelection *sel);
+                                 // Maybe this method could also be called 
+                                 // "AddDataSelection", but I'm worried about
+                                 // overloading/compile problems...
+    int                          AddDataSelectionRefPtr(avtDataSelection_p sel);
     void                         RemoveAllDataSelections();
     const avtDataSelection_p     GetDataSelection(int id) const;
     const std::vector<avtDataSelection_p> GetAllDataSelections() const;
