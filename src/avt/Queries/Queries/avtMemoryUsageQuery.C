@@ -99,6 +99,8 @@ avtMemoryUsageQuery::~avtMemoryUsageQuery()
 //  Creation:   March 5, 2008
 //
 //  Modifications:
+//    Cyrus Harrison,Wed Apr  1 12:08:22 PDT 2009
+//    Modified to support reporting up to 4 gigabytes per proc.
 //
 // ****************************************************************************
 
@@ -106,12 +108,12 @@ void
 avtMemoryUsageQuery::PerformQuery(QueryAttributes *atts)
 {
     // grab memory usage per engine process
-    int m_size = -1;
-    int m_rss  = -1;
+    unsigned int m_size = 0;
+    unsigned int m_rss  = 0;
     
     GetMemorySize(m_size,m_rss);
     
-    if(m_size < 0 || m_rss < 0)
+    if(m_size == 0 || m_rss == 0)
     {
         memSizeVals.clear();
         atts->SetResultsValue(memSizeVals);

@@ -93,7 +93,7 @@ bool UTILITY_API  ReadAndProcessDirectory(const std::string &,
 std::string UTILITY_API ExpandUserPath(const std::string &);
 
 // LINUX ONLY
-void UTILITY_API  GetMemorySize(int &, int &);
+void UTILITY_API  GetMemorySize(unsigned int &, unsigned int &);
 
 void UTILITY_API  WaitUntilFile(const char *);
 bool UTILITY_API  WildcardStringMatch(const char *p, const char *s);

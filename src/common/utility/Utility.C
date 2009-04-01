@@ -212,13 +212,18 @@ LongestCommonSuffixLength(const char * const *list, int listN)
 //  Programmer: Hank Childs (from code from Peter Lindstrom)
 //  Creation:   February 28, 2008
 //
+//  Modifications:
+//    Cyrus Harrison, Wed Apr  1 12:16:19 PDT 2009
+//    Modified to use unsigned ints so we can go above 2 gigabytes (up to
+//    4 gigabytes).
+//
 // ****************************************************************************
 
 void
-GetMemorySize(int &size, int &rss)
+GetMemorySize(unsigned int &size, unsigned int &rss)
 {
-    size = -1;
-    rss  = -1;
+    size = 0;
+    rss  = 0;
 #if !defined(_WIN32)
     FILE *file = fopen("/proc/self/statm", "r");
     if (file == NULL)
@@ -226,7 +231,7 @@ GetMemorySize(int &size, int &rss)
         return;
     }
 
-    int count = fscanf(file, "%d%d", &size, &rss);
+    int count = fscanf(file, "%u%u", &size, &rss);
     if (count != 2)
     {
         return;
