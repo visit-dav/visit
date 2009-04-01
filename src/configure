@@ -10654,17 +10654,22 @@ fi;
 echo "$as_me:$LINENO: checking if IceT should be used" >&5
 echo $ECHO_N "checking if IceT should be used... $ECHO_C" >&6
 
-# Allow enabling IceT through a config site variable.
-if test -n "${ICET_ENABLE}" -o "x${enable_icet}" = "xyes"; then
-  enable_icet="yes"
+# IceT can be enabled by the ICET_ENABLE config-site var ...
+if test -n "${ICET_ENABLE}"; then
+  use_icet="yes"
 else
-  enable_icet="no"
+  use_icet="no"
 
+fi
+
+# ... but the configure option should always take precedence.
+if test -n "${enable_icet}"; then
+  use_icet="${enable_icet}"
 fi
 
 
 # Check to make sure they aren't doing something weird.
-if test "x${enable_icet}" = "yes" -a \
+if test "x${use_icet}" = "xyes" -a \
         \( -z "${UseParallel}" -o "x${UseParallel}" = "xno" \); then
 
     { echo "$as_me:$LINENO: WARNING: IceT usage requested, but you're not doing a parallel
@@ -10676,8 +10681,8 @@ build. IceT requires '--enable-parallel' to be specified." >&2;}
 fi
 
 
-echo "$as_me:$LINENO: result: $enable_icet" >&5
-echo "${ECHO_T}$enable_icet" >&6
+echo "$as_me:$LINENO: result: $use_icet" >&5
+echo "${ECHO_T}$use_icet" >&6
 
 
 if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
@@ -10692,7 +10697,7 @@ elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
 
 
 ax_have_icet=0
-if test "x$enable_icet" != "xno"; then
+if test "x$use_icet" != "xno"; then
 
                         ac_ext=cc
 ac_cpp='$CXXCPP $CPPFLAGS'

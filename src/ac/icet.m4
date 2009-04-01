@@ -76,6 +76,10 @@ dnl     ICET_ENABLE as well to specify it without the --enable option.
 dnl    Downgrade the error to a warning.
 dnl    Fix a bug which would cause the config-site setting to take precedence
 dnl     over the --enable configure option.
+dnl
+dnl    Tom Fogal, Wed Apr  1 11:35:50 MST 2009
+dnl    Rework enabling code so that the command line option takes precedence.
+dnl
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
@@ -104,14 +108,16 @@ AC_ARG_WITH([icet-libdir],
 
 AC_MSG_CHECKING([if IceT should be used])
 
-# Allow enabling IceT through a config site variable.
-AS_IF([test -n "${ICET_ENABLE}" -o "x${enable_icet}" = "xyes"],
-    [enable_icet="yes"],
-    [enable_icet="no"]
+# IceT can be enabled by the ICET_ENABLE config-site var ...
+AS_IF([test -n "${ICET_ENABLE}"],
+    [use_icet="yes"],
+    [use_icet="no"]
 )
+# ... but the configure option should always take precedence.
+AS_IF([test -n "${enable_icet}"], [use_icet="${enable_icet}"])
 
 # Check to make sure they aren't doing something weird.
-AS_IF([test "x${enable_icet}" = "yes" -a \
+AS_IF([test "x${use_icet}" = "xyes" -a \
         \( -z "${UseParallel}" -o "x${UseParallel}" = "xno" \)],
     [
     AC_MSG_WARN([IceT usage requested, but you're not doing a parallel
@@ -119,7 +125,7 @@ build. IceT requires '--enable-parallel' to be specified.])
     ]
 )
 
-AC_MSG_RESULT([$enable_icet])
+AC_MSG_RESULT([$use_icet])
 
 ]) dnl end of AX_ICET_OPTIONS.
 
@@ -139,7 +145,7 @@ dnl    substitute ICET_CXXFLAGS to be available to makefiles
 AC_DEFUN([AX_CHECK_ICET], [
 
 ax_have_icet=0
-AS_IF([test "x$enable_icet" != "xno"],
+AS_IF([test "x$use_icet" != "xno"],
     [
         dnl IceT is really a C library, but we do our checks with C++ because
         dnl that's how we'll use it in VisIt
