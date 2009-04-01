@@ -158,6 +158,9 @@ avtTerminatingSink::~avtTerminatingSink()
 //    Hank Childs, Thu Feb 28 17:11:10 PST 2008
 //    Add debug statement about memory usage.
 //
+//    Cyrus Harrison, Wed Apr  1 12:03:19 PDT 2009
+//    Change so memory usage info scales up to 4 gigabytes.
+//
 // ****************************************************************************
 
 void
@@ -205,7 +208,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
 
             if (debug3_real)
             {
-                int size = -1, rss = -1;
+                unsigned int size = 0, rss = 0;
                 GetMemorySize(size, rss);
                 if (size > 0 && rss > 0)
                 {
@@ -237,7 +240,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
 
                 if (debug3_real)
                 {
-                    int size = -1, rss = -1;
+                    unsigned int size = 0, rss = 0;
                     GetMemorySize(size, rss);
                     if (size > 0 && rss > 0)
                     {
