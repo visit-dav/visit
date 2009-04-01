@@ -141,6 +141,9 @@ avtConnComponentsVolumeQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Sep 18 09:41:09 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
+//    Only set results on the root processor.
+//
 // ****************************************************************************
 
 void
@@ -154,34 +157,36 @@ avtConnComponentsVolumeQuery::PostExecute(void)
     delete [] sum_res_dbl;
 
     // create output message
-
-    std::string msg = "";
-    char buff[2048];
-
-    if(nComps == 1)
-    {SNPRINTF(buff,2048,"Found %d connected component\n",nComps);}
-    else
-    {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
-
-    msg += buff;
-
-    string format  =  "Component %d Volume = (" 
-                              + queryAtts.GetFloatFormat() +")\n";
-    
-    for(int i=0;i<nComps;i++)
+    if(PAR_Rank() == 0)
     {
-        SNPRINTF(buff,1024,
-                 format.c_str(),
-                 i,
-                 volPerComp[i]);
+        std::string msg = "";
+        char buff[2048];
+
+        if(nComps == 1)
+        {SNPRINTF(buff,2048,"Found %d connected component\n",nComps);}
+        else
+        {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
 
         msg += buff;
-    }
     
-    // set output message
-    SetResultMessage(msg);
-    // set output values
-    SetResultValues(volPerComp);
+        string format  =  "Component %d Volume = (" 
+                                  + queryAtts.GetFloatFormat() +")\n";
+    
+        for(int i=0;i<nComps;i++)
+        {
+            SNPRINTF(buff,1024,
+                     format.c_str(),
+                     i,
+                    volPerComp[i]);
+
+            msg += buff;
+        }
+    
+        // set output message
+        SetResultMessage(msg);
+        // set output values
+        SetResultValues(volPerComp);
+    }
 }
 
 

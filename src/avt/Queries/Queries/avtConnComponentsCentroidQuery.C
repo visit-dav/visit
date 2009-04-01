@@ -142,6 +142,9 @@ avtConnComponentsCentroidQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Sep 18 09:41:09 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
+//    Only set results on the root processor.
+//
 // ****************************************************************************
 
 void
@@ -179,59 +182,62 @@ avtConnComponentsCentroidQuery::PostExecute(void)
 
     // create output message
 
-    std::string msg = "";
-    char buff[2048];
-
-    if(nComps == 1)
-    {SNPRINTF(buff,2048,"Found %d connected component\n",nComps);}
-    else
-    {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
-
-    msg += buff;
-
-    // pack values into a a single vector for query output
-    vector<double> result_vec(nComps *3);
-
-    for(int i=0;i<nComps;i++)
+    if(PAR_Rank() == 0)
     {
-        // get number of cells for current component
-        double n_comp_cells =  (double)nCellsPerComp[i];
-        // calculate centriod values for the current component
-        xCentroidPerComp[i] /= n_comp_cells;
-        yCentroidPerComp[i] /= n_comp_cells;
-        zCentroidPerComp[i] /= n_comp_cells;
+        std::string msg = "";
+        char buff[2048];
 
-        // pack into result vector
-        result_vec[i*3 + 0] = xCentroidPerComp[i];
-        result_vec[i*3 + 1] = yCentroidPerComp[i];
-        result_vec[i*3 + 2] = zCentroidPerComp[i];
-    }
-
-    
-    string format  =  "Component %d [%d cells] Centroid = (" 
-                        + queryAtts.GetFloatFormat()  +","
-                        + queryAtts.GetFloatFormat()  +","
-                        + queryAtts.GetFloatFormat()  +")\n";
-    
-    // prepare the output message
-    for(int i=0;i<nComps;i++)
-    {
-        SNPRINTF(buff,1024,
-                 format.c_str(),
-                 i,
-                 nCellsPerComp[i],
-                 xCentroidPerComp[i],
-                 yCentroidPerComp[i],
-                 zCentroidPerComp[i]);
+        if(nComps == 1)
+        {SNPRINTF(buff,2048,"Found %d connected component\n",nComps);}
+        else
+        {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
 
         msg += buff;
+
+        // pack values into a a single vector for query output
+        vector<double> result_vec(nComps *3);
+
+        for(int i=0;i<nComps;i++)
+        {
+            // get number of cells for current component
+            double n_comp_cells =  (double)nCellsPerComp[i];
+            // calculate centriod values for the current component
+            xCentroidPerComp[i] /= n_comp_cells;
+            yCentroidPerComp[i] /= n_comp_cells;
+            zCentroidPerComp[i] /= n_comp_cells;
+
+            // pack into result vector
+            result_vec[i*3 + 0] = xCentroidPerComp[i];
+            result_vec[i*3 + 1] = yCentroidPerComp[i];
+            result_vec[i*3 + 2] = zCentroidPerComp[i];
+        }
+
+    
+        string format  =  "Component %d [%d cells] Centroid = (" 
+                            + queryAtts.GetFloatFormat()  +","
+                            + queryAtts.GetFloatFormat()  +","
+                            + queryAtts.GetFloatFormat()  +")\n";
+    
+        // prepare the output message
+        for(int i=0;i<nComps;i++)
+        {
+            SNPRINTF(buff,1024,
+                     format.c_str(),
+                    i,
+                    nCellsPerComp[i],
+                    xCentroidPerComp[i],
+                    yCentroidPerComp[i],
+                    zCentroidPerComp[i]);
+
+            msg += buff;
+        }
+
+        // set result message
+        SetResultMessage(msg);
+
+        // set result values
+        SetResultValues(result_vec);
     }
-
-    // set result message
-    SetResultMessage(msg);
-
-    // set result values
-    SetResultValues(result_vec);
 }
 
 

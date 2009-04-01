@@ -208,6 +208,9 @@ avtConnComponentsSummaryQuery::PreExecute(void)
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added support for per component bounding box info.
 //
+//    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
+//    Only set results on the root processor.
+//
 // ****************************************************************************
 
 void
@@ -303,39 +306,40 @@ avtConnComponentsSummaryQuery::PostExecute(void)
         yCentroidPerComp[i] /= n_comp_cells;
         zCentroidPerComp[i] /= n_comp_cells;
     }
-
-    // make sure we got a valid output file name (not simply the var name)
-    if(outputFileName == variableName)
-        outputFileName = "cc_summary.okc";
-
-    // create output message
-    std::string msg = "";
-    char buff[2048];
-
-    if(nComps == 1)
-    {SNPRINTF(buff,2048,"Found %d connected component.\n",nComps);}
-    else
-    {SNPRINTF(buff,2048,"Found %d connected components.\n",nComps);}
-
-    msg += buff;
-
-    msg += "Component summary information saved to " + outputFileName;
-    msg += ", which can be imported into VisIt";
-
-    // set output message
-    SetResultMessage(msg);
-
+    
     if(PAR_Rank() == 0)
     {
+        // make sure we got a valid output file name (not simply the var name)
+        if(outputFileName == variableName)
+            outputFileName = "cc_summary.okc";
+
+        // create output message
+        std::string msg = "";
+        char buff[2048];
+
+        if(nComps == 1)
+        {SNPRINTF(buff,2048,"Found %d connected component.\n",nComps);}
+        else
+        {SNPRINTF(buff,2048,"Found %d connected components.\n",nComps);}
+
+        msg += buff;
+    
+        msg += "Component summary information saved to " + outputFileName;
+        msg += ", which can be imported into VisIt";
+
+        // set output message
+        SetResultMessage(msg);
+
         // save results to output okc file
         SaveComponentResults(outputFileName);
-    }
- 
-    vector<double> results;
-    PrepareComponentResults(results);
+        
+        // pack results
+        vector<double> results;
+        PrepareComponentResults(results);
 
-    // set output values
-    SetResultValues(results);
+        // set output values
+        SetResultValues(results);
+    }
 }
 
 

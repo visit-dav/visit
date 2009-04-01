@@ -125,26 +125,33 @@ avtConnComponentsQuery::PreExecute(void)
 //  Programmer: Cyrus Harrison
 //  Creation:   February 5, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
+//    Only set results on the root processor.
+//
 // ****************************************************************************
 
 void
 avtConnComponentsQuery::PostExecute(void)
 {
-    // simply return the number of connected components
-    std::string msg = "";
-    char buff[2048];
+    if(PAR_Rank() == 0)
+    {
+        // simply return the number of connected components
+        std::string msg = "";
+        char buff[2048];
 
-    if(nComps == 1)
-    {SNPRINTF(buff,2048,"Found %d connected component\n",nComps);}
-    else
-    {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
+        if(nComps == 1)
+        {SNPRINTF(buff,2048,"Found %d connected component\n",nComps);}
+        else
+        {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
 
-    msg += buff;
+        msg += buff;
 
-    // set output message
-    SetResultMessage(msg);
-    // set output value
-    SetResultValue(nComps);
+        // set output message
+        SetResultMessage(msg);
+        // set output value
+        SetResultValue(nComps);
+    }
 }
 
 

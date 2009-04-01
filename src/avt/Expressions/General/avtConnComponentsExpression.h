@@ -75,6 +75,10 @@ class     avtIntervalTree;
 //    Added CheckForProperGhostZones, a new sanity check for proper ghost info
 //    before using the ghost zone neighbors enhancement in the parallel case.
 //
+//    Cyrus Harrison, Mon Mar 30 12:06:50 PDT 2009
+//    Added variable name argument to BoundarySet::RelocateUsingPartition.
+//    This allows us to ony send the label variable and reduce communication.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
@@ -165,7 +169,8 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
                                                     double *,
                                                     double *) const;
 
-        void                  RelocateUsingPartition(const SpatialPartition &);
+        void                  RelocateUsingPartition(const SpatialPartition &,
+                                                     const char *label_var_name); 
 
 
       protected:
