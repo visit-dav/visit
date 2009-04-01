@@ -1034,6 +1034,11 @@ avtConnComponentsExpression::GlobalLabelShift
 //  Programmer: Cyrus Harrison
 //  Creation:   January 25, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:50:10 PDT 2007
+//    Pass label variable name to BoundarySet, it only needs to communicate 
+//    the labels array during relocation.
+//
 // ****************************************************************************
 int
 avtConnComponentsExpression::GlobalResolve(int num_comps,
@@ -1074,7 +1079,7 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
     spart.CreatePartition(bset,bounds);
 
     // Relocate proper cells using boundary set
-    bset.RelocateUsingPartition(spart);
+    bset.RelocateUsingPartition(spart,outputVariableName);
 
     // get the relocated datasets
     sets = bset.GetMeshes();
@@ -2091,10 +2096,13 @@ avtConnComponentsExpression::BoundarySet::GetBoundsIntersection
 //    Cyrus Harrison, Sat Aug 11 15:08:03 PDT 2007
 //    Added ghost neighbors optimization
 //
+//    Cyrus Harrison, Mon Mar 30 12:06:50 PDT 2009
+//    Only send labels array during relocate.
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
-(const SpatialPartition &spart) 
+(const SpatialPartition &spart, const char *label_var_name) 
 {
 #ifdef PARALLEL
     // loop indices
@@ -2106,9 +2114,13 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
     
     // used to hold temporary meshes created to send to other processors
     vtkUnstructuredGrid **snd_meshes = new vtkUnstructuredGrid*[nprocs];
+    
+    // used to hold temporary labels created to send to other processors
+    vtkIntArray **snd_arrays = new vtkIntArray*[nprocs];
+    
     // holds the current number of cells in the temporary meshes
     int                  *snd_ncells = new int[nprocs];
-
+    
     // holds appenders used to concatenate temporary data sets 
     // into a single data set for each processor
     vtkAppendFilter     **appenders  = new vtkAppendFilter*[nprocs];
@@ -2130,6 +2142,9 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
     {
         // find which cells from the current mesh to send
         vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*) meshes[i];
+        vtkDataArray *data_array = mesh->GetCellData()->GetArray(label_var_name);
+        vtkIntArray *mesh_lbls = dynamic_cast<vtkIntArray*>(data_array);
+        
         int ncells = mesh->GetNumberOfCells();
       
         // get ghost zone neighbor info if available
@@ -2144,6 +2159,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
         for( j = 0; j < nprocs; j++)
         {
             snd_meshes[j] = NULL;
+            snd_arrays[j] = NULL;
             snd_ncells[j] = 0;
         }
 
@@ -2167,6 +2183,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
                 int des_proc = proc_list[k];
                 // get pointer to the temporary mesh for the dest processor
                 vtkUnstructuredGrid *des_mesh = snd_meshes[des_proc]; 
+                vtkIntArray *des_array        = snd_arrays[des_proc];
 
                 // if this mesh does not exist, create it
                 if( des_mesh == NULL)
@@ -2176,20 +2193,23 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
                     des_mesh = vtkUnstructuredGrid::New();
                     vtkPoints *pts = vtkVisItUtility::GetPoints(mesh);
                     des_mesh->SetPoints(pts);
-                    des_mesh->GetPointData()->ShallowCopy(mesh->GetPointData());
-                    des_mesh->GetCellData()->CopyAllocate(mesh->GetCellData());
-                    des_mesh->Allocate(ncells*9);
+                    // create data array to pack ccl labels into.
+                    des_array = vtkIntArray::New();
+                    des_array->SetName(label_var_name);
+                    // result only has one component - the label value
+                    des_array->SetNumberOfComponents(1);
+                    des_mesh->GetCellData()->AddArray(des_array);
                     pts->Delete();
                     snd_meshes[des_proc] = des_mesh;
+                    snd_arrays[des_proc] = des_array;
                 }
 
                 // copy this cell's data to the temporary mesh
                 int cell_type  = mesh->GetCellType(j);
                 vtkIdList *ids = cell->GetPointIds();
                 des_mesh->InsertNextCell(cell_type,ids);
-                des_mesh->GetCellData()->CopyData(mesh->GetCellData(),
-                                                  j,
-                                                  snd_ncells[des_proc]);
+                // insert the cell's label value into the outgoing dataset.
+                des_array->InsertNextValue(mesh_lbls->GetValue(j));
                 snd_ncells[des_proc]++;
             }
 
@@ -2199,6 +2219,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
         for( j = 0; j < nprocs ; j++)
         {
             vtkUnstructuredGrid *des_mesh =  snd_meshes[j];
+            vtkIntArray *des_array =  snd_arrays[j];
             if(des_mesh != NULL)
             {
                 // use this filter to remove unnecessary points
@@ -2212,14 +2233,17 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
                 ugrpf->Delete();
                 // delete the temporary mesh
                 des_mesh->Delete();
+                des_array->Delete();
             }
         }
 
     }
-
+    
     // clean up arrays used for temporary mesh data
     delete [] snd_meshes;
+    delete [] snd_arrays;
     delete [] snd_ncells;
+    
 
     
     // use the appenders to concatenate mesh data to produce the final dataset
