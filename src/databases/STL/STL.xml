@@ -3,10 +3,10 @@
     <Extensions> stl </Extensions>
     <Files components="M">
         avtSTLFileFormat.C
-        vtkSTLReader.C
+        vtkVisItSTLReader.C
     </Files>
     <Files components="E">
         avtSTLFileFormat.C
-        vtkSTLReader.C
+        vtkVisItSTLReader.C
     </Files>
   </Plugin>

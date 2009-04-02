@@ -685,8 +685,6 @@ avtDyna3DFileFormat::ReadMaterialCards(ifstream &ifile)
                << materialCards[i].density << ", strength=" << materialCards[i].strength << endl;
     }
     debug5 << "**********************************************************" << endl;
-
-    SkipToSection(ifile, "NODE DEFINITIONS");
 }
 
 // ****************************************************************************
@@ -709,6 +707,10 @@ avtDyna3DFileFormat::ReadMaterialCards(ifstream &ifile)
 //   Brad Whitlock, Mon Mar  9 16:32:16 PDT 2009
 //   I changed how we do materials. I also put in some diagnostic code so we
 //   can see the start and end of node and cell sequences.
+//
+//   Brad Whitlock, Thu Apr  2 16:26:10 PDT 2009
+//   I changed the reader so it reopens the file after reading materials
+//   just in case there was an error.
 //
 // ****************************************************************************
 
@@ -738,11 +740,21 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
 
     int readCards = visitTimer->StartTimer();
     bool recognized = ReadControlCards(ifile);
-    ReadMaterialCards(ifile);
-    visitTimer->StopTimer(readCards, "Reading control and material cards.");
-    
+    visitTimer->StopTimer(readCards, "Reading control cards.");
+
     if(recognized)
     {
+        readCards = visitTimer->StartTimer();
+        ReadMaterialCards(ifile);
+        visitTimer->StopTimer(readCards, "Reading material cards.");
+
+        // Close and reopen the file and skip to the NODE DEFINITIONS section. This
+        // prevents us from messing up the nodes if we happened to mess up the 
+        // materials.
+        ifile.close();
+        ifile.open(name);
+        SkipToSection(ifile, "NODE DEFINITIONS");
+
         if(nLines == ALL_LINES)
         {
             int readingFile = visitTimer->StartTimer();

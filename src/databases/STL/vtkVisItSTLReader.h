@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkSTLReader.h,v $
+  Module:    $RCSfile: vtkVisItSTLReader.h,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,11 +12,11 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkSTLReader - read ASCII or binary stereo lithography files
+// .NAME vtkVisItSTLReader - read ASCII or binary stereo lithography files
 // .SECTION Description
-// vtkSTLReader is a source object that reads ASCII or binary stereo 
+// vtkVisItSTLReader is a source object that reads ASCII or binary stereo 
 // lithography files (.stl files). The FileName must be specified to
-// vtkSTLReader. The object automatically detects whether the file is
+// vtkVisItSTLReader. The object automatically detects whether the file is
 // ASCII or binary.
 //
 // .stl files are quite inefficient since they duplicate vertex 
@@ -29,8 +29,8 @@
 // Binary files written on one system may not be readable on other systems.
 // vtkSTLWriter uses VAX or PC byte ordering and swaps bytes on other systems.
 
-#ifndef __vtkSTLReader_h
-#define __vtkSTLReader_h
+#ifndef __vtkVisItSTLReader_h
+#define __vtkVisItSTLReader_h
 
 #include "vtkPolyDataSource.h"
 
@@ -39,15 +39,15 @@ class vtkFloatArray;
 class vtkPointLocator;
 class vtkPoints;
 
-class vtkSTLReader : public vtkPolyDataSource 
+class vtkVisItSTLReader : public vtkPolyDataSource 
 {
 public:
-  vtkTypeRevisionMacro(vtkSTLReader,vtkPolyDataSource);
+  vtkTypeRevisionMacro(vtkVisItSTLReader,vtkPolyDataSource);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
   // Construct object with merging set to true.
-  static vtkSTLReader *New();
+  static vtkVisItSTLReader *New();
 
   // Description:
   // Overload standard modified time function. If locator is modified,
@@ -82,8 +82,8 @@ public:
   void CreateDefaultLocator();
 
 protected:
-  vtkSTLReader();
-  ~vtkSTLReader();
+  vtkVisItSTLReader();
+  ~vtkVisItSTLReader();
 
   char *FileName;
   int Merging;
@@ -96,8 +96,8 @@ protected:
                    vtkFloatArray* scalars=0);
   int GetSTLFileType(FILE *fp);
 private:
-  vtkSTLReader(const vtkSTLReader&);  // Not implemented.
-  void operator=(const vtkSTLReader&);  // Not implemented.
+  vtkVisItSTLReader(const vtkVisItSTLReader&);  // Not implemented.
+  void operator=(const vtkVisItSTLReader&);  // Not implemented.
 };
 
 #endif
