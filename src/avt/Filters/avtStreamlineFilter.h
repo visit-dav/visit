@@ -174,6 +174,10 @@ class DomainType;
 //   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
 //   Added seedTime0 and seedTimeStep0 member data.
 //
+//    Gunther H. Weber, Thu Apr  2 10:47:01 PDT 2009
+//    Added activeTimeStep and ExamineContract() to retrieve
+//    currently active time step
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -254,6 +258,9 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     double boxExtents[6];
     bool   useWholeBox;
 
+    // Data retrieved from contract
+    int activeTimeStep;
+
     //Timings helpers.
     int                       numSeedPts;
     int                       method;
@@ -266,6 +273,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
     virtual avtContract_p     ModifyContract(avtContract_p);
+    virtual void              ExamineContract(avtContract_p);
     virtual bool              CheckOnDemandViability(void);
 
     void                      IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps=-1);
