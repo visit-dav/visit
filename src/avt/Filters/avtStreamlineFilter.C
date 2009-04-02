@@ -206,6 +206,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     useWholeBox = false;
     InitialIOTime = 0.0;
     InitialDomLoads = 0;
+    activeTimeStep = -1;
 }
 
 
@@ -460,6 +461,11 @@ avtStreamlineFilter::GetDomain(const DomainType &domain,
 //  Programmer: Dave Pugmire
 //  Creation:   March 4, 2009
 //
+//  Modifications:
+//    Gunther H. Weber, Thu Apr  2 10:59:47 PDT 2009
+//    Return activeTimeStep obtained from contract instead of 0 when doing
+//    streamlines.
+//
 // ****************************************************************************
 
 int
@@ -479,10 +485,11 @@ avtStreamlineFilter::GetTimeStep(double &t) const
         //EXCEPTION0(ImproperUseException);
         return -1;
     }
-
-    return 0;
+    else
+    {
+        return activeTimeStep;
+    }
 }
-
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::DomainLoaded
@@ -2439,4 +2446,24 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     }
 
     return avtDatasetOnDemandFilter::ModifyContract(out_contract);
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::ExamineContract
+//
+//  Purpose:
+//      Retrieve active time step from current contract.
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   April 2, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::ExamineContract(avtContract_p in_contract)
+{
+    avtDatasetOnDemandFilter::ExamineContract(in_contract);
+    activeTimeStep = in_contract->GetDataRequest()->GetTimestep();
 }
