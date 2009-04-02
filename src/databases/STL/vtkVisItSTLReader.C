@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkSTLReader.cxx,v $
+  Module:    $RCSfile: vtkVisItSTLReader.cxx,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,7 +12,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkSTLReader.h"
+#include "vtkVisItSTLReader.h"
 
 #include "vtkByteSwap.h"
 #include "vtkCellArray.h"
@@ -24,14 +24,14 @@
 
 #include <ctype.h>
 
-vtkCxxRevisionMacro(vtkSTLReader, "$Revision: 1.69 $");
-vtkStandardNewMacro(vtkSTLReader);
+vtkCxxRevisionMacro(vtkVisItSTLReader, "$Revision: 1.69 $");
+vtkStandardNewMacro(vtkVisItSTLReader);
 
 #define VTK_ASCII 0
 #define VTK_BINARY 1
 
 // Construct object with merging set to true.
-vtkSTLReader::vtkSTLReader()
+vtkVisItSTLReader::vtkVisItSTLReader()
 {
   this->FileName = NULL;
   this->Merging = 1;
@@ -39,7 +39,7 @@ vtkSTLReader::vtkSTLReader()
   this->Locator = NULL;
 }
 
-vtkSTLReader::~vtkSTLReader()
+vtkVisItSTLReader::~vtkVisItSTLReader()
 {
   if (this->FileName)
     {
@@ -54,7 +54,7 @@ vtkSTLReader::~vtkSTLReader()
 
 // Overload standard modified time function. If locator is modified,
 // then this object is modified as well.
-unsigned long vtkSTLReader::GetMTime()
+unsigned long vtkVisItSTLReader::GetMTime()
 {
   unsigned long mTime1=this->vtkPolyDataSource::GetMTime();
   unsigned long mTime2;
@@ -69,7 +69,7 @@ unsigned long vtkSTLReader::GetMTime()
 }
 
 
-void vtkSTLReader::Execute()
+void vtkVisItSTLReader::Execute()
 {
   FILE *fp;
   vtkPoints *newPts, *mergedPts;
@@ -221,7 +221,7 @@ void vtkSTLReader::Execute()
   output->Squeeze();
 }
 
-int vtkSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts, 
+int vtkVisItSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts, 
                                 vtkCellArray *newPolys)
 {
   int i, numTris;
@@ -284,7 +284,7 @@ int vtkSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts,
   return 0;
 }
 
-int vtkSTLReader::ReadASCIISTL(FILE *fp, vtkPoints *newPts, 
+int vtkVisItSTLReader::ReadASCIISTL(FILE *fp, vtkPoints *newPts, 
                                vtkCellArray *newPolys, vtkFloatArray *scalars)
 {
   char line[256];
@@ -353,7 +353,7 @@ int vtkSTLReader::ReadASCIISTL(FILE *fp, vtkPoints *newPts,
   return 0;
 }
 
-int vtkSTLReader::GetSTLFileType(FILE *fp)
+int vtkVisItSTLReader::GetSTLFileType(FILE *fp)
 {
   unsigned char header[256];
   int type, i;
@@ -379,7 +379,7 @@ int vtkSTLReader::GetSTLFileType(FILE *fp)
 
 // Specify a spatial locator for merging points. By
 // default an instance of vtkMergePoints is used.
-void vtkSTLReader::SetLocator(vtkPointLocator *locator)
+void vtkVisItSTLReader::SetLocator(vtkPointLocator *locator)
 {
   if ( this->Locator == locator ) 
     {
@@ -398,7 +398,7 @@ void vtkSTLReader::SetLocator(vtkPointLocator *locator)
   this->Modified();
 }
 
-void vtkSTLReader::CreateDefaultLocator()
+void vtkVisItSTLReader::CreateDefaultLocator()
 {
   if ( this->Locator == NULL )
     {
@@ -408,7 +408,7 @@ void vtkSTLReader::CreateDefaultLocator()
     }
 }
 
-void vtkSTLReader::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItSTLReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 

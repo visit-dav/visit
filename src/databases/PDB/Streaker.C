@@ -58,6 +58,11 @@
 
 #define STREAK_MATERIAL "streak_material"
 
+// Let's have a mode where we do cell centered data since it solves some
+// problems. Let's make it conditional to start with in case it's not 100% 
+// right.
+#define CELL_CENTERED_DATA
+
 // ****************************************************************************
 // Method: Streaker::StreakInfo::StreakInfo
 //
@@ -417,7 +422,9 @@ invalid:
 // Creation:   Tue Dec  2 16:38:01 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  1 11:18:07 PDT 2009
+//   I removed a pointer increment that caused an ABR.
+//
 // ****************************************************************************
 
 bool
@@ -479,7 +486,7 @@ Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
             {
                 int mat = *ptr++;
                 if(mat > 0)
-                    mats.insert(*ptr++);
+                    mats.insert(mat);
             }
             delete [] ireg;
 
@@ -539,6 +546,9 @@ Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
 //   Brad Whitlock, Wed Feb 25 16:06:40 PST 2009
 //   Changed to use log10.
 //
+//   Brad Whitlock, Thu Apr  2 16:37:08 PDT 2009
+//   Added cell-centered data support.
+//
 // ****************************************************************************
 
 void
@@ -568,7 +578,11 @@ Streaker::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtScalarMetaData *smd = new avtScalarMetaData;
         smd->name = it->first;
         smd->meshName = meshName;
+#ifdef CELL_CENTERED_DATA
+        smd->centering = AVT_ZONECENT;
+#else
         smd->centering = AVT_NODECENT;
+#endif
         md->Add(smd);
 
         // Add a material for this streak plot if its ireg matched the size of zvar.
@@ -958,9 +972,31 @@ Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PD
     points->Delete();
     sgrid->SetDimensions(sdims);
 
+#ifdef CELL_CENTERED_DATA
+    // Create a cell-centered version of zvar. We can ignore the first row of
+    // data since it's no good.
+    vtkFloatArray *cvar = vtkFloatArray::New();
+    int cx = sdims[0] - 1;
+    int cy = sdims[1] - 1;
+    cvar->SetNumberOfTuples(cx * cy);
+    float *dest = (float *)cvar->GetVoidPointer(0);
+    float *f = (float *)zvar->GetVoidPointer(0);
+    for(int j = 0; j < cy; ++j)
+    {
+        float *src = f + ((j+1) * sdims[0]);
+        for(int i = 0; i < cx; ++i)
+            *dest++ = *src++;
+    }
+    zvar->Delete();
+
+    // Add the cvar array to the dataset.
+    cvar->SetName(var.c_str());
+    sgrid->GetPointData()->AddArray(cvar);
+#else
     // Add the zvar array to the dataset.
     zvar->SetName(var.c_str());
     sgrid->GetPointData()->AddArray(zvar);
+#endif
 
     // Assemble the vtkDataArray for the matvar if this streak plot has a material.
     if(s.hasMaterial)
