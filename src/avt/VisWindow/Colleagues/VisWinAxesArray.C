@@ -431,6 +431,11 @@ VisWinAxesArray::UpdateView(void)
 //    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
 //    Added support for array variables and bin-defined x positions.
 //
+//    Jeremy Meredith, Thu Apr  2 16:16:32 EDT 2009
+//    Don't throw an error if the extents don't exist for an array
+//    variable; just ignore it.  It's probably not the primary
+//    variable we're trying to use anyway.
+//
 // ****************************************************************************
 
 void
@@ -451,7 +456,9 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
         for (int j = 0 ; j < nvars ; j++)
         {
             const char *var = atts.GetVariableName(j).c_str();
-            if (atts.GetVariableType(var) == AVT_ARRAY_VAR)
+            if (atts.GetVariableType(var) == AVT_ARRAY_VAR &&
+                atts.GetVariableComponentExtents(var) &&
+                atts.GetVariableComponentExtents(var)->HasExtents())
             {
                 naxes = atts.GetVariableDimension(var);
                 arrayActor = i;
@@ -459,7 +466,8 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
                 break;
             }
             int axis = atts.GetUseForAxis(var);
-            if (axis == -1)
+            if (axis == -1 ||
+                atts.GetCumulativeTrueDataExtents(var) == NULL)
                 continue;
             naxes = (axis+1) > naxes ? (axis+1) : naxes;
         }
@@ -474,14 +482,11 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
             list[arrayActor]->GetBehavior()->GetInfo().GetAttributes();
         const char *var = atts.GetVariableName(arrayIndex).c_str();
         int dim = atts.GetVariableDimension(var);
+
         avtExtents *e = atts.GetVariableComponentExtents(var);
+        // note: we already checked above that e exists and has extents
+
         const vector<double> &bins = atts.GetVariableBinRanges(var);
-        if (!e || !e->HasExtents())
-        {
-            char str[100];
-            sprintf(str, "Did not have valid extents for var '%s'", var);
-            EXCEPTION1(ImproperUseException, str);
-        }
         double *extents = new double[2*dim];
         e->CopyTo(extents);
         for (int k=0; k<dim; k++)
@@ -514,13 +519,10 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
                 int axis = atts.GetUseForAxis(var);
                 if (axis == -1)
                     continue;
+
                 avtExtents *ext = atts.GetCumulativeTrueDataExtents(var);
-                if (!ext)
-                {
-                    char str[100];
-                    sprintf(str, "Did not have valid extents for var '%s'", var);
-                    EXCEPTION1(ImproperUseException, str);
-                }
+                // note: we already checked above that ext exists
+
                 atts.GetCumulativeTrueDataExtents(var)->CopyTo(axes[axis].range);
                 axes[axis].xpos = axis;
                 SNPRINTF(axes[axis].title,256, var);
