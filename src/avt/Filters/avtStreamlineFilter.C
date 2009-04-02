@@ -1152,6 +1152,9 @@ avtStreamlineFilter::Execute(void)
 //   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
 //   Set seedTimeStep0 from input time value.
 //
+//   Dave Pugmire, Thu Apr  2 10:59:42 EDT 2009
+//   Properly bound seedTime0 search.
+//
 // ****************************************************************************
 
 void
@@ -1314,7 +1317,7 @@ avtStreamlineFilter::Initialize()
             seedTimeStep0 = -1;
             for (int i = 0; i < domainTimeIntervals.size(); i++)
                 if (seedTime0 >= domainTimeIntervals[i][0] &&
-                    seedTime0 <= domainTimeIntervals[i][1])
+                    seedTime0 < domainTimeIntervals[i][1])
                 {
                     seedTimeStep0 = i;
                     break;

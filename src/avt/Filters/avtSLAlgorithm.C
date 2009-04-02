@@ -481,6 +481,9 @@ avtSLAlgorithm::ComputeStatistic(SLStatistics &stats)
 //  Programmer: Dave Pugmire
 //  Creation:   March 26, 2009
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Compute avgDomainLoaded, instead of 1.0/avgDomainLoaded.
+//
 // ****************************************************************************
 
 void
@@ -518,7 +521,7 @@ avtSLAlgorithm::ComputeDomainLoadStatistic()
     }
 
     if (totDomainsLoaded > 0)
-        avgDomainLoaded = (float)domainsUsed / (float)totDomainsLoaded;
+        avgDomainLoaded = (float)totDomainsLoaded / (float)domainsUsed;
 
     debug1<<"Local Dom report:"<<endl;
     for (int i = 0; i < numDomains; i++) debug1<<setw(3)<<i<<": "<<domLoads[i]<<endl;
@@ -559,7 +562,7 @@ avtSLAlgorithm::ComputeDomainLoadStatistic()
     }
         
     if (globalTotDomainsLoaded > 0)
-        globalAvgDomainLoaded = (float)globalDomainsUsed / (float)globalTotDomainsLoaded;
+        globalAvgDomainLoaded = (float)globalTotDomainsLoaded / (float)globalDomainsUsed;
     delete [] sums;
 #else
     globalDomainsUsed = domainsUsed;

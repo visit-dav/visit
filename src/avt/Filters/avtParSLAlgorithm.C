@@ -61,6 +61,9 @@ int avtParSLAlgorithm::STREAMLINE_TAG = 420001;
 //
 //   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //   Change how timings are reported/calculated.
+//
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Limit the number of async recvs outstanding.
 //   
 // ****************************************************************************
 
@@ -70,7 +73,9 @@ avtParSLAlgorithm::avtParSLAlgorithm(avtStreamlineFilter *slFilter)
 {
     nProcs = PAR_Size();
     rank = PAR_Rank();
-    statusMsgSz = 1;
+    msgID = 0;
+    statusMsgSz = -1;
+    numAsyncRecvs = -1;
     slMsgSz = 10*1024*1024;
 }
 
@@ -98,11 +103,25 @@ avtParSLAlgorithm::~avtParSLAlgorithm()
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Limit the number of async recvs outstanding.
+//
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
+avtParSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts,
+                              int msgSz,
+                              int numRecvs)
 {
+    //Standardmsg + 1(sender rank) +1(msg ID).
+    statusMsgSz = msgSz+1+1;
+    numAsyncRecvs = numRecvs;
+    
+    if (statusMsgSz <= 0 || numAsyncRecvs <= 0)
+        EXCEPTION0(ImproperUseException);
+    
     avtSLAlgorithm::Initialize(seedPts);
     InitRequests();
 }
@@ -134,24 +153,23 @@ avtParSLAlgorithm::PostExecute()
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Limit the number of async recvs outstanding.
+//
 // ****************************************************************************
 
 void
 avtParSLAlgorithm::InitRequests()
 {
-    debug5<<"avtParSLAlgorithm::InitRequests()\n";
-    statusRecvRequests.resize(nProcs, MPI_REQUEST_NULL);
-    slRecvRequests.resize(nProcs, MPI_REQUEST_NULL);
-
-    for (int i = 0; i < nProcs; i++)
+    debug5<<"avtParSLAlgorithm::InitRequests() sz= "<<numAsyncRecvs<<endl;
+    statusRecvRequests.resize(numAsyncRecvs, MPI_REQUEST_NULL);
+    slRecvRequests.resize(numAsyncRecvs, MPI_REQUEST_NULL);
+    
+    for (int i = 0; i < statusRecvRequests.size(); i++)
     {
-        if (i != rank)
-        {
-            PostRecvStatusReq(i);
-            PostRecvSLReq(i);
-        }
+        PostRecvStatusReq(i);
+        PostRecvSLReq(i);
     }
-
 }
 
 // ****************************************************************************
@@ -335,18 +353,22 @@ avtParSLAlgorithm::CheckPendingSendRequests()
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Limit the number of async recvs outstanding.
+//
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::PostRecvStatusReq(int proc)
+avtParSLAlgorithm::PostRecvStatusReq(int idx)
 {
     MPI_Request req;
     int *buff = new int[statusMsgSz];
-    MPI_Irecv(buff, statusMsgSz, MPI_INT, proc,
+
+    MPI_Irecv(buff, statusMsgSz, MPI_INT, MPI_ANY_SOURCE,
               avtParSLAlgorithm::STATUS_TAG,
               VISIT_MPI_COMM, &req);
-    debug5 << "Post Statusrecv from " << proc<<" req= "<<req<<endl;
-    statusRecvRequests[proc] = req;
+    debug5 << "Post Statusrecv " <<idx<<" req= "<<req<<endl;
+    statusRecvRequests[idx] = req;
     recvIntBufferMap[req] = buff;
 }
 
@@ -359,20 +381,25 @@ avtParSLAlgorithm::PostRecvStatusReq(int proc)
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Limit the number of async recvs outstanding.
+//
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::PostRecvSLReq(int proc)
+avtParSLAlgorithm::PostRecvSLReq(int idx)
 {
     MPI_Request req;
     unsigned char *buff = new unsigned char[slMsgSz];
     MPI_Irecv(buff, slMsgSz,
-              MPI_UNSIGNED_CHAR, proc,
+              MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE,
               avtParSLAlgorithm::STREAMLINE_TAG, 
               VISIT_MPI_COMM, &req);
 
-    debug5 << "Post SLrecv from " << proc<<" req= "<<req<<endl;
-    slRecvRequests[proc] = req;
+    debug5 << "Post SLrecv " <<idx<<" req= "<<req<<endl;
+    slRecvRequests[idx] = req;
     recvSLBufferMap[req] = buff;
 }
 
@@ -388,6 +415,8 @@ avtParSLAlgorithm::PostRecvSLReq(int proc)
 //
 // Modifications:
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Add the senders rank and msgID to the front of the message.
 //
 // ****************************************************************************
 
@@ -400,17 +429,21 @@ avtParSLAlgorithm::SendMsg(int dst,
         EXCEPTION0(ImproperUseException);
     
     int *buff = new int[statusMsgSz];
+    buff[0] = msgID;
+    msgID++;
+    buff[1] = rank;
     
     MPI_Request req;
     for (int i = 0; i < msg.size(); i++)
-        buff[i] = msg[i];
+        buff[2+i] = msg[i];
+
+    debug5<<"SendMsg to :"<<dst<<" [";
+    for(int i = 0; i < statusMsgSz; i++) debug5<<buff[i]<<" ";
+    debug5<<"]"<<endl;
         
     int err = MPI_Isend(buff, statusMsgSz, MPI_INT, dst,
                         avtParSLAlgorithm::STATUS_TAG,
                         VISIT_MPI_COMM, &req);
-    debug5<<"Send: "<<dst<<" [";
-    for(int i = 0; i < msg.size(); i++) debug5<<buff[i]<<" ";
-    debug5<<"] err= "<<err<<endl;
 
     sendIntBufferMap[req] = buff;
     
@@ -455,6 +488,9 @@ avtParSLAlgorithm::SendAllMsg(vector<int> &msg)
 //
 //   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //   Change how timings are reported/calculated.
+//
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Senders rank and msgID is in the message now.
 //   
 // ****************************************************************************
 
@@ -475,6 +511,7 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
         vector<MPI_Request> copy;
         for (int i = 0; i < statusRecvRequests.size(); i++)
             copy.push_back(statusRecvRequests[i]);
+
         err = MPI_Testsome(nReq, &copy[0], &num, indices, status);
         debug5<<"::RecvMsgs() err= "<<err<<" Testsome("<<nReq<<"); num= "<<num<<endl;
 
@@ -494,17 +531,16 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
                 if (buff == NULL)
                     continue;
 
-                //Copy the sender rank and msg.
+                debug5<<"RecvMsg: [";
+                for(int i = 0; i < statusMsgSz; i++) debug5<<buff[i]<<" ";
+                debug5<<"]"<<endl;
+                
+                //Skip msg ID, copy buffer int msg.
                 vector<int> msg;
-                msg.push_back(idx);
-                for (int i = 0; i < statusMsgSz; i++)
+                for (int i = 1; i < statusMsgSz; i++)
                     msg.push_back(buff[i]);
                 msgs.push_back(msg);
 
-                debug5<<"msg= [";
-                for(int i = 0; i < msg.size(); i++) debug5<<msg[i]<<" ";
-                debug5<<"]\n";
-                
                 //Clean up.
                 delete [] buff;
             }
@@ -522,7 +558,6 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
     CommTime.value += visitTimer->StopTimer(communicationTimer,
                                             "RecvMsgs");
 }
-
 
 // ****************************************************************************
 //  Method: avtParSLAlgorithm::SendSLs
@@ -608,6 +643,7 @@ avtParSLAlgorithm::SendSLs(int dst,
 //  Change how timings are reported/calculated.
 //
 // ****************************************************************************
+
 int
 avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
 {

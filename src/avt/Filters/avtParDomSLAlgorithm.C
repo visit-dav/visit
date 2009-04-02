@@ -61,6 +61,9 @@ using namespace std;
 //    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
 //    Change numTerminated to numSLChange.
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Message size and number of receives moved to Initialize().
+//
 // ****************************************************************************
 
 avtParDomSLAlgorithm::avtParDomSLAlgorithm(avtStreamlineFilter *slFilter,
@@ -69,7 +72,6 @@ avtParDomSLAlgorithm::avtParDomSLAlgorithm(avtStreamlineFilter *slFilter,
 {
     numSLChange = 0;
     totalNumStreamlines = 0;
-    statusMsgSz = 1;
     maxCnt = maxCount;
 }
 
@@ -105,13 +107,20 @@ avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Message size and number of receives moved to Initialize().
+//
 // ****************************************************************************
 
 
 void
 avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 {
-    avtParSLAlgorithm::Initialize(seedPts);
+    int numRecvs = nProcs-1;
+    if (numRecvs > 64)
+        numRecvs = 64;
+    
+    avtParSLAlgorithm::Initialize(seedPts, 1, numRecvs);
     totalNumStreamlines = seedPts.size();
     numSLChange = 0;
 
@@ -189,32 +198,6 @@ avtParDomSLAlgorithm::ExchangeTermination()
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::ExchangeSLs
-//
-//  Purpose:
-//      Send/recv streamlines.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   January 27, 2009
-//
-//  Modifications:
-//
-//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
-//    Change numTerminated to numSLChange.
-//
-// ****************************************************************************
-
-void
-avtParDomSLAlgorithm::ExchangeSLs(
-               vector<vector<avtStreamlineWrapper *> > &distributeSLs)
-{
-    int earlyTerminations = 0;
-    avtParSLAlgorithm::ExchangeSLs(activeSLs, distributeSLs, earlyTerminations);
-    numSLChange -= earlyTerminations;
-}
-
-
-// ****************************************************************************
 //  Method: avtParDomSLAlgorithm::Execute
 //
 //  Purpose:
@@ -233,6 +216,9 @@ avtParDomSLAlgorithm::ExchangeSLs(
 //    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
 //    Change numTerminated to numSLChange.
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Remove ExchangeSLs() method.
+//
 // ****************************************************************************
 
 void
@@ -241,8 +227,6 @@ avtParDomSLAlgorithm::Execute()
     debug1<<"avtParDomSLAlgorithm::Execute()\n";
     int timer = visitTimer->StartTimer();
     
-    vector< vector< avtStreamlineWrapper *> > distributeStreamlines(nProcs);
-
     while (totalNumStreamlines > 0)
     {
         //Integrate upto maxCnt streamlines.
@@ -260,12 +244,16 @@ avtParDomSLAlgorithm::Execute()
                 numSLChange--;
             }
             else
-                HandleOOBSL(s, distributeStreamlines);
+                HandleOOBSL(s);
             
             cnt++;
         }
 
-        ExchangeSLs(distributeStreamlines);
+        //Check for new SLs.
+        int earlyTerminations = 0;
+        RecvSLs(activeSLs, earlyTerminations);
+        numSLChange -= earlyTerminations;
+
         ExchangeTermination();
         CheckPendingSendRequests();
     }
@@ -290,11 +278,13 @@ avtParDomSLAlgorithm::Execute()
 //    Change numTerminated to numSLChange. Account for SLs 'created' when
 //    passing one SL multiple times.
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Send SLs using SendSLs.
+//
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s,
-                         std::vector< std::vector< avtStreamlineWrapper *> > &d)
+avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s)
 {
     MemStream buff;
     bool deleteSL = true;
@@ -324,7 +314,10 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s,
             buff.rewind();
             newS->Serialize(MemStream::READ, buff, GetSolver());
             newS->domain = s->seedPtDomainList[i];
-            d[domRank].push_back(newS);
+
+            vector<avtStreamlineWrapper *> sls;
+            sls.push_back(newS);
+            SendSLs(domRank, sls);
         }
     }
 
