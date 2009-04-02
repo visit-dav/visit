@@ -686,6 +686,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Mon Aug 28 17:40:47 EDT 2006
 //    Added support for unit cell vectors.
 //
+//    Jeremy Meredith, Thu Apr  2 16:08:16 EDT 2009
+//    Added array variable support.
+//
 // ****************************************************************************
 
 void
@@ -841,6 +844,10 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         else if (ncomp == 9)
         {
             AddTensorVarToMetaData(md, name, MESHNAME, AVT_NODECENT);
+        }
+        else
+        {
+            AddArrayVarToMetaData(md, name, ncomp, MESHNAME, AVT_NODECENT);
         }
         nvars++;
     }
