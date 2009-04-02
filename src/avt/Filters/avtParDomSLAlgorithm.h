@@ -65,6 +65,9 @@
 //    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
 //    Change numTerminated to numSLChange.
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Remove ExchangeSLs.
+//
 // ****************************************************************************
 
 class avtParDomSLAlgorithm : public avtParSLAlgorithm
@@ -80,10 +83,8 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
 
   protected:
     void                      ExchangeTermination();
-    void                      HandleOOBSL(avtStreamlineWrapper *s,
-                          std::vector< std::vector< avtStreamlineWrapper *> >&);
-    void                      ExchangeSLs(
-                            std::vector<std::vector<avtStreamlineWrapper *> >&);
+    void                      HandleOOBSL(avtStreamlineWrapper *s);
+    
     int                       numSLChange, totalNumStreamlines;
 
     std::list<avtStreamlineWrapper *> activeSLs;

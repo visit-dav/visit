@@ -66,6 +66,9 @@
 //  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //  Change how timings are reported/calculated.
 //
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Message size and number of receives as member data. Add msgID to track msgs.
+//
 // ****************************************************************************
 
 class avtParSLAlgorithm : public avtSLAlgorithm
@@ -74,15 +77,16 @@ class avtParSLAlgorithm : public avtSLAlgorithm
     avtParSLAlgorithm(avtStreamlineFilter *slFilter);
     virtual ~avtParSLAlgorithm();
 
-    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &,
+                                         int, int);
     virtual void              PostExecute();
 
   protected:
     void                      InitRequests();
     void                      CheckPendingSendRequests();
     void                      CleanupAsynchronous();
-    void                      PostRecvStatusReq( int proc );
-    void                      PostRecvSLReq( int proc );
+    void                      PostRecvStatusReq(int idx);
+    void                      PostRecvSLReq(int idx);
     void                      SendMsg(int dest, std::vector<int> &msg);
     void                      SendAllMsg(std::vector<int> &msg);
     void                      RecvMsgs(std::vector<std::vector<int> > &msgs);
@@ -100,7 +104,6 @@ class avtParSLAlgorithm : public avtSLAlgorithm
     std::map<MPI_Request, int *> sendIntBufferMap, recvIntBufferMap;
 
     std::vector<MPI_Request>  statusRecvRequests, slRecvRequests;
-    int                       statusMsgSz, slMsgSz;
 
     virtual void              CompileTimingStatistics();
     virtual void              CompileCounterStatistics();
@@ -115,7 +118,7 @@ class avtParSLAlgorithm : public avtSLAlgorithm
 
   private:
     static int                STATUS_TAG, STREAMLINE_TAG;
-
+    int                       statusMsgSz, slMsgSz, numAsyncRecvs, msgID;
 };
 
 #endif

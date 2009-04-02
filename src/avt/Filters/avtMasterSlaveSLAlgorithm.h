@@ -93,15 +93,15 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
     int                        DomToIdx(const DomainType &dom) const
     {
         int n = dom.domain/numTimeSteps + dom.timeStep;
-        debug5<<"numTS= "<<numTimeSteps<<endl;
-        debug5<<"dom "<<dom<<" ==> "<<n<<endl;
+        //debug5<<"numTS= "<<numTimeSteps<<endl;
+        //debug5<<"dom "<<dom<<" ==> "<<n<<endl;
         return n;
     }
 
     DomainType                 IdxToDom(const int &num) const
     {
         DomainType d(num/numTimeSteps + num%numTimeSteps);
-        debug5<<"idx "<<num<<" ==> "<<d<<endl;
+        //debug5<<"idx "<<num<<" ==> "<<d<<endl;
         return d;
     }
     
@@ -218,7 +218,10 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 // Modifications:
 //
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
-//   Add timeout counter for slaves. 
+//   Add timeout counter for slaves.
+//   
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Add HandleLatencyTimer method.
 //
 // ****************************************************************************
 
@@ -242,6 +245,8 @@ class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
     std::list<avtStreamlineWrapper *> activeSLs, oobSLs;
 
     void                      ProcessMessages(bool &done, bool &newMsg);
+    void                      HandleLatencyTimer(int activeSLCnt,
+                                                 bool checkMaxLatency=true);
 };
 
 
