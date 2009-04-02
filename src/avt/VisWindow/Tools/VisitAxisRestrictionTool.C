@@ -702,6 +702,11 @@ VisitAxisRestrictionTool::MoveCallback(VisitInteractiveTool *it, CB_ENUM e,
 //    Jeremy Meredith, Fri Feb 15 13:21:20 EST 2008
 //    Added axis names to the axis restriction tool.
 //
+//    Jeremy Meredith, Thu Apr  2 16:16:32 EDT 2009
+//    Don't throw an error if the extents don't exist for an array
+//    variable; just ignore it.  It's probably not the primary
+//    variable we're trying to use anyway.
+//
 // ****************************************************************************
 void
 VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
@@ -721,7 +726,9 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
         for (int j = 0 ; j < nvars ; j++)
         {
             const char *var = atts.GetVariableName(j).c_str();
-            if (atts.GetVariableType(var) == AVT_ARRAY_VAR)
+            if (atts.GetVariableType(var) == AVT_ARRAY_VAR &&
+                atts.GetVariableComponentExtents(var) &&
+                atts.GetVariableComponentExtents(var)->HasExtents())
             {
                 naxes = atts.GetVariableDimension(var);
                 arrayActor = i;
@@ -729,7 +736,8 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
                 break;
             }
             int axis = atts.GetUseForAxis(var);
-            if (axis == -1)
+            if (axis == -1 ||
+                atts.GetCumulativeTrueDataExtents(var) == NULL)
                 continue;
             naxes = (axis+1) > naxes ? (axis+1) : naxes;
         }
@@ -747,15 +755,12 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
             list[arrayActor]->GetBehavior()->GetInfo().GetAttributes();
         const char *var = atts.GetVariableName(arrayIndex).c_str();
         int dim = atts.GetVariableDimension(var);
+
         avtExtents *e = atts.GetVariableComponentExtents(var);
+        // note: we already checked above that e exists and has extents
+
         const vector<double> &bins = atts.GetVariableBinRanges(var);
         const vector<string> &subnames = atts.GetVariableSubnames(var);
-        if (!e || !e->HasExtents())
-        {
-            char str[100];
-            sprintf(str, "Did not have valid extents for var '%s'", var);
-            EXCEPTION1(ImproperUseException, str);
-        }
         double *extents = new double[2*dim];
         e->CopyTo(extents);
         for (int k=0; k<dim; k++)
@@ -783,13 +788,10 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
                 int axis = atts.GetUseForAxis(var);
                 if (axis == -1)
                     continue;
+
                 avtExtents *ext = atts.GetCumulativeTrueDataExtents(var);
-                if (!ext)
-                {
-                    char str[100];
-                    sprintf(str, "Did not have valid extents for var '%s'", var);
-                    EXCEPTION1(ImproperUseException, str);
-                }
+                // note: we already checked above that ext exists
+
                 double extents[2];
                 atts.GetCumulativeTrueDataExtents(var)->CopyTo(extents);
                 axesXPos[axis] = axis;
