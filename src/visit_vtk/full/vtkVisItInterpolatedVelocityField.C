@@ -259,6 +259,7 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel)
         vel[i] +=  vec[i] * weights[j];
       }
     }
+    GenCell->Delete();
 
     return true;
 }
