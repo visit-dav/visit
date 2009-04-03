@@ -976,6 +976,9 @@ avtNek5000FileFormat::ReadBlockLocations()
 //    Tom Fogal, Sat Feb  7 17:32:20 EST 2009
 //    Fix the iterator declaration.
 //
+//    Hank Childs, Fri Apr  3 15:35:15 CDT 2009
+//    Fix memory problem.
+//
 // ****************************************************************************
 
 avtNek5000FileFormat::~avtNek5000FileFormat()
@@ -997,10 +1000,10 @@ avtNek5000FileFormat::~avtNek5000FileFormat()
         delete [] it->second;
     std::map<int, avtIntervalTree *>::iterator it2;
     for (it2 = boundingBoxes.begin() ; it2 != boundingBoxes.end() ; it2++)
-        delete [] it2->second;
+        delete it2->second;
     std::map<PointerKey, avtIntervalTree *, KeyCompare>::iterator it3;
     for (it3 = dataExtents.begin() ; it3 != dataExtents.end() ; it3++)
-        delete [] it3->second;
+        delete it3->second;
 }
 
 
