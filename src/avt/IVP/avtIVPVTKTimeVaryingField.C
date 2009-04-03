@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtIVPVTKTimeVaryingField.C                              //
+//                        avtIVPVTKTimeVaryingField.C                        //
 // ************************************************************************* //
 
 #include <avtIVPVTKTimeVaryingField.h>
 #include <iostream>
 #include <vtkCell.h>
 #include <vtkDataSet.h>
-#include <vtkInterpolatedVelocityField.h>
+#include <vtkVisItInterpolatedVelocityField.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <DebugStream.h>
@@ -57,8 +57,8 @@
 //
 // ****************************************************************************
 
-avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkInterpolatedVelocityField *velocity1,
-                                                      vtkInterpolatedVelocityField *velocity2,
+avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkVisItInterpolatedVelocityField *velocity1,
+                                                      vtkVisItInterpolatedVelocityField *velocity2,
                                                       double t1,
                                                       double t2)
 {
@@ -96,8 +96,14 @@ avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 //  Programmer:  Dave Pugmire (on behalf of Hank Childs)
 //  Creation:    Tue Feb 24 09:24:49 EST 2009
 //
+//  Modifications:
+//
 //    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //    Check time bounds and throw execption.
+//
+//    Hank Childs, Thu Apr  2 16:36:50 PDT 2009
+//    Update to use vtkVisItInterpolatedVelocityField, not 
+//    vtkInterpolatedVelocityField.
 //
 // ****************************************************************************
 
@@ -115,8 +121,8 @@ avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
 
     // Evaluate the field at both timesteps.
     avtVec y1(x.dim()), param(pad(x,t)), y2(x.dim());
-    if ( ! iv1->FunctionValues(param.values(), y1.values()) ||
-         ! iv2->FunctionValues(param.values(), y2.values()) )
+    if ( ! iv1->Evaluate(param.values(), y1.values()) ||
+         ! iv2->Evaluate(param.values(), y2.values()) )
     {
         debug5<<"  **OUT of BOUNDS**\n";
         throw Undefined();
@@ -151,6 +157,10 @@ avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Apr  2 16:36:50 PDT 2009
+//    Update to use vtkVisItInterpolatedVelocityField, not 
+//    vtkInterpolatedVelocityField.
+//
 // ****************************************************************************
 
 double
@@ -160,13 +170,13 @@ EXCEPTION0(ImproperUseException); // didn't do this.
     avtVec y( x.dim() );
     avtVec param = pad(x,t);
     
-    int result = iv1->FunctionValues( param.values(), y.values() );
+    int result = iv1->Evaluate( param.values(), y.values() );
     
     if( !result )
         throw Undefined();
 
-    vtkDataSet *ds = iv1->GetLastDataSet();
-    vtkIdType cellID = iv1->GetLastCellId();
+    vtkDataSet *ds = iv1->GetDataSet();
+    vtkIdType cellID = iv1->GetLastCell();
     vtkCell *cell = ds->GetCell( cellID );
     
     vtkDoubleArray *cellVectors;
@@ -181,9 +191,8 @@ EXCEPTION0(ImproperUseException); // didn't do this.
     inVectors->GetTuples( cell->PointIds, cellVectors );
 
     double *cellVel = cellVectors->GetPointer(0);
-    double pcoords[3], w[100];
-    iv1->GetLastWeights( w );
-    iv1->GetLastLocalCoordinates( pcoords );
+    double *w = iv1->GetLastWeights();
+    double *pcoords = iv1->GetLastPCoords();
     cell->Derivatives( 0, pcoords, cellVel, 3, derivs);
     //cout<<"pcoords= "<<pcoords[0]<<" "<<pcoords[1]<<" "<<pcoords[2]<<endl;
 
@@ -217,6 +226,8 @@ EXCEPTION0(ImproperUseException); // didn't do this.
 //  Programmer:  Dave Pugmire (on behalf of Hank Childs)
 //  Creation:    Tue Feb 24 09:24:49 EST 2009
 //
+//  Modifications:
+//
 //    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //    Check time bounds.
 //
@@ -229,8 +240,8 @@ avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
     avtVec param = pad(x,t);
 
     return (t >= time1 && t <= time2 &&
-            iv1->FunctionValues(param.values(), y.values()) &&
-            iv2->FunctionValues(param.values(), y.values()));
+            iv1->Evaluate(param.values(), y.values()) &&
+            iv2->Evaluate(param.values(), y.values()));
 }
 
 
@@ -243,12 +254,20 @@ avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
 //  Programmer:  Dave Pugmire (on behalf of Hank Childs)
 //  Creation:    Tue Feb 24 09:24:49 EST 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Apr  2 16:36:50 PDT 2009
+//    Update to use vtkVisItInterpolatedVelocityField, not 
+//    vtkInterpolatedVelocityField.
+//    (Hard code "3", since that is what the old implementation was doing
+//    anyways...)
+//
 // ****************************************************************************
 
 unsigned int 
 avtIVPVTKTimeVaryingField::GetDimension() const
 {
-    return iv1->GetNumberOfFunctions();
+    return 3;
 }  
 
 // ****************************************************************************

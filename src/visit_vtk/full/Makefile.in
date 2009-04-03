@@ -310,6 +310,9 @@
 #    Moved vtkMultiFontVectorText and vtkVectorFontCharacterData to
 #    rendering lib.
 #
+#    Hank Childs, Thu Apr  2 17:54:09 CDT 2009
+#    Added vtkVisItInterpolatedVelocityField.
+#
 ##############################################################################
 
 ##
@@ -355,6 +358,7 @@ SRC= vtkAxisDepthSort.C \
     vtkVisItExtractRectilinearGrid.C \
     vtkVisItFeatureEdges.C \
     vtkVisItGlyph3D.C \
+    vtkVisItInterpolatedVelocityField.C \
     vtkVisItProbeFilter.C \
     vtkVisItPolyDataNormals.C \
     vtkVisItRectilinearGrid.C \

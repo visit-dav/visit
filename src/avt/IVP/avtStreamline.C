@@ -193,6 +193,11 @@ avtStreamline::Advance(const avtIVPField* field,
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
 //    
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Fix problem with stalling out during initialization in case where
+//    seed point is close to boundary of domain.  Done in consultation with
+//    Christoph.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -232,7 +237,17 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             // if step size is below given minimum, give up
 
             // restore old state to before failed step
+            double hBeforePush = ivp->GetNextStepSize();
             ivp->PutState( state );
+            if (ivp->GetNextStepSize() == 0.)
+            {
+                // This can happen if we try to look a few points out
+                // for the very first step and one of those points
+                // is outside the domain.  Just set the step size
+                // back to what it was before so we can try again
+                // with a smaller step.
+                ivp->SetNextStepSize(hBeforePush);
+            }
 
             double h = ivp->GetNextStepSize();
 

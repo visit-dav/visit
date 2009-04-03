@@ -44,7 +44,7 @@
 #include <iostream>
 #include <vtkCell.h>
 #include <vtkDataSet.h>
-#include <vtkInterpolatedVelocityField.h>
+#include <vtkVisItInterpolatedVelocityField.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <DebugStream.h>
@@ -55,9 +55,14 @@
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
+//
 // ****************************************************************************
 
-avtIVPVTKField::avtIVPVTKField( vtkInterpolatedVelocityField* velocity ) 
+avtIVPVTKField::avtIVPVTKField( vtkVisItInterpolatedVelocityField* velocity ) 
     : iv(velocity)
 {
     iv->Register( NULL );
@@ -88,6 +93,11 @@ avtIVPVTKField::~avtIVPVTKField()
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
+//
 // ****************************************************************************
 
 avtVec
@@ -95,8 +105,8 @@ avtIVPVTKField::operator()(const double& t, const avtVecRef& x) const
 {
     avtVec y( x.dim() ), param( pad(x,t));
     
-    int result = iv->FunctionValues( param.values(), y.values() );
-    //debug5<<result<<"= iv->FunctionValues("<<param<<") y= "<<y<<endl;
+    int result = iv->Evaluate( param.values(), y.values() );
+    //debug5<<result<<"= iv->Evaluate("<<param<<") y= "<<y<<endl;
     
     if( !result )
         throw Undefined();
@@ -126,6 +136,9 @@ avtIVPVTKField::operator()(const double& t, const avtVecRef& x) const
 //    Increase the size of the "w" (weights) variable to prevent stack 
 //    overwrites.
 //
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
+//
 // ****************************************************************************
 
 double
@@ -134,13 +147,13 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVecRef& x ) const
     avtVec y( x.dim() );
     avtVec param = pad(x,t);
     
-    int result = iv->FunctionValues( param.values(), y.values() );
+    int result = iv->Evaluate( param.values(), y.values() );
     
     if( !result )
         throw Undefined();
 
-    vtkDataSet *ds = iv->GetLastDataSet();
-    vtkIdType cellID = iv->GetLastCellId();
+    vtkDataSet *ds = iv->GetDataSet();
+    vtkIdType cellID = iv->GetLastCell();
     vtkCell *cell = ds->GetCell( cellID );
     
     vtkDoubleArray *cellVectors;
@@ -155,9 +168,8 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVecRef& x ) const
     inVectors->GetTuples( cell->PointIds, cellVectors );
 
     double *cellVel = cellVectors->GetPointer(0);
-    double pcoords[3], w[100];
-    iv->GetLastWeights( w );
-    iv->GetLastLocalCoordinates( pcoords );
+    double *w = iv->GetLastWeights();
+    double *pcoords = iv->GetLastPCoords();
     cell->Derivatives( 0, pcoords, cellVel, 3, derivs);
     //cout<<"pcoords= "<<pcoords[0]<<" "<<pcoords[1]<<" "<<pcoords[2]<<endl;
 
@@ -191,13 +203,18 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVecRef& x ) const
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
+//
 // ****************************************************************************
 
 bool
 avtIVPVTKField::IsInside( const double& t, const avtVecRef& x ) const
 {
     avtVec y( x.dim() );
-    return iv->FunctionValues( pad( x, t ).values(), y.values() );
+    return iv->Evaluate( pad( x, t ).values(), y.values() );
 }
 
 
@@ -210,12 +227,18 @@ avtIVPVTKField::IsInside( const double& t, const avtVecRef& x ) const
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
+//    (The old method was just returning 0 anyways...)
+//
 // ****************************************************************************
 
 unsigned int 
 avtIVPVTKField::GetDimension() const
 {
-    return iv->GetNumberOfFunctions();
+    return 3;
 }  
 
 // ****************************************************************************
