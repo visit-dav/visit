@@ -122,7 +122,7 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel)
         int ijk[3];
         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid*)ds;
         if (vtkVisItUtility::ComputeStructuredCoordinates(rgrid, pt, ijk) == 0)
-            return -1;
+            return false;
         cell = rgrid->ComputeCellId(ijk);
         if (cell < 0)
             return false;
