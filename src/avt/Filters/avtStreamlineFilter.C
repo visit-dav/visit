@@ -1408,6 +1408,10 @@ avtStreamlineFilter::Initialize()
 //   Hank Childs, Tue Mar 31 12:43:05 CDT 2009
 //   Early return for 0 cells.
 //
+//   Hank Childs, Fri Apr  3 13:51:30 CDT 2009
+//   Fixed a problem where on demand with point-based lookups could not
+//   support multiple seedpoints.
+//
 // ****************************************************************************
 
 bool
@@ -1452,6 +1456,21 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
     }
 
     vtkVisItCellLocator *cellLocator = domainToCellLocatorMap[domain];
+    if ( cellLocator != NULL && specifyPoint )
+    {
+        double bbox[6];
+        cellLocator->GetDataSet()->GetBounds(bbox);
+        if (pt.x < bbox[0] || pt.x > bbox[1] || pt.y < bbox[2] || pt.y > bbox[3] ||
+            pt.z < bbox[4] || pt.z > bbox[5])
+        {
+            // We are getting data in a point based way and the point changed
+            // and now we have a new "domain 0".  Remove the locator for the
+            // old one.
+            cellLocator->SetDataSet(NULL);
+            cellLocator->Delete();
+            cellLocator = NULL;
+        }
+    }
     if ( cellLocator == NULL )
     {
         cellLocator = vtkVisItCellLocator::New();
@@ -2261,7 +2280,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         double xyz[3] = {candidatePts[i].x,candidatePts[i].y,candidatePts[i].z};
         intervalTree->GetElementsListFromRange(xyz,xyz, dl);
 
-        //cout<<i<<": "<<candidatePts[i].xyz[0]<<" "<<candidatePts[i].xyz[1]<<" "<<candidatePts[i].xyz[2]<<" dl= "<<dl.size()<<endl;
+        //cout<<i<<": "<<candidatePts[i].x<<" "<<candidatePts[i].y<<" "<<candidatePts[i].z<<" dl= "<<dl.size()<<endl;
         // seed in no domains, try to wiggle it into a DS.
         if (dl.size() == 0)
         {
