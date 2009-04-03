@@ -622,7 +622,6 @@ avtSLAlgorithm::ReportStatistics()
     sprintf(f, "timings%03d.txt", rank);
     ofstream os;
     os.open(f, ios::out);
-
     ReportStatistics(os);
     os.close();
     if (rank == 0)
@@ -642,6 +641,9 @@ avtSLAlgorithm::ReportStatistics()
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Overhaul how timings are reported.
 //
+//   Dave Pugmire, Fri Apr  3 11:46:10 EDT 2009
+//   Add tags to the timings reports that make them easier to parse.
+//
 // ****************************************************************************
 
 void
@@ -652,10 +654,13 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
     nCPUs = PAR_Size();
 #endif
     os<<endl;
-    os<<"Totals: ***********************************************"<<endl;
+    os<<"ReportBegin: ***********************************************"<<endl;
+    string db = streamlineFilter->GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    os<<"File= "<<db<<endl;
     os<<"Method= "<<AlgoName()<<" nCPUs= "<<nCPUs<<" nDom= "<<numDomains;
     os<<" nPts= "<<numSeedPoints<<endl;
-    os<<" maxCount= "<<streamlineFilter->maxCount;
+    os<<"Seeds= "<<streamlineFilter->SeedInfoString()<<endl;
+    os<<"maxCount= "<<streamlineFilter->maxCount;
     os<<" domCache= "<<streamlineFilter->cacheQLen;
     os<<" workGrp=  "<<streamlineFilter->workGroupSz<<endl;
     os<<endl;
@@ -669,6 +674,7 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
     ReportTimings(os, false);
     ReportCounters(os, false);
     os<<endl;
+    os<<"ReportEnd: ***********************************************"<<endl;
 }
 
 // ****************************************************************************
