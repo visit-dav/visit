@@ -291,6 +291,9 @@ QvisClipWindow::~QvisClipWindow()
 //   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
 //   Qt4 Port.
 //
+//   Jeremy Meredith, Fri Apr  3 10:19:16 EDT 2009
+//   Added missing connections for plane toggles.
+//
 // ****************************************************************************
 
 void
@@ -356,6 +359,12 @@ QvisClipWindow::CreateWindowContents()
     planeWidgetsLayout->addWidget(plane1Group);
     planeWidgetsLayout->addWidget(plane2Group);
     planeWidgetsLayout->addWidget(plane3Group);
+    connect(plane1Group, SIGNAL(toggled(bool)),
+            this, SLOT(plane1StatusToggled(bool)));
+    connect(plane2Group, SIGNAL(toggled(bool)),
+            this, SLOT(plane2StatusToggled(bool)));
+    connect(plane3Group, SIGNAL(toggled(bool)),
+            this, SLOT(plane3StatusToggled(bool)));
         
     // Plane Inverse
     planeInverse = new QCheckBox(tr("Inverse"), planeWidgets);
