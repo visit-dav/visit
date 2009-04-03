@@ -46,6 +46,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkPolyDataNormals.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkTextActor.h>
@@ -641,6 +642,9 @@ VisitPlaneTool::CreatePlaneActor()
 //   Kathleen Bonnell, Fri Jul 26 10:52:09 PDT 2002    
 //   Fix memory leak: Delete vtkMatrix4x4 m.
 //
+//   Brad Whitlock, Fri Apr  3 13:17:58 PDT 2009
+//   I added normals to the actor so it will get shaded.
+//
 // ****************************************************************************
 
 void
@@ -771,6 +775,19 @@ VisitPlaneTool::CreateVectorActor()
         rgb[2] = (unsigned char)((float)fg[2] * 255.f);
     }
 
+    //
+    // Run the polydata through the normals filter so we create normals for it.
+    // This will make it look shaded as was intended.
+    //
+    vtkPolyDataNormals *pdn = vtkPolyDataNormals::New();
+    pdn->SetInput(vectorData);
+    pdn->Update();
+    vtkPolyData *pd = pdn->GetOutput();
+    pd->Register(NULL);
+    pdn->Delete();
+    vectorData->Delete();
+    vectorData = pd;
+
     vectorMapper = vtkPolyDataMapper::New();
     vectorMapper->SetInput(vectorData);
 
@@ -778,6 +795,11 @@ VisitPlaneTool::CreateVectorActor()
     vtkMatrix4x4 *m = vtkMatrix4x4::New(); m->Identity();
     vectorActor->SetUserMatrix(m);
     vectorActor->SetMapper(vectorMapper);
+    vectorActor->GetProperty()->SetAmbient(0.);
+    vectorActor->GetProperty()->SetDiffuse(1.);
+    vectorActor->GetProperty()->SetSpecular(0.6);
+    vectorActor->GetProperty()->SetSpecularPower(20.);
+
     m->Delete();
 }
 
@@ -1588,6 +1610,9 @@ VisitPlaneTool::CallCallback()
 //   Hank Childs, Mon Apr 15 17:33:48 PDT 2002
 //   Update internal state to account for possible error conditions.
 //
+//   Brad Whitlock, Fri Apr  3 11:01:17 PDT 2009
+//   Don't do bounding box mode unless we have it selected.
+//
 // ****************************************************************************
 
 void
@@ -1597,7 +1622,7 @@ VisitPlaneTool::InitialActorSetup()
     AddOutline();
 
     // Enter bounding box mode if there are plots.
-    if(proxy.HasPlots())
+    if(proxy.GetBoundingBoxMode() && proxy.HasPlots())
     {
         addedBbox = true;
         proxy.StartBoundingBox();

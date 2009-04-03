@@ -1107,6 +1107,8 @@ VisitBoxTool::CallCallback()
 // Creation:   Wed Oct 30 12:22:31 PDT 2002
 //
 // Modifications:
+//   Brad Whitlock, Fri Apr  3 11:01:17 PDT 2009
+//   Don't do bounding box mode unless we have it selected.
 //
 // ****************************************************************************
 
@@ -1114,7 +1116,7 @@ void
 VisitBoxTool::InitialActorSetup()
 {
     // Enter bounding box mode if there are plots.
-    if(proxy.HasPlots())
+    if(proxy.GetBoundingBoxMode() && proxy.HasPlots())
     {
         addedBbox = true;
         proxy.StartBoundingBox();

@@ -48,8 +48,10 @@
 #include <vtkCellData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkPolyDataNormals.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
+#include <vtkSphereSource.h>
 #include <vtkTextActor.h>
 #include <vtkTextProperty.h>
 #include <avtVector.h>
@@ -72,6 +74,9 @@
 //
 //   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
 //   Removed unneeded point actor.
+//
+//   Brad Whitlock, Fri Apr  3 14:14:48 PDT 2009
+//   I added sphere actor, mapper, data.
 //
 // ****************************************************************************
 
@@ -98,8 +103,13 @@ VisitPointTool::VisitPointTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     guideMapper = NULL;
     guideData = NULL;
 
+    sphereActor = NULL;
+    sphereMapper = NULL;
+    sphereData = NULL;
+
     CreateTextActors();
     CreateGuide();
+    CreateSphere();
 }
 
 // ****************************************************************************
@@ -124,6 +134,9 @@ VisitPointTool::~VisitPointTool()
  
     // Delete the guide
     DeleteGuide();
+
+    // Delete the sphere
+    DeleteSphere();
 }
 
 // ****************************************************************************
@@ -139,6 +152,9 @@ VisitPointTool::~VisitPointTool()
 //   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
 //   Removed unneeded point actor.
 //
+//   Brad Whitlock, Fri Apr  3 14:22:07 PDT 2009
+//   I added sphereActor.
+//
 // ****************************************************************************
 
 void
@@ -151,6 +167,7 @@ VisitPointTool::Enable()
     if(!val)
     {
         UpdateTool();
+        proxy.GetCanvas()->AddActor(sphereActor);
         AddText();
     }
 }
@@ -168,6 +185,9 @@ VisitPointTool::Enable()
 //   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
 //   Removed unneeded point actor.
 //
+//   Brad Whitlock, Fri Apr  3 14:22:07 PDT 2009
+//   I added sphereActor.
+//
 // ****************************************************************************
 
 void
@@ -180,6 +200,7 @@ VisitPointTool::Disable()
     // Remove the actors from the canvas if the tool was enabled.
     if(val)
     {
+        proxy.GetCanvas()->RemoveActor(sphereActor);
         RemoveText();
     }
 }
@@ -288,6 +309,10 @@ VisitPointTool::Start3DMode()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 10:26:34 PDT 2003
 //
+// Modifications:
+//   Brad Whitlock, Fri Apr  3 14:41:40 PDT 2009
+//   I added code to set the fg color of the new sphere.
+//
 // ****************************************************************************
 
 void
@@ -297,6 +322,7 @@ VisitPointTool::SetForegroundColor(double r, double g, double b)
 
     // Set the colors of the text actors.
     pointTextActor->GetTextProperty()->SetColor(color);
+    sphereActor->GetProperty()->SetColor(color);
 }
 
 
@@ -309,6 +335,10 @@ VisitPointTool::SetForegroundColor(double r, double g, double b)
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Brad Whitlock, Fri Apr  3 14:43:24 PDT 2009
+//   Update the sphere based on the view.
+//
 // ****************************************************************************
 
 void
@@ -317,6 +347,7 @@ VisitPointTool::UpdateView()
     if(IsEnabled())
     {
         UpdateText();
+        UpdateSphere();
     }
 }
 
@@ -333,6 +364,9 @@ VisitPointTool::UpdateView()
 //   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
 //   Removed unneeded point actor.
 //
+//   Brad Whitlock, Fri Apr  3 14:23:26 PDT 2009
+//   I added UpdateSphere().
+//
 // ****************************************************************************
 
 void
@@ -340,9 +374,9 @@ VisitPointTool::UpdateTool()
 {
     hotPoints[0].pt = avtVector((double*)Interface.GetPoint());
 
+    UpdateSphere();
     UpdateText();
 }
-
 
 // ****************************************************************************
 // Method: VisitPointTool::CreateTextActors
@@ -476,6 +510,10 @@ VisitPointTool::CreateGuide()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Brad Whitlock, Fri Apr  3 14:15:24 PDT 2009
+//   I added sphere stuff.
+//
 // ****************************************************************************
 
 void
@@ -497,6 +535,39 @@ VisitPointTool::DeleteGuide()
     {
         guideData->Delete();
         guideData = NULL;
+    }
+}
+
+void
+VisitPointTool::CreateSphere()
+{
+    sphereData = NULL;
+    sphereMapper = vtkPolyDataMapper::New();
+    sphereActor = vtkActor::New();
+    sphereActor->SetMapper(sphereMapper);
+
+    UpdateSphere();
+}
+
+void
+VisitPointTool::DeleteSphere()
+{
+    if(sphereActor != NULL)
+    {
+        sphereActor->Delete();
+        sphereActor = NULL;
+    }
+
+    if(sphereMapper != NULL)
+    {
+        sphereMapper->Delete();
+        sphereMapper = NULL;
+    }
+
+    if(sphereData != NULL)
+    {
+        sphereData->Delete();
+        sphereData = NULL;
     }
 }
 
@@ -535,6 +606,10 @@ VisitPointTool::AddGuide()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Brad Whitlock, Fri Apr  3 14:16:09 PDT 2009
+//   I added sphereActor.
+//
 // ****************************************************************************
 
 void
@@ -555,6 +630,8 @@ VisitPointTool::RemoveGuide()
 //
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// Modifications:
 //
 // ****************************************************************************
 
@@ -714,6 +791,74 @@ VisitPointTool::GetGuidePoints(avtVector *pts)
 }
 
 // ****************************************************************************
+// Method: VisItPointTool::UpdateSphere
+//
+// Purpose: 
+//   Updates the point's sphere data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr  3 14:19:58 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisitPointTool::UpdateSphere()
+{
+    if(sphereData != NULL)
+        sphereData->Delete();
+
+    // Store the colors and points in the polydata.
+    vtkSphereSource *source = vtkSphereSource::New();
+    source->SetCenter(hotPoints[0].pt.x,
+                      hotPoints[0].pt.y,
+                      hotPoints[0].pt.z);
+    double bounds[6];
+    proxy.GetBounds(bounds);
+    double dX = bounds[1] - bounds[0];
+    double dY = bounds[3] - bounds[2];
+    double dZ = bounds[5] - bounds[4];
+    double radius = sqrt(dX*dX + dY*dY + dZ*dZ) / 100.;
+    vtkRenderer *ren = proxy.GetCanvas();
+    if(ren != 0)
+    {
+        vtkCamera *camera = ren->GetActiveCamera();
+        if(camera != 0)
+            radius /= camera->GetFocalDisk();
+    }
+    source->SetRadius(radius);
+    source->SetLatLongTessellation(1);
+    source->SetPhiResolution(15);
+    source->SetThetaResolution(15);
+
+    vtkPolyDataNormals *pdn = vtkPolyDataNormals::New();
+    pdn->AddInput(source->GetOutput());
+    pdn->Update();
+    sphereData = pdn->GetOutput();
+    sphereData->Register(NULL);
+    pdn->Delete();
+    source->Delete();
+
+    sphereActor->GetProperty()->SetAmbient(0.);
+    sphereActor->GetProperty()->SetDiffuse(1.);
+    sphereActor->GetProperty()->SetSpecular(0.6);
+    sphereActor->GetProperty()->SetSpecularPower(20.);
+    // Set the color of the sphere. Red outside, FG inside.
+    double fg[3] = {1., 0., 0.};
+    if((hotPoints[0].pt.x >= bounds[0] && hotPoints[0].pt.x <= bounds[1]) &&
+       (hotPoints[0].pt.y >= bounds[2] && hotPoints[0].pt.y <= bounds[3]) &&
+       (hotPoints[0].pt.z >= bounds[4] && hotPoints[0].pt.z <= bounds[5]))
+    {
+        proxy.GetForegroundColor(fg);
+    }
+    sphereActor->GetProperty()->SetColor(fg);
+
+    // Set the mapper's input to be the new dataset.
+    sphereMapper->SetInput(sphereData);
+}
+
+// ****************************************************************************
 // Method: VisitPointTool::CallCallback
 //
 // Purpose: 
@@ -743,6 +888,10 @@ VisitPointTool::CallCallback()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Brad Whitlock, Fri Apr  3 11:01:17 PDT 2009
+//   Don't do bounding box mode unless we have it selected.
+//
 // ****************************************************************************
 
 void
@@ -754,8 +903,11 @@ VisitPointTool::InitialActorSetup()
         // Add the guide
         AddGuide();
 
-        addedBbox = true;
-        proxy.StartBoundingBox();
+        if(proxy.GetBoundingBoxMode())
+        {
+            addedBbox = true;
+            proxy.StartBoundingBox();
+        }
     }
 }
 
@@ -892,6 +1044,9 @@ VisitPointTool::ComputeTranslationDistance(int direction)
 //   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
 //   Removed unneeded point actor.
 //
+//   Brad Whitlock, Fri Apr  3 14:40:14 PDT 2009
+//   Update the sphere.
+//
 // ****************************************************************************
 
 void
@@ -956,19 +1111,20 @@ VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
         // Update the text actors.
         UpdateText();
 
-        // Update the guide
+        // Update the guide and the sphere.
         UpdateGuide();
+        UpdateSphere();
 
         // Render the window
         proxy.Render();
     }
     else
     {
-        // Call the tool's callback.
-        CallCallback();
-
         // Remove the right actors.
         FinalActorSetup();
+
+        // Call the tool's callback.
+        CallCallback();
 
         axisTranslate = none;
     }

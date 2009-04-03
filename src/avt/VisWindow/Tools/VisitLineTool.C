@@ -971,6 +971,8 @@ VisitLineTool::CallCallback()
 // Creation:   Fri Oct 12 14:37:20 PST 2001
 //
 // Modifications:
+//   Brad Whitlock, Fri Apr  3 11:01:17 PDT 2009
+//   Don't do bounding box mode unless we have it selected.
 //
 // ****************************************************************************
 
@@ -983,8 +985,11 @@ VisitLineTool::InitialActorSetup(int pointIndex)
         // Add the guide
         AddGuide(pointIndex);
 
-        addedBbox = true;
-        proxy.StartBoundingBox();
+        if(proxy.GetBoundingBoxMode())
+        {
+            addedBbox = true;
+            proxy.StartBoundingBox();
+        }
     }
 }
 
