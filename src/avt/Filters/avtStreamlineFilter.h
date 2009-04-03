@@ -178,6 +178,9 @@ class DomainType;
 //    Added activeTimeStep and ExamineContract() to retrieve
 //    currently active time step
 //
+//    Dave Pugmire, Fri Apr  3 09:18:03 EDT 2009
+//    Add SeedInfoString method to report seed information.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -251,6 +254,7 @@ class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
     std::map<DomainType, vtkVisItCellLocator*> domainToCellLocatorMap;
 
     // Various starting locations for streamlines.
+    std::string             SeedInfoString() const;
     double pointSource[3];
     double lineStart[3], lineEnd[3];
     double planeOrigin[3], planeNormal[3], planeUpAxis[3], planeRadius;

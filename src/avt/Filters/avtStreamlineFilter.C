@@ -912,6 +912,56 @@ avtStreamlineFilter::SetBoxSource(double E[6])
 
 
 // ****************************************************************************
+// Method: avtStreamlineFilter::SeedInfoString
+//
+// Purpose: 
+//   Get info string on seeds.
+//
+// Arguments:
+//   
+//
+// Programmer: Dave Pugmire
+// Creation:   Fri Apr  3 09:18:03 EDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+avtStreamlineFilter::SeedInfoString() const
+{
+    char buff[256];
+    if (sourceType == STREAMLINE_SOURCE_POINT)
+        sprintf(buff, "Point [%g %g %g]", 
+                pointSource[0], pointSource[1], pointSource[2]);
+    else if (sourceType == STREAMLINE_SOURCE_LINE)
+        sprintf(buff, "Line [%g %g %g] [%g %g %g] D: %d", 
+                lineStart[0], lineStart[1], lineStart[2],
+                lineEnd[0], lineEnd[1], lineEnd[2], pointDensity1);
+    else if (sourceType == STREAMLINE_SOURCE_PLANE)
+        sprintf(buff, "Plane O[%g %g %g] N[%g %g %g] R: %g D: %d %d",
+                planeOrigin[0], planeOrigin[1], planeOrigin[2],
+                planeNormal[0], planeNormal[1], planeNormal[2],
+                planeRadius, pointDensity1, pointDensity2);
+    else if (sourceType == STREAMLINE_SOURCE_SPHERE)
+        sprintf(buff, "Sphere [%g %g %g] %g D: %d %d",
+                sphereOrigin[0],sphereOrigin[1],sphereOrigin[2],
+                sphereRadius, pointDensity1, pointDensity2);
+    else if (sourceType == STREAMLINE_SOURCE_BOX)
+        sprintf(buff, "Box [%g %g] [%g %g] [%g %g] D: %d %d %d",
+                boxExtents[0], boxExtents[1],
+                boxExtents[2], boxExtents[3],
+                boxExtents[4], boxExtents[5],
+                pointDensity1, pointDensity2, pointDensity3);
+    else
+        sprintf(buff, "%s", "UNKNOWN");
+    
+    string str = buff;
+    return str;
+}
+
+
+// ****************************************************************************
 // Method: avtStreamlineFilter::SetShowStart
 //
 // Purpose: 
