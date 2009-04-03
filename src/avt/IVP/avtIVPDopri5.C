@@ -340,6 +340,10 @@ avtIVPDopri5::SetTolerances(const double& relt, const double& abst)
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Consider a negative stepsize.
 //
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Incorporate fix from Christoph to do a better job guessing the
+//    initial step size.
+//
 // ****************************************************************************
 
 double 
@@ -347,62 +351,91 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
                                const double& h_max, 
                                const double& t_max)
 {
+    // make a local copy since we may need to modify it
+    double local_h_max = h_max;
     double direction = sign(1.0, t_max - t);
-    double sk, sqr;
-    double dnf = 0.0;
-    double dny = 0.0;
-    
-    double h;
-    
-    for(size_t i=0 ; i < y.dim() ; i++) 
+        
+    // loop until an estimate succeeds
+    while( true )
     {
-        sk = abstol + reltol * std::abs(y[i]);
-        sqr = k1[i] / sk;
-        dnf += sqr * sqr;
-        sqr = y[i] / sk;
-        dny += sqr * sqr;
+        try
+        {
+            double sk, sqr;
+            double dnf = 0.0;
+            double dny = 0.0;
+    
+            double h;
+    
+            for(size_t i=0 ; i < y.dim() ; i++) 
+            {
+                sk = abstol + reltol * std::abs(y[i]);
+                sqr = k1[i] / sk;
+                dnf += sqr * sqr;
+                sqr = y[i] / sk;
+                dny += sqr * sqr;
+            }
+
+            if( (dnf <= 1.0e-10) || (dny <= 1.0e-10) ) 
+                h = 1.0e-6;
+            else 
+                h = sqrt( dny/dnf ) * 0.01;
+
+            h = std::min( h, local_h_max );
+            h = sign( h, direction );
+
+            // perform an explicit Euler step
+            avtVec k3 = y + h * k1;
+            avtVec k2 = (*field)( t+h, k3 );
+
+            n_eval++;
+
+            // estimate the second derivative of the solution
+            double der2 = 0.0;
+
+            for( size_t i=0; i<y.dim(); i++) 
+            {
+                sk = abstol + reltol * std::abs( y[i] );
+                sqr = ( k2[i] - k1[i] ) / sk;
+                der2 += sqr*sqr;
+            }
+
+            der2 = sqrt( der2 ) / h;
+
+            // step size is computed such that
+            // h**(1/5) * max( norm(k1), norm(der2) ) = 0.01
+            double der12 = std::max( std::abs(der2), sqrt(dnf) );
+            double h1;
+
+            if( der12 <= 1.0e-15 ) 
+                h1 = std::max( 1.0e-6, std::abs(h)*1.0e-3 );
+            else 
+                h1 = pow( 0.01/der12, 0.2 );
+
+            h = std::min( fabs(100.0*h), std::min( h1, local_h_max ) );
+            h = sign( h, direction );
+
+            return h;
+        }
+        catch( avtIVPField::Undefined& )
+        {
+            // Somehow we couldn't evaluate one of the points we need for the 
+            // starting estimate. The above code adheres to the h_max that is 
+            // passed in - let's reduce that and try again.
+            // (we're really using local_h_max since h_max is const double&)
+            
+            // (Oh, and if local_h_max is zero, let's set it to unit length (= direction))
+            if( !local_h_max )
+                local_h_max = direction;
+            else 
+                local_h_max /= 2;
+                
+            // if local_h_max is smaller then epsilon, we stop trying
+            // return that back to Step() which will then fail with a 
+            // stepsize underflow
+            if( local_h_max < std::numeric_limits<double>::epsilon() )
+                return local_h_max;
+        }
     }
-
-    if( (dnf <= 1.0e-10) || (dny <= 1.0e-10) ) 
-        h = 1.0e-6;
-    else 
-        h = sqrt( dny/dnf ) * 0.01;
-
-    h = std::min( h, h_max );
-    h = sign( h, direction );
-
-    // perform an explicit Euler step
-    avtVec k3 = y + h * k1;
-    avtVec k2 = (*field)( t+h, k3 );
-
-    n_eval++;
-
-    // estimate the second derivative of the solution
-    double der2 = 0.0;
-
-    for( size_t i=0; i<y.dim(); i++) 
-    {
-        sk = abstol + reltol * std::abs( y[i] );
-        sqr = ( k2[i] - k1[i] ) / sk;
-        der2 += sqr*sqr;
-    }
-
-    der2 = sqrt( der2 ) / h;
-
-    // step size is computed such that
-    // h**(1/5) * max( norm(k1), norm(der2) ) = 0.01
-    double der12 = std::max( std::abs(der2), sqrt(dnf) );
-    double h1;
-
-    if( der12 <= 1.0e-15 ) 
-        h1 = std::max( 1.0e-6, std::abs(h)*1.0e-3 );
-    else 
-        h1 = pow( 0.01/der12, 0.2 );
-
-    h = std::min( fabs(100.0*h), std::min( h1, h_max ) );
-    h = sign( h, direction );
-
-    return h;
 }
 
 

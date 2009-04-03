@@ -45,7 +45,7 @@
 
 #include <avtIVPField.h>
 
-#include <vtkInterpolatedVelocityField.h>
+#include <vtkVisItInterpolatedVelocityField.h>
 
 #include <ivp_exports.h>
 
@@ -66,12 +66,15 @@
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Added GetValidTimeRange function.
 //
+//   Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//   Use vtkVisItInterpolatedVelocityField, not vtktInterpolatedVelocityField.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKField: public avtIVPField
 {
   public:
-                   avtIVPVTKField( vtkInterpolatedVelocityField* velocity ); 
+                   avtIVPVTKField( vtkVisItInterpolatedVelocityField* velocity ); 
                    ~avtIVPVTKField();
 
     // avtIVPField interface
@@ -84,7 +87,7 @@ class IVP_API avtIVPVTKField: public avtIVPField
     virtual bool   GetValidTimeRange(double range[]) const {return false;}
 
   protected:
-    vtkInterpolatedVelocityField   *iv;
+    vtkVisItInterpolatedVelocityField   *iv;
     bool           normalized;
     
 };

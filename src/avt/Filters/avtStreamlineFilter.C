@@ -60,7 +60,6 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
-#include <vtkInterpolatedVelocityField.h>
 #include <vtkLineSource.h>
 #include <vtkPlaneSource.h>
 #include <vtkPoints.h>
@@ -72,6 +71,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <vtkGlyph3D.h>
 
 #include <vtkVisItCellLocator.h>
+#include <vtkVisItInterpolatedVelocityField.h>
 
 #include <avtCallback.h>
 #include <avtDatabase.h>
@@ -1574,6 +1574,9 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
 //   Fix memory leak.
 //
+//   Hank Childs, Thu Apr  2 17:58:09 CDT 2009
+//   Do our own interpolation.  The previous one we used was too buggy for ugrids.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1589,7 +1592,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
           <<slSeg->domain<<") HGZ = "<<haveGhostZones <<endl;
 
     // prepare streamline integration ingredients
-    vtkInterpolatedVelocityField* velocity1=vtkInterpolatedVelocityField::New();
+    vtkVisItInterpolatedVelocityField* velocity1= vtkVisItInterpolatedVelocityField::New();
     if (doPathlines)
     {
         // Our expression will be the active variable, so reset it.
@@ -1607,20 +1610,18 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         
         cellToPt1->SetInput(ds);
         cellToPt1->Update();
-        velocity1->AddDataSet(cellToPt1->GetOutput());
+        velocity1->SetDataSet(cellToPt1->GetOutput());
     }
     else
-        velocity1->AddDataSet(ds);
+        velocity1->SetDataSet(ds);
     
-    velocity1->CachingOn();
-
-    vtkInterpolatedVelocityField* velocity2=NULL;
+    vtkVisItInterpolatedVelocityField* velocity2=NULL;
     vtkDataSet *ds2 = NULL;
     vtkCellDataToPointData *cellToPt2 = NULL;
     double t1, t2;
     if (doPathlines)
     {
-        velocity2 = vtkInterpolatedVelocityField::New();
+        velocity2 = vtkVisItInterpolatedVelocityField::New();
         ds2 = (vtkDataSet *) ds->NewInstance();
         ds2->ShallowCopy(ds);
 
@@ -1642,13 +1643,11 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
             
             cellToPt2->SetInput(ds2);
             cellToPt2->Update();
-            velocity2->AddDataSet(cellToPt2->GetOutput());
+            velocity2->SetDataSet(cellToPt2->GetOutput());
         }
         else
-            velocity2->AddDataSet(ds2);
+            velocity2->SetDataSet(ds2);
         
-        velocity2->CachingOn();
-
         std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
         ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
         if (*dbp == NULL)

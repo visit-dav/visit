@@ -36,69 +36,37 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                         avtIVPVTKTimeVaryingField.h                       //
-// ************************************************************************* //
+#ifndef VTK_VISIT_INTERPOLATED_VELOCITY_FIELD
+#define VTK_VISIT_INTERPOLATED_VELOCITY_FIELD
 
-#ifndef AVT_IVPVTKTimeVaryingFIELD_H
-#define AVT_IVPVTKTimeVaryingFIELD_H
+#include <vtkObject.h>
 
-#include <avtIVPField.h>
+class vtkDataSet;
+class vtkVisItPointLocator;
 
-#include <vtkVisItInterpolatedVelocityField.h>
-
-#include <ivp_exports.h>
-
-
-// ****************************************************************************
-//  Class:  avtIVPVTKTimeVaryingField
-//
-//  Purpose:
-//    A wrapper class to allow the use of vtkDataSets as IVP fields for 
-//    streamline integration. Uses vtkVisItInterpolatedVelocityField on top of 
-//    the supplied vtkDataSet. 
-//
-//  Programmer:  Dave Pugmire (on behalf of Hank Childs)
-//  Creation:    Tue Feb 24 09:24:49 EST 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Add GetValidTimeRange.
-//
-//   Hank Childs, Thu Apr  2 16:40:08 PDT 2009
-//   Use vtkVisItInterpolatedVelocityField.
-//
-// ****************************************************************************
-
-class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
+class vtkVisItInterpolatedVelocityField  : public vtkObject
 {
   public:
-                   avtIVPVTKTimeVaryingField(vtkVisItInterpolatedVelocityField *velocity1,
-                                             vtkVisItInterpolatedVelocityField *velocity2,
-                                             double time1, double time2); 
-                   ~avtIVPVTKTimeVaryingField();
+  vtkTypeMacro(vtkVisItInterpolatedVelocityField,vtkObject);
+                  vtkVisItInterpolatedVelocityField();
+    virtual      ~vtkVisItInterpolatedVelocityField();
 
-    // avtIVPField interface
-    avtVec         operator()(const double& t, const avtVecRef& x) const;
-    double         ComputeVorticity(const double& t, const avtVecRef& x) const;
-    
-    bool           IsInside( const double& t, const avtVecRef& x ) const;
-    unsigned int   GetDimension() const;
-    void           SetNormalized( bool v );
-    virtual bool   GetValidTimeRange(double range[]) const;
+    static vtkVisItInterpolatedVelocityField *New();
+    void          SetDataSet(vtkDataSet *ds);
+    bool          Evaluate(double *pt, double *vel);
+ 
+    vtkDataSet   *GetDataSet(void) { return ds; };
+    double       *GetLastWeights(void) { return weights; };
+    int           GetLastCell(void) { return lastCell; };
+    double       *GetLastPCoords(void) { return pcoords; };
 
-  protected:
-
-
-    vtkVisItInterpolatedVelocityField   *iv1;
-    vtkVisItInterpolatedVelocityField   *iv2;
-    double                          time1;
-    double                          time2;
-    bool           normalized;
-    
+  private:
+    vtkDataSet  *ds;
+    vtkVisItPointLocator *locator;
+    double       weights[1024];
+    int          lastCell;
+    double       pcoords[3];
 };
 
 #endif
-
 
