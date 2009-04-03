@@ -265,6 +265,7 @@ avtStreamlineFilter::ComputeRankList(const vector<int> &domList,
     {
         int dom = domList[i];
         DomainType d(dom, 0);
+        // TODO: Should this be DomainType d(dom, activeTimeStep); instead?
         int proc = DomainToRank(d);
         r.push_back(proc);
     }
@@ -1205,6 +1206,10 @@ avtStreamlineFilter::Execute(void)
 //   Dave Pugmire, Thu Apr  2 10:59:42 EDT 2009
 //   Properly bound seedTime0 search.
 //
+//   Gunther H. Weber, Fri Apr  3 16:01:48 PDT 2009
+//   Initialize seedTimeStep0 even when streamlines are computed since
+//   otherwise seed points get created for the wrong time step. 
+//
 // ****************************************************************************
 
 void
@@ -1372,10 +1377,20 @@ avtStreamlineFilter::Initialize()
                     seedTimeStep0 = i;
                     break;
                 }
+#if 0
+            seedTimeStep0 = activeTimeStep;
+            seedTime0 = domainTimeIntervals[seedTimeStep0][0];
+#endif
             
             if (seedTimeStep0 == -1)
                 EXCEPTION1(ImproperUseException, "Invalid pathline time value.");
         }
+    }
+    else
+    {
+        // Wee need to set seedTimeStep0 even for streamlines since it is used
+        // as time for the streamline seeds.
+        seedTimeStep0 = activeTimeStep;
     }
 }
 
