@@ -77,6 +77,9 @@
 //   Brad Whitlock, Wed Jan  7 14:51:13 PST 2009
 //   Removed GetPlotListIndex, GetPlotInfoAtts.
 //
+//   Brad Whitlock, Fri Apr  3 10:54:57 PDT 2009
+//   I added GetBoundingBoxMode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
@@ -99,6 +102,8 @@ class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
 
     vtkRenderer        *GetBackground()
                                   { return ProxiedGetBackground(); };
+
+    bool                GetBoundingBoxMode() const { return ProxiedGetBoundingBoxMode(); }
 
     void                GetBounds(double bounds[6])
                                   { ProxiedGetBounds(bounds); };

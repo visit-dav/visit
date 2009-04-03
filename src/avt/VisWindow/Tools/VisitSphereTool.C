@@ -611,6 +611,8 @@ VisitSphereTool::CallCallback()
 // Creation:   Thu May 2 16:59:02 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Fri Apr  3 11:01:17 PDT 2009
+//   Don't do bounding box mode unless we have it selected.
 //
 // ****************************************************************************
 
@@ -618,7 +620,7 @@ void
 VisitSphereTool::InitialActorSetup()
 {
     // Enter bounding box mode if there are plots.
-    if(proxy.HasPlots())
+    if(proxy.GetBoundingBoxMode() && proxy.HasPlots())
     {
         addedBbox = true;
         proxy.StartBoundingBox();

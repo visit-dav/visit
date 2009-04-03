@@ -117,6 +117,10 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
     void RemoveText();
     void UpdateText();
 
+    void CreateSphere();
+    void DeleteSphere();
+    void UpdateSphere();
+
     void InitialActorSetup();
     void FinalActorSetup();
 
@@ -125,6 +129,9 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
     vtkActor            *guideActor;
     vtkPolyDataMapper   *guideMapper;
     vtkPolyData         *guideData;
+    vtkActor            *sphereActor;
+    vtkPolyDataMapper   *sphereMapper;
+    vtkPolyData         *sphereData;
     vtkTextActor        *pointTextActor;
 
     avtPointToolInterface Interface;
