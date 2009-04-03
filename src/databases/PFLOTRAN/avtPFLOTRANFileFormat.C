@@ -79,6 +79,12 @@ static std::string coordNames[3] = { "X [m]", "Y [m]", "Z [m]" };
 //  Programmer: Sean Ahern
 //  Creation:   Thu Apr 24 14:00:58 PST 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Apr  3 12:26:26 EDT 2009
+//    All variables are supposed to be cell-centered.
+//    Add support for old-style PFLOTRAN files where the coordinate
+//    arrays represented cell centers.
+//
 // ****************************************************************************
 
 avtPFLOTRANFileFormat::avtPFLOTRANFileFormat(const char *fname):
@@ -87,6 +93,9 @@ avtPFLOTRANFileFormat::avtPFLOTRANFileFormat(const char *fname):
     filename = strdup(fname);
     opened = false;
     nTime = 0;
+
+    // a bit of a hack to fix up old files with cell-centered coordinates
+    oldFileNeedingCoordFixup = false;
 
     // Turn off HDF5 error messages to the terminal.
     H5Eset_auto(NULL, NULL);
@@ -459,6 +468,12 @@ avtPFLOTRANFileFormat::AddGhostCellInfo(vtkDataSet *ds)
 //  Programmer: Sean Ahern
 //  Creation:   Thu Apr 24 14:00:58 PST 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Apr  3 12:26:26 EDT 2009
+//    All variables are supposed to be cell-centered.
+//    Add support for old-style PFLOTRAN files where the coordinate
+//    arrays represented cell centers.
+//
 // ****************************************************************************
 
 void
@@ -494,12 +509,37 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
     {
         char name[512];
         H5Gget_objname_by_idx(g, i, name, 512);
+
+        hid_t ds = H5Dopen(g, name);
+        hid_t dsSpace = H5Dget_space(ds);
+        int ndims = H5Sget_simple_extent_ndims(dsSpace);
+        if (ndims != 3)
+            continue; // skip it
+
+        // We need to check if the coordinate array dims are the same
+        // as the variables.  So well save off one of the variable's
+        // dimensions and compare it with the mesh coordinate array later
+        // to see if we need to recenter the coordinate arrays.
+        if (i == 0)
+        {
+            hsize_t varDimsForOldFileTest[3];
+            H5Sget_simple_extent_dims(dsSpace, varDimsForOldFileTest, NULL);
+            oldFileNeedingCoordFixup = (globalDims[0]==varDimsForOldFileTest[0]);
+        }        
+
         avtScalarMetaData *scalar = new avtScalarMetaData();
         scalar->name = name;
         scalar->meshName = "mesh";
-        scalar->centering = AVT_NODECENT;
+        scalar->centering = AVT_ZONECENT;
         md->Add(scalar);
     }
+
+#ifdef PARALLEL
+    if (oldFileNeedingCoordFixup)
+        EXCEPTION1(ImproperUseException,
+                   "Can't support old PFLOTRAN files, needing coordinate "
+                   "array recentering, in parallel.");
+#endif
 
     // Set the time information.
     std::vector<double> t;
@@ -535,6 +575,11 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
 //    Added support for automatic parallel decomposition and parallel I/O
 //    via hyperslab reading.
 //
+//    Jeremy Meredith, Fri Apr  3 12:26:26 EDT 2009
+//    All variables are supposed to be cell-centered.
+//    Add support for old-style PFLOTRAN files where the coordinate
+//    arrays represented cell centers.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -564,7 +609,41 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
     }
 
     vtkRectilinearGrid *mesh = vtkRectilinearGrid::New();
-    mesh->SetDimensions(domainGlobalCount);
+
+    if (oldFileNeedingCoordFixup)
+    {
+        int dims[3] = {domainGlobalCount[0],
+                       domainGlobalCount[1],
+                       domainGlobalCount[2]};
+        for (int dim=0; dim<3; dim++)
+        {
+            if (dims[dim] < 2)
+                continue;
+
+            dims[dim]++;
+            int d = dims[dim];
+            vtkDoubleArray *oc = localCoords[dim];
+            vtkDoubleArray *nc = vtkDoubleArray::New();
+
+            nc->SetNumberOfTuples(oc->GetNumberOfTuples()+1);
+            nc->SetTuple1(0, (oc->GetTuple1(0) -
+                              (oc->GetTuple1(1)-oc->GetTuple1(0))/2.));
+            for (int i=1; i<d-1; i++)
+                nc->SetTuple1(i, (oc->GetTuple1(i-1)+oc->GetTuple1(i))/2.);
+            nc->SetTuple1(d-1, (oc->GetTuple1(d-2) +
+                                (oc->GetTuple1(d-2)-oc->GetTuple1(d-3))/2.));
+
+            localCoords[dim] = nc;
+            oc->Delete();
+        }
+
+        mesh->SetDimensions(dims);
+    }
+    else
+    {
+        mesh->SetDimensions(domainGlobalCount);
+    }
+
     mesh->SetXCoordinates(localCoords[0]);
     mesh->SetYCoordinates(localCoords[1]);
     mesh->SetZCoordinates(localCoords[2]);
@@ -609,6 +688,11 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
 //    at all, so while I'm surprised it looked even partly okay, I'm
 //    confident reading to ints is the correct solution.
 //
+//    Jeremy Meredith, Fri Apr  3 12:26:26 EDT 2009
+//    All variables are supposed to be cell-centered.
+//    Add support for old-style PFLOTRAN files where the coordinate
+//    arrays represented cell centers.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -630,7 +714,12 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 
     hid_t slabSpace = H5Scopy(dsSpace);
     hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
-    hsize_t count[] = {domainGlobalCount[0],domainGlobalCount[1],domainGlobalCount[2]};
+    hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
+    if (oldFileNeedingCoordFixup)
+    {
+        for (int dim=0; dim<3; dim++)
+            count[dim]++;
+    }
     H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
 
     hsize_t beg[3];
