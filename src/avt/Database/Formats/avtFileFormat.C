@@ -89,6 +89,9 @@ const double avtFileFormat::FORMAT_INVALID_TIME  = INVALID_TIME / 10.0;
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Fri Apr  3 23:39:26 CDT 2009
+//    Initialize resultMustBeProducedOnlyOnThisProcessor.
+//
 // ****************************************************************************
 
 avtFileFormat::avtFileFormat()
@@ -99,6 +102,7 @@ avtFileFormat::avtFileFormat()
     canDoStreaming = true;
     metadata = NULL;
     closingFile = false;
+    resultMustBeProducedOnlyOnThisProcessor = false;
 }
 
 

@@ -2901,6 +2901,10 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
 //    Hank Childs, Sun Mar 22 14:40:49 CDT 2009
 //    Add support for point selections.
 //
+//    Hank Childs, Sat Apr  4 00:24:21 CDT 2009
+//    Add support for the case where we are streaming data in parallel and
+//    we can't rely on other processors to help out.
+//
 // ****************************************************************************
 
 void
@@ -3029,9 +3033,23 @@ avtNek5000FileFormat::RegisterDataSelections(
     int nelements = (useAllElements ? iNumBlocks : finalElementList.size());
     int elements_per_proc = nelements / nprocs;
     int one_extra_until = nelements % nprocs;
-    int my_num_elements = elements_per_proc + (rank < one_extra_until ? 1 : 0);
-    int my_start = elements_per_proc*rank + (rank < one_extra_until ? rank : one_extra_until);
-    int my_end = my_start + my_num_elements;
+
+    int my_num_elements, my_start, my_end;
+    if (resultMustBeProducedOnlyOnThisProcessor)
+    {
+        my_num_elements = nelements;
+        my_start = 0;
+        my_end = nelements;
+    }
+    else
+    {
+        int elements_per_proc = nelements / nprocs;
+        int one_extra_until = nelements % nprocs;
+        my_num_elements = elements_per_proc + (rank < one_extra_until ? 1 : 0);
+        my_start = elements_per_proc*rank + (rank < one_extra_until ? rank : one_extra_until);
+        my_end = my_start + my_num_elements;
+    }
+
     myElementList.resize(my_num_elements);
     for (i = my_start ; i < my_end ; i++)
     {

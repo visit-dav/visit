@@ -4756,6 +4756,10 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    algorithm (for example) assumes that all of the domains have different
 //    IDs.
 //    
+//    Hank Childs, Fri Apr  3 23:51:06 CDT 2009
+//    Add support for file formats that do their own domain decomposition
+//    in a parallel setting when using data selections.
+//
 // ****************************************************************************
 
 void
@@ -4821,6 +4825,16 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         real_vars2nd.push_back(ref);
     }
     Interface->RegisterVariableList(real_var, vars2nd);
+
+    // 
+    // File formats that do their own domain decomposition divide the problem
+    // among their processors.  If we are streaming, then we don't want to
+    // do this.  We'll have to count on the data selections in this case.
+    // Communicate this to the file formats here.
+    //
+    avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
+    Interface->SetResultMustBeProducedOnlyOnThisProcessor(
+                                                   validity.AreWeStreaming());
 
     //
     // Some file formats are interested in knowing about data selections
