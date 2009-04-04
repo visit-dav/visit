@@ -52,6 +52,7 @@
 
 #include <avtBinningScheme.h>
 #include <avtDDFFunctionInfo.h>
+#include <avtParallel.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
@@ -222,11 +223,20 @@ avtDDF::ApplyFunction(vtkDataSet *ds)
 //  Programmer: Hank Childs
 //  Creation:   March 30, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 26 13:15:10 CDT 2009
+//    Only have the root processor write out the file (wowsa! -- how did this
+//    not get noticed for 3 years!).
+//
 // ****************************************************************************
 
 void
 avtDDF::OutputDDF(const std::string &ddfname)
 {
+    if (PAR_Rank() != 0)
+        return;
+
     avtDDFFunctionInfo *i = GetFunctionInfo();
     int numDims = i->GetDomainNumberOfTuples();
     vtkDataSet *g = CreateGrid();
