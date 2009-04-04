@@ -61,6 +61,9 @@
 #    Thomas R. Treadway, Fri Jul 27 15:06:53 PDT 2007
 #    Added Mesa libraries to link.
 #
+#    Gunther H. Weber, Fri Apr  3 17:24:22 PDT 2009
+#    Added vtkVisItCellLocator from "full".
+#
 ##############################################################################
 
 ##
@@ -92,6 +95,7 @@ SRC=InitVTKNoGraphics.C \
     vtkUnstructuredGridBoundaryFilter.C \
     vtkUnstructuredGridFacelistFilter.C \
     vtkVisItPointLocator.C \
+    vtkVisItCellLocator.C \
     vtkVisItUtility.C 
 
 
