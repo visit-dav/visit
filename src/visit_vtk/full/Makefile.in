@@ -313,6 +313,9 @@
 #    Hank Childs, Thu Apr  2 17:54:09 CDT 2009
 #    Added vtkVisItInterpolatedVelocityField.
 #
+#    Gunther H. Weber, Fri Apr  3 17:24:22 PDT 2009
+#    Moved vtkVisItCellLocator to "lightweight".
+#
 ##############################################################################
 
 ##
@@ -350,7 +353,6 @@ SRC= vtkAxisDepthSort.C \
     vtkVectorReduceFilter.C \
     vtkVertexFilter.C \
     vtkVisItCellDataToPointData.C \
-    vtkVisItCellLocator.C \
     vtkVisItClipper.C \
     vtkVisItContourFilter.C \
     vtkVisItCutter.C \
