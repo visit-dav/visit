@@ -99,6 +99,9 @@ avtDatasetOnDemandFilter::avtDatasetOnDemandFilter()
 //    Dave Pugmire, Wed Mar 25 09:15:23 EDT 2009
 //    Add domain caching for point decomposed domains.
 //
+//    Gunther H. Weber, Fri Apr  3 17:37:18 PDT 2009
+//    Moved vtkCellLocator from map to DomainCacheEntry data structure.
+//
 // ****************************************************************************
 
 avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
@@ -106,12 +109,9 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
     while ( ! domainQueue.empty() )
     {
         domainQueue.front().ds->Delete();
+        if (domainQueue.front().cl) domainQueue.front().cl->Delete();
         domainQueue.pop_front();
     }
-
-    std::map<int, vtkVisItCellLocator*>::const_iterator it;
-    for ( it = pointSelDomainToCellLocatorMap.begin(); it != pointSelDomainToCellLocatorMap.end(); it++ )
-        it->second->Delete();
 }
 
 
@@ -233,6 +233,12 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
 //    Dave Pugmire, Wed Mar 25 09:15:23 EDT 2009
 //    Add domain caching for point decomposed domains.
 //
+//    Gunther H. Weber, Fri Apr  3 17:38:12 PDT 2009
+//    Enabled Dave's caching code. Since we currently use the same domain id
+//    for all requests of data around points, using a map from the domain id
+//    to a cell locator would not have worked. Thus, I moved the entry to
+//    the DataCacheEntry instead.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -246,12 +252,15 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
     }
 
     int domainId = 0; //Need to hash XYZ to domainId ???
+    // FIXME: For the moment we just use one domain ID (0) for all points. This choice will cause
+    // the following for loop to test *all* cache entries whether they contain the point location.
+    // This strategy is not very efficient, but better than a pipeline re-execute.
 
     debug5<<"Look in cache: "<<domainId<<" sz= "<<domainQueue.size()<<endl;
-#if 0
 
     //See if it's in the cache.
     std::list<DomainCacheEntry>::iterator it;
+    int foundPos = 0;
     for ( it = domainQueue.begin(); it != domainQueue.end(); it++ )
     {
         // Found it. Move it to the front of the list.
@@ -278,14 +287,14 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
                 //Do a cell check....
                 debug5<<"It's in the bbox. Check the cell.\n";
 
-                vtkVisItCellLocator *cellLocator = pointSelDomainToCellLocatorMap[domainId];
+                vtkVisItCellLocator *cellLocator = it->cl;
                 if ( cellLocator == NULL )
                 {
                     cellLocator = vtkVisItCellLocator::New();
                     cellLocator->SetDataSet(it->ds);
                     cellLocator->IgnoreGhostsOn();
                     cellLocator->BuildLocator();
-                    pointSelDomainToCellLocatorMap[domainId] = cellLocator;
+                    it->cl = cellLocator;
                 }
                 
                 double rad = 1e-6, dist=0.0;
@@ -300,9 +309,9 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
                 }
             }
 
-
             if (foundIt)
             {
+                debug5<<"Found data in cace, returning cache entry " << foundPos << std::endl;
                 DomainCacheEntry entry;
                 entry.ds = it->ds;
                 entry.domainID = it->domainID;
@@ -315,7 +324,6 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
             }
         }
     }
-#endif
 
     debug5<<"     Update->GetDataAroundPoint, time= "<<timeStep<<endl;
     avtContract_p new_contract = new avtContract(firstContract);
@@ -339,12 +347,14 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
     entry.domainID = domainId;
     entry.timeStep = timeStep;
     entry.ds = rv;
+    entry.cl = 0;
     rv->Register(NULL);
     loadDSCount++;
 
     domainQueue.push_front(entry);
     if ( domainQueue.size() > maxQueueLength )
     {
+        if (domainQueue.back().cl) domainQueue.back().cl->Delete();
         vtkDataSet *purgeDS = domainQueue.back().ds;
         int purgeDomainID = domainQueue.back().domainID;
         domainQueue.pop_back();
