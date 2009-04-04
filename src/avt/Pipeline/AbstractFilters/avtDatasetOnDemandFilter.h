@@ -51,11 +51,31 @@
 class  avtExtents;
 class vtkVisItCellLocator;
 
-typedef struct
+// ****************************************************************************
+//  Class: avtDatasetOnDemandFilter
+//
+//  Purpose:
+//     Helper class for list of entries 
+//
+//  Programmer: Hank Childs
+//  Creation:   March 1, 2008
+//
+//  Modifications:
+//    Gunther H. Weber, Fri Apr  3 17:32:29 PDT 2009
+//    Added visitCellLocator entry and a constructor that ensures that it
+//    is set to 0 (because if the value is different from 0 the destructor
+//    of avtDatasetOnDemandFilter will call Delete() on it.
+//
+// **************************************************************************** 
+
+struct DomainCacheEntry
 {
     vtkDataSet *ds;
     int domainID, timeStep;
-} DomainCacheEntry;
+    vtkVisItCellLocator* cl;
+
+    DomainCacheEntry() : ds(0), timeStep(-1), cl(0) {}
+};
 
 
 // ****************************************************************************
@@ -98,6 +118,10 @@ typedef struct
 //    Dave Pugmire, Sat Mar 28 09:42:15 EDT 2009
 //    Counter to keep track of how many times a domain is loaded.
 //
+//    Gunther H. Weber, Fri Apr  3 17:40:05 PDT 2009
+//    Removed map from domain id to cell locator since we currently
+//    use the same domain id for all point based data load operations.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
@@ -136,7 +160,6 @@ protected:
     avtContract_p                firstContract;
     bool                         operatingOnDemand;
     int                          purgeDSCount, loadDSCount;
-    std::map<int, vtkVisItCellLocator*> pointSelDomainToCellLocatorMap;
 };
 
 
