@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkVisItCellLocator.h
+../../visit_vtk/lightweight/vtkVisItCellLocator.h
