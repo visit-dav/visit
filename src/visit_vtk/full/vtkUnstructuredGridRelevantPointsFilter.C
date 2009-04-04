@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include "vtkUnstructuredGridRelevantPointsFilter.h"
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkIdList.h>
 #include <vtkMergePoints.h>
@@ -56,15 +57,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 vtkStandardNewMacro(vtkUnstructuredGridRelevantPointsFilter);
 
 
+#include <avtParallel.h>
 //------------------------------------------------------------------------------
 // Modifications:
 //
 //   Hank Childs, Sun Mar 13 14:12:38 PST 2005
 //   Fix memory leak.
 //
+//   Hank Childs, Sun Mar 29 16:26:27 CDT 2009
+//   Remove call to BuildLinks.
+//
 //------------------------------------------------------------------------------
 void vtkUnstructuredGridRelevantPointsFilter::Execute()
 {
+  int  i, j;
+
   vtkUnstructuredGrid  *input  = this->GetInput();
   vtkUnstructuredGrid  *output = this->GetOutput();
   
@@ -87,41 +94,48 @@ void vtkUnstructuredGridRelevantPointsFilter::Execute()
     return;
     }
   
-  input->BuildLinks();
+  int *pointMap = new int[numInPts];
+  for (i = 0 ; i < numInPts ; i++)
+    {
+    pointMap[i] = -1;
+    }
+  vtkCellArray *cells = input->GetCells();
+  vtkIdType *ptr = cells->GetPointer();
+  int numOutPts = 0;
+  for (i = 0 ; i < numCells ; i++)
+    {
+    int npts = *ptr++;
+    for (j = 0 ; j < npts ; j++)
+      {
+      int oldPt = *ptr++;
+      if (pointMap[oldPt] == -1)
+        pointMap[oldPt] = numOutPts++;
+      }
+    }
+
   vtkPoints *newPts = vtkPoints::New();
-  newPts->Allocate(numInPts);
+  newPts->SetNumberOfPoints(numOutPts);
+  vtkPointData *inputPD  = input->GetPointData();
+  vtkPointData *outputPD = output->GetPointData();
+  outputPD->CopyAllocate(inputPD, numOutPts);
   
+  for (j = 0 ; j < numInPts ; j++)
+    {
+    if (pointMap[j] != -1)
+      {
+      double pt[3];
+      inPts->GetPoint(j, pt);
+      newPts->SetPoint(pointMap[j], pt);
+      outputPD->CopyData(inputPD, j, pointMap[j]);
+      }
+    }
+
   vtkCellData  *inputCD = input->GetCellData();
   vtkCellData  *outputCD = output->GetCellData();
   outputCD->PassData(inputCD);
   
-  vtkPointData *inputPD  = input->GetPointData();
-  vtkPointData *outputPD = output->GetPointData();
-  outputPD->CopyAllocate(inputPD);
-  
-  int numNewPts = 0;
   vtkIdList *cellIds = vtkIdList::New();
-  int *pointMap = new int[numInPts];
-  int i;
-  // search through all given input points, marking those not
-  // associated with cells, adding good points to the new list
-  for (i = 0; i < numInPts; i++)
-    {
-    input->GetPointCells(i, cellIds);
-    if (0 == cellIds->GetNumberOfIds()) 
-      {
-      pointMap[i] = -1;
-      }
-    else
-      {
-      newPts->InsertNextPoint(inPts->GetPoint(i));
-      pointMap[i] = numNewPts;
-      outputPD->CopyData(inputPD, i, numNewPts);
-      numNewPts++;
-      }
-    }
 
-  newPts->Squeeze();
   output->SetPoints(newPts);
 
   // now work through cells, changing associated point id to coincide
@@ -129,15 +143,17 @@ void vtkUnstructuredGridRelevantPointsFilter::Execute()
 
   vtkIdList *oldIds = vtkIdList::New(); 
   vtkIdList *newIds = vtkIdList::New();
-  int j, id, cellType;
+  int id, cellType;
+  ptr = cells->GetPointer();
   for (i = 0; i < numCells; i++) 
     {
-    input->GetCellPoints(i, oldIds);
     cellType = input->GetCellType(i);
-    newIds->SetNumberOfIds(oldIds->GetNumberOfIds());
-    for (j = 0; j < oldIds->GetNumberOfIds(); j++)
+    int npts = *ptr++;
+
+    newIds->SetNumberOfIds(npts);
+    for (j = 0; j < npts ; j++)
       {
-      id = oldIds->GetId(j); 
+      id = *ptr++;
       newIds->SetId(j, pointMap[id]);
       }
       output->InsertNextCell(cellType, newIds);
