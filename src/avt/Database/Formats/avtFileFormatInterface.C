@@ -369,3 +369,30 @@ avtFileFormatInterface::CanCacheVariable(const char *var_name)
 
     return true;
 }
+
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::SetResultMustBeProducedOnlyOnThisProcessor
+//
+//  Purpose:
+//      This method is for telling formats that do their own domain
+//      decomposition whether or not they can count on other processors to 
+//      help them produce results.  In the case of streamlines that produce
+//      point selections, the file format reader will *not* be able to count
+//      on the other processors, although it can in all other cases (at the
+//      time of the writing of this comment).
+//
+//  Programmer: Hank Childs
+//  Creation:   April 3, 2009
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::SetResultMustBeProducedOnlyOnThisProcessor(bool b)
+{
+    int nFormats = GetNumberOfFileFormats();
+    for (int i = 0 ; i < nFormats ; i++)
+    {
+        GetFormat(i)->SetResultMustBeProducedOnlyOnThisProcessor(b);
+    }
+}

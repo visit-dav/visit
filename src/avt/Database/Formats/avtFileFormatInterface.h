@@ -210,6 +210,9 @@ class    avtVariableCache;
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Fri Apr  3 23:39:26 CDT 2009
+//    Added SetResultMustProducedOnlyOnThisProcessor.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -249,6 +252,7 @@ class DATABASE_API avtFileFormatInterface
     void                    SetCache(avtVariableCache *);
     void                    TurnMaterialSelectionOff(void);
     void                    TurnMaterialSelectionOn(const char *);
+    void                    SetResultMustBeProducedOnlyOnThisProcessor(bool);
 
     void                    RegisterDataSelections(
                                 const std::vector<avtDataSelection_p>& selList,

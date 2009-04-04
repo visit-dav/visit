@@ -115,6 +115,12 @@ class     avtVariableCache;
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Fri Apr  3 23:39:26 CDT 2009
+//    Add data member, resultMustBeProducedOnlyOnThisProcessor, which is
+//    for telling dynamic decomposition formats when its processor is
+//    operating in isolation and thus cannot assume other processors will
+//    read some of its data.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -154,6 +160,9 @@ class DATABASE_API avtFileFormat
     virtual void          RegisterDataSelections(
                               const std::vector<avtDataSelection_p>&,
                               std::vector<bool> *wasApplied) {;};
+
+    void                  SetResultMustBeProducedOnlyOnThisProcessor(bool b)
+                            { resultMustBeProducedOnlyOnThisProcessor = b; };
 
     //
     // MCM-07Apr05: Below this line, a new design pattern is being introduced
@@ -201,6 +210,10 @@ class DATABASE_API avtFileFormat
     bool                  closingFile;
     char                 *materialName;
     std::vector<int>      fileIndicesForDescriptorManager;
+
+    // This data member is for file formats that do their 
+    // own domain decomposition.
+    bool                  resultMustBeProducedOnlyOnThisProcessor;
 
     //
     // These cannot be const because the format might have to do real work
