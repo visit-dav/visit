@@ -90,6 +90,10 @@ avtSerialSLAlgorithm::~avtSerialSLAlgorithm()
 //   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
 //   Make changes for point decomposed domain databases.
 //
+//   Hank Childs, Fri Apr  3 16:26:24 PDT 2009
+//   Change parallelization strategy, since it was loading up on the last
+//   processor and we want it to be more spread out.
+//
 // ****************************************************************************
 
 void
@@ -98,18 +102,25 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
     avtSLAlgorithm::Initialize(seedPts);
     int nSeeds = seedPts.size();
     int i0 = 0, i1 = nSeeds;
+    debug3 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
 
  #ifdef PARALLEL
     int rank = PAR_Rank();
     int nProcs = PAR_Size();
 
-    int nPts = nSeeds/nProcs;
-    i0 = rank * nPts;
-    i1 = i0 + nPts;
-    // Last processor will get the slack.
-    if (rank == nProcs-1)
-        i1 = nSeeds;
-    debug1 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
+    int nSeedsPerProc = (nSeeds / nProcs);
+    int oneExtraUntil = (nSeeds % nProcs);
+    
+    if (rank < oneExtraUntil)
+    {
+        i0 = (rank)*(nSeedsPerProc+1);
+        i1 = (rank+1)*(nSeedsPerProc+1);
+    }
+    else
+    {
+        i0 = (rank)*(nSeedsPerProc) + oneExtraUntil;
+        i1 = (rank+1)*(nSeedsPerProc) + oneExtraUntil;
+    }
     
     //Delete the seeds I don't need.
     for (int i = 0; i < i0; i++)
