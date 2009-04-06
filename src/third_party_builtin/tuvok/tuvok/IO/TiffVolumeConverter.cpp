@@ -79,6 +79,7 @@ TiffVolumeConverter::ConvertToRAW(const std::string& strSourceFilename,
                                   std::string& strIntermediateFile,
                                   bool& bDeleteIntermediateFile)
 {
+#if 0
   MESSAGE("Attempting to convert TiffVolume: %s", strSourceFilename.c_str());
 
   TIFF *tif = TIFFOpen(strSourceFilename.c_str(), "r");
@@ -166,6 +167,7 @@ TiffVolumeConverter::ConvertToRAW(const std::string& strSourceFilename,
   binary.Close();
 
   TIFFClose(tif);
+#endif
   return true;
 }
 
@@ -182,7 +184,7 @@ TiffVolumeConverter::ConvertToNative(const std::string&,
 {
   return false;
 }
-
+#if 0
 // Reads the dimensions of the TIFF volume.  X and Y come from the dimensions
 // of the first image in the stack: we assume that this stays constant
 // throughout the volume.  Z comes from the number of images in the stack.
@@ -256,4 +258,5 @@ tv_vector_to_scalar_magnitude(UINT32 *field, size_t w, size_t h)
   }
   return ret;
 }
+#endif
 #endif
