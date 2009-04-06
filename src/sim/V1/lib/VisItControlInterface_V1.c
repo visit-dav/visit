@@ -1190,11 +1190,14 @@ int VisItAttemptToCompleteConnection(void)
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Brad Whitlock, Mon Apr  6 09:50:54 PDT 2009
+*   Don't call if the function is NULL.
 *
 *******************************************************************************/
 void VisItSetSlaveProcessCallback(void (*spic)())
 {
-    v_set_slave_process_callback(spic);
+    if(v_set_slave_process_callback)
+        v_set_slave_process_callback(spic);
 }
 
 /*******************************************************************************
@@ -1206,11 +1209,14 @@ void VisItSetSlaveProcessCallback(void (*spic)())
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Brad Whitlock, Mon Apr  6 09:50:54 PDT 2009
+*   Don't call if the function is NULL.
 *
 *******************************************************************************/
 void VisItSetCommandCallback(void (*scc)(const char*,int,float,const char*))
 {
-    v_set_command_callback(engine,scc);
+    if(engine && v_set_command_callback)
+        v_set_command_callback(engine,scc);
 }
 
 /*******************************************************************************
@@ -1301,11 +1307,14 @@ void VisItExecuteCommand(const char *command)
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*  Brad Whitlock, Mon Apr  6 09:54:01 PDT 2009
+*  Don't call disconnect unless it's set.
 *
 *******************************************************************************/
 void VisItDisconnect(void)
 {
-    v_disconnect();
+    if(v_disconnect)
+        v_disconnect();
     engineSocket = -1;
     engine = 0;
 }

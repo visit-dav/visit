@@ -501,13 +501,13 @@ F_VISITATTEMPTCONNECTION(void)
         VisItSetGetVariable(VisItGetVariable, NULL);
         VisItSetGetCurve(VisItGetCurve, NULL);
         VisItSetGetDomainList(VisItGetDomainList, NULL);
+    
+        /* These functions need to be set up but they can't be set up until
+         * after the VisItAttemptToCompleteConnection function completes.
+         */
+        VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
+        VisItSetCommandCallback(f_visit_internal_commandcallback, NULL);
     }
-
-    /* These functions need to be set up but they can't be set up until after
-     * the VisItAttemptToCompleteConnection function completes.
-     */
-    VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
-    VisItSetCommandCallback(f_visit_internal_commandcallback, NULL);
 
     return ret;
 }
