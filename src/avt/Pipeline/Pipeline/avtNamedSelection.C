@@ -42,10 +42,16 @@
 
 #include <avtNamedSelection.h>
 
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+
 #include <avtIdentifierSelection.h>
 
 #include <visitstream.h>
 #include <VisItException.h>
+#include <InvalidVariableException.h>
 
 
 // ****************************************************************************
@@ -412,6 +418,50 @@ avtFloatingPointIdNamedSelection::CreateSelection(void)
     avtIdentifierSelection *rv = new avtIdentifierSelection;
     rv->SetIdentifiers(ids);
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtFloatingPointIdNamedSelection::CreateConditionString
+//
+//  Purpose:
+//      Creates a condition string that can be fed to the database.
+//
+//  Notes:      This is probably a bad design, because it assumes FastBit.
+//              This should be revisited soon.
+//
+//  Programmer: Hank Childs
+//  Creation:   April 6, 2009
+//
+// ****************************************************************************
+
+static std::string
+stringify(double x)
+{
+    std::ostringstream o;
+    if (!(o << setprecision(32) << x))
+    {
+        EXCEPTION1(InvalidVariableException, "string conversion");
+    }
+    return o.str();
+}
+
+const std::string
+avtFloatingPointIdNamedSelection::CreateConditionString(void)
+{
+    std::string condition = "";
+    if (ids.size()>0)
+    {
+        // convert all the identifiers into a string...
+        std::string id_string = "( id in ( "; // Prabhat- TODO id is hardcoded here..
+
+        for (int j=0; j<ids.size()-1; j++)
+            id_string = id_string + stringify(ids[j]) + ", ";
+        id_string = id_string + stringify(ids[ids.size()-1]) + " ))";
+
+        condition = id_string;
+    }
+    return condition;
 }
 
 

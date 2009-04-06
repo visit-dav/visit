@@ -1310,6 +1310,10 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
 //
 //    Gunther H. Weber, Thu Apr 12 11:00:57 PDT 2007
 //    Added missing space to debug message
+//
+//    Hank Childs, Mon Apr  6 13:06:22 PDT 2009
+//    Add support for sending named selection info to all filters.
+//
 // ****************************************************************************
 int
 NetworkManager::EndNetwork(int windowID)
@@ -1331,6 +1335,16 @@ NetworkManager::EndNetwork(int windowID)
             workingNetnodeList.push_back(filt);
 
             workingNet->AddNode(filt);
+
+            std::vector<Netnode *> netnodes = workingNet->GetNodeList();
+            for (int i = 0 ; i < netnodes.size() ; i++)
+            {
+                avtFilter *filt = netnodes[i]->GetFilter();
+                if (filt == NULL)
+                    continue;
+                filt->RegisterNamedSelection(it->second);
+            }
+            workingNet->GetPlot()->RegisterNamedSelection(it->second);
         }
     }
 
