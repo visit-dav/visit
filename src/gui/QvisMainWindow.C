@@ -314,6 +314,9 @@
 //    Moved the Help menu to the end of the menubar, but only for the Mac.
 //    This is to meet Macintosh application guidelines.
 //
+//    Brad Whitlock, Mon Apr  6 15:17:13 PDT 2009
+//    I added 2 missing signal/slot connections.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -397,16 +400,19 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     // ReOpen pull-right menu.
     
     reopenPopup = new QMenu(tr("ReOpen file"),fileAdvancedPopup);        
+    connect(reopenPopup, SIGNAL(triggered(QAction*)),
+            this, SLOT(reopenFile(QAction*)));
     reopenPopupAct = fileAdvancedPopup->addMenu(reopenPopup);
     reopenPopupAct->setEnabled(false);
-    //fileAdvancedPopup->setItemEnabled(reopenPopupId, false);
 
     // Close pull-right menu
     closePopup = new QMenu(tr("Close file"),fileAdvancedPopup);
+    connect(closePopup, SIGNAL(triggered(QAction*)),
+            this, SLOT(closeFile(QAction*)));
     closePopupAct = fileAdvancedPopup->addMenu(closePopup);
     closePopupAct->setEnabled(false);
 
-    filePopup->addAction(tr("Refresh file list"), 
+    refreshFileListAct = filePopup->addAction(tr("Refresh file list"), 
                           this, SIGNAL(refreshFileList()), 
                           QKeySequence(Qt::CTRL + Qt::Key_R));
     filePopup->addAction(tr("File &information . . ."), 
@@ -1314,6 +1320,9 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Mon Apr  6 15:46:18 PDT 2009
+//   I fixed a bug with the Qt4 port.
+//
 // ****************************************************************************
 
 void
@@ -1339,8 +1348,7 @@ QvisMainWindow::UpdateFileMenuPopup(QMenu *m, QAction *action)
     // Set the menu's enabled state.
     //
     bool menuEnabled = (m->actions().count() > 0);
-    m->setEnabled(menuEnabled);
-
+    action->setEnabled(menuEnabled);
 }
 
 // ****************************************************************************
@@ -2075,13 +2083,15 @@ QvisMainWindow::show()
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Mon Apr  6 15:18:46 PDT 2009
+//   I added code to translate the action id to a file index.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::reopenFile(QAction *action)
 {
-    // Get file index from action!
-    int fileIndex = 0;
+    int fileIndex = reopenPopup->actions().indexOf(action);
     const stringVector &sources = globalAtts->GetSources();
 
     if(fileIndex >= 0 && fileIndex < sources.size())
@@ -2119,13 +2129,15 @@ QvisMainWindow::reopenFile(QAction *action)
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Mon Apr  6 15:18:46 PDT 2009
+//   I added code to translate the action id to a file index.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::closeFile(QAction *action)
 {
-    // Get file index from action!
-    int fileIndex = 0;
+    int fileIndex = closePopup->actions().indexOf(action);
     const stringVector &sources = globalAtts->GetSources();
 
     if(fileIndex >= 0 && fileIndex < sources.size())
@@ -2363,8 +2375,11 @@ QvisMainWindow::GetTimeStateFormat() const
 //   Changed positions of some menu entries to account for the new File
 //   Open entry.
 //
-//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Mon Apr  6 15:41:07 PDT 2009
+//   I fixed bugs with the Qt4 port.
 //
 // ****************************************************************************
 
@@ -2381,12 +2396,12 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
             // Show selected files. Put reopen, close in an advanced menu.
             filePopup->removeAction(reopenPopupAct);
             filePopup->removeAction(closePopupAct);
-            
-            delete fileAdvancedPopupAct;
+
+            delete reopenPopupAct;
             delete closePopupAct;
 
             fileAdvancedPopup = new QMenu(tr("Advanced file options"));
-            fileAdvancedPopupAct = filePopup->insertMenu(openFileAct,fileAdvancedPopup);
+            fileAdvancedPopupAct = filePopup->insertMenu(refreshFileListAct,fileAdvancedPopup);
 
             // ReOpen pull-right menu.
             reopenPopup = new QMenu(tr("ReOpen file"));
@@ -2401,6 +2416,9 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
                     this, SLOT(closeFile(QAction*)));
             closePopupAct = fileAdvancedPopup->addMenu(closePopup);
             closePopupAct->setEnabled(true);
+
+            advancedMenuShowing = true;
+
             //
             // Update the new visible menus with the active sources.
             //
@@ -2413,22 +2431,23 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
         if(advancedMenuShowing)
         {
             // No selected files. Put reopen and close in the file menu.
-            filePopup->removeAction(fileAdvancedPopupAct);
             delete fileAdvancedPopupAct;
-
-            // ReOpen pull-right menu.
-            reopenPopup = new QMenu(tr("ReOpen file"), filePopup);
-            connect(reopenPopup, SIGNAL(triggered(QAction*)),
-                    this, SLOT(reopenFile(QAction*)));
-            reopenPopupAct = filePopup->insertMenu(openFileAct,reopenPopup);
-            reopenPopupAct->setEnabled(true);
+            fileAdvancedPopupAct = 0;
 
             // Close pull-right menu
             closePopup = new QMenu(tr("Close file"), filePopup);
             connect(closePopup, SIGNAL(triggered(QAction*)),
                     this, SLOT(closeFile(QAction*)));
-            closePopupAct = filePopup->insertMenu(reopenPopupAct,closePopup);
+            closePopupAct = filePopup->insertMenu(refreshFileListAct,closePopup);
             closePopupAct->setEnabled(false);
+
+            // ReOpen pull-right menu.
+            reopenPopup = new QMenu(tr("ReOpen file"), filePopup);
+            connect(reopenPopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(reopenFile(QAction*)));
+            reopenPopupAct = filePopup->insertMenu(closePopupAct,reopenPopup);
+            reopenPopupAct->setEnabled(true);
+
             advancedMenuShowing = false;
 
             //

@@ -385,6 +385,7 @@ private:
     QAction                   *reopenPopupAct;
     QMenu                     *closePopup;
     QAction                   *closePopupAct;
+    QAction                   *refreshFileListAct;
     bool                       advancedMenuShowing;
 
     QMenu                    *winPopup;
