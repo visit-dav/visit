@@ -70,6 +70,10 @@
 //    Jeremy Meredith, Thu Aug 11 14:35:39 PDT 2005
 //    Added new routine to unify global extents.
 //
+//    Jeremy Meredith, Mon Apr  6 14:36:58 EDT 2009
+//    Added support for particle and grid file names.
+//    This is for support for the new "Packed AMR" format.
+//
 // ****************************************************************************
 
 class avtEnzoFileFormat : public avtSTMDFileFormat
@@ -124,6 +128,9 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
         int              maxLogicalExtentsGlobally[3];
         double           refinementRatio[3];
 
+        std::string      gridFileName;
+        std::string      particleFileName;
+
       public:
         void PrintRecursive(std::vector<Grid> &grids, int level = 0);
         void Print();
@@ -131,6 +138,7 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
         void DetermineExtentsGlobally(int numLevels,std::vector<Grid> &grids);
     };
 
+    std::string fname_dir;
     std::string fname_base;
     std::string fnameB;
     std::string fnameH;

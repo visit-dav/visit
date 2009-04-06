@@ -63,6 +63,7 @@
 #include <InvalidFilesException.h>
 #include <Expression.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
 
 #include <hdf.h>
 #include <mfhdf.h>
@@ -102,6 +103,8 @@ void avtEnzoFileFormat::Grid::Print()
     cerr << "globMinExt:"<<minLogicalExtentsGlobally[0]<<","<<minLogicalExtentsGlobally[1]<<","<<minLogicalExtentsGlobally[2]<<endl;
     cerr << "globMaxExt:"<<maxLogicalExtentsGlobally[0]<<","<<maxLogicalExtentsGlobally[1]<<","<<maxLogicalExtentsGlobally[2]<<endl;
     cerr << "parRatio:  "<<refinementRatio[0]<<","<<refinementRatio[1]<<","<<refinementRatio[2]<<endl;
+    cerr << "gridFileName:"<<gridFileName<<endl;
+    cerr << "particleFileName:"<<particleFileName<<endl;
     cerr << endl;
 }
 
@@ -254,6 +257,10 @@ avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
 //    Fixed bug where the last line of the .hierarchy file was assumed
 //    to be a known item.
 //
+//    Jeremy Meredith, Mon Apr  6 14:36:58 EDT 2009
+//    Added support for particle and grid file names.
+//    This is for support for the new "Packed AMR" format.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::ReadHierachyFile()
@@ -276,6 +283,8 @@ avtEnzoFileFormat::ReadHierachyFile()
     root.minLogicalExtentsGlobally[0] = 0;
     root.minLogicalExtentsGlobally[1] = 0;
     root.minLogicalExtentsGlobally[2] = 0;
+    root.gridFileName = "";
+    root.particleFileName = "";
     grids.push_back(root);
 
     string buff = "";
@@ -359,12 +368,34 @@ avtEnzoFileFormat::ReadHierachyFile()
                 g.maxSpatialExtents[2] = 0;
             }
 
+            string fullpath;
+            while (buff != "BaryonFileName")
+            {
+                h >> buff;
+            }
+            h >> buff; // '='
+            h >> fullpath;
+            g.gridFileName = fname_dir + "/" +
+                    StringHelpers::Basename(fullpath.c_str());
+
             while (buff != "NumberOfParticles")
             {
                 h >> buff;
             }
             h >> buff; // '='
             h >> g.numberOfParticles;
+
+            if (g.numberOfParticles > 0)
+            {
+                while (buff != "ParticleFileName")
+                {
+                    h >> buff;
+                }
+                h >> buff; // '='
+                h >> fullpath;
+                g.particleFileName = fname_dir + "/" +
+                    StringHelpers::Basename(fullpath.c_str());
+            }
 
             g.level = level;
             g.parentID = parent;
@@ -502,6 +533,13 @@ avtEnzoFileFormat::ReadParameterFile()
 //
 //    Mark C. Miller, Fri Mar 20 16:07:14 PST 2009
 //    Made HDF5 related code conditionally compiled on HAVE_LIBHDF5
+//
+//    Jeremy Meredith, Mon Apr  6 14:36:58 EDT 2009
+//    Added support for explicit particle and grid file names.
+//    Also, try to descend into a top-level Group if its name
+//    matches the format for a grid-group in the new format.
+//    This is for support for the new "Packed AMR" format.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::DetermineVariablesFromGridFile()
@@ -529,11 +567,10 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
         }
     }
 
-    char gridFileName[1000];
-    sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), smallest_grid);
+    string gridFileName = grids[smallest_grid].gridFileName;
     debug3 << "Smallest Enzo grid with particles was # "<<smallest_grid<<endl;
 
-    int32 file_handle = SDstart(gridFileName, DFACC_READ);
+    int32 file_handle = SDstart(gridFileName.c_str(), DFACC_READ);
     if (file_handle >= 0)
     {
         fileType = ENZO_FT_HDF4;
@@ -581,10 +618,10 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
     else
     {
 #if HAVE_LIBHDF5
-        hid_t fileId = H5Fopen(gridFileName, H5F_ACC_RDONLY, H5P_DEFAULT);
+        hid_t fileId = H5Fopen(gridFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
         if (fileId < 0)
         {
-            EXCEPTION1(InvalidFilesException, gridFileName);
+            EXCEPTION1(InvalidFilesException, gridFileName.c_str());
         }
 
         fileType = ENZO_FT_HDF5;
@@ -595,9 +632,31 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
         //       darn root group and use that instead.
         hid_t rootId = H5Gopen(fileId, "/");
 
+        // Make a pass over the contents of the root directory
+        // looking for a group corresponding to our grid name, and
+        // open it if necessary.
         hsize_t n_objs;
         H5Gget_num_objs(rootId, &n_objs);
+        for (int var = 0 ; var < n_objs ; var++)
+        {
+            if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
+            {
+                int gridindex;
+                char  name[65];
+                H5Gget_objname_by_idx(rootId, var, name, 64);
+                if (sscanf(name, "Grid%d", &gridindex) == 1 &&
+                    gridindex == smallest_grid)
+                {
+                    rootId = H5Gopen(rootId, name);
+                    break;
+                }
+            }
+        }
 
+        // In case we opened a subdirectory, get the num items again.
+        H5Gget_num_objs(rootId, &n_objs);
+
+        // Okay, actually do the parsing work.
         for (int var = 0 ; var < n_objs ; var++)
         {
             if (H5Gget_objtype_by_idx(rootId, var) == H5G_DATASET)
@@ -640,7 +699,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
         SNPRINTF(msg, sizeof(msg), "The HDF4 library failed to open \"%s\" "
             "and this installation of the Enzo plugin is NOT compiled with "
             "HDF5 support. So, the file may be an HDF5 file but if so, it "
-            "cannot be opened with this installation.", gridFileName);
+            "cannot be opened with this installation.", gridFileName.c_str());
         EXCEPTION1(InvalidFilesException, msg);
 #endif
     }
@@ -658,6 +717,10 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 //
 //    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
 //    Added support for 2D files.
+//
+//    Jeremy Meredith, Mon Apr  6 14:40:37 EDT 2009
+//    Save the directory name off; we'll need to add it back on
+//    later to open some other files.
 //
 // ****************************************************************************
 
@@ -693,6 +756,7 @@ avtEnzoFileFormat::avtEnzoFileFormat(const char *filename)
                    "It was not a .hierarchy or .boundary file.");
     }
 
+    fname_dir = StringHelpers::Dirname(fname_base.c_str());
 }
 
 // ****************************************************************************
@@ -1123,6 +1187,13 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Fri Mar 20 16:07:14 PST 2009
 //    Made HDF5 related code conditionally compiled on HAVE_LIBHDF5
+//
+//    Jeremy Meredith, Mon Apr  6 14:36:58 EDT 2009
+//    Added support for explicit particle and grid file names.
+//    Also, try to descend into a top-level Group if its name
+//    matches the format for a grid-group in the new format.
+//    This is for support for the new "Packed AMR" format.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1170,13 +1241,12 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
     else if (fileType == ENZO_FT_HDF4)
     {
         // particle mesh
-        char gridFileName[1000];
-        sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
+        string particleFileName = grids[domain+1].particleFileName;
 
-        int32 file_handle = SDstart(gridFileName, DFACC_READ);
+        int32 file_handle = SDstart(particleFileName.c_str(), DFACC_READ);
         if (file_handle < 0)
         {
-            EXCEPTION1(InvalidFilesException, gridFileName);
+            EXCEPTION1(InvalidFilesException, particleFileName.c_str());
         }
 
         bool is_particle = (strcmp(meshname, "particles") == 0);
@@ -1322,13 +1392,38 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
     {
 #ifdef HAVE_LIBHDF5
         // particle mesh
-        char gridFileName[1000];
-        sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
+        string particleFileName = grids[domain+1].particleFileName;
+        if (particleFileName == "")
+        {
+            return NULL;
+        }
 
-        hid_t fileId = H5Fopen(gridFileName, H5F_ACC_RDONLY, H5P_DEFAULT);
+        hid_t fileId = H5Fopen(particleFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
         if (fileId < 0)
         {
-            EXCEPTION1(InvalidFilesException, gridFileName);
+            EXCEPTION1(InvalidFilesException, particleFileName.c_str());
+        }
+
+        // Make a pass over the contents of the root directory
+        // looking for a group corresponding to our grid name, and
+        // open it if necessary.
+        hid_t rootId = H5Gopen(fileId, "/");
+        hsize_t n_objs;
+        H5Gget_num_objs(rootId, &n_objs);
+        for (int var = 0 ; var < n_objs ; var++)
+        {
+            if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
+            {
+                int gridindex;
+                char  name[65];
+                H5Gget_objname_by_idx(rootId, var, name, 64);
+                if (sscanf(name, "Grid%d", &gridindex) == 1 &&
+                    gridindex == domain+1)
+                {
+                    rootId = H5Gopen(rootId, name);
+                    break;
+                }
+            }
         }
 
         // temporarily disable error reporting
@@ -1343,9 +1438,9 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         const char *zn = is_particle ? "particle_position_z" : "tracer_particle_position_z";
 
         // find the coordinate variables (if they exist)
-        hid_t var_id_x = H5Dopen(fileId, xn);
-        hid_t var_id_y = H5Dopen(fileId, yn);
-        hid_t var_id_z = dimension==3 ? H5Dopen(fileId, zn) : -1;
+        hid_t var_id_x = H5Dopen(rootId, xn);
+        hid_t var_id_y = H5Dopen(rootId, yn);
+        hid_t var_id_z = dimension==3 ? H5Dopen(rootId, zn) : -1;
 
         // turn back on error reporting
         H5Eset_auto(old_errorfunc, old_clientdata);
@@ -1357,6 +1452,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
             // This grid didn't have any particles.  No problem -- particles
             // won't exist in every grid.  Just close the file and return
             // NULL.
+            H5Gclose(rootId);
             H5Fclose(fileId);
             return NULL;
         }
@@ -1414,6 +1510,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         points->Delete();
 
         // For now, always close the file
+        H5Gclose(rootId);
         H5Fclose(fileId);
         return ugrid;
 #endif
@@ -1611,6 +1708,16 @@ avtEnzoFileFormat::BuildDomainNesting()
 //
 //    Mark C. Miller, Fri Mar 20 16:07:14 PST 2009
 //    Made HDF5 related code conditionally compiled on HAVE_LIBHDF5
+//
+//    Jeremy Meredith, Mon Apr  6 14:36:58 EDT 2009
+//    Added support for explicit particle and grid file names.
+//    Also, try to descend into a top-level Group if its name
+//    matches the format for a grid-group in the new format.
+//    This is for support for the new "Packed AMR" format.
+//    Also, no longer return an error if a grid was missing.  Some
+//    times, this happens (e.g. Dark_Matter_Density), and it seems
+//    to work okay if we just return NULL here.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1621,25 +1728,24 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
     if (fileType == ENZO_FT_HDF4)
     {
         // HDF4 STUFF
-        char gridFileName[1000];
-        sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
+        string gridFileName = grids[domain+1].gridFileName;
 
-        int32 file_handle = SDstart(gridFileName, DFACC_READ);
+        int32 file_handle = SDstart(gridFileName.c_str(), DFACC_READ);
         if (file_handle < 0)
         {
-            EXCEPTION1(InvalidFilesException, gridFileName);
+            EXCEPTION1(InvalidFilesException, gridFileName.c_str());
         }
 
         int32 var_index = SDnametoindex(file_handle, varname);
         if (var_index < 0)
         {
-            EXCEPTION1(InvalidFilesException, gridFileName);
+            EXCEPTION1(InvalidFilesException, gridFileName.c_str());
         }
 
         int32 var_handle = SDselect(file_handle, var_index);
         if (var_handle < 0)
         {
-            EXCEPTION1(InvalidFilesException, gridFileName);
+            EXCEPTION1(InvalidFilesException, gridFileName.c_str());
         }
 
         int32 ndims;
@@ -1715,13 +1821,34 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
     {
 #ifdef HAVE_LIBHDF5
         // HDF5 STUFF
-        char gridFileName[1000];
-        sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
+        string gridFileName = grids[domain+1].gridFileName;
 
-        hid_t fileId = H5Fopen(gridFileName, H5F_ACC_RDONLY, H5P_DEFAULT);
+        hid_t fileId = H5Fopen(gridFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
         if (fileId < 0)
         {
-            EXCEPTION1(InvalidFilesException, gridFileName);
+            EXCEPTION1(InvalidFilesException, gridFileName.c_str());
+        }
+
+        // Make a pass over the contents of the root directory
+        // looking for a group corresponding to our grid name, and
+        // open it if necessary.
+        hid_t rootId = H5Gopen(fileId, "/");
+        hsize_t n_objs;
+        H5Gget_num_objs(rootId, &n_objs);
+        for (int var = 0 ; var < n_objs ; var++)
+        {
+            if (H5Gget_objtype_by_idx(rootId, var) == H5G_GROUP)
+            {
+                int gridindex;
+                char  name[65];
+                H5Gget_objname_by_idx(rootId, var, name, 64);
+                if (sscanf(name, "Grid%d", &gridindex) == 1 &&
+                    gridindex == domain+1)
+                {
+                    rootId = H5Gopen(rootId, name);
+                    break;
+                }
+            }
         }
 
         // temporarily disable error reporting
@@ -1731,7 +1858,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         H5Eset_auto(NULL, NULL);
 
         // find the variable (if it exists)
-        hid_t varId = H5Dopen(fileId, varname);
+        hid_t varId = H5Dopen(rootId, varname);
 
         // turn back on error reporting
         H5Eset_auto(old_errorfunc, old_clientdata);
@@ -1739,7 +1866,11 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         // check if the variable exists
         if (varId < 0)
         {
-            EXCEPTION1(InvalidFilesException, gridFileName);
+            // This is apparently okay.  We could populate with zeros, but
+            // it's easier to just return NULL, which seems to work.
+            H5Gclose(rootId);
+            H5Fclose(fileId);
+            return NULL;
         }
 
         hid_t spaceId = H5Dget_space(varId);
@@ -1814,6 +1945,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         H5Dclose(varId);
 
         // For now, always close the file
+        H5Gclose(rootId);
         H5Fclose(fileId);
 
         return fa;
