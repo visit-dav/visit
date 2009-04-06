@@ -110,6 +110,9 @@ class     avtWebpage;
 //    Hank Childs, Mon Feb 23 13:20:07 PST 2009
 //    Added support for named selections.
 //
+//    Hank Childs, Mon Apr  6 12:58:50 PDT 2009
+//    Add another method for handling named selections.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -136,6 +139,10 @@ class PIPELINE_API avtFilter
 
     virtual avtNamedSelection          *CreateNamedSelection(avtContract_p,
                                                              const std::string &);
+    // This method is needed for filters that bypass the pipeline to talk
+    // directly to the database and also need to know what named selections
+    // are being used.
+    virtual void                        RegisterNamedSelection(const std::string &) {;};
 
   protected:
     bool                                modified;

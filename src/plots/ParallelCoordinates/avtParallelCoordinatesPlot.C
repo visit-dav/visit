@@ -360,6 +360,9 @@ avtParallelCoordinatesPlot::GetMapper(void)
 //
 //  Modifications:
 //   
+//    Hank Childs, Mon Apr  6 14:15:56 PDT 2009
+//    Register named selections with the filter.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -372,6 +375,10 @@ avtParallelCoordinatesPlot::ApplyOperators(avtDataObject_p input)
     }
 
     parAxisFilter = new avtParallelCoordinatesFilter(atts);
+    for (int i = 0 ; i < namedSelections.size() ; i++)
+    {
+        parAxisFilter->RegisterNamedSelection(namedSelections[i]);
+    }
 
     parAxisFilter->SetInput(input);
 

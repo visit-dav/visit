@@ -251,6 +251,9 @@ class     WindowAttributes;
 //    Removed CanDoCurveViewScaling, CanDo2DViewScaling (moved into 
 //    ViewerPlotPluginInfo)
 //
+//    Hank Childs, Mon Apr  6 14:05:10 PDT 2009
+//    Add support for registering named selections.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -321,6 +324,7 @@ class PLOTTER_API avtPlot
                                                       ScaleMode rs);
     virtual bool              NeedZBufferToCompositeEvenIn2D(void) 
                                                           { return false; };
+    virtual void              RegisterNamedSelection(const std::string &) {;};
 
     virtual avtFilter	      *GetFilterForTopOfPipeline() { return 0; }
 

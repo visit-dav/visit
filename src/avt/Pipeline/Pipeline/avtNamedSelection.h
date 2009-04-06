@@ -77,6 +77,9 @@ class PairCompare {
 //    Hank Childs, Mon Feb 23 10:09:26 PST 2009
 //    Added support for setting up data selections for contracts.
 //
+//    Hank Childs, Mon Apr  6 16:31:10 PDT 2009
+//    Add methods for creating condition strings.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelection
@@ -100,6 +103,7 @@ class PIPELINE_API avtNamedSelection
     virtual SELECTION_TYPE  GetType(void) = 0;
 
     const std::string  &GetName(void) { return name; };
+    virtual const std::string CreateConditionString(void) { return ""; };
 
   protected:
     std::string         name;
@@ -148,6 +152,7 @@ class PIPELINE_API avtFloatingPointIdNamedSelection : public avtNamedSelection
     virtual void  Write(const std::string &);
 
     virtual avtDataSelection *CreateSelection(void);
+    virtual const std::string CreateConditionString(void);
 
     virtual SELECTION_TYPE  GetType(void) { return FLOAT_ID; };
 

@@ -86,6 +86,9 @@ class vtkPoints;
 //    Use new histogram structure for context and (optionally) focus.
 //    Add some multiple-timestep support.
 //
+//    Hank Childs, Mon Apr  6 13:07:18 PDT 2009
+//    Added method for registering named selections.
+//
 // ****************************************************************************
 
 class avtParallelCoordinatesFilter : public avtSIMODataTreeIterator
@@ -102,6 +105,8 @@ public:
                                     { return "Parallel coordinates plot"; };
     virtual void                ReleaseData(void);
     virtual avtNamedSelection  *CreateNamedSelection(avtContract_p, const std::string &);
+    virtual void                RegisterNamedSelection(const std::string &s) 
+                                              { namedSelections.push_back(s);};
 
 protected:
     virtual avtContract_p       ModifyContract(avtContract_p);
@@ -130,6 +135,7 @@ private:
     void                        DrawFocusHistograms(int ts);
     void                        PrepareForArrayVariable();
     string                      ConvertExtentsToCondition();
+    string                      ConvertNamedSelectionToCondition();
 
     ParallelCoordinatesAttributes parCoordsAtts;
     
@@ -145,6 +151,8 @@ private:
     doubleVector                axisMaxima;
     doubleVector                axisXPositions;
     
+    stringVector                namedSelections;
+
     boolVector                  applySubranges;
     bool                        extentsApplied;
 

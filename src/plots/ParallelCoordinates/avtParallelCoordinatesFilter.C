@@ -74,6 +74,7 @@
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtNamedSelection.h>
+#include <avtNamedSelectionManager.h>
 #include <avtParallel.h>
 
 #include <DebugStream.h>
@@ -196,6 +197,9 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 //    Removed named selection support (since it's being done differently).
 //    Added missing check to see if we want to draw focus at all.
 //
+//    Hank Childs, Mon Apr  6 09:43:52 PDT 2009
+//    Reenable named selection support.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -289,7 +293,7 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
                               nctxparts,            //number of bins 1
                               curAxisVarNames[i+1], //variable 2
                               nctxparts,            //number of bins 2
-                              "",//TODO: ConvertNamedSelectionToCondition(),
+                              ConvertNamedSelectionToCondition(),
                               true ,                //condition is exact
                               true                  //use regular binning
                               );
@@ -2126,6 +2130,9 @@ avtParallelCoordinatesFilter::PrepareForArrayVariable()
 //    Port to trunk.  Disabled named selections since they're now
 //    done differently.
 //
+//    Hank Childs, Mon Apr  6 09:42:41 PDT 2009
+//    Enabled call to ConvertNamedSelectionToCondition.
+//
 // ****************************************************************************
 
 std::string   
@@ -2173,18 +2180,37 @@ avtParallelCoordinatesFilter::ConvertExtentsToCondition()
             numberOfConditions++;
         }    
     }
-    /*
-      // TODO: Named selections are done differently now....
-    if (parCoordsAtts.GetApplyNamedSelection())
+
+    string cond2 = ConvertNamedSelectionToCondition();
+    if (cond2 != "")
     {
-        string cond2 = ConvertNamedSelectionToCondition();
         condition.append("&&");
         condition.append(cond2);
     }
-    */
       
     return condition;
 }        
+
+string
+avtParallelCoordinatesFilter::ConvertNamedSelectionToCondition(void)
+{
+    string rv = "";
+
+    for (int i = 0 ; i < namedSelections.size() ; i++)
+    {
+        avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
+        avtNamedSelection *ns = nsm->GetNamedSelection(namedSelections[i]);
+        string s2 = ns->CreateConditionString();
+        if (s2 == "")
+            continue; // named selection will be set up by named selection filter.
+        rv.append(s2);
+        if (i != (namedSelections.size()-1))
+            rv.append("&&");
+    }
+
+    return rv;
+}
+
 
 // ****************************************************************************
 //  Method: avtParallelCoordinatesFilter::CreateNamedSelection
@@ -2248,20 +2274,7 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
                      parCoordsAtts.GetExtentMinima()[j],
                      parCoordsAtts.GetExtentMaxima()[j]));
     }
-/*
-    if (parCoordsAtts.GetApplyNamedSelection())
-    {
-        vector<double> ids;
-        avtCallback::GetNamedSelection(
-                            parCoordsAtts.GetApplyNamedSelectionName(), ids);
-        if (ids.size()>0)
-        {
-            avtIdentifierSelection *idsel = new avtIdentifierSelection();
-            idsel->SetIdentifiers(ids);
-            drs.push_back(idsel);
-        }
-    }
- */
+
     avtIdentifierSelection *ids = GetMetaData()->GetIdentifiers(drs);
     avtNamedSelection *rv = NULL;
     if (ids != NULL)
