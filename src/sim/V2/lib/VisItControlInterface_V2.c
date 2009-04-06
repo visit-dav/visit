@@ -1842,7 +1842,8 @@ void VisItSetSlaveProcessCallback(void (*spic)())
 {
     LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback, "spic=%p", (void*)spic);
     LIBSIM_MESSAGE("Calling visit_set_slave_process_callback");
-    (*callbacks->control.set_slave_process_callback)(spic);
+    if(callbacks->control.set_slave_process_callback)
+        (*callbacks->control.set_slave_process_callback)(spic);
     LIBSIM_API_LEAVE(VisItSetSlaveProcessCallback);
 }
 
@@ -2008,10 +2009,12 @@ void VisItDisconnect(void)
 {
     LIBSIM_API_ENTER(VisItDisconnect);
     LIBSIM_MESSAGE("Calling visit_disconnect");
-    (*callbacks->control.disconnect)();
+    if(callbacks->control.disconnect)
+        (*callbacks->control.disconnect)();
     engineSocket = -1;
     engine = 0;
-    free(callbacks);
+    if(callbacks != NULL)
+        free(callbacks);
     callbacks = NULL;
     LIBSIM_API_LEAVE(VisItDisconnect);
 }

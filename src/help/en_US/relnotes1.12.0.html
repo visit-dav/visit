@@ -142,8 +142,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Various compilation issues were resolved for compiling VisIt on
       Linux-PPC systems.  Thanks to Patrick Shinpaugh for the fixes!</li>
-  <li></li>
-  <li></li>
+  <li>When using the context menu in the plot list, copying a plot via the
+      <i>Copy plot</i> menu option would result in no plots being selected.
+      The default behavior has been modified so the new, copied plot is
+      made active.</li>
+  <li>The Fortran libsim interface could crash the simulation in the event that
+      VisIt was unable to connect to the simulation.</li>
   <li></li>
 </ul>
 

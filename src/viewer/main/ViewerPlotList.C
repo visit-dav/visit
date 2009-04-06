@@ -3763,6 +3763,10 @@ ViewerPlotList::TransmutePlots(bool turningOffScalableRendering)
 //  Programmer: Ellen Tarwater
 //  Creation:   September 27, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Fri Apr  3 15:53:30 PDT 2009
+//    I made the new plots active and the ones that were previously selected
+//    inactive.
 //
 // ****************************************************************************
 
@@ -3772,10 +3776,14 @@ ViewerPlotList::CopyActivePlots()
      //
     // Loop over the list, copying any active plots.
     //
-    int plotsAdded = 0;
-    for (int i = 0; i < nPlots; i++)
+    int i, plotsAdded = 0;
+    int numInitialPlots = nPlots;
+    bool *active = new bool[nPlots+1];
+    for (i = 0; i < numInitialPlots; i++)
+        active[i] = plots[i].active;
+    for (i = 0; i < numInitialPlots; i++)
     {
-        if (plots[i].active == true)
+        if (active[i])
 	{
     
 	    // create a copy of this plot:
@@ -3802,8 +3810,9 @@ ViewerPlotList::CopyActivePlots()
 	        //
 	        SimpleAddPlot( dest, false );
 	        ++plotsAdded;
-		// make the added plot INactive...
-		plots[nPlots-1].active = false;
+
+		// Make the original plot INactive...
+		plots[i].active = false;
 	    }
 	    else
 	    {
@@ -3811,9 +3820,9 @@ ViewerPlotList::CopyActivePlots()
 	        return;
 	    }
 	}
-	
     }
- 
+    delete [] active;
+
     //
     // Update the client attributes.
     //
@@ -3821,12 +3830,7 @@ ViewerPlotList::CopyActivePlots()
     {
         UpdatePlotList();
 	UpdatePlotAtts();
-	UpdateSILRestrictionAtts();     //?
-
-        //
-        // Update the frame.
-        //
-        UpdateFrame();
+	UpdateSILRestrictionAtts();
     }
 }
 

@@ -253,6 +253,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
     versionText += tr("svn revision");
     versionText += " ";
     versionText += SVN_REVISION;
+
     // Create a lookup of month names so the internationalization
     // files don't have to change.
     QStringList months;
@@ -268,7 +269,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 1;
+    int currentMonth = 4;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2009", this));
 

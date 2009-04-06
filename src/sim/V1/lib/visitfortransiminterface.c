@@ -470,6 +470,9 @@ F_VISITDETECTINPUT(int *blocking, int *consoledesc)
  *   Brad Whitlock, Wed Jan 10 16:01:58 PST 2007
  *   Applied David Stuebe's change.
  *
+ *   Brad Whitlock, Mon Apr  6 09:50:12 PDT 2009
+ *   Don't register callbacks unless the connection was a success.
+ *
  *****************************************************************************/
 
 FORTRAN
@@ -486,8 +489,11 @@ F_VISITATTEMPTCONNECTION(void)
     /* These functions need to be set up but they can't be set up until after
      * the VisItAttemptToCompleteConnection function completes.
      */
-    VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
-    VisItSetCommandCallback(f_visit_internal_commandcallback);
+    if(ret)
+    {
+        VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
+        VisItSetCommandCallback(f_visit_internal_commandcallback);
+    }
 
     return ret;
 }
