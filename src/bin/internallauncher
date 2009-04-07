@@ -438,6 +438,11 @@ exec perl -x $0 ${1+"$@"};
 #
 #    Mark C. Miller, Mon Mar 30 17:55:08 PDT 2009
 #    Added cli to list of component names in IsAVisItComponentName
+#
+#    Mark C. Miller, Thu Apr  2 22:57:22 PDT 2009
+#    Added support for '-TESTARGS' such that all arguments occuring AFTER
+#    this argument are NOT passed on to any VisIt components. They are
+#    intended to be interpreted by VisIt's testing python script(s).
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -933,12 +938,15 @@ $ssh_tunneling  = 0;
 $leftdb = "";
 $rightdb = "";
 $noloopback = 0;
+$testingargs  = 0;
 
 # Parse the arguments 
 @visitargs = ();
+@testargs  = ();
 while (scalar(@ARGV) > 0) {
     $arg = shift @ARGV;
-    if    ($arg eq "-par" || $arg eq "-parallel")  { $parallel = 1; }
+    if ($arg eq "-TESTARGS" || $testingargs)       { $testingargs = 1; push @testargs, $arg; }
+    elsif ($arg eq "-par" || $arg eq "-parallel")  { $parallel = 1; }
     elsif ($arg eq "-np")        { $procs= shift; $procs_set= 1; $parallel = 1; }
     elsif ($arg eq "-nn")        { $nodes= shift; $nodes_set= 1; }
     elsif ($arg eq "-l")         { $launch=shift; $launch_set=1; }
@@ -1140,7 +1148,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-sshtunneling" )    { $ssh_tunneling = 1; push @visitargs, $arg; }
     elsif ($arg eq "-viewerdisplay" )   { $viewerdisplay = shift; push @visitargs, $arg, $viewerdisplay; }
     elsif ($arg eq "-noloopback")       { push @visitargs, $arg if (!$noloopback); $noloopback = 1; }
-    else                         { push @visitargs, $arg; }
+    else                                { push @visitargs, $arg; }
 }
 
 # -----------------------------------------------------------------------------
@@ -2660,7 +2668,14 @@ else
 
         if(!$launched)
         {
-            exec @visitcmd or die "Can't execute visit: $!\n";
+            if ($exe_name eq "cli")
+            {
+               exec "@visitcmd @testargs" or die "Can't execute visit: $!\n";
+            }
+            else
+            {
+               exec @visitcmd or die "Can't execute visit: $!\n";
+            }
         }
     }
 }
@@ -2676,7 +2691,14 @@ sub RunComponent {
    chomp($printcmd[0] = `basename $printcmd[0]`);
    print STDERR "Running: @printcmd\n" if (! $quiet);
    if ($security_key_set) { push @visitcmd, "-key", $security_key; }
-   exec @visitcmd or die "Can't execute visit: $!\n";
+   if ($exe_name eq "cli")
+   {
+      exec "@visitcmd @testargs" or die "Can't execute visit: $!\n";
+   }
+   else
+   {
+      exec @visitcmd or die "Can't execute visit: $!\n";
+   }
 }
 
 sub PrintEnvironment {
