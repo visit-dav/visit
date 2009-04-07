@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Purpose: Provide Qt-free, xml-free mechanism for generating database plugin

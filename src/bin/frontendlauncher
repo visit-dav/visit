@@ -69,6 +69,10 @@ exec perl -x $0 ${1+"$@"};
 #    Quote the $visitdir string by adding backslashes to special
 #    characters before passing it into a regular expression.
 #
+#    Mark C. Miller, Thu Apr  2 22:58:56 PDT 2009
+#    Added support for '-TESTARGS' such that all arguments occuring AFTER
+#    this argument are grouped together and passed AFTER any arguments that
+#    this script may need to push on the command line.
 ###############################################################################
 
 
@@ -133,13 +137,20 @@ $want_version = 0;
 $ver          = "";
 $beta         = 0;
 $using_dev    = 0;
+$testingargs  = 0;
 
 # Parse the arguments 
 @legacyvisitargs = @ARGV;
 @visitargs = ();
+@testargs  = ();
 while (scalar(@ARGV) > 0) {
     $arg = shift @ARGV;
-    if ($arg eq "-v")
+    if ($arg eq "-TESTARGS" || $testingargs)
+    {
+        $testingargs = 1;
+        push @testargs, $arg;
+    }
+    elsif ($arg eq "-v")
     {
         $ver  = shift; $ver_set  = 1;
         die "The '-v' version argument requires a value.\n" if (!defined $ver);
@@ -408,7 +419,7 @@ $ENV{VISITDIR}     = $visitdir;
 # -----------------------------------------------------------------------------
 #                       Run the internal launcher!
 # -----------------------------------------------------------------------------
-@visitcmd = ("${visitdir}/bin/internallauncher", @visitargs);
+@visitcmd = ("${visitdir}/bin/internallauncher", @visitargs, @testargs);
 exec @visitcmd or die "Can't execute visit launcher script: $!\n";
 
 
