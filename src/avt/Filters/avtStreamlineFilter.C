@@ -2126,6 +2126,10 @@ randMinus1_1()
 //   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
 //   Initialize time step in domain and start time of streamlines.
 //
+//   Hank Childs, Mon Apr  6 17:42:55 PDT 2009
+//   Change seedTimeStep0 to seedTime0 (integers were mistakenly being
+//   send in as doubles).
+//
 // ****************************************************************************
 
 void
@@ -2356,7 +2360,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         if (streamlineDirection == VTK_INTEGRATE_FORWARD ||
              streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
-            avtStreamline *sl = new avtStreamline(solver, seedTimeStep0, pt);
+            avtStreamline *sl = new avtStreamline(solver, seedTime0, pt);
             avtStreamlineWrapper *slSeg;
             slSeg = new avtStreamlineWrapper(sl,
                                              avtStreamlineWrapper::FWD,
@@ -2369,7 +2373,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         if (streamlineDirection == VTK_INTEGRATE_BACKWARD ||
              streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
-            avtStreamline *sl = new avtStreamline(solver, seedTimeStep0, pt);
+            avtStreamline *sl = new avtStreamline(solver, seedTime0, pt);
             avtStreamlineWrapper *slSeg;
             slSeg = new avtStreamlineWrapper(sl, 
                                              avtStreamlineWrapper::BWD,
