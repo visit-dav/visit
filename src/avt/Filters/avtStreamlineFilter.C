@@ -1675,6 +1675,10 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Change the estimation of the extents to be the size of the current 
 //   domain (not the whole problem).  This will make the leap size better.
 //
+//   Hank Childs, Tue Apr  7 08:52:59 CDT 2009
+//   Use a single vtkVisItInterpolatedVelocity for pathlines, which means
+//   that cell locations are done once, not twice.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1690,7 +1694,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
           <<slSeg->domain<<") HGZ = "<<haveGhostZones <<endl;
 
     // prepare streamline integration ingredients
-    vtkVisItInterpolatedVelocityField* velocity1= vtkVisItInterpolatedVelocityField::New();
+    vtkVisItInterpolatedVelocityField* velocity1 = vtkVisItInterpolatedVelocityField::New();
     if (doPathlines)
     {
         // Our expression will be the active variable, so reset it.
@@ -1713,38 +1717,11 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     else
         velocity1->SetDataSet(ds);
     
-    vtkVisItInterpolatedVelocityField* velocity2=NULL;
-    vtkDataSet *ds2 = NULL;
-    vtkCellDataToPointData *cellToPt2 = NULL;
     double t1, t2;
     if (doPathlines)
     {
-        velocity2 = vtkVisItInterpolatedVelocityField::New();
-        ds2 = (vtkDataSet *) ds->NewInstance();
-        ds2->ShallowCopy(ds);
-
-        if (ds2->GetPointData()->GetVectors() != NULL)
-            ds2->GetPointData()->SetActiveVectors(pathlineNextTimeVar.c_str());
-        else
-            ds2->GetCellData()->SetActiveVectors(pathlineNextTimeVar.c_str());
-        
-        if (ds->GetPointData()->GetVectors() != NULL)
-            ds->GetPointData()->SetActiveVectors(pathlineVar.c_str());
-        else
-            ds->GetCellData()->SetActiveVectors(pathlineVar.c_str());
-        
-        
-        // See if we have cell cenetered data...
-        if (ds2->GetPointData()->GetVectors() == NULL)
-        {
-            cellToPt2 = vtkCellDataToPointData::New();
-            
-            cellToPt2->SetInput(ds2);
-            cellToPt2->Update();
-            velocity2->SetDataSet(cellToPt2->GetOutput());
-        }
-        else
-            velocity2->SetDataSet(ds2);
+        velocity1->SetDoPathlines(true);
+        velocity1->SetNextTimeName(pathlineNextTimeVar);
         
         std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
         ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
@@ -1760,6 +1737,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
             t1 = (double)slSeg->domain.timeStep;
             t2 = (double)(slSeg->domain.timeStep+1);
         }
+        velocity1->SetCurrentTime(t1);
+        velocity1->SetNextTime(t2);
     }
 
     double end = termination;
@@ -1777,7 +1756,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     ds->GetBounds(bbox);
     if (doPathlines)
     {
-        avtIVPVTKTimeVaryingField field(velocity1, velocity2, t1, t2);
+        avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
         result = slSeg->sl->Advance(&field,
                                     terminationType,
                                     end,
@@ -1833,12 +1812,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         slSeg->status = avtStreamlineWrapper::TERMINATE;
     
     velocity1->Delete();
-    if (velocity2)
-        velocity2->Delete();
     if (cellToPt1)
         cellToPt1->Delete();
-    if (cellToPt2)
-        cellToPt2->Delete();
     
     debug5<<"::IntegrateDomain() result= "<<result<<endl;
     return result;

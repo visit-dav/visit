@@ -53,8 +53,13 @@ class vtkVisItInterpolatedVelocityField  : public vtkObject
 
     static vtkVisItInterpolatedVelocityField *New();
     void          SetDataSet(vtkDataSet *ds);
-    bool          Evaluate(double *pt, double *vel);
+    bool          Evaluate(double *pt, double *vel, double t = 0.);
  
+    void          SetDoPathlines(bool b) { doPathlines = b; };
+    void          SetCurrentTime(double t) { curTime = t; };
+    void          SetNextTime(double t) { nextTime = t; };
+    void          SetNextTimeName(const std::string &s) { nextTimeName = s; };
+
     vtkDataSet   *GetDataSet(void) { return ds; };
     double       *GetLastWeights(void) { return weights; };
     int           GetLastCell(void) { return lastCell; };
@@ -66,6 +71,10 @@ class vtkVisItInterpolatedVelocityField  : public vtkObject
     double       weights[1024];
     int          lastCell;
     double       pcoords[3];
+    bool         doPathlines;
+    std::string  nextTimeName;
+    double       curTime;
+    double       nextTime;
 };
 
 #endif
