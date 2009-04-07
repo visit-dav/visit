@@ -586,6 +586,9 @@
 #     Added -DH5_USE_16_API to the CFLAGS and CXXFLAGS for the gdal build
 #     so that it would build with hdf5 1.8.
 #
+#     Mark C. Miller, Tue Apr  7 14:56:44 PDT 2009
+#     Added missing surrounding quotes in creation of DEFAULT_ITAPS_IMPLS
+#     symbol for config.conf file that gets created.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -7736,7 +7739,7 @@ function build_hostconf
         echo "## Various ITAPS implementations" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-"DEFAULT_ITAPS_IMPLS=$ITAPS_MOAB_IMPL $ITAPS_FMDB_IMPL $ITAPS_GRUMMP_IMPL" \
+"DEFAULT_ITAPS_IMPLS=\"$ITAPS_MOAB_IMPL $ITAPS_FMDB_IMPL $ITAPS_GRUMMP_IMPL\"" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
