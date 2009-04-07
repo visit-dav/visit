@@ -2,6 +2,7 @@
 #define _BASE_INTERFACE_H
 
 #include <stdint.h>
+#define H5_USE_16_API
 #include "hdf5.h"
 #include <stdio.h>
 #include <stdlib.h>

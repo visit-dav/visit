@@ -12385,6 +12385,8 @@ visit_DeleteNamedSelection(PyObject *self, PyObject *args)
 // Creation:   January 28, 2009
 //
 // Modifications:
+//    Gunther H. Weber, Mon Apr  6 18:55:15 PDT 2009
+//    Pass engine and simulation name to LoadNamedSelection RPC.
 //   
 // ****************************************************************************
 
@@ -12394,12 +12396,59 @@ visit_LoadNamedSelection(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *selName;
-    if (!PyArg_ParseTuple(args, "s", &selName))
-       return NULL;
+    bool useFirstEngine = false;
+    bool useFirstSimulation = false;
+    const char *engineName = 0;
+    const char *simulationName = 0;
+
+    if (!PyArg_ParseTuple(args, "sss", &selName, &engineName, &simulationName))
+    {
+        if (!PyArg_ParseTuple(args, "ss", &selName, &engineName))
+        {
+            if (!PyArg_ParseTuple(args, "s", &selName))
+                return NULL;
+
+            PyErr_Clear();
+            // Indicate that we want to close the first engine in the list.
+            useFirstEngine = true;
+        }
+        else
+        {
+            PyErr_Clear();
+            // Indicate that we want to close the first simulation on that host
+            useFirstSimulation = true;
+        }
+    }
+
 
     // Activate the database.
     MUTEX_LOCK();
-        GetViewerMethods()->LoadNamedSelection(selName);
+        if(useFirstEngine)
+        {
+            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+            const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
+            if(engines.size() > 0)
+            {
+                engineName = engines[0].c_str();
+                simulationName = sims[0].c_str();
+            }
+        }
+        else if (useFirstSimulation)
+        {
+            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+            const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
+            for (int i=0; i<engines.size(); i++)
+            {
+                if (engines[i] == engineName)
+                {
+                    simulationName = sims[i].c_str();
+                    break;
+                }
+            }
+        }
+
+        if (engineName != 0 && simulationName != 0)
+            GetViewerMethods()->LoadNamedSelection(selName, engineName, simulationName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -12416,7 +12465,9 @@ visit_LoadNamedSelection(PyObject *self, PyObject *args)
 // Creation:   January 28, 2009
 //
 // Modifications:
-//   
+//    Gunther H. Weber, Mon Apr  6 18:55:15 PDT 2009
+//    Pass engine and simulation name to SaveNamedSelection RPC.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12425,12 +12476,58 @@ visit_SaveNamedSelection(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *selName;
-    if (!PyArg_ParseTuple(args, "s", &selName))
-       return NULL;
+    bool useFirstEngine = false;
+    bool useFirstSimulation = false;
+    const char *engineName = 0;
+    const char *simulationName = 0;
+
+    if (!PyArg_ParseTuple(args, "sss", &selName, &engineName, &simulationName))
+    {
+        if (!PyArg_ParseTuple(args, "ss", &selName, &engineName))
+        {
+            if (!PyArg_ParseTuple(args, "s", &selName))
+                return NULL;
+
+            PyErr_Clear();
+            // Indicate that we want to close the first engine in the list.
+            useFirstEngine = true;
+        }
+        else
+        {
+            PyErr_Clear();
+            // Indicate that we want to close the first simulation on that host
+            useFirstSimulation = true;
+        }
+    }
 
     // Activate the database.
     MUTEX_LOCK();
-        GetViewerMethods()->SaveNamedSelection(selName);
+        if(useFirstEngine)
+        {
+            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+            const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
+            if(engines.size() > 0)
+            {
+                engineName = engines[0].c_str();
+                simulationName = sims[0].c_str();
+            }
+        }
+        else if (useFirstSimulation)
+        {
+            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+            const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
+            for (int i=0; i<engines.size(); i++)
+            {
+                if (engines[i] == engineName)
+                {
+                    simulationName = sims[i].c_str();
+                    break;
+                }
+            }
+        }
+
+        if (engineName != 0 && simulationName != 0)
+            GetViewerMethods()->SaveNamedSelection(selName, engineName, simulationName);
     MUTEX_UNLOCK();
 
     // Return the success value.

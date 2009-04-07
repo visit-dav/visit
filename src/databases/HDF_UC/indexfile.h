@@ -231,17 +231,17 @@ class H5_Index : public BaseFileInterface{
         //usefull functions for working with hdf5 files
         
         void openHDF5FileLocal(const char* file_location);
-        void string_attribute(std::string string_title,char *label);
-        void write_int_attribute(int64_t size,char *label);
-        void write_double_attribute(double size,char *label);
-        void create_int_attribute(int64_t size,char *label);
-        void create_double_attribute(double size,char *label);
+        void string_attribute(std::string string_title,const char *label);
+        void write_int_attribute(int64_t size,const char *label);
+        void write_double_attribute(double size,const char *label);
+        void create_int_attribute(int64_t size,const char *label);
+        void create_double_attribute(double size,const char *label);
         bool queryTimeValue(double timeValue);
 
         //helper function for determining the datatype of an idx
         //files counterpart.  Also opens the appropriate handles
         //to the .bitmap dataset before exiting.
-        bool getAttribute(std::string variable, uint64_t time, BaseFileInterface::DataType *type,char * attribute);
+        bool getAttribute(std::string variable, uint64_t time, BaseFileInterface::DataType *type,const char * attribute);
         //returns the data type in the data set
         bool getType(std::string variable, uint64_t time, BaseFileInterface::DataType *type);
         //helper function supporting insertstep() and declareVariable()

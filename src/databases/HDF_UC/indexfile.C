@@ -525,7 +525,7 @@ void H5_Index::getH5PartData(const std::string variablename, int64_t time, void 
 }
 
 
-void H5_Index::string_attribute(std::string string_title,char *label){
+void H5_Index::string_attribute(std::string string_title,const char *label){
         char attr_data_c[200];
         hsize_t temp_size;
 
@@ -539,7 +539,7 @@ void H5_Index::string_attribute(std::string string_title,char *label){
         attribute_id.write(H5T_C_S1,attr_data_c);
 }
 
-void H5_Index::write_int_attribute(int64_t size,char *label){
+void H5_Index::write_int_attribute(int64_t size,const char *label){
         int64_t spacial_d;
         hsize_t temp_size = 1;
 
@@ -551,7 +551,7 @@ void H5_Index::write_int_attribute(int64_t size,char *label){
         attribute_id.write(H5T_NATIVE_INT64,&spacial_d);
 }
 
-void H5_Index::write_double_attribute(double size,char *label){
+void H5_Index::write_double_attribute(double size,const char *label){
         double spacial_d;
         hsize_t temp_size = 1;
 
@@ -564,7 +564,7 @@ void H5_Index::write_double_attribute(double size,char *label){
 }
 
 
-void H5_Index::create_int_attribute(int64_t size,char *label){
+void H5_Index::create_int_attribute(int64_t size,const char *label){
         int64_t spacial_d;
         hsize_t temp_size = 1;
 
@@ -576,7 +576,7 @@ void H5_Index::create_int_attribute(int64_t size,char *label){
         attribute_id.write(H5T_NATIVE_INT64,&spacial_d);
 }
 
-void H5_Index::create_double_attribute(double size,char *label){
+void H5_Index::create_double_attribute(double size,const char *label){
         double spacial_d;
         hsize_t temp_size = 1;
 
@@ -1066,7 +1066,7 @@ bool H5_Index::getType(std::string variable, uint64_t time, BaseFileInterface::D
         return answer;
 }
 
-bool H5_Index::getAttribute(std::string variable, uint64_t time, BaseFileInterface::DataType *type,char * attribute){
+bool H5_Index::getAttribute(std::string variable, uint64_t time, BaseFileInterface::DataType *type,const char * attribute){
         std::string variableName;
         char p2[200];
         bool answer = true;

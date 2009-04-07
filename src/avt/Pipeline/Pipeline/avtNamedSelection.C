@@ -347,6 +347,9 @@ avtFloatingPointIdNamedSelection::~avtFloatingPointIdNamedSelection()
 //    Use size_t for loop variable to remove signed/unsigned int comparison
 //    warnings.
 //
+//    Gunther H. Weber, Mon Apr  6 20:17:40 PDT 2009
+//    Increased precision for floating point output.
+//
 // ****************************************************************************
 
 void
@@ -355,6 +358,7 @@ avtFloatingPointIdNamedSelection::Write(const std::string &fname)
     ofstream ofile(fname.c_str());
     ofile << FLOAT_ID << endl;
     ofile << ids.size() << endl;
+    ofile << std::setprecision(32);
     for (size_t i = 0 ; i < ids.size() ; i++)
     {
         ofile << ids[i] << endl;

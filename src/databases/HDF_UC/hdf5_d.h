@@ -1,6 +1,7 @@
 #ifndef _HDD_H
 #define _HDD_H
 
+#define H5_USE_16_API
 #include "hdf5.h"
 #include "base_api.h"
 #include <stdio.h>
