@@ -1661,6 +1661,10 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Hank Childs, Thu Apr  2 17:58:09 CDT 2009
 //   Do our own interpolation.  The previous one we used was too buggy for ugrids.
 //
+//   Hank Childs, Mon Apr  6 19:05:08 PDT 2009
+//   Change the estimation of the extents to be the size of the current 
+//   domain (not the whole problem).  This will make the leap size better.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1759,6 +1763,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     int numSteps = slSeg->sl->size();
     avtIVPSolver::Result result;
 
+    double bbox[6];
+    ds->GetBounds(bbox);
     if (doPathlines)
     {
         avtIVPVTKTimeVaryingField field(velocity1, velocity2, t1, t2);
@@ -1767,7 +1773,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                                     end,
                                     doVorticity,
                                     haveGhostZones,
-                                    extents);
+                                    bbox);
     }
     else
     {
@@ -1777,7 +1783,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                                     end,
                                     doVorticity,
                                     haveGhostZones,
-                                    extents);
+                                    bbox);
     }
     
     numSteps = slSeg->sl->size() - numSteps;
