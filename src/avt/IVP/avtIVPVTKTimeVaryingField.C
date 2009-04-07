@@ -58,14 +58,11 @@
 // ****************************************************************************
 
 avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkVisItInterpolatedVelocityField *velocity1,
-                                                      vtkVisItInterpolatedVelocityField *velocity2,
                                                       double t1,
                                                       double t2)
 {
     iv1 = velocity1;
     iv1->Register( NULL );
-    iv2 = velocity2;
-    iv2->Register( NULL );
     time1 = t1;
     time2 = t2;
     normalized = false;
@@ -83,7 +80,6 @@ avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkVisItInterpolatedVeloci
 avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 {
     iv1->Delete();
-    iv2->Delete();
 }
 
 
@@ -105,6 +101,10 @@ avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 //    Update to use vtkVisItInterpolatedVelocityField, not 
 //    vtkInterpolatedVelocityField.
 //
+//    Hank Childs, Tue Apr  7 08:52:59 CDT 2009
+//    Use a single vtkVisItInterpolatedVelocityField, which saves on
+//    computation.
+//
 // ****************************************************************************
 
 avtVec
@@ -121,17 +121,14 @@ avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
 
     // Evaluate the field at both timesteps.
     avtVec y1(x.dim()), param(pad(x,t)), y2(x.dim());
-    if ( ! iv1->Evaluate(param.values(), y1.values()) ||
-         ! iv2->Evaluate(param.values(), y2.values()) )
+    if ( ! iv1->Evaluate(param.values(), y1.values(), t))
     {
         debug5<<"  **OUT of BOUNDS**\n";
         throw Undefined();
     }
     
-    double prop1 = 1. - (t - time1) / (time2 - time1);
-    
     avtVec y(x.dim());
-    y = prop1*y1 + (1-prop1)*y2;
+    y = y1;
 
     debug5<<"T= "<<t<<" ["<<time1<<" "<<time2<<"]"<<" Y1 = "<<y1<<" Y2= "<<y2<<" y= "<<y<<endl;
 
@@ -240,8 +237,7 @@ avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
     avtVec param = pad(x,t);
 
     return (t >= time1 && t <= time2 &&
-            iv1->Evaluate(param.values(), y.values()) &&
-            iv2->Evaluate(param.values(), y.values()));
+            iv1->Evaluate(param.values(), y.values()));
 }
 
 

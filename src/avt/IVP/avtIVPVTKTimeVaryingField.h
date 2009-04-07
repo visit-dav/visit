@@ -69,14 +69,17 @@
 //   Hank Childs, Thu Apr  2 16:40:08 PDT 2009
 //   Use vtkVisItInterpolatedVelocityField.
 //
+//   Hank Childs, Tue Apr  7 08:52:59 CDT 2009
+//   Use a single vtkVisItInterpolatedVelocityField, which saves on
+//   computation.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
 {
   public:
-                   avtIVPVTKTimeVaryingField(vtkVisItInterpolatedVelocityField *velocity1,
-                                             vtkVisItInterpolatedVelocityField *velocity2,
-                                             double time1, double time2); 
+                   avtIVPVTKTimeVaryingField(vtkVisItInterpolatedVelocityField *,
+                                             double t1, double t2);
                    ~avtIVPVTKTimeVaryingField();
 
     // avtIVPField interface
@@ -90,11 +93,8 @@ class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
 
   protected:
 
-
+    double                               time1, time2;
     vtkVisItInterpolatedVelocityField   *iv1;
-    vtkVisItInterpolatedVelocityField   *iv2;
-    double                          time1;
-    double                          time2;
     bool           normalized;
     
 };

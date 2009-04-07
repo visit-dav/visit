@@ -74,6 +74,10 @@ vtkVisItInterpolatedVelocityField::vtkVisItInterpolatedVelocityField()
    for (int i = 0 ; i < 1024 ; i++)
       weights[i] = 0.;
    locator = NULL;
+   doPathlines = false;
+   nextTimeName = "";
+   curTime = 0.;
+   nextTime = 1.;
 }
 
 vtkVisItInterpolatedVelocityField::~vtkVisItInterpolatedVelocityField()
@@ -99,7 +103,7 @@ vtkVisItInterpolatedVelocityField::SetDataSet(vtkDataSet *ds_)
 }
 
 bool
-vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel)
+vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
 {
     if (ds == NULL)
     {
@@ -107,7 +111,15 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel)
         return false;
     }
     vtkDataArray *vectors =  ds->GetPointData()->GetVectors();
-    if (ds == NULL)
+    vtkDataArray *vectors2 =  NULL;
+    if (doPathlines)
+        vectors2 = ds->GetPointData()->GetArray(nextTimeName.c_str());
+    if (vectors == NULL)
+    {
+        debug1 <<" vtkVisItInterpolatedVelocityField::Can't locate vectors to interpolate" << endl;
+        return false;
+    }
+    if (doPathlines && vectors2 == NULL)
     {
         debug1 <<" vtkVisItInterpolatedVelocityField::Can't locate vectors to interpolate" << endl;
         return false;
@@ -248,7 +260,7 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel)
     if (val <= 0)
         return false;
     // interpolate the vectors
-    vel[0] = vel[1] = vel[2];
+    vel[0] = vel[1] = vel[2] = 0;
     double vec[3];
     for (int j=0; j < numPts; j++)
     {
@@ -256,8 +268,26 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel)
       vectors->GetTuple(id, vec);
       for (int i=0; i < 3; i++)
       {
-        vel[i] +=  vec[i] * weights[j];
+        vel[i] += vec[i] * weights[j];
       }
+    }
+    if (doPathlines)
+    {
+      double vel2[3] = { 0, 0, 0 };
+      double vel1[3] = { vel[0], vel[1], vel[2] };
+      for (int j=0; j < numPts; j++)
+      {
+        int id = GenCell->PointIds->GetId(j);
+        vectors2->GetTuple(id, vec);
+        for (int i=0; i < 3; i++)
+        {
+          vel2[i] += vec[i] * weights[j];
+        }
+      }
+      double prop1 = 1. - (t - curTime) / (nextTime - curTime);
+      vel[0] = prop1*vel1[0] + (1-prop1)*vel2[0];
+      vel[1] = prop1*vel1[1] + (1-prop1)*vel2[1];
+      vel[2] = prop1*vel1[2] + (1-prop1)*vel2[2];
     }
     GenCell->Delete();
 
