@@ -1,4 +1,5 @@
 #include "hdf5_s.h"
+#include <visit-hdf5.h>
 
 H5S::H5S(){
         valid = false;
@@ -70,7 +71,11 @@ bool H5S::selectElements(hsize_t max,hsize_t num_dimms,std::vector<int32_t> *ind
                         counter++;
                 }                
         }
+#if HDF5_VERSION_GE(1,8,0)
+        status = H5Sselect_elements(classID,H5S_SELECT_SET,max,(const hsize_t *)coord);
+#else
         status = H5Sselect_elements(classID,H5S_SELECT_SET,max,(const hsize_t **)coord);
+#endif
 
         free (coord);
         if(status>=0)return true;

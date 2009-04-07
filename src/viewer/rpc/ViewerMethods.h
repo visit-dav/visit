@@ -112,6 +112,10 @@ class ViewerState;
 //   Hank Childs, Wed Jan 28 14:28:59 PST 2009
 //   Added support for named selection methods.
 //
+//   Gunther H. Weber, Mon Apr  6 19:03:03 PDT 2009
+//   Added arguments for host name and simulation name to methods for loading
+//   and saving named selections. 
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -178,9 +182,12 @@ public:
     void ApplyNamedSelection(const std::string &selName);
     void CreateNamedSelection(const std::string &selName);
     void DeleteNamedSelection(const std::string &selName);
-    void LoadNamedSelection(const std::string &selName);
-    void SaveNamedSelection(const std::string &selName);
-
+    void LoadNamedSelection(const std::string &selName,
+                            const std::string &hostName,
+                            const std::string &simName);
+    void SaveNamedSelection(const std::string &selName,
+                            const std::string &hostName,
+                            const std::string &simName);
     void AnimationSetNFrames(int nFrames);
     void AnimationPlay();
     void AnimationReversePlay();

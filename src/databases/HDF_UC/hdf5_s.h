@@ -1,6 +1,7 @@
 #ifndef _HDS_H
 #define _HDS_H
 
+#define H5_USE_16_API
 #include "hdf5.h"
 #include <stdio.h>
 #include <stdlib.h>

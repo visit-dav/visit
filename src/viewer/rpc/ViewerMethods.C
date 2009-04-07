@@ -839,16 +839,23 @@ ViewerMethods::DeleteNamedSelection(const std::string &selName)
 // Programmer: Hank Childs
 // Creation:   January 28, 2009
 //
+// Modifications:
+//    Gunther H. Weber, Mon Apr  6 19:04:24 PDT 2009
+//    Added arguments for host name and simulation name
+//
 // ****************************************************************************
 
 void
-ViewerMethods::LoadNamedSelection(const std::string &selName)
+ViewerMethods::LoadNamedSelection(const std::string &selName,
+        const std::string& hostName, const std::string& simName)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::LoadNamedSelectionRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
+    state->GetViewerRPC()->SetStringArg1(selName);
+    state->GetViewerRPC()->SetProgramHost(hostName);
 
     //
     // Issue the RPC.
@@ -865,16 +872,22 @@ ViewerMethods::LoadNamedSelection(const std::string &selName)
 // Programmer: Hank Childs
 // Creation:   January 28, 2009
 //
+// Modifications:
+//    Gunther H. Weber, Mon Apr  6 19:04:24 PDT 2009
+//
 // ****************************************************************************
 
 void
-ViewerMethods::SaveNamedSelection(const std::string &selName)
+ViewerMethods::SaveNamedSelection(const std::string &selName,
+        const std::string& hostName, const std::string& simName)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::SaveNamedSelectionRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
+    state->GetViewerRPC()->SetProgramHost(hostName);
+    state->GetViewerRPC()->SetProgramSim(simName);
 
     //
     // Issue the RPC.
