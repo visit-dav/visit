@@ -1210,6 +1210,9 @@ avtStreamlineFilter::Execute(void)
 //   Initialize seedTimeStep0 even when streamlines are computed since
 //   otherwise seed points get created for the wrong time step. 
 //
+//   Gunther H. Weber, Mon Apr  6 19:19:31 PDT 2009
+//   Initialize seedTime0 for streamline mode. 
+//
 // ****************************************************************************
 
 void
@@ -1367,6 +1370,10 @@ avtStreamlineFilter::Initialize()
         if (numTimeSteps == 1)
             doPathlines = false;
 
+#if 0
+        seedTimeStep0 = activeTimeStep;
+        seedTime0 = md->GetTimes()[activeTimeStep];
+#else
         if (doPathlines)
         {
             seedTimeStep0 = -1;
@@ -1377,19 +1384,22 @@ avtStreamlineFilter::Initialize()
                     seedTimeStep0 = i;
                     break;
                 }
-#if 0
-            seedTimeStep0 = activeTimeStep;
-            seedTime0 = domainTimeIntervals[seedTimeStep0][0];
-#endif
             
             if (seedTimeStep0 == -1)
                 EXCEPTION1(ImproperUseException, "Invalid pathline time value.");
         }
+#endif
     }
     else
     {
         // Wee need to set seedTimeStep0 even for streamlines since it is used
         // as time for the streamline seeds.
+        std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+        ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+        if (*dbp == NULL)
+            EXCEPTION1(InvalidFilesException, db.c_str());
+        avtDatabaseMetaData *md = dbp->GetMetaData(0);
+        seedTime0 = md->GetTimes()[activeTimeStep];
         seedTimeStep0 = activeTimeStep;
     }
 }
