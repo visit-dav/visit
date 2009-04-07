@@ -2249,6 +2249,11 @@ avtParallelCoordinatesFilter::CreateNamedSelection(avtContract_p c,
 //  Programmer: Hank Childs
 //  Creation:   February 9, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Apr  6 17:13:58 PDT 2009
+//    Fix a crash due to deleting a reference we don't own.
+//
 // ****************************************************************************
 
 avtNamedSelection *
@@ -2279,7 +2284,9 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
     avtNamedSelection *rv = NULL;
     if (ids != NULL)
         rv = new avtFloatingPointIdNamedSelection(selName, ids->GetIdentifiers());
-    delete ids;
+    // Don't delete ids, since it is being cached at the DB level and we don't
+    // own this reference.
+    // delete ids;
 
     for (j = 0 ; j < drs.size() ; j++)
         delete drs[j];
