@@ -697,6 +697,11 @@ SumIntArrayAcrossAllProcessors(int *inArray, int *outArray, int nArray)
 //    MPI_Type_get_extent is only in MPI-2. Likewise for
 //    MPI_UNSIGNED_LONG_LONG. So, I made the first check conditional
 //    on MPI_UNSIGNED_LONG_LONG being defined.
+//
+//    Gunther H. Weber, Mon Apr  6 20:50:50 PDT 2009
+//    Check whether MPI_INTEGER8 defined even if MPI_UNSIGNED_LONG_LONG
+//    is defined.
+//    
 // ****************************************************************************
 
 void
@@ -718,7 +723,8 @@ SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray,
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_get_extent(datatype, &lb, &e);
     }
-#elif defined(MPI_INTEGER8)  // ... may only be MPI-2.
+#endif
+#if defined(MPI_INTEGER8)  // ... may only be MPI-2.
     if (e != sizeof(VISIT_LONG_LONG))
     {
         datatype = MPI_INTEGER8;
