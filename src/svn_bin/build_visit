@@ -596,6 +596,10 @@
 #     Mark C. Miller, Wed Apr  8 10:25:38 PDT 2009
 #     Fixed some problems with _IMPL symbol for ITAPS_GRUMMP. Fixed install
 #     of ITAPS_GRUMMP missing iMesh_protos.h
+#
+#     Mark C. Miller, Wed Apr  8 11:48:04 PDT 2009
+#     Removed shared libs from ITAPS installs to make it easier to package
+#     the build up using visit-bin-dist.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -7325,6 +7329,9 @@ function build_itaps_moab
            warn "ITAPS_MOAB install failed.  Giving up"
            return 1
         fi
+        # To make it easier to package this build up, ensure we don't wind up
+        # liking to shared libraries.
+        find $VISITDIR/itaps/MOAB/$ITAPS_MOAB_VERSION/$VISITARCH -name 'lib*.so*' -exec rm -f {} \;
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -7390,6 +7397,9 @@ function build_itaps_fmdb
            warn "ITAPS_FMDB install failed.  Giving up"
            return 1
         fi
+        # To make it easier to package this build up, ensure we don't wind up
+        # liking to shared libraries.
+        find $VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH -name 'lib*.so*' -exec rm -f {} \;
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -7455,6 +7465,9 @@ function build_itaps_grummp
            warn "ITAPS_GRUMMP install failed.  Giving up"
            return 1
         fi
+        # To make it easier to package this build up, ensure we don't wind up
+        # liking to shared libraries.
+        find $VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH -name 'lib*.so*' -exec rm -f {} \;
         #
         # A 'make install' for GRUMMP fails to install iMesh_protos.h.
         # Take care of that now.
