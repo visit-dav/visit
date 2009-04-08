@@ -1,0 +1,22 @@
+openFile ~/data/noise.silo
+changeVariable shepardglobal
+saveWindow
+changeVariable radial
+saveWindow
+changePlotType 1
+setNContours 3
+saveWindow
+setNContours 4
+saveWindow
+setNContours 5
+saveWindow
+setNContours 6
+saveWindow
+setNContours 7
+saveWindow
+setNContours 8
+saveWindow
+setNContours 9
+saveWindow
+setNContours 10
+saveWindow

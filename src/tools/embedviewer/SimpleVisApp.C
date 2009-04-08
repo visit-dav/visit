@@ -23,6 +23,8 @@
 // naughty #define directives.
 #include <vtkQtRenderWindow.h>
 
+#include "CommandParser.h"
+
 vtkQtRenderWindow *
 SimpleVisApp::ReturnVisWin(void *data)
 {
@@ -108,6 +110,7 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v) : QMainWindow()
     // Create menus
     QMenu *fileMenu = menuBar()->addMenu(tr("File"));
     fileMenu->addAction(tr("Open . . ."), this, SLOT(selectFile()));
+    fileMenu->addAction(tr("Open commands. . ."), this, SLOT(execFile()));
     fileMenu->addSeparator();
     fileMenu->addAction(tr("Save window"), this, SLOT(saveWindow()));
     fileMenu->addSeparator();
@@ -125,10 +128,14 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v) : QMainWindow()
 
     // Set the initial widget sensitivity.
     resetWindow();
+
+    cmd = 0;
 }
 
 SimpleVisApp::~SimpleVisApp()
-{}
+{
+    delete cmd;
+}
 
 void
 SimpleVisApp::resetWindow()
@@ -174,7 +181,13 @@ SimpleVisApp::selectFile()
                tr("Open File"),
                QDir::current().path(),
                tr("Data files (*.silo *.vtk *.cgns *.nc *.h5 *.pdb *.visit)"));
-        
+
+    openFile(filename);
+}
+
+void
+SimpleVisApp::openFile(const QString &filename)
+{
     if(!filename.isEmpty())
     {
         // Open the file.
@@ -211,6 +224,23 @@ void
 SimpleVisApp::changeVariable(const QString &var)
 {
     viewer->Methods()->ChangeActivePlotsVar(var.toStdString());
+}
+
+void
+SimpleVisApp::changeVariableAndUpdate(const QString &var)
+{
+    changeVariable(var);
+
+    variables->blockSignals(true);
+    for(int i = 0; i < variables->count(); ++i)
+    {
+        if(variables->item(i)->text() == var)
+        {
+            variables->setCurrentRow(i);
+            break;
+        }
+    }
+    variables->blockSignals(false);
 }
 
 void
@@ -268,4 +298,35 @@ SimpleVisApp::openGUI()
 {
     stringVector args;
     viewer->DelayedMethods()->OpenClient("GUI", viewer->GetVisItCommand(), args);
+}
+
+void
+SimpleVisApp::execFile()
+{
+    // Get a filename from the file dialog.
+    QString filename = QFileDialog::getOpenFileName(this,
+               tr("Open File"),
+               QDir::current().path(),
+               tr("command files (*.txt)"));
+        
+    if(!filename.isEmpty())
+    {
+        if(cmd == NULL)
+        {
+            // Create the command parser.
+            cmd = new CommandParser(viewer);
+            connect(cmd, SIGNAL(openFile(const QString &)),
+                    this, SLOT(openFile(const QString &)));
+            connect(cmd, SIGNAL(changeVariable(const QString &)),
+                    this, SLOT(changeVariableAndUpdate(const QString &)));
+            connect(cmd, SIGNAL(changePlotType(int)),
+                    this, SLOT(changePlotType(int)));
+            connect(cmd, SIGNAL(setNContours(int)),
+                    this, SLOT(setNContours(int)));
+            connect(cmd, SIGNAL(saveWindow()),
+                    this, SLOT(saveWindow()));
+        }
+
+        cmd->ProcessCommands(filename);
+    }
 }

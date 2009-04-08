@@ -41,6 +41,9 @@
 #   Removed refs to $(FILIB) which was for the FAST INTERVAL LIBRARY and
 #   was replaced by some Boost builtin libs.
 #
+#   Brad Whitlock, Wed Apr  8 09:08:10 PDT 2009
+#   I added some new files.
+#
 ##############################################################################
 
 ##
@@ -69,7 +72,7 @@ CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@
 CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ @VIEWER_MESA_STUB_CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
          -I./icons -I../../include -I../../include/visit -I.
 
-HDRMOC=SimpleVisApp.h
+HDRMOC=SimpleVisApp.h Synchronizer.h CommandParser.h
 SRCMOC=${HDRMOC:.h=_moc.C}
 OBJMOC=${SRCMOC:.C=.o}
 
