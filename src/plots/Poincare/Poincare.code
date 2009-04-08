@@ -10,6 +10,9 @@ Definition:
 // Programmer: Dave Pugmire
 // Creation:   Tues Oct 21 14:22:17 EDT 2008
 //
+// Modifications:
+//    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
+//    Initial steps to unification with streamline attributes.
 // ****************************************************************************
 
 bool
@@ -32,16 +35,16 @@ PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
     else if(atts->TypeName() == "Line")
     {
         const Line *line = (const Line *)atts;
-        SetLineSourceStart(line->GetPoint1());
-        SetLineSourceEnd(line->GetPoint2());
+        SetLineStart(line->GetPoint1());
+        SetLineEnd(line->GetPoint2());
         retval = true;
     }
     else if(atts->TypeName() == "PlaneAttributes")
     {
         const PlaneAttributes *plane = (const PlaneAttributes *)atts;
-        SetPlaneSourcePoint(plane->GetOrigin());
-        SetPlaneSourceNormal(plane->GetNormal());
-        SetPlaneSourceUpVec(plane->GetUpAxis());
+        SetPlaneOrigin(plane->GetOrigin());
+        SetPlaneNormal(plane->GetNormal());
+        SetPlaneUpAxis(plane->GetUpAxis());
         retval = true;
     }
     return retval;
@@ -59,6 +62,9 @@ Definition:
 // Programmer: Dave Pugmire
 // Creation:   Tues Oct 21 14:22:17 EDT 2008
 //
+// Modifications:
+//    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
+//    Initial steps to unification with streamline attributes.
 // ****************************************************************************
 
 AttributeSubject *
@@ -78,16 +84,16 @@ PoincareAttributes::CreateCompatible(const std::string &tname) const
     else if (tname == "Line")
     {
         Line *l = new Line;
-        l->SetPoint1(GetLineSourceStart());
-        l->SetPoint2(GetLineSourceEnd());
+        l->SetPoint1(GetLineStart());
+        l->SetPoint2(GetLineEnd());
         retval = l;
     }
     else if (tname == "PlaneAttributes")
     {
         PlaneAttributes *p = new PlaneAttributes;
-        p->SetOrigin(GetPlaneSourcePoint());
-        p->SetNormal(GetPlaneSourceNormal());
-        p->SetUpAxis(GetPlaneSourceUpVec());
+        p->SetOrigin(GetPlaneOrigin());
+        p->SetNormal(GetPlaneNormal());
+        p->SetUpAxis(GetPlaneUpAxis());
         retval = p;
     }
     return retval;

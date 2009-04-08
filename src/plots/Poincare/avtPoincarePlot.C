@@ -291,6 +291,9 @@ avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
 //    Dave Pugmire, Wed Feb 25 09:52:11 EST 2009
 //    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
 //
+//    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
+//    Initial steps to unification with streamline attributes.
+//
 // ****************************************************************************
 
 void
@@ -304,8 +307,8 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 #ifdef ENGINE
 
     // Set the streamline attributes.
-    if (atts.GetIntegratorType() == PoincareAttributes::RungeKutta)
-      poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORLAND_PRINCE);
+    if (atts.GetIntegrationType() == PoincareAttributes::DormandPrince)
+      poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORMAND_PRINCE);
     else // if (atts.GetIntegratorType() == AdamsBashforth)
       poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_ADAMS_BASHFORTH);
 
@@ -317,7 +320,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         poincareFilter->SetTermination(STREAMLINE_TERMINATE_DISTANCE, atts.GetTermination());
     else if (atts.GetTerminationType() == PoincareAttributes::Time)
         poincareFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
-    else if (atts.GetTerminationType() == PoincareAttributes::Steps)
+    else if (atts.GetTerminationType() == PoincareAttributes::Step)
         poincareFilter->SetTermination(STREAMLINE_TERMINATE_STEP, atts.GetTermination());
 
     poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
@@ -327,23 +330,23 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetStreamlineDirection(0);
     poincareFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
 
-    switch (atts.GetStreamlineSource())
+    switch (atts.GetSourceType())
     {
-      case PoincareAttributes::PointSource:
+      case PoincareAttributes::SpecifiedPoint:
         poincareFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
         poincareFilter->SetPointSource(atts.GetPointSource());
         break;
 
-      case PoincareAttributes::LineSource:
+      case PoincareAttributes::SpecifiedLine:
         poincareFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
-        poincareFilter->SetLineSource(atts.GetLineSourceStart(), atts.GetLineSourceEnd());
+        poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
         break;
 
-      case PoincareAttributes::PlaneSource:
+      case PoincareAttributes::SpecifiedPlane:
         poincareFilter->SetSourceType(STREAMLINE_SOURCE_PLANE);
-        poincareFilter->SetPlaneSource(atts.GetPlaneSourcePoint(),
-                                       atts.GetPlaneSourceNormal(),
-                                       atts.GetPlaneSourceUpVec(),
+        poincareFilter->SetPlaneSource(atts.GetPlaneOrigin(),
+                                       atts.GetPlaneNormal(),
+                                       atts.GetPlaneUpAxis(),
                                        atts.GetSourceRadius());
         break;
     }

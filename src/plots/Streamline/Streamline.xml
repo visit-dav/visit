@@ -35,14 +35,14 @@
         Time
         Step
       </Enum>
-      <Enum name="IntegrationType">
-        DormandPrince
-        AdamsBashforth
-      </Enum>
       <Enum name="StreamlineAlgorithmType">
         LoadOnDemand
         ParallelStaticDomains
         MasterSlave
+      </Enum>
+      <Enum name="IntegrationType">
+        DormandPrince
+        AdamsBashforth
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint

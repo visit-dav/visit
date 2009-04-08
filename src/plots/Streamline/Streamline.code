@@ -213,7 +213,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
        (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
         (sphereRadius != obj.sphereRadius)));
 
-    // If we're in box source mode and the box differs, boxSourceDiffers
+    // If we're in box source mode and the box differs, boxDiffers
     // evaluates to true.
     bool boxSourceDiffers = (sourceType == SpecifiedBox) &&
         (POINT_DIFFERS(boxExtents, obj.boxExtents) ||

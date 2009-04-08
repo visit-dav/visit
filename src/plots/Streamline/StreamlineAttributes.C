@@ -237,43 +237,6 @@ StreamlineAttributes::TerminationType_FromString(const std::string &s, Streamlin
 }
 
 //
-// Enum conversion methods for StreamlineAttributes::IntegrationType
-//
-
-static const char *IntegrationType_strings[] = {
-"DormandPrince", "AdamsBashforth"};
-
-std::string
-StreamlineAttributes::IntegrationType_ToString(StreamlineAttributes::IntegrationType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return IntegrationType_strings[index];
-}
-
-std::string
-StreamlineAttributes::IntegrationType_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return IntegrationType_strings[index];
-}
-
-bool
-StreamlineAttributes::IntegrationType_FromString(const std::string &s, StreamlineAttributes::IntegrationType &val)
-{
-    val = StreamlineAttributes::DormandPrince;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == IntegrationType_strings[i])
-        {
-            val = (IntegrationType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for StreamlineAttributes::StreamlineAlgorithmType
 //
 
@@ -305,6 +268,43 @@ StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, S
         if(s == StreamlineAlgorithmType_strings[i])
         {
             val = (StreamlineAlgorithmType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for StreamlineAttributes::IntegrationType
+//
+
+static const char *IntegrationType_strings[] = {
+"DormandPrince", "AdamsBashforth"};
+
+std::string
+StreamlineAttributes::IntegrationType_ToString(StreamlineAttributes::IntegrationType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return IntegrationType_strings[index];
+}
+
+std::string
+StreamlineAttributes::IntegrationType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return IntegrationType_strings[index];
+}
+
+bool
+StreamlineAttributes::IntegrationType_FromString(const std::string &s, StreamlineAttributes::IntegrationType &val)
+{
+    val = StreamlineAttributes::DormandPrince;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == IntegrationType_strings[i])
+        {
+            val = (IntegrationType)i;
             return true;
         }
     }
@@ -2441,7 +2441,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
        (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
         (sphereRadius != obj.sphereRadius)));
 
-    // If we're in box source mode and the box differs, boxSourceDiffers
+    // If we're in box source mode and the box differs, boxDiffers
     // evaluates to true.
     bool boxSourceDiffers = (sourceType == SpecifiedBox) &&
         (POINT_DIFFERS(boxExtents, obj.boxExtents) ||
@@ -2469,7 +2469,6 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (relTol != obj.relTol) ||
            (absTol != obj.absTol) ||
            (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
-           (pathlines != obj.pathlines) ||
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||

@@ -86,12 +86,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int TERMINATIONTYPE_TIME = 1;
     public final static int TERMINATIONTYPE_STEP = 2;
 
-    public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
-    public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
-
     public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
     public final static int STREAMLINEALGORITHMTYPE_MASTERSLAVE = 2;
+
+    public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
+    public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
 
 
     public StreamlineAttributes()

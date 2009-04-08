@@ -180,7 +180,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     coloringMethod = STREAMLINE_COLOR_SPEED;
     displayMethod = STREAMLINE_DISPLAY_LINES;
     streamlineDirection = VTK_INTEGRATE_FORWARD;
-    integrationType = STREAMLINE_INTEGRATE_DORLAND_PRINCE;
+    integrationType = STREAMLINE_INTEGRATE_DORMAND_PRINCE;
     relTol = 1e-7;
     absTol = 0;
     intervalTree = NULL;
@@ -1954,7 +1954,7 @@ avtStreamlineFilter::PreExecute(void)
     avtDatasetOnDemandFilter::PreExecute();
 
     // Create the solver. --Get from user prefs.
-    if (integrationType == STREAMLINE_INTEGRATE_DORLAND_PRINCE)
+    if (integrationType == STREAMLINE_INTEGRATE_DORMAND_PRINCE)
     {
         solver = new avtIVPDopri5;
         solver->SetMaximumStepSize(maxStepLength);
