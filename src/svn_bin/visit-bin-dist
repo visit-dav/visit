@@ -376,6 +376,10 @@
 #    Patrick Shinpaugh, Wed Mar 11 11:34:16 MST 2009
 #    Fix directories to account for linux-ppc64.
 #
+#    Mark C. Miller, Wed Apr  8 11:06:38 PDT 2009
+#    Added minimum possible logic for dbio-only distros. Many commands fail
+#    in this mode. But, those failures are harmless and the script should
+#    continue on to complete the creation of a binary distro.
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -397,6 +401,7 @@ set Configuration = "open"
 set makerelative = "TRUE"
 set max_one_silo_bytes = 2000000  #  2e6 bytes (about 2 megabytes)
 set max_tot_silo_bytes = 20000000 # 20e6 bytes (about 20 megabytes)
+set dbioOnly = "FALSE"
 
 #
 # Parse the argument list.
@@ -490,6 +495,17 @@ while ($#argv >= 1)
                set max_tot_silo_bytes = $1
                breaksw
  
+      case -dbio-only:
+               set dbioOnly = TRUE
+               set DataFiles = FALSE 
+               set QtLibs = FALSE
+               set MesaLibs = FALSE 
+               set VTKLibs = TRUE
+               set PythonExe = FALSE 
+               set max_one_silo_bytes = 0 
+               set max_tot_silo_bytes = 0 
+               breaksw
+
       default:
                echo " "
                echo ">>>>>>>>>>  Illegal option $1  <<<<<<<<<<"
@@ -523,6 +539,7 @@ if ($Help == TRUE) then
    echo "       -norel         Skip the pass on the Mac that makes sure "
    echo "                      libraries are relative to @executable_path."
    echo "       -max_silo_bytes  <one-file> <total>"
+   echo "       -dbio-only     Prepare a dbio-only distribution." 
    exit (1)
 endif
 
@@ -986,6 +1003,9 @@ cp $VisItDir/exe/curv3dprep    $bindir
 cp $VisItDir/exe/text2polys    $bindir
 cp $VisItDir/exe/time_annotation $bindir
 cp $VisItDir/exe/visitconvert_ser $bindir
+if(-e $VisItDir/exe/visitconvert_ser_lite) then
+   cp $VisItDir/exe/visitconvert_ser_lite $bindir
+fi
 cp $VisItDir/exe/visit_composite  $bindir
 cp $VisItDir/exe/visit_transition $bindir
 if(-e $VisItDir/exe/visitconvert_par) then
