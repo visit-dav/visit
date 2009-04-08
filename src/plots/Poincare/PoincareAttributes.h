@@ -60,26 +60,17 @@
 class PoincareAttributes : public AttributeSubject
 {
 public:
-    enum ColoringMethod
+    enum SourceType
     {
-        Solid,
-        ColorBySpeed,
-        ColorByVorticity,
-        ColorByLength,
-        ColorByTime,
-        ColorBySeedPointID
+        SpecifiedPoint,
+        SpecifiedLine,
+        SpecifiedPlane
     };
     enum TerminationType
     {
-        Steps,
         Distance,
-        Time
-    };
-    enum SourceType
-    {
-        PointSource,
-        LineSource,
-        PlaneSource
+        Time,
+        Step
     };
     enum ColorStyleType
     {
@@ -105,9 +96,9 @@ public:
         Merge,
         Smooth
     };
-    enum IntegratorType
+    enum IntegrationType
     {
-        RungeKutta,
+        DormandPrince,
         AdamsBashforth
     };
 
@@ -127,36 +118,36 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectPointSource();
-    void SelectLineSourceStart();
-    void SelectLineSourceEnd();
-    void SelectPlaneSourcePoint();
-    void SelectPlaneSourceNormal();
-    void SelectPlaneSourceUpVec();
+    void SelectLineStart();
+    void SelectLineEnd();
+    void SelectPlaneOrigin();
+    void SelectPlaneNormal();
+    void SelectPlaneUpAxis();
     void SelectColorTableName();
     void SelectSingleColor();
 
     // Property setting methods
+    void SetSourceType(SourceType sourceType_);
+    void SetMaxStepLength(double maxStepLength_);
     void SetTermination(double termination_);
-    void SetTerminationType(TerminationType terminationType_);
-    void SetIntegratorType(IntegratorType integratorType_);
-    void SetStreamlineSource(SourceType streamlineSource_);
-    void SetShowStreamlines(bool showStreamlines_);
-    void SetShowPoints(bool showPoints_);
-    void SetPointDensity(int pointDensity_);
-    void SetSourceRadius(double sourceRadius_);
     void SetPointSource(const double *pointSource_);
-    void SetLineSourceStart(const double *lineSourceStart_);
-    void SetLineSourceEnd(const double *lineSourceEnd_);
-    void SetPlaneSourcePoint(const double *planeSourcePoint_);
-    void SetPlaneSourceNormal(const double *planeSourceNormal_);
-    void SetPlaneSourceUpVec(const double *planeSourceUpVec_);
-    void SetColorTableName(const std::string &colorTableName_);
-    void SetSingleColor(const ColorAttribute &singleColor_);
+    void SetLineStart(const double *lineStart_);
+    void SetLineEnd(const double *lineEnd_);
+    void SetPlaneOrigin(const double *planeOrigin_);
+    void SetPlaneNormal(const double *planeNormal_);
+    void SetPlaneUpAxis(const double *planeUpAxis_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
-    void SetMaxStepLength(double maxStepLength_);
+    void SetTerminationType(TerminationType terminationType_);
+    void SetIntegrationType(IntegrationType integrationType_);
+    void SetShowStreamlines(bool showStreamlines_);
+    void SetShowPoints(bool showPoints_);
+    void SetPointDensity(int pointDensity_);
+    void SetSourceRadius(double sourceRadius_);
+    void SetColorTableName(const std::string &colorTableName_);
+    void SetSingleColor(const ColorAttribute &singleColor_);
     void SetNumberPlanes(int NumberPlanes_);
     void SetColorStyle(ColorStyleType ColorStyle_);
     void SetMaxToroidalWinding(int MaxToroidalWinding_);
@@ -168,35 +159,35 @@ public:
     void SetOverlaps(OverlapType Overlaps_);
 
     // Property getting methods
+    SourceType           GetSourceType() const;
+    double               GetMaxStepLength() const;
     double               GetTermination() const;
-    TerminationType      GetTerminationType() const;
-    IntegratorType       GetIntegratorType() const;
-    SourceType           GetStreamlineSource() const;
-    bool                 GetShowStreamlines() const;
-    bool                 GetShowPoints() const;
-    int                  GetPointDensity() const;
-    double               GetSourceRadius() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
-    const double         *GetLineSourceStart() const;
-          double         *GetLineSourceStart();
-    const double         *GetLineSourceEnd() const;
-          double         *GetLineSourceEnd();
-    const double         *GetPlaneSourcePoint() const;
-          double         *GetPlaneSourcePoint();
-    const double         *GetPlaneSourceNormal() const;
-          double         *GetPlaneSourceNormal();
-    const double         *GetPlaneSourceUpVec() const;
-          double         *GetPlaneSourceUpVec();
-    const std::string    &GetColorTableName() const;
-          std::string    &GetColorTableName();
-    const ColorAttribute &GetSingleColor() const;
-          ColorAttribute &GetSingleColor();
+    const double         *GetLineStart() const;
+          double         *GetLineStart();
+    const double         *GetLineEnd() const;
+          double         *GetLineEnd();
+    const double         *GetPlaneOrigin() const;
+          double         *GetPlaneOrigin();
+    const double         *GetPlaneNormal() const;
+          double         *GetPlaneNormal();
+    const double         *GetPlaneUpAxis() const;
+          double         *GetPlaneUpAxis();
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     double               GetRelTol() const;
     double               GetAbsTol() const;
-    double               GetMaxStepLength() const;
+    TerminationType      GetTerminationType() const;
+    IntegrationType      GetIntegrationType() const;
+    bool                 GetShowStreamlines() const;
+    bool                 GetShowPoints() const;
+    int                  GetPointDensity() const;
+    double               GetSourceRadius() const;
+    const std::string    &GetColorTableName() const;
+          std::string    &GetColorTableName();
+    const ColorAttribute &GetSingleColor() const;
+          ColorAttribute &GetSingleColor();
     int                  GetNumberPlanes() const;
     ColorStyleType       GetColorStyle() const;
     int                  GetMaxToroidalWinding() const;
@@ -212,20 +203,15 @@ public:
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string ColoringMethod_ToString(ColoringMethod);
-    static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
+    static std::string SourceType_ToString(SourceType);
+    static bool SourceType_FromString(const std::string &, SourceType &);
 protected:
-    static std::string ColoringMethod_ToString(int);
+    static std::string SourceType_ToString(int);
 public:
     static std::string TerminationType_ToString(TerminationType);
     static bool TerminationType_FromString(const std::string &, TerminationType &);
 protected:
     static std::string TerminationType_ToString(int);
-public:
-    static std::string SourceType_ToString(SourceType);
-    static bool SourceType_FromString(const std::string &, SourceType &);
-protected:
-    static std::string SourceType_ToString(int);
 public:
     static std::string ColorStyleType_ToString(ColorStyleType);
     static bool ColorStyleType_FromString(const std::string &, ColorStyleType &);
@@ -242,10 +228,10 @@ public:
 protected:
     static std::string OverlapType_ToString(int);
 public:
-    static std::string IntegratorType_ToString(IntegratorType);
-    static bool IntegratorType_FromString(const std::string &, IntegratorType &);
+    static std::string IntegrationType_ToString(IntegrationType);
+    static bool IntegrationType_FromString(const std::string &, IntegrationType &);
 protected:
-    static std::string IntegratorType_ToString(int);
+    static std::string IntegrationType_ToString(int);
 public:
 
     // Keyframing methods
@@ -257,27 +243,27 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_termination = 0,
-        ID_terminationType,
-        ID_integratorType,
-        ID_streamlineSource,
-        ID_showStreamlines,
-        ID_showPoints,
-        ID_pointDensity,
-        ID_sourceRadius,
+        ID_sourceType = 0,
+        ID_maxStepLength,
+        ID_termination,
         ID_pointSource,
-        ID_lineSourceStart,
-        ID_lineSourceEnd,
-        ID_planeSourcePoint,
-        ID_planeSourceNormal,
-        ID_planeSourceUpVec,
-        ID_colorTableName,
-        ID_singleColor,
+        ID_lineStart,
+        ID_lineEnd,
+        ID_planeOrigin,
+        ID_planeNormal,
+        ID_planeUpAxis,
         ID_legendFlag,
         ID_lightingFlag,
         ID_relTol,
         ID_absTol,
-        ID_maxStepLength,
+        ID_terminationType,
+        ID_integrationType,
+        ID_showStreamlines,
+        ID_showPoints,
+        ID_pointDensity,
+        ID_sourceRadius,
+        ID_colorTableName,
+        ID_singleColor,
         ID_NumberPlanes,
         ID_ColorStyle,
         ID_MaxToroidalWinding,
@@ -290,27 +276,27 @@ public:
     };
 
 private:
+    int            sourceType;
+    double         maxStepLength;
     double         termination;
-    int            terminationType;
-    int            integratorType;
-    int            streamlineSource;
-    bool           showStreamlines;
-    bool           showPoints;
-    int            pointDensity;
-    double         sourceRadius;
     double         pointSource[3];
-    double         lineSourceStart[3];
-    double         lineSourceEnd[3];
-    double         planeSourcePoint[3];
-    double         planeSourceNormal[3];
-    double         planeSourceUpVec[3];
-    std::string    colorTableName;
-    ColorAttribute singleColor;
+    double         lineStart[3];
+    double         lineEnd[3];
+    double         planeOrigin[3];
+    double         planeNormal[3];
+    double         planeUpAxis[3];
     bool           legendFlag;
     bool           lightingFlag;
     double         relTol;
     double         absTol;
-    double         maxStepLength;
+    int            terminationType;
+    int            integrationType;
+    bool           showStreamlines;
+    bool           showPoints;
+    int            pointDensity;
+    double         sourceRadius;
+    std::string    colorTableName;
+    ColorAttribute singleColor;
     int            NumberPlanes;
     int            ColorStyle;
     int            MaxToroidalWinding;

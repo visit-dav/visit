@@ -5,27 +5,17 @@
     <Files components="E">
       avtPoincareFilter.C
       StreamlineAnalyzerLib.C
-      Point.C
-      Vector.C
     </Files>
     <Attribute name="PoincareAttributes" purpose="Attributes for the Poincare plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Poincare.code">
-      <Enum name="ColoringMethod">
-        Solid
-        ColorBySpeed
-        ColorByVorticity
-        ColorByLength
-        ColorByTime
-        ColorBySeedPointID
+      <Enum name="SourceType">
+        SpecifiedPoint
+        SpecifiedLine
+        SpecifiedPlane
       </Enum>
       <Enum name="TerminationType">
-        Steps
         Distance
         Time
-      </Enum>
-      <Enum name="SourceType">
-        PointSource
-        LineSource
-        PlaneSource
+        Step
       </Enum>
       <Enum name="ColorStyleType">
         OriginalValue
@@ -48,71 +38,48 @@
         Merge
         Smooth
       </Enum>
-      <Enum name="IntegratorType">
-        RungeKutta
+      <Enum name="IntegrationType">
+        DormandPrince
         AdamsBashforth
       </Enum>
+      <Field name="sourceType" label="Streamline Source" type="enum" subtype="SourceType">
+        SpecifiedPoint
+      </Field>
+      <Field name="maxStepLength" label="maximum step length" type="double">
+        0.100000
+      </Field>
       <Field name="termination" label="Termination" type="double">
         10.000000
       </Field>
-      <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
-        Steps
-      </Field>
-      <Field name="integratorType" label="Integrator" type="enum" subtype="IntegratorType">
-        AdamsBashforth
-      </Field>
-      <Field name="streamlineSource" label="Streamline Source" type="enum" subtype="SourceType">
-      </Field>
-      <Field name="showStreamlines" label="Show Streamlines" type="bool">
-        false
-      </Field>
-      <Field name="showPoints" label="Show Points" type="bool">
-        false
-      </Field>
-      <Field name="pointDensity" label="Point Density" type="int" enabler="streamlineSource:LineSource,PlaneSource">
-        1
-      </Field>
-      <Field name="sourceRadius" label="Source Radius" type="double" enabler="streamlineSource:PlaneSource">
-        1.000000
-      </Field>
-      <Field name="pointSource" label="Point Source" type="doubleArray" length="3" enabler="streamlineSource:PointSource">
+      <Field name="pointSource" label="Point Source" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="lineSourceStart" label="Line Point Start" type="doubleArray" length="3" enabler="streamlineSource:LineSource">
+      <Field name="lineStart" label="Line Point Start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="lineSourceEnd" label="Line Point End" type="doubleArray" length="3" enabler="streamlineSource:LineSource">
+      <Field name="lineEnd" label="Line Point End" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
         1.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeSourcePoint" label="Plane Source Point" type="doubleArray" length="3" enabler="streamlineSource:PlaneSource">
+      <Field name="planeOrigin" label="Plane Source Point" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeSourceNormal" label="Plane Source Normal" type="doubleArray" length="3" enabler="streamlineSource:PlaneSource">
+      <Field name="planeNormal" label="Plane Source Normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         0.000000
         1.000000
       </Field>
-      <Field name="planeSourceUpVec" label="Plane Source Up Vec" type="doubleArray" length="3" enabler="streamlineSource:PlaneSource">
+      <Field name="planeUpAxis" label="Plane Source Up Axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         1.000000
         0.000000
-      </Field>
-      <Field name="colorTableName" label="Color table" type="colortable">
-        Default
-      </Field>
-      <Field name="singleColor" label="Single color" type="color" length="4">
-        0
-        0
-        0
-        255
       </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true
@@ -126,8 +93,32 @@
       <Field name="absTol" label="abs. tolerance" type="double">
         0.000010
       </Field>
-      <Field name="maxStepLength" label="maximum step length" type="double">
-        0.100000
+      <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
+        Step
+      </Field>
+      <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
+        AdamsBashforth
+      </Field>
+      <Field name="showStreamlines" label="Show Streamlines" type="bool">
+        false
+      </Field>
+      <Field name="showPoints" label="Show Points" type="bool">
+        false
+      </Field>
+      <Field name="pointDensity" label="Point Density" type="int" enabler="sourceType:SpecifiedLine,SpecifiedPlane">
+        1
+      </Field>
+      <Field name="sourceRadius" label="Source Radius" type="double" enabler="sourceType:SpecifiedPlane">
+        1.000000
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="singleColor" label="Single color" type="color" length="4">
+        0
+        0
+        0
+        255
       </Field>
       <Field name="NumberPlanes" label="NumberPlanes" type="int">
         1

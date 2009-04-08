@@ -95,16 +95,16 @@ public:
         Time,
         Step
     };
-    enum IntegrationType
-    {
-        DormandPrince,
-        AdamsBashforth
-    };
     enum StreamlineAlgorithmType
     {
         LoadOnDemand,
         ParallelStaticDomains,
         MasterSlave
+    };
+    enum IntegrationType
+    {
+        DormandPrince,
+        AdamsBashforth
     };
 
     StreamlineAttributes();
@@ -245,15 +245,15 @@ public:
 protected:
     static std::string TerminationType_ToString(int);
 public:
-    static std::string IntegrationType_ToString(IntegrationType);
-    static bool IntegrationType_FromString(const std::string &, IntegrationType &);
-protected:
-    static std::string IntegrationType_ToString(int);
-public:
     static std::string StreamlineAlgorithmType_ToString(StreamlineAlgorithmType);
     static bool StreamlineAlgorithmType_FromString(const std::string &, StreamlineAlgorithmType &);
 protected:
     static std::string StreamlineAlgorithmType_ToString(int);
+public:
+    static std::string IntegrationType_ToString(IntegrationType);
+    static bool IntegrationType_FromString(const std::string &, IntegrationType &);
+protected:
+    static std::string IntegrationType_ToString(int);
 public:
 
     // Keyframing methods

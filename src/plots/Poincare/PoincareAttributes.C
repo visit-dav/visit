@@ -43,88 +43,11 @@
 #include <Line.h>
 
 //
-// Enum conversion methods for PoincareAttributes::ColoringMethod
-//
-
-static const char *ColoringMethod_strings[] = {
-"Solid", "ColorBySpeed", "ColorByVorticity", 
-"ColorByLength", "ColorByTime", "ColorBySeedPointID"
-};
-
-std::string
-PoincareAttributes::ColoringMethod_ToString(PoincareAttributes::ColoringMethod t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 6) index = 0;
-    return ColoringMethod_strings[index];
-}
-
-std::string
-PoincareAttributes::ColoringMethod_ToString(int t)
-{
-    int index = (t < 0 || t >= 6) ? 0 : t;
-    return ColoringMethod_strings[index];
-}
-
-bool
-PoincareAttributes::ColoringMethod_FromString(const std::string &s, PoincareAttributes::ColoringMethod &val)
-{
-    val = PoincareAttributes::Solid;
-    for(int i = 0; i < 6; ++i)
-    {
-        if(s == ColoringMethod_strings[i])
-        {
-            val = (ColoringMethod)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
-// Enum conversion methods for PoincareAttributes::TerminationType
-//
-
-static const char *TerminationType_strings[] = {
-"Steps", "Distance", "Time"
-};
-
-std::string
-PoincareAttributes::TerminationType_ToString(PoincareAttributes::TerminationType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
-    return TerminationType_strings[index];
-}
-
-std::string
-PoincareAttributes::TerminationType_ToString(int t)
-{
-    int index = (t < 0 || t >= 3) ? 0 : t;
-    return TerminationType_strings[index];
-}
-
-bool
-PoincareAttributes::TerminationType_FromString(const std::string &s, PoincareAttributes::TerminationType &val)
-{
-    val = PoincareAttributes::Steps;
-    for(int i = 0; i < 3; ++i)
-    {
-        if(s == TerminationType_strings[i])
-        {
-            val = (TerminationType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for PoincareAttributes::SourceType
 //
 
 static const char *SourceType_strings[] = {
-"PointSource", "LineSource", "PlaneSource"
+"SpecifiedPoint", "SpecifiedLine", "SpecifiedPlane"
 };
 
 std::string
@@ -145,12 +68,50 @@ PoincareAttributes::SourceType_ToString(int t)
 bool
 PoincareAttributes::SourceType_FromString(const std::string &s, PoincareAttributes::SourceType &val)
 {
-    val = PoincareAttributes::PointSource;
+    val = PoincareAttributes::SpecifiedPoint;
     for(int i = 0; i < 3; ++i)
     {
         if(s == SourceType_strings[i])
         {
             val = (SourceType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for PoincareAttributes::TerminationType
+//
+
+static const char *TerminationType_strings[] = {
+"Distance", "Time", "Step"
+};
+
+std::string
+PoincareAttributes::TerminationType_ToString(PoincareAttributes::TerminationType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return TerminationType_strings[index];
+}
+
+std::string
+PoincareAttributes::TerminationType_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return TerminationType_strings[index];
+}
+
+bool
+PoincareAttributes::TerminationType_FromString(const std::string &s, PoincareAttributes::TerminationType &val)
+{
+    val = PoincareAttributes::Distance;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == TerminationType_strings[i])
+        {
+            val = (TerminationType)i;
             return true;
         }
     }
@@ -273,36 +234,36 @@ PoincareAttributes::OverlapType_FromString(const std::string &s, PoincareAttribu
 }
 
 //
-// Enum conversion methods for PoincareAttributes::IntegratorType
+// Enum conversion methods for PoincareAttributes::IntegrationType
 //
 
-static const char *IntegratorType_strings[] = {
-"RungeKutta", "AdamsBashforth"};
+static const char *IntegrationType_strings[] = {
+"DormandPrince", "AdamsBashforth"};
 
 std::string
-PoincareAttributes::IntegratorType_ToString(PoincareAttributes::IntegratorType t)
+PoincareAttributes::IntegrationType_ToString(PoincareAttributes::IntegrationType t)
 {
     int index = int(t);
     if(index < 0 || index >= 2) index = 0;
-    return IntegratorType_strings[index];
+    return IntegrationType_strings[index];
 }
 
 std::string
-PoincareAttributes::IntegratorType_ToString(int t)
+PoincareAttributes::IntegrationType_ToString(int t)
 {
     int index = (t < 0 || t >= 2) ? 0 : t;
-    return IntegratorType_strings[index];
+    return IntegrationType_strings[index];
 }
 
 bool
-PoincareAttributes::IntegratorType_FromString(const std::string &s, PoincareAttributes::IntegratorType &val)
+PoincareAttributes::IntegrationType_FromString(const std::string &s, PoincareAttributes::IntegrationType &val)
 {
-    val = PoincareAttributes::RungeKutta;
+    val = PoincareAttributes::DormandPrince;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == IntegratorType_strings[i])
+        if(s == IntegrationType_strings[i])
         {
-            val = (IntegratorType)i;
+            val = (IntegrationType)i;
             return true;
         }
     }
@@ -310,7 +271,7 @@ PoincareAttributes::IntegratorType_FromString(const std::string &s, PoincareAttr
 }
 
 // Type map format string
-const char *PoincareAttributes::TypeMapFormatString = "diiibbidDDDDDDsabbdddiiiidiibi";
+const char *PoincareAttributes::TypeMapFormatString = "iddDDDDDDbbddiibbidsaiiiidiibi";
 
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
@@ -331,36 +292,37 @@ PoincareAttributes::PoincareAttributes() :
     AttributeSubject(PoincareAttributes::TypeMapFormatString),
     colorTableName("Default"), singleColor(0, 0, 0)
 {
+    sourceType = SpecifiedPoint;
+    maxStepLength = 0.1;
     termination = 10;
-    terminationType = Steps;
-    integratorType = AdamsBashforth;
-    showStreamlines = false;
-    showPoints = false;
-    pointDensity = 1;
-    sourceRadius = 1;
     pointSource[0] = 0;
     pointSource[1] = 0;
     pointSource[2] = 0;
-    lineSourceStart[0] = 0;
-    lineSourceStart[1] = 0;
-    lineSourceStart[2] = 0;
-    lineSourceEnd[0] = 1;
-    lineSourceEnd[1] = 0;
-    lineSourceEnd[2] = 0;
-    planeSourcePoint[0] = 0;
-    planeSourcePoint[1] = 0;
-    planeSourcePoint[2] = 0;
-    planeSourceNormal[0] = 0;
-    planeSourceNormal[1] = 0;
-    planeSourceNormal[2] = 1;
-    planeSourceUpVec[0] = 0;
-    planeSourceUpVec[1] = 1;
-    planeSourceUpVec[2] = 0;
+    lineStart[0] = 0;
+    lineStart[1] = 0;
+    lineStart[2] = 0;
+    lineEnd[0] = 1;
+    lineEnd[1] = 0;
+    lineEnd[2] = 0;
+    planeOrigin[0] = 0;
+    planeOrigin[1] = 0;
+    planeOrigin[2] = 0;
+    planeNormal[0] = 0;
+    planeNormal[1] = 0;
+    planeNormal[2] = 1;
+    planeUpAxis[0] = 0;
+    planeUpAxis[1] = 1;
+    planeUpAxis[2] = 0;
     legendFlag = true;
     lightingFlag = true;
     relTol = 0.0001;
     absTol = 1e-05;
-    maxStepLength = 0.1;
+    terminationType = Step;
+    integrationType = AdamsBashforth;
+    showStreamlines = false;
+    showPoints = false;
+    pointDensity = 1;
+    sourceRadius = 1;
     NumberPlanes = 1;
     ColorStyle = SafetyFactor;
     MaxToroidalWinding = 30;
@@ -390,45 +352,45 @@ PoincareAttributes::PoincareAttributes() :
 PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) : 
     AttributeSubject(PoincareAttributes::TypeMapFormatString)
 {
+    sourceType = obj.sourceType;
+    maxStepLength = obj.maxStepLength;
     termination = obj.termination;
-    terminationType = obj.terminationType;
-    integratorType = obj.integratorType;
-    streamlineSource = obj.streamlineSource;
-    showStreamlines = obj.showStreamlines;
-    showPoints = obj.showPoints;
-    pointDensity = obj.pointDensity;
-    sourceRadius = obj.sourceRadius;
     pointSource[0] = obj.pointSource[0];
     pointSource[1] = obj.pointSource[1];
     pointSource[2] = obj.pointSource[2];
 
-    lineSourceStart[0] = obj.lineSourceStart[0];
-    lineSourceStart[1] = obj.lineSourceStart[1];
-    lineSourceStart[2] = obj.lineSourceStart[2];
+    lineStart[0] = obj.lineStart[0];
+    lineStart[1] = obj.lineStart[1];
+    lineStart[2] = obj.lineStart[2];
 
-    lineSourceEnd[0] = obj.lineSourceEnd[0];
-    lineSourceEnd[1] = obj.lineSourceEnd[1];
-    lineSourceEnd[2] = obj.lineSourceEnd[2];
+    lineEnd[0] = obj.lineEnd[0];
+    lineEnd[1] = obj.lineEnd[1];
+    lineEnd[2] = obj.lineEnd[2];
 
-    planeSourcePoint[0] = obj.planeSourcePoint[0];
-    planeSourcePoint[1] = obj.planeSourcePoint[1];
-    planeSourcePoint[2] = obj.planeSourcePoint[2];
+    planeOrigin[0] = obj.planeOrigin[0];
+    planeOrigin[1] = obj.planeOrigin[1];
+    planeOrigin[2] = obj.planeOrigin[2];
 
-    planeSourceNormal[0] = obj.planeSourceNormal[0];
-    planeSourceNormal[1] = obj.planeSourceNormal[1];
-    planeSourceNormal[2] = obj.planeSourceNormal[2];
+    planeNormal[0] = obj.planeNormal[0];
+    planeNormal[1] = obj.planeNormal[1];
+    planeNormal[2] = obj.planeNormal[2];
 
-    planeSourceUpVec[0] = obj.planeSourceUpVec[0];
-    planeSourceUpVec[1] = obj.planeSourceUpVec[1];
-    planeSourceUpVec[2] = obj.planeSourceUpVec[2];
+    planeUpAxis[0] = obj.planeUpAxis[0];
+    planeUpAxis[1] = obj.planeUpAxis[1];
+    planeUpAxis[2] = obj.planeUpAxis[2];
 
-    colorTableName = obj.colorTableName;
-    singleColor = obj.singleColor;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     relTol = obj.relTol;
     absTol = obj.absTol;
-    maxStepLength = obj.maxStepLength;
+    terminationType = obj.terminationType;
+    integrationType = obj.integrationType;
+    showStreamlines = obj.showStreamlines;
+    showPoints = obj.showPoints;
+    pointDensity = obj.pointDensity;
+    sourceRadius = obj.sourceRadius;
+    colorTableName = obj.colorTableName;
+    singleColor = obj.singleColor;
     NumberPlanes = obj.NumberPlanes;
     ColorStyle = obj.ColorStyle;
     MaxToroidalWinding = obj.MaxToroidalWinding;
@@ -481,45 +443,45 @@ PoincareAttributes&
 PoincareAttributes::operator = (const PoincareAttributes &obj)
 {
     if (this == &obj) return *this;
+    sourceType = obj.sourceType;
+    maxStepLength = obj.maxStepLength;
     termination = obj.termination;
-    terminationType = obj.terminationType;
-    integratorType = obj.integratorType;
-    streamlineSource = obj.streamlineSource;
-    showStreamlines = obj.showStreamlines;
-    showPoints = obj.showPoints;
-    pointDensity = obj.pointDensity;
-    sourceRadius = obj.sourceRadius;
     pointSource[0] = obj.pointSource[0];
     pointSource[1] = obj.pointSource[1];
     pointSource[2] = obj.pointSource[2];
 
-    lineSourceStart[0] = obj.lineSourceStart[0];
-    lineSourceStart[1] = obj.lineSourceStart[1];
-    lineSourceStart[2] = obj.lineSourceStart[2];
+    lineStart[0] = obj.lineStart[0];
+    lineStart[1] = obj.lineStart[1];
+    lineStart[2] = obj.lineStart[2];
 
-    lineSourceEnd[0] = obj.lineSourceEnd[0];
-    lineSourceEnd[1] = obj.lineSourceEnd[1];
-    lineSourceEnd[2] = obj.lineSourceEnd[2];
+    lineEnd[0] = obj.lineEnd[0];
+    lineEnd[1] = obj.lineEnd[1];
+    lineEnd[2] = obj.lineEnd[2];
 
-    planeSourcePoint[0] = obj.planeSourcePoint[0];
-    planeSourcePoint[1] = obj.planeSourcePoint[1];
-    planeSourcePoint[2] = obj.planeSourcePoint[2];
+    planeOrigin[0] = obj.planeOrigin[0];
+    planeOrigin[1] = obj.planeOrigin[1];
+    planeOrigin[2] = obj.planeOrigin[2];
 
-    planeSourceNormal[0] = obj.planeSourceNormal[0];
-    planeSourceNormal[1] = obj.planeSourceNormal[1];
-    planeSourceNormal[2] = obj.planeSourceNormal[2];
+    planeNormal[0] = obj.planeNormal[0];
+    planeNormal[1] = obj.planeNormal[1];
+    planeNormal[2] = obj.planeNormal[2];
 
-    planeSourceUpVec[0] = obj.planeSourceUpVec[0];
-    planeSourceUpVec[1] = obj.planeSourceUpVec[1];
-    planeSourceUpVec[2] = obj.planeSourceUpVec[2];
+    planeUpAxis[0] = obj.planeUpAxis[0];
+    planeUpAxis[1] = obj.planeUpAxis[1];
+    planeUpAxis[2] = obj.planeUpAxis[2];
 
-    colorTableName = obj.colorTableName;
-    singleColor = obj.singleColor;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     relTol = obj.relTol;
     absTol = obj.absTol;
-    maxStepLength = obj.maxStepLength;
+    terminationType = obj.terminationType;
+    integrationType = obj.integrationType;
+    showStreamlines = obj.showStreamlines;
+    showPoints = obj.showPoints;
+    pointDensity = obj.pointDensity;
+    sourceRadius = obj.sourceRadius;
+    colorTableName = obj.colorTableName;
+    singleColor = obj.singleColor;
     NumberPlanes = obj.NumberPlanes;
     ColorStyle = obj.ColorStyle;
     MaxToroidalWinding = obj.MaxToroidalWinding;
@@ -557,53 +519,53 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
     for(int i = 0; i < 3 && pointSource_equal; ++i)
         pointSource_equal = (pointSource[i] == obj.pointSource[i]);
 
-    // Compare the lineSourceStart arrays.
-    bool lineSourceStart_equal = true;
-    for(int i = 0; i < 3 && lineSourceStart_equal; ++i)
-        lineSourceStart_equal = (lineSourceStart[i] == obj.lineSourceStart[i]);
+    // Compare the lineStart arrays.
+    bool lineStart_equal = true;
+    for(int i = 0; i < 3 && lineStart_equal; ++i)
+        lineStart_equal = (lineStart[i] == obj.lineStart[i]);
 
-    // Compare the lineSourceEnd arrays.
-    bool lineSourceEnd_equal = true;
-    for(int i = 0; i < 3 && lineSourceEnd_equal; ++i)
-        lineSourceEnd_equal = (lineSourceEnd[i] == obj.lineSourceEnd[i]);
+    // Compare the lineEnd arrays.
+    bool lineEnd_equal = true;
+    for(int i = 0; i < 3 && lineEnd_equal; ++i)
+        lineEnd_equal = (lineEnd[i] == obj.lineEnd[i]);
 
-    // Compare the planeSourcePoint arrays.
-    bool planeSourcePoint_equal = true;
-    for(int i = 0; i < 3 && planeSourcePoint_equal; ++i)
-        planeSourcePoint_equal = (planeSourcePoint[i] == obj.planeSourcePoint[i]);
+    // Compare the planeOrigin arrays.
+    bool planeOrigin_equal = true;
+    for(int i = 0; i < 3 && planeOrigin_equal; ++i)
+        planeOrigin_equal = (planeOrigin[i] == obj.planeOrigin[i]);
 
-    // Compare the planeSourceNormal arrays.
-    bool planeSourceNormal_equal = true;
-    for(int i = 0; i < 3 && planeSourceNormal_equal; ++i)
-        planeSourceNormal_equal = (planeSourceNormal[i] == obj.planeSourceNormal[i]);
+    // Compare the planeNormal arrays.
+    bool planeNormal_equal = true;
+    for(int i = 0; i < 3 && planeNormal_equal; ++i)
+        planeNormal_equal = (planeNormal[i] == obj.planeNormal[i]);
 
-    // Compare the planeSourceUpVec arrays.
-    bool planeSourceUpVec_equal = true;
-    for(int i = 0; i < 3 && planeSourceUpVec_equal; ++i)
-        planeSourceUpVec_equal = (planeSourceUpVec[i] == obj.planeSourceUpVec[i]);
+    // Compare the planeUpAxis arrays.
+    bool planeUpAxis_equal = true;
+    for(int i = 0; i < 3 && planeUpAxis_equal; ++i)
+        planeUpAxis_equal = (planeUpAxis[i] == obj.planeUpAxis[i]);
 
     // Create the return value
-    return ((termination == obj.termination) &&
-            (terminationType == obj.terminationType) &&
-            (integratorType == obj.integratorType) &&
-            (streamlineSource == obj.streamlineSource) &&
-            (showStreamlines == obj.showStreamlines) &&
-            (showPoints == obj.showPoints) &&
-            (pointDensity == obj.pointDensity) &&
-            (sourceRadius == obj.sourceRadius) &&
+    return ((sourceType == obj.sourceType) &&
+            (maxStepLength == obj.maxStepLength) &&
+            (termination == obj.termination) &&
             pointSource_equal &&
-            lineSourceStart_equal &&
-            lineSourceEnd_equal &&
-            planeSourcePoint_equal &&
-            planeSourceNormal_equal &&
-            planeSourceUpVec_equal &&
-            (colorTableName == obj.colorTableName) &&
-            (singleColor == obj.singleColor) &&
+            lineStart_equal &&
+            lineEnd_equal &&
+            planeOrigin_equal &&
+            planeNormal_equal &&
+            planeUpAxis_equal &&
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
             (relTol == obj.relTol) &&
             (absTol == obj.absTol) &&
-            (maxStepLength == obj.maxStepLength) &&
+            (terminationType == obj.terminationType) &&
+            (integrationType == obj.integrationType) &&
+            (showStreamlines == obj.showStreamlines) &&
+            (showPoints == obj.showPoints) &&
+            (pointDensity == obj.pointDensity) &&
+            (sourceRadius == obj.sourceRadius) &&
+            (colorTableName == obj.colorTableName) &&
+            (singleColor == obj.singleColor) &&
             (NumberPlanes == obj.NumberPlanes) &&
             (ColorStyle == obj.ColorStyle) &&
             (MaxToroidalWinding == obj.MaxToroidalWinding) &&
@@ -666,6 +628,9 @@ PoincareAttributes::TypeName() const
 // Programmer: Dave Pugmire
 // Creation:   Tues Oct 21 14:22:17 EDT 2008
 //
+// Modifications:
+//    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
+//    Initial steps to unification with streamline attributes.
 // ****************************************************************************
 
 bool
@@ -688,16 +653,16 @@ PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
     else if(atts->TypeName() == "Line")
     {
         const Line *line = (const Line *)atts;
-        SetLineSourceStart(line->GetPoint1());
-        SetLineSourceEnd(line->GetPoint2());
+        SetLineStart(line->GetPoint1());
+        SetLineEnd(line->GetPoint2());
         retval = true;
     }
     else if(atts->TypeName() == "PlaneAttributes")
     {
         const PlaneAttributes *plane = (const PlaneAttributes *)atts;
-        SetPlaneSourcePoint(plane->GetOrigin());
-        SetPlaneSourceNormal(plane->GetNormal());
-        SetPlaneSourceUpVec(plane->GetUpAxis());
+        SetPlaneOrigin(plane->GetOrigin());
+        SetPlaneNormal(plane->GetNormal());
+        SetPlaneUpAxis(plane->GetUpAxis());
         retval = true;
     }
     return retval;
@@ -712,6 +677,9 @@ PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
 // Programmer: Dave Pugmire
 // Creation:   Tues Oct 21 14:22:17 EDT 2008
 //
+// Modifications:
+//    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
+//    Initial steps to unification with streamline attributes.
 // ****************************************************************************
 
 AttributeSubject *
@@ -731,16 +699,16 @@ PoincareAttributes::CreateCompatible(const std::string &tname) const
     else if (tname == "Line")
     {
         Line *l = new Line;
-        l->SetPoint1(GetLineSourceStart());
-        l->SetPoint2(GetLineSourceEnd());
+        l->SetPoint1(GetLineStart());
+        l->SetPoint2(GetLineEnd());
         retval = l;
     }
     else if (tname == "PlaneAttributes")
     {
         PlaneAttributes *p = new PlaneAttributes;
-        p->SetOrigin(GetPlaneSourcePoint());
-        p->SetNormal(GetPlaneSourceNormal());
-        p->SetUpAxis(GetPlaneSourceUpVec());
+        p->SetOrigin(GetPlaneOrigin());
+        p->SetNormal(GetPlaneNormal());
+        p->SetUpAxis(GetPlaneUpAxis());
         retval = p;
     }
     return retval;
@@ -791,27 +759,27 @@ PoincareAttributes::NewInstance(bool copy) const
 void
 PoincareAttributes::SelectAll()
 {
+    Select(ID_sourceType,              (void *)&sourceType);
+    Select(ID_maxStepLength,           (void *)&maxStepLength);
     Select(ID_termination,             (void *)&termination);
-    Select(ID_terminationType,         (void *)&terminationType);
-    Select(ID_integratorType,          (void *)&integratorType);
-    Select(ID_streamlineSource,        (void *)&streamlineSource);
-    Select(ID_showStreamlines,         (void *)&showStreamlines);
-    Select(ID_showPoints,              (void *)&showPoints);
-    Select(ID_pointDensity,            (void *)&pointDensity);
-    Select(ID_sourceRadius,            (void *)&sourceRadius);
     Select(ID_pointSource,             (void *)pointSource, 3);
-    Select(ID_lineSourceStart,         (void *)lineSourceStart, 3);
-    Select(ID_lineSourceEnd,           (void *)lineSourceEnd, 3);
-    Select(ID_planeSourcePoint,        (void *)planeSourcePoint, 3);
-    Select(ID_planeSourceNormal,       (void *)planeSourceNormal, 3);
-    Select(ID_planeSourceUpVec,        (void *)planeSourceUpVec, 3);
-    Select(ID_colorTableName,          (void *)&colorTableName);
-    Select(ID_singleColor,             (void *)&singleColor);
+    Select(ID_lineStart,               (void *)lineStart, 3);
+    Select(ID_lineEnd,                 (void *)lineEnd, 3);
+    Select(ID_planeOrigin,             (void *)planeOrigin, 3);
+    Select(ID_planeNormal,             (void *)planeNormal, 3);
+    Select(ID_planeUpAxis,             (void *)planeUpAxis, 3);
     Select(ID_legendFlag,              (void *)&legendFlag);
     Select(ID_lightingFlag,            (void *)&lightingFlag);
     Select(ID_relTol,                  (void *)&relTol);
     Select(ID_absTol,                  (void *)&absTol);
-    Select(ID_maxStepLength,           (void *)&maxStepLength);
+    Select(ID_terminationType,         (void *)&terminationType);
+    Select(ID_integrationType,         (void *)&integrationType);
+    Select(ID_showStreamlines,         (void *)&showStreamlines);
+    Select(ID_showPoints,              (void *)&showPoints);
+    Select(ID_pointDensity,            (void *)&pointDensity);
+    Select(ID_sourceRadius,            (void *)&sourceRadius);
+    Select(ID_colorTableName,          (void *)&colorTableName);
+    Select(ID_singleColor,             (void *)&singleColor);
     Select(ID_NumberPlanes,            (void *)&NumberPlanes);
     Select(ID_ColorStyle,              (void *)&ColorStyle);
     Select(ID_MaxToroidalWinding,      (void *)&MaxToroidalWinding);
@@ -853,10 +821,82 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     // Create a node for PoincareAttributes.
     DataNode *node = new DataNode("PoincareAttributes");
 
+    if(completeSave || !FieldsEqual(ID_sourceType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sourceType", SourceType_ToString(sourceType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxStepLength, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxStepLength", maxStepLength));
+    }
+
     if(completeSave || !FieldsEqual(ID_termination, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("termination", termination));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointSource, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointSource", pointSource, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineStart, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineStart", lineStart, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineEnd, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineEnd", lineEnd, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_planeOrigin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("planeOrigin", planeOrigin, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_planeNormal, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("planeNormal", planeNormal, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_planeUpAxis, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("planeUpAxis", planeUpAxis, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("legendFlag", legendFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lightingFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lightingFlag", lightingFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_relTol, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("relTol", relTol));
+    }
+
+    if(completeSave || !FieldsEqual(ID_absTol, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("absTol", absTol));
     }
 
     if(completeSave || !FieldsEqual(ID_terminationType, &defaultObject))
@@ -865,16 +905,10 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("terminationType", TerminationType_ToString(terminationType)));
     }
 
-    if(completeSave || !FieldsEqual(ID_integratorType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_integrationType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("integratorType", IntegratorType_ToString(integratorType)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_streamlineSource, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("streamlineSource", SourceType_ToString(streamlineSource)));
+        node->AddNode(new DataNode("integrationType", IntegrationType_ToString(integrationType)));
     }
 
     if(completeSave || !FieldsEqual(ID_showStreamlines, &defaultObject))
@@ -901,42 +935,6 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("sourceRadius", sourceRadius));
     }
 
-    if(completeSave || !FieldsEqual(ID_pointSource, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointSource", pointSource, 3));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineSourceStart, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineSourceStart", lineSourceStart, 3));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineSourceEnd, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineSourceEnd", lineSourceEnd, 3));
-    }
-
-    if(completeSave || !FieldsEqual(ID_planeSourcePoint, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("planeSourcePoint", planeSourcePoint, 3));
-    }
-
-    if(completeSave || !FieldsEqual(ID_planeSourceNormal, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("planeSourceNormal", planeSourceNormal, 3));
-    }
-
-    if(completeSave || !FieldsEqual(ID_planeSourceUpVec, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("planeSourceUpVec", planeSourceUpVec, 3));
-    }
-
     if(completeSave || !FieldsEqual(ID_colorTableName, &defaultObject))
     {
         addToParent = true;
@@ -951,36 +949,6 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         }
         else
             delete singleColorNode;
-    if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("legendFlag", legendFlag));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lightingFlag, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lightingFlag", lightingFlag));
-    }
-
-    if(completeSave || !FieldsEqual(ID_relTol, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("relTol", relTol));
-    }
-
-    if(completeSave || !FieldsEqual(ID_absTol, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("absTol", absTol));
-    }
-
-    if(completeSave || !FieldsEqual(ID_maxStepLength, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("maxStepLength", maxStepLength));
-    }
-
     if(completeSave || !FieldsEqual(ID_NumberPlanes, &defaultObject))
     {
         addToParent = true;
@@ -1071,8 +1039,46 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("sourceType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetSourceType(SourceType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SourceType value;
+            if(SourceType_FromString(node->AsString(), value))
+                SetSourceType(value);
+        }
+    }
+    if((node = searchNode->GetNode("maxStepLength")) != 0)
+        SetMaxStepLength(node->AsDouble());
     if((node = searchNode->GetNode("termination")) != 0)
         SetTermination(node->AsDouble());
+    if((node = searchNode->GetNode("pointSource")) != 0)
+        SetPointSource(node->AsDoubleArray());
+    if((node = searchNode->GetNode("lineStart")) != 0)
+        SetLineStart(node->AsDoubleArray());
+    if((node = searchNode->GetNode("lineEnd")) != 0)
+        SetLineEnd(node->AsDoubleArray());
+    if((node = searchNode->GetNode("planeOrigin")) != 0)
+        SetPlaneOrigin(node->AsDoubleArray());
+    if((node = searchNode->GetNode("planeNormal")) != 0)
+        SetPlaneNormal(node->AsDoubleArray());
+    if((node = searchNode->GetNode("planeUpAxis")) != 0)
+        SetPlaneUpAxis(node->AsDoubleArray());
+    if((node = searchNode->GetNode("legendFlag")) != 0)
+        SetLegendFlag(node->AsBool());
+    if((node = searchNode->GetNode("lightingFlag")) != 0)
+        SetLightingFlag(node->AsBool());
+    if((node = searchNode->GetNode("relTol")) != 0)
+        SetRelTol(node->AsDouble());
+    if((node = searchNode->GetNode("absTol")) != 0)
+        SetAbsTol(node->AsDouble());
     if((node = searchNode->GetNode("terminationType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1089,36 +1095,20 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
                 SetTerminationType(value);
         }
     }
-    if((node = searchNode->GetNode("integratorType")) != 0)
+    if((node = searchNode->GetNode("integrationType")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetIntegratorType(IntegratorType(ival));
+                SetIntegrationType(IntegrationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            IntegratorType value;
-            if(IntegratorType_FromString(node->AsString(), value))
-                SetIntegratorType(value);
-        }
-    }
-    if((node = searchNode->GetNode("streamlineSource")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetStreamlineSource(SourceType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            SourceType value;
-            if(SourceType_FromString(node->AsString(), value))
-                SetStreamlineSource(value);
+            IntegrationType value;
+            if(IntegrationType_FromString(node->AsString(), value))
+                SetIntegrationType(value);
         }
     }
     if((node = searchNode->GetNode("showStreamlines")) != 0)
@@ -1129,32 +1119,10 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetPointDensity(node->AsInt());
     if((node = searchNode->GetNode("sourceRadius")) != 0)
         SetSourceRadius(node->AsDouble());
-    if((node = searchNode->GetNode("pointSource")) != 0)
-        SetPointSource(node->AsDoubleArray());
-    if((node = searchNode->GetNode("lineSourceStart")) != 0)
-        SetLineSourceStart(node->AsDoubleArray());
-    if((node = searchNode->GetNode("lineSourceEnd")) != 0)
-        SetLineSourceEnd(node->AsDoubleArray());
-    if((node = searchNode->GetNode("planeSourcePoint")) != 0)
-        SetPlaneSourcePoint(node->AsDoubleArray());
-    if((node = searchNode->GetNode("planeSourceNormal")) != 0)
-        SetPlaneSourceNormal(node->AsDoubleArray());
-    if((node = searchNode->GetNode("planeSourceUpVec")) != 0)
-        SetPlaneSourceUpVec(node->AsDoubleArray());
     if((node = searchNode->GetNode("colorTableName")) != 0)
         SetColorTableName(node->AsString());
     if((node = searchNode->GetNode("singleColor")) != 0)
         singleColor.SetFromNode(node);
-    if((node = searchNode->GetNode("legendFlag")) != 0)
-        SetLegendFlag(node->AsBool());
-    if((node = searchNode->GetNode("lightingFlag")) != 0)
-        SetLightingFlag(node->AsBool());
-    if((node = searchNode->GetNode("relTol")) != 0)
-        SetRelTol(node->AsDouble());
-    if((node = searchNode->GetNode("absTol")) != 0)
-        SetAbsTol(node->AsDouble());
-    if((node = searchNode->GetNode("maxStepLength")) != 0)
-        SetMaxStepLength(node->AsDouble());
     if((node = searchNode->GetNode("NumberPlanes")) != 0)
         SetNumberPlanes(node->AsInt());
     if((node = searchNode->GetNode("ColorStyle")) != 0)
@@ -1222,59 +1190,24 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
+PoincareAttributes::SetSourceType(PoincareAttributes::SourceType sourceType_)
+{
+    sourceType = sourceType_;
+    Select(ID_sourceType, (void *)&sourceType);
+}
+
+void
+PoincareAttributes::SetMaxStepLength(double maxStepLength_)
+{
+    maxStepLength = maxStepLength_;
+    Select(ID_maxStepLength, (void *)&maxStepLength);
+}
+
+void
 PoincareAttributes::SetTermination(double termination_)
 {
     termination = termination_;
     Select(ID_termination, (void *)&termination);
-}
-
-void
-PoincareAttributes::SetTerminationType(PoincareAttributes::TerminationType terminationType_)
-{
-    terminationType = terminationType_;
-    Select(ID_terminationType, (void *)&terminationType);
-}
-
-void
-PoincareAttributes::SetIntegratorType(PoincareAttributes::IntegratorType integratorType_)
-{
-    integratorType = integratorType_;
-    Select(ID_integratorType, (void *)&integratorType);
-}
-
-void
-PoincareAttributes::SetStreamlineSource(PoincareAttributes::SourceType streamlineSource_)
-{
-    streamlineSource = streamlineSource_;
-    Select(ID_streamlineSource, (void *)&streamlineSource);
-}
-
-void
-PoincareAttributes::SetShowStreamlines(bool showStreamlines_)
-{
-    showStreamlines = showStreamlines_;
-    Select(ID_showStreamlines, (void *)&showStreamlines);
-}
-
-void
-PoincareAttributes::SetShowPoints(bool showPoints_)
-{
-    showPoints = showPoints_;
-    Select(ID_showPoints, (void *)&showPoints);
-}
-
-void
-PoincareAttributes::SetPointDensity(int pointDensity_)
-{
-    pointDensity = pointDensity_;
-    Select(ID_pointDensity, (void *)&pointDensity);
-}
-
-void
-PoincareAttributes::SetSourceRadius(double sourceRadius_)
-{
-    sourceRadius = sourceRadius_;
-    Select(ID_sourceRadius, (void *)&sourceRadius);
 }
 
 void
@@ -1287,62 +1220,48 @@ PoincareAttributes::SetPointSource(const double *pointSource_)
 }
 
 void
-PoincareAttributes::SetLineSourceStart(const double *lineSourceStart_)
+PoincareAttributes::SetLineStart(const double *lineStart_)
 {
-    lineSourceStart[0] = lineSourceStart_[0];
-    lineSourceStart[1] = lineSourceStart_[1];
-    lineSourceStart[2] = lineSourceStart_[2];
-    Select(ID_lineSourceStart, (void *)lineSourceStart, 3);
+    lineStart[0] = lineStart_[0];
+    lineStart[1] = lineStart_[1];
+    lineStart[2] = lineStart_[2];
+    Select(ID_lineStart, (void *)lineStart, 3);
 }
 
 void
-PoincareAttributes::SetLineSourceEnd(const double *lineSourceEnd_)
+PoincareAttributes::SetLineEnd(const double *lineEnd_)
 {
-    lineSourceEnd[0] = lineSourceEnd_[0];
-    lineSourceEnd[1] = lineSourceEnd_[1];
-    lineSourceEnd[2] = lineSourceEnd_[2];
-    Select(ID_lineSourceEnd, (void *)lineSourceEnd, 3);
+    lineEnd[0] = lineEnd_[0];
+    lineEnd[1] = lineEnd_[1];
+    lineEnd[2] = lineEnd_[2];
+    Select(ID_lineEnd, (void *)lineEnd, 3);
 }
 
 void
-PoincareAttributes::SetPlaneSourcePoint(const double *planeSourcePoint_)
+PoincareAttributes::SetPlaneOrigin(const double *planeOrigin_)
 {
-    planeSourcePoint[0] = planeSourcePoint_[0];
-    planeSourcePoint[1] = planeSourcePoint_[1];
-    planeSourcePoint[2] = planeSourcePoint_[2];
-    Select(ID_planeSourcePoint, (void *)planeSourcePoint, 3);
+    planeOrigin[0] = planeOrigin_[0];
+    planeOrigin[1] = planeOrigin_[1];
+    planeOrigin[2] = planeOrigin_[2];
+    Select(ID_planeOrigin, (void *)planeOrigin, 3);
 }
 
 void
-PoincareAttributes::SetPlaneSourceNormal(const double *planeSourceNormal_)
+PoincareAttributes::SetPlaneNormal(const double *planeNormal_)
 {
-    planeSourceNormal[0] = planeSourceNormal_[0];
-    planeSourceNormal[1] = planeSourceNormal_[1];
-    planeSourceNormal[2] = planeSourceNormal_[2];
-    Select(ID_planeSourceNormal, (void *)planeSourceNormal, 3);
+    planeNormal[0] = planeNormal_[0];
+    planeNormal[1] = planeNormal_[1];
+    planeNormal[2] = planeNormal_[2];
+    Select(ID_planeNormal, (void *)planeNormal, 3);
 }
 
 void
-PoincareAttributes::SetPlaneSourceUpVec(const double *planeSourceUpVec_)
+PoincareAttributes::SetPlaneUpAxis(const double *planeUpAxis_)
 {
-    planeSourceUpVec[0] = planeSourceUpVec_[0];
-    planeSourceUpVec[1] = planeSourceUpVec_[1];
-    planeSourceUpVec[2] = planeSourceUpVec_[2];
-    Select(ID_planeSourceUpVec, (void *)planeSourceUpVec, 3);
-}
-
-void
-PoincareAttributes::SetColorTableName(const std::string &colorTableName_)
-{
-    colorTableName = colorTableName_;
-    Select(ID_colorTableName, (void *)&colorTableName);
-}
-
-void
-PoincareAttributes::SetSingleColor(const ColorAttribute &singleColor_)
-{
-    singleColor = singleColor_;
-    Select(ID_singleColor, (void *)&singleColor);
+    planeUpAxis[0] = planeUpAxis_[0];
+    planeUpAxis[1] = planeUpAxis_[1];
+    planeUpAxis[2] = planeUpAxis_[2];
+    Select(ID_planeUpAxis, (void *)planeUpAxis, 3);
 }
 
 void
@@ -1374,10 +1293,59 @@ PoincareAttributes::SetAbsTol(double absTol_)
 }
 
 void
-PoincareAttributes::SetMaxStepLength(double maxStepLength_)
+PoincareAttributes::SetTerminationType(PoincareAttributes::TerminationType terminationType_)
 {
-    maxStepLength = maxStepLength_;
-    Select(ID_maxStepLength, (void *)&maxStepLength);
+    terminationType = terminationType_;
+    Select(ID_terminationType, (void *)&terminationType);
+}
+
+void
+PoincareAttributes::SetIntegrationType(PoincareAttributes::IntegrationType integrationType_)
+{
+    integrationType = integrationType_;
+    Select(ID_integrationType, (void *)&integrationType);
+}
+
+void
+PoincareAttributes::SetShowStreamlines(bool showStreamlines_)
+{
+    showStreamlines = showStreamlines_;
+    Select(ID_showStreamlines, (void *)&showStreamlines);
+}
+
+void
+PoincareAttributes::SetShowPoints(bool showPoints_)
+{
+    showPoints = showPoints_;
+    Select(ID_showPoints, (void *)&showPoints);
+}
+
+void
+PoincareAttributes::SetPointDensity(int pointDensity_)
+{
+    pointDensity = pointDensity_;
+    Select(ID_pointDensity, (void *)&pointDensity);
+}
+
+void
+PoincareAttributes::SetSourceRadius(double sourceRadius_)
+{
+    sourceRadius = sourceRadius_;
+    Select(ID_sourceRadius, (void *)&sourceRadius);
+}
+
+void
+PoincareAttributes::SetColorTableName(const std::string &colorTableName_)
+{
+    colorTableName = colorTableName_;
+    Select(ID_colorTableName, (void *)&colorTableName);
+}
+
+void
+PoincareAttributes::SetSingleColor(const ColorAttribute &singleColor_)
+{
+    singleColor = singleColor_;
+    Select(ID_singleColor, (void *)&singleColor);
 }
 
 void
@@ -1447,52 +1415,22 @@ PoincareAttributes::SetOverlaps(PoincareAttributes::OverlapType Overlaps_)
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
+PoincareAttributes::SourceType
+PoincareAttributes::GetSourceType() const
+{
+    return SourceType(sourceType);
+}
+
+double
+PoincareAttributes::GetMaxStepLength() const
+{
+    return maxStepLength;
+}
+
 double
 PoincareAttributes::GetTermination() const
 {
     return termination;
-}
-
-PoincareAttributes::TerminationType
-PoincareAttributes::GetTerminationType() const
-{
-    return TerminationType(terminationType);
-}
-
-PoincareAttributes::IntegratorType
-PoincareAttributes::GetIntegratorType() const
-{
-    return IntegratorType(integratorType);
-}
-
-PoincareAttributes::SourceType
-PoincareAttributes::GetStreamlineSource() const
-{
-    return SourceType(streamlineSource);
-}
-
-bool
-PoincareAttributes::GetShowStreamlines() const
-{
-    return showStreamlines;
-}
-
-bool
-PoincareAttributes::GetShowPoints() const
-{
-    return showPoints;
-}
-
-int
-PoincareAttributes::GetPointDensity() const
-{
-    return pointDensity;
-}
-
-double
-PoincareAttributes::GetSourceRadius() const
-{
-    return sourceRadius;
 }
 
 const double *
@@ -1508,87 +1446,63 @@ PoincareAttributes::GetPointSource()
 }
 
 const double *
-PoincareAttributes::GetLineSourceStart() const
+PoincareAttributes::GetLineStart() const
 {
-    return lineSourceStart;
+    return lineStart;
 }
 
 double *
-PoincareAttributes::GetLineSourceStart()
+PoincareAttributes::GetLineStart()
 {
-    return lineSourceStart;
+    return lineStart;
 }
 
 const double *
-PoincareAttributes::GetLineSourceEnd() const
+PoincareAttributes::GetLineEnd() const
 {
-    return lineSourceEnd;
+    return lineEnd;
 }
 
 double *
-PoincareAttributes::GetLineSourceEnd()
+PoincareAttributes::GetLineEnd()
 {
-    return lineSourceEnd;
+    return lineEnd;
 }
 
 const double *
-PoincareAttributes::GetPlaneSourcePoint() const
+PoincareAttributes::GetPlaneOrigin() const
 {
-    return planeSourcePoint;
+    return planeOrigin;
 }
 
 double *
-PoincareAttributes::GetPlaneSourcePoint()
+PoincareAttributes::GetPlaneOrigin()
 {
-    return planeSourcePoint;
+    return planeOrigin;
 }
 
 const double *
-PoincareAttributes::GetPlaneSourceNormal() const
+PoincareAttributes::GetPlaneNormal() const
 {
-    return planeSourceNormal;
+    return planeNormal;
 }
 
 double *
-PoincareAttributes::GetPlaneSourceNormal()
+PoincareAttributes::GetPlaneNormal()
 {
-    return planeSourceNormal;
+    return planeNormal;
 }
 
 const double *
-PoincareAttributes::GetPlaneSourceUpVec() const
+PoincareAttributes::GetPlaneUpAxis() const
 {
-    return planeSourceUpVec;
+    return planeUpAxis;
 }
 
 double *
-PoincareAttributes::GetPlaneSourceUpVec()
+PoincareAttributes::GetPlaneUpAxis()
 {
-    return planeSourceUpVec;
-}
-
-const std::string &
-PoincareAttributes::GetColorTableName() const
-{
-    return colorTableName;
-}
-
-std::string &
-PoincareAttributes::GetColorTableName()
-{
-    return colorTableName;
-}
-
-const ColorAttribute &
-PoincareAttributes::GetSingleColor() const
-{
-    return singleColor;
-}
-
-ColorAttribute &
-PoincareAttributes::GetSingleColor()
-{
-    return singleColor;
+    return planeUpAxis;
 }
 
 bool
@@ -1615,10 +1529,64 @@ PoincareAttributes::GetAbsTol() const
     return absTol;
 }
 
-double
-PoincareAttributes::GetMaxStepLength() const
+PoincareAttributes::TerminationType
+PoincareAttributes::GetTerminationType() const
 {
-    return maxStepLength;
+    return TerminationType(terminationType);
+}
+
+PoincareAttributes::IntegrationType
+PoincareAttributes::GetIntegrationType() const
+{
+    return IntegrationType(integrationType);
+}
+
+bool
+PoincareAttributes::GetShowStreamlines() const
+{
+    return showStreamlines;
+}
+
+bool
+PoincareAttributes::GetShowPoints() const
+{
+    return showPoints;
+}
+
+int
+PoincareAttributes::GetPointDensity() const
+{
+    return pointDensity;
+}
+
+double
+PoincareAttributes::GetSourceRadius() const
+{
+    return sourceRadius;
+}
+
+const std::string &
+PoincareAttributes::GetColorTableName() const
+{
+    return colorTableName;
+}
+
+std::string &
+PoincareAttributes::GetColorTableName()
+{
+    return colorTableName;
+}
+
+const ColorAttribute &
+PoincareAttributes::GetSingleColor() const
+{
+    return singleColor;
+}
+
+ColorAttribute &
+PoincareAttributes::GetSingleColor()
+{
+    return singleColor;
 }
 
 int
@@ -1686,33 +1654,33 @@ PoincareAttributes::SelectPointSource()
 }
 
 void
-PoincareAttributes::SelectLineSourceStart()
+PoincareAttributes::SelectLineStart()
 {
-    Select(ID_lineSourceStart, (void *)lineSourceStart, 3);
+    Select(ID_lineStart, (void *)lineStart, 3);
 }
 
 void
-PoincareAttributes::SelectLineSourceEnd()
+PoincareAttributes::SelectLineEnd()
 {
-    Select(ID_lineSourceEnd, (void *)lineSourceEnd, 3);
+    Select(ID_lineEnd, (void *)lineEnd, 3);
 }
 
 void
-PoincareAttributes::SelectPlaneSourcePoint()
+PoincareAttributes::SelectPlaneOrigin()
 {
-    Select(ID_planeSourcePoint, (void *)planeSourcePoint, 3);
+    Select(ID_planeOrigin, (void *)planeOrigin, 3);
 }
 
 void
-PoincareAttributes::SelectPlaneSourceNormal()
+PoincareAttributes::SelectPlaneNormal()
 {
-    Select(ID_planeSourceNormal, (void *)planeSourceNormal, 3);
+    Select(ID_planeNormal, (void *)planeNormal, 3);
 }
 
 void
-PoincareAttributes::SelectPlaneSourceUpVec()
+PoincareAttributes::SelectPlaneUpAxis()
 {
-    Select(ID_planeSourceUpVec, (void *)planeSourceUpVec, 3);
+    Select(ID_planeUpAxis, (void *)planeUpAxis, 3);
 }
 
 void
@@ -1751,27 +1719,27 @@ PoincareAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_sourceType:              return "sourceType";
+    case ID_maxStepLength:           return "maxStepLength";
     case ID_termination:             return "termination";
-    case ID_terminationType:         return "terminationType";
-    case ID_integratorType:          return "integratorType";
-    case ID_streamlineSource:        return "streamlineSource";
-    case ID_showStreamlines:         return "showStreamlines";
-    case ID_showPoints:              return "showPoints";
-    case ID_pointDensity:            return "pointDensity";
-    case ID_sourceRadius:            return "sourceRadius";
     case ID_pointSource:             return "pointSource";
-    case ID_lineSourceStart:         return "lineSourceStart";
-    case ID_lineSourceEnd:           return "lineSourceEnd";
-    case ID_planeSourcePoint:        return "planeSourcePoint";
-    case ID_planeSourceNormal:       return "planeSourceNormal";
-    case ID_planeSourceUpVec:        return "planeSourceUpVec";
-    case ID_colorTableName:          return "colorTableName";
-    case ID_singleColor:             return "singleColor";
+    case ID_lineStart:               return "lineStart";
+    case ID_lineEnd:                 return "lineEnd";
+    case ID_planeOrigin:             return "planeOrigin";
+    case ID_planeNormal:             return "planeNormal";
+    case ID_planeUpAxis:             return "planeUpAxis";
     case ID_legendFlag:              return "legendFlag";
     case ID_lightingFlag:            return "lightingFlag";
     case ID_relTol:                  return "relTol";
     case ID_absTol:                  return "absTol";
-    case ID_maxStepLength:           return "maxStepLength";
+    case ID_terminationType:         return "terminationType";
+    case ID_integrationType:         return "integrationType";
+    case ID_showStreamlines:         return "showStreamlines";
+    case ID_showPoints:              return "showPoints";
+    case ID_pointDensity:            return "pointDensity";
+    case ID_sourceRadius:            return "sourceRadius";
+    case ID_colorTableName:          return "colorTableName";
+    case ID_singleColor:             return "singleColor";
     case ID_NumberPlanes:            return "NumberPlanes";
     case ID_ColorStyle:              return "ColorStyle";
     case ID_MaxToroidalWinding:      return "MaxToroidalWinding";
@@ -1805,27 +1773,27 @@ PoincareAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_sourceType:              return FieldType_enum;
+    case ID_maxStepLength:           return FieldType_double;
     case ID_termination:             return FieldType_double;
-    case ID_terminationType:         return FieldType_enum;
-    case ID_integratorType:          return FieldType_enum;
-    case ID_streamlineSource:        return FieldType_enum;
-    case ID_showStreamlines:         return FieldType_bool;
-    case ID_showPoints:              return FieldType_bool;
-    case ID_pointDensity:            return FieldType_int;
-    case ID_sourceRadius:            return FieldType_double;
     case ID_pointSource:             return FieldType_doubleArray;
-    case ID_lineSourceStart:         return FieldType_doubleArray;
-    case ID_lineSourceEnd:           return FieldType_doubleArray;
-    case ID_planeSourcePoint:        return FieldType_doubleArray;
-    case ID_planeSourceNormal:       return FieldType_doubleArray;
-    case ID_planeSourceUpVec:        return FieldType_doubleArray;
-    case ID_colorTableName:          return FieldType_colortable;
-    case ID_singleColor:             return FieldType_color;
+    case ID_lineStart:               return FieldType_doubleArray;
+    case ID_lineEnd:                 return FieldType_doubleArray;
+    case ID_planeOrigin:             return FieldType_doubleArray;
+    case ID_planeNormal:             return FieldType_doubleArray;
+    case ID_planeUpAxis:             return FieldType_doubleArray;
     case ID_legendFlag:              return FieldType_bool;
     case ID_lightingFlag:            return FieldType_bool;
     case ID_relTol:                  return FieldType_double;
     case ID_absTol:                  return FieldType_double;
-    case ID_maxStepLength:           return FieldType_double;
+    case ID_terminationType:         return FieldType_enum;
+    case ID_integrationType:         return FieldType_enum;
+    case ID_showStreamlines:         return FieldType_bool;
+    case ID_showPoints:              return FieldType_bool;
+    case ID_pointDensity:            return FieldType_int;
+    case ID_sourceRadius:            return FieldType_double;
+    case ID_colorTableName:          return FieldType_colortable;
+    case ID_singleColor:             return FieldType_color;
     case ID_NumberPlanes:            return FieldType_int;
     case ID_ColorStyle:              return FieldType_enum;
     case ID_MaxToroidalWinding:      return FieldType_int;
@@ -1859,27 +1827,27 @@ PoincareAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_sourceType:              return "enum";
+    case ID_maxStepLength:           return "double";
     case ID_termination:             return "double";
-    case ID_terminationType:         return "enum";
-    case ID_integratorType:          return "enum";
-    case ID_streamlineSource:        return "enum";
-    case ID_showStreamlines:         return "bool";
-    case ID_showPoints:              return "bool";
-    case ID_pointDensity:            return "int";
-    case ID_sourceRadius:            return "double";
     case ID_pointSource:             return "doubleArray";
-    case ID_lineSourceStart:         return "doubleArray";
-    case ID_lineSourceEnd:           return "doubleArray";
-    case ID_planeSourcePoint:        return "doubleArray";
-    case ID_planeSourceNormal:       return "doubleArray";
-    case ID_planeSourceUpVec:        return "doubleArray";
-    case ID_colorTableName:          return "colortable";
-    case ID_singleColor:             return "color";
+    case ID_lineStart:               return "doubleArray";
+    case ID_lineEnd:                 return "doubleArray";
+    case ID_planeOrigin:             return "doubleArray";
+    case ID_planeNormal:             return "doubleArray";
+    case ID_planeUpAxis:             return "doubleArray";
     case ID_legendFlag:              return "bool";
     case ID_lightingFlag:            return "bool";
     case ID_relTol:                  return "double";
     case ID_absTol:                  return "double";
-    case ID_maxStepLength:           return "double";
+    case ID_terminationType:         return "enum";
+    case ID_integrationType:         return "enum";
+    case ID_showStreamlines:         return "bool";
+    case ID_showPoints:              return "bool";
+    case ID_pointDensity:            return "int";
+    case ID_sourceRadius:            return "double";
+    case ID_colorTableName:          return "colortable";
+    case ID_singleColor:             return "color";
     case ID_NumberPlanes:            return "int";
     case ID_ColorStyle:              return "enum";
     case ID_MaxToroidalWinding:      return "int";
@@ -1915,44 +1883,19 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_sourceType:
+        {  // new scope
+        retval = (sourceType == obj.sourceType);
+        }
+        break;
+    case ID_maxStepLength:
+        {  // new scope
+        retval = (maxStepLength == obj.maxStepLength);
+        }
+        break;
     case ID_termination:
         {  // new scope
         retval = (termination == obj.termination);
-        }
-        break;
-    case ID_terminationType:
-        {  // new scope
-        retval = (terminationType == obj.terminationType);
-        }
-        break;
-    case ID_integratorType:
-        {  // new scope
-        retval = (integratorType == obj.integratorType);
-        }
-        break;
-    case ID_streamlineSource:
-        {  // new scope
-        retval = (streamlineSource == obj.streamlineSource);
-        }
-        break;
-    case ID_showStreamlines:
-        {  // new scope
-        retval = (showStreamlines == obj.showStreamlines);
-        }
-        break;
-    case ID_showPoints:
-        {  // new scope
-        retval = (showPoints == obj.showPoints);
-        }
-        break;
-    case ID_pointDensity:
-        {  // new scope
-        retval = (pointDensity == obj.pointDensity);
-        }
-        break;
-    case ID_sourceRadius:
-        {  // new scope
-        retval = (sourceRadius == obj.sourceRadius);
         }
         break;
     case ID_pointSource:
@@ -1965,64 +1908,54 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = pointSource_equal;
         }
         break;
-    case ID_lineSourceStart:
+    case ID_lineStart:
         {  // new scope
-        // Compare the lineSourceStart arrays.
-        bool lineSourceStart_equal = true;
-        for(int i = 0; i < 3 && lineSourceStart_equal; ++i)
-            lineSourceStart_equal = (lineSourceStart[i] == obj.lineSourceStart[i]);
+        // Compare the lineStart arrays.
+        bool lineStart_equal = true;
+        for(int i = 0; i < 3 && lineStart_equal; ++i)
+            lineStart_equal = (lineStart[i] == obj.lineStart[i]);
 
-        retval = lineSourceStart_equal;
+        retval = lineStart_equal;
         }
         break;
-    case ID_lineSourceEnd:
+    case ID_lineEnd:
         {  // new scope
-        // Compare the lineSourceEnd arrays.
-        bool lineSourceEnd_equal = true;
-        for(int i = 0; i < 3 && lineSourceEnd_equal; ++i)
-            lineSourceEnd_equal = (lineSourceEnd[i] == obj.lineSourceEnd[i]);
+        // Compare the lineEnd arrays.
+        bool lineEnd_equal = true;
+        for(int i = 0; i < 3 && lineEnd_equal; ++i)
+            lineEnd_equal = (lineEnd[i] == obj.lineEnd[i]);
 
-        retval = lineSourceEnd_equal;
+        retval = lineEnd_equal;
         }
         break;
-    case ID_planeSourcePoint:
+    case ID_planeOrigin:
         {  // new scope
-        // Compare the planeSourcePoint arrays.
-        bool planeSourcePoint_equal = true;
-        for(int i = 0; i < 3 && planeSourcePoint_equal; ++i)
-            planeSourcePoint_equal = (planeSourcePoint[i] == obj.planeSourcePoint[i]);
+        // Compare the planeOrigin arrays.
+        bool planeOrigin_equal = true;
+        for(int i = 0; i < 3 && planeOrigin_equal; ++i)
+            planeOrigin_equal = (planeOrigin[i] == obj.planeOrigin[i]);
 
-        retval = planeSourcePoint_equal;
+        retval = planeOrigin_equal;
         }
         break;
-    case ID_planeSourceNormal:
+    case ID_planeNormal:
         {  // new scope
-        // Compare the planeSourceNormal arrays.
-        bool planeSourceNormal_equal = true;
-        for(int i = 0; i < 3 && planeSourceNormal_equal; ++i)
-            planeSourceNormal_equal = (planeSourceNormal[i] == obj.planeSourceNormal[i]);
+        // Compare the planeNormal arrays.
+        bool planeNormal_equal = true;
+        for(int i = 0; i < 3 && planeNormal_equal; ++i)
+            planeNormal_equal = (planeNormal[i] == obj.planeNormal[i]);
 
-        retval = planeSourceNormal_equal;
+        retval = planeNormal_equal;
         }
         break;
-    case ID_planeSourceUpVec:
+    case ID_planeUpAxis:
         {  // new scope
-        // Compare the planeSourceUpVec arrays.
-        bool planeSourceUpVec_equal = true;
-        for(int i = 0; i < 3 && planeSourceUpVec_equal; ++i)
-            planeSourceUpVec_equal = (planeSourceUpVec[i] == obj.planeSourceUpVec[i]);
+        // Compare the planeUpAxis arrays.
+        bool planeUpAxis_equal = true;
+        for(int i = 0; i < 3 && planeUpAxis_equal; ++i)
+            planeUpAxis_equal = (planeUpAxis[i] == obj.planeUpAxis[i]);
 
-        retval = planeSourceUpVec_equal;
-        }
-        break;
-    case ID_colorTableName:
-        {  // new scope
-        retval = (colorTableName == obj.colorTableName);
-        }
-        break;
-    case ID_singleColor:
-        {  // new scope
-        retval = (singleColor == obj.singleColor);
+        retval = planeUpAxis_equal;
         }
         break;
     case ID_legendFlag:
@@ -2045,9 +1978,44 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (absTol == obj.absTol);
         }
         break;
-    case ID_maxStepLength:
+    case ID_terminationType:
         {  // new scope
-        retval = (maxStepLength == obj.maxStepLength);
+        retval = (terminationType == obj.terminationType);
+        }
+        break;
+    case ID_integrationType:
+        {  // new scope
+        retval = (integrationType == obj.integrationType);
+        }
+        break;
+    case ID_showStreamlines:
+        {  // new scope
+        retval = (showStreamlines == obj.showStreamlines);
+        }
+        break;
+    case ID_showPoints:
+        {  // new scope
+        retval = (showPoints == obj.showPoints);
+        }
+        break;
+    case ID_pointDensity:
+        {  // new scope
+        retval = (pointDensity == obj.pointDensity);
+        }
+        break;
+    case ID_sourceRadius:
+        {  // new scope
+        retval = (sourceRadius == obj.sourceRadius);
+        }
+        break;
+    case ID_colorTableName:
+        {  // new scope
+        retval = (colorTableName == obj.colorTableName);
+        }
+        break;
+    case ID_singleColor:
+        {  // new scope
+        retval = (singleColor == obj.singleColor);
         }
         break;
     case ID_NumberPlanes:

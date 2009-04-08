@@ -337,6 +337,10 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Add pathline option.
 //
+//   Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
+//   Initial steps to unification with Poincare attributes.
+//   
+//
 // ****************************************************************************
 
 void
