@@ -52,6 +52,7 @@
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
+#include <vtkShortArray.h>
 #include <vtkRectilinearGrid.h>
 
 #include <avtDatabase.h>
@@ -469,6 +470,18 @@ ReadBricklet(FILE *fp, T *dest, const long long *full_size,
 //
 
 // FROM FConvert.C
+
+static int
+int16_Reverse_Endian(short val, unsigned char *output)
+{
+    unsigned char *input  = ((unsigned char *)&val);
+
+    output[0] = input[1];
+    output[1] = input[0];
+
+    return 2;
+}
+
 static int
 int32_Reverse_Endian(int val, unsigned char *outbuf)
 {
@@ -648,6 +661,9 @@ ReArrangeTuple2ToTuple3(T *start, vtkIdType nTuples)
 //    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
 //    Change most int's and long's to long longs to support >4GB files.
 //
+//    Brad Whitlock, Wed Apr  8 09:40:42 PDT 2009
+//    Added short int support.
+//
 // ****************************************************************************
 
 void
@@ -667,6 +683,8 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
     unsigned long long whole_nelem = whole_size * dataNumComponents;
     if(dataFormat == ByteData)
         whole_buff = (void *)(new unsigned char[whole_nelem]);
+    else if(dataFormat == ShortData)
+        whole_buff = (void *)(new short[whole_nelem]);
     else if(dataFormat == IntegerData)
         whole_buff = (void *)(new int[whole_nelem]);
     else if(dataFormat == FloatData)
@@ -713,6 +731,15 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
                      dx, dy, dataNumComponents);
         // Delete the array containing the whole BOV
         delete [] uc_buff;
+    }
+    else if(dataFormat == ShortData)
+    {
+        short *s_buff = (short *)whole_buff;
+        ExtractBrick((short *)dest, s_buff,
+                     x_start, x_stop, y_start, y_stop, z_start, z_stop,
+                     dx, dy, dataNumComponents);
+        // Delete the array containing the whole BOV
+        delete [] s_buff;
     }
     else if(dataFormat == IntegerData)
     {
@@ -779,6 +806,9 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
 //    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
 //    Change most int's and long's to long longs to support >4GB files.
 //
+//    Brad Whitlock, Wed Apr  8 09:42:24 PDT 2009
+//    I added short int support.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -843,6 +873,12 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         unit_size = sizeof(unsigned char);
         vtkUnsignedCharArray *ca = vtkUnsignedCharArray::New();
         rv = ca;
+    }
+    else if(dataFormat == ShortData)
+    {
+        unit_size = sizeof(short);
+        vtkShortArray *sa = vtkShortArray::New();
+        rv = sa;
     }
     else if(dataFormat == IntegerData)
     {
@@ -933,6 +969,14 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
                 debug4 << mName << "Reading char bricklet" << endl;
                 // Read the unsigned char data.
                 unsigned char *buff = (unsigned char *) rv->GetVoidPointer(0);
+                ReadBricklet(file_handle, buff, full_size, start, stop,
+                             byteOffset, dataNumComponents);
+            }
+            else if(dataFormat == ShortData)
+            {
+                debug4 << mName << "Reading short bricklet" << endl;
+                // Read the short data.
+                short *buff = (short *) rv->GetVoidPointer(0);
                 ReadBricklet(file_handle, buff, full_size, start, stop,
                              byteOffset, dataNumComponents);
             }
@@ -1062,7 +1106,18 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             long long nvals = rv->GetNumberOfTuples();
             unsigned long long ntotal = nvals * dataNumComponents;
 
-            if (dataFormat == IntegerData)
+            if (dataFormat == ShortData)
+            {
+                debug4 << mName << "Reversing endian for shorts" << endl;
+                short *buff = (short *) rv->GetVoidPointer(0);
+                for (long long i = 0 ; i < ntotal ; i++)
+                {
+                    int tmp;
+                    int16_Reverse_Endian(buff[i], (unsigned char *) &tmp);
+                    buff[i] = tmp;
+                }
+            }
+            else if (dataFormat == IntegerData)
             {
                 debug4 << mName << "Reversing endian for ints" << endl;
                 int *buff = (int *) rv->GetVoidPointer(0);
@@ -1111,6 +1166,11 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
            dataFormat == FloatData)
         {
             ReArrangeTuple2ToTuple3((float *)rv->GetVoidPointer(0),
+                                    rv->GetNumberOfTuples());
+        }
+        else if(dataFormat == ShortData)
+        {
+            ReArrangeTuple2ToTuple3((short *)rv->GetVoidPointer(0),
                                     rv->GetNumberOfTuples());
         }
         else if(dataFormat == IntegerData)
@@ -1492,6 +1552,9 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Thu Apr 24 11:40:13 PDT 2008
 //    Only have processor 0 read the .bov file.
 //
+//    Brad Whitlock, Wed Apr  8 09:45:38 PDT 2009
+//    I added short int support.
+//
 // ****************************************************************************
 
 void
@@ -1555,6 +1618,8 @@ avtBOVFileFormat::ReadTOC(void)
                     dataFormat = DoubleData;
                 else if (strncmp(line, "INT", strlen("INT")) == 0)
                     dataFormat = IntegerData;
+                else if (strncmp(line, "SHORT", strlen("SHORT")) == 0)
+                    dataFormat = ShortData;
                 else
                     debug1 << "Unknown keyword for BOV byte data: " 
                            << line << endl;
