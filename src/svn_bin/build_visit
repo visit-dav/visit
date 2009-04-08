@@ -589,6 +589,13 @@
 #     Mark C. Miller, Tue Apr  7 14:56:44 PDT 2009
 #     Added missing surrounding quotes in creation of DEFAULT_ITAPS_IMPLS
 #     symbol for config.conf file that gets created.
+#
+#     Mark C. Miller, Tue Apr  7 15:02:19 PDT 2009
+#     Added missing path component for include path for ITAPS_FMDB symbol.
+#
+#     Mark C. Miller, Wed Apr  8 10:25:38 PDT 2009
+#     Fixed some problems with _IMPL symbol for ITAPS_GRUMMP. Fixed install
+#     of ITAPS_GRUMMP missing iMesh_protos.h
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -7448,6 +7455,13 @@ function build_itaps_grummp
            warn "ITAPS_GRUMMP install failed.  Giving up"
            return 1
         fi
+        #
+        # A 'make install' for GRUMMP fails to install iMesh_protos.h.
+        # Take care of that now.
+        #
+        if [[ ! -e $VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH/include/ITAPS/iMesh_protos.h ]]; then
+            cp iMesh/iMesh_protos.h $VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH/include/ITAPS/.
+        fi
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -9138,6 +9152,7 @@ if [[ "$DO_ITAPS" == "yes" ]] ; then
         fi
         info "Done building ITAPS_MOAB"
     fi
+    # Setup the _IMPL symbol for ITAPS_MOAB
     export ITAPS_MOAB_IMPL="MOAB:cub:-I\$VISITHOME/itaps/MOAB/$ITAPS_MOAB_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/MOAB/$ITAPS_MOAB_VERSION/\$VISITARCH/lib,-liMesh,-lMOAB,-lvtkGraphics"
     if [[ "$DO_HDF5" == "yes" ]] ; then
        ITAPS_MOAB_IMPL="$ITAPS_MOAB_IMPL,-L\$VISITHOME/hdf5/$HDF5_VERSION/\$VISITARCH/lib,-lhdf5,-lz"
@@ -9161,7 +9176,8 @@ if [[ "$DO_ITAPS" == "yes" ]] ; then
         fi
         info "Done building ITAPS_FMDB"
     fi
-    export ITAPS_FMDB_IMPL="FMDB:sms:-I\$VISITHOME/itaps/FMDB/$ITAPS_FMDB_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/FMDB/$ITAPS_FMDB_VERSION/\$VISITARCH/lib,-lFMDB,-lSCORECModel,-lSCORECUtil,-lvtkGraphics"
+    # Setup the _IMPL symbol for ITAPS_FMDB
+    export ITAPS_FMDB_IMPL="FMDB:sms:-I\$VISITHOME/itaps/FMDB/$ITAPS_FMDB_VERSION/\$VISITARCH/include/FMDB:-L\$VISITHOME/itaps/FMDB/$ITAPS_FMDB_VERSION/\$VISITARCH/lib,-lFMDB,-lSCORECModel,-lSCORECUtil,-lvtkGraphics"
 
     # handle GRUMMP implementation ot ITAPS
     check_if_installed "itaps/GRUMMP" $ITAPS_GRUMMP_VERSION
@@ -9175,7 +9191,8 @@ if [[ "$DO_ITAPS" == "yes" ]] ; then
         fi
         info "Done building ITAPS_GRUMMP"
     fi
-    export ITAPS_GRUMMP_IMPL="GRUMMP:bdry,smesh,vmesh:-I\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-liMesh_GRUMMP,-lGR_3D,-lGR_surf,-lGR_2D,-lGR_base,-lSUMAAlog_lite,-lOptMS,-lvtkGraphics"
+    # Setup the _IMPL symbol for ITAPS_GRUMMP
+    export ITAPS_GRUMMP_IMPL="GRUMMP:bdry,smesh,vmesh:-I\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/include/ITAPS:-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib/ITAPS,-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-liMesh_GRUMMP,-lGR_3D,-lGR_surf,-lGR_2D,-lGR_base,-lSUMAAlog_lite,-lOptMS,-lvtkGraphics"
 fi
 
 #
