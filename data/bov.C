@@ -163,6 +163,31 @@ fill_BOV_indices(unsigned char *data, const int *full_size)
     }
 }
 
+// Template specialization for unsigned short.
+void
+fill_BOV_indices(unsigned short *data, const int *full_size)
+{
+    unsigned short *ptr = data;
+    float root3 = sqrt(3.);
+
+    for(int k = 0; k < full_size[2]; ++k)
+    {
+        float z = float(k) / float(full_size[2]-1);
+        for(int j = 0; j < full_size[1]; ++j)
+        {
+            float y = float(j) / float(full_size[1]-1);
+            for(int i = 0; i < full_size[0]; ++i)
+            {
+                float x = float(i) / float(full_size[0]-1);
+
+                float r = sqrt(x*x + y*y + z*z);
+                unsigned short c = (unsigned short)((int)((65536./2.-1.)* r / root3));
+                *ptr++ = c;
+            }
+        }
+    }
+}
+
 template <class T>
 void
 write_BOV_types(const char *tname, const char *sname, int nc, T *data,
@@ -388,11 +413,18 @@ write_multi_bov()
 //   Thomas R. Treadway, Mon Jul 16 13:45:29 PDT 2007
 //   quad_t conflicts with quad_t in #include <sys/types.h>
 //
+//   Brad Whitlock, Wed Apr  8 09:57:28 PDT 2009
+//   I added short data.
+//
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
+    unsigned short *sdata = new unsigned short[nels + offset];
+    write_BOV_types("SHORT", "SHORT", 1, sdata, false);
+    delete [] sdata;
+
     int *idata = new int[nels + offset];
     write_BOV_types("INT", "INT", 1, idata, false);
     delete [] idata;
