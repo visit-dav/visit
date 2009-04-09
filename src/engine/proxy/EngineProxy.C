@@ -50,11 +50,12 @@
 // this, we should remove this include directive
 #include <InvalidVariableException.h>
 
+#include <DebugStream.h>
+#include <ExpressionList.h>
+#include <ParentProcess.h>
 #include <RemoteProcess.h>
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
-#include <ExpressionList.h>
-#include <DebugStream.h>
 #include <TimingsManager.h>
 #include <snprintf.h>
 
@@ -88,10 +89,15 @@
 //     Brad Whitlock, Thu Jan 25 13:53:15 PST 2007
 //     Added commandFromSim.
 //
+//     Brad Whitlock, Thu Apr  9 15:04:14 PDT 2009
+//     Add engineP.
+//
 // ****************************************************************************
 
 EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
 {
+    engineP = NULL;
+
     // Indicate that we want 2 write sockets from the engine.
     nWrite = 2;
 
@@ -142,6 +148,9 @@ EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
 //    Brad Whitlock, Thu Jan 25 13:53:36 PST 2007
 //    Delete commandFromSim.
 //
+//    Brad Whitlock, Thu Apr  9 15:03:57 PDT 2009
+//    Delete engineP.
+//
 // ****************************************************************************
 
 EngineProxy::~EngineProxy()
@@ -150,6 +159,60 @@ EngineProxy::~EngineProxy()
     delete metaData;
     delete silAtts;
     delete commandFromSim;
+
+    delete engineP;
+}
+
+// ****************************************************************************
+// Method: EngineProxy::Create
+//
+// Purpose: 
+//   This method is used to connect to an existing compute engine.
+//
+// Arguments:
+//   args : The arguments that we need to connect back to the engine.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr  9 15:07:34 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::Connect(const stringVector &args)
+{
+    char **argv = new char*[args.size()+1];
+    for(size_t i = 0; i <= args.size(); ++i)
+    {
+        if(i < args.size())
+            argv[i] = (char*)args[i].c_str();
+        else
+            argv[i] = NULL;
+    }
+    int argc = args.size();
+
+    engineP = new ParentProcess;
+    engineP->Connect(1, 2, &argc, &argv, true);
+    delete [] argv;
+
+    // Use engineP's connections for xfer.
+    xfer.SetInputConnection(engineP->GetWriteConnection());
+    xfer.SetOutputConnection(engineP->GetReadConnection());
+
+    //
+    // Set up the RPCs
+    //
+    SetupAllRPCs();
+
+    //
+    // List the objects that were hooked up. 
+    //
+    xfer.ListObjects();
 }
 
 // ****************************************************************************
@@ -339,7 +402,9 @@ EngineProxy::GetComponentName() const
 // Creation:   Fri Mar 12 11:04:57 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr  9 16:15:50 PDT 2009
+//   I added reverse launch support.
+//
 // ****************************************************************************
 
 void
@@ -358,8 +423,16 @@ EngineProxy::SendKeepAlive()
     //
 #define KEEPALIVE_SIZE 10
     unsigned char buf[KEEPALIVE_SIZE];
-    if (component->GetWriteConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0)
-        debug1 << "Error reading keep alive data from engine!!!!\n";
+    if(engineP != NULL)
+    {
+        if (engineP->GetReadConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0)
+            debug1 << "Error reading keep alive data from engine!!!!\n";
+    }
+    else
+    {
+        if (component->GetWriteConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0)
+            debug1 << "Error reading keep alive data from engine!!!!\n";
+    }
 }
 
 // ****************************************************************************
@@ -694,6 +767,9 @@ EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
 //    Kathleen Bonnell, Thu Jun 12 10:53:29 PDT 2003 
 //    Added timing code for delay before read, and read. 
 //
+//    Brad Whitlock, Thu Apr  9 16:17:36 PDT 2009
+//    I added reverse launch support.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -752,12 +828,23 @@ EngineProxy::Execute(bool respondWithNull, void (*waitCB)(void *), void *cbData)
     long size = executeRPC.GetReplyLen();
     char *buf = new char[size];
 
-    component->GetWriteConnection(1)->NeedsRead(true);
+    if(engineP != NULL)
+        engineP->GetReadConnection(1)->NeedsRead(true);
+    else
+        component->GetWriteConnection(1)->NeedsRead(true);
     visitTimer->StopTimer(readDelay, "Delay between read notification and actual read");
 
     int readData = visitTimer->StartTimer();
-    if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
-        debug1 << "Error reading VTK data!!!!\n";
+    if(engineP != NULL)
+    {
+        if (engineP->GetReadConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
+            debug1 << "Error reading VTK data!!!!\n";
+    }
+    else
+    {
+        if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
+            debug1 << "Error reading VTK data!!!!\n";
+    }
 
     char msg[128];
     SNPRINTF(msg, 128, "Reading %ld bytes from socket", size);
@@ -915,6 +1002,10 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 //
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Removed conditionally removed code block conditioned on 'MCM_FIX'
+//
+//    Brad Whitlock, Thu Apr  9 16:17:55 PDT 2009
+//    I added reverse launch support.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -973,8 +1064,16 @@ EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
     long size = renderRPC.GetReplyLen();
     char *buf = new char[size];
 
-    if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
-        debug1 << "Error reading VTK data!!!!\n";
+    if(engineP != NULL)
+    {
+        if (engineP->GetReadConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
+            debug1 << "Error reading VTK data!!!!\n";
+    }
+    else
+    {
+        if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
+            debug1 << "Error reading VTK data!!!!\n";
+    }
 
     // The data object reader will clean up the memory with buf.
     avtDataObjectReader_p avtreader  = new avtDataObjectReader;

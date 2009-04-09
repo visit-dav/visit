@@ -165,6 +165,8 @@ protected:
                            bool manualSSHPort,
                            int sshPort, bool useTunneling,
                            int numRead, int numWrite, bool local);
+    virtual void Launch(const std::string &rHost, bool createAsThoughLocal,
+                        const stringVector &commandLine);
 protected:
     int                      listenPortNum;
     std::string              localHost, localUserName;

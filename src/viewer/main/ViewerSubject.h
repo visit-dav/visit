@@ -719,6 +719,8 @@ private slots:
     void CopyAnnotationsToWindow(int from, int to);
     void CopyPlotsToWindow(int from, int to);
 
+    void OpenDatabaseOnStartup();
+    void OpenScriptOnStartup();
 private:
     typedef std::vector<ViewerClientConnection *> ViewerClientConnectionVector;
     static void BroadcastToAllClients(void *, Subject *);
@@ -731,6 +733,8 @@ private:
     bool                   heavyInitializationDone;
     bool                   interruptionEnabled;
     std::string            launchEngineAtStartup;
+    std::string            openDatabaseOnStartup;
+    std::string            openScriptOnStartup;
     bool                   blockSocketSignals;
     bool                   processingFromParent;
     int                    animationStopOpcode;

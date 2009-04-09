@@ -75,13 +75,14 @@ class MPIXfer;
 class NetworkManager;
 class NonBlockingRPC;
 class Observer;
+class ParentProcess;
 class ProcessAttributes;
+class ViewerRemoteProcess;
 class VisItDisplay;
 class Xfer;
 
 #include <vector>
 #include <avtDataObjectWriter.h>
-#include <ParentProcess.h>
 #include <BufferConnection.h>
 #include <SaveWindowAttributes.h>
 
@@ -200,6 +201,9 @@ class Xfer;
 //    I changed the command callback mechanism so it only accepts string
 //    arguments and it also accepts user-provided callback data.
 //
+//    Brad Whitlock, Thu Apr  9 11:55:50 PDT 2009
+//    I made it possible to reverse launch the viewer.
+//
 // ****************************************************************************
 
 class Engine
@@ -275,6 +279,8 @@ class Engine
   protected:
                     Engine();
     void            ProcessCommandLine(int argc, char *argv[]);
+    bool            ReverseLaunchViewer(int *argc, char **argv[]);
+    void            ExtractViewerArguments(int *argc, char **argv[]);
 
     static void     AlarmHandler(int signal);
     static void     NewHandler(void);
@@ -284,10 +290,13 @@ class Engine
 
   protected:
     // The singleton object
-    static Engine     *instance;
+    static Engine       *instance;
 
     // The Viewer
-    ParentProcess      theViewer;
+    ParentProcess       *viewerP;       // Used when the viewer launches engine
+    ViewerRemoteProcess *viewer;        // Used when engine launches viewer
+    stringVector         viewerArgs;    // "
+    bool                 reverseLaunch;
 
     // The destination machine's type representation.
     TypeRepresentation destinationFormat;

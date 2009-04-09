@@ -1026,6 +1026,46 @@ RemoteProcess::MultiThreadedAcceptSocket()
 }
 
 // ****************************************************************************
+// Method: RemoteProcess::Launch
+//
+// Purpose: 
+//   Launches the remote process.
+//
+// Arguments:
+//   rHost               : The host where the program will be launched.
+//   createAsThoughLocal : Whether to create the program as local.
+//   commandLine         : 
+//
+// Returns:    
+//
+// Note:       I moved this out from the Open method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr  9 10:25:24 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+RemoteProcess::Launch(const std::string &rHost, bool createAsThoughLocal,
+    const stringVector &commandLine)
+{
+    const char *mName = "RemoteProcess::Launch: ";
+
+    if (HostIsLocal(rHost) || createAsThoughLocal)
+    {
+        debug5 << mName << "Calling LaunchLocal" << endl;
+        LaunchLocal(commandLine);
+    }
+    else
+    {
+        debug5 << mName << "Calling LaunchRemote" << endl;
+        LaunchRemote(commandLine);
+    }
+}
+
+// ****************************************************************************
 // Method: RemoteProcess::Open
 //
 // Purpose: 
@@ -1089,6 +1129,9 @@ RemoteProcess::MultiThreadedAcceptSocket()
 //    Jeremy Meredith, Thu May 24 11:10:15 EDT 2007
 //    Added SSH tunneling argument; pass it along to CreateCommandLine.
 //
+//    Brad Whitlock, Thu Apr  9 10:40:08 PDT 2009
+//    I moved some code to the new Launch method.
+//
 // ****************************************************************************
 
 bool
@@ -1145,16 +1188,7 @@ RemoteProcess::Open(const std::string &rHost,
     //
     // Launch the remote process.
     //
-    if (HostIsLocal(rHost) || createAsThoughLocal)
-    {
-        debug5 << mName << "Calling LaunchLocal" << endl;
-        LaunchLocal(commandLine);
-    }
-    else
-    {
-        debug5 << mName << "Calling LaunchRemote" << endl;
-        LaunchRemote(commandLine);
-    }
+    Launch(rHost, createAsThoughLocal, commandLine);
 
     childDied[GetProcessId()] = false;
 

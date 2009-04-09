@@ -83,6 +83,7 @@
 class StatusAttributes;
 class ConstructDDFAttributes;
 class ExportDBAttributes;
+class ParentProcess;
 
 // ****************************************************************************
 //  Class: EngineProxy
@@ -308,6 +309,9 @@ class ExportDBAttributes;
 //    Hank Childs, Wed Jan 28 15:57:02 PST 2009
 //    Add support for named selections.
 //
+//    Brad Whitlock, Thu Apr  9 15:02:51 PDT 2009
+//    I added reverse launch support.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -315,6 +319,9 @@ class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
 public:
     EngineProxy();
     virtual ~EngineProxy();
+
+    // This version of Create is specifically for reverse launch.
+    void Connect(const stringVector &args);
 
     virtual void SendKeepAlive();
 
@@ -431,6 +438,8 @@ protected:
     void                     ClearStatus();
     void                     Warning(const char *message);
 private:
+    ParentProcess           *engineP;
+
     ReadRPC                  readRPC;
     ApplyOperatorRPC         applyOperatorRPC;
     MakePlotRPC              makePlotRPC;
