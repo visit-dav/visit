@@ -264,6 +264,7 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //      args           the arguments to pass to the engine
 //      skipChooser    do we not want to ask the user which profile to use
 //      numRestarts    the number of restart attempts to use when engines fail
+//      reverseLaunch  Whether the engine is being reverse launched (engine launched viewer)
 //
 //  Programmer: Eric Brugger
 //  Creation:   September 23, 2000
@@ -403,9 +404,7 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 
 bool
 ViewerEngineManager::CreateEngine(const EngineKey &ek,
-                                  const stringVector &args,
-                                  bool skipChooser,
-                                  int numRestarts_)
+    const stringVector &args, bool skipChooser, int numRestarts_, bool reverseLaunch)
 {
     if (numRestarts_ == -1)
     {
@@ -413,7 +412,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
             numRestarts = 2;
     }
     else
-       numRestarts = numRestarts_;
+        numRestarts = numRestarts_;
 
     //
     // Check if an engine already exists for the host.
@@ -441,8 +440,11 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     // Create a new engine proxy and add arguments from the profile to it.
     //
     newEngine.proxy = new EngineProxy;
-    bool addParallelArgs = !newEngine.profile.GetShareOneBatchJob();
-    newEngine.proxy->AddProfileArguments(newEngine.profile, addParallelArgs);
+    if(!reverseLaunch)
+    {
+        bool addParallelArgs = !newEngine.profile.GetShareOneBatchJob();
+        newEngine.proxy->AddProfileArguments(newEngine.profile, addParallelArgs);
+    }
 
     //
     // Add some arguments to the engine proxy before we try to
@@ -492,10 +494,23 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
             inLaunch = true;
             if (!ShouldShareBatchJob(ek.HostName()) && 
                 HostIsLocalHost(ek.HostName()))
-                newEngine.proxy->Create("localhost", chd, clientHostName,
-                                        manualSSHPort, sshPort, useTunneling);
-            else
             {
+                if(reverseLaunch)
+                {
+                    debug1 << "Connecting to an existing engine" << endl;
+                    newEngine.proxy->Connect(args);
+                }
+                else
+                {
+                    debug1 << "Launching a local engine" << endl;
+                    newEngine.proxy->Create("localhost", chd, clientHostName,
+                                            manualSSHPort, sshPort, useTunneling);
+                }
+            }
+            else
+            { 
+                debug1 << "Launching an engine with the launcher" << endl;
+
                 // Use VisIt's launcher to start the remote engine.
                 newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                                   manualSSHPort, sshPort, useTunneling,

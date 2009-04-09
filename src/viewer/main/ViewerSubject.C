@@ -226,9 +226,13 @@ using std::string;
 //    Brad Whitlock, Thu Aug 14 09:57:59 PDT 2008
 //    Removed mainApp, Added call to CreateState.
 //
+//    Brad Whitlock, Thu Apr  9 15:58:47 PDT 2009
+//    I initialized openDatabaseOnStartup, openScriptOnStartup.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : ViewerBase(0), 
+    launchEngineAtStartup(), openDatabaseOnStartup(), openScriptOnStartup(),
     interpretCommands(), xfer(), clients(),
     borders(), shift(), preshift(), geometry(),
     engineParallelArguments(), unknownArguments(), clientArguments(),
@@ -262,11 +266,6 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     // Set a flag indicating that we're not presently launching a component.
     //
     launchingComponent = false;
-
-    //
-    // Will be set by the -launchengine flag.
-    //
-    launchEngineAtStartup = "";
 
     //
     // Set by BlockSocketSignals method.
@@ -935,6 +934,9 @@ ViewerSubject::InformClientOfPlugins() const
 //   Added code to set up ViewerMethods so it writes into a buffered viewer
 //   state that gets copied into the central xfer's input buffer.
 //
+//   Brad Whitlock, Thu Apr  9 15:59:56 PDT 2009
+//   I added code to open a file on startup.
+//
 // ****************************************************************************
 
 void
@@ -1027,6 +1029,12 @@ ViewerSubject::HeavyInitialization()
 
         // Discover the client's information.
         QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
+
+        // Open a database on startup.
+        QTimer::singleShot(100, this, SLOT(OpenDatabaseOnStartup()));
+
+        // Open a script on startup.
+        QTimer::singleShot(100, this, SLOT(OpenScriptOnStartup()));
 
         heavyInitializationDone = true;
         visitTimer->StopTimer(timeid, "Heavy initialization.");
@@ -1652,6 +1660,9 @@ ViewerSubject::AddInitialWindows()
 //    connecting to a running simulation at startup (right now), so we
 //    can safely call CreateEngine instead of ConnectSim.
 //
+//    Brad Whitlock, Thu Apr  9 14:39:12 PDT 2009
+//    I added support for reverse launching.
+//
 // ****************************************************************************
 
 void
@@ -1662,10 +1673,94 @@ ViewerSubject::LaunchEngineOnStartup()
     //
     if (launchEngineAtStartup != "")
     {
-        stringVector noArgs;
-        ViewerEngineManager::Instance()->
-                CreateEngine(EngineKey(launchEngineAtStartup,""),
-                             engineParallelArguments, true, numEngineRestarts);
+        if(launchEngineAtStartup.substr(0,6) == "-host=")
+        {
+            stringVector tokens = SplitValues(launchEngineAtStartup, ',');
+            stringVector args;
+            args.push_back("visit");
+            for(size_t i = 0; i < tokens.size(); ++i)
+            {
+                stringVector comps = SplitValues(tokens[i], '=');
+                if(comps.size() == 1)
+                    args.push_back(comps[0]);
+                else if(comps.size() == 2)
+                {
+                    args.push_back(comps[0]);
+                    args.push_back(comps[1]);
+                }
+            }
+
+            ViewerEngineManager::Instance()->CreateEngine(
+                EngineKey("localhost",""), // The name of the engine (host)
+                args,               // The engine arguments
+                true,               // Whether to skip the engine chooser
+                numEngineRestarts,  // Number of allowed restarts
+                true);              // Whether we're reverse launching
+
+            ViewerWindowManager::Instance()->ShowAllWindows();
+        }
+        else
+        {
+            ViewerEngineManager::Instance()->CreateEngine(
+                EngineKey(launchEngineAtStartup,""), // The name of the engine (host)
+                engineParallelArguments,             // The engine arguments
+                true,                                // Whether to skip the engine chooser
+                numEngineRestarts,                   // Number of allowed restarts
+                false);                              // Whether we're reverse launching
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::OpenDatabaseOnStartup
+//
+// Purpose: 
+//   This method opens a file on startup if there is a file to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr  9 16:05:43 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::OpenDatabaseOnStartup()
+{
+    if(openDatabaseOnStartup != "")
+    {
+        OpenDatabaseHelper(openDatabaseOnStartup, // DB name
+           0,    // timeState, 
+           true, // addDefaultPlots
+           true, // updateWindowInfo,
+           "");  // forcedFileType
+
+        ViewerWindowManager::Instance()->UpdateActions();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::OpenScriptOnStartup
+//
+// Purpose: 
+//   This method opens a script on startup if there is a script to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr  9 16:05:43 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::OpenScriptOnStartup()
+{
+    if(openScriptOnStartup != "")
+    {
+        std::string cmd("Source('");
+        cmd += openScriptOnStartup;
+        cmd += "')";
+        InterpretCommands(cmd);
     }
 }
 
@@ -2325,6 +2420,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    convenience.  This will even override whatever the setting is in
 //    a selected host profile.
 //
+//    Brad Whitlock, Thu Apr  9 14:45:03 PDT 2009
+//    I added -connectengine support and -o and -s  support.
+//
 // ****************************************************************************
 
 void
@@ -2588,6 +2686,38 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
                 continue;
             }
             launchEngineAtStartup = argv[i+1];
+            ++i;
+        }
+        else if (strcmp(argv[i], "-connectengine") == 0)
+        {
+            if(i + 1 >= argc)
+            {
+                cerr << "The -connectengine option must be followed by an "
+                        "argument containing the engine connection parameters. "
+                        "That argument is of the form: -host=val,-key=val,-port=val" << endl;
+                continue;
+            }
+            launchEngineAtStartup = argv[i+1];
+            ++i;
+        }
+        else if (strcmp(argv[i], "-o") == 0)
+        {
+            if(i + 1 >= argc)
+            {
+                cerr << "The -o option must be followed by a filename." << endl;
+                continue;
+            }
+            openDatabaseOnStartup = argv[i+1];
+            ++i;
+        }
+        else if (strcmp(argv[i], "-s") == 0)
+        {
+            if(i + 1 >= argc)
+            {
+                cerr << "The -s option must be followed by a script filename." << endl;
+                continue;
+            }
+            openScriptOnStartup = argv[i+1];
             ++i;
         }
         else if (strcmp(argv[i], "-key") == 0)

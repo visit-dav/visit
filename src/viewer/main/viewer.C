@@ -116,6 +116,10 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 //    Prevent Qt from getting the -geometry flag since it messes up the
 //    viswin's initial size on X11 with Qt 4.
 //
+//    Brad Whitlock, Thu Apr  9 14:19:51 PDT 2009
+//    Skip connecting to the client if we're doing a -connectengine, which
+//    means the engine and not the client is launching the viewer.
+//
 // ****************************************************************************
 
 int
@@ -137,9 +141,14 @@ main(int argc, char *argv[])
         VisItViewer viewer;
 
         //
-        // Connect back to the client.
+        // Connect back to the client if we're not doing a reverse launch from
+        // the compute engine.
         //
-        viewer.Connect(&argc, &argv);
+        bool reverseLaunch = false;
+        for(int i = 1; i < argc && !reverseLaunch; ++i)
+            reverseLaunch |= (strcmp(argv[i], "-connectengine") == 0);
+        if(!reverseLaunch)
+            viewer.Connect(&argc, &argv);
 
         //
         // Process the command line arguments first since some may be removed

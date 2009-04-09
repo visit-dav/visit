@@ -285,6 +285,9 @@ class FileOpenOptions;
 //    Hank Childs, Wed Jan 28 15:03:08 PST 2009
 //    Add support for named selections.
 //
+//    Brad Whitlock, Thu Apr  9 15:18:44 PDT 2009
+//    I added another argument to CreateEngine that permits reverse launches.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -304,7 +307,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool CreateEngine(const EngineKey &ek,
                       const std::vector<std::string> &arguments,
                       bool  skipChooser=false,
-                      int numRestarts=-1);
+                      int   numRestarts=-1,
+                      bool  reverseLaunch = false);
 
     bool ConnectSim(const EngineKey &ek,
                     const std::vector<std::string> &arguments,

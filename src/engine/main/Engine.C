@@ -79,6 +79,7 @@
 #include <ParentProcess.h>
 #include <ParsingExprList.h>
 #include <QueryAttributes.h>
+#include <RemoteProcess.h>
 #include <SILAttributes.h>
 #include <SimulationCommand.h>
 #include <SocketConnection.h>
@@ -129,6 +130,81 @@ static void ResetEngineTimeout(void *p, int secs);
 #ifdef PARALLEL
 const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 #endif
+
+// ****************************************************************************
+// Class: ViewerRemoteProcess
+//
+// Purpose:
+//   This class is used when the engine needs to reverse launch the viewer.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr  9 11:51:35 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class ViewerRemoteProcess : public RemoteProcess
+{
+public:
+    ViewerRemoteProcess(const std::string &p) : RemoteProcess(p)
+    {
+    }
+
+    virtual ~ViewerRemoteProcess()
+    {
+    }
+
+protected:
+    virtual void Launch(const std::string &rHost, bool createAsThoughLocal,
+                        const stringVector &commandLine)
+    {
+        const char *mName = "ViewerRemoteProcess::Launch: ";
+
+        // Convert the remote process arguments into arguments that the viewer
+        // will recognize as directives to reverse connect to the engine.
+        stringVector viewerArgs;
+        std::map<std::string, std::string> launchArgs;
+        for(size_t i = 0; i < commandLine.size(); ++i)
+        {
+            if(commandLine[i] == "-host" ||
+               commandLine[i] == "-port" || 
+               commandLine[i] == "-key")
+            {
+                launchArgs[commandLine[i]] = commandLine[i+1];
+                ++i;
+            }
+            else
+                viewerArgs.push_back(commandLine[i]);
+        }
+
+        // Convert to -host=val,-port=val,-key=val
+        std::string arg;
+        std::map<std::string, std::string>::const_iterator it;
+        for(it = launchArgs.begin(); it != launchArgs.end(); ++it)
+        {
+            arg += it->first;
+            if(it->second.size() > 0)
+            {
+                arg += "=";
+                arg += it->second;
+            }
+            arg += ",";
+        }
+        arg = arg.substr(0, arg.size()-1);
+        viewerArgs.push_back("-connectengine");
+        viewerArgs.push_back(arg);
+
+        debug5 << mName << "viewer args(";
+        for(size_t i = 0; i < viewerArgs.size(); ++i)
+            debug5 << viewerArgs[i] << ", ";
+        debug5 << endl;
+
+        RemoteProcess::Launch(rHost, createAsThoughLocal, viewerArgs);
+    }
+};
 
 // ****************************************************************************
 //  Constructor:  Engine::Engine
@@ -183,10 +259,17 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Brad Whitlock, Fri Mar 27 11:33:52 PDT 2009
 //    I initialized simulationCommandCallbackData.
 //
+//    Brad Whitlock, Thu Apr  9 11:57:44 PDT 2009
+//    Initialize viewer, viewerP, reverseLaunch.
+//
 // ****************************************************************************
 
-Engine::Engine()
+Engine::Engine() : viewerArgs()
 {
+    viewer = NULL;
+    viewerP = NULL;
+    reverseLaunch = false;
+
     vtkConnection = 0;
     noFatalExceptions = true;
     idleTimeoutMins = 480;
@@ -258,6 +341,9 @@ Engine::Engine()
 //    Brad Whitlock, Mon Dec  1 10:22:05 PST 2008
 //    Delete network manager last to delay when plugins are unloaded.
 //
+//    Brad Whitlock, Thu Apr  9 11:57:07 PDT 2009
+//    Delete viewer and viewerP.
+//
 // ****************************************************************************
 
 Engine::~Engine()
@@ -294,10 +380,13 @@ Engine::~Engine()
     delete simulationCommandRPC;
     delete setEFileOpenOptionsRPC;
 
+    delete viewer;
+    delete viewerP;
+
     delete renderingDisplay;
 
     // Delete the network manager last since it deletes plugin managers
-    // and out RPC's may need to call plugin AttributeSubject destructors.
+    // and our RPC's may need to call plugin AttributeSubject destructors.
     // We can't seem to do that reliably on Linux once plugins have been
     // unloaded.
     delete netmgr;
@@ -375,14 +464,21 @@ Engine *Engine::Instance()
 //    Tom Fogal, Tue Jul 15 10:02:27 EDT 2008
 //    Include the # of processors we're running on in the timing message.
 //
+//    Brad Whitlock, Thu Apr  9 13:40:32 PDT 2009
+//    I moved the xfer set input connection code for non-UI procs to 
+//    ConnectToViewer where the UI proc sets its xfer input connection.
+//
 // ****************************************************************************
 
 void
 Engine::Initialize(int *argc, char **argv[], bool sigs)
 {
     int initTimer = visitTimer->StartTimer();
-#ifdef PARALLEL
 
+    // Get arguments that the viewer can use.
+    ExtractViewerArguments(argc, argv);
+
+#ifdef PARALLEL
     xfer = new MPIXfer;
     //
     // Initialize for MPI and get the process rank & size.
@@ -411,15 +507,6 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     //
 #if !defined(_WIN32)
     std::set_new_handler(Engine::NewHandler);
-#endif
-
-#ifdef PARALLEL
-    if (!PAR_UIProcess())
-    {
-        // Set the xfer object's input connection to be the buffer connection
-        // of the object itself
-        xfer->SetInputConnection(&par_conn);
-    }
 #endif
 
     debug1 << "ENGINE started\n";
@@ -595,7 +682,10 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 {
     int setupTimer = visitTimer->StartTimer();
 
-    vtkConnection = theViewer.GetReadConnection(1);
+    if(reverseLaunch)
+        vtkConnection = viewer->GetWriteConnection(1);
+    else
+        vtkConnection = viewerP->GetReadConnection(1);
 
     // Parse the command line.
     ProcessCommandLine(*argc, *argv);
@@ -773,18 +863,43 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     //
 #ifdef PARALLEL
     if (PAR_UIProcess())
-        xfer->SetInputConnection(theViewer.GetWriteConnection());
+    {
+        if(reverseLaunch)
+            xfer->SetInputConnection(viewer->GetWriteConnection());
+        else
+            xfer->SetInputConnection(viewerP->GetWriteConnection());
+    }
+    else
+    {
+        // Set the xfer object's input connection to be the buffer connection
+        // of the object itself
+        xfer->SetInputConnection(&par_conn);
+    }
 #else
-    xfer->SetInputConnection(theViewer.GetWriteConnection());
+    if(reverseLaunch)
+        xfer->SetInputConnection(viewer->GetWriteConnection());
+    else
+        xfer->SetInputConnection(viewerP->GetWriteConnection());
 #endif
-    xfer->SetOutputConnection(theViewer.GetReadConnection());
+    if(reverseLaunch)
+        xfer->SetOutputConnection(viewer->GetReadConnection());
+    else
+        xfer->SetOutputConnection(viewerP->GetReadConnection());
 
     //
     // Set the global destination format. This only happens on the UI-Process
     // when running in parallel since non-UI processes have no SocketConnections.
     //
-    if (theViewer.GetReadConnection() != 0)
-        destinationFormat = theViewer.GetReadConnection()->GetDestinationFormat();
+    if(reverseLaunch)
+    {
+        if (viewer->GetReadConnection() != 0)
+            destinationFormat = viewer->GetReadConnection()->GetDestinationFormat();
+    }
+    else
+    {
+        if (viewerP->GetReadConnection() != 0)
+            destinationFormat = viewerP->GetReadConnection()->GetDestinationFormat();
+    }
 
     //
     // Create the network manager and the load balancer.
@@ -823,12 +938,170 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 12, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Thu Apr  9 11:39:57 PDT 2009
+//    I added code to support reverse launches.
+//
 // ****************************************************************************
 
 int
 Engine::GetInputSocket()
 {
-    return theViewer.GetWriteConnection()->GetDescriptor();
+    int s;
+    if(reverseLaunch)
+        s = viewer->GetWriteConnection()->GetDescriptor();
+    else
+        s = viewerP->GetWriteConnection()->GetDescriptor();
+
+    return s;
+}
+
+// ****************************************************************************
+// Method: Engine::ExtractViewerArguments
+//
+// Purpose: 
+//   This method takes a first peek at the engine's command line and extracts
+//   any useful arguments into viewerArgs. If the arguments are meant only
+//   for the viewer then they get removed from the command line before the
+//   engine gets them. The viewerArgs are used when reverse launching the
+//   viewer from the engine.
+//
+// Arguments:
+//   argc : Pointer to the number of command line arguments.
+//   argv : Pointer to the command line arguments array.
+// 
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr  9 14:09:24 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Engine::ExtractViewerArguments(int *argc, char **argv[])
+{
+    char **ARGV = *argv;
+    for(int i = 0; i < *argc; ++i)
+    {
+        int deleteCount = 0;
+
+        if(strcmp(ARGV[i], "-reverse_launch") == 0)
+        {
+            reverseLaunch = true;
+            deleteCount = 1;
+        }
+        else if(strcmp(ARGV[i], "-nowin") == 0)
+        {
+            viewerArgs.push_back("-nowin");
+            deleteCount = 1;
+        }
+        else if(strcmp(ARGV[i], "-s") == 0)
+        {
+            viewerArgs.push_back("-s");
+            viewerArgs.push_back(ARGV[i+1]);
+            deleteCount = 2;
+        }
+        else if(strcmp(ARGV[i], "-o") == 0)
+        {
+            viewerArgs.push_back("-o");
+            viewerArgs.push_back(ARGV[i+1]);
+            deleteCount = 2;
+        }
+        else if(strcmp(ARGV[i], "-debug") == 0)
+        {
+            viewerArgs.push_back(ARGV[i]);
+            viewerArgs.push_back(ARGV[i+1]);
+            ++i;
+        }
+        else
+            viewerArgs.push_back(ARGV[i]);
+        // some other args we want to handle.
+
+        if(deleteCount > 0)
+        {
+            for(int j = i; j < *argc; ++j)
+            {
+                ARGV[j] = (j + deleteCount < *argc) ?
+                    ARGV[j + deleteCount] : NULL;
+            }
+            (*argc) -= deleteCount;
+            --i;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: Engine::ReverseLaunchViewer
+//
+// Purpose: 
+//   This function scans the command line arguments for -reverse_launch and if
+//   it is found then the engine launches the viewer.
+//
+// Arguments:
+//   argc : Pointer to the number of command line arguments.
+//   argv : Pointer to the command line arguments array.
+//
+// Returns:    True if we reverse launched the viewer; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr  9 11:59:57 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+Engine::ReverseLaunchViewer(int *argc, char **argv[])
+{
+    // If we're reverse launching and we're the UI process then we can 
+    // launch the viewer.
+    viewer = new ViewerRemoteProcess("visit");
+#ifdef PARALLEL
+    if(reverseLaunch && PAR_UIProcess())
+#else
+    if(reverseLaunch)
+#endif
+    {
+        TRY
+        {
+            viewer->AddArgument("-viewer");
+//            viewer->AddArgument("-defer");
+            for(size_t j = 0; j < viewerArgs.size(); ++j)
+                viewer->AddArgument(viewerArgs[j]);
+            viewer->Open("localhost",              // host
+                         HostProfile::MachineName, // client host determination
+                         "",                       // client host name
+                         false,                    // manual SSH port
+                         0,                        // ssh port
+                         false,                    // ssh tunnelling
+                         1,                        // num read sockets
+                         2);                       // num write sockets
+        }
+        CATCH(VisItException)
+        {
+            reverseLaunch = false;
+        }
+        ENDTRY
+    }
+    int reverse = reverseLaunch ? 1 : 0;
+#ifdef PARALLEL
+    // Make sure that all processors have the same value as the UI process.
+    MPI_Bcast((void *)&reverse, 1, MPI_INT, 0, VISIT_MPI_COMM);
+#endif
+    if(reverse == 0 && viewer != NULL)
+    {
+        delete viewer;
+        viewer = NULL;
+        reverseLaunch = false;
+    }
+
+    return reverseLaunch;
 }
 
 // ****************************************************************************
@@ -838,7 +1111,8 @@ Engine::GetInputSocket()
 //   Connects to the viewer.
 //
 // Arguments:
-//   viewer : The viewer object that we want to connect.
+//   argc : Pointer to the number of command line arguments.
+//   argv : Pointer to the command line arguments array.
 //
 // Returns:    True if we connect to the viewer, false otherwise.
 //
@@ -857,6 +1131,10 @@ Engine::GetInputSocket()
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Brad Whitlock, Thu Apr  9 12:07:22 PDT 2009
+//    I added support for reverse launching the viewer.
+//
 // ****************************************************************************
 
 bool
@@ -867,11 +1145,21 @@ Engine::ConnectViewer(int *argc, char **argv[])
     // Connect to the viewer.
     TRY
     {
+        if(ReverseLaunchViewer(argc, argv))
+        {
+            // The engine launched the viewer.
+            reverseLaunch = true;
+        }
+        else
+        {
+            // The viewer launched the engine
+            viewerP = new ParentProcess;
 #ifdef PARALLEL
-        theViewer.Connect(1, 2, argc, argv, PAR_UIProcess());
+            viewerP->Connect(1, 2, argc, argv, PAR_UIProcess());
 #else
-        theViewer.Connect(1, 2, argc, argv, true);
+            viewerP->Connect(1, 2, argc, argv, true);
 #endif
+        }
     }
     CATCH(IncompatibleVersionException)
     {
