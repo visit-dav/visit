@@ -985,7 +985,7 @@ void
 Engine::ExtractViewerArguments(int *argc, char **argv[])
 {
     char **ARGV = *argv;
-    for(int i = 0; i < *argc; ++i)
+    for(int i = 1; i < *argc; ++i)
     {
         int deleteCount = 0;
 
