@@ -1191,6 +1191,9 @@ function uncompress_untar
 #   Cyrus Harrison, Thu Feb 19 12:21:55 PST 2009                              #
 #   Fixed problem where if a download path was given, svn mode was skipped    #
 #                                                                             #
+#   Cyrus Harrison, Thu Apr  9 19:21:13 PDT 2009                              #
+#   Applied patch from Rick Wagner to fix curl downloads on OSX.              #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
@@ -1219,9 +1222,9 @@ function download_file
     if [[ "$1" == "" ]] ; then
         # If SVN was not requested or if it failed...
         if [[ "$dfile" == "$VISIT_FILE" ]] ; then
-            try_download_file https://wci.llnl.gov/codes/visit/$VISIT_VERSION/$dfile
+            try_download_file https://wci.llnl.gov/codes/visit/$VISIT_VERSION/$dfile $dfile
         else
-            try_download_file https://wci.llnl.gov/codes/visit/3rd_party/$dfile
+            try_download_file https://wci.llnl.gov/codes/visit/3rd_party/$dfile $dfile
         fi
         
         if [[ $? == 0 ]] ; then
@@ -1232,7 +1235,7 @@ function download_file
     # So, now try various places listed.
     # try all sites listed incl. falling back to visit's 3rd_party
     for site in $* https://wci.llnl.gov/codes/visit/3rd_party; do
-        try_download_file $site/$dfile 
+        try_download_file $site/$dfile $dfile
     if [[ $? == 0 ]] ; then
         return 0
     fi
@@ -1250,9 +1253,12 @@ function download_file
 # Programmer: Refactored from other sources (Mark C. Miller)
 # Creation: February 19, 2009
 #
-#  Cyrus Harrison, 
+#   Cyrus Harrison, Tue 24 Mar 13:44:31 PST 2009 
 #   As an extra guard, check that the downloaded file actually exisits. 
 #   (Firewalls can cause strange files to be created.)
+# 
+#   Cyrus Harrison, Thu Apr  9 19:21:13 PDT 2009
+#   Applied patch from Rick Wagner to fix curl downloads on OSX.
 #
 # *************************************************************************** 
 
@@ -1260,7 +1266,7 @@ function try_download_file
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
         # MaxOS X comes with curl
-        curl -ksfo $1
+        curl -ksfo $2 $1
     else
         check_wget
         if [[ $? != 0 ]] ; then
