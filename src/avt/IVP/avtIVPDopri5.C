@@ -463,6 +463,10 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion.    
 //
+//    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//    Put if statements in front of debug's.  The generation of strings to
+//    output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -480,7 +484,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
             t_max = -t_max;
     }
 
-    debug5<<"End= "<<end<<" t_max= "<<t_max<<endl;
+    if (debug5_real)
+        debug5<<"End= "<<end<<" t_max= "<<t_max<<endl;
     
     const double direction = sign( 1.0, t_max - t );
 
@@ -522,8 +527,9 @@ avtIVPDopri5::Step(const avtIVPField* field,
         // stepsize underflow?
         if( 0.1*std::abs(h) <= std::abs(t)*epsilon ) 
         {
-            debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
-                   << t << ", step size too small (h = " << h << ")\n";
+            if (debug5_real)
+                debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
+                       << t << ", step size too small (h = " << h << ")\n";
             return STEPSIZE_UNDERFLOW;
         }
 
@@ -536,8 +542,9 @@ avtIVPDopri5::Step(const avtIVPField* field,
 
         n_steps++;
 
-        debug5 << "\tavtIVPDopri5::step(): t = " << t << ", y = " << y 
-               << ", h = " << h << ", t+h = " << t+h << '\n';
+        if (debug5_real)
+            debug5 << "\tavtIVPDopri5::step(): t = " << t << ", y = " << y 
+                   << ", h = " << h << ", t+h = " << t+h << '\n';
 
         // perform stages
         y_new = y + h*a21*k1;
@@ -615,9 +622,10 @@ avtIVPDopri5::Step(const avtIVPField* field,
                 
                     if( iasti == 15 ) 
                     {
-                        debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
-                               << t << ", problem seems stiff (y = " << y 
-                               << ")\n";
+                        if (debug5_real)
+                            debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
+                                   << t << ", problem seems stiff (y = " << y 
+                                   << ")\n";
                         return STIFFNESS_DETECTED;
                     }
                 }
@@ -679,8 +687,9 @@ avtIVPDopri5::Step(const avtIVPField* field,
                 
             
             // normal exit
-            debug5 << "\tavtIVPDopri5::step(): normal exit, now at t = " 
-                   << t << ", y = " << y << ", h = " << h << '\n';
+            if (debug5_real)
+                debug5 << "\tavtIVPDopri5::step(): normal exit, now at t = " 
+                       << t << ", y = " << y << ", h = " << h << '\n';
             return OK;
         }
         else 
@@ -694,8 +703,9 @@ avtIVPDopri5::Step(const avtIVPField* field,
 
             h = h_new;
             
-            debug5 << "\tavtIVPDopri5::step(): step rejected, retry with h = "
-                   << h << '\n';
+            if (debug5_real)
+                debug5 << "\tavtIVPDopri5::step(): step rejected, retry with h = "
+                       << h << '\n';
         }
     }
 }
