@@ -236,6 +236,9 @@ EXCEPTION0(ImproperUseException); // didn't do this.
 //    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //    Check time bounds.
 //
+//    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//    Make sure to pass time along to the VTK module, as it now uses it.
+//
 // ****************************************************************************
 
 bool
@@ -245,7 +248,7 @@ avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
     avtVec param = pad(x,t);
 
     return (t >= time1 && t <= time2 &&
-            iv1->Evaluate(param.values(), y.values()));
+            iv1->Evaluate(param.values(), y.values()), t);
 }
 
 
