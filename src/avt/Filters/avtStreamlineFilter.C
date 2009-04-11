@@ -1679,6 +1679,11 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Use a single vtkVisItInterpolatedVelocity for pathlines, which means
 //   that cell locations are done once, not twice.
 //
+//   Hank Childs, Fri Apr 10 23:10:06 CDT 2009
+//   Correctly tell avtStreamline the end time.  It was giving correct
+//   results before, but it was doing many iterations to determine the end
+//   time, when it was possible to just specify the end time.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1695,14 +1700,6 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 
     // prepare streamline integration ingredients
     vtkVisItInterpolatedVelocityField* velocity1 = vtkVisItInterpolatedVelocityField::New();
-    if (doPathlines)
-    {
-        // Our expression will be the active variable, so reset it.
-        if (ds->GetPointData()->GetArray(pathlineVar.c_str()) != NULL)
-            ds->GetPointData()->SetActiveVectors(pathlineVar.c_str());
-        if (ds->GetCellData()->GetArray(pathlineVar.c_str()) != NULL)
-            ds->GetCellData()->SetActiveVectors(pathlineVar.c_str());
-    }
     
     // See if we have cell cenetered data...
     vtkCellDataToPointData *cellToPt1 = NULL;
@@ -1759,10 +1756,13 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
         result = slSeg->sl->Advance(&field,
                                     terminationType,
-                                    end,
+                                    (t2 < end ? t2 : end),
                                     doVorticity,
                                     haveGhostZones,
                                     bbox);
+        if (result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE)
+            if (t2 < end)
+                result = avtIVPSolver::OUTSIDE_DOMAIN; // outside in time
     }
     else
     {
