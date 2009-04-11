@@ -105,17 +105,23 @@ avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 //    Use a single vtkVisItInterpolatedVelocityField, which saves on
 //    computation.
 //
+//    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//    Put if statements in front of debug's.  The generation of strings to
+//    output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 avtVec
 avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
 {
-    debug5<<"Eval( "<<t<<", "<<x<<") = ";
+    if (debug5_real)
+        debug5<<"Eval( "<<t<<", "<<x<<") = ";
 
     // Check for inclusion in this time boundary.
     if (t < time1 || t > time2)
     {
-        debug5<<"  **OUT of TIME**\n";
+        if (debug5_real)
+            debug5<<"  **OUT of TIME**\n";
         throw Undefined();
     }
 
@@ -123,14 +129,16 @@ avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
     avtVec y1(x.dim()), param(pad(x,t)), y2(x.dim());
     if ( ! iv1->Evaluate(param.values(), y1.values(), t))
     {
-        debug5<<"  **OUT of BOUNDS**\n";
+        if (debug5_real)
+            debug5<<"  **OUT of BOUNDS**\n";
         throw Undefined();
     }
     
     avtVec y(x.dim());
     y = y1;
 
-    debug5<<"T= "<<t<<" ["<<time1<<" "<<time2<<"]"<<" Y1 = "<<y1<<" Y2= "<<y2<<" y= "<<y<<endl;
+    if (debug5_real)
+        debug5<<"T= "<<t<<" ["<<time1<<" "<<time2<<"]"<<" Y1 = "<<y1<<" Y2= "<<y2<<" y= "<<y<<endl;
 
     if ( normalized )
     {

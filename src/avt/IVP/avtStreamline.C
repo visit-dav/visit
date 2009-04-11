@@ -198,6 +198,10 @@ avtStreamline::Advance(const avtIVPField* field,
 //    seed point is close to boundary of domain.  Done in consultation with
 //    Christoph.
 //
+//    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//    Put if statements in front of debug's.  The generation of strings to
+//    output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -226,13 +230,16 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 
         try
         {
-            debug5<<"Step( mode= "<<termType<<" end= "<<end<<endl;
+            if (debug5_real)
+                debug5<<"Step( mode= "<<termType<<" end= "<<end<<endl;
             result = ivp->Step(field, termType, end, step);
-            debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
+            if (debug5_real)
+                debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
         }
         catch( avtIVPField::Undefined& )
         {
-            debug5<<ivp->GetCurrentY()<<" not in domain\n";
+            if (debug5_real)
+                debug5<<ivp->GetCurrentY()<<" not in domain\n";
             // integrator left the domain, retry with smaller step
             // if step size is below given minimum, give up
 
@@ -256,7 +263,8 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             {
                 delete step;
                 HandleGhostZones((end > 0.0), haveGhostZones, extents);
-                debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN\n";
+                if (debug5_real)
+                    debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN\n";
                 return avtIVPSolver::OUTSIDE_DOMAIN;            
             }
             
@@ -319,6 +327,10 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //    Dave Pugmire,  Tue Mar 31 17:08:29 EDT 2009
 //    Set the step's T value when leaping out.  
 //
+//    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//    Put if statements in front of debug's.  The generation of strings to
+//    output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 void
@@ -370,8 +382,10 @@ avtStreamline::HandleGhostZones(bool forward,
     dir /= len;
     double leapingDistance = minRange * 0.001;
 
-    debug5<< "Leaping: "<<leapingDistance<< " dir = "<<dir<<endl;
-    debug5<< "Leap: "<<pt;
+    if (debug5_real)
+        debug5<< "Leaping: "<<leapingDistance<< " dir = "<<dir<<endl;
+    if (debug5_real)
+        debug5<< "Leap: "<<pt;
     dir *= leapingDistance;
     avtVec newPt = pt + dir;
     _ivpSolver->SetCurrentY(newPt);
@@ -382,7 +396,8 @@ avtStreamline::HandleGhostZones(bool forward,
     else
         (*_steps.begin())->tEnd -= leapingDistance;
     
-    debug5<<" ==> "<<newPt<<" T: "<<_ivpSolver->GetCurrentT()<<endl;
+    if (debug5_real)
+        debug5<<" ==> "<<newPt<<" T: "<<_ivpSolver->GetCurrentT()<<endl;
 }
 
 
@@ -522,6 +537,10 @@ avtStreamline::PtEnd(avtVec &end)
 //    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //    Code cleanup: We no longer need fwd/bwd solvers.
 //
+//    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//    Put if statements in front of debug's.  The generation of strings to
+//    output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 void
@@ -541,7 +560,8 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     }
     else
     {
-        debug5 << "avtStreamline READ: listSz = " << _steps.size() <<endl;
+        if (debug5_real)
+            debug5 << "avtStreamline READ: listSz = " << _steps.size() <<endl;
         _steps.clear();
         size_t sz = 0;
         buff.io( mode, sz );
@@ -573,6 +593,7 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
         
         _ivpSolver = solver->Clone();
         _ivpSolver->PutState(solverState);
-    }
-    debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
+    }    
+    if (debug5_real)
+        debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
 }

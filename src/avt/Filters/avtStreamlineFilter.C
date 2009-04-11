@@ -306,6 +306,10 @@ avtStreamlineFilter::ComputeRankList(const vector<int> &domList,
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//   Put if statements in front of debug's.  The generation of strings to
+//   output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 void
@@ -321,7 +325,8 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
     slSeg->seedPtDomainList.resize(0);
     vector<int> doms;
     intervalTree->GetElementsListFromRange(xyz, xyz, doms);
-    debug5<<"SetDomain(): pt= "<<endPt<<" T= "<<t<<" step= "<<timeStep<<endl;
+    if (debug5_real)
+        debug5<<"SetDomain(): pt= "<<endPt<<" T= "<<t<<" step= "<<timeStep<<endl;
     for (int i = 0; i < doms.size(); i++)
         slSeg->seedPtDomainList.push_back(DomainType(doms[i], timeStep));
     slSeg->domain = DomainType(-1,0);
@@ -365,7 +370,8 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
     
     if (slSeg->seedPtDomainList.size() == 1)
         slSeg->domain = slSeg->seedPtDomainList[0];
-    debug5<<"SetDomain: "<<slSeg->domain<<endl;
+    if (debug5_real)
+        debug5<<"SetDomain: "<<slSeg->domain<<endl;
     /*
     debug1<<"::SetDomain() pt=["<<endPt.xyz[0]<<" "<<endPt.xyz[1]
           <<" "<<endPt.xyz[2]<<"] in domains: ";
@@ -403,10 +409,12 @@ vtkDataSet *
 avtStreamlineFilter::GetDomain(const DomainType &domain,
                                double X, double Y, double Z)
 {
-    debug5<<"avtStreamlineFilter::GetDomain("<<domain<<" "<<X<<" "<<Y<<" "<<Z<<");"<<endl;
+    if (debug5_real)
+        debug5<<"avtStreamlineFilter::GetDomain("<<domain<<" "<<X<<" "<<Y<<" "<<Z<<");"<<endl;
     vtkDataSet *ds = NULL;
 
-    debug5<<"OperatingOnDemand() = "<<OperatingOnDemand()<<endl;
+    if (debug5_real)
+        debug5<<"OperatingOnDemand() = "<<OperatingOnDemand()<<endl;
 
     if (OperatingOnDemand())
     {
@@ -449,7 +457,8 @@ avtStreamlineFilter::GetDomain(const DomainType &domain,
 
     }
     
-    debug5<<"GetDomain("<<domain<<") = "<<ds<<endl;
+    if (debug5_real)
+        debug5<<"GetDomain("<<domain<<") = "<<ds<<endl;
     return ds;
 }
 
@@ -476,7 +485,8 @@ avtStreamlineFilter::GetTimeStep(double &t) const
     {
         for (int i = 0; i < domainTimeIntervals.size(); i++)
         {
-            debug5<<" T= "<<t<<" in ["<<domainTimeIntervals[i][0]<<", "<<domainTimeIntervals[i][1]<<"] ?"<<endl;
+            if (debug5_real)
+                debug5<<" T= "<<t<<" in ["<<domainTimeIntervals[i][0]<<", "<<domainTimeIntervals[i][1]<<"] ?"<<endl;
             if (t >= domainTimeIntervals[i][0] &&
                 t < (domainTimeIntervals[i][1]))
             {
@@ -1213,6 +1223,10 @@ avtStreamlineFilter::Execute(void)
 //   Gunther H. Weber, Mon Apr  6 19:19:31 PDT 2009
 //   Initialize seedTime0 for streamline mode. 
 //
+//   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//   Put if statements in front of debug's.  The generation of strings to
+//   output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 void
@@ -1335,9 +1349,12 @@ avtStreamlineFilter::Initialize()
     cacheQLen = numDomains;
 #endif
 
-    debug5<< "Domain/Data setup:\n";
-    for (int i = 0; i < numDomains; i++)
-        debug5<<i<<": rank= "<< domainToRank[i]<<" ds= "<<dataSets[i]<<endl;
+    if (debug5_real)
+    {
+        debug5<< "Domain/Data setup:\n";
+        for (int i = 0; i < numDomains; i++)
+            debug5<<i<<": rank= "<< domainToRank[i]<<" ds= "<<dataSets[i]<<endl;
+    }
 
     // Some methods need random number generator.
     srand(2776724);
@@ -1350,7 +1367,8 @@ avtStreamlineFilter::Initialize()
         if (*dbp == NULL)
             EXCEPTION1(InvalidFilesException, db.c_str());
         avtDatabaseMetaData *md = dbp->GetMetaData(0);
-        debug5<<"Times: [";
+        if (debug5_real)
+            debug5<<"Times: [";
         for (int i = 0; i < md->GetTimes().size()-1; i++)
         {
             vector<double> intv(2);
@@ -1362,9 +1380,11 @@ avtStreamlineFilter::Initialize()
                 intv[1] = (double)i+1;
             }
             domainTimeIntervals.push_back(intv);
-            debug5<<" ("<<intv[0]<<", "<<intv[1]<<")";
+            if (debug5_real)
+                debug5<<" ("<<intv[0]<<", "<<intv[1]<<")";
         }
-        debug5<<"]"<<endl;
+        if (debug5_real)
+            debug5<<"]"<<endl;
         
         numTimeSteps = domainTimeIntervals.size();
         if (numTimeSteps == 1)
@@ -1437,12 +1457,17 @@ avtStreamlineFilter::Initialize()
 //   Fixed a problem where on demand with point-based lookups could not
 //   support multiple seedpoints.
 //
+//   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//   Put if statements in front of debug's.  The generation of strings to
+//   output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 bool
 avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
 {
-    debug5<< "avtStreamlineFilter::PointInDomain("<<pt<<", dom= "<<domain<<");\n";
+    if (debug5_real)
+        debug5<< "avtStreamlineFilter::PointInDomain("<<pt<<", dom= "<<domain<<");\n";
     vtkDataSet *ds = GetDomain(domain, pt.x, pt.y, pt.z);
 
     if (ds == NULL)
@@ -1459,7 +1484,8 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
     {
         double bbox[6];
         intervalTree->GetElementExtents(domain.domain, bbox);
-        debug5<<"[ "<<bbox[0]<<" "<<bbox[1]<<" ] [ "<<bbox[2]<<" "<<bbox[3]<<" ] [ "<<bbox[4]<<" "<<bbox[5]<<" ]"<<endl;
+        if (debug5_real)
+            debug5<<"[ "<<bbox[0]<<" "<<bbox[1]<<" ] [ "<<bbox[2]<<" "<<bbox[3]<<" ] [ "<<bbox[4]<<" "<<bbox[5]<<" ]"<<endl;
         if (pt.x < bbox[0] || pt.x > bbox[1] ||
             pt.y < bbox[2] || pt.y > bbox[3])
         {
@@ -1510,10 +1536,12 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
     int foundCell = -1, subId = 0;
     int success = cellLocator->FindClosestPointWithinRadius(p, rad, resPt, 
                                                        foundCell, subId, dist);
-    debug5<< "suc = "<<success<<" dist = "<<dist<<" resPt= ["<<resPt[0]
+    if (debug5_real)
+        debug5<< "suc = "<<success<<" dist = "<<dist<<" resPt= ["<<resPt[0]
           <<" "<<resPt[1]<<" "<<resPt[2]<<"]\n\n";
 
-    debug5<< "PointInDomain() = "<<(success?"TRUE":"FALSE")<<endl;
+    if (debug5_real)
+        debug5<< "PointInDomain() = "<<(success?"TRUE":"FALSE")<<endl;
     return (success == 1 ? true : false);
 }
 
@@ -1555,6 +1583,12 @@ avtStreamlineFilter::OwnDomain(DomainType &domain)
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
+//
+//  Modifications:
+//
+//   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//   Put if statements in front of debug's.  The generation of strings to
+//   output to debug was doubling the total integration time.
 //
 // ****************************************************************************
 
@@ -1602,18 +1636,21 @@ avtStreamlineFilter::ComputeDomainToRankMapping()
         }
 
 #ifdef PARALLEL
-        debug1<<"Sum across all procs\n";
+        if (debug5_real)
+            debug5<<"Sum across all procs\n";
         SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0], numDomains);
 #endif
 
         for (int i = 0; i < numDomains; i++)
         {
-            debug1<<"dom: "<<i<<": rank= "<<domainToRank[i]<<" ds= "<<dataSets[i] << endl;
+            if (debug5_real)
+                debug5<<"dom: "<<i<<": rank= "<<domainToRank[i]<<" ds= "<<dataSets[i] << endl;
         }
     }
 
     for (int i = 0; i < numDomains; i++)
-        debug1<<i<<": rank= "<< domainToRank[i]<<endl;
+        if (debug5_real)
+            debug5<<i<<": rank= "<< domainToRank[i]<<endl;
 
 #endif
 }
@@ -1695,7 +1732,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
     bool haveGhostZones = false; //(a.GetContainsGhostZones()==AVT_NO_GHOSTS ? false : true);
 
-    debug5<< "avtStreamlineFilter::IntegrateDomain(dom= "
+    if (debug5_real)
+        debug5<< "avtStreamlineFilter::IntegrateDomain(dom= "
           <<slSeg->domain<<") HGZ = "<<haveGhostZones <<endl;
 
     // prepare streamline integration ingredients
@@ -1815,7 +1853,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     if (cellToPt1)
         cellToPt1->Delete();
     
-    debug5<<"::IntegrateDomain() result= "<<result<<endl;
+    if (debug5_real)
+        debug5<<"::IntegrateDomain() result= "<<result<<endl;
     return result;
 }
 
@@ -1840,6 +1879,10 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 //   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
 //   Make changes for point decomposed domain databases.
 //
+//   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//   Put if statements in front of debug's.  The generation of strings to
+//   output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 void
@@ -1852,7 +1895,8 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
     slSeg->GetEndPoint(pt);
     vtkDataSet *ds = GetDomain(slSeg->domain, pt.x, pt.y, pt.z);
 
-    debug5 << "avtStreamlineFilter::IntegrateStreamline("<<pt<<" "<<slSeg->domain<<")"<<endl;
+    if (debug5_real)
+        debug5 << "avtStreamlineFilter::IntegrateStreamline("<<pt<<" "<<slSeg->domain<<")"<<endl;
 
     if (ds == NULL)
     {
@@ -1866,29 +1910,35 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
         double extents[6] = { 0.,0., 0.,0., 0.,0. };
         intervalTree->GetElementExtents(slSeg->domain.domain, extents);
         avtIVPSolver::Result result = IntegrateDomain(slSeg, ds, extents, maxSteps);
-        debug5<<"ISL: result= "<<result<<endl;
+        if (debug5_real)
+            debug5<<"ISL: result= "<<result<<endl;
 
         //SL exited this domain.
         if (slSeg->status == avtStreamlineWrapper::OUTOFBOUNDS)
         {
-            debug5<<"OOB: call set domain\n";
+            if (debug5_real)
+                debug5<<"OOB: call set domain\n";
             SetDomain(slSeg);
         }
         //SL terminates.
         else
         {
-            debug5<<"Terminate!\n";
-            debug5<<avtIVPSolver::OK<<endl;
-            debug5<<avtIVPSolver::TERMINATE<<endl;
-            debug5<<avtIVPSolver::OUTSIDE_DOMAIN<<endl;
+            if (debug5_real)
+            {
+                debug5<<"Terminate!\n";
+                debug5<<avtIVPSolver::OK<<endl;
+                debug5<<avtIVPSolver::TERMINATE<<endl;
+                debug5<<avtIVPSolver::OUTSIDE_DOMAIN<<endl;
+            }
             slSeg->status = avtStreamlineWrapper::TERMINATE;
             slSeg->domain.domain = -1;
             slSeg->domain.timeStep = -1;
         }
     }
     
-    debug5 << "   IntegrateStreamline DONE: status = " << (slSeg->status==avtStreamlineWrapper::TERMINATE ? "TERMINATE" : "OOB")
-           << " domCnt= "<<slSeg->seedPtDomainList.size()<<endl;
+    if (debug5_real)
+        debug5 << "   IntegrateStreamline DONE: status = " << (slSeg->status==avtStreamlineWrapper::TERMINATE ? "TERMINATE" : "OOB")
+               << " domCnt= "<<slSeg->seedPtDomainList.size()<<endl;
 }
 
 // ****************************************************************************
@@ -2121,6 +2171,10 @@ randMinus1_1()
 //   Change seedTimeStep0 to seedTime0 (integers were mistakenly being
 //   send in as doubles).
 //
+//   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
+//   Put if statements in front of debug's.  The generation of strings to
+//   output to debug was doubling the total integration time.
+//
 // ****************************************************************************
 
 void
@@ -2325,10 +2379,13 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
                 continue;
         }
 
-        debug5<<"Candidate pt: "<<i<<" "<<candidatePts[i];
-        debug5<<" id= "<<i<<" dom =[";
-        for (int j = 0; j < dl.size();j++)debug5<<dl[j]<<", ";
-        debug5<<"]\n";
+        if (debug5_real)
+        {
+            debug5<<"Candidate pt: "<<i<<" "<<candidatePts[i];
+            debug5<<" id= "<<i<<" dom =[";
+            for (int j = 0; j < dl.size();j++)debug5<<dl[j]<<", ";
+            debug5<<"]\n";
+        }
         
         // Add seed for each domain/pt. At this point, we don't know where 
         // the pt belongs....
