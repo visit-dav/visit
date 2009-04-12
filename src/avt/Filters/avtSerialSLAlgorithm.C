@@ -164,6 +164,13 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
 //   Make changes for point decomposed domain databases.
 //
+//   Hank Childs, Sat Apr 11 23:18:32 CDT 2009
+//   Make an explicit call to GetDomain before calling IntegrateStreamline.
+//   If we don't make this call, IntegrateStreamline will call GetDomain for 
+//   us.  But by calling it explicitly, it goes through the avtSLAlgorithm
+//   bookkeeping logic, meaning that I/O will correctly be counted as I/O,
+//   instead of being rolled in with integration time.
+//
 // ****************************************************************************
 
 void
@@ -182,6 +189,15 @@ avtSerialSLAlgorithm::Execute()
 
             if (DomainLoaded(s->domain))
             {
+#ifndef PARALLEL
+                // In serial, we return that every domain is loaded.
+                // That's basically okay.
+                // But it screws up time reporting, because the domain isn't
+                // loaded until IntegrateStreamline calls GetDomain.
+                // So call it explicitly first, so I/O can be correctly 
+                // counted.
+                GetDomain(s);
+#endif
                 IntegrateStreamline(s);
                 if (s->status == avtStreamlineWrapper::TERMINATE)
                     terminatedSLs.push_back(s);
