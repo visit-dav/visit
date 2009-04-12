@@ -102,14 +102,16 @@ avtDatasetOnDemandFilter::avtDatasetOnDemandFilter()
 //    Gunther H. Weber, Fri Apr  3 17:37:18 PDT 2009
 //    Moved vtkCellLocator from map to DomainCacheEntry data structure.
 //
+//    Hank Childs, Sat Apr 11 23:27:56 CDT 2009
+//    Remove some Delete calls, as they are now handled by the 
+//    DomainCacheEntry struct directly.
+//
 // ****************************************************************************
 
 avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 {
     while ( ! domainQueue.empty() )
     {
-        domainQueue.front().ds->Delete();
-        if (domainQueue.front().cl) domainQueue.front().cl->Delete();
         domainQueue.pop_front();
     }
 }
@@ -144,6 +146,10 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 //    Dave Pugmire, Sat Mar 28 09:42:15 EDT 2009
 //    Counter to keep track of how many times a domain is loaded.
 //
+//    Hank Childs, Sat Apr 11 23:27:56 CDT 2009
+//    Remove some Delete calls, as they are now handled by the 
+//    DomainCacheEntry struct directly.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -165,10 +171,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
             it->timeStep == timeStep)
         {
             DomainCacheEntry entry;
-            entry.ds = it->ds;
-            entry.domainID = it->domainID;
-            entry.timeStep = timeStep;
-
+            entry = *it;
             //Remove, then move to front.
             domainQueue.erase( it );
             domainQueue.push_front( entry );
@@ -210,10 +213,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     domainQueue.push_front(entry);
     if ( domainQueue.size() > maxQueueLength )
     {
-        vtkDataSet *purgeDS = domainQueue.back().ds;
-        int purgeDomainID = domainQueue.back().domainID;
         domainQueue.pop_back();
-        purgeDS->Delete();
         purgeDSCount++;
     }
 
@@ -238,6 +238,10 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
 //    for all requests of data around points, using a map from the domain id
 //    to a cell locator would not have worked. Thus, I moved the entry to
 //    the DataCacheEntry instead.
+//
+//    Hank Childs, Sat Apr 11 23:27:56 CDT 2009
+//    Remove some Delete calls, as they are now handled by the 
+//    DomainCacheEntry struct directly.
 //
 // ****************************************************************************
 
@@ -313,9 +317,7 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
             {
                 debug5<<"Found data in cace, returning cache entry " << foundPos << std::endl;
                 DomainCacheEntry entry;
-                entry.ds = it->ds;
-                entry.domainID = it->domainID;
-                entry.timeStep = timeStep;
+                entry = *it;
 
                 //Remove, then move to front.
                 domainQueue.erase( it );
@@ -347,18 +349,14 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
     entry.domainID = domainId;
     entry.timeStep = timeStep;
     entry.ds = rv;
-    entry.cl = 0;
+    entry.cl = NULL;
     rv->Register(NULL);
     loadDSCount++;
 
     domainQueue.push_front(entry);
     if ( domainQueue.size() > maxQueueLength )
     {
-        if (domainQueue.back().cl) domainQueue.back().cl->Delete();
-        vtkDataSet *purgeDS = domainQueue.back().ds;
-        int purgeDomainID = domainQueue.back().domainID;
         domainQueue.pop_back();
-        purgeDS->Delete();
         purgeDSCount++;
     }
 
