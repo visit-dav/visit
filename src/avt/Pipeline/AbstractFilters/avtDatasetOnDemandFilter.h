@@ -48,8 +48,10 @@
 #include <avtDatasetToDatasetFilter.h>
 #include <list>
 
+#include <vtkDataSet.h>
+#include <vtkVisItCellLocator.h>
+
 class  avtExtents;
-class vtkVisItCellLocator;
 
 // ****************************************************************************
 //  Class: avtDatasetOnDemandFilter
@@ -66,6 +68,9 @@ class vtkVisItCellLocator;
 //    is set to 0 (because if the value is different from 0 the destructor
 //    of avtDatasetOnDemandFilter will call Delete() on it.
 //
+//    Hank Childs, Sat Apr 11 23:26:01 CDT 2009
+//    Overhaul how reference counting is done to fix a memory leak with caching.
+//
 // **************************************************************************** 
 
 struct DomainCacheEntry
@@ -75,6 +80,20 @@ struct DomainCacheEntry
     vtkVisItCellLocator* cl;
 
     DomainCacheEntry() : ds(0), timeStep(-1), cl(0) {}
+    ~DomainCacheEntry() 
+           { if (ds != NULL) ds->Delete(); if (cl!= NULL) cl->Delete(); };
+    DomainCacheEntry(const DomainCacheEntry &dce) 
+           { ds = dce.ds; if (ds!=NULL) ds->Register(NULL);
+             cl = dce.cl; if (cl!=NULL) cl->Register(NULL);
+             domainID = dce.domainID; timeStep = dce.timeStep; };
+    DomainCacheEntry       &operator=(const DomainCacheEntry &dce) 
+           {  if (ds != NULL) ds->Delete(); 
+              if (cl != NULL) cl->Delete(); 
+              ds = dce.ds; if (ds!=NULL) ds->Register(NULL);
+              cl = dce.cl; if (cl!=NULL) cl->Register(NULL);
+              domainID = dce.domainID; timeStep = dce.timeStep; 
+              return *this; 
+           };
 };
 
 
