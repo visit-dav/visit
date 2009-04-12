@@ -248,7 +248,7 @@ avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
     avtVec param = pad(x,t);
 
     return (t >= time1 && t <= time2 &&
-            iv1->Evaluate(param.values(), y.values()), t);
+            iv1->Evaluate(param.values(), y.values(), t) );
 }
 
 
