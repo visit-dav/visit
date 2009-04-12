@@ -122,6 +122,9 @@
 //    Dave Pugmire, Mon Feb 23 13:29:49 EST 2009
 //    Added LookupTimer.
 //    
+//    Hank Childs, Sat Apr 11 23:41:27 CDT 2009
+//    Add mode for NoOutputs.
+//
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -151,8 +154,8 @@ class MISC_API TimingsManager
     void                       DumpTimings(ostream &);
 
     void                       WithholdOutput(bool);
+    void                       NeverOutput(bool);
     void                       OutputAllTimings();
-
 
   protected:
     std::string                filename;
@@ -160,6 +163,7 @@ class MISC_API TimingsManager
     int                        numCurrentTimings;
     bool                       enabled;
     bool                       withholdOutput;
+    bool                       neverOutput;
     bool                       outputAllTimings;
 
     std::vector<double>        times;

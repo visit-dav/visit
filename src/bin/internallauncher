@@ -799,6 +799,12 @@ $fullusage = "$usage
                              Withhold timing output during execution. Prevents
                              output of timing information from affecting
                              performance.
+        -never-output-timings
+                             Never output timings files.  This is used when
+                             you want the timer to be enabled (for usage by
+                             developers to measure inner loops), but you
+                             want to avoid blowing memory with the bookkeeping
+                             for each and every timing call.
         -timing-processor-stride N
                              Have only every Nth processor output timing info.
                              Prevents overwhelming parallel file systems.

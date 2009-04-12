@@ -1583,6 +1583,9 @@ Engine::ProcessInput()
 //    Tom Fogal, Mon Aug 11 11:40:57 EDT 2008
 //    Add `n-gpus-per-node' command line parameter.
 //
+//    Hank Childs, Sat Apr 11 23:41:27 CDT 2009
+//    Added -never-output-timings flag.
+//
 // ****************************************************************************
 
 void
@@ -1649,6 +1652,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-withhold-timing-output") == 0)
             visitTimer->WithholdOutput(true);
+        else if (strcmp(argv[i], "-never-output-timings") == 0)
+            visitTimer->NeverOutput(true);
         else if (strcmp(argv[i], "-timeout") == 0)
         {
             if (i+1 < argc)
