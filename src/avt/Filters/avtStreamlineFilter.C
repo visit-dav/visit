@@ -1721,6 +1721,10 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   results before, but it was doing many iterations to determine the end
 //   time, when it was possible to just specify the end time.
 //
+//   Hank Childs, Sun Apr 12 17:32:31 PDT 2009
+//   Fix problem with streamlines not getting communicated to the right
+//   processor in parallel.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1828,7 +1832,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
             slSeg->status = avtStreamlineWrapper::TERMINATE;
 
         // We are in the same domain.
-        else if (slSeg->seedPtDomainList.size() == 1)
+        else if (slSeg->seedPtDomainList.size() >= 1)
         {
             // pathline terminates if timestep is out of bounds.
             if (doPathlines && slSeg->domain.timeStep == -1)
@@ -1843,8 +1847,6 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                 slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
             }
         }
-        else
-            slSeg->status = avtStreamlineWrapper::TERMINATE;
     }
     else
         slSeg->status = avtStreamlineWrapper::TERMINATE;
