@@ -122,6 +122,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeUpAxis[0] = 0;
         planeUpAxis[1] = 1;
         planeUpAxis[2] = 0;
+        planeRadius = 1;
+        pointDensity = 1;
+        colorTableName = new String("Default");
+        singleColor = new ColorAttribute(0, 0, 0);
         legendFlag = true;
         lightingFlag = true;
         relTol = 0.0001;
@@ -130,10 +134,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         showStreamlines = false;
         showPoints = false;
-        pointDensity = 1;
-        sourceRadius = 1;
-        colorTableName = new String("Default");
-        singleColor = new ColorAttribute(0, 0, 0);
         NumberPlanes = 1;
         ColorStyle = COLORSTYLETYPE_SAFETYFACTOR;
         MaxToroidalWinding = 30;
@@ -184,6 +184,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeUpAxis[1] = obj.planeUpAxis[1];
         planeUpAxis[2] = obj.planeUpAxis[2];
 
+        planeRadius = obj.planeRadius;
+        pointDensity = obj.pointDensity;
+        colorTableName = new String(obj.colorTableName);
+        singleColor = new ColorAttribute(obj.singleColor);
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
         relTol = obj.relTol;
@@ -192,10 +196,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         integrationType = obj.integrationType;
         showStreamlines = obj.showStreamlines;
         showPoints = obj.showPoints;
-        pointDensity = obj.pointDensity;
-        sourceRadius = obj.sourceRadius;
-        colorTableName = new String(obj.colorTableName);
-        singleColor = new ColorAttribute(obj.singleColor);
         NumberPlanes = obj.NumberPlanes;
         ColorStyle = obj.ColorStyle;
         MaxToroidalWinding = obj.MaxToroidalWinding;
@@ -253,6 +253,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 planeOrigin_equal &&
                 planeNormal_equal &&
                 planeUpAxis_equal &&
+                (planeRadius == obj.planeRadius) &&
+                (pointDensity == obj.pointDensity) &&
+                (colorTableName.equals(obj.colorTableName)) &&
+                (singleColor == obj.singleColor) &&
                 (legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
                 (relTol == obj.relTol) &&
@@ -261,10 +265,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (integrationType == obj.integrationType) &&
                 (showStreamlines == obj.showStreamlines) &&
                 (showPoints == obj.showPoints) &&
-                (pointDensity == obj.pointDensity) &&
-                (sourceRadius == obj.sourceRadius) &&
-                (colorTableName.equals(obj.colorTableName)) &&
-                (singleColor == obj.singleColor) &&
                 (NumberPlanes == obj.NumberPlanes) &&
                 (ColorStyle == obj.ColorStyle) &&
                 (MaxToroidalWinding == obj.MaxToroidalWinding) &&
@@ -394,75 +394,75 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(8);
     }
 
-    public void SetLegendFlag(boolean legendFlag_)
+    public void SetPlaneRadius(double planeRadius_)
     {
-        legendFlag = legendFlag_;
+        planeRadius = planeRadius_;
         Select(9);
-    }
-
-    public void SetLightingFlag(boolean lightingFlag_)
-    {
-        lightingFlag = lightingFlag_;
-        Select(10);
-    }
-
-    public void SetRelTol(double relTol_)
-    {
-        relTol = relTol_;
-        Select(11);
-    }
-
-    public void SetAbsTol(double absTol_)
-    {
-        absTol = absTol_;
-        Select(12);
-    }
-
-    public void SetTerminationType(int terminationType_)
-    {
-        terminationType = terminationType_;
-        Select(13);
-    }
-
-    public void SetIntegrationType(int integrationType_)
-    {
-        integrationType = integrationType_;
-        Select(14);
-    }
-
-    public void SetShowStreamlines(boolean showStreamlines_)
-    {
-        showStreamlines = showStreamlines_;
-        Select(15);
-    }
-
-    public void SetShowPoints(boolean showPoints_)
-    {
-        showPoints = showPoints_;
-        Select(16);
     }
 
     public void SetPointDensity(int pointDensity_)
     {
         pointDensity = pointDensity_;
-        Select(17);
-    }
-
-    public void SetSourceRadius(double sourceRadius_)
-    {
-        sourceRadius = sourceRadius_;
-        Select(18);
+        Select(10);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(19);
+        Select(11);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
+        Select(12);
+    }
+
+    public void SetLegendFlag(boolean legendFlag_)
+    {
+        legendFlag = legendFlag_;
+        Select(13);
+    }
+
+    public void SetLightingFlag(boolean lightingFlag_)
+    {
+        lightingFlag = lightingFlag_;
+        Select(14);
+    }
+
+    public void SetRelTol(double relTol_)
+    {
+        relTol = relTol_;
+        Select(15);
+    }
+
+    public void SetAbsTol(double absTol_)
+    {
+        absTol = absTol_;
+        Select(16);
+    }
+
+    public void SetTerminationType(int terminationType_)
+    {
+        terminationType = terminationType_;
+        Select(17);
+    }
+
+    public void SetIntegrationType(int integrationType_)
+    {
+        integrationType = integrationType_;
+        Select(18);
+    }
+
+    public void SetShowStreamlines(boolean showStreamlines_)
+    {
+        showStreamlines = showStreamlines_;
+        Select(19);
+    }
+
+    public void SetShowPoints(boolean showPoints_)
+    {
+        showPoints = showPoints_;
         Select(20);
     }
 
@@ -530,6 +530,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public double[]       GetPlaneOrigin() { return planeOrigin; }
     public double[]       GetPlaneNormal() { return planeNormal; }
     public double[]       GetPlaneUpAxis() { return planeUpAxis; }
+    public double         GetPlaneRadius() { return planeRadius; }
+    public int            GetPointDensity() { return pointDensity; }
+    public String         GetColorTableName() { return colorTableName; }
+    public ColorAttribute GetSingleColor() { return singleColor; }
     public boolean        GetLegendFlag() { return legendFlag; }
     public boolean        GetLightingFlag() { return lightingFlag; }
     public double         GetRelTol() { return relTol; }
@@ -538,10 +542,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetIntegrationType() { return integrationType; }
     public boolean        GetShowStreamlines() { return showStreamlines; }
     public boolean        GetShowPoints() { return showPoints; }
-    public int            GetPointDensity() { return pointDensity; }
-    public double         GetSourceRadius() { return sourceRadius; }
-    public String         GetColorTableName() { return colorTableName; }
-    public ColorAttribute GetSingleColor() { return singleColor; }
     public int            GetNumberPlanes() { return NumberPlanes; }
     public int            GetColorStyle() { return ColorStyle; }
     public int            GetMaxToroidalWinding() { return MaxToroidalWinding; }
@@ -574,29 +574,29 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(8, buf))
             buf.WriteDoubleArray(planeUpAxis);
         if(WriteSelect(9, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteDouble(planeRadius);
         if(WriteSelect(10, buf))
-            buf.WriteBool(lightingFlag);
-        if(WriteSelect(11, buf))
-            buf.WriteDouble(relTol);
-        if(WriteSelect(12, buf))
-            buf.WriteDouble(absTol);
-        if(WriteSelect(13, buf))
-            buf.WriteInt(terminationType);
-        if(WriteSelect(14, buf))
-            buf.WriteInt(integrationType);
-        if(WriteSelect(15, buf))
-            buf.WriteBool(showStreamlines);
-        if(WriteSelect(16, buf))
-            buf.WriteBool(showPoints);
-        if(WriteSelect(17, buf))
             buf.WriteInt(pointDensity);
-        if(WriteSelect(18, buf))
-            buf.WriteDouble(sourceRadius);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(11, buf))
             buf.WriteString(colorTableName);
-        if(WriteSelect(20, buf))
+        if(WriteSelect(12, buf))
             singleColor.Write(buf);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(legendFlag);
+        if(WriteSelect(14, buf))
+            buf.WriteBool(lightingFlag);
+        if(WriteSelect(15, buf))
+            buf.WriteDouble(relTol);
+        if(WriteSelect(16, buf))
+            buf.WriteDouble(absTol);
+        if(WriteSelect(17, buf))
+            buf.WriteInt(terminationType);
+        if(WriteSelect(18, buf))
+            buf.WriteInt(integrationType);
+        if(WriteSelect(19, buf))
+            buf.WriteBool(showStreamlines);
+        if(WriteSelect(20, buf))
+            buf.WriteBool(showPoints);
         if(WriteSelect(21, buf))
             buf.WriteInt(NumberPlanes);
         if(WriteSelect(22, buf))
@@ -652,41 +652,41 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 SetPlaneUpAxis(buf.ReadDoubleArray());
                 break;
             case 9:
-                SetLegendFlag(buf.ReadBool());
+                SetPlaneRadius(buf.ReadDouble());
                 break;
             case 10:
-                SetLightingFlag(buf.ReadBool());
-                break;
-            case 11:
-                SetRelTol(buf.ReadDouble());
-                break;
-            case 12:
-                SetAbsTol(buf.ReadDouble());
-                break;
-            case 13:
-                SetTerminationType(buf.ReadInt());
-                break;
-            case 14:
-                SetIntegrationType(buf.ReadInt());
-                break;
-            case 15:
-                SetShowStreamlines(buf.ReadBool());
-                break;
-            case 16:
-                SetShowPoints(buf.ReadBool());
-                break;
-            case 17:
                 SetPointDensity(buf.ReadInt());
                 break;
-            case 18:
-                SetSourceRadius(buf.ReadDouble());
-                break;
-            case 19:
+            case 11:
                 SetColorTableName(buf.ReadString());
                 break;
-            case 20:
+            case 12:
                 singleColor.Read(buf);
-                Select(20);
+                Select(12);
+                break;
+            case 13:
+                SetLegendFlag(buf.ReadBool());
+                break;
+            case 14:
+                SetLightingFlag(buf.ReadBool());
+                break;
+            case 15:
+                SetRelTol(buf.ReadDouble());
+                break;
+            case 16:
+                SetAbsTol(buf.ReadDouble());
+                break;
+            case 17:
+                SetTerminationType(buf.ReadInt());
+                break;
+            case 18:
+                SetIntegrationType(buf.ReadInt());
+                break;
+            case 19:
+                SetShowStreamlines(buf.ReadBool());
+                break;
+            case 20:
+                SetShowPoints(buf.ReadBool());
                 break;
             case 21:
                 SetNumberPlanes(buf.ReadInt());
@@ -738,6 +738,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + doubleArrayToString("planeOrigin", planeOrigin, indent) + "\n";
         str = str + doubleArrayToString("planeNormal", planeNormal, indent) + "\n";
         str = str + doubleArrayToString("planeUpAxis", planeUpAxis, indent) + "\n";
+        str = str + doubleToString("planeRadius", planeRadius, indent) + "\n";
+        str = str + intToString("pointDensity", pointDensity, indent) + "\n";
+        str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         str = str + doubleToString("relTol", relTol, indent) + "\n";
@@ -758,10 +762,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + boolToString("showStreamlines", showStreamlines, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
-        str = str + intToString("pointDensity", pointDensity, indent) + "\n";
-        str = str + doubleToString("sourceRadius", sourceRadius, indent) + "\n";
-        str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
-        str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + intToString("NumberPlanes", NumberPlanes, indent) + "\n";
         str = str + indent + "ColorStyle = ";
         if(ColorStyle == COLORSTYLETYPE_ORIGINALVALUE)
@@ -818,6 +818,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private double[]       planeOrigin;
     private double[]       planeNormal;
     private double[]       planeUpAxis;
+    private double         planeRadius;
+    private int            pointDensity;
+    private String         colorTableName;
+    private ColorAttribute singleColor;
     private boolean        legendFlag;
     private boolean        lightingFlag;
     private double         relTol;
@@ -826,10 +830,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            integrationType;
     private boolean        showStreamlines;
     private boolean        showPoints;
-    private int            pointDensity;
-    private double         sourceRadius;
-    private String         colorTableName;
-    private ColorAttribute singleColor;
     private int            NumberPlanes;
     private int            ColorStyle;
     private int            MaxToroidalWinding;

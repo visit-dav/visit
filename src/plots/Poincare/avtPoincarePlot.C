@@ -325,7 +325,6 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
     poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
     poincareFilter->SetShowStart(false);
-    poincareFilter->SetRadius(atts.GetSourceRadius());
     poincareFilter->SetPointDensity(atts.GetPointDensity());
     poincareFilter->SetStreamlineDirection(0);
     poincareFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
@@ -347,7 +346,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         poincareFilter->SetPlaneSource(atts.GetPlaneOrigin(),
                                        atts.GetPlaneNormal(),
                                        atts.GetPlaneUpAxis(),
-                                       atts.GetSourceRadius());
+                                       atts.GetPlaneRadius());
         break;
     }
 

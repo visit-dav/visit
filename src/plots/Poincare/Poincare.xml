@@ -81,6 +81,21 @@
         1.000000
         0.000000
       </Field>
+      <Field name="planeRadius" label="Plane radius" type="double" enabler="sourceType:SpecifiedPlane">
+        1.000000
+      </Field>
+      <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine,SpecifiedPlane">
+        1
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="singleColor" label="Single color" type="color" length="4">
+        0
+        0
+        0
+        255
+      </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
@@ -104,21 +119,6 @@
       </Field>
       <Field name="showPoints" label="Show Points" type="bool">
         false
-      </Field>
-      <Field name="pointDensity" label="Point Density" type="int" enabler="sourceType:SpecifiedLine,SpecifiedPlane">
-        1
-      </Field>
-      <Field name="sourceRadius" label="Source Radius" type="double" enabler="sourceType:SpecifiedPlane">
-        1.000000
-      </Field>
-      <Field name="colorTableName" label="Color table" type="colortable">
-        Default
-      </Field>
-      <Field name="singleColor" label="Single color" type="color" length="4">
-        0
-        0
-        0
-        255
       </Field>
       <Field name="NumberPlanes" label="NumberPlanes" type="int">
         1

@@ -204,32 +204,60 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(planeUpAxisProcessText()));
     mainLayout->addWidget(planeUpAxis, 8,1);
 
+    planeRadiusLabel = new QLabel(tr("Plane radius"), central);
+    mainLayout->addWidget(planeRadiusLabel,9,0);
+    planeRadius = new QLineEdit(central);
+    connect(planeRadius, SIGNAL(returnPressed()),
+            this, SLOT(planeRadiusProcessText()));
+    mainLayout->addWidget(planeRadius, 9,1);
+
+    pointDensityLabel = new QLabel(tr("Point density"), central);
+    mainLayout->addWidget(pointDensityLabel,10,0);
+    pointDensity = new QLineEdit(central);
+    connect(pointDensity, SIGNAL(returnPressed()),
+            this, SLOT(pointDensityProcessText()));
+    mainLayout->addWidget(pointDensity, 10,1);
+
+    colorTableNameLabel = new QLabel(tr("Color table"), central);
+    mainLayout->addWidget(colorTableNameLabel,11,0);
+    colorTableName = new QvisColorTableButton(central);
+    connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
+            this, SLOT(colorTableNameChanged(bool, const QString&)));
+    mainLayout->addWidget(colorTableName, 11,1);
+
+    singleColorLabel = new QLabel(tr("Single color"), central);
+    mainLayout->addWidget(singleColorLabel,12,0);
+    singleColor = new QvisColorButton(central);
+    connect(singleColor, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(singleColorChanged(const QColor&)));
+    mainLayout->addWidget(singleColor, 12,1);
+
     legendFlag = new QCheckBox(tr("Legend"), central);
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
-    mainLayout->addWidget(legendFlag, 9,0);
+    mainLayout->addWidget(legendFlag, 13,0);
 
     lightingFlag = new QCheckBox(tr("Lighting"), central);
     connect(lightingFlag, SIGNAL(toggled(bool)),
             this, SLOT(lightingFlagChanged(bool)));
-    mainLayout->addWidget(lightingFlag, 10,0);
+    mainLayout->addWidget(lightingFlag, 14,0);
 
     relTolLabel = new QLabel(tr("rel. tolerance"), central);
-    mainLayout->addWidget(relTolLabel,11,0);
+    mainLayout->addWidget(relTolLabel,15,0);
     relTol = new QLineEdit(central);
     connect(relTol, SIGNAL(returnPressed()),
             this, SLOT(relTolProcessText()));
-    mainLayout->addWidget(relTol, 11,1);
+    mainLayout->addWidget(relTol, 15,1);
 
     absTolLabel = new QLabel(tr("abs. tolerance"), central);
-    mainLayout->addWidget(absTolLabel,12,0);
+    mainLayout->addWidget(absTolLabel,16,0);
     absTol = new QLineEdit(central);
     connect(absTol, SIGNAL(returnPressed()),
             this, SLOT(absTolProcessText()));
-    mainLayout->addWidget(absTol, 12,1);
+    mainLayout->addWidget(absTol, 16,1);
 
     terminationTypeLabel = new QLabel(tr("Termination Type"), central);
-    mainLayout->addWidget(terminationTypeLabel,13,0);
+    mainLayout->addWidget(terminationTypeLabel,17,0);
     terminationType = new QWidget(central);
     terminationTypeButtonGroup= new QButtonGroup(terminationType);
     QHBoxLayout *terminationTypeLayout = new QHBoxLayout(terminationType);
@@ -246,10 +274,10 @@ QvisPoincarePlotWindow::CreateWindowContents()
     terminationTypeLayout->addWidget(terminationTypeTerminationTypeStep);
     connect(terminationTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(terminationTypeChanged(int)));
-    mainLayout->addWidget(terminationType, 13,1);
+    mainLayout->addWidget(terminationType, 17,1);
 
     integrationTypeLabel = new QLabel(tr("Integrator"), central);
-    mainLayout->addWidget(integrationTypeLabel,14,0);
+    mainLayout->addWidget(integrationTypeLabel,18,0);
     integrationType = new QWidget(central);
     integrationTypeButtonGroup= new QButtonGroup(integrationType);
     QHBoxLayout *integrationTypeLayout = new QHBoxLayout(integrationType);
@@ -263,45 +291,17 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationTypeLayout->addWidget(integrationTypeIntegrationTypeAdamsBashforth);
     connect(integrationTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(integrationTypeChanged(int)));
-    mainLayout->addWidget(integrationType, 14,1);
+    mainLayout->addWidget(integrationType, 18,1);
 
     showStreamlines = new QCheckBox(tr("Show Streamlines"), central);
     connect(showStreamlines, SIGNAL(toggled(bool)),
             this, SLOT(showStreamlinesChanged(bool)));
-    mainLayout->addWidget(showStreamlines, 15,0);
+    mainLayout->addWidget(showStreamlines, 19,0);
 
     showPoints = new QCheckBox(tr("Show Points"), central);
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
-    mainLayout->addWidget(showPoints, 16,0);
-
-    pointDensityLabel = new QLabel(tr("Point Density"), central);
-    mainLayout->addWidget(pointDensityLabel,17,0);
-    pointDensity = new QLineEdit(central);
-    connect(pointDensity, SIGNAL(returnPressed()),
-            this, SLOT(pointDensityProcessText()));
-    mainLayout->addWidget(pointDensity, 17,1);
-
-    sourceRadiusLabel = new QLabel(tr("Source Radius"), central);
-    mainLayout->addWidget(sourceRadiusLabel,18,0);
-    sourceRadius = new QLineEdit(central);
-    connect(sourceRadius, SIGNAL(returnPressed()),
-            this, SLOT(sourceRadiusProcessText()));
-    mainLayout->addWidget(sourceRadius, 18,1);
-
-    colorTableNameLabel = new QLabel(tr("Color table"), central);
-    mainLayout->addWidget(colorTableNameLabel,19,0);
-    colorTableName = new QvisColorTableButton(central);
-    connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
-            this, SLOT(colorTableNameChanged(bool, const QString&)));
-    mainLayout->addWidget(colorTableName, 19,1);
-
-    singleColorLabel = new QLabel(tr("Single color"), central);
-    mainLayout->addWidget(singleColorLabel,20,0);
-    singleColor = new QvisColorButton(central);
-    connect(singleColor, SIGNAL(selectedColor(const QColor&)),
-            this, SLOT(singleColorChanged(const QColor&)));
-    mainLayout->addWidget(singleColor, 20,1);
+    mainLayout->addWidget(showPoints, 20,0);
 
     NumberPlanesLabel = new QLabel(tr("NumberPlanes"), central);
     mainLayout->addWidget(NumberPlanesLabel,21,0);
@@ -528,6 +528,18 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
                 if(planeUpAxisLabel)
                     planeUpAxisLabel->setEnabled(false);
             }
+            if (atts->GetSourceType() == PoincareAttributes::SpecifiedPlane)
+            {
+                planeRadius->setEnabled(true);
+                if(planeRadiusLabel)
+                    planeRadiusLabel->setEnabled(true);
+            }
+            else
+            {
+                planeRadius->setEnabled(false);
+                if(planeRadiusLabel)
+                    planeRadiusLabel->setEnabled(false);
+            }
             if (atts->GetSourceType() == PoincareAttributes::SpecifiedLine || atts->GetSourceType() == PoincareAttributes::SpecifiedPlane)
             {
                 pointDensity->setEnabled(true);
@@ -539,18 +551,6 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
                 pointDensity->setEnabled(false);
                 if(pointDensityLabel)
                     pointDensityLabel->setEnabled(false);
-            }
-            if (atts->GetSourceType() == PoincareAttributes::SpecifiedPlane)
-            {
-                sourceRadius->setEnabled(true);
-                if(sourceRadiusLabel)
-                    sourceRadiusLabel->setEnabled(true);
-            }
-            else
-            {
-                sourceRadius->setEnabled(false);
-                if(sourceRadiusLabel)
-                    sourceRadiusLabel->setEnabled(false);
             }
             sourceTypeButtonGroup->blockSignals(true);
             if(sourceTypeButtonGroup->button((int)atts->GetSourceType()) != 0)
@@ -580,6 +580,27 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             break;
           case PoincareAttributes::ID_planeUpAxis:
             planeUpAxis->setText(DoublesToQString(atts->GetPlaneUpAxis(), 3));
+            break;
+          case PoincareAttributes::ID_planeRadius:
+            planeRadius->setText(DoubleToQString(atts->GetPlaneRadius()));
+            break;
+          case PoincareAttributes::ID_pointDensity:
+            pointDensity->setText(IntToQString(atts->GetPointDensity()));
+            break;
+          case PoincareAttributes::ID_colorTableName:
+            colorTableName->blockSignals(true);
+            colorTableName->setColorTable(QString(atts->GetColorTableName().c_str()));
+            colorTableName->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_singleColor:
+            { // new scope
+                QColor tempcolor = QColor(atts->GetSingleColor().Red(),
+                                   atts->GetSingleColor().Green(),
+                                   atts->GetSingleColor().Blue());
+                singleColor->blockSignals(true);
+                singleColor->setButtonColor(tempcolor);
+                singleColor->blockSignals(false);
+            }
             break;
           case PoincareAttributes::ID_legendFlag:
             legendFlag->blockSignals(true);
@@ -618,27 +639,6 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             showPoints->blockSignals(true);
             showPoints->setChecked(atts->GetShowPoints());
             showPoints->blockSignals(false);
-            break;
-          case PoincareAttributes::ID_pointDensity:
-            pointDensity->setText(IntToQString(atts->GetPointDensity()));
-            break;
-          case PoincareAttributes::ID_sourceRadius:
-            sourceRadius->setText(DoubleToQString(atts->GetSourceRadius()));
-            break;
-          case PoincareAttributes::ID_colorTableName:
-            colorTableName->blockSignals(true);
-            colorTableName->setColorTable(QString(atts->GetColorTableName().c_str()));
-            colorTableName->blockSignals(false);
-            break;
-          case PoincareAttributes::ID_singleColor:
-            { // new scope
-                QColor tempcolor = QColor(atts->GetSingleColor().Red(),
-                                   atts->GetSingleColor().Green(),
-                                   atts->GetSingleColor().Blue());
-                singleColor->blockSignals(true);
-                singleColor->setButtonColor(tempcolor);
-                singleColor->blockSignals(false);
-            }
             break;
           case PoincareAttributes::ID_NumberPlanes:
             NumberPlanes->setText(IntToQString(atts->GetNumberPlanes()));
@@ -815,6 +815,34 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do planeRadius
+    if(which_widget == PoincareAttributes::ID_planeRadius || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(planeRadius, val))
+            atts->SetPlaneRadius(val);
+        else
+        {
+            ResettingError(tr("Plane radius"),
+                DoubleToQString(atts->GetPlaneRadius()));
+            atts->SetPlaneRadius(atts->GetPlaneRadius());
+        }
+    }
+
+    // Do pointDensity
+    if(which_widget == PoincareAttributes::ID_pointDensity || doAll)
+    {
+        int val;
+        if(LineEditGetInt(pointDensity, val))
+            atts->SetPointDensity(val);
+        else
+        {
+            ResettingError(tr("Point density"),
+                IntToQString(atts->GetPointDensity()));
+            atts->SetPointDensity(atts->GetPointDensity());
+        }
+    }
+
     // Do relTol
     if(which_widget == PoincareAttributes::ID_relTol || doAll)
     {
@@ -840,34 +868,6 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("abs. tolerance"),
                 DoubleToQString(atts->GetAbsTol()));
             atts->SetAbsTol(atts->GetAbsTol());
-        }
-    }
-
-    // Do pointDensity
-    if(which_widget == PoincareAttributes::ID_pointDensity || doAll)
-    {
-        int val;
-        if(LineEditGetInt(pointDensity, val))
-            atts->SetPointDensity(val);
-        else
-        {
-            ResettingError(tr("Point Density"),
-                IntToQString(atts->GetPointDensity()));
-            atts->SetPointDensity(atts->GetPointDensity());
-        }
-    }
-
-    // Do sourceRadius
-    if(which_widget == PoincareAttributes::ID_sourceRadius || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(sourceRadius, val))
-            atts->SetSourceRadius(val);
-        else
-        {
-            ResettingError(tr("Source Radius"),
-                DoubleToQString(atts->GetSourceRadius()));
-            atts->SetSourceRadius(atts->GetSourceRadius());
         }
     }
 
@@ -1123,6 +1123,41 @@ QvisPoincarePlotWindow::planeUpAxisProcessText()
 
 
 void
+QvisPoincarePlotWindow::planeRadiusProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_planeRadius);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::pointDensityProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_pointDensity);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::colorTableNameChanged(bool useDefault, const QString &ctName)
+{
+    atts->SetColorTableName(ctName.toStdString());
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::singleColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    atts->SetSingleColor(temp);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
 QvisPoincarePlotWindow::legendFlagChanged(bool val)
 {
     atts->SetLegendFlag(val);
@@ -1193,41 +1228,6 @@ void
 QvisPoincarePlotWindow::showPointsChanged(bool val)
 {
     atts->SetShowPoints(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisPoincarePlotWindow::pointDensityProcessText()
-{
-    GetCurrentValues(PoincareAttributes::ID_pointDensity);
-    Apply();
-}
-
-
-void
-QvisPoincarePlotWindow::sourceRadiusProcessText()
-{
-    GetCurrentValues(PoincareAttributes::ID_sourceRadius);
-    Apply();
-}
-
-
-void
-QvisPoincarePlotWindow::colorTableNameChanged(bool useDefault, const QString &ctName)
-{
-    atts->SetColorTableName(ctName.toStdString());
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisPoincarePlotWindow::singleColorChanged(const QColor &color)
-{
-    ColorAttribute temp(color.red(), color.green(), color.blue());
-    atts->SetSingleColor(temp);
     SetUpdate(false);
     Apply();
 }
