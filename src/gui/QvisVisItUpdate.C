@@ -52,7 +52,7 @@
 #include <stdlib.h>
 #include <visit-config.h>
 #include <DebugStream.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
 
 #define STAGE_SUBMIT_RUNINFO        0
 #define STAGE_DETERMINE_VERSION     1

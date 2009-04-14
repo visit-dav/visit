@@ -267,9 +267,12 @@ ParentProcess::SetVersion(const std::string &ver)
 //    Kathleen Bonnell, Thu Aug  9 10:12:18 PDT 2007 
 //    Moved '-rawmap' test to just after '-host' test. 
 //
+//    Brad Whitlock, Tue Apr 14 15:13:07 PDT 2009
+//    I made it return true if any connections were created.
+//
 // ****************************************************************************
 
-void
+bool
 ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
     bool createSockets, int failCode)
 {
@@ -362,6 +365,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
     //
     // Now that we have connection information, create the connections.
     //
+    bool createdConnections = false;
     if(rhostSpecified && createSockets)
     {
         debug5 << mName << "Creating sockets" << endl;
@@ -414,10 +418,12 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
             //
             debug5 << mName << "Exchanging type representations." << endl;
             ExchangeTypeRepresentations(failCode);
+            createdConnections = true;
         }
     }
 
     debug5 << mName << "done" << endl;
+    return createdConnections;
 }
 
 // ****************************************************************************

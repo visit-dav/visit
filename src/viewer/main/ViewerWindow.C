@@ -74,6 +74,7 @@ using std::string;
 #include <ViewerPlot.h> 
 #include <ViewerPlotList.h> 
 #include <ViewerPopupMenu.h>
+#include <ViewerProperties.h>
 #include <ViewerQueryManager.h>
 #include <ViewerToolbar.h>
 #include <ViewerSubject.h>
@@ -86,12 +87,6 @@ using std::string;
 #include <DebugStream.h>
 
 #include <Utility.h>
-
-//
-// Definition of static variables associated with ViewerWindow.
-//
-bool    ViewerWindow::doNoWinMode = false;
-bool    ViewerWindow::doFullScreenMode = false;
 
 //
 // Local macros.
@@ -262,18 +257,21 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Removed the viewport setting for avtAxisArray - it should already be
 //    set to something reasonable by the default constructor.
 //
+//    Brad Whitlock, Tue Apr 14 11:39:39 PDT 2009
+//    Use ViewerProperties.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     undoViewStack(true), redoViewStack()
 {
-    if (doNoWinMode)
+    if (GetViewerProperties()->GetNowin())
     {
         visWindow = new VisWindow();
     }
     else
     {
-        visWindow = new QtVisWindow(doFullScreenMode);
+        visWindow = new QtVisWindow(GetViewerProperties()->GetWindowFullScreen());
     }
 
     visWindow->SetCloseCallback(CloseCallback, (void *)this);
@@ -451,82 +449,6 @@ ViewerWindow::~ViewerWindow()
     delete view3DAtts;
     delete viewAxisArrayAtts;
     delete actionMgr;
-}
-
-// ****************************************************************************
-//  Method: ViewerWindow::SetNoWinMode
-//
-//  Purpose:
-//      Controls whether or not VisWindows should be created in nowin mode.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 1, 2002
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetNoWinMode(bool newMode)
-{
-    doNoWinMode = newMode;
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetNoWinMode
-//
-// Purpose: 
-//   Returns the nowin mode.
-//
-// Returns:    The nowin mode.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Feb 6 08:07:17 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ViewerWindow::GetNoWinMode()
-{
-    return doNoWinMode;
-}
-
-// ****************************************************************************
-//  Method: ViewerWindow::SetFullScreenMode
-//
-//  Purpose:
-//      Controls whether VisWindows should be created in fullscreen mode.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   July 17, 2007
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetFullScreenMode(bool newMode)
-{
-    doFullScreenMode = newMode;
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetFullScreenMode
-//
-// Purpose: 
-//   Returns the fullscreen mode.
-//
-// Returns:    The fullscreen mode.
-//
-// Programmer: Jeremy Meredith
-// Creation:   July 17, 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ViewerWindow::GetFullScreenMode()
-{
-    return doFullScreenMode;
 }
 
 // ****************************************************************************
@@ -9595,6 +9517,8 @@ ViewerWindow::CopyInteractorAtts(const ViewerWindow *source)
 // Creation:   September 27, 2004 
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr 14 11:37:05 PDT 2009
+//   Use ViewerProperties.
 //
 // ****************************************************************************
 
@@ -9602,7 +9526,7 @@ void
 ViewerWindow::GlyphPick(const double pt1[3], const double pt2[3], 
                         int &dom, int &elNum, bool &forCell)
 {
-    visWindow->GlyphPick(pt1, pt2, dom, elNum, forCell, GetNoWinMode()); 
+    visWindow->GlyphPick(pt1, pt2, dom, elNum, forCell, GetViewerProperties()->GetNowin()); 
 }
 
 // ****************************************************************************
@@ -9695,6 +9619,7 @@ ViewerWindow::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
         rs = LINEAR; 
     }
 }
+
 // ****************************************************************************
 //  Method: ViewerWindow::SetPlotFollowsTime
 //
@@ -9712,8 +9637,6 @@ ViewerWindow::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
 void
 ViewerWindow::SetPlotFollowsTime()
 {
-
     // toggle the follows time flag:
     GetPlotList()->SetPlotFollowsTime();
-
 }

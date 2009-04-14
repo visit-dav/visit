@@ -4,6 +4,7 @@
 #include <viewer_exports.h>
 
 class ViewerMethods;
+class ViewerProperties;
 class ViewerState;
 class PlotPluginManager;
 class OperatorPluginManager;
@@ -32,6 +33,10 @@ class OperatorPluginManager;
 //   Brad Whitlock, Tue Jun 24 14:33:17 PDT 2008
 //   Added methods to return the plugin managers.
 //
+//   Brad Whitlock, Tue Apr 14 11:12:07 PDT 2009
+//   I added GetViewerProperties. I made the message suppression stuff use the
+//   new ViewerProperties.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerBase : public QObject
@@ -45,6 +50,7 @@ public:
     static ViewerMethods         *GetViewerMethods();
     static PlotPluginManager     *GetPlotPluginManager();
     static OperatorPluginManager *GetOperatorPluginManager();
+    static ViewerProperties      *GetViewerProperties();
 
     // Methods to send messages
     static void Error(const QString &message, bool = true);
@@ -61,17 +67,16 @@ public:
     static void ClearStatus(const char *sender = 0);
     
     // Message Suppression Control
-    static void EnableMessageSuppression()  { suppressMessages = true;}
-    static void DisableMessageSuppression() { suppressMessages = false;}
-    static bool SuppressMessages()          { return suppressMessages;}
-    
-protected:
-    static ViewerMethods         *base_viewerMethods;
+    static void EnableMessageSuppression();
+    static void DisableMessageSuppression();
+    static bool SuppressMessages();
+
 private:
+    static ViewerMethods         *base_viewerMethods;
     static ViewerState           *base_viewerState;
     static PlotPluginManager     *base_plotPlugins;
     static OperatorPluginManager *base_operatorPlugins;
-    static bool                   suppressMessages;
+    static ViewerProperties      *base_viewerProperties;
 };
 
 #endif

@@ -49,7 +49,7 @@
 #include <QPixmap>
 #include <QDesktopWidget>
 #include <visit-config.h>   // For version number, svn revision
-#include <Utility.h>
+#include <InstallationFunctions.h>
 
 #define MULTIPLE_IMAGES
 #define TIMER_DURATION 2*1000     // 2 seconds

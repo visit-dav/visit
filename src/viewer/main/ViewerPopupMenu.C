@@ -38,6 +38,7 @@
 
 #include <ViewerPopupMenu.h>
 #include <ViewerActionBase.h>
+#include <ViewerProperties.h>
 #include <ViewerWindow.h>
 
 #include <QMenu>
@@ -62,9 +63,12 @@
 //    Brad Whitlock, Tue May 27 13:46:56 PDT 2008
 //    Qt 4.
 //
+//    Brad Whitlock, Tue Apr 14 14:21:27 PDT 2009
+//    Inherit ViewerBase.
+//
 // ****************************************************************************
 
-ViewerPopupMenu::ViewerPopupMenu(ViewerWindow *win) : menus()
+ViewerPopupMenu::ViewerPopupMenu(ViewerWindow *win) : ViewerBase(), menus()
 {
     //
     // Keep a pointer to the window that created this menu.
@@ -74,7 +78,7 @@ ViewerPopupMenu::ViewerPopupMenu(ViewerWindow *win) : menus()
     //
     // Create the popup menu widget.
     //
-    if(win->GetNoWinMode())
+    if(GetViewerProperties()->GetNowin())
         popup = 0;
     else
         popup = new QMenu(0);

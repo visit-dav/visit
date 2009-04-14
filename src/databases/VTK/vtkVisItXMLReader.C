@@ -29,7 +29,7 @@
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
-#include "Utility.h"
+#include "FileFunctions.h"
 
 #include <sys/stat.h>
 #include <assert.h>

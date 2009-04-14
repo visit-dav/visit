@@ -38,6 +38,7 @@
 
 #include <ViewerBase.h>
 
+#include <ViewerProperties.h>
 #include <ViewerState.h>
 #include <ViewerMethods.h>
 #include <OperatorPluginManager.h>
@@ -53,7 +54,7 @@ ViewerState           *ViewerBase::base_viewerState = 0;
 ViewerMethods         *ViewerBase::base_viewerMethods = 0;
 PlotPluginManager     *ViewerBase::base_plotPlugins = 0;
 OperatorPluginManager *ViewerBase::base_operatorPlugins = 0;
-bool                   ViewerBase::suppressMessages = false;
+ViewerProperties      *ViewerBase::base_viewerProperties = 0;
 
 // ****************************************************************************
 // Method: ViewerBase::ViewerBase
@@ -195,6 +196,32 @@ ViewerBase::GetOperatorPluginManager()
 }
 
 // ****************************************************************************
+// Method: ViewerBase::GetViewerProperties
+//
+// Purpose: 
+//   Return the viewer properties
+//
+// Returns:    The viewer properties.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 14 11:19:10 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerProperties *
+ViewerBase::GetViewerProperties()
+{
+    if(base_viewerProperties == 0)
+        base_viewerProperties = new ViewerProperties;
+
+    return base_viewerProperties;
+}
+
+// ****************************************************************************
 // Method: ViewerBase::Error
 //
 // Purpose: 
@@ -222,12 +249,15 @@ ViewerBase::GetOperatorPluginManager()
 //   Brad Whitlock, Tue Apr 29 10:58:40 PDT 2008
 //   Converted to QString.
 //
+//   Brad Whitlock, Tue Apr 14 11:53:29 PDT 2009
+//   Use a method instead of a member.
+//
 // ****************************************************************************
 
 void
 ViewerBase::Error(const QString &message, bool hasUnicode)
 {
-    if (message.isEmpty() || suppressMessages )
+    if (message.isEmpty() || SuppressMessages() )
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
@@ -264,12 +294,15 @@ ViewerBase::Error(const QString &message, bool hasUnicode)
 //   Brad Whitlock, Tue Apr 29 10:58:40 PDT 2008
 //   Converted to QString.
 //
+//   Brad Whitlock, Tue Apr 14 11:53:29 PDT 2009
+//   Use a method instead of a member.
+//
 // ****************************************************************************
 
 void
 ViewerBase::Warning(const QString &message, bool hasUnicode)
 {
-    if (message.isEmpty() || suppressMessages)
+    if (message.isEmpty() || SuppressMessages())
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
@@ -306,12 +339,15 @@ ViewerBase::Warning(const QString &message, bool hasUnicode)
 //   Brad Whitlock, Tue Apr 29 10:58:40 PDT 2008
 //   Converted to QString.
 //
+//   Brad Whitlock, Tue Apr 14 11:53:29 PDT 2009
+//   Use a method instead of a member.
+//
 // ****************************************************************************
 
 void
 ViewerBase::Message(const QString &message, bool hasUnicode)
 {
-    if (message.isEmpty() || suppressMessages )
+    if (message.isEmpty() || SuppressMessages() )
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
@@ -518,4 +554,22 @@ ViewerBase::ClearStatus(const char *sender)
     GetViewerState()->GetStatusAttributes()->SetCurrentStageName("");
     GetViewerState()->GetStatusAttributes()->SetMaxStage(0);
     GetViewerState()->GetStatusAttributes()->Notify();
+}
+
+void
+ViewerBase::EnableMessageSuppression()
+{
+    GetViewerProperties()->SetSuppressMessages(true);
+}
+
+void
+ViewerBase::DisableMessageSuppression()
+{
+    GetViewerProperties()->SetSuppressMessages(false);
+}
+
+bool
+ViewerBase::SuppressMessages()
+{
+    return GetViewerProperties()->GetSuppressMessages();
 }

@@ -97,29 +97,30 @@ static const char *ViewerRPCType_strings[] = {
 "ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", "SetInteractorAttributesRPC", 
 "SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", "GetProcInfoRPC", 
 "SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", "ExportDBRPC", 
-"SetTryHarderCyclesTimesRPC", "OpenClientRPC", "SuppressQueryOutputRPC", 
-"SetQueryFloatFormatRPC", "SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", 
-"ResetMeshManagementAttributesRPC", "ResizeWindowRPC", "MoveWindowRPC", 
-"MoveAndResizeWindowRPC", "SetStateLoggingRPC", "ConstructDDFRPC", 
-"RequestMetaDataRPC", "SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", 
-"SetCreateTimeDerivativeExpressionsRPC", "SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", 
-"SetPlotFollowsTimeRPC", "TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", 
-"SetSuppressMessagesRPC", "ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", 
-"DeleteNamedSelectionRPC", "LoadNamedSelectionRPC", "SaveNamedSelectionRPC", 
+"SetTryHarderCyclesTimesRPC", "OpenClientRPC", "OpenGUIClientRPC", 
+"OpenCLIClientRPC", "SuppressQueryOutputRPC", "SetQueryFloatFormatRPC", 
+"SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", "ResetMeshManagementAttributesRPC", 
+"ResizeWindowRPC", "MoveWindowRPC", "MoveAndResizeWindowRPC", 
+"SetStateLoggingRPC", "ConstructDDFRPC", "RequestMetaDataRPC", 
+"SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", "SetCreateTimeDerivativeExpressionsRPC", 
+"SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", "SetPlotFollowsTimeRPC", 
+"TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", "SetSuppressMessagesRPC", 
+"ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", "DeleteNamedSelectionRPC", 
+"LoadNamedSelectionRPC", "SaveNamedSelectionRPC", "MenuQuitRPC", 
 "MaxRPC"};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 184) index = 0;
+    if(index < 0 || index >= 187) index = 0;
     return ViewerRPCType_strings[index];
 }
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(int t)
 {
-    int index = (t < 0 || t >= 184) ? 0 : t;
+    int index = (t < 0 || t >= 187) ? 0 : t;
     return ViewerRPCType_strings[index];
 }
 
@@ -127,7 +128,7 @@ bool
 ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCType &val)
 {
     val = ViewerRPC::CloseRPC;
-    for(int i = 0; i < 184; ++i)
+    for(int i = 0; i < 187; ++i)
     {
         if(s == ViewerRPCType_strings[i])
         {

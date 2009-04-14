@@ -76,6 +76,7 @@
 #include <ViewerPlot.h>
 #include <ViewerPlotFactory.h>
 #include <ViewerPlotList.h>
+#include <ViewerProperties.h>
 #include <ViewerQueryManager.h>
 #include <ViewerState.h>
 #include <ViewerWindow.h>
@@ -1393,7 +1394,9 @@ ViewerPlotList::UpdateFrame(bool updatePlotStates)
 // Creation:   Wed Dec 10 15:09:57 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 14 11:32:37 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -1401,7 +1404,7 @@ ViewerPlotList::SetAnimationAttributes(const AnimationAttributes &a)
 {
     AnimationAttributes newAtts(a);
 
-    if (newAtts.GetPipelineCachingMode() && avtCallback::GetNowinMode())
+    if (newAtts.GetPipelineCachingMode() && GetViewerProperties()->GetNowin())
     {
         debug1 << "Overriding request to do pipeline caching, since we are in "
                << "no-win mode." << endl;
@@ -1582,6 +1585,9 @@ ViewerPlotList::DeleteTimeSlider(const std::string &ts, bool update)
 //   Brad Whitlock, Tue Apr 29 15:55:10 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Apr 14 11:33:03 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 bool
@@ -1591,7 +1597,7 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
     ViewerFileServer *fs = ViewerFileServer::Instance();
     bool permission;
 
-    if(avtCallback::GetNowinMode())
+    if(GetViewerProperties()->GetNowin())
     {
         debug3 << mName << "Don't need to ask for permission. "
                << "We're running -nowin." << endl;
@@ -1670,7 +1676,9 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
 // Creation:   Tue Feb 3 10:28:24 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 14 11:33:24 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 bool
@@ -1685,7 +1693,7 @@ ViewerPlotList::AllowAutomaticCorrelation(const stringVector &dbs) const
         GetDatabaseCorrelationList();
     DatabaseCorrelationList::WhenToCorrelate when = 
         cL->GetWhenToCorrelate();
-    bool needPermission = avtCallback::GetNowinMode() ? false :
+    bool needPermission = GetViewerProperties()->GetNowin() ? false :
         cL->GetNeedPermission();
     bool allowCorrelation;
 

@@ -35,73 +35,42 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
-#ifndef VIEWER_POPUP_MENU_H
-#define VIEWER_POPUP_MENU_H
-#include <viewer_exports.h>
+#ifndef INSTALLATION_FUNCTIONS_H
+#define INSTALLATION_FUNCTIONS_H
 #include <string>
-#include <map>
+#include <misc_exports.h>
 
-#include <ViewerBase.h>
+typedef enum {CONFIGSTATE_IOERROR,
+              CONFIGSTATE_FIRSTTIME,
+              CONFIGSTATE_SUCCESS} ConfigStateEnum;
 
-// Forward declares.
-class QAction;
-class QMenu;
-class ViewerActionBase;
-class ViewerWindow;
+// Installation directory functions
+std::string MISC_API GetVisItInstallationDirectory();
+std::string MISC_API GetVisItInstallationDirectory(const char *version);
+bool        MISC_API ReadInstallationInfo(std::string &distName, 
+                                          std::string &configName, 
+                                          std::string &bankName);
 
-// ****************************************************************************
-// Class: ViewerPopupMenu
-//
-// Purpose:
-//   This is the popup menu class for the viewer.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 4 15:37:09 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Tue Feb 25 10:09:39 PDT 2003
-//   I added RemoveAction.
-//
-//   Brad Whitlock, Tue May 27 14:10:57 PDT 2008
-//   Qt 4.
-//
-// ****************************************************************************
+std::string MISC_API GetVisItArchitectureDirectory();
+std::string MISC_API GetVisItArchitectureDirectory(const char *version);
+std::string MISC_API GetVisItLauncher();
 
-class VIEWER_API ViewerPopupMenu : public ViewerBase
-{
-    struct SubMenuInfo
-    {
-        SubMenuInfo();
-        SubMenuInfo(const SubMenuInfo &);
-        SubMenuInfo(QMenu *, QAction *);
-        virtual ~SubMenuInfo();
-        void operator = (const SubMenuInfo &);
+// User installation / data functions
+std::string MISC_API GetUserVisItDirectory();
+MISC_API char *      GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
+MISC_API char *      GetSystemConfigFile(const char *filename = 0);
 
-        QMenu   *menu;
-        QAction *action;
-    };
+std::string MISC_API GetUserVisItRCFile();
+std::string MISC_API GetSystemVisItRCFile();
 
-    typedef std::map<std::string, SubMenuInfo> MenuMap;
-public:
-    ViewerPopupMenu(ViewerWindow *win);
-    virtual ~ViewerPopupMenu();
+int         MISC_API ConfigStateGetRunCount(ConfigStateEnum &code);
+void        MISC_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
 
-    void ShowMenu();
-    void HideMenu();
-    void SetEnabled(bool val);
-
-    void AddAction(ViewerActionBase *action);
-    void AddAction(const std::string &menuName, ViewerActionBase *action);
-    void RemoveAction(ViewerActionBase *action);
-    void EnableMenu(const std::string &menuName);
-    void DisableMenu(const std::string &menuName);
-private:
-    QMenu   *CreateMenu(const std::string &name);
-
-    QMenu   *popup;
-    ViewerWindow *window;
-    MenuMap       menus;
-};
+// Version functions
+int         MISC_API GetVisItVersionFromString(const char*, int&, int&, int&);
+bool        MISC_API VisItVersionsCompatible(const char*, const char*);
+bool        MISC_API VersionGreaterThan(const std::string &v1, const std::string &v2);
+void        MISC_API SetIsDevelopmentVersion(bool val);
+bool        MISC_API GetIsDevelopmentVersion();
 
 #endif

@@ -39,7 +39,8 @@
 #include <ColorTableManager.h>
 #include <DataNode.h>
 #include <DebugStream.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
+#include <FileFunctions.h>
 #include <visit-config.h>
 #include <ColorControlPoint.h>
 

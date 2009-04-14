@@ -472,6 +472,10 @@ class avtDefaultPlotMetaData;
 //    Hank Childs, Wed Jan 28 14:53:32 PST 2009
 //    Add support for named selections.
 //
+//    Brad Whitlock, Tue Apr 14 11:23:44 PDT 2009
+//    I moved a bunch of members to the base class' ViewerProperties so we 
+//    can access their values throughout the viewer.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -488,9 +492,6 @@ public:
 
     void SetNowinMode(bool);
     bool GetNowinMode() const;
-
-    void SetUseWindowMetrics(bool);
-    bool GetUseWindowMetrics() const;
 
     ViewerState   *GetViewerDelayedState();
     ViewerMethods *GetViewerDelayedMethods();
@@ -739,7 +740,6 @@ private:
     bool                   processingFromParent;
     int                    animationStopOpcode;
     int                    iconifyOpcode;
-    int                    numEngineRestarts;
     std::string            interpretCommands;
 
     ViewerMasterXfer       xfer;
@@ -755,17 +755,6 @@ private:
     ViewerObserverToSignal *clientMethodObserver;
     ViewerObserverToSignal *clientInformationObserver;
     ViewerObserverToSignal *colorTableObserver;
-
-    bool                   nowin;
-    std::string            borders;
-    std::string            shift;
-    std::string            preshift;
-    std::string            geometry;
-    bool                   smallWindow;
-    bool                   noconfig;
-    bool                   defaultStereoToOn;
-    bool                   useWindowMetrics;
-    char                  *configFileName;
 
     ViewerPlotFactory     *plotFactory;
     ViewerOperatorFactory *operatorFactory;
@@ -787,9 +776,6 @@ private:
     std::vector<std::string> engineParallelArguments;
     std::vector<std::string> unknownArguments;
     std::vector<std::string> clientArguments;
-
-    // For localization
-    QString                applicationLocale;
 };
 
 #endif

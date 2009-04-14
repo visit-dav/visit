@@ -76,6 +76,7 @@
 #include <DebugStream.h>
 #include <ExpandPathRPC.h>
 #include <ExpandPathRPCExecutor.h>
+#include <FileFunctions.h>
 #include <GetDBPluginInfoRPC.h>
 #include <GetDBPluginInfoRPCExecutor.h>
 #include <GetDirectoryRPC.h>

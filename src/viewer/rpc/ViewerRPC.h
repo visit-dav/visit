@@ -220,6 +220,8 @@ public:
         ExportDBRPC,
         SetTryHarderCyclesTimesRPC,
         OpenClientRPC,
+        OpenGUIClientRPC,
+        OpenCLIClientRPC,
         SuppressQueryOutputRPC,
         SetQueryFloatFormatRPC,
         SetMeshManagementAttributesRPC,
@@ -245,6 +247,7 @@ public:
         DeleteNamedSelectionRPC,
         LoadNamedSelectionRPC,
         SaveNamedSelectionRPC,
+        MenuQuitRPC,
         MaxRPC
     };
 

@@ -26,7 +26,7 @@
 #include "vtkRectilinearGrid.h"
 #include "vtkStructuredGrid.h"
 #include "vtkUnstructuredGrid.h"
-#include "Utility.h"
+#include "FileFunctions.h"
 
 #include <sys/stat.h>
 #include <ctype.h>

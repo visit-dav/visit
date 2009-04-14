@@ -77,6 +77,7 @@
 #include <ViewerOperatorFactory.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotList.h>
+#include <ViewerProperties.h>
 #include <ViewerQuery.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -2071,7 +2072,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                   ((plot->GetMeshType() == AVT_POINT_MESH) &&
                    (strcmp(plot->GetPlotTypeName(), "Label") != 0));
 
-        bool mustGlyphPickOnEngine = doGlyphPick && win->GetNoWinMode() && 
+        bool mustGlyphPickOnEngine = doGlyphPick && 
+                   GetViewerProperties()->GetNowin() && 
                   ((plot->GetMeshType() == AVT_POINT_MESH) &&
                    (strcmp(plot->GetPlotTypeName(), "Mesh") != 0));
 

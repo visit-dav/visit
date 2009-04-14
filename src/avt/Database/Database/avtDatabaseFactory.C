@@ -44,7 +44,6 @@
 
 #include <errno.h> // for errno
 #include <visitstream.h>
-#include <sys/stat.h>
 
 #include <vector>
 #include <string>
@@ -57,7 +56,7 @@
 
 #include <DatabasePluginManager.h>
 #include <DatabasePluginInfo.h>
-#include <Utility.h>
+#include <FileFunctions.h>
 #include <DBOptionsAttributes.h>
 
 #include <BadPermissionException.h>

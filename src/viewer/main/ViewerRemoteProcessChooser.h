@@ -39,6 +39,7 @@
 #ifndef VIEWERREMOTEPROCESSCHOOSER_H
 #define VIEWERREMOTEPROCESSCHOOSER_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 
 #include <string>
 #include <vector>
@@ -83,12 +84,15 @@ class ViewerHostProfileSelector;
 //    I made the selected host profile get passed out of SelectProfile. I also
 //    moved AddProfileArguments into RemoteProxyBase.
 //
+//    Brad Whitlock, Tue Apr 14 11:42:03 PDT 2009
+//    Inherit from ViewerBase.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerRemoteProcessChooser 
+class VIEWER_API ViewerRemoteProcessChooser : public ViewerBase
 {
   public:
-    ~ViewerRemoteProcessChooser();
+    virtual ~ViewerRemoteProcessChooser();
 
     static ViewerRemoteProcessChooser *Instance();
     static void SetNoWinMode(bool nw);
@@ -99,7 +103,6 @@ class VIEWER_API ViewerRemoteProcessChooser
     void ClearCache(const std::string&);
 
   private:
-    static bool nowin;
     static ViewerRemoteProcessChooser *instance;
 
     ViewerHostProfileSelector *selector;

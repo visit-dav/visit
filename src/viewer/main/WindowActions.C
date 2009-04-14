@@ -38,6 +38,7 @@
 
 #include <WindowActions.h>
 #include <ViewerPlotList.h>
+#include <ViewerProperties.h>
 #include <ViewerQueryManager.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -102,7 +103,7 @@ AddWindowAction::AddWindowAction(ViewerWindow *win) :
 {
     SetAllText(tr("Add new window"));
     SetMenuText(tr("Add"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(newwindow_xpm)));
 }
 
@@ -148,7 +149,7 @@ CloneWindowAction::CloneWindowAction(ViewerWindow *win) :
 {
     SetAllText(tr("Clone window"));
     SetMenuText(tr("Clone"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(copymenu_xpm)));
 }
 
@@ -198,7 +199,7 @@ DeleteWindowAction::DeleteWindowAction(ViewerWindow *win) :
 {
     SetAllText(tr("Delete window"));
     SetMenuText(tr("Delete"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(deletewindow_xpm)));
 }
 
@@ -271,7 +272,7 @@ ClearWindowAction::ClearWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
     SetAllText(tr("Clear plots"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(clearwindow_xpm)));
 }
 
@@ -518,7 +519,7 @@ SetActiveWindowAction::SetActiveWindowAction(ViewerWindow *win) :
 {
     SetAllText(tr("Make active"));
     SetToolTip(tr("Make window active"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(checkwindow_xpm), QPixmap(blankwindow_xpm));
 }
 
@@ -608,7 +609,7 @@ ToggleSpinModeAction::ToggleSpinModeAction(ViewerWindow *win) :
 {
     SetAllText(tr("Spin"));
     SetToolTip(tr("Toggle spin mode"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(spinon_xpm), QPixmap(spinoff_xpm));
 }
 
@@ -698,7 +699,7 @@ ToggleBoundingBoxModeAction::ToggleBoundingBoxModeAction(ViewerWindow *win) :
 {
     SetAllText(tr("Navigate bbox"));
     SetToolTip(tr("Toggle bounding box navigation"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(navigatebboxon_xpm), QPixmap(navigatebboxoff_xpm));
 }
 
@@ -790,11 +791,11 @@ SetWindowLayoutAction::SetWindowLayoutAction(ViewerWindow *win) :
 {
     SetAllText(tr("Layout"));
     SetToolTip(tr("Set window layout"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(layout2x2_xpm)));
     SetExclusive(true);
 
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
     {
         AddChoice(tr("1x1"), tr("1 x 1 window layout"), QPixmap(layout1x1_xpm), QPixmap(layout1x1_xpm));
         AddChoice(tr("1x2"), tr("1 x 2 window layout"), QPixmap(layout1x2_xpm), QPixmap(layout1x2_xpm));
@@ -945,7 +946,7 @@ InvertBackgroundAction::InvertBackgroundAction(ViewerWindow *win) :
 {
     SetAllText(tr("Invert background"));
     SetToolTip(tr("Swap background and foreground colors"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(invertbackground_xpm)));
 }
 
@@ -1000,7 +1001,7 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
     SetToolTip(tr("Set window mode"));
     SetExclusive(true);
 
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
     {
         AddChoice(tr("Navigate"), tr("Navigate mode"), QPixmap(navigatemode_xpm));
         AddChoice(tr("Zone Pick"), tr("Zone Pick mode"), QPixmap(zonepickmode_xpm));
@@ -1234,7 +1235,7 @@ EnableToolAction::EnableToolAction(ViewerWindow *win) :
     for(int i = 0; i < window->GetNumTools(); ++i)
     {
         std::string tool(window->GetToolName(i));
-        if (!win->GetNoWinMode())
+        if (!GetViewerProperties()->GetNowin())
         {
             if(tool == "Box")
                 AddChoice(tr("Box"), tr("Box tool"), QPixmap(boxtool_xpm));

@@ -45,6 +45,7 @@
 #include <avtDatabaseMetaData.h>
 #include <ViewerMethods.h>
 #include <ViewerState.h>
+#include <ViewerProperties.h>
 
 // Forward definitions
 class vtkQtRenderWindow;
@@ -69,6 +70,9 @@ class ViewerSubject;
 //    the identical version.  It's necessary for new viewer-apps but
 //    might confuse VisIt-proper's smart versioning.
 //   
+//    Brad Whitlock, Tue Apr 14 14:23:53 PDT 2009
+//    Added ViewerProperties.
+//
 // ****************************************************************************
 
 class VIEWER_API VisItViewer
@@ -139,6 +143,9 @@ public:
     // Notify() to post them into the event loop where they can be safely
     // used.
     ViewerState   *DelayedState() const;
+
+    // Access viewer properties.
+    ViewerProperties *Properties() const;
 
     // Get a file's metadata.
     const avtDatabaseMetaData *GetMetaData(const std::string &hostDB, int ts=-1);

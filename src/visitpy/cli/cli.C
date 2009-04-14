@@ -49,7 +49,8 @@
 
 #include <Python.h>
 
-#include <Utility.h>
+#include <FileFunctions.h>
+#include <InstallationFunctions.h>
 #include <VisItException.h>
 #ifdef WIN32
   #define VISITCLI_API __declspec(dllimport)

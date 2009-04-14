@@ -77,9 +77,10 @@
 #include <ViewerActionManager.h>
 #include <ViewerEngineManager.h>
 #include <ViewerFileServer.h>
+#include <ViewerOperator.h>
 #include <ViewerPlotList.h>
 #include <ViewerPlot.h>
-#include <ViewerOperator.h>
+#include <ViewerProperties.h>
 #include <ViewerQueryManager.h>
 #include <ViewerSubject.h>
 #include <ViewerToolbar.h>
@@ -2052,7 +2053,7 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
         if(screenCapture)
         {
 #ifdef MESA_STUB
-            if(windows[index]->GetNoWinMode() == false)
+            if(GetViewerProperties()->GetNowin() == false)
             {
                 retval = windows[index]->ScreenCapture();
             }
@@ -3338,6 +3339,9 @@ ViewerWindowManager::ToggleCameraViewMode(int windowIndex)
 //   Brad Whitlock, Tue May 27 14:22:05 PDT 2008
 //   Changed to QString.
 //
+//   Brad Whitlock, Tue Apr 14 11:29:21 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 bool
@@ -3346,7 +3350,7 @@ ViewerWindowManager::AskForCorrelationPermission(const QString &msg,
 {
     bool permission;
 
-    if(avtCallback::GetNowinMode())
+    if(GetViewerProperties()->GetNowin())
         permission = true;
     else
     {
@@ -9252,6 +9256,9 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Wed Feb 13 14:12:47 PST 2008
 //   Added configVersion argument.
 //
+//   Brad Whitlock, Tue Apr 14 11:29:57 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -9352,7 +9359,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
             {
                 // We're able to read in the size and location.
                 int  w, h, x, y;
-                if(ViewerWindow::GetNoWinMode())
+                if(GetViewerProperties()->GetNowin())
                 {
                     x = y = 0;
                     w = windowLimits[0][0].width;
@@ -9404,7 +9411,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
             {
                 // We're able to read in the size and location.
                 int  w, h, x, y;
-                if(ViewerWindow::GetNoWinMode())
+                if(GetViewerProperties()->GetNowin())
                 {
                     x = y = 0;
                     w = windowLimits[0][0].width;

@@ -43,7 +43,7 @@
 #include <IncompatibleSecurityTokenException.h>
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
 #include <string.h>       // for strcmp
 #include <stdlib.h>
 #include <stdio.h>

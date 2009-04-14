@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+  <Attribute name="ViewerProperties" purpose="Contain properties about the viewer" persistent="false" keyframe="false" exportAPI="VIEWER_API" exportInclude="viewer_exports.h">
+    <Field name="nowin" label="No window" type="bool">
+      false
+    </Field>
+    <Field name="windowBorders" label="window borders" type="string">
+    </Field>
+    <Field name="windowShift" label="window shift" type="string">
+    </Field>
+    <Field name="windowPreShift" label="Window pre shift" type="string">
+    </Field>
+    <Field name="windowGeometry" label="Window geometry" type="string">
+    </Field>
+    <Field name="windowFullScreen" label="Window full screen" type="int">
+      0
+    </Field>
+    <Field name="windowSmall" label="Small window" type="bool">
+      false
+    </Field>
+    <Field name="noConfig" label="No configuration file" type="bool">
+      false
+    </Field>
+    <Field name="defaultStereoToOn" label="Default stereo to on" type="bool">
+      false
+    </Field>
+    <Field name="useWindowMetrics" label="Use window metrics" type="bool">
+      true
+    </Field>
+    <Field name="configurationFileName" label="Configuration file name" type="string">
+    </Field>
+    <Field name="applicationLocale" label="Application locale" type="string">
+      default
+    </Field>
+    <Field name="launchedByClient" label="Launched by client" type="bool">
+      false
+    </Field>
+    <Field name="suppressMessages" label="Suppress messages" type="bool">
+      false
+    </Field>
+    <Field name="numEngineRestarts" label="Number of engine restarts" type="int">
+      2
+    </Field>
+  </Attribute>

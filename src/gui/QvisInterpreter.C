@@ -45,7 +45,7 @@
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
 #include <DebugStream.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
 
 // ****************************************************************************
 // Method: QvisInterpreter::QvisInterpreter

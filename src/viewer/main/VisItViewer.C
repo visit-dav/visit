@@ -4,6 +4,7 @@
 #include <avtCallback.h>
 
 #include <ViewerFileServer.h>
+#include <ViewerProperties.h>
 #include <ViewerSubject.h>
 #include <ViewerState.h>
 #include <ViewerMethods.h>
@@ -357,7 +358,9 @@ VisItViewer::Connect(int *argc, char ***argv)
 // Creation:   Mon Aug 18 16:37:03 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 14 13:45:06 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -366,7 +369,7 @@ VisItViewer::SetWindowCreationCallback(vtkQtRenderWindow* (*wcc)(void *),
 {
     // Turn off using the window metrics because we're going to embed our
     // windows in another application's widgets.
-    viewer->SetUseWindowMetrics(false);
+    viewer->GetViewerProperties()->SetUseWindowMetrics(false);
     // Set the window creation callback.
     QtVisWindow::SetWindowCreationCallback(wcc, wccdata);
 //    ViewerWindowManager::Instance()->DisableWindowDeletion();
@@ -514,6 +517,26 @@ VisItViewer::DelayedState() const
     return viewer->GetViewerDelayedState();
 }
 
+// ****************************************************************************
+// Method: VisItViewer::Properties
+//
+// Purpose: 
+//   Return the viewer properties.
+//
+// Returns:    The viewer properties.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 14 14:25:26 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerProperties *
+VisItViewer::Properties() const
+{
+    return viewer->GetViewerProperties();
+}
 
 // ****************************************************************************
 // Method: VisItViewer::GetMetaData

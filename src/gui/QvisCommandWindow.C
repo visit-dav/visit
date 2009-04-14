@@ -53,7 +53,7 @@
 #include <QToolTip>
 #include <QWidget>
 
-#include <Utility.h>
+#include <InstallationFunctions.h>
 #include <DataNode.h>
 #include <DebugStream.h>
 

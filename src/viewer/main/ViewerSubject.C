@@ -74,6 +74,7 @@
 #include <HostProfileList.h>
 #include <VisItInit.h>
 #include <InitVTK.h>
+#include <InstallationFunctions.h>
 #include <InteractorAttributes.h>
 #include <InvalidVariableException.h>
 #include <KeyframeAttributes.h>
@@ -124,6 +125,7 @@
 #include <ViewerPlotFactory.h>
 #include <ViewerPlotList.h>
 #include <ViewerPopupMenu.h>
+#include <ViewerProperties.h>
 #include <ViewerQueryManager.h>
 #include <ViewerServerManager.h>
 #include <ViewerState.h>
@@ -229,14 +231,15 @@ using std::string;
 //    Brad Whitlock, Thu Apr  9 15:58:47 PDT 2009
 //    I initialized openDatabaseOnStartup, openScriptOnStartup.
 //
+//    Brad Whitlock, Tue Apr 14 11:47:41 PDT 2009
+//    I moved many members into ViewerProperties.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : ViewerBase(0), 
     launchEngineAtStartup(), openDatabaseOnStartup(), openScriptOnStartup(),
     interpretCommands(), xfer(), clients(),
-    borders(), shift(), preshift(), geometry(),
-    engineParallelArguments(), unknownArguments(), clientArguments(),
-    applicationLocale("default")
+    engineParallelArguments(), unknownArguments(), clientArguments()
 {
     //
     // Initialize pointers to some Qt objects that don't get created
@@ -286,11 +289,6 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     iconifyOpcode = 0;
 
     //
-    // can be overridden by the -numrestarts flag.
-    //
-    numEngineRestarts = VIEWER_NUM_ENGINE_RESTARTS;
-
-    //
     // Initialize pointers to some objects that don't get created until later.
     //
     keepAliveTimer = 0;
@@ -301,20 +299,9 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     syncObserver = 0;
     colorTableObserver = 0;
 
-
-    //
-    // Set some flags related to viewer windows.
-    //
-    nowin = false;
-    smallWindow = false;
-    defaultStereoToOn = false;
-    useWindowMetrics = true;
-
     //
     // By default, read the config files.
     //
-    noconfig = false;
-    configFileName = 0;
     configMgr = new ViewerConfigManager(this);
     systemSettings = 0;
     localSettings = 0;
@@ -372,6 +359,9 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
 //    Brad Whitlock, Wed Aug 20 15:45:57 PDT 2008
 //    Delete viewerDelayedState.
 //
+//    Brad Whitlock, Tue Apr 14 11:21:46 PDT 2009
+//    Delete viewer properties.
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -387,8 +377,8 @@ ViewerSubject::~ViewerSubject()
     delete operatorFactory;
     delete configMgr;
     delete syncObserver;
-    delete [] configFileName;
 
+    delete GetViewerProperties();
     delete GetViewerState();
     delete GetViewerMethods();
     delete inputConnection;
@@ -417,6 +407,9 @@ ViewerSubject::~ViewerSubject()
 //    to a parent process will now be optional based on whether this method
 //    is called.
 //
+//    Brad Whitlock, Tue Apr 14 11:57:47 PDT 2009
+//    Set LaunchedByClient in the ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -426,7 +419,8 @@ ViewerSubject::Connect(int *argc, char ***argv)
     {
         int timeid = visitTimer->StartTimer();
         parent = new ParentProcess;
-        parent->Connect(1, 1, argc, argv, true);
+        if(parent->Connect(1, 1, argc, argv, true))
+            GetViewerProperties()->SetLaunchedByClient(true);
         visitTimer->StopTimer(timeid, "Connecting to client");
     }
 }
@@ -452,6 +446,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //   Brad Whitlock, Wed Nov 26 11:39:27 PDT 2008
 //   Get the current appearance attributes
 //
+//   Brad Whitlock, Tue Apr 14 11:57:11 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -468,6 +465,7 @@ ViewerSubject::Initialize()
     QString transPath(GetVisItArchitectureDirectory().c_str());
     transPath += "/bin/translations/";
 #endif
+    QString applicationLocale(GetViewerProperties()->GetApplicationLocale().c_str());
     if(applicationLocale == "default")
         applicationLocale = QLocale::system().name();
     QString transFile(QString("visit_") + applicationLocale);
@@ -484,7 +482,7 @@ ViewerSubject::Initialize()
     }
 
     // Customize the colors and fonts.
-    if (!ViewerWindow::GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
     {
         GetAppearance(qApp, GetViewerState()->GetAppearanceAttributes());
         CustomizeAppearance();
@@ -778,7 +776,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
     // process requires authentication.
     //
 #if !defined(_WIN32)
-    if (!ViewerWindow::GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
     {
         RemoteProcess::SetAuthenticationCallback(&ViewerPasswordWindow::authenticate);
     }
@@ -937,6 +935,9 @@ ViewerSubject::InformClientOfPlugins() const
 //   Brad Whitlock, Thu Apr  9 15:59:56 PDT 2009
 //   I added code to open a file on startup.
 //
+//   Brad Whitlock, Tue Apr 14 12:00:09 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -963,7 +964,7 @@ ViewerSubject::HeavyInitialization()
         //
         // Turn on stereo if it was enabled from the command line
         //
-        if (defaultStereoToOn)
+        if (GetViewerProperties()->GetDefaultStereoToOn())
             ViewerWindowManager::GetRenderingAttributes()->SetStereoRendering(true);
 
         //
@@ -1540,6 +1541,9 @@ ViewerSubject::LoadOperatorPlugins()
 //   make sure we send default file opening options from the config file
 //   to all existing mdservers.
 //
+//   Brad Whitlock, Tue Apr 14 12:02:10 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -1554,7 +1558,7 @@ ViewerSubject::ProcessConfigFileSettings()
     configMgr->ProcessConfigSettings(localSettings);
 
     // Import external color tables.
-    if(!noconfig)
+    if(!GetViewerProperties()->GetNoConfig())
         avtColorTables::Instance()->ImportColorTables();
 
     // Send the user's config settings to the client.
@@ -1663,6 +1667,9 @@ ViewerSubject::AddInitialWindows()
 //    Brad Whitlock, Thu Apr  9 14:39:12 PDT 2009
 //    I added support for reverse launching.
 //
+//    Brad Whitlock, Tue Apr 14 12:03:32 PDT 2009
+//    Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -1694,7 +1701,7 @@ ViewerSubject::LaunchEngineOnStartup()
                 EngineKey("localhost",""), // The name of the engine (host)
                 args,               // The engine arguments
                 true,               // Whether to skip the engine chooser
-                numEngineRestarts,  // Number of allowed restarts
+                GetViewerProperties()->GetNumEngineRestarts(), // Number of allowed restarts
                 true);              // Whether we're reverse launching
 
             ViewerWindowManager::Instance()->ShowAllWindows();
@@ -1705,7 +1712,7 @@ ViewerSubject::LaunchEngineOnStartup()
                 EngineKey(launchEngineAtStartup,""), // The name of the engine (host)
                 engineParallelArguments,             // The engine arguments
                 true,                                // Whether to skip the engine chooser
-                numEngineRestarts,                   // Number of allowed restarts
+                GetViewerProperties()->GetNumEngineRestarts(), // Number of allowed restarts
                 false);                              // Whether we're reverse launching
         }
     }
@@ -1736,6 +1743,7 @@ ViewerSubject::OpenDatabaseOnStartup()
            "");  // forcedFileType
 
         ViewerWindowManager::Instance()->UpdateActions();
+        ViewerWindowManager::Instance()->ShowAllWindows();
     }
 }
 
@@ -1761,6 +1769,7 @@ ViewerSubject::OpenScriptOnStartup()
         cmd += openScriptOnStartup;
         cmd += "')";
         InterpretCommands(cmd);
+        ViewerWindowManager::Instance()->ShowAllWindows();
     }
 }
 
@@ -1942,6 +1951,9 @@ ViewerSubject::ProcessEvents()
 //    I made it honor the useWindowMetrics setting in the event that
 //    none of the geometry or other flags were set.
 //
+//    Brad Whitlock, Tue Apr 14 12:04:03 PDT 2009
+//    Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -1950,26 +1962,26 @@ ViewerSubject::InitializeWorkArea()
     char           tmp[50];
     int            x, y, w, h;
 
-    if (nowin)
+    if (GetViewerProperties()->GetNowin())
     {
-        if (borders.size() == 0)
+        if (GetViewerProperties()->GetWindowBorders().size() == 0)
         {
-            borders  = "0,0,0,0";
+            GetViewerProperties()->SetWindowBorders("0,0,0,0");
         }
-        if (shift.size() == 0)
+        if (GetViewerProperties()->GetWindowShift().size() == 0)
         {
-            shift    = "0,0";
+            GetViewerProperties()->SetWindowShift("0,0");
         }
-        if (preshift.size() == 0)
+        if (GetViewerProperties()->GetWindowPreShift().size() == 0)
         {
-            preshift = "0,0";
+            GetViewerProperties()->SetWindowPreShift("0,0");
         }
-        if (geometry.size() == 0)
+        if (GetViewerProperties()->GetWindowGeometry().size() == 0)
         {
-            if (!smallWindow)
-                geometry = "1024x1024";
+            if (GetViewerProperties()->GetWindowSmall())
+                GetViewerProperties()->SetWindowGeometry("512x512");
             else
-                geometry = "512x512";
+                GetViewerProperties()->SetWindowGeometry("1024x1024");
         }
     }
     else
@@ -1979,13 +1991,15 @@ ViewerSubject::InitializeWorkArea()
         // class to fill in the blanks.
         //
         int wmBorder[4], wmShift[2], wmScreen[4];
-        if(borders.size() == 0 || shift.size() == 0 ||
-           preshift.size() == 0 || geometry.size() == 0)
+        if(GetViewerProperties()->GetWindowBorders().size() == 0 ||
+           GetViewerProperties()->GetWindowShift().size() == 0 ||
+           GetViewerProperties()->GetWindowPreShift().size() == 0 || 
+           GetViewerProperties()->GetWindowGeometry().size() == 0)
         {
-            if(useWindowMetrics)
+            if(GetViewerProperties()->GetUseWindowMetrics())
             {
                 WindowMetrics *wm = WindowMetrics::Instance();
-                wm->MeasureScreen(useWindowMetrics);
+                wm->MeasureScreen(true);
 
                 wmBorder[0] = wm->GetBorderT();
                 wmBorder[1] = wm->GetBorderB();
@@ -2023,35 +2037,35 @@ ViewerSubject::InitializeWorkArea()
         //
         // Use WindowMetrics to determine the borders.
         //
-        if(borders.size() == 0)
+        if(GetViewerProperties()->GetWindowBorders().size() == 0)
         {
             SNPRINTF(tmp, 50, "%d,%d,%d,%d",
                      wmBorder[0], wmBorder[1], wmBorder[2], wmBorder[3]);
-            borders = tmp;
+            GetViewerProperties()->SetWindowBorders(tmp);
         }
 
         //
         // Use WindowMetrics to determine the shift.
         //
-        if(shift.size() == 0)
+        if(GetViewerProperties()->GetWindowShift().size() == 0)
         {
             SNPRINTF(tmp, 50, "%d,%d", wmShift[0], wmShift[1]);
-            shift = tmp;
+            GetViewerProperties()->SetWindowShift(tmp);
         }
 
         //
         // Use WindowMetrics to determine the preshift.
         //
-        if(preshift.size() == 0)
+        if(GetViewerProperties()->GetWindowPreShift().size() == 0)
         {
             SNPRINTF(tmp, 50, "%d,%d", wmShift[0], wmShift[1]);
-            preshift = tmp;
+            GetViewerProperties()->SetWindowPreShift(tmp);
         }
 
         //
         // Use WindowMetrics to determine the geometry.
         //
-        if(geometry.size() == 0)
+        if(GetViewerProperties()->GetWindowGeometry().size() == 0)
         {
             int h1 = int(wmScreen[0] * 0.8);
             int h2 = int(wmScreen[1] * 0.8);
@@ -2059,22 +2073,23 @@ ViewerSubject::InitializeWorkArea()
             w = h;
             x = wmScreen[2] + wmScreen[0] - w;
             y = wmScreen[3];
-            if(smallWindow)
+            if(GetViewerProperties()->GetWindowSmall())
             {
                 w /= 2; h /= 2; x += w;
             }
 
             SNPRINTF(tmp, 50, "%dx%d+%d+%d", w, h, x, y);
-            geometry = tmp;
+            GetViewerProperties()->SetWindowGeometry(tmp);
         }
-        else if(smallWindow)
+        else if(GetViewerProperties()->GetWindowSmall())
         {
-            if(sscanf(geometry.c_str(), "%dx%d+%d+%d", &w, &h, &x, &y) == 4)
+            if(sscanf(GetViewerProperties()->GetWindowGeometry().c_str(),
+                      "%dx%d+%d+%d", &w, &h, &x, &y) == 4)
             {
                 w /= 2;
                 h /= 2;
                 SNPRINTF(tmp, 50, "%dx%d+%d+%d", w, h, x, y);
-                geometry = tmp;
+                GetViewerProperties()->SetWindowGeometry(tmp);
             }
         }
     }
@@ -2083,10 +2098,10 @@ ViewerSubject::InitializeWorkArea()
     // Set the options in the viewer window manager.
     //
     ViewerWindowManager *windowManager=ViewerWindowManager::Instance();
-    windowManager->SetBorders(borders.c_str());
-    windowManager->SetShift(shift.c_str());
-    windowManager->SetPreshift(preshift.c_str());
-    windowManager->SetGeometry(geometry.c_str());
+    windowManager->SetBorders(GetViewerProperties()->GetWindowBorders().c_str());
+    windowManager->SetShift(GetViewerProperties()->GetWindowShift().c_str());
+    windowManager->SetPreshift(GetViewerProperties()->GetWindowPreShift().c_str());
+    windowManager->SetGeometry(GetViewerProperties()->GetWindowGeometry().c_str());
 }
 
 // ****************************************************************************
@@ -2120,7 +2135,7 @@ ViewerSubject::InitializeWorkArea()
 void
 ViewerSubject::CustomizeAppearance()
 {
-    if (!ViewerWindow::GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
     {
         SetAppearance(qApp, GetViewerState()->GetAppearanceAttributes());
     }
@@ -2201,6 +2216,9 @@ ViewerSubject::GetOperatorFactory() const
 //    Brad Whitlock, Thu Aug 14 14:44:22 PDT 2008
 //    Move creation of the config manager to the constructor.
 //
+//    Brad Whitlock, Tue Apr 14 12:14:12 PDT 2009
+//    Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -2216,25 +2234,16 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
     {
         if (strcmp(argv[i], "-noconfig") == 0)
         {
-            noconfig = true;
-            if(configFileName != 0)
-            {
-                delete [] configFileName;
-                configFileName = 0;
-            }
+            GetViewerProperties()->SetNoConfig(true);
+            GetViewerProperties()->SetConfigurationFileName("");
         }
-        else if (strcmp(argv[i], "-config") == 0 && (i+1) < argc && !noconfig)
+        else if (strcmp(argv[i], "-config") == 0 &&
+                 (i+1) < argc &&
+                 !GetViewerProperties()->GetNoConfig())
         {
             specifiedConfig = true;
-            if(configFileName != 0)
-            {
-                delete [] configFileName;
-                configFileName = 0;
-            }
 #ifndef WIN32
-            int len = strlen(argv[i+1]);
-            configFileName = new char[len + 1];
-            strcpy(configFileName, argv[i+1]);
+            GetViewerProperties()->SetConfigurationFileName(argv[i+1]);
 #else
             string tmp = argv[i+1];
             int argcnt = 1;
@@ -2249,9 +2258,7 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
                     tmp += argv[j];
                 }
             }
-            int len = tmp.length();
-            configFileName = new char[len+1];
-            strcpy(configFileName, tmp.c_str());
+            GetViewerProperties()->SetConfigurationFileName(tmp);
             nConfigArgs = argcnt;
 #endif
         }       
@@ -2264,20 +2271,22 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
     //
     timeid = visitTimer->StartTimer();
     char *configFile = GetSystemConfigFile();
-    if (noconfig)
+    if (GetViewerProperties()->GetNoConfig())
         systemSettings = NULL;
     else
         systemSettings = configMgr->ReadConfigFile(configFile);
     delete [] configFile;
-    configFile = GetDefaultConfigFile(configFileName);
-    if (specifiedConfig && strcmp(configFile, configFileName) != 0)
+    std::string configFileName(GetViewerProperties()->GetConfigurationFileName());
+    const char *cfn = (configFileName != "") ? configFileName.c_str() : NULL;
+    configFile = GetDefaultConfigFile(cfn);
+    if (specifiedConfig && strcmp(configFile, cfn) != 0)
     {
         cerr << "\n\nYou specified a config file with the \"-config\" option,"
                 " but the config file could not be located.  Note that this "
                 "may be because you must fully qualify the directory of the "
                 "config file.\n\n\n";
     }
-    if (noconfig)
+    if (GetViewerProperties()->GetNoConfig())
         localSettings = NULL;
     else
         localSettings = configMgr->ReadConfigFile(configFile);
@@ -2439,7 +2448,6 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
     //
     for (int i = 1 ; i < argc ; i++)
     {
-debug1 << "Processing option " << i << " " << argv[i] << endl;
         if (strcmp(argv[i], "-borders") == 0)
         {
             if (i + 1 >= argc)
@@ -2447,7 +2455,7 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
                 cerr << "Borders string missing for -borders option" << endl;
                 continue;
             }
-            borders = argv[i+1];
+            GetViewerProperties()->SetWindowBorders(argv[i+1]);
             i += 1;
         }
         else if (strcmp(argv[i], "-shift") == 0)
@@ -2457,7 +2465,7 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
                 cerr << "Shift string missing for -shift option" << endl;
                 continue;
             }
-            shift = argv[i+1];
+            GetViewerProperties()->SetWindowShift(argv[i+1]);
             i += 1;
         }
         else if (strcmp(argv[i], "-preshift") == 0)
@@ -2467,7 +2475,7 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
                 cerr << "Preshift string missing for -preshift option" << endl;
                 continue;
             }
-            preshift = argv[i+1];
+            GetViewerProperties()->SetWindowPreShift(argv[i+1]);
             i += 1;
         }
         else if (strcmp(argv[i], "-geometry") == 0)
@@ -2494,15 +2502,15 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
         }
         else if (strcmp(argv[i], "-small") == 0)
         {
-            smallWindow = true;
+            GetViewerProperties()->SetWindowSmall(true);
         }
         else if (strcmp(argv[i], "-debug") == 0)
         {
             int debugLevel = 1; 
             if (i+1 < argc && isdigit(*(argv[i+1])))
-               debugLevel = atoi(argv[i+1]);
+                debugLevel = atoi(argv[i+1]);
             else
-               cerr << "Warning: debug level not specified, assuming 1" << endl;
+                cerr << "Warning: debug level not specified, assuming 1" << endl;
             if (debugLevel > 0 && debugLevel < 6)
             {
                 ViewerServerManager::SetDebugLevel(debugLevel);
@@ -2630,7 +2638,7 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
             clientArguments.push_back(argv[i]);
             clientArguments.push_back(argv[i+1]);
 
-            applicationLocale = QString(argv[i+1]);
+            GetViewerProperties()->SetApplicationLocale(argv[i+1]);
             ++i;
         }
         else if (strcmp(argv[i], "-timing") == 0 ||
@@ -2661,11 +2669,10 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
             InitVTK::ForceMesa();
             RemoteProcess::DisablePTY();
             SetNowinMode(true);
-            nowin = true;
         }
         else if (strcmp(argv[i], "-fullscreen") == 0)
         {
-            ViewerWindow::SetFullScreenMode(true);
+            GetViewerProperties()->SetWindowFullScreen(true);
         }
         else if (strcmp(argv[i], "-nopty") == 0)
         {
@@ -2674,7 +2681,7 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
         else if (strcmp(argv[i], "-stereo") == 0)
         {
             VisWinRendering::SetStereoEnabled();
-            defaultStereoToOn = true;
+            GetViewerProperties()->SetDefaultStereoToOn(true);
             unknownArguments.push_back(argv[i]);
         }
         else if (strcmp(argv[i], "-launchengine") == 0)
@@ -2738,7 +2745,7 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
                         "integer number." << endl;
                 continue;
             }
-            numEngineRestarts = atoi(argv[++i]);
+            GetViewerProperties()->SetNumEngineRestarts(atoi(argv[++i]));
         }
         else if (strcmp(argv[i], "-engineargs") == 0)
         {
@@ -2753,7 +2760,7 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
         else if(strcmp(argv[i], "-nowindowmetrics") == 0)
         {
             debug1 << "Handling -nowindowmetrics" << endl;
-            useWindowMetrics = false;
+            GetViewerProperties()->SetUseWindowMetrics(false);
         }
         else if(strcmp(argv[i], "-sshtunneling") == 0)
         {
@@ -2769,9 +2776,9 @@ debug1 << "Processing option " << i << " " << argv[i] << endl;
     // Set the geometry based on the argument that was provided with
     // -viewer_geometry taking precedence.
     if(viewerGeometryProvided)
-        geometry = tmpViewerGeometry;
+        GetViewerProperties()->SetWindowGeometry(tmpViewerGeometry);
     else if(geometryProvided)
-        geometry = tmpGeometry;
+        GetViewerProperties()->SetWindowGeometry(tmpGeometry);
 
     ViewerServerManager::SetArguments(unknownArguments);
 }
@@ -3905,6 +3912,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Moved set of active host database until after we have obtained valid
 //    meta data. 
 //
+//    Brad Whitlock, Tue Apr 14 13:38:10 PDT 2009
+//    Use ViewerProperties.
+//
 // ****************************************************************************
 
 int
@@ -4107,17 +4117,21 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         }
         else
         {
-            if (nowin)
+            if (GetViewerProperties()->GetNowin())
             {
                 success = ViewerEngineManager::Instance()->
-                                     CreateEngine(ek, engineParallelArguments,
-                                                  false, numEngineRestarts);
+                    CreateEngine(ek,
+                                 engineParallelArguments,
+                                 false,
+                                 GetViewerProperties()->GetNumEngineRestarts());
             }
             else
             {
                 success = ViewerEngineManager::Instance()->
-                                          CreateEngine(ek, noArgs, false,
-                                                       numEngineRestarts);
+                    CreateEngine(ek,
+                                 noArgs,
+                                 false,
+                                 GetViewerProperties()->GetNumEngineRestarts());
             }
         }
 
@@ -4953,6 +4967,9 @@ ViewerSubject::DeleteDatabaseCorrelation()
 //    Brad Whitlock, Wed Apr 30 09:19:27 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Tue Apr 14 13:40:52 PDT 2009
+//    Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -4980,21 +4997,27 @@ ViewerSubject::OpenComputeEngine()
     }
     else if (givenOptions)
     {
-        ViewerEngineManager::Instance()->CreateEngine(key,
-                                                      options, true,
-                                                      numEngineRestarts);
+        ViewerEngineManager::Instance()->CreateEngine(
+            key,
+            options,
+            true,
+            GetViewerProperties()->GetNumEngineRestarts());
     }
-    else if (nowin && givenCLArgs)
+    else if (GetViewerProperties()->GetNowin() && givenCLArgs)
     {
-        ViewerEngineManager::Instance()->CreateEngine(key,
-                                                      engineParallelArguments,
-                                                      true, numEngineRestarts);
+        ViewerEngineManager::Instance()->CreateEngine(
+            key,
+            engineParallelArguments,
+            true,
+            GetViewerProperties()->GetNumEngineRestarts());
     }
     else
     {
-        ViewerEngineManager::Instance()->CreateEngine(key,
-                                                      options, false,
-                                                      numEngineRestarts);
+        ViewerEngineManager::Instance()->CreateEngine(
+            key,
+            options,
+            false,
+            GetViewerProperties()->GetNumEngineRestarts());
     }
 }
 
@@ -5750,12 +5773,17 @@ ViewerSubject::ExportColorTable()
 //    Brad Whitlock, Wed Apr 30 09:26:08 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Tue Apr 14 13:42:31 PDT 2009
+//    Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::WriteConfigFile()
 {
-    char *defaultConfigFile = GetDefaultConfigFile(configFileName);
+    std::string configFileName(GetViewerProperties()->GetConfigurationFileName());
+    const char *cfn = (configFileName != "") ? configFileName.c_str() : 0;
+    char *defaultConfigFile = GetDefaultConfigFile(cfn);
 
     //
     // Tell the ViewerWindowManager to get the current location, size of the
@@ -6425,6 +6453,9 @@ ViewerSubject::SetRenderingAttributes()
 //   Brad Whitlock, Tue Feb 5 09:24:03 PDT 2002
 //   Made it respect the -small flag.
 //
+//   Brad Whitlock, Tue Apr 14 13:43:06 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
@@ -6436,7 +6467,7 @@ ViewerSubject::SetWindowArea()
     // Recalculate the layouts and reposition the windows.
     //
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    if(smallWindow)
+    if(GetViewerProperties()->GetWindowSmall())
     {
         int x, y, w, h;
         if (sscanf(area, "%dx%d+%d+%d", &w, &h, &x, &y) == 4)
@@ -8887,7 +8918,7 @@ ViewerSubject::OpenClient()
 
     TRY
     {
-        if(!avtCallback::GetNowinMode())
+        if(!GetViewerProperties()->GetNowin())
         {
             dialog = new ViewerConnectionProgressDialog(clientName.c_str(),
                 "localhost", false, 5);
@@ -9951,13 +9982,15 @@ ViewerSubject::SetDefaultFileOpenOptions()
 // Creation:   Fri Aug 22 15:16:39 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr 14 11:28:20 PDT 2009
+//   Use ViewerProperties.
 //   
 // ****************************************************************************
 
 bool
 ViewerSubject::GetNowinMode() const
 {
-    return nowin;
+    return GetViewerProperties()->GetNowin();
 }
 
 // ****************************************************************************
@@ -9976,58 +10009,16 @@ ViewerSubject::GetNowinMode() const
 // Creation:   Fri Aug 22 15:16:58 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 14 11:28:20 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::SetNowinMode(bool value)
 {
-    nowin = value;
-    avtCallback::SetSoftwareRendering(nowin);
-    ViewerWindow::SetNoWinMode(nowin);
-    ViewerRemoteProcessChooser::SetNoWinMode(nowin);
-    avtCallback::SetNowinMode(nowin);
-}
+    GetViewerProperties()->SetNowin(value);
 
-// ****************************************************************************
-// Method: ViewerSubject::SetUseWindowMetrics
-//
-// Purpose: 
-//   Sets whether the window metrics are used.
-//
-// Arguments:
-//   value : The new window metrics value
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 22 15:17:35 PST 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::SetUseWindowMetrics(bool value)
-{
-    useWindowMetrics = value;
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::GetUseWindowMetrics
-//
-// Purpose: 
-//   Get the window metrics setting.
-//
-// Returns:    The current window metrics setting.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 22 15:18:24 PST 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ViewerSubject::GetUseWindowMetrics() const
-{
-    return useWindowMetrics;
+    avtCallback::SetSoftwareRendering(value);
+    avtCallback::SetNowinMode(value);
 }

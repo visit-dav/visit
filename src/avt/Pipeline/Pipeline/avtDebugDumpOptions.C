@@ -41,7 +41,8 @@
 // ************************************************************************* //
 
 #include <avtDebugDumpOptions.h>
-#include <Utility.h>
+#include <visit-config.h>
+#include <FileFunctions.h>
 #include <DebugStream.h>
 using std::string;
 
