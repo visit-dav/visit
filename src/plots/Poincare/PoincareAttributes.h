@@ -136,6 +136,10 @@ public:
     void SetPlaneOrigin(const double *planeOrigin_);
     void SetPlaneNormal(const double *planeNormal_);
     void SetPlaneUpAxis(const double *planeUpAxis_);
+    void SetPlaneRadius(double planeRadius_);
+    void SetPointDensity(int pointDensity_);
+    void SetColorTableName(const std::string &colorTableName_);
+    void SetSingleColor(const ColorAttribute &singleColor_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetRelTol(double relTol_);
@@ -144,10 +148,6 @@ public:
     void SetIntegrationType(IntegrationType integrationType_);
     void SetShowStreamlines(bool showStreamlines_);
     void SetShowPoints(bool showPoints_);
-    void SetPointDensity(int pointDensity_);
-    void SetSourceRadius(double sourceRadius_);
-    void SetColorTableName(const std::string &colorTableName_);
-    void SetSingleColor(const ColorAttribute &singleColor_);
     void SetNumberPlanes(int NumberPlanes_);
     void SetColorStyle(ColorStyleType ColorStyle_);
     void SetMaxToroidalWinding(int MaxToroidalWinding_);
@@ -174,6 +174,12 @@ public:
           double         *GetPlaneNormal();
     const double         *GetPlaneUpAxis() const;
           double         *GetPlaneUpAxis();
+    double               GetPlaneRadius() const;
+    int                  GetPointDensity() const;
+    const std::string    &GetColorTableName() const;
+          std::string    &GetColorTableName();
+    const ColorAttribute &GetSingleColor() const;
+          ColorAttribute &GetSingleColor();
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     double               GetRelTol() const;
@@ -182,12 +188,6 @@ public:
     IntegrationType      GetIntegrationType() const;
     bool                 GetShowStreamlines() const;
     bool                 GetShowPoints() const;
-    int                  GetPointDensity() const;
-    double               GetSourceRadius() const;
-    const std::string    &GetColorTableName() const;
-          std::string    &GetColorTableName();
-    const ColorAttribute &GetSingleColor() const;
-          ColorAttribute &GetSingleColor();
     int                  GetNumberPlanes() const;
     ColorStyleType       GetColorStyle() const;
     int                  GetMaxToroidalWinding() const;
@@ -252,6 +252,10 @@ public:
         ID_planeOrigin,
         ID_planeNormal,
         ID_planeUpAxis,
+        ID_planeRadius,
+        ID_pointDensity,
+        ID_colorTableName,
+        ID_singleColor,
         ID_legendFlag,
         ID_lightingFlag,
         ID_relTol,
@@ -260,10 +264,6 @@ public:
         ID_integrationType,
         ID_showStreamlines,
         ID_showPoints,
-        ID_pointDensity,
-        ID_sourceRadius,
-        ID_colorTableName,
-        ID_singleColor,
         ID_NumberPlanes,
         ID_ColorStyle,
         ID_MaxToroidalWinding,
@@ -285,6 +285,10 @@ private:
     double         planeOrigin[3];
     double         planeNormal[3];
     double         planeUpAxis[3];
+    double         planeRadius;
+    int            pointDensity;
+    std::string    colorTableName;
+    ColorAttribute singleColor;
     bool           legendFlag;
     bool           lightingFlag;
     double         relTol;
@@ -293,10 +297,6 @@ private:
     int            integrationType;
     bool           showStreamlines;
     bool           showPoints;
-    int            pointDensity;
-    double         sourceRadius;
-    std::string    colorTableName;
-    ColorAttribute singleColor;
     int            NumberPlanes;
     int            ColorStyle;
     int            MaxToroidalWinding;

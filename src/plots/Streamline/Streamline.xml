@@ -105,7 +105,7 @@
       <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:SpecifiedBox">
         true
       </Field>
-      <Field name="pointDensity" label="Point density" type="int">
+      <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine,SpecifiedPlane">
         2
       </Field>
       <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
@@ -147,10 +147,10 @@
       <Field name="absTol" label="abs. tolerance" type="double">
         0.000010
       </Field>
-      <Field name="terminationType" label="unnamed1" type="enum" subtype="TerminationType">
+      <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
         Distance
       </Field>
-      <Field name="integrationType" label="Integration type" type="enum" subtype="IntegrationType">
+      <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         DormandPrince
       </Field>
       <Field name="streamlineAlgorithmType" label="Streamline algorithm type" type="enum" subtype="StreamlineAlgorithmType">
