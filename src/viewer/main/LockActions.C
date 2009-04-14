@@ -38,6 +38,7 @@
 
 #include <LockActions.h>
 #include <ViewerPlotList.h>
+#include <ViewerProperties.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
 
@@ -69,7 +70,7 @@ ToggleLockViewAction::ToggleLockViewAction(ViewerWindow *win) :
     ViewerToggleAction(win)
 {
     SetAllText(tr("Lock view"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(viewlockon_xpm), QPixmap(viewlockoff_xpm));
 }
 
@@ -115,7 +116,7 @@ ToggleLockTimeAction::ToggleLockTimeAction(ViewerWindow *win) :
     ViewerToggleAction(win)
 {
     SetAllText(tr("Lock time"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(timelockon_xpm), QPixmap(timelockoff_xpm));
 }
 
@@ -153,7 +154,7 @@ ToggleLockToolAction::ToggleLockToolAction(ViewerWindow *win) :
     ViewerToggleAction(win)
 {
     SetAllText(tr("Lock tools"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(toollockon_xpm), QPixmap(toollockoff_xpm));
 }
 

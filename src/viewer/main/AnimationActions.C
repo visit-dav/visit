@@ -39,6 +39,7 @@
 #include <AnimationActions.h>
 #include <ViewerFileServer.h>
 #include <ViewerPlotList.h>
+#include <ViewerProperties.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
 
@@ -65,7 +66,7 @@ TimeSliderReverseStepAction::TimeSliderReverseStepAction(ViewerWindow *win) :
 {
     SetAllText(tr("Reverse step"));
     SetToolTip(tr("Step back one frame"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(animationreversestep_xpm)));
 }
 
@@ -89,7 +90,7 @@ AnimationReversePlayAction::AnimationReversePlayAction(ViewerWindow *win) :
 {
     SetAllText(tr("Reverse play"));
     SetToolTip(tr("Play animation in reverse"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(animationreverseplayon_xpm), QPixmap(animationreverseplayoff_xpm));
 }
 
@@ -120,7 +121,7 @@ AnimationStopAction::AnimationStopAction(ViewerWindow *win) :
 {
     SetAllText(tr("Stop"));
     SetToolTip(tr("Stop animation"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(animationstopon_xpm), QPixmap(animationstopoff_xpm));
 }
 
@@ -151,7 +152,7 @@ AnimationPlayAction::AnimationPlayAction(ViewerWindow *win) :
 {
     SetAllText(tr("Play"));
     SetToolTip(tr("Play animation"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(animationplayon_xpm), QPixmap(animationplayoff_xpm));
 }
 
@@ -182,7 +183,7 @@ TimeSliderForwardStepAction::TimeSliderForwardStepAction(ViewerWindow *win) :
 {
     SetAllText(tr("Forward step"));
     SetToolTip(tr("Step forward one frame"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(animationforwardstep_xpm)));
 }
 

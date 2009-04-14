@@ -158,6 +158,7 @@
 #include <CouldNotConnectException.h>
 #include <IncompatibleVersionException.h>
 #include <IncompatibleSecurityTokenException.h>
+#include <InstallationFunctions.h>
 #include <LostConnectionException.h>
 #include <TimingsManager.h>
 #include <DebugStream.h>
@@ -1910,6 +1911,9 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Mon Oct 20 16:35:10 PDT 2008
 //    Don't set the loadFile path if the host is localhost.
 //
+//    Brad Whitlock, Fri Apr 10 16:46:38 PDT 2009
+//    I removed -dv handling since it's now handled in VisItInit.
+//
 // ****************************************************************************
 
 void
@@ -2185,10 +2189,6 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
             }
             applicationLocale = argv[i + 1];
             ++i;
-        }
-        else if(current == "-dv")
-        {
-            SetIsDevelopmentVersion(true);
         }
         else if(current == "-nowindowmetrics")
         {

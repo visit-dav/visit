@@ -67,6 +67,9 @@
 #    Tom Fogal, Sat Nov 22 16:48:20 MST 2008
 #    Added Environment
 #
+#    Brad Whitlock, Fri Apr 10 16:12:30 PDT 2009
+#    I moved some code from utility into InstallationFunctions.C
+#
 ##############################################################################
 
 ##
@@ -81,10 +84,10 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-SRC=DebugStream.C Environment.C PTY.C StackTimer.C \
-    TimingsManager.C VisItException.C VisItInit.C
-HDR=DebugStream.h Environment.h PTY.h StackTimer.h \
-    TimingsManager.h VisItException.h VisItInit.h
+SRC=DebugStream.C Environment.C FileFunctions.C InstallationFunctions.C \
+    PTY.C StackTimer.C TimingsManager.C VisItException.C VisItInit.C
+HDR=DebugStream.h Environment.h FileFunctions.C InstallationFunctions.h \
+    PTY.h StackTimer.h TimingsManager.h VisItException.h VisItInit.h
 OBJ=$(SRC:.C=.o)
 LIB=libmisc
 

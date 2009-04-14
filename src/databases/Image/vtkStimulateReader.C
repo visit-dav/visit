@@ -46,7 +46,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkByteSwap.h>
 #include <vtkPointData.h>
-#include <Utility.h>
+#include <FileFunctions.h>
 
 #include <sys/stat.h>
 

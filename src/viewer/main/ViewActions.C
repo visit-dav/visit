@@ -40,6 +40,7 @@
 #include <ViewAttributes.h>
 #include <ViewerPlotList.h>
 #include <ViewerPopupMenu.h>
+#include <ViewerProperties.h>
 #include <ViewerToolbar.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -77,7 +78,7 @@ TogglePerspectiveViewAction::TogglePerspectiveViewAction(ViewerWindow *win) : Vi
 {
     SetAllText(tr("Perspective"));
     SetToolTip(tr("Toggle perspective view"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(perspectiveon_xpm), QPixmap(perspectiveoff_xpm));
 }
 
@@ -106,7 +107,7 @@ TogglePerspectiveViewAction::Checked() const
 ResetViewAction::ResetViewAction(ViewerWindow *win) : ViewerAction(win)
 {
     SetAllText(tr("Reset view"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(resetview_xpm)));
 }
 
@@ -130,7 +131,7 @@ RecenterViewAction::RecenterViewAction(ViewerWindow *win) :
     ViewerAction(win)
 {
     SetAllText(tr("Recenter view"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(recenterview_xpm)));
 }
 
@@ -154,7 +155,7 @@ UndoViewAction::UndoViewAction(ViewerWindow *win) :
     ViewerAction(win)
 {
     SetAllText(tr("Undo view"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(undoview_xpm)));
 }
 
@@ -179,7 +180,7 @@ RedoViewAction::RedoViewAction(ViewerWindow *win) :
     ViewerAction(win)
 {
     SetAllText(tr("Redo view"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(redoview_xpm)));
 }
 
@@ -264,7 +265,7 @@ SaveViewAction::SaveViewAction(ViewerWindow *win) : ViewerMultipleAction(win),
     SetToolTip(s3);
     SetExclusive(false);
 
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
     {
         // Add the clear saved views choice.
         QPixmap clearIcon(saveview_xpm);
@@ -596,7 +597,7 @@ SaveViewAction::AddNewView(void *v, int vt)
     //
     QString tmp(tr("Use saved view %1").arg(views.size()));
 
-    if (!window->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
     {
         //
         // Create a pixmap from the blank camera pixmap that we can
@@ -1126,7 +1127,7 @@ ChooseCenterOfRotationAction::ChooseCenterOfRotationAction(ViewerWindow *win) :
 {
     SetAllText(tr("Choose center"));
     SetToolTip(tr("Choose center of rotation"));
-    if (!win->GetNoWinMode())
+    if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(choosecenterofrotation_xpm)));
 }
 
@@ -1203,7 +1204,7 @@ ChooseCenterOfRotationAction::Execute()
         double y = args.GetQueryPoint1()[1];
         windowMgr->ChooseCenterOfRotation(window->GetWindowId(), x, y);
     }
-    else if(!ViewerWindow::GetNoWinMode())
+    else if(!GetViewerProperties()->GetNowin())
     {
         // We don't have the points so we want to choose them interactively.
         // In order to do this, we have to change the window into

@@ -38,11 +38,14 @@
 
 #include <ViewerActionManager.h>
 #include <ViewerAction.h>
+#include <ViewerMethods.h>
 #include <ViewerMultipleAction.h>
 #include <ViewerPopupMenu.h>
+#include <ViewerProperties.h>
 #include <ViewerToggleAction.h>
 #include <ViewerToolbar.h>
 #include <ViewerWindow.h>
+#include <ViewerWindowManager.h>
 
 #include <AnimationActions.h>
 #include <LockActions.h>
@@ -51,7 +54,7 @@
 #include <ViewActions.h>
 
 #include <DebugStream.h>
-#include <ViewerWindowManager.h>
+#include <InstallationFunctions.h>
 
 #include <ActionGroupDescription.h>
 #include <ViewerWindowManagerAttributes.h>
@@ -351,7 +354,7 @@ public:
             if(toggled != actionShouldBeToggled)
             {
                 // Set the appropriate icon into the action.
-                if (!window->GetNoWinMode() &&
+                if (!GetViewerProperties()->GetNowin() &&
                     !action->icon().isNull())
                 {
                     if(actionShouldBeToggled)
@@ -368,6 +371,110 @@ public:
     }
 
     virtual bool Checked() const { return windowMgr->UsesLargeIcons(); }
+
+    virtual bool AllowInToolbar() const { return false; }
+};
+
+// ****************************************************************************
+// Class: OpenGUIClientAction
+//
+// Purpose:
+//   This action opens the VisIt GUI.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 14 09:57:32 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class OpenGUIClientAction : public ViewerAction
+{
+public:
+    OpenGUIClientAction(ViewerWindow *win) : ViewerAction(win)
+    {
+        SetAllText(tr("Open GUI"));
+    }
+
+    virtual ~OpenGUIClientAction() { }
+
+    virtual void Execute()
+    {
+        stringVector args;
+        GetViewerMethods()->OpenClient("GUI", GetVisItLauncher(), args);
+    }
+
+    virtual bool AllowInToolbar() const { return false; }
+};
+
+// ****************************************************************************
+// Class: OpenCLIClientAction
+//
+// Purpose:
+//   This action opens the VisIt CLI.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 14 09:57:32 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class OpenCLIClientAction : public ViewerAction
+{
+public:
+    OpenCLIClientAction(ViewerWindow *win) : ViewerAction(win)
+    {
+        SetAllText(tr("Open CLI"));
+    }
+
+    virtual ~OpenCLIClientAction() { }
+
+    virtual void Execute()
+    {
+        stringVector args;
+        args.push_back("-cli");
+        args.push_back("-newconsole");
+        GetViewerMethods()->OpenClient("CLI", GetVisItLauncher(), args);
+    }
+
+    virtual bool AllowInToolbar() const { return false; }
+};
+
+// ****************************************************************************
+// Class: MenuQuitAction
+//
+// Purpose:
+//   This action quits the viewer.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 14 09:57:32 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class MenuQuitAction : public ViewerAction
+{
+public:
+    MenuQuitAction(ViewerWindow *win) : ViewerAction(win)
+    {
+        SetAllText(tr("Quit"));
+    }
+
+    virtual ~MenuQuitAction() { }
+
+    virtual void Execute()
+    {
+        GetViewerMethods()->Close();
+        EXCEPTION1(VisItException, "Bypass action manager update. This is safe and by design");
+    }
 
     virtual bool AllowInToolbar() const { return false; }
 };
@@ -440,6 +547,9 @@ public:
 //
 //   Brad Whitlock, Fri May 23 10:29:46 PDT 2008
 //   Qt 4.
+//
+//   Brad Whitlock, Tue Apr 14 10:04:18 PDT 2009
+//   I added actions to open the gui and cli and quit.
 //
 // ****************************************************************************
 
@@ -520,6 +630,13 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
     AddAction(new MovePlotDatabaseKeyframeAction(win), ViewerRPC::MovePlotDatabaseKeyframeRPC);
     AddAction(new CopyPlotAction(win), ViewerRPC::CopyActivePlotsRPC);
     AddAction(new SetPlotFollowsTimeAction(win),ViewerRPC::SetPlotFollowsTimeRPC);
+
+    if(!GetViewerProperties()->GetLaunchedByClient())
+    {
+        AddAction(new OpenGUIClientAction(win), ViewerRPC::OpenGUIClientRPC);
+        AddAction(new OpenCLIClientAction(win), ViewerRPC::OpenCLIClientRPC);
+        AddAction(new MenuQuitAction(win), ViewerRPC::MenuQuitRPC);
+    }
 }
 
 // ****************************************************************************
@@ -997,7 +1114,7 @@ ViewerActionManager::HandleAction(const ViewerRPC &rpc)
 void
 ViewerActionManager::Update()
 {
-    if(!ViewerWindow::GetNoWinMode())
+    if(!GetViewerProperties()->GetNowin())
         ViewerWindowManager::Instance()->UpdateActions();
 }
 
@@ -1017,7 +1134,7 @@ ViewerActionManager::Update()
 void
 ViewerActionManager::UpdateSingleWindow()
 {
-    if(!ViewerWindow::GetNoWinMode())
+    if(!GetViewerProperties()->GetNowin())
     {
         // Update the actions.
         for(int i = 0; i < (int)ViewerRPC::MaxRPC; ++i)

@@ -41,6 +41,7 @@
 #include <ViewerFileServer.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotList.h>
+#include <ViewerProperties.h>
 #include <ViewerQueryManager.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -117,13 +118,13 @@ AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
         info = pluginMgr->GetViewerPluginInfo(pluginMgr->GetEnabledID(i));
         if(info)
         {
-            if(!window->GetNoWinMode() && 
+            if(!GetViewerProperties()->GetNowin() && 
                info->XPMIconData() != 0 &&
                info->GetUserSelectable())
             {
                 QString *menuName = info->GetMenuName();
 
-                if(!window->GetNoWinMode())
+                if(!GetViewerProperties()->GetNowin())
                 {
                     // Create a pixmap for the operator or get its pixmap from
                     // the pixmap cache.
@@ -523,7 +524,7 @@ RemoveOperatorAction::Execute()
 RemoveLastOperatorAction::RemoveLastOperatorAction(ViewerWindow *win) : ViewerAction(win)
 {
     SetAllText(tr("Remove last operator"));
-    if(!window->GetNoWinMode())
+    if(!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(removelastoperator_xpm)));
 }
 
@@ -611,7 +612,7 @@ RemoveAllOperatorsAction::RemoveAllOperatorsAction(ViewerWindow *win) :
     ViewerAction(win)
 {
     SetAllText(tr("Remove all operators"));
-    if(!window->GetNoWinMode())
+    if(!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(removealloperators_xpm)));
 }
 
@@ -796,13 +797,13 @@ AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win),
         info = pluginMgr->GetViewerPluginInfo(pluginMgr->GetEnabledID(i));
         if(info)
         {
-            if(!window->GetNoWinMode() && info->XPMIconData() != 0)
+            if(!GetViewerProperties()->GetNowin() && info->XPMIconData() != 0)
             {
                 QString *menuName = info->GetMenuName();
 
                 // Create a pixmap for the plot or get its pixmap from
                 // the pixmap cache.
-                if(!window->GetNoWinMode())
+                if(!GetViewerProperties()->GetNowin())
                 {
                     QString key;
                     key.sprintf("plot_icon_%s", info->GetName());
@@ -1209,7 +1210,7 @@ AddPlotAction::addPlot(int index, const QString &var)
 void
 AddPlotAction::changeMenuIconSize(bool large)
 {
-    if(!window->GetNoWinMode())
+    if(!GetViewerProperties()->GetNowin())
     {
 #if 1
 //#//warning Finish porting AddPlotAction::changeMenuIconSize

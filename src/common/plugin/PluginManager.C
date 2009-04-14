@@ -44,7 +44,7 @@
 #include <DebugStream.h>
 #include <InvalidDirectoryException.h>
 #include <InvalidPluginException.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
 #include <visit-config.h>
 #include <visitstream.h>
 #include <stdlib.h>

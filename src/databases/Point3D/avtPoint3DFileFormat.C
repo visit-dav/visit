@@ -54,7 +54,7 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
-#include <Utility.h>
+#include <InstallationFunctions.h>
 #include <DebugStream.h>
 
 const char      *avtPoint3DFileFormat::MESHNAME = "points";

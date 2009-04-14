@@ -39,7 +39,8 @@
 #include <MovieUtility.h>
 #include <visit-config.h>
 
-#include <Utility.h>
+#include <FileFunctions.h>
+#include <InstallationFunctions.h>
 #include <MovieTemplateConfig.h>
 #include <DebugStream.h>
 

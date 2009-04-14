@@ -65,7 +65,7 @@
 #include <IncompatibleSecurityTokenException.h>
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
 
 #include <DebugStream.h>
 #include <snprintf.h>

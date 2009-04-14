@@ -43,7 +43,8 @@
 #include <AttributeSubject.h>
 #include <ViewerSubject.h>
 #include <DebugStream.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
+#include <FileFunctions.h>
 #include <snprintf.h>
 
 // ****************************************************************************

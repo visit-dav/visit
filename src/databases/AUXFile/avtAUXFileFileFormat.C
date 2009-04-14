@@ -60,7 +60,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
-#include <Utility.h>
+#include <FileFunctions.h>
 
 using     std::string;
 

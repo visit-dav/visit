@@ -72,6 +72,7 @@
 #endif
 #include <IncompatibleVersionException.h>
 #include <VisItInit.h>
+#include <InstallationFunctions.h>
 #include <InitVTK.h>
 #include <LoadBalancer.h>
 #include <LostConnectionException.h>
@@ -200,7 +201,7 @@ protected:
         debug5 << mName << "viewer args(";
         for(size_t i = 0; i < viewerArgs.size(); ++i)
             debug5 << viewerArgs[i] << ", ";
-        debug5 << endl;
+        debug5 << ")" << endl;
 
         RemoteProcess::Launch(rHost, createAsThoughLocal, viewerArgs);
     }
@@ -1061,7 +1062,7 @@ Engine::ReverseLaunchViewer(int *argc, char **argv[])
 {
     // If we're reverse launching and we're the UI process then we can 
     // launch the viewer.
-    viewer = new ViewerRemoteProcess("visit");
+    viewer = new ViewerRemoteProcess(GetVisItLauncher());
 #ifdef PARALLEL
     if(reverseLaunch && PAR_UIProcess())
 #else
@@ -1071,7 +1072,6 @@ Engine::ReverseLaunchViewer(int *argc, char **argv[])
         TRY
         {
             viewer->AddArgument("-viewer");
-//            viewer->AddArgument("-defer");
             for(size_t j = 0; j < viewerArgs.size(); ++j)
                 viewer->AddArgument(viewerArgs[j]);
             viewer->Open("localhost",              // host

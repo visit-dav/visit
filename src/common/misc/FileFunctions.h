@@ -35,73 +35,46 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
-#ifndef VIEWER_POPUP_MENU_H
-#define VIEWER_POPUP_MENU_H
-#include <viewer_exports.h>
+#ifndef FILE_FUNCTIONS_H
+#define FILE_FUNCTIONS_H
+#include <misc_exports.h>
 #include <string>
-#include <map>
 
-#include <ViewerBase.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
-// Forward declares.
-class QAction;
-class QMenu;
-class ViewerActionBase;
-class ViewerWindow;
-
-// ****************************************************************************
-// Class: ViewerPopupMenu
 //
-// Purpose:
-//   This is the popup menu class for the viewer.
+// Type definitions
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 4 15:37:09 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Tue Feb 25 10:09:39 PDT 2003
-//   I added RemoveAction.
-//
-//   Brad Whitlock, Tue May 27 14:10:57 PDT 2008
-//   Qt 4.
-//
-// ****************************************************************************
+typedef void (ProcessDirectoryCallback)(void *, const std::string &, bool,
+                                        bool, long);
 
-class VIEWER_API ViewerPopupMenu : public ViewerBase
-{
-    struct SubMenuInfo
-    {
-        SubMenuInfo();
-        SubMenuInfo(const SubMenuInfo &);
-        SubMenuInfo(QMenu *, QAction *);
-        virtual ~SubMenuInfo();
-        void operator = (const SubMenuInfo &);
+#if defined(_WIN32)
+  typedef struct _stat VisItStat_t;
+  typedef off_t VisItOff_t;
+  typedef unsigned short mode_t;
+  #ifndef S_ISDIR
+    #define S_ISDIR(m) (((m) &S_IFMT) == S_IFDIR)
+  #endif
+#else
 
-        QMenu   *menu;
-        QAction *action;
-    };
+#if SIZEOF_OFF64_T > 4
+typedef struct stat64 VisItStat_t;
+typedef off64_t VisItOff_t;
+#else
+typedef struct stat VisItStat_t;
+typedef off_t VisItOff_t;
+#endif
 
-    typedef std::map<std::string, SubMenuInfo> MenuMap;
-public:
-    ViewerPopupMenu(ViewerWindow *win);
-    virtual ~ViewerPopupMenu();
+#endif
 
-    void ShowMenu();
-    void HideMenu();
-    void SetEnabled(bool val);
 
-    void AddAction(ViewerActionBase *action);
-    void AddAction(const std::string &menuName, ViewerActionBase *action);
-    void RemoveAction(ViewerActionBase *action);
-    void EnableMenu(const std::string &menuName);
-    void DisableMenu(const std::string &menuName);
-private:
-    QMenu   *CreateMenu(const std::string &name);
-
-    QMenu   *popup;
-    ViewerWindow *window;
-    MenuMap       menus;
-};
+int         MISC_API VisItStat(const char *filename, VisItStat_t *buf);
+int         MISC_API VisItFstat(int fd, VisItStat_t *buf);
+bool        MISC_API ReadAndProcessDirectory(const std::string &,
+                                      ProcessDirectoryCallback *,
+                                      void * = 0,
+                                      bool = false);
+std::string MISC_API ExpandUserPath(const std::string &);
 
 #endif

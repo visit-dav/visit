@@ -29,7 +29,7 @@
 
 #include "vtkVisItXMLParser.h"
 #include "vtkObjectFactory.h"
-#include "Utility.h"
+#include "FileFunctions.h"
 #include "vtk_expat.h"
 #include <ctype.h>
 #include <sys/stat.h>

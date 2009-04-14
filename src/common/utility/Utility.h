@@ -47,38 +47,8 @@
 #include <vectortypes.h>
 #include <map>
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <limits.h>
 #include <float.h>
-
-//
-// Type definitions
-//
-typedef void (ProcessDirectoryCallback)(void *, const std::string &, bool,
-                                        bool, long);
-typedef enum {CONFIGSTATE_IOERROR,
-              CONFIGSTATE_FIRSTTIME,
-              CONFIGSTATE_SUCCESS} ConfigStateEnum;
-
-#if defined(_WIN32)
-  typedef struct _stat VisItStat_t;
-  typedef off_t VisItOff_t;
-  typedef unsigned short mode_t;
-  #ifndef S_ISDIR
-    #define S_ISDIR(m) (((m) &S_IFMT) == S_IFDIR)
-  #endif
-#else
-
-#if SIZEOF_OFF64_T > 4
-typedef struct stat64 VisItStat_t;
-typedef off64_t VisItOff_t;
-#else
-typedef struct stat VisItStat_t;
-typedef off_t VisItOff_t;
-#endif
-
-#endif
 
 //
 // Function Prototypes
@@ -86,11 +56,6 @@ typedef off_t VisItOff_t;
 char UTILITY_API *CreateMessageStrings(char **, int *, int);
 int  UTILITY_API  LongestCommonPrefixLength(const char * const *, int);
 int  UTILITY_API  LongestCommonSuffixLength(const char * const *, int);
-bool UTILITY_API  ReadAndProcessDirectory(const std::string &,
-                                          ProcessDirectoryCallback *,
-                                          void * = 0,
-                                          bool = false);
-std::string UTILITY_API ExpandUserPath(const std::string &);
 
 // LINUX ONLY
 void UTILITY_API  GetMemorySize(unsigned int &, unsigned int &);
@@ -103,39 +68,9 @@ bool UTILITY_API  NumericStringCompare(const std::string &str1, const std::strin
 std::vector<std::string> UTILITY_API SplitValues(const std::string &buff,
                                                  char delim);
 
-std::string UTILITY_API GetVisItInstallationDirectory();
-std::string UTILITY_API GetVisItInstallationDirectory(const char *version);
-bool        UTILITY_API ReadInstallationInfo(std::string &distName, 
-                                             std::string &configName, 
-                                             std::string &bankName);
-
-std::string UTILITY_API GetVisItArchitectureDirectory();
-std::string UTILITY_API GetVisItArchitectureDirectory(const char *version);
-std::string UTILITY_API GetVisItLauncher();
-
-std::string UTILITY_API GetUserVisItDirectory();
-UTILITY_API char *      GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
-UTILITY_API char *      GetSystemConfigFile(const char *filename = 0);
-
-std::string UTILITY_API GetUserVisItRCFile();
-std::string UTILITY_API GetSystemVisItRCFile();
-
-int         UTILITY_API ConfigStateGetRunCount(ConfigStateEnum &code);
-void        UTILITY_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
-
-int         UTILITY_API VisItStat(const char *filename, VisItStat_t *buf);
-int         UTILITY_API VisItFstat(int fd, VisItStat_t *buf);
-
 bool        UTILITY_API VisItInitExtentsToLimits(double *exts, int n);
 bool        UTILITY_API VisItInitExtentsToLimits(float *exts, int n);
 bool        UTILITY_API VisItInitExtentsToLimits(int *exts, int n);
-
-// Version functions
-int         UTILITY_API GetVisItVersionFromString(const char*, int&, int&, int&);
-bool        UTILITY_API VisItVersionsCompatible(const char*, const char*);
-bool        UTILITY_API VersionGreaterThan(const std::string &v1, const std::string &v2);
-void        UTILITY_API SetIsDevelopmentVersion(bool val);
-bool        UTILITY_API GetIsDevelopmentVersion();
 
 // NOTE: Put these in their own header.
 void UTILITY_API PutOnSameXIntervals(int on1, const float *ox1, 

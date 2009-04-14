@@ -394,6 +394,7 @@ LIBSRC= \
     ViewerPlotFactory.C \
     ViewerPlotList.C \
     ViewerPopupMenu.C \
+    ViewerProperties.C \
     ViewerQuery.C \
     ViewerQueryManager.C \
     ViewerRemoteProcessChooser.C \

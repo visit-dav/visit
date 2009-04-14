@@ -42,6 +42,7 @@
 #include <HostProfileList.h>
 #include <ViewerHostProfileSelectorNoWin.h>
 #include <ViewerHostProfileSelectorWithWin.h>
+#include <ViewerProperties.h>
 #include <RemoteProxyBase.h>
 
 #include <stdio.h>
@@ -52,7 +53,6 @@
 #include <string>
 using std::string;
 
-bool ViewerRemoteProcessChooser::nowin = false;
 ViewerRemoteProcessChooser *ViewerRemoteProcessChooser::instance = NULL;
 
 // ****************************************************************************
@@ -65,11 +65,14 @@ ViewerRemoteProcessChooser *ViewerRemoteProcessChooser::instance = NULL;
 //    Kathleen Bonnell, Wed Feb  5 09:40:21 PST 2003 
 //    Rework to use ViewerHostProfileSelector. 
 //
+//    Brad Whitlock, Tue Apr 14 11:42:27 PDT 2009
+//    Inherit from ViewerBase.
+//
 // ****************************************************************************
 
-ViewerRemoteProcessChooser::ViewerRemoteProcessChooser()
+ViewerRemoteProcessChooser::ViewerRemoteProcessChooser() : ViewerBase()
 {
-    if (nowin)
+    if (GetViewerProperties()->GetNowin())
         selector = new ViewerHostProfileSelectorNoWin();
     else
         selector = new ViewerHostProfileSelectorWithWin();
@@ -196,25 +199,4 @@ ViewerRemoteProcessChooser::Instance()
     if (!instance)
         instance = new ViewerRemoteProcessChooser();
     return instance;
-}
-
-
-// ****************************************************************************
-//  Method:  ViewerRemoteProcessChooser::SetNoWinMode
-//
-//  Purpose:
-//    Sets nowin mode.
-//
-//  Arguments:
-//    nw         nowin mode
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 17, 2002
-//
-// ****************************************************************************
-
-void
-ViewerRemoteProcessChooser::SetNoWinMode(bool nw)
-{
-    nowin = nw;
 }

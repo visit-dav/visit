@@ -52,6 +52,7 @@
 #include <CancelledConnectException.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerPasswordWindow.h>
+#include <ViewerProperties.h>
 #include <ViewerSubject.h>
 #include <ViewerRemoteProcessChooser.h>
 
@@ -536,6 +537,9 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
 //   Brad Whitlock, Tue May 27 15:54:41 PDT 2008
 //   VisIt is fast on Intel Macs so make the timeout be non-zero.
 //
+//   Brad Whitlock, Tue Apr 14 11:31:48 PDT 2009
+//   Use ViewerProperties.
+//
 // ****************************************************************************
 
 ViewerConnectionProgressDialog *
@@ -547,7 +551,7 @@ ViewerServerManager::SetupConnectionProgressWindow(RemoteProxyBase *component,
     //
     // Set the engine proxy's progress callback.
     //
-    if(!avtCallback::GetNowinMode())
+    if(!GetViewerProperties()->GetNowin())
     {
         int timeout = (component->Parallel() || !HostIsLocalHost(host)) ? 0 : 4000;
 

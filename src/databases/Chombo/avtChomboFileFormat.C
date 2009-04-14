@@ -68,7 +68,7 @@
 
 #include <Expression.h>
 
-#include <Utility.h>
+#include <FileFunctions.h>
 
 #include <BadDomainException.h>
 #include <DebugStream.h>

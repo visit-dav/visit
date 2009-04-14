@@ -49,7 +49,7 @@
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
 
-#include <Utility.h>
+#include <FileFunctions.h>
 
 #include <snprintf.h>
 

@@ -159,6 +159,8 @@
       ExportDBRPC
       SetTryHarderCyclesTimesRPC
       OpenClientRPC
+      OpenGUIClientRPC
+      OpenCLIClientRPC
       SuppressQueryOutputRPC
       SetQueryFloatFormatRPC
       SetMeshManagementAttributesRPC
@@ -184,6 +186,7 @@
       DeleteNamedSelectionRPC
       LoadNamedSelectionRPC
       SaveNamedSelectionRPC
+      MenuQuitRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

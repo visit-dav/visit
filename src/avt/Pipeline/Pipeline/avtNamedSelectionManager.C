@@ -53,7 +53,7 @@
 
 #include <DebugStream.h>
 #include <snprintf.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
 #include <visitstream.h>
 #include <VisItException.h>
 

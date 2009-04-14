@@ -38,6 +38,8 @@
 
 #include <ViewerWindow.h>
 #include <ViewerToggleAction.h>
+#include <ViewerProperties.h>
+
 #include <QAction>
 
 // ****************************************************************************
@@ -122,7 +124,7 @@ ViewerToggleAction::~ViewerToggleAction()
 void
 ViewerToggleAction::SetIcons(const QPixmap &p1, const QPixmap &p2)
 {
-    if(!window->GetNoWinMode())
+    if(!GetViewerProperties()->GetNowin())
     {
         toggledIcon = new QPixmap(p1);
         regularIcon = new QPixmap(p2);
@@ -188,7 +190,7 @@ ViewerToggleAction::Update()
         if(toggled != actionShouldBeToggled)
         {
             // Set the appropriate icon into the action.
-            if (!window->GetNoWinMode() &&
+            if (!GetViewerProperties()->GetNowin() &&
                 !action->icon().isNull())
             {
                 if(actionShouldBeToggled)

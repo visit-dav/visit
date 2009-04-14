@@ -87,6 +87,10 @@ class Connection;
 //   Jeremy Meredith, Wed Apr 30 12:26:25 EDT 2008
 //   Added apparent host name (tries to resolve localhost into a real name).
 //
+//   Brad Whitlock, Tue Apr 14 15:13:20 PDT 2009
+//   I made Connect return bool as to whether any connections were created
+//   since it is possible to call Connect and not create any connections.
+//
 // ****************************************************************************
 
 class COMM_API ParentProcess
@@ -94,7 +98,7 @@ class COMM_API ParentProcess
 public:
     ParentProcess();
     ~ParentProcess();
-    void Connect(int numRead, int numWrite, int *argc, char **argv[],
+    bool Connect(int numRead, int numWrite, int *argc, char **argv[],
                  bool createSockets, int failCode=0);
     const std::string &GetHostName() const;
     const std::string &GetApparentHostName();

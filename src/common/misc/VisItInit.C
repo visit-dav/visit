@@ -56,6 +56,7 @@
 #include <cstring>
 
 #include <DebugStream.h>
+#include <InstallationFunctions.h>
 #include <TimingsManager.h>
 #include <visit-config.h>
 
@@ -216,6 +217,9 @@ NewHandler(void)
 //    Add support for -debug_engine_rank, limiting debug output to the specified
 //    rank.
 //
+//    Brad Whitlock, Fri Apr 10 16:00:55 PDT 2009
+//    I added support for reading -dv.
+//
 // ****************************************************************************
 
 void
@@ -310,6 +314,10 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
                  strcmp("-timings", argv[i]) == 0)
         {
             enableTimings = true;
+        }
+        else if (strcmp("-dv",  argv[i]) == 0)
+        {
+            SetIsDevelopmentVersion(true);
         }
         else if (strcmp("-svn_revision",  argv[i]) == 0)
         {

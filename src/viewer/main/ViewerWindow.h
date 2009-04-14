@@ -441,6 +441,9 @@ class ViewerToolbar;
 //    I removed the AnimationAttribute methods since they can be accessed
 //    via the plot list.
 //
+//    Brad Whitlock, Tue Apr 14 11:37:34 PDT 2009
+//    I made it use ViewerProperties.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -615,12 +618,6 @@ public:
     bool GetToolAvailable(int index) const;
     bool GetToolEnabled(int index) const;
     std::string GetToolName(int index) const;
-
-    static void SetNoWinMode(bool);
-    static bool GetNoWinMode();
-
-    static void SetFullScreenMode(bool);
-    static bool GetFullScreenMode();
 
     void SetFullFrameMode(const bool mode);
     bool GetFullFrameMode() const;
@@ -801,9 +798,6 @@ private:
 
     ViewStack       undoViewStack;
     ViewStack       redoViewStack;
-
-    static bool     doNoWinMode;
-    static bool     doFullScreenMode;
 
     // Note: since these aren't stored in VisWindow, this seems like a fine
     // place to put them.  If the shading ever is stored in VisWindow, this
