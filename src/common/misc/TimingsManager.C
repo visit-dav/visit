@@ -78,6 +78,11 @@ static struct TIMEINFO initTimeInfo;
 //  Programmer: Mark C. Miller
 //  Creation:   April 20, 2004 
 //
+//  Modifications:
+//
+//    Dave Pugmire, Wed Apr 15 08:36:39 EDT 2009
+//    Use gettimeofday for all non-windows.
+//
 // ****************************************************************************
 
 static void
@@ -85,10 +90,8 @@ GetCurrentTimeInfo(struct TIMEINFO &timeInfo)
 {
 #if defined(_WIN32)
     _ftime(&timeInfo);
-#elif defined(__APPLE__)
-    gettimeofday(&timeInfo, 0);
 #else
-    ftime(&timeInfo);
+    gettimeofday(&timeInfo, 0);
 #endif
 }
 
@@ -627,6 +630,9 @@ TimingsManager::LookupTimer(const std::string &nm)
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //    Added test for emtpy filename. Added missing call to close ofile
 //
+//    Dave Pugmire, Wed Apr 15 08:36:39 EDT 2009
+//    Force fixed mode output for floating point numbers.
+//
 // ****************************************************************************
 
 void
@@ -672,6 +678,7 @@ TimingsManager::DumpTimings(void)
     }
     else
     {
+        ofile<<std::fixed;
         DumpTimings(ofile);
         ofile.close();
     }
@@ -774,20 +781,15 @@ TimingsManager::DumpTimings(ostream &out)
 //    Mark C. Miller, Tue Apr 20 21:12:05 PDT 2004
 //    Relocated from PlatformStopTimer
 //
+//    Dave Pugmire, Wed Apr 15 08:36:39 EDT 2009
+//    Use gettimeofday for all non-windows.
+//
 // ****************************************************************************
 double
 TimingsManager::DiffTime(const struct TIMEINFO &startTime,
                          const struct TIMEINFO &endTime)
 {
-#if defined(__APPLE__)
-
-    double seconds = double(endTime.tv_sec - startTime.tv_sec) + 
-                     double(endTime.tv_usec - startTime.tv_usec) / 1000000.;
-                     
-    return seconds;
-
-#else
-
+#if defined(_WIN32)
     // 
     // Figure out how many milliseconds between start and end times 
     //
@@ -803,7 +805,11 @@ TimingsManager::DiffTime(const struct TIMEINFO &startTime,
     }
 
     return (ms/1000.);
-
+#else
+    double seconds = double(endTime.tv_sec - startTime.tv_sec) + 
+                     double(endTime.tv_usec - startTime.tv_usec) / 1000000.;
+                     
+    return seconds;
 #endif
 }
 

@@ -58,10 +58,8 @@
 // useful macro for declaring time info structs
 #if defined(_WIN32)
 #    define TIMEINFO _timeb
-#elif defined(__APPLE__)
-#    define TIMEINFO timeval
 #else
-#    define TIMEINFO timeb
+#    define TIMEINFO timeval
 #endif
 
 // useful macro for computing time of arrival at a particular line of code
