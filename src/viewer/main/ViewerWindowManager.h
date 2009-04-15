@@ -405,6 +405,10 @@ typedef struct {
 //    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
 //    Made return type of SetPlotFollowsTime be 'void'.
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Changed the interface to ReplaceDatabase, adding option to replace
+//    only active plots.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -557,7 +561,8 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
                          const std::string &database,
                          int timeState,
                          bool setTimeState,
-                         bool onlyReplaceSame);
+                         bool onlyReplaceSame,
+                         bool onlyReplaceActive);
     void CheckForNewStates(const std::string &hostDatabase);
     void CreateDatabaseCorrelation(const std::string &name,
                                    const stringVector &dbs,

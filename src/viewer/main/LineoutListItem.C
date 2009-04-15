@@ -669,6 +669,9 @@ LineoutListItem::DisableTool()
 //    Added call to SetActiveTimeSlider to ensure the correct plots in the
 //    window are updated.
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Changed the interface to ViewerPlotList::ReplaceDatabase.
+//
 // ****************************************************************************
 
 void
@@ -682,7 +685,7 @@ LineoutListItem::Update(Subject *TheChangedSubject)
          {
              case PlotQueryInfo::Database:
                  vpl->ReplaceDatabase(origPlot->GetEngineKey(),
-                     origPlot->GetDatabaseName(), 0, false, false);
+                     origPlot->GetDatabaseName(), 0, false, false,false);
                  break;
              case PlotQueryInfo::VarName:
                  vpl->SetPlotVar(origPlot->GetVariableName());

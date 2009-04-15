@@ -39,7 +39,10 @@
 #include <visitstream.h>
 
 #include <QComboBox>
+#include <QDebug>
+#include <QContextMenuEvent>
 #include <QLabel>
+#include <QMenu>
 #include <QTreeWidget>
 #include <QTreeWidgetItem> 
 #include <QLayout>
@@ -238,6 +241,9 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //   Cyrus Harrison, Tue Jul  1 14:28:23 PDT 2008
 //   Initial Qt4 Port.
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Added creation & setup of filePopupMenu.
+//
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent) :
@@ -263,6 +269,12 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
     
     connect(fileTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)),
             this, SLOT(openFileDblClick(QTreeWidgetItem *)));
+    /*
+    connect(fileListView, 
+            SIGNAL(rightButtonClicked(QListViewItem *,const QPoint &,int)),
+            this, 
+            SLOT(showFilePopup(QListViewItem *, const QPoint &, int)));
+    */      
     connect(fileTree, SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
             this, SLOT(highlightFile(QTreeWidgetItem *)));
     connect(fileTree, SIGNAL(itemExpanded(QTreeWidgetItem *)),
@@ -338,6 +350,13 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
     connect(vcrControls, SIGNAL(nextFrame()), this, SLOT(forwardStep()));
     topLayout->addWidget(vcrControls);
 
+    filePopupMenu = new QMenu(this);
+    openAct    = filePopupMenu->addAction(tr("&Open"));
+    replaceAct = filePopupMenu->addAction(tr("&Replace"));
+    replaceSelectedAct = filePopupMenu->addAction(tr("Replace &Selected"));
+    overlayAct = filePopupMenu->addAction(tr("&Overlay"));
+    closeAct   = filePopupMenu->addAction(tr("&Close"));
+    
     // Create the computer pixmap.
     computerPixmap = new QPixmap(computer_xpm);
     // Create the database pixmap.
@@ -2005,10 +2024,41 @@ QvisFilePanel::HighlightedItemIsInvalid() const
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
 // 
+//   Cyrus Harrison, Tue Apr 14 14:24:08 PDT 2009
+//   Refactored to use common CheckIfReplaceIsValid() method.
+//
 // ****************************************************************************
 
 bool
 QvisFilePanel::UpdateReplaceButtonEnabledState()
+{
+    bool enabled = CheckIfReplaceIsValid();
+    replaceButton->setEnabled(enabled);
+    return enabled;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::CheckIfReplaceIsValid
+//
+// Purpose: 
+//   This method tells us if replace/replace selected are valid operations.
+// 
+//
+//   Note: Refactored from UpdateReplaceButtonEnabledState(), so the core
+//    logic could be used both in UpdateReplaceButtonEnabledState() and
+//    for the filePopupMenu.
+//
+// Returns:    True if replace is a valid operation given the selected item.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Apr 14 14:23:11 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisFilePanel::CheckIfReplaceIsValid()
 {
     bool enabled = false;
     if(!fileServer->GetOpenFile().Empty())
@@ -2016,7 +2066,7 @@ QvisFilePanel::UpdateReplaceButtonEnabledState()
         QTreeWidgetItem *item = fileTree->currentItem();
         if(item != 0)
         {
-            QvisFilePanelItem *ci = (QvisFilePanelItem *)item;
+            QvisFilePanelItem *ci = (QvisFilePanelItem*)item;
             bool differentFiles = fileServer->GetOpenFile() != ci->file;
 
             stringVector defs(fileServer->GetVirtualFileDefinition(ci->file));
@@ -2064,7 +2114,6 @@ QvisFilePanel::UpdateReplaceButtonEnabledState()
         }
     }
 
-    replaceButton->setEnabled(enabled);
     return enabled;
 }
 
@@ -2227,16 +2276,21 @@ QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
 //   Brad Whitlock, Mon Dec 20 16:21:30 PST 2004
 //   Changed how the Replace button's enabled state is set.
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Added argument to allow replace of only active plots.
+//
 // ****************************************************************************
 
 void
-QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
+QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState,
+                           bool onlyReplaceActive)
 {
     // Try and set the open the data file.
     SetOpenDataFile(filename, timeState, this, false);
 
     // Tell the viewer to replace the database.
-    GetViewerMethods()->ReplaceDatabase(filename.FullName().c_str(), timeState);
+    GetViewerMethods()->ReplaceDatabase(filename.FullName().c_str(),
+                                        timeState,onlyReplaceActive);
 
     // Update the Replace and Overlay buttons.
     UpdateReplaceButtonEnabledState();
@@ -2509,6 +2563,65 @@ QvisFilePanel::SetTimeSliderState(int state)
              Message(tr("The active time slider is already at state") + msg);
          }
     }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::contextMenuEvent
+//
+// Purpose: 
+//   Shows file popup menu.
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Apr 14 16:27:57 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::contextMenuEvent(QContextMenuEvent *e)
+{  
+    
+    QvisFilePanelItem *file_item=(QvisFilePanelItem*)fileTree->currentItem();
+    if(file_item == NULL || !file_item->isFile())
+        return;    
+
+    // update popup menu with proper commands
+    bool file_opened_before = fileServer->HaveOpenedFile(file_item->file);
+    if(file_opened_before)
+    {
+        if(fileServer->GetOpenFile() != file_item->file)
+            openAct->setText(tr("&Activate"));
+        else
+            openAct->setText(tr("Re&Open"));
+        // enable close menu item
+        closeAct->setEnabled(true);
+    }
+    else
+    {
+        openAct->setText(tr("&Open"));
+        // if the file is not opened, disable the "Close" menu item
+        closeAct->setEnabled(false);
+    }
+    
+    bool replace_valid = CheckIfReplaceIsValid();
+    replaceAct->setEnabled(replace_valid);
+    replaceSelectedAct->setEnabled(replace_valid);
+    overlayAct->setEnabled(replace_valid);
+
+    QAction *result = filePopupMenu->exec(e->globalPos());
+    if(result == openAct)
+        openFile();
+    else if(result == replaceAct)
+        replaceFile();
+    else if(result == replaceSelectedAct)
+        replaceSelected();
+    else if(result == overlayAct)
+        overlayFile();
+    else if(result == closeAct)
+        closeFile();
+    
 }
 
 // ****************************************************************************
@@ -3264,9 +3377,42 @@ QvisFilePanel::replaceFile()
         int timeState = (fileItem->timeState < 0) ? 0 : fileItem->timeState;
 
         // Try and replace the file.
-        ReplaceFile(fileItem->file.FullName(), timeState);
+        ReplaceFile(fileItem->file.FullName(), timeState,false);
     }
 }
+
+// ****************************************************************************
+// Method: QvisFilePanel::replaceSelected
+//
+// Purpose: 
+//   This is a Qt slot function that replaces active when the Replace
+//   Selected menu option from the file popup menu is clicked.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Apr 14 16:43:13 PDT 2009
+//
+// Modifications:
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::replaceSelected()
+{
+    QvisFilePanelItem *file_item= (QvisFilePanelItem *)fileTree->currentItem();
+
+    if((file_item != 0) && file_item->isFile() && (!file_item->file.Empty()))
+    {
+        // Make sure that we use a valid time state. Some file items
+        // have a time state of -1 if they are the parent item of several
+        // time step items.
+        int timeState = (file_item->timeState < 0) ? 0 : file_item->timeState;
+
+        // Try and replace the file.
+        ReplaceFile(file_item->file.FullName(), timeState, true);
+    }
+}
+
+
 
 // ****************************************************************************
 // Method: QvisFilePanel::overlayFile
@@ -3304,6 +3450,33 @@ QvisFilePanel::overlayFile()
 
         // Try and open the file.
         OverlayFile(fileItem->file.FullName(), timeState);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::closeFile
+//
+// Purpose: 
+//   This is a Qt slot function that overlays a file when the Overlay
+//   button is clicked. TODO
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Apr 14 16:43:13 PDT 2009
+//
+// Modifications: 
+//
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::closeFile()
+{
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem *) fileTree->currentItem();
+    if((fileItem != 0) && fileItem ->isFile() && (!fileItem->file.Empty()))
+    {
+        fileServer->ClearFile(fileItem->file.FullName());
+        GetViewerMethods()->CloseDatabase(fileItem->file.FullName());
+        UpdateOpenButtonState();
     }
 }
 
