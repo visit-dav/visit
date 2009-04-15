@@ -6762,12 +6762,16 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
 //   Mark C. Miller, Mon Dec  6 20:18:43 PST 2004
 //   Added code to push final SIL controls to client
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Changed the interface to ReplaceDatabase, adding option to replace
+//    only active plots.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
     const std::string &database, int timeState, bool setTimeState,
-    bool onlyReplaceSame)
+    bool onlyReplaceSame,bool onlyReplaceActive)
 {
     for(int i = 0; i < maxWindows; ++i)
     {
@@ -6775,7 +6779,8 @@ ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
         {
             windows[i]->GetPlotList()->
                 ReplaceDatabase(key, database, timeState, setTimeState,
-                                onlyReplaceSame);
+                                onlyReplaceSame,
+                                onlyReplaceActive);
         }
     }
 

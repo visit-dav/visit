@@ -302,6 +302,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Kathleen Bonnell, Tue Mar  3 15:03:19 PST 2009
 //    Renamed CanDoLogViewScaling to PermitsLogViewScaling.
 //
+//    Cyrus Harrison, Tue Apr 14 13:34:15 PDT 2009
+//    Modified ReplaceDatabase to add option for replacing only active plots.
+//
 // ****************************************************************************
 
 
@@ -399,7 +402,8 @@ public:
     void SetPlotAtts(const int plotType);
     void SetPlotOperatorAtts(const int operatorType, bool applyToAll = false);
     void ReplaceDatabase(const EngineKey &ek, const std::string &database,
-                         int timeState, bool setTimeState, bool onlyReplaceSame);
+                         int timeState, bool setTimeState, bool onlyReplaceSame,
+                         bool onlyReplaceActive);
     void OverlayDatabase(const EngineKey &ek,
                          const std::string &database, int timeState);
 

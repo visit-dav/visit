@@ -669,10 +669,14 @@ ViewerMethods::ReOpenDatabase(const std::string &database, bool forceClose)
 //    I added an optional timeState argument so we can replace databases
 //    at later time states.
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Added argument to allow replace of only active plots.
+//
 // ****************************************************************************
 
 void
-ViewerMethods::ReplaceDatabase(const std::string &database, int timeState)
+ViewerMethods::ReplaceDatabase(const std::string &database, int timeState,
+                               bool onlyReplaceActive)
 {
     //
     // Set the rpc type and arguments.
@@ -680,6 +684,7 @@ ViewerMethods::ReplaceDatabase(const std::string &database, int timeState)
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ReplaceDatabaseRPC);
     state->GetViewerRPC()->SetDatabase(database);
     state->GetViewerRPC()->SetIntArg1(timeState);
+    state->GetViewerRPC()->SetIntArg2((int)onlyReplaceActive);
 
     //
     // Issue the RPC.

@@ -4400,6 +4400,10 @@ ViewerSubject::CheckForNewStates()
 //   Made it use the generic integer argument for forceClose so as to not be
 //   misleading.
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Changed the interface to ReplaceDatabase to support option for only 
+//    replacing active plots.
+//
 // ****************************************************************************
 
 void
@@ -4520,7 +4524,7 @@ ViewerSubject::ReOpenDatabase()
     // specified database.
     //
     ViewerWindowManager::Instance()->ReplaceDatabase(key, db, reOpenState,
-                                                     false, true);
+                                                     false, true, false);
 }
 
 // ****************************************************************************
@@ -4583,13 +4587,20 @@ ViewerSubject::ReOpenDatabase()
 //   I added code to make sure that the active window is still compatible
 //   with other time-locked windows after the database was replaced.
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Changed the interface to ReplaceDatabase to support option for only 
+//    replacing active plots.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ReplaceDatabase()
 {
-    debug4 << "ReplaceDatabase: db=" << GetViewerState()->GetViewerRPC()->GetDatabase().c_str()
-           << ", time=" << GetViewerState()->GetViewerRPC()->GetIntArg1() << endl;
+    debug4 << "ReplaceDatabase: db=" 
+           << GetViewerState()->GetViewerRPC()->GetDatabase().c_str()
+           << ", time=" << GetViewerState()->GetViewerRPC()->GetIntArg1() 
+           << ", onlyReplaceActive=" 
+           << GetViewerState()->GetViewerRPC()->GetIntArg2() << endl;
 
     //
     // If the replace is merely changing the timestate, then turn on
@@ -4607,9 +4618,11 @@ ViewerSubject::ReplaceDatabase()
     // First open the database.
     //
     int timeState = GetViewerState()->GetViewerRPC()->GetIntArg1();
+    
     timeState = OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), timeState,
                                    false, false);
 
+    bool onlyReplaceActive = (bool) GetViewerState()->GetViewerRPC()->GetIntArg2();
     //
     // Now perform the database replacement.
     //
@@ -4618,7 +4631,8 @@ ViewerSubject::ReplaceDatabase()
                               plotList->GetDatabaseName(),
                               timeState,
                               true,
-                              false);
+                              false,
+                              onlyReplaceActive);
 
     //
     // If the current window is time-locked then we have to make sure that
@@ -9270,6 +9284,10 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //   Brad Whitlock, Fri Mar 27 11:27:40 PDT 2009
 //   I added INTERNALSYNC so we can sync with the simulation.
 //
+//   Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//   Changed the interface to ReplaceDatabase to support option for only 
+//   replacing active plots.
+//
 // ****************************************************************************
 
 void
@@ -9284,7 +9302,8 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
     {
         // The simulation told us that it wants us to update all of the plots 
         // that use it as a source.
-        ViewerWindowManager::Instance()->ReplaceDatabase(key, db, 0, false, true);
+        ViewerWindowManager::Instance()->ReplaceDatabase(key, db, 0, false, true,
+                                                         false);
     }
     else if(command.substr(0,8) == "Message:")
     {

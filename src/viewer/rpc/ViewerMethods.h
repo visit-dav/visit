@@ -116,6 +116,10 @@ class ViewerState;
 //   Added arguments for host name and simulation name to methods for loading
 //   and saving named selections. 
 //
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Added argument to ReplaceDatabase to  allow replace of only active 
+//    plots.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -158,7 +162,8 @@ public:
     void ActivateDatabase(const std::string &database);
     void CheckForNewStates(const std::string &database);
     void ReOpenDatabase(const std::string &database, bool forceClose = true);
-    void ReplaceDatabase(const std::string &database, int timeState = 0);
+    void ReplaceDatabase(const std::string &database, int timeState = 0, 
+                         bool onlyReplaceActive = false);
     void OverlayDatabase(const std::string &database, int timeState = 0);
     void RequestMetaData(const std::string &database, int ts = -1);
     void ClearCache(const std::string &hostName, const std::string &simName);
