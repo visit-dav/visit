@@ -40,6 +40,7 @@
 #include <misc_exports.h>
 #include <string>
 
+#include <visit-config.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
