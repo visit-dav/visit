@@ -82,7 +82,8 @@ public:
         ToroidalWindingPointOrder,
         ToroidalWindings,
         PoloidalWindings,
-        SafetyFactor
+        SafetyFactor,
+        Solid
     };
     enum ShowMeshType
     {

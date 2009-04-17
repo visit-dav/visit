@@ -27,6 +27,7 @@
         ToroidalWindings
         PoloidalWindings
         SafetyFactor
+        Solid
       </Enum>
       <Enum name="ShowMeshType">
         Curves
