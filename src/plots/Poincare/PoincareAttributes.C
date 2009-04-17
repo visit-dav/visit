@@ -125,21 +125,21 @@ PoincareAttributes::TerminationType_FromString(const std::string &s, PoincareAtt
 static const char *ColorStyleType_strings[] = {
 "OriginalValue", "InputOrder", "PointIndex", 
 "Plane", "ToroidalWindingOrder", "ToroidalWindingPointOrder", 
-"ToroidalWindings", "PoloidalWindings", "SafetyFactor"
-};
+"ToroidalWindings", "PoloidalWindings", "SafetyFactor", 
+"Solid"};
 
 std::string
 PoincareAttributes::ColorStyleType_ToString(PoincareAttributes::ColorStyleType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 9) index = 0;
+    if(index < 0 || index >= 10) index = 0;
     return ColorStyleType_strings[index];
 }
 
 std::string
 PoincareAttributes::ColorStyleType_ToString(int t)
 {
-    int index = (t < 0 || t >= 9) ? 0 : t;
+    int index = (t < 0 || t >= 10) ? 0 : t;
     return ColorStyleType_strings[index];
 }
 
@@ -147,7 +147,7 @@ bool
 PoincareAttributes::ColorStyleType_FromString(const std::string &s, PoincareAttributes::ColorStyleType &val)
 {
     val = PoincareAttributes::OriginalValue;
-    for(int i = 0; i < 9; ++i)
+    for(int i = 0; i < 10; ++i)
     {
         if(s == ColorStyleType_strings[i])
         {
@@ -1131,7 +1131,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 9)
+            if(ival >= 0 && ival < 10)
                 SetColorStyle(ColorStyleType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

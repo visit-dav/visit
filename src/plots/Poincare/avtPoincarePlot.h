@@ -78,7 +78,7 @@ class avtPoincarePlot : public avtLineDataPlot
     virtual void                SetAtts(const AttributeGroup*);
 
   protected:
-    PoincareAttributes              atts;
+    PoincareAttributes          atts;
 
     avtVariableMapper          *varMapper;
     avtVariableLegend          *varLegend;

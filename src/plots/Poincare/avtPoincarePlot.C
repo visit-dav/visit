@@ -294,13 +294,16 @@ avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
 //    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
 //    Initial steps to unification with streamline attributes.
 //
+//    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
+//    Load LUT or load single color, depending on attrs.
+//
 // ****************************************************************************
 
 void
 avtPoincarePlot::SetAtts(const AttributeGroup *a)
 {
     const PoincareAttributes *newAtts = (const PoincareAttributes *)a;
-
+    
     //needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
 
     atts = *newAtts;
@@ -373,10 +376,20 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetClipPlanes( planes );
 #endif
 
+    if(atts.GetColorStyle() != PoincareAttributes::Solid)
+    {
+        SetColorTable(atts.GetColorTableName().c_str());
+    }
+    else
+    {
+        // Set a single color into the LUT.
+        avtLUT->SetLUTColors(atts.GetSingleColor().GetColor(), 1);
+    }
+
+
     //SetLighting(atts.GetLightingFlag());
     varMapper->TurnLightingOn();
     varMapper->SetSpecularIsInappropriate(false);
-    SetColorTable(atts.GetColorTableName().c_str());
     varLegend->SetColorBarVisibility(1);
     SetLegend(atts.GetLegendFlag());
 }

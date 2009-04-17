@@ -119,6 +119,9 @@ QvisPoincarePlotWindow::~QvisPoincarePlotWindow()
 // Creation:   omitted
 //
 // Modifications:
+//
+//    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
+//    GUI reorganization.
 //   
 // ****************************************************************************
 
@@ -128,6 +131,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
+<<<<<<< .working
     sourceTypeLabel = new QLabel(tr("Streamline Source"), central);
     mainLayout->addWidget(sourceTypeLabel,0,0);
     sourceType = new QWidget(central);
@@ -145,6 +149,45 @@ QvisPoincarePlotWindow::CreateWindowContents()
     sourceTypeButtonGroup->addButton(sourceTypeSourceTypeSpecifiedPlane,2);
     sourceTypeLayout->addWidget(sourceTypeSourceTypeSpecifiedPlane);
     connect(sourceTypeButtonGroup, SIGNAL(buttonClicked(int)),
+=======
+    QTabWidget *tabs = new QTabWidget(central, "tabs");
+    mainLayout->addMultiCellWidget(tabs, 1,1, 1,1);
+    int row;
+
+    // tab for source options
+    QFrame *streamlineTab = new QFrame(tabs);
+    QGridLayout *streamlineLayout = new QGridLayout(streamlineTab, 30, 2, 5);
+    tabs->addTab(streamlineTab, "Streamlines");
+    row = 0;
+
+    terminationLabel = new QLabel(tr("Termination Criterion"), streamlineTab, "terminationLabel");
+    streamlineLayout->addWidget(terminationLabel,row,0);
+    row++;
+
+    terminationType = new QComboBox(streamlineTab, "terminationType");
+    terminationType->insertItem(tr("Distance"));
+    terminationType->insertItem(tr("Time"));
+    terminationType->insertItem(tr("Number of Steps"));
+    connect(terminationType, SIGNAL(activated(int)),
+            this, SLOT(terminationTypeChanged(int)));
+    streamlineLayout->addWidget(terminationType, row,0);    
+
+    termination = new QLineEdit(streamlineTab, "termination");
+    connect(termination, SIGNAL(returnPressed()),
+            this, SLOT(terminationProcessText()));
+    streamlineLayout->addWidget(termination,row,1);
+    row++;
+
+    // Create the source type combo box.
+    sourceTypeLabel = new QLabel(tr("Streamline Source"), streamlineTab, "sourceTypeLabel");
+    streamlineLayout->addWidget(sourceTypeLabel,row,0);
+
+    sourceType = new QComboBox(streamlineTab, "sourceType");
+    sourceType->insertItem(tr("Point"));
+    sourceType->insertItem(tr("Line"));
+    sourceType->insertItem(tr("Plane"));
+    connect(sourceType, SIGNAL(activated(int)),
+>>>>>>> .merge-right.r6885
             this, SLOT(sourceTypeChanged(int)));
     mainLayout->addWidget(sourceType, 0,1);
 
@@ -225,13 +268,34 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     mainLayout->addWidget(colorTableName, 11,1);
 
+<<<<<<< .working
     singleColorLabel = new QLabel(tr("Single color"), central);
     mainLayout->addWidget(singleColorLabel,12,0);
     singleColor = new QvisColorButton(central);
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
     mainLayout->addWidget(singleColor, 12,1);
+=======
+    integrationTypeLabel = new QLabel(tr("Integrator"), streamlineTab, "integrationTypeLabel");
+    streamlineLayout->addWidget(integrationTypeLabel,row,0);
+    integrationType = new QComboBox(streamlineTab, "integrationType");
+    integrationType->insertItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->insertItem(tr("Adams-Bashforth (Multi-step)"));
+    connect(integrationType, SIGNAL(activated(int)),
+            this, SLOT(integrationTypeChanged(int)));
+    streamlineLayout->addWidget(integrationType,row,1);
+    row++;
 
+    maxStepLengthLabel = new QLabel(tr("Maximum step length"), streamlineTab, "maxStepLengthLabel");
+    streamlineLayout->addWidget(maxStepLengthLabel,row,0);
+    maxStepLength = new QLineEdit(streamlineTab, "maxStepLength");
+    connect(maxStepLength, SIGNAL(returnPressed()),
+            this, SLOT(maxStepLengthProcessText()));
+    streamlineLayout->addWidget(maxStepLength,row,1);
+    row++;
+>>>>>>> .merge-right.r6885
+
+<<<<<<< .working
     legendFlag = new QCheckBox(tr("Legend"), central);
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
@@ -245,17 +309,29 @@ QvisPoincarePlotWindow::CreateWindowContents()
     relTolLabel = new QLabel(tr("rel. tolerance"), central);
     mainLayout->addWidget(relTolLabel,15,0);
     relTol = new QLineEdit(central);
+=======
+    relTolLabel = new QLabel(tr("Relative tolerance"), streamlineTab, "relTolLabel");
+    streamlineLayout->addWidget(relTolLabel,row,0);
+    relTol = new QLineEdit(streamlineTab, "relTol");
+>>>>>>> .merge-right.r6885
     connect(relTol, SIGNAL(returnPressed()),
             this, SLOT(relTolProcessText()));
     mainLayout->addWidget(relTol, 15,1);
 
+<<<<<<< .working
     absTolLabel = new QLabel(tr("abs. tolerance"), central);
     mainLayout->addWidget(absTolLabel,16,0);
     absTol = new QLineEdit(central);
+=======
+    absTolLabel = new QLabel(tr("Absolute tolerance"), streamlineTab, "absTolLabel");
+    streamlineLayout->addWidget(absTolLabel,row,0);
+    absTol = new QLineEdit(streamlineTab, "absTol");
+>>>>>>> .merge-right.r6885
     connect(absTol, SIGNAL(returnPressed()),
             this, SLOT(absTolProcessText()));
     mainLayout->addWidget(absTol, 16,1);
 
+<<<<<<< .working
     terminationTypeLabel = new QLabel(tr("Termination Type"), central);
     mainLayout->addWidget(terminationTypeLabel,17,0);
     terminationType = new QWidget(central);
@@ -275,7 +351,23 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(terminationTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(terminationTypeChanged(int)));
     mainLayout->addWidget(terminationType, 17,1);
+=======
+    // tab for analysis options
+    QFrame *analysisTab = new QFrame(tabs);
+    QGridLayout *analysisLayout = new QGridLayout(analysisTab, 30, 2, 5);
+    tabs->addTab(analysisTab, "Analysis");
+    row = 0;
 
+    MaxToroidalWindingLabel = new QLabel(tr("Max toroidal winding"), analysisTab, "MaxToroidalWindingLabel");
+    analysisLayout->addWidget(MaxToroidalWindingLabel,row,0);
+    MaxToroidalWinding = new QSpinBox(1,10000, 1, analysisTab, "MaxToroidalWinding");
+    connect(MaxToroidalWinding, SIGNAL(valueChanged(int)),
+            this, SLOT(MaxToroidalWindingSizeChanged(int)));
+    analysisLayout->addWidget(MaxToroidalWinding,row,1);
+    row++;
+>>>>>>> .merge-right.r6885
+
+<<<<<<< .working
     integrationTypeLabel = new QLabel(tr("Integrator"), central);
     mainLayout->addWidget(integrationTypeLabel,18,0);
     integrationType = new QWidget(central);
@@ -292,8 +384,81 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(integrationTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(integrationTypeChanged(int)));
     mainLayout->addWidget(integrationType, 18,1);
+=======
+    OverrideToroidalWindingLabel = new QLabel(tr("OverrideToroidalWinding"), analysisTab, "OverrideToroidalWindingLabel");
+    analysisLayout->addWidget(OverrideToroidalWindingLabel,row,0);
+    OverrideToroidalWinding = new QLineEdit(analysisTab, "OverrideToroidalWinding");
+    connect(OverrideToroidalWinding, SIGNAL(returnPressed()),
+            this, SLOT(OverrideToroidalWindingProcessText()));
+    analysisLayout->addWidget(OverrideToroidalWinding,row,1);
+    row++;
+>>>>>>> .merge-right.r6885
 
+<<<<<<< .working
     showStreamlines = new QCheckBox(tr("Show Streamlines"), central);
+=======
+    HitRateLabel = new QLabel(tr("HitRate"), analysisTab, "HitRateLabel");
+    analysisLayout->addWidget(HitRateLabel,row,0);
+    HitRate = new QLineEdit(analysisTab, "HitRate");
+    connect(HitRate, SIGNAL(returnPressed()),
+            this, SLOT(HitRateProcessText()));
+    analysisLayout->addWidget(HitRate,row,1);
+    row++;
+
+    AdjustPlaneLabel = new QLabel(tr("AdjustPlane"), analysisTab, "AdjustPlaneLabel");
+    analysisLayout->addWidget(AdjustPlaneLabel,row,0);
+    AdjustPlane = new QLineEdit(analysisTab, "AdjustPlane");
+    connect(AdjustPlane, SIGNAL(returnPressed()),
+            this, SLOT(AdjustPlaneProcessText()));
+    analysisLayout->addWidget(AdjustPlane,row,1);
+    row++;
+
+    OverlapsLabel = new QLabel(tr("Overlaps"), analysisTab, "OverlapsLabel");
+    analysisLayout->addWidget(OverlapsLabel,row,0);
+    Overlaps = new QButtonGroup(analysisTab, "Overlaps");
+    Overlaps->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *OverlapsLayout = new QHBoxLayout(Overlaps);
+    OverlapsLayout->setSpacing(10);
+    QRadioButton *OverlapsOverlapTypeRaw = new QRadioButton(tr("Raw"), Overlaps);
+    OverlapsLayout->addWidget(OverlapsOverlapTypeRaw);
+    QRadioButton *OverlapsOverlapTypeRemove = new QRadioButton(tr("Remove"), Overlaps);
+    OverlapsLayout->addWidget(OverlapsOverlapTypeRemove);
+    QRadioButton *OverlapsOverlapTypeMerge = new QRadioButton(tr("Merge"), Overlaps);
+    OverlapsLayout->addWidget(OverlapsOverlapTypeMerge);
+    QRadioButton *OverlapsOverlapTypeSmooth = new QRadioButton(tr("Smooth"), Overlaps);
+    OverlapsLayout->addWidget(OverlapsOverlapTypeSmooth);
+    connect(Overlaps, SIGNAL(clicked(int)),
+            this, SLOT(OverlapsChanged(int)));
+    analysisLayout->addWidget(Overlaps,row,1);
+    row++;
+
+    // tab for display options
+    QFrame *displayTab = new QFrame(tabs);
+    QGridLayout *displayLayout = new QGridLayout(displayTab, 30, 2, 5);
+    tabs->addTab(displayTab, "Display");
+    row = 0;
+
+    DisplayTypeLabel = new QLabel(tr("Display type"), displayTab, "DisplayTypeLabel");
+    displayLayout->addWidget(DisplayTypeLabel,row,0);
+    
+    DisplayType = new QComboBox(displayTab, "DisplayType");
+    DisplayType->insertItem(tr("Curves"),0);
+    DisplayType->insertItem(tr("Surfaces"),1);
+    connect(DisplayType, SIGNAL(activated(int)),
+            this, SLOT(DisplayTypeChanged(int)));
+    displayLayout->addWidget(DisplayType,row,1);
+    row++;
+
+    NumberPlanesLabel = new QLabel(tr("Number of planes"), displayTab, "NumberPlanesLabel");
+    displayLayout->addWidget(NumberPlanesLabel,row,0);
+    NumberPlanes = new QSpinBox(1,10000, 1, displayTab, "NumberPlanes");
+    connect(NumberPlanes, SIGNAL(valueChanged(int)),
+            this, SLOT(NumberPlanesSizeChanged(int)));
+    displayLayout->addWidget(NumberPlanes,row,1);
+    row++;
+
+    showStreamlines = new QCheckBox(tr("Show Streamlines"), displayTab, "showStreamlines");
+>>>>>>> .merge-right.r6885
     connect(showStreamlines, SIGNAL(toggled(bool)),
             this, SLOT(showStreamlinesChanged(bool)));
     mainLayout->addWidget(showStreamlines, 19,0);
@@ -303,13 +468,56 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(showPointsChanged(bool)));
     mainLayout->addWidget(showPoints, 20,0);
 
+<<<<<<< .working
     NumberPlanesLabel = new QLabel(tr("NumberPlanes"), central);
     mainLayout->addWidget(NumberPlanesLabel,21,0);
     NumberPlanes = new QLineEdit(central);
     connect(NumberPlanes, SIGNAL(returnPressed()),
             this, SLOT(NumberPlanesProcessText()));
     mainLayout->addWidget(NumberPlanes, 21,1);
+=======
+    ShowIslands = new QCheckBox(tr("Show Islands"), displayTab, "ShowIslands");
+    connect(ShowIslands, SIGNAL(toggled(bool)),
+            this, SLOT(ShowIslandsChanged(bool)));
+    displayLayout->addWidget(ShowIslands,row,0);
+    row++;
 
+    ColorStyleLabel = new QLabel(tr("Color by"), displayTab, "ColorStyleLabel");
+    displayLayout->addWidget(ColorStyleLabel,row,0);
+    ColorStyle = new QComboBox(displayTab, "ColorStyle");
+    ColorStyle->insertItem(tr("OriginalValue"));
+    ColorStyle->insertItem(tr("InputOrder"));
+    ColorStyle->insertItem(tr("PointIndex"));
+    ColorStyle->insertItem(tr("Plane"));
+    ColorStyle->insertItem(tr("ToroidalWindingOrder"));
+    ColorStyle->insertItem(tr("ToroidalWindingPointOrder"));
+    ColorStyle->insertItem(tr("ToroidalWindings"));
+    ColorStyle->insertItem(tr("PoloidalWindings"));
+    ColorStyle->insertItem(tr("SafetyFactor"));
+    ColorStyle->insertItem(tr("Solid"));
+    connect(ColorStyle, SIGNAL(activated(int)),
+            this, SLOT(ColorStyleChanged(int)));
+    displayLayout->addWidget(ColorStyle,row,1);
+    row++;
+
+    colorTableNameLabel = new QLabel(tr("Color table"), displayTab, "colorTableNameLabel");
+    displayLayout->addWidget(colorTableNameLabel,row,0);
+    colorTableName = new QvisColorTableButton(displayTab, "colorTableName");
+    connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
+            this, SLOT(colorTableNameChanged(bool, const QString&)));
+    displayLayout->addWidget(colorTableName,row,1);
+    row++;
+
+    singleColorLabel = new QLabel(tr("Single color"), displayTab, "singleColorLabel");
+    displayLayout->addWidget(singleColorLabel,row,0);
+    singleColor = new QvisColorButton(displayTab, "singleColor");
+    connect(singleColor, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(singleColorChanged(const QColor&)));
+    displayLayout->addWidget(singleColor,row,1);
+    row++;
+>>>>>>> .merge-right.r6885
+
+<<<<<<< .working
     ColorStyleLabel = new QLabel(tr("ColorStyle value"), central);
     mainLayout->addWidget(ColorStyleLabel,22,0);
     ColorStyle = new QWidget(central);
@@ -354,21 +562,39 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(MaxToroidalWinding, SIGNAL(returnPressed()),
             this, SLOT(MaxToroidalWindingProcessText()));
     mainLayout->addWidget(MaxToroidalWinding, 23,1);
+=======
+>>>>>>> .merge-right.r6885
 
+<<<<<<< .working
     OverrideToroidalWindingLabel = new QLabel(tr("OverrideToroidalWinding"), central);
     mainLayout->addWidget(OverrideToroidalWindingLabel,24,0);
     OverrideToroidalWinding = new QLineEdit(central);
     connect(OverrideToroidalWinding, SIGNAL(returnPressed()),
             this, SLOT(OverrideToroidalWindingProcessText()));
     mainLayout->addWidget(OverrideToroidalWinding, 24,1);
+=======
+    legendFlag = new QCheckBox(tr("Legend"), displayTab, "legendFlag");
+    connect(legendFlag, SIGNAL(toggled(bool)),
+            this, SLOT(legendFlagChanged(bool)));
+    displayLayout->addWidget(legendFlag,row,0);
+>>>>>>> .merge-right.r6885
 
+<<<<<<< .working
     HitRateLabel = new QLabel(tr("HitRate"), central);
     mainLayout->addWidget(HitRateLabel,25,0);
     HitRate = new QLineEdit(central);
     connect(HitRate, SIGNAL(returnPressed()),
             this, SLOT(HitRateProcessText()));
     mainLayout->addWidget(HitRate, 25,1);
+=======
+    lightingFlag = new QCheckBox(tr("Lighting"), displayTab, "lightingFlag");
+    connect(lightingFlag, SIGNAL(toggled(bool)),
+            this, SLOT(lightingFlagChanged(bool)));
+    displayLayout->addWidget(lightingFlag,row,1);
+    row++;
+>>>>>>> .merge-right.r6885
 
+<<<<<<< .working
     ShowCurvesLabel = new QLabel(tr("ShowCurves"), central);
     mainLayout->addWidget(ShowCurvesLabel,26,0);
     ShowCurves = new QWidget(central);
@@ -421,6 +647,8 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(OverlapsChanged(int)));
     mainLayout->addWidget(Overlaps, 29,1);
 
+=======
+>>>>>>> .merge-right.r6885
 }
 
 
@@ -436,6 +664,9 @@ QvisPoincarePlotWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
+//
+//    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
+//    GUI reorganization.
 //   
 // ****************************************************************************
 
@@ -619,16 +850,28 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             absTol->setText(DoubleToQString(atts->GetAbsTol()));
             break;
           case PoincareAttributes::ID_terminationType:
+<<<<<<< .working
             terminationTypeButtonGroup->blockSignals(true);
             if(terminationTypeButtonGroup->button((int)atts->GetTerminationType()) != 0)
                 terminationTypeButtonGroup->button((int)atts->GetTerminationType())->setChecked(true);
             terminationTypeButtonGroup->blockSignals(false);
+=======
+            terminationType->blockSignals(true);
+            integrationType->setCurrentItem(atts->GetIntegrationType());
+            terminationType->blockSignals(false);
+>>>>>>> .merge-right.r6885
             break;
           case PoincareAttributes::ID_integrationType:
+<<<<<<< .working
             integrationTypeButtonGroup->blockSignals(true);
             if(integrationTypeButtonGroup->button((int)atts->GetIntegrationType()) != 0)
                 integrationTypeButtonGroup->button((int)atts->GetIntegrationType())->setChecked(true);
             integrationTypeButtonGroup->blockSignals(false);
+=======
+            integrationType->blockSignals(true);
+            integrationType->setCurrentItem(atts->GetIntegrationType());
+            integrationType->blockSignals(false);
+>>>>>>> .merge-right.r6885
             break;
           case PoincareAttributes::ID_showStreamlines:
             showStreamlines->blockSignals(true);
@@ -641,16 +884,42 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             showPoints->blockSignals(false);
             break;
           case PoincareAttributes::ID_NumberPlanes:
+<<<<<<< .working
             NumberPlanes->setText(IntToQString(atts->GetNumberPlanes()));
+=======
+            NumberPlanes->blockSignals(true);
+            NumberPlanes->setValue(atts->GetNumberPlanes());
+            NumberPlanes->blockSignals(false);
+>>>>>>> .merge-right.r6885
             break;
           case PoincareAttributes::ID_ColorStyle:
+<<<<<<< .working
             ColorStyleButtonGroup->blockSignals(true);
             if(ColorStyleButtonGroup->button((int)atts->GetColorStyle()) != 0)
                 ColorStyleButtonGroup->button((int)atts->GetColorStyle())->setChecked(true);
             ColorStyleButtonGroup->blockSignals(false);
+=======
+            {
+            bool needCT = atts->GetColorStyle() != PoincareAttributes::Solid;
+            colorTableNameLabel->setEnabled(needCT);
+            colorTableName->setEnabled(needCT);
+            singleColor->setEnabled(!needCT);
+            singleColorLabel->setEnabled(!needCT);
+
+            ColorStyle->blockSignals(true);
+            ColorStyle->setCurrentItem(atts->GetColorStyle());
+            ColorStyle->blockSignals(false);
+>>>>>>> .merge-right.r6885
+            }
             break;
           case PoincareAttributes::ID_MaxToroidalWinding:
+<<<<<<< .working
             MaxToroidalWinding->setText(IntToQString(atts->GetMaxToroidalWinding()));
+=======
+            MaxToroidalWinding->blockSignals(true);
+            MaxToroidalWinding->setValue(atts->GetMaxToroidalWinding());
+            MaxToroidalWinding->blockSignals(false);
+>>>>>>> .merge-right.r6885
             break;
           case PoincareAttributes::ID_OverrideToroidalWinding:
             OverrideToroidalWinding->setText(IntToQString(atts->GetOverrideToroidalWinding()));
@@ -659,10 +928,16 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             HitRate->setText(DoubleToQString(atts->GetHitRate()));
             break;
           case PoincareAttributes::ID_ShowCurves:
+<<<<<<< .working
             ShowCurvesButtonGroup->blockSignals(true);
             if(ShowCurvesButtonGroup->button((int)atts->GetShowCurves()) != 0)
                 ShowCurvesButtonGroup->button((int)atts->GetShowCurves())->setChecked(true);
             ShowCurvesButtonGroup->blockSignals(false);
+=======
+            DisplayType->blockSignals(true);
+            DisplayType->setCurrentItem(atts->GetShowCurves());
+            DisplayType->blockSignals(false);
+>>>>>>> .merge-right.r6885
             break;
           case PoincareAttributes::ID_AdjustPlane:
             AdjustPlane->setText(IntToQString(atts->GetAdjustPlane()));
@@ -874,13 +1149,27 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
     // Do NumberPlanes
     if(which_widget == PoincareAttributes::ID_NumberPlanes || doAll)
     {
+<<<<<<< .working
         int val;
         if(LineEditGetInt(NumberPlanes, val))
             atts->SetNumberPlanes(val);
         else
+=======
+        int val = NumberPlanes->value();
+        if (val >= 2)
+            atts->SetNumberPlanes(val);
+        else
+>>>>>>> .merge-right.r6885
         {
+<<<<<<< .working
             ResettingError(tr("NumberPlanes"),
                 IntToQString(atts->GetNumberPlanes()));
+=======
+            msg = tr("The value of NumberPlanes was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetNumberPlanes());
+            Message(msg);
+>>>>>>> .merge-right.r6885
             atts->SetNumberPlanes(atts->GetNumberPlanes());
         }
     }
@@ -888,13 +1177,27 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
     // Do MaxToroidalWinding
     if(which_widget == PoincareAttributes::ID_MaxToroidalWinding || doAll)
     {
+<<<<<<< .working
         int val;
         if(LineEditGetInt(MaxToroidalWinding, val))
             atts->SetMaxToroidalWinding(val);
         else
+=======
+        int val = MaxToroidalWinding->value();
+        if (val >= 1)
+            atts->SetMaxToroidalWinding(val);
+        else
+>>>>>>> .merge-right.r6885
         {
+<<<<<<< .working
             ResettingError(tr("MaxToroidalWinding"),
                 IntToQString(atts->GetMaxToroidalWinding()));
+=======
+            msg = tr("The value of MaxToroidalWinding was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMaxToroidalWinding());
+            Message(msg);
+>>>>>>> .merge-right.r6885
             atts->SetMaxToroidalWinding(atts->GetMaxToroidalWinding());
         }
     }
@@ -1234,9 +1537,9 @@ QvisPoincarePlotWindow::showPointsChanged(bool val)
 
 
 void
-QvisPoincarePlotWindow::NumberPlanesProcessText()
+QvisPoincarePlotWindow::NumberPlanesSizeChanged(int val)
 {
-    GetCurrentValues(PoincareAttributes::ID_NumberPlanes);
+    atts->SetNumberPlanes(val);
     Apply();
 }
 
@@ -1247,16 +1550,16 @@ QvisPoincarePlotWindow::ColorStyleChanged(int val)
     if(val != atts->GetColorStyle())
     {
         atts->SetColorStyle(PoincareAttributes::ColorStyleType(val));
-        SetUpdate(false);
+        //SetUpdate(false);
         Apply();
     }
 }
 
 
 void
-QvisPoincarePlotWindow::MaxToroidalWindingProcessText()
+QvisPoincarePlotWindow::MaxToroidalWindingSizeChanged(int val)
 {
-    GetCurrentValues(PoincareAttributes::ID_MaxToroidalWinding);
+    atts->SetMaxToroidalWinding(val);
     Apply();
 }
 
@@ -1278,7 +1581,7 @@ QvisPoincarePlotWindow::HitRateProcessText()
 
 
 void
-QvisPoincarePlotWindow::ShowCurvesChanged(int val)
+QvisPoincarePlotWindow::DisplayTypeChanged(int val)
 {
     if(val != atts->GetShowCurves())
     {

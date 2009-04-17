@@ -64,6 +64,17 @@
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
 
 
+static const int COLOR_OriginalValue = 0;
+static const int COLOR_InputOrder = 1;
+static const int COLOR_PointIndex = 2;
+static const int COLOR_Plane = 3;
+static const int COLOR_ToroidalWindingOrder = 4;
+static const int COLOR_ToroidalWindingPointOrder = 5;
+static const int COLOR_ToroidalWindings = 6;
+static const int COLOR_PoloidalWindings = 7;
+static const int COLOR_SafetyFactor = 8;
+static const int COLOR_Solid = 9;
+
 // ****************************************************************************
 //  Method: avtPoincareFilter constructor
 //
@@ -75,6 +86,9 @@
 //    Dave Pugmire, Wed Feb 25 09:52:11 EST 2009
 //    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
 //
+//    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
+//    Add variables for colorBy var.
+//
 // ****************************************************************************
 
 avtPoincareFilter::avtPoincareFilter() :
@@ -85,7 +99,7 @@ avtPoincareFilter::avtPoincareFilter() :
     hitrate( 0.90 ),
     showIslands(0),
     overlaps(1),
-    color(8),
+    color(COLOR_SafetyFactor),
     is_curvemesh(1),
     adjust_plane(-1)
 {
@@ -386,7 +400,6 @@ avtPoincareFilter::PostExecute(void)
 void
 avtPoincareFilter::CreateStreamlineOutput( vector<avtStreamlineWrapper *> &streamlines)
 {
-    cout<<"There are " << streamlines.size()<<" streamlines.\n";
     GetStreamlinePoints(streamlines);
     ClassifyStreamlines();
     
@@ -607,6 +620,9 @@ avtPoincareFilter::ClassifyStreamlines()
 //  Modifications:
 //    Dave Pugmire (for Allen Sanderson), Wed Feb 25 09:52:11 EST 2009
 //    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
+//
+//    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
+//    Add variables for colorBy var.
 //
 // ****************************************************************************
 
@@ -1005,13 +1021,13 @@ avtPoincareFilter::CreatePoincareOutput()
         {
             double color_value = 0;
             
-            if( color == 1 )
+            if( color == COLOR_InputOrder )
                 color_value = i;
-            else if( color == 6 )
+            else if( color == COLOR_ToroidalWindings )
                 color_value = toroidalWinding;
-            else if( color == 7 )
+            else if( color == COLOR_PoloidalWindings )
                 color_value = poloidalWinding;
-            else if( color == 8 )
+            else if( color == COLOR_SafetyFactor )
                 color_value = (double) toroidalWinding / (double) poloidalWinding;
             
             // Currently the surface mesh is a structquad so set the dims - it
