@@ -2,6 +2,9 @@
 //                            avtH5PartFileFormat.C                           //
 // ************************************************************************* //
 
+#define H5_USE_16_API
+#include <hdf5.h>
+
 #include <avtH5PartFileFormat.h>
 
 #include <string>
@@ -12,11 +15,13 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <DBOptionsAttributes.h>
 
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <InvalidDBTypeException.h>
 #include <BadIndexException.h>
 #include <vtkCellType.h>
 #include <vtkPolyData.h>
@@ -31,7 +36,6 @@
 #include <iostream>
 
 #include <DebugStream.h>
-
 
 #ifdef PARALLEL
 #include <avtParallel.h>
@@ -49,11 +53,72 @@ using namespace std;
 //    Kathleen Bonnell, Wed Jul 2 8:49:52 PDT 2008
 //    Removed unreferenced variables.
 //
+//    Gunther H. Weber, Fri Apr 17 12:42:38 PDT 2009
+//    Added option allowing to ignore files with FastBit index so that
+//    they get passed on to the HDF_UC file format.
+//
+//    Gunther H. Weber, Fri Apr 17 14:24:33 PDT 2009
+//    Fixed handling of FastBit option in case there is a config file without
+//    the option saved.
+//
 // ****************************************************************************
 
-avtH5PartFileFormat::avtH5PartFileFormat(const char *filename)
-    : avtMTMDFileFormat(filename)
+avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
+        DBOptionsAttributes *atts) : avtMTMDFileFormat(filename)
 {
+    // Depending on options reject file if it has a FastBit index
+    bool ignoreFilesWithFastBitIndex = true;
+    if (atts != NULL)
+        for (int i = 0; i < atts->GetNumberOfOptions(); ++i)
+            if (atts->GetName(i) == "Ignore files with FastBit index")
+                ignoreFilesWithFastBitIndex =
+                    atts->GetBool("Ignore files with FastBit index");
+ 
+    if (ignoreFilesWithFastBitIndex)
+    {
+        bool hasIndex = false;
+        hid_t filehandle = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
+        if (filehandle > 0)
+        {
+            //
+            // Get current automatic stack traversal function to re-enable it later and
+            // disable HDF5's automatic error printing
+            //
+            H5E_auto_t h5e_autofunc;
+            void* h5e_clientdata;
+            H5Eget_auto(&h5e_autofunc, &h5e_clientdata);
+            H5Eset_auto(0, 0);
+
+            hid_t indexGroup = H5Gopen(filehandle, "__H5PartIndex__");
+            if (indexGroup > 0)
+            {
+                hasIndex = true;
+                H5Gclose(indexGroup);
+            }
+
+            //
+            // Re-enable HDF5's automatic diagnostic output
+            //
+            H5Eset_auto(h5e_autofunc, h5e_clientdata);
+
+            H5Fclose(filehandle);
+        }
+        else
+        {
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a H5Part file, since "
+                                "it is not even an HDF5 file.");
+        }
+        
+        if (hasIndex)
+        {
+            EXCEPTION1(InvalidDBTypeException, "May be an H5Part file, but has an "
+                    "FastBit index. Rejecting file so that HDF_UC plugin can take "
+                    "a turn. If you want to open this file with the H5Part plugin "
+                    " disable the file reader option \"Ignore files with FastBit "
+                    " index\".");
+        }
+    }
+
     // INITIALIZE DATA MEMBERS
     H5PartFile *file;
     fname = filename;
@@ -402,6 +467,10 @@ avtH5PartFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 //  Programmer: kurts
 //  Creation:   Tue Aug 28 17:35:50 PDT 2007
 //
+//  Modifications:
+//    Gunther H. Weber, Fri Apr 17 13:55:07 PDT 2009
+//    Read block origin from file.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -442,6 +511,15 @@ avtH5PartFileFormat::GetMeshBlock(int timestate, int domain)
     if (status != H5PART_SUCCESS)
         EXCEPTION1(VisItException, "Could not read field information");
 
+    double xOrigin = 0;
+    double yOrigin = 0;
+    double zOrigin = 0;
+    status = H5Block3dGetFieldOrigin(file, fieldName, &xOrigin, &yOrigin, &zOrigin);
+    if (status != H5PART_SUCCESS)
+    {
+        EXCEPTION1(VisItException, "Could not read field origin.");
+    }
+
     double xSpacing = 0;
     double ySpacing = 0;
     double zSpacing = 0;
@@ -462,7 +540,7 @@ avtH5PartFileFormat::GetMeshBlock(int timestate, int domain)
     float *xarray = (float *) coords[0]->GetVoidPointer(0);
     for (int i=subBlockDims[0]; i <= subBlockDims[1]; i++)
     {
-        xarray[i-subBlockDims[0]] = i * xSpacing;
+        xarray[i-subBlockDims[0]] = xOrigin + i * xSpacing;
     }
 
     // set y coordinates
@@ -470,7 +548,7 @@ avtH5PartFileFormat::GetMeshBlock(int timestate, int domain)
     coords[1]->SetNumberOfTuples(subBlockDims[3] - subBlockDims[2] + 1);
     float *yarray = (float *) coords[1]->GetVoidPointer(0);
     for (int i=subBlockDims[2]; i <= subBlockDims[3]; i++) {
-        yarray[i-subBlockDims[2]] = i * ySpacing;
+        yarray[i-subBlockDims[2]] = yOrigin + i * ySpacing;
     }
 
     // set z coordinates
@@ -478,7 +556,7 @@ avtH5PartFileFormat::GetMeshBlock(int timestate, int domain)
     coords[2]->SetNumberOfTuples(subBlockDims[5] - subBlockDims[4] + 1);
     float *zarray = (float *) coords[2]->GetVoidPointer(0);
     for (int i=subBlockDims[4]; i <= subBlockDims[5]; i++) {
-        zarray[i-subBlockDims[4]] = i * zSpacing;
+        zarray[i-subBlockDims[4]] = zOrigin + i * zSpacing;
     }
 
     // create vtkRectilinearGrid objects + set dims and coords

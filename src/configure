@@ -9238,7 +9238,6 @@ else
    fi
    if test "$DEFAULT_FASTBIT_LIB" != "" ; then
       FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit -lrt"
-      H5PART_LIBDIR="$DEFAULT_FASTBIT_LIB"
    fi
 fi
 if test "$FASTBIT_LIB" != "" ; then

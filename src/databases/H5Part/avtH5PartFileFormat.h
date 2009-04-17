@@ -13,6 +13,8 @@
 #include <vector>
 #include <string>
 
+class DBOptionsAttributes;
+
 // ****************************************************************************
 //  Class: avtH5PartFileFormat
 //
@@ -26,12 +28,15 @@
 //    Kurt Stockinger, Tue Aug 28 17:35:50 PDT 2007
 //    Added support for field data
 //
+//    Gunther H. Weber, Fri Apr 17 13:03:47 PDT 2009
+//    Added option to reject file if FastBit index is present.
+//
 // ****************************************************************************
 
 class avtH5PartFileFormat : public avtMTMDFileFormat
 {
   public:
-                       avtH5PartFileFormat(const char *);
+                       avtH5PartFileFormat(const char *, DBOptionsAttributes *);
     virtual           ~avtH5PartFileFormat() {;};
 
     //

@@ -929,6 +929,10 @@ dnl    bin/db_xml2makefile shell script. Adjusted sed commands for generating
 dnl    ITAPS implementations .xml files to include spaces for db_xml2makefile
 dnl    to work properly.
 dnl
+dnl    Gunther H. Weber, Fri Apr 17 13:22:44 PDT 2009
+dnl    Do not add "-lrt" for FastBit on MacOS (Darwin machines)
+dnl    Do not change H5PART_LIBDIR in FastBit config.
+dnl    
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2564,7 +2568,6 @@ else
    fi
    if test "$DEFAULT_FASTBIT_LIB" != "" ; then
       FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit -lrt"
-      H5PART_LIBDIR="$DEFAULT_FASTBIT_LIB"
    fi
 fi
 if test "$FASTBIT_LIB" != "" ; then
