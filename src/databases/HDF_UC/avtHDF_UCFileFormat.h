@@ -45,6 +45,7 @@
 
 #include <avtMTSDFileFormat.h>
 #include <avtHistogramSpecification.h>
+#include <FileFunctions.h>
 
 #include <hdf5_fastquery.h>
 
