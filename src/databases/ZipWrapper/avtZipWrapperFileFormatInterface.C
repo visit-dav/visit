@@ -41,6 +41,20 @@
 // ************************************************************************* //
 #include <avtZipWrapperFileFormatInterface.h>
 
+#include <cerrno>
+#include <cstring>
+#include <string>
+#include <typeinfo>
+#include <vector>
+
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/wait.h>  // for WIFEXITED and WEXITSTATUS
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 #include <snprintf.h>
 #include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
@@ -61,18 +75,6 @@
 #include <avtParallel.h>
 
 #include <FileFunctions.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/wait.h>  // for WIFEXITED and WEXITSTATUS
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-#include <string>
-#include <vector>
-#include <typeinfo>
 
 using std::string;
 using std::vector;
