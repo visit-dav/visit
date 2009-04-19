@@ -36,12 +36,11 @@
 *
 *****************************************************************************/
 #include <InstallationFunctions.h>
-#include <Environment.h>
-#include <FileFunctions.h>
 
 #include <visit-config.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <snprintf.h>
 
 #if defined(_WIN32)
@@ -53,6 +52,9 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #endif
+
+#include <Environment.h>
+#include <FileFunctions.h>
 
 //
 // Static vars.
