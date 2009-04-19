@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 #include <InstallationFunctions.h>
+#include <Environment.h>
 #include <FileFunctions.h>
 
 #include <visit-config.h>
@@ -85,6 +86,9 @@ static bool isDevelopmentVersion = false;
 //
 //   Jeremy Meredith, Thu Aug  7 16:20:02 EDT 2008
 //   Use const char* for string literals.
+//
+//   Tom Fogal, Sun Apr 19 11:39:50 MST 2009
+//   Use `Environment' to simplify and fix a compilation error.
 //
 // ****************************************************************************
 
@@ -136,9 +140,10 @@ GetDefaultConfigFile(const char *filename, const char *home)
     }
 
 #if defined(_WIN32)
-    char *realhome = getenv((home == 0) ? "VISITUSERHOME" : home);
+    const char *homevar = (home == NULL) ? "VISITUSERHOME" : home;
+    std::string realhome = Environment::get(homevar);
 
-    if(realhome != NULL)
+    if(!realhome.empty())
     {
         if(home == NULL)
         {
@@ -148,14 +153,18 @@ GetDefaultConfigFile(const char *filename, const char *home)
             char username[100];
             GetUserName(username, &namelen);
 
-            retval = new char[strlen(realhome) + namelen + 5 + filenameLength + 2 + 7];
-            sprintf(retval, "%s\\%s for %s.ini", realhome, configFileName, username);
+            retval = new char[realhome.length() + namelen + 5 + filenameLength + 2 + 7];
+            std::ostringstream ini;
+            ini << realhome << "\\" << configFileName << " for " << username
+                << ".ini";
+            sprintf(retval, "%s\\%s for %s.ini", realhome.c_str(),
+                    configFileName, username);
         }
         else
         {
             // System config.
             retval = new char[strlen(realhome) + filenameLength + 2 + 7];
-            sprintf(retval, "%s\\%s.ini", realhome, configFileName);
+            sprintf(retval, "%s\\%s.ini", realhome.c_str(), configFileName);
         }
     }
     else
@@ -167,11 +176,12 @@ GetDefaultConfigFile(const char *filename, const char *home)
     // The file it is assumed to be in the home directory unless the home
     // directrory doesn't exist, in which case we will say it is
     // in the current directory.
-    char *realhome = getenv((home == 0) ? "HOME" : home);
-    if(realhome != NULL)
+    const char *homevar = (home == NULL) ? "HOME" : home;
+    std::string realhome = Environment::get(homevar);
+    if(Environment::exists(homevar))
     {
-        retval = new char[strlen(realhome) + filenameLength + 2 + 7];
-        sprintf(retval, "%s/.visit/%s", realhome, configFileName);
+        retval = new char[realhome.length() + filenameLength + 2 + 7];
+        sprintf(retval, "%s/.visit/%s", realhome.c_str(), configFileName);
     }
     else
     {
@@ -253,25 +263,28 @@ GetSystemConfigFile(const char *filename)
 //   Kathleen Bonnell, Fri Jul 20 10:48:21 PDT 2007 
 //   User directory on windows is now defined by VISITUSERHOME env var. 
 //
+//   Tom Fogal, Sun Apr 19 12:44:06 MST 2009
+//   Use `Environment' to simplify and fix a compilation error.
+//
 // ****************************************************************************
 
 std::string
 GetUserVisItDirectory()
 {
 #if defined(_WIN32)
-    const char *home = getenv("VISITUSERHOME");
+    const std::string home = Environment::get("VISITUSERHOME");
 #else
-    const char *home = getenv("HOME");
+    const std::string home = Environment::get("HOME");
 #endif
 
     std::string homedir;
 
-    if(home != 0)
+    if(!home.empty())
     {
 #if defined(_WIN32)
-        homedir = std::string(home);
+        homedir = home;
 #else
-        homedir = std::string(home) + "/.visit";
+        homedir = home + "/.visit";
 #endif
 
         if(homedir[homedir.size() - 1] != SLASH_CHAR)
@@ -492,6 +505,9 @@ GetIsDevelopmentVersion()
 //   Regardless of return value from ReadKey, visithome may have been
 //   malloc'd and thus requires free. 
 //
+//   Tom Fogal, Sun Apr 19 12:47:22 MST 2009
+//   Use `Environment' to simplify and fix a compilation error.
+//
 // ****************************************************************************
 
 std::string
@@ -537,8 +553,8 @@ GetVisItInstallationDirectory(const char *version)
     // Get the installation dir for the version that's running. They all use
     // the same "visit" script so it's okay to do this.
     std::string installDir("/usr/local/visit");
-    const char *idir = getenv("VISITHOME");
-    if(idir != 0)
+    const std::string idir = Environment::get("VISITHOME");
+    if(!idir.empty())
     {
         // The directory often has a "/bin" on the end. Strip it off.
         std::string home(idir);
@@ -587,6 +603,9 @@ GetVisItInstallationDirectory(const char *version)
 //   Regardless of return value from ReadKey, visithome may have been
 //   malloc'd and thus requires free. 
 //
+//   Tom Fogal, Sun Apr 19 12:47:42 MST 2009
+//   Use `Environment' to simplify and fix a compilation error.
+//
 // ****************************************************************************
 
 std::string
@@ -624,8 +643,8 @@ GetVisItArchitectureDirectory(const char *version)
     // Get the installation dir for the version that's running. They all use
     // the same "visit" script so it's okay to do this.
     std::string archDir(std::string("/usr/local/visit/") + std::string(VERSION));
-    const char *adir = getenv("VISITARCHHOME");
-    if(adir != 0)
+    const std::string adir = Environment::get("VISITARCHHOME");
+    if(!adir.empty())
         archDir = adir;
     return archDir;
 #endif
@@ -678,6 +697,9 @@ GetVisItLauncher()
 // Creation:   Thu Oct  2 11:16:08 PDT 2008
 //
 // Modifications:
+//
+//   Tom Fogal, Sun Apr 19 12:48:38 MST 2009
+//   Use `Environment' to simplify and fix a compilation error.
 //   
 // ****************************************************************************
 
@@ -743,9 +765,9 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
     //
     // Try and determine the platform that should be downloaded.
     //
-    const char *archHome = getenv("VISITARCHHOME");
+    std::string archHome = Environment::get("VISITARCHHOME");
     bool platformDetermined = false;
-    if(archHome != 0)
+    if(!archHome.empty())
     {
         std::string arch(archHome);
 
