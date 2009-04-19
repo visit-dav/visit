@@ -1338,12 +1338,12 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     struct hostent *localHostEnt = gethostbyname(localHostStr);
     if (localHostEnt == NULL)
     {
-	// Ok, using the host's name returned from gethostname()
-	// did not work. So, lets fall back to 'localhost'
+        // Ok, using the host's name returned from gethostname()
+        // did not work. So, lets fall back to 'localhost'
         strcpy(localHostStr,"localhost");
         localHostEnt = gethostbyname(localHostStr);
-	if (localHostEnt == NULL)
-	{
+        if (localHostEnt == NULL)
+        {
 #if defined(_WIN32)
             LogWindowsSocketError(mName, "gethostbyname,2");
 #endif
