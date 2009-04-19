@@ -39,19 +39,21 @@
 // ************************************************************************* //
 //                              PluginManager.C                              //
 // ************************************************************************* //
-
 #include <PluginManager.h>
+#include <visit-config.h>
+
+#include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <map>
+#include <vector>
+
 #include <DebugStream.h>
 #include <InvalidDirectoryException.h>
 #include <InvalidPluginException.h>
 #include <InstallationFunctions.h>
-#include <visit-config.h>
 #include <visitstream.h>
-#include <stdlib.h>
-#include <string>
-#include <vector>
-#include <map>
-#include <algorithm>
 
 #if __APPLE__
 #include <AvailabilityMacros.h>
