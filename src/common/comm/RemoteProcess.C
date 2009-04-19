@@ -36,9 +36,12 @@
 *
 *****************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <map>
+#include <set>
 
 #if defined(_WIN32)
 #include <process.h>
@@ -69,8 +72,6 @@
 
 #include <DebugStream.h>
 #include <snprintf.h>
-#include <map>
-#include <set>
 
 #ifdef HAVE_THREADS
 #if !defined(_WIN32)
