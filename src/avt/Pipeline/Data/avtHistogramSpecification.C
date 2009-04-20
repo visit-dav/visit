@@ -704,18 +704,23 @@ avtHistogramSpecification::Print(ostream &out) const
 //    Check whether MPI_INTEGER8 defined even if MPI_UNSIGNED_LONG_LONG
 //    is defined.
 //    
+//    Brad Whitlock, Mon Apr 20 12:06:25 PDT 2009
+//    Check MPI_VERSION and MPI_SUBVERSION before using MPI_Type_get_extent.
+//
 // ****************************************************************************
+
 bool
 avtHistogramSpecification::GetToRootProcessor(int tag)
 {
     // Find a long-long data type for the counts array
     MPI_Datatype datatype = MPI_LONG_LONG;
-    MPI_Aint lb,e;
     // On at least one mpi implementation (mpich2-1.0.5, Linux-x86-64),
     // MPI_LONG_LONG blatantly fails.  But for some reason INTEGER8 works.
     // Luckily we can tell this by checking the datatype size of the type.
     // We'll try a few different ones, and if none work, just do it slowly
     // using a single-precision int.
+#if (MPI_VERSION >= 2) || ((MPI_VERSION == 1) && (MPI_SUBVERSION > 2))
+    MPI_Aint lb,e;
 #if defined(MPI_UNSIGNED_LONG_LONG)
     MPI_Type_get_extent(datatype, &lb, &e);
     if (e != sizeof(VISIT_LONG_LONG))
@@ -729,6 +734,15 @@ avtHistogramSpecification::GetToRootProcessor(int tag)
     {
         datatype = MPI_INTEGER8;
         MPI_Type_get_extent(datatype, &lb, &e);
+    }
+#endif
+#else
+    MPI_Aint e;
+    MPI_Type_extent(datatype, &e);
+    if (e != sizeof(VISIT_LONG_LONG))
+    {
+        datatype = MPI_UNSIGNED_LONG_LONG;
+        MPI_Type_extent(datatype, &e);
     }
 #endif
 
