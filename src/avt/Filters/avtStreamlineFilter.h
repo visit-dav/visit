@@ -45,6 +45,7 @@
 
 #include <avtStreamline.h>
 #include <avtDatasetOnDemandFilter.h>
+#include <avtDatasetToDatasetFilter.h>
 #include <avtIVPDopri5.h>
 #include <avtVec.h>
 #include <avtIntervalTree.h>
@@ -181,9 +182,14 @@ class DomainType;
 //    Dave Pugmire, Fri Apr  3 09:18:03 EDT 2009
 //    Add SeedInfoString method to report seed information.
 //
+//    Hank Childs, Mon Apr 20 08:40:07 PDT 2009
+//    Change in inheritance to reflect changes in base class.
+//
 // ****************************************************************************
 
-class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
+class AVTFILTERS_API avtStreamlineFilter : 
+    virtual public avtDatasetOnDemandFilter,
+    virtual public avtDatasetToDatasetFilter
 {
   public:
                               avtStreamlineFilter();

@@ -45,7 +45,7 @@
 
 #include <pipeline_exports.h>
 
-#include <avtDatasetToDatasetFilter.h>
+#include <avtDatasetToDataObjectFilter.h>
 #include <list>
 
 #include <vtkDataSet.h>
@@ -141,10 +141,13 @@ struct DomainCacheEntry
 //    Removed map from domain id to cell locator since we currently
 //    use the same domain id for all point based data load operations.
 //
+//    Hank Childs, Mon Apr 20 08:40:07 PDT 2009
+//    Change inheritance so that output can be non-datasets.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
-                                                      avtDatasetToDatasetFilter
+                                                   avtDatasetToDataObjectFilter
 {
   public:
                                  avtDatasetOnDemandFilter();
