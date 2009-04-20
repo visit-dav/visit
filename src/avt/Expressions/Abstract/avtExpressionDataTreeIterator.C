@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtExpressionDataTreeIterator.C                          //
+//                     avtExpressionDataTreeIterator.C                       //
 // ************************************************************************* //
 
 #include <avtExpressionDataTreeIterator.h>
@@ -171,6 +171,9 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 //    Hank Childs, Sun Jan 13 20:26:34 PST 2008
 //    Add support for constant singletons.
 //
+//    Kathleen Bonnell, Tue Apr  7 07:55:25 PDT 2009
+//    Delete dat before early return.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -245,6 +248,7 @@ avtExpressionDataTreeIterator::ExecuteData(vtkDataSet *in_ds, int index,
         debug1 << "Ntuples = " << ntups << endl;
         debug1 << "Ncells = " << ncells << endl;
         debug1 << "Npts = " << npts << endl;
+        dat->Delete();
         return rv;
     }
 

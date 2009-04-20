@@ -40,11 +40,12 @@
 #define VTK_VISIT_INTERPOLATED_VELOCITY_FIELD
 
 #include <vtkObject.h>
+#include <visit_vtk_exports.h>
 
 class vtkDataSet;
 class vtkVisItPointLocator;
 
-class vtkVisItInterpolatedVelocityField  : public vtkObject
+class VISIT_VTK_API vtkVisItInterpolatedVelocityField  : public vtkObject
 {
   public:
   vtkTypeMacro(vtkVisItInterpolatedVelocityField,vtkObject);
