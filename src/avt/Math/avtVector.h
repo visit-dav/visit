@@ -71,6 +71,10 @@
 //    Dave Pugmire, Mon Nov 17 12:05:04 EST 2008
 //    Added operators == != and methods dot, cross, length2 and length.
 //
+//    Kathleen Bonnell, Mon Apr 20 10:38:22 MST 2009 
+//    Added MATH_API in front of operator<< for compilation on windows when
+//    other classes attempt to use the method.
+//
 // ****************************************************************************
 class MATH_API avtVector
 {
@@ -122,7 +126,7 @@ class MATH_API avtVector
     double length() const;
 
     // friends
-    friend ostream& operator<<(ostream& ostr,const avtVector&) STUB_OSTR;
+    MATH_API friend ostream& operator<<(ostream& ostr,const avtVector&) STUB_OSTR;
 
     // input/output
     const char *getAsText() STUB_STR;

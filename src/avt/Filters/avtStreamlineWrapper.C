@@ -155,7 +155,7 @@ avtStreamlineWrapper::Debug()
     sl->PtEnd(end);
     debug1<<"******seed: "<<end;
     debug1<<" Dom= [ "<<domain<<", ";
-    for (int i = 0; i < seedPtDomainList.size(); i++)
+    for (size_t i = 0; i < seedPtDomainList.size(); i++)
         debug1<<seedPtDomainList[i]<<", ";
     debug1<<"] ";
     debug1<< " steps= "<<sl->size()<<endl;
@@ -307,7 +307,7 @@ avtStreamlineWrapper::ComputeStatistics()
     maxCnt = 0;
     sum = 0;
     numDomainsVisited = 0;
-    for (int i = 0; i < domainVisitCnts.size(); i++)
+    for (size_t i = 0; i < domainVisitCnts.size(); i++)
     {
         int cnt = domainVisitCnts[i];
         if (cnt > maxCnt)

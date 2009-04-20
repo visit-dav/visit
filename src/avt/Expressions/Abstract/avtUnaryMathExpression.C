@@ -149,6 +149,9 @@ avtUnaryMathExpression::~avtUnaryMathExpression()
 //    Hank Childs, Sun Jan 13 20:07:56 PST 2008
 //    Add support for creating singletons.
 //
+//    Kathleen Bonnell, Tue Apr  7 07:58:33 PDT 2009
+//    When data == NULL, don't create a new vtkFloatArray twice.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -274,9 +277,7 @@ avtUnaryMathExpression::DeriveVariable(vtkDataSet *in_ds)
         // the mesh.
         //
         ncomps = 1;
-        vtkFloatArray *tmp = vtkFloatArray::New();
-        dv = CreateArray(tmp);
-        tmp->Delete();
+        dv = vtkFloatArray::New();
     }
     else
     {

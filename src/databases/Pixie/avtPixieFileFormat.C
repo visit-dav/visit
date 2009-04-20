@@ -1780,7 +1780,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
                         {
                             int dsize = H5Tget_size(attrType);
                             char *ptr = data + dsize * j + 1;
-                            char tmp[dsize+1];
+                            char *tmp = new char[dsize+1];
                             int i;
                             for(i = 0; i < dsize && *ptr != ' '; ++i)
                                 tmp[i] = *ptr++;
@@ -1792,6 +1792,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
                                 info2.coordY = std::string(tmp);
                             else
                                 info2.coordZ = std::string(tmp);
+                            delete [] tmp;
                         }
                         info2.hasCoords = true;
 

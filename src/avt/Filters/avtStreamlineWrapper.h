@@ -46,13 +46,14 @@
 #include <vector>
 #include <visitstream.h>
 #include <MemStream.h>
+#include <filters_exports.h>
 
 class avtStreamline;
 class vtkPolyData;
 class avtVector;
 class avtIVPSolver;
 
-class DomainType
+class AVTFILTERS_API DomainType
 {
   public:
     DomainType() :domain(-1), timeStep(0) {}
@@ -73,7 +74,7 @@ class DomainType
     }
     bool operator<(const DomainType &dt) const
     {
-        return domain < dt.domain && timeStep << dt.timeStep;
+        return domain < dt.domain && timeStep < dt.timeStep;
     }
 
     //Members
@@ -102,7 +103,7 @@ class DomainType
 //
 // ****************************************************************************
 
-class avtStreamlineWrapper
+class AVTFILTERS_API avtStreamlineWrapper
 {
   public:
     enum Status

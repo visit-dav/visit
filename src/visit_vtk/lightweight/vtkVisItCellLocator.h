@@ -47,7 +47,7 @@
 #ifndef __vtkVisItCellLocator_h
 #define __vtkVisItCellLocator_h
 
-#include <visit_vtk_exports.h>
+#include <visit_vtk_light_exports.h>
 #include "vtkLocator.h"
 
 class vtkCell;
@@ -58,7 +58,7 @@ class vtkIdList;
 class vtkNeighborCells;
 class vtkPoints;
 
-class VISIT_VTK_API vtkVisItCellLocator : public vtkLocator
+class VISIT_VTK_LIGHT_API vtkVisItCellLocator : public vtkLocator
 {
 public:
   vtkTypeRevisionMacro(vtkVisItCellLocator,vtkLocator);
