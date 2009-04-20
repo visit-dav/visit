@@ -205,7 +205,7 @@ avtLineScanQuery::GetCellsForPoint(int ptId, vtkPolyData *pd,
             // it might be more appropriate to just clean the data beforehand.
             bool match = false;
             pd->GetCellPoints(curId, this_cell_pts);
-            for(int j = 0; j < list->GetNumberOfIds(); ++j)
+            for(int j = 0; j < list->GetNumberOfIds() && !match; ++j)
             {
                 if(i == j)
                     continue;
