@@ -58,6 +58,10 @@
 //  Programmer: David Bremer
 //  Creation:   November 17, 2006
 //
+//  Modifications:
+//    Brad Whitlock, Fri Apr 17 09:38:35 PDT 2009
+//    I added a PreExecute method.
+//
 // ****************************************************************************
 
 class QUERY_API avtHohlraumFluxQuery : public avtLineScanQuery
@@ -106,6 +110,7 @@ class QUERY_API avtHohlraumFluxQuery : public avtLineScanQuery
 
   private:
     virtual void              ExecuteLineScan(vtkPolyData *pd);
+    virtual void              PreExecute(void);
     virtual void              PostExecute(void);
 };
 

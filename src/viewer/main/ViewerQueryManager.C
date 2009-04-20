@@ -1057,6 +1057,11 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Brad Whitlock, Tue Apr 29 16:31:58 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Fri Apr 17 09:58:52 PDT 2009
+//    Send updated expressions to the engine before we execute the query in
+//    case the query involves expressions that have not been sent to the engine
+//    yet.
+//
 // ****************************************************************************
 
 void         
@@ -1248,12 +1253,19 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         }
 
         TRY
-        { 
+        {
+            if(plotIds.size() > 0)
+            {
+                ViewerPlot *p = plist->GetPlot(plotIds[0]);
+                ViewerEngineManager::Instance()->UpdateExpressionsFromPlot(p);
+            }
+
             if (doTimeQuery)
             {
                 DoTimeQuery(oWin, &qa);
                 CATCH_RETURN(1);
             }
+
             if (ViewerEngineManager::Instance()->Query(engineKey, networkIds, 
                    &qa, qa))
             {

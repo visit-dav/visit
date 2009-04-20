@@ -42,6 +42,8 @@
 
 #include <avtLineScanQuery.h>
 
+#include <set>
+
 #include <stdio.h>
 #include <math.h>
 
@@ -150,6 +152,14 @@ avtLineScanQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   July 20, 2006
 //
+//  Modifications:
+//    Brad Whitlock, Mon Apr 20 09:39:46 PDT 2009
+//    I added code that makes duplicate line segments only be counted once.
+//    These line segments seem to occur at domain boundaries -- maybe a copy
+//    from each processor? When these line segments are counted multiply, it
+//    prevents the whole line scan from building up into a longer line. This
+//    was causing results of zero in the Hohlraum Flux query.
+//
 // ****************************************************************************
 
 int
@@ -158,6 +168,11 @@ avtLineScanQuery::GetCellsForPoint(int ptId, vtkPolyData *pd,
                                    int &seg1, int &seg2)
 {
     static vtkIdList *list = vtkIdList::New();
+    // Follow the same pattern as for "list". These get leaked but at least
+    // we don't have to allocate them very often.
+    static vtkIdList *this_cell_pts = vtkIdList::New();
+    static vtkIdList *cell_pts = vtkIdList::New();
+
     pd->GetPointCells(ptId, list);
     int numMatches = 0;
     int workingLineid = lineid;
@@ -182,12 +197,44 @@ avtLineScanQuery::GetCellsForPoint(int ptId, vtkPolyData *pd,
         }
         else
         {
-            // This is an error condition.  It is believed to occur when
-            // a line coincides with an edge.  Empirically, it is believed
-            // to happen about one time when you cast 100K lines over 90M
-            // zones.  So: it doesn't happen often, but it happens enough.
-            // In this case, just ignoring the line won't affect statistics.
-            return 3;
+            // Compare the other cells against this cell. If this cell matches
+            // any other cell then don't count it. To get here, we have already
+            // had 2 good cells (we assume) so we basically want to make sure 
+            // any matches don't count. We check here in a somewhat already 
+            // error condition to avoid the cost of doing it every time. Of course,
+            // it might be more appropriate to just clean the data beforehand.
+            bool match = false;
+            pd->GetCellPoints(curId, this_cell_pts);
+            for(int j = 0; j < list->GetNumberOfIds(); ++j)
+            {
+                if(i == j)
+                    continue;
+
+                pd->GetCellPoints(list->GetId(j), cell_pts);
+                if(cell_pts->GetNumberOfIds() == this_cell_pts->GetNumberOfIds())
+                {
+                    // Store the node numbers in a set so we can easily compare
+                    // the sorted sets' of node numbers.
+                    std::set<vtkIdType> ids1, ids2;
+                    for(int q = 0; q < cell_pts->GetNumberOfIds(); ++q)
+                    {
+                        ids1.insert(cell_pts->GetId(q));
+                        ids2.insert(this_cell_pts->GetId(q));
+                    }
+
+                    match = (ids1 == ids2);
+                }
+            }
+
+            if(!match)
+            {
+                // This is an error condition.  It is believed to occur when
+                // a line coincides with an edge.  Empirically, it is believed
+                // to happen about one time when you cast 100K lines over 90M
+                // zones.  So: it doesn't happen often, but it happens enough.
+                // In this case, just ignoring the line won't affect statistics.
+                return 3;
+            }
         }
     }
 

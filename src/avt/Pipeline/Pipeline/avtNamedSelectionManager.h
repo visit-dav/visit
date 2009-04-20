@@ -59,6 +59,11 @@ class     avtNamedSelection;
 //  Programmer: Hank Childs
 //  Creation:   January 30, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Apr 19 22:42:09 PDT 2009
+//    Add argument to DeleteNamedSelection.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelectionManager
@@ -75,7 +80,8 @@ class PIPELINE_API avtNamedSelectionManager
 
     void          CreateNamedSelection(avtDataObject_p, const std::string &);
 
-    void          DeleteNamedSelection(const std::string &);
+    void          DeleteNamedSelection(const std::string &, 
+                                       bool expectThisSelToBeThere = true);
     void          LoadNamedSelection(const std::string &);
     void          SaveNamedSelection(const std::string &);
 
