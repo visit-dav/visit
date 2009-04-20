@@ -149,7 +149,16 @@ enhancements and bug-fixes that were added to this release.</p>
       made active.</li>
   <li>The Fortran libsim interface could crash the simulation in the event that
       VisIt was unable to connect to the simulation.</li>
-  <li></li>
+  <li>VisIt was not sending expression definitions to the compute engine
+      prior to executing a database query. This could cause database queries 
+      to fail if the expressions had not already been sent to the compute
+      engine for another reason such as for creating a plot.</li>
+  <li>VisIt's <i>Hohlraum Flux</i> query could crash the parallel compute engine if
+      a processor did not have data.</li>
+  <li>VisIt's <i>Hohlraum Flux</i> query could return all zeroes in the event that
+      many of the line segments produced by its line scan were duplicates. This prevented
+      the query from linking the line scans into larger connected lines along which
+      the <i>Hohlraum Flux</i> query integrates its results.</li>
 </ul>
 
 <a name="Config_changes"></a>

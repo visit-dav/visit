@@ -487,6 +487,31 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
     }
 }
 
+// ****************************************************************************
+// Method: avtHohlraumFluxQuery::PreExecute
+//
+// Purpose: 
+//   This method is called before we start executing on the data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 17 09:41:11 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtHohlraumFluxQuery::PreExecute()
+{
+    avtLineScanQuery::PreExecute();
+
+    // Override the default value of numBins from the base class since it will
+    // be set during query execution. We have to do it here to avoid an exception
+    // that would be thrown from the avtLineScanQuery::PreExecute method. We 
+    // need to set the number of bins to zero here so we can safely take the
+    // maximum value of numBins in the PostExecute method.
+    numBins = 0;
+}
 
 // ****************************************************************************
 //  Method: avtHohlraumFluxQuery::PostExecute
@@ -516,15 +541,33 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
 //    Hank Childs, Thu Jul 24 13:00:40 PDT 2008
 //    Add to the output resolution.
 //
+//    Brad Whitlock, Fri Apr 17 09:41:37 PDT 2009
+//    I removed the code to bail out early if radBins == NULL. This was fatal
+//    in parallel with processors that did not have data because it caused the
+//    communication for summing the double array across processors with a
+//    later MPI communication to unify the maximum value. Both types of 
+//    communications were MPI_Allreduce so MPI tried to make them succeed even
+//    though they were incompatible.
+//
 // ****************************************************************************
 
 void
 avtHohlraumFluxQuery::PostExecute(void)
 {
+    // Make sure that we have the same number of bins across all processors. We
+    // will unless we're on a processor that had no data to execute. IF that's
+    // the case then we construct radBins here with all zeroes unless no
+    // processors had data.
+    numBins = UnifyMaximumValue(numBins);
+    if(numBins == 0)
+        return;
     if (radBins == NULL)
     {
-        return;
+        radBins = new double[numBins];
+        for(int i = 0; i < numBins; ++i)
+            radBins[i] = 0.;
     }
+
     double *accumBins = new double[numBins];
 
     SumDoubleArrayAcrossAllProcessors(radBins, accumBins, numBins);
