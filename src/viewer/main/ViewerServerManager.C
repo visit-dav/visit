@@ -69,6 +69,7 @@ extern ViewerSubject *viewerSubject;
 //
 HostProfileList *ViewerServerManager::clientAtts = 0;
 int ViewerServerManager::debugLevel = 0;
+bool ViewerServerManager::bufferDebug = false;
 std::string ViewerServerManager::localHost("localhost");
 stringVector ViewerServerManager::arguments;
 ViewerServerManager::LauncherMap ViewerServerManager::launchers;
@@ -154,12 +155,15 @@ ViewerServerManager::GetClientAtts()
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//    Added bufferDebug to control buffering of debug logs.
 // ****************************************************************************
 
 void
-ViewerServerManager::SetDebugLevel(int level)
+ViewerServerManager::SetDebugLevel(int level, bool doBuf)
 {
     debugLevel = level;
+    bufferDebug = doBuf;
 }
 
 // ****************************************************************************
@@ -481,6 +485,8 @@ ViewerServerManager::ShouldShareBatchJob(const std::string &host)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//    Added bufferDebug to control buffering of debug logs.
 // ****************************************************************************
 
 void
@@ -491,7 +497,10 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
     if(debugLevel > 0)
     {
         char temp[10];
-        SNPRINTF(temp, 10, "%d", debugLevel);
+        if (bufferDebug)
+            SNPRINTF(temp, 10, "%db", debugLevel);
+        else
+            SNPRINTF(temp, 10, "%d", debugLevel);
         component->AddArgument("-debug");
         component->AddArgument(temp);
     }

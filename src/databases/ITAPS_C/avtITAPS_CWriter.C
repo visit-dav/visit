@@ -80,17 +80,19 @@ using namespace avtITAPS_CUtility;
 //    Mark C. Miller, Wed Jan 14 17:57:46 PST 2009
 //    Added some bools control output behavior
 //
+//    Mark C. Miller, Tue Apr 21 16:05:30 PDT 2009
+//    Added addFacesFor3DEnts=true for GRUMMP.
 // ****************************************************************************
 
 avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
 {
+    simplexify = false;
     addFacesFor3DEnts = false;
     preventDupsToiMesh = false;
 
 #if defined(ITAPS_GRUMMP)
     simplexify = true;
-#else
-    simplexify = false;
+    addFacesFor3DEnts = true;
 #endif
 
 #if defined(ITAPS_MOAB)
@@ -188,6 +190,9 @@ avtITAPS_CWriter::OpenFile(const string &stemname, int nb)
 //  Programmer: Mark C. Miller 
 //  Creation:   November 20, 2008 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 21 16:06:03 PDT 2009
+//    Added code to store spatial/topological dimensions of mesh.
 // ****************************************************************************
 
 void
@@ -196,7 +201,8 @@ avtITAPS_CWriter::WriteHeaders(const avtDatabaseMetaData *md,
                             vector<string> &materials)
 {
     const avtMeshMetaData *mmd = md->GetMesh(0);
-
+    spatialDim = mmd->spatialDimension;
+    topoDim = mmd->topologicalDimension;
 }
 
 // ****************************************************************************
@@ -243,6 +249,9 @@ static int compare_ehs(const void *a, const void *b)
 //    Added code to properly traverse faces of a cell instead of assuming
 //    all cells are tets. Expanded the duplicate faces map to include a 4th
 //    node id.
+//
+//    Mark C. Miller, Tue Apr 21 16:06:48 PDT 2009
+//    Updated to newest iMesh/iBase specification.
 // ****************************************************************************
 static void
 WriteMesh(vtkDataSet *_ds, int chunk,
@@ -304,7 +313,7 @@ WriteMesh(vtkDataSet *_ds, int chunk,
         CheckITAPSError(itapsMesh, iMesh_createEntSet, NoL);
     
         // add just created Vtx entites to chunkSet
-        iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, &chunkSet, &itapsError);
+        iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, chunkSet, &itapsError);
         CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
     
         // remove just created Vtx entities from rootSet, ok?
@@ -431,7 +440,7 @@ WriteMesh(vtkDataSet *_ds, int chunk,
         *cellHdls = znHdls;
     
         // add just created cell entites to chunkSet
-        iMesh_addEntArrToSet(itapsMesh, znHdls, ncells, &chunkSet, &itapsError);
+        iMesh_addEntArrToSet(itapsMesh, znHdls, ncells, chunkSet, &itapsError);
         CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
     
         // remove just created cell entities from rootSet, ok?
@@ -569,10 +578,13 @@ static void ConvertTypeAndStorageOrder(vtkDataArray *arr, int sorder, T **buf)
 //    Fixed off by one error in string length passed for array names. It was
 //    failing to include the terminating null character. Removed conditional
 //    compilation for getDescription as that now works in most recent GRUMMP.
+//
+//    Mark C. Miller, Tue Apr 21 16:06:48 PDT 2009
+//    Updated to newest iMesh/iBase specification.
 // ****************************************************************************
 static void
 WriteVariables(vtkDataSet *ds, int chunk,
-    iMesh_Instance itapsMesh, iBase_EntityHandle rootSet,
+    iMesh_Instance itapsMesh, iBase_EntitySetHandle rootSet,
     iBase_EntityHandle *ptHdls, iBase_EntityHandle *clHdls)
 {
     try
@@ -711,6 +723,9 @@ funcEnd: ;
 //
 //    Mark C. Miller, Wed Jan 14 18:00:42 PST 2009
 //    Added bools to call to WriteMesh.
+//
+//    Mark C. Miller, Tue Apr 21 16:07:33 PDT 2009
+//    Added logic to pass "2D" option for GRUMMP.
 // ****************************************************************************
 
 void
@@ -718,9 +733,13 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     int i;
 
-    char dummyStr[32];
+    char *dummyStr = "";
+#if defined(ITAPS_GRUMMP)
+    if (spatialDim == 2)
+        dummyStr = "2D";
+#endif
     iMesh_Instance itapsMesh;
-    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, 0);
+    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, strlen(dummyStr)+1);
     CheckITAPSError(itapsMesh, iMesh_newMesh, NoL);
 
     iBase_EntitySetHandle rootSet;

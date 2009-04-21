@@ -70,6 +70,9 @@
 #    Brad Whitlock, Fri Apr 10 16:12:30 PDT 2009
 #    I moved some code from utility into InstallationFunctions.C
 #
+#    Mark C. Miller, Tue Apr 21 14:37:24 PDT 2009
+#    Added DebugStreamFull.[Ch] (really a rename of DebugStream.[Ch])
+#
 ##############################################################################
 
 ##
@@ -84,9 +87,9 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-SRC=DebugStream.C Environment.C FileFunctions.C InstallationFunctions.C \
+SRC=DebugStreamFull.C Environment.C FileFunctions.C InstallationFunctions.C \
     PTY.C StackTimer.C TimingsManager.C VisItException.C VisItInit.C
-HDR=DebugStream.h Environment.h FileFunctions.C InstallationFunctions.h \
+HDR=DebugStreamFull.h DebugStream.h Environment.h FileFunctions.C InstallationFunctions.h \
     PTY.h StackTimer.h TimingsManager.h VisItException.h VisItInit.h
 OBJ=$(SRC:.C=.o)
 LIB=libmisc

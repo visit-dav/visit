@@ -92,6 +92,10 @@ GetITAPS_CReadOptions(void)
 //  Modifications:
 //    Mark C. Miller, Wed Jan 14 17:57:10 PST 2009
 //    Added various bools to control output behavior.
+//
+//    Mark C. Miller, Tue Apr 21 16:04:38 PDT 2009
+//    Ensure all options are available, even to GRUMMP, but set their default
+//    values appropriately for GRUMMP.
 // ****************************************************************************
 
 DBOptionsAttributes *
@@ -99,7 +103,7 @@ GetITAPS_CWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
 
-#ifdef ITAPS_MOAB
+#if defined(ITAPS_MOAB)
     rv->SetEnum("Format", 0);
     vector<string> formats;
     formats.push_back("MOAB");   // 0
@@ -113,14 +117,16 @@ GetITAPS_CWriteOptions(void)
     rv->SetEnumStrings("Format", formats);
 #endif
 
-    // Flag to indicate if the mesh should be converted
-    // to simplices, triangles in 2D or tetrahedra in 3D
-    // Since GRUMMP can ONLY handle tetrahedra, it is
-    // always true for GRUMMP
-#ifndef ITAPS_GRUMMP
+    // GRUMMP requires some extra stuff so we turn that on
+    // by default here. 
+#if defined(ITAPS_GRUMMP)
+    rv->SetBool("Simplexify", true);
+    rv->SetBool("Add faces for 3Dents", true);
+#else
     rv->SetBool("Simplexify", false);
-#endif
     rv->SetBool("Add faces for 3Dents", false);
+#endif
+
     rv->SetBool("Prevent duplicates to iMesh", false);
 
     return rv;

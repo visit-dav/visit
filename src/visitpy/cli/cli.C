@@ -131,6 +131,8 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Assume Python won't modify argv, and cast a string literal to
 //    a const.
 //
+//    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//    Added logic to manage buffering of debug logs; an extra 'b' after level.
 // ****************************************************************************
 
 int
@@ -138,6 +140,7 @@ main(int argc, char *argv[])
 {
     int  retval = 0;
     int  debugLevel = 0;
+    bool bufferDebug = false;
     bool verbose = false, s_found = false;
     char *runFile = 0, *loadFile = 0, tmpArg[512];
     char **argv2 = new char *[argc];
@@ -155,10 +158,13 @@ main(int argc, char *argv[])
         {
             debugLevel = 1;
             if (i+1 < argc && isdigit(*(argv[i+1])))
-               debugLevel = atoi(argv[++i]);
+               debugLevel = atoi(argv[i+1]);
             else
                fprintf(stderr,"Warning: debug level not specified, "
                               "assuming 1\n");
+            if (i+1 < argc && *(argv[i+1]+1) == 'b')
+                bufferDebug = true;
+            i++;
             if (debugLevel < 0)
             {
                 debugLevel = 0;
@@ -288,7 +294,7 @@ main(int argc, char *argv[])
         PySys_SetArgv(argc, argv);
 
         // Initialize the VisIt module.
-        cli_initvisit(debugLevel, verbose, argc2, argv2,
+        cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
                       argc_after_s, argv_after_s);
 
         // Run some Python commands that import VisIt and launch the viewer.

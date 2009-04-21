@@ -85,6 +85,9 @@ typedef struct _VisItEntitySetInfo {
 //    Mark C. Miller, Tue Apr 22 23:20:43 PDT 2008
 //    Added stuff to handle more interesting subsetting.
 //
+//    Mark C. Miller, Tue Apr 21 16:08:19 PDT 2009
+//    Removed class storage for vert, edge, face and regn entities.
+//    Used symbolic names for size of arrays of entity type.
 // ****************************************************************************
 
 class avtITAPS_CFileFormat : public avtSTMDFileFormat
@@ -110,23 +113,12 @@ class avtITAPS_CFileFormat : public avtSTMDFileFormat
       string               vmeshFileName;
       iMesh_Instance       itapsMesh;
       iBase_EntitySetHandle rootSet;
-      iBase_EntityHandle  *vertEnts;
-      int                  vertEnts_allocated;
-      iBase_EntityHandle  *edgeEnts;
-      int                  edgeEnts_allocated;
-      iBase_EntityHandle  *faceEnts;
-      int                  faceEnts_allocated;
-      iBase_EntityHandle  *regnEnts;
-      int                  regnEnts_allocated;
       int                  geomDim;
       int                  topoDim;
-      int                  numVerts;
-      int                  numEdges;
-      int                  numFaces;
-      int                  numRegns;
-      iBase_EntityType     domToEntType[4];
+      int                  numOfType[iBase_ALL_TYPES];
+      iBase_EntityType     domToEntType[iBase_ALL_TYPES];
       bool                 haveMixedElementMesh;
-      vector<iBase_TagHandle>    primitiveTagHandles[4];
+      vector<iBase_TagHandle>    primitiveTagHandles[iBase_ALL_TYPES];
       map<iBase_EntitySetHandle,VisItEntitySetInfo_t> esMap;
 
       map<string, vector<iBase_EntitySetHandle> > topLevelSets;

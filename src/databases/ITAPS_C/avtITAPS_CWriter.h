@@ -68,6 +68,9 @@ class DBOptionsAttributes;
 //  Modifications:
 //    Mark C. Miller, Wed Jan 14 17:54:21 PST 2009
 //    Added some bools to control behavior of output to iMesh 
+//
+//    Mark C. Miller, Tue Apr 21 15:53:42 PDT 2009
+//    Added storage for spatial and topoligical dimension of mesh.
 // ****************************************************************************
 
 class avtITAPS_CWriter : public virtual avtDatabaseWriter
@@ -99,6 +102,8 @@ class avtITAPS_CWriter : public virtual avtDatabaseWriter
     bool           addFacesFor3DEnts;
     bool           preventDupsToiMesh;
     int            nblocks;
+    int            spatialDim;
+    int            topoDim;
 };
 
 #endif
