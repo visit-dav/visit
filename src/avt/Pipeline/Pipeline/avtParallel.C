@@ -720,8 +720,8 @@ SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray,
     // using a single-precision int.
 #if (MPI_VERSION >= 2) || ((MPI_VERSION == 1) && (MPI_SUBVERSION > 2))
     MPI_Aint lb,e;
-#if defined(MPI_UNSIGNED_LONG_LONG)
     MPI_Type_get_extent(datatype, &lb, &e);
+#if defined(MPI_UNSIGNED_LONG_LONG)
     if (e != sizeof(VISIT_LONG_LONG))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
@@ -738,11 +738,13 @@ SumLongLongArrayAcrossAllProcessors(VISIT_LONG_LONG *inArray,
 #else
     MPI_Aint e;
     MPI_Type_extent(datatype, &e);
+#if defined(MPI_UNSIGNED_LONG_LONG)
     if (e != sizeof(VISIT_LONG_LONG))
     {
         datatype = MPI_UNSIGNED_LONG_LONG;
         MPI_Type_extent(datatype, &e);
     }
+#endif
 #endif
 
     if (e == sizeof(VISIT_LONG_LONG))
