@@ -71,7 +71,7 @@
 #
 #         Experimental (internal)
 #           ITAPS             ITAPS-FMDB-1.0-15Apr09.tar.gz
-#           ITAPS             ITAPS-GRUMMP-0.5.0-15Apr09.tar.gz
+#           ITAPS             ITAPS-GRUMMP-0.5.0-20Apr09.tar.gz
 #           ITAPS             ITAPS-MOAB-3.99-20Apr09.tar.gz
 #           ViSUS             visus_26Feb07.tar.gz      -V
 #
@@ -985,9 +985,9 @@ export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.0-15Apr09"}
 export ITAPS_FMDB_COMPATIBILITY_VERSION=${ITAPS_FMDB_COMPATIBILITY_VERSION:-"1.0-15Apr09"}
 export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
 
-export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"ITAPS-GRUMMP-0.5.0-15Apr09.tar.gz"}
-export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.5.0-15Apr09"}
-export ITAPS_GRUMMP_COMPATIBILITY_VERSION=${ITAPS_GRUMMP_COMPATIBILITY_VERSION:-"0.5.0-15Apr09"}
+export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"ITAPS-GRUMMP-0.5.0-20Apr09.tar.gz"}
+export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.5.0-20Apr09"}
+export ITAPS_GRUMMP_COMPATIBILITY_VERSION=${ITAPS_GRUMMP_COMPATIBILITY_VERSION:-"0.5.0-20Apr09"}
 export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR:-"${ITAPS_GRUMMP_FILE%.tar*}"}
 
 export VISUS_FILE=${VISUS_FILE:-"visus_26Feb07.tar.gz"}
@@ -7483,13 +7483,6 @@ function build_itaps_grummp
         # To make it easier to package this build up, ensure we don't wind up
         # liking to shared libraries.
         find $VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH -name 'lib*.so*' -exec rm -f {} \;
-        #
-        # A 'make install' for GRUMMP fails to install iMesh_protos.h.
-        # Take care of that now.
-        #
-        if [[ ! -e $VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH/include/ITAPS/iMesh_protos.h ]]; then
-            cp iMesh/iMesh_protos.h $VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH/include/ITAPS/.
-        fi
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -7965,10 +7958,10 @@ function build_visit
     #
     if [[ "${DO_DBIO_ONLY}" == "yes" && "$0" == "build_imeshio" ]] ; then
         if [[ -e exe/visitconvert_ser_lite ]]; then
-            cp exe/visitconvert_ser_lite exe/imeshio_convert
+            cp exe/visitconvert_ser_lite exe/imeshioconvert
             cp bin/visitconvert bin/imeshioconvert
         fi
-    fi 
+    fi
 }
 
 printvariables () {
@@ -8616,10 +8609,11 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "HDF4"     "$HDF4_VERSION  $HDF4_FILE"      $ON_HDF4 \
            "HDF5"     "$HDF5_VERSION  $HDF5_FILE"      $ON_HDF5 \
            "IceT"     "$ICET_VERSION  $ICET_FILE"      $ON_ICET \
+           "ITAPS"    "15Apr09 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
            "Mili"     "$MILI_VERSION $MILI_FILE (not available from the web)"      $ON_MILI \
            "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
+           "Silo"     "$SILO_VERSION    $SILO_FILE"      $ON_SILO \
            "SZip"     "$SZIP_VERSION    $SZIP_FILE"      $ON_SZIP \
-           "ITAPS"    "31Dec08 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
            "NetCDF"   "$NETCDF_VERSION  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
     retval=$?
 
@@ -9232,7 +9226,7 @@ if [[ "$DO_ITAPS" == "yes" ]] ; then
         info "Done building ITAPS_GRUMMP"
     fi
     # Setup the _IMPL symbol for ITAPS_GRUMMP
-    export ITAPS_GRUMMP_IMPL="GRUMMP:bdry,smesh,vmesh:-I\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/include/ITAPS:-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib/ITAPS,-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-liMesh_GRUMMP,-lGR_3D,-lGR_surf,-lGR_2D,-lGR_base,-lSUMAAlog_lite,-lOptMS,-lvtkGraphics"
+    export ITAPS_GRUMMP_IMPL="GRUMMP:bdry,smesh,vmesh:-I\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-liMesh_GRUMMP,-lGR_3D,-lGR_surf,-lGR_2D,-lGR_base,-lSUMAAlog_lite,-lOptMS,-lvtkGraphics"
 fi
 
 #
