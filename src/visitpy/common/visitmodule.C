@@ -400,6 +400,7 @@ static bool                  moduleUseThreads = false;
 #endif
 static bool                  noViewer = true;
 static int                   moduleDebugLevel = 0;
+static bool                  moduleBufferDebug = false;
 static VisItMessageObserver *messageObserver = 0;
 static VisItStatusObserver  *statusObserver = 0;
 static bool                  moduleVerbose = false;
@@ -1321,14 +1322,24 @@ visit_LaunchNowin(PyObject *self, PyObject *args)
 //
 // Modifications:
 //
+//    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//    Added logic to manage buffering of debug logs; an extra 'b' after level.
 // ****************************************************************************
 
 PyObject *
 visit_SetDebugLevel(PyObject *self, PyObject *args)
 {
-    int dLevel;
-    if(!PyArg_ParseTuple(args, "i", &dLevel))
+    char *sLevel = 0;
+    if(!PyArg_ParseTuple(args, "s", &sLevel))
         return NULL;
+
+    int dLevel = 0;
+    if (isdigit(sLevel[0]))
+        dLevel = atoi(sLevel);
+    else
+        return NULL;
+    if (sLevel[1] == 'b')
+        moduleBufferDebug = true;
 
     if(dLevel < 1 || dLevel > 5)
     {
@@ -1343,7 +1354,10 @@ visit_SetDebugLevel(PyObject *self, PyObject *args)
 
         GetViewerProxy()->AddArgument("-debug");
         char tmp[10];
-        SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
+        if (moduleBufferDebug)
+            SNPRINTF(tmp, 10, "%db", moduleDebugLevel);
+        else
+            SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
         GetViewerProxy()->AddArgument(tmp); 
     }
     else
@@ -14635,6 +14649,9 @@ NeedToLoadPlugins(Subject *, void *)
 //
 //   Mark C. Miller, Thu Aug 21 11:32:08 PDT 2008
 //   Added passing of '-clobber_vlogs' to Init
+//
+//   Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//   Added logic to manage buffering of debug logs; an extra 'b' after level.
 // ****************************************************************************
 
 static int
@@ -14654,8 +14671,12 @@ InitializeModule()
         if(moduleDebugLevel > 0)
         {
             static const char *nums[] = {"1", "2", "3", "4", "5"};
+            static const char *bnums[] = {"1b", "2b", "3b", "4b", "5b"};
             argv[argc++] = (char*)"-debug";
-            argv[argc++] = (char*)nums[moduleDebugLevel - 1];
+            if (moduleBufferDebug)
+                argv[argc++] = (char*)bnums[moduleDebugLevel - 1];
+            else
+                argv[argc++] = (char*)nums[moduleDebugLevel - 1];
         }
         for(int i = 1; i < cli_argc; ++i)
         {
@@ -14699,7 +14720,10 @@ InitializeModule()
     {
         GetViewerProxy()->AddArgument("-debug");
         char tmp[10];
-        SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
+        if (moduleBufferDebug)
+            SNPRINTF(tmp, 10, "%db", moduleDebugLevel);
+        else
+            SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
         GetViewerProxy()->AddArgument(tmp);        
     }
 
@@ -15136,13 +15160,24 @@ VisItErrorFunc(const char *errString)
 //   Added argc,v_after_s so we can query which arguments to the cli came
 //   after -s file.py.
 //
+//   Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//   Added logic to manage buffering of debug logs; negative value indicates it
 // ****************************************************************************
 
 void
 cli_initvisit(int debugLevel, bool verbose, int argc, char **argv,
     int argc_after_s, char **argv_after_s)
 {
-    moduleDebugLevel = debugLevel;
+    if (debugLevel < 0)
+    {
+        moduleDebugLevel = -debugLevel;
+        moduleBufferDebug = true;
+    }
+    else
+    {
+        moduleDebugLevel = debugLevel;
+        moduleBufferDebug = false;
+    }
     moduleVerbose = verbose;
     localNameSpace = true;
     cli_argc = argc;

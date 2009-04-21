@@ -2432,6 +2432,8 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    Brad Whitlock, Thu Apr  9 14:45:03 PDT 2009
 //    I added -connectengine support and -o and -s  support.
 //
+//    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//    Added logic to manage buffering of debug logs; an extra 'b' after level.
 // ****************************************************************************
 
 void
@@ -2507,13 +2509,18 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-debug") == 0)
         {
             int debugLevel = 1; 
+            bool bufferDebug = false;
             if (i+1 < argc && isdigit(*(argv[i+1])))
                 debugLevel = atoi(argv[i+1]);
             else
                 cerr << "Warning: debug level not specified, assuming 1" << endl;
+
+            if (i+1 < argc && *(argv[i+1]+1) == 'b')
+               bufferDebug = true;
+
             if (debugLevel > 0 && debugLevel < 6)
             {
-                ViewerServerManager::SetDebugLevel(debugLevel);
+                ViewerServerManager::SetDebugLevel(debugLevel, bufferDebug);
 
                 clientArguments.push_back(argv[i]);
                 clientArguments.push_back(argv[i+1]);

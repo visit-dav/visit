@@ -55,7 +55,7 @@
 #include <new>
 #include <cstring>
 
-#include <DebugStream.h>
+#include <DebugStreamFull.h>
 #include <InstallationFunctions.h>
 #include <TimingsManager.h>
 #include <visit-config.h>
@@ -220,6 +220,9 @@ NewHandler(void)
 //    Brad Whitlock, Fri Apr 10 16:00:55 PDT 2009
 //    I added support for reading -dv.
 //
+//    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//    Added logic to manage buffering of debug logs; an extra 'b' after level.
+//
 // ****************************************************************************
 
 void
@@ -236,6 +239,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
 #else
     bool usePid = false;
 #endif
+    bool bufferDebug = false;
     bool clobberVlogs = false;
     bool vtk_debug = false;
     bool enableTimings = false;
@@ -277,6 +281,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
                    debuglevel = atoi(argv[i+1]);
                 else
                    cerr << "Warning: debug level not specified, assuming 1\n";
+
                 if (debuglevel > 5)
                 {
                     cerr << "Warning: clamping debug level to 5\n";
@@ -287,6 +292,9 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
                     cerr << "Warning: clamping debug level to 0\n";
                     debuglevel = 0;
                 }
+                if (i+1 < argc && *(argv[i+1]+1) == 'b')
+                    bufferDebug = true;
+
                 if(strip)
                 {
                     striparg(i,2, argc,argv);
@@ -383,7 +391,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
-    DebugStream::Initialize(progname, debuglevel, sigs, clobberVlogs);
+    DebugStream::Initialize(progname, debuglevel, sigs, clobberVlogs, bufferDebug);
     for(i = 0; i < argc; ++i)
         debug1 << argv[i] << " ";
     debug1 << endl;

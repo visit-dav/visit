@@ -93,6 +93,8 @@ class ViewerConnectionProgressDialog;
 //    Jeremy Meredith, Wed Dec  3 16:48:35 EST 2008
 //    Allowed commandline override forcing-on of SSH tunneling.
 //
+//    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
+//    Added bool to SetDebugLevel to control buffering of debug logs. 
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager : public ViewerBase
@@ -111,7 +113,7 @@ public:
     static void CloseLaunchers();
     static void SendKeepAlivesToLaunchers();
 
-    static void SetDebugLevel(int level);
+    static void SetDebugLevel(int level, bool useBuf);
     static void SetArguments(const stringVector &arg);
     static void SetLocalHost(const std::string &hostName);
     static bool HostIsLocalHost(const std::string &hostName);
@@ -159,6 +161,7 @@ private:
                               ViewerConnectionProgressDialog *dialog);
 
     static int                      debugLevel;
+    static bool                     bufferDebug;
     static std::string              localHost;
     static stringVector             arguments;
     static LauncherMap              launchers;

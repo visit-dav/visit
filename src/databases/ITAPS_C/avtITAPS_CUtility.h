@@ -55,11 +55,33 @@ using std::map;
 using std::string;
 using std::vector;
 
+// Macro to simplify allocation of an iMesh 'array' of specific
+// size, N
+#define IMESH_ADEFN(TN,ON,N)                    \
+    TN* ON = (TN*) malloc(N * sizeof(TN));      \
+    int ON ## _allocated = 1;                   \
+    int ON ## _size = N;
+
+// Macro to simplify allocation of an iMesh 'array' of specific
+// unspecified size 
+#define IMESH_ADEF(TN,ON)               \
+    TN* ON = 0;                         \
+    int ON ## _allocated = 0;           \
+    int ON ## _size = 0;
+
+// Macro to simplify passing of an iMesh 'array' to a function
+#define IMESH_AARG(ON) &ON, &ON ## _allocated, &ON ## _size
+
+// Macro to free an iMesh 'array'
+#define IMESH_AFREE(ON)                 \
+    if (ON) free(ON);                   \
+    ON ## _allocated = 0;               \
+    ON ## _size = 0;
+
 // end of list
 #define EoL (void*)-1
 // no list
 #define NoL (0,EoL)
-
 
 // ****************************************************************************
 //  Macro: CheckITAPSError2
@@ -83,6 +105,10 @@ using std::vector;
 //
 //    Mark C. Miller, Mon Jan 26 15:22:44 PST 2009
 //    Removed explicit qualification of name of namespace on supressMessage
+//
+//    Mark C. Miller, Tue Apr 21 16:03:55 PDT 2009
+//    Removed got and cleanup stuff as that could inadvertently cause odd
+//    behavior.
 // ****************************************************************************
 #define CheckITAPSError2(IMI, ERR, FN, ARGS, THELINE, THEFILE)                                  \
     if (ERR != 0)                                                                               \
@@ -109,19 +135,17 @@ using std::vector;
             if (!avtCallback::IssueWarning(supressMessage))                                     \
                 cerr << supressMessage << endl;                                                 \
         }                                                                                       \
-        ITAPSErrorCleanupHelper ARGS;                                                           \
-        goto funcEnd;                                                                           \
     }                                                                                           \
     else                                                                                        \
     {                                                                                           \
-        debug4 << "Made it past call to \"" << #FN << "\" at line "                             \
+        debug5 << "Made it past call to \"" << #FN << "\" at line "                             \
                << THELINE << " in file " << THEFILE << endl;                                    \
     }
 
 #define CheckITAPSError(IMI, FN, ARGS) CheckITAPSError2(IMI, itapsError, FN, ARGS, __LINE__, __FILE__)
 
 typedef bool (*HandleThisSet)(iMesh_Instance ima, int level, int memidx, bool ises,
-    iBase_EntitySetHandle esh, void *cb_data);
+    iBase_EntityHandle eh, iBase_EntitySetHandle esh, void *cb_data);
 
 namespace avtITAPS_CUtility
 {
@@ -138,12 +162,12 @@ namespace avtITAPS_CUtility
     int ITAPSEntityTopologyToVTKZoneType(int ztype);
     int VTKZoneTypeToITAPSEntityTopology(int ztype);
     void TraverseSetHierarchy(iMesh_Instance aMesh, int level, int memberId,
-        bool isEntitySet, iBase_EntitySetHandle esh, bool debugOff,
+        bool isEntitySet, iBase_EntityHandle eh, iBase_EntitySetHandle esh, bool debugOff,
         HandleThisSet handleSetCb, void *handleSetCb_data);
     void GetTagsForEntity(iMesh_Instance aMesh, bool isEntitySet,
-        iBase_EntitySetHandle esh, vector<string> &tagNames, vector<int> &tagTypes,
+        iBase_EntityHandle eh, iBase_EntitySetHandle esh, vector<string> &tagNames, vector<int> &tagTypes,
         vector<int> &tagSizes, vector<string> &tagVals, int level);
     bool GetTopLevelSets(iMesh_Instance ima, int level, int memidx, bool ises,
-        iBase_EntitySetHandle esh, void *cb_data);
+        iBase_EntityHandle eh, iBase_EntitySetHandle esh, void *cb_data);
 }
 #endif

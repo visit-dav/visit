@@ -36,7 +36,8 @@
 *
 *****************************************************************************/
 
-#include <DebugStream.h>
+#include <DebugStreamFull.h>
+#include <visitstream.h>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -56,11 +57,22 @@ vector<DebugStream::DebugStreamBuf*> DebugStream::DebugStreamBuf::allBuffers;
 int DebugStream::DebugStreamBuf::curLevel;
 
 // global DebugStreams
-DebugStream debug1_real(1);
-DebugStream debug2_real(2);
-DebugStream debug3_real(3);
-DebugStream debug4_real(4);
-DebugStream debug5_real(5);
+// We make these static so they are NOT visible outside this file
+static DebugStream debug1_realobj(1);
+static DebugStream debug2_realobj(2);
+static DebugStream debug3_realobj(3);
+static DebugStream debug4_realobj(4);
+static DebugStream debug5_realobj(5);
+
+// global DebugStream pointers
+// These are the only things visible outside this file. Doing this
+// prevents all of VisIt from being recompiled when only the interface
+// to the DebugStream class changes.
+ostream *debug1_realp = &debug1_realobj;
+ostream *debug2_realp = &debug2_realobj;
+ostream *debug3_realp = &debug3_realobj;
+ostream *debug4_realp = &debug4_realobj;
+ostream *debug5_realp = &debug5_realobj;
 
 // ****************************************************************************
 // Function: close_streams
@@ -80,11 +92,11 @@ DebugStream debug5_real(5);
 static void
 close_streams()
 {
-    if (debug1_real) debug1_real.close();
-    if (debug2_real) debug2_real.close();
-    if (debug3_real) debug3_real.close();
-    if (debug4_real) debug4_real.close();
-    if (debug5_real) debug5_real.close();
+    if (debug1_realobj) debug1_realobj.close();
+    if (debug2_realobj) debug2_realobj.close();
+    if (debug3_realobj) debug3_realobj.close();
+    if (debug4_realobj) debug4_realobj.close();
+    if (debug5_realobj) debug5_realobj.close();
 }
 
 // ****************************************************************************
@@ -322,9 +334,11 @@ DebugStream::DebugStreamBuf::close()
 //    Apparently setbuf is not public on some platforms.  I added an #ifdef
 //    to disable it based on a configure'd define.
 //
+//    Mark C. Miller, Tue Apr 14 16:01:49 PDT 2009
+//    Added option to buffer the debug logs.
 // ****************************************************************************
 void
-DebugStream::DebugStreamBuf::open(const char *filename_)
+DebugStream::DebugStreamBuf::open(const char *filename_, bool buffer_debug)
 {
     close();
     strcpy(filename, filename_);
@@ -338,11 +352,13 @@ DebugStream::DebugStreamBuf::open(const char *filename_)
     else
     {
         // flush the buffer after every operation
-        out->setf(ios::unitbuf);
+        if (!buffer_debug)
+            out->setf(ios::unitbuf);
 #ifndef NO_SETBUF
         // the previous flag does nothing on SunOS;
         // I hate to do this, but I'm doing it to force automatic flushing:
-        out->rdbuf()->setbuf((char*)0,0);
+        if (!buffer_debug)
+            out->rdbuf()->setbuf((char*)0,0);
 #endif
     }
 }
@@ -502,11 +518,14 @@ DebugStream::~DebugStream()
 //    This has some undesirable behavior if you happening to be editing a vlog
 //    and re-run VisIt as it may cause the editor to save a swap file because
 //    the file's name is getting changed out from underneath the editor.
+//
+//    Mark C. Miller, Tue Apr 14 16:01:49 PDT 2009
+//    Added option to buffer the debug logs.
 // ****************************************************************************
 
 
 void
-DebugStream::open(const char *progname, bool clobber)
+DebugStream::open(const char *progname, bool clobber, bool buffer_debug)
 {
     char filename[256];
     sprintf(filename, "A.%s.%d.vlog", progname, level);
@@ -532,7 +551,7 @@ DebugStream::open(const char *progname, bool clobber)
     }
 
     // ok, open the stream
-    buf->open(filename);
+    buf->open(filename, buffer_debug);
     enabled = true;
 }
 
@@ -604,23 +623,25 @@ DebugStream::close()
 //    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
 //    Allow disabling of signal handlers.
 //
+//    Mark C. Miller, Tue Apr 14 16:01:49 PDT 2009
+//    Added option to buffer the debug logs.
 // ****************************************************************************
 
 void
 DebugStream::Initialize(const char *progname, int debuglevel, bool sigs,
-    bool clobber)
+    bool clobber, bool buffer_debug)
 {
     switch (debuglevel)
     {
-      case 5:  debug5_real.open(progname, clobber);
+      case 5:  debug5_realobj.open(progname, clobber, buffer_debug);
         /* FALLTHRU */
-      case 4:  debug4_real.open(progname, clobber);
+      case 4:  debug4_realobj.open(progname, clobber, buffer_debug);
         /* FALLTHRU */
-      case 3:  debug3_real.open(progname, clobber);
+      case 3:  debug3_realobj.open(progname, clobber, buffer_debug);
         /* FALLTHRU */
-      case 2:  debug2_real.open(progname, clobber);
+      case 2:  debug2_realobj.open(progname, clobber, buffer_debug);
         /* FALLTHRU */
-      case 1:  debug1_real.open(progname, clobber);
+      case 1:  debug1_realobj.open(progname, clobber, buffer_debug);
         break;
       default:
         break;

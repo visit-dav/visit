@@ -780,7 +780,15 @@ $fullusage = "$usage
     ---------------------------------------------------------------------------
         -debug <level>       Run with <level> levels of output logging.
                              <level> must be between 1 and 5. This will generate
-                             debug logs for ALL components.
+                             debug logs (called 'vlogs' for ALL components.
+                             Note that debug logs are UNbuffered. However, if
+                             you also specify 'b' immediately after the digit
+                             indicating the debug level (e.g. '-debug 3b'), the
+                             logs will be buffered. This can substantially improve
+                             performance when a lot of debug output is generated.
+                             However, also beware that when debug logs are buffered,
+                             there isn't necessarily any guarentee they will contain
+                             the most recent debug output just prior to a crash.
         -debug_<compname> <level>
                              Run specified component with <level> of output
                              logging. For example, '-debug_mdserver 4' will run
@@ -788,10 +796,13 @@ $fullusage = "$usage
                              '-debug_<compname> <level>' args are allowed.
         -debug_engine_rank <r>
                              Restrict debug output to the specified rank.
-        -clobber_vlogs       By default, each invokation or restart of a VisIt
-                             component will write its debug logs to new files.
-                             This flag causes VisIt to overwrite existing debug
-                             logs rather than creating new ones.
+        -clobber_vlogs       By default, VisIt maintains debug logs from the 5
+                             most recent invokations or restarts of each VisIt
+                             component. They are named something like
+                             A.mdserver.5.vlog, A.engine_ser.5.vlog, etc with
+                             the leading letter (A-E) indicating most to least
+                             recent. The clobber_vlogs flag causes VisIt to remove
+                             all debug logs and begin creating them anew.
         -vtk-debug           Turn on debugging of vtk objects used in pipelines.
         -pid                 Append process ids to the names of log files.
         -timing              Save timing data to files.
