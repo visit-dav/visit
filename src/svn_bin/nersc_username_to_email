@@ -26,6 +26,9 @@
 #    Dave Semeraro, Tuesday December 9 13:26:45 CST 2008
 #    Added case for userid "semeraro".
 #
+#    Paul Navratil, Wednesday April 22 14:12:00 CST 2009
+#    Added case for userid "pnav".
+#
 # *****************************************************************************
 
 
@@ -97,6 +100,10 @@ case $1 in
     # Dave Semeraro, NCSA / University of Illinois
     "semeraro")
         emaddr=semeraro@ncsa.uiuc.edu
+        ;;
+    # Paul Navratil, TACC / University of Texas
+    "pnav")
+        emaddr=pnav@tacc.utexas.edu
         ;;
     *)
         emaddr=visit-developers@ornl.gov
