@@ -38,6 +38,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <signal.h>
 #include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
