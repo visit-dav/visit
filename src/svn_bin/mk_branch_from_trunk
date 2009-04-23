@@ -13,6 +13,9 @@
 #    Hank Childs, Thu Jul  5 16:13:57 PDT 2007
 #    Suppress SVN noise.
 #
+#    Hank Childs, Thu Apr 23 15:32:10 PDT 2009
+#    Port to bash.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -98,5 +101,5 @@ echo ""
 echo "Successful!"
 echo ""
 
-return 0
+exit 0
 
