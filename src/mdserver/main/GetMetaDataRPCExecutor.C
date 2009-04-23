@@ -138,6 +138,8 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //   Hank Childs, Wed Dec 19 08:39:46 PST 2007
 //   Add timing information.
 //
+//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//   Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -162,8 +164,8 @@ GetMetaDataRPCExecutor::Update(Subject *s)
                              rpc->GetCreateVectorMagnitudeExpressions());
 
         debug5 << "MetaData=" << endl;
-        if(debug5_real)
-            parent->GetCurrentMetaData()->Print(debug5_real);
+        if(DebugStream::Level5())
+            parent->GetCurrentMetaData()->Print(DebugStream::Stream5());
 
         int t0 = visitTimer->StartTimer();
         rpc->SendReply(parent->GetCurrentMetaData());

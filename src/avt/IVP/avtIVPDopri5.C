@@ -467,6 +467,8 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Put if statements in front of debug's.  The generation of strings to
 //    output to debug was doubling the total integration time.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -484,7 +486,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
             t_max = -t_max;
     }
 
-    if (debug5_real)
+    if (DebugStream::Level5())
         debug5<<"End= "<<end<<" t_max= "<<t_max<<endl;
     
     const double direction = sign( 1.0, t_max - t );
@@ -527,7 +529,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
         // stepsize underflow?
         if( 0.1*std::abs(h) <= std::abs(t)*epsilon ) 
         {
-            if (debug5_real)
+            if (DebugStream::Level5())
                 debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
                        << t << ", step size too small (h = " << h << ")\n";
             return STEPSIZE_UNDERFLOW;
@@ -542,7 +544,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
 
         n_steps++;
 
-        if (debug5_real)
+        if (DebugStream::Level5())
             debug5 << "\tavtIVPDopri5::step(): t = " << t << ", y = " << y 
                    << ", h = " << h << ", t+h = " << t+h << '\n';
 
@@ -622,7 +624,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
                 
                     if( iasti == 15 ) 
                     {
-                        if (debug5_real)
+                        if (DebugStream::Level5())
                             debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
                                    << t << ", problem seems stiff (y = " << y 
                                    << ")\n";
@@ -687,7 +689,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
                 
             
             // normal exit
-            if (debug5_real)
+            if (DebugStream::Level5())
                 debug5 << "\tavtIVPDopri5::step(): normal exit, now at t = " 
                        << t << ", y = " << y << ", h = " << h << '\n';
             return OK;
@@ -703,7 +705,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
 
             h = h_new;
             
-            if (debug5_real)
+            if (DebugStream::Level5())
                 debug5 << "\tavtIVPDopri5::step(): step rejected, retry with h = "
                        << h << '\n';
         }

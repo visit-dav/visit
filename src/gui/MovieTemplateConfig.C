@@ -250,6 +250,8 @@ MovieTemplateConfig::CreateSequenceObjects(DataNode *sNode,
 //   Added debugging statements and code to skip the XML tag. Make the
 //   TemplateOptions node be the root node.
 //
+//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//   Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 DataNode *
@@ -293,8 +295,8 @@ MovieTemplateConfig::ReadConfigFile(const char *filename)
     }
 
     // Print the data node tree to the logs so we can see its structure.
-    if(debug5_real)
-        root->Print(debug5_real);
+    if(DebugStream::Level5())
+        root->Print(DebugStream::Stream5());
 
     // Remove all of the sequences.
     SequenceRemoveAll();

@@ -161,6 +161,8 @@ avtTerminatingSink::~avtTerminatingSink()
 //    Cyrus Harrison, Wed Apr  1 12:03:19 PDT 2009
 //    Change so memory usage info scales up to 4 gigabytes.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -206,7 +208,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
             input->Update(contract);
             visitTimer->StopTimer(t, "First pipeline update.");
 
-            if (debug3_real)
+            if (DebugStream::Level3())
             {
                 unsigned int size = 0, rss = 0;
                 GetMemorySize(size, rss);
@@ -238,7 +240,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
                 dob->Merge(*input);
                 iter++;
 
-                if (debug3_real)
+                if (DebugStream::Level3())
                 {
                     unsigned int size = 0, rss = 0;
                     GetMemorySize(size, rss);

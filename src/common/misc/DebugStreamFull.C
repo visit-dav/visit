@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <DebugStreamFull.h>
+#include <DebugStream.h>
 #include <visitstream.h>
 
 #if defined(_WIN32)
@@ -53,26 +54,40 @@
 using std::vector;
 
 // static DebugStreamBuf class data
-vector<DebugStream::DebugStreamBuf*> DebugStream::DebugStreamBuf::allBuffers;
-int DebugStream::DebugStreamBuf::curLevel;
+vector<DebugStreamFull::DebugStreamBuf*> DebugStreamFull::DebugStreamBuf::allBuffers;
+int DebugStreamFull::DebugStreamBuf::curLevel;
 
 // global DebugStreams
 // We make these static so they are NOT visible outside this file
-static DebugStream debug1_realobj(1);
-static DebugStream debug2_realobj(2);
-static DebugStream debug3_realobj(3);
-static DebugStream debug4_realobj(4);
-static DebugStream debug5_realobj(5);
+static DebugStreamFull debug1_realobj(1);
+static DebugStreamFull debug2_realobj(2);
+static DebugStreamFull debug3_realobj(3);
+static DebugStreamFull debug4_realobj(4);
+static DebugStreamFull debug5_realobj(5);
 
-// global DebugStream pointers
-// These are the only things visible outside this file. Doing this
-// prevents all of VisIt from being recompiled when only the interface
-// to the DebugStream class changes.
-ostream *debug1_realp = &debug1_realobj;
-ostream *debug2_realp = &debug2_realobj;
-ostream *debug3_realp = &debug3_realobj;
-ostream *debug4_realp = &debug4_realobj;
-ostream *debug5_realp = &debug5_realobj;
+bool DebugStream::Level1() { return debug1_realobj.isenabled(); };
+bool DebugStream::Level2() { return debug2_realobj.isenabled(); };
+bool DebugStream::Level3() { return debug3_realobj.isenabled(); };
+bool DebugStream::Level4() { return debug4_realobj.isenabled(); };
+bool DebugStream::Level5() { return debug5_realobj.isenabled(); };
+
+ostream& DebugStream::Stream1() { return *((ostream*) &debug1_realobj); };
+ostream& DebugStream::Stream2() { return *((ostream*) &debug2_realobj); };
+ostream& DebugStream::Stream3() { return *((ostream*) &debug3_realobj); };
+ostream& DebugStream::Stream4() { return *((ostream*) &debug4_realobj); };
+ostream& DebugStream::Stream5() { return *((ostream*) &debug5_realobj); };
+
+int
+DebugStream::GetLevel()
+{
+    int level = 0;
+    level += debug1_realobj.isenabled();
+    level += debug2_realobj.isenabled();
+    level += debug3_realobj.isenabled();
+    level += debug4_realobj.isenabled();
+    level += debug5_realobj.isenabled();
+    return level;
+}
 
 // ****************************************************************************
 // Function: close_streams
@@ -92,11 +107,11 @@ ostream *debug5_realp = &debug5_realobj;
 static void
 close_streams()
 {
-    if (debug1_realobj) debug1_realobj.close();
-    if (debug2_realobj) debug2_realobj.close();
-    if (debug3_realobj) debug3_realobj.close();
-    if (debug4_realobj) debug4_realobj.close();
-    if (debug5_realobj) debug5_realobj.close();
+    if (debug1_realobj.isenabled()) debug1_realobj.close();
+    if (debug2_realobj.isenabled()) debug2_realobj.close();
+    if (debug3_realobj.isenabled()) debug3_realobj.close();
+    if (debug4_realobj.isenabled()) debug4_realobj.close();
+    if (debug5_realobj.isenabled()) debug5_realobj.close();
 }
 
 // ****************************************************************************
@@ -242,7 +257,7 @@ signalhandler_exit(int sig)
 //  Creation:    November 17, 2000
 //
 // ****************************************************************************
-DebugStream::DebugStreamBuf::DebugStreamBuf() : streambuf()
+DebugStreamFull::DebugStreamBuf::DebugStreamBuf() : streambuf()
 {
     allBuffers.push_back(this);
     level = 0;
@@ -260,7 +275,7 @@ DebugStream::DebugStreamBuf::DebugStreamBuf() : streambuf()
 //  Creation:    November 17, 2000
 //
 // ****************************************************************************
-DebugStream::DebugStreamBuf::~DebugStreamBuf()
+DebugStreamFull::DebugStreamBuf::~DebugStreamBuf()
 {
     close();
 }
@@ -280,7 +295,7 @@ DebugStream::DebugStreamBuf::~DebugStreamBuf()
 //
 // ****************************************************************************
 void
-DebugStream::DebugStreamBuf::SetLevel(int level_)
+DebugStreamFull::DebugStreamBuf::SetLevel(int level_)
 {
     level=level_;
 }
@@ -299,7 +314,7 @@ DebugStream::DebugStreamBuf::SetLevel(int level_)
 //
 // ****************************************************************************
 void
-DebugStream::DebugStreamBuf::close()
+DebugStreamFull::DebugStreamBuf::close()
 {
     if (out)
     {
@@ -338,7 +353,7 @@ DebugStream::DebugStreamBuf::close()
 //    Added option to buffer the debug logs.
 // ****************************************************************************
 void
-DebugStream::DebugStreamBuf::open(const char *filename_, bool buffer_debug)
+DebugStreamFull::DebugStreamBuf::open(const char *filename_, bool buffer_debug)
 {
     close();
     strcpy(filename, filename_);
@@ -383,7 +398,7 @@ DebugStream::DebugStreamBuf::open(const char *filename_, bool buffer_debug)
 //
 // ****************************************************************************
 int
-DebugStream::DebugStreamBuf::put(int c)
+DebugStreamFull::DebugStreamBuf::put(int c)
 {
     if (out &&
         curLevel <= level)
@@ -413,7 +428,7 @@ DebugStream::DebugStreamBuf::put(int c)
 //
 // ****************************************************************************
 int
-DebugStream::DebugStreamBuf::overflow(int c)
+DebugStreamFull::DebugStreamBuf::overflow(int c)
 {
     curLevel = level;
     for (size_t i=0; i<allBuffers.size(); i++)
@@ -425,16 +440,16 @@ DebugStream::DebugStreamBuf::overflow(int c)
 
 // ****************************************************************************
 // ****************************************************************************
-//                           class DebugStream
+//                           class DebugStreamFull
 // ****************************************************************************
 // ****************************************************************************
 
 
 // ****************************************************************************
-//  Constructor:  DebugStream::DebugStream
+//  Constructor:  DebugStreamFull::DebugStreamFull
 //
 //  Purpose:
-//    constructor for the DebugStream
+//    constructor for the DebugStreamFull
 //
 //  Arguments:
 //    level_    the debug level of this ostream
@@ -451,7 +466,7 @@ DebugStream::DebugStreamBuf::overflow(int c)
 //    referenced value so that it works with the MIPSpro compiler.
 //
 // ****************************************************************************
-DebugStream::DebugStream(int level_) : ostream(new DebugStreamBuf)
+DebugStreamFull::DebugStreamFull(int level_) : ostream(new DebugStreamBuf)
 {
     level = level_;
     buf = (DebugStreamBuf*)(rdbuf());
@@ -461,10 +476,10 @@ DebugStream::DebugStream(int level_) : ostream(new DebugStreamBuf)
 
 
 // ****************************************************************************
-//  Destructor:  DebugStream::~DebugStream
+//  Destructor:  DebugStreamFull::~DebugStreamFull
 //
 //  Purpose:
-//    destructor for the DebugStream
+//    destructor for the DebugStreamFull
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 17, 2000
@@ -475,14 +490,14 @@ DebugStream::DebugStream(int level_) : ostream(new DebugStreamBuf)
 //    referenced value so that it works with the MIPSpro compiler.
 //
 // ****************************************************************************
-DebugStream::~DebugStream()
+DebugStreamFull::~DebugStreamFull()
 {
     buf->close();
 }
 
 
 // ****************************************************************************
-//  Method:  DebugStream::open
+//  Method:  DebugStreamFull::open
 //
 //  Purpose:
 //    create a file for logging given the program name
@@ -525,7 +540,7 @@ DebugStream::~DebugStream()
 
 
 void
-DebugStream::open(const char *progname, bool clobber, bool buffer_debug)
+DebugStreamFull::open(const char *progname, bool clobber, bool buffer_debug)
 {
     char filename[256];
     sprintf(filename, "A.%s.%d.vlog", progname, level);
@@ -557,7 +572,7 @@ DebugStream::open(const char *progname, bool clobber, bool buffer_debug)
 
 
 // ****************************************************************************
-//  Method:  DebugStream::close
+//  Method:  DebugStreamFull::close
 //
 //  Purpose:
 //    close the file, but don't delete it
@@ -578,14 +593,14 @@ DebugStream::open(const char *progname, bool clobber, bool buffer_debug)
 //
 // ****************************************************************************
 void
-DebugStream::close()
+DebugStreamFull::close()
 {
     buf->close();
     enabled = false;
 }
 
 // ****************************************************************************
-//  Method:  DebugStream::Initialize
+//  Method:  DebugStreamFull::Initialize
 //
 //  Purpose:
 //    This should be called once to initalize all the debug streams.
@@ -628,7 +643,7 @@ DebugStream::close()
 // ****************************************************************************
 
 void
-DebugStream::Initialize(const char *progname, int debuglevel, bool sigs,
+DebugStreamFull::Initialize(const char *progname, int debuglevel, bool sigs,
     bool clobber, bool buffer_debug)
 {
     switch (debuglevel)

@@ -4796,6 +4796,8 @@ ViewerSubject::CloseDatabase()
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//   Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -4844,8 +4846,8 @@ ViewerSubject::HandleRequestMetaData()
 
         // Print the metadata to the debug logs.
         debug5 << mName << "Metadata contains: " << endl;
-        if(debug5_real)
-            md->Print(debug5_real, 1);
+        if(DebugStream::Level5())
+            md->Print(DebugStream::Stream5(), 1);
     }
     else
     {

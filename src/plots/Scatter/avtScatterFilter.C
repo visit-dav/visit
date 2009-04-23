@@ -251,6 +251,8 @@ avtScatterFilter::PreExecute(void)
 //    Moved some code to other routines and made the color variable always
 //    be node-centered so the glyphers can handle it.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 vtkDataSet *
@@ -389,8 +391,8 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
             }
         }
 
-        if(debug4_real)
-            GetOutput()->GetInfo().GetAttributes().Print(debug4_real);
+        if(DebugStream::Level4())
+            GetOutput()->GetInfo().GetAttributes().Print(DebugStream::Stream4());
 
         // Clean up data arrays that we may have had to generate.
         if(deleteArray2)

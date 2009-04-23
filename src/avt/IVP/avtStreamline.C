@@ -202,6 +202,8 @@ avtStreamline::Advance(const avtIVPField* field,
 //    Put if statements in front of debug's.  The generation of strings to
 //    output to debug was doubling the total integration time.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -230,15 +232,15 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 
         try
         {
-            if (debug5_real)
+            if (DebugStream::Level5())
                 debug5<<"Step( mode= "<<termType<<" end= "<<end<<endl;
             result = ivp->Step(field, termType, end, step);
-            if (debug5_real)
+            if (DebugStream::Level5())
                 debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
         }
         catch( avtIVPField::Undefined& )
         {
-            if (debug5_real)
+            if (DebugStream::Level5())
                 debug5<<ivp->GetCurrentY()<<" not in domain\n";
             // integrator left the domain, retry with smaller step
             // if step size is below given minimum, give up
@@ -263,7 +265,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             {
                 delete step;
                 HandleGhostZones((end > 0.0), haveGhostZones, extents);
-                if (debug5_real)
+                if (DebugStream::Level5())
                     debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN\n";
                 return avtIVPSolver::OUTSIDE_DOMAIN;            
             }
@@ -331,6 +333,8 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //    Put if statements in front of debug's.  The generation of strings to
 //    output to debug was doubling the total integration time.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -382,9 +386,9 @@ avtStreamline::HandleGhostZones(bool forward,
     dir /= len;
     double leapingDistance = minRange * 0.001;
 
-    if (debug5_real)
+    if (DebugStream::Level5())
         debug5<< "Leaping: "<<leapingDistance<< " dir = "<<dir<<endl;
-    if (debug5_real)
+    if (DebugStream::Level5())
         debug5<< "Leap: "<<pt;
     dir *= leapingDistance;
     avtVec newPt = pt + dir;
@@ -396,7 +400,7 @@ avtStreamline::HandleGhostZones(bool forward,
     else
         (*_steps.begin())->tEnd -= leapingDistance;
     
-    if (debug5_real)
+    if (DebugStream::Level5())
         debug5<<" ==> "<<newPt<<" T: "<<_ivpSolver->GetCurrentT()<<endl;
 }
 
@@ -541,6 +545,8 @@ avtStreamline::PtEnd(avtVec &end)
 //    Put if statements in front of debug's.  The generation of strings to
 //    output to debug was doubling the total integration time.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -560,7 +566,7 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     }
     else
     {
-        if (debug5_real)
+        if (DebugStream::Level5())
             debug5 << "avtStreamline READ: listSz = " << _steps.size() <<endl;
         _steps.clear();
         size_t sz = 0;
@@ -594,6 +600,6 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
         _ivpSolver = solver->Clone();
         _ivpSolver->PutState(solverState);
     }    
-    if (debug5_real)
+    if (DebugStream::Level5())
         debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
 }

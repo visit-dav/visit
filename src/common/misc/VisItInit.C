@@ -56,6 +56,7 @@
 #include <cstring>
 
 #include <DebugStreamFull.h>
+#include <DebugStream.h>
 #include <InstallationFunctions.h>
 #include <TimingsManager.h>
 #include <visit-config.h>
@@ -391,7 +392,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
-    DebugStream::Initialize(progname, debuglevel, sigs, clobberVlogs, bufferDebug);
+    DebugStreamFull::Initialize(progname, debuglevel, sigs, clobberVlogs, bufferDebug);
     for(i = 0; i < argc; ++i)
         debug1 << argv[i] << " ";
     debug1 << endl;

@@ -370,6 +370,8 @@ avtLODIParticleFileFormat::GetTimes(doubleVector &t)
 //    Hank Childs, Fri Feb 23 09:22:20 PST 2007
 //    Fix memory leak.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -377,8 +379,8 @@ avtLODIParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     const char *mName = "avtLODIParticleFileFormat::PopulateDatabaseMetaData: ";
     debug4 << mName << endl;
-    if(debug4_real)
-        fileObject->PrintFileContents(debug4_real);
+    if(DebugStream::Level4())
+        fileObject->PrintFileContents(DebugStream::Stream4());
 
     // Assemble a database title.
     std::string comment(GetType()), titleString, create_version, 

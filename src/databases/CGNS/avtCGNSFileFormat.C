@@ -1038,6 +1038,8 @@ avtCGNSFileFormat::AddReferenceStateExpressions(avtDatabaseMetaData *md,
 //   Totally rewrote to support reading data from multiple bases. It's more
 //   modular too.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -1094,8 +1096,8 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     debug4 << "==================== BASE INFORMATION ====================" << endl;
     for(int bi = 0; bi < baseInfo.size(); ++bi)
     {
-        if(debug4_real)
-            PrintBaseInformation(debug4_real, baseInfo[bi]);
+        if(DebugStream::Level4())
+            PrintBaseInformation(DebugStream::Stream4(), baseInfo[bi]);
     }
 
     bool someInvalidCenterings = false;

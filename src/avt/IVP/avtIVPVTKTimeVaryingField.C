@@ -109,18 +109,20 @@ avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 //    Put if statements in front of debug's.  The generation of strings to
 //    output to debug was doubling the total integration time.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 avtVec
 avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
 {
-    if (debug5_real)
+    if (DebugStream::Level5())
         debug5<<"Eval( "<<t<<", "<<x<<") = ";
 
     // Check for inclusion in this time boundary.
     if (t < time1 || t > time2)
     {
-        if (debug5_real)
+        if (DebugStream::Level5())
             debug5<<"  **OUT of TIME**\n";
         throw Undefined();
     }
@@ -129,7 +131,7 @@ avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
     avtVec y1(x.dim()), param(pad(x,t)), y2(x.dim());
     if ( ! iv1->Evaluate(param.values(), y1.values(), t))
     {
-        if (debug5_real)
+        if (DebugStream::Level5())
             debug5<<"  **OUT of BOUNDS**\n";
         throw Undefined();
     }
@@ -137,7 +139,7 @@ avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
     avtVec y(x.dim());
     y = y1;
 
-    if (debug5_real)
+    if (DebugStream::Level5())
         debug5<<"T= "<<t<<" ["<<time1<<" "<<time2<<"]"<<" Y1 = "<<y1<<" Y2= "<<y2<<" y= "<<y<<endl;
 
     if ( normalized )

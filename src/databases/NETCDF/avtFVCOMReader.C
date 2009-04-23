@@ -969,6 +969,8 @@ avtFVCOMReader::GetCycles(intVector &cyc)
 //    Kathleen Bonnell, Thu Apr  3 13:13:50 PDT 2008
 //    Fixed use of assignemnt(=) instead of comparison(==).
 // 
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 
@@ -981,8 +983,8 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
   if (NeedDimensions) GetDimensions();
 
-  if(debug4_real)
-    fileObject->PrintFileContents(debug4_real);
+  if(DebugStream::Level4())
+    fileObject->PrintFileContents(DebugStream::Stream4());
 
   // Assemble a database title.
   std::string comment(dbtype), titleString, source,

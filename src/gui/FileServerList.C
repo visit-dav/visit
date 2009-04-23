@@ -2538,7 +2538,7 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
 
             if (key) *key = useKey;
             debug3 << "Caching metadata with key \"" << useKey << "\"" << endl;
-            newmd->Print(debug3_real);
+            newmd->Print(DebugStream::Stream3());
             return fileMetaData[useKey];
         }
         else
@@ -2703,7 +2703,7 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
 
             if (key) *key = useKey;
             debug3 << "Caching SIL with key \"" << useKey << "\"" << endl;
-            newSIL->Print(debug3_real);
+            newSIL->Print(DebugStream::Stream3());
             return SILData[useKey];
         }
         else
