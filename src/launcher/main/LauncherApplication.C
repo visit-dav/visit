@@ -36,26 +36,12 @@
 *
 *****************************************************************************/
 
-#include <stdio.h>
 #include <visit-config.h>
-#include <LauncherApplication.h>
-#include <ConnectionGroup.h>
-#include <SocketConnection.h>
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
-#include <SocketBridge.h>
-#endif
-#include <DebugStream.h>
-#include <IncompatibleVersionException.h>
-#include <CouldNotConnectException.h>
-#include <LostConnectionException.h>
-#include <RPCExecutor.h>
-#include <map>
-#include <snprintf.h>
-#include <time.h>
-
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <ctime>
+#include <map>
 
 #if defined(_WIN32)
 #include <process.h>
@@ -72,6 +58,21 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #endif
+
+#include <LauncherApplication.h>
+#include <ConnectionGroup.h>
+#include <SocketConnection.h>
+#if defined(PANTHERHACK)
+// Broken on Panther
+#else
+#include <SocketBridge.h>
+#endif
+#include <DebugStream.h>
+#include <IncompatibleVersionException.h>
+#include <CouldNotConnectException.h>
+#include <LostConnectionException.h>
+#include <RPCExecutor.h>
+#include <snprintf.h>
 
 // Capture child output on UNIX & Mac. VCL is never run on Windows so this
 // should not matter.
