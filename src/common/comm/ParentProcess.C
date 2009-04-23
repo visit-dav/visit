@@ -36,7 +36,9 @@
 *
 *****************************************************************************/
 
-#include <errno.h>
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
 #if defined(_WIN32)
 #include <win32commhelpers.h>
 #else
@@ -56,8 +58,6 @@
 #include <CommunicationHeader.h>
 #include <CouldNotConnectException.h>
 #include <IncompatibleVersionException.h>
-
-#include <cstring>
 
 // ****************************************************************************
 // Method: ParentProcess::ParentProcess
