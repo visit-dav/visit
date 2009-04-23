@@ -169,5 +169,7 @@ namespace avtITAPS_CUtility
         vector<int> &tagSizes, vector<string> &tagVals, int level);
     bool GetTopLevelSets(iMesh_Instance ima, int level, int memidx, bool ises,
         iBase_EntityHandle eh, iBase_EntitySetHandle esh, void *cb_data);
+    int GetTagStuff(iMesh_Instance ima, iBase_EntitySetHandle set,
+        int ent_type, string name, int *type, int *nvals, void **vals);
 }
 #endif
