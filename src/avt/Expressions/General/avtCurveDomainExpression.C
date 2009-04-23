@@ -37,96 +37,100 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtCurve2DFileFormat.h                          //
+//                       avtCurveDomainExpression.C                          //
 // ************************************************************************* //
 
-#ifndef AVT_CURVE2D_FILE_FORMAT_H
-#define AVT_CURVE2D_FILE_FORMAT_H
+#include <avtCurveDomainExpression.h>
 
-#include <avtSTSDFileFormat.h>
+#include <math.h>
+#include <float.h>
 
-#include <vector>
-#include <string>
-#include <visitstream.h>
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 
+#include <avtExtents.h>
+#include <avtExpressionFilter.h>
+#include <avtCommonDataFunctions.h>
 
-class     vtkRectilinearGrid;
+#include <avtExprNode.h>
+
+#include <DebugStream.h>
+#include <ExpressionException.h>
+#include <vtkVisItUtility.h>
 
 
 // ****************************************************************************
-//  Class: avtCurve2DFileFormat
+//  Method: avtCurveDomainExpression constructor
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 5, 2009
+//
+// ****************************************************************************
+
+avtCurveDomainExpression::avtCurveDomainExpression()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveDomainExpression destructor
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 5, 2009
+//
+// ****************************************************************************
+
+avtCurveDomainExpression::~avtCurveDomainExpression()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveDomainExpression::ExecuteData
 //
 //  Purpose:
-//      A file format reader for curves.
+//      Does the actual VTK code to modify the dataset.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
+//  Arguments:
+//      inDS      The input dataset.
+//      <unused>  The domain number.
+//
+//  Returns:      The output dataset.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     March 5, 2009
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Aug  1 21:16:55 PDT 2003
-//    Made the format be a STSD.
-//
-//    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005 
-//    Added methods GetTime, GetCycle, and members curveTime, curveCycle.
-//
-//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
-//    Represent curve as 1D RectilinearGrid instead of PolyData. 
-//
-//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
-//    Added dataExtents. 
-//
-//    Mark C. Miller, Tue Oct 31 20:33:29 PST 2006
-//    Added VALID_XVALUE token to support "zone-centered" curves
-//
-//    Kathleen Bonnell, Tue Jan 20 11:02:57 PST 2009
-//    Added spatialExtents. 
-//
 // ****************************************************************************
 
-typedef enum
+vtkDataSet *
+avtCurveDomainExpression::ExecuteData(vtkDataSet *in_ds, int index,
+                                 std::string label)
 {
-    VALID_POINT       = 0,
-    HEADER,          /* 1 */
-    WHITESPACE,      /* 2 */
-    INVALID_POINT,   /* 3 */
-    VALID_XVALUE
-} CurveToken;
+    vtkDataArray *yval = in_ds->GetPointData()->GetArray(varnames[0]);
+    vtkDataArray *xval = in_ds->GetPointData()->GetArray(varnames[1]);
 
+    int npts = xval->GetNumberOfTuples();
+    vtkRectilinearGrid *rv = vtkVisItUtility::Create1DRGrid(npts, xval->GetDataType());
 
-class avtCurve2DFileFormat : public avtSTSDFileFormat
-{
-  public:
-                          avtCurve2DFileFormat(const char *);
-    virtual              ~avtCurve2DFileFormat();
-    
-    virtual const char   *GetType(void) { return "Curve File Format"; };
+    vtkDataArray *newX = rv->GetXCoordinates();
+    vtkDataArray *newY = yval->NewInstance();
+    newY->SetNumberOfTuples(npts);
+    newY->SetName(GetOutputVariableName());
+    rv->GetPointData()->SetScalars(newY);
+    newY->Delete();
 
-    virtual double        GetTime(void);
-    virtual int           GetCycle(void);
-    
-    virtual vtkDataSet   *GetMesh(const char *);
-    virtual vtkDataArray *GetVar(const char *);
+    for (int i = 0; i < npts; ++i)
+    {
+        newX->SetTuple1(i, xval->GetTuple1(i));
+        newY->SetTuple1(i, yval->GetTuple1(i));
+    }
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
-
-  protected:
-    std::string           filename;
-    bool                  readFile;
-
-    std::vector<vtkRectilinearGrid *> curves;
-    std::vector<std::string>   curveNames;
-    std::vector<double>        spatialExtents;
-    std::vector<double>        dataExtents;
-    double                     curveTime;
-    int                        curveCycle;
-
-    void                  ReadFile(void);
-    CurveToken            GetPoint(ifstream &, float &, float &,
-                                   std::string &);
-};
-
-
-#endif
+    return rv;
+}
 
 

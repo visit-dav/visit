@@ -18,6 +18,15 @@
     <Field name="yLabel" label="Y label" type="string" access="public">
       Y-Axis
     </Field>
+    <Field name="hasSpatialExtents" label="Has spatial extents" type="bool" access="public">
+      false
+    </Field>
+    <Field name="minSpatialExtents" label="Minimum spatial extents" type="double" access="public">
+      0.000000
+    </Field>
+    <Field name="maxSpatialExtents" label="Maximum spatial extents" type="double" access="public">
+      0.000000
+    </Field>
     <Field name="hasDataExtents" label="Has data extents" type="bool" access="public">
       false
     </Field>
@@ -36,9 +45,13 @@
     </Function>
     <Function name="avtCurveMetaData3" user="true" member="true">
     </Function>
-    <Function name="SetExtents" user="true" member="true">
+    <Function name="SetSpatialExtents" user="true" member="true">
     </Function>
-    <Function name="UnsetExtents" user="true" member="true">
+    <Function name="UnsetSpatialExtents" user="true" member="true">
+    </Function>
+    <Function name="SetDataExtents" user="true" member="true">
+    </Function>
+    <Function name="UnsetDataExtents" user="true" member="true">
     </Function>
     <Function name="Print" user="true" member="true">
     </Function>

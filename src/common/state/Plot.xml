@@ -15,6 +15,7 @@
     <Field name="plotVar" type="string">"notset"</Field>
     <Field name="databaseName" type="string">"notset"</Field>
     <Field name="operators" type="intVector"></Field>
+    <Field name="operatorNames" type="stringVector"></Field>
     <Field name="activeOperator" type="int">-1</Field>
     <Field name="id" type="int">-1</Field>
     <Field name="beginFrame" type="int">-999</Field>
@@ -27,5 +28,6 @@
     <Function name="ClearAllOperators"  user="true" member="true"></Function>
     <Function name="GetNumOperators"    user="true" member="true"></Function>
     <Function name="GetOperator"        user="true" member="true"></Function>
+    <Function name="GetOperatorName"    user="true" member="true"></Function>
     <Function name="RemoveLastOperator" user="true" member="true"></Function>
   </Attribute>

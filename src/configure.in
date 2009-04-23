@@ -933,6 +933,8 @@ dnl    Gunther H. Weber, Fri Apr 17 13:22:44 PDT 2009
 dnl    Do not add "-lrt" for FastBit on MacOS (Darwin machines)
 dnl    Do not change H5PART_LIBDIR in FastBit config.
 dnl    
+dnl    Kathleen Bonnell, Thu Feb 19 13:06:43 PST 2009
+dnl    Added test for PyParsing.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3475,6 +3477,14 @@ if test "$enable_scripting" = "yes"; then
             PY_CXXFLAGS="-Wno-long-double -I$PY_INCLUDEDIR"
             ;;
     esac
+
+    AC_MSG_CHECKING(for PyParsing)
+    if test -r "$PYDIR/lib/$PYVERSION/site-packages/pyparsing.pyc"
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_PYPARSING, [1], [Define if you have pyparsing.])
+    else
+        AC_MSG_RESULT(no)
+    fi   
 else
     PYDIR=""
     PYVERSION=""

@@ -21,6 +21,9 @@
 /* Define if you have the gdal headers. */
 #undef HAVE_GDAL_H
 
+/* Define if you have pyparsing */
+#undef HAVE_PYPARSING
+
 /* Define if you have the IceT library */
 #undef HAVE_ICET
 

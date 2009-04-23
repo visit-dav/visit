@@ -93,6 +93,15 @@ PyavtCurveMetaData_ToString(const avtCurveMetaData *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%syLabel = \"%s\"\n", prefix, atts->yLabel.c_str());
     str += tmpStr;
+    if(atts->hasSpatialExtents)
+        SNPRINTF(tmpStr, 1000, "%shasSpatialExtents = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%shasSpatialExtents = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sminSpatialExtents = %g\n", prefix, atts->minSpatialExtents);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smaxSpatialExtents = %g\n", prefix, atts->maxSpatialExtents);
+    str += tmpStr;
     if(atts->hasDataExtents)
         SNPRINTF(tmpStr, 1000, "%shasDataExtents = 1\n", prefix);
     else
@@ -290,6 +299,78 @@ avtCurveMetaData_GetYLabel(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+avtCurveMetaData_SetHasSpatialExtents(PyObject *self, PyObject *args)
+{
+    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the hasSpatialExtents in the object.
+    obj->data->hasSpatialExtents = (ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtCurveMetaData_GetHasSpatialExtents(PyObject *self, PyObject *args)
+{
+    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->hasSpatialExtents?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+avtCurveMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
+{
+    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the minSpatialExtents in the object.
+    obj->data->minSpatialExtents = dval;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtCurveMetaData_GetMinSpatialExtents(PyObject *self, PyObject *args)
+{
+    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->minSpatialExtents);
+    return retval;
+}
+
+/*static*/ PyObject *
+avtCurveMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
+{
+    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the maxSpatialExtents in the object.
+    obj->data->maxSpatialExtents = dval;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtCurveMetaData_GetMaxSpatialExtents(PyObject *self, PyObject *args)
+{
+    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->maxSpatialExtents);
+    return retval;
+}
+
+/*static*/ PyObject *
 avtCurveMetaData_SetHasDataExtents(PyObject *self, PyObject *args)
 {
     avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
@@ -427,6 +508,12 @@ static struct PyMethodDef avtCurveMetaData_methods[] = {
     {"GetYUnits", avtCurveMetaData_GetYUnits, METH_VARARGS},
     {"SetYLabel", avtCurveMetaData_SetYLabel, METH_VARARGS},
     {"GetYLabel", avtCurveMetaData_GetYLabel, METH_VARARGS},
+    {"SetHasSpatialExtents", avtCurveMetaData_SetHasSpatialExtents, METH_VARARGS},
+    {"GetHasSpatialExtents", avtCurveMetaData_GetHasSpatialExtents, METH_VARARGS},
+    {"SetMinSpatialExtents", avtCurveMetaData_SetMinSpatialExtents, METH_VARARGS},
+    {"GetMinSpatialExtents", avtCurveMetaData_GetMinSpatialExtents, METH_VARARGS},
+    {"SetMaxSpatialExtents", avtCurveMetaData_SetMaxSpatialExtents, METH_VARARGS},
+    {"GetMaxSpatialExtents", avtCurveMetaData_GetMaxSpatialExtents, METH_VARARGS},
     {"SetHasDataExtents", avtCurveMetaData_SetHasDataExtents, METH_VARARGS},
     {"GetHasDataExtents", avtCurveMetaData_GetHasDataExtents, METH_VARARGS},
     {"SetMinDataExtents", avtCurveMetaData_SetMinDataExtents, METH_VARARGS},
@@ -479,6 +566,12 @@ avtCurveMetaData_getattr(PyObject *self, char *name)
         return avtCurveMetaData_GetYUnits(self, NULL);
     if(strcmp(name, "yLabel") == 0)
         return avtCurveMetaData_GetYLabel(self, NULL);
+    if(strcmp(name, "hasSpatialExtents") == 0)
+        return avtCurveMetaData_GetHasSpatialExtents(self, NULL);
+    if(strcmp(name, "minSpatialExtents") == 0)
+        return avtCurveMetaData_GetMinSpatialExtents(self, NULL);
+    if(strcmp(name, "maxSpatialExtents") == 0)
+        return avtCurveMetaData_GetMaxSpatialExtents(self, NULL);
     if(strcmp(name, "hasDataExtents") == 0)
         return avtCurveMetaData_GetHasDataExtents(self, NULL);
     if(strcmp(name, "minDataExtents") == 0)
@@ -517,6 +610,12 @@ avtCurveMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtCurveMetaData_SetYUnits(self, tuple);
     else if(strcmp(name, "yLabel") == 0)
         obj = avtCurveMetaData_SetYLabel(self, tuple);
+    else if(strcmp(name, "hasSpatialExtents") == 0)
+        obj = avtCurveMetaData_SetHasSpatialExtents(self, tuple);
+    else if(strcmp(name, "minSpatialExtents") == 0)
+        obj = avtCurveMetaData_SetMinSpatialExtents(self, tuple);
+    else if(strcmp(name, "maxSpatialExtents") == 0)
+        obj = avtCurveMetaData_SetMaxSpatialExtents(self, tuple);
     else if(strcmp(name, "hasDataExtents") == 0)
         obj = avtCurveMetaData_SetHasDataExtents(self, tuple);
     else if(strcmp(name, "minDataExtents") == 0)

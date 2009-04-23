@@ -428,6 +428,7 @@ static std::map<std::string, PyObject*> macroFunctions;
 static CallbackManager      *callbackMgr = NULL;
 static ViewerRPCCallbacks   *rpcCallbacks = NULL;
 
+static std::string ultraScriptFile = "";
 typedef struct
 {
     AnnotationObject *object;
@@ -12579,6 +12580,60 @@ visit_Argv(PyObject *self, PyObject *args)
     return retval;
 }
 
+
+// ****************************************************************************
+// Function: visit_LoadUltra
+//
+// Purpose: Load the ultra command wrapper, which runs until 'quit' is entered.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 19, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+STATIC PyObject *
+visit_SetUltraScript(PyObject *self, PyObject *args)
+{
+    char *sname = NULL;
+    if (!PyArg_ParseTuple(args, "s", &sname))
+    {
+        PyErr_Clear();
+        ultraScriptFile = ""; 
+    }
+    else
+    {
+        ultraScriptFile = sname; 
+    }
+    return PyInt_FromLong(1);
+}
+
+STATIC PyObject *
+visit_GetUltraScript(PyObject *self, PyObject *args)
+{
+    return PyString_FromString(ultraScriptFile.c_str());
+}
+
+STATIC PyObject *
+visit_LoadUltra(PyObject *self, PyObject *args)
+{
+#ifdef HAVE_PYPARSING
+    NO_ARGUMENTS();
+          
+    string parserFile = string(getenv("VISITULTRAHOME")) + 
+                        string("/ultraparse.py");
+
+    PyObject *argTuple = PyTuple_New(1);
+    PyTuple_SetItem(argTuple, 0, PyString_FromString(parserFile.c_str()));
+    visit_Source(self, argTuple);
+    return PyInt_FromLong(1);
+#else
+    VisItErrorFunc("LoadUltra requires PyParsing to be installed in pythons site-packages.");
+    return NULL;
+#endif
+}
+
+
 // ****************************************************************************
 // Function: PopulateMethodArgs
 //
@@ -13703,6 +13758,10 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Hank Childs, Wed Jan 28 10:42:28 PST 2009
 //   Add calls for named selections.
 //
+//   Kathleen Bonnell, Mon Feb  9 17:41:02 PST 2009
+//   Added LoadUltra.
+
+//
 // ****************************************************************************
 
 static void
@@ -13886,6 +13945,9 @@ AddDefaultMethods()
     AddMethod("Lineout", visit_Lineout, visit_Lineout_doc);
     AddMethod("LoadNamedSelection", visit_LoadNamedSelection,
                                            visit_LoadNamedSelection_doc);
+    AddMethod("LoadUltra", visit_LoadUltra, visit_LoadUltra_doc);
+    AddMethod("GetUltraScript", visit_GetUltraScript, NULL /*DOCUMENT ME */);
+    AddMethod("SetUltraScript", visit_SetUltraScript, NULL /*DOCUMENT ME */);
     AddMethod("MovePlotDatabaseKeyframe", visit_MovePlotDatabaseKeyframe,
                                            visit_MovePlotDatabaseKeyframe_doc);
     AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe,

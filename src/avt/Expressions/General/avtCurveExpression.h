@@ -37,96 +37,53 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtCurve2DFileFormat.h                          //
+//                          avtCurveExpression.h                             //
 // ************************************************************************* //
 
-#ifndef AVT_CURVE2D_FILE_FORMAT_H
-#define AVT_CURVE2D_FILE_FORMAT_H
-
-#include <avtSTSDFileFormat.h>
-
-#include <vector>
-#include <string>
-#include <visitstream.h>
+#ifndef AVT_CURVE_EXPRESSION_H
+#define AVT_CURVE_EXPRESSION_H
 
 
-class     vtkRectilinearGrid;
+#include <avtMacroExpressionFilter.h>
 
 
 // ****************************************************************************
-//  Class: avtCurve2DFileFormat
+//  Class: avtCurveExpression
 //
 //  Purpose:
-//      A file format reader for curves.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 5, 2009
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Aug  1 21:16:55 PDT 2003
-//    Made the format be a STSD.
-//
-//    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005 
-//    Added methods GetTime, GetCycle, and members curveTime, curveCycle.
-//
-//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
-//    Represent curve as 1D RectilinearGrid instead of PolyData. 
-//
-//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
-//    Added dataExtents. 
-//
-//    Mark C. Miller, Tue Oct 31 20:33:29 PST 2006
-//    Added VALID_XVALUE token to support "zone-centered" curves
-//
-//    Kathleen Bonnell, Tue Jan 20 11:02:57 PST 2009
-//    Added spatialExtents. 
-//
 // ****************************************************************************
 
-typedef enum
-{
-    VALID_POINT       = 0,
-    HEADER,          /* 1 */
-    WHITESPACE,      /* 2 */
-    INVALID_POINT,   /* 3 */
-    VALID_XVALUE
-} CurveToken;
-
-
-class avtCurve2DFileFormat : public avtSTSDFileFormat
+class EXPRESSION_API avtCurveExpression : public avtMacroExpressionFilter
 {
   public:
-                          avtCurve2DFileFormat(const char *);
-    virtual              ~avtCurve2DFileFormat();
-    
-    virtual const char   *GetType(void) { return "Curve File Format"; };
+                              avtCurveExpression();
+    virtual                  ~avtCurveExpression();
 
-    virtual double        GetTime(void);
-    virtual int           GetCycle(void);
-    
-    virtual vtkDataSet   *GetMesh(const char *);
-    virtual vtkDataArray *GetVar(const char *);
-
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual const char       *GetType(void)   { return "avtCurveExpression"; }
+    virtual const char       *GetDescription(void)
+                               { return "Calculating Curve"; }
 
   protected:
-    std::string           filename;
-    bool                  readFile;
+    virtual int               GetVariableDimension() { return 1;}
+    virtual void              GetMacro(std::vector<std::string> &, 
+                                       std::string &, Expression::ExprType &);
 
-    std::vector<vtkRectilinearGrid *> curves;
-    std::vector<std::string>   curveNames;
-    std::vector<double>        spatialExtents;
-    std::vector<double>        dataExtents;
-    double                     curveTime;
-    int                        curveCycle;
-
-    void                  ReadFile(void);
-    CurveToken            GetPoint(ifstream &, float &, float &,
-                                   std::string &);
+    virtual void              ProcessArguments(ArgsExpr *args, 
+                                               ExprPipelineState *state);
+  private:
+    const int                 IsYFunc(const char *var) const;
+    const int                 IsXFunc(const char *var) const;
+    const bool                ValidFunctionName(const char *func);
+    int                       xvar;
+    string                    function;
 };
 
 
 #endif
-
 

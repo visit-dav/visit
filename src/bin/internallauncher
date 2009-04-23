@@ -438,6 +438,11 @@ exec perl -x $0 ${1+"$@"};
 #
 #    Mark C. Miller, Mon Mar 30 17:55:08 PDT 2009
 #    Added cli to list of component names in IsAVisItComponentName
+#
+#    Kathleen Bonnell, Wed Apr 22 17:43:26 PDT 2009
+#    Added environemnt variable VISITULTRAHOME, so that VisIt knows where to 
+#    find the ultra wrapper.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1700,6 +1705,7 @@ if ($ver eq "")
     }
     $visitlibdir  = "$visitdir/lib";
     $visithelpdir = "$visitdir/help";
+    $visitultradir = "$visitdir/ultrawrapper";
     $visitplugins = "$visitdir/plugins";
     $publicversion = 0;
 }
@@ -1741,6 +1747,7 @@ else # We're running a public version.
     }
     $visitlibdir  = "$visitdir/$archdir/lib";
     $visithelpdir = "$visitdir/$archdir/help";
+    $visitultradir = "$visitdir/$archdir/ultrawrapper";
     $visitplugins = "$visitdir/$archdir/plugins";
     $publicversion = 1;
 }
@@ -1957,6 +1964,7 @@ if (!defined($ENV{VISITPLUGININST}))
 $ENV{VISITHOME}     = "$visitdir";
 $ENV{VISITARCHHOME} = "$visitarchdir";
 $ENV{VISITHELPHOME} = "$visithelpdir";
+$ENV{VISITULTRAHOME} = "$visitultradir";
 $ENV{PYTHONHOME}    = "$visitlibdir/python";
 
 # Some engine launchers (like MPICH2's mpirun) may be python-based
@@ -2460,6 +2468,7 @@ else
             print GDBFILE "set environment LIBPATH=$ENV{LIBPATH}\n";
             print GDBFILE "set environment VISITHOME=$ENV{VISITHOME}\n";
             print GDBFILE "set environment VISITHELPHOME=$ENV{VISITHELPHOME}\n";
+            print GDBFILE "set environment VISITULTRAHOME=$ENV{VISITULTRAHOME}\n";
             print GDBFILE "set environment VISITPLUGINDIR=$ENV{VISITPLUGINDIR}\n";
             print GDBFILE "set environment PYTHONHOME=$ENV{PYTHONHOME}\n";
             if($ENV{TRAP_FPE} ne "")
@@ -2707,6 +2716,7 @@ LD_LIBRARY64_PATH=$ENV{LD_LIBRARY64_PATH}
 LIBPATH=$ENV{LIBPATH}
 VISITHOME=$ENV{VISITHOME}
 VISITHELPHOME=$ENV{VISITHELPHOME}
+VISITULTRAHOME=$ENV{VISITULTRAHOME}
 VISITPLUGINDIR=$ENV{VISITPLUGINDIR}
 PYTHONHOME=$ENV{PYTHONHOME}
 TRAP_FPE=$ENV{TRAP_FPE}
@@ -2724,6 +2734,7 @@ Be sure to set your environment variables:
     setenv LIBPATH $ENV{LIBPATH}
     setenv VISITHOME $ENV{VISITHOME}
     setenv VISITHELPHOME $ENV{VISITHELPHOME}
+    setenv VISITULTRAHOME $ENV{VISITULTRAHOME}
     setenv VISITPLUGINDIR $ENV{VISITPLUGINDIR}
     setenv PYTHONHOME $ENV{PYTHONHOME}
     setenv TRAP_FPE $ENV{TRAP_FPE}
@@ -2741,6 +2752,7 @@ Be sure to set your environment variables:
     LIBPATH=$ENV{LIBPATH}
     VISITHOME=$ENV{VISITHOME}
     VISITHELPHOME=$ENV{VISITHELPHOME}
+    VISITULTRAHOME=$ENV{VISITULTRAHOME}
     VISITPLUGINDIR=$ENV{VISITPLUGINDIR}
     PYTHONHOME=$ENV{PYTHONHOME}
     TRAP_FPE=$ENV{TRAP_FPE}

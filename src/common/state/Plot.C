@@ -78,7 +78,7 @@ Plot::StateType_FromString(const std::string &s, Plot::StateType &val)
 }
 
 // Type map format string
-const char *Plot::TypeMapFormatString = "iisbbbssi*iiiii*i*bb";
+const char *Plot::TypeMapFormatString = "iisbbbssi*s*iiiii*i*bb";
 
 // ****************************************************************************
 // Method: Plot::Plot
@@ -140,6 +140,7 @@ Plot::Plot(const Plot &obj) :
     plotVar = obj.plotVar;
     databaseName = obj.databaseName;
     operators = obj.operators;
+    operatorNames = obj.operatorNames;
     activeOperator = obj.activeOperator;
     id = obj.id;
     beginFrame = obj.beginFrame;
@@ -200,6 +201,7 @@ Plot::operator = (const Plot &obj)
     plotVar = obj.plotVar;
     databaseName = obj.databaseName;
     operators = obj.operators;
+    operatorNames = obj.operatorNames;
     activeOperator = obj.activeOperator;
     id = obj.id;
     beginFrame = obj.beginFrame;
@@ -241,6 +243,7 @@ Plot::operator == (const Plot &obj) const
             (plotVar == obj.plotVar) &&
             (databaseName == obj.databaseName) &&
             (operators == obj.operators) &&
+            (operatorNames == obj.operatorNames) &&
             (activeOperator == obj.activeOperator) &&
             (id == obj.id) &&
             (beginFrame == obj.beginFrame) &&
@@ -401,6 +404,7 @@ Plot::SelectAll()
     Select(ID_plotVar,           (void *)&plotVar);
     Select(ID_databaseName,      (void *)&databaseName);
     Select(ID_operators,         (void *)&operators);
+    Select(ID_operatorNames,     (void *)&operatorNames);
     Select(ID_activeOperator,    (void *)&activeOperator);
     Select(ID_id,                (void *)&id);
     Select(ID_beginFrame,        (void *)&beginFrame);
@@ -476,6 +480,13 @@ Plot::SetOperators(const intVector &operators_)
 {
     operators = operators_;
     Select(ID_operators, (void *)&operators);
+}
+
+void
+Plot::SetOperatorNames(const stringVector &operatorNames_)
+{
+    operatorNames = operatorNames_;
+    Select(ID_operatorNames, (void *)&operatorNames);
 }
 
 void
@@ -616,6 +627,18 @@ Plot::GetOperators()
     return operators;
 }
 
+const stringVector &
+Plot::GetOperatorNames() const
+{
+    return operatorNames;
+}
+
+stringVector &
+Plot::GetOperatorNames()
+{
+    return operatorNames;
+}
+
 int
 Plot::GetActiveOperator() const
 {
@@ -705,6 +728,12 @@ Plot::SelectOperators()
 }
 
 void
+Plot::SelectOperatorNames()
+{
+    Select(ID_operatorNames, (void *)&operatorNames);
+}
+
+void
 Plot::SelectKeyframes()
 {
     Select(ID_keyframes, (void *)&keyframes);
@@ -749,6 +778,7 @@ Plot::GetFieldName(int index) const
     case ID_plotVar:           return "plotVar";
     case ID_databaseName:      return "databaseName";
     case ID_operators:         return "operators";
+    case ID_operatorNames:     return "operatorNames";
     case ID_activeOperator:    return "activeOperator";
     case ID_id:                return "id";
     case ID_beginFrame:        return "beginFrame";
@@ -790,6 +820,7 @@ Plot::GetFieldType(int index) const
     case ID_plotVar:           return FieldType_string;
     case ID_databaseName:      return FieldType_string;
     case ID_operators:         return FieldType_intVector;
+    case ID_operatorNames:     return FieldType_stringVector;
     case ID_activeOperator:    return FieldType_int;
     case ID_id:                return FieldType_int;
     case ID_beginFrame:        return FieldType_int;
@@ -831,6 +862,7 @@ Plot::GetFieldTypeName(int index) const
     case ID_plotVar:           return "string";
     case ID_databaseName:      return "string";
     case ID_operators:         return "intVector";
+    case ID_operatorNames:     return "stringVector";
     case ID_activeOperator:    return "int";
     case ID_id:                return "int";
     case ID_beginFrame:        return "int";
@@ -910,6 +942,11 @@ Plot::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (operators == obj.operators);
         }
         break;
+    case ID_operatorNames:
+        {  // new scope
+        retval = (operatorNames == obj.operatorNames);
+        }
+        break;
     case ID_activeOperator:
         {  // new scope
         retval = (activeOperator == obj.activeOperator);
@@ -961,10 +998,12 @@ Plot::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-Plot::AddOperator(int op)
+Plot::AddOperator(int op, const char *name)
 {
     operators.push_back(op);
-    Select(8, (void *)&operators);
+    operatorNames.push_back(name);
+    Select(ID_operators, (void *)&operators);
+    Select(ID_operatorNames, (void *)&operatorNames);
 }
 
 void
@@ -973,7 +1012,9 @@ Plot::ClearAllOperators()
     if(operators.size() > 0)
     {
         operators.clear();
-        Select(8, (void *)&operators);
+        operatorNames.clear();
+        Select(ID_operators, (void *)&operators);
+        Select(ID_operatorNames, (void *)&operatorNames);
     }
 }
 
@@ -989,13 +1030,21 @@ Plot::GetOperator(int i) const
     return operators[i];
 }
 
+const std::string &
+Plot::GetOperatorName(int i) const
+{
+    return operatorNames[i];
+}
+
 void
 Plot::RemoveLastOperator()
 {
     if(operators.size() > 0)
     {
         operators.pop_back();
-        Select(8, (void *)&operators);
+        operatorNames.pop_back();
+        Select(ID_operators, (void *)&operators);
+        Select(ID_operatorNames, (void *)&operatorNames);
     }
 }
 

@@ -58,7 +58,7 @@ public class avtCurveMetaData extends AttributeSubject
 {
     public avtCurveMetaData()
     {
-        super(12);
+        super(15);
 
         name = new String("curve");
         originalName = new String("");
@@ -67,6 +67,9 @@ public class avtCurveMetaData extends AttributeSubject
         xLabel = new String("X-Axis");
         yUnits = new String("");
         yLabel = new String("Y-Axis");
+        hasSpatialExtents = false;
+        minSpatialExtents = 0;
+        maxSpatialExtents = 0;
         hasDataExtents = false;
         minDataExtents = 0;
         maxDataExtents = 0;
@@ -76,7 +79,7 @@ public class avtCurveMetaData extends AttributeSubject
 
     public avtCurveMetaData(avtCurveMetaData obj)
     {
-        super(12);
+        super(15);
 
         name = new String(obj.name);
         originalName = new String(obj.originalName);
@@ -85,6 +88,9 @@ public class avtCurveMetaData extends AttributeSubject
         xLabel = new String(obj.xLabel);
         yUnits = new String(obj.yUnits);
         yLabel = new String(obj.yLabel);
+        hasSpatialExtents = obj.hasSpatialExtents;
+        minSpatialExtents = obj.minSpatialExtents;
+        maxSpatialExtents = obj.maxSpatialExtents;
         hasDataExtents = obj.hasDataExtents;
         minDataExtents = obj.minDataExtents;
         maxDataExtents = obj.maxDataExtents;
@@ -104,6 +110,9 @@ public class avtCurveMetaData extends AttributeSubject
                 (xLabel.equals(obj.xLabel)) &&
                 (yUnits.equals(obj.yUnits)) &&
                 (yLabel.equals(obj.yLabel)) &&
+                (hasSpatialExtents == obj.hasSpatialExtents) &&
+                (minSpatialExtents == obj.minSpatialExtents) &&
+                (maxSpatialExtents == obj.maxSpatialExtents) &&
                 (hasDataExtents == obj.hasDataExtents) &&
                 (minDataExtents == obj.minDataExtents) &&
                 (maxDataExtents == obj.maxDataExtents) &&
@@ -154,34 +163,52 @@ public class avtCurveMetaData extends AttributeSubject
         Select(6);
     }
 
+    public void SetHasSpatialExtents(boolean hasSpatialExtents_)
+    {
+        hasSpatialExtents = hasSpatialExtents_;
+        Select(7);
+    }
+
+    public void SetMinSpatialExtents(double minSpatialExtents_)
+    {
+        minSpatialExtents = minSpatialExtents_;
+        Select(8);
+    }
+
+    public void SetMaxSpatialExtents(double maxSpatialExtents_)
+    {
+        maxSpatialExtents = maxSpatialExtents_;
+        Select(9);
+    }
+
     public void SetHasDataExtents(boolean hasDataExtents_)
     {
         hasDataExtents = hasDataExtents_;
-        Select(7);
+        Select(10);
     }
 
     public void SetMinDataExtents(double minDataExtents_)
     {
         minDataExtents = minDataExtents_;
-        Select(8);
+        Select(11);
     }
 
     public void SetMaxDataExtents(double maxDataExtents_)
     {
         maxDataExtents = maxDataExtents_;
-        Select(9);
+        Select(12);
     }
 
     public void SetHideFromGUI(boolean hideFromGUI_)
     {
         hideFromGUI = hideFromGUI_;
-        Select(10);
+        Select(13);
     }
 
     public void SetFrom1DScalarName(String from1DScalarName_)
     {
         from1DScalarName = from1DScalarName_;
-        Select(11);
+        Select(14);
     }
 
     // Property getting methods
@@ -192,6 +219,9 @@ public class avtCurveMetaData extends AttributeSubject
     public String  GetXLabel() { return xLabel; }
     public String  GetYUnits() { return yUnits; }
     public String  GetYLabel() { return yLabel; }
+    public boolean GetHasSpatialExtents() { return hasSpatialExtents; }
+    public double  GetMinSpatialExtents() { return minSpatialExtents; }
+    public double  GetMaxSpatialExtents() { return maxSpatialExtents; }
     public boolean GetHasDataExtents() { return hasDataExtents; }
     public double  GetMinDataExtents() { return minDataExtents; }
     public double  GetMaxDataExtents() { return maxDataExtents; }
@@ -216,14 +246,20 @@ public class avtCurveMetaData extends AttributeSubject
         if(WriteSelect(6, buf))
             buf.WriteString(yLabel);
         if(WriteSelect(7, buf))
-            buf.WriteBool(hasDataExtents);
+            buf.WriteBool(hasSpatialExtents);
         if(WriteSelect(8, buf))
-            buf.WriteDouble(minDataExtents);
+            buf.WriteDouble(minSpatialExtents);
         if(WriteSelect(9, buf))
-            buf.WriteDouble(maxDataExtents);
+            buf.WriteDouble(maxSpatialExtents);
         if(WriteSelect(10, buf))
-            buf.WriteBool(hideFromGUI);
+            buf.WriteBool(hasDataExtents);
         if(WriteSelect(11, buf))
+            buf.WriteDouble(minDataExtents);
+        if(WriteSelect(12, buf))
+            buf.WriteDouble(maxDataExtents);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(hideFromGUI);
+        if(WriteSelect(14, buf))
             buf.WriteString(from1DScalarName);
     }
 
@@ -256,18 +292,27 @@ public class avtCurveMetaData extends AttributeSubject
                 SetYLabel(buf.ReadString());
                 break;
             case 7:
-                SetHasDataExtents(buf.ReadBool());
+                SetHasSpatialExtents(buf.ReadBool());
                 break;
             case 8:
-                SetMinDataExtents(buf.ReadDouble());
+                SetMinSpatialExtents(buf.ReadDouble());
                 break;
             case 9:
-                SetMaxDataExtents(buf.ReadDouble());
+                SetMaxSpatialExtents(buf.ReadDouble());
                 break;
             case 10:
-                SetHideFromGUI(buf.ReadBool());
+                SetHasDataExtents(buf.ReadBool());
                 break;
             case 11:
+                SetMinDataExtents(buf.ReadDouble());
+                break;
+            case 12:
+                SetMaxDataExtents(buf.ReadDouble());
+                break;
+            case 13:
+                SetHideFromGUI(buf.ReadBool());
+                break;
+            case 14:
                 SetFrom1DScalarName(buf.ReadString());
                 break;
             }
@@ -284,6 +329,9 @@ public class avtCurveMetaData extends AttributeSubject
         str = str + stringToString("xLabel", xLabel, indent) + "\n";
         str = str + stringToString("yUnits", yUnits, indent) + "\n";
         str = str + stringToString("yLabel", yLabel, indent) + "\n";
+        str = str + boolToString("hasSpatialExtents", hasSpatialExtents, indent) + "\n";
+        str = str + doubleToString("minSpatialExtents", minSpatialExtents, indent) + "\n";
+        str = str + doubleToString("maxSpatialExtents", maxSpatialExtents, indent) + "\n";
         str = str + boolToString("hasDataExtents", hasDataExtents, indent) + "\n";
         str = str + doubleToString("minDataExtents", minDataExtents, indent) + "\n";
         str = str + doubleToString("maxDataExtents", maxDataExtents, indent) + "\n";
@@ -301,6 +349,9 @@ public class avtCurveMetaData extends AttributeSubject
     private String  xLabel;
     private String  yUnits;
     private String  yLabel;
+    private boolean hasSpatialExtents;
+    private double  minSpatialExtents;
+    private double  maxSpatialExtents;
     private boolean hasDataExtents;
     private double  minDataExtents;
     private double  maxDataExtents;

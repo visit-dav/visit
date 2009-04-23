@@ -67,7 +67,7 @@ public class Plot extends AttributeSubject
 
     public Plot()
     {
-        super(17);
+        super(18);
 
         stateType = STATETYPE_NEWLYCREATED;
         plotType = 0;
@@ -78,6 +78,7 @@ public class Plot extends AttributeSubject
         plotVar = new String("notset");
         databaseName = new String("notset");
         operators = new Vector();
+        operatorNames = new Vector();
         activeOperator = -1;
         id = -1;
         beginFrame = -999;
@@ -90,7 +91,7 @@ public class Plot extends AttributeSubject
 
     public Plot(Plot obj)
     {
-        super(17);
+        super(18);
 
         int i;
 
@@ -108,6 +109,10 @@ public class Plot extends AttributeSubject
             Integer iv = (Integer)obj.operators.elementAt(i);
             operators.addElement(new Integer(iv.intValue()));
         }
+        operatorNames = new Vector(obj.operatorNames.size());
+        for(i = 0; i < obj.operatorNames.size(); ++i)
+            operatorNames.addElement(new String((String)obj.operatorNames.elementAt(i)));
+
         activeOperator = obj.activeOperator;
         id = obj.id;
         beginFrame = obj.beginFrame;
@@ -143,6 +148,15 @@ public class Plot extends AttributeSubject
             Integer operators2 = (Integer)obj.operators.elementAt(i);
             operators_equal = operators1.equals(operators2);
         }
+        // Compare the elements in the operatorNames vector.
+        boolean operatorNames_equal = (obj.operatorNames.size() == operatorNames.size());
+        for(i = 0; (i < operatorNames.size()) && operatorNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String operatorNames1 = (String)operatorNames.elementAt(i);
+            String operatorNames2 = (String)obj.operatorNames.elementAt(i);
+            operatorNames_equal = operatorNames1.equals(operatorNames2);
+        }
         // Compare the elements in the keyframes vector.
         boolean keyframes_equal = (obj.keyframes.size() == keyframes.size());
         for(i = 0; (i < keyframes.size()) && keyframes_equal; ++i)
@@ -171,6 +185,7 @@ public class Plot extends AttributeSubject
                 (plotVar.equals(obj.plotVar)) &&
                 (databaseName.equals(obj.databaseName)) &&
                 operators_equal &&
+                operatorNames_equal &&
                 (activeOperator == obj.activeOperator) &&
                 (id == obj.id) &&
                 (beginFrame == obj.beginFrame) &&
@@ -236,52 +251,58 @@ public class Plot extends AttributeSubject
         Select(8);
     }
 
+    public void SetOperatorNames(Vector operatorNames_)
+    {
+        operatorNames = operatorNames_;
+        Select(9);
+    }
+
     public void SetActiveOperator(int activeOperator_)
     {
         activeOperator = activeOperator_;
-        Select(9);
+        Select(10);
     }
 
     public void SetId(int id_)
     {
         id = id_;
-        Select(10);
+        Select(11);
     }
 
     public void SetBeginFrame(int beginFrame_)
     {
         beginFrame = beginFrame_;
-        Select(11);
+        Select(12);
     }
 
     public void SetEndFrame(int endFrame_)
     {
         endFrame = endFrame_;
-        Select(12);
+        Select(13);
     }
 
     public void SetKeyframes(Vector keyframes_)
     {
         keyframes = keyframes_;
-        Select(13);
+        Select(14);
     }
 
     public void SetDatabaseKeyframes(Vector databaseKeyframes_)
     {
         databaseKeyframes = databaseKeyframes_;
-        Select(14);
+        Select(15);
     }
 
     public void SetIsFromSimulation(boolean isFromSimulation_)
     {
         isFromSimulation = isFromSimulation_;
-        Select(15);
+        Select(16);
     }
 
     public void SetFollowsTime(boolean followsTime_)
     {
         followsTime = followsTime_;
-        Select(16);
+        Select(17);
     }
 
     // Property getting methods
@@ -294,6 +315,7 @@ public class Plot extends AttributeSubject
     public String  GetPlotVar() { return plotVar; }
     public String  GetDatabaseName() { return databaseName; }
     public Vector  GetOperators() { return operators; }
+    public Vector  GetOperatorNames() { return operatorNames; }
     public int     GetActiveOperator() { return activeOperator; }
     public int     GetId() { return id; }
     public int     GetBeginFrame() { return beginFrame; }
@@ -325,20 +347,22 @@ public class Plot extends AttributeSubject
         if(WriteSelect(8, buf))
             buf.WriteIntVector(operators);
         if(WriteSelect(9, buf))
-            buf.WriteInt(activeOperator);
+            buf.WriteStringVector(operatorNames);
         if(WriteSelect(10, buf))
-            buf.WriteInt(id);
+            buf.WriteInt(activeOperator);
         if(WriteSelect(11, buf))
-            buf.WriteInt(beginFrame);
+            buf.WriteInt(id);
         if(WriteSelect(12, buf))
-            buf.WriteInt(endFrame);
+            buf.WriteInt(beginFrame);
         if(WriteSelect(13, buf))
-            buf.WriteIntVector(keyframes);
+            buf.WriteInt(endFrame);
         if(WriteSelect(14, buf))
-            buf.WriteIntVector(databaseKeyframes);
+            buf.WriteIntVector(keyframes);
         if(WriteSelect(15, buf))
-            buf.WriteBool(isFromSimulation);
+            buf.WriteIntVector(databaseKeyframes);
         if(WriteSelect(16, buf))
+            buf.WriteBool(isFromSimulation);
+        if(WriteSelect(17, buf))
             buf.WriteBool(followsTime);
     }
 
@@ -377,27 +401,30 @@ public class Plot extends AttributeSubject
                 SetOperators(buf.ReadIntVector());
                 break;
             case 9:
-                SetActiveOperator(buf.ReadInt());
+                SetOperatorNames(buf.ReadStringVector());
                 break;
             case 10:
-                SetId(buf.ReadInt());
+                SetActiveOperator(buf.ReadInt());
                 break;
             case 11:
-                SetBeginFrame(buf.ReadInt());
+                SetId(buf.ReadInt());
                 break;
             case 12:
-                SetEndFrame(buf.ReadInt());
+                SetBeginFrame(buf.ReadInt());
                 break;
             case 13:
-                SetKeyframes(buf.ReadIntVector());
+                SetEndFrame(buf.ReadInt());
                 break;
             case 14:
-                SetDatabaseKeyframes(buf.ReadIntVector());
+                SetKeyframes(buf.ReadIntVector());
                 break;
             case 15:
-                SetIsFromSimulation(buf.ReadBool());
+                SetDatabaseKeyframes(buf.ReadIntVector());
                 break;
             case 16:
+                SetIsFromSimulation(buf.ReadBool());
+                break;
+            case 17:
                 SetFollowsTime(buf.ReadBool());
                 break;
             }
@@ -425,6 +452,7 @@ public class Plot extends AttributeSubject
         str = str + stringToString("plotVar", plotVar, indent) + "\n";
         str = str + stringToString("databaseName", databaseName, indent) + "\n";
         str = str + intVectorToString("operators", operators, indent) + "\n";
+        str = str + stringVectorToString("operatorNames", operatorNames, indent) + "\n";
         str = str + intToString("activeOperator", activeOperator, indent) + "\n";
         str = str + intToString("id", id, indent) + "\n";
         str = str + intToString("beginFrame", beginFrame, indent) + "\n";
@@ -447,6 +475,7 @@ public class Plot extends AttributeSubject
     private String  plotVar;
     private String  databaseName;
     private Vector  operators; // vector of Integer objects
+    private Vector  operatorNames; // vector of String objects
     private int     activeOperator;
     private int     id;
     private int     beginFrame;

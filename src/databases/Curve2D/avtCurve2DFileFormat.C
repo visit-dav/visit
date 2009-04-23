@@ -215,6 +215,9 @@ avtCurve2DFileFormat::GetVar(const char *name)
 //    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
 //    Added DataExtents to CurveMetaData. 
 //
+//    Kathleen Bonnell, Tue Jan 20 11:04:33 PST 2009
+//    Added SpatialExtents to CurveMetaData. 
+//
 // ****************************************************************************
 
 void
@@ -229,6 +232,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         avtCurveMetaData *curve = new avtCurveMetaData;
         curve->name = curveNames[i];
+        curve->hasSpatialExtents = true;
+        curve->minSpatialExtents = spatialExtents[i*2];
+        curve->maxSpatialExtents = spatialExtents[i*2+1];
         curve->hasDataExtents = true;
         curve->minDataExtents = dataExtents[i*2];
         curve->maxDataExtents = dataExtents[i*2+1];
@@ -295,6 +301,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    For files with multiple curves, we were incorrectly throwing away
 //    the first point of curve N+1 if it was identical to the last point
 //    of curve N.
+//
+//    Kathleen Bonnell, Tue Jan 20 11:12:54 PST 2009
+//    Add spatial extents.
 //
 // ****************************************************************************
 
@@ -532,6 +541,8 @@ avtCurve2DFileFormat::ReadFile(void)
 
         double dmin = FLT_MAX;
         double dmax = -FLT_MAX;
+        double smin = FLT_MAX;
+        double smax = -FLT_MAX;
         for (int j = 0 ; j < nPts ; j++)
         {
             if (centering[i] == AVT_NODECENT)
@@ -543,10 +554,16 @@ avtCurve2DFileFormat::ReadFile(void)
                 dmin = yl[start+j];
             if (yl[start+j] > dmax)
                 dmax = yl[start+j];
+            if (xc->GetValue(j) < smin)
+                smin = xc->GetValue(j);
+            if (xc->GetValue(j) > smax)
+                smax = xc->GetValue(j);
         }
  
         vals->Delete();
         curves.push_back(rg);
+        spatialExtents.push_back(smin);
+        spatialExtents.push_back(smax);
         dataExtents.push_back(dmin);
         dataExtents.push_back(dmax);
 
