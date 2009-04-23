@@ -17,6 +17,9 @@
 #    Gunther H. Weber, Fri Mar 13 11:04:00 PDT 2009
 #    Replaced bashisms with POSIX so that script runs on Ubuntu with dash   
 #
+#    Hank Childs, Thu Apr 23 15:22:52 PDT 2009
+#    Fix some mistakes with "==" getting translated to "-ne".
+#
 # *****************************************************************************
 
 
@@ -248,14 +251,14 @@ svn_cp_dir()
 
    # Confirm that $DEST does not already exist
    svn ls $DEST 2>/dev/null > /dev/null
-   if [ $? -ne 0 ] ; then
+   if [ $? -eq 0 ] ; then
       echo "Destination ($DEST) already exists.  Aborting!"
       exit 1
    fi
 
    echo "Creating ${DEST}...."
    svn copy $SRC $DEST -m "Making copy of $SRC as $DEST"
-   if [ $? -ne 0 ] ; then
+   if [ $? -eq 0 ] ; then
       echo "Successful."
    else
       echo "Not successful."
@@ -279,14 +282,14 @@ svn_mv_dir()
 
    # Confirm that $DEST does not already exist
    svn ls $DEST 2>/dev/null > /dev/null
-   if [ $? -ne 0 ] ; then
+   if [ $? -eq 0 ] ; then
       echo "Destination ($DEST) already exists.  Aborting!"
       exit 1
    fi
 
    echo "Creating ${DEST}...."
    svn move $SRC $DEST -m "Making copy of $SRC as $DEST"
-   if [ $? -ne 0 ] ; then
+   if [ $? -eq 0 ] ; then
       echo "Successful."
    else
       echo "Not successful."
