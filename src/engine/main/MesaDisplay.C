@@ -35,14 +35,13 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <cerrno>
+#include <visit-config.h>
 #include <cstring>
 
 #include <MesaDisplay.h>
 
-#include <DebugStream.h>
+#include <Environment.h>
 #include <InitVTK.h>
-#include <visit-config.h>
 
 // ****************************************************************************
 //  Method: MesaDisplay constructor
@@ -116,24 +115,17 @@ MesaDisplay::Initialize(size_t display, const std::vector<std::string> &user_arg
 //    I made use of unsetenv dependent on HAVE_SETENV (only gcc 3.2 on
 //    Solaris).  I Replaced strerror_r with strerror.
 //
+//    Tom Fogal, Wed Apr 22 18:37:35 MDT 2009
+//    Use `Environment' namespace function instead of `unsetenv' directly.
+//
 // ****************************************************************************
 
 void
 MesaDisplay::Connect()
 {
     InitVTK::ForceMesa();
-#ifndef WIN32
-#ifdef __APPLE__
-    unsetenv("DISPLAY");
-#else 
-#ifdef HAVE_SETENV
-    if(unsetenv("DISPLAY") != 0)
-    {
-        debug1 << "unsetenv(DISPLAY) failed: " << strerror(errno) << std::endl;
-    }
-#endif
-#endif
-#endif
+
+    Environment::unset("DISPLAY");
 }
 
 // ****************************************************************************
