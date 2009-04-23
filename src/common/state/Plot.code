@@ -1,11 +1,13 @@
 Function: AddOperator
-Declaration: void AddOperator(int op);
+Declaration: void AddOperator(int op, const char *name);
 Definition:
 void
-Plot::AddOperator(int op)
+Plot::AddOperator(int op, const char *name)
 {
     operators.push_back(op);
-    Select(8, (void *)&operators);
+    operatorNames.push_back(name);
+    Select(ID_operators, (void *)&operators);
+    Select(ID_operatorNames, (void *)&operatorNames);
 }
 
 Function: ClearAllOperators
@@ -17,7 +19,9 @@ Plot::ClearAllOperators()
     if(operators.size() > 0)
     {
         operators.clear();
-        Select(8, (void *)&operators);
+        operatorNames.clear();
+        Select(ID_operators, (void *)&operators);
+        Select(ID_operatorNames, (void *)&operatorNames);
     }
 }
 
@@ -39,6 +43,15 @@ Plot::GetOperator(int i) const
     return operators[i];
 }
 
+Function: GetOperatorName
+Declaration: const std::string  &GetOperatorName(int i) const;
+Definition:
+const std::string &
+Plot::GetOperatorName(int i) const
+{
+    return operatorNames[i];
+}
+
 Function: RemoveLastOperator
 Declaration: void RemoveLastOperator();
 Definition:
@@ -48,6 +61,8 @@ Plot::RemoveLastOperator()
     if(operators.size() > 0)
     {
         operators.pop_back();
-        Select(8, (void *)&operators);
+        operatorNames.pop_back();
+        Select(ID_operators, (void *)&operators);
+        Select(ID_operatorNames, (void *)&operatorNames);
     }
 }

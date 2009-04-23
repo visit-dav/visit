@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *avtCurveMetaData::TypeMapFormatString = "ssbssssbddbs";
+const char *avtCurveMetaData::TypeMapFormatString = "ssbssssbddbddbs";
 
 // ****************************************************************************
 // Method: avtCurveMetaData::avtCurveMetaData
@@ -64,6 +64,9 @@ avtCurveMetaData::avtCurveMetaData() :
     validVariable = true;
     xLabel = "X-Axis";
     yLabel = "Y-Axis";
+    hasSpatialExtents = false;
+    minSpatialExtents = 0;
+    maxSpatialExtents = 0;
     hasDataExtents = false;
     minDataExtents = 0;
     maxDataExtents = 0;
@@ -95,6 +98,9 @@ avtCurveMetaData::avtCurveMetaData(const avtCurveMetaData &obj) :
     xLabel = obj.xLabel;
     yUnits = obj.yUnits;
     yLabel = obj.yLabel;
+    hasSpatialExtents = obj.hasSpatialExtents;
+    minSpatialExtents = obj.minSpatialExtents;
+    maxSpatialExtents = obj.maxSpatialExtents;
     hasDataExtents = obj.hasDataExtents;
     minDataExtents = obj.minDataExtents;
     maxDataExtents = obj.maxDataExtents;
@@ -150,6 +156,9 @@ avtCurveMetaData::operator = (const avtCurveMetaData &obj)
     xLabel = obj.xLabel;
     yUnits = obj.yUnits;
     yLabel = obj.yLabel;
+    hasSpatialExtents = obj.hasSpatialExtents;
+    minSpatialExtents = obj.minSpatialExtents;
+    maxSpatialExtents = obj.maxSpatialExtents;
     hasDataExtents = obj.hasDataExtents;
     minDataExtents = obj.minDataExtents;
     maxDataExtents = obj.maxDataExtents;
@@ -186,6 +195,9 @@ avtCurveMetaData::operator == (const avtCurveMetaData &obj) const
             (xLabel == obj.xLabel) &&
             (yUnits == obj.yUnits) &&
             (yLabel == obj.yLabel) &&
+            (hasSpatialExtents == obj.hasSpatialExtents) &&
+            (minSpatialExtents == obj.minSpatialExtents) &&
+            (maxSpatialExtents == obj.maxSpatialExtents) &&
             (hasDataExtents == obj.hasDataExtents) &&
             (minDataExtents == obj.minDataExtents) &&
             (maxDataExtents == obj.maxDataExtents) &&
@@ -334,17 +346,20 @@ avtCurveMetaData::NewInstance(bool copy) const
 void
 avtCurveMetaData::SelectAll()
 {
-    Select(ID_name,             (void *)&name);
-    Select(ID_originalName,     (void *)&originalName);
-    Select(ID_validVariable,    (void *)&validVariable);
-    Select(ID_xUnits,           (void *)&xUnits);
-    Select(ID_xLabel,           (void *)&xLabel);
-    Select(ID_yUnits,           (void *)&yUnits);
-    Select(ID_yLabel,           (void *)&yLabel);
-    Select(ID_hasDataExtents,   (void *)&hasDataExtents);
-    Select(ID_minDataExtents,   (void *)&minDataExtents);
-    Select(ID_maxDataExtents,   (void *)&maxDataExtents);
-    Select(ID_hideFromGUI,      (void *)&hideFromGUI);
+    Select(ID_name,              (void *)&name);
+    Select(ID_originalName,      (void *)&originalName);
+    Select(ID_validVariable,     (void *)&validVariable);
+    Select(ID_xUnits,            (void *)&xUnits);
+    Select(ID_xLabel,            (void *)&xLabel);
+    Select(ID_yUnits,            (void *)&yUnits);
+    Select(ID_yLabel,            (void *)&yLabel);
+    Select(ID_hasSpatialExtents, (void *)&hasSpatialExtents);
+    Select(ID_minSpatialExtents, (void *)&minSpatialExtents);
+    Select(ID_maxSpatialExtents, (void *)&maxSpatialExtents);
+    Select(ID_hasDataExtents,    (void *)&hasDataExtents);
+    Select(ID_minDataExtents,    (void *)&minDataExtents);
+    Select(ID_maxDataExtents,    (void *)&maxDataExtents);
+    Select(ID_hideFromGUI,       (void *)&hideFromGUI);
     Select(ID_from1DScalarName, (void *)&from1DScalarName);
 }
 
@@ -397,6 +412,8 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n)
 //
 //  Arguments:
 //      n       The name of the curve
+//      minS    The minimum spatial extents
+//      maxS    The maximum spatial extents
 //      minE    The minimum data extents
 //      maxE    The maximum data extents
 //
@@ -407,7 +424,7 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n)
 //
 // ****************************************************************************
 
-avtCurveMetaData::avtCurveMetaData(const std::string &n, double minE, double maxE)
+avtCurveMetaData::avtCurveMetaData(const std::string &n, double minS, double maxS, double minE, double maxE)
     : AttributeSubject(avtCurveMetaData::TypeMapFormatString)
 {
     // Initialize all members
@@ -416,16 +433,19 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n, double minE, double max
     // Override some values.
     name          = n;
     originalName  = name;
+    hasSpatialExtents = true;
+    minSpatialExtents = minS;
+    maxSpatialExtents = maxS;
     hasDataExtents = true;
     minDataExtents = minE;
     maxDataExtents = maxE;
 }
 
 // ****************************************************************************
-//  Method: avtCurveMetaData::SetExtents
+//  Method: avtCurveMetaData::SetSpatialExtents
 //
 //  Purpose:
-//      Sets the extents of the curve variable.
+//      Sets the spatial extents of the curve variable.
 //
 //  Arguments:
 //      extents     Extents as <min value, max value>.
@@ -438,7 +458,44 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n, double minE, double max
 // ****************************************************************************
 
 void
-avtCurveMetaData::SetExtents(const double *extents)
+avtCurveMetaData::SetSpatialExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasSpatialExtents = false;
+    }
+    else
+    {
+        hasSpatialExtents = true;
+        minSpatialExtents = extents[0];
+        maxSpatialExtents = extents[1];
+    }
+}
+
+void
+avtCurveMetaData::UnsetSpatialExtents()
+{
+    hasSpatialExtents = false;
+}
+
+// ****************************************************************************
+//  Method: avtCurveMetaData::SetDataExtents
+//
+//  Purpose:
+//      Sets the data extents of the curve variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMetaData::SetDataExtents(const double *extents)
 {
     if (extents == NULL)
     {
@@ -453,7 +510,7 @@ avtCurveMetaData::SetExtents(const double *extents)
 }
 
 void
-avtCurveMetaData::UnsetExtents()
+avtCurveMetaData::UnsetDataExtents()
 {
     hasDataExtents = false;
 }

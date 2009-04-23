@@ -313,6 +313,8 @@ General_src= \
   General/avtConnComponentsExpression.C \
   General/avtConstantFunctionExpression.C \
   General/avtCurlExpression.C \
+  General/avtCurveExpression.C \
+  General/avtCurveDomainExpression.C \
   General/avtDataIdExpression.C \
   General/avtDegreeExpression.C \
   General/avtDivergenceExpression.C \

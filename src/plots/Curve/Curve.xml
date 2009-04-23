@@ -40,7 +40,7 @@
       <Field name="showLabels" label="Labels" type="bool">
         true
       </Field>
-      <Field name="designator" label="Designator" type="string" internal="true">
+      <Field name="designator" label="Designator" type="string">
       </Field>
       <Field name="showPoints" label="showPoints" type="bool">
         false

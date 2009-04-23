@@ -111,6 +111,9 @@ class     ExprPipelineState;
 //    Sean Ahern, Wed Sep 10 12:21:41 EDT 2008
 //    Added a target centering.
 //
+//    Kathleen Bonnell, Thu Apr 16 09:50:56 PDT 2009
+//    Added GetOutputVariableName.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -132,6 +135,8 @@ class EXPRESSION_API avtExpressionFilter : virtual public
                                      avtCentering, std::string name,
                                      avtCentering targCent = AVT_UNKNOWN_CENT);
 
+    const char              *GetOutputVariableName() 
+                                 { return outputVariableName; }
   protected:
     char                    *outputVariableName;
     int                      currentTimeState;

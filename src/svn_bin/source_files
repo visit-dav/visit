@@ -119,6 +119,7 @@ else
     push @files, get_svn_recursive    "./src/exe";
     push @files, get_svn_norecursive  "./src/lib";
     push @files, get_svn_recursive    "./src/help";
+    push @files, get_svn_recursive    "./src/ultrawrapper";
     push @files, get_svn_recursive    "./src/archives";
     push @files, get_svn_recursive    "./src/plugins";
     push @files, get_svn_recursive    "./src/svn_bin";

@@ -4938,6 +4938,9 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
 //   Brad Whitlock, Mon Mar 19 18:14:18 PST 2007
 //   Made it set the plot's name.
 //
+//   Kathleen Bonnell, Mon Feb  9 17:35:58 PST 2009
+//   Made it set the operators' names, via AddOperator call.
+//
 // ****************************************************************************
 
 void
@@ -4974,7 +4977,8 @@ ViewerPlot::InitializePlot(Plot &plot) const
     // Set the operators that are applied to the plot
     for (int op_index = 0; op_index < GetNOperators(); ++op_index)
     {
-        plot.AddOperator(GetOperator(op_index)->GetType());
+        plot.AddOperator(GetOperator(op_index)->GetType(), 
+                         GetOperator(op_index)->GetName());
     }
     plot.SetActiveOperator(activeOperatorIndex);
 }

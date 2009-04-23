@@ -87,6 +87,7 @@ public:
     void SelectPlotVar();
     void SelectDatabaseName();
     void SelectOperators();
+    void SelectOperatorNames();
     void SelectKeyframes();
     void SelectDatabaseKeyframes();
 
@@ -100,6 +101,7 @@ public:
     void SetPlotVar(const std::string &plotVar_);
     void SetDatabaseName(const std::string &databaseName_);
     void SetOperators(const intVector &operators_);
+    void SetOperatorNames(const stringVector &operatorNames_);
     void SetActiveOperator(int activeOperator_);
     void SetId(int id_);
     void SetBeginFrame(int beginFrame_);
@@ -110,29 +112,31 @@ public:
     void SetFollowsTime(bool followsTime_);
 
     // Property getting methods
-    StateType         GetStateType() const;
-    int               GetPlotType() const;
-    const std::string &GetPlotName() const;
-          std::string &GetPlotName();
-    bool              GetActiveFlag() const;
-    bool              GetHiddenFlag() const;
-    bool              GetExpandedFlag() const;
-    const std::string &GetPlotVar() const;
-          std::string &GetPlotVar();
-    const std::string &GetDatabaseName() const;
-          std::string &GetDatabaseName();
-    const intVector   &GetOperators() const;
-          intVector   &GetOperators();
-    int               GetActiveOperator() const;
-    int               GetId() const;
-    int               GetBeginFrame() const;
-    int               GetEndFrame() const;
-    const intVector   &GetKeyframes() const;
-          intVector   &GetKeyframes();
-    const intVector   &GetDatabaseKeyframes() const;
-          intVector   &GetDatabaseKeyframes();
-    bool              GetIsFromSimulation() const;
-    bool              GetFollowsTime() const;
+    StateType          GetStateType() const;
+    int                GetPlotType() const;
+    const std::string  &GetPlotName() const;
+          std::string  &GetPlotName();
+    bool               GetActiveFlag() const;
+    bool               GetHiddenFlag() const;
+    bool               GetExpandedFlag() const;
+    const std::string  &GetPlotVar() const;
+          std::string  &GetPlotVar();
+    const std::string  &GetDatabaseName() const;
+          std::string  &GetDatabaseName();
+    const intVector    &GetOperators() const;
+          intVector    &GetOperators();
+    const stringVector &GetOperatorNames() const;
+          stringVector &GetOperatorNames();
+    int                GetActiveOperator() const;
+    int                GetId() const;
+    int                GetBeginFrame() const;
+    int                GetEndFrame() const;
+    const intVector    &GetKeyframes() const;
+          intVector    &GetKeyframes();
+    const intVector    &GetDatabaseKeyframes() const;
+          intVector    &GetDatabaseKeyframes();
+    bool               GetIsFromSimulation() const;
+    bool               GetFollowsTime() const;
 
     // Enum conversion functions
     static std::string StateType_ToString(StateType);
@@ -148,10 +152,11 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    void AddOperator(int op);
+    void AddOperator(int op, const char *name);
     void ClearAllOperators();
     int  GetNumOperators() const;
     int  GetOperator(int i) const;
+    const std::string  &GetOperatorName(int i) const;
     void RemoveLastOperator();
 
     // IDs that can be used to identify fields in case statements
@@ -165,6 +170,7 @@ public:
         ID_plotVar,
         ID_databaseName,
         ID_operators,
+        ID_operatorNames,
         ID_activeOperator,
         ID_id,
         ID_beginFrame,
@@ -176,23 +182,24 @@ public:
     };
 
 private:
-    int         stateType;
-    int         plotType;
-    std::string plotName;
-    bool        activeFlag;
-    bool        hiddenFlag;
-    bool        expandedFlag;
-    std::string plotVar;
-    std::string databaseName;
-    intVector   operators;
-    int         activeOperator;
-    int         id;
-    int         beginFrame;
-    int         endFrame;
-    intVector   keyframes;
-    intVector   databaseKeyframes;
-    bool        isFromSimulation;
-    bool        followsTime;
+    int          stateType;
+    int          plotType;
+    std::string  plotName;
+    bool         activeFlag;
+    bool         hiddenFlag;
+    bool         expandedFlag;
+    std::string  plotVar;
+    std::string  databaseName;
+    intVector    operators;
+    stringVector operatorNames;
+    int          activeOperator;
+    int          id;
+    int          beginFrame;
+    int          endFrame;
+    intVector    keyframes;
+    intVector    databaseKeyframes;
+    bool         isFromSimulation;
+    bool         followsTime;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

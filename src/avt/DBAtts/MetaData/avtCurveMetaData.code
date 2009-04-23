@@ -34,13 +34,15 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n)
 }
 
 Function: avtCurveMetaData3
-Declaration: avtCurveMetaData(const std::string &n, double minE, double maxE);
+Declaration: avtCurveMetaData(const std::string &n, double minS, double maxS, double minE, double maxE);
 Definition:
 // ****************************************************************************
 //  Method: avtCurveMetaData constructor
 //
 //  Arguments:
 //      n       The name of the curve
+//      minS    The minimum spatial extents
+//      maxS    The maximum spatial extents
 //      minE    The minimum data extents
 //      maxE    The maximum data extents
 //
@@ -51,7 +53,7 @@ Definition:
 //
 // ****************************************************************************
 
-avtCurveMetaData::avtCurveMetaData(const std::string &n, double minE, double maxE)
+avtCurveMetaData::avtCurveMetaData(const std::string &n, double minS, double maxS, double minE, double maxE)
     : AttributeSubject(avtCurveMetaData::TypeMapFormatString)
 {
     // Initialize all members
@@ -60,19 +62,21 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n, double minE, double max
     // Override some values.
     name          = n;
     originalName  = name;
+    hasSpatialExtents = true;
+    minSpatialExtents = minS;
+    maxSpatialExtents = maxS;
     hasDataExtents = true;
     minDataExtents = minE;
     maxDataExtents = maxE;
 }
-
-Function: SetExtents
-Declaration: void SetExtents(const double *);
+Function: SetSpatialExtents
+Declaration: void SetSpatialExtents(const double *);
 Definition:
 // ****************************************************************************
-//  Method: avtCurveMetaData::SetExtents
+//  Method: avtCurveMetaData::SetSpatialExtents
 //
 //  Purpose:
-//      Sets the extents of the curve variable.
+//      Sets the spatial extents of the curve variable.
 //
 //  Arguments:
 //      extents     Extents as <min value, max value>.
@@ -85,7 +89,51 @@ Definition:
 // ****************************************************************************
 
 void
-avtCurveMetaData::SetExtents(const double *extents)
+avtCurveMetaData::SetSpatialExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasSpatialExtents = false;
+    }
+    else
+    {
+        hasSpatialExtents = true;
+        minSpatialExtents = extents[0];
+        maxSpatialExtents = extents[1];
+    }
+}
+
+Function: UnsetSpatialExtents
+Declaration: void UnsetSpatialExtents();
+Definition:
+void
+avtCurveMetaData::UnsetSpatialExtents()
+{
+    hasSpatialExtents = false;
+}
+
+
+Function: SetDataExtents
+Declaration: void SetDataExtents(const double *);
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData::SetDataExtents
+//
+//  Purpose:
+//      Sets the data extents of the curve variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMetaData::SetDataExtents(const double *extents)
 {
     if (extents == NULL)
     {
@@ -99,11 +147,11 @@ avtCurveMetaData::SetExtents(const double *extents)
     }
 }
 
-Function: UnsetExtents
-Declaration: void UnsetExtents();
+Function: UnsetDataExtents
+Declaration: void UnsetDataExtents();
 Definition:
 void
-avtCurveMetaData::UnsetExtents()
+avtCurveMetaData::UnsetDataExtents()
 {
     hasDataExtents = false;
 }
