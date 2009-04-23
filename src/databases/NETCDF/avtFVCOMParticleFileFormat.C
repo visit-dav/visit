@@ -402,6 +402,10 @@ avtFVCOMParticleFileFormat::FreeUpResources(void)
 //  Programmer: David Stuebe
 //  Creation:   Thu May 18 08:39:01 PDT 2006
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -419,8 +423,8 @@ avtFVCOMParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, in
     if(status != NC_NOERR) fileObject-> HandleError(status);
     
 
-    if(debug4_real)
-        fileObject->PrintFileContents(debug4_real);
+    if(DebugStream::Level4())
+        fileObject->PrintFileContents(DebugStream::Stream4());
 
 
     // Assemble a database title.

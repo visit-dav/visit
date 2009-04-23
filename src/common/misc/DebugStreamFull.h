@@ -45,14 +45,12 @@
 #include <misc_exports.h>
 #include <visitstream.h>
 
-#include <DebugStream.h>
-
 #include <vector>
 #include <signal.h>
 #include <stdlib.h>
 
 // ****************************************************************************
-//  Class:  DebugStream
+//  Class:  DebugStreamFull
 //
 //  Purpose:
 //    An implementation of ostream designed for error and message logging.
@@ -87,15 +85,17 @@
 //    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
 //    Allow disabling of signal handlers.
 //
+//    Mark C. Miller, Wed Apr 22 13:32:22 PDT 2009
+//    Changed name to DebugStreamFull
 // ****************************************************************************
 
-class MISC_API DebugStream : public ostream
+class MISC_API DebugStreamFull : public ostream
 {
   public:
-                   DebugStream(int level_);
-                  ~DebugStream();
+                   DebugStreamFull(int level_);
+                  ~DebugStreamFull();
 
-    operator       bool()   {return enabled;};
+    bool           isenabled() const { return enabled; };
     void           open(const char *progname, bool, bool);
     void           close();
     static void    Initialize(const char *, int, bool=true, bool=false, bool=false);

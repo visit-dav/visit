@@ -40,35 +40,39 @@
 //                                DebugStream.h                              //
 // ************************************************************************* //
 
-// Expose the ONLY parts of a debug stream object we really need in MOST
-// of the source code.
-
 #ifndef DEBUG_STREAM_H
 #define DEBUG_STREAM_H
+
 #include <misc_exports.h>
 #include <visitstream.h>
 
-#define debug1 if (!(*debug1_realp)) ; else (*debug1_realp)
-#define debug2 if (!(*debug2_realp)) ; else (*debug2_realp)
-#define debug3 if (!(*debug3_realp)) ; else (*debug3_realp)
-#define debug4 if (!(*debug4_realp)) ; else (*debug4_realp)
-#define debug5 if (!(*debug5_realp)) ; else (*debug5_realp)
+//
+// Hide as much of DebugStream interface as possible.
+//
+namespace DebugStream
+{
+    // Query if a given level is enabled
+    extern MISC_API bool Level1();
+    extern MISC_API bool Level2();
+    extern MISC_API bool Level3();
+    extern MISC_API bool Level4();
+    extern MISC_API bool Level5();
 
-// These are defined to maintain backward compatibility with the
-// 'debugN_real' symbols before they were turned into pointers
-// and which are used variously throughout VisIt.
-#define debug1_real (*debug1_realp)
-#define debug2_real (*debug2_realp)
-#define debug3_real (*debug3_realp)
-#define debug4_real (*debug4_realp)
-#define debug5_real (*debug5_realp)
+    // Obtain a given level's stream object
+    extern MISC_API ostream& Stream1();
+    extern MISC_API ostream& Stream2();
+    extern MISC_API ostream& Stream3();
+    extern MISC_API ostream& Stream4();
+    extern MISC_API ostream& Stream5();
 
-extern MISC_API ostream *debug1_realp;
-extern MISC_API ostream *debug2_realp;
-extern MISC_API ostream *debug3_realp;
-extern MISC_API ostream *debug4_realp;
-extern MISC_API ostream *debug5_realp;
+    // Query what the current level is (more expensive than LevelN())
+    extern MISC_API int GetLevel();
+}
+
+#define debug1 if (!DebugStream::Level1()) ; else (DebugStream::Stream1())
+#define debug2 if (!DebugStream::Level2()) ; else (DebugStream::Stream2())
+#define debug3 if (!DebugStream::Level3()) ; else (DebugStream::Stream3())
+#define debug4 if (!DebugStream::Level4()) ; else (DebugStream::Stream4())
+#define debug5 if (!DebugStream::Level5()) ; else (DebugStream::Stream5())
 
 #endif
-
-

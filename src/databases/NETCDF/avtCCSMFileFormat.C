@@ -338,6 +338,10 @@ avtCCSMFileFormat::GetTimes(std::vector<double> &times)
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Jul 11 11:28:20 PDT 2007
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
@@ -345,8 +349,8 @@ avtCCSMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
 {
     const char *mName = "avtCCSMFileFormat::PopulateDatabaseMetaData: ";
     debug4 << mName << endl;
-    if(debug4_real)
-        fileObject->PrintFileContents(debug4_real);
+    if(DebugStream::Level4())
+        fileObject->PrintFileContents(DebugStream::Stream4());
 
     int status, nDims, nVars, nGlobalAtts, unlimitedDimension;
     status = nc_inq(fileObject->GetFileHandle(), &nDims, &nVars, &nGlobalAtts,

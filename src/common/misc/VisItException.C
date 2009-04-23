@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <VisItException.h>
+#include <DebugStreamFull.h>
 #include <DebugStream.h>
 #include <VisItInit.h>
 
@@ -65,7 +66,7 @@ VisItException::VisItException()
     msg      = "<The reason for the exception was not described>";
     type     = "VisItException";
     line     = -1;
-    log      = &debug1_real;
+    log      = &DebugStream::Stream1();
 }
 
 // ****************************************************************************
@@ -105,7 +106,7 @@ VisItException::VisItException(const std::string &m)
     }
     type     = "VisItException";
     line     = -1;
-    log      = &debug1_real;
+    log      = &DebugStream::Stream1(); 
 }
 
 // ****************************************************************************
@@ -198,7 +199,7 @@ void
 VisItException::LogCatch(const char *exceptionName, const char *srcFile,
     int srcLine)
 {
-    debug1_real << "catch(" << exceptionName << ") " << srcFile << ":" << srcLine << endl;
+    debug1 << "catch(" << exceptionName << ") " << srcFile << ":" << srcLine << endl;
 }
 
 #ifdef FAKE_EXCEPTIONS

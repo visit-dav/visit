@@ -189,6 +189,7 @@ avtBasicNETCDFFileFormat::~avtBasicNETCDFFileFormat()
 void
 avtBasicNETCDFFileFormat::FreeUpResources()
 {
+    cerr << "Got here 2" << endl;
     debug4 << "avtBasicNETCDFFileFormat::FreeUpResources" << endl;
     fileObject->Close();
 }
@@ -267,14 +268,16 @@ avtBasicNETCDFFileFormat::ActivateTimestep()
 //    Hank Childs, Fri Feb 23 09:20:38 PST 2007
 //    Fix memory leak.
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 void
 avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     debug4 << "avtBasicNETCDFFileFormat::PopulateDatabaseMetaData" << endl;
-    if(debug4_real)
-        fileObject->PrintFileContents(debug4_real);
+    if(DebugStream::Level4())
+        fileObject->PrintFileContents(DebugStream::Stream4());
 
     int status, nDims, nVars, nGlobalAtts, unlimitedDimension;
     status = nc_inq(fileObject->GetFileHandle(), &nDims, &nVars, &nGlobalAtts,

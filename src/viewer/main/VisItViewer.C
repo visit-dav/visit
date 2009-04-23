@@ -935,13 +935,15 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 //    Kathleen Bonnell, Wed Apr 30 10:59:18 PDT 2008 
 //    Windows compiler doesn't like 'and', use '&&' instead. 
 //
+//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//    Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
 
 static void
 LogGlxAndXdpyInfo()
 {
 #if !defined(_WIN32) && !defined(Q_WS_MACX)
-    if (debug5_real)
+    if (DebugStream::Level5())
     {
         LogCommand("xdpyinfo", "number of visuals"); // truncate at list of visuals
         LogCommand("glxinfo -v -t", "^Vis  Vis");    // truncate at table of visuals

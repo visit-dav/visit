@@ -2101,12 +2101,12 @@ PF3DFileFormat::GetVar(int dom, const char *varName)
 #ifdef DEBUG_PRINT
         debug4 << "BOF = " << (void*)bof << endl;
         debug4 << "Copying subblock of BOF into VTK object" << endl;
-        if(debug4_real)
+        if(DebugStream::Level4())
         {
-            print_array(debug4_real, "bof->size", bof->size, 3, 8, true, false);
-            print_array(debug4_real, "domainsize", domainsize, 3, 8, true, false);
-            print_array(debug4_real, "start", start, 3, 8, true, false);
-            print_array(debug4_real, "end", end, 3, 8, true, false);
+            print_array(DebugStream::Stream4(), "bof->size", bof->size, 3, 8, true, false);
+            print_array(DebugStream::Stream4(), "domainsize", domainsize, 3, 8, true, false);
+            print_array(DebugStream::Stream4(), "start", start, 3, 8, true, false);
+            print_array(DebugStream::Stream4(), "end", end, 3, 8, true, false);
         }
 #endif
 
@@ -2503,8 +2503,8 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
             }
 
 #ifdef DEBUG_PRINT
-            if(debug4_real)
-                operator << (debug4_real);
+            if(DebugStream::Level4())
+                operator << (DebugStream::Stream4());
 #endif            
         }
 
