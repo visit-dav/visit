@@ -733,13 +733,16 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     int i;
 
-    char *dummyStr = "";
+    // What is rule for the null character in specifying length of string
+    // What should impl. do with a string that is empty (e.g. "") as opposed
+    // to a pointer to 0.
+    char *dummyStr = 0;
 #if defined(ITAPS_GRUMMP)
     if (spatialDim == 2)
         dummyStr = "2D";
 #endif
     iMesh_Instance itapsMesh;
-    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, strlen(dummyStr)+1);
+    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, dummyStr ? strlen(dummyStr)+1 : 0);
     CheckITAPSError(itapsMesh, iMesh_newMesh, NoL);
 
     iBase_EntitySetHandle rootSet;

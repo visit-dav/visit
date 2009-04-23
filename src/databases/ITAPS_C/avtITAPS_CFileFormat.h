@@ -125,6 +125,11 @@ class avtITAPS_CFileFormat : public avtSTMDFileFormat
       vector<iBase_EntitySetHandle> domainSets;
       int                           domainEntType;
 
+      vector<string> rootTagNames;
+      vector<int>    rootTagTypes;
+      vector<int>    rootTagSizes;
+      vector<string> rootTagVals;
+
       map<string, vector<vector<int> > > pascalsTriangleMaps;
 
 };

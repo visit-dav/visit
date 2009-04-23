@@ -192,6 +192,9 @@ avtITAPS_CFileFormat::FreeUpResources(void)
 //    the set theoretic sense. Changed loop that searches for tags and
 //    determines centering to add stuff to variable name if the same tag is
 //    defined on different classes of entities.
+//
+//    Mark C. Miller, Thu Apr 23 08:10:02 PDT 2009
+//    Added logic to handle Zoltan partition as VisIt's domains.
 // ****************************************************************************
 
 void
@@ -288,7 +291,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // to debug logs.
         const bool debugOff = true;
         iBase_EntityHandle junk;
-        if (debug4_real)
+        if (DebugStream::Level4())
             TraverseSetHierarchy(itapsMesh, 0, 0, true, junk, rootSet, !debugOff, 0, 0);
 
         // Ok, do some real work to get top-level sets
@@ -299,44 +302,54 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // Find the 'domain' set class and assign its sets for the domains.
         //
         map<string, vector<iBase_EntitySetHandle> >::iterator tlsit;
+        if (GetTagStuff(itapsMesh, rootSet, -1, "PARALLEL_PARTITION", 0, 0, 0) == iBase_SUCCESS ||
+            GetTagStuff(itapsMesh, rootSet, iBase_VERTEX, "PARALLEL_PARTITION", 0, 0, 0) == iBase_SUCCESS ||
+            GetTagStuff(itapsMesh, rootSet, iBase_REGION, "PARALLEL_PARTITION", 0, 0, 0) == iBase_SUCCESS)
         {
-            for (tlsit = topLevelSets.begin(); tlsit != topLevelSets.end(); tlsit++)
+            domainSets = topLevelSets["PARALLEL_PARTITION"]; 
+            domainSetClassName = "PARALLEL_PARTITION";
+        }
+        else
+        {
             {
-                if (tlsit->first == domainSetClassName)
+                for (tlsit = topLevelSets.begin(); tlsit != topLevelSets.end(); tlsit++)
                 {
-                    //
-                    // Lets at least ensure that the choosen class of entity sets
-                    // has enough entities to at least 'cover' the root.
-                    //
-                    int nverts = 0;
-                    int nother = 0;
-                    for (unsigned int q = 0; q < tlsit->second.size(); q++)
+                    if (tlsit->first == domainSetClassName)
                     {
-                        int nverts_tmp;
-                        int nother_tmp;
-                        iMesh_getNumOfType(itapsMesh, tlsit->second[q], iBase_VERTEX, &nverts_tmp, &itapsError);
-                        iMesh_getNumOfType(itapsMesh, tlsit->second[q], domainEntType, &nother_tmp, &itapsError);
-                        nverts += nverts_tmp;
-                        nother += nother_tmp;
+                        //
+                        // Lets at least ensure that the choosen class of entity sets
+                        // has enough entities to at least 'cover' the root.
+                        //
+                        int nverts = 0;
+                        int nother = 0;
+                        for (unsigned int q = 0; q < tlsit->second.size(); q++)
+                        {
+                            int nverts_tmp;
+                            int nother_tmp;
+                            iMesh_getNumOfType(itapsMesh, tlsit->second[q], iBase_VERTEX, &nverts_tmp, &itapsError);
+                            iMesh_getNumOfType(itapsMesh, tlsit->second[q], domainEntType, &nother_tmp, &itapsError);
+                            nverts += nverts_tmp;
+                            nother += nother_tmp;
+                        }
+                        //
+                        // MOAB seems to be 'funny' with vertex entities in subsets and so
+                        // a vertex cover is never possible to achieve from MOAB. So, we
+                        // currently only test for 'other'
+                        //if (nverts >= numOfType[0] && nother >= numOfType[topoDim])
+                        if (nother >= numOfType[topoDim])
+                        {
+                            domainSets = tlsit->second;
+                            debug3 << "selected \"" << tlsit->first << "\" as the domain class" << endl;
+                            break;
+                        }
+                        else
+                        {
+                            debug3 << "skipping \"" << tlsit->first << "\" as candidate domain class "
+                                   << "because it cannot possible 'cover' root" << endl;
+                        }
                     }
-                    //
-                    // MOAB seems to be 'funny' with vertex entities in subsets and so
-                    // a vertex cover is never possible to achieve from MOAB. So, we
-                    // currently only test for 'other'
-                    //if (nverts >= numOfType[0] && nother >= numOfType[topoDim])
-                    if (nother >= numOfType[topoDim])
-                    {
-                        domainSets = tlsit->second;
-                        debug3 << "selected \"" << tlsit->first << "\" as the domain class" << endl;
-                        break;
-                    }
-                    else
-                    {
-                        debug3 << "skipping \"" << tlsit->first << "\" as candidate domain class "
-                               << "because it cannot possible 'cover' root" << endl;
-                    }
+                    debug3 << "skipping \"" << tlsit->first << "\" as candidate domain class" << endl;
                 }
-                debug3 << "skipping \"" << tlsit->first << "\" as candidate domain class" << endl;
             }
         }
 
