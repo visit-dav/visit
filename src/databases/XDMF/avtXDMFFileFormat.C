@@ -502,6 +502,11 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lBuf,
 //    I added coding to convert uchar, char, uint, and int to float if
 //    necessary, since HDF5 doesn't do that type of conversion.
 //
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I changed the way char and int conversions are made to float since
+//    the previous method caused a crash. I added coding to convert ulong
+//    and long to float if necessary, when sizeof(long) was 8.
+//
 // ****************************************************************************
 
 int
@@ -578,11 +583,12 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
     dataset_type_size  = H5Tget_size(dataset_type);
 
     //
-    // Check that the type is supported.  This includes 1 and 4 byte
+    // Check that the type is supported.  This includes 1, 4, and 8 byte
     // integers and 4 and 8 byte floats.
     //
     if ((dataset_type_class == H5T_INTEGER &&
-         dataset_type_size != 1 && dataset_type_size != 4) ||
+         dataset_type_size != 1 && dataset_type_size != 4 &&
+         dataset_type_size != 8) ||
         (dataset_type_class == H5T_FLOAT &&
          dataset_type_size != 4 && dataset_type_size != 8) ||
         (dataset_type_class != H5T_INTEGER &&
@@ -677,7 +683,7 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
             }
             float *fBuf = (float *)buf;
             for (int i = 0; i < lBuf; i++)
-                *fBuf++ = *cBuf++;
+                fBuf[i] = (float) cBuf[i];
             delete [] cBuf;
         }
         else if (dataset_type_size == 1 && dataset_type_sign == H5T_SGN_2)
@@ -693,7 +699,7 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
             }
             float *fBuf = (float *)buf;
             for (int i = 0; i < lBuf; i++)
-                *fBuf++ = *cBuf++;
+                fBuf[i] = (float) cBuf[i];
             delete [] cBuf;
         }
         else if (dataset_type_size == 4 && dataset_type_sign == H5T_SGN_NONE)
@@ -709,7 +715,7 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
             }
             float *fBuf = (float *)buf;
             for (int i = 0; i < lBuf; i++)
-                *fBuf++ = *iBuf++;
+                fBuf[i] = (float) iBuf[i];
             delete [] iBuf;
         }
         else if (dataset_type_size == 4 && dataset_type_sign == H5T_SGN_2)
@@ -725,8 +731,58 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
             }
             float *fBuf = (float *)buf;
             for (int i = 0; i < lBuf; i++)
-                *fBuf++ = *iBuf++;
+                fBuf[i] = (float) iBuf[i];
             delete [] iBuf;
+        }
+        else if (dataset_type_size == 8 && dataset_type_sign == H5T_SGN_NONE)
+        {
+            if (sizeof(unsigned long) == 8)
+            {
+                debug4 << mName << "Converting ulong to float" << endl;
+                unsigned long *iBuf = new unsigned long[lBuf];
+                if (H5Dread(dataset_id, H5T_NATIVE_ULONG, H5S_ALL, H5S_ALL,
+                            H5P_DEFAULT, iBuf) < 0)
+                {
+                    avtCallback::IssueWarning("Unable to read the dataset.");
+                    H5Dclose(dataset_id);
+                    return 0;
+                }
+                float *fBuf = (float *)buf;
+                for (int i = 0; i < lBuf; i++)
+                    fBuf[i] = (float) iBuf[i];
+                delete [] iBuf;
+            }
+            else
+            {
+                avtCallback::IssueWarning("Unable to read the dataset.");
+                H5Dclose(dataset_id);
+                return 0;
+            }
+        }
+        else if (dataset_type_size == 8 && dataset_type_sign == H5T_SGN_2)
+        {
+            if (sizeof(long) == 8)
+            {
+                debug4 << mName << "Converting long to float" << endl;
+                long *iBuf = new long[lBuf];
+                if (H5Dread(dataset_id, H5T_NATIVE_LONG, H5S_ALL, H5S_ALL,
+                            H5P_DEFAULT, iBuf) < 0)
+                {
+                    avtCallback::IssueWarning("Unable to read the dataset.");
+                    H5Dclose(dataset_id);
+                    return 0;
+                }
+                float *fBuf = (float *)buf;
+                for (int i = 0; i < lBuf; i++)
+                    fBuf[i] = (float) iBuf[i];
+                delete [] iBuf;
+            }
+            else
+            {
+                avtCallback::IssueWarning("Unable to read the dataset.");
+                H5Dclose(dataset_id);
+                return 0;
+            }
         }
         else
         {
@@ -900,6 +956,11 @@ avtXDMFFileFormat::AddVarInfo(bool topGrid, int iBlock, VarInfo *varInfo)
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 DataItem *
@@ -918,22 +979,22 @@ avtXDMFFileFormat::ParseDataItem()
     //
     while (xdmfParser.GetNextAttribute())
     {
-        if (strcmp(xdmfParser.GetAttributeName(), "Dimensions") == 0)
+        if (strcmp(xdmfParser.GetAttributeName(), "DIMENSIONS") == 0)
         {
-            dimensions = string(xdmfParser.GetAttributeValue());
+            dimensions = string(xdmfParser.GetAttributeValueAsUpper());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "Type") == 0 ||
-                 strcmp(xdmfParser.GetAttributeName(), "NumberType") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
+                 strcmp(xdmfParser.GetAttributeName(), "NUMBERTYPE") == 0)
         {
-            numberType = string(xdmfParser.GetAttributeValue());
+            numberType = string(xdmfParser.GetAttributeValueAsUpper());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "Precision") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "PRECISION") == 0)
         {
-            precision = string(xdmfParser.GetAttributeValue());
+            precision = string(xdmfParser.GetAttributeValueAsUpper());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "Format") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "FORMAT") == 0)
         {
-            format = string(xdmfParser.GetAttributeValue());
+            format = string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -997,15 +1058,15 @@ avtXDMFFileFormat::ParseDataItem()
     //
     // Determine the number type.
     //
-    if (numberType == "" || numberType == "Float")
+    if (numberType == "" || numberType == "FLOAT")
         dataItem->type = DataItem::DATA_TYPE_FLOAT;
-    else if (numberType == "Int")
+    else if (numberType == "INT")
         dataItem->type = DataItem::DATA_TYPE_INT;
-    else if (numberType == "UInt")
+    else if (numberType == "UINT")
         dataItem->type = DataItem::DATA_TYPE_UINT;
-    else if (numberType == "Char")
+    else if (numberType == "CHAR")
         dataItem->type = DataItem::DATA_TYPE_CHAR;
-    else if (numberType == "UChar")
+    else if (numberType == "UCHAR")
         dataItem->type = DataItem::DATA_TYPE_UCHAR;
     else
     {
@@ -1079,6 +1140,10 @@ avtXDMFFileFormat::ParseDataItem()
 //    Eric Brugger, Tue Apr  8 14:25:31 PDT 2008
 //    Added the arguments baseOffset and order.
 //
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 void
@@ -1091,27 +1156,27 @@ avtXDMFFileFormat::ParseTopology(string &topologyType,
     //
     while (xdmfParser.GetNextAttribute())
     {
-        if (strcmp(xdmfParser.GetAttributeName(), "Type") == 0 ||
-            strcmp(xdmfParser.GetAttributeName(), "TopologyType") == 0)
+        if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
+            strcmp(xdmfParser.GetAttributeName(), "TOPOLOGYTYPE") == 0)
         {
-            topologyType = string(xdmfParser.GetAttributeValue());
+            topologyType = string(xdmfParser.GetAttributeValueAsUpper());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "NumberOfElements") == 0 ||
-                 strcmp(xdmfParser.GetAttributeName(), "Dimensions") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "NUMBEROFELEMENTS") == 0 ||
+                 strcmp(xdmfParser.GetAttributeName(), "DIMENSIONS") == 0)
         {
-            numberOfElements = string(xdmfParser.GetAttributeValue());
+            numberOfElements = string(xdmfParser.GetAttributeValueAsUpper());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "NodesPerElement") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "NODESPERELEMENT") == 0)
         {
-            nodesPerElement = string(xdmfParser.GetAttributeValue());
+            nodesPerElement = string(xdmfParser.GetAttributeValueAsUpper());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "BaseOffset") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "BASEOFFSET") == 0)
         {
-            baseOffset = string(xdmfParser.GetAttributeValue());
+            baseOffset = string(xdmfParser.GetAttributeValueAsUpper());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "Order") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "ORDER") == 0)
         {
-            order = string(xdmfParser.GetAttributeValue());
+            order = string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1124,7 +1189,7 @@ avtXDMFFileFormat::ParseTopology(string &topologyType,
     {
         if (elementType == XDMFParser::TYPE_START_TAG)
         {
-            if (strcmp(xdmfParser.GetElementName(), "DataItem") == 0)
+            if (strcmp(xdmfParser.GetElementName(), "DATAITEM") == 0)
             {
                 if (!haveTopologyData)
                 {
@@ -1164,6 +1229,10 @@ avtXDMFFileFormat::ParseTopology(string &topologyType,
 //    Remove 'struct' from in front of DataItem, to remove compile error on 
 //    Windows.
 //
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 void
@@ -1175,10 +1244,10 @@ avtXDMFFileFormat::ParseGeometry(string &geometryType, int &nDataItem,
     //
     while (xdmfParser.GetNextAttribute())
     {
-        if (strcmp(xdmfParser.GetAttributeName(), "Type") == 0 ||
-            strcmp(xdmfParser.GetAttributeName(), "GeometryType") == 0)
+        if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
+            strcmp(xdmfParser.GetAttributeName(), "GEOMETRYTYPE") == 0)
         {
-            geometryType = string(xdmfParser.GetAttributeValue());
+            geometryType = string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1191,7 +1260,7 @@ avtXDMFFileFormat::ParseGeometry(string &geometryType, int &nDataItem,
     {
         if (elementType == XDMFParser::TYPE_START_TAG)
         {
-            if (strcmp(xdmfParser.GetElementName(), "DataItem") == 0)
+            if (strcmp(xdmfParser.GetElementName(), "DATAITEM") == 0)
             {
                 if (nDataItem < 3)
                 {
@@ -1226,6 +1295,11 @@ avtXDMFFileFormat::ParseGeometry(string &geometryType, int &nDataItem,
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 VarInfo *
@@ -1242,18 +1316,18 @@ avtXDMFFileFormat::ParseAttribute(int iDomain, int iGrid,
     //
     while (xdmfParser.GetNextAttribute())
     {
-        if (strcmp(xdmfParser.GetAttributeName(), "Name") == 0)
+        if (strcmp(xdmfParser.GetAttributeName(), "NAME") == 0)
         {
             attributeName = string(xdmfParser.GetAttributeValue());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "Type") == 0 ||
-                 strcmp(xdmfParser.GetAttributeName(), "AttributeType") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
+                 strcmp(xdmfParser.GetAttributeName(), "ATTRIBUTETYPE") == 0)
         {
-            attributeType = string(xdmfParser.GetAttributeValue());
+            attributeType = string(xdmfParser.GetAttributeValueAsUpper());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "Center") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "CENTER") == 0)
         {
-            center = string(xdmfParser.GetAttributeValue());
+            center = string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1265,7 +1339,7 @@ avtXDMFFileFormat::ParseAttribute(int iDomain, int iGrid,
     {
         if (elementType == XDMFParser::TYPE_START_TAG)
         {
-            if (strcmp(xdmfParser.GetElementName(), "DataItem") == 0)
+            if (strcmp(xdmfParser.GetElementName(), "DATAITEM") == 0)
             {
                 varData = ParseDataItem();
             }
@@ -1315,27 +1389,27 @@ avtXDMFFileFormat::ParseAttribute(int iDomain, int iGrid,
     //
     // Determine the attribute type and dimension.
     //
-    if (attributeType == "" || attributeType == "Scalar")
+    if (attributeType == "" || attributeType == "SCALAR")
     {
         varInfo->variableType = VarInfo::TYPE_SCALAR;
         varInfo->varDimension = 1;
     }
-    else if (attributeType == "Vector")
+    else if (attributeType == "VECTOR")
     {
         varInfo->variableType = VarInfo::TYPE_VECTOR;
         varInfo->varDimension = varData->dims[varData->nDims-1];
     }
-    else if (attributeType == "Tensor")
+    else if (attributeType == "TENSOR")
     {
         varInfo->variableType = VarInfo::TYPE_TENSOR;
         varInfo->varDimension = 9;
     }
-    else if (attributeType == "Tensor6")
+    else if (attributeType == "TENSOR6")
     {
         varInfo->variableType = VarInfo::TYPE_TENSOR;
         varInfo->varDimension = 6;
     }
-    else if (attributeType == "Matrix")
+    else if (attributeType == "MATRIX")
     {
         debug1 << "Invalid Attribute: Unsupported AttributeType - Matrix." << endl;
         delete varInfo;
@@ -1351,15 +1425,15 @@ avtXDMFFileFormat::ParseAttribute(int iDomain, int iGrid,
     //
     // Determine the centering.
     //
-    if (center == "" || center == "Node")
+    if (center == "" || center == "NODE")
     {
         varInfo->centering = AVT_NODECENT;
     }
-    else if (center == "Cell")
+    else if (center == "CELL")
     {
         varInfo->centering = AVT_ZONECENT;
     }
-    else if (center == "Face" || center == "Edge" || center == "Grid")
+    else if (center == "FACE" || center == "EDGE" || center == "GRID")
     {
         debug1 << "Invalid Attribute: Unsupported Center." << endl;
         delete varInfo;
@@ -1392,6 +1466,10 @@ avtXDMFFileFormat::ParseAttribute(int iDomain, int iGrid,
 //    Eric Brugger, Tue Aug 26 15:57:05 PDT 2008
 //    Modified the routine to handle grid information with a baseIndex.
 //
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 void
@@ -1406,19 +1484,19 @@ avtXDMFFileFormat::ParseGridInformation(string &baseIndex,
     //
     while (xdmfParser.GetNextAttribute())
     {
-        if (strcmp(xdmfParser.GetAttributeName(), "Name") == 0)
+        if (strcmp(xdmfParser.GetAttributeName(), "NAME") == 0)
         {
-            if (strcmp(xdmfParser.GetAttributeValue(), "BaseIndex") == 0)
+            if (strcmp(xdmfParser.GetAttributeValueAsUpper(), "BASEINDEX") == 0)
                 haveBaseIndex = true;
-            else if (strcmp(xdmfParser.GetAttributeValue(), "GhostOffsets") == 0)
+            else if (strcmp(xdmfParser.GetAttributeValueAsUpper(), "GHOSTOFFSETS") == 0)
                 haveGhostOffsets = true;
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "Value") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "VALUE") == 0)
         {
             if (haveBaseIndex)
-                baseIndex = string(xdmfParser.GetAttributeValue());
+                baseIndex = string(xdmfParser.GetAttributeValueAsUpper());
             else if (haveGhostOffsets)
-                ghostOffsets = string(xdmfParser.GetAttributeValue());
+                ghostOffsets = string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1468,6 +1546,10 @@ avtXDMFFileFormat::ParseGridInformation(string &baseIndex,
 //    also reversed the order in which the ghost zone indices are interpreted
 //    to match the order in which dimensions are interpreted.
 //
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 void
@@ -1497,21 +1579,21 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     {
         if (elementType == XDMFParser::TYPE_START_TAG)
         {
-            if (strcmp(xdmfParser.GetElementName(), "Topology") == 0)
+            if (strcmp(xdmfParser.GetElementName(), "TOPOLOGY") == 0)
             {
                 ParseTopology(topologyType, numberOfElements, nodesPerElement,
                     baseOffset, order, &topologyData);
             }
-            else if (strcmp(xdmfParser.GetElementName(), "Geometry") == 0)
+            else if (strcmp(xdmfParser.GetElementName(), "GEOMETRY") == 0)
             {
                 ParseGeometry(geometryType, nMeshData, meshData);
             }
-            else if (strcmp(xdmfParser.GetElementName(), "Attribute") == 0)
+            else if (strcmp(xdmfParser.GetElementName(), "ATTRIBUTE") == 0)
             {
                 if ((varInfo = ParseAttribute(iDomain, iGrid, gridName)) != NULL)
                     varList.push_back(varInfo);
             }
-            else if (strcmp(xdmfParser.GetElementName(), "Information") == 0)
+            else if (strcmp(xdmfParser.GetElementName(), "INFORMATION") == 0)
             {
                 ParseGridInformation(baseIndex, ghostOffsets);
             }
@@ -1565,9 +1647,9 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
         meshInfo->geometryType = MeshInfo::TYPE_XY;
     else if (geometryType == "X_Y_Z")
         meshInfo->geometryType = MeshInfo::TYPE_X_Y_Z;
-    else if (geometryType == "VxVyVz")
+    else if (geometryType == "VXVYVZ")
         meshInfo->geometryType = MeshInfo::TYPE_VXVYVZ;
-    else if (geometryType == "Origin_DxDyDz")
+    else if (geometryType == "ORIGIN_DXDYDZ")
         meshInfo->geometryType = MeshInfo::TYPE_ORIGIN_DXDYDZ;
     else
     {
@@ -1579,25 +1661,25 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
         return;
     }
 
-    if (topologyType == "2DRectMesh" || topologyType == "2DCoRectMesh")
+    if (topologyType == "2DRECTMESH" || topologyType == "2DCORECTMESH")
     {
         meshInfo->topologicalDimension = 2;
         meshInfo->spatialDimension = 2;
         meshInfo->type = AVT_RECTILINEAR_MESH;
     }
-    else if (topologyType == "2DSMesh")
+    else if (topologyType == "2DSMESH")
     {
         meshInfo->topologicalDimension = 2;
         meshInfo->spatialDimension = 2;
         meshInfo->type = AVT_CURVILINEAR_MESH;
     }
-    else if (topologyType == "3DRectMesh" || topologyType == "3DCoRectMesh")
+    else if (topologyType == "3DRECTMESH" || topologyType == "3DCORECTMESH")
     {
         meshInfo->topologicalDimension = 3;
         meshInfo->spatialDimension = 3;
         meshInfo->type = AVT_RECTILINEAR_MESH;
     }
-    else if (topologyType == "3DSMesh")
+    else if (topologyType == "3DSMESH")
     {
         meshInfo->topologicalDimension = 3;
         meshInfo->spatialDimension = 3;
@@ -1605,39 +1687,39 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     }
     else
     {
-        if (topologyType == "Polyvertex")
+        if (topologyType == "POLYVERTEX")
             meshInfo->cellType = MeshInfo::CELL_POLYVERTEX;
-        else if (topologyType == "Polyline")
+        else if (topologyType == "POLYLINE")
             meshInfo->cellType = MeshInfo::CELL_POLYLINE;
-        else if (topologyType == "Polygon")
+        else if (topologyType == "POLYGON")
             meshInfo->cellType = MeshInfo::CELL_POLYGON;
-        else if (topologyType == "Triangle")
+        else if (topologyType == "TRIANGLE")
             meshInfo->cellType = MeshInfo::CELL_TRIANGLE;
-        else if (topologyType == "Quadrilateral")
+        else if (topologyType == "QUADRILATERAL")
             meshInfo->cellType = MeshInfo::CELL_QUADRILATERAL;
-        else if (topologyType == "Tetrahedron")
+        else if (topologyType == "TETRAHEDRON")
             meshInfo->cellType = MeshInfo::CELL_TETRAHEDRON;
-        else if (topologyType == "Pyramid")
+        else if (topologyType == "PYRAMID")
             meshInfo->cellType = MeshInfo::CELL_PYRAMID;
-        else if (topologyType == "Wedge")
+        else if (topologyType == "WEDGE")
             meshInfo->cellType = MeshInfo::CELL_WEDGE;
-        else if (topologyType == "Hexahedron")
+        else if (topologyType == "HEXAHEDRON")
             meshInfo->cellType = MeshInfo::CELL_HEXAHEDRON;
-        else if (topologyType == "Edge_3")
+        else if (topologyType == "EDGE_3")
             meshInfo->cellType = MeshInfo::CELL_EDGE_3;
-        else if (topologyType == "Triangle_6")
+        else if (topologyType == "TRIANGLE_6")
             meshInfo->cellType = MeshInfo::CELL_TRIANGLE_6;
-        else if (topologyType == "Quadrilateral_8")
+        else if (topologyType == "QUADRILATERAL_8")
             meshInfo->cellType = MeshInfo::CELL_QUADRILATERAL_8;
-        else if (topologyType == "Tetrahedron_10")
+        else if (topologyType == "TETRAHEDRON_10")
             meshInfo->cellType = MeshInfo::CELL_TETRAHEDRON_10;
-        else if (topologyType == "Pyramid_13")
+        else if (topologyType == "PYRAMID_13")
             meshInfo->cellType = MeshInfo::CELL_PYRAMID_13;
-        else if (topologyType == "Wedge_15")
+        else if (topologyType == "WEDGE_15")
             meshInfo->cellType = MeshInfo::CELL_WEDGE_15;
-        else if (topologyType == "Hexahedron_20")
+        else if (topologyType == "HEXAHEDRON_20")
             meshInfo->cellType = MeshInfo::CELL_HEXAHEDRON_20;
-        else if (topologyType == "Mixed")
+        else if (topologyType == "MIXED")
             meshInfo->cellType = MeshInfo::CELL_MIXED;
         else
         {
@@ -1806,6 +1888,11 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 void
@@ -1828,14 +1915,14 @@ avtXDMFFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
         //
         while (xdmfParser.GetNextAttribute())
         {
-            if (strcmp(xdmfParser.GetAttributeName(), "Name") == 0)
+            if (strcmp(xdmfParser.GetAttributeName(), "NAME") == 0)
             {
                 gridName = string(xdmfParser.GetAttributeValue());
             }
-            else if (strcmp(xdmfParser.GetAttributeName(), "Type") == 0 ||
-                     strcmp(xdmfParser.GetAttributeName(), "GridType") == 0)
+            else if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
+                     strcmp(xdmfParser.GetAttributeName(), "GRIDTYPE") == 0)
             {
-                gridType = string(xdmfParser.GetAttributeValue());
+                gridType = string(xdmfParser.GetAttributeValueAsUpper());
             }
         }
 
@@ -1870,20 +1957,20 @@ avtXDMFFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
         //
         while (xdmfParser.GetNextAttribute())
         {
-            if (strcmp(xdmfParser.GetAttributeName(), "Type") == 0 ||
-                strcmp(xdmfParser.GetAttributeName(), "GridType") == 0)
+            if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
+                strcmp(xdmfParser.GetAttributeName(), "GRIDTYPE") == 0)
             {
-                gridType = string(xdmfParser.GetAttributeValue());
+                gridType = string(xdmfParser.GetAttributeValueAsUpper());
             }
         }
     }
 
-    if (gridType == "" || gridType == "Uniform")
+    if (gridType == "" || gridType == "UNIFORM")
     {
         ParseUniformGrid(meshList, iDomain, iGrid,
             topGrid, gridName);
     }
-    else if (gridType == "Collection" || gridType == "Tree")
+    else if (gridType == "COLLECTION" || gridType == "TREE")
     {
         if (topGrid)
         {
@@ -1895,7 +1982,7 @@ avtXDMFFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
             {
                 if (elementType == XDMFParser::TYPE_START_TAG)
                 {
-                    if (strcmp(xdmfParser.GetElementName(), "Grid") == 0)
+                    if (strcmp(xdmfParser.GetElementName(), "GRID") == 0)
                     {
                         ParseGrid(meshInfo->blockList, iDomain, iGrid,
                                   gridName, topGrid);
@@ -1937,7 +2024,7 @@ avtXDMFFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
             {
                 if (elementType == XDMFParser::TYPE_START_TAG)
                 {
-                    if (strcmp(xdmfParser.GetElementName(), "Grid") == 0)
+                    if (strcmp(xdmfParser.GetElementName(), "GRID") == 0)
                     {
                         ParseGrid(meshList, iDomain, iGrid, gridName,
                                   topGrid);
@@ -1955,7 +2042,7 @@ avtXDMFFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
             }
         }
     }
-    else if (gridType == "Subset")
+    else if (gridType == "SUBSET")
     {
         debug1 << gridName << ": Unsupported Grid type - Subset" << endl;
         return;
@@ -1977,6 +2064,11 @@ avtXDMFFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 void
@@ -1989,7 +2081,7 @@ avtXDMFFileFormat::ParseDomain(int iDomain)
     //
     while (xdmfParser.GetNextAttribute())
     {
-        if (strcmp(xdmfParser.GetAttributeName(), "Name") == 0)
+        if (strcmp(xdmfParser.GetAttributeName(), "NAME") == 0)
         {
             domainName = string(xdmfParser.GetAttributeValue());
         }
@@ -2019,7 +2111,7 @@ avtXDMFFileFormat::ParseDomain(int iDomain)
     {
         if (elementType == XDMFParser::TYPE_START_TAG)
         {
-            if (strcmp(xdmfParser.GetElementName(), "Grid") == 0)
+            if (strcmp(xdmfParser.GetElementName(), "GRID") == 0)
             {
                 string gridName;
 
@@ -2051,6 +2143,11 @@ avtXDMFFileFormat::ParseDomain(int iDomain)
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 void
@@ -2070,7 +2167,7 @@ avtXDMFFileFormat::ParseXdmf()
     {
         if (elementType == XDMFParser::TYPE_START_TAG)
         {
-            if (strcmp(xdmfParser.GetElementName(), "Domain") == 0)
+            if (strcmp(xdmfParser.GetElementName(), "DOMAIN") == 0)
             {
                 ParseDomain(nDomains);
 
@@ -2097,6 +2194,11 @@ avtXDMFFileFormat::ParseXdmf()
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:31:34 PDT 2009
+//    I enhanced the routine to be insensitive to the case for element names,
+//    attribute names, and attribute values that were not names.
+//
 // ****************************************************************************
 
 void
@@ -2109,7 +2211,7 @@ avtXDMFFileFormat::ParseXMLFile(void)
     {
         if (elementType == XDMFParser::TYPE_START_TAG)
         {
-            if (strcmp(xdmfParser.GetElementName(), "Xdmf") == 0)
+            if (strcmp(xdmfParser.GetElementName(), "XDMF") == 0)
             {
                 ParseXdmf();
             }

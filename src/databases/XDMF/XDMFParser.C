@@ -141,6 +141,11 @@ XDMFParser::SetInputFileName(const char *filename)
 //  Programmer: Eric Brugger
 //  Creation:   Wed Nov 14 10:32:54 PDT 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:20:39 PDT 2009
+//    I modified the routine to store the elementName in all upper case
+//    letters.
+//
 // ****************************************************************************
 
 XDMFParser::ElementType
@@ -266,12 +271,12 @@ XDMFParser::GetNextElement()
             // Process the name.
             //
             char *cptr = &elementName[0];
-            *cptr++ = *chr;
+            *cptr++ = toupper(*chr);
             chr = GetChar();
 
             while (NAME_CHAR)
             {
-                *cptr++ = *chr;
+                *cptr++ = toupper(*chr);
                 chr = GetChar();
             }
             *cptr = '\0';
@@ -321,12 +326,12 @@ XDMFParser::GetNextElement()
             // Process the name.
             //
             char *cptr = &elementName[0];
-            *cptr++ = *chr;
+            *cptr++ = toupper(*chr);
             chr = GetChar();
 
             while (NAME_CHAR)
             {
-                *cptr++ = *chr;
+                *cptr++ = toupper(*chr);
                 chr = GetChar();
             }
             *cptr = '\0';
@@ -451,6 +456,11 @@ XDMFParser::GetElementName() const
 //  Programmer: Eric Brugger
 //  Creation:   Wed Nov 14 10:32:54 PDT 2007
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:20:39 PDT 2009
+//    I modified the routine to store the attributeName in all upper case
+//    letters.
+//
 // ****************************************************************************
 
 bool
@@ -503,12 +513,12 @@ XDMFParser::GetNextAttribute()
         // Process the attribute name.
         //
         char *cptr = &attributeName[0];
-        *cptr++ = *chr;
+        *cptr++ = toupper(*chr);
         chr = GetChar();
 
         while (NAME_CHAR)
         {
-            *cptr++ = *chr;
+            *cptr++ = toupper(*chr);
             chr = GetChar();
         }
         *cptr = '\0';
@@ -636,6 +646,26 @@ XDMFParser::GetAttributeName() const
 const char *
 XDMFParser::GetAttributeValue() const
 {
+    return attributeValue;
+}
+
+
+// ****************************************************************************
+//  Method: XDMFParser::GetAttributeValueAsUpper
+//
+//  Purpose:
+//      Return the value of the current attribute in all upper case letters.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Apr 24 08:20:39 PDT 2009
+//
+// ****************************************************************************
+
+const char *
+XDMFParser::GetAttributeValueAsUpper()
+{
+    for (int i = 0; attributeValue[i] != 0; i++)
+        attributeValue[i] = toupper(attributeValue[i]);
     return attributeValue;
 }
 
