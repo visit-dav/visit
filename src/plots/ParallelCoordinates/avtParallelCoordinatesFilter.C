@@ -1074,6 +1074,10 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 //    Port to trunk.  Removed named selection stuff since it's
 //    done differently now.
 //
+//    Jeremy Meredith, Fri Apr 24 13:13:24 EDT 2009
+//    Change the way extents are determined for zero ranges to fix
+//    underflow problem.
+//
 // ****************************************************************************
 
 void
@@ -1235,16 +1239,10 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
         double &axisMinimum = axisMinima[axisNum];
         double &axisMaximum = axisMaxima[axisNum];
 
-        if (fabs(axisMinimum) < 1e-20)
-            axisMinimum = 0.0;
-        if (fabs(axisMaximum) < 1e-20)
-            axisMaximum = 0.0;
-
-        if (fabs(axisMaximum - axisMinimum) < 1e-20)
+        if (axisMaximum == axisMinimum)
         {
-            double dataAverage = (axisMinimum + axisMaximum) * 0.5;
-            axisMinimum = dataAverage - 1e-20;
-            axisMaximum = dataAverage + 1e-20;
+            axisMinimum -= 1.0;
+            axisMaximum += 1.0;
         }
     }
     
