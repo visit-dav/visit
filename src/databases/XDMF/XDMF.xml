@@ -4,6 +4,7 @@
     <LIBS>     $(HDF5_LIB) $(ZLIB_LIB) </LIBS>
     <Extensions>
       xmf
+      xdmf
     </Extensions>
     <Files components="M">
       avtXDMFFileFormat.C

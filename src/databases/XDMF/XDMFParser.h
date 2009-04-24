@@ -45,6 +45,21 @@
 
 #include <stdio.h>
 
+// ****************************************************************************
+//  Class: avtXDMFFileFormat
+//
+//  Purpose:
+//      Reads in XDMF files as a plugin to VisIt.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Nov 14 11:28:35 PDT 2007
+//
+//  Modifications:
+//    Eric Brugger, Fri Apr 24 08:18:22 PDT 2009
+//    I added the method GetAttributeValueAsUpper.
+//
+// ****************************************************************************
+
 class XDMFParser
 {
   public:
@@ -64,6 +79,7 @@ class XDMFParser
     bool               GetNextAttribute();
     const char        *GetAttributeName() const;
     const char        *GetAttributeValue() const;
+    const char        *GetAttributeValueAsUpper();
 
     int                GetCDataOffset() const;
     int                GetCDataLength() const;
