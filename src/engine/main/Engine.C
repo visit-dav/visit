@@ -263,6 +263,9 @@ protected:
 //    Brad Whitlock, Thu Apr  9 11:57:44 PDT 2009
 //    Initialize viewer, viewerP, reverseLaunch.
 //
+//    Brad Whitlock, Thu Apr 23 12:05:16 PDT 2009
+//    Disable simulation plugins by default.
+//
 // ****************************************************************************
 
 Engine::Engine() : viewerArgs()
@@ -287,6 +290,7 @@ Engine::Engine() : viewerArgs()
     silAtts = NULL;
     commandFromSim = NULL;
     pluginDir = "";
+    simulationPluginsEnabled = false;
 
     quitRPC = NULL;
     keepAliveRPC = NULL;
@@ -571,6 +575,27 @@ Engine::Finalize(void)
 
 
 // ****************************************************************************
+// Method: Engine::EnableSimulationPlugins
+//
+// Purpose: 
+//   Allow the engine to use simulation plugins in addition to engine plugins.
+//
+// Note:       This method needs to be called before SetUpViewerInterface.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 23 12:08:27 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Engine::EnableSimulationPlugins()
+{
+    simulationPluginsEnabled = true;
+}
+
+// ****************************************************************************
 //  Method:  Engine::SetUpViewerInterface
 //
 //  Purpose:
@@ -676,6 +701,9 @@ Engine::Finalize(void)
 //    Hank Childs, Thu Jan 29 11:15:16 PST 2009
 //    Add NamedSelectionRPC.
 //
+//    Brad Whitlock, Thu Apr 23 12:11:35 PDT 2009
+//    Differentiate between simulation and engine plugins.
+//
 // ****************************************************************************
 
 void
@@ -739,14 +767,16 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
         netmgr->GetOperatorPluginManager()->SetPluginDir(pluginDir.c_str());
         netmgr->GetDatabasePluginManager()->SetPluginDir(pluginDir.c_str());
     }
+    PluginManager::PluginCategory pCat = simulationPluginsEnabled ? 
+        PluginManager::Simulation : PluginManager::Engine;
 #ifdef PARALLEL
-    netmgr->GetPlotPluginManager()->Initialize(PlotPluginManager::Engine, true);
-    netmgr->GetOperatorPluginManager()->Initialize(OperatorPluginManager::Engine, true);
-    netmgr->GetDatabasePluginManager()->Initialize(DatabasePluginManager::Engine, true);
+    netmgr->GetPlotPluginManager()->Initialize(pCat, true);
+    netmgr->GetOperatorPluginManager()->Initialize(pCat, true);
+    netmgr->GetDatabasePluginManager()->Initialize(pCat, true);
 #else
-    netmgr->GetPlotPluginManager()->Initialize(PlotPluginManager::Engine, false);
-    netmgr->GetOperatorPluginManager()->Initialize(OperatorPluginManager::Engine, false);
-    netmgr->GetDatabasePluginManager()->Initialize(DatabasePluginManager::Engine, false);
+    netmgr->GetPlotPluginManager()->Initialize(pCat, false);
+    netmgr->GetOperatorPluginManager()->Initialize(pCat, false);
+    netmgr->GetDatabasePluginManager()->Initialize(pCat, false);
 #endif    
     //
     // Load plugins

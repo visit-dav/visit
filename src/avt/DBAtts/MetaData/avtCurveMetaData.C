@@ -360,7 +360,7 @@ avtCurveMetaData::SelectAll()
     Select(ID_minDataExtents,    (void *)&minDataExtents);
     Select(ID_maxDataExtents,    (void *)&maxDataExtents);
     Select(ID_hideFromGUI,       (void *)&hideFromGUI);
-    Select(ID_from1DScalarName, (void *)&from1DScalarName);
+    Select(ID_from1DScalarName,  (void *)&from1DScalarName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

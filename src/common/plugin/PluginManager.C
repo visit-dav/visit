@@ -601,6 +601,9 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    Kathleen Bonnell, Wed May 21 08:12:16 PDT 2008 
 //    Fix libs indexing when searching for match.
 //
+//    Brad Whitlock, Thu Apr 23 11:55:41 PDT 2009
+//    Ignore any SimV plugin if we're not in the engine and not a simulation.
+//
 // ****************************************************************************
 
 void
@@ -634,7 +637,15 @@ PluginManager::ReadPluginInfo()
           case Scripting: str = string("libS") + filename.substr(4); break;
           case Viewer:    str = string("libV") + filename.substr(4); break;
           case MDServer:  str = string("libM") + filename.substr(4); break;
-          case Engine:    str = string("libE") +
+          case Engine:    if(filename.substr(0,8) == "libISimV")
+                          {
+                              debug1 << "Skipping plugin " << filename
+                                     << " because it is a simulation plugin."
+                                     << endl;
+                              continue;
+                          }
+                          // Fall through to Simulation
+          case Simulation:str = string("libE") +
                           filename.substr(4, filename.length() - 4 - ext.size())
                           + (parallel ? string("_par") : string("_ser"))
                           + ext;
@@ -853,6 +864,10 @@ PluginManager::LoadSinglePluginNow(const std::string& id)
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Changed return value to bool to indicate if it actually loaded
 //    the plugin.
+//
+//    Brad Whitlock, Thu Apr 23 11:56:46 PDT 2009
+//    Added Simulation case.
+//
 // ****************************************************************************
 
 bool
@@ -916,6 +931,9 @@ PluginManager::LoadSinglePlugin(int index)
         LoadMDServerPluginInfo();
         break;
       case Engine:
+        LoadEnginePluginInfo();
+        break;
+      case Simulation:
         LoadEnginePluginInfo();
         break;
       case Scripting:

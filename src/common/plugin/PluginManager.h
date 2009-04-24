@@ -95,6 +95,10 @@
 //    Made SetPluginDir be a public function so we can change the directory if
 //    we need to.
 //
+//    Brad Whitlock, Thu Apr 23 11:36:20 PDT 2009
+//    I added Simulation to the plugin categories, which will be a superset
+//    of Engine.
+//
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -107,7 +111,8 @@ class PLUGIN_API PluginManager
         Viewer,
         Engine,
         MDServer,
-        Scripting
+        Scripting,
+        Simulation
     };
   public:
     virtual ~PluginManager();
