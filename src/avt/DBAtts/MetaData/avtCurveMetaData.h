@@ -105,20 +105,20 @@ public:
     };
 
 public:
-    std::string  name;
-    std::string  originalName;
-    bool         validVariable;
-    std::string  xUnits;
-    std::string  xLabel;
-    std::string  yUnits;
-    std::string  yLabel;
-    bool         hasSpatialExtents;
-    double       minSpatialExtents;
-    double       maxSpatialExtents;
-    bool         hasDataExtents;
-    double       minDataExtents;
-    double       maxDataExtents;
-    bool         hideFromGUI;
+    std::string name;
+    std::string originalName;
+    bool        validVariable;
+    std::string xUnits;
+    std::string xLabel;
+    std::string yUnits;
+    std::string yLabel;
+    bool        hasSpatialExtents;
+    double      minSpatialExtents;
+    double      maxSpatialExtents;
+    bool        hasDataExtents;
+    double      minDataExtents;
+    double      maxDataExtents;
+    bool        hideFromGUI;
     std::string from1DScalarName;
 
 private:

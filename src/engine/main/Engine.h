@@ -204,6 +204,9 @@ class Xfer;
 //    Brad Whitlock, Thu Apr  9 11:55:50 PDT 2009
 //    I made it possible to reverse launch the viewer.
 //
+//    Brad Whitlock, Thu Apr 23 12:08:17 PDT 2009
+//    I added simulationPluginsEnabled.
+//
 // ****************************************************************************
 
 class Engine
@@ -219,6 +222,7 @@ class Engine
     void            SetUpViewerInterface(int *argc, char **argv[]);
 
     // Needed for simulations
+    void            EnableSimulationPlugins();
     void            PopulateSimulationMetaData(const std::string &db,
                                                const std::string &fmt);
     void            SimulationTimeStepChanged();
@@ -304,6 +308,7 @@ class Engine
     // Here's the network manager!
     NetworkManager    *netmgr;
     std::string        pluginDir;
+    bool               simulationPluginsEnabled;
 
     // The connection
     Connection        *vtkConnection;

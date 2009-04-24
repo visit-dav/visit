@@ -443,6 +443,10 @@ exec perl -x $0 ${1+"$@"};
 #    Added environemnt variable VISITULTRAHOME, so that VisIt knows where to 
 #    find the ultra wrapper.
 #
+#    Kathleen Bonnell, Wed Apr 22 17:43:26 PDT 2009
+#    Added environemnt variable VISITULTRAHOME, so that VisIt knows where to 
+#    find the ultra wrapper.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
