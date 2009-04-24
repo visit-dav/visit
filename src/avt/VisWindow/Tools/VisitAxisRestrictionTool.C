@@ -432,6 +432,9 @@ VisitAxisRestrictionTool::UpdateText()
 //    Jeremy Meredith, Fri Feb 15 13:21:20 EST 2008
 //    Added axis names to the axis restriction tool.
 //
+//    Jeremy Meredith, Fri Apr 24 13:40:33 EDT 2009
+//    Fixed bugs when min/max are the same (i.e. single-valued variable).
+//
 // ****************************************************************************
 
 void
@@ -442,7 +445,8 @@ VisitAxisRestrictionTool::CallCallback()
     {
         Interface.SetAxisName(ax, axesNames[ax]);
 
-        if (origHotPoints[ax*2+1].pt.y <= 0)
+        if (axesMin[ax]==axesMax[ax] ||
+            origHotPoints[ax*2+1].pt.y <= 0)
         {
             Interface.SetAxisMin(ax, -1e+37);
         }
@@ -453,7 +457,8 @@ VisitAxisRestrictionTool::CallCallback()
             Interface.SetAxisMin(ax, minval);
         }
 
-        if (origHotPoints[ax*2+0].pt.y >= 1)
+        if (axesMin[ax]==axesMax[ax] ||
+            origHotPoints[ax*2+0].pt.y >= 1)
         {
             Interface.SetAxisMax(ax, +1e+37);
         }
@@ -707,6 +712,9 @@ VisitAxisRestrictionTool::MoveCallback(VisitInteractiveTool *it, CB_ENUM e,
 //    variable; just ignore it.  It's probably not the primary
 //    variable we're trying to use anyway.
 //
+//    Jeremy Meredith, Fri Apr 24 13:41:05 EDT 2009
+//    Fixed bugs when min/max are the same (i.e. single-valued variable).
+//
 // ****************************************************************************
 void
 VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
@@ -818,12 +826,18 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
 
         h.data = origHotPoints.size();
         h.shape = 1;
-        h.pt.y = (maxval-axesMin[i])/(axesMax[i]-axesMin[i]);
+        if (axesMin[i] == axesMax[i])
+            h.pt.y = 1;
+        else
+            h.pt.y = (maxval-axesMin[i])/(axesMax[i]-axesMin[i]);
         origHotPoints.push_back(h);
 
         h.data = origHotPoints.size();
         h.shape = 2;
-        h.pt.y = (minval-axesMin[i])/(axesMax[i]-axesMin[i]);
+        if (axesMin[i] == axesMax[i])
+            h.pt.y = 0;
+        else
+            h.pt.y = (minval-axesMin[i])/(axesMax[i]-axesMin[i]);
         origHotPoints.push_back(h);        
     }
     hotPoints = origHotPoints;
