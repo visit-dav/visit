@@ -54,7 +54,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>You can now transform the time shown in the database information and time slider
       annotations. The new controls for time in the Annotations window allow you to
       scale time and add an offset.</li>
-  <li>You can now execute Ultra commands from within VisIt. This is accomplished from the CLI by using the new 'LoadUltra()' command, which will replace VisIt's command prompt with an Ultra prompt, allowing only Ultra commands to be entered. 'end' or 'quit' must be entered to return to VisIt's cli prompt.  Use 'help' at the Ultra prompt for information about currently supported commands</li>
+  <li>You can now execute Ultra (curve plotting software) commands from within VisIt. This is accomplished from the CLI by using the new 'LoadUltra()' command, which will replace VisIt's command prompt with an Ultra prompt, allowing only Ultra commands to be entered. 'end' or 'quit' must be entered to return to VisIt's cli prompt.  Use 'help' at the Ultra prompt for information about currently supported commands</li>
   <li></li>
   <li></li>
 </ul>
@@ -98,7 +98,9 @@ enhancements and bug-fixes that were added to this release.</p>
       variable length material cards and malformed material cards.</li>
   <li>VisIt's Mili reader is now available for the windows platform.</li>
   <li>VisIt's STL reader has been fixed so it no longer crashes on MacOS X.</li>
-  <li>VisIt's BOV reader has been enhanced so it supports short integer (16 bit) data. Use the <b>SHORT<b> keyword for the DATA_FORMAT in the BOV header file to specify that your BOV file contains short integer data.</li>
+  <li>VisIt's BOV reader has been enhanced so it supports short integer (16 bit) 
+      data. Use the <b>SHORT<b> keyword for the DATA_FORMAT in the BOV header file
+      to specify that your BOV file contains short integer data.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -159,6 +161,8 @@ enhancements and bug-fixes that were added to this release.</p>
       many of the line segments produced by its line scan were duplicates. This prevented
       the query from linking the line scans into larger connected lines along which
       the <i>Hohlraum Flux</i> query integrates its results.</li>
+  <li>VisIt's simulation database reader was not freeing unstructured data.</li>
+  <li>VisIt's component launcher program was fixed so users can use "Parse from SSH_CLIENT" in their host profiles when connecting to libsim-instrumented simulations that run on remote computers. That setting would previously cause simulations to crash when VisIt connected to them.</li>
 </ul>
 
 <a name="Config_changes"></a>

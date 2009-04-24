@@ -37,10 +37,12 @@
 *****************************************************************************/
 
 #include <visit-config.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+
 #include <map>
 
 #if defined(_WIN32)
@@ -62,6 +64,9 @@
 #include <LauncherApplication.h>
 #include <ConnectionGroup.h>
 #include <SocketConnection.h>
+#include <Utility.h>
+#include <vectortypes.h>
+
 #if defined(PANTHERHACK)
 // Broken on Panther
 #else
@@ -997,6 +1002,65 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
 }
 
 // ****************************************************************************
+// Method: GetSSHClient
+//
+// Purpose: 
+//   Gets the SSH_CLIENT variable if it exists.
+//
+// Arguments:
+//   sshClient : The return variable.
+//
+// Returns:    True on success; false on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 24 15:21:18 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GetSSHClient(std::string &sshClient)
+{
+    bool retval = false;
+    const char *s = NULL;
+    if((s = getenv("SSH_CLIENT")) != NULL)
+    {
+        stringVector sv = SplitValues(s, ' ');
+        if(sv.size() > 0)
+        {
+            retval = true;
+            sshClient = sv[0];
+        }
+    }
+    else if((s = getenv("SSH2_CLIENT")) != NULL)
+    {
+        stringVector sv = SplitValues(s, ' ');
+        if(sv.size() > 0)
+        {
+            retval = true;
+            sshClient = sv[0];
+        }
+    }
+    else if((s = getenv("SSH_CONNECTION")) != NULL)
+    {
+        stringVector sv = SplitValues(s, ' ');
+        if(sv.size() > 0)
+        {
+            retval = true;
+            sshClient = sv[0];
+        }
+    }
+    else
+    {
+        debug1 << "None of the SSH environment variables were set!" << endl;
+    }
+    return retval;
+}
+
+// ****************************************************************************
 //  Method:  LauncherApplication::ConnectSimulation
 //
 //  Purpose:
@@ -1020,7 +1084,11 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
 //    Hank Childs, Fri Jun  9 15:53:20 PDT 2006
 //    Replace sprintf(tmp, "") with strcpy(tmp, "") to remove compiler warning.
 //
+//    Brad Whitlock, Fri Apr 24 15:21:58 PDT 2009
+//    I fixed "parse from ssh_client" for simulations.
+//
 // ****************************************************************************
+
 void
 LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
                                        const std::string &simHost, int simPort,
@@ -1124,10 +1192,28 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
     strcpy(tmp, "");
     for (size_t i=0; i<launchArgs.size(); i++)
     {
-        strcat(tmp, launchArgs[i].c_str());
+        if(launchArgs[i] == "-guesshost")
+        {
+            // replace -guesshost with -host XXXX
+            std::string sshClient;
+            if(GetSSHClient(sshClient))
+            {
+                strcat(tmp, "-host\n");
+                strcat(tmp, sshClient.c_str());
+            }
+            else
+            {
+                // This isn't gonna work.
+                strcat(tmp, launchArgs[i].c_str());
+            }
+        }
+        else        
+            strcat(tmp, launchArgs[i].c_str());
         strcat(tmp, "\n");
     }
     strcat(tmp, "\n");
+
+    debug1 << "ConnectToSimRPC: launchArgs = " << tmp << endl;
 
     // Send it!
     ptr = (const char*)tmp;
