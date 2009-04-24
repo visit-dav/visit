@@ -684,6 +684,10 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Return point meshes as unstructured grids so materials can be defined
 //    on them without causing glitches later in the pipeline.
 //
+//    Brad Whitlock, Fri Apr 24 09:45:16 PDT 2009
+//    Free the data from unstructured meshes. I also added code to free any
+//    arrays before throwing an exception.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -783,6 +787,9 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             }
             else
             {
+                FreeDataArray(cmesh->xcoords);
+                FreeDataArray(cmesh->ycoords);
+                FreeDataArray(cmesh->zcoords);
                 EXCEPTION1(ImproperUseException,
                            "Coordinate arrays must be float or double.\n");
             }
@@ -885,6 +892,9 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             }
             else
             {
+                FreeDataArray(rmesh->xcoords);
+                FreeDataArray(rmesh->ycoords);
+                FreeDataArray(rmesh->zcoords);
                 EXCEPTION1(ImproperUseException,
                            "Coordinate arrays must be float or double.\n");
             }
@@ -929,6 +939,10 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 
             if (umesh->connectivity.dataType != VISIT_DATATYPE_INT)
             {
+                FreeDataArray(umesh->xcoords);
+                FreeDataArray(umesh->ycoords);
+                FreeDataArray(umesh->zcoords);
+                FreeDataArray(umesh->connectivity);
                 EXCEPTION1(ImproperUseException,
                            "Connectivity array must be ints.");
             }
@@ -971,6 +985,10 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             }
             else
             {
+                FreeDataArray(umesh->xcoords);
+                FreeDataArray(umesh->ycoords);
+                FreeDataArray(umesh->zcoords);
+                FreeDataArray(umesh->connectivity);
                 EXCEPTION1(ImproperUseException,
                            "Coordinate arrays must be float or double.\n");
             }
@@ -1028,6 +1046,10 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 
             if (numCells != umesh->nzones)
             {
+                FreeDataArray(umesh->xcoords);
+                FreeDataArray(umesh->ycoords);
+                FreeDataArray(umesh->zcoords);
+                FreeDataArray(umesh->connectivity);
                 EXCEPTION1(ImproperUseException,
                            "Number of zones and length of connectivity "
                            "array did not match!");
@@ -1098,6 +1120,11 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                 ugrid->SetUpdateGhostLevel(0);
             }
 
+            FreeDataArray(umesh->xcoords);
+            FreeDataArray(umesh->ycoords);
+            FreeDataArray(umesh->zcoords);
+            FreeDataArray(umesh->connectivity);
+
             return ugrid;
         }
         break;
@@ -1154,6 +1181,9 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             }
             else
             {
+                FreeDataArray(pmesh->xcoords);
+                FreeDataArray(pmesh->ycoords);
+                FreeDataArray(pmesh->zcoords);
                 EXCEPTION1(ImproperUseException,
                            "Coordinate arrays must be float or double.\n");
             }
@@ -1408,6 +1438,7 @@ avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
 
     if (md->matlist.dataType != VISIT_DATATYPE_INT)
     {
+        FreeDataArray(md->matlist);
         EXCEPTION1(ImproperUseException,
                    "matlist array must be integers");
     }
