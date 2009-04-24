@@ -39,13 +39,14 @@
 // ************************************************************************* //
 //                          avtCurveExpression.C                             //
 // ************************************************************************* //
+#include <cstring>
 
 #include <avtCurveExpression.h>
 
 #include <snprintf.h>
+#include <avtExprNode.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
-#include <avtExprNode.h>
 
 
 static const char* yFuncs[] = {
