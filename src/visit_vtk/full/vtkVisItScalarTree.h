@@ -83,8 +83,8 @@ public:
 protected:
   vtkVisItScalarTree();
   ~vtkVisItScalarTree();
-  vtkVisItScalarTree(const vtkVisItScalarTree&){ ; }  // Not implemented.
-  void operator=(const vtkVisItScalarTree&) { ; } // Not implemented.
+  vtkVisItScalarTree(const vtkVisItScalarTree&);  // Not implemented.
+  void operator=(const vtkVisItScalarTree&); // Not implemented.
 
   void RecursiveSearch(std::vector<int> &v, int index, int lev);
 
