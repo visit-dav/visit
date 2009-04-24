@@ -707,6 +707,9 @@ avtParallelCoordinatesFilter::PostExecute(void)
 //    Jeremy Meredith, Wed Feb 25 15:26:29 EST 2009
 //    Port to trunk.
 //
+//    Tom Fogal, Wed Apr 22 20:55:40 MDT 2009
+//    Return null if we hit the end of the function.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -931,6 +934,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     }
 
     visitTimer->StopTimer(timer1, "avtParallelCoordinatesFilter::ExecuteDataTree()");
+    return NULL;
 }
 
 
