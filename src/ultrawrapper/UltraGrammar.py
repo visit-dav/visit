@@ -14,10 +14,14 @@ mathOpsLongName = ["sine", "cosine", "tangent", "ArcTan", "ArcSin", "ArcCos", "a
 
 cmfeOps = ["+", "-", "*", "/"]
 cmfeOpsLongName = ["sum", "difference", "product", "quotient"]
+
 mathOpsArg = ["dy", "divy", "ymin", "ymax", "my"]
 mathOpsXArg = ["%s" %el.replace('y', 'x') for el in mathOpsArg]
 
-mathOpsArgLongName = ["Shift", "Divide", "", "", "Scale"]
+mathOpsArg +=["powr", "powa"]
+mathOpsXArg += ["powrx", "powax"]
+
+mathOpsArgLongName = ["Shift", "Divide", "", "", "Scale", "", ""]
 
 opsArg = ["lnwidth"]
 togglePlotOps = ["axis", "data-id", "grid", "x-log-scale", "y-log-scale"]
@@ -50,11 +54,11 @@ def AddMathOps():
         cmdHelp[cmd] = [proc, usg]
 
 
-    tempDict = dict(zip(mathOpsArg, mathOpsLongName) + \
-                    zip(mathOpsXArg, mathOpsLongName))
+    tempDict = dict(zip(mathOpsArg, mathOpsArgLongName) + \
+                    zip(mathOpsXArg, mathOpsArgLongName))
 
     for cmd in mathOpsArg + mathOpsXArg:
-        if cmd in mathOpsNoArg:
+        if cmd in mathOpsArg:
             yc = "y"
         else:
             yc = "x"
@@ -67,6 +71,14 @@ def AddMathOps():
             proc = "Procedure: Filter out point in curves whose %s-values"%yc
             proc += " %s limit." % log
 
+        elif cmd == "powr" or cmd == "powrx": 
+            usg = "Usage: %s <curve-list> <a>" %cmd
+            proc = "Procedure: Raise %s values of curves to a power, %s=%s^a"\
+                   %(yc,yc,yc) 
+        elif cmd == "powa" or cmd == "powax":
+            usg = "Usage: %s <curve-list> <a>" %cmd
+            proc = "Procedure: Raise a to the power of the %s values of" %yc
+            proc += " curves, %s=a^%s" %(yc,yc) 
         else:
             usg = "Usage: %s <curve-list> <value>" %cmd
             proc = "Procedure: %s %s values of curves by a constant" \
@@ -246,6 +258,7 @@ multiCurveCommandAlpha = oneOf("""del """    + \
                                         mathOpsXNoArg + \
                                         cmfeOps  + \
                                         mathOpsArg + \
+                                        mathOpsXArg + \
                                         opsArg      \
                                         ) \
                                ).setResultsName("cmd") 

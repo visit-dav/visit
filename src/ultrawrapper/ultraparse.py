@@ -159,13 +159,14 @@ def ultra_doOp_percurve(curve, t):
     else:
         usevar = curve.expressions[numE-1]
 
+    usevar = "<%s>"%usevar
     if t.cmd in mathOpsNoArg:
-        newvarDef = "%s(<%s>)" % (t.cmd, usevar)
+        newvarDef = "%s(%s)" % (t.cmd, usevar)
         createAndApplyExpression(curve, newvarDef, t.cmd)
 
     elif t.cmd in mathOpsXNoArg:
         usecmd = mathOpsNoArg[mathOpsXNoArg.index(t.cmd)]
-        newvarDef = "curve_domain(<%s>, %s(coord(<%s>)[0]))"  % \
+        newvarDef = "curve_domain(%s, %s(coord(%s)[0]))"  % \
                                  (usevar, usecmd, usevar)
         createAndApplyExpression(curve, newvarDef, t.cmd)
 
@@ -222,32 +223,44 @@ def ultra_doOp_percurve(curve, t):
     elif t.cmd in mathOpsArg:
         newvarDef = ""
         op = ""
+        secondVar = t.arg
         if t.cmd == 'divy':
             op = "/"
         elif t.cmd == 'dy':
             op = "+"
         elif t.cmd == 'my':
             op = "*"
+        elif t.cmd == 'powr':
+            op = "^"
+        elif t.cmd == 'powa':
+            op = "^"
+            secondVar = usevar
+            usevar = t.arg
         else:
             return 
-        newvarDef = "<%s> %s %s" % (usevar, op, t.arg)
+        newvarDef = "%s %s %s" % (usevar, op, secondVar)
         createAndApplyExpression(curve, newvarDef, t.cmd)
 
     elif t.cmd in mathOpsXArg:
-        newvarDef = "curve_domain(<%s>, %s(coord(<%s>)[0]))"  % \
-                                 (usevar, usecmd, usevar)
         newvarDef = ""
         op = ""
+        secondVar = t.arg
         if t.cmd == 'divx':
             op = "/"
         elif t.cmd == 'dx':
             op = "+"
         elif t.cmd == 'mx':
             op = "*"
+        elif t.cmd == 'powrx':
+            op = "^"
+        elif t.cmd == 'powax':
+            op = "^"
+            secondVar = usevar
+            usevar = t.arg
         else:
             return 
-        newvarDef = "curve_domain(<%s>, coord(<%s>)[0] %s %s" % \
-                                 (usevar, usevar, op, t.arg)
+        newvarDef = "curve_domain(%s, coord(%s)[0] %s %s)" % \
+                                 (usevar, usevar, op, secondVar)
         createAndApplyExpression(curve, newvarDef, t.cmd)
 
     elif t.cmd == 'lnwidth':
@@ -354,7 +367,7 @@ def ultra_multiCurveAlpha(t):
             ultra_doOp_percurve(curve, t) 
     elif t.cmd in cmfeOps:
         ultra_docmfemath(cl, t)
-    elif t.cmd in mathOpsArg:
+    elif t.cmd in mathOpsArg or t.cmd in mathOpsXArg:
         if not t.arg:
             UltraUsage(cmd)
         else:
@@ -537,13 +550,14 @@ def runUltraWrapper():
             SetUltraScript("")
         else: 
             cmd = raw_input('U-> ')
+            print "cmd: ", cmd
         if cmd.split()[0] == 'runscript':
             ultrascript.parseFile(cmd.split()[1])
             continue
         try:
             ulRes = ultracommand.parseString(cmd)
         except ParseException, err: 
-            #print 'Exception (%s) while parsing command: %s' %(err,cmd)
+            print 'Exception (%s) while parsing command: %s' %(err,cmd)
             UltraUsage(cmd.split()[0])
             continue
 
