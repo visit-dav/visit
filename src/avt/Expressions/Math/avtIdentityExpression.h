@@ -63,6 +63,9 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs and Kathleen Bonnell, Fri Apr 24 17:18:47 PDT 2009
+//    Fix problem with identity variables of meshes.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtIdentityExpression : public avtUnaryMathExpression
@@ -71,9 +74,12 @@ class EXPRESSION_API avtIdentityExpression : public avtUnaryMathExpression
                               avtIdentityExpression();
     virtual                  ~avtIdentityExpression();
 
-    virtual const char       *GetType(void)  { return "avtIdentityExpression"; };
+    virtual const char       *GetType(void)  { return "avtIdentityExpression"; }
     virtual const char       *GetDescription(void) 
-                                    { return "Applying the identity filter"; };
+                                    { return "Applying the identity filter"; }
+
+    // "Tolerated" may be a better phrase than "Expected" here.
+    virtual bool              NullInputIsExpected(void) { return true; }
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
