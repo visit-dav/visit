@@ -200,6 +200,9 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 //    Hank Childs, Mon Apr  6 09:43:52 PDT 2009
 //    Reenable named selection support.
 //
+//    Jeremy Meredith, Mon Apr 27 11:12:30 EDT 2009
+//    Added ability to draw focus as color-graduated bins.  Added focus gamma.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -217,7 +220,7 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
          atts.GetVariableType(pipelineVariable) == AVT_ARRAY_VAR)
        isArrayVar_Local = true;
 
-    if (!parCoordsAtts.GetForceFullDataFocus() &&
+    if (parCoordsAtts.GetDrawFocusAs() != ParallelCoordinatesAttributes::IndividualLines &&
         GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
         !isArrayVar_Local)
     {
@@ -451,6 +454,9 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
 //    Jeremy Meredith, Wed Mar 18 12:30:52 EDT 2009
 //    Check for a zero axis count and report as an error.
 //
+//    Jeremy Meredith, Mon Apr 27 11:12:30 EDT 2009
+//    Added ability to draw focus as color-graduated bins.  Added focus gamma.
+//
 // *****************************************************************************
 
 void
@@ -515,7 +521,7 @@ avtParallelCoordinatesFilter::PreExecute(void)
         (!parCoordsAtts.GetDrawLinesOnlyIfExtentsOn() || extentsApplied) &&
         histogramsForSelectedRegion.size() == 0)
     {
-        if (! parCoordsAtts.GetForceFullDataFocus())
+        if (parCoordsAtts.GetDrawFocusAs() != ParallelCoordinatesAttributes::IndividualLines)
             InitializeFocusHistograms();
     }
     
@@ -579,6 +585,9 @@ avtParallelCoordinatesFilter::PreExecute(void)
 //    Jeremy Meredith, Wed Feb 25 15:24:48 EST 2009
 //    Port to trunk.
 //
+//    Jeremy Meredith, Mon Apr 27 11:12:30 EDT 2009
+//    Added ability to draw focus as color-graduated bins.  Added focus gamma.
+//
 // ***************************************************************************
 
 void
@@ -630,7 +639,7 @@ avtParallelCoordinatesFilter::PostExecute(void)
     for (int t=0; t<histograms.size(); t++)
         DrawContext(t);
 
-    if (! parCoordsAtts.GetForceFullDataFocus())
+    if (parCoordsAtts.GetDrawFocusAs()!=ParallelCoordinatesAttributes::IndividualLines)
     {
         for (int t=0; t<histogramsForSelectedRegion.size(); t++)
             if (histogramsForSelectedRegion[t] != NULL)
@@ -710,6 +719,9 @@ avtParallelCoordinatesFilter::PostExecute(void)
 //    Tom Fogal, Wed Apr 22 20:55:40 MDT 2009
 //    Return null if we hit the end of the function.
 //
+//    Jeremy Meredith, Mon Apr 27 11:12:30 EDT 2009
+//    Added ability to draw focus as color-graduated bins.  Added focus gamma.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -775,7 +787,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     boolVector           varIsCellData;
     intVector            varComponentCounts;
 
-    if (parCoordsAtts.GetForceFullDataFocus())
+    if (parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
         InitializeFocusPolyData();
 
     for (axisNum = 0; axisNum < axisCount; axisNum++)
@@ -873,7 +885,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             
             // TODO: DOESN'T SUPPORT MULTIPLE TIME STEPS; hardcoded to 0
             if (drawLines)
-                if (parCoordsAtts.GetForceFullDataFocus())
+                if (parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
                     AppendDataTupleFocus(inputTuple);
                 else
                     CountDataTupleFocus(0, inputTuple);
@@ -896,7 +908,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             
             // TODO: DOESN'T SUPPORT MULTIPLE TIME STEPS; hardcoded to 0
             if (drawLines)
-                if (parCoordsAtts.GetForceFullDataFocus())
+                if (parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
                     AppendDataTupleFocus(inputTuple);
                 else
                     CountDataTupleFocus(0, inputTuple);
@@ -910,18 +922,20 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
         pointIdList->Delete();
     }
 
-    if (drawLines && parCoordsAtts.GetForceFullDataFocus())
+    if (drawLines && parCoordsAtts.GetDrawFocusAs()==ParallelCoordinatesAttributes::IndividualLines)
     {
         DrawFocusPolyLines();
 
-        vtkDataSet **outputDataSets = new vtkDataSet *[1];
+        vtkDataSet **outputDataSets = new vtkDataSet *[PCP_CTX_BRIGHTNESS_LEVELS];
+        for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
+            outputDataSets[i] = NULL;
+        outputDataSets[PCP_CTX_BRIGHTNESS_LEVELS-1] = dataCurvePolyData;
 
-        outputDataSets[0] = dataCurvePolyData;
+        avtDataTree_p outputDataTree =
+            new avtDataTree(PCP_CTX_BRIGHTNESS_LEVELS, outputDataSets,
+                            domain, focusLabels[0]);
 
-        avtDataTree *outputDataTree =
-            new avtDataTree(1, outputDataSets, domain, focusLabels[0]);
-
-        outputDataSets[0]->Delete();
+        outputDataSets[PCP_CTX_BRIGHTNESS_LEVELS-1]->Delete();
         delete [] outputDataSets;
 
         visitTimer->StopTimer(timer1, "avtParallelCoordinatesFilter::ExecuteDataTree()");
@@ -990,6 +1004,9 @@ avtParallelCoordinatesFilter::UpdateDataObjectInfo(void)
 //    Jeremy Meredith, Wed Feb 25 15:28:50 EST 2009
 //    Port to trunk.
 //
+//    Jeremy Meredith, Mon Apr 27 11:12:30 EDT 2009
+//    Added ability to draw focus as color-graduated bins.  Added focus gamma.
+//
 // ****************************************************************************
 
 void
@@ -1001,10 +1018,10 @@ avtParallelCoordinatesFilter::CreateLabels()
         focusLabels[t].clear();
         contextLabels[t].clear();
 
-        sprintf(str, "Data Curves, time %03d", t);
-        focusLabels[t].push_back(str);
         for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
         {
+            sprintf(str, "Data Focus level %03d, time %03d", i, t);
+            focusLabels[t].push_back(str);
             sprintf(str, "Data Context level %03d, time %03d", i, t);
             contextLabels[t].push_back(str);
         }
@@ -1452,6 +1469,27 @@ avtParallelCoordinatesFilter::CountDataTupleContext(int ts, const floatVector &i
 //  Method:  avtParallelCoordinatesFilter::DrawContext
 //
 //  Purpose:
+//    Just calls DrawHistogram with the arguments set for
+//    drawing the context.
+//
+//  Arguments:
+//    ts         time step
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 27, 2009
+//
+// ****************************************************************************
+void
+avtParallelCoordinatesFilter::DrawContext(int ts)
+{
+    DrawHistogram(ts, false);
+}
+
+
+// ****************************************************************************
+//  Method:  avtParallelCoordinatesFilter::DrawHistogram
+//
+//  Purpose:
 //    Draw the parallel axis context bins.
 //
 //  Arguments:
@@ -1506,14 +1544,23 @@ avtParallelCoordinatesFilter::CountDataTupleContext(int ts, const floatVector &i
 //    Jeremy Meredith, Wed Feb 25 16:41:43 EST 2009
 //    Port to trunk.
 //
+//    Jeremy Meredith, Mon Apr 27 11:12:30 EDT 2009
+//    Added ability to draw focus as color-graduated bins.  Added focus gamma.
+//    This function can now draw either the context or focus histograms
+//    based on the right settings, and has been renamed DrawHistogram
+//    and is called from the old DrawFocus and DrawContext methods
+//
 // ****************************************************************************
 
 void
-avtParallelCoordinatesFilter::DrawContext(int ts)
+avtParallelCoordinatesFilter::DrawHistogram(int ts, bool focus)
 {
+    std::vector<avtHistogramSpecification*> &hist = 
+        (focus ? histogramsForSelectedRegion : histograms);       
+
     int timer1 = visitTimer->StartTimer();
     
-    CheckHistograms(axisCount, histograms);
+    CheckHistograms(axisCount, hist);
 
 #ifdef PARALLEL
     // We assume either all processors have a timestep (i.e. we decomposed
@@ -1521,7 +1568,7 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
     // by one timestep per processor).
 
     // Figure out what kind of unification we need
-    bool i_have_this_histogram = (histograms[ts] != NULL);
+    bool i_have_this_histogram = (hist[ts] != NULL);
     int processors_with_histogram = (i_have_this_histogram ? 1 : 0);
     SumIntAcrossAllProcessors(processors_with_histogram);
 
@@ -1537,7 +1584,7 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
     {
         // First case: all processors have a histogram so sum
         for (int axis=0; axis<axisCount-1; axis++)
-            success &= histograms[ts][axis].SumAcrossAllProcessors();
+            success &= hist[ts][axis].SumAcrossAllProcessors();
     }
     else
     {
@@ -1545,15 +1592,15 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
         if (PAR_Rank()==0  &&  ! i_have_this_histogram)
         {
             // If the root processor doesn't have it, he'll need to receive it
-            histograms[ts] = new avtHistogramSpecification[axisCount-1];
+            hist[ts] = new avtHistogramSpecification[axisCount-1];
             for (int axis=0; axis<axisCount-1; axis++)
-                success &= histograms[ts][axis].GetToRootProcessor(ts*axisCount+axis);
+                success &= hist[ts][axis].GetToRootProcessor(ts*axisCount+axis);
         }
         else if (PAR_Rank()!=0  &&  i_have_this_histogram)
         {
             // If we're the a non-root processor with it, then send it.
             for (int axis=0; axis<axisCount-1; axis++)
-                success &= histograms[ts][axis].GetToRootProcessor(ts*axisCount+axis);
+                success &= hist[ts][axis].GetToRootProcessor(ts*axisCount+axis);
         }
     }
 
@@ -1570,34 +1617,45 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
     }
 #endif
 
-    vtkPolyData        *contextPolyData[PCP_CTX_BRIGHTNESS_LEVELS];
-    vtkPoints          *contextPoints[PCP_CTX_BRIGHTNESS_LEVELS];
-    vtkCellArray       *contextLines[PCP_CTX_BRIGHTNESS_LEVELS];
-    vtkCellArray       *contextVerts[PCP_CTX_BRIGHTNESS_LEVELS];
-    vtkCellArray       *contextPolys[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkPolyData        *histPolyData[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkPoints          *histPoints[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkCellArray       *histLines[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkCellArray       *histVerts[PCP_CTX_BRIGHTNESS_LEVELS];
+    vtkCellArray       *histPolys[PCP_CTX_BRIGHTNESS_LEVELS];
 
     //
     //  Initialize polygon datasets for the context.
     //
+    bool onlyUsingBrightestLevel = (focus &&
+                                    parCoordsAtts.GetDrawFocusAs() ==
+                          ParallelCoordinatesAttributes::BinsOfConstantColor);
+
     for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
     {
-        contextPolyData[i] = vtkPolyData::New();
+        /*if (onlyUsingBrightestLevel &&
+            i < PCP_CTX_BRIGHTNESS_LEVELS-1)
+        {
+            histPolyData[i] = NULL;
+            histPolyData[i] = vtkPolyData::New();
+            continue;
+            }*/
+        histPolyData[i] = vtkPolyData::New();
 
-        contextPoints[i] = vtkPoints::New();
-        contextPolyData[i]->SetPoints(contextPoints[i]);
-        contextPoints[i]->Delete();
+        histPoints[i] = vtkPoints::New();
+        histPolyData[i]->SetPoints(histPoints[i]);
+        histPoints[i]->Delete();
 
-        contextLines[i] = vtkCellArray::New();
-        contextPolyData[i]->SetLines(contextLines[i]);
-        contextLines[i]->Delete();
+        histLines[i] = vtkCellArray::New();
+        histPolyData[i]->SetLines(histLines[i]);
+        histLines[i]->Delete();
 
-        contextVerts[i] = vtkCellArray::New();
-        contextPolyData[i]->SetVerts(contextVerts[i]);
-        contextVerts[i]->Delete();
+        histVerts[i] = vtkCellArray::New();
+        histPolyData[i]->SetVerts(histVerts[i]);
+        histVerts[i]->Delete();
 
-        contextPolys[i] = vtkCellArray::New();
-        contextPolyData[i]->SetPolys(contextPolys[i]);
-        contextPolys[i]->Delete();
+        histPolys[i] = vtkCellArray::New();
+        histPolyData[i]->SetPolys(histPolys[i]);
+        histPolys[i]->Delete();
     }
 
     for (int axisNum = 0; axisNum < axisCount; axisNum++)
@@ -1610,9 +1668,9 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
                                        varmin, varmax);
         const vector<double> *bounds;
         if (axisNum==0)
-            bounds = &(histograms[ts][axisNum].GetBounds()[0]);
+            bounds = &(hist[ts][axisNum].GetBounds()[0]);
         else
-            bounds = &(histograms[ts][axisNum-1].GetBounds()[1]);
+            bounds = &(hist[ts][axisNum-1].GetBounds()[1]);
         int nparts = bounds->size() - 1;
         for (int part = 0 ; part <= nparts ; part++)
         {
@@ -1623,23 +1681,30 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
             pt[2] = 0.0;
             for (int i = 0 ; i < PCP_CTX_BRIGHTNESS_LEVELS ; i++)
             {
-                contextPoints[i]->InsertNextPoint(pt);
+                /*if (onlyUsingBrightestLevel &&
+                    i < PCP_CTX_BRIGHTNESS_LEVELS-1)
+                {
+                    continue;
+                    }*/
+                histPoints[i]->InsertNextPoint(pt);
             }
         }
     }
 
-    double gamma = parCoordsAtts.GetContextGamma();
+    double gamma = (focus ? 
+                    parCoordsAtts.GetFocusGamma() :
+                    parCoordsAtts.GetContextGamma());
     if (gamma<.1)
         gamma=.1;
-    if (gamma>10)
-        gamma=10;
+    if (gamma>25)
+        gamma=25;
 
     int axis0index = 0;
     for (int axis = 0; axis < axisCount-1; axis++)
     {
-        VISIT_LONG_LONG *counts = histograms[ts][axis].GetCounts();
-        int nparts0 = histograms[ts][axis].GetNumberOfBins()[0];
-        int nparts1 = histograms[ts][axis].GetNumberOfBins()[1];
+        VISIT_LONG_LONG *counts = hist[ts][axis].GetCounts();
+        int nparts0 = hist[ts][axis].GetNumberOfBins()[0];
+        int nparts1 = hist[ts][axis].GetNumberOfBins()[1];
 
         int axis1index = axis0index + nparts0+1;
 
@@ -1647,15 +1712,15 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
         double maxdensity = 0;
         for (int a=0; a<nparts0; a++)
         {
-            double size0 = histograms[ts][axis].GetBounds()[0][a+1] -
-                           histograms[ts][axis].GetBounds()[0][a];
+            double size0 = hist[ts][axis].GetBounds()[0][a+1] -
+                           hist[ts][axis].GetBounds()[0][a];
             for (int b=0; b<nparts1; b++)
             {
                 int count = counts[a*nparts1+b];
                 if (count == 0)
                     continue;
-                double size1 = histograms[ts][axis].GetBounds()[1][b+1] -
-                               histograms[ts][axis].GetBounds()[1][b];
+                double size1 = hist[ts][axis].GetBounds()[1][b+1] -
+                               hist[ts][axis].GetBounds()[1][b];
                 double area = size0 * size1;
                 double density = (area>0) ? count/area : 0;
                 if (density > maxdensity)
@@ -1667,15 +1732,15 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
             continue;
 
         // Draw each bin as a polygon in the appropriately
-        // colored (and layered) context polydata
+        // colored (and layered) hist polydata
         for (int a=0; a<nparts0; a++)
         {
-            double size0 = histograms[ts][axis].GetBounds()[0][a+1] -
-                           histograms[ts][axis].GetBounds()[0][a];
+            double size0 = hist[ts][axis].GetBounds()[0][a+1] -
+                           hist[ts][axis].GetBounds()[0][a];
             for (int b=0; b<nparts1; b++)
             {
-                double size1 = histograms[ts][axis].GetBounds()[1][b+1] -
-                               histograms[ts][axis].GetBounds()[1][b];
+                double size1 = hist[ts][axis].GetBounds()[1][b+1] -
+                               hist[ts][axis].GetBounds()[1][b];
                 double area = size0 * size1;
                 double density = (area>0) ? counts[a*nparts1+b]/area : 0;
 
@@ -1689,6 +1754,9 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
 
                 int c = int(double(PCP_CTX_BRIGHTNESS_LEVELS-1) * alpha);
 
+                if (c > 0 && onlyUsingBrightestLevel)
+                    c = PCP_CTX_BRIGHTNESS_LEVELS-1;
+
                 if (c != 0)
                 {
                     vtkIdType poly[4];
@@ -1696,7 +1764,7 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
                     poly[1] = axis1index + b;
                     poly[2] = poly[1] + 1;
                     poly[3] = poly[0] + 1;
-                    contextPolys[c]->InsertNextCell(4, poly);
+                    histPolys[c]->InsertNextCell(4, poly);
                 }
             }
         }
@@ -1707,23 +1775,29 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
     // We have to explicitly convert these into base types
     vtkDataSet **outputDataSets = new vtkDataSet*[PCP_CTX_BRIGHTNESS_LEVELS];
     for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
-        outputDataSets[i] = contextPolyData[i];
+        outputDataSets[i] = histPolyData[i];
 
     // Add them to a data tree
-    avtDataTree_p contextTree = new avtDataTree(PCP_CTX_BRIGHTNESS_LEVELS,
-                                                outputDataSets,
-                                                -1, contextLabels[ts]);
+    avtDataTree_p histTree = new avtDataTree(PCP_CTX_BRIGHTNESS_LEVELS,
+                                             outputDataSets,
+                                             -1, 
+                                             (focus ? focusLabels[ts] :
+                                                      contextLabels[ts])
+                                             );
     for (int i=0; i<PCP_CTX_BRIGHTNESS_LEVELS; i++)
-        outputDataSets[i]->Delete();
+    {
+        if (outputDataSets[i])
+            outputDataSets[i]->Delete();
+    }
     delete [] outputDataSets;
 
-    // Add the new context after the old ones
+    // Add the new histograms after the old ones
     avtDataTree_p oldTree = GetDataTree();
-    avtDataTree_p trees[2] = { oldTree, contextTree };
+    avtDataTree_p trees[2] = { oldTree, histTree };
     avtDataTree_p newOutput = new avtDataTree(2, trees);
     SetOutputDataTree(newOutput);
     
-    visitTimer->StopTimer(timer1, "avtParallelCoordinatesFilter::DrawContex()");     
+    visitTimer->StopTimer(timer1, "avtParallelCoordinatesFilter::DrawHistogram()");     
 }
 
 
@@ -1762,174 +1836,16 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
 //    Jeremy Meredith, Wed Feb 25 16:42:15 EST 2009
 //    Port to trunk.
 //
+//    Jeremy Meredith, Mon Apr 27 11:23:19 EDT 2009
+//    Entirely merged this function with DrawContext into the new
+//    DrawHistogram call.  This one now just calls that with the right
+//    arguments.
+//
 // ****************************************************************************
 void
 avtParallelCoordinatesFilter::DrawFocusHistograms(int ts)
 {
-    int timer1 = visitTimer->StartTimer();
-    
-    CheckHistograms(axisCount, histogramsForSelectedRegion);
-
-#ifdef PARALLEL
-    // We assume either all processors have a timestep (i.e. we decomposed
-    // this timestep data-parallel), or exactly one does (i.e. we decomposed
-    // by one timestep per processor).
-
-    // Figure out what kind of unification we need
-    bool i_have_this_histogram = (histogramsForSelectedRegion[ts] != NULL);
-    int processors_with_histogram = (i_have_this_histogram ? 1 : 0);
-    SumIntAcrossAllProcessors(processors_with_histogram);
-
-    if (processors_with_histogram>1 && processors_with_histogram<PAR_Size())
-    {
-        EXCEPTION1(ImproperUseException, "More than one processor had a "
-                   "histogram for a given timestep, yet not all processors "
-                   "had one.");
-    }
-
-    bool success = true;
-    if (processors_with_histogram > 1)
-    {
-        // First case: all processors have a histogram so sum
-        for (int axis=0; axis<axisCount-1; axis++)
-            success &= histogramsForSelectedRegion[ts][axis].SumAcrossAllProcessors();
-    }
-    else
-    {
-        // Second case: only one process has it.
-        if (PAR_Rank()==0  &&  ! i_have_this_histogram)
-        {
-            // If the root processor doesn't have it, he'll need to receive it
-            histogramsForSelectedRegion[ts] = new avtHistogramSpecification[axisCount-1];
-            for (int axis=0; axis<axisCount-1; axis++)
-                success &= histogramsForSelectedRegion[ts][axis].GetToRootProcessor(ts*axisCount+axis);
-        }
-        else if (PAR_Rank()!=0  &&  i_have_this_histogram)
-        {
-            // If we're the a non-root processor with it, then send it.
-            for (int axis=0; axis<axisCount-1; axis++)
-                success &= histogramsForSelectedRegion[ts][axis].GetToRootProcessor(ts*axisCount+axis);
-        }
-    }
-
-    if (!success)
-    {
-        EXCEPTION1(ImproperUseException,
-                   "Error in parallel unification of histogramsForSelectedRegion.");
-    }
-
-    if (PAR_Rank() != 0)
-    {
-        // only process 0 has to draw the lines
-        return;
-    }
-#endif
-
-    vtkPolyData        *focusPolyData;
-    vtkPoints          *focusPoints;
-    vtkCellArray       *focusLines;
-    vtkCellArray       *focusVerts;
-    vtkCellArray       *focusPolys;
-
-    //
-    //  Initialize polygon datasets for the lines.
-    //
-    focusPolyData = vtkPolyData::New();
-
-    focusPoints = vtkPoints::New();
-    focusPolyData->SetPoints(focusPoints);
-    focusPoints->Delete();
-
-    focusLines = vtkCellArray::New();
-    focusPolyData->SetLines(focusLines);
-    focusLines->Delete();
-
-    focusVerts = vtkCellArray::New();
-    focusPolyData->SetVerts(focusVerts);
-    focusVerts->Delete();
-
-    focusPolys = vtkCellArray::New();
-    focusPolyData->SetPolys(focusPolys);
-    focusPolys->Delete();
-
-    for (int axisNum = 0; axisNum < axisCount; axisNum++)
-    {
-        double varmin =  DBL_MAX;
-        double varmax = -DBL_MAX;
-        UpdateLimitsWithAllHSTimeSteps(axisNum, histograms,
-                                       varmin, varmax);
-        UpdateLimitsWithAllHSTimeSteps(axisNum, histogramsForSelectedRegion,
-                                       varmin, varmax);
-        const vector<double> *bounds;
-        if (axisNum==0)
-            bounds = &(histogramsForSelectedRegion[ts][axisNum].GetBounds()[0]);
-        else
-            bounds = &(histogramsForSelectedRegion[ts][axisNum-1].GetBounds()[1]);
-        int nparts = bounds->size() - 1;
-        for (int part = 0 ; part < nparts ; part++)
-        {
-            double val = ((*bounds)[part] + (*bounds)[part+1]) / 2.0;
-            float pt[3];
-            pt[0] = axisXPositions[axisNum];
-            pt[1] = (val-varmin)/(varmax-varmin);
-            pt[2] = 0.0;
-            focusPoints->InsertNextPoint(pt);
-        }
-    }
-
-    float gamma = parCoordsAtts.GetContextGamma();
-    if (gamma<.1)
-        gamma=.1;
-    if (gamma>10)
-        gamma=10;
-
-    int axis0index = 0;
-    for (int axis = 0; axis < axisCount-1; axis++)
-    {
-        VISIT_LONG_LONG *counts = histogramsForSelectedRegion[ts][axis].GetCounts();
-        int nparts0 = histogramsForSelectedRegion[ts][axis].GetNumberOfBins()[0];
-        int nparts1 = histogramsForSelectedRegion[ts][axis].GetNumberOfBins()[1];
-
-        int axis1index = axis0index + nparts0;
-
-        // Draw each bin as a polygon in the appropriately
-        // colored (and layered) context polydata
-        for (int a=0; a<nparts0; a++)
-        {
-            for (int b=0; b<nparts1; b++)
-            {
-                int c = counts[a*nparts1+b];
-                if (c != 0)
-                {
-                    vtkIdType line[2];
-                    line[0] = axis0index + a;
-                    line[1] = axis1index + b;
-                    focusLines->InsertNextCell(2, line);
-                }
-            }
-        }
-
-        axis0index = axis1index;
-    }
-
-    // We have to explicitly convert these into base types
-    vtkDataSet **outputDataSets = new vtkDataSet*[1];
-    outputDataSets[0] = focusPolyData;
-
-    // Add them to a data tree
-    avtDataTree_p focusTree = new avtDataTree(1,
-                                              outputDataSets,
-                                              -1, focusLabels[ts]);
-    outputDataSets[0]->Delete();
-    delete [] outputDataSets;
-
-    // Add the new context after the old ones (and after the contexts)
-    avtDataTree_p oldTree = GetDataTree();
-    avtDataTree_p trees[2] = { oldTree, focusTree };
-    avtDataTree_p newOutput = new avtDataTree(2, trees);
-    SetOutputDataTree(newOutput);
-    
-    visitTimer->StopTimer(timer1, "avtParallelCoordinatesFilter::DrawFocus()");  
+    DrawHistogram(ts, true);
 }
 
 

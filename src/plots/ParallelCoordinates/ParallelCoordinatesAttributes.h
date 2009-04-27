@@ -61,6 +61,13 @@
 class ParallelCoordinatesAttributes : public AttributeSubject
 {
 public:
+    enum FocusRendering
+    {
+        IndividualLines,
+        BinsOfConstantColor,
+        BinsColoredByPopulation
+    };
+
     ParallelCoordinatesAttributes();
     ParallelCoordinatesAttributes(const ParallelCoordinatesAttributes &obj);
     virtual ~ParallelCoordinatesAttributes();
@@ -97,7 +104,8 @@ public:
     void SetDrawLinesOnlyIfExtentsOn(bool drawLinesOnlyIfExtentsOn_);
     void SetUnifyAxisExtents(bool unifyAxisExtents_);
     void SetLinesNumPartitions(int linesNumPartitions_);
-    void SetForceFullDataFocus(bool forceFullDataFocus_);
+    void SetFocusGamma(float focusGamma_);
+    void SetDrawFocusAs(FocusRendering drawFocusAs_);
 
     // Property getting methods
     const stringVector   &GetScalarAxisNames() const;
@@ -119,12 +127,19 @@ public:
     bool                 GetDrawLinesOnlyIfExtentsOn() const;
     bool                 GetUnifyAxisExtents() const;
     int                  GetLinesNumPartitions() const;
-    bool                 GetForceFullDataFocus() const;
+    float                GetFocusGamma() const;
+    FocusRendering       GetDrawFocusAs() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string FocusRendering_ToString(FocusRendering);
+    static bool FocusRendering_FromString(const std::string &, FocusRendering &);
+protected:
+    static std::string FocusRendering_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -154,7 +169,8 @@ public:
         ID_drawLinesOnlyIfExtentsOn,
         ID_unifyAxisExtents,
         ID_linesNumPartitions,
-        ID_forceFullDataFocus
+        ID_focusGamma,
+        ID_drawFocusAs
     };
 
 private:
@@ -171,7 +187,8 @@ private:
     bool           drawLinesOnlyIfExtentsOn;
     bool           unifyAxisExtents;
     int            linesNumPartitions;
-    bool           forceFullDataFocus;
+    float          focusGamma;
+    int            drawFocusAs;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

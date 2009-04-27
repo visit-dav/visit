@@ -44,6 +44,7 @@
 class ParallelCoordinatesAttributes;
 class QButtonGroup;
 class QCheckBox;
+class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
@@ -132,7 +133,10 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     void resetAxisExtents();
     void linesOnlyIfExtentsToggled(bool);
     void unifyAxisExtentsToggled(bool);
-    void forceIndividualLineFocusToggled(bool);
+    void focusGammaProcessText();
+    void focusGammaSliderChanged(int val);
+    void focusGammaSliderReleased();
+    void drawFocusAsChanged(int);
   private:
     int GetSelectedAxisIndex();
     int plotType;
@@ -147,9 +151,13 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
 
     QGroupBox          *drawLines;
     QCheckBox          *linesOnlyIfExtents;
+    QComboBox          *drawFocusAs;
+    QLabel             *drawFocusAsLabel;
     QvisColorButton    *linesColor;
     QLineEdit          *linesNumPartitions;
     QSlider            *linesNumPartitionsSlider;
+    QLineEdit          *focusGamma;
+    QSlider            *focusGammaSlider;
 
     QGroupBox          *drawContext;
     QLineEdit          *contextGamma;
@@ -163,10 +171,10 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     QLabel             *contextGammaLabel;
     QLabel             *contextNumPartitionsLabel;
     QLabel             *contextColorLabel;
+    QLabel             *focusGammaLabel;
 
     QCheckBox          *unifyAxisExtents;
 
-    QCheckBox          *forceIndividualLineFocusToggle;
 
     ParallelCoordinatesAttributes *atts;
 };

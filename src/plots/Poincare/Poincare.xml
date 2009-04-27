@@ -27,7 +27,6 @@
         ToroidalWindings
         PoloidalWindings
         SafetyFactor
-        Solid
       </Enum>
       <Enum name="ShowMeshType">
         Curves
@@ -42,6 +41,10 @@
       <Enum name="IntegrationType">
         DormandPrince
         AdamsBashforth
+      </Enum>
+      <Enum name="ColoringMethod">
+        ColorBySingleColor
+        ColorByColorTable
       </Enum>
       <Field name="sourceType" label="Streamline Source" type="enum" subtype="SourceType">
         SpecifiedPoint
@@ -147,6 +150,21 @@
       </Field>
       <Field name="Overlaps" label="Overlaps" type="enum" subtype="OverlapType">
         Remove
+      </Field>
+      <Field name="Min" label="Min" type="double">
+        0.000000
+      </Field>
+      <Field name="Max" label="Max" type="double">
+        0.000000
+      </Field>
+      <Field name="useMin" label="Use Min" type="bool">
+        false
+      </Field>
+      <Field name="useMax" label="Use Max" type="bool">
+        false
+      </Field>
+      <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
+        ColorBySingleColor
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

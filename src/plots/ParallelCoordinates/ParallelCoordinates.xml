@@ -15,6 +15,11 @@
       QvisParallelCoordinatesPlotWizard.h
     </Files>
     <Attribute name="ParallelCoordinatesAttributes" purpose="This class contains the plot attributes for the ParallelCoordinates plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ParallelCoordinates.code">
+      <Enum name="FocusRendering">
+        IndividualLines
+        BinsOfConstantColor
+        BinsColoredByPopulation
+      </Enum>
       <Field name="scalarAxisNames" label="scalarAxisNames" type="stringVector">
       </Field>
       <Field name="visualAxisNames" label="visualAxisNames" type="stringVector">
@@ -56,8 +61,11 @@
       <Field name="linesNumPartitions" label="Number of line partitions" type="int">
         512
       </Field>
-      <Field name="forceFullDataFocus" label="Force full data focus rendering" type="bool">
-        false
+      <Field name="focusGamma" label="Focus brightness adjustment" type="float">
+        4.000000
+      </Field>
+      <Field name="drawFocusAs" label="Draw focus as" type="enum" subtype="FocusRendering">
+        BinsOfConstantColor
       </Field>
       <Function name="InsertAxis" user="true" member="true">
       </Function>

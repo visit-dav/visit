@@ -82,8 +82,7 @@ public:
         ToroidalWindingPointOrder,
         ToroidalWindings,
         PoloidalWindings,
-        SafetyFactor,
-        Solid
+        SafetyFactor
     };
     enum ShowMeshType
     {
@@ -101,6 +100,11 @@ public:
     {
         DormandPrince,
         AdamsBashforth
+    };
+    enum ColoringMethod
+    {
+        ColorBySingleColor,
+        ColorByColorTable
     };
 
     PoincareAttributes();
@@ -158,6 +162,11 @@ public:
     void SetAdjustPlane(int AdjustPlane_);
     void SetShowIslands(bool ShowIslands_);
     void SetOverlaps(OverlapType Overlaps_);
+    void SetMin(double Min_);
+    void SetMax(double Max_);
+    void SetUseMin(bool useMin_);
+    void SetUseMax(bool useMax_);
+    void SetColorType(ColoringMethod colorType_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -198,6 +207,11 @@ public:
     int                  GetAdjustPlane() const;
     bool                 GetShowIslands() const;
     OverlapType          GetOverlaps() const;
+    double               GetMin() const;
+    double               GetMax() const;
+    bool                 GetUseMin() const;
+    bool                 GetUseMax() const;
+    ColoringMethod       GetColorType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -233,6 +247,11 @@ public:
     static bool IntegrationType_FromString(const std::string &, IntegrationType &);
 protected:
     static std::string IntegrationType_ToString(int);
+public:
+    static std::string ColoringMethod_ToString(ColoringMethod);
+    static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
+protected:
+    static std::string ColoringMethod_ToString(int);
 public:
 
     // Keyframing methods
@@ -273,7 +292,12 @@ public:
         ID_ShowCurves,
         ID_AdjustPlane,
         ID_ShowIslands,
-        ID_Overlaps
+        ID_Overlaps,
+        ID_Min,
+        ID_Max,
+        ID_useMin,
+        ID_useMax,
+        ID_colorType
     };
 
 private:
@@ -307,6 +331,11 @@ private:
     int            AdjustPlane;
     bool           ShowIslands;
     int            Overlaps;
+    double         Min;
+    double         Max;
+    bool           useMin;
+    bool           useMax;
+    int            colorType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

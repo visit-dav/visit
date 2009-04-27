@@ -236,6 +236,9 @@ Definition:
 //    Port to trunk.  Removed time iteration (for now) and
 //    named selections (since they are done differently now).
 //
+//    Jeremy Meredith, Fri Apr 24 15:36:05 EDT 2009
+//    Changed focus drawing method to be an enum.  Added focus gamma.
+//
 // ****************************************************************************
 bool
 ParallelCoordinatesAttributes::ChangesRequireRecalculation(
@@ -249,9 +252,10 @@ ParallelCoordinatesAttributes::ChangesRequireRecalculation(
         drawLinesOnlyIfExtentsOn != obj.drawLinesOnlyIfExtentsOn ||
         contextNumPartitions != obj.contextNumPartitions ||
         contextGamma != obj.contextGamma ||
+        focusGamma != obj.focusGamma ||
         scalarAxisNames != obj.scalarAxisNames ||
         unifyAxisExtents != obj.unifyAxisExtents ||
-        forceFullDataFocus != obj.forceFullDataFocus
+        drawFocusAs != obj.drawFocusAs
         )
     {
         return true;
@@ -383,7 +387,6 @@ ParallelCoordinatesAttributes::CreateCompatible(const std::string &tname) const
 
     return retval;
 }
-
 
 Function: ResetAxes
 Declaration: void ResetAxes();
@@ -607,8 +610,7 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
     *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
 }
 
-Target: xml2info
-Function:  ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling
+Function: ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
 Definition:
 bool
@@ -616,3 +618,4 @@ ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling() const
 {
     return false;
 }
+

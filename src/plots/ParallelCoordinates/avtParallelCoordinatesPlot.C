@@ -219,6 +219,11 @@ avtParallelCoordinatesPlot::SetAtts(const AttributeGroup *a)
 //    Jeremy Meredith, Wed Feb 25 16:37:49 EST 2009
 //    Port to trunk.  Not doing time yet, but left in the capability.
 //
+//    Jeremy Meredith, Mon Apr 27 11:11:15 EDT 2009
+//    Focus can now be drawn with colors graduated by population.
+//    Removed the time case since I couldn't test any changes this would
+//    have caused.
+//
 // ****************************************************************************
 
 void
@@ -230,33 +235,35 @@ avtParallelCoordinatesPlot::SetColors()
 
     if (true) // TODO: !atts.GetDoTime()
     {
-        int numColorEntries = 4 * (1+PCP_CTX_BRIGHTNESS_LEVELS);
+        int numColorEntries = 4 * 2 * PCP_CTX_BRIGHTNESS_LEVELS;
         unsigned char *plotColors = new unsigned char[numColorEntries];
 
         for (redID = 0; redID < numColorEntries; redID += 4)
         {
-            switch (redID)
+            float scale;
+            if (redID < numColorEntries/2)
+                scale = ((redID)/4.)/float(PCP_CTX_BRIGHTNESS_LEVELS);
+            else
+                scale = ((redID-numColorEntries/2)/4.)/float(PCP_CTX_BRIGHTNESS_LEVELS);
+            int bgred   = int(bgColor[0]*255);
+            int bggreen = int(bgColor[1]*255);
+            int bgblue  = int(bgColor[2]*255);
+            int hired, higreen, hiblue;
+            if (redID < numColorEntries/2)
             {
-              case PCP_CTX_BRIGHTNESS_LEVELS*4 + 0:
-                red   = atts.GetLinesColor().Red();
-                green = atts.GetLinesColor().Green();
-                blue  = atts.GetLinesColor().Blue();
-                break;
-              default:
-                {
-                float scale = ((redID)/4.)/float(PCP_CTX_BRIGHTNESS_LEVELS);
-                int bgred   = int(bgColor[0]*255);
-                int bggreen = int(bgColor[1]*255);
-                int bgblue  = int(bgColor[2]*255);
-                int hired   = atts.GetContextColor().Red();
-                int higreen = atts.GetContextColor().Green();
-                int hiblue  = atts.GetContextColor().Blue();            
-                red   = int(scale*hired   + (1.-scale)*bgred);
-                green = int(scale*higreen + (1.-scale)*bggreen);
-                blue  = int(scale*hiblue  + (1.-scale)*bgblue);
-                }
-                break;
+                hired   = atts.GetContextColor().Red();
+                higreen = atts.GetContextColor().Green();
+                hiblue  = atts.GetContextColor().Blue();
             }
+            else
+            {
+                hired   = atts.GetLinesColor().Red();
+                higreen = atts.GetLinesColor().Green();
+                hiblue  = atts.GetLinesColor().Blue();
+            }
+            red   = int(scale*hired   + (1.-scale)*bgred);
+            green = int(scale*higreen + (1.-scale)*bggreen);
+            blue  = int(scale*hiblue  + (1.-scale)*bgblue);
 
             colorAtt.SetRgba(red, green, blue, 255);
             colorAttList.AddColors(colorAtt);
@@ -267,53 +274,13 @@ avtParallelCoordinatesPlot::SetColors()
             plotColors[redID+3] = 255;
         }
 
-        avtLUT->SetLUTColorsWithOpacity(plotColors, 1+PCP_CTX_BRIGHTNESS_LEVELS);
+        avtLUT->SetLUTColorsWithOpacity(plotColors, 2*PCP_CTX_BRIGHTNESS_LEVELS);
         levelsMapper->SetColors(colorAttList);
         delete [] plotColors;
     }
     else
     {
-        int numColorEntries = 4 * PCP_MAX_TIMESTEPS +
-                              4 * PCP_CTX_BRIGHTNESS_LEVELS * PCP_MAX_TIMESTEPS;
-        unsigned char *plotColors = new unsigned char[numColorEntries];
-
-        for (redID = 0; redID < numColorEntries; redID += 4)
-        {
-            if (redID >= 4*PCP_MAX_TIMESTEPS*PCP_CTX_BRIGHTNESS_LEVELS)
-            {
-                int timestep = (redID - 4*PCP_MAX_TIMESTEPS*PCP_CTX_BRIGHTNESS_LEVELS) / 4;
-                red   = multi_timestep_focus_colors[timestep*3+0];
-                green = multi_timestep_focus_colors[timestep*3+1];
-                blue  = multi_timestep_focus_colors[timestep*3+2];
-            }
-            else
-            {
-                int timestep = redID/(4*PCP_CTX_BRIGHTNESS_LEVELS);
-                int level = redID/4 - (PCP_CTX_BRIGHTNESS_LEVELS*timestep);
-                float scale = float(level+1)/float(PCP_CTX_BRIGHTNESS_LEVELS);
-                int bgred   = int(bgColor[0]*255);
-                int bggreen = int(bgColor[1]*255);
-                int bgblue  = int(bgColor[2]*255);
-                int hired   = multi_timestep_ctx_colors[timestep*3+0];
-                int higreen = multi_timestep_ctx_colors[timestep*3+1];
-                int hiblue  = multi_timestep_ctx_colors[timestep*3+2];
-                red   = int(scale*hired   + (1.-scale)*bgred);
-                green = int(scale*higreen + (1.-scale)*bggreen);
-                blue  = int(scale*hiblue  + (1.-scale)*bgblue);
-            }
-
-            colorAtt.SetRgba(red, green, blue, 255);
-            colorAttList.AddColors(colorAtt);
-
-            plotColors[redID  ] = (unsigned char)red;
-            plotColors[redID+1] = (unsigned char)green;
-            plotColors[redID+2] = (unsigned char)blue;
-            plotColors[redID+3] = 255;
-        }
-
-        avtLUT->SetLUTColorsWithOpacity(plotColors, 1+PCP_CTX_BRIGHTNESS_LEVELS);
-        levelsMapper->SetColors(colorAttList);
-        delete [] plotColors;
+        // Not implemented.....
     }
 }
 
