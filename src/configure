@@ -11197,7 +11197,7 @@ echo "${ECHO_T}$PYDIR, version $PYVERSION" >&6
 
     echo "$as_me:$LINENO: checking for PyParsing" >&5
 echo $ECHO_N "checking for PyParsing... $ECHO_C" >&6
-    if test -r "$PYDIR/lib/$PYVERSION/site-packages/pyparsing.pyc"
+    if test -r "$PYDIR/lib/$PYVERSION/site-packages/pyparsing.pyc" ; then
         echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
 

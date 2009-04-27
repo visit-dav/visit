@@ -935,6 +935,10 @@ dnl    Do not change H5PART_LIBDIR in FastBit config.
 dnl    
 dnl    Kathleen Bonnell, Thu Feb 19 13:06:43 PST 2009
 dnl    Added test for PyParsing.
+dnl
+dnl    Tom Fogal, Sat Apr 25 15:44:48 MDT 2009
+dnl    Fixed a broken `if' statement.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3479,7 +3483,7 @@ if test "$enable_scripting" = "yes"; then
     esac
 
     AC_MSG_CHECKING(for PyParsing)
-    if test -r "$PYDIR/lib/$PYVERSION/site-packages/pyparsing.pyc"
+    if test -r "$PYDIR/lib/$PYVERSION/site-packages/pyparsing.pyc" ; then
         AC_MSG_RESULT(yes)
         AC_DEFINE(HAVE_PYPARSING, [1], [Define if you have pyparsing.])
     else
