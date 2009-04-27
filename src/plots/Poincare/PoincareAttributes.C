@@ -125,21 +125,21 @@ PoincareAttributes::TerminationType_FromString(const std::string &s, PoincareAtt
 static const char *ColorStyleType_strings[] = {
 "OriginalValue", "InputOrder", "PointIndex", 
 "Plane", "ToroidalWindingOrder", "ToroidalWindingPointOrder", 
-"ToroidalWindings", "PoloidalWindings", "SafetyFactor", 
-"Solid"};
+"ToroidalWindings", "PoloidalWindings", "SafetyFactor"
+};
 
 std::string
 PoincareAttributes::ColorStyleType_ToString(PoincareAttributes::ColorStyleType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 10) index = 0;
+    if(index < 0 || index >= 9) index = 0;
     return ColorStyleType_strings[index];
 }
 
 std::string
 PoincareAttributes::ColorStyleType_ToString(int t)
 {
-    int index = (t < 0 || t >= 10) ? 0 : t;
+    int index = (t < 0 || t >= 9) ? 0 : t;
     return ColorStyleType_strings[index];
 }
 
@@ -147,7 +147,7 @@ bool
 PoincareAttributes::ColorStyleType_FromString(const std::string &s, PoincareAttributes::ColorStyleType &val)
 {
     val = PoincareAttributes::OriginalValue;
-    for(int i = 0; i < 10; ++i)
+    for(int i = 0; i < 9; ++i)
     {
         if(s == ColorStyleType_strings[i])
         {
@@ -270,8 +270,45 @@ PoincareAttributes::IntegrationType_FromString(const std::string &s, PoincareAtt
     return false;
 }
 
+//
+// Enum conversion methods for PoincareAttributes::ColoringMethod
+//
+
+static const char *ColoringMethod_strings[] = {
+"ColorBySingleColor", "ColorByColorTable"};
+
+std::string
+PoincareAttributes::ColoringMethod_ToString(PoincareAttributes::ColoringMethod t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return ColoringMethod_strings[index];
+}
+
+std::string
+PoincareAttributes::ColoringMethod_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ColoringMethod_strings[index];
+}
+
+bool
+PoincareAttributes::ColoringMethod_FromString(const std::string &s, PoincareAttributes::ColoringMethod &val)
+{
+    val = PoincareAttributes::ColorBySingleColor;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == ColoringMethod_strings[i])
+        {
+            val = (ColoringMethod)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // Type map format string
-const char *PoincareAttributes::TypeMapFormatString = "iddDDDDDDdisabbddiibbiiiidiibi";
+const char *PoincareAttributes::TypeMapFormatString = "iddDDDDDDdisabbddiibbiiiidiibiddbbi";
 
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
@@ -332,6 +369,11 @@ PoincareAttributes::PoincareAttributes() :
     AdjustPlane = -1;
     ShowIslands = false;
     Overlaps = Remove;
+    Min = 0;
+    Max = 0;
+    useMin = false;
+    useMax = false;
+    colorType = ColorBySingleColor;
 }
 
 // ****************************************************************************
@@ -400,6 +442,11 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
     AdjustPlane = obj.AdjustPlane;
     ShowIslands = obj.ShowIslands;
     Overlaps = obj.Overlaps;
+    Min = obj.Min;
+    Max = obj.Max;
+    useMin = obj.useMin;
+    useMax = obj.useMax;
+    colorType = obj.colorType;
 
     SelectAll();
 }
@@ -491,6 +538,11 @@ PoincareAttributes::operator = (const PoincareAttributes &obj)
     AdjustPlane = obj.AdjustPlane;
     ShowIslands = obj.ShowIslands;
     Overlaps = obj.Overlaps;
+    Min = obj.Min;
+    Max = obj.Max;
+    useMin = obj.useMin;
+    useMax = obj.useMax;
+    colorType = obj.colorType;
 
     SelectAll();
     return *this;
@@ -574,7 +626,12 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (ShowCurves == obj.ShowCurves) &&
             (AdjustPlane == obj.AdjustPlane) &&
             (ShowIslands == obj.ShowIslands) &&
-            (Overlaps == obj.Overlaps));
+            (Overlaps == obj.Overlaps) &&
+            (Min == obj.Min) &&
+            (Max == obj.Max) &&
+            (useMin == obj.useMin) &&
+            (useMax == obj.useMax) &&
+            (colorType == obj.colorType));
 }
 
 // ****************************************************************************
@@ -789,6 +846,11 @@ PoincareAttributes::SelectAll()
     Select(ID_AdjustPlane,             (void *)&AdjustPlane);
     Select(ID_ShowIslands,             (void *)&ShowIslands);
     Select(ID_Overlaps,                (void *)&Overlaps);
+    Select(ID_Min,                     (void *)&Min);
+    Select(ID_Max,                     (void *)&Max);
+    Select(ID_useMin,                  (void *)&useMin);
+    Select(ID_useMax,                  (void *)&useMax);
+    Select(ID_colorType,               (void *)&colorType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1003,6 +1065,36 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("Overlaps", OverlapType_ToString(Overlaps)));
     }
 
+    if(completeSave || !FieldsEqual(ID_Min, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("Min", Min));
+    }
+
+    if(completeSave || !FieldsEqual(ID_Max, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("Max", Max));
+    }
+
+    if(completeSave || !FieldsEqual(ID_useMin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useMin", useMin));
+    }
+
+    if(completeSave || !FieldsEqual(ID_useMax, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useMax", useMax));
+    }
+
+    if(completeSave || !FieldsEqual(ID_colorType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorType", ColoringMethod_ToString(colorType)));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1131,7 +1223,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 10)
+            if(ival >= 0 && ival < 9)
                 SetColorStyle(ColorStyleType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1181,6 +1273,30 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
             OverlapType value;
             if(OverlapType_FromString(node->AsString(), value))
                 SetOverlaps(value);
+        }
+    }
+    if((node = searchNode->GetNode("Min")) != 0)
+        SetMin(node->AsDouble());
+    if((node = searchNode->GetNode("Max")) != 0)
+        SetMax(node->AsDouble());
+    if((node = searchNode->GetNode("useMin")) != 0)
+        SetUseMin(node->AsBool());
+    if((node = searchNode->GetNode("useMax")) != 0)
+        SetUseMax(node->AsBool());
+    if((node = searchNode->GetNode("colorType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetColorType(ColoringMethod(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ColoringMethod value;
+            if(ColoringMethod_FromString(node->AsString(), value))
+                SetColorType(value);
         }
     }
 }
@@ -1409,6 +1525,41 @@ PoincareAttributes::SetOverlaps(PoincareAttributes::OverlapType Overlaps_)
 {
     Overlaps = Overlaps_;
     Select(ID_Overlaps, (void *)&Overlaps);
+}
+
+void
+PoincareAttributes::SetMin(double Min_)
+{
+    Min = Min_;
+    Select(ID_Min, (void *)&Min);
+}
+
+void
+PoincareAttributes::SetMax(double Max_)
+{
+    Max = Max_;
+    Select(ID_Max, (void *)&Max);
+}
+
+void
+PoincareAttributes::SetUseMin(bool useMin_)
+{
+    useMin = useMin_;
+    Select(ID_useMin, (void *)&useMin);
+}
+
+void
+PoincareAttributes::SetUseMax(bool useMax_)
+{
+    useMax = useMax_;
+    Select(ID_useMax, (void *)&useMax);
+}
+
+void
+PoincareAttributes::SetColorType(PoincareAttributes::ColoringMethod colorType_)
+{
+    colorType = colorType_;
+    Select(ID_colorType, (void *)&colorType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1643,6 +1794,36 @@ PoincareAttributes::GetOverlaps() const
     return OverlapType(Overlaps);
 }
 
+double
+PoincareAttributes::GetMin() const
+{
+    return Min;
+}
+
+double
+PoincareAttributes::GetMax() const
+{
+    return Max;
+}
+
+bool
+PoincareAttributes::GetUseMin() const
+{
+    return useMin;
+}
+
+bool
+PoincareAttributes::GetUseMax() const
+{
+    return useMax;
+}
+
+PoincareAttributes::ColoringMethod
+PoincareAttributes::GetColorType() const
+{
+    return ColoringMethod(colorType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1749,6 +1930,11 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_AdjustPlane:             return "AdjustPlane";
     case ID_ShowIslands:             return "ShowIslands";
     case ID_Overlaps:                return "Overlaps";
+    case ID_Min:                     return "Min";
+    case ID_Max:                     return "Max";
+    case ID_useMin:                  return "useMin";
+    case ID_useMax:                  return "useMax";
+    case ID_colorType:               return "colorType";
     default:  return "invalid index";
     }
 }
@@ -1803,6 +1989,11 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_AdjustPlane:             return FieldType_int;
     case ID_ShowIslands:             return FieldType_bool;
     case ID_Overlaps:                return FieldType_enum;
+    case ID_Min:                     return FieldType_double;
+    case ID_Max:                     return FieldType_double;
+    case ID_useMin:                  return FieldType_bool;
+    case ID_useMax:                  return FieldType_bool;
+    case ID_colorType:               return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1857,6 +2048,11 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_AdjustPlane:             return "int";
     case ID_ShowIslands:             return "bool";
     case ID_Overlaps:                return "enum";
+    case ID_Min:                     return "double";
+    case ID_Max:                     return "double";
+    case ID_useMin:                  return "bool";
+    case ID_useMax:                  return "bool";
+    case ID_colorType:               return "enum";
     default:  return "invalid index";
     }
 }
@@ -2061,6 +2257,31 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_Overlaps:
         {  // new scope
         retval = (Overlaps == obj.Overlaps);
+        }
+        break;
+    case ID_Min:
+        {  // new scope
+        retval = (Min == obj.Min);
+        }
+        break;
+    case ID_Max:
+        {  // new scope
+        retval = (Max == obj.Max);
+        }
+        break;
+    case ID_useMin:
+        {  // new scope
+        retval = (useMin == obj.useMin);
+        }
+        break;
+    case ID_useMax:
+        {  // new scope
+        retval = (useMax == obj.useMax);
+        }
+        break;
+    case ID_colorType:
+        {  // new scope
+        retval = (colorType == obj.colorType);
         }
         break;
     default: retval = false;

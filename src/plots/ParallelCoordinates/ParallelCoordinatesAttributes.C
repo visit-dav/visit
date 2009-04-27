@@ -39,8 +39,46 @@
 #include <ParallelCoordinatesAttributes.h>
 #include <DataNode.h>
 
+//
+// Enum conversion methods for ParallelCoordinatesAttributes::FocusRendering
+//
+
+static const char *FocusRendering_strings[] = {
+"IndividualLines", "BinsOfConstantColor", "BinsColoredByPopulation"
+};
+
+std::string
+ParallelCoordinatesAttributes::FocusRendering_ToString(ParallelCoordinatesAttributes::FocusRendering t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return FocusRendering_strings[index];
+}
+
+std::string
+ParallelCoordinatesAttributes::FocusRendering_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return FocusRendering_strings[index];
+}
+
+bool
+ParallelCoordinatesAttributes::FocusRendering_FromString(const std::string &s, ParallelCoordinatesAttributes::FocusRendering &val)
+{
+    val = ParallelCoordinatesAttributes::IndividualLines;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == FocusRendering_strings[i])
+        {
+            val = (FocusRendering)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // Type map format string
-const char *ParallelCoordinatesAttributes::TypeMapFormatString = "s*s*d*d*babfiabbib";
+const char *ParallelCoordinatesAttributes::TypeMapFormatString = "s*s*d*d*babfiabbifi";
 
 // ****************************************************************************
 // Method: ParallelCoordinatesAttributes::ParallelCoordinatesAttributes
@@ -68,7 +106,8 @@ ParallelCoordinatesAttributes::ParallelCoordinatesAttributes() :
     drawLinesOnlyIfExtentsOn = true;
     unifyAxisExtents = false;
     linesNumPartitions = 512;
-    forceFullDataFocus = false;
+    focusGamma = 4;
+    drawFocusAs = BinsOfConstantColor;
 }
 
 // ****************************************************************************
@@ -102,7 +141,8 @@ ParallelCoordinatesAttributes::ParallelCoordinatesAttributes(const ParallelCoord
     drawLinesOnlyIfExtentsOn = obj.drawLinesOnlyIfExtentsOn;
     unifyAxisExtents = obj.unifyAxisExtents;
     linesNumPartitions = obj.linesNumPartitions;
-    forceFullDataFocus = obj.forceFullDataFocus;
+    focusGamma = obj.focusGamma;
+    drawFocusAs = obj.drawFocusAs;
 
     SelectAll();
 }
@@ -159,7 +199,8 @@ ParallelCoordinatesAttributes::operator = (const ParallelCoordinatesAttributes &
     drawLinesOnlyIfExtentsOn = obj.drawLinesOnlyIfExtentsOn;
     unifyAxisExtents = obj.unifyAxisExtents;
     linesNumPartitions = obj.linesNumPartitions;
-    forceFullDataFocus = obj.forceFullDataFocus;
+    focusGamma = obj.focusGamma;
+    drawFocusAs = obj.drawFocusAs;
 
     SelectAll();
     return *this;
@@ -197,7 +238,8 @@ ParallelCoordinatesAttributes::operator == (const ParallelCoordinatesAttributes 
             (drawLinesOnlyIfExtentsOn == obj.drawLinesOnlyIfExtentsOn) &&
             (unifyAxisExtents == obj.unifyAxisExtents) &&
             (linesNumPartitions == obj.linesNumPartitions) &&
-            (forceFullDataFocus == obj.forceFullDataFocus));
+            (focusGamma == obj.focusGamma) &&
+            (drawFocusAs == obj.drawFocusAs));
 }
 
 // ****************************************************************************
@@ -419,7 +461,8 @@ ParallelCoordinatesAttributes::SelectAll()
     Select(ID_drawLinesOnlyIfExtentsOn, (void *)&drawLinesOnlyIfExtentsOn);
     Select(ID_unifyAxisExtents,         (void *)&unifyAxisExtents);
     Select(ID_linesNumPartitions,       (void *)&linesNumPartitions);
-    Select(ID_forceFullDataFocus,       (void *)&forceFullDataFocus);
+    Select(ID_focusGamma,               (void *)&focusGamma);
+    Select(ID_drawFocusAs,              (void *)&drawFocusAs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -534,10 +577,16 @@ ParallelCoordinatesAttributes::CreateNode(DataNode *parentNode, bool completeSav
         node->AddNode(new DataNode("linesNumPartitions", linesNumPartitions));
     }
 
-    if(completeSave || !FieldsEqual(ID_forceFullDataFocus, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_focusGamma, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("forceFullDataFocus", forceFullDataFocus));
+        node->AddNode(new DataNode("focusGamma", focusGamma));
+    }
+
+    if(completeSave || !FieldsEqual(ID_drawFocusAs, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("drawFocusAs", FocusRendering_ToString(drawFocusAs)));
     }
 
 
@@ -602,8 +651,24 @@ ParallelCoordinatesAttributes::SetFromNode(DataNode *parentNode)
         SetUnifyAxisExtents(node->AsBool());
     if((node = searchNode->GetNode("linesNumPartitions")) != 0)
         SetLinesNumPartitions(node->AsInt());
-    if((node = searchNode->GetNode("forceFullDataFocus")) != 0)
-        SetForceFullDataFocus(node->AsBool());
+    if((node = searchNode->GetNode("focusGamma")) != 0)
+        SetFocusGamma(node->AsFloat());
+    if((node = searchNode->GetNode("drawFocusAs")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetDrawFocusAs(FocusRendering(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            FocusRendering value;
+            if(FocusRendering_FromString(node->AsString(), value))
+                SetDrawFocusAs(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -702,10 +767,17 @@ ParallelCoordinatesAttributes::SetLinesNumPartitions(int linesNumPartitions_)
 }
 
 void
-ParallelCoordinatesAttributes::SetForceFullDataFocus(bool forceFullDataFocus_)
+ParallelCoordinatesAttributes::SetFocusGamma(float focusGamma_)
 {
-    forceFullDataFocus = forceFullDataFocus_;
-    Select(ID_forceFullDataFocus, (void *)&forceFullDataFocus);
+    focusGamma = focusGamma_;
+    Select(ID_focusGamma, (void *)&focusGamma);
+}
+
+void
+ParallelCoordinatesAttributes::SetDrawFocusAs(ParallelCoordinatesAttributes::FocusRendering drawFocusAs_)
+{
+    drawFocusAs = drawFocusAs_;
+    Select(ID_drawFocusAs, (void *)&drawFocusAs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -826,10 +898,16 @@ ParallelCoordinatesAttributes::GetLinesNumPartitions() const
     return linesNumPartitions;
 }
 
-bool
-ParallelCoordinatesAttributes::GetForceFullDataFocus() const
+float
+ParallelCoordinatesAttributes::GetFocusGamma() const
 {
-    return forceFullDataFocus;
+    return focusGamma;
+}
+
+ParallelCoordinatesAttributes::FocusRendering
+ParallelCoordinatesAttributes::GetDrawFocusAs() const
+{
+    return FocusRendering(drawFocusAs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -909,7 +987,8 @@ ParallelCoordinatesAttributes::GetFieldName(int index) const
     case ID_drawLinesOnlyIfExtentsOn: return "drawLinesOnlyIfExtentsOn";
     case ID_unifyAxisExtents:         return "unifyAxisExtents";
     case ID_linesNumPartitions:       return "linesNumPartitions";
-    case ID_forceFullDataFocus:       return "forceFullDataFocus";
+    case ID_focusGamma:               return "focusGamma";
+    case ID_drawFocusAs:              return "drawFocusAs";
     default:  return "invalid index";
     }
 }
@@ -947,7 +1026,8 @@ ParallelCoordinatesAttributes::GetFieldType(int index) const
     case ID_drawLinesOnlyIfExtentsOn: return FieldType_bool;
     case ID_unifyAxisExtents:         return FieldType_bool;
     case ID_linesNumPartitions:       return FieldType_int;
-    case ID_forceFullDataFocus:       return FieldType_bool;
+    case ID_focusGamma:               return FieldType_float;
+    case ID_drawFocusAs:              return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -985,7 +1065,8 @@ ParallelCoordinatesAttributes::GetFieldTypeName(int index) const
     case ID_drawLinesOnlyIfExtentsOn: return "bool";
     case ID_unifyAxisExtents:         return "bool";
     case ID_linesNumPartitions:       return "int";
-    case ID_forceFullDataFocus:       return "bool";
+    case ID_focusGamma:               return "float";
+    case ID_drawFocusAs:              return "enum";
     default:  return "invalid index";
     }
 }
@@ -1077,9 +1158,14 @@ ParallelCoordinatesAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
         retval = (linesNumPartitions == obj.linesNumPartitions);
         }
         break;
-    case ID_forceFullDataFocus:
+    case ID_focusGamma:
         {  // new scope
-        retval = (forceFullDataFocus == obj.forceFullDataFocus);
+        retval = (focusGamma == obj.focusGamma);
+        }
+        break;
+    case ID_drawFocusAs:
+        {  // new scope
+        retval = (drawFocusAs == obj.drawFocusAs);
         }
         break;
     default: retval = false;
@@ -1318,6 +1404,9 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
 //    Port to trunk.  Removed time iteration (for now) and
 //    named selections (since they are done differently now).
 //
+//    Jeremy Meredith, Fri Apr 24 15:36:05 EDT 2009
+//    Changed focus drawing method to be an enum.  Added focus gamma.
+//
 // ****************************************************************************
 bool
 ParallelCoordinatesAttributes::ChangesRequireRecalculation(
@@ -1331,9 +1420,10 @@ ParallelCoordinatesAttributes::ChangesRequireRecalculation(
         drawLinesOnlyIfExtentsOn != obj.drawLinesOnlyIfExtentsOn ||
         contextNumPartitions != obj.contextNumPartitions ||
         contextGamma != obj.contextGamma ||
+        focusGamma != obj.focusGamma ||
         scalarAxisNames != obj.scalarAxisNames ||
         unifyAxisExtents != obj.unifyAxisExtents ||
-        forceFullDataFocus != obj.forceFullDataFocus
+        drawFocusAs != obj.drawFocusAs
         )
     {
         return true;

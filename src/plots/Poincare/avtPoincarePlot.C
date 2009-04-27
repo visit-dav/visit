@@ -47,6 +47,7 @@
 #include <avtVariableLegend.h>
 #include <avtVariableMapper.h>
 #include <avtPoincareFilter.h>
+#include <InvalidLimitsException.h>
 
 // ****************************************************************************
 //  Method: avtPoincarePlot constructor
@@ -376,7 +377,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetClipPlanes( planes );
 #endif
 
-    if(atts.GetColorStyle() != PoincareAttributes::Solid)
+    if(atts.GetColorType() == PoincareAttributes::ColorByColorTable)
     {
         SetColorTable(atts.GetColorTableName().c_str());
     }
@@ -442,6 +443,9 @@ avtPoincarePlot::SetLegend(bool legendOn)
 //
 // Modifications:
 //
+// Dave Pugmire, Fri Apr 24 15:47:02 EDT 2009
+// Add min/max variable ranges.
+//
 // ****************************************************************************
 
 void
@@ -450,12 +454,21 @@ avtPoincarePlot::SetLegendRanges()
     double min, max;
     varMapper->GetVarRange(min, max);
 
-    if (max < 0.)
-        max = 0.;
+    if (atts.GetUseMin())
+        min = atts.GetMin();
+    if (atts.GetUseMax())
+        max = atts.GetMax();
+
+    if (atts.GetUseMin() && atts.GetUseMax() && min >= max)
+    {
+        EXCEPTION1(InvalidLimitsException, false); 
+    }
+    varMapper->SetMin(min);
+    varMapper->SetMax(max);
 
     //
     // Set the range for the legend's text and colors.
     //
-    varLegend->SetVarRange(0., max);
-    varLegend->SetRange(0., max);
+    varLegend->SetVarRange(min, max);
+    varLegend->SetRange(min, max);
 }

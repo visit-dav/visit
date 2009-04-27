@@ -42,6 +42,9 @@
 
 #include <avtPlainTextFileFormat.h>
 
+#include <cstring>
+#include <string.h>
+
 #include <string>
 
 #include <vtkPointData.h>
@@ -453,6 +456,9 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //    Support both CSV and whitespace-delimited files.  Sped up
 //    parsing as well.
 //
+//    Brad Whitlock, Mon Apr 27 09:00:52 PDT 2009
+//    I increased the line length from 4K to 32K.
+//
 // ****************************************************************************
 
 void
@@ -466,17 +472,19 @@ avtPlainTextFileFormat::ReadFile()
         EXCEPTION1(InvalidFilesException, filename.c_str());
 
     // skip the first lines if asked
-    char buff[4096];
+    int linelen = 32768;
+    char *buff = new char[linelen];
+    memset(buff, 0, sizeof(char) * linelen);
     for (int l=0; l<skipLines; l++)
     {
-        in.getline(buff, 4096);
+        in.getline(buff, linelen);
     }
 
     // actually read the data; one vector per row
     ncolumns = 0;
     nrows = 0;
     bool firstRow = true;
-    in.getline(buff, 4096);
+    in.getline(buff, linelen);
     bool comma = false;
     for (char *p=buff; *p!='\0'; p++)
         if (*p == ',')
@@ -564,7 +572,7 @@ avtPlainTextFileFormat::ReadFile()
             nrows++;
         }
         firstRow = false;
-        in.getline(buff, 4096);
+        in.getline(buff, linelen);
 
 #ifdef MDSERVER
         // We don't need to know how many rows there are in the
@@ -572,6 +580,7 @@ avtPlainTextFileFormat::ReadFile()
         break;
 #endif
     }
+    delete [] buff;
 
     // fix up variable names
     if (format == Grid)

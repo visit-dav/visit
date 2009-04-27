@@ -90,10 +90,13 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
     public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
 
+    public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
+    public final static int COLORINGMETHOD_COLORBYCOLORTABLE = 1;
+
 
     public PoincareAttributes()
     {
-        super(30);
+        super(35);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -143,11 +146,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         AdjustPlane = -1;
         ShowIslands = false;
         Overlaps = OVERLAPTYPE_REMOVE;
+        Min = 0;
+        Max = 0;
+        useMin = false;
+        useMax = false;
+        colorType = COLORINGMETHOD_COLORBYSINGLECOLOR;
     }
 
     public PoincareAttributes(PoincareAttributes obj)
     {
-        super(30);
+        super(35);
 
         int i;
 
@@ -205,6 +213,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         AdjustPlane = obj.AdjustPlane;
         ShowIslands = obj.ShowIslands;
         Overlaps = obj.Overlaps;
+        Min = obj.Min;
+        Max = obj.Max;
+        useMin = obj.useMin;
+        useMax = obj.useMax;
+        colorType = obj.colorType;
 
         SelectAll();
     }
@@ -273,7 +286,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (ShowCurves == obj.ShowCurves) &&
                 (AdjustPlane == obj.AdjustPlane) &&
                 (ShowIslands == obj.ShowIslands) &&
-                (Overlaps == obj.Overlaps));
+                (Overlaps == obj.Overlaps) &&
+                (Min == obj.Min) &&
+                (Max == obj.Max) &&
+                (useMin == obj.useMin) &&
+                (useMax == obj.useMax) &&
+                (colorType == obj.colorType));
     }
 
     public String GetName() { return "Poincare"; }
@@ -520,6 +538,36 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(29);
     }
 
+    public void SetMin(double Min_)
+    {
+        Min = Min_;
+        Select(30);
+    }
+
+    public void SetMax(double Max_)
+    {
+        Max = Max_;
+        Select(31);
+    }
+
+    public void SetUseMin(boolean useMin_)
+    {
+        useMin = useMin_;
+        Select(32);
+    }
+
+    public void SetUseMax(boolean useMax_)
+    {
+        useMax = useMax_;
+        Select(33);
+    }
+
+    public void SetColorType(int colorType_)
+    {
+        colorType = colorType_;
+        Select(34);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double         GetMaxStepLength() { return maxStepLength; }
@@ -551,6 +599,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetAdjustPlane() { return AdjustPlane; }
     public boolean        GetShowIslands() { return ShowIslands; }
     public int            GetOverlaps() { return Overlaps; }
+    public double         GetMin() { return Min; }
+    public double         GetMax() { return Max; }
+    public boolean        GetUseMin() { return useMin; }
+    public boolean        GetUseMax() { return useMax; }
+    public int            GetColorType() { return colorType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -615,6 +668,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(ShowIslands);
         if(WriteSelect(29, buf))
             buf.WriteInt(Overlaps);
+        if(WriteSelect(30, buf))
+            buf.WriteDouble(Min);
+        if(WriteSelect(31, buf))
+            buf.WriteDouble(Max);
+        if(WriteSelect(32, buf))
+            buf.WriteBool(useMin);
+        if(WriteSelect(33, buf))
+            buf.WriteBool(useMax);
+        if(WriteSelect(34, buf))
+            buf.WriteInt(colorType);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -715,6 +778,21 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             case 29:
                 SetOverlaps(buf.ReadInt());
                 break;
+            case 30:
+                SetMin(buf.ReadDouble());
+                break;
+            case 31:
+                SetMax(buf.ReadDouble());
+                break;
+            case 32:
+                SetUseMin(buf.ReadBool());
+                break;
+            case 33:
+                SetUseMax(buf.ReadBool());
+                break;
+            case 34:
+                SetColorType(buf.ReadInt());
+                break;
             }
         }
     }
@@ -804,6 +882,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(Overlaps == OVERLAPTYPE_SMOOTH)
             str = str + "OVERLAPTYPE_SMOOTH";
         str = str + "\n";
+        str = str + doubleToString("Min", Min, indent) + "\n";
+        str = str + doubleToString("Max", Max, indent) + "\n";
+        str = str + boolToString("useMin", useMin, indent) + "\n";
+        str = str + boolToString("useMax", useMax, indent) + "\n";
+        str = str + indent + "colorType = ";
+        if(colorType == COLORINGMETHOD_COLORBYSINGLECOLOR)
+            str = str + "COLORINGMETHOD_COLORBYSINGLECOLOR";
+        if(colorType == COLORINGMETHOD_COLORBYCOLORTABLE)
+            str = str + "COLORINGMETHOD_COLORBYCOLORTABLE";
+        str = str + "\n";
         return str;
     }
 
@@ -839,5 +927,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            AdjustPlane;
     private boolean        ShowIslands;
     private int            Overlaps;
+    private double         Min;
+    private double         Max;
+    private boolean        useMin;
+    private boolean        useMax;
+    private int            colorType;
 }
 

@@ -89,6 +89,10 @@ class vtkPoints;
 //    Hank Childs, Mon Apr  6 13:07:18 PDT 2009
 //    Added method for registering named selections.
 //
+//    Jeremy Meredith, Mon Apr 27 10:44:49 EDT 2009
+//    Added ability to draw focus as color-graduated bins, merging
+//    context- and focus-as-histogram-drawing routines.
+//
 // ****************************************************************************
 
 class avtParallelCoordinatesFilter : public avtSIMODataTreeIterator
@@ -131,6 +135,7 @@ private:
     void                        InitializeFocusHistograms();
     void                        CleanUpAllHistograms();
 
+    void                        DrawHistogram(int ts, bool focus);
     void                        DrawContext(int ts);
     void                        DrawFocusHistograms(int ts);
     void                        PrepareForArrayVariable();
