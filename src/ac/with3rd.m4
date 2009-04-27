@@ -102,6 +102,11 @@ dnl   Tom Fogal, Mon Dec 15 14:49:44 MST 2008
 dnl   Fixed a bad 'test'.  Forgot to mention before, but made some small
 dnl   changes to m4 variables in a previous commit.
 dnl
+dnl   Tom Fogal, Mon Apr 27 17:19:13 MDT 2009
+dnl   Explicitly null out libloc, libdep variables first.  Prevents them from
+dnl   `stacking up' with multiple invocations of this macro.  Pull out help
+dnl   string generation since it was complex.
+dnl
 AC_DEFUN(VAC_ARG_WITH3RD,
 [
     dnl Rename some variables for legibility.
@@ -111,18 +116,30 @@ AC_DEFUN(VAC_ARG_WITH3RD,
     m4_define([ax_m4_function], [$4])       dnl function in the lib
     m4_define([ax_m4_help_string], [$5])    dnl help string for with option
 
-    withval=no
-    AC_ARG_WITH(ax_m4_lib_short_name,
-        [AS_HELP_STRING([--with-ax_m4_lib_short_name],
-            AS_IF(test -n "ax_m4_help_string",
-                  [ax_m4_help_string],
-                  [use ax_m4_lib_short_name; build related plugin(s)/code]
-            ))]
-    )
+    dnl Clear definition of libloc var.
+    m4_define([ax_m4_shellvar_libloc])
+    dnl Then set it appropriately (DEFAULT_<thelib>_LIBLOC)
     m4_append([ax_m4_shellvar_libloc], [DEFAULT]) dnl
     m4_append([ax_m4_shellvar_libloc], m4_toupper(ax_m4_lib_short_name), [_])
     m4_append([ax_m4_shellvar_libloc], [LIBLOC], [_]) dnl
+
+    dnl Help string is given, or we generate a generic one.
+    m4_define([ax_m4_help])
+    m4_define(ax_m4_help, ifelse(,[$5],
+      [use ax_m4_lib_short_name; build related plugin(s)/code],[$5])
+    )
+
+    AC_ARG_WITH(ax_m4_lib_short_name,
+        [AS_HELP_STRING(
+            [--with-ax_m4_lib_short_name],
+            ax_m4_help)
+        ],
+        [withval=${with_hdf5}],
+        [withval=${ax_m4_shellvar_libloc}]
+    )
+
     dnl temporarily -- this libdep should go away though.
+    m4_define([ax_m4_shellvar_libdep])
     m4_append([ax_m4_shellvar_libdep], [DEFAULT]) dnl
     m4_append([ax_m4_shellvar_libdep], m4_toupper(ax_m4_lib_short_name), [_])
     m4_append([ax_m4_shellvar_libdep], [LIBDEP], [_]) dnl

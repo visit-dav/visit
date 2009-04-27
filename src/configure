@@ -899,8 +899,7 @@ Optional Packages:
                           be ommitted)
   --without-pty           Disable PTY use
   --with-zlib=INC-DIR,LIB-DIR     Use the GNU zlib compression
-  --with-hdf5 if test -n ""; then else use hdf5; build related plugin(s)/code
-                          fi
+  --with-hdf5
 
   --with-exodus=<DIR>           enable Exodus driver
   --with-exodus-include=<DIR>   specify Exodus include path
@@ -5648,7 +5647,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5651:" \
+echo "$as_me:5650:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -7503,13 +7502,22 @@ esac
 #
 
 
-    withval=no
+
+
+
+
+
+
 
 # Check whether --with-hdf5 or --without-hdf5 was given.
 if test "${with_hdf5+set}" = set; then
   withval="$with_hdf5"
+  withval=${with_hdf5}
+else
+  withval=${DEFAULT_HDF5_LIBLOC}
 
 fi;
+
 
 
 
@@ -7959,13 +7967,22 @@ fi
 #
 
 
-    withval=no
+
+
+
+
+
+
 
 # Check whether --with-silo or --without-silo was given.
 if test "${with_silo+set}" = set; then
   withval="$with_silo"
+  withval=${with_hdf5}
+else
+  withval=${DEFAULT_SILO_LIBLOC}
 
 fi;
+
 
 
 
@@ -7973,8 +7990,8 @@ fi;
             #
             # look up _LIBLOC, _LIBDEP variables
             #
-            if test -n "${DEFAULT_HDF5_LIBLOCDEFAULT_SILO_LIBLOC}"; then
-                  withval=${DEFAULT_HDF5_LIBLOCDEFAULT_SILO_LIBLOC}:${DEFAULT_HDF5_LIBDEPDEFAULT_SILO_LIBDEP}
+            if test -n "${DEFAULT_SILO_LIBLOC}"; then
+                  withval=${DEFAULT_SILO_LIBLOC}:${DEFAULT_SILO_LIBDEP}
 
 fi
 
@@ -8487,13 +8504,22 @@ fi
 #
 
 
-    withval=no
+
+
+
+
+
+
 
 # Check whether --with-pdb or --without-pdb was given.
 if test "${with_pdb+set}" = set; then
   withval="$with_pdb"
+  withval=${with_hdf5}
+else
+  withval=${DEFAULT_PDB_LIBLOC}
 
 fi;
+
 
 
 
@@ -8501,8 +8527,8 @@ fi;
             #
             # look up _LIBLOC, _LIBDEP variables
             #
-            if test -n "${DEFAULT_HDF5_LIBLOCDEFAULT_SILO_LIBLOCDEFAULT_PDB_LIBLOC}"; then
-                  withval=${DEFAULT_HDF5_LIBLOCDEFAULT_SILO_LIBLOCDEFAULT_PDB_LIBLOC}:${DEFAULT_HDF5_LIBDEPDEFAULT_SILO_LIBDEPDEFAULT_PDB_LIBDEP}
+            if test -n "${DEFAULT_PDB_LIBLOC}"; then
+                  withval=${DEFAULT_PDB_LIBLOC}:${DEFAULT_PDB_LIBDEP}
 
 fi
 
