@@ -267,10 +267,13 @@ LauncherApplication::Instance()
 //   Brad Whitlock, Wed Nov 21 11:13:20 PST 2007
 //   Added support for forwarding child output.
 //
+//   Brad Whitlock, Mon Apr 27 16:25:34 PST 2009
+//   I added portMap.
+//
 // ****************************************************************************
 
 LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
-    keepAliveRPC(), launchRPC(), childOutput()
+    keepAliveRPC(), launchRPC(), portMap(), childOutput()
 {
     quitExecutor = 0;
     keepAliveExecutor = 0;
@@ -352,6 +355,40 @@ LauncherApplication::Execute(int *argc, char **argv[])
 }
 
 // ****************************************************************************
+// Method: LauncherApplication::FillPortMap
+//
+// Purpose: 
+//   Processes the -portmap command line argument.
+//
+// Arguments:
+//   argc : The number of command line arguments.
+//   argv : The command line arguments.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 27 16:25:34 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+LauncherApplication::FillPortMap(const std::string &arg)
+{
+    portMap.clear();
+
+    stringVector v = SplitValues(arg, ',');
+    for(int i = 0; i < v.size(); ++i)
+    {
+        int p0, p1;
+        if(sscanf(v[i].c_str(), "%d:%d", &p0, &p1) == 2)
+        {
+            debug1 << "Port map: " << p0 << " maps to viewer's port " << p1 << endl;
+            portMap[p0] = p1;
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: LauncherApplication::ProcessArguments
 //
 // Purpose: 
@@ -365,10 +402,13 @@ LauncherApplication::Execute(int *argc, char **argv[])
 // Creation:   Fri May 2 17:29:41 PST 2003
 //
 // Modifications:
-//    Jeremy Meredith, Thu May 24 11:25:31 EDT 2007
-//    Added detection of the SSH tunneling argument.  This is how
-//    the client tells us the SSH port forwarding is in effect.
+//   Jeremy Meredith, Thu May 24 11:25:31 EDT 2007
+//   Added detection of the SSH tunneling argument.  This is how
+//   the client tells us the SSH port forwarding is in effect.
 //   
+//   Brad Whitlock, Mon Apr 27 16:25:34 PST 2009
+//   I added code to populate portMap.
+//
 // ****************************************************************************
 
 void
@@ -389,6 +429,11 @@ LauncherApplication::ProcessArguments(int *argcp, char **argvp[])
         else if (arg == "-sshtunneling")
         {
             useSSHTunneling = true;
+        }
+        else if (arg == "-portmap")
+        {
+            FillPortMap(argv[i+1]);
+            ++i;
         }
     }
 }
@@ -744,12 +789,17 @@ LauncherApplication::ProcessInput()
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
+//    Brad Whitlock, Mon Apr 27 16:31:23 PST 2009
+//    I added code to map oldlocalport which often comes unaltered from the
+//    viewer. We use the tunnelled port map to determine its real port number.
+//
 // ****************************************************************************
 #if defined(PANTHERHACK)
 // Broken on Panther
 #else
 void
-LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
+LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs, 
+    bool doBridge, bool mapPort)
 {
     const char *mName="LauncherApplication::SetupGatewaySocketBridgeIfNeeded: ";
 
@@ -758,23 +808,13 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
 
     debug5 << mName << "SSH Tunneling was enabled\n";
 
-    // Detect if we're launching a parallel engine
-    bool launching_parallel = false;
-    bool launching_engine   = false;
+    // Get the port and host.
     int  oldlocalport       = -1;
     int  portargument       = -1;
     int  hostargument       = -1;
     for (size_t i=0; i<launchArgs.size(); i++)
     {
-        if (launchArgs[i] == "-np" || launchArgs[i] == "-par")
-        {
-            launching_parallel = true;
-        }
-        else if (launchArgs[i] == "-engine")
-        {
-            launching_engine = true;
-        }
-        else if (i<launchArgs.size()-1 && launchArgs[i] == "-port")
+        if (i<launchArgs.size()-1 && launchArgs[i] == "-port")
         {
             oldlocalport = atoi(launchArgs[i+1].c_str());
             portargument = i+1;
@@ -785,7 +825,7 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
         }
     }
 
-    if (launching_parallel && launching_engine)
+    if (doBridge && portargument != -1 && hostargument != -1)
     {
         debug5 << mName << "Parallel Engine launch detected; "
                << "Setting up gateway port bridge.\n";
@@ -817,7 +857,10 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
         // fork and start the socket bridge
         int *ports = new int[2];
         ports[0] = newlocalport;
-        ports[1] = oldlocalport;
+        if(mapPort && portMap.find(oldlocalport) != portMap.end())
+            ports[1] = portMap[oldlocalport];
+        else
+            ports[1] = oldlocalport;
 #ifdef _WIN32
         _beginthread(CreateSocketBridge, 0, (void*)ports);
 #else
@@ -878,6 +921,10 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
 //   I added support for forwarding child process stdout to VCL through a pipe
 //   so we can forward that output to the client.
 //
+//   Brad Whitlock, Mon Apr 27 16:31:23 PST 2009
+//   I moved the testing for parallel & engine up to here so I can call
+//   SetupGatewaySocketBridgeIfNeeded when I need to connect to simulations.
+//
 // ****************************************************************************
 
 void
@@ -897,7 +944,21 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
 #if defined(PANTHERHACK)
 // Broken on Panther
 #else
-    SetupGatewaySocketBridgeIfNeeded(launchArgs);
+    bool launching_parallel = false;
+    bool launching_engine = false;
+    for (size_t i=0; i<launchArgs.size(); i++)
+    {
+        if (launchArgs[i] == "-np" || launchArgs[i] == "-par")
+        {
+            launching_parallel = true;
+        }
+        else if (launchArgs[i] == "-engine")
+        {
+            launching_engine = true;
+        }
+    }
+    bool doBridge = launching_parallel && launching_engine;
+    SetupGatewaySocketBridgeIfNeeded(launchArgs, doBridge, false/*right?*/);
 #endif
 
     std::string remoteProgram(launchArgs[0]);
@@ -1087,16 +1148,65 @@ GetSSHClient(std::string &sshClient)
 //    Brad Whitlock, Fri Apr 24 15:21:58 PDT 2009
 //    I fixed "parse from ssh_client" for simulations.
 //
+//    Brad Whitlock, Mon Apr 27 16:31:23 PST 2009
+//    I added support for SSH tunnelling.
+//
 // ****************************************************************************
 
 void
-LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
+LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
                                        const std::string &simHost, int simPort,
                                        const std::string &simSecurityKey)
 {
+    const char *mName = "LauncherApplication::ConnectSimulation: ";
     int                s;
     struct hostent     *hp;
     struct sockaddr_in server;
+    stringVector       launchArgs;
+    size_t             i;
+
+    debug1 << mName << "origLaunchArgs={";
+    for(int i = 0; i < origLaunchArgs.size(); ++i)
+        debug1 << origLaunchArgs[i] << " ";
+    debug1 << "}" << endl;
+    debug1 << "simHost=" << simHost << endl;
+    debug1 << "simPort=" << simPort << endl;
+    debug1 << "simSecurityKey=" << simSecurityKey << endl;
+
+    //
+    // Convert -guesshost to -host XXXX
+    //
+    for (size_t i=0; i<origLaunchArgs.size(); i++)
+    {
+        if(origLaunchArgs[i] == "-guesshost")
+        {
+            // replace -guesshost with -host XXXX
+            std::string sshClient;
+            if(GetSSHClient(sshClient))
+            {
+                launchArgs.push_back("-host");
+                launchArgs.push_back(sshClient);
+            }
+        }
+        else        
+            launchArgs.push_back(origLaunchArgs[i]);
+    }
+
+    debug1 << mName << "AFTER -guesshost conversion: launchArgs={";
+    for(int i = 0; i < launchArgs.size(); ++i)
+        debug1 << launchArgs[i] << " ";
+    debug1 << "}" << endl;
+
+    // Set up an extra indirection if we're tunneling and 
+    // launching a parallel engine.  SSH port forwarding
+    // is typically restricted to forwarding from localhost
+    // which doesn't work if we're on a compute node.
+    SetupGatewaySocketBridgeIfNeeded(launchArgs, true, true);
+
+    debug1 << mName << "AFTER Socket Bridge: launchArgs={";
+    for(int i = 0; i < launchArgs.size(); ++i)
+        debug1 << launchArgs[i] << " ";
+    debug1 << "}" << endl;
 
     //
     // Get the simulation host information
@@ -1192,28 +1302,10 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
     strcpy(tmp, "");
     for (size_t i=0; i<launchArgs.size(); i++)
     {
-        if(launchArgs[i] == "-guesshost")
-        {
-            // replace -guesshost with -host XXXX
-            std::string sshClient;
-            if(GetSSHClient(sshClient))
-            {
-                strcat(tmp, "-host\n");
-                strcat(tmp, sshClient.c_str());
-            }
-            else
-            {
-                // This isn't gonna work.
-                strcat(tmp, launchArgs[i].c_str());
-            }
-        }
-        else        
-            strcat(tmp, launchArgs[i].c_str());
+        strcat(tmp, launchArgs[i].c_str());
         strcat(tmp, "\n");
     }
     strcat(tmp, "\n");
-
-    debug1 << "ConnectToSimRPC: launchArgs = " << tmp << endl;
 
     // Send it!
     ptr = (const char*)tmp;

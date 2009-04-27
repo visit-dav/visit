@@ -1750,6 +1750,10 @@ RemoteProcess::SecureShellArgs() const
 //    7 (on UNIX) or 10 (on Windows).  Particularly on Windows, users were
 //    still having problems.
 //
+//    Brad Whitlock, Mon Apr 27 16:24:08 PDT 2009
+//    Pass port mapping information to the launched process in case it needs
+//    that information when we're doing SSH tunnelling.
+//
 // ****************************************************************************
 
 void
@@ -1933,6 +1937,20 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
         char tmp[20];
         sprintf(tmp, "%d", portTunnelMap[listenPortNum]);
         args.push_back(tmp);
+
+        // Send the port mapping to the remote process so it can use the
+        // mapping to help forward ports itself.
+        std::map<int,int>::const_iterator it;
+        std::string portmap;
+        for(it = portTunnelMap.begin(); it != portTunnelMap.end(); ++it)
+        {
+            sprintf(tmp, "%d:%d", it->first, it->second);
+            portmap += tmp;
+            portmap += ",";
+        }
+        portmap = portmap.substr(0,portmap.size()-1);
+        args.push_back("-portmap");
+        args.push_back(portmap);
     }
     else
 #endif
