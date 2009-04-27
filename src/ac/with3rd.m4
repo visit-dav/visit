@@ -95,18 +95,52 @@ dnl   Made it initialize withval to 'no' and initialize with_package. Added
 dnl   logic to the action-if-not-given part of AC_ARG_WITH to change withval
 dnl   only if DEFAULT specifications actually exist.
 dnl
+dnl   Tom Fogal, Wed Dec 10 13:13:28 MST 2008
+dnl   Reworked the top of the macro to be more autoconf friendly and legible.
+dnl
+dnl   Tom Fogal, Mon Dec 15 14:49:44 MST 2008
+dnl   Fixed a bad 'test'.  Forgot to mention before, but made some small
+dnl   changes to m4 variables in a previous commit.
+dnl
 AC_DEFUN(VAC_ARG_WITH3RD,
 [
-    withval=no
-    AC_ARG_WITH($1, AC_HELP_STRING([--with-$1],ifelse(,[$5],[use $1; build related plugin(s)/code],[$5])),,
-        if test -n "$DEFAULT_[]m4_translit([$1],[a-z0-9-],[A-Z0-9_])_LIBLOC"; then
-            withval=$DEFAULT_[]m4_translit([$1],[a-z0-9-],[A-Z0-9_])_LIBLOC:$DEFAULT_[]m4_translit([$1],[a-z0-9-],[A-Z0-9_])_LIBDEP
-        fi)
+    dnl Rename some variables for legibility.
+    m4_define([ax_m4_lib_short_name], [$1]) dnl for display/variable purposes
+    m4_define([ax_m4_header], [$2])         dnl to check if we can include it
+    m4_define([ax_m4_library], [$3])        dnl lib to link against
+    m4_define([ax_m4_function], [$4])       dnl function in the lib
+    m4_define([ax_m4_help_string], [$5])    dnl help string for with option
 
-    with_[]m4_translit([$1],[A-Z0-9_],[a-z0-9-])=$withval
-    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE=""
-    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB=""
-    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_TARGET=""
+    withval=no
+    AC_ARG_WITH(ax_m4_lib_short_name,
+        [AS_HELP_STRING([--with-ax_m4_lib_short_name],
+            AS_IF(test -n "ax_m4_help_string",
+                  [ax_m4_help_string],
+                  [use ax_m4_lib_short_name; build related plugin(s)/code]
+            ))]
+    )
+    m4_append([ax_m4_shellvar_libloc], [DEFAULT]) dnl
+    m4_append([ax_m4_shellvar_libloc], m4_toupper(ax_m4_lib_short_name), [_])
+    m4_append([ax_m4_shellvar_libloc], [LIBLOC], [_]) dnl
+    dnl temporarily -- this libdep should go away though.
+    m4_append([ax_m4_shellvar_libdep], [DEFAULT]) dnl
+    m4_append([ax_m4_shellvar_libdep], m4_toupper(ax_m4_lib_short_name), [_])
+    m4_append([ax_m4_shellvar_libdep], [LIBDEP], [_]) dnl
+
+    AS_IF([test "x${withval}" != "xno"], dnl
+        [  #
+            # look up _LIBLOC, _LIBDEP variables
+            #
+            AS_IF([test -n "${ax_m4_shellvar_libloc}"], dnl
+                [withval=${ax_m4_shellvar_libloc}:${ax_m4_shellvar_libdep}]
+            ) dnl
+        ] dnl
+    )
+
+    m4_toupper(ax_m4_lib_short_name)_INCLUDE=""
+    m4_toupper(ax_m4_lib_short_name)_LIB=""
+    m4_toupper(ax_m4_lib_short_name)_TARGET=""
+
     ifelse(,[$2],incfile=[$1].h,incfile=[$2])
     ifelse(,[$3],libtags="[$1]",libtags="[$3]")
     incdirs="include inc ."
@@ -329,6 +363,5 @@ AC_DEFUN(VAC_ARG_WITH3RD,
     AC_SUBST(m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE)
     AC_SUBST(m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB)
     AC_SUBST(m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_TARGET)
-
 ]
 )

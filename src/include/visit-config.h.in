@@ -21,9 +21,6 @@
 /* Define if you have the gdal headers. */
 #undef HAVE_GDAL_H
 
-/* Define if you have pyparsing */
-#undef HAVE_PYPARSING
-
 /* Define if you have the IceT library */
 #undef HAVE_ICET
 
@@ -77,6 +74,9 @@
 
 /* Define if you have the netcdf header. */
 #undef HAVE_NETCDF_H
+
+/* Define if you have pyparsing. */
+#undef HAVE_PYPARSING
 
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
