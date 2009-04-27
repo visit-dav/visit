@@ -899,12 +899,12 @@ Optional Packages:
                           be ommitted)
   --without-pty           Disable PTY use
   --with-zlib=INC-DIR,LIB-DIR     Use the GNU zlib compression
-  --with-hdf5             use hdf5; build related plugin(s)/code
-  --with-silo             use silo; build related plugin(s)/code
+  --with-hdf5 if test -n ""; then else use hdf5; build related plugin(s)/code
+                          fi
+
   --with-exodus=<DIR>           enable Exodus driver
   --with-exodus-include=<DIR>   specify Exodus include path
   --with-exodus-lib=<DIR>       specify Exodus lib path
-  --with-pdb              use pdb; build related plugin(s)/code
   --with-mili=DIR      Location of Mili header and library
   --with-google-perftools=DIR      Location of tc-malloc from google-perftools
   --with-hdf4=INC-DIR,LIB-DIR      Location of HDF4 header and library
@@ -7502,22 +7502,33 @@ esac
 # All libs should be switched to use this new macro.
 #
 
+
     withval=no
 
 # Check whether --with-hdf5 or --without-hdf5 was given.
 if test "${with_hdf5+set}" = set; then
   withval="$with_hdf5"
 
-else
-  if test -n "$DEFAULT_HDF5_LIBLOC"; then
-            withval=$DEFAULT_HDF5_LIBLOC:$DEFAULT_HDF5_LIBDEP
-        fi
 fi;
 
-    with_hdf5=$withval
+
+
+    if test "x${withval}" != "xno"; then
+            #
+            # look up _LIBLOC, _LIBDEP variables
+            #
+            if test -n "${DEFAULT_HDF5_LIBLOC}"; then
+                  withval=${DEFAULT_HDF5_LIBLOC}:${DEFAULT_HDF5_LIBDEP}
+
+fi
+
+fi
+
+
     HDF5_INCLUDE=""
     HDF5_LIB=""
     HDF5_TARGET=""
+
     incfile=hdf5.h
     libtags="hdf5"
     incdirs="include inc ."
@@ -7919,7 +7930,6 @@ echo "${ECHO_T}no" >&6
 
 
 
-
 # Check for possible zlib dependence. If there is, we'll just add -lz
 if test -n "$HDF5_LIB"; then
     if test -n "`strings $HDF5_LIBFILE | grep -i inflateInit`"; then
@@ -7948,22 +7958,33 @@ fi
 # Handle the Silo library
 #
 
+
     withval=no
 
 # Check whether --with-silo or --without-silo was given.
 if test "${with_silo+set}" = set; then
   withval="$with_silo"
 
-else
-  if test -n "$DEFAULT_SILO_LIBLOC"; then
-            withval=$DEFAULT_SILO_LIBLOC:$DEFAULT_SILO_LIBDEP
-        fi
 fi;
 
-    with_silo=$withval
+
+
+    if test "x${withval}" != "xno"; then
+            #
+            # look up _LIBLOC, _LIBDEP variables
+            #
+            if test -n "${DEFAULT_HDF5_LIBLOCDEFAULT_SILO_LIBLOC}"; then
+                  withval=${DEFAULT_HDF5_LIBLOCDEFAULT_SILO_LIBLOC}:${DEFAULT_HDF5_LIBDEPDEFAULT_SILO_LIBDEP}
+
+fi
+
+fi
+
+
     SILO_INCLUDE=""
     SILO_LIB=""
     SILO_TARGET=""
+
     incfile=silo.h
     libtags="siloxx siloh5 silo"
     incdirs="include inc ."
@@ -8365,7 +8386,6 @@ echo "${ECHO_T}no" >&6
 
 
 
-
 # Check for possible dependence on HDF5
 if test -n "$SILO_LIB"; then
     if test -n "`strings $SILO_LIBFILE | grep -i 'SILO built with HDF5'`"; then
@@ -8466,22 +8486,33 @@ fi
 # See of --with-pdb was specified. Use PDB lite otherwise.
 #
 
+
     withval=no
 
 # Check whether --with-pdb or --without-pdb was given.
 if test "${with_pdb+set}" = set; then
   withval="$with_pdb"
 
-else
-  if test -n "$DEFAULT_PDB_LIBLOC"; then
-            withval=$DEFAULT_PDB_LIBLOC:$DEFAULT_PDB_LIBDEP
-        fi
 fi;
 
-    with_pdb=$withval
+
+
+    if test "x${withval}" != "xno"; then
+            #
+            # look up _LIBLOC, _LIBDEP variables
+            #
+            if test -n "${DEFAULT_HDF5_LIBLOCDEFAULT_SILO_LIBLOCDEFAULT_PDB_LIBLOC}"; then
+                  withval=${DEFAULT_HDF5_LIBLOCDEFAULT_SILO_LIBLOCDEFAULT_PDB_LIBLOC}:${DEFAULT_HDF5_LIBDEPDEFAULT_SILO_LIBDEPDEFAULT_PDB_LIBDEP}
+
+fi
+
+fi
+
+
     PDB_INCLUDE=""
     PDB_LIB=""
     PDB_TARGET=""
+
     incfile=pdb.h
     libtags="pdb"
     incdirs="include inc ."
@@ -8877,7 +8908,6 @@ echo "${ECHO_T}
 echo "${ECHO_T}no" >&6
 
     fi
-
 
 
 
@@ -11165,19 +11195,17 @@ echo "${ECHO_T}$PYDIR, version $PYVERSION" >&6
             ;;
     esac
 
-    # Check for PyParsing
     echo "$as_me:$LINENO: checking for PyParsing" >&5
 echo $ECHO_N "checking for PyParsing... $ECHO_C" >&6
-
-    if test -r "$PYDIR/lib/$PYVERSION/site-packages/pyparsing.pyc"; then
-
-    echo "$as_me:$LINENO: result: yes" >&5
+    if test -r "$PYDIR/lib/$PYVERSION/site-packages/pyparsing.pyc"
+        echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_PYPARSING 1
 _ACEOF
-    else 
+
+    else
         echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
     fi
