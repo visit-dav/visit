@@ -447,6 +447,10 @@ exec perl -x $0 ${1+"$@"};
 #    Added environemnt variable VISITULTRAHOME, so that VisIt knows where to 
 #    find the ultra wrapper.
 #
+#    Hank Childs, Sun Apr 26 21:18:36 CDT 2009
+#    Add support for Argonne machine "gadzooks", which has a weird connection
+#    system similar to eureka.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1458,7 +1462,15 @@ $IsRunningOnEureka_ANL = 0;
 if ( ($parallel) and $exe_name eq "engine" and $host =~ /login1/ )
 {
     $IsRunningOnEureka_ANL = 1;
-    $remotehost = "login1-mgmt.eureka";
+    chomp($domain   = `hostname -d`);
+    if ( $domain eq "gadzooks.alcf.anl.gov" )
+    {
+        $remotehost = "login1-mgmt.gadzooks";
+    }
+    else
+    {
+        $remotehost = "login1-mgmt.eureka";
+    }
 }
 
 
