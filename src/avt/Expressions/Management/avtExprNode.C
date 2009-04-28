@@ -54,7 +54,9 @@
 #include <avtModuloExpression.h>
 #include <avtRoundExpression.h>
 #include <avtSinExpression.h>
+#include <avtSinhExpression.h>
 #include <avtCosExpression.h>
+#include <avtCoshExpression.h>
 #include <avtExpExpression.h>
 #include <avtDistanceToBestFitLineExpression.h>
 #include <avtRandomExpression.h>
@@ -103,6 +105,7 @@
 #include <avtRevolvedSurfaceArea.h>
 #include <avtSpecMFExpression.h>
 #include <avtTanExpression.h>
+#include <avtTanhExpression.h>
 #include <avtAbsValExpression.h>
 #include <avtNaturalLogExpression.h>
 #include <avtBase10LogExpression.h>
@@ -535,6 +538,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Cyrus Harrison, Thu Mar 26 17:08:32 PDT 2009
 //    Added "key_aggregate" expression.
 //
+//    Kathleen Bonnell, Mon Apr 27 15:47:49 PDT 2009
+//    Added sinh, cosh, tanh.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -542,10 +548,16 @@ avtFunctionExpr::CreateFilters(string functionName)
 {
     if (functionName == "sin")
         return new avtSinExpression();
+    if (functionName == "sinh")
+        return new avtSinhExpression();
     if (functionName == "cos")
         return new avtCosExpression();
+    if (functionName == "cosh")
+        return new avtCoshExpression();
     if (functionName == "tan")
         return new avtTanExpression();
+    if (functionName == "tanh")
+        return new avtTanhExpression();
     if (functionName == "atan")
         return new avtArctanExpression();
     if (functionName == "atan2")

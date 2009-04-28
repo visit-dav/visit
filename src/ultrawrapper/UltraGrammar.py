@@ -6,10 +6,10 @@ from pyparsing import *
 # Operations/commands
 #-----------------------------------------------------------------------------
 mathOpsNoArg = ["sin", "cos", "tan", "atan", "asin", "acos", "abs", "ln", \
-                "exp", "log10", "sqr", "sqrt"]
+                "exp", "log10", "sqr", "sqrt", "sinh", "cosh", "tanh"]
 mathOpsXNoArg =["%sx" %el for el in mathOpsNoArg]
 
-mathOpsLongName = ["sine", "cosine", "tangent", "ArcTan", "ArcSin", "ArcCos", "absolute value", "natural log", "exponential", "base 10 log", "square", "square root"]
+mathOpsLongName = ["sine", "cosine", "tangent", "ArcTan", "ArcSin", "ArcCos", "absolute value", "natural log", "exponential", "base 10 log", "square", "square root", "hyperbolic sine", "hyperbolic cosine", "hyperbolic tangent"]
 
 
 cmfeOps = ["+", "-", "*", "/"]
