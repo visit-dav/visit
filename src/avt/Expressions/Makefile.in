@@ -241,6 +241,9 @@
 #   Cyrus Harrison, Thu Mar 26 16:29:52 PDT 2009
 #   Added Key Aggregator Expression.
 #
+#   Kathleen Bonnell, Mon Apr 27 17:00:55 PDT 2009
+#   Added avtCoshExpression, avtSinhExpression, avtTanhExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -385,6 +388,7 @@ Math_src= \
   Math/avtBinarySubtractExpression.C \
   Math/avtCeilingExpression.C \
   Math/avtCosExpression.C \
+  Math/avtCoshExpression.C \
   Math/avtCylindricalCoordinatesExpression.C \
   Math/avtCylindricalRadiusExpression.C \
   Math/avtDegreeToRadianExpression.C \
@@ -401,9 +405,11 @@ Math_src= \
   Math/avtRadianToDegreeExpression.C \
   Math/avtRoundExpression.C \
   Math/avtSinExpression.C \
+  Math/avtSinhExpression.C \
   Math/avtSquareExpression.C \
   Math/avtSquareRootExpression.C \
   Math/avtTanExpression.C \
+  Math/avtTanhExpression.C \
   Math/avtTraceExpression.C \
   Math/avtUnaryMinusExpression.C \
   Math/avtVectorCrossProductExpression.C

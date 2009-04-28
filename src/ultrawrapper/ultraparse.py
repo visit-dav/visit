@@ -550,7 +550,6 @@ def runUltraWrapper():
             SetUltraScript("")
         else: 
             cmd = raw_input('U-> ')
-            print "cmd: ", cmd
         if cmd.split()[0] == 'runscript':
             ultrascript.parseFile(cmd.split()[1])
             continue
