@@ -50,6 +50,7 @@ using namespace std;
 #ifdef PARALLEL
 static int MAX_DOMAIN_PRINT = 30;
 static bool MASTER_BALANCING = false;
+static bool SLAVE_AUTO_LOAD_DOMS = false;
 static int LATENCY_SEND_CNT = 2;
 
 int avtMasterSlaveSLAlgorithm::MSG_STATUS = 420003;
@@ -188,6 +189,9 @@ avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
 //
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Message size and number of receives put in Initialize().
+//
+//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Initialize offloadCounter.
 //  
 // ****************************************************************************
 
@@ -195,10 +199,11 @@ avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtStreamlineFilter *slFilt
                                                      int maxCount)
     : avtParSLAlgorithm(slFilter),
       SleepTime("sleepT"), LatencyTime("latT"), MaxLatencyTime("maxLatT"), SleepCnt("sleepC"),
-      LatencySavingCnt("latSaveCnt")
+      LatencySavingCnt("latSaveCnt"), OffloadCnt("offloadCnt")
 {
     NUM_DOMAINS = numDomains * numTimeSteps;
     maxCnt = maxCount;
+    case4AThreshold = 10*maxCnt;
     sleepMicroSec = 1;
     latencyTimer = -1;
 }
@@ -368,6 +373,9 @@ avtMasterSlaveSLAlgorithm::ReportTimings(ostream &os, bool totals)
 //  
 //  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //  Change how timings are reported/calculated.
+//
+//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Print new offload counter.
 //  
 // ****************************************************************************
 
@@ -377,6 +385,9 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
     avtParSLAlgorithm::ReportCounters(os, totals);
     PrintCounter(os, "SleepCnt", SleepCnt, totals);
     PrintCounter(os, "LSaveCnt", LatencySavingCnt, totals);
+    PrintCounter(os, "OffldCnt", OffloadCnt, totals);
+    if (!totals)
+        os<<"LatencyHistory: "<<latencyHistory<<endl;
 }
 
 
@@ -396,6 +407,9 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 //   
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //  Allow masters to share work loads.
+//
+//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Initialize new counters.
 //  
 // ****************************************************************************
 
@@ -407,6 +421,9 @@ avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
                                            vector<int> &masters)
     : avtMasterSlaveSLAlgorithm(slFilter, maxCount)
 {
+    // Sleeping master seems to increase latency.
+    sleepMicroSec = 0;
+    
     workGroupSz = workGrpSz;
     //Create my slaves.
     for (int i = 0; i < slaves.size(); i++)
@@ -422,9 +439,9 @@ avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
 
     case1Cnt = 0;
     case2Cnt = 0;
-    case3Cnt = 0;
-    case4Cnt = 0;
-    case5Cnt = 0;
+    case3ACnt = case3BCnt = case3CCnt = 0;
+    case4ACnt = case4BCnt = 0;
+    case5ACnt = case5BCnt = 0;
     case6Cnt = 0;
 }
 
@@ -458,6 +475,9 @@ avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //  Allow masters to share work loads.  
 //
+//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Better initial seed point distribution.
+//
 // ****************************************************************************
 
 void
@@ -472,14 +492,23 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
         numMasters = 1;
     else
         numMasters = nProcs/workGroupSz;
-    int ptsPerMaster = nSeeds/numMasters;
 
-    int i0 = rank*ptsPerMaster;
-    int i1 = i0+ptsPerMaster;
-    if (rank == (numMasters-1))
-        i1 = nSeeds;
+    int nSeedsPerProc = (nSeeds / numMasters);
+    int oneExtraUntil = (nSeeds % numMasters);
+    int i0 = 0, i1 = nSeeds;
 
-    debug1<<"I have seeds: "<<i0<<" --> "<<i1<<endl;
+    if (rank < oneExtraUntil)
+    {
+        i0 = (rank)*(nSeedsPerProc+1);
+        i1 = (rank+1)*(nSeedsPerProc+1);
+    }
+    else
+    {
+        i0 = (rank)*(nSeedsPerProc) + oneExtraUntil;
+        i1 = (rank+1)*(nSeedsPerProc) + oneExtraUntil;
+    }
+
+    debug1 << "I have "<<(i1-i0)<<" seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
     
     //Delete the seeds I don't need.
     for (int i = 0; i < i0; i++)
@@ -559,6 +588,11 @@ avtMasterSLAlgorithm::CompileCounterStatistics()
 //  Programmer: Dave Pugmire
 //  Creation:   March 25, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Report new counters.
+//
 // ****************************************************************************
 
 void
@@ -568,21 +602,32 @@ avtMasterSLAlgorithm::ReportCounters(ostream &os, bool totals)
     
     if (!totals)
     {
-        float tot = case1Cnt+case2Cnt+case3Cnt+case4Cnt+case5Cnt+case6Cnt;
+        float tot = case1Cnt+case2Cnt+case3ACnt+case3BCnt+case3CCnt+
+                    case4ACnt+case4BCnt+case5ACnt+case5BCnt+case6Cnt;
+        
+        int case1 = case1Cnt;
+        int case2 = case2Cnt;
+        int case3 = case3ACnt+case3BCnt+case3CCnt;
+        int case4 = case4ACnt+case4BCnt;
+        int case5 = case5ACnt+case5BCnt;
+        int case6 = case6Cnt;
         
         os<<"Cases:";
-        os<<" C1: "<<case1Cnt;
-        os<<"("<<setprecision(3)<<(float)case1Cnt/tot*100.0<<"%)";
-        os<<" C2: "<<case2Cnt;
-        os<<"("<<setprecision(3)<<(float)case2Cnt/tot*100.0<<"%)";
-        os<<" C3: "<<case3Cnt;
-        os<<"("<<setprecision(3)<<(float)case3Cnt/tot*100.0<<"%)";
-        os<<" C4: "<<case4Cnt;
-        os<<"("<<setprecision(3)<<(float)case4Cnt/tot*100.0<<"%)";
-        os<<" C5: "<<case5Cnt;
-        os<<"("<<setprecision(3)<<(float)case5Cnt/tot*100.0<<"%)";
-        os<<" C6: "<<case6Cnt;
-        os<<"("<<setprecision(3)<<(float)case6Cnt/tot*100.0<<"%)";
+        os<<" C1: "<<case1;
+        os<<"("<<setprecision(3)<<(float)case1/tot*100.0<<"%)";
+        os<<" C2: "<<case2;
+        os<<"("<<setprecision(3)<<(float)case2/tot*100.0<<"%)";
+        os<<" C3: "<<case3;
+        os<<"["<<case3ACnt<<" "<<case3BCnt<<" "<<case3CCnt<<"] ";
+        os<<"("<<setprecision(3)<<(float)case3/tot*100.0<<"%)";
+        os<<" C4: "<<case4;
+        os<<"["<<case4ACnt<<" "<<case4BCnt<<"] ";
+        os<<"("<<setprecision(3)<<(float)case4/tot*100.0<<"%)";
+        os<<" C5: "<<case5;
+        os<<"["<<case5ACnt<<" "<<case5BCnt<<"] ";
+        os<<"("<<setprecision(3)<<(float)case5/tot*100.0<<"%)";
+        os<<" C6: "<<case6;
+        os<<"("<<setprecision(3)<<(float)case6/tot*100.0<<"%)";
         os<<endl;
     }
 }
@@ -1195,20 +1240,20 @@ avtMasterSLAlgorithm::ManageSlaves()
     */
     
     int case3OverloadFactor = 20*maxCnt, case3NDomainFactor = 3*maxCnt;
-    Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
+    Case3(case3OverloadFactor, case3NDomainFactor, case3ACnt);
 
-    Case4(10*maxCnt, case4Cnt);
+    Case4(case4AThreshold, case4ACnt);
     Case1(case1Cnt);
     //Case2(case2Cnt);
     
-    Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
+    Case3(case3OverloadFactor, case3NDomainFactor, case3BCnt);
     
     Case2(case2Cnt);
-    Case4(0, case4Cnt);
-    Case3(case3OverloadFactor, case3NDomainFactor, case3Cnt);
+    Case4(0, case4BCnt);
+    Case3(case3OverloadFactor, case3NDomainFactor, case3CCnt);
     
-    Case5(maxCnt, true, case5Cnt);
-    Case5(maxCnt, false, case5Cnt);
+    Case5(maxCnt, true, case5ACnt);
+    Case5(maxCnt, false, case5ACnt);
 
     //See who else still doesn't have work....
     FindSlackers();
@@ -1878,6 +1923,17 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 
         debug1<<"Case 5: "<<senders[i]<<" ===> "<<receivers[i]<<" "<<doms[i]<<endl;
         SendMsg(senders[i], msg);
+        /*
+        for (int j = 0; j < slaveInfo.size(); j++)
+        {
+            if (slaveInfo[j].rank == senders[i])
+            {
+                slaveInfo[j].case5Mark = true;
+                break;
+            }
+        }
+        */
+
         counter++;
         if (i > 1)
             break;
@@ -1934,6 +1990,10 @@ avtSlaveSLAlgorithm::~avtSlaveSLAlgorithm()
 //  Programmer: Dave Pugmire
 //  Creation:   April 2, 2009
 //
+//  Modifications:
+//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Record latency.
+//
 // ****************************************************************************
 
 void
@@ -1947,6 +2007,7 @@ avtSlaveSLAlgorithm::HandleLatencyTimer(int activeSLCnt, bool checkMaxLatency)
     else if (latencyTimer != -1 && activeSLCnt > 0)
     {
         double t = visitTimer->StopTimer(latencyTimer, "Latency");
+        latencyHistory.push_back(t);
         debug1<<"------------------------------------------End latency: time= "<<t<<endl;
         LatencyTime.value += t;
         
@@ -2122,6 +2183,9 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Latency time was not always being reported accurately. Only send the latency
 //   saving status update once.
+//
+//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Add auto-load code for slaves.
 //   
 // ****************************************************************************
 
@@ -2153,7 +2217,34 @@ avtSlaveSLAlgorithm::Execute()
                 
         bool done = false, newMsgs = false, forceSend = false;
         bool sentLatencySavingStatus = false;
-        
+
+        //Check for a case4A overide...
+        if (SLAVE_AUTO_LOAD_DOMS && activeSLs.empty() && (oobSLs.size() > case4AThreshold))
+        {
+            debug1<<"Checking for 4A.... "<<endl;
+            int candidate = -1;
+            for (int i = 0; i < NUM_DOMAINS; i++)
+                if (status[i] < 0 && status[i] <= case4AThreshold)
+                {
+                    if (candidate == -1 || (status[i] < status[candidate]))
+                        candidate = i;
+                }
+
+            if (candidate != -1)
+            {
+                //Force send the status with this new domain loaded.
+                status[candidate] = abs(status[candidate])+1;
+                SendStatus(true);
+                
+                //Get the domain, and return to the top of the while loop.
+                DomainType dom = IdxToDom(candidate);
+                GetDomain(dom);
+                activeSLs.splice(activeSLs.end(), oobSLs);
+                oobSLs.clear();
+                continue; //Drop out of loop, recompute active/oobs.
+            }
+        }
+
         HandleLatencyTimer(activeSLs.size());
         while (!activeSLs.empty() && !done)
         {
@@ -2348,6 +2439,7 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             {
                 debug1<<"OFFLOAD: Send "<<sendSLs.size()<<" to "<<dst<<endl;
                 SendSLs(dst, sendSLs);
+                OffloadCnt.value += sendSLs.size();
             }
         }
         

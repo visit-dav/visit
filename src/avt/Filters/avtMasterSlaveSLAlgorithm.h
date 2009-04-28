@@ -69,6 +69,9 @@ class SlaveInfo;
 //  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //  Change how timings are reported/calculated.
 //
+//  Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//  New counters.
+//
 // ****************************************************************************
 
 class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
@@ -88,7 +91,7 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
                                              int workGroupSz);
 
   protected:
-    int                        maxCnt;
+    int                        maxCnt, case4AThreshold;
     int                        NUM_DOMAINS;
     int                        DomToIdx(const DomainType &dom) const
     {
@@ -115,8 +118,9 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 
     //Statistics and coutners.
     int                       latencyTimer;
+    std::vector<double>       latencyHistory;
     SLStatistics              SleepTime, LatencyTime, MaxLatencyTime;
-    SLStatistics              SleepCnt, LatencySavingCnt;
+    SLStatistics              SleepCnt, LatencySavingCnt, OffloadCnt;
     virtual void              CompileTimingStatistics();
     virtual void              CompileCounterStatistics();
     virtual void              CalculateExtraTime();
@@ -178,7 +182,8 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 
     int                       workGroupActiveSLs, workGroupSz;
     bool                      done, slaveUpdate, masterUpdate;
-    int                       case1Cnt, case2Cnt, case3Cnt, case4Cnt, case5Cnt, case6Cnt;
+    int                       case1Cnt, case2Cnt, case3ACnt, case3BCnt, case3CCnt, case4ACnt, case4BCnt,
+                              case5ACnt, case5BCnt, case6Cnt;
     int                       master;
     std::vector<SlaveInfo>    slaveInfo, masterInfo;
     std::vector<int>          slDomCnts, domLoaded, slackers;
