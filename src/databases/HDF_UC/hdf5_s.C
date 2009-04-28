@@ -57,29 +57,45 @@ bool H5S::selectNone(){
         if(status>=0)return true;
         else return false;}
 
-bool H5S::selectElements(hsize_t max,hsize_t num_dimms,std::vector<int32_t> *indices){
-        int32_t counter=0,c1;
-        //transfer all of the users data into the coord object
-        hsize_t *coord;
-        coord = (hsize_t*) calloc ((max*num_dimms),sizeof(hsize_t));
-        counter = indices->size();
-        counter=0;
-        for(int y=0;y<(int)max;y++){
-                for(int y1=0;y1<(int)num_dimms;y1++){
-                        c1 = indices->operator[] (counter);
-                        coord[y*num_dimms + y1]=c1;
-                        counter++;
-                }                
-        }
-#if HDF5_VERSION_GE(1,8,0)
-        status = H5Sselect_elements(classID,H5S_SELECT_SET,max,(const hsize_t *)coord);
+/// Defines a selection with nsel points.
+/// The incoming array indices specifies the coordinates of the elements to
+/// be selected.  This function does the necessary transformation to match
+/// the requirement of HDF5 H5Sselect_elements.  For version 1.6 and
+/// earlier, it simply need to copy the indices into an array of hsize_t
+/// type.  For version 1.8 and later, it has to generate a second level
+/// pointers to satisfy the new requirement of HDF5 API.
+///
+/// TODO: change indices to std::vector<hsize_t> to avoid the need of
+/// copying to coord.  After changing indices to std::vector<int32_t>,
+/// coord == indices->begin().
+bool H5S::selectElements(hsize_t nsel, hsize_t num_dimms,
+                         std::vector<int32_t> *indices) {
+  // copy the indices into array coord
+  hsize_t *coord;
+  coord = (hsize_t*) calloc ((nsel*num_dimms),sizeof(hsize_t));
+  for (size_t j = 0; j < nsel * num_dimms; ++ j)
+    coord[j] = indices->operator[](j);
+  
+#ifdef H5_USE_16_API
+  status = H5Sselect_elements(classID, H5S_SELECT_SET, nsel,
+                              const_cast<const hsize_t*>(coord));
 #else
-        status = H5Sselect_elements(classID,H5S_SELECT_SET,max,(const hsize_t **)coord);
+  // for HDF5 version 1.8 and later, need a new level of indirection
+  const hsize_t **cptr =
+    (const hsize_t**) calloc(nsel * sizeof(const hsize_t*));
+  for (size_t j2 = 0; j2 < nsel; ++ j2)
+    cptr[j2] = coord + j2 * num_dimms;
+  status = H5Sselect_elements(classID, H5S_SELECT_SET, nsel, cptr);
+  free(cptr);
 #endif
+  
+  free (coord);
+  if(status>=0)return true;
+  else { 
+    H5Eprint2(H5E_DEFAULT, stderr);
+    return false;
+  }
 
-        free (coord);
-        if(status>=0)return true;
-        else return false;
 }
 
 bool H5S::selectHSlab(hsize_t offset[], hsize_t count[]){

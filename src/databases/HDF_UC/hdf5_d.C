@@ -166,7 +166,10 @@ void H5D::getSize(uint64_t *length){
 bool H5D::slabRead(hid_t memtype, hid_t memspace, hid_t dataspace,void * buffer){
         status = H5Dread(classID, memtype, memspace, dataspace,H5P_DEFAULT, buffer);
         if(status>=0)return true;
-        else return false;
+        else {
+          H5Eprint2(H5E_DEFAULT, stderr);
+          return false;
+        }
 }
 
 

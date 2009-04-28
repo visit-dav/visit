@@ -174,6 +174,11 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 //    Kathleen Bonnell, Tue Apr  7 07:55:25 PDT 2009
 //    Delete dat before early return.
 //
+//    Jeremy Meredith, Tue Apr 28 13:53:48 EDT 2009
+//    Had it detect singletons or ambiguous cases before comparing
+//    with ncells and npts.  (The old way would do the wrong thing
+//    for single-cell data sets.)
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -224,21 +229,21 @@ avtExpressionDataTreeIterator::ExecuteData(vtkDataSet *in_ds, int index,
     int ncells = rv->GetNumberOfCells();
     int ntups  = dat->GetNumberOfTuples();
     bool isPoint = false;
-    if ((ntups == ncells) && (ntups != npts))
-    {
-        isPoint = false;
-    }
-    else if ((ntups == npts) && (ntups != ncells))
-    {
-        isPoint = true;
-    }
-    else if ((ntups == npts) && (ntups == ncells))
+    if ((ntups == npts) && (ntups == ncells))
     {
         isPoint = IsPointVariable();
     }
     else if (ntups == 1) // Constant singleton.
     {
         isPoint = IsPointVariable();
+    }
+    else if ((ntups == ncells) && (ntups != npts))
+    {
+        isPoint = false;
+    }
+    else if ((ntups == npts) && (ntups != ncells))
+    {
+        isPoint = true;
     }
     else
     {

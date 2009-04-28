@@ -468,10 +468,15 @@ class HDF5_FQ {
                            void *max);
         
         void getDataMinMax_Double(const std::string& variableName,
-                                    int64_t timestep,
-                                   double &min,
-                                   double &max);
- 
+                                  int64_t timestep,
+                                  double &min,
+                                  double &max);
+
+        void getDataMinMax_Float(const std::string& variableName,
+                                 int64_t timestep,
+                                 float &min,
+                                 float &max);
+        
     /*!
       \brief Get min time value.
 

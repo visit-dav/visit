@@ -237,6 +237,7 @@ void H5_Index::openH5PartFile(std::string file_location) {
     }
     else {
       //std::cout << "datasetName: " << datasetName << "." << std::endl;
+      //std::cout << "datasetType: " << datasetType << ".."<< std::endl;
       variable_names.push_back(datasetName);
       variable_indices.push_back(i);
       variable_types.push_back(datasetType);
@@ -416,6 +417,9 @@ int64_t H5_Index::getH5PartVariableInfo(const std::string             variableNa
     if (variable_names[i] == variableName) {
       h5PartType = variable_types[i];
       foundName = true;
+      //std::cout<<variableName<<" found in cache, type = "<<h5PartType<<std::endl;
+      //std::cout<<"FLOAT32 is "<<H5PART_FLOAT32<<std::endl;
+      //std::cout<<"FLOAT64 is "<<H5PART_FLOAT64<<std::endl;
     }
   }
 
@@ -426,16 +430,19 @@ int64_t H5_Index::getH5PartVariableInfo(const std::string             variableNa
   if (h5PartType == H5PART_INT64) {
     *type = H5_Int64;
   }
-  else {
-    if (h5PartType == H5PART_FLOAT64) {
-      *type = H5_Double;
-    }
-    else {
-      perror("getH5PartDatasetSize: Data type not defined in H5Part.");
-      answer = -1;
-    }
+  else if (h5PartType == H5PART_FLOAT64) {
+    *type = H5_Double;
+    //std::cout<<"returning type double"<<std::endl;
   }
-
+  else if (h5PartType == H5PART_FLOAT32) {
+    *type = H5_Float;
+    //std::cout<<"returning type float"<<std::endl;
+  }
+  else {
+    perror("getH5PartDatasetSize: Data type not defined in H5Part.");
+    answer = -1;
+  }
+  
   const h5part_int64_t lenName = 64;
   char datasetName[lenName];
   h5part_int64_t datasetType;
@@ -510,18 +517,38 @@ void H5_Index::getH5PartData(const std::string variablename, int64_t time, void 
       datasetIdx = variable_indices[i];
   }
 
+  /*
+    switch(variable_types[datasetIdx]) {
+    case (H5PART_INT64):
+    H5PartReadDataInt64(h5partFile, variablename.c_str(), (h5part_int64_t*) data);
+    break;
+    case (H5PART_FLOAT32):
+    H5PartReadDataFloat32(h5partFile, variablename.c_str(), (h5part_float32_t*) data);
+    break;
+    case (H5PART_FLOAT64):
+    H5PartReadDataFloat64(h5partFile, variablename.c_str(), (h5part_float64_t*) data);
+    break;
+    default:
+    perror("getH5PartData: Data type not defined in H5Part.");
+    break;
+    }
+  */
+  
+  
   // retrieve data
   if (variable_types[datasetIdx] == H5PART_INT64) {
     H5PartReadDataInt64(h5partFile, variablename.c_str(), (h5part_int64_t*) data);
   }
-  else {
-    if (variable_types[datasetIdx] == H5PART_FLOAT64) {
-      H5PartReadDataFloat64(h5partFile, variablename.c_str(), (h5part_float64_t*) data);
-    }
-    else {
-      perror("getH5PartData: Data type not defined in H5Part.");
-    }
+  else if (variable_types[datasetIdx] == H5PART_FLOAT64) {
+    H5PartReadDataFloat64(h5partFile, variablename.c_str(), (h5part_float64_t*) data);
   }
+  else if (variable_types[datasetIdx] == H5PART_FLOAT32) {
+    H5PartReadDataFloat32(h5partFile, variablename.c_str(), (h5part_float32_t*) data);
+  }
+  else {
+    perror("getH5PartData: Data type not defined in H5Part.");
+  }
+ 
 }
 
 
@@ -814,6 +841,13 @@ bool H5_Index::createBitmap(std::string variableName,
 bool H5_Index::getPointData(const std::string variablename,int64_t time,void *data, const std::vector<int32_t>& indices){
         bool answer = true;
         
+        /*
+        std::cout<<"H5_Index printing offsets "<<indices.size()<<std::endl;
+        for (int i=0; i<indices.size();i++)
+          std::cout<<indices[i]<<std::endl;
+        std::cout<<"H5_Index ---------------- "<<std::endl;
+        */
+
         //here we get specific values from the datasets indicated by the indices vector
         BaseFileInterface::DataType var_type;
         std::string path = stringPath(variablename,time);
@@ -831,53 +865,85 @@ bool H5_Index::getPointData(const std::string variablename,int64_t time,void *da
         answer = dataspace_id.assignSpace(dataset_id.getDataSpace());
         if(answer == false) return answer;
 
-        //next determine the dimmensionality of the dataset...
+        //next determine the dimensionality of the dataset...
         hsize_t num_dimms = dataspace_id.getNDim(dataset_id.getDataSpace());
+
+        //std::cout<<"H5_Index: num_dimms "<<num_dimms<<std::endl;
 
         hsize_t count[255];
         int32_t max = indices.size();
         max /= num_dimms;
 
+        //std::cout<<"H5_Index: max "<<max<<std::endl;
+
         /// the function selectElements should not modify indices array!
         answer = dataspace_id.selectElements
             (max, num_dimms, const_cast<std::vector<int32_t>*>(&indices));
-        if(answer == false) return answer;
+        if(answer == false) {
+          //std::cout<<"H5_Index:: dataspace_id.selectElements() failed"<<std::endl;
+          return answer;
+        }
 
         H5S dataspace_id2;
         count[0] = max;
         answer = dataspace_id2.create(1,count);
-        if(answer == false) return answer;
+        if(answer == false) {
+          //std::cout<<"H5_Index:: Could not create 2nd dataspace"<<std::endl;
+          return answer;
+        }
         
         switch(var_type){
-                case BaseFileInterface::DataType(0):
-                        float *f_ptr;
-                        f_ptr = (float*)data;
-                        answer = dataset_id.slabRead(H5T_NATIVE_FLOAT,dataspace_id2.getID(),dataspace_id.getID(),&f_ptr[0]);
+        case BaseFileInterface::H5_Float:
+          //std::cout<<"H5_Index:: we should be here"<<std::endl;
+          float *f_ptr;
+          f_ptr = (float*)data;
+
+          /*
+            std::cout<<"Before slabRead: (";
+            for (int i=0;i<3;i++)
+            std::cout<<f_ptr[i]<<",";
+            std::cout<<")"<<std::endl;
+          */
+
+          answer = dataset_id.slabRead(H5T_NATIVE_FLOAT,dataspace_id2.getID(),dataspace_id.getID(),&f_ptr[0]);
+          
+          /*
+            std::cout<<"After slabRead: (";
+            for (int i=0;i<3;i++)
+            std::cout<<f_ptr[i]<<",";
+            std::cout<<")\n"<<std::endl;
+          */
+
+          break;
+        case BaseFileInterface::H5_Double:
+          double *d_ptr;
+          d_ptr = (double*)data;
+          answer = dataset_id.slabRead(H5T_NATIVE_DOUBLE,dataspace_id2.getID(),dataspace_id.getID(),&d_ptr[0]);
+          break;
+        case BaseFileInterface::H5_Int32:
+          int32_t *i3_ptr;
+          i3_ptr = (int32_t*)data;
+          answer = dataset_id.slabRead(H5T_NATIVE_INT32,dataspace_id2.getID(),dataspace_id.getID(),&i3_ptr[0]);
+          break;
+        case BaseFileInterface::H5_Int64:
+          int64_t *i6_ptr;
+          i6_ptr = (int64_t*)data;
+          answer = dataset_id.slabRead(H5T_NATIVE_INT64,dataspace_id2.getID(),dataspace_id.getID(),&i6_ptr[0]);
                 break;
-                case BaseFileInterface::DataType(1):
-                        double *d_ptr;
-                        d_ptr = (double*)data;
-                        answer = dataset_id.slabRead(H5T_NATIVE_DOUBLE,dataspace_id2.getID(),dataspace_id.getID(),&d_ptr[0]);
-                break;
-                case BaseFileInterface::DataType(2):
-                        int32_t *i3_ptr;
-                        i3_ptr = (int32_t*)data;
-                        answer = dataset_id.slabRead(H5T_NATIVE_INT32,dataspace_id2.getID(),dataspace_id.getID(),&i3_ptr[0]);
-                break;
-                case BaseFileInterface::DataType(3):
-                        int64_t *i6_ptr;
-                        i6_ptr = (int64_t*)data;
-                        answer = dataset_id.slabRead(H5T_NATIVE_INT64,dataspace_id2.getID(),dataspace_id.getID(),&i6_ptr[0]);
-                break;
-                case BaseFileInterface::DataType(4):
-                        char *c_ptr;
-                        c_ptr = (char*)data;
-                        answer = dataset_id.slabRead(H5T_NATIVE_CHAR,dataspace_id2.getID(),dataspace_id.getID(),&c_ptr[0]);
-                break;
-                default:
-                break;
+        case BaseFileInterface::H5_Byte:
+          char *c_ptr;
+          c_ptr = (char*)data;
+          answer = dataset_id.slabRead(H5T_NATIVE_CHAR,dataspace_id2.getID(),dataspace_id.getID(),&c_ptr[0]);
+          break;
+        default:
+          break;
         }
-        if(answer == false) return answer;
+
+        if(answer == false) {
+          //std::cout<<"H5_Index:: dataset_id.slabRead()) failed"<<std::endl;
+          return answer;
+        }
+
         return answer;
 }
 
