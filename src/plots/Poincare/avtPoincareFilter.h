@@ -59,6 +59,9 @@
 //    Dave Pugmire (for Allen Sanderson), Wed Feb 25 09:52:11 EST 2009
 //    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
 //
+//    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
+//    Changed color to colorBy
+//
 // ****************************************************************************
 
 #include "StreamlineAnalyzerLib.h"
@@ -77,15 +80,15 @@ class avtPoincareFilter : public avtStreamlineFilter
     void                      SetShowStreamlines( bool v ) {showStreamlines=v;}
     void                      SetShowPoints( bool v ) {showPoints=v;}
 
-  void SetColorStyle( unsigned int value );
-  void SetMaxToroidalWinding( unsigned int value );
-  void SetOverrideToroidalWinding( unsigned int value);
-  void SetHitRate( double val );
-  void SetShowIslands( bool val );
-  void SetOverlaps( unsigned int val );
-  void SetShowCurves( unsigned int val );
-  void SetAdjustPlane( unsigned int val );
-  void SetClipPlanes( vector< double > planeAngles );
+    void SetColorBy( unsigned int value );
+    void SetMaxToroidalWinding( unsigned int value );
+    void SetOverrideToroidalWinding( unsigned int value);
+    void SetHitRate( double val );
+    void SetShowIslands( bool val );
+    void SetOverlaps( unsigned int val );
+    void SetShowCurves( unsigned int val );
+    void SetAdjustPlane( unsigned int val );
+    void SetClipPlanes( vector< double > planeAngles );
 
   protected:
     // Streamline overides.
@@ -129,7 +132,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     unsigned int showIslands;
     unsigned int overlaps;
 
-    unsigned int color;
+    unsigned int colorBy;
     bool is_curvemesh;
     int adjust_plane;
 

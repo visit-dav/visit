@@ -17,7 +17,7 @@
         Time
         Step
       </Enum>
-      <Enum name="ColorStyleType">
+      <Enum name="ColorBy">
         OriginalValue
         InputOrder
         PointIndex
@@ -124,43 +124,43 @@
       <Field name="showPoints" label="Show Points" type="bool">
         false
       </Field>
-      <Field name="NumberPlanes" label="NumberPlanes" type="int">
+      <Field name="numberPlanes" label="numberPlanes" type="int">
         1
       </Field>
-      <Field name="ColorStyle" label="ColorStyle value" type="enum" subtype="ColorStyleType">
+      <Field name="colorBy" label="colorBy" type="enum" subtype="ColorBy">
         SafetyFactor
       </Field>
-      <Field name="MaxToroidalWinding" label="MaxToroidalWinding" type="int">
+      <Field name="maxToroidalWinding" label="maxToroidalWinding" type="int">
         30
       </Field>
-      <Field name="OverrideToroidalWinding" label="OverrideToroidalWinding" type="int">
+      <Field name="overrideToroidalWinding" label="overrideToroidalWinding" type="int">
         0
       </Field>
-      <Field name="HitRate" label="HitRate" type="double">
+      <Field name="hitRate" label="hitRate" type="double">
         0.900000
       </Field>
-      <Field name="ShowCurves" label="ShowCurves" type="enum" subtype="ShowMeshType">
+      <Field name="showCurves" label="showCurves" type="enum" subtype="ShowMeshType">
         Curves
       </Field>
-      <Field name="AdjustPlane" label="AdjustPlane" type="int">
+      <Field name="adjustPlane" label="adjustPlane" type="int">
         -1
       </Field>
-      <Field name="ShowIslands" label="ShowIslands" type="bool">
+      <Field name="showIslands" label="showIslands" type="bool">
         false
       </Field>
-      <Field name="Overlaps" label="Overlaps" type="enum" subtype="OverlapType">
+      <Field name="overlaps" label="overlaps" type="enum" subtype="OverlapType">
         Remove
       </Field>
-      <Field name="Min" label="Min" type="double">
+      <Field name="min" label="min" type="double">
         0.000000
       </Field>
-      <Field name="Max" label="Max" type="double">
+      <Field name="max" label="max" type="double">
         0.000000
       </Field>
-      <Field name="useMin" label="Use Min" type="bool">
+      <Field name="minFlag" label="minFlag" type="bool">
         false
       </Field>
-      <Field name="useMax" label="Use Max" type="bool">
+      <Field name="maxFlag" label="maxFlag" type="bool">
         false
       </Field>
       <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">

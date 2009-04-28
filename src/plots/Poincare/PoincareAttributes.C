@@ -119,39 +119,39 @@ PoincareAttributes::TerminationType_FromString(const std::string &s, PoincareAtt
 }
 
 //
-// Enum conversion methods for PoincareAttributes::ColorStyleType
+// Enum conversion methods for PoincareAttributes::ColorBy
 //
 
-static const char *ColorStyleType_strings[] = {
+static const char *ColorBy_strings[] = {
 "OriginalValue", "InputOrder", "PointIndex", 
 "Plane", "ToroidalWindingOrder", "ToroidalWindingPointOrder", 
 "ToroidalWindings", "PoloidalWindings", "SafetyFactor"
 };
 
 std::string
-PoincareAttributes::ColorStyleType_ToString(PoincareAttributes::ColorStyleType t)
+PoincareAttributes::ColorBy_ToString(PoincareAttributes::ColorBy t)
 {
     int index = int(t);
     if(index < 0 || index >= 9) index = 0;
-    return ColorStyleType_strings[index];
+    return ColorBy_strings[index];
 }
 
 std::string
-PoincareAttributes::ColorStyleType_ToString(int t)
+PoincareAttributes::ColorBy_ToString(int t)
 {
     int index = (t < 0 || t >= 9) ? 0 : t;
-    return ColorStyleType_strings[index];
+    return ColorBy_strings[index];
 }
 
 bool
-PoincareAttributes::ColorStyleType_FromString(const std::string &s, PoincareAttributes::ColorStyleType &val)
+PoincareAttributes::ColorBy_FromString(const std::string &s, PoincareAttributes::ColorBy &val)
 {
     val = PoincareAttributes::OriginalValue;
     for(int i = 0; i < 9; ++i)
     {
-        if(s == ColorStyleType_strings[i])
+        if(s == ColorBy_strings[i])
         {
-            val = (ColorStyleType)i;
+            val = (ColorBy)i;
             return true;
         }
     }
@@ -360,19 +360,19 @@ PoincareAttributes::PoincareAttributes() :
     integrationType = AdamsBashforth;
     showStreamlines = false;
     showPoints = false;
-    NumberPlanes = 1;
-    ColorStyle = SafetyFactor;
-    MaxToroidalWinding = 30;
-    OverrideToroidalWinding = 0;
-    HitRate = 0.9;
-    ShowCurves = Curves;
-    AdjustPlane = -1;
-    ShowIslands = false;
-    Overlaps = Remove;
-    Min = 0;
-    Max = 0;
-    useMin = false;
-    useMax = false;
+    numberPlanes = 1;
+    colorBy = SafetyFactor;
+    maxToroidalWinding = 30;
+    overrideToroidalWinding = 0;
+    hitRate = 0.9;
+    showCurves = Curves;
+    adjustPlane = -1;
+    showIslands = false;
+    overlaps = Remove;
+    min = 0;
+    max = 0;
+    minFlag = false;
+    maxFlag = false;
     colorType = ColorBySingleColor;
 }
 
@@ -433,19 +433,19 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
     integrationType = obj.integrationType;
     showStreamlines = obj.showStreamlines;
     showPoints = obj.showPoints;
-    NumberPlanes = obj.NumberPlanes;
-    ColorStyle = obj.ColorStyle;
-    MaxToroidalWinding = obj.MaxToroidalWinding;
-    OverrideToroidalWinding = obj.OverrideToroidalWinding;
-    HitRate = obj.HitRate;
-    ShowCurves = obj.ShowCurves;
-    AdjustPlane = obj.AdjustPlane;
-    ShowIslands = obj.ShowIslands;
-    Overlaps = obj.Overlaps;
-    Min = obj.Min;
-    Max = obj.Max;
-    useMin = obj.useMin;
-    useMax = obj.useMax;
+    numberPlanes = obj.numberPlanes;
+    colorBy = obj.colorBy;
+    maxToroidalWinding = obj.maxToroidalWinding;
+    overrideToroidalWinding = obj.overrideToroidalWinding;
+    hitRate = obj.hitRate;
+    showCurves = obj.showCurves;
+    adjustPlane = obj.adjustPlane;
+    showIslands = obj.showIslands;
+    overlaps = obj.overlaps;
+    min = obj.min;
+    max = obj.max;
+    minFlag = obj.minFlag;
+    maxFlag = obj.maxFlag;
     colorType = obj.colorType;
 
     SelectAll();
@@ -529,19 +529,19 @@ PoincareAttributes::operator = (const PoincareAttributes &obj)
     integrationType = obj.integrationType;
     showStreamlines = obj.showStreamlines;
     showPoints = obj.showPoints;
-    NumberPlanes = obj.NumberPlanes;
-    ColorStyle = obj.ColorStyle;
-    MaxToroidalWinding = obj.MaxToroidalWinding;
-    OverrideToroidalWinding = obj.OverrideToroidalWinding;
-    HitRate = obj.HitRate;
-    ShowCurves = obj.ShowCurves;
-    AdjustPlane = obj.AdjustPlane;
-    ShowIslands = obj.ShowIslands;
-    Overlaps = obj.Overlaps;
-    Min = obj.Min;
-    Max = obj.Max;
-    useMin = obj.useMin;
-    useMax = obj.useMax;
+    numberPlanes = obj.numberPlanes;
+    colorBy = obj.colorBy;
+    maxToroidalWinding = obj.maxToroidalWinding;
+    overrideToroidalWinding = obj.overrideToroidalWinding;
+    hitRate = obj.hitRate;
+    showCurves = obj.showCurves;
+    adjustPlane = obj.adjustPlane;
+    showIslands = obj.showIslands;
+    overlaps = obj.overlaps;
+    min = obj.min;
+    max = obj.max;
+    minFlag = obj.minFlag;
+    maxFlag = obj.maxFlag;
     colorType = obj.colorType;
 
     SelectAll();
@@ -618,19 +618,19 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (integrationType == obj.integrationType) &&
             (showStreamlines == obj.showStreamlines) &&
             (showPoints == obj.showPoints) &&
-            (NumberPlanes == obj.NumberPlanes) &&
-            (ColorStyle == obj.ColorStyle) &&
-            (MaxToroidalWinding == obj.MaxToroidalWinding) &&
-            (OverrideToroidalWinding == obj.OverrideToroidalWinding) &&
-            (HitRate == obj.HitRate) &&
-            (ShowCurves == obj.ShowCurves) &&
-            (AdjustPlane == obj.AdjustPlane) &&
-            (ShowIslands == obj.ShowIslands) &&
-            (Overlaps == obj.Overlaps) &&
-            (Min == obj.Min) &&
-            (Max == obj.Max) &&
-            (useMin == obj.useMin) &&
-            (useMax == obj.useMax) &&
+            (numberPlanes == obj.numberPlanes) &&
+            (colorBy == obj.colorBy) &&
+            (maxToroidalWinding == obj.maxToroidalWinding) &&
+            (overrideToroidalWinding == obj.overrideToroidalWinding) &&
+            (hitRate == obj.hitRate) &&
+            (showCurves == obj.showCurves) &&
+            (adjustPlane == obj.adjustPlane) &&
+            (showIslands == obj.showIslands) &&
+            (overlaps == obj.overlaps) &&
+            (min == obj.min) &&
+            (max == obj.max) &&
+            (minFlag == obj.minFlag) &&
+            (maxFlag == obj.maxFlag) &&
             (colorType == obj.colorType));
 }
 
@@ -837,19 +837,19 @@ PoincareAttributes::SelectAll()
     Select(ID_integrationType,         (void *)&integrationType);
     Select(ID_showStreamlines,         (void *)&showStreamlines);
     Select(ID_showPoints,              (void *)&showPoints);
-    Select(ID_NumberPlanes,            (void *)&NumberPlanes);
-    Select(ID_ColorStyle,              (void *)&ColorStyle);
-    Select(ID_MaxToroidalWinding,      (void *)&MaxToroidalWinding);
-    Select(ID_OverrideToroidalWinding, (void *)&OverrideToroidalWinding);
-    Select(ID_HitRate,                 (void *)&HitRate);
-    Select(ID_ShowCurves,              (void *)&ShowCurves);
-    Select(ID_AdjustPlane,             (void *)&AdjustPlane);
-    Select(ID_ShowIslands,             (void *)&ShowIslands);
-    Select(ID_Overlaps,                (void *)&Overlaps);
-    Select(ID_Min,                     (void *)&Min);
-    Select(ID_Max,                     (void *)&Max);
-    Select(ID_useMin,                  (void *)&useMin);
-    Select(ID_useMax,                  (void *)&useMax);
+    Select(ID_numberPlanes,            (void *)&numberPlanes);
+    Select(ID_colorBy,                 (void *)&colorBy);
+    Select(ID_maxToroidalWinding,      (void *)&maxToroidalWinding);
+    Select(ID_overrideToroidalWinding, (void *)&overrideToroidalWinding);
+    Select(ID_hitRate,                 (void *)&hitRate);
+    Select(ID_showCurves,              (void *)&showCurves);
+    Select(ID_adjustPlane,             (void *)&adjustPlane);
+    Select(ID_showIslands,             (void *)&showIslands);
+    Select(ID_overlaps,                (void *)&overlaps);
+    Select(ID_min,                     (void *)&min);
+    Select(ID_max,                     (void *)&max);
+    Select(ID_minFlag,                 (void *)&minFlag);
+    Select(ID_maxFlag,                 (void *)&maxFlag);
     Select(ID_colorType,               (void *)&colorType);
 }
 
@@ -1011,82 +1011,82 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("showPoints", showPoints));
     }
 
-    if(completeSave || !FieldsEqual(ID_NumberPlanes, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_numberPlanes, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("NumberPlanes", NumberPlanes));
+        node->AddNode(new DataNode("numberPlanes", numberPlanes));
     }
 
-    if(completeSave || !FieldsEqual(ID_ColorStyle, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_colorBy, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("ColorStyle", ColorStyleType_ToString(ColorStyle)));
+        node->AddNode(new DataNode("colorBy", ColorBy_ToString(colorBy)));
     }
 
-    if(completeSave || !FieldsEqual(ID_MaxToroidalWinding, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_maxToroidalWinding, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("MaxToroidalWinding", MaxToroidalWinding));
+        node->AddNode(new DataNode("maxToroidalWinding", maxToroidalWinding));
     }
 
-    if(completeSave || !FieldsEqual(ID_OverrideToroidalWinding, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_overrideToroidalWinding, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("OverrideToroidalWinding", OverrideToroidalWinding));
+        node->AddNode(new DataNode("overrideToroidalWinding", overrideToroidalWinding));
     }
 
-    if(completeSave || !FieldsEqual(ID_HitRate, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_hitRate, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("HitRate", HitRate));
+        node->AddNode(new DataNode("hitRate", hitRate));
     }
 
-    if(completeSave || !FieldsEqual(ID_ShowCurves, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showCurves, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("ShowCurves", ShowMeshType_ToString(ShowCurves)));
+        node->AddNode(new DataNode("showCurves", ShowMeshType_ToString(showCurves)));
     }
 
-    if(completeSave || !FieldsEqual(ID_AdjustPlane, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_adjustPlane, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("AdjustPlane", AdjustPlane));
+        node->AddNode(new DataNode("adjustPlane", adjustPlane));
     }
 
-    if(completeSave || !FieldsEqual(ID_ShowIslands, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showIslands, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("ShowIslands", ShowIslands));
+        node->AddNode(new DataNode("showIslands", showIslands));
     }
 
-    if(completeSave || !FieldsEqual(ID_Overlaps, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_overlaps, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("Overlaps", OverlapType_ToString(Overlaps)));
+        node->AddNode(new DataNode("overlaps", OverlapType_ToString(overlaps)));
     }
 
-    if(completeSave || !FieldsEqual(ID_Min, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_min, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("Min", Min));
+        node->AddNode(new DataNode("min", min));
     }
 
-    if(completeSave || !FieldsEqual(ID_Max, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_max, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("Max", Max));
+        node->AddNode(new DataNode("max", max));
     }
 
-    if(completeSave || !FieldsEqual(ID_useMin, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_minFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("useMin", useMin));
+        node->AddNode(new DataNode("minFlag", minFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_useMax, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_maxFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("useMax", useMax));
+        node->AddNode(new DataNode("maxFlag", maxFlag));
     }
 
     if(completeSave || !FieldsEqual(ID_colorType, &defaultObject))
@@ -1215,31 +1215,31 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetShowStreamlines(node->AsBool());
     if((node = searchNode->GetNode("showPoints")) != 0)
         SetShowPoints(node->AsBool());
-    if((node = searchNode->GetNode("NumberPlanes")) != 0)
+    if((node = searchNode->GetNode("numberPlanes")) != 0)
         SetNumberPlanes(node->AsInt());
-    if((node = searchNode->GetNode("ColorStyle")) != 0)
+    if((node = searchNode->GetNode("colorBy")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 9)
-                SetColorStyle(ColorStyleType(ival));
+                SetColorBy(ColorBy(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            ColorStyleType value;
-            if(ColorStyleType_FromString(node->AsString(), value))
-                SetColorStyle(value);
+            ColorBy value;
+            if(ColorBy_FromString(node->AsString(), value))
+                SetColorBy(value);
         }
     }
-    if((node = searchNode->GetNode("MaxToroidalWinding")) != 0)
+    if((node = searchNode->GetNode("maxToroidalWinding")) != 0)
         SetMaxToroidalWinding(node->AsInt());
-    if((node = searchNode->GetNode("OverrideToroidalWinding")) != 0)
+    if((node = searchNode->GetNode("overrideToroidalWinding")) != 0)
         SetOverrideToroidalWinding(node->AsInt());
-    if((node = searchNode->GetNode("HitRate")) != 0)
+    if((node = searchNode->GetNode("hitRate")) != 0)
         SetHitRate(node->AsDouble());
-    if((node = searchNode->GetNode("ShowCurves")) != 0)
+    if((node = searchNode->GetNode("showCurves")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
@@ -1255,11 +1255,11 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
                 SetShowCurves(value);
         }
     }
-    if((node = searchNode->GetNode("AdjustPlane")) != 0)
+    if((node = searchNode->GetNode("adjustPlane")) != 0)
         SetAdjustPlane(node->AsInt());
-    if((node = searchNode->GetNode("ShowIslands")) != 0)
+    if((node = searchNode->GetNode("showIslands")) != 0)
         SetShowIslands(node->AsBool());
-    if((node = searchNode->GetNode("Overlaps")) != 0)
+    if((node = searchNode->GetNode("overlaps")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
@@ -1275,14 +1275,14 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
                 SetOverlaps(value);
         }
     }
-    if((node = searchNode->GetNode("Min")) != 0)
+    if((node = searchNode->GetNode("min")) != 0)
         SetMin(node->AsDouble());
-    if((node = searchNode->GetNode("Max")) != 0)
+    if((node = searchNode->GetNode("max")) != 0)
         SetMax(node->AsDouble());
-    if((node = searchNode->GetNode("useMin")) != 0)
-        SetUseMin(node->AsBool());
-    if((node = searchNode->GetNode("useMax")) != 0)
-        SetUseMax(node->AsBool());
+    if((node = searchNode->GetNode("minFlag")) != 0)
+        SetMinFlag(node->AsBool());
+    if((node = searchNode->GetNode("maxFlag")) != 0)
+        SetMaxFlag(node->AsBool());
     if((node = searchNode->GetNode("colorType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1465,94 +1465,94 @@ PoincareAttributes::SetShowPoints(bool showPoints_)
 }
 
 void
-PoincareAttributes::SetNumberPlanes(int NumberPlanes_)
+PoincareAttributes::SetNumberPlanes(int numberPlanes_)
 {
-    NumberPlanes = NumberPlanes_;
-    Select(ID_NumberPlanes, (void *)&NumberPlanes);
+    numberPlanes = numberPlanes_;
+    Select(ID_numberPlanes, (void *)&numberPlanes);
 }
 
 void
-PoincareAttributes::SetColorStyle(PoincareAttributes::ColorStyleType ColorStyle_)
+PoincareAttributes::SetColorBy(PoincareAttributes::ColorBy colorBy_)
 {
-    ColorStyle = ColorStyle_;
-    Select(ID_ColorStyle, (void *)&ColorStyle);
+    colorBy = colorBy_;
+    Select(ID_colorBy, (void *)&colorBy);
 }
 
 void
-PoincareAttributes::SetMaxToroidalWinding(int MaxToroidalWinding_)
+PoincareAttributes::SetMaxToroidalWinding(int maxToroidalWinding_)
 {
-    MaxToroidalWinding = MaxToroidalWinding_;
-    Select(ID_MaxToroidalWinding, (void *)&MaxToroidalWinding);
+    maxToroidalWinding = maxToroidalWinding_;
+    Select(ID_maxToroidalWinding, (void *)&maxToroidalWinding);
 }
 
 void
-PoincareAttributes::SetOverrideToroidalWinding(int OverrideToroidalWinding_)
+PoincareAttributes::SetOverrideToroidalWinding(int overrideToroidalWinding_)
 {
-    OverrideToroidalWinding = OverrideToroidalWinding_;
-    Select(ID_OverrideToroidalWinding, (void *)&OverrideToroidalWinding);
+    overrideToroidalWinding = overrideToroidalWinding_;
+    Select(ID_overrideToroidalWinding, (void *)&overrideToroidalWinding);
 }
 
 void
-PoincareAttributes::SetHitRate(double HitRate_)
+PoincareAttributes::SetHitRate(double hitRate_)
 {
-    HitRate = HitRate_;
-    Select(ID_HitRate, (void *)&HitRate);
+    hitRate = hitRate_;
+    Select(ID_hitRate, (void *)&hitRate);
 }
 
 void
-PoincareAttributes::SetShowCurves(PoincareAttributes::ShowMeshType ShowCurves_)
+PoincareAttributes::SetShowCurves(PoincareAttributes::ShowMeshType showCurves_)
 {
-    ShowCurves = ShowCurves_;
-    Select(ID_ShowCurves, (void *)&ShowCurves);
+    showCurves = showCurves_;
+    Select(ID_showCurves, (void *)&showCurves);
 }
 
 void
-PoincareAttributes::SetAdjustPlane(int AdjustPlane_)
+PoincareAttributes::SetAdjustPlane(int adjustPlane_)
 {
-    AdjustPlane = AdjustPlane_;
-    Select(ID_AdjustPlane, (void *)&AdjustPlane);
+    adjustPlane = adjustPlane_;
+    Select(ID_adjustPlane, (void *)&adjustPlane);
 }
 
 void
-PoincareAttributes::SetShowIslands(bool ShowIslands_)
+PoincareAttributes::SetShowIslands(bool showIslands_)
 {
-    ShowIslands = ShowIslands_;
-    Select(ID_ShowIslands, (void *)&ShowIslands);
+    showIslands = showIslands_;
+    Select(ID_showIslands, (void *)&showIslands);
 }
 
 void
-PoincareAttributes::SetOverlaps(PoincareAttributes::OverlapType Overlaps_)
+PoincareAttributes::SetOverlaps(PoincareAttributes::OverlapType overlaps_)
 {
-    Overlaps = Overlaps_;
-    Select(ID_Overlaps, (void *)&Overlaps);
+    overlaps = overlaps_;
+    Select(ID_overlaps, (void *)&overlaps);
 }
 
 void
-PoincareAttributes::SetMin(double Min_)
+PoincareAttributes::SetMin(double min_)
 {
-    Min = Min_;
-    Select(ID_Min, (void *)&Min);
+    min = min_;
+    Select(ID_min, (void *)&min);
 }
 
 void
-PoincareAttributes::SetMax(double Max_)
+PoincareAttributes::SetMax(double max_)
 {
-    Max = Max_;
-    Select(ID_Max, (void *)&Max);
+    max = max_;
+    Select(ID_max, (void *)&max);
 }
 
 void
-PoincareAttributes::SetUseMin(bool useMin_)
+PoincareAttributes::SetMinFlag(bool minFlag_)
 {
-    useMin = useMin_;
-    Select(ID_useMin, (void *)&useMin);
+    minFlag = minFlag_;
+    Select(ID_minFlag, (void *)&minFlag);
 }
 
 void
-PoincareAttributes::SetUseMax(bool useMax_)
+PoincareAttributes::SetMaxFlag(bool maxFlag_)
 {
-    useMax = useMax_;
-    Select(ID_useMax, (void *)&useMax);
+    maxFlag = maxFlag_;
+    Select(ID_maxFlag, (void *)&maxFlag);
 }
 
 void
@@ -1743,79 +1743,79 @@ PoincareAttributes::GetShowPoints() const
 int
 PoincareAttributes::GetNumberPlanes() const
 {
-    return NumberPlanes;
+    return numberPlanes;
 }
 
-PoincareAttributes::ColorStyleType
-PoincareAttributes::GetColorStyle() const
+PoincareAttributes::ColorBy
+PoincareAttributes::GetColorBy() const
 {
-    return ColorStyleType(ColorStyle);
+    return ColorBy(colorBy);
 }
 
 int
 PoincareAttributes::GetMaxToroidalWinding() const
 {
-    return MaxToroidalWinding;
+    return maxToroidalWinding;
 }
 
 int
 PoincareAttributes::GetOverrideToroidalWinding() const
 {
-    return OverrideToroidalWinding;
+    return overrideToroidalWinding;
 }
 
 double
 PoincareAttributes::GetHitRate() const
 {
-    return HitRate;
+    return hitRate;
 }
 
 PoincareAttributes::ShowMeshType
 PoincareAttributes::GetShowCurves() const
 {
-    return ShowMeshType(ShowCurves);
+    return ShowMeshType(showCurves);
 }
 
 int
 PoincareAttributes::GetAdjustPlane() const
 {
-    return AdjustPlane;
+    return adjustPlane;
 }
 
 bool
 PoincareAttributes::GetShowIslands() const
 {
-    return ShowIslands;
+    return showIslands;
 }
 
 PoincareAttributes::OverlapType
 PoincareAttributes::GetOverlaps() const
 {
-    return OverlapType(Overlaps);
+    return OverlapType(overlaps);
 }
 
 double
 PoincareAttributes::GetMin() const
 {
-    return Min;
+    return min;
 }
 
 double
 PoincareAttributes::GetMax() const
 {
-    return Max;
+    return max;
 }
 
 bool
-PoincareAttributes::GetUseMin() const
+PoincareAttributes::GetMinFlag() const
 {
-    return useMin;
+    return minFlag;
 }
 
 bool
-PoincareAttributes::GetUseMax() const
+PoincareAttributes::GetMaxFlag() const
 {
-    return useMax;
+    return maxFlag;
 }
 
 PoincareAttributes::ColoringMethod
@@ -1921,19 +1921,19 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_integrationType:         return "integrationType";
     case ID_showStreamlines:         return "showStreamlines";
     case ID_showPoints:              return "showPoints";
-    case ID_NumberPlanes:            return "NumberPlanes";
-    case ID_ColorStyle:              return "ColorStyle";
-    case ID_MaxToroidalWinding:      return "MaxToroidalWinding";
-    case ID_OverrideToroidalWinding: return "OverrideToroidalWinding";
-    case ID_HitRate:                 return "HitRate";
-    case ID_ShowCurves:              return "ShowCurves";
-    case ID_AdjustPlane:             return "AdjustPlane";
-    case ID_ShowIslands:             return "ShowIslands";
-    case ID_Overlaps:                return "Overlaps";
-    case ID_Min:                     return "Min";
-    case ID_Max:                     return "Max";
-    case ID_useMin:                  return "useMin";
-    case ID_useMax:                  return "useMax";
+    case ID_numberPlanes:            return "numberPlanes";
+    case ID_colorBy:                 return "colorBy";
+    case ID_maxToroidalWinding:      return "maxToroidalWinding";
+    case ID_overrideToroidalWinding: return "overrideToroidalWinding";
+    case ID_hitRate:                 return "hitRate";
+    case ID_showCurves:              return "showCurves";
+    case ID_adjustPlane:             return "adjustPlane";
+    case ID_showIslands:             return "showIslands";
+    case ID_overlaps:                return "overlaps";
+    case ID_min:                     return "min";
+    case ID_max:                     return "max";
+    case ID_minFlag:                 return "minFlag";
+    case ID_maxFlag:                 return "maxFlag";
     case ID_colorType:               return "colorType";
     default:  return "invalid index";
     }
@@ -1980,19 +1980,19 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_integrationType:         return FieldType_enum;
     case ID_showStreamlines:         return FieldType_bool;
     case ID_showPoints:              return FieldType_bool;
-    case ID_NumberPlanes:            return FieldType_int;
-    case ID_ColorStyle:              return FieldType_enum;
-    case ID_MaxToroidalWinding:      return FieldType_int;
-    case ID_OverrideToroidalWinding: return FieldType_int;
-    case ID_HitRate:                 return FieldType_double;
-    case ID_ShowCurves:              return FieldType_enum;
-    case ID_AdjustPlane:             return FieldType_int;
-    case ID_ShowIslands:             return FieldType_bool;
-    case ID_Overlaps:                return FieldType_enum;
-    case ID_Min:                     return FieldType_double;
-    case ID_Max:                     return FieldType_double;
-    case ID_useMin:                  return FieldType_bool;
-    case ID_useMax:                  return FieldType_bool;
+    case ID_numberPlanes:            return FieldType_int;
+    case ID_colorBy:                 return FieldType_enum;
+    case ID_maxToroidalWinding:      return FieldType_int;
+    case ID_overrideToroidalWinding: return FieldType_int;
+    case ID_hitRate:                 return FieldType_double;
+    case ID_showCurves:              return FieldType_enum;
+    case ID_adjustPlane:             return FieldType_int;
+    case ID_showIslands:             return FieldType_bool;
+    case ID_overlaps:                return FieldType_enum;
+    case ID_min:                     return FieldType_double;
+    case ID_max:                     return FieldType_double;
+    case ID_minFlag:                 return FieldType_bool;
+    case ID_maxFlag:                 return FieldType_bool;
     case ID_colorType:               return FieldType_enum;
     default:  return FieldType_unknown;
     }
@@ -2039,19 +2039,19 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_integrationType:         return "enum";
     case ID_showStreamlines:         return "bool";
     case ID_showPoints:              return "bool";
-    case ID_NumberPlanes:            return "int";
-    case ID_ColorStyle:              return "enum";
-    case ID_MaxToroidalWinding:      return "int";
-    case ID_OverrideToroidalWinding: return "int";
-    case ID_HitRate:                 return "double";
-    case ID_ShowCurves:              return "enum";
-    case ID_AdjustPlane:             return "int";
-    case ID_ShowIslands:             return "bool";
-    case ID_Overlaps:                return "enum";
-    case ID_Min:                     return "double";
-    case ID_Max:                     return "double";
-    case ID_useMin:                  return "bool";
-    case ID_useMax:                  return "bool";
+    case ID_numberPlanes:            return "int";
+    case ID_colorBy:                 return "enum";
+    case ID_maxToroidalWinding:      return "int";
+    case ID_overrideToroidalWinding: return "int";
+    case ID_hitRate:                 return "double";
+    case ID_showCurves:              return "enum";
+    case ID_adjustPlane:             return "int";
+    case ID_showIslands:             return "bool";
+    case ID_overlaps:                return "enum";
+    case ID_min:                     return "double";
+    case ID_max:                     return "double";
+    case ID_minFlag:                 return "bool";
+    case ID_maxFlag:                 return "bool";
     case ID_colorType:               return "enum";
     default:  return "invalid index";
     }
@@ -2214,69 +2214,69 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (showPoints == obj.showPoints);
         }
         break;
-    case ID_NumberPlanes:
+    case ID_numberPlanes:
         {  // new scope
-        retval = (NumberPlanes == obj.NumberPlanes);
+        retval = (numberPlanes == obj.numberPlanes);
         }
         break;
-    case ID_ColorStyle:
+    case ID_colorBy:
         {  // new scope
-        retval = (ColorStyle == obj.ColorStyle);
+        retval = (colorBy == obj.colorBy);
         }
         break;
-    case ID_MaxToroidalWinding:
+    case ID_maxToroidalWinding:
         {  // new scope
-        retval = (MaxToroidalWinding == obj.MaxToroidalWinding);
+        retval = (maxToroidalWinding == obj.maxToroidalWinding);
         }
         break;
-    case ID_OverrideToroidalWinding:
+    case ID_overrideToroidalWinding:
         {  // new scope
-        retval = (OverrideToroidalWinding == obj.OverrideToroidalWinding);
+        retval = (overrideToroidalWinding == obj.overrideToroidalWinding);
         }
         break;
-    case ID_HitRate:
+    case ID_hitRate:
         {  // new scope
-        retval = (HitRate == obj.HitRate);
+        retval = (hitRate == obj.hitRate);
         }
         break;
-    case ID_ShowCurves:
+    case ID_showCurves:
         {  // new scope
-        retval = (ShowCurves == obj.ShowCurves);
+        retval = (showCurves == obj.showCurves);
         }
         break;
-    case ID_AdjustPlane:
+    case ID_adjustPlane:
         {  // new scope
-        retval = (AdjustPlane == obj.AdjustPlane);
+        retval = (adjustPlane == obj.adjustPlane);
         }
         break;
-    case ID_ShowIslands:
+    case ID_showIslands:
         {  // new scope
-        retval = (ShowIslands == obj.ShowIslands);
+        retval = (showIslands == obj.showIslands);
         }
         break;
-    case ID_Overlaps:
+    case ID_overlaps:
         {  // new scope
-        retval = (Overlaps == obj.Overlaps);
+        retval = (overlaps == obj.overlaps);
         }
         break;
-    case ID_Min:
+    case ID_min:
         {  // new scope
-        retval = (Min == obj.Min);
+        retval = (min == obj.min);
         }
         break;
-    case ID_Max:
+    case ID_max:
         {  // new scope
-        retval = (Max == obj.Max);
+        retval = (max == obj.max);
         }
         break;
-    case ID_useMin:
+    case ID_minFlag:
         {  // new scope
-        retval = (useMin == obj.useMin);
+        retval = (minFlag == obj.minFlag);
         }
         break;
-    case ID_useMax:
+    case ID_maxFlag:
         {  // new scope
-        retval = (useMax == obj.useMax);
+        retval = (maxFlag == obj.maxFlag);
         }
         break;
     case ID_colorType:
