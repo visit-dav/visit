@@ -107,6 +107,11 @@ dnl   Explicitly null out libloc, libdep variables first.  Prevents them from
 dnl   `stacking up' with multiple invocations of this macro.  Pull out help
 dnl   string generation since it was complex.
 dnl
+dnl   Mark C. Miller, Mon Apr 27 19:44:04 PDT 2009
+dnl   Via trial-and-error, made some changes that result in help string being
+dnl   printed correctly. Also, removed extraneous references to 'with_hdf5'
+dnl   and changed AS_HELP_STRING to AC_HELP_STRING
+dnl
 AC_DEFUN(VAC_ARG_WITH3RD,
 [
     dnl Rename some variables for legibility.
@@ -125,16 +130,12 @@ AC_DEFUN(VAC_ARG_WITH3RD,
 
     dnl Help string is given, or we generate a generic one.
     m4_define([ax_m4_help])
-    m4_define(ax_m4_help, ifelse(,[$5],
-      [use ax_m4_lib_short_name; build related plugin(s)/code],[$5])
+    m4_append([ax_m4_help], ifelse(,[$5],
+        [use ax_m4_lib_short_name; build related plugin(s)/code],[$5])
     )
 
     AC_ARG_WITH(ax_m4_lib_short_name,
-        [AS_HELP_STRING(
-            [--with-ax_m4_lib_short_name],
-            ax_m4_help)
-        ],
-        [withval=${with_hdf5}],
+        AC_HELP_STRING(--with-ax_m4_lib_short_name,ax_m4_help),,
         [withval=${ax_m4_shellvar_libloc}]
     )
 

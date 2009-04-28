@@ -75,6 +75,9 @@
 /* Define if you have the netcdf header. */
 #undef HAVE_NETCDF_H
 
+/* Define if you are using PDB proper instead of PDB lite. */
+#undef HAVE_PDB_PROPER
+
 /* Define if you have pyparsing. */
 #undef HAVE_PYPARSING
 
