@@ -60,6 +60,9 @@
 //   Brad Whitlock, Thu Nov  6 14:39:36 PST 2008
 //   Added method to get the PDB file.
 //
+//   Mark C. Miller, Tue Apr 28 11:05:54 PDT 2009
+//   Changed name of PDB() to PDBfobj() to avoid symbol collision with PDB
+//   proper.
 // ****************************************************************************
 
 class PDBReader
@@ -72,7 +75,7 @@ public:
     void SetOwnsPDBFile(bool v);
 
     bool Identify();
-    PDBFileObject *PDB();
+    PDBFileObject *PDBfobj();
 protected:
     class VariableData
     {

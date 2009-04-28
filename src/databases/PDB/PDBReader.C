@@ -176,10 +176,13 @@ PDBReader::Identify()
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue Apr 28 11:05:54 PDT 2009
+//   Changed name of PDB() to PDBfobj() to avoid symbol collision with PDB
+//   proper.
 // ****************************************************************************
 
 PDBFileObject *
-PDBReader::PDB()
+PDBReader::PDBfobj()
 {
     return pdb;
 }

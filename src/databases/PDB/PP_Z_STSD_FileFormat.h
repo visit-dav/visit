@@ -70,6 +70,9 @@ class avtFileFormatInterface;
 //   Brad Whitlock, Fri Nov  7 10:24:22 PST 2008
 //   Added PDB method.
 //
+//   Mark C. Miller, Tue Apr 28 11:05:54 PDT 2009
+//   Changed name of PDB() to PDBfobj() to avoid symbol collision with PDB
+//   proper.
 // ****************************************************************************
 
 class PP_Z_STSD_FileFormat : public avtSTSDFileFormat
@@ -85,7 +88,7 @@ public:
     // Mimic PDBReader interface.
     bool Identify();
     void SetOwnsPDBFile(bool);
-    PDBFileObject *PDB();
+    PDBFileObject *PDBfobj();
 
     // Methods overrides for an STSD file format.
     virtual const char   *GetType();

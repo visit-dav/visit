@@ -2268,6 +2268,8 @@ PF3DFileFormat::MasterInformation::GetNDomains() const
 //   Jeremy Meredith, Thu Aug  7 15:59:40 EDT 2008
 //   Assume PDB won't modify our string literals, so cast to char* as needed.
 //
+//   Mark C. Miller, Tue Apr 28 11:05:17 PDT 2009
+//   Fixed compiler symbol redefinition error for a HAVE_PDB_PROPER build.
 // ****************************************************************************
 
 bool
@@ -2282,6 +2284,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
         // Stage 1: Get the history structure.
         //
         char s_type[100];
+        defstr *ds;
 #ifdef HAVE_PDB_PROPER
         syment *s = PD_query_entry(pdb->filePointer(), "__@history", NULL);
         if(s == NULL)
@@ -2291,13 +2294,13 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
         }
 
         strcpy(s_type, s->type);
-        defstr *ds = PD_inquire_type(pdb->filePointer(), s_type);
+        ds = PD_inquire_type(pdb->filePointer(), s_type);
 #else
         // Use the name that we know it to be since Silo's PDB does not seem to
         // have any of the PDB query functions.
         strcpy(s_type, "__");
 #endif
-        defstr *ds = PD_inquire_type(pdb->filePointer(), s_type);
+        ds = PD_inquire_type(pdb->filePointer(), s_type);
         if(ds == NULL)
         {
             debug4 << mName << "Can't get type information for " << s_type << endl;
