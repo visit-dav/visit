@@ -142,7 +142,7 @@ void HDF5_FQ::getPointData(const char* variableName,
                            const std::vector<int32_t>& indices) {
         
     std::string temp = variableName;
-        getPointData(temp,time,data, indices);
+    getPointData(temp,time,data, indices);
 }
 
 
@@ -151,7 +151,9 @@ void HDF5_FQ::getPointData(const std::string & variableName,
                            void *data,
                            const std::vector<int32_t>& indices) {
         
-        dataSets->getPointData(variableName,time,data, indices);
+  bool retval = dataSets->getPointData(variableName,time,data, indices);
+  if (!retval)
+    std::cout<<"getPointData failed"<<std::endl;
 }
 
 
@@ -174,7 +176,7 @@ void HDF5_FQ::getVariableInformation(const std::string & variableName,
                                 std::vector <int64_t> &dims,
                                 BaseFileInterface::DataType *type){
         
-        dataSets->getVariableInfo(variableName,time,dims,type);
+  dataSets->getVariableInfo(variableName,time,dims,type);
 }
 
 
@@ -213,12 +215,14 @@ int64_t HDF5_FQ::getHitCount(char * query,int64_t time){
 }
 
 void HDF5_FQ::executeQuery(char * query, int64_t time, std::vector<int32_t>& offset){
+  ibis::gVerbose = 0;
         tok = fastQuery[time]->createQuery(query);
         numHits = fastQuery[time]->submitQuery(tok);
         if (numHits>0)
           fastQuery[time]->getHitLocations((const char*)tok,offset);
 
         fastQuery[time]->destroyQuery(tok);
+  ibis::gVerbose = 0;
 }
 
 int64_t HDF5_FQ::executeEqualitySelectionQuery(const char * varname, 
@@ -261,9 +265,9 @@ void HDF5_FQ::getDataMinMax(const std::string& variableName,
 }
 
 void HDF5_FQ::getDataMinMax_Double(const std::string& variableName,
-                                    int64_t timestep,
-                                     double& min,
-                                    double& max){
+                                   int64_t timestep,
+                                   double& min,
+                                   double& max){
   //  getDataMinMax(variableName, timestep, (BaseFileInterface::DataType)1, min, max);
   double range[2];
   bool result = false;
@@ -279,6 +283,24 @@ void HDF5_FQ::getDataMinMax_Double(const std::string& variableName,
   
 }
 
+void HDF5_FQ::getDataMinMax_Float(const std::string& variableName,
+                                  int64_t timestep,
+                                  float& min,
+                                  float& max){
+  //  getDataMinMax(variableName, timestep, (BaseFileInterface::DataType)1??, min, max);
+  float range[2];
+  bool result = false;
+  
+  // timestep has to be zero, since there's only 1 dataset open at a time..
+  result = dataSets->getActualRange(variableName, 0, (void*)range);
+  if (!result) {
+    //std::cerr<<"ERROR:: HDF_FQ:: getDataMinMax call failed" << std::endl << std::endl;
+  }
+
+  min = range[0];
+  max = range[1];
+  
+}
 
 
 // Convert FastBit histogram to a hist where

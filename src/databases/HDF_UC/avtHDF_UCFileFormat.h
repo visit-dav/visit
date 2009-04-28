@@ -156,6 +156,10 @@ class avtHDF_UCFileFormat : public avtMTSDFileFormat
     
     //Chache histograms
     histogramCache*                    histoCache;
+
+    void                               printOffsets();
+    void                               printMesh(int numParticles, float*ptr, string msg);
+
 };
 
 

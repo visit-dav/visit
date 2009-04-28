@@ -179,8 +179,9 @@ avtHDF_UCFileFormat::AddFileInThisDirectory(const std::string &filenameWithDir)
   // now that we have the filename, we need to find 2 patterns
   // test_electrons_ 
   // and h5part
-  if ((filename.find("test_electrons_") != string::npos) && 
-      (filename.find(".h5part") != string::npos))
+  //  if ((filename.find("test_electrons_") != string::npos) && 
+  //      (filename.find(".h5part") != string::npos))
+  if (filename.find(".h5part") != string::npos)
     fileNames.push_back(filenameWithDir);
  
   sort(fileNames.begin(), fileNames.end());
@@ -321,14 +322,16 @@ vtkDataSet *
 avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
 {
   int t1 = visitTimer->StartTimer();
-    
+  
   long int i;
   
   int numParticles = 0;
-  double *X = NULL;
-  double *Y = NULL;
-  double *Z = NULL;
-  BaseFileInterface::DataType type;
+  double *XD,*YD,*ZD;
+  float  *XF,*YF,*ZF;
+  XD=YD=ZD=NULL;
+  XF=YF=ZF=NULL;
+
+  BaseFileInterface::DataType x_type,y_type,z_type;
   
   //  debug4<<"avtHDF_UCFileFormat::GetMesh()" << endl;
 
@@ -338,43 +341,139 @@ avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
     {
       //      debug4<<"GetMesh:: readAlldata" << endl;
       vector<int64_t> dims;
-      reader.getVariableInformation("x", 0, dims, &type);
-
+      reader.getVariableInformation("x", 0, dims, &x_type);
+      
       if (dims.size() != 1)
         EXCEPTION1(InvalidVariableException, meshname);
+      
       numParticles = dims[0];
       debug4<<"GetMesh:: all " << numParticles << " particles... " << endl;
-      X = new double[dims[0]];
-      reader.getData("x", 0, X);
-      Y = new double[dims[0]];
-      reader.getData("y", 0, Y);
+
+      reader.getVariableInformation("x", 0, dims, &x_type);
+      if (x_type==BaseFileInterface::H5_Double) {
+        XD = new double[numParticles];
+        reader.getData("x", 0, XD);     
+      }
+      else if (x_type==BaseFileInterface::H5_Float) {
+        XF = new float[numParticles];
+        reader.getData("x", 0, XF);     
+      }
+      else {
+        debug4<<"x is neither float nor double"<<endl;
+        EXCEPTION1(InvalidVariableException, "x");
+      }
+            
+
+      reader.getVariableInformation("y", 0, dims, &y_type);
+      if (dims[0]!=numParticles){
+        debug4<<"y dimensions != numParticles"<<endl;
+        EXCEPTION1(InvalidVariableException, "y");
+      }
+      
+      if (y_type==BaseFileInterface::H5_Double) {
+        YD = new double[numParticles];
+        reader.getData("y", 0, YD);
+      }
+      else if (y_type==BaseFileInterface::H5_Float) {
+        YF = new float[numParticles];
+        reader.getData("y", 0, YF);
+      }
+      else {
+        debug4<<"y is neither float nor double"<<endl;
+        EXCEPTION1(InvalidVariableException, "y");
+      }
+
       if (!is2D)
         {
-          Z = new double[dims[0]];
-          reader.getData("z", 0, Z);
-        }
+          reader.getVariableInformation("z", 0, dims, &z_type);
+          if (dims[0]!=numParticles){
+            debug4<<"z dimensions != numParticles"<<endl;
+            EXCEPTION1(InvalidVariableException, "z");
+          }
+          
+          if (z_type==BaseFileInterface::H5_Double) {
+            ZD = new double[numParticles];
+            reader.getData("z", 0, ZD);
+          }
+          else if (z_type==BaseFileInterface::H5_Float) {
+            ZF = new float[numParticles];
+            reader.getData("z", 0, ZF);
+          }
+          else {
+            debug4<<"z is neither float nor double"<<endl;
+            EXCEPTION1(InvalidVariableException, "z");
+          }
+        } // z case
+      
     }
+
   else
     {
       // RIGHT HERE!
       // we will fill in data based on the results of a previous query that we executed in 
       // setDataRangeSelections()
+
+      printOffsets();
       
       vector<int64_t> dims;
       numParticles = queryResults.size();
       
       debug4<<"GetMesh:: read [" << numParticles << "] particles... " << endl;
       debug4<<"GetMesh:: read [" << numParticles << "] particles from query result.. " << endl;
-      X = new double[numParticles];
-      reader.getPointData("x", 0, X, queryResults);
+
+      reader.getVariableInformation("x", 0, dims, &x_type);
+      if (x_type==BaseFileInterface::H5_Double) {
+        debug4<<"x is double type"<<std::endl;
+        XD = new double[numParticles];
+        reader.getPointData("x", 0, XD, queryResults);
+      }
+      else if (x_type==BaseFileInterface::H5_Float) {
+        debug4<<"x is float type"<<std::endl;
+        XF = new float[numParticles];
+        reader.getPointData("x", 0, XF, queryResults);
+      }
+      else {
+        debug4<<"x is neither float nor double"<<endl;
+        EXCEPTION1(InvalidVariableException, "x");
+      }
       
-      Y = new double[numParticles];
-      reader.getPointData("y", 0, Y, queryResults);
+      reader.getVariableInformation("y", 0, dims, &y_type);
+      if (y_type==BaseFileInterface::H5_Double) {
+        YD = new double[numParticles];
+        reader.getPointData("y", 0, YD, queryResults);
+      }
+      else if (y_type==BaseFileInterface::H5_Float) {
+        YF = new float[numParticles];
+        for (int i=0;i<numParticles;i++)
+          YF[i] = 9.99999;
+
+        reader.getPointData("y", 0, YF, queryResults);
+      }
+      else {
+        debug4<<"y is neither float nor double"<<endl;
+        EXCEPTION1(InvalidVariableException, "y");
+      }
+
       
       if (!is2D)
         {
-          Z = new double[numParticles];
-          reader.getPointData("z", 0, Z, queryResults);
+          reader.getVariableInformation("z", 0, dims, &z_type);
+          if (z_type==BaseFileInterface::H5_Double) {
+            ZD = new double[numParticles];
+            reader.getPointData("z", 0, ZD, queryResults);
+          }
+          else if (z_type==BaseFileInterface::H5_Float) {
+            ZF = new float[numParticles];
+            for (int i=0;i<numParticles;i++)
+              ZF[i] = 9.99999;
+
+            reader.getPointData("z", 0, ZF, queryResults);
+          }
+          else {
+            debug4<<"z is neither float nor double"<<endl;
+            EXCEPTION1(InvalidVariableException, "z");
+          }
+          
         }
     }
   
@@ -383,30 +482,67 @@ avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
   vtkpoints->SetNumberOfPoints((vtkIdType) numParticles);
   
   float *pts = (float *) vtkpoints->GetVoidPointer(0);
+
+  if (x_type==BaseFileInterface::H5_Double) {
+    for (i=0; i<numParticles; i++)
+      pts[3*i+0] = XD[i];
+
+    delete[] XD;
+  }
+
+  else if (x_type==BaseFileInterface::H5_Float) {
+    for (i=0; i<numParticles; i++)
+      pts[3*i+0] = XF[i];    
+
+    delete[] XF;
+  }
+
+  if (y_type==BaseFileInterface::H5_Double) {
+    for (i=0; i<numParticles; i++)
+      pts[3*i+1] = YD[i];
+
+    delete[] YD;
+  }
+    
+  else if (y_type==BaseFileInterface::H5_Float) {
+    for (i=0; i<numParticles; i++)
+      pts[3*i+1] = YF[i];    
   
-  for (i=0; i < numParticles ; i++)
-    {
-      pts[3*i+0] = X[i];
-      pts[3*i+1] = Y[i];
-      if (is2D)
-        pts[3*i+2] = 0.;
-      else
-        pts[3*i+2] = Z[i];
+    delete[] YF;
+  }
+
+  
+  if (is2D) {
+    for (i=0; i<numParticles; i++) // 2D data
+      pts[3*i+2] = 0.;
+  }
+  
+  else { // 3D data
+    if (z_type==BaseFileInterface::H5_Double) {
+      for (i=0; i<numParticles; i++)
+        pts[3*i+2] = ZD[i];
+      
+      delete[] ZD;
     }
+    
+    else if (z_type==BaseFileInterface::H5_Float) {
+      for (i=0; i<numParticles; i++)
+        pts[3*i+2] = ZF[i];    
+      
+      delete[] ZF;
+    }
+  } // is2D
+  
+  //printMesh(numParticles, pts, "after converting to pts array");
   
   dataset->Allocate(numParticles*2);
   for (i=0; i < numParticles ; i++)
-    {
+      {
       vtkIdType onevertex = (vtkIdType) i;
       dataset->InsertNextCell(VTK_VERTEX, 1, &onevertex);
     }
   dataset->SetPoints(vtkpoints);
   vtkpoints->Delete();
-  
-  delete [] X;
-  delete [] Y;
-  if (!is2D)
-    delete [] Z;
   
   visitTimer->StopTimer(t1, "HDF_UC::GetMesh ");
   return dataset;
@@ -434,43 +570,68 @@ avtHDF_UCFileFormat::GetVar(int ts, const char *varname)
 {
     int t1 = visitTimer->StartTimer();
     BaseFileInterface::DataType type;
-    double *V = NULL;
+    vector<int64_t> dims;
+    double *VD = NULL;
+    float *VF = NULL;
     int numParticles = 0;
-
+    
     //    debug4<<"avtHDF_UCFileFormat::GetVar()" << endl;
-
+    
     updateReader(ts, true);
     
     if (readAllData)
       {
         //        debug4<<"GetVar:: readAlldata" << endl;
-        vector<int64_t> dims;
         reader.getVariableInformation(varname, 0, dims, &type);
         if (dims.size() != 1)
           EXCEPTION1(InvalidVariableException, varname);
         numParticles = dims[0];
         debug4<<"GetVar() reading all " << numParticles << " particles...." << endl;
-        V = new double[numParticles];
-        reader.getData(varname, 0, V);
+        
+        if (type==BaseFileInterface::H5_Double) {
+          VD = new double[numParticles];
+          reader.getData(varname, 0, VD);
+        }
+        else if (type==BaseFileInterface::H5_Float) {
+          VF = new float[numParticles];
+          reader.getData(varname, 0, VF);
+        }
       }
     else
-    {
-      // we are going to read a subset of the data based on the query that was previously executed
-      // in RegisterDataSelections()
-      numParticles = queryResults.size();
-      debug4<<"GetVar() returning subset of " << numParticles << " particles...." << endl;
-      V = new double[numParticles];
-      reader.getPointData(varname, 0, V, queryResults);
-    }
+      {
+        // we are going to read a subset of the data based on the query that was previously executed
+        // in RegisterDataSelections()
+        numParticles = queryResults.size();
+        debug4<<"GetVar() returning subset of " << numParticles << " particles...." << endl;
+        
+        reader.getVariableInformation(varname, 0, dims, &type);
+        if (type==BaseFileInterface::H5_Double) {
+          VD = new double[numParticles];
+          reader.getPointData(varname, 0, VD, queryResults);
+        }
+        else if (type==BaseFileInterface::H5_Float) {
+          VF = new float[numParticles];
+          reader.getPointData(varname, 0, VF, queryResults);
+        }
+        
+      }
     
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(numParticles);
-    for (int i = 0 ; i < numParticles ; i++)
-    {
-        rv->SetTuple1(i, V[i]);
+    
+    if (type==BaseFileInterface::H5_Double) {
+      for (int i = 0 ; i < numParticles ; i++)
+        rv->SetTuple1(i, VD[i]);
+      
+      delete[]VD;
+    }
+    else if (type==BaseFileInterface::H5_Float) {
+      for (int i = 0 ; i < numParticles ; i++)
+        rv->SetTuple1(i, VF[i]);      
+      
+      delete[]VF;
     }
     
-    delete [] V;
     visitTimer->StopTimer(t1, "HDF_UC::GetVar ");
     return rv;
 }
@@ -667,22 +828,47 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
             ends[i]   =  spec->GetBounds()[i][spec->GetBounds()[i].size()-1];
       }
   }
-  //if bounds are not specified than ask the reader for the extends 
+  //if bounds are not specified than ask the reader for the extents 
   else{
-        debug4<< plugin << func << "Detected that bounds are not set.. setting them to..";
-        for(int i=0; i<variables.size() ; i++){
-            reader.getDataMinMax_Double(variables[i],
+    debug4<< plugin << func << "Detected that bounds are not set.. setting them to..";
+    for(int i=0; i<variables.size() ; i++){
+
+      
+      vector<int64_t> dims;
+      BaseFileInterface::DataType type;
+      reader.getVariableInformation(variables[i], 0, dims, &type);
+
+      if (type==BaseFileInterface::H5_Float) {
+        float start, end;
+        reader.getDataMinMax_Float(variables[i],
+                                   0,
+                                   start, 
+                                   end);
+        begins[i] = start;
+        ends[i] = end;
+      }
+      else if (type==BaseFileInterface::H5_Double) {
+        double start, end;
+        reader.getDataMinMax_Double(variables[i],
                                     0,
-                                    begins[i],
-                                    ends[i]);
-            debug4<< "\t FastBit calculated " << variables[i] << " bounds to be.. " 
-                  << begins[i] << ", "<< ends[i] << endl<<endl;
-        }
+                                    start,
+                                    end);
+        begins[i] = start;
+        ends[i] = end;
+      }
+      else {
+        debug4<<"Warning:: data type min/max not yet supported"<<endl;
+      }
+      
+      
+      debug4<< "\t HDF-FQ/FastBit calculated " << variables[i] << " bounds to be.. " 
+            << begins[i] << ", "<< ends[i] << endl<<endl;
+    }
   }
   
   bool cacheCurrentHisto = false;
   
-// We need to check the dimensionality of the histogram to determine what FastBit call
+  // We need to check the dimensionality of the histogram to determine what FastBit call
   // to make. We'll assume that the bounds contain junk for now and that num_bins is what will
   // drive the histogram creation.
   if( !isCached )
@@ -971,13 +1157,36 @@ avtHDF_UCFileFormat::ConstructIdentifiersFromDataRangeSelection(
     reader.executeQuery((char*)query.c_str(), 0, qResults);
     debug4 << "\t Execution of query string["<<query.size()<<" resulted in " << qResults.size() << " entries.." << endl;
    
-    double *V = new double[qResults.size()];
-    reader.getPointData("id", 0, V, qResults); // Prabhat- TODO 'id' is hardcoded here...
-
-    for (int j=0; j<qResults.size(); j++) 
-      ids.push_back(V[j]);
+    BaseFileInterface::DataType type;
+    vector<int64_t> dims;
+    double *VD = NULL;
+    float *VF = NULL;
     
-    delete [] V;
+    reader.getVariableInformation("id", 0, dims, &type); // TODO- id is hardcoded here
+    
+    if (type==BaseFileInterface::H5_Double) {
+      VD = new double[qResults.size()];
+      reader.getPointData("id", 0, VD, qResults); 
+    }
+    else if (type==BaseFileInterface::H5_Float) {
+      VF = new float[qResults.size()];
+      reader.getPointData("id", 0, VF, qResults); 
+    }
+    
+    if (type==BaseFileInterface::H5_Double) {
+      for (int j=0; j<qResults.size(); j++) 
+        ids.push_back(VD[j]);
+      
+      delete [] VD;
+    }
+    
+    else if (type==BaseFileInterface::H5_Float) {
+      for (int j=0; j<qResults.size(); j++) 
+        ids.push_back(VF[j]);
+
+      delete [] VF;
+    }    
+
     qResults.clear();
   }
   
@@ -1002,4 +1211,25 @@ int  avtHDF_UCFileFormat::get_string_from_identifiers(const vector<double>& Iden
 
   return Identifiers.size();
 
+}
+
+void  avtHDF_UCFileFormat::printOffsets() {
+  
+  debug4<<"Printing queryResults, size = "<<queryResults.size()<<endl;
+  for (int i=0; i<queryResults.size();i++)
+    debug4<<queryResults[i]<<", ";
+  debug4<<endl;
+
+}
+
+void  avtHDF_UCFileFormat::printMesh(int numParticles, float*ptr, string msg) {
+
+  debug4<<msg<<std::endl;
+  debug4<<"\nPrinting mesh with "<< numParticles<<" points************"<<endl;
+
+  for (int i=0; i<numParticles; i++) {
+    debug4<<"("<<ptr[3*i+0]<<", "<<ptr[3*i+1]<<", "<<ptr[3*i+2]<<") "<<std::endl;
+  }
+
+  debug4<<"****************************"<<std::endl;
 }
