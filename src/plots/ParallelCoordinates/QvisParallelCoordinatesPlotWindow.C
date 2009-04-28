@@ -877,6 +877,14 @@ QvisParallelCoordinatesPlotWindow::contextGammaProcessText()
 
 
 void
+QvisParallelCoordinatesPlotWindow::focusGammaProcessText()
+{
+    GetCurrentValues(ParallelCoordinatesAttributes::ID_focusGamma);
+    Apply();
+}
+
+
+void
 QvisParallelCoordinatesPlotWindow::contextNumPartitionsProcessText()
 {
     GetCurrentValues(ParallelCoordinatesAttributes::ID_contextNumPartitions);
