@@ -1095,6 +1095,13 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2009
 //
+//  Modifications:
+//  
+//    Gunther H. Weber, Mon Apr 27 20:41:18 PDT 2009
+//    Fix a crash due to deleting a reference we don't own. (Analogous to
+//    a fix Hank did on Mon Apr 6 17:13:58 PDT 2009 in 
+//    avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection 
+//
 // ****************************************************************************
 
 avtNamedSelection *
@@ -1129,7 +1136,9 @@ avtThresholdFilter::CreateNamedSelection(avtContract_p c, const std::string &s)
     avtNamedSelection *rv = NULL;
     if (ids != NULL)
         rv = new avtFloatingPointIdNamedSelection(s, ids->GetIdentifiers());
-    delete ids;
+    // Don't delete ids, since it is being cached at the DB level and we don't
+    // own this reference.
+    // delete ids;
 
     for (int i = 0 ; i < drs.size() ; i++)
         delete drs[i];
