@@ -64,6 +64,9 @@
 //   Brad Whitlock, Fri Nov  7 10:22:16 PST 2008
 //   Added support for streak plots.
 //
+//   Mark C. Miller, Tue Apr 28 11:05:54 PDT 2009
+//   Changed name of PDB() to PDBfobj() to avoid symbol collision with PDB
+//   proper.
 // ****************************************************************************
 
 class AlwaysReadCyclesAndTimes_STSD_FFI : public avtSTSDFileFormatInterface
@@ -90,7 +93,7 @@ public:
             for(int t = 0; t < nTimesteps; ++t)
             {
                 PP_Z_STSD_FileFormat *ff = (PP_Z_STSD_FileFormat *)timesteps[t][b];
-                pdbs.push_back(ff->PDB());
+                pdbs.push_back(ff->PDBfobj());
             }
         streaker.ReadStreakFile(std::string(timesteps[0][0]->GetFilename()) + ".streak", pdbs[0]);
         streaker.PopulateDatabaseMetaData(md);
@@ -143,7 +146,7 @@ public:
             for(int t = 0; t < nTimesteps; ++t)
             {
                 PP_Z_STSD_FileFormat *ff = (PP_Z_STSD_FileFormat *)timesteps[t][b];
-                pdbs.push_back(ff->PDB());
+                pdbs.push_back(ff->PDBfobj());
             }
         return pdbs;
     }
@@ -325,9 +328,9 @@ PP_Z_STSD_FileFormat::SetOwnsPDBFile(bool val)
 }
 
 PDBFileObject *
-PP_Z_STSD_FileFormat::PDB()
+PP_Z_STSD_FileFormat::PDBfobj()
 {
-    return reader.PDB();
+    return reader.PDBfobj();
 }
 
 //

@@ -455,6 +455,9 @@ PP_Z_MTSD_FileFormat::GetNTimesteps()
 //   Brad Whitlock, Fri Nov  7 09:47:58 PST 2008
 //   Added support for creating Streak plot data from the PDB data.
 //
+//    Mark C. Miller, Tue Apr 28 11:05:54 PDT 2009
+//    Changed name of PDB() to PDBfobj() to avoid symbol collision with PDB
+//    proper.
 // ****************************************************************************
 
 void
@@ -476,7 +479,7 @@ PP_Z_MTSD_FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Optionally tack on streak plot data.
     Streaker::PDBFileObjectVector pdbs;
     for(int i = 0; i < nReaders; ++i)
-        pdbs.push_back(readers[i]->PDB());
+        pdbs.push_back(readers[i]->PDBfobj());
     streaker.ReadStreakFile(pdbs[0]->GetName() + ".streak", pdbs[0]);
     streaker.PopulateDatabaseMetaData(md);
 #endif
@@ -577,6 +580,9 @@ PP_Z_MTSD_FileFormat::DetermineTimeFlow(int ts)
 //    Brad Whitlock, Tue Dec  2 15:52:01 PST 2008
 //    Added streaker material support.
 //
+//    Mark C. Miller, Tue Apr 28 11:05:54 PDT 2009
+//    Changed name of PDB() to PDBfobj() to avoid symbol collision with PDB
+//    proper.
 // ****************************************************************************
 
 void *
@@ -589,7 +595,7 @@ PP_Z_MTSD_FileFormat::GetAuxiliaryData(const char *var, int ts,
     // Try and get a streak mesh first. If none exists, return the mesh.
     Streaker::PDBFileObjectVector pdbs;
     for(int i = 0; i < nReaders; ++i)
-        pdbs.push_back(readers[i]->PDB());
+        pdbs.push_back(readers[i]->PDBfobj());
     retval = streaker.GetAuxiliaryData(var, type, args, df, pdbs);
     if(retval != 0)
         return retval;
@@ -632,6 +638,9 @@ PP_Z_MTSD_FileFormat::GetAuxiliaryData(const char *var, int ts,
 //    Brad Whitlock, Fri Nov  7 09:57:16 PST 2008
 //    Call code to get the streak plot mesh.
 //
+//    Mark C. Miller, Tue Apr 28 11:05:54 PDT 2009
+//    Changed name of PDB() to PDBfobj() to avoid symbol collision with PDB
+//    proper.
 // ****************************************************************************
 
 vtkDataSet *
@@ -643,7 +652,7 @@ PP_Z_MTSD_FileFormat::GetMesh(int ts, const char *var)
     // Try and get a streak mesh first. If none exists, return the mesh.
     Streaker::PDBFileObjectVector pdbs;
     for(int i = 0; i < nReaders; ++i)
-        pdbs.push_back(readers[i]->PDB());
+        pdbs.push_back(readers[i]->PDBfobj());
     retval = streaker.GetMesh(var, pdbs);
     if(retval != 0)
         return retval;
@@ -687,6 +696,9 @@ PP_Z_MTSD_FileFormat::GetMesh(int ts, const char *var)
 //    Brad Whitlock, Fri Nov  7 09:57:16 PST 2008
 //    Call code to get the streak plot mesh.
 //
+//    Mark C. Miller, Tue Apr 28 11:05:54 PDT 2009
+//    Changed name of PDB() to PDBfobj() to avoid symbol collision with PDB
+//    proper.
 // ****************************************************************************
 
 vtkDataArray *
@@ -697,7 +709,7 @@ PP_Z_MTSD_FileFormat::GetVar(int ts, const char *var)
     // Try and get a streak data first. If none exists, return the mesh data.
     Streaker::PDBFileObjectVector pdbs;
     for(int i = 0; i < nReaders; ++i)
-        pdbs.push_back(readers[i]->PDB());
+        pdbs.push_back(readers[i]->PDBfobj());
     retval = streaker.GetVar(var, pdbs);
     if(retval != 0)
         return retval;
