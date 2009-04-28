@@ -41,21 +41,21 @@
 // ************************************************************************* //
 #ifndef ENV_H
 #define ENV_H
-#include <utility_exports.h>
+#include <misc_exports.h>
 
 #include <string>
 
 namespace Environment {
     /// Obtains a value from the environment.
-    std::string UTILITY_API get(const char *);
+    std::string MISC_API get(const char *);
 
     /// Predicate to determine whether a variable is defined.
-    bool UTILITY_API exists(const char *);
+    bool MISC_API exists(const char *);
 
     /// Sets a value in the enviroment.  Overwrites any existing value.
-    void UTILITY_API set(const char *k, const char *v);
+    void MISC_API set(const char *k, const char *v);
 
     /// Removes the given key from the environment.
-    void UTILITY_API unset(const char *);
+    void MISC_API unset(const char *);
 };
 #endif
