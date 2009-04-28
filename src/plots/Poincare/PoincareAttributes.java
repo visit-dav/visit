@@ -69,15 +69,15 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int TERMINATIONTYPE_TIME = 1;
     public final static int TERMINATIONTYPE_STEP = 2;
 
-    public final static int COLORSTYLETYPE_ORIGINALVALUE = 0;
-    public final static int COLORSTYLETYPE_INPUTORDER = 1;
-    public final static int COLORSTYLETYPE_POINTINDEX = 2;
-    public final static int COLORSTYLETYPE_PLANE = 3;
-    public final static int COLORSTYLETYPE_TOROIDALWINDINGORDER = 4;
-    public final static int COLORSTYLETYPE_TOROIDALWINDINGPOINTORDER = 5;
-    public final static int COLORSTYLETYPE_TOROIDALWINDINGS = 6;
-    public final static int COLORSTYLETYPE_POLOIDALWINDINGS = 7;
-    public final static int COLORSTYLETYPE_SAFETYFACTOR = 8;
+    public final static int COLORBY_ORIGINALVALUE = 0;
+    public final static int COLORBY_INPUTORDER = 1;
+    public final static int COLORBY_POINTINDEX = 2;
+    public final static int COLORBY_PLANE = 3;
+    public final static int COLORBY_TOROIDALWINDINGORDER = 4;
+    public final static int COLORBY_TOROIDALWINDINGPOINTORDER = 5;
+    public final static int COLORBY_TOROIDALWINDINGS = 6;
+    public final static int COLORBY_POLOIDALWINDINGS = 7;
+    public final static int COLORBY_SAFETYFACTOR = 8;
 
     public final static int SHOWMESHTYPE_CURVES = 0;
     public final static int SHOWMESHTYPE_SURFACES = 1;
@@ -137,19 +137,19 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         showStreamlines = false;
         showPoints = false;
-        NumberPlanes = 1;
-        ColorStyle = COLORSTYLETYPE_SAFETYFACTOR;
-        MaxToroidalWinding = 30;
-        OverrideToroidalWinding = 0;
-        HitRate = 0.9;
-        ShowCurves = SHOWMESHTYPE_CURVES;
-        AdjustPlane = -1;
-        ShowIslands = false;
-        Overlaps = OVERLAPTYPE_REMOVE;
-        Min = 0;
-        Max = 0;
-        useMin = false;
-        useMax = false;
+        numberPlanes = 1;
+        colorBy = COLORBY_SAFETYFACTOR;
+        maxToroidalWinding = 30;
+        overrideToroidalWinding = 0;
+        hitRate = 0.9;
+        showCurves = SHOWMESHTYPE_CURVES;
+        adjustPlane = -1;
+        showIslands = false;
+        overlaps = OVERLAPTYPE_REMOVE;
+        min = 0;
+        max = 0;
+        minFlag = false;
+        maxFlag = false;
         colorType = COLORINGMETHOD_COLORBYSINGLECOLOR;
     }
 
@@ -204,19 +204,19 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         integrationType = obj.integrationType;
         showStreamlines = obj.showStreamlines;
         showPoints = obj.showPoints;
-        NumberPlanes = obj.NumberPlanes;
-        ColorStyle = obj.ColorStyle;
-        MaxToroidalWinding = obj.MaxToroidalWinding;
-        OverrideToroidalWinding = obj.OverrideToroidalWinding;
-        HitRate = obj.HitRate;
-        ShowCurves = obj.ShowCurves;
-        AdjustPlane = obj.AdjustPlane;
-        ShowIslands = obj.ShowIslands;
-        Overlaps = obj.Overlaps;
-        Min = obj.Min;
-        Max = obj.Max;
-        useMin = obj.useMin;
-        useMax = obj.useMax;
+        numberPlanes = obj.numberPlanes;
+        colorBy = obj.colorBy;
+        maxToroidalWinding = obj.maxToroidalWinding;
+        overrideToroidalWinding = obj.overrideToroidalWinding;
+        hitRate = obj.hitRate;
+        showCurves = obj.showCurves;
+        adjustPlane = obj.adjustPlane;
+        showIslands = obj.showIslands;
+        overlaps = obj.overlaps;
+        min = obj.min;
+        max = obj.max;
+        minFlag = obj.minFlag;
+        maxFlag = obj.maxFlag;
         colorType = obj.colorType;
 
         SelectAll();
@@ -278,19 +278,19 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (integrationType == obj.integrationType) &&
                 (showStreamlines == obj.showStreamlines) &&
                 (showPoints == obj.showPoints) &&
-                (NumberPlanes == obj.NumberPlanes) &&
-                (ColorStyle == obj.ColorStyle) &&
-                (MaxToroidalWinding == obj.MaxToroidalWinding) &&
-                (OverrideToroidalWinding == obj.OverrideToroidalWinding) &&
-                (HitRate == obj.HitRate) &&
-                (ShowCurves == obj.ShowCurves) &&
-                (AdjustPlane == obj.AdjustPlane) &&
-                (ShowIslands == obj.ShowIslands) &&
-                (Overlaps == obj.Overlaps) &&
-                (Min == obj.Min) &&
-                (Max == obj.Max) &&
-                (useMin == obj.useMin) &&
-                (useMax == obj.useMax) &&
+                (numberPlanes == obj.numberPlanes) &&
+                (colorBy == obj.colorBy) &&
+                (maxToroidalWinding == obj.maxToroidalWinding) &&
+                (overrideToroidalWinding == obj.overrideToroidalWinding) &&
+                (hitRate == obj.hitRate) &&
+                (showCurves == obj.showCurves) &&
+                (adjustPlane == obj.adjustPlane) &&
+                (showIslands == obj.showIslands) &&
+                (overlaps == obj.overlaps) &&
+                (min == obj.min) &&
+                (max == obj.max) &&
+                (minFlag == obj.minFlag) &&
+                (maxFlag == obj.maxFlag) &&
                 (colorType == obj.colorType));
     }
 
@@ -484,81 +484,81 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(20);
     }
 
-    public void SetNumberPlanes(int NumberPlanes_)
+    public void SetNumberPlanes(int numberPlanes_)
     {
-        NumberPlanes = NumberPlanes_;
+        numberPlanes = numberPlanes_;
         Select(21);
     }
 
-    public void SetColorStyle(int ColorStyle_)
+    public void SetColorBy(int colorBy_)
     {
-        ColorStyle = ColorStyle_;
+        colorBy = colorBy_;
         Select(22);
     }
 
-    public void SetMaxToroidalWinding(int MaxToroidalWinding_)
+    public void SetMaxToroidalWinding(int maxToroidalWinding_)
     {
-        MaxToroidalWinding = MaxToroidalWinding_;
+        maxToroidalWinding = maxToroidalWinding_;
         Select(23);
     }
 
-    public void SetOverrideToroidalWinding(int OverrideToroidalWinding_)
+    public void SetOverrideToroidalWinding(int overrideToroidalWinding_)
     {
-        OverrideToroidalWinding = OverrideToroidalWinding_;
+        overrideToroidalWinding = overrideToroidalWinding_;
         Select(24);
     }
 
-    public void SetHitRate(double HitRate_)
+    public void SetHitRate(double hitRate_)
     {
-        HitRate = HitRate_;
+        hitRate = hitRate_;
         Select(25);
     }
 
-    public void SetShowCurves(int ShowCurves_)
+    public void SetShowCurves(int showCurves_)
     {
-        ShowCurves = ShowCurves_;
+        showCurves = showCurves_;
         Select(26);
     }
 
-    public void SetAdjustPlane(int AdjustPlane_)
+    public void SetAdjustPlane(int adjustPlane_)
     {
-        AdjustPlane = AdjustPlane_;
+        adjustPlane = adjustPlane_;
         Select(27);
     }
 
-    public void SetShowIslands(boolean ShowIslands_)
+    public void SetShowIslands(boolean showIslands_)
     {
-        ShowIslands = ShowIslands_;
+        showIslands = showIslands_;
         Select(28);
     }
 
-    public void SetOverlaps(int Overlaps_)
+    public void SetOverlaps(int overlaps_)
     {
-        Overlaps = Overlaps_;
+        overlaps = overlaps_;
         Select(29);
     }
 
-    public void SetMin(double Min_)
+    public void SetMin(double min_)
     {
-        Min = Min_;
+        min = min_;
         Select(30);
     }
 
-    public void SetMax(double Max_)
+    public void SetMax(double max_)
     {
-        Max = Max_;
+        max = max_;
         Select(31);
     }
 
-    public void SetUseMin(boolean useMin_)
+    public void SetMinFlag(boolean minFlag_)
     {
-        useMin = useMin_;
+        minFlag = minFlag_;
         Select(32);
     }
 
-    public void SetUseMax(boolean useMax_)
+    public void SetMaxFlag(boolean maxFlag_)
     {
-        useMax = useMax_;
+        maxFlag = maxFlag_;
         Select(33);
     }
 
@@ -590,19 +590,19 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetIntegrationType() { return integrationType; }
     public boolean        GetShowStreamlines() { return showStreamlines; }
     public boolean        GetShowPoints() { return showPoints; }
-    public int            GetNumberPlanes() { return NumberPlanes; }
-    public int            GetColorStyle() { return ColorStyle; }
-    public int            GetMaxToroidalWinding() { return MaxToroidalWinding; }
-    public int            GetOverrideToroidalWinding() { return OverrideToroidalWinding; }
-    public double         GetHitRate() { return HitRate; }
-    public int            GetShowCurves() { return ShowCurves; }
-    public int            GetAdjustPlane() { return AdjustPlane; }
-    public boolean        GetShowIslands() { return ShowIslands; }
-    public int            GetOverlaps() { return Overlaps; }
-    public double         GetMin() { return Min; }
-    public double         GetMax() { return Max; }
-    public boolean        GetUseMin() { return useMin; }
-    public boolean        GetUseMax() { return useMax; }
+    public int            GetNumberPlanes() { return numberPlanes; }
+    public int            GetColorBy() { return colorBy; }
+    public int            GetMaxToroidalWinding() { return maxToroidalWinding; }
+    public int            GetOverrideToroidalWinding() { return overrideToroidalWinding; }
+    public double         GetHitRate() { return hitRate; }
+    public int            GetShowCurves() { return showCurves; }
+    public int            GetAdjustPlane() { return adjustPlane; }
+    public boolean        GetShowIslands() { return showIslands; }
+    public int            GetOverlaps() { return overlaps; }
+    public double         GetMin() { return min; }
+    public double         GetMax() { return max; }
+    public boolean        GetMinFlag() { return minFlag; }
+    public boolean        GetMaxFlag() { return maxFlag; }
     public int            GetColorType() { return colorType; }
 
     // Write and read methods.
@@ -651,31 +651,31 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(20, buf))
             buf.WriteBool(showPoints);
         if(WriteSelect(21, buf))
-            buf.WriteInt(NumberPlanes);
+            buf.WriteInt(numberPlanes);
         if(WriteSelect(22, buf))
-            buf.WriteInt(ColorStyle);
+            buf.WriteInt(colorBy);
         if(WriteSelect(23, buf))
-            buf.WriteInt(MaxToroidalWinding);
+            buf.WriteInt(maxToroidalWinding);
         if(WriteSelect(24, buf))
-            buf.WriteInt(OverrideToroidalWinding);
+            buf.WriteInt(overrideToroidalWinding);
         if(WriteSelect(25, buf))
-            buf.WriteDouble(HitRate);
+            buf.WriteDouble(hitRate);
         if(WriteSelect(26, buf))
-            buf.WriteInt(ShowCurves);
+            buf.WriteInt(showCurves);
         if(WriteSelect(27, buf))
-            buf.WriteInt(AdjustPlane);
+            buf.WriteInt(adjustPlane);
         if(WriteSelect(28, buf))
-            buf.WriteBool(ShowIslands);
+            buf.WriteBool(showIslands);
         if(WriteSelect(29, buf))
-            buf.WriteInt(Overlaps);
+            buf.WriteInt(overlaps);
         if(WriteSelect(30, buf))
-            buf.WriteDouble(Min);
+            buf.WriteDouble(min);
         if(WriteSelect(31, buf))
-            buf.WriteDouble(Max);
+            buf.WriteDouble(max);
         if(WriteSelect(32, buf))
-            buf.WriteBool(useMin);
+            buf.WriteBool(minFlag);
         if(WriteSelect(33, buf))
-            buf.WriteBool(useMax);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(34, buf))
             buf.WriteInt(colorType);
     }
@@ -755,7 +755,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 SetNumberPlanes(buf.ReadInt());
                 break;
             case 22:
-                SetColorStyle(buf.ReadInt());
+                SetColorBy(buf.ReadInt());
                 break;
             case 23:
                 SetMaxToroidalWinding(buf.ReadInt());
@@ -785,10 +785,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 SetMax(buf.ReadDouble());
                 break;
             case 32:
-                SetUseMin(buf.ReadBool());
+                SetMinFlag(buf.ReadBool());
                 break;
             case 33:
-                SetUseMax(buf.ReadBool());
+                SetMaxFlag(buf.ReadBool());
                 break;
             case 34:
                 SetColorType(buf.ReadInt());
@@ -840,52 +840,52 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + boolToString("showStreamlines", showStreamlines, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
-        str = str + intToString("NumberPlanes", NumberPlanes, indent) + "\n";
-        str = str + indent + "ColorStyle = ";
-        if(ColorStyle == COLORSTYLETYPE_ORIGINALVALUE)
-            str = str + "COLORSTYLETYPE_ORIGINALVALUE";
-        if(ColorStyle == COLORSTYLETYPE_INPUTORDER)
-            str = str + "COLORSTYLETYPE_INPUTORDER";
-        if(ColorStyle == COLORSTYLETYPE_POINTINDEX)
-            str = str + "COLORSTYLETYPE_POINTINDEX";
-        if(ColorStyle == COLORSTYLETYPE_PLANE)
-            str = str + "COLORSTYLETYPE_PLANE";
-        if(ColorStyle == COLORSTYLETYPE_TOROIDALWINDINGORDER)
-            str = str + "COLORSTYLETYPE_TOROIDALWINDINGORDER";
-        if(ColorStyle == COLORSTYLETYPE_TOROIDALWINDINGPOINTORDER)
-            str = str + "COLORSTYLETYPE_TOROIDALWINDINGPOINTORDER";
-        if(ColorStyle == COLORSTYLETYPE_TOROIDALWINDINGS)
-            str = str + "COLORSTYLETYPE_TOROIDALWINDINGS";
-        if(ColorStyle == COLORSTYLETYPE_POLOIDALWINDINGS)
-            str = str + "COLORSTYLETYPE_POLOIDALWINDINGS";
-        if(ColorStyle == COLORSTYLETYPE_SAFETYFACTOR)
-            str = str + "COLORSTYLETYPE_SAFETYFACTOR";
+        str = str + intToString("numberPlanes", numberPlanes, indent) + "\n";
+        str = str + indent + "colorBy = ";
+        if(colorBy == COLORBY_ORIGINALVALUE)
+            str = str + "COLORBY_ORIGINALVALUE";
+        if(colorBy == COLORBY_INPUTORDER)
+            str = str + "COLORBY_INPUTORDER";
+        if(colorBy == COLORBY_POINTINDEX)
+            str = str + "COLORBY_POINTINDEX";
+        if(colorBy == COLORBY_PLANE)
+            str = str + "COLORBY_PLANE";
+        if(colorBy == COLORBY_TOROIDALWINDINGORDER)
+            str = str + "COLORBY_TOROIDALWINDINGORDER";
+        if(colorBy == COLORBY_TOROIDALWINDINGPOINTORDER)
+            str = str + "COLORBY_TOROIDALWINDINGPOINTORDER";
+        if(colorBy == COLORBY_TOROIDALWINDINGS)
+            str = str + "COLORBY_TOROIDALWINDINGS";
+        if(colorBy == COLORBY_POLOIDALWINDINGS)
+            str = str + "COLORBY_POLOIDALWINDINGS";
+        if(colorBy == COLORBY_SAFETYFACTOR)
+            str = str + "COLORBY_SAFETYFACTOR";
         str = str + "\n";
-        str = str + intToString("MaxToroidalWinding", MaxToroidalWinding, indent) + "\n";
-        str = str + intToString("OverrideToroidalWinding", OverrideToroidalWinding, indent) + "\n";
-        str = str + doubleToString("HitRate", HitRate, indent) + "\n";
-        str = str + indent + "ShowCurves = ";
-        if(ShowCurves == SHOWMESHTYPE_CURVES)
+        str = str + intToString("maxToroidalWinding", maxToroidalWinding, indent) + "\n";
+        str = str + intToString("overrideToroidalWinding", overrideToroidalWinding, indent) + "\n";
+        str = str + doubleToString("hitRate", hitRate, indent) + "\n";
+        str = str + indent + "showCurves = ";
+        if(showCurves == SHOWMESHTYPE_CURVES)
             str = str + "SHOWMESHTYPE_CURVES";
-        if(ShowCurves == SHOWMESHTYPE_SURFACES)
+        if(showCurves == SHOWMESHTYPE_SURFACES)
             str = str + "SHOWMESHTYPE_SURFACES";
         str = str + "\n";
-        str = str + intToString("AdjustPlane", AdjustPlane, indent) + "\n";
-        str = str + boolToString("ShowIslands", ShowIslands, indent) + "\n";
-        str = str + indent + "Overlaps = ";
-        if(Overlaps == OVERLAPTYPE_RAW)
+        str = str + intToString("adjustPlane", adjustPlane, indent) + "\n";
+        str = str + boolToString("showIslands", showIslands, indent) + "\n";
+        str = str + indent + "overlaps = ";
+        if(overlaps == OVERLAPTYPE_RAW)
             str = str + "OVERLAPTYPE_RAW";
-        if(Overlaps == OVERLAPTYPE_REMOVE)
+        if(overlaps == OVERLAPTYPE_REMOVE)
             str = str + "OVERLAPTYPE_REMOVE";
-        if(Overlaps == OVERLAPTYPE_MERGE)
+        if(overlaps == OVERLAPTYPE_MERGE)
             str = str + "OVERLAPTYPE_MERGE";
-        if(Overlaps == OVERLAPTYPE_SMOOTH)
+        if(overlaps == OVERLAPTYPE_SMOOTH)
             str = str + "OVERLAPTYPE_SMOOTH";
         str = str + "\n";
-        str = str + doubleToString("Min", Min, indent) + "\n";
-        str = str + doubleToString("Max", Max, indent) + "\n";
-        str = str + boolToString("useMin", useMin, indent) + "\n";
-        str = str + boolToString("useMax", useMax, indent) + "\n";
+        str = str + doubleToString("min", min, indent) + "\n";
+        str = str + doubleToString("max", max, indent) + "\n";
+        str = str + boolToString("minFlag", minFlag, indent) + "\n";
+        str = str + boolToString("maxFlag", maxFlag, indent) + "\n";
         str = str + indent + "colorType = ";
         if(colorType == COLORINGMETHOD_COLORBYSINGLECOLOR)
             str = str + "COLORINGMETHOD_COLORBYSINGLECOLOR";
@@ -918,19 +918,19 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            integrationType;
     private boolean        showStreamlines;
     private boolean        showPoints;
-    private int            NumberPlanes;
-    private int            ColorStyle;
-    private int            MaxToroidalWinding;
-    private int            OverrideToroidalWinding;
-    private double         HitRate;
-    private int            ShowCurves;
-    private int            AdjustPlane;
-    private boolean        ShowIslands;
-    private int            Overlaps;
-    private double         Min;
-    private double         Max;
-    private boolean        useMin;
-    private boolean        useMax;
+    private int            numberPlanes;
+    private int            colorBy;
+    private int            maxToroidalWinding;
+    private int            overrideToroidalWinding;
+    private double         hitRate;
+    private int            showCurves;
+    private int            adjustPlane;
+    private boolean        showIslands;
+    private int            overlaps;
+    private double         min;
+    private double         max;
+    private boolean        minFlag;
+    private boolean        maxFlag;
     private int            colorType;
 }
 

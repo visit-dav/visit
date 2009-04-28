@@ -298,6 +298,9 @@ avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
 //    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
 //    Load LUT or load single color, depending on attrs.
 //
+//    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
+//    GUI reorganization.
+//
 // ****************************************************************************
 
 void
@@ -358,7 +361,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetShowPoints(atts.GetShowPoints());
 
 
-    poincareFilter->SetColorStyle( atts.GetColorStyle() );
+    poincareFilter->SetColoringMethod( atts.GetColorBy() );
     poincareFilter->SetMaxToroidalWinding( atts.GetMaxToroidalWinding() );
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetHitRate( atts.GetHitRate() );
@@ -454,12 +457,12 @@ avtPoincarePlot::SetLegendRanges()
     double min, max;
     varMapper->GetVarRange(min, max);
 
-    if (atts.GetUseMin())
+    if (atts.GetMinFlag())
         min = atts.GetMin();
-    if (atts.GetUseMax())
+    if (atts.GetMaxFlag())
         max = atts.GetMax();
 
-    if (atts.GetUseMin() && atts.GetUseMax() && min >= max)
+    if (atts.GetMinFlag() && atts.GetMaxFlag() && min >= max)
     {
         EXCEPTION1(InvalidLimitsException, false); 
     }

@@ -89,6 +89,9 @@ static const int COLOR_Solid = 9;
 //    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
 //    Add variables for colorBy var.
 //
+//    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
+//    Changed color to colorBy
+//
 // ****************************************************************************
 
 avtPoincareFilter::avtPoincareFilter() :
@@ -99,7 +102,7 @@ avtPoincareFilter::avtPoincareFilter() :
     hitrate( 0.90 ),
     showIslands(0),
     overlaps(1),
-    color(COLOR_SafetyFactor),
+    colorBy(COLOR_SafetyFactor),
     is_curvemesh(1),
     adjust_plane(-1)
 {
@@ -271,7 +274,7 @@ avtPoincareFilter::SetOverlaps( unsigned int val )
 }
 
 // ****************************************************************************
-//  Method: avtPoincareFilter::SetColorStyle
+//  Method: avtPoincareFilter::SetColorBy
 //
 //  Purpose:
 //      Sets the attribute values from the GUI
@@ -282,12 +285,17 @@ avtPoincareFilter::SetOverlaps( unsigned int val )
 //  Creationist: Allen Sanderson
 //  Creation:    Wed Feb 25 09:52:11 EST 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
+//    Changed color to colorBy
+//
 // ****************************************************************************
 
 void
-avtPoincareFilter::SetColorStyle( unsigned int value )
+avtPoincareFilter::SetColorBy( unsigned int value )
 {
-    color = value;
+    colorBy = value;
 }
 
 // ****************************************************************************
@@ -623,6 +631,9 @@ avtPoincareFilter::ClassifyStreamlines()
 //
 //    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
 //    Add variables for colorBy var.
+//
+//    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
+//    Changed color to colorBy
 //
 // ****************************************************************************
 
@@ -1021,13 +1032,13 @@ avtPoincareFilter::CreatePoincareOutput()
         {
             double color_value = 0;
             
-            if( color == COLOR_InputOrder )
+            if( colorBy == COLOR_InputOrder )
                 color_value = i;
-            else if( color == COLOR_ToroidalWindings )
+            else if( colorBy == COLOR_ToroidalWindings )
                 color_value = toroidalWinding;
-            else if( color == COLOR_PoloidalWindings )
+            else if( colorBy == COLOR_PoloidalWindings )
                 color_value = poloidalWinding;
-            else if( color == COLOR_SafetyFactor )
+            else if( colorBy == COLOR_SafetyFactor )
                 color_value = (double) toroidalWinding / (double) poloidalWinding;
             
             // Currently the surface mesh is a structquad so set the dims - it
@@ -1035,11 +1046,11 @@ avtPoincareFilter::CreatePoincareOutput()
             // can be generated.
             if( is_curvemesh ) 
             {
-                loadCurve( dt, puncturePts, color, color_value );
+                loadCurve( dt, puncturePts, colorBy, color_value );
             }
             else
             {
-              loadSurface( dt, puncturePts, nnodes, islands, skip, color, color_value );
+              loadSurface( dt, puncturePts, nnodes, islands, skip, colorBy, color_value );
             }
         }
     }

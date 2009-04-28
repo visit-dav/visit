@@ -72,7 +72,7 @@ public:
         Time,
         Step
     };
-    enum ColorStyleType
+    enum ColorBy
     {
         OriginalValue,
         InputOrder,
@@ -153,19 +153,19 @@ public:
     void SetIntegrationType(IntegrationType integrationType_);
     void SetShowStreamlines(bool showStreamlines_);
     void SetShowPoints(bool showPoints_);
-    void SetNumberPlanes(int NumberPlanes_);
-    void SetColorStyle(ColorStyleType ColorStyle_);
-    void SetMaxToroidalWinding(int MaxToroidalWinding_);
-    void SetOverrideToroidalWinding(int OverrideToroidalWinding_);
-    void SetHitRate(double HitRate_);
-    void SetShowCurves(ShowMeshType ShowCurves_);
-    void SetAdjustPlane(int AdjustPlane_);
-    void SetShowIslands(bool ShowIslands_);
-    void SetOverlaps(OverlapType Overlaps_);
-    void SetMin(double Min_);
-    void SetMax(double Max_);
-    void SetUseMin(bool useMin_);
-    void SetUseMax(bool useMax_);
+    void SetNumberPlanes(int numberPlanes_);
+    void SetColorBy(ColorBy colorBy_);
+    void SetMaxToroidalWinding(int maxToroidalWinding_);
+    void SetOverrideToroidalWinding(int overrideToroidalWinding_);
+    void SetHitRate(double hitRate_);
+    void SetShowCurves(ShowMeshType showCurves_);
+    void SetAdjustPlane(int adjustPlane_);
+    void SetShowIslands(bool showIslands_);
+    void SetOverlaps(OverlapType overlaps_);
+    void SetMin(double min_);
+    void SetMax(double max_);
+    void SetMinFlag(bool minFlag_);
+    void SetMaxFlag(bool maxFlag_);
     void SetColorType(ColoringMethod colorType_);
 
     // Property getting methods
@@ -199,7 +199,7 @@ public:
     bool                 GetShowStreamlines() const;
     bool                 GetShowPoints() const;
     int                  GetNumberPlanes() const;
-    ColorStyleType       GetColorStyle() const;
+    ColorBy              GetColorBy() const;
     int                  GetMaxToroidalWinding() const;
     int                  GetOverrideToroidalWinding() const;
     double               GetHitRate() const;
@@ -209,8 +209,8 @@ public:
     OverlapType          GetOverlaps() const;
     double               GetMin() const;
     double               GetMax() const;
-    bool                 GetUseMin() const;
-    bool                 GetUseMax() const;
+    bool                 GetMinFlag() const;
+    bool                 GetMaxFlag() const;
     ColoringMethod       GetColorType() const;
 
     // Persistence methods
@@ -228,10 +228,10 @@ public:
 protected:
     static std::string TerminationType_ToString(int);
 public:
-    static std::string ColorStyleType_ToString(ColorStyleType);
-    static bool ColorStyleType_FromString(const std::string &, ColorStyleType &);
+    static std::string ColorBy_ToString(ColorBy);
+    static bool ColorBy_FromString(const std::string &, ColorBy &);
 protected:
-    static std::string ColorStyleType_ToString(int);
+    static std::string ColorBy_ToString(int);
 public:
     static std::string ShowMeshType_ToString(ShowMeshType);
     static bool ShowMeshType_FromString(const std::string &, ShowMeshType &);
@@ -284,19 +284,19 @@ public:
         ID_integrationType,
         ID_showStreamlines,
         ID_showPoints,
-        ID_NumberPlanes,
-        ID_ColorStyle,
-        ID_MaxToroidalWinding,
-        ID_OverrideToroidalWinding,
-        ID_HitRate,
-        ID_ShowCurves,
-        ID_AdjustPlane,
-        ID_ShowIslands,
-        ID_Overlaps,
-        ID_Min,
-        ID_Max,
-        ID_useMin,
-        ID_useMax,
+        ID_numberPlanes,
+        ID_colorBy,
+        ID_maxToroidalWinding,
+        ID_overrideToroidalWinding,
+        ID_hitRate,
+        ID_showCurves,
+        ID_adjustPlane,
+        ID_showIslands,
+        ID_overlaps,
+        ID_min,
+        ID_max,
+        ID_minFlag,
+        ID_maxFlag,
         ID_colorType
     };
 
@@ -322,19 +322,19 @@ private:
     int            integrationType;
     bool           showStreamlines;
     bool           showPoints;
-    int            NumberPlanes;
-    int            ColorStyle;
-    int            MaxToroidalWinding;
-    int            OverrideToroidalWinding;
-    double         HitRate;
-    int            ShowCurves;
-    int            AdjustPlane;
-    bool           ShowIslands;
-    int            Overlaps;
-    double         Min;
-    double         Max;
-    bool           useMin;
-    bool           useMax;
+    int            numberPlanes;
+    int            colorBy;
+    int            maxToroidalWinding;
+    int            overrideToroidalWinding;
+    double         hitRate;
+    int            showCurves;
+    int            adjustPlane;
+    bool           showIslands;
+    int            overlaps;
+    double         min;
+    double         max;
+    bool           minFlag;
+    bool           maxFlag;
     int            colorType;
 
     // Static class format string for type map.
