@@ -660,6 +660,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    Brad Whitlock, Tue Apr 29 13:23:21 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Tue Apr 28 09:32:04 PDT 2009
+//    Pass the SSH tunneling option to the launcher callback.
+//
 // ****************************************************************************
 
 bool
@@ -726,7 +729,8 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         //
         typedef struct {
             string h; int p; string k;
-            ViewerConnectionProgressDialog *d;} SimData;
+            ViewerConnectionProgressDialog *d;
+            bool tunnel;} SimData;
         SimData simData;
         // The windows compiler can't accept non aggregate types in an
         // initializer list so initialize them like this:
@@ -734,6 +738,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         simData.p = simPort;
         simData.k = simSecurityKey;
         simData.d = SetupConnectionProgressWindow(newEngine.proxy, ek.HostName());
+        GetSSHTunnelOptions(ek.HostName(), simData.tunnel);
 
         newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                           manualSSHPort, sshPort, useTunneling,

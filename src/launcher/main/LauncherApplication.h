@@ -83,7 +83,7 @@
 //   Added support for forwarding child process output to the client.
 //
 //   Brad Whitlock, Mon Apr 27 16:25:34 PST 2009
-//   I added portMap so we can use it to tunnel simulation data connections.
+//   I changed the code so we can tunnel simulation data connections.
 //
 // ****************************************************************************
 
@@ -110,8 +110,7 @@ protected:
     void TerminateConnectionRequest(int, char **);
 #else
     void TerminateConnectionRequest(int, char **);
-    void SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs, bool, bool);
-    void FillPortMap(const std::string &arg);
+    void SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs, bool);
 #endif
     static void AlarmHandler(int);
     static void DeadChildHandler(int);
@@ -132,7 +131,6 @@ private:
     RPCExecutor<LaunchRPC>     *launchExecutor;
     RPCExecutor<ConnectSimRPC> *connectSimExecutor;
 
-    std::map<int,int>           portMap;
     bool                        useSSHTunneling;
     bool                        keepGoing;
     int                         timeout;
