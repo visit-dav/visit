@@ -1353,8 +1353,6 @@ avtStreamlineFilter::Initialize()
 #else
     // for serial, it's all load on demand.
     method = STREAMLINE_STAGED_LOAD_ONDEMAND;
-    // allow all domains to be in memory.
-    cacheQLen = numDomains;
 #endif
 
     if (DebugStream::Level5())
