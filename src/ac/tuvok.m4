@@ -36,6 +36,9 @@ dnl Modifications:
 dnl
 dnl   Tom Fogal, Thu Mar  5 11:26:51 MST 2009
 dnl   s/Tuvok/tuvok/, where appropriate.
+dnl
+dnl   Mark C. Miller, Mon Apr 27 20:25:28 PDT 2009
+dnl   Changed AS_HELP_STRING to AC_HELP_STRING
 
 dnl provide an --enable-tuvok option and an environment variable to enable
 dnl Tuvok.  If Tuvok is enabled:
@@ -49,7 +52,7 @@ AC_DEFUN([AX_TUVOK], [
     # Use the option if given on the configure line, else use TUVOK_ENABLE in
     # the environment (should it be set).
     AC_ARG_ENABLE([tuvok],
-        [AS_HELP_STRING([--enable-tuvok],
+        [AC_HELP_STRING([--enable-tuvok],
                         [Enable Tuvok-based volume renderers.])],
         [],
         [AS_IF([test -n "${TUVOK_ENABLE}"],

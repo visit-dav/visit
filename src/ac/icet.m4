@@ -80,12 +80,15 @@ dnl
 dnl    Tom Fogal, Wed Apr  1 11:35:50 MST 2009
 dnl    Rework enabling code so that the command line option takes precedence.
 dnl
+dnl    Mark C. Miller, Mon Apr 27 20:25:28 PDT 2009
+dnl    Changed AS_HELP_STRING to AC_HELP_STRING
+
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
 AC_DEFUN([AX_ICET_OPTIONS], [
 AC_ARG_ENABLE([icet],
-    [AS_HELP_STRING([--enable-icet],
+    [AC_HELP_STRING([--enable-icet],
                     [Use the ICE-T parallel image compositor])]
 )
 dnl Default to `no' if they aren't set.
@@ -94,13 +97,13 @@ AS_IF([test -z "${DEFAULT_ICET_LIB}"],     [DEFAULT_ICET_LIB="no"])
 
 dnl `with' options to specify header/library locations.
 AC_ARG_WITH([icet-includedir],
-    [AS_HELP_STRING([--with-icet-includedir=/path],
+    [AC_HELP_STRING([--with-icet-includedir=/path],
         [Directory where ICE-T include files can be found.])],
     [with_icet_includedir=$withval],
     [with_icet_includedir=$DEFAULT_ICET_INCLUDE]
 )
 AC_ARG_WITH([icet-libdir],
-    [AS_HELP_STRING([--with-icet-libdir=/path],
+    [AC_HELP_STRING([--with-icet-libdir=/path],
         [Directory where ICE-T libraries can be found.])],
     [with_icet_libdir=$withval],
     [with_icet_libdir=$DEFAULT_ICET_LIB]

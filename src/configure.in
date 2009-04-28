@@ -939,6 +939,10 @@ dnl
 dnl    Tom Fogal, Sat Apr 25 15:44:48 MDT 2009
 dnl    Fixed a broken `if' statement.
 dnl
+dnl    Mark C. Miller, Mon Apr 27 20:04:22 PDT 2009
+dnl    Improved Silo check for HDF5 dependence a bit by falling back to
+dnl    whatever HDF5 might have been specified via --with-hdf5 arg.
+dnl    Fixed configuration with PDB proper.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2178,7 +2182,22 @@ VAC_ARG_WITH3RD(silo,,siloxx siloh5 silo)
 if test -n "$SILO_LIB"; then
     if test -n "`strings $SILO_LIBFILE | grep -i 'SILO built with HDF5'`"; then
         if test -z "`echo $SILO_LIB | tr ' ' '\n' | grep -x -e '-lhdf5'`"; then
-            AC_MSG_ERROR(Silo appears to have a dependence on HDF5. Add dependent libs after ':' in --with-silo arg.)
+            # If we get here, Silo is dependent on HDF5 library but that
+            # dependence was NOT explicitly specified either in the DEFAULT_SILO_LIBDEP
+            # variable or after the ':' in the --with-silo arg. So, lets just
+            # assume its the same HDF5, if any, that was specified via the --with-hdf
+            # argument. However, if that too is not specified, we error out.
+            if test -n "$HDF5_LIB"; then
+                SILO_LIB="$SILO_LIB $HDF5_LIB"
+                AC_MSG_WARN(Silo appears to have a dependence on HDF5.
+Assuming it is the same HDF5 library as this
+$HDF5_LIBFILE)
+            else
+                AC_MSG_ERROR(Silo appears to have a dependence on HDF5.
+Since no HDF5 library was specified via the
+--with-hdf5 argument, you must add dependent
+libs after a ':' in the --with-silo arg.)
+            fi
         fi
     fi
 fi
@@ -2284,7 +2303,8 @@ if test -z "$PDB_LIB"; then
         AC_SUBST(PDB_TARGET)
     fi
 else
-    PDB_LIB="$PDB_LIB -lpdb -lscore -lpml"
+    AC_DEFINE(HAVE_PDB_PROPER, [1], [Define if you are using PDB proper instead of PDB lite.])
+    PDB_LIB="$PDB_LIB -lscore -lpml"
     AC_SUBST(PDB_LIB)
 fi
 
