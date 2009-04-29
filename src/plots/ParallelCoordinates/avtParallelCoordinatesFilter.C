@@ -2222,11 +2222,16 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
 //  Programmer: Hank Childs
 //  Creation:   February 9, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Apr 20 17:27:15 MST 2009
+//    GetCellPoints assumes the passed vtkIdList has been created, so I added 
+//    initialization of pointIdList, and deleted it when no longer needed.
+// 
 // ****************************************************************************
 
 avtNamedSelection *
-avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(avtContract_p c, 
-                                                   const std::string &selName)
+avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
+    avtContract_p c, const std::string &selName)
 {
     int  i;
 
@@ -2248,7 +2253,7 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(avtContract_p
         bool arrayIsCellData, dataBadOrMissing;
         std::string arrayName;
         vtkDataArray *dataArray;
-        vtkIdList *pointIdList;
+        vtkIdList *pointIdList = vtkIdList::New();
         float *arrayValues;
         float valueSum;
         
@@ -2363,6 +2368,7 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(avtContract_p
                 zones.push_back(ptr[2*j+1]);
             }
         }
+        pointIdList->Delete();
     }
 
     // Note the poor use of MPI below, coded for expediency, as I believe all

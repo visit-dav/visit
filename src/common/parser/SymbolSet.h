@@ -79,7 +79,7 @@ struct PARSER_API SymbolSet
     }
     bool contains(const Symbol *s) const
     {
-        return set[s->GetIndex()];
+        return set[s->GetIndex()] != 0;
     }
     bool operator==(const SymbolSet &t) const
     {

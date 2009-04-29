@@ -183,6 +183,10 @@ avtPersistentParticlesFilter::InspectPrincipalData(void)
 //  Programmer: Hank Childs
 //  Creation:   January 25, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Apr 20 17:49:52 MST 2009
+//    Use vtk's SafeDownCast method instead of dynamic_cast.
+//
 // ****************************************************************************
 
 void
@@ -193,9 +197,10 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
     tree->Traverse(CGetNumberOfZones, &nzones, success);
 
     //Merge the datasets but do not connect the particles
-    if( ! atts.GetConnectParticles() ){
-          trees.push_back(tree);
-          return;
+    if( ! atts.GetConnectParticles() )
+    {
+        trees.push_back(tree);
+        return;
     }
 
     //if connectParticles is set then compute a new dataset describing
@@ -211,7 +216,7 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
                                          " in avtDataTree");
     }
     vtkDataSet *currDs = dsets[0];
-    vtkUnstructuredGrid *uGrid = dynamic_cast<vtkUnstructuredGrid*>(currDs);
+    vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::SafeDownCast(currDs);
     if (uGrid == 0)
     {
         EXCEPTION1(ImproperUseException, "Filter only supports "

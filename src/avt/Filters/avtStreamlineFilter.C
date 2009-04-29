@@ -2367,7 +2367,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         if (dl.size() == 0)
         {
             //Try to wiggle it by 0.5% of the dataset size.
-            double offset[3], wiggle[3] = {dX*0.005, dY*0.005, dZ*0.005};
+            double wiggle[3] = {dX*0.005, dY*0.005, dZ*0.005};
             bool foundGoodPt = false;
             for ( int w = 0; w < 100; w++ )
             {

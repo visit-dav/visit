@@ -136,7 +136,6 @@ avtDistanceToValueRF::GetRayValue(const avtRay *ray,
     int depthIndex = IndexOfDepth(depth, numSamples);
 
     double distance;
-    double intensity;
 
     int     location = -1;
     for (int i = 0 ; i < depthIndex ; i++)

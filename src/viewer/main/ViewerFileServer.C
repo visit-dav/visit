@@ -1495,8 +1495,7 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
             "connect to %1 then contact visit-users@ornl.gov and provide "
             "information about how you are trying to connect. Be sure to "
             "include the VisIt version and platform on which you are "
-            "running.");
-        msg.replace("%1", host.c_str());
+            "running.").arg(host.c_str());
         Error(msg);
 
         delete newServer;

@@ -288,7 +288,7 @@ Grammar::GetDictionary()
 bool
 Grammar::Configure()
 {
-    int okay = true;
+    bool okay = true;
 
     ConfiguratingSet start;
     start.AddItem(ConfiguratingItem(rules[0], eof));
