@@ -451,6 +451,9 @@ exec perl -x $0 ${1+"$@"};
 #    Add support for Argonne machine "gadzooks", which has a weird connection
 #    system similar to eureka.
 #
+#    Dave Pugmire, Wed Apr 29 13:41:45 EDT 2009
+#    Fix module loading for lens.ccs.ornl.gov
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2309,7 +2312,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($IsRunningOnLens_ORNL)
             {
                 # Lens loads modules that we hate, by default.
-                print TFILE 'eval $(modulecmd sh unload PE-pgi)',"\n";
+                print TFILE 'eval $(modulecmd sh swap PE-pgi PE-gnu)',"\n";
             }
             if ($IsRunningOnEureka_ANL)
             {
