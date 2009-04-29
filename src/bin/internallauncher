@@ -454,6 +454,9 @@ exec perl -x $0 ${1+"$@"};
 #    Dave Pugmire, Wed Apr 29 13:41:45 EDT 2009
 #    Fix module loading for lens.ccs.ornl.gov
 #
+#    Tom Fogal, Wed Apr 29 12:12:20 MDT 2009
+#    Add message about module loading.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2312,6 +2315,12 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($IsRunningOnLens_ORNL)
             {
                 # Lens loads modules that we hate, by default.
+                print "NOTE I'm forcing a specific MPI implementation " .
+                      "which release versions of VisIt are known to be " .
+                      "compiled against.  If you are a *developer*, it's " .
+                      "very likely I've chosen the wrong MPI " .
+                      "implementation; you might have to hack " .
+                      "internallauncher to load the module you need.\n";
                 print TFILE 'eval $(modulecmd sh swap PE-pgi PE-gnu)',"\n";
             }
             if ($IsRunningOnEureka_ANL)
