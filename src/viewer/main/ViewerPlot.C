@@ -2525,8 +2525,7 @@ ViewerPlot::SetOperatorAttsFromClient(const int type)
             "Please make one of the %1 operators be the active operator by "
             "expanding the plot and clicking one of its %1 operators so "
             "VisIt will apply the operator settings to the correct %1 "
-            "operator.");
-        msg.replace("%1", operators[firstIndex]->GetMenuName());
+            "operator.").arg(operators[firstIndex]->GetMenuName());
         Warning(msg);
     }
     else if(firstIndex != -1)

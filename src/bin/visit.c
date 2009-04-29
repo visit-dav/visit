@@ -43,6 +43,7 @@
 #include <visit-config.h>
 #include <windows.h>
 #include <Winbase.h>
+#include <process.h>
 #include <sys/stat.h>
 #include <shlobj.h>
 #include <shlwapi.h>
@@ -233,17 +234,20 @@ main(int argc, char *argv[])
     int noloopback = 0;
     int parallel = 0;
     int hostset = 0;
+    char *spawnargs[100];
+    int nspawnargs = 0;
+    char component[100];
 
     /*
      * Default values.
      */
-    char component[100];
+    memset((void*)spawnargs, 0, 100 * sizeof(char*));
     strcpy(component, "gui");
 
     /*
      * Parse the command line arguments.
      */
-    for(i = 1; i < argc; ++i)
+    for(i = 0; i < argc; ++i)
     {
         if(ARG("-help"))
         {
@@ -464,13 +468,26 @@ main(int argc, char *argv[])
     memset(printCommand, 0, size);
     if(useShortFileName)
     {
-        sprintf(command, "%s\\%s", visitpath, component);
-        sprintf(printCommand, "%s\\%s", visitpath, component);
+        char *argv0 = (char *)malloc(strlen(visitpath) + 100);
+        sprintf(argv0, "%s\\%s", visitpath, component);
+        strcpy(command, argv0);
+        strcpy(printCommand, argv0);
+
+        spawnargs[nspawnargs] = strdup(argv0);
+        nspawnargs++;
+        free(argv0);
     }
     else
     {
-        sprintf(command, "\"%s\\%s\"", visitpath, component);
-        sprintf(printCommand, "\"%s\\%s\"", visitpath, component);
+        char *argv0 = (char *)malloc(strlen(visitpath) + 100);
+        sprintf(argv0, "\"%s\\%\"s", visitpath, component);
+        strcpy(command, argv0);
+        strcpy(printCommand, argv0);
+
+        sprintf(argv0, "%s\\%s", visitpath, component);
+        spawnargs[nspawnargs] = strdup(argv0);
+        nspawnargs++;
+        free(argv0);
     }
     cptr = command + strlen(command);
     cptr2 = printCommand + strlen(printCommand);
@@ -480,11 +497,18 @@ main(int argc, char *argv[])
         {
             sprintf(cptr, " \'%s\'", componentArgs[i]);
             cptr += (strlen(componentArgs[i]) + 3);
+
+            spawnargs[nspawnargs] = (char *)malloc(strlen(componentArgs[i]) + 1 + 2);
+            sprintf(spawnargs[nspawnargs], " \'%s\'", componentArgs[i]);
+            nspawnargs++;
         }
         else
         {
             sprintf(cptr, " %s", componentArgs[i]);
             cptr += (strlen(componentArgs[i]) + 1);
+
+            spawnargs[nspawnargs] = strdup(componentArgs[i]);
+            nspawnargs++;
         }
 
         if(strcmp(componentArgs[i], "-key") == 0)
@@ -510,11 +534,24 @@ main(int argc, char *argv[])
         cptr += (strlen(visitargs) + 1);
         sprintf(cptr2, " %s", visitargs);
         cptr2 += (strlen(visitargs) + 1);
+
+        spawnargs[nspawnargs] = strdup(visitargs);
+        nspawnargs++;
     }
     if(addMovieArguments)
     {
-        sprintf(cptr, " -s \"%s\\makemoviemain.py\" -nowin", visitpath);
-        sprintf(cptr2, " -s \"%s\\makemoviemain.py\" -nowin", visitpath);
+        char *spath = (char *)malloc(strlen(visitpath) + 100);
+        sprintf(spath, "\"%s\\makemoviemain.py\"", visitpath);
+        sprintf(cptr, " -s %s -nowin", spath);
+        sprintf(cptr2, " -s %s -nowin", spath);
+
+        spawnargs[nspawnargs] = strdup("-s");
+        nspawnargs++;
+        spawnargs[nspawnargs] = strdup(spath);
+        nspawnargs++;
+        spawnargs[nspawnargs] = strdup("-nowin");
+        nspawnargs++;
+        free(spath);
     }
     command[size-1] = '\0';
     printCommand[size-1] = '\0';
@@ -528,7 +565,21 @@ main(int argc, char *argv[])
     /*
      * Launch the appropriate VisIt component.
      */
+#if 0
+    /* This method seems to be able to deal with spaces in the exe path name.
+     * It's not perfect but we might want to consider cleaning it up and
+     * switching.
+     */
+#if 0
+printf("=============\n%s\n", spawnargs[0]);
+for(i = 1; i < nspawnargs; ++i)
+    printf("\t%s\n", spawnargs[i]);
+printf("=============\n");
+#endif
+    _execv(spawnargs[0], &spawnargs[1]);
+#else
     retval = system(command);
+#endif
 
     /*
      * Free memory
@@ -537,6 +588,8 @@ main(int argc, char *argv[])
     free(printCommand);
     for(i = 0; i < nComponentArgs; ++i)
         free(componentArgs[i]);
+    for(i = 0; i < nspawnargs; ++i)
+        free(spawnargs[i]);
     free(visitpath);
     if(visitargs != 0)
         free(visitargs);

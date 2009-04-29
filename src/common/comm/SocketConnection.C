@@ -39,6 +39,7 @@
 #include <SocketConnection.h>
 #if defined(_WIN32)
 #include <winsock2.h>
+#include <win32commhelpers.h>
 #else
 #include <strings.h>             // bzero by way of FD_ZERO
 #include <sys/socket.h>
@@ -137,6 +138,12 @@ SocketConnection::Fill()
     unsigned char tmp[1000];
 #if defined(_WIN32)
     int amountRead = recv(descriptor, (char FAR *)tmp, 1000, 0);
+    if(amountRead == SOCKET_ERROR)
+    {
+        LogWindowsSocketError("SocketConnection", "Fill");
+        if(WSAGetLastError() == WSAEWOULDBLOCK)
+            return -1;
+    }
 #else
     int amountRead = recv(descriptor, (void *)tmp, 1000, 0);
 #endif

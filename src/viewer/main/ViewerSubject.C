@@ -1917,15 +1917,30 @@ ViewerSubject::ProcessEventsCB(void *cbData)
 //   Brad Whitlock, Thu Aug 14 09:56:41 PDT 2008
 //   Use qApp.
 //
+//   Brad Whitlock, Tue Apr 28 19:14:23 PST 2009
+//   I disabled the simulation socket notifiers since we don't want them to
+//   be enabled while processing events since this method is a callback for
+//   when we're reading from the simulation. If the socket notifiers are
+//   allowed to operate then it disrupts the synchronous send/recv's that
+//   we're using to communicate with the simulation. This caused the simulation
+//   connection to disconnect on Windows.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ProcessEvents()
 {
+    std::map<EngineKey,QSocketNotifier*>::iterator it;
+    for(it = engineKeyToNotifier.begin(); it != engineKeyToNotifier.end(); ++it)
+        it->second->setEnabled(false);
+
     if (interruptionEnabled)
     {
         qApp->processEvents(QEventLoop::AllEvents, 100);
     }
+
+    for(it = engineKeyToNotifier.begin(); it != engineKeyToNotifier.end(); ++it)
+        it->second->setEnabled(true);
 }
 
 // ****************************************************************************

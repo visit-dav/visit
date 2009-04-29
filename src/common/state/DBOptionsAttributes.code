@@ -84,7 +84,7 @@ DBOptionsAttributes::GetBool(const std::string &name) const
     int bIndex = FindIndex(name);
     if (bIndex < 0)
         EXCEPTION0(BadDeclareFormatString);
-    return (bool) optBools[bIndex];
+    return optBools[bIndex] != 0;
 }
 
 Function: SetFloat
