@@ -40,6 +40,7 @@
 
 #include <StreamlineAnalyzerLib.h>
 
+#include <algorithm>
 #include <float.h>
 #include <iostream>
 

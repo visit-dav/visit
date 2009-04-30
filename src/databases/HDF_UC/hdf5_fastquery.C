@@ -152,8 +152,8 @@ void HDF5_FQ::getPointData(const std::string & variableName,
                            const std::vector<int32_t>& indices) {
         
   bool retval = dataSets->getPointData(variableName,time,data, indices);
-  if (!retval)
-    std::cout<<"getPointData failed"<<std::endl;
+  //if (!retval)
+    //std::cout<<"getPointData failed"<<std::endl;
 }
 
 
@@ -280,7 +280,7 @@ void HDF5_FQ::getDataMinMax_Double(const std::string& variableName,
 
   min = range[0];
   max = range[1];
-  
+  //std::cout<<"getDataMinMax_Double returned " << min << ", "<< max << " for "<< variableName<<std::endl;
 }
 
 void HDF5_FQ::getDataMinMax_Float(const std::string& variableName,
@@ -299,6 +299,7 @@ void HDF5_FQ::getDataMinMax_Float(const std::string& variableName,
 
   min = range[0];
   max = range[1];
+  //std::cout<<"getDataMinMax_Float returned " << min << ", "<< max << " for "<< variableName<<std::endl;
   
 }
 

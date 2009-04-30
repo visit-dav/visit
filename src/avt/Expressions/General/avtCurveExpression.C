@@ -43,6 +43,8 @@
 
 #include <avtCurveExpression.h>
 
+#include <cstring>
+
 #include <snprintf.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>

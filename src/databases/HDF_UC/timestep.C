@@ -192,6 +192,110 @@ array_t<double>*   H5_FQ_Variable::selectDoubles(const ibis::bitvector& mask) co
   return array;        
 } // H5_FQ_Variable::selectDoubles
 
+array_t<float>*   H5_FQ_Variable::selectFloats(const ibis::bitvector& mask) const {
+  array_t<float>* array = new array_t<float>;
+  array_t<float> prop;
+  uint32_t i = 0;
+  uint32_t tot = mask.cnt();
+  ibis::horometer timer;
+  if (ibis::gVerbose > 3) {
+      LOGGER(ibis::gVerbose > 4)
+          << "H5_FQ_Variable[" << (thePart->name() ? thePart->name() : "?")
+          << "." << name() << "]::selectFloats starting timer..";
+      timer.start();
+  }
+#ifdef DEBUG
+  LOGGER(1) << "DEBUG -- reading " << name() << ", mask.cnt() = " << tot
+            << ", mask.bytes() = " << mask.bytes()
+            << ", mask.size()*8/pagesize = "
+            << mask.size()*8/ibis::fileManager::pageSize()
+            << ", read all = "
+            << (mask.bytes()/4 > mask.size()/ibis::fileManager::pageSize() ?
+                "yes" : "no");
+#endif
+  if (mask.size() < 1048576 || tot+tot > mask.size() ||
+      mask.bytes()/4 > mask.size()/ibis::fileManager::pageSize()) {
+      // read all values than extract the ones marked with 1 in mask
+      getValues(prop); // retrieving all values of this variable
+      array->resize(tot);
+      if (tot > prop.size()) tot = prop.size();
+      const uint32_t nprop = prop.size();
+      ibis::bitvector::indexSet index = mask.firstIndexSet();
+      if (nprop >= mask.size()) {
+          while (index.nIndices() > 0) {
+              const ibis::bitvector::word_t *idx0 = index.indices();
+              if (index.isRange()) {
+                  for (uint32_t j = *idx0; j<idx0[1]; ++j, ++i) {
+                      (*array)[i] = (prop[j]);
+                  }
+              }
+              else {
+                  for (uint32_t j = 0; j<index.nIndices(); ++j, ++i) {
+                      (*array)[i] = (prop[idx0[j]]);
+                  }
+              }
+              ++ index;
+          }
+      }
+      else {
+          while (index.nIndices() > 0) {
+              const ibis::bitvector::word_t *idx0 = index.indices();
+              if (*idx0 >= nprop) break;
+              if (index.isRange()) {
+                  for (uint32_t j = *idx0;
+                       j<(idx0[1]<=nprop ? idx0[1] : nprop);
+                       ++j, ++i) {
+                      (*array)[i] = (prop[j]);
+                  }
+              }
+              else {
+                  for (uint32_t j = 0; j<index.nIndices(); ++j, ++i) {
+                      if (idx0[j] < nprop)
+                          (*array)[i] = (prop[idx0[j]]);
+                      else
+                          break;
+                  }
+              }
+              ++ index;
+          }
+      }
+  }
+  else {
+      // generate the coordinates and ask HDF5 function to extract them
+      std::vector<int32_t> coord;
+      coord.reserve(tot);
+      for (ibis::bitvector::indexSet ix = mask.firstIndexSet();
+           ix.nIndices() > 0; ++ ix) {
+          const ibis::bitvector::word_t *ind = ix.indices();
+          if (ix.isRange()) {
+              for (unsigned int j = ind[0]; j < ind[1]; ++ j)
+                coord.push_back(static_cast<int32_t>(j));
+          }
+          else {
+              for (unsigned int j = 0; j < ix.nIndices(); ++j)
+                coord.push_back(static_cast<int32_t>(ind[j]));
+          }
+      }
+      i = getPointValues(*array, coord);
+  }
+  if (i != tot) {
+    array->resize(i);
+    logWarning("selectFloats", "expects to retrieve %lu elements "
+               "but only got %lu", static_cast<long unsigned>(tot),
+               static_cast<long unsigned>(i));
+  }
+  else if (ibis::gVerbose > 3) {
+      timer.stop();
+      LOGGER(ibis::gVerbose >= 0)
+          << "H5_FQ_Variable[" << (thePart->name() ? thePart->name() : "?")
+          << "." << name() << "]::selectFloats extracted " << tot << " value"
+          << (tot > 1 ? "s" : "") << " out of " << mask.size() << " took "
+          << timer.CPUTime() << " sec (CPU) and " << timer.realTime()
+          << " sec (elapsed) time";
+  }
+  return array;        
+} // H5_FQ_Variable::selectFloats
+
 
 void H5_FQ_Variable::loadIndex(const char*) const throw () {
     writeLock lock(this, "loadIndex");

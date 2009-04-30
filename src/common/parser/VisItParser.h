@@ -118,6 +118,9 @@ struct PARSER_API ParseElem
 //    START, which doesn't make much sense.  Instead, we just store it in
 //    a new data member, which is more direct and more clear.
 //
+//    Tom Fogal, Wed Apr 29 15:36:42 MDT 2009
+//    Check for empty `elems' so we don't deref an empty vector.
+//
 // ****************************************************************************
 class PARSER_API Parser
 {
@@ -128,7 +131,12 @@ public:
     void    ParseOneToken(Token *);
     bool    Accept() { return accept; }
     virtual ParseTreeNode *Parse(const std::string &) = 0;
-    ParseTreeNode *GetParseTree() { return parseTree; }
+    ParseTreeNode *GetParseTree() {
+      if(elems.empty()) {
+        return NULL;
+      }
+      return elems[0].node;
+    }
     void    SetGrammar(Grammar * g) { G = g; }
 
 protected:

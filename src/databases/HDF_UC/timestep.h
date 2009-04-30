@@ -142,6 +142,7 @@ public:
     int getPointValues(array_t<E>& arr,
                        const std::vector<int32_t>& coords) const;
     virtual array_t<double>*   selectDoubles(const ibis::bitvector& mask) const;
+    virtual array_t<float>*   selectFloats(const ibis::bitvector& mask) const;
 
     /// Return the H5_Index object containing this variable.
     H5_Index& getH5Index() const {return h5file_;}

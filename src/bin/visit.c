@@ -480,7 +480,7 @@ main(int argc, char *argv[])
     else
     {
         char *argv0 = (char *)malloc(strlen(visitpath) + 100);
-        sprintf(argv0, "\"%s\\%\"s", visitpath, component);
+        sprintf(argv0, "\"%s\\%s\"", visitpath, component);
         strcpy(command, argv0);
         strcpy(printCommand, argv0);
 
@@ -570,7 +570,7 @@ main(int argc, char *argv[])
      * It's not perfect but we might want to consider cleaning it up and
      * switching.
      */
-#if 0
+#if 1
 printf("=============\n%s\n", spawnargs[0]);
 for(i = 1; i < nspawnargs; ++i)
     printf("\t%s\n", spawnargs[i]);
