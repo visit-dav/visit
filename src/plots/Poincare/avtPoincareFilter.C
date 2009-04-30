@@ -333,7 +333,7 @@ avtPoincareFilter::SetShowCurves( unsigned int val )
 // ****************************************************************************
 
 void
-avtPoincareFilter::SetAdjustPlane( unsigned int val )
+avtPoincareFilter::SetAdjustPlane( int val )
 {
     adjust_plane = val;
 }

@@ -311,6 +311,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     //needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
 
     atts = *newAtts;
+
 #ifdef ENGINE
 
     // Set the streamline attributes.
@@ -361,7 +362,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetShowPoints(atts.GetShowPoints());
 
 
-    poincareFilter->SetColoringMethod( atts.GetColorBy() );
+    poincareFilter->SetColorBy( atts.GetColorBy() );
     poincareFilter->SetMaxToroidalWinding( atts.GetMaxToroidalWinding() );
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetHitRate( atts.GetHitRate() );

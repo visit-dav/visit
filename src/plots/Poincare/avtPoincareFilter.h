@@ -87,7 +87,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetShowIslands( bool val );
     void SetOverlaps( unsigned int val );
     void SetShowCurves( unsigned int val );
-    void SetAdjustPlane( unsigned int val );
+    void SetAdjustPlane( int val );
     void SetClipPlanes( vector< double > planeAngles );
 
   protected:
