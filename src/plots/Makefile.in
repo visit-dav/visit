@@ -159,6 +159,9 @@
 #    Tom Fogal, Wed Apr 29 15:15:19 MDT 2009
 #    Added the Poincare plot to the `built by default' list.
 #
+#    Tom Fogal, Wed Apr 29 22:00:06 MDT 2009
+#    Temporarily removed Poincare plot due to build issues.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -170,7 +173,7 @@ all: message
 OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
-         MultiCurve Poincare ParallelCoordinates Pseudocolor Scatter \
+         MultiCurve ParallelCoordinates Pseudocolor Scatter \
          Spreadsheet Streamline Subset Surface Tensor Truecolor Vector \
          Volume WellBore
 
