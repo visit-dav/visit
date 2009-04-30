@@ -835,6 +835,10 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header)
 //  Programmer: Eric Brugger
 //  Creation:   Fri Dec  5 16:39:53 PST 2008
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Apr 30 14:13:42 PDT 2009
+//    Added a fix for atoms files without species data.
+//
 // ****************************************************************************
 
 void
@@ -884,7 +888,9 @@ avtDDCMDFileFormat::CopyAsciiDataToBlocks(const DDCMDHeader *header)
         //
         // Copy the pinfo and coordinate data.
         //
-        if (groupOffset != -1)
+
+        // Make sure we actually have species & type offsets 
+        if (groupOffset != -1 && speciesOffset != -1 && typeOffset!=-1 )
         {
             int iGroup = 0;
             while (iGroup < nGroups &&
@@ -900,11 +906,11 @@ avtDDCMDFileFormat::CopyAsciiDataToBlocks(const DDCMDHeader *header)
                 iType++;
             pinfoBlock[i] = iGroup * nSpecies * nTypes +
                             iSpecies * nTypes + iType;
-
-            coordsBlock[i*3]   = strtof(recOffsets[xOffset], NULL) / coordsScale;
-            coordsBlock[i*3+1] = strtof(recOffsets[yOffset], NULL) / coordsScale;
-            coordsBlock[i*3+2] = strtof(recOffsets[zOffset], NULL) / coordsScale;
         }
+        // moved coords setup out of above conditional
+        coordsBlock[i*3]   = strtof(recOffsets[xOffset], NULL) / coordsScale;
+        coordsBlock[i*3+1] = strtof(recOffsets[yOffset], NULL) / coordsScale;
+        coordsBlock[i*3+2] = strtof(recOffsets[zOffset], NULL) / coordsScale;
 
         //
         // Copy the variable information.
@@ -1045,6 +1051,9 @@ avtDDCMDFileFormat::CopyBinaryDataToBlocks(const DDCMDHeader *header)
 //    Eric Brugger, Fri Dec  5 16:39:53 PST 2008
 //    I enhanced the reader to read ascii atom files.
 //
+//    Cyrus Harrison, Thu Apr 30 14:13:42 PDT 2009
+//    Added a fix for atoms files without species data.
+//
 // ****************************************************************************
 
 void
@@ -1074,9 +1083,12 @@ avtDDCMDFileFormat::CopyDataToBlocks(const DDCMDHeader *header)
     //
     if (pinfoOffset != -1 || groupOffset != -1)
     {
-        coordsBlock = new float[nPoints*3];
         pinfoBlock = new unsigned[nPoints];
     }
+
+    // moved coordsBlock allocate outside of above conditional
+    coordsBlock = new float[nPoints*3];
+
     varValues = new float*[nVars];
     for (int i = 0; i < nVars; i++)
     {
