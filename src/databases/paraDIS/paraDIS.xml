@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+  <Plugin name="paraDIS" type="database" label="paraDIS simulation dump metafile" version="1.0a1" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <Files components="M">
+avtparaDISFileFormat.C    
+paraDIS_lib/paradis.C 
+paraDIS_lib/paradis_c_interface.C   
+RC_c_lib/args.c 
+RC_c_lib/debugutil.c 
+RC_c_lib/signals.c 
+RC_c_lib/fileutils.c 
+RC_c_lib/inventor.c
+RC_cpp_lib/RCDebugStream.C 
+RC_cpp_lib/Prefs.C 
+RC_cpp_lib/RangeList.C 
+RC_cpp_lib/test.C 
+RC_cpp_lib/timer.C 
+RC_cpp_lib/pathutil.C
+    </Files>
+    <Files components="E">
+ avtparaDISFileFormat.C      
+paraDIS_lib/paradis.C 
+paraDIS_lib/paradis_c_interface.C   
+RC_c_lib/args.c 
+RC_c_lib/debugutil.c 
+RC_c_lib/signals.c 
+RC_c_lib/fileutils.c 
+RC_c_lib/inventor.c
+RC_cpp_lib/RCDebugStream.C 
+RC_cpp_lib/Prefs.C 
+RC_cpp_lib/RangeList.C 
+RC_cpp_lib/test.C 
+RC_cpp_lib/timer.C 
+RC_cpp_lib/pathutil.C
+    </Files>
+    <CXXFLAGS>
+      -IparaDIS_lib
+      -IRC_c_lib
+      -IRC_cpp_lib
+    </CXXFLAGS>
+    <Extensions>
+      prds
+      dat
+      data
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
