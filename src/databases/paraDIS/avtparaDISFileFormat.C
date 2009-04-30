@@ -88,11 +88,17 @@ avtparaDISFileFormat::avtparaDISFileFormat(const char *filename)
     mVerbosity(0), mFilename(filename) {
  
   paraDIS_init(); 
+#ifndef debug1_real
+  mVerbosity = DebugStream::GetLevel(); 
+#else
+  // 2009/04/30 -- old school until version 12 becomes the default at LLNL
+  // This can be removed after that point.  But of course, probably won't.  LOL
   if (debug1_real) mVerbosity++;
   if (debug2_real) mVerbosity++;
   if (debug3_real) mVerbosity++; 
   if (debug4_real) mVerbosity++;
   if (debug5_real) mVerbosity++;
+#endif
   string debugfile ; 
   if (mVerbosity) {
     debugfile = "paradis_debug_out.log";
