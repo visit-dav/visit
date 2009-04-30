@@ -156,6 +156,9 @@
 #    Eric Brugger, Tue Dec  9 17:37:27 PST 2008
 #    Added MultiCurve plot.
 #
+#    Tom Fogal, Wed Apr 29 15:15:19 MDT 2009
+#    Added the Poincare plot to the `built by default' list.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -167,8 +170,9 @@ all: message
 OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
-         MultiCurve ParallelCoordinates Pseudocolor Scatter Spreadsheet \
-         Streamline Subset Surface Tensor Truecolor Vector Volume WellBore
+         MultiCurve Poincare ParallelCoordinates Pseudocolor Scatter \
+         Spreadsheet Streamline Subset Surface Tensor Truecolor Vector \
+         Volume WellBore
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve Mesh Pseudocolor

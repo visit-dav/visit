@@ -826,11 +826,12 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
       for (int i=0; i<variables.size(); i++) {
             begins[i] =  spec->GetBounds()[i][0];
             ends[i]   =  spec->GetBounds()[i][spec->GetBounds()[i].size()-1];
+            debug4<<"boundsSpecified to be "<< begins[i] <<", "<<ends[i]<<std::endl;
       }
   }
   //if bounds are not specified than ask the reader for the extents 
   else{
-    debug4<< plugin << func << "Detected that bounds are not set.. setting them to..";
+    debug4<< plugin << func << "Detected that bounds are not set.. setting them to.."<<std::endl;
     for(int i=0; i<variables.size() ; i++){
 
       
@@ -862,7 +863,7 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
       
       
       debug4<< "\t HDF-FQ/FastBit calculated " << variables[i] << " bounds to be.. " 
-            << begins[i] << ", "<< ends[i] << endl<<endl;
+               << begins[i] << ", "<< ends[i] << endl<<endl;
     }
   }
   
@@ -895,8 +896,8 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     double begin2 = begins[1];
     double end2 = ends[1];
     
-    //    debug4 << "BEGIN1 = " << begin1 << ", END1 " << end1 << ", begin2 " << begin2 << ", end2 = " << end2 << endl;
-    //    debug4 << "numbins1 = " << numBins[0] << ", numBins2 = " << numBins[1] << endl;
+    debug4 << "BEGIN1 = " << begin1 << ", END1 " << end1 << ", begin2 " << begin2 << ", end2 = " << end2 << endl;
+    debug4 << "numbins1 = " << numBins[0] << ", numBins2 = " << numBins[1] << endl;
   
     if( regularBinning ){ //if regular binning should be used
             reader.get2DHistogram((int64_t)0,
@@ -934,7 +935,9 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     //debug4<<"**********************HDF_UC*************"<<spec->GetBounds().size()<<" "<<spec->GetBounds()[0].size()<<" "<<spec->GetBounds()[1].size()<<endl;     
     
     spec->SetBoundsSpecified();
-    spec->SetCounts( count );   //Copy the counts into the specification
+    spec->SetCounts( count );   //Copy the counts into the
+                                //specification
+
     //debug4<<"**********************HDF_UC*************"<<spec->GetNumberOfBins()[0]<<" "<<spec->GetNumberOfBins()[1]<<endl;      
  
     

@@ -47,9 +47,12 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <vector>
 
 #include <visitstream.h>
+#include <sys/stat.h>
 
+#include <visitstream.h>
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtGenericDatabase.h>

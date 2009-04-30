@@ -49,10 +49,19 @@
 #include <map>
 #include <vector>
 
+#include <visit-config.h>
+
+#include <algorithm>
+#include <cstdlib>
+#include <string>
+#include <map>
+#include <vector>
+
 #include <DebugStream.h>
 #include <InvalidDirectoryException.h>
 #include <InvalidPluginException.h>
 #include <InstallationFunctions.h>
+#include <Utility.h>
 #include <visitstream.h>
 
 #if __APPLE__

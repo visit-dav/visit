@@ -268,6 +268,14 @@ protected:
 //    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
 //    Added distSqrVecVec and distVecVec functions.
 //
+//    Tom Fogal, Wed Apr 29 19:34:01 MDT 2009
+//    . Create a 1-elem array if needed in the copy ctor; `new x[0]' is
+//      invalid.
+//    . Add a parameter to the data & size constructor to detail how many
+//      elements to copy from the source array.  The source array is allowed
+//      (and is, in some code -- see pad()) to be smaller than the destination
+//      array.
+//
 //*****************************************************************************
 
 class avtVec: public avtVecRef
@@ -286,20 +294,22 @@ public:
         std::fill( begin(), end(), 0.0 );
     }
 
-    avtVec( const_pointer data, const size_type& n ) : 
+    avtVec( const_pointer data, const size_type& n, const size_type& ncopy ) :
         avtVecRef( new double[n], n )
     {
-        std::copy( data, data+n, begin() );
+        std::copy( data, data+ncopy, begin() );
     }
 
     avtVec( const avtVecRef& other ) : 
-        avtVecRef( new double[other.dim()], other.dim() )
+        avtVecRef( new double[other.dim() ? other.dim() : 1],
+                   other.dim() ? other.dim() : 1 )
     {
         std::copy( other.begin(), other.end(), begin() );
     }
 
     avtVec( const avtVec& other ) : 
-        avtVecRef( new double[other.dim()], other.dim() )
+        avtVecRef( new double[other.dim() > 0 ? other.dim() : 1],
+                   other.dim() > 0 ? other.dim() : 1 )
     {
         std::copy( other.begin(), other.end(), begin() );
     }
@@ -548,9 +558,14 @@ inline double norm_inf( const avtVecRef& v )
     return max( abs(v) );
 }
 
+// Modifications:
+//
+//   Tom Fogal, Wed Apr 29 19:35:57 MDT 2009
+//   Use new size parameter to detail size of source array.
+//
 inline avtVec pad( const avtVecRef& v, const double& a )
 {
-    avtVec result( v.begin(), v.dim()+1 );
+    avtVec result( v.begin(), v.dim()+1, v.dim() );
     result[v.dim()] = a;
     
     return result;
