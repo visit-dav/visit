@@ -97,6 +97,10 @@
 #
 #    Mark C. Miller, Wed Mar  4 17:54:09 PST 2009
 #    Enabled a dbio-only build
+#
+#    Eric Brugger, Fri May  1 13:02:00 PDT 2009
+#    Added mcurvit directory.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -106,7 +110,7 @@
 MILI=makemili
 
 OPTIONAL=avtprep classwriter doxygenate embedviewer windowmaker \
-	 escan mpeg_encode clidriver DataManualExamples clipeditor
+	 escan mpeg_encode clidriver DataManualExamples clipeditor mcurvit
 
 SILO_TARGET=curv3dprep
 

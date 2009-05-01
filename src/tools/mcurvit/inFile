@@ -1,0 +1,4 @@
+newplot u
+newplot v
+save format = png filename = "outFrames"
+quit

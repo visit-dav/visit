@@ -19919,6 +19919,7 @@ TOOLS_FILES="tools/Makefile
              tools/escan/Makefile
              tools/imagetools/Makefile
              tools/makemili/Makefile
+             tools/mcurvit/Makefile
              tools/mpeg2encode/Makefile
              tools/mpeg_encode/Makefile
              tools/protocol/Makefile

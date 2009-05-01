@@ -943,6 +943,10 @@ dnl    Mark C. Miller, Mon Apr 27 20:04:22 PDT 2009
 dnl    Improved Silo check for HDF5 dependence a bit by falling back to
 dnl    whatever HDF5 might have been specified via --with-hdf5 arg.
 dnl    Fixed configuration with PDB proper.
+dnl
+dnl    Eric Brugger, Fri May  1 12:58:34 PDT 2009
+dnl    Added tools/mcurvit.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -4063,6 +4067,7 @@ TOOLS_FILES="tools/Makefile
              tools/escan/Makefile
              tools/imagetools/Makefile
              tools/makemili/Makefile
+             tools/mcurvit/Makefile
              tools/mpeg2encode/Makefile
              tools/mpeg_encode/Makefile
              tools/protocol/Makefile
