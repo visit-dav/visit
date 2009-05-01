@@ -1,0 +1,37 @@
+
+Mcurvit is a sample embedded viewer application that displays a multi curve
+plot of 2d rectilinear data.  It also applies an index select operator to
+control the range of data from the mesh that is displayed.  It can be run
+in a GUI mode or a batch CLI mode.
+
+When running mcurvit, you must first set the LD_LIBRARY_PATH so that it can
+find the visit libraries. You can do that with the following command.
+
+setenv LD_LIBRARY_PATH ../../lib
+
+You must also have a saved configuration with the MultiCurve plot enabled,
+since by default it is not enabled.  If you forget to do that, mcurvit will
+crash.
+
+To run it in GUI mode do the following:
+
+1) ./mcurvit
+
+2) Open a file with a 2d rectlinear mesh.  A good choice would be
+   /usr/gapps/visit/data/rect2d.silo.
+
+This will cause mcurvit to display a MultiCurve plot of the first variable
+in the file.  At this point you can change the variable (u and v are
+better choices for variables than t if you are visualizing  rect2d.silo),
+change the index select range, change the MultiCurve plot attributes, and
+change appearance attributes.
+
+You can also save the currently displayed image as a PNG file.
+
+To run it in batch CLI mode do the following:
+
+1) ./mcurvit -G -f inFile /usr/gapps/visit/data/rect2d.silo
+
+This will create two PNG images from the file rect2d.silo.  Mcurvit will
+exit after executing the batch file.  The commands in the file inFile are
+pretty much it as far as commands that it understands are concerned.

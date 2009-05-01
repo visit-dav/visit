@@ -1,8 +1,8 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-400142
+* LLNL-CODE-400124
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -35,128 +35,83 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
-// ************************************************************************* //
-//                              Environment.C                                //
-// ************************************************************************* //
-#ifndef _POSIX_C_SOURCE
-#   define _POSIX_C_SOURCE 200112L
-#endif
-#include <cstdlib>
-#include <cstring>
-#include <errno.h>
-#ifdef  _WIN32
-# include <windows.h>
-#endif
-
-#include <Environment.h>
-
-#include <DebugStream.h>
-#include <snprintf.h>
-
-namespace Environment {
+#include "Synchronizer.h"
 
 // ****************************************************************************
-//  Function: Environment::get
+// Method: Synchronizer::Synchronizer
 //
-//  Purpose:  Obtains a value from the environment.
-//            `getenv' appears to be pretty standard; we don't do anything
-//            special here.
+// Purpose:
+//   Constructor.
 //
-//  Programmer: Tom Fogal
+// Programmer: Eric Brugger
+// Creation:   Fri May  1 08:06:28 PDT 2009
+//
+// Modifications:
 //
 // ****************************************************************************
-std::string
-get(const char *variable)
+
+Synchronizer::Synchronizer(Subject *s, Subject *ds) : QObject(), Observer(s)
 {
-    const char *value = getenv(variable);
-    if (value == NULL)
-    {
-        std::string str;
-        return str;
-    }
-    return std::string(value);
+    syncCount = 100;
+    sync = (SyncAttributes *)s;
+    delayedSync = (SyncAttributes *)ds;
 }
 
 // ****************************************************************************
-//  Function: Environment::get
+// Method: Synchronizer::~Synchronizer
 //
-//  Purpose: Predicate to determine whether a variable is defined.
+// Purpose:
+//   Destructor.
 //
-//  Programmer: Tom Fogal
+// Programmer: Eric Brugger
+// Creation:   Fri May  1 08:06:28 PDT 2009
+//
+// Modifications:
 //
 // ****************************************************************************
-bool
-exists(const char *variable)
+
+Synchronizer::~Synchronizer()
 {
-    char *value = getenv(variable);
-    if(value == NULL)
-    {
-        return false;
-    }
-    return true;
 }
 
 // ****************************************************************************
-//  Function: Environment::set
+// Method: Synchronizer::PostSynchronize
 //
-//  Purpose: Sets a value in the enviroment.  Avoid using putenv, since it
-//           requires static memory.
+// Purpose:
+//   Causes the viewer to get an update event.  This routine should be called
+//   after doing some viewer action that requires waiting for the viewer to
+//   complete it.
 //
-//  Programmer: Tom Fogal
+// Programmer: Eric Brugger
+// Creation:   Fri May  1 08:06:28 PDT 2009
 //
-//  Modifications:
-//
-//    Tom Fogal, Thu Apr 30 12:08:07 MDT 2009
-//    Do the right thing on Windows (untested..)
+// Modifications:
 //
 // ****************************************************************************
+
 void
-set(const char *k, const char *v)
+Synchronizer::PostSynchronize()
 {
-#ifdef _WIN32
-    if(SetEnvironmentVariable(k, v) == 0)
-#else
-    if(setenv(k, v, 1) != 0)
-#endif
-    {
-        debug1 << "setenv(" << k << " = " << v << ") failed!" << std::endl
-#ifdef _WIN32
-               << "Error: " << GetLastError() << std::endl;
-#else
-               << "Error: " << errno << ": '" << strerror(errno) << std::endl;
-#endif
-    }
+    delayedSync->SetSyncTag(syncCount++);
+    delayedSync->Notify();
 }
 
 // ****************************************************************************
-//  Function: Environment::unset
+// Method: Synchronizer::Update
 //
-//  Purpose: Removes a variable definition from the environment.
+// Purpose:
+//   This update method, which is called when the viewer is finished
+//   processing its work.  This causes the embedded application to regain
+//   control and issue more viewer actions.
 //
-//  Programmer: Tom Fogal
+// Programmer: Eric Brugger
+// Creation:   Fri May  1 08:06:28 PDT 2009
+//
+// Modifications:
 //
 // ****************************************************************************
-void
-unset(const char *variable)
-{
-#ifdef HAVE_UNSETENV
-# ifdef __APPLE__
-    // Apple's unsetenv returns void; no error checking is possible.
-    unsetenv(variable);
-# else
-    if(unsetenv(variable) != 0)
-    {
-        debug1 << "unsetenv(" << variable << ") failed!" << std::endl
-               << "Error: " << errno << ": '" << strerror(errno) << std::endl;
-    }
-# endif
-#else
-    // level 5 because it doesn't usually matter if we clean up our environment
-    // correctly; OS will do it when our process exits anyway.
-    debug5 << "unsetenv(" << variable << ") ignored; unsetenv not supported "
-           << "on this platform." << std::endl;
-#endif
-}
 
-};  /* namespace Environment */
+void Synchronizer::Update(Subject *)
+{
+    emit synchronized();
+}
