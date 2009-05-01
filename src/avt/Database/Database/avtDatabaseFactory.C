@@ -47,7 +47,6 @@
 #include <cstring>
 #include <string>
 #include <vector>
-#include <vector>
 
 #include <visitstream.h>
 #include <sys/stat.h>
