@@ -55,8 +55,12 @@
 #    Added -lplotter_ser for avtColorTables reference
 #
 #    Gunther H. Weber, Wed Sep 19 16:36:14 PDT 2007
-#    Add -lplotter_ser for serial engine and -lplotter_ser for
+#    Add -lplotter_ser for serial engine and -lplotter_par for
 #    parallel engine.
+#
+#    Brad Whitlock, Fri May  1 08:51:00 PDT 2009
+#    -lplotter_ser/par introduced other depencies on the Mac. Plotter itself
+#    must depend on some new stuff.
 #
 ##############################################################################
 
@@ -78,8 +82,8 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtwriter
 LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS)
-SER_LIBS_FOR_MACOSX_PREBINDING=-lplotter_ser
-PAR_LIBS_FOR_MACOSX_PREBINDING=-lplotter_par
+SER_LIBS_FOR_MACOSX_PREBINDING=-lplotter_ser -lavtfilters_ser -lavtview -lparallel_visit_vtk_ser
+PAR_LIBS_FOR_MACOSX_PREBINDING=-lplotter_par -lavtfilters_par -lavtview -lparallel_visit_vtk_par
 SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(SER_LIBS_FOR_MACOSX_PREBINDING) $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(PAR_LIBS_FOR_MACOSX_PREBINDING) $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 

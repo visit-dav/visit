@@ -13,6 +13,7 @@
 class H5_Index : public BaseFileInterface{
   public:
         H5_Index(const bool useH5PartFile = false);
+        H5_Index(const H5_Index &);
         virtual ~H5_Index();
 
         //open or create a new HDF5_UC file.  Files that are not found
