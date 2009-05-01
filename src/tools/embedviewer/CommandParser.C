@@ -31,7 +31,7 @@ void CommandParser::ProcessCommands(const QString &filename)
     {
         connect(sync, SIGNAL(synchronized()),
                 this, SLOT(ProcessOneCommand()));
-        ProcessOneCommand();
+        sync->PostSynchronize();
     }
 }
 

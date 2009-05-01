@@ -1,4 +1,4 @@
-openFile ~/data/noise.silo
+openFile /usr/gapps/visit/data/noise.silo
 changeVariable shepardglobal
 saveWindow
 changeVariable radial
