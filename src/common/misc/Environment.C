@@ -45,7 +45,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <errno.h>
-#include <iostream>
+#ifdef  _WIN32
+# include <windows.h>
+#endif
 
 #include <Environment.h>
 
@@ -80,23 +82,19 @@ exists(const char *variable)
 void
 set(const char *k, const char *v)
 {
-#ifndef WIN32
+#ifdef _WIN32
+    if(SetEnvironmentVariable(k, v) == 0)
+#else
     if(setenv(k, v, 1) != 0)
+#endif
     {
         debug1 << "setenv(" << k << " = " << v << ") failed!" << std::endl
-               << "Error: " << errno << ": '" << strerror(errno) << std::endl;
-    }
+#ifdef _WIN32
+               << "Error: " << GetLastError() << std::endl;
 #else
-    int size = strlen(k) + strlen(v) +1;
-    char *envVar = new char [size + 1];
-    SNPRINTF(envVar, size, "%s=%s", k, v);
-    if(putenv(envVar) != 0)
-    {
-        debug1 << "putenv(" << k << " = " << v << ") failed!" << std::endl
                << "Error: " << errno << ": '" << strerror(errno) << std::endl;
-    }
-    delete [] envVar;
 #endif
+    }
 }
 
 /// Removes a variable definition.  Implementations appear to differ a bit
