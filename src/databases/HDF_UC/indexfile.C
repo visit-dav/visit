@@ -13,6 +13,19 @@ H5_Index::H5_Index(const bool useH5PartFile){
   }
 }
 
+H5_Index::H5_Index(const H5_Index &hi){
+  file_open = false;
+  h5partFileOpen = false;
+  useH5Part = hi.useH5Part;
+  strcpy(fileName, hi.fileName);
+  nParticles = hi.nParticles;
+  nTimeSteps = hi.nTimeSteps;
+  nDatasets = hi.nDatasets;
+  timevalues = NULL;
+  variable_names = hi.variable_names;
+  variable_types = hi.variable_types;
+  variable_indices = hi.variable_indices;
+}
 
 H5_Index::~H5_Index(){
 

@@ -22,6 +22,7 @@
       LEOSFileReader.C
       LEOSFileFormat.C
       Streaker.C
+      JMFileFormat.C
     </Files>
     <Files components="E">
       avtPDBFileFormat.C
@@ -35,6 +36,7 @@
       LEOSFileReader.C
       LEOSFileFormat.C
       Streaker.C
+      JMFileFormat.C
     </Files>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>

@@ -47,6 +47,7 @@
 #include <PP_Z_STSD_FileFormat.h>
 #include <PP_Z_MTSD_FileFormat.h>
 #include <LEOSFileFormat.h>
+#include <JMFileFormat.h>
 
 // ****************************************************************************
 // Method: PDB_CreateFileFormatInterface
@@ -72,6 +73,10 @@
 //
 //   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
 //   Added read options as formal arg. and passed to LEOS interface creator.
+//
+//   Brad Whitlock, Thu Apr 30 15:48:08 PDT 2009
+//   I added support for Jose's file format.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -102,19 +107,38 @@ PDB_CreateFileFormatInterface(const char * const *list, int nList, int nBlock,
         {
             // Check to see if it is a PF3D file.
             if(ffi == 0)
+            {
+                debug4 << "Testing if file contains PF3D data" << endl;
                 ffi = PF3DFileFormat::CreateInterface(pdb, list, nList, nBlock);
+            }
 
             // Check to see if it is a PPZ STSD file..
             if(ffi == 0)
+            {
+                debug4 << "Testing if file contains Flash ST data" << endl;
                 ffi = PP_Z_STSD_FileFormat::CreateInterface(pdb, list, nList, nBlock);
+            }
 
             // Check to see if it is a PPZ Collected MTSD file.
             if(ffi == 0)
+            {
+                debug4 << "Testing if file contains Flash MT data" << endl;
                 ffi = PP_Z_MTSD_FileFormat::CreateInterface(pdb, list, nList);
+            }
 
             // Check to see if it is an LEOS file.
             if(ffi == 0)
+            {
+                debug4 << "Testing if file contains LEOS data" << endl;
                 ffi = LEOSFileFormat::CreateInterface(pdb, list[0], rdopts);
+            }
+
+            // Check to see if it is one of Jose's files.
+            if(ffi == 0)
+            {
+                debug4 << "Testing if file contains JM data" << endl;
+                ffi = JMFileFormat::CreateInterface(pdb, list, nList);
+            }
 
             // Add more file formats here.
 
