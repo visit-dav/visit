@@ -57,6 +57,7 @@
 #include <avtCallback.h>
 #include <avtMetaData.h>
 
+#include <snprintf.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
 #include <ImproperUseException.h>
@@ -305,7 +306,7 @@ avtGeodesicVectorQuantizeExpression::UpdateDataObjectInfo(void)
     for (int i = 0 ; i < geodesic_sphere_npts ; i++)
     {
         char str[256];
-        snprintf(str,256,"node%03d",i);
+        SNPRINTF(str,256,"node%03d",i);
         subnames[i] = str;
     }
 

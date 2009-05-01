@@ -48,11 +48,18 @@
    #define VERDICT_DBL_MAX 1.0E+300
 #endif
 
-
-#ifdef __cplusplus
-  #define C_FUNC_DEF extern "C"
+#if defined(_WIN32)
+  #if defined(VERDICT_EXPORTS) || defined(visit_verdict_EXPORTS)
+    #define C_FUNC_DEF __declspec(dllexport)
+  #else
+    #define C_FUNC_DEF __declspec(dllimport)
+  #endif
 #else
-  #define C_FUNC_DEF
+  #ifdef __cplusplus
+    #define C_FUNC_DEF extern "C"
+  #else
+    #define C_FUNC_DEF
+  #endif
 #endif
 
 

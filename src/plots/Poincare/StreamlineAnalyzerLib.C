@@ -670,7 +670,7 @@ islandChecks( vector< Point >& points,
   // the hull is convex the base point may the centroid of all of the
   // points or based upon a point that is perpendicular to the
   // principal axis of the group of points.
-  unsigned int nodes[toroidalWinding];
+  vector<unsigned int>nodes(toroidalWinding);
 
   for( unsigned int i=0; i<toroidalWinding; i++ ) {
 
@@ -2682,7 +2682,7 @@ smoothCurve( vector< vector < Point > > &bins,
       {
         unsigned int nodes = bins[i].size();
 
-        pair< Point, unsigned int > newPts[add*nodes];
+        vector<pair< Point, unsigned int >> newPts(add*nodes);
 
         for( unsigned int j=0; j<add*nodes; j++ )
           newPts[j] = pair< Point, unsigned int > (Point(0,0,0), 0 );
@@ -2995,7 +2995,7 @@ mergeOverlap( vector< vector < Point > > &bins,
     }
   } else {
 
-    vector < Point > tmp_bins[toroidalWinding];
+    vector<vector < Point >> tmp_bins(toroidalWinding);
 
     // This gives the minimal number of nodes for each group.
     surfaceOverlapCheck( bins, toroidalWinding, skip, nnodes );

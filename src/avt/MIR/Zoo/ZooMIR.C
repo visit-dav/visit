@@ -262,7 +262,7 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
         }
 
         int *conn_ptr = conn.connectivity;
-        double actualVFStorage[nMaterials];
+        double *actualVFStorage = new double[nMaterials];
         double *actualVFs = (options.numIterations>0) ? actualVFStorage : NULL;
         double maxdiff = 0;
         for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
@@ -298,7 +298,7 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
         }
 
         visitTimer->StopTimer(timerHandle2, "MIR: Cell clipping");
-
+        delete [] actualVFStorage;
         delete cr;
     }
 

@@ -617,7 +617,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
     }
     else
     {
-#if HAVE_LIBHDF5
+#ifdef HAVE_LIBHDF5
         hid_t fileId = H5Fopen(gridFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
         if (fileId < 0)
         {

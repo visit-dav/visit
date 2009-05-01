@@ -214,7 +214,7 @@ avtXDMFFileFormat::OpenFile(const char *n)
     }
     else
     {
-        int lastSlash = fname.find_last_of(SLASH_STRING);
+        int lastSlash = fname.find_last_of(VISIT_SLASH_STRING);
         if (lastSlash == string::npos)
         {
             strcpy(name, n);

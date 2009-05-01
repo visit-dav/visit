@@ -50,6 +50,7 @@
 #include <Environment.h>
 
 #include <DebugStream.h>
+#include <snprintf.h>
 
 namespace Environment {
 
@@ -79,11 +80,23 @@ exists(const char *variable)
 void
 set(const char *k, const char *v)
 {
+#ifndef WIN32
     if(setenv(k, v, 1) != 0)
     {
         debug1 << "setenv(" << k << " = " << v << ") failed!" << std::endl
                << "Error: " << errno << ": '" << strerror(errno) << std::endl;
     }
+#else
+    int size = strlen(k) + strlen(v) +1;
+    char *envVar = new char [size + 1];
+    SNPRINTF(envVar, size, "%s=%s", k, v);
+    if(putenv(envVar) != 0)
+    {
+        debug1 << "putenv(" << k << " = " << v << ") failed!" << std::endl
+               << "Error: " << errno << ": '" << strerror(errno) << std::endl;
+    }
+    delete [] envVar;
+#endif
 }
 
 /// Removes a variable definition.  Implementations appear to differ a bit

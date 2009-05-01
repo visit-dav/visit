@@ -63,6 +63,7 @@
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
+#include <snprintf.h>
 
 using namespace std;
 
@@ -536,7 +537,7 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
         char str[256];
         for (int i=0; i<dim; i++)
         {
-            snprintf(str, 256, "subvar%d", i);
+            SNPRINTF(str, 256, "subvar%d", i);
             subnames.push_back(str);
         }
         outAtts.SetVariableSubnames(subnames, outputVariableName);
