@@ -156,16 +156,13 @@ GetDefaultConfigFile(const char *filename, const char *home)
             GetUserName(username, &namelen);
 
             retval = new char[realhome.length() + namelen + 5 + filenameLength + 2 + 7];
-            std::ostringstream ini;
-            ini << realhome << "\\" << configFileName << " for " << username
-                << ".ini";
             sprintf(retval, "%s\\%s for %s.ini", realhome.c_str(),
                     configFileName, username);
         }
         else
         {
             // System config.
-            retval = new char[strlen(realhome) + filenameLength + 2 + 7];
+            retval = new char[realhome.length() + filenameLength + 2 + 7];
             sprintf(retval, "%s\\%s.ini", realhome.c_str(), configFileName);
         }
     }

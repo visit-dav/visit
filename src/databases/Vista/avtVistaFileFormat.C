@@ -50,7 +50,7 @@
 
 #include <visit-config.h>
 
-#if HAVE_LIBHDF5
+#ifdef HAVE_LIBHDF5
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
 // versions of HDF5 before 1.8 and ensures correct compilation with
@@ -142,7 +142,7 @@ VistaTree::GetTop() const
 const int avtVistaFileFormat::MASTER_FILE_INDEX = 0;
 int avtVistaFileFormat::objcnt = 0;
 
-#if HAVE_LIBHDF5
+#ifdef HAVE_LIBHDF5
 // ****************************************************************************
 //  Function:  avtVistaFileFormat::InitializeHDF5
 //
@@ -316,7 +316,7 @@ avtVistaFileFormat::avtVistaFileFormat(const char *filename,
         DBShowErrors(DB_ALL, 0);
         fileHandles[MASTER_FILE_INDEX] = dbfile;
     }
-#if HAVE_LIBHDF5
+#ifdef HAVE_LIBHDF5
     else
     {
         isSilo = false;
@@ -414,7 +414,7 @@ avtVistaFileFormat::~avtVistaFileFormat()
     avtVistaFileFormat::objcnt--;
 
     // handle HDF5 library termination on descrution of last instance
-#if HAVE_LIBHDF5
+#ifdef HAVE_LIBHDF5
     if (!isSilo && (avtVistaFileFormat::objcnt == 0))
         FinalizeHDF5();
 #endif
@@ -510,7 +510,7 @@ avtVistaFileFormat::OpenFile(int f)
     {
         fileHandles[f] = (void *) DBOpen(filenames[f], DB_UNKNOWN, DB_READ);
     }
-#if HAVE_LIBHDF5
+#ifdef HAVE_LIBHDF5
     else
     {
         fileHandles[f] = (void *) new hid_t;
@@ -614,7 +614,7 @@ avtVistaFileFormat::CloseFile(int f)
         {
             DBClose((DBfile*) fileHandles[f]);
         }
-#if HAVE_LIBHDF5
+#ifdef HAVE_LIBHDF5
         else
         {
             H5Fclose(*((hid_t*) fileHandles[f]));
@@ -796,7 +796,7 @@ avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
         }
 
     }
-#if HAVE_LIBHDF5
+#ifdef HAVE_LIBHDF5
     else
     {
         // open the dataset

@@ -610,6 +610,7 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
     *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
 }
 
+Target: xml2info
 Function: ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
 Definition:

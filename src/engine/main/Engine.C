@@ -51,7 +51,7 @@
 #include <unistd.h>      // for alarm()
 #else
 #include <process.h>     // for _getpid()
-#include <winsock.h>     // for gethostname()
+#include <winsock2.h>     // for gethostname()
 #endif
 #include <new>
 

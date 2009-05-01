@@ -669,7 +669,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     spinModeAct = winPopup->addAction(tr("Spin"),
                                      this, SLOT(toggleSpinMode()));
     
-#if not defined(Q_WS_MACX)
+#ifndef Q_WS_MACX
     // We put the Help menu here on all platforms other than the Mac.  The Mac
     // help menu is done lower down.
 
