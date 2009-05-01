@@ -45,17 +45,47 @@
 
 #include <string>
 
-namespace Environment {
-    /// Obtains a value from the environment.
+namespace Environment
+{
+    // ****************************************************************************
+    //  Function: Environment::get
+    //
+    //  Purpose:  Obtains a value from the environment.
+    //
+    //  Programmer: Tom Fogal
+    //
+    // ****************************************************************************
     std::string MISC_API get(const char *);
 
-    /// Predicate to determine whether a variable is defined.
+    // ****************************************************************************
+    //  Function: Environment::get
+    //
+    //  Purpose: Predicate to determine whether a variable is defined.
+    //
+    //  Programmer: Tom Fogal
+    //
+    // ****************************************************************************
     bool MISC_API exists(const char *);
 
-    /// Sets a value in the enviroment.  Overwrites any existing value.
+    // ****************************************************************************
+    //  Function: Environment::set
+    //
+    //  Purpose: Sets a value in the enviroment.  Avoid using putenv, since it
+    //           requires static memory.
+    //
+    //  Programmer: Tom Fogal
+    //
+    // ****************************************************************************
     void MISC_API set(const char *k, const char *v);
 
-    /// Removes the given key from the environment.
+    // ****************************************************************************
+    //  Function: Environment::unset
+    //
+    //  Purpose: Removes a variable definition from the environment.
+    //
+    //  Programmer: Tom Fogal
+    //
+    // ****************************************************************************
     void MISC_API unset(const char *);
 };
 #endif

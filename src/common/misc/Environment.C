@@ -56,8 +56,16 @@
 
 namespace Environment {
 
-/// Obtains a value from the environment.
-/// `getenv' appears to be pretty standard; we don't do anything special here.
+// ****************************************************************************
+//  Function: Environment::get
+//
+//  Purpose:  Obtains a value from the environment.
+//            `getenv' appears to be pretty standard; we don't do anything
+//            special here.
+//
+//  Programmer: Tom Fogal
+//
+// ****************************************************************************
 std::string
 get(const char *variable)
 {
@@ -65,7 +73,14 @@ get(const char *variable)
     return std::string(value);
 }
 
-/// Predicate to determine whether a variable is defined.
+// ****************************************************************************
+//  Function: Environment::get
+//
+//  Purpose: Predicate to determine whether a variable is defined.
+//
+//  Programmer: Tom Fogal
+//
+// ****************************************************************************
 bool
 exists(const char *variable)
 {
@@ -77,8 +92,20 @@ exists(const char *variable)
     return true;
 }
 
-/// Sets a value in the enviroment.  Avoid using putenv, since it requires
-/// static memory.
+// ****************************************************************************
+//  Function: Environment::set
+//
+//  Purpose: Sets a value in the enviroment.  Avoid using putenv, since it
+//           requires static memory.
+//
+//  Programmer: Tom Fogal
+//
+//  Modifications:
+//
+//    Tom Fogal, Thu Apr 30 12:08:07 MDT 2009
+//    Do the right thing on Windows (untested..)
+//
+// ****************************************************************************
 void
 set(const char *k, const char *v)
 {
@@ -97,8 +124,14 @@ set(const char *k, const char *v)
     }
 }
 
-/// Removes a variable definition.  Implementations appear to differ a bit
-/// between platforms.
+// ****************************************************************************
+//  Function: Environment::unset
+//
+//  Purpose: Removes a variable definition from the environment.
+//
+//  Programmer: Tom Fogal
+//
+// ****************************************************************************
 void
 unset(const char *variable)
 {
@@ -121,4 +154,4 @@ unset(const char *variable)
 #endif
 }
 
-};  /* namespace Env */
+};  /* namespace Environment */
