@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">2.0.0</Field>
+    <Object name="VIEWER">
+        <Object name="DEFAULT_VALUES">
+            <Object name="HostProfileList">
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">ranger</Field>
+                    <Field name="host" type="string">ranger.tacc.utexas.edu</Field>
+                    <Field name="hostAliases" type="string">login#.ranger.tacc.utexas.edu</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="numProcessors" type="int">8</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">ibrun</Field>
+                    <Field name="active" type="bool">true</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">spur</Field>
+                    <Field name="host" type="string">spur.tacc.utexas.edu</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit" </Field>
+                    <Field name="numProcessors" type="int">8</Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">ibrun</Field>
+                    <Field name="active" type="bool">true</Field>
+                </Object>
+                <Field name="activeProfile" type="int">1</Field>
+            </Object>
+        </Object>
+    </Object>
+</Object>

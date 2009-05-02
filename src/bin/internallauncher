@@ -1,6 +1,26 @@
-#! /bin/sh
-exec perl -x $0 ${1+"$@"};
-#!perl
+#!/bin/sh
+# Do a little magic to run perl from anywhere in your path.
+
+lines=`cat $0 | wc -l`
+lines=`expr $lines - 20`
+if (test -n "$TMPDIR") then
+    if (test ! -d "$TMPDIR") then
+        TMPDIR=$HOME
+    fi
+else
+    TMPDIR=$HOME
+fi
+tail -$lines $0 1> $TMPDIR/visitilperl$$ 2>/dev/null
+if (test $? -ne 0) then
+    tail --lines=$lines $0 1>> $TMPDIR/visitilperl$$
+fi
+echo "__END__" >> $TMPDIR/visitilperl$$
+echo "$0 $*" >> $TMPDIR/visitilperl$$
+exec perl $TMPDIR/visitilperl$$ $0 ${1+"$@"}
+
+unlink $0;
+$0 = shift @ARGV;
+
 
 ###############################################################################
 #
@@ -446,6 +466,11 @@ exec perl -x $0 ${1+"$@"};
 #    Kathleen Bonnell, Wed Apr 22 17:43:26 PDT 2009
 #    Added environemnt variable VISITULTRAHOME, so that VisIt knows where to 
 #    find the ultra wrapper.
+#
+#    Hank Childs, Sat Apr 25 11:35:31 CDT 2009
+#    (1) Undo Perl magic that Sean put in about a year ago.  It seemed like a
+#    more elegant solution, but it was biting LLNL and TACC and Perl experts
+#    were not able to figure it out.  (2) Add support for TACC.
 #
 #    Hank Childs, Sun Apr 26 21:18:36 CDT 2009
 #    Add support for Argonne machine "gadzooks", which has a weird connection
@@ -1396,6 +1421,22 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /lens/ )
 }
 
 # ----
+# HACK for ranger/spur @ TACC
+# ----
+$IsRunningOnTexasRanger = 0;
+# Hostnames are of the form spur.tacc.utexas.edu or login#.ranger.tacc.utexas.edu
+if ( ($parallel) and $exe_name eq "engine" and (($host =~ /spur/) or ($host =~ /login/)))
+{
+    chomp($domain   = `hostname -d`);
+    if ( ($domain eq "tacc.utexas.edu") or ($domain eq "ranger.tacc.utexas.edu") )
+    {
+        $IsRunningOnTexasRanger = 1;
+        print STDERR "\n\nAttempting to launch parallel engine at TACC\n\n";
+        print STDERR "If your job cannot launch, please see http://www.visitusers.org/index.php?title=TACC for help\n\n";
+    }
+}
+
+# ----
 # HACK for jaguarcnl @ ORNL
 #
 # ----
@@ -2124,6 +2165,17 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, @post_args;
         chomp($printcmd[0] = `basename $printcmd[0]`);
     }
+    # ibrun
+    elsif ($launch eq "ibrun")
+    {
+        @parcmd = ("ibrun");
+        push @parcmd, @visitcmd;
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
     # prun
     elsif ($launch eq "prun")
     {
@@ -2306,6 +2358,11 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 }
                 push @mpicmd, "@visitcmd\n";
             }
+            elsif ($sublauncher eq "ibrun")
+            {
+                @mpicmd = ("ibrun");
+                push @mpicmd, "@visitcmd\n";
+            }
             elsif ($sublauncher eq "")
             {
                 @mpicmd = "@visitcmd\n";
@@ -2341,7 +2398,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
             @parcmd = ($plauncher);
 
             # Add the env variables.
-            push @parcmd, "-v LIBPATH=$ENV{LIBPATH},LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH},VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
+            if (! $IsRunningOnTexasRanger)
+            {
+                push @parcmd, "-v LIBPATH=$ENV{LIBPATH},LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH},VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
+            }
 
             # parse for '-l vis' so it can be separated from the
             # launchargs
@@ -2367,23 +2427,45 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @parcmd, @newlaunchargs if $newlaunchargs_set;
             $nodes = $procs if (!$nodes_set);
             $ppn = ceil($procs / $nodes);
-            $qsubNumNodeStr = "nodes";
-            $qsubPPNStr = "ppn";
-            $qsubSeparator = ":";
-            if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
-            if ( $IsRunningOnFranklinNERSC ) {
-                $qsubNumNodeStr = "mppwidth";
-                $qsubPPNStr = "mppnppn";
-                $qsubSeparator = ",";
+            if (! $IsRunningOnTexasRanger)
+            {
+                $qsubNumNodeStr = "nodes";
+                $qsubPPNStr = "ppn";
+                $qsubSeparator = ":";
+                if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
+                if ( $IsRunningOnFranklinNERSC ) {
+                    $qsubNumNodeStr = "mppwidth";
+                    $qsubPPNStr = "mppnppn";
+                    $qsubSeparator = ",";
+                }
+                if ( $IsRunningOnLens_ORNL ) {$qsubPPNStr = "ppn";}
+                if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn:vis";}
+                else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn"; }
             }
-            if ( $IsRunningOnLens_ORNL ) {$qsubPPNStr = "ppn";}
-            if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn:vis";}
-            else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn"; }
-            push @parcmd, "-l", "walltime=$time" if $time_set;
+            else
+            {
+                $fake_procs=$nodes*16;
+                $str= "${ppn}way";
+                push @parcmd, "-pe", $str, $fake_procs;
+            }
+
+            if (! $IsRunningOnTexasRanger)
+            {
+                push @parcmd, "-l", "walltime=$time" if $time_set;
+            }
+            else
+            {
+                if ($time_set)
+                {
+                    $hours=sprintf("%02d", $time/60);
+                    $minutes=sprintf("%02d", $time%60);
+                    push @parcmd, "-l", "h_rt=$hours:$minutes:00";
+                }
+            }
             if ($UseTTC) { push @parcmd, "-l", "ttc=$procs"; }
             push @parcmd, "-q",  $part  if $part_set;
             push @parcmd, "-A",  $bank  if $bank_set;
-          
+      
             @printcmd = @parcmd;
             push @parcmd, $tfilename;
             push @printcmd, $cdcmd;

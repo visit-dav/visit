@@ -17,6 +17,9 @@
 #   Eric Brugger, Mon Apr  7 13:52:50 PDT 2008
 #   Removed sc install.
 #
+#   Hank Childs, Sat May  2 13:26:51 CDT 2009
+#   Renamed config file to llnl_closed.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -104,7 +107,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f crier
 cat <<EOF > crier
 #!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on crier"           >> resultlog 2>&1
@@ -141,8 +144,8 @@ fi
 rm -f purple
 cat <<EOF > purple
 #!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver aix64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on purple"          >> resultlog 2>&1
@@ -194,7 +197,7 @@ fi
 rm -f hopi
 cat <<EOF > hopi
 #!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on hopi"            >> resultlog 2>&1
