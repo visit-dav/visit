@@ -239,8 +239,8 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//   Initial Qt4 Port.
 //
 // ****************************************************************************
 
@@ -455,6 +455,9 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 //   Eric Brugger, Mon Aug 18 10:39:11 PDT 2008
 //   Added support for just "msub" as a parallel launch method.
 //
+//   Hank Childs, Sat Apr 25 13:51:17 PDT 2009
+//   Added support for ibrun & qsub/ibrun.
+//
 // ****************************************************************************
 
 QWidget *
@@ -475,6 +478,7 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
     launchMethod->addItem(tr("(default)"));
     launchMethod->addItem("bsub");
     launchMethod->addItem("dmpirun");
+    launchMethod->addItem("ibrun");
     launchMethod->addItem("mpirun");
     launchMethod->addItem("msub");
     launchMethod->addItem("poe");
@@ -487,6 +491,7 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
     launchMethod->addItem("psub/poe");
     launchMethod->addItem("psub/srun");
     launchMethod->addItem("qsub/aprun");
+    launchMethod->addItem("qsub/ibrun");
     launchMethod->addItem("qsub/mpiexec");
     launchMethod->addItem("qsub/mpirun");
     launchMethod->addItem("qsub/srun");

@@ -17,6 +17,9 @@
 #   Hank Childs, Wed Oct 17 16:25:14 PDT 2007
 #   Add a subject line to the status e-mail.
 #
+#   Hank Childs, Sat May  2 13:26:51 CDT 2009
+#   Change config file to "llnl_open".
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -159,7 +162,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f hoth
 cat <<EOF > hoth
 #!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on hoth"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -195,8 +198,8 @@ fi
 rm -f up
 cat <<EOF > up
 #!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver aix64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver aix64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on up"              >> resultlog 2>&1
@@ -248,7 +251,7 @@ fi
 rm -f yana
 cat <<EOF > yana
 #!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on yana"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -284,7 +287,7 @@ fi
 rm -f xchem
 cat <<EOF > xchem
 #!/bin/sh
-./visit-install -private -c open -b bdivp -gw -l $ver linux-x86_64-fedora4 /opt/llnl/visit > installlog 2>&1
+./visit-install -private -c llnl_open -b bdivp -gw -l $ver linux-x86_64-fedora4 /opt/llnl/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on xchem"           > resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -356,7 +359,7 @@ fi
 rm -f ellipse
 cat <<EOF > ellipse
 #!/bin/sh
-./visit-install -private -c open -b bdivp $ver linux-ellipse visit > installlog 2>&1
+./visit-install -private -c llnl_open -b bdivp $ver linux-ellipse visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on ellipse"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1

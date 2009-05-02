@@ -380,11 +380,12 @@
 #    Added minimum possible logic for dbio-only distros. Many commands fail
 #    in this mode. But, those failures are harmless and the script should
 #    continue on to complete the creation of a binary distro.
-#    Kathleen Bonnell, Wed Apr 22 16:46:53 PDT 2009
-#    Add ultrawapper files, pyparsing files.
 #
 #    Kathleen Bonnell, Wed Apr 22 16:46:53 PDT 2009
 #    Add ultrawapper files, pyparsing files.
+#
+#    Hank Childs, Sat May  2 10:59:41 CDT 2009
+#    Added configs for TACC.  Also change incorrect "fi" to be an "endif".
 #
 #------------------------------------------------------------------------------
 
@@ -1013,7 +1014,7 @@ cp $VisItDir/exe/time_annotation $bindir
 cp $VisItDir/exe/visitconvert_ser $bindir
 if(-e $VisItDir/exe/visitconvert_ser_lite) then
    cp $VisItDir/exe/visitconvert_ser_lite $bindir
-fi
+endif
 cp $VisItDir/exe/visit_composite  $bindir
 cp $VisItDir/exe/visit_transition $bindir
 if(-e $VisItDir/exe/visitconvert_par) then
@@ -1531,13 +1532,15 @@ cp $VisItDir/ultrawrapper/*.py $ultradir/
 # Copy the configuration files.
 #
 mkdir $verdir/.visit
-cp $VisItDir/svn_bin/visit-config-closed $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-llnl_closed $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-nersc  $verdir/.visit
-cp $VisItDir/svn_bin/visit-config-open   $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-llnl_open   $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-ornl   $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-anag   $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-anl    $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-princeton    $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-tacc    $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-tacc_internal    $verdir/.visit
 if (-e $verdir/.visit/visit-config-$Configuration) then
     ln -s visit-config-$Configuration $verdir/.visit/config
 endif
