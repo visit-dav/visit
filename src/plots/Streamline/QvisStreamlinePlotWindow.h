@@ -93,6 +93,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Add pathline GUI.
 //    
+//   Hank Childs, Sat May  2 22:10:26 PDT 2009
+//   Added option for specifying seed points as a point list.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -133,6 +136,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void pointSourceProcessText();
     void lineStartProcessText();
     void lineEndProcessText();
+    void pointListProcessText();
     void planeOriginProcessText();
     void planeNormalProcessText();
     void planeUpAxisProcessText();
@@ -173,6 +177,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *lineStartLabel;
     QLineEdit *lineEnd;
     QLabel    *lineEndLabel;
+    QLineEdit *pointList;
+    QLabel    *pointListLabel;
     QLineEdit *planeOrigin;
     QLabel    *planeOriginLabel;
     QLineEdit *planeNormal;

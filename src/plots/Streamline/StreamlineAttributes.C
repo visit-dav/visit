@@ -51,20 +51,21 @@
 
 static const char *SourceType_strings[] = {
 "SpecifiedPoint", "SpecifiedLine", "SpecifiedPlane", 
-"SpecifiedSphere", "SpecifiedBox"};
+"SpecifiedSphere", "SpecifiedBox", "SpecifiedPointList"
+};
 
 std::string
 StreamlineAttributes::SourceType_ToString(StreamlineAttributes::SourceType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return SourceType_strings[index];
 }
 
 std::string
 StreamlineAttributes::SourceType_ToString(int t)
 {
-    int index = (t < 0 || t >= 5) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return SourceType_strings[index];
 }
 
@@ -72,7 +73,7 @@ bool
 StreamlineAttributes::SourceType_FromString(const std::string &s, StreamlineAttributes::SourceType &val)
 {
     val = StreamlineAttributes::SpecifiedPoint;
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == SourceType_strings[i])
         {
@@ -312,7 +313,7 @@ StreamlineAttributes::IntegrationType_FromString(const std::string &s, Streamlin
 }
 
 // Type map format string
-const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiiiib";
+const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbd*iibdiisabbiddiiiiiib";
 
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
@@ -366,6 +367,15 @@ StreamlineAttributes::StreamlineAttributes() :
     boxExtents[4] = 0;
     boxExtents[5] = 1;
     useWholeBox = true;
+    pointList.push_back(0);
+    pointList.push_back(0);
+    pointList.push_back(0);
+    pointList.push_back(1);
+    pointList.push_back(0);
+    pointList.push_back(0);
+    pointList.push_back(0);
+    pointList.push_back(1);
+    pointList.push_back(0);
     pointDensity = 2;
     displayMethod = Lines;
     showStart = false;
@@ -442,6 +452,7 @@ StreamlineAttributes::StreamlineAttributes(const StreamlineAttributes &obj) :
         boxExtents[i] = obj.boxExtents[i];
 
     useWholeBox = obj.useWholeBox;
+    pointList = obj.pointList;
     pointDensity = obj.pointDensity;
     displayMethod = obj.displayMethod;
     showStart = obj.showStart;
@@ -543,6 +554,7 @@ StreamlineAttributes::operator = (const StreamlineAttributes &obj)
         boxExtents[i] = obj.boxExtents[i];
 
     useWholeBox = obj.useWholeBox;
+    pointList = obj.pointList;
     pointDensity = obj.pointDensity;
     displayMethod = obj.displayMethod;
     showStart = obj.showStart;
@@ -641,6 +653,7 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (sphereRadius == obj.sphereRadius) &&
             boxExtents_equal &&
             (useWholeBox == obj.useWholeBox) &&
+            (pointList == obj.pointList) &&
             (pointDensity == obj.pointDensity) &&
             (displayMethod == obj.displayMethod) &&
             (showStart == obj.showStart) &&
@@ -917,6 +930,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_sphereRadius,              (void *)&sphereRadius);
     Select(ID_boxExtents,                (void *)boxExtents, 6);
     Select(ID_useWholeBox,               (void *)&useWholeBox);
+    Select(ID_pointList,                 (void *)&pointList);
     Select(ID_pointDensity,              (void *)&pointDensity);
     Select(ID_displayMethod,             (void *)&displayMethod);
     Select(ID_showStart,                 (void *)&showStart);
@@ -1051,6 +1065,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("useWholeBox", useWholeBox));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointList, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointList", pointList));
     }
 
     if(completeSave || !FieldsEqual(ID_pointDensity, &defaultObject))
@@ -1217,7 +1237,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
+            if(ival >= 0 && ival < 6)
                 SetSourceType(SourceType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1253,6 +1273,8 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetBoxExtents(node->AsDoubleArray());
     if((node = searchNode->GetNode("useWholeBox")) != 0)
         SetUseWholeBox(node->AsBool());
+    if((node = searchNode->GetNode("pointList")) != 0)
+        SetPointList(node->AsDoubleVector());
     if((node = searchNode->GetNode("pointDensity")) != 0)
         SetPointDensity(node->AsInt());
     if((node = searchNode->GetNode("displayMethod")) != 0)
@@ -1494,6 +1516,13 @@ StreamlineAttributes::SetUseWholeBox(bool useWholeBox_)
 {
     useWholeBox = useWholeBox_;
     Select(ID_useWholeBox, (void *)&useWholeBox);
+}
+
+void
+StreamlineAttributes::SetPointList(const doubleVector &pointList_)
+{
+    pointList = pointList_;
+    Select(ID_pointList, (void *)&pointList);
 }
 
 void
@@ -1772,6 +1801,18 @@ StreamlineAttributes::GetUseWholeBox() const
     return useWholeBox;
 }
 
+const doubleVector &
+StreamlineAttributes::GetPointList() const
+{
+    return pointList;
+}
+
+doubleVector &
+StreamlineAttributes::GetPointList()
+{
+    return pointList;
+}
+
 int
 StreamlineAttributes::GetPointDensity() const
 {
@@ -1957,6 +1998,12 @@ StreamlineAttributes::SelectBoxExtents()
 }
 
 void
+StreamlineAttributes::SelectPointList()
+{
+    Select(ID_pointList, (void *)&pointList);
+}
+
+void
 StreamlineAttributes::SelectColorTableName()
 {
     Select(ID_colorTableName, (void *)&colorTableName);
@@ -2006,6 +2053,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_sphereRadius:              return "sphereRadius";
     case ID_boxExtents:                return "boxExtents";
     case ID_useWholeBox:               return "useWholeBox";
+    case ID_pointList:                 return "pointList";
     case ID_pointDensity:              return "pointDensity";
     case ID_displayMethod:             return "displayMethod";
     case ID_showStart:                 return "showStart";
@@ -2064,6 +2112,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_sphereRadius:              return FieldType_double;
     case ID_boxExtents:                return FieldType_doubleArray;
     case ID_useWholeBox:               return FieldType_bool;
+    case ID_pointList:                 return FieldType_doubleVector;
     case ID_pointDensity:              return FieldType_int;
     case ID_displayMethod:             return FieldType_enum;
     case ID_showStart:                 return FieldType_bool;
@@ -2122,6 +2171,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_sphereRadius:              return "double";
     case ID_boxExtents:                return "doubleArray";
     case ID_useWholeBox:               return "bool";
+    case ID_pointList:                 return "doubleVector";
     case ID_pointDensity:              return "int";
     case ID_displayMethod:             return "enum";
     case ID_showStart:                 return "bool";
@@ -2278,6 +2328,11 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (useWholeBox == obj.useWholeBox);
         }
         break;
+    case ID_pointList:
+        {  // new scope
+        retval = (pointList == obj.pointList);
+        }
+        break;
     case ID_pointDensity:
         {  // new scope
         retval = (pointDensity == obj.pointDensity);
@@ -2408,6 +2463,9 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Hank Childs, Sat Mar  3 09:00:12 PST 2007
 //    Add support for useWholeBox.
 //
+//    Hank Childs, Sun May  3 11:49:31 CDT 2009
+//    Add support for point lists.
+//
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -2441,6 +2499,18 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
        (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
         (sphereRadius != obj.sphereRadius)));
 
+    bool sourcePointListDiffers = (sourceType == SpecifiedPointList);
+    if (sourcePointListDiffers)
+    {
+        sourcePointListDiffers = false;
+        if (pointList.size() != obj.pointList.size())
+            sourcePointListDiffers = true;
+        else
+            for (int i = 0 ; i < pointList.size() ; i++)
+                if (pointList[i] != obj.pointList[i])
+                    sourcePointListDiffers = true;
+    }
+
     // If we're in box source mode and the box differs, boxDiffers
     // evaluates to true.
     bool boxSourceDiffers = (sourceType == SpecifiedBox) &&
@@ -2469,10 +2539,12 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (relTol != obj.relTol) ||
            (absTol != obj.absTol) ||
            (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
+           (pathlines != obj.pathlines) ||
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||
            sourceSphereDiffers ||
+           sourcePointListDiffers ||
            boxSourceDiffers ||
            densityMatters ||
            radiusMatters;

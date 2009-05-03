@@ -340,6 +340,8 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
 //   Initial steps to unification with Poincare attributes.
 //   
+//   Hank Childs, Sun May  3 12:32:13 CDT 2009
+//   Added support for point list source types.
 //
 // ****************************************************************************
 
@@ -386,6 +388,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
                                      atts.GetPlaneRadius());
     streamlineFilter->SetSphereSource(atts.GetSphereOrigin(),
                                       atts.GetSphereRadius());
+    streamlineFilter->SetPointListSource(atts.GetPointList());
     streamlineFilter->SetBoxSource(atts.GetBoxExtents());
     streamlineFilter->SetUseWholeBox(atts.GetUseWholeBox());
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()));

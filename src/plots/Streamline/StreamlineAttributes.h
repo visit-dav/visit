@@ -66,7 +66,8 @@ public:
         SpecifiedLine,
         SpecifiedPlane,
         SpecifiedSphere,
-        SpecifiedBox
+        SpecifiedBox,
+        SpecifiedPointList
     };
     enum ColoringMethod
     {
@@ -130,6 +131,7 @@ public:
     void SelectPlaneUpAxis();
     void SelectSphereOrigin();
     void SelectBoxExtents();
+    void SelectPointList();
     void SelectColorTableName();
     void SelectSingleColor();
 
@@ -148,6 +150,7 @@ public:
     void SetSphereRadius(double sphereRadius_);
     void SetBoxExtents(const double *boxExtents_);
     void SetUseWholeBox(bool useWholeBox_);
+    void SetPointList(const doubleVector &pointList_);
     void SetPointDensity(int pointDensity_);
     void SetDisplayMethod(DisplayMethod displayMethod_);
     void SetShowStart(bool showStart_);
@@ -192,6 +195,8 @@ public:
     const double         *GetBoxExtents() const;
           double         *GetBoxExtents();
     bool                 GetUseWholeBox() const;
+    const doubleVector   &GetPointList() const;
+          doubleVector   &GetPointList();
     int                  GetPointDensity() const;
     DisplayMethod        GetDisplayMethod() const;
     bool                 GetShowStart() const;
@@ -281,6 +286,7 @@ public:
         ID_sphereRadius,
         ID_boxExtents,
         ID_useWholeBox,
+        ID_pointList,
         ID_pointDensity,
         ID_displayMethod,
         ID_showStart,
@@ -318,6 +324,7 @@ private:
     double         sphereRadius;
     double         boxExtents[6];
     bool           useWholeBox;
+    doubleVector   pointList;
     int            pointDensity;
     int            displayMethod;
     bool           showStart;
