@@ -929,6 +929,29 @@ avtStreamlineFilter::SetBoxSource(double E[6])
 
 
 // ****************************************************************************
+// Method: avtStreamlineFilter::SetPointListSource
+//
+// Purpose: 
+//   Sets the streamline point list source.
+//
+// Arguments:
+//   ptlist : A list of points
+//
+// Programmer: Hank Childs
+// Creation:   May 3, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetPointListSource(const std::vector<double> &ptList)
+{
+    pointList = ptList;
+}
+
+
+// ****************************************************************************
 // Method: avtStreamlineFilter::SeedInfoString
 //
 // Purpose: 
@@ -942,6 +965,9 @@ avtStreamlineFilter::SetBoxSource(double E[6])
 //
 // Modifications:
 //   
+//   Hank Childs, Sun May  3 12:42:38 CDT 2009
+//   Add case for point lists.
+//
 // ****************************************************************************
 
 std::string
@@ -970,6 +996,8 @@ avtStreamlineFilter::SeedInfoString() const
                 boxExtents[2], boxExtents[3],
                 boxExtents[4], boxExtents[5],
                 pointDensity1, pointDensity2, pointDensity3);
+    else if (sourceType == STREAMLINE_SOURCE_POINT_LIST)
+        strcpy(buff, "Point list [points not printed]");
     else
         sprintf(buff, "%s", "UNKNOWN");
     
@@ -2193,6 +2221,10 @@ randMinus1_1()
 //
 //   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //   Changed interface to DebugStream to obtain current debug level.
+//
+//   Hank Childs, Sun May  3 12:32:13 CDT 2009
+//   Added support for point list sources.
+//
 // ****************************************************************************
 
 void
@@ -2259,7 +2291,6 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         }
         plane->Delete();
     }
-
     else if(sourceType == STREAMLINE_SOURCE_SPHERE)
     {
         vtkSphereSource* sphere = vtkSphereSource::New();
@@ -2340,6 +2371,21 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
                     candidatePts.push_back(p);
                 }
             }
+        }
+    }
+    else if(sourceType == STREAMLINE_SOURCE_POINT_LIST)
+    {
+        if ((pointList.size() % 3) != 0)
+        {
+            EXCEPTION1(VisItException, "The seed points for the streamline "
+                       "are incorrectly specified.  The number of values must be a "
+                       "multiple of 3 (X, Y, Z).");
+        }
+        int npts = pointList.size() / 3;
+        for (int i = 0 ; i < npts ; i++)
+        {
+            avtVector p(pointList[3*i], pointList[3*i+1], pointList[3*i+2]);
+            candidatePts.push_back(p);
         }
     }
 

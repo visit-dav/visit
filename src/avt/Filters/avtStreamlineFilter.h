@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtStreamlineFilter.h                        //
+//                           avtStreamlineFilter.h                           //
 // ************************************************************************* //
 
 #ifndef AVT_STREAMLINE_FILTER_H
@@ -70,6 +70,7 @@ class DomainType;
 #define STREAMLINE_SOURCE_PLANE      2
 #define STREAMLINE_SOURCE_SPHERE     3
 #define STREAMLINE_SOURCE_BOX        4
+#define STREAMLINE_SOURCE_POINT_LIST 5
 
 #define STREAMLINE_COLOR_SOLID       0
 #define STREAMLINE_COLOR_SPEED       1
@@ -103,6 +104,7 @@ class DomainType;
 // Creation:   Mon Nov 4 15:32:05 PST 2002
 //
 // Modifications:
+//
 //   Brad Whitlock, Wed Dec 22 12:45:29 PDT 2004
 //   Added ability to color by vorticity and the ability to display as ribbons.
 //
@@ -175,16 +177,19 @@ class DomainType;
 //   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
 //   Added seedTime0 and seedTimeStep0 member data.
 //
-//    Gunther H. Weber, Thu Apr  2 10:47:01 PDT 2009
-//    Added activeTimeStep and ExamineContract() to retrieve
-//    currently active time step
+//   Gunther H. Weber, Thu Apr  2 10:47:01 PDT 2009
+//   Added activeTimeStep and ExamineContract() to retrieve
+//   currently active time step
 //
-//    Dave Pugmire, Fri Apr  3 09:18:03 EDT 2009
-//    Add SeedInfoString method to report seed information.
+//   Dave Pugmire, Fri Apr  3 09:18:03 EDT 2009
+//   Add SeedInfoString method to report seed information.
 //
-//    Hank Childs, Mon Apr 20 08:40:07 PDT 2009
-//    Change in inheritance to reflect changes in base class.
+//   Hank Childs, Mon Apr 20 08:40:07 PDT 2009
+//   Change in inheritance to reflect changes in base class.
 //
+//   Hank Childs, Sun May  3 12:32:13 CDT 2009
+//   Added point list source type.
+// 
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -215,6 +220,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      SetPlaneSource(double O[3], double N[3],
                                              double U[3], double R);
     void                      SetSphereSource(double O[3], double R);
+    void                      SetPointListSource(const std::vector<double> &);
     void                      SetBoxSource(double E[6]);
     void                      SetUseWholeBox(bool b) { useWholeBox = b; };
 
@@ -266,6 +272,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     double planeOrigin[3], planeNormal[3], planeUpAxis[3], planeRadius;
     double sphereOrigin[3], sphereRadius;
     double boxExtents[6];
+    std::vector<double> pointList;
     bool   useWholeBox;
 
     // Data retrieved from contract
