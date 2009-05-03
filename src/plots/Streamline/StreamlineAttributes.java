@@ -41,6 +41,8 @@ package llnl.visit.plots;
 import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
+import java.lang.Double;
+import java.util.Vector;
 import llnl.visit.ColorAttribute;
 
 // ****************************************************************************
@@ -66,6 +68,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int SOURCETYPE_SPECIFIEDPLANE = 2;
     public final static int SOURCETYPE_SPECIFIEDSPHERE = 3;
     public final static int SOURCETYPE_SPECIFIEDBOX = 4;
+    public final static int SOURCETYPE_SPECIFIEDPOINTLIST = 5;
 
     public final static int COLORINGMETHOD_SOLID = 0;
     public final static int COLORINGMETHOD_COLORBYSPEED = 1;
@@ -96,7 +99,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public StreamlineAttributes()
     {
-        super(34);
+        super(35);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -139,6 +142,16 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         boxExtents[4] = 0;
         boxExtents[5] = 1;
         useWholeBox = true;
+        pointList = new Vector();
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(1));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(1));
+        pointList.addElement(new Double(0));
         pointDensity = 2;
         displayMethod = DISPLAYMETHOD_LINES;
         showStart = false;
@@ -163,7 +176,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public StreamlineAttributes(StreamlineAttributes obj)
     {
-        super(34);
+        super(35);
 
         int i;
 
@@ -212,6 +225,13 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             boxExtents[i] = obj.boxExtents[i];
 
         useWholeBox = obj.useWholeBox;
+        pointList = new Vector(obj.pointList.size());
+        for(i = 0; i < obj.pointList.size(); ++i)
+        {
+            Double dv = (Double)obj.pointList.elementAt(i);
+            pointList.addElement(new Double(dv.doubleValue()));
+        }
+
         pointDensity = obj.pointDensity;
         displayMethod = obj.displayMethod;
         showStart = obj.showStart;
@@ -280,6 +300,15 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 6 && boxExtents_equal; ++i)
             boxExtents_equal = (boxExtents[i] == obj.boxExtents[i]);
 
+        // Compare the elements in the pointList vector.
+        boolean pointList_equal = (obj.pointList.size() == pointList.size());
+        for(i = 0; (i < pointList.size()) && pointList_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double pointList1 = (Double)pointList.elementAt(i);
+            Double pointList2 = (Double)obj.pointList.elementAt(i);
+            pointList_equal = pointList1.equals(pointList2);
+        }
         // Create the return value
         return ((sourceType == obj.sourceType) &&
                 (maxStepLength == obj.maxStepLength) &&
@@ -295,6 +324,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (sphereRadius == obj.sphereRadius) &&
                 boxExtents_equal &&
                 (useWholeBox == obj.useWholeBox) &&
+                pointList_equal &&
                 (pointDensity == obj.pointDensity) &&
                 (displayMethod == obj.displayMethod) &&
                 (showStart == obj.showStart) &&
@@ -476,124 +506,130 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(13);
     }
 
+    public void SetPointList(Vector pointList_)
+    {
+        pointList = pointList_;
+        Select(14);
+    }
+
     public void SetPointDensity(int pointDensity_)
     {
         pointDensity = pointDensity_;
-        Select(14);
+        Select(15);
     }
 
     public void SetDisplayMethod(int displayMethod_)
     {
         displayMethod = displayMethod_;
-        Select(15);
+        Select(16);
     }
 
     public void SetShowStart(boolean showStart_)
     {
         showStart = showStart_;
-        Select(16);
+        Select(17);
     }
 
     public void SetRadius(double radius_)
     {
         radius = radius_;
-        Select(17);
+        Select(18);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(18);
+        Select(19);
     }
 
     public void SetColoringMethod(int coloringMethod_)
     {
         coloringMethod = coloringMethod_;
-        Select(19);
+        Select(20);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(20);
+        Select(21);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(21);
+        Select(22);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(22);
+        Select(23);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(23);
+        Select(24);
     }
 
     public void SetStreamlineDirection(int StreamlineDirection_)
     {
         StreamlineDirection = StreamlineDirection_;
-        Select(24);
+        Select(25);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(25);
+        Select(26);
     }
 
     public void SetAbsTol(double absTol_)
     {
         absTol = absTol_;
-        Select(26);
+        Select(27);
     }
 
     public void SetTerminationType(int terminationType_)
     {
         terminationType = terminationType_;
-        Select(27);
+        Select(28);
     }
 
     public void SetIntegrationType(int integrationType_)
     {
         integrationType = integrationType_;
-        Select(28);
+        Select(29);
     }
 
     public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
     {
         streamlineAlgorithmType = streamlineAlgorithmType_;
-        Select(29);
+        Select(30);
     }
 
     public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
     {
         maxStreamlineProcessCount = maxStreamlineProcessCount_;
-        Select(30);
+        Select(31);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(31);
+        Select(32);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(32);
+        Select(33);
     }
 
     public void SetPathlines(boolean pathlines_)
     {
         pathlines = pathlines_;
-        Select(33);
+        Select(34);
     }
 
     // Property getting methods
@@ -611,6 +647,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public double         GetSphereRadius() { return sphereRadius; }
     public double[]       GetBoxExtents() { return boxExtents; }
     public boolean        GetUseWholeBox() { return useWholeBox; }
+    public Vector         GetPointList() { return pointList; }
     public int            GetPointDensity() { return pointDensity; }
     public int            GetDisplayMethod() { return displayMethod; }
     public boolean        GetShowStart() { return showStart; }
@@ -664,44 +701,46 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(13, buf))
             buf.WriteBool(useWholeBox);
         if(WriteSelect(14, buf))
-            buf.WriteInt(pointDensity);
+            buf.WriteDoubleVector(pointList);
         if(WriteSelect(15, buf))
-            buf.WriteInt(displayMethod);
+            buf.WriteInt(pointDensity);
         if(WriteSelect(16, buf))
-            buf.WriteBool(showStart);
+            buf.WriteInt(displayMethod);
         if(WriteSelect(17, buf))
-            buf.WriteDouble(radius);
+            buf.WriteBool(showStart);
         if(WriteSelect(18, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteDouble(radius);
         if(WriteSelect(19, buf))
-            buf.WriteInt(coloringMethod);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(20, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteInt(coloringMethod);
         if(WriteSelect(21, buf))
-            singleColor.Write(buf);
+            buf.WriteString(colorTableName);
         if(WriteSelect(22, buf))
-            buf.WriteBool(legendFlag);
+            singleColor.Write(buf);
         if(WriteSelect(23, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(24, buf))
-            buf.WriteInt(StreamlineDirection);
+            buf.WriteBool(lightingFlag);
         if(WriteSelect(25, buf))
-            buf.WriteDouble(relTol);
+            buf.WriteInt(StreamlineDirection);
         if(WriteSelect(26, buf))
-            buf.WriteDouble(absTol);
+            buf.WriteDouble(relTol);
         if(WriteSelect(27, buf))
-            buf.WriteInt(terminationType);
+            buf.WriteDouble(absTol);
         if(WriteSelect(28, buf))
-            buf.WriteInt(integrationType);
+            buf.WriteInt(terminationType);
         if(WriteSelect(29, buf))
-            buf.WriteInt(streamlineAlgorithmType);
+            buf.WriteInt(integrationType);
         if(WriteSelect(30, buf))
-            buf.WriteInt(maxStreamlineProcessCount);
+            buf.WriteInt(streamlineAlgorithmType);
         if(WriteSelect(31, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteInt(maxStreamlineProcessCount);
         if(WriteSelect(32, buf))
-            buf.WriteInt(workGroupSize);
+            buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(33, buf))
+            buf.WriteInt(workGroupSize);
+        if(WriteSelect(34, buf))
             buf.WriteBool(pathlines);
     }
 
@@ -755,64 +794,67 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 SetUseWholeBox(buf.ReadBool());
                 break;
             case 14:
-                SetPointDensity(buf.ReadInt());
+                SetPointList(buf.ReadDoubleVector());
                 break;
             case 15:
-                SetDisplayMethod(buf.ReadInt());
+                SetPointDensity(buf.ReadInt());
                 break;
             case 16:
-                SetShowStart(buf.ReadBool());
+                SetDisplayMethod(buf.ReadInt());
                 break;
             case 17:
-                SetRadius(buf.ReadDouble());
+                SetShowStart(buf.ReadBool());
                 break;
             case 18:
-                SetLineWidth(buf.ReadInt());
+                SetRadius(buf.ReadDouble());
                 break;
             case 19:
-                SetColoringMethod(buf.ReadInt());
+                SetLineWidth(buf.ReadInt());
                 break;
             case 20:
-                SetColorTableName(buf.ReadString());
+                SetColoringMethod(buf.ReadInt());
                 break;
             case 21:
-                singleColor.Read(buf);
-                Select(21);
+                SetColorTableName(buf.ReadString());
                 break;
             case 22:
-                SetLegendFlag(buf.ReadBool());
+                singleColor.Read(buf);
+                Select(22);
                 break;
             case 23:
-                SetLightingFlag(buf.ReadBool());
+                SetLegendFlag(buf.ReadBool());
                 break;
             case 24:
-                SetStreamlineDirection(buf.ReadInt());
+                SetLightingFlag(buf.ReadBool());
                 break;
             case 25:
-                SetRelTol(buf.ReadDouble());
+                SetStreamlineDirection(buf.ReadInt());
                 break;
             case 26:
-                SetAbsTol(buf.ReadDouble());
+                SetRelTol(buf.ReadDouble());
                 break;
             case 27:
-                SetTerminationType(buf.ReadInt());
+                SetAbsTol(buf.ReadDouble());
                 break;
             case 28:
-                SetIntegrationType(buf.ReadInt());
+                SetTerminationType(buf.ReadInt());
                 break;
             case 29:
-                SetStreamlineAlgorithmType(buf.ReadInt());
+                SetIntegrationType(buf.ReadInt());
                 break;
             case 30:
-                SetMaxStreamlineProcessCount(buf.ReadInt());
+                SetStreamlineAlgorithmType(buf.ReadInt());
                 break;
             case 31:
-                SetMaxDomainCacheSize(buf.ReadInt());
+                SetMaxStreamlineProcessCount(buf.ReadInt());
                 break;
             case 32:
-                SetWorkGroupSize(buf.ReadInt());
+                SetMaxDomainCacheSize(buf.ReadInt());
                 break;
             case 33:
+                SetWorkGroupSize(buf.ReadInt());
+                break;
+            case 34:
                 SetPathlines(buf.ReadBool());
                 break;
             }
@@ -833,6 +875,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "SOURCETYPE_SPECIFIEDSPHERE";
         if(sourceType == SOURCETYPE_SPECIFIEDBOX)
             str = str + "SOURCETYPE_SPECIFIEDBOX";
+        if(sourceType == SOURCETYPE_SPECIFIEDPOINTLIST)
+            str = str + "SOURCETYPE_SPECIFIEDPOINTLIST";
         str = str + "\n";
         str = str + doubleToString("maxStepLength", maxStepLength, indent) + "\n";
         str = str + doubleToString("termination", termination, indent) + "\n";
@@ -847,6 +891,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("sphereRadius", sphereRadius, indent) + "\n";
         str = str + doubleArrayToString("boxExtents", boxExtents, indent) + "\n";
         str = str + boolToString("useWholeBox", useWholeBox, indent) + "\n";
+        str = str + doubleVectorToString("pointList", pointList, indent) + "\n";
         str = str + intToString("pointDensity", pointDensity, indent) + "\n";
         str = str + indent + "displayMethod = ";
         if(displayMethod == DISPLAYMETHOD_LINES)
@@ -932,6 +977,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private double         sphereRadius;
     private double[]       boxExtents;
     private boolean        useWholeBox;
+    private Vector         pointList; // vector of Double objects
     private int            pointDensity;
     private int            displayMethod;
     private boolean        showStart;

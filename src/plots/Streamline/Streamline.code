@@ -180,6 +180,9 @@ Definition:
 //    Hank Childs, Sat Mar  3 09:00:12 PST 2007
 //    Add support for useWholeBox.
 //
+//    Hank Childs, Sun May  3 11:49:31 CDT 2009
+//    Add support for point lists.
+//
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -212,6 +215,18 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     bool sourceSphereDiffers = ((sourceType == SpecifiedSphere) &&
        (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
         (sphereRadius != obj.sphereRadius)));
+
+    bool sourcePointListDiffers = (sourceType == SpecifiedPointList);
+    if (sourcePointListDiffers)
+    {
+        sourcePointListDiffers = false;
+        if (pointList.size() != obj.pointList.size())
+            sourcePointListDiffers = true;
+        else
+            for (int i = 0 ; i < pointList.size() ; i++)
+                if (pointList[i] != obj.pointList[i])
+                    sourcePointListDiffers = true;
+    }
 
     // If we're in box source mode and the box differs, boxDiffers
     // evaluates to true.
@@ -246,6 +261,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            sourceLineDiffers ||
            sourcePlaneDiffers ||
            sourceSphereDiffers ||
+           sourcePointListDiffers ||
            boxSourceDiffers ||
            densityMatters ||
            radiusMatters;

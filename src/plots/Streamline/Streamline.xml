@@ -11,6 +11,7 @@
         SpecifiedPlane
         SpecifiedSphere
         SpecifiedBox
+        SpecifiedPointList
       </Enum>
       <Enum name="ColoringMethod">
         Solid
@@ -105,7 +106,18 @@
       <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:SpecifiedBox">
         true
       </Field>
-      <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine,SpecifiedPlane">
+      <Field name="pointList" label="List of Points" type="doubleVector" enabler="sourceType:SpecifiedPointList">
+        0.000000
+        0.000000
+        0.000000
+        1.000000
+        0.000000
+        0.000000
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine,SpecifiedPlane,SpecifiedSphere,SpecifiedBox">
         2
       </Field>
       <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">

@@ -156,6 +156,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Add pathline GUI.
 //    
+//   Hank Childs, Sat May  2 22:14:38 PDT 2009
+//   Add support for point lists.
+//
 // ****************************************************************************
 
 void
@@ -216,11 +219,12 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     // Create the source type combo box.
     hLayout->addWidget(new QLabel(tr("Source type"), topPageSource), 0,0);
     sourceType = new QComboBox(topPageSource);
-    sourceType->addItem(tr("Point"));
+    sourceType->addItem(tr("Single Point"));
     sourceType->addItem(tr("Line"));
     sourceType->addItem(tr("Plane"));
     sourceType->addItem(tr("Sphere"));
     sourceType->addItem(tr("Box"));
+    sourceType->addItem(tr("Point List"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
     hLayout->addWidget(sourceType, 0,1);
@@ -351,6 +355,15 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     boxExtentsLabel[2]->setBuddy(boxExtents[2]);
     sLayout->addWidget(boxExtentsLabel[2], 15, 0);
     sLayout->addWidget(boxExtents[2], 15, 1);
+
+    // Create the widgets that specify a point list.
+    pointList = new QLineEdit(pageSource);
+    connect(pointList, SIGNAL(returnPressed()),
+            this, SLOT(pointListProcessText()));
+    pointListLabel = new QLabel(tr("Format as \"X1 Y1 Z1 X2 Y2 Z2 ...\".  For 2D, use 0 for Z."), pageSource);
+    pointListLabel->setBuddy(pointList);
+    sLayout->addWidget(pointListLabel,16,0);
+    sLayout->addWidget(pointList, 17,0);
 
     //
     // Create appearance-related widgets.
@@ -682,6 +695,9 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             temp.setNum(streamAtts->GetSphereRadius());
             sphereRadius->setText(temp);
             break;
+        case StreamlineAttributes::ID_pointList:
+            pointList->setText(DoublesToQString(streamAtts->GetPointList()));
+            break;
         case StreamlineAttributes::ID_boxExtents:
             boxExtents[0]->setText(DoublesToQString(streamAtts->GetBoxExtents(),2));
             boxExtents[1]->setText(DoublesToQString(streamAtts->GetBoxExtents()+2,2));
@@ -853,6 +869,9 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 //   Hide/show useWholeBox.  Also enable/disable pointDensity if source type
 //   is point.
 //
+//   Hank Childs, Sat May  2 22:05:56 PDT 2009
+//   Add support for point lists.
+//
 // ****************************************************************************
 
 void
@@ -863,6 +882,7 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     bool usePlane =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedPlane;
     bool useSphere =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedSphere;
     bool useBox =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedBox;
+    bool usePointList =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedPointList;
 
     //
     // Update the point widgets.
@@ -874,13 +894,11 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
         sourceAtts->setTitle(tr("Point"));
         pointSource->show();
         pointSourceLabel->show();
-        pointDensity->setEnabled(false);
     }
     else
     {
         pointSource->hide();
         pointSourceLabel->hide();
-        pointDensity->setEnabled(true);
     }
 
     //
@@ -994,6 +1012,28 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
             boxExtentsLabel[i]->hide();
         }
     }
+
+    //
+    // Update the point list widgets.
+    //
+    pointList->setEnabled(usePointList);
+    pointListLabel->setEnabled(usePointList);
+    if(usePointList)
+    {
+        sourceAtts->setTitle(tr("Point List"));
+        pointList->show();
+        pointListLabel->show();
+    }
+    else
+    {
+        pointList->hide();
+        pointListLabel->hide();
+    }
+
+    if (usePoint || usePointList)
+        pointDensity->setEnabled(false);
+    else
+        pointDensity->setEnabled(true);
 }
 
 // ****************************************************************************
@@ -1371,6 +1411,35 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetBoxExtents(d);
     }
 
+    // Do pointList
+    if(which_widget == StreamlineAttributes::ID_pointList || doAll)
+    {
+        double d[3];
+        bool allOkay = true;
+        std::vector<double> pointListV;
+        if(!LineEditGetDoubles(pointList, pointListV))
+            allOkay = false;
+        bool multipleOf3Error = false;
+        if ((pointListV.size() % 3) != 0)
+        {
+            allOkay = false;
+            multipleOf3Error = true;
+        }
+
+        if(!allOkay)
+        {
+            if (multipleOf3Error)
+                Message(tr("The number of values in the point list was not a multiple" 
+                           " of three, so the previous values will be used."));
+            else
+                Message(tr("The point list contained errors so the previous "
+                           "values will be used."));
+            streamAtts->SelectPointList();
+        }
+        else
+            streamAtts->SetPointList(pointListV);
+    }
+
     // pointDensity
     if (which_widget == StreamlineAttributes::ID_pointDensity|| doAll)
     {
@@ -1590,6 +1659,13 @@ void
 QvisStreamlinePlotWindow::lineEndProcessText()
 {
     GetCurrentValues(StreamlineAttributes::ID_lineEnd);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pointListProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_pointList);
     Apply();
 }
 
