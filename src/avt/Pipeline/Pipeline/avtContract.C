@@ -44,6 +44,36 @@
 
 #include <avtWebpage.h>
 
+
+static const char* bool2str(bool b) { return b ? "yes" : "no"; }
+
+// ****************************************************************************
+//  Function: operator<<
+//
+//  Arguments:
+//      os       output stream to write to
+//      c        contract information to query.
+//
+//  Programmer:  Tom Fogal
+//  Creation:    May 3, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+ostream& operator<<(ostream &os, const avtContract& c)
+{
+    os << "avtContract information:"
+       << "\tpipeline index: " << c.pipelineIndex << "\n"
+       << "\tstreaming possible: " << bool2str(c.canDoStreaming) << "\n"
+       << "\tstreaming: " << bool2str(c.doingOnDemandStreaming) << "\n"
+       << "\tload balancing: " << bool2str(c.useLoadBalancing) << "\n"
+       << "\tmesh optimizations:" << "\n"
+       << "\t\tcurvilinear: " << bool2str(c.haveCurvilinearMeshOptimizations)
+       << "\n\t\trectilinear: " << bool2str(c.haveRectilinearMeshOptimizations)
+       << "\n\tfilters: " << c.nFilters << std::endl;
+    return os;
+}
+
 // ****************************************************************************
 //  Method: avtContract constructor
 //
