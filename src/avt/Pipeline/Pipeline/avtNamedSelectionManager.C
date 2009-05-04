@@ -40,6 +40,7 @@
 //                         avtNamedSelectionManager.C                        //
 // ************************************************************************* //
 
+#include <sstream>
 #include <avtNamedSelectionManager.h>
 
 #include <vtkCellData.h>
@@ -321,6 +322,9 @@ avtNamedSelectionManager::DeleteNamedSelection(const std::string &name,
 //  Programmer: Hank Childs
 //  Creation:   January 30, 2009
 //
+//  Tom Fogal, Sun May  3 19:21:44 MDT 2009
+//  Fix string formatting when an exception occurs.
+//
 // ****************************************************************************
 
 void
@@ -330,10 +334,10 @@ avtNamedSelectionManager::LoadNamedSelection(const std::string &name)
     ifstream ifile(qualName.c_str());
     if (ifile.fail())
     {
-        char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to load named selection from file %s",
-                 qualName.size());
-        EXCEPTION1(VisItException, msg);
+        std::ostringstream msg;
+        msg << "Unable to load named selection from file: '"
+            << qualName << "'";
+        EXCEPTION1(VisItException, msg.str().c_str());
     }
 
     int fileType;
@@ -354,10 +358,10 @@ avtNamedSelectionManager::LoadNamedSelection(const std::string &name)
     }
     else
     {
-        char msg[1024];
-        SNPRINTF(msg, 1024, "Problem reading named selection from file %s",
-                 qualName.size());
-        EXCEPTION1(VisItException, msg);
+        std::ostringstream msg;
+        msg << "Problem reading named selection from file: '"
+            << qualName << "'";
+        EXCEPTION1(VisItException, msg.str().c_str());
     }
 
     int curSize = selList.size();
