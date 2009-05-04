@@ -43,10 +43,10 @@
 #ifndef AVT_CONTRACT_H
 #define AVT_CONTRACT_H
 
+#include <iosfwd>
+
 #include <pipeline_exports.h>
-
 #include <ref_ptr.h>
-
 #include <avtDataRequest.h>
 
 class avtWebpage;
@@ -94,10 +94,14 @@ typedef ref_ptr<avtContract> avtContract_p;
 //    Hank Childs, Sun Mar  9 06:36:49 PST 2008
 //    Add new data member for on demand streaming.
 //
+//    Tom Fogal, Sun May  3 17:52:35 MDT 2009
+//    I overloaded operator<< to allow for easier debugging.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtContract
 {
+  friend ostream& operator<<(ostream &, const avtContract&);
   public:
                         avtContract(avtDataRequest_p, int);
                         avtContract(avtContract_p);
@@ -152,8 +156,4 @@ class PIPELINE_API avtContract
     // meaningful, that's fine.
     avtContract(const avtContract &) {;};
 };
-
-
 #endif
-
-
