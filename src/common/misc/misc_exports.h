@@ -40,7 +40,7 @@
 #define MISC_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef MISC_EXPORTS
+#if defined(MISC_EXPORTS) || defined(visitcommon_EXPORTS)
 #define MISC_API __declspec(dllexport)
 #else
 #define MISC_API __declspec(dllimport)

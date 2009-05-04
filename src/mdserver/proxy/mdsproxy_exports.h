@@ -40,7 +40,7 @@
 #define MDSERVER_PROXY_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef MDSPROXY_EXPORTS
+#if defined(MDSPROXY_EXPORTS) || defined(mdserverproxy_EXPORTS)
 #define MDSERVER_PROXY_API __declspec(dllexport)
 #else
 #define MDSERVER_PROXY_API __declspec(dllimport)

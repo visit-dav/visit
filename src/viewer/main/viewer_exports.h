@@ -40,7 +40,7 @@
 #define VIEWER_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef VIEWER_EXPORTS
+#if defined(VIEWER_EXPORTS) || defined(viewer_EXPORTS)
 #define VIEWER_API __declspec(dllexport)
 #else
 #define VIEWER_API __declspec(dllimport)

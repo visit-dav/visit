@@ -40,7 +40,7 @@
 #define WINUTIL_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef WINUTIL_EXPORTS
+#if defined(WINUTIL_EXPORTS) || defined(winutil_EXPORTS)
 #define WINUTIL_API __declspec(dllexport)
 #else
 #define WINUTIL_API __declspec(dllimport)

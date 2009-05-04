@@ -40,7 +40,7 @@
 #define PARALLEL_VISIT_VTK_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef PARALLEL_VISIT_VTK_EXPORTS
+#if defined(PARALLEL_VISIT_VTK_EXPORTS) || defined(parallel_visit_vtk_ser_EXPORTS)
 #define PARALLEL_VISIT_VTK_API __declspec(dllexport)
 #else
 #define PARALLEL_VISIT_VTK_API __declspec(dllimport)

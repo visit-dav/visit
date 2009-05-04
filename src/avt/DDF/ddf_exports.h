@@ -40,7 +40,7 @@
 #define AVTDDF_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef AVTDDF_EXPORTS
+#if defined(AVTDDF_EXPORTS) || defined(avtddf_ser_EXPORTS) || defined(avtddf_par_EXPORTS) 
 #define AVTDDF_API __declspec(dllexport)
 #else
 #define AVTDDF_API __declspec(dllimport)

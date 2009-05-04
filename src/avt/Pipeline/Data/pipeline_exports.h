@@ -40,7 +40,7 @@
 #define PIPELINE_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef PIPELINE_EXPORTS
+#if defined(PIPELINE_EXPORTS) || defined(avtpipeline_ser_EXPORTS) || defined(avtpipeline_par_EXPORTS)
 #define PIPELINE_API __declspec(dllexport)
 #else
 #define PIPELINE_API __declspec(dllimport)

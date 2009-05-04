@@ -40,7 +40,7 @@
 #define QUERY_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef QUERY_EXPORTS
+#if defined(QUERY_EXPORTS) || defined(avtquery_ser_EXPORTS) || defined(avtquery_par_EXPORTS)
 #define QUERY_API __declspec(dllexport)
 #else
 #define QUERY_API __declspec(dllimport)

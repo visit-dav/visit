@@ -40,7 +40,7 @@
 #define MIR_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef MIR_EXPORTS
+#if defined(MIR_EXPORTS) || defined(avtmir_ser_EXPORTS) || defined(avtmir_par_EXPORTS)
 #define MIR_API __declspec(dllexport)
 #else
 #define MIR_API __declspec(dllimport)

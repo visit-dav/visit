@@ -40,7 +40,7 @@
 #define ENGINE_RPC_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef ENGINE_RPC_EXPORTS
+#if defined(ENGINE_RPC_EXPORTS) || defined (enginerpc_EXPORTS)
 #define ENGINE_RPC_API __declspec(dllexport)
 #else
 #define ENGINE_RPC_API __declspec(dllimport)

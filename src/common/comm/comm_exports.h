@@ -41,7 +41,7 @@
 
 #if defined(_WIN32)
 #define DESCRIPTOR unsigned int
-#ifdef COMM_EXPORTS
+#if defined(COMM_EXPORTS) || defined(visitcommon_EXPORTS)
 #define COMM_API __declspec(dllexport)
 #else
 #define COMM_API __declspec(dllimport)

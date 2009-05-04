@@ -40,7 +40,7 @@
 #define AVTVIEW_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef AVTVIEW_EXPORTS
+#if defined(AVTVIEW_EXPORTS) || defined(avtview_EXPORTS)
 #define AVTVIEW_API __declspec(dllexport)
 #else
 #define AVTVIEW_API __declspec(dllimport)

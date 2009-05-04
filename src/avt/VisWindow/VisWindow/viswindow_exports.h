@@ -40,7 +40,7 @@
 #define VISWINDOW_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef VISWINDOW_EXPORTS
+#if defined(VISWINDOW_EXPORTS) || defined(avtviswindow_ser_EXPORTS) || defined(avtviswindow_par_EXPORTS)
 #define VISWINDOW_API __declspec(dllexport)
 #else
 #define VISWINDOW_API __declspec(dllimport)

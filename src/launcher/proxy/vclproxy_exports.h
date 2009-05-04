@@ -40,7 +40,7 @@
 #define LAUNCHER_PROXY_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef LAUNCHER_PROXY_EXPORTS
+#if defined(LAUNCHER_PROXY_EXPORTS) || defined(vclproxy_EXPORTS)
 #define LAUNCHER_PROXY_API __declspec(dllexport)
 #else
 #define LAUNCHER_PROXY_API __declspec(dllimport)

@@ -40,7 +40,7 @@
 #define PLUGIN_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef PLUGIN_EXPORTS
+#if defined(PLUGIN_EXPORTS) || defined(visitcommon_EXPORTS)
 #define PLUGIN_API __declspec(dllexport)
 #else
 #define PLUGIN_API __declspec(dllimport)

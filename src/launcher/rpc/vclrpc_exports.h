@@ -40,7 +40,7 @@
 #define LAUNCHER_RPC_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef LAUNCHER_RPC_EXPORTS
+#if defined(LAUNCHER_RPC_EXPORTS) || defined(vclrpc_EXPORTS)
 #define LAUNCHER_RPC_API __declspec(dllexport)
 #else
 #define LAUNCHER_RPC_API __declspec(dllimport)

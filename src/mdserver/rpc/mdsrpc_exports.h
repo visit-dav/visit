@@ -40,7 +40,7 @@
 #define MDSERVER_RPC_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef MDSERVER_RPC_EXPORTS
+#if defined(MDSERVER_RPC_EXPORTS) || defined(mdserverrpc_EXPORTS)
 #define MDSERVER_RPC_API __declspec(dllexport)
 #else
 #define MDSERVER_RPC_API __declspec(dllimport)
