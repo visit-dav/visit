@@ -947,6 +947,9 @@ dnl
 dnl    Eric Brugger, Fri May  1 12:58:34 PDT 2009
 dnl    Added tools/mcurvit.
 dnl
+dnl    Brad Whitlock, Mon May  4 13:14:20 PDT 2009
+dnl    Added VISIT_ to several defines for better namespace behavior
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1002,21 +1005,21 @@ AC_MSG_RESULT($VERSION)
 
 # Get the SVN version number.
 AC_MSG_CHECKING(what subversion revision is)
-if test -r SVN_REVISION; then
-   SVN_REVISION=`cat SVN_REVISION`
+if test -r VISIT_SVN_REVISION; then
+   VISIT_SVN_REVISION=`cat VISIT_SVN_REVISION`
 else
    if test -d .svn; then
-      SVN_REVISION=`svn info . 2>/dev/null | grep "Revision:" | cut -d' ' -f2`
+      VISIT_SVN_REVISION=`svn info . 2>/dev/null | grep "Revision:" | cut -d' ' -f2`
    else
-      SVN_REVISION="unknown"
+      VISIT_SVN_REVISION="unknown"
    fi
 fi
-AC_DEFINE_UNQUOTED(SVN_REVISION,"$SVN_REVISION",[Subversion revision])
-AC_MSG_RESULT($SVN_REVISION)
+AC_DEFINE_UNQUOTED(VISIT_SVN_REVISION,"$VISIT_SVN_REVISION",[Subversion revision])
+AC_MSG_RESULT($VISIT_SVN_REVISION)
 
 # Set the slash characters used in filenames.
-AC_DEFINE_UNQUOTED(SLASH_CHAR,'/',[Define the slash character])
-AC_DEFINE_UNQUOTED(SLASH_STRING,"/",[Define the slash string])
+AC_DEFINE_UNQUOTED(VISIT_SLASH_CHAR,'/',[Define the slash character])
+AC_DEFINE_UNQUOTED(VISIT_SLASH_STRING,"/",[Define the slash string])
 
 # Load the site configuration file if present.
 # Also check for hostnames where the first field is a node name.
@@ -2000,12 +2003,12 @@ AC_LANG_C
 AC_MSG_CHECKING(whether to use PTYs)
 AC_ARG_WITH(pty,
 	[  --without-pty           Disable PTY use],
-        USE_PTY=$withval,
-        USE_PTY="yes")
-AC_MSG_RESULT($USE_PTY)
+        VISIT_USE_PTY=$withval,
+        VISIT_USE_PTY="yes")
+AC_MSG_RESULT($VISIT_USE_PTY)
 
-if test "$USE_PTY" = "yes"; then
-    AC_DEFINE(USE_PTY, [1], [Define USE_PTY if we want to use PTYs.])
+if test "$VISIT_USE_PTY" = "yes"; then
+    AC_DEFINE(VISIT_USE_PTY, [1], [Define VISIT_USE_PTY if we want to use PTYs.])
 
     # Check for SYSV versus BSD style pseudo-ttys
     AC_MSG_CHECKING(for SYSV vs BSD style ptys)
@@ -3470,7 +3473,7 @@ AC_TRY_RUN([
         AC_MSG_RESULT(Cross-compiling... assuming $OSMESA_SIZE_LIMIT)
 )
 rm -f junk.txt
-AC_DEFINE_UNQUOTED(OSMESA_SIZE_LIMIT, $OSMESA_SIZE_LIMIT,
+AC_DEFINE_UNQUOTED(VISIT_RENDERING_SIZE_LIMIT, $OSMESA_SIZE_LIMIT,
                    [OSMesa Window Size Limit.])
 CXXFLAGS="$oldcxxflags"
 LDFLAGS="$oldldflags"
@@ -3752,7 +3755,7 @@ AC_SUBST(SHLIB_POSTPROCESS_PAR)
 AC_SUBST(SHLIB_TMPDIR)
 AC_SUBST(PREBIND_LIBS)
 
-AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}", [Shared library extension])
+AC_DEFINE_UNQUOTED(VISIT_PLUGIN_EXTENSION, ".${SHLIB_SOEXT}", [Shared library extension])
 
 #
 # Now that we know about shared libraries, specify the engine wrapper library.

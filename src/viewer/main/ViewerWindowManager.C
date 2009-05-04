@@ -1677,19 +1677,19 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                            "to be saved."));
             }
 
-            if(fileBase[fileBase.size() - 1] == SLASH_CHAR)
+            if(fileBase[fileBase.size() - 1] == VISIT_SLASH_CHAR)
             {
-                if(f[0] == SLASH_CHAR)
+                if(f[0] == VISIT_SLASH_CHAR)
                     fileBase = fileBase.substr(0,fileBase.size()-1) + f;
                 else
                     fileBase += f;
             }
             else
             {
-                if(f[0] == SLASH_CHAR)
+                if(f[0] == VISIT_SLASH_CHAR)
                     fileBase += f;
                 else
-                    fileBase = fileBase + std::string(SLASH_STRING) + f;
+                    fileBase = fileBase + std::string(VISIT_SLASH_STRING) + f;
             }
         }
         else
@@ -1721,7 +1721,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             const char *tmp = fname, *last = NULL;
             while (tmp != NULL)
             {
-                tmp = strstr(tmp, SLASH_STRING);
+                tmp = strstr(tmp, VISIT_SLASH_STRING);
                 if (tmp != NULL)
                 {
                     last = tmp;
@@ -1754,10 +1754,10 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             char right_prefix[1024];
             if (has_dir_prefix)
             {
-                sprintf(left_prefix, "%s%cleft_%s", dir_prefix, SLASH_CHAR,
+                sprintf(left_prefix, "%s%cleft_%s", dir_prefix, VISIT_SLASH_CHAR,
                                                     stem);
                 sprintf(right_prefix, "%s%cright_%s", dir_prefix,
-                                                      SLASH_CHAR, stem);
+                                                      VISIT_SLASH_CHAR, stem);
             }
             else
             {
@@ -1817,17 +1817,17 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
             // if w or h are greated than the max window size, 
             // reduce them proportionally
-            if (w >= h && w > OSMESA_SIZE_LIMIT)
+            if (w >= h && w > VISIT_RENDERING_SIZE_LIMIT)
             {
-                h = (int)((double)h * (double)OSMESA_SIZE_LIMIT / (double)w);
-                w = OSMESA_SIZE_LIMIT;
+                h = (int)((double)h * (double)VISIT_RENDERING_SIZE_LIMIT / (double)w);
+                w = VISIT_RENDERING_SIZE_LIMIT;
                 Message(tr("The window was too large to save at the requested resolution.  "
                            "The resolution has been automatically reduced."));
             }
-            else if (h >= w && h > OSMESA_SIZE_LIMIT)
+            else if (h >= w && h > VISIT_RENDERING_SIZE_LIMIT)
             {
-                w = (int)((double)w * (double)OSMESA_SIZE_LIMIT / (double)h);
-                h = OSMESA_SIZE_LIMIT;
+                w = (int)((double)w * (double)VISIT_RENDERING_SIZE_LIMIT / (double)h);
+                h = VISIT_RENDERING_SIZE_LIMIT;
                 Message(tr("The window was too large to save at the requested resolution.  "
                            "The resolution has been automatically reduced."));
             }

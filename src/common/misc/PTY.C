@@ -38,7 +38,7 @@
 
 #include "PTY.h"
 
-#ifdef USE_PTY
+#ifdef VISIT_USE_PTY
 
 #include <signal.h>
 #include <stdio.h>

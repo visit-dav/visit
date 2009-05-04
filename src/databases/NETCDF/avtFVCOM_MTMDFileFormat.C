@@ -270,7 +270,7 @@ avtFVCOM_MTMDFileFormat::Init()
 
     // Find a directory prefix based on the name of the master file.
     std::string prefix;
-    std::string::size_type index = fileObject->GetName().rfind(SLASH_STRING);
+    std::string::size_type index = fileObject->GetName().rfind(VISIT_SLASH_STRING);
     if(index != std::string::npos)
     {
         prefix = fileObject->GetName().substr(0, index+1);
@@ -326,7 +326,7 @@ avtFVCOM_MTMDFileFormat::Init()
             delete fobj;
 
             std::string filename(domainfilename);
-            index = filename.rfind(SLASH_STRING);
+            index = filename.rfind(VISIT_SLASH_STRING);
             if(index != std::string::npos)
             {
                 filename = filename.substr(index+1, filename.size()-1);

@@ -312,7 +312,7 @@ GetMovieTemplateInformation(const std::string &filename, MovieTemplateInformatio
     {
         // Get the path to the filename so we can prepend it to all of
         // the UI filenames.
-        std::string::size_type pos = filename.rfind(SLASH_STRING);
+        std::string::size_type pos = filename.rfind(VISIT_SLASH_STRING);
         std::string prefix;
         if(pos != std::string::npos)
             prefix = filename.substr(0, pos+1);
@@ -322,14 +322,14 @@ GetMovieTemplateInformation(const std::string &filename, MovieTemplateInformatio
         info.specificationFile = filename;
 
         cfg.GetTemplateFile(info.templateFile);
-        if(!(info.templateFile.size() > 0 && info.templateFile[0] == SLASH_CHAR) &&
+        if(!(info.templateFile.size() > 0 && info.templateFile[0] == VISIT_SLASH_CHAR) &&
            !(info.templateFile.size() > 2 && info.templateFile[1] == ':'))
         {
              info.templateFile = prefix + info.templateFile;
         }
 
         cfg.GetPreviewImageFile(info.previewImageFile);
-        if(!(info.previewImageFile.size() > 0 && info.previewImageFile[0] == SLASH_CHAR) &&
+        if(!(info.previewImageFile.size() > 0 && info.previewImageFile[0] == VISIT_SLASH_CHAR) &&
            !(info.previewImageFile.size() > 2 && info.previewImageFile[1] == ':'))
         {
              info.previewImageFile = prefix + info.previewImageFile;
@@ -338,7 +338,7 @@ GetMovieTemplateInformation(const std::string &filename, MovieTemplateInformatio
         info.usesSessionFile = cfg.GetSessionFile(info.sessionFile);
         if(info.usesSessionFile)
         {
-            if(!(info.sessionFile.size() > 0 && info.sessionFile[0] == SLASH_CHAR) &&
+            if(!(info.sessionFile.size() > 0 && info.sessionFile[0] == VISIT_SLASH_CHAR) &&
                !(info.sessionFile.size() > 2 && info.sessionFile[1] == ':'))
             {
                 info.sessionFile = prefix + info.sessionFile;

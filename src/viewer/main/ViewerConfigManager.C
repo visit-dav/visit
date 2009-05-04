@@ -528,7 +528,7 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
 
     if(inVisItDir)
     {
-        file2 = GetUserVisItDirectory() + std::string(SLASH_STRING) +
+        file2 = GetUserVisItDirectory() + std::string(VISIT_SLASH_STRING) +
                 filename;
     }
 

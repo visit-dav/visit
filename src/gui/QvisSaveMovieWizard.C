@@ -191,7 +191,7 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
     QString dirName;
     if(nameIsFile)
     {
-        std::string::size_type pos = name.rfind(SLASH_STRING);
+        std::string::size_type pos = name.rfind(VISIT_SLASH_STRING);
         if(pos != std::string::npos)
         {
             dirName = QString(name.substr(0, pos).c_str());
@@ -439,7 +439,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             // determine the name of the specification file.
             //
             const std::string &tfile = it->second.info.specificationFile;
-            std::string::size_type slashpos = tfile.rfind(SLASH_STRING);
+            std::string::size_type slashpos = tfile.rfind(VISIT_SLASH_STRING);
             if(slashpos != std::string::npos)
                 specificationFile = tfile.substr(slashpos+1, tfile.size()-slashpos-1);
             else
@@ -1400,7 +1400,7 @@ QvisSaveMovieWizard::CreateFormatPage()
 
     page9_widthSpinBox = new QSpinBox(formatAndResolution);
     page9_widthSpinBox->setMinimum(32);
-    page9_widthSpinBox->setMaximum(OSMESA_SIZE_LIMIT);
+    page9_widthSpinBox->setMaximum(VISIT_RENDERING_SIZE_LIMIT);
     page9_widthSpinBox->setValue((int)(default_movie_size[0]));
     page9_widthSpinBox->setEnabled(false);
     connect(page9_widthSpinBox, SIGNAL(valueChanged(int)),
@@ -1413,7 +1413,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     
     page9_heightSpinBox = new QSpinBox(formatAndResolution);
     page9_heightSpinBox->setMinimum(32);
-    page9_heightSpinBox->setMaximum(OSMESA_SIZE_LIMIT);
+    page9_heightSpinBox->setMaximum(VISIT_RENDERING_SIZE_LIMIT);
     page9_heightSpinBox->setValue((int)(default_movie_size[1]));
     page9_heightSpinBox->setEnabled(false);
     connect(page9_heightSpinBox, SIGNAL(valueChanged(int)),
@@ -3508,8 +3508,8 @@ QvisSaveMovieWizard::GetMovieAttsOutputDir()
         d.makeAbsolute();
         std::string outDir(d.path().toStdString());
 #endif
-        if(outDir.size() > 0 && outDir[outDir.size() - 1] != SLASH_CHAR)
-            outDir += SLASH_STRING;
+        if(outDir.size() > 0 && outDir[outDir.size() - 1] != VISIT_SLASH_CHAR)
+            outDir += VISIT_SLASH_STRING;
         movieAtts->SetOutputDirectory(outDir);
     }
     return movieAtts->GetOutputDirectory();
@@ -4516,8 +4516,8 @@ void
 QvisSaveMovieWizard::page11_processOutputDirectoryText(const QString &s)
 {
     std::string outDir(s.toStdString());
-    if(outDir.size() > 0 && outDir[outDir.size() - 1] != SLASH_CHAR)
-        outDir += SLASH_STRING;
+    if(outDir.size() > 0 && outDir[outDir.size() - 1] != VISIT_SLASH_CHAR)
+        outDir += VISIT_SLASH_STRING;
     movieAtts->SetOutputDirectory(outDir);
     page11_UpdateButtons();
 }
@@ -4563,8 +4563,8 @@ QvisSaveMovieWizard::page11_selectOutputDirectory()
     if(!dirName.isEmpty())
     {
         std::string outDir(dirName.toStdString());
-        if(outDir.size() > 0 && outDir[outDir.size() - 1] != SLASH_CHAR)
-            outDir += SLASH_STRING;
+        if(outDir.size() > 0 && outDir[outDir.size() - 1] != VISIT_SLASH_CHAR)
+            outDir += VISIT_SLASH_STRING;
 
         movieAtts->SetOutputDirectory(outDir);
         page11_outputDirectoryLineEdit->blockSignals(true);

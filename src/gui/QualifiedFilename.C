@@ -61,7 +61,7 @@
 
 QualifiedFilename::QualifiedFilename() : host(""), path(""), filename("")
 {
-    separator = SLASH_CHAR;
+    separator = VISIT_SLASH_CHAR;
     flag = 1;
 }
 
@@ -300,7 +300,7 @@ QualifiedFilename::Empty() const
 char
 QualifiedFilename::DetermineSeparator(const std::string &p) const
 {
-    char sep = SLASH_CHAR;
+    char sep = VISIT_SLASH_CHAR;
 
     for(int i = 0; i < p.length(); ++i)
     {

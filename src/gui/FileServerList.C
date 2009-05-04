@@ -2992,7 +2992,7 @@ FileServerList::DecodePath(const string &path)
 char
 FileServerList::GetSeparator()
 {
-    char sep = SLASH_CHAR;
+    char sep = VISIT_SLASH_CHAR;
     SAFE_GET_SEPARATOR(activeHost, GetSeparator);
     return sep;
 }
@@ -3000,7 +3000,7 @@ FileServerList::GetSeparator()
 char
 FileServerList::GetSeparator(const string &host)
 {
-    char sep = SLASH_CHAR;
+    char sep = VISIT_SLASH_CHAR;
     SAFE_GET_SEPARATOR(host, GetSeparator);
     return sep;
 }
@@ -3024,7 +3024,7 @@ FileServerList::GetSeparator(const string &host)
 string
 FileServerList::GetSeparatorString()
 {
-    string sep(SLASH_STRING);
+    string sep(VISIT_SLASH_STRING);
     SAFE_GET_SEPARATOR(activeHost, GetSeparatorString);
     return sep;
 }
@@ -3032,7 +3032,7 @@ FileServerList::GetSeparatorString()
 string
 FileServerList::GetSeparatorString(const string &host)
 {
-    string sep(SLASH_STRING);
+    string sep(VISIT_SLASH_STRING);
     SAFE_GET_SEPARATOR(host, GetSeparatorString);
     return sep;
 }

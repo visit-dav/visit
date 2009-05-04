@@ -4543,7 +4543,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Nov  3 17:53:33 PST 2008
-//    Use SLASH_CHAR instead of '/' so that this works on Windows.
+//    Use VISIT_SLASH_CHAR instead of '/' so that this works on Windows.
 //
 // ****************************************************************************
 string 
@@ -4553,12 +4553,12 @@ GetDirName(const char *path)
 
     int len = strlen(path);
     const char *last = path + (len-1);
-    while (*last != SLASH_CHAR && last > path)
+    while (*last != VISIT_SLASH_CHAR && last > path)
     {
         last--;
     }
 
-    if (*last != SLASH_CHAR)
+    if (*last != VISIT_SLASH_CHAR)
     {
         return "";
     }

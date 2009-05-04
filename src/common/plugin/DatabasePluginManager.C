@@ -503,7 +503,7 @@ DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll
     int lastSlash = -1;
     for (i = len-1 ; i >= 0 ; i--)
     {
-        if (fap[i] == SLASH_CHAR)
+        if (fap[i] == VISIT_SLASH_CHAR)
         {
             lastSlash = i;
             break;

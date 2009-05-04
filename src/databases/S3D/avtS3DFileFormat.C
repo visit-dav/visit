@@ -382,7 +382,7 @@ avtS3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     string timestepDir = CreateStringFromDouble(fileTimes[timeState]);
 
     char path[256];
-    SNPRINTF(path,256,"%s%s%s%sfield.00000",dir.c_str(),SLASH_STRING, timestepDir.c_str(), SLASH_STRING);
+    SNPRINTF(path,256,"%s%s%s%sfield.00000",dir.c_str(),VISIT_SLASH_STRING, timestepDir.c_str(), VISIT_SLASH_STRING);
 
     NcError err(NcError::verbose_nonfatal);
  
@@ -726,7 +726,7 @@ avtS3DFileFormat::GetVar(int timeState, int domain, const char *varname)
 
     // Open up the NetCDF file.
     char path[256];
-    SNPRINTF(path,256,"%s%s%s%sfield.%05d",dir.c_str(),SLASH_STRING, timestepDir.c_str(), SLASH_STRING, domain);
+    SNPRINTF(path,256,"%s%s%s%sfield.%05d",dir.c_str(),VISIT_SLASH_STRING, timestepDir.c_str(), VISIT_SLASH_STRING, domain);
     debug5 << "avtS3DFileFormat::GetVar: Full path to data file is " << path << endl;
 
     NcFile nf(path);

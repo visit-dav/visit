@@ -746,14 +746,14 @@ PF3DFileFormat::FilenameForDomain(int realDomain)
            << f.c_str() << endl;
 
     // Find the directory prefix based on the path of the first master file.
-    std::string::size_type index = f.rfind(SLASH_STRING);
+    std::string::size_type index = f.rfind(VISIT_SLASH_STRING);
     std::string vizDir("viz");
     if(index != std::string::npos)
     {
         std::string path(f.substr(0, index));
         debug4 << mName << "path = " << path << endl;
 
-        std::string::size_type index2 = path.rfind(SLASH_STRING);
+        std::string::size_type index2 = path.rfind(VISIT_SLASH_STRING);
         if(index2 != std::string::npos)
         {
             vizDir = path.substr(index2+1);
@@ -772,26 +772,26 @@ PF3DFileFormat::FilenameForDomain(int realDomain)
 
     // Look for "/viz/" in the visnam string for the specified domain and use
     // anything to the right of it.
-    std::string vizStr(SLASH_STRING);
+    std::string vizStr(VISIT_SLASH_STRING);
     vizStr += "viz";
-    vizStr += SLASH_STRING;
+    vizStr += VISIT_SLASH_STRING;
     f = std::string(master.Get_visname_for_domain(realDomain, 0));
     index = f.rfind(vizStr);
     if(index != std::string::npos)
         middle = f.substr(index, f.size() - index);
     if(middle.size() > 1)
     {
-        if(middle[0] != SLASH_CHAR)
-            middle = std::string(SLASH_STRING) + middle;
-        if(middle[middle.size()-1] != SLASH_CHAR)
-            middle += SLASH_STRING;
+        if(middle[0] != VISIT_SLASH_CHAR)
+            middle = std::string(VISIT_SLASH_STRING) + middle;
+        if(middle[middle.size()-1] != VISIT_SLASH_CHAR)
+            middle += VISIT_SLASH_STRING;
 
         // Replace "viz" with something else, if required.
         std::string rhs(middle.substr(1,middle.size()-1));
-        std::string::size_type nextSlash = rhs.find(SLASH_STRING);
+        std::string::size_type nextSlash = rhs.find(VISIT_SLASH_STRING);
         if(rhs.substr(nextSlash) != vizDir)
         {
-            middle = std::string(SLASH_STRING) + vizDir + 
+            middle = std::string(VISIT_SLASH_STRING) + vizDir + 
                      rhs.substr(nextSlash, rhs.size() - nextSlash);
         }
     }
@@ -2695,9 +2695,9 @@ PF3DFileFormat::MasterInformation::Get_dom_prefix_for_domain(int dom) const
         if(retval.size() > 0)
         {
             if(retval[0] != '/')
-                retval = std::string(SLASH_STRING) + retval;
+                retval = std::string(VISIT_SLASH_STRING) + retval;
             if(retval[retval.size()-1] != '/')
-                retval = retval + std::string(SLASH_STRING);
+                retval = retval + std::string(VISIT_SLASH_STRING);
         }
     }
 

@@ -49,19 +49,10 @@
 #include <map>
 #include <vector>
 
-#include <visit-config.h>
-
-#include <algorithm>
-#include <cstdlib>
-#include <string>
-#include <map>
-#include <vector>
-
 #include <DebugStream.h>
 #include <InvalidDirectoryException.h>
 #include <InvalidPluginException.h>
 #include <InstallationFunctions.h>
-#include <Utility.h>
 #include <visitstream.h>
 
 #if __APPLE__
@@ -514,7 +505,7 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
     ReadPluginDir(files);
 
     // Add each file that is a library to the list.
-    string ext(PLUGIN_EXTENSION);
+    string ext(VISIT_PLUGIN_EXTENSION);
     int extLen = ext.size();
 
     vector< vector<pair<string,string> > > tmp;
@@ -627,7 +618,7 @@ PluginManager::ReadPluginInfo()
     vector<string> pluginsWithNoVersion;
 
     // Read the plugin info for each plugin in the libs list.
-    string ext(PLUGIN_EXTENSION);
+    string ext(VISIT_PLUGIN_EXTENSION);
     vector<string> alreadyLoaded;
     vector<string> alreadyLoadedDir;
     for (size_t i=0; i<libs.size(); i++)
@@ -685,7 +676,7 @@ PluginManager::ReadPluginInfo()
         }
 
         // We're okay, now try to open the plugin info.
-        string pluginFile(dirname + SLASH_STRING + filename);
+        string pluginFile(dirname + VISIT_SLASH_STRING + filename);
         PluginOpen(pluginFile);
         const char **VisItPluginVersion =
                               (const char**)PluginSymbol("VisItPluginVersion");
@@ -712,7 +703,7 @@ PluginManager::ReadPluginInfo()
             // that will be loaded later.
             alreadyLoaded.push_back(filename);
             alreadyLoadedDir.push_back(dirname);
-            libfiles.push_back(dirname + SLASH_STRING + str);
+            libfiles.push_back(dirname + VISIT_SLASH_STRING + str);
         }
     }
 
@@ -727,7 +718,7 @@ PluginManager::ReadPluginInfo()
         for (size_t i=0; i<pluginsWithWrongVersion.size(); i++)
         {
             string pluginFile(pluginsWithWrongVersion[i]);
-            string ext(PLUGIN_EXTENSION);
+            string ext(VISIT_PLUGIN_EXTENSION);
             int slashPos = pluginFile.rfind("/");
             string dirname = pluginFile.substr(0, slashPos);
             int suffixLen = (pluginFile.find("_ser") != -1 ||
@@ -761,7 +752,7 @@ PluginManager::ReadPluginInfo()
         for (size_t i=0; i<pluginsWithNoVersion.size(); i++)
         {
             string pluginFile(pluginsWithNoVersion[i]);
-            string ext(PLUGIN_EXTENSION);
+            string ext(VISIT_PLUGIN_EXTENSION);
             int slashPos = pluginFile.rfind("/");
             string dirname = pluginFile.substr(0, slashPos);
             int suffixLen = (pluginFile.find("_ser") != -1 ||
@@ -1220,7 +1211,7 @@ PluginManager::SetPluginDir(const char *PluginDir)
                 {
                     PathAppend(tmp, "LLNL");
                     PathAppend(tmp, "VisIt");
-                    pluginDirs.push_back(string(tmp) + SLASH_STRING + 
+                    pluginDirs.push_back(string(tmp) + VISIT_SLASH_STRING + 
                                          managerName + "s");
                     delete [] tmp;
                     return;
@@ -1266,7 +1257,7 @@ PluginManager::SetPluginDir(const char *PluginDir)
         }
         if (!dir.empty())
         {
-           pluginDirs.push_back(string(dir) + SLASH_STRING + managerName + "s");
+           pluginDirs.push_back(string(dir) + VISIT_SLASH_STRING + managerName + "s");
         }
         dir = "";
         if (*c)
@@ -1451,7 +1442,7 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
     bool pluginVersion = (symbol == "VisItPluginVersion");
     if(pluginVersion || symbol.substr(0,3) == "Get")
     {
-        string ext(PLUGIN_EXTENSION);
+        string ext(VISIT_PLUGIN_EXTENSION);
         int slashPos = openPlugin.rfind("/");
         int suffixLen = (openPlugin.find("_ser") != -1 ||
                          openPlugin.find("_par") != -1) ? 4 : 0;

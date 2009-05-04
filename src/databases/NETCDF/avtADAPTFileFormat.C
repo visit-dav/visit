@@ -256,12 +256,12 @@ avtADAPTFileFormat::GetGridFileName()
 
         // Get the path to the filename that we're opening.
         std::string path(filename);
-        pos = path.rfind(SLASH_STRING);
+        pos = path.rfind(VISIT_SLASH_STRING);
         if(pos != std::string::npos)
         {
             path = path.substr(0, pos);
-            if(path.size() > 0 && path[path.size()-1] != SLASH_CHAR)
-                path += SLASH_STRING;
+            if(path.size() > 0 && path[path.size()-1] != VISIT_SLASH_CHAR)
+                path += VISIT_SLASH_STRING;
         }
         else
             path = "";

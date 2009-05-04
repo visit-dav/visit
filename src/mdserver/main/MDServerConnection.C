@@ -1021,10 +1021,10 @@ MDServerConnection::FilteredPath(const std::string &path) const
         if(state == 0)
         {
             filteredPath += path[i];
-            if(path[i] == SLASH_CHAR)
+            if(path[i] == VISIT_SLASH_CHAR)
                 state = 1;
         }
-        else if(path[i] != SLASH_CHAR)
+        else if(path[i] != VISIT_SLASH_CHAR)
         {
             filteredPath += path[i];
             state = 0;
@@ -1032,13 +1032,13 @@ MDServerConnection::FilteredPath(const std::string &path) const
     }
 
     std::string path2(filteredPath);
-    if(path2.length() > 0 && path2[path2.length() - 1] == SLASH_CHAR)
+    if(path2.length() > 0 && path2[path2.length() - 1] == VISIT_SLASH_CHAR)
     {
         filteredPath = path2.substr(0, path2.length() - 1);
     }
 
     if(filteredPath.size() == 0)
-        filteredPath = SLASH_STRING;
+        filteredPath = VISIT_SLASH_STRING;
     else
     {
         // Filter out .. so we get the right path.
@@ -1048,7 +1048,7 @@ MDServerConnection::FilteredPath(const std::string &path) const
         const char *str = filteredPath.c_str();
         for(i = 0; i < filteredPath.length() + 1; ++i)
         {
-            if(str[i] == SLASH_CHAR || str[i] == '\0')
+            if(str[i] == VISIT_SLASH_CHAR || str[i] == '\0')
             {
                 if(tmp.size() > 0)
                 {
@@ -1071,9 +1071,9 @@ MDServerConnection::FilteredPath(const std::string &path) const
             { 
 #if defined(_WIN32)
                 if(i > 0)
-                    filteredPath += SLASH_STRING;
+                    filteredPath += VISIT_SLASH_STRING;
 #else
-                filteredPath += SLASH_STRING;
+                filteredPath += VISIT_SLASH_STRING;
 #endif
                 filteredPath += tmpNames[i];
             }
@@ -2269,8 +2269,8 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
 
                 // Create a good path.
                 std::string path(currentWorkingDirectory);
-                if(path[path.size() - 1] != SLASH_CHAR)
-                    path += SLASH_STRING;
+                if(path[path.size() - 1] != VISIT_SLASH_CHAR)
+                    path += VISIT_SLASH_STRING;
 
                 // Add the file to the virtual files map. Give the data from the
                 // new vector of filenames to the existing vector of filenames
@@ -2565,7 +2565,7 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
     VirtualFileInformationMap::iterator virtualFile = virtualFiles.find(file);
 
     bool fileContainsStar = (file.find("*") != std::string::npos);
-    std::string::size_type index = file.rfind(SLASH_STRING);
+    std::string::size_type index = file.rfind(VISIT_SLASH_STRING);
 
     if (virtualFile == virtualFiles.end())
     {

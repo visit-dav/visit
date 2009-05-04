@@ -717,7 +717,7 @@ avtBoxlibFileFormat::ReadHeader(void)
     ifstream in;
     string double_tmp;
 
-    string headerFilename = rootPath + timestepPath + SLASH_STRING + "Header";
+    string headerFilename = rootPath + timestepPath + VISIT_SLASH_STRING + "Header";
 
     if (iDoReading)
         in.open(headerFilename.c_str());
@@ -1455,7 +1455,7 @@ avtBoxlibFileFormat::GetVisMF(int index)
 {
     if (!mfReaders[index])
     {
-        string filename(rootPath + timestepPath + SLASH_STRING +
+        string filename(rootPath + timestepPath + VISIT_SLASH_STRING +
                         multifabFilenames[index]);
 #if defined(_WIN32)
         // If we're on Windows then make some extra passes through the filename
@@ -2213,12 +2213,12 @@ GetDirName(const char *path)
 
     int len = strlen(path);
     const char *last = path + (len-1);
-    while (*last != SLASH_CHAR && last > path)
+    while (*last != VISIT_SLASH_CHAR && last > path)
     {
         last--;
     }
 
-    if (*last != SLASH_CHAR)
+    if (*last != VISIT_SLASH_CHAR)
     {
         return "";
     }

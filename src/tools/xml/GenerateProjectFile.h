@@ -521,9 +521,9 @@ protected:
         }
        
         // Make sure that it ends with a separator.
-        if(retval.length() > 0 && retval.right(1) != SLASH_STRING)
+        if(retval.length() > 0 && retval.right(1) != VISIT_SLASH_STRING)
         {
-            retval += SLASH_STRING;
+            retval += VISIT_SLASH_STRING;
         }
        
         if (retval.length() == 0)
