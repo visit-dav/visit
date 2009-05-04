@@ -102,7 +102,7 @@ MDServerProxy::MDServerProxy() : RemoteProxyBase("-mdserver"),
     createGroupListRPC(), expandPathRPC(), closeDatabaseRPC(),
     loadPluginsRPC(), getPluginErrorsRPC(), getDBPluginInfoRPC()
 {
-    separator = SLASH_CHAR;
+    separator = VISIT_SLASH_CHAR;
 }
 
 // ****************************************************************************

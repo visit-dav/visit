@@ -721,7 +721,7 @@ avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile,
 //
 //  Modifications:
 //    Brad Whitlock, Thu May 22 14:23:14 PST 2003
-//    I made it use SLASH_STRING so it works better on Windows.
+//    I made it use VISIT_SLASH_STRING so it works better on Windows.
 //
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Added bool to skip global info
@@ -741,7 +741,7 @@ avtSiloFileFormat::OpenFile(const char *n, bool skipGlobalInfo)
     while (thisSlash != NULL)
     {
         lastSlash = thisSlash;
-        thisSlash = strstr(lastSlash+1, SLASH_STRING);
+        thisSlash = strstr(lastSlash+1, VISIT_SLASH_STRING);
     }
     if (lastSlash == tocFile)
     {

@@ -1460,32 +1460,32 @@ echo "${ECHO_T}$VERSION" >&6
 # Get the SVN version number.
 echo "$as_me:$LINENO: checking what subversion revision is" >&5
 echo $ECHO_N "checking what subversion revision is... $ECHO_C" >&6
-if test -r SVN_REVISION; then
-   SVN_REVISION=`cat SVN_REVISION`
+if test -r VISIT_SVN_REVISION; then
+   VISIT_SVN_REVISION=`cat VISIT_SVN_REVISION`
 else
    if test -d .svn; then
-      SVN_REVISION=`svn info . 2>/dev/null | grep "Revision:" | cut -d' ' -f2`
+      VISIT_SVN_REVISION=`svn info . 2>/dev/null | grep "Revision:" | cut -d' ' -f2`
    else
-      SVN_REVISION="unknown"
+      VISIT_SVN_REVISION="unknown"
    fi
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define SVN_REVISION "$SVN_REVISION"
+#define VISIT_SVN_REVISION "$VISIT_SVN_REVISION"
 _ACEOF
 
-echo "$as_me:$LINENO: result: $SVN_REVISION" >&5
-echo "${ECHO_T}$SVN_REVISION" >&6
+echo "$as_me:$LINENO: result: $VISIT_SVN_REVISION" >&5
+echo "${ECHO_T}$VISIT_SVN_REVISION" >&6
 
 # Set the slash characters used in filenames.
 
 cat >>confdefs.h <<_ACEOF
-#define SLASH_CHAR '/'
+#define VISIT_SLASH_CHAR '/'
 _ACEOF
 
 
 cat >>confdefs.h <<_ACEOF
-#define SLASH_STRING "/"
+#define VISIT_SLASH_STRING "/"
 _ACEOF
 
 
@@ -6330,17 +6330,17 @@ echo $ECHO_N "checking whether to use PTYs... $ECHO_C" >&6
 # Check whether --with-pty or --without-pty was given.
 if test "${with_pty+set}" = set; then
   withval="$with_pty"
-  USE_PTY=$withval
+  VISIT_USE_PTY=$withval
 else
-  USE_PTY="yes"
+  VISIT_USE_PTY="yes"
 fi;
-echo "$as_me:$LINENO: result: $USE_PTY" >&5
-echo "${ECHO_T}$USE_PTY" >&6
+echo "$as_me:$LINENO: result: $VISIT_USE_PTY" >&5
+echo "${ECHO_T}$VISIT_USE_PTY" >&6
 
-if test "$USE_PTY" = "yes"; then
+if test "$VISIT_USE_PTY" = "yes"; then
 
 cat >>confdefs.h <<\_ACEOF
-#define USE_PTY 1
+#define VISIT_USE_PTY 1
 _ACEOF
 
 
@@ -11143,7 +11143,7 @@ fi
 rm -f junk.txt
 
 cat >>confdefs.h <<_ACEOF
-#define OSMESA_SIZE_LIMIT $OSMESA_SIZE_LIMIT
+#define VISIT_RENDERING_SIZE_LIMIT $OSMESA_SIZE_LIMIT
 _ACEOF
 
 CXXFLAGS="$oldcxxflags"
@@ -11951,7 +11951,7 @@ if test -z "$SHLIB_LIBEXT" ; then SHLIB_LIBEXT="so"; fi
 
 
 cat >>confdefs.h <<_ACEOF
-#define PLUGIN_EXTENSION ".${SHLIB_SOEXT}"
+#define VISIT_PLUGIN_EXTENSION ".${SHLIB_SOEXT}"
 _ACEOF
 
 

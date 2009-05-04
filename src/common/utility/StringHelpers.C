@@ -538,21 +538,21 @@ basename(const char *path, int& start)
            return StaticStringBuf;
        }
 
-       // backup, skipping over all trailing SLASH_CHAR chars
+       // backup, skipping over all trailing VISIT_SLASH_CHAR chars
        int j = n-1;
-       while ((j >= 0) && (path[j] == SLASH_CHAR))
+       while ((j >= 0) && (path[j] == VISIT_SLASH_CHAR))
            j--;
 
-       // deal with string consisting of all SLASH_CHAR chars
+       // deal with string consisting of all VISIT_SLASH_CHAR chars
        if (j == -1)
        {
-           strcpy(StaticStringBuf, SLASH_STRING);
+           strcpy(StaticStringBuf, VISIT_SLASH_STRING);
            return StaticStringBuf;
        }
 
-       // backup to just after next SLASH_CHAR char
+       // backup to just after next VISIT_SLASH_CHAR char
        int i = j-1;
-       while ((i >= 0) && (path[i] != SLASH_CHAR))
+       while ((i >= 0) && (path[i] != VISIT_SLASH_CHAR))
            i--;
        i++;
        start = i;
@@ -597,9 +597,9 @@ StringHelpers::Dirname(const char *path)
        strcpy(StaticStringBuf, ".");
        return StaticStringBuf;
    }
-   else if ((path[0] == SLASH_CHAR) && (path[1] == '\0'))
+   else if ((path[0] == VISIT_SLASH_CHAR) && (path[1] == '\0'))
    {
-       strcpy(StaticStringBuf, SLASH_STRING);
+       strcpy(StaticStringBuf, VISIT_SLASH_STRING);
        return StaticStringBuf;
    }
 
@@ -608,7 +608,7 @@ StringHelpers::Dirname(const char *path)
 
     if (start == -1)
     {
-        strcpy(StaticStringBuf, SLASH_STRING);
+        strcpy(StaticStringBuf, VISIT_SLASH_STRING);
         return StaticStringBuf;
     }
     else
@@ -616,7 +616,7 @@ StringHelpers::Dirname(const char *path)
         int i;
         for (i = 0; i < start; i++)
             StaticStringBuf[i] = path[i];
-        if (StaticStringBuf[i-1] == SLASH_CHAR)
+        if (StaticStringBuf[i-1] == VISIT_SLASH_CHAR)
             StaticStringBuf[i-1] = '\0';
        else
             StaticStringBuf[i] = '\0';

@@ -120,7 +120,7 @@ GetDefaultConfigFile(const char *filename, const char *home)
 
     // If the filename has an absolute path, do not prepend the home
     // directory.
-    if (filename != NULL && filename[0] == SLASH_CHAR)
+    if (filename != NULL && filename[0] == VISIT_SLASH_CHAR)
     {
         // Must make a copy because the caller will delete this.
         retval = new char[strlen(filename)+1];
@@ -286,8 +286,8 @@ GetUserVisItDirectory()
         homedir = home + "/.visit";
 #endif
 
-        if(homedir[homedir.size() - 1] != SLASH_CHAR)
-            homedir += SLASH_STRING;
+        if(homedir[homedir.size() - 1] != VISIT_SLASH_CHAR)
+            homedir += VISIT_SLASH_STRING;
     }
 
     return homedir;

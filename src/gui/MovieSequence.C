@@ -318,10 +318,10 @@ MovieSequence::InitializeFromValues(const std::string &xmlFile, DataNode *node)
 
             // Prepend the path to the XML file to the UI file if the
             // UI file does not have a path.
-            if(!(uiFile.size() > 0 && uiFile[0] == SLASH_CHAR) &&
+            if(!(uiFile.size() > 0 && uiFile[0] == VISIT_SLASH_CHAR) &&
                !(uiFile.size() > 2 && uiFile[1] == ':'))
             {
-                std::string::size_type pos = xmlFile.rfind(SLASH_STRING);
+                std::string::size_type pos = xmlFile.rfind(VISIT_SLASH_STRING);
                 std::string prefix;
                 if(pos != std::string::npos)
                     prefix = xmlFile.substr(0, pos+1);

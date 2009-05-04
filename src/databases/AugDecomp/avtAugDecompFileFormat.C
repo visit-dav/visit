@@ -96,16 +96,16 @@ avtAugDecompFileFormat::avtAugDecompFileFormat(const char *augd_filename,
 {
     ifstream ifile(augd_filename);
     ifile >> filename;
-    if (filename[0] != SLASH_CHAR)
+    if (filename[0] != VISIT_SLASH_CHAR)
     {
         int len = strlen(augd_filename);
         const char *last = augd_filename + (len-1);
-        while (*last != SLASH_CHAR && last > augd_filename)
+        while (*last != VISIT_SLASH_CHAR && last > augd_filename)
         {
             last--;
         }
 
-        if (*last == SLASH_CHAR)
+        if (*last == VISIT_SLASH_CHAR)
         {
             char str[1024];
             strcpy(str, augd_filename);

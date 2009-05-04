@@ -558,7 +558,7 @@ avtVistaFileFormat::OpenFile(const char *fileName)
     while (thisSlash != NULL)
     {
         lastSlash = thisSlash;
-        thisSlash = strstr(lastSlash+1, SLASH_STRING);
+        thisSlash = strstr(lastSlash+1, VISIT_SLASH_STRING);
     }
     if (lastSlash == tocFile)
     {

@@ -43,7 +43,6 @@
 #include <VisWinPathTracker.h>
 
 #include <VisWindow.h>
-#include <visit-config.h> // for SLASH_CHAR, SLASH_STRING
 
 #include <string>
 #include <vector>

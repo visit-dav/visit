@@ -3997,7 +3997,7 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
     if (atts->GetDirname() == "")
         qualFilename = atts->GetFilename();
     else
-        qualFilename = atts->GetDirname() + std::string(SLASH_STRING)
+        qualFilename = atts->GetDirname() + std::string(VISIT_SLASH_STRING)
                      + atts->GetFilename();
     bool doAll = false;
     std::vector<std::string> vars = atts->GetVariables();

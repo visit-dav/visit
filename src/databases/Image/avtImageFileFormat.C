@@ -275,7 +275,7 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
         const char   *filename = fname.c_str();
         char          dir[1024];
         const char   *p = filename, *q = NULL;
-        while ((q = strstr(p, SLASH_STRING)) != NULL)
+        while ((q = strstr(p, VISIT_SLASH_STRING)) != NULL)
         {
             p = q+1;
         }
@@ -301,7 +301,7 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
             else
             {
                 char line_with_dir[1024];
-                if (line[0] == SLASH_CHAR)
+                if (line[0] == VISIT_SLASH_CHAR)
                 {
                     strcpy(line_with_dir, line);
                 }

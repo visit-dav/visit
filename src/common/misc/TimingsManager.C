@@ -305,7 +305,7 @@ TimingsManager::SetFilename(const std::string &fname)
 #if defined(_WIN32)
     if (!(fname[0] == 'C' && fname[1] == ':'))
 #else
-    if (fname[0] != SLASH_CHAR)
+    if (fname[0] != VISIT_SLASH_CHAR)
 #endif
     {
         char currentDir[1024];
@@ -316,8 +316,8 @@ TimingsManager::SetFilename(const std::string &fname)
 #endif
         currentDir[1023]='\0';
         std::string filenameTmp(currentDir);
-        if(filenameTmp[filenameTmp.size()-1] != SLASH_CHAR)
-            filenameTmp += SLASH_STRING;
+        if(filenameTmp[filenameTmp.size()-1] != VISIT_SLASH_CHAR)
+            filenameTmp += VISIT_SLASH_STRING;
         filename = filenameTmp + fname + ".timings"; 
     }
     else

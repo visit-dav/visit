@@ -721,7 +721,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             okay = (sscanf(temp.toStdString().c_str(), "%d", &w) == 1);
             if(okay)
             {
-                okay = (w <= OSMESA_SIZE_LIMIT);
+                okay = (w <= VISIT_RENDERING_SIZE_LIMIT);
                 
                 if(okay)
                 {
@@ -753,7 +753,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             okay = (sscanf(temp.toStdString().c_str(), "%d", &h) == 1);
             if(okay)
             {
-                okay = (h <= OSMESA_SIZE_LIMIT);
+                okay = (h <= VISIT_RENDERING_SIZE_LIMIT);
                 
                 if(okay)
                 {

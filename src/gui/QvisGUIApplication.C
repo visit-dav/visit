@@ -1340,7 +1340,7 @@ QvisGUIApplication::HandleSynchronize(int val)
             sessionDir = GetUserVisItDirectory();
         else
 #ifndef WIN32
-            sessionDir = QString(QDir(".").absolutePath() + SLASH_STRING).toStdString();
+            sessionDir = QString(QDir(".").absolutePath() + VISIT_SLASH_STRING).toStdString();
 #else
             sessionDir = fileServer->GetPath();
 #endif
@@ -4470,7 +4470,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
         // VisIt directory to it.
         if(node == 0)
         {
-            if(guifilename[0] != SLASH_CHAR)
+            if(guifilename[0] != VISIT_SLASH_CHAR)
             {
                 filename = GetUserVisItDirectory() + filename;
                 guifilename = GetUserVisItDirectory() + guifilename;
@@ -7363,7 +7363,7 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     args.push_back("-output");
     std::string dirFile(movieAtts->GetOutputDirectory());
     if(dirFile == ".")
-        dirFile += SLASH_STRING;
+        dirFile += VISIT_SLASH_STRING;
     dirFile += movieAtts->GetOutputName();
     args.push_back(QuoteSpaces(dirFile));
 
@@ -7420,7 +7420,7 @@ UpdateCurrentWindowSizes(MovieAttributes *movieAtts, int currentWidth,
     {
         if(useCurrentSize[i] == 1)
         {
-            const int MAX_WINDOW_SIZE = OSMESA_SIZE_LIMIT;
+            const int MAX_WINDOW_SIZE = VISIT_RENDERING_SIZE_LIMIT;
             int w = int(scales[i] * double(currentWidth));
             widths[i] = (w > MAX_WINDOW_SIZE) ? MAX_WINDOW_SIZE : w;
             int h = int(scales[i] * double(currentHeight));
@@ -7499,7 +7499,7 @@ QvisGUIApplication::GetNumMovieFrames()
 void
 QvisGUIApplication::UpdateSessionDir( const std::string &sessionFileName )
 {
-    int idx = sessionFileName.rfind(SLASH_STRING);
+    int idx = sessionFileName.rfind(VISIT_SLASH_STRING);
     if ( idx != 0 )
         sessionDir = sessionFileName.substr( 0, idx+1 );
 }
@@ -7705,7 +7705,7 @@ QvisGUIApplication::SaveMovieMain()
 
             // Set the output directory.
             QString outputDir(movieAtts->GetOutputDirectory().c_str());
-            if(outputDir.endsWith((char*)SLASH_STRING))
+            if(outputDir.endsWith((char*)VISIT_SLASH_STRING))
                 outputDir = outputDir.left(outputDir.length()-1);
             outputDir = MakeCodeSlashes(outputDir);
             code += "    movie.outputDir = \"" + outputDir + "\"\n";
@@ -7770,8 +7770,8 @@ QvisGUIApplication::SaveMovieMain()
         {
             // Create a name for the session file.
             QString sessionName(movieAtts->GetOutputDirectory().c_str());
-            if(!sessionName.endsWith((char*)SLASH_STRING))
-                sessionName += SLASH_STRING;
+            if(!sessionName.endsWith((char*)VISIT_SLASH_STRING))
+                sessionName += VISIT_SLASH_STRING;
             sessionName += QString(movieAtts->GetOutputName().c_str());
 
             // Save the current session.

@@ -314,7 +314,7 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
         if(node != 0)
         {
             std::string ctName;
-            std::string::size_type pos = ctFileName.rfind(SLASH_STRING);
+            std::string::size_type pos = ctFileName.rfind(VISIT_SLASH_STRING);
             if(pos == std::string::npos)
                 ctName = ctFileName;
             else

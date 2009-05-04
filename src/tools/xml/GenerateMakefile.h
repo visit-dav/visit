@@ -541,12 +541,12 @@ class MakefileGeneratorPlugin : public Plugin
                    "$(EPARLIBS_FOR_MACOSX_PREBINDING) "
 		   "$(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
-            out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
-            out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
-            out << "SDSO="<<visitplugininstall<<"/operators/libS"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
-            out << "VDSO="<<visitplugininstall<<"/operators/libV"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
-            out << "ESERDSO="<<visitplugininstall<<"/operators/libE"<<name<<"Operator_ser" << PLUGIN_EXTENSION << endl;
-            out << "EPARDSO="<<visitplugininstall<<"/operators/libE"<<name<<"Operator_par" << PLUGIN_EXTENSION << endl;
+            out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "SDSO="<<visitplugininstall<<"/operators/libS"<<name<<"Operator" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "VDSO="<<visitplugininstall<<"/operators/libV"<<name<<"Operator" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "ESERDSO="<<visitplugininstall<<"/operators/libE"<<name<<"Operator_ser" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "EPARDSO="<<visitplugininstall<<"/operators/libE"<<name<<"Operator_par" << VISIT_PLUGIN_EXTENSION << endl;
         }
         else if (type=="plot")
         {
@@ -721,12 +721,12 @@ class MakefileGeneratorPlugin : public Plugin
             out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser $(ESERLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par $(EPARLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
-            out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
-            out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
-            out << "SDSO="<<visitplugininstall<<"/plots/libS"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
-            out << "VDSO="<<visitplugininstall<<"/plots/libV"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
-            out << "ESERDSO="<<visitplugininstall<<"/plots/libE"<<name<<"Plot_ser" << PLUGIN_EXTENSION << endl;
-            out << "EPARDSO="<<visitplugininstall<<"/plots/libE"<<name<<"Plot_par" << PLUGIN_EXTENSION << endl;
+            out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "SDSO="<<visitplugininstall<<"/plots/libS"<<name<<"Plot" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "VDSO="<<visitplugininstall<<"/plots/libV"<<name<<"Plot" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "ESERDSO="<<visitplugininstall<<"/plots/libE"<<name<<"Plot_ser" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "EPARDSO="<<visitplugininstall<<"/plots/libE"<<name<<"Plot_par" << VISIT_PLUGIN_EXTENSION << endl;
         }
         else if (type=="database")
         {
@@ -807,10 +807,10 @@ class MakefileGeneratorPlugin : public Plugin
             out << "EPARLIBS=-lpipeline_par -ldatabase_par -lmir_par -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
 
             out << "" << endl;
-            out << "IDSO="<<visitplugininstall<<"/databases/libI"<<name<<"Database" << PLUGIN_EXTENSION << endl;
-            out << "MDSO="<<visitplugininstall<<"/databases/libM"<<name<<"Database" << PLUGIN_EXTENSION << endl;
-            out << "ESERDSO="<<visitplugininstall<<"/databases/libE"<<name<<"Database_ser" << PLUGIN_EXTENSION << endl;
-            out << "EPARDSO="<<visitplugininstall<<"/databases/libE"<<name<<"Database_par" << PLUGIN_EXTENSION << endl;
+            out << "IDSO="<<visitplugininstall<<"/databases/libI"<<name<<"Database" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "MDSO="<<visitplugininstall<<"/databases/libM"<<name<<"Database" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "ESERDSO="<<visitplugininstall<<"/databases/libE"<<name<<"Database_ser" << VISIT_PLUGIN_EXTENSION << endl;
+            out << "EPARDSO="<<visitplugininstall<<"/databases/libE"<<name<<"Database_par" << VISIT_PLUGIN_EXTENSION << endl;
         }
         out << endl;
         out << "" << endl;

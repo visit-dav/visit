@@ -2043,7 +2043,7 @@ RemoteProcess::LaunchRemote(const stringVector &args)
     remoteProgramPid = _spawnvp(_P_NOWAIT, SecureShell(), argv);
 #else
     // Start the program in UNIX
-#ifdef USE_PTY
+#ifdef VISIT_USE_PTY
     debug5 << mName << "Starting child process using pty_fork" << endl;
     int ptyFileDescriptor;
     if (!disablePTY)
@@ -2084,7 +2084,7 @@ RemoteProcess::LaunchRemote(const stringVector &args)
         break;
     }
 
-#ifdef USE_PTY
+#ifdef VISIT_USE_PTY
     if (!disablePTY && getAuthentication)
     {
         TRY

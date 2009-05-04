@@ -639,7 +639,7 @@ void vtkVisItPLOT3DReader::CollectInfo(char *x_file, char *s_file)
     int lastSlash = -1;
     for (int i = len-1; i >= 0; i--)
     {
-        if (fap[i] == SLASH_CHAR)
+        if (fap[i] == VISIT_SLASH_CHAR)
         {
             lastSlash = i;
             break;

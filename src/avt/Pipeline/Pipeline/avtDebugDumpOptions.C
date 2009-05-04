@@ -181,7 +181,7 @@ avtDebugDumpOptions::SetDumpDirectory(const string &odir)
     if(res_dir != "")
     {
         // make sure it has a "/" or "\" (windows) suffix
-        string slash = string(SLASH_STRING);
+        string slash = string(VISIT_SLASH_STRING);
         if (res_dir[res_dir.length()-1] != slash[0] )
             res_dir += slash;
         // make sure the dir exists!

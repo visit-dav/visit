@@ -252,7 +252,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
     versionText.sprintf("VisIt %s, ", VERSION);
     versionText += tr("svn revision");
     versionText += " ";
-    versionText += SVN_REVISION;
+    versionText += VISIT_SVN_REVISION;
 
     // Create a lookup of month names so the internationalization
     // files don't have to change.

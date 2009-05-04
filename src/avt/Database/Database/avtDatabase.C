@@ -2242,7 +2242,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 
     char          dir[1024];
     const char   *p = textfile, *q = NULL;
-    while ((q = strstr(p, SLASH_STRING)) != NULL)
+    while ((q = strstr(p, VISIT_SLASH_STRING)) != NULL)
     {
         p = q+1;
     }
@@ -2267,7 +2267,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
         {
             ConvertSlashes(str_auto);
 
-            if (str_auto[0] == SLASH_CHAR || str_auto[0] == '!')
+            if (str_auto[0] == VISIT_SLASH_CHAR || str_auto[0] == '!')
             {
                 strcpy(str_with_dir, str_auto);
             }

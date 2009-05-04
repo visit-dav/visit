@@ -40,7 +40,7 @@
 #define PTY_H
 
 #include <visit-config.h>
-#ifdef USE_PTY
+#ifdef VISIT_USE_PTY
 
 #include <stdlib.h>
 #include <unistd.h>

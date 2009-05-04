@@ -904,15 +904,15 @@ QvisHelpWindow::TopicFromDocHelper(QString &str, const QString &doc,
 QString
 QvisHelpWindow::CompleteFileName(const QString &page) const
 {
-    QString file(helpPath + QString(SLASH_STRING) + 
-                 locale + QString(SLASH_STRING) + 
+    QString file(helpPath + QString(VISIT_SLASH_STRING) + 
+                 locale + QString(VISIT_SLASH_STRING) + 
                  page);
     if(!QFile(file).exists())
     {
         // The page did not exist for the desired locale, revert to the
         // en_US page.
-        file = QString(helpPath + QString(SLASH_STRING) + 
-                       QString("en_US") + QString(SLASH_STRING) + 
+        file = QString(helpPath + QString(VISIT_SLASH_STRING) + 
+                       QString("en_US") + QString(VISIT_SLASH_STRING) + 
                        page);
     }
 
