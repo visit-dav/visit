@@ -46,7 +46,6 @@
 #include <database_exports.h>
 
 #include <stdlib.h> // For NULL
-
 #include <string>
 #include <vector>
 
@@ -157,8 +156,4 @@ class DATABASE_API avtDatabaseFactory
     static bool                  createVectorMagnitudeExpressions;
     static FileOpenOptions       defaultFileOpenOptions;
 };
-
-
 #endif
-
-

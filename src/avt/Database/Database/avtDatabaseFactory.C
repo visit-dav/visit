@@ -90,7 +90,7 @@ FileOpenOptions avtDatabaseFactory::defaultFileOpenOptions;
 //
 // Function Prototypes
 //
-void CheckPermissions(const char *);
+static void CheckPermissions(const char *);
 
 
 // ****************************************************************************
@@ -720,10 +720,13 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
 //    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
 //    Made it use VisItStat instead of stat
 //
+//    Tom Fogal, Sun May  3 15:33:55 MDT 2009
+//    Marked the functions static.
+//
 // ****************************************************************************
 
 #if defined(_WIN32)
-void
+static void
 CheckPermissions(const char *filename)
 {
    // nothing
@@ -735,7 +738,7 @@ static uid_t   uid;
 static gid_t   gids[100];
 static int     ngids;
 
-void
+static void
 SetUpUserInfo(void)
 {
     setUpUserInfo = true;
@@ -743,7 +746,7 @@ SetUpUserInfo(void)
     ngids = getgroups(100, gids);
 }
 
-void
+static void
 CheckPermissions(const char *filename)
 {
     if (!setUpUserInfo)
@@ -801,5 +804,4 @@ CheckPermissions(const char *filename)
 
     EXCEPTION1(BadPermissionException, filename);
 }
-
 #endif
