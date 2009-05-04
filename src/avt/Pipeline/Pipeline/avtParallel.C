@@ -245,6 +245,30 @@ PAR_UIProcess(void)
     return (par_rank == 0);
 }
 
+// ****************************************************************************
+//  Function: PAR_WaitForDebugger
+//
+//  Purpose:
+//      Spins indefinitely until a developer loads up a debugger on process 0
+//      and fixes it.
+//
+//  Programmer: Tom Fogal
+//  Creation:   October 17, 2008
+//
+// ****************************************************************************
+
+void
+PAR_WaitForDebugger(void)
+{
+    volatile int i = 0;
+    if(PAR_Rank() == 0)
+    {
+        do {
+            // nothing
+        } while(i == 0);
+    }
+    Barrier();
+}
 
 // ****************************************************************************
 //  Function: MinMaxOp 
