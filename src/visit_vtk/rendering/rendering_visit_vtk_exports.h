@@ -40,7 +40,7 @@
 #define RENDERING_VISIT_VTK_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef RENDERING_VISIT_VTK_EXPORTS
+#if defined(RENDERING_VISIT_VTK_EXPORTS) || defined (rendering_visit_vtk_EXPORTS)
 #define RENDERING_VISIT_VTK_API __declspec(dllexport)
 #else
 #define RENDERING_VISIT_VTK_API __declspec(dllimport)

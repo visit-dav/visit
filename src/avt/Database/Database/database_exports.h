@@ -40,7 +40,7 @@
 #define DATABASE_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef DATABASE_EXPORTS
+#if defined(DATABASE_EXPORTS) || defined(avtdatabase_ser_EXPORTS) || defined(avtdatabase_par_EXPORTS)
 #define DATABASE_API __declspec(dllexport)
 #else
 #define DATABASE_API __declspec(dllimport)

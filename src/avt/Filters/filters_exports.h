@@ -40,7 +40,7 @@
 #define AVTFILTERS_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef AVTFILTERS_EXPORTS
+#if defined(AVTFILTERS_EXPORTS) || defined(avtfilters_ser_EXPORTS) || defined(avtfilters_par_EXPORTS)
 #define AVTFILTERS_API __declspec(dllexport)
 #else
 #define AVTFILTERS_API __declspec(dllimport)

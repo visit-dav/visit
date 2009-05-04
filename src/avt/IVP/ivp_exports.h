@@ -40,7 +40,7 @@
 #define IVP_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef IVP_EXPORTS
+#if defined(IVP_EXPORTS) || defined(avtivp_EXPORTS)
 #define IVP_API __declspec(dllexport)
 #else
 #define IVP_API __declspec(dllimport)

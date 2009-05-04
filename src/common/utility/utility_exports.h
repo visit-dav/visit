@@ -40,7 +40,7 @@
 #define UTILITY_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef UTILITY_EXPORTS
+#if defined(UTILITY_EXPORTS) || defined(visitcommon_EXPORTS)
 #define UTILITY_API __declspec(dllexport)
 #else
 #define UTILITY_API __declspec(dllimport)

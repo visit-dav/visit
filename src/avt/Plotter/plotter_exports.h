@@ -40,7 +40,7 @@
 #define PLOTTER_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef PLOTTER_EXPORTS
+#if defined(PLOTTER_EXPORTS) || defined(avtplotter_ser_EXPORTS)
 #define PLOTTER_API __declspec(dllexport)
 #else
 #define PLOTTER_API __declspec(dllimport)

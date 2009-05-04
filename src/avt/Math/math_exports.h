@@ -40,7 +40,7 @@
 #define MATH_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef MATH_EXPORTS
+#if defined(MATH_EXPORTS) || defined(avtmath_EXPORTS)
 #define MATH_API __declspec(dllexport)
 #else
 #define MATH_API __declspec(dllimport)

@@ -40,7 +40,7 @@
 #define EXPR_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef EXPR_EXPORTS
+#if defined(EXPR_EXPORTS) || defined(visitcommon_EXPORTS)
 #define EXPR_API __declspec(dllexport)
 #else
 #define EXPR_API __declspec(dllimport)

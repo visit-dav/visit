@@ -40,7 +40,7 @@
 #define QTVISWINDOW_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef QTVISWINDOW_EXPORTS
+#if defined(QTVISWINDOW_EXPORTS) || defined (avtqtviswindow_EXPORTS)
 #define QTVISWINDOW_API __declspec(dllexport)
 #else
 #define QTVISWINDOW_API __declspec(dllimport)

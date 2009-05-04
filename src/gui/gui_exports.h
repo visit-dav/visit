@@ -40,7 +40,7 @@
 #define GUI_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef GUI_EXPORTS
+#if defined(GUI_EXPORTS) || defined(gui_EXPORTS)
 #define GUI_API __declspec(dllexport)
 #else
 #define GUI_API __declspec(dllimport)

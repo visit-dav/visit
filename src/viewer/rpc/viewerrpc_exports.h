@@ -40,7 +40,7 @@
 #define VIEWER_RPC_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef VIEWER_RPC_EXPORTS
+#if defined(VIEWER_RPC_EXPORTS) || defined(viewerrpc_EXPORTS)
 #define VIEWER_RPC_API __declspec(dllexport)
 #else
 #define VIEWER_RPC_API __declspec(dllimport)

@@ -40,7 +40,7 @@
 #define AVTFILEWRITER_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef AVTFILEWRITER_EXPORTS
+#if defined(AVTFILEWRITER_EXPORTS) || defined(avtwriter_ser_EXPORTS) || defined(avtwriter_par_EXPORTS)
 #define AVTFILEWRITER_API __declspec(dllexport)
 #else
 #define AVTFILEWRITER_API __declspec(dllimport)

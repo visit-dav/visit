@@ -40,7 +40,7 @@
 #define EXPRESSION_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef EXPRESSION_EXPORTS
+#if defined(EXPRESSION_EXPORTS) || defined(avtexpressions_ser_EXPORTS) || defined(avtexpressions_par_EXPORTS)
 #define EXPRESSION_API __declspec(dllexport)
 #else
 #define EXPRESSION_API __declspec(dllimport)
