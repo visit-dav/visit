@@ -64,6 +64,7 @@ PIPELINE_API void    PAR_Init(int &argc, char **&argv);
 PIPELINE_API int     PAR_Rank(void);
 PIPELINE_API int     PAR_Size(void);
 PIPELINE_API bool    PAR_UIProcess(void);
+PIPELINE_API void    PAR_WaitForDebugger(void);
 PIPELINE_API void    SumIntAcrossAllProcessors(int&);
 PIPELINE_API void    SumFloatAcrossAllProcessors(float&);
 PIPELINE_API void    SumFloatArrayAcrossAllProcessors(float *, float *, int);
