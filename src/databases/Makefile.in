@@ -436,6 +436,8 @@ REQUIRED=\
  Nek5000 \
  OpenFOAM \
  OVERFLOW \
+ paraDIS \
+ paraDIS_tecplot \
  PATRAN \
  PLOT2D \
  PLOT3D \
