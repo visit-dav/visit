@@ -259,6 +259,11 @@ static int Geti(const char *s)
 //    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
 //    Made it use VisItStat instead of stat
 //
+//    Mark C. Miller, Tue May  5 11:26:50 PDT 2009
+//    Fixed bug handling mesh with very small number of points (<10). The
+//    logic to increase vtkPoints object size resulted in having no effect
+//    because 1.1* current size was resulting in same size. Also, added
+//    logic to deal with CPENTA element types that are really pyramids.
 // ****************************************************************************
 
 bool
@@ -300,6 +305,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
     ugrid->SetPoints(pts);
     ugrid->Allocate(nCells);
     pts->Delete();
+    pts = ugrid->GetPoints();
 
     char  line[1024];
     float pt[3];
@@ -355,6 +361,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 int newSize = int(float(nPoints) * 1.1f);
                 if(newSize < psi)
                     newSize = int(float(psi) * 1.1f);
+                if(newSize <= nPoints)
+                    newSize = nPoints + 1;
 
                 debug4 << "Resizing point array from " << nPoints
                        << " points to " << newSize
@@ -406,6 +414,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 int newSize = int(float(nPoints) * 1.1f);
                 if(newSize < psi)
                     newSize = int(float(psi) * 1.1f);
+                if(newSize <= nPoints)
+                    newSize = nPoints + 1;
 
                 debug4 << "Resizing point array from " << nPoints
                        << " points to " << newSize
@@ -586,7 +596,15 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                    << ", " << verts[5]
                    << endl;
 #endif
-            ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+            //
+            // http://www.simcenter.msstate.edu/docs/ug_io/3d_grid_file_type_nastran.html
+            // says that if 5th and 6th nodes are identical, then its really a 5 noded
+            // pyramid.
+            //
+            if (verts[4] == verts[5])
+                ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+            else
+                ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
         }
         else if(strncmp(line, "CQUAD4", 6) == 0)
         {
