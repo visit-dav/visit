@@ -437,7 +437,7 @@ avtparaDIS_tecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 void avtparaDIS_tecplotFileFormat::AddHexToMesh(vtkUnstructuredGrid *linemesh, vector<int> &hex) {
   vtkIdType nodeIndices[2]; 
   vtkIdType *ip = nodeIndices; // for printing
-  uint32_t segnum = 0; 
+  unsigned int segnum = 0; 
   if (mFileType == "QUADRILATERAL") {
     int index = 4, otherIndex; 
     while (index--) {
