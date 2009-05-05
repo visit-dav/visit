@@ -1229,6 +1229,12 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Changed #if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2) to nested
 //    #if statements. The former assumes short-circuit evaluation and not
 //    all C pre-processors apparently obey it.
+//
+//    Mark C. Miller, Tue May  5 11:11:19 PDT 2009
+//    Changed level of info returned from MultiMatHasAllMatInfo necessary to
+//    skirt reading individual material object to 3 or greater. This fixes
+//    cases where material numbers are known at the multi-block level but
+//    all other material info is known only on the individual material blocks.
 // ****************************************************************************
 
 void
@@ -2691,7 +2697,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         DBmaterial *mat = NULL;
         char *material  = NULL;
-        if (MultiMatHasAllMatInfo(mm) < 2)
+        if (MultiMatHasAllMatInfo(mm) < 3)
         {
             // Find the first non-empty mesh
             int meshnum = 0;
