@@ -361,6 +361,9 @@
 #   Hank Childs, Sun Mar 22 14:45:21 CDT 2009
 #   Remove Nek3D target ... reader is in the process of becoming deprecated.
 #
+#   Tom Fogal, Mon May  4 17:43:32 MDT 2009
+#   (Temporarily) remove paraDIS reader, to get a nightly test run.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -433,8 +436,6 @@ REQUIRED=\
  Nek5000 \
  OpenFOAM \
  OVERFLOW \
- paraDIS \
- paraDIS_tecplot \
  PATRAN \
  PLOT2D \
  PLOT3D \
