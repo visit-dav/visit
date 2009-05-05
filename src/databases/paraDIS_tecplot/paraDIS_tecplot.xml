@@ -29,6 +29,7 @@ RC_cpp_lib/timer.C
 RC_cpp_lib/pathutil.C
      </Files>
    <CXXFLAGS>
+      -DNO_BOOST
       -IRC_c_lib
       -IRC_cpp_lib
     </CXXFLAGS>
