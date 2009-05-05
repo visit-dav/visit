@@ -112,7 +112,7 @@ class avtparaDIS_tecplotFileFormat : public avtSTSDFileFormat
     
     string mFileType; 
     vector<string> mVariableNames; 
-    uint32_t mNumElems, mNumPoints, mNumVars; 
+    unsigned int mNumElems, mNumPoints, mNumVars; 
     bool mRotateTecplotPoints; 
     rclib::Point<float> mOldOrientation, mNewOrientation; 
     

@@ -1,5 +1,10 @@
 #include "stringutil.h"
 
+#if defined(_WIN32)
+#else
+#include <unistd.h>
+#endif
+
 
 //===============================================================
 /*!

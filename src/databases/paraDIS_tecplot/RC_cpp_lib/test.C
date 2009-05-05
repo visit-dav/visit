@@ -160,7 +160,7 @@ void TestStrings(void) {
   ADDTEST("test1  test2 test3", "(test1, test2, test3)"); 
   ADDTEST("   ", "()"); 
   vector<string>::iterator pos = tests.begin(), endpos = tests.end(); 
-  uint32_t testnum = 0; 
+  unsigned int testnum = 0; 
   while (testnum < tests.size()) {
     RunTest(testnum, tests, expectedResults); 
     ++testnum; 
