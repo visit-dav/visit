@@ -457,6 +457,11 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Tom Fogal, Sun May  3 19:50:37 MDT 2009
 //    Don't do any ghost calculations when there are no domains.
 //
+//    Tom Fogal, Mon May  4 17:38:17 MDT 2009
+//    Make sure all processors agree about whether or not they should
+//    synchronize ghost and nesting information.  This replaces the `blind
+//    skip' logic used previously.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -659,6 +664,14 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         visitTimer->StopTimer(t0, "Creating simplified nesting rep.");
     }
 
+    // Figure out the nesting globally to make sure all processors will
+    // synchronously communicate (or not) later.
+    // Stuff them into ints first.  MPI_MAX isn't defined on MPI_BOOLs.
+    alreadyDidNesting = static_cast<bool>
+        (UnifyMaximumValue(static_cast<int>(alreadyDidNesting)));
+    alreadyDidGhosts = static_cast<bool>
+        (UnifyMaximumValue(static_cast<int>(alreadyDidGhosts)));
+
     //
     // Add node numbers if requested.
     //
@@ -740,7 +753,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     //
     // Apply ghosting when domains nest within other domains (AMR meshes)
     //
-    if (!alreadyDidNesting && nDomains > 0)
+    if (!alreadyDidNesting)
     {
         int t0 = visitTimer->StartTimer();
         ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec,
@@ -762,7 +775,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     if (ghostType != NO_GHOST_DATA)
         ghostDataIsNeeded = true;
 
-    if (ghostDataIsNeeded && !alreadyDidGhosts && nDomains > 0)
+    if (ghostDataIsNeeded && !alreadyDidGhosts)
     {
         didGhosts = CommunicateGhosts(ghostType, datasetCollection, domains, 
                                       spec, src, allDomains, 
