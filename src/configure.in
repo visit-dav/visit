@@ -950,6 +950,9 @@ dnl
 dnl    Brad Whitlock, Mon May  4 13:14:20 PDT 2009
 dnl    Added VISIT_ to several defines for better namespace behavior
 dnl
+dnl    Hank Childs, Tue May  5 01:03:49 CDT 2009
+dnl    Put -lGLU into the SLIVR libs.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1670,7 +1673,7 @@ if test "$UseSLIVR" = "yes"; then
         AC_DEFINE(HAVE_LIBSLIVR, [1], [Define if you have the SLIVR library.])
         BUILD_SLIVR="slivr"
         SLIVR_INCLUDE="-I$""(TOPDIR)/include/teem -I$""(TOPDIR)/include/slivr"
-        SLIVR_LIBS="-lslivrV -lslivrG -lnrrd -lair -lbiff -lhest"
+        SLIVR_LIBS="-lslivrV -lslivrG -lnrrd -lair -lbiff -lhest -lGLU"
         if test "$UNAME" = "Darwin"; then
             TEEM_CMAKE_C_FLAGS="-D CMAKE_C_FLAGS:STRING=-fno-common"
             SLIVR_CMAKE_SHARED_LINKER_FLAGS="-D CMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-undefined,dynamic_lookup"
