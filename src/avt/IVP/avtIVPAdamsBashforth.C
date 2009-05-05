@@ -296,6 +296,9 @@ avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 //    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //    Bug fix in parallel communication of solver state.
 //
+//    Dave Pugmire, Tue May  5 10:43:05 EDT 2009
+//    Memory issue with history init. Make sure vecs are of proper size.
+//
 // ****************************************************************************
 
 void 
@@ -310,9 +313,11 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
     h = h_max;
     initialized = 0;
 
-    for( size_t i=1; i<STEPS; ++i )
-      for( size_t j=0; j<yCur.dim(); ++j )
-        history[i].values()[j] = 0;
+    history[0] = avtVec(yCur.dim());
+    history[1] = avtVec(yCur.dim());
+    history[2] = avtVec(yCur.dim());
+    history[3] = avtVec(yCur.dim());
+    history[4] = avtVec(yCur.dim());
 }
 
 
