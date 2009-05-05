@@ -359,6 +359,9 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    Hank Childs, Sun Mar 22 14:13:16 CDT 2009
 //    Add support for on demand streaming.
 //
+//    Hank Childs, Tue May  5 14:15:45 PDT 2009
+//    Fix parsing problem with names that have subdirectories.
+//
 // ****************************************************************************
 
 void
@@ -381,8 +384,9 @@ avtCMFEExpression::Execute()
     for (int i = var_wo_quotes.size()-1 ; i >= 0 ; i--)
         if (var_wo_quotes[i] == '\'')
             var_wo_quotes.replace(i,1,"");
+    std::string final_var = "<" + var_wo_quotes + ">";
 
-    exp2.SetDefinition(var_wo_quotes);
+    exp2.SetDefinition(final_var);
     exp2.SetType(Expression::Unknown);
     new_list.AddExpressions(exp2);
     *(pel->GetList()) = new_list;
