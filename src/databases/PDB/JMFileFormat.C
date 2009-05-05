@@ -65,11 +65,8 @@
 #define JM_TIME   "timeh"
 #define JM_XCOORD "xx"
 #define JM_YCOORD "yy"
+#define JM_ZCOORD "zz"
 #define JM_IREG   "ireg"
-
-// The file's data is stored like this: [ny][nx][nts] which is somewhat backwards
-// so we need to reorder it.
-#define REVERSE_DATA
 
 // ****************************************************************************
 // Method: JMFileFormat::CreateInterface
@@ -138,6 +135,7 @@ JMFileFormat::CreateInterface(PDBFileObject *pdb,
 
 JMFileFormat::VarItem::VarItem()
 {
+    accesses = 0;
     type = NO_TYPE;
     dims = 0;
     ndims = 0;
@@ -196,69 +194,8 @@ JMFileFormat::VarItem::DataForTime(int ts)
     double *dptr = (double *)data;
     long   *lptr = (long *)  data;
 
-#ifdef REVERSE_DATA
-    // Time is the fastest varying dimension. Backwards!
-    int nts = dims[0];
-    int nx = dims[1];
-    int ny = dims[2];
-    switch(type)
-    {
-    case CHAR_TYPE:
-    case CHARARRAY_TYPE:
-        {
-        char *dest = new char[nx * ny];
-        for(int j = 0; j < ny; ++j)
-            for(int i = 0; i < nx; ++i)
-                dest[j * nx + i] = cptr[j*nx*nts + i*nts + ts];
-        return (void *)dest;
-        }
-        break;
-    case INTEGER_TYPE:
-    case INTEGERARRAY_TYPE:
-        {
-        int *dest = new int[nx * ny];
-        for(int j = 0; j < ny; ++j)
-            for(int i = 0; i < nx; ++i)
-                dest[j * nx + i] = iptr[j*nx*nts + i*nts + ts];
-        return (void *)dest;
-        }
-        break;
-    case FLOAT_TYPE:
-    case FLOATARRAY_TYPE:
-        {
-        float *dest = new float[nx * ny];
-        for(int j = 0; j < ny; ++j)
-            for(int i = 0; i < nx; ++i)
-                dest[j * nx + i] = fptr[j*nx*nts + i*nts + ts];
-        return (void *)dest;
-        }
-        break;
-    case DOUBLE_TYPE:
-    case DOUBLEARRAY_TYPE:
-        {
-        double *dest = new double[nx * ny];
-        for(int j = 0; j < ny; ++j)
-            for(int i = 0; i < nx; ++i)
-                dest[j * nx + i] = dptr[j*nx*nts + i*nts + ts];
-        return (void *)dest;
-        }
-        break;
-    case LONG_TYPE:
-    case LONGARRAY_TYPE:
-        {
-        long *dest = new long[nx * ny];
-        for(int j = 0; j < ny; ++j)
-            for(int i = 0; i < nx; ++i)
-                dest[j * nx + i] = lptr[j*nx*nts + i*nts + ts];
-        return (void *)dest;
-        }
-        break;
-    default:
-        break;
-    }
-#else
     int sz = 1;
-    for(int i = 1; i < ndims; ++i)
+    for(int i = 0; i < ndims-1; ++i)
         sz *= dims[i];
     int offset = (data != 0) ? (sz * ts) : 0;
 
@@ -287,7 +224,57 @@ JMFileFormat::VarItem::DataForTime(int ts)
     default:
         break;
     }
-#endif
+
+    return 0;
+}
+
+// ****************************************************************************
+// Method: JMFileFormat::VarItem::NumBytes
+//
+// Purpose: 
+//   Returns the number of bytes stored in the data array.
+//
+// Returns:    The number of bytes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May  5 15:48:44 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+size_t
+JMFileFormat::VarItem::NumBytes() const
+{
+    int sz = 1;
+    for(int i = 0; i < ndims; ++i)
+        sz *= dims[i];
+
+    switch(type)
+    {
+    case CHAR_TYPE:
+    case CHARARRAY_TYPE:
+        return sz * sizeof(char);
+        break;
+    case INTEGER_TYPE:
+    case INTEGERARRAY_TYPE:
+        return sz * sizeof(int);
+        break;
+    case FLOAT_TYPE:
+    case FLOATARRAY_TYPE:
+        return sz * sizeof(float);
+        break;
+    case DOUBLE_TYPE:
+    case DOUBLEARRAY_TYPE:
+        return sz * sizeof(double);
+        break;
+    case LONG_TYPE:
+    case LONGARRAY_TYPE:
+        return sz * sizeof(long);
+        break;
+    default:
+        break;
+    }
 
     return 0;
 }
@@ -305,6 +292,7 @@ JMFileFormat::JMFileFormat(const char * const*filename, PDBFileObject *p)
 {
     pdb = p;
     ownsPDB = false;
+    threeD = false;
 }
 
 JMFileFormat::JMFileFormat(const char * const*filename)
@@ -312,6 +300,7 @@ JMFileFormat::JMFileFormat(const char * const*filename)
 {
     pdb = new PDBFileObject(*filename);
     ownsPDB = true;
+    threeD = false;
 }
 
 // ****************************************************************************
@@ -399,12 +388,78 @@ JMFileFormat::ActivateTimestep(int ts)
 bool
 JMFileFormat::Identify()
 {
-    const char *required[] = {"xx", "yy", "ireg", "tr", "ti", "cycle", "timeh"};
+    const char *mName = "JMFileFormat::Identify: ";
+    const char *required[] = {JM_CYCLE, JM_TIME, JM_XCOORD, JM_YCOORD, JM_IREG};
     bool identified = true;
-    for(int i = 0; i < 7 && identified; ++i)
+    for(int i = 0; i < 5 && identified; ++i)
+    {
         identified &= pdb->SymbolExists(required[i]);
-    debug1 << "JMFileFormat::Identify: " << (identified?"true":"false") << endl;
+        debug1 << mName << "The file did not contain " << required[i] << endl;
+    }
+    debug1 << mName << (identified?"true":"false") << endl;
     return identified;
+}
+
+// ****************************************************************************
+// Method: JMFileFormat::VariableCacheSize
+//
+// Purpose: 
+//   Returns the size of the variable cache.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May  5 15:53:02 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+size_t
+JMFileFormat::VariableCacheSize() const
+{
+    size_t sz = 0;
+    std::map<std::string, VarItem *>::const_iterator it;
+    for(it = variableCache.begin(); it != variableCache.end(); ++it)
+        sz += it->second->NumBytes();
+    return sz;
+}
+
+// ****************************************************************************
+// Method: JMFileFormat::MakeRoom
+//
+// Purpose: 
+//   Makes room in the variable cache for a new item.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May  5 15:53:21 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+JMFileFormat::MakeRoom()
+{
+    while(VariableCacheSize() > 500000000L)
+    {
+        int minAccess = -1;
+        std::string minName;
+        std::map<std::string, VarItem *>::iterator it;
+        for(it = variableCache.begin(); it != variableCache.end(); ++it)
+        {
+            if(minAccess == -1 || it->second->accesses < minAccess)
+            {
+                minAccess = it->second->accesses;
+                minName = it->first;
+            }
+        }
+
+        it = variableCache.find(minName);
+        if(it != variableCache.end())
+        {
+            delete it->second;
+            variableCache.erase(it);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -433,7 +488,10 @@ JMFileFormat::ReadVariable(const std::string &var)
     VarItem *item = 0;
     std::map<std::string, VarItem *>::iterator it = variableCache.find(var);
     if(it != variableCache.end())
+    {
         item = it->second;
+        item->accesses++;
+    }
     else
     {
         item = new VarItem;
@@ -441,14 +499,16 @@ JMFileFormat::ReadVariable(const std::string &var)
             &item->nTotalElements, &item->dims, &item->ndims);
         if(item->data != 0)
         {
+            MakeRoom();
+
             variableCache[var] = item;
+            item->accesses = 1;
         }
         else
         {
             delete item;
             item = 0;
         }
-        return item;
     }
 
     return item;
@@ -547,6 +607,14 @@ void
 JMFileFormat::FreeUpResources(void)
 {
     pdb->Close();
+
+    // Clear out all of the variables in our private cache.
+    for(std::map<std::string, VarItem *>::iterator it = variableCache.begin();
+        it != variableCache.end(); ++it)
+    {
+        delete it->second;
+    }
+    variableCache.clear();
 }
 
 // ****************************************************************************
@@ -605,12 +673,18 @@ JMFileFormat::GetMaterialNames(stringVector &materialNames)
         int *ireg_data = (int *)ireg->data;
         for(int i = 0; i < ireg->nTotalElements; ++i)
              matno_set.insert(ireg_data[i]);
+
         for(std::set<int>::const_iterator it = matno_set.begin();
             it != matno_set.end(); ++it)
         {
             char tmp[10];
-            SNPRINTF(tmp, 10, "%d", *it);
-            materialNames.push_back(tmp);
+            if(*it == -1)
+                materialNames.push_back("mixed");
+            else
+            {
+                SNPRINTF(tmp, 10, "%d", *it);
+                materialNames.push_back(tmp);
+            }
         }
     }
 }
@@ -640,13 +714,6 @@ JMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
     zonalSize = GetSize(JM_IREG);
     curveSize = GetSize(JM_CYCLE);
 
-    avtMeshMetaData *mmd = new avtMeshMetaData();
-    mmd->name = "mesh";
-    mmd->meshType = AVT_CURVILINEAR_MESH;
-    mmd->spatialDimension = 2;
-    mmd->topologicalDimension = 2;
-    md->Add(mmd);
-
     //
     // Iterate over all variables and add the problem-sized ones.
     //
@@ -668,6 +735,9 @@ JMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 
             if(cent == 1 || cent == 2)
             {
+                if(strcmp(varList[j], JM_ZCOORD) == 0)
+                    threeD = true;
+
                 avtScalarMetaData *smd = new avtScalarMetaData(
                     varList[j], "mesh", 
                     (cent == 1) ? AVT_NODECENT : AVT_ZONECENT);
@@ -686,6 +756,14 @@ JMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 
         SFREE(varList);
     }
+
+    // Add the mesh
+    avtMeshMetaData *mmd = new avtMeshMetaData();
+    mmd->name = "mesh";
+    mmd->meshType = AVT_CURVILINEAR_MESH;
+    mmd->spatialDimension = threeD ? 3 : 2;
+    mmd->topologicalDimension = threeD ? 3 : 2;
+    md->Add(mmd);
 
     // Add a material
     stringVector materialNames;
@@ -770,33 +848,49 @@ StoreValues(T *dest, int stride, int offset, void *ptr, TypeEnum t, int nvals)
     float  *fptr = (float *) ptr;
     double *dptr = (double *)ptr;
     long   *lptr = (long *)  ptr;
+    T *dest2 = dest + offset;
 
     switch(t)
     {
     case CHAR_TYPE:
     case CHARARRAY_TYPE:
         for(i = 0; i < nvals; ++i)
-            dest[i * stride + offset] = (T)cptr[i];
+        {
+            *dest2 = (T)cptr[i];
+            dest2 += stride;
+        }
         break;
     case INTEGER_TYPE:
     case INTEGERARRAY_TYPE:
         for(i = 0; i < nvals; ++i)
-            dest[i * stride + offset] = (T)iptr[i];
+        {
+            *dest2 = (T)iptr[i];
+            dest2 += stride;
+        }
         break;
     case FLOAT_TYPE:
     case FLOATARRAY_TYPE:
         for(i = 0; i < nvals; ++i)
-            dest[i * stride + offset] = fptr[i];
+        {
+            *dest2 = fptr[i];
+            dest2 += stride;
+        }
         break;
     case DOUBLE_TYPE:
     case DOUBLEARRAY_TYPE:
         for(i = 0; i < nvals; ++i)
-            dest[i * stride + offset] = (T)dptr[i];
+        {
+            *dest2 = (T)dptr[i];
+            dest2 += stride;
+        }
         break;
     case LONG_TYPE:
     case LONGARRAY_TYPE:
         for(i = 0; i < nvals; ++i)
-            dest[i * stride + offset] = (T)lptr[i];
+        {
+            *dest2 = (T)lptr[i];
+            dest2 += stride;
+        }
         break;
     default:
         break;
@@ -862,8 +956,9 @@ JMFileFormat::GetMesh(int timestate, const char *meshname)
     else
     {
         // It's a mesh
-        VarItem *yy = ReadVariable(JM_YCOORD);
         VarItem *xx = ReadVariable(JM_XCOORD);
+        VarItem *yy = ReadVariable(JM_YCOORD);
+        VarItem *zz = 0;
         if(xx == 0)
         {
             EXCEPTION1(InvalidVariableException, "Can't read X coordinates");
@@ -872,13 +967,21 @@ JMFileFormat::GetMesh(int timestate, const char *meshname)
         {
             EXCEPTION1(InvalidVariableException, "Can't read Y coordinates");
         }
+        if(threeD)
+        {
+            zz = ReadVariable(JM_ZCOORD);
+            if(zz == 0)
+            {
+                EXCEPTION1(InvalidVariableException, "Can't read Z coordinates");
+            }
+        }
 
-        int ndims = 2;
+        int ndims = threeD ? 3 : 2;
         int dims[3];
-        dims[0] = xx->dims[1];
-        dims[1] = xx->dims[2];
-        dims[2] = 1;
-        int nnodes = dims[0]*dims[1];
+        dims[0] = xx->dims[0];
+        dims[1] = xx->dims[1];
+        dims[2] = threeD ? xx->dims[2] : 1;
+        int nnodes = dims[0]*dims[1]*dims[2];
 
         //
         // Create the vtkStructuredGrid and vtkPoints objects.
@@ -899,10 +1002,12 @@ JMFileFormat::GetMesh(int timestate, const char *meshname)
         void *yy_data = yy->DataForTime(timestate);
         StoreValues<float>(pts, 3, 0, xx_data, xx->type, nnodes);
         StoreValues<float>(pts, 3, 1, yy_data, yy->type, nnodes);
-#ifdef REVERSE_DATA
-        free_void_mem(xx_data, xx->type);
-        free_void_mem(yy_data, yy->type);
-#endif
+        if(threeD)
+        {
+            void *zz_data = zz->DataForTime(timestate);
+            StoreValues<float>(pts, 3, 2, zz_data, zz->type, nnodes);
+        }
+
         ds = sgrid;
     }
 
@@ -940,7 +1045,7 @@ JMFileFormat::GetVar(int timestate, const char *varname)
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    int nvals = var->dims[1] * var->dims[2];
+    int nvals = var->dims[0] * var->dims[1] * (threeD ? var->dims[2] : 1);
     void *var_data = var->DataForTime(timestate);
     if(var->type == DOUBLE_TYPE || var->type == DOUBLEARRAY_TYPE)
     {
@@ -991,10 +1096,10 @@ JMFileFormat::GetVectorVar(int timestate, const char *varname)
 }
 
 // ****************************************************************************
-// Method: 
+// Method: JMFileFormat::GetAuxiliaryData
 //
 // Purpose: 
-//   
+//   Returns auxiliary data such as material data.
 //
 // Arguments:
 //
@@ -1023,17 +1128,41 @@ JMFileFormat::GetAuxiliaryData(const char *var, int timestep,
             GetMaterialNames(materialNames);
             int *matnos = new int[materialNames.size()];
             char **names = new char*[materialNames.size()];
+            bool mixed = false;
             for(int i = 0; i < materialNames.size(); ++i)
             {
                 names[i] = (char*)materialNames[i].c_str();
-                sscanf(names[i], "%d", &matnos[i]);
+                if(i==0 && strcmp(names[i], "mixed") == 0)
+                {
+                    matnos[i] = 0;
+                    mixed = true;
+                }
+                else
+                {
+                    sscanf(names[i], "%d", &matnos[i]);
+                    if(mixed)
+                        matnos[i]++;
+                }
             }
 
-            int *matlist = (int *)ireg->DataForTime(timestep);
             int dims[3] = {1,1,1};
-            int ndims = 2;
-            dims[0] = ireg->dims[1];
-            dims[1] = ireg->dims[2];
+            int ndims = threeD ? 3 : 2;
+            dims[0] = ireg->dims[0];
+            dims[1] = ireg->dims[1];
+            dims[2] = threeD ? ireg->dims[2] : 1;
+            int nvals = dims[0] * dims[1] * dims[2];
+
+            int *matlist = 0;
+            if(mixed)
+            {
+                int *ireg_data = (int *)ireg->DataForTime(timestep);
+                matlist = new int[nvals];
+                for(int i = 0; i < nvals; ++i)
+                    matlist[i] = mixed ? (ireg_data[i] + 1) : ireg_data[i];
+            }
+            else
+                matlist = (int *)ireg->DataForTime(timestep);
+
 
             df = avtMaterial::Destruct;
             retval = new avtMaterial(
@@ -1053,9 +1182,8 @@ JMFileFormat::GetAuxiliaryData(const char *var, int timestep,
 
             delete [] names;
             delete [] matnos;
-#ifdef REVERSE_DATA
-            delete [] matlist;
-#endif
+            if(mixed)
+                delete [] matlist;
         }
     }
 

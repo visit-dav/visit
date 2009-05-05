@@ -103,7 +103,10 @@ protected:
     {
         VarItem();
         ~VarItem();
-        void *DataForTime(int);
+        void  *DataForTime(int);
+        size_t NumBytes() const;
+
+        int       accesses;
 
         TypeEnum  type; 
         int      *dims;
@@ -114,6 +117,7 @@ protected:
 
     PDBFileObject                   *pdb;
     bool                             ownsPDB;
+    bool                             threeD;
     std::map<std::string, VarItem *> variableCache;
     std::set<std::string>            curveNames;
 
@@ -121,6 +125,9 @@ protected:
     VarItem *              ReadVariable(const std::string &var);
     VarItem *              ReadIREG();
     intVector              GetSize(const char *varName);
+    void                   MakeRoom();
+    size_t                 VariableCacheSize() const;
+
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };
 

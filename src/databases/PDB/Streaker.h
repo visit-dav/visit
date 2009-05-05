@@ -70,6 +70,9 @@ class vtkFloatArray;
 //   I added x_scale and x_translate to the StreakInfo. I also added support
 //   for different kinds of log scaling.
 //
+//   Brad Whitlock, Tue May  5 16:22:56 PDT 2009
+//   I added support for setting the streak plot centering.
+//
 // ****************************************************************************
 
 class Streaker
@@ -101,7 +104,7 @@ private:
         std::string zvar;
 
         bool        hasMaterial;
-
+        bool        cellCentered;
         int         slice;
         int         sliceIndex;
         int         hsize;

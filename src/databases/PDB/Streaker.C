@@ -58,11 +58,6 @@
 
 #define STREAK_MATERIAL "streak_material"
 
-// Let's have a mode where we do cell centered data since it solves some
-// problems. Let's make it conditional to start with in case it's not 100% 
-// right.
-#define CELL_CENTERED_DATA
-
 // ****************************************************************************
 // Method: Streaker::StreakInfo::StreakInfo
 //
@@ -175,7 +170,10 @@ Streaker::FreeUpResources()
 // Modifications:
 //   Brad Whitlock, Wed Feb 25 16:11:10 PST 2009
 //   I added x_scale, x_translate.
-//   
+//
+//   Brad Whitlock, Tue May  5 16:28:35 PDT 2009
+//   I added cellcentered and nodecentered commands.
+//
 // ****************************************************************************
 
 void
@@ -194,6 +192,7 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
 
     // process the file.
     char  line[1024];
+    bool  cellCentered = true;
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
     {
         // Get the line
@@ -201,6 +200,10 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
 
         if(line[0] == '#')
             continue;
+        else if(strncmp(line, "cellcentered", 12) == 0)
+            cellCentered = true;
+        else if(strncmp(line, "nodecentered", 12) == 0)
+            cellCentered = false;
         else if(strncmp(line, "streakplot", 10) == 0)
         {
             bool invalidStreak = true;
@@ -269,6 +272,7 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
                     s.log = LOGTYPE_LOG10;
                 else
                     s.log = LOGTYPE_NONE;
+                s.cellCentered = cellCentered;
 
                 AddStreak(varname, s, pdb);
             }
@@ -549,6 +553,9 @@ Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
 //   Brad Whitlock, Thu Apr  2 16:37:08 PDT 2009
 //   Added cell-centered data support.
 //
+//   Brad Whitlock, Tue May  5 16:25:02 PDT 2009
+//   I made cell-centering support be dynamic instead of compiled in.
+//
 // ****************************************************************************
 
 void
@@ -578,11 +585,7 @@ Streaker::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtScalarMetaData *smd = new avtScalarMetaData;
         smd->name = it->first;
         smd->meshName = meshName;
-#ifdef CELL_CENTERED_DATA
-        smd->centering = AVT_ZONECENT;
-#else
-        smd->centering = AVT_NODECENT;
-#endif
+        smd->centering = it->second.cellCentered ? AVT_ZONECENT : AVT_NODECENT;
         md->Add(smd);
 
         // Add a material for this streak plot if its ireg matched the size of zvar.
@@ -875,6 +878,9 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
 //   Brad Whitlock, Wed Feb 25 16:14:33 PST 2009
 //   I added x_scale and x_translate. I also added support for different logs.
 //
+//   Brad Whitlock, Tue May  5 16:27:54 PDT 2009
+//   Do the centering dynamically.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -972,31 +978,34 @@ Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PD
     points->Delete();
     sgrid->SetDimensions(sdims);
 
-#ifdef CELL_CENTERED_DATA
-    // Create a cell-centered version of zvar. We can ignore the first row of
-    // data since it's no good.
-    vtkFloatArray *cvar = vtkFloatArray::New();
-    int cx = sdims[0] - 1;
-    int cy = sdims[1] - 1;
-    cvar->SetNumberOfTuples(cx * cy);
-    float *dest = (float *)cvar->GetVoidPointer(0);
-    float *f = (float *)zvar->GetVoidPointer(0);
-    for(int j = 0; j < cy; ++j)
+    if(s.cellCentered)
     {
-        float *src = f + ((j+1) * sdims[0]);
-        for(int i = 0; i < cx; ++i)
-            *dest++ = *src++;
-    }
-    zvar->Delete();
+        // Create a cell-centered version of zvar. We can ignore the first row of
+        // data since it's no good.
+        vtkFloatArray *cvar = vtkFloatArray::New();
+        int cx = sdims[0] - 1;
+        int cy = sdims[1] - 1;
+        cvar->SetNumberOfTuples(cx * cy);
+        float *dest = (float *)cvar->GetVoidPointer(0);
+        float *f = (float *)zvar->GetVoidPointer(0);
+        for(int j = 0; j < cy; ++j)
+        {
+            float *src = f + ((j+1) * sdims[0]);
+            for(int i = 0; i < cx; ++i)
+                *dest++ = *src++;
+        }
+        zvar->Delete();
 
-    // Add the cvar array to the dataset.
-    cvar->SetName(var.c_str());
-    sgrid->GetPointData()->AddArray(cvar);
-#else
-    // Add the zvar array to the dataset.
-    zvar->SetName(var.c_str());
-    sgrid->GetPointData()->AddArray(zvar);
-#endif
+        // Add the cvar array to the dataset.
+        cvar->SetName(var.c_str());
+        sgrid->GetPointData()->AddArray(cvar);
+    }
+    else
+    {
+        // Add the zvar array to the dataset.
+        zvar->SetName(var.c_str());
+        sgrid->GetPointData()->AddArray(zvar);
+    }
 
     // Assemble the vtkDataArray for the matvar if this streak plot has a material.
     if(s.hasMaterial)
