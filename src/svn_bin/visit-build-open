@@ -79,6 +79,7 @@ esac
 hoth=true
 up=true
 yana=true
+alastor=false
 xchem=true
 davinci=true
 ellipse=true
@@ -97,6 +98,7 @@ do
          hoth=false
          up=false
          yana=false
+         alastor=false
          xchem=false
          davinci=false
          ellipse=false
@@ -124,6 +126,14 @@ do
          ;;
       +yana)
          yana=true
+         shift
+         ;;
+      -alastor)
+         alastor=false
+         shift
+         ;;
+      +alastor)
+         alastor=true
          shift
          ;;
       -xchem)
@@ -167,6 +177,7 @@ then
    echo "    hoth (B-Div, Linux),"
    echo "    up (LC, AIX),"
    echo "    yana (LC, Linux, x86_64),"
+   echo "    alastor (LC, Linux, x86_64),"
    echo "    xchem (HEAF, Linux),"
    echo "    davinci (LBNL, Altix),"
    echo "    ellipse (UChicago, Linux)"
@@ -361,6 +372,59 @@ then
 fi
 
 #
+# Build on alastor.
+#
+rm -f alastor
+cat <<EOF > alastor
+#!/bin/sh
+if test ! -d /nfs/tmp2/$user ; then
+   mkdir /nfs/tmp2/$user
+fi
+if test ! -d /nfs/tmp2/$user/alastor ; then
+   mkdir /nfs/tmp2/$user/alastor
+fi
+rm -rf /nfs/tmp2/$user/alastor/visitbuild
+mkdir /nfs/tmp2/$user/alastor/visitbuild
+mv alastor_$dist.tar.gz /nfs/tmp2/$user/alastor/visitbuild/$dist.tar.gz
+cd /nfs/tmp2/$user/alastor/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+export PATH=\$PATH:/usr/bin/X11
+ln -s yana1.conf config-site/\`hostname\`.conf
+env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-parallel --enable-visitmodule --enable-slivr >> ../../buildlog 2>&1
+make -j 12 >> ../../buildlog 2>&1
+svn_bin/visit-bin-dist >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on alastor"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): alastor" $emailName < resultlog
+EOF
+
+if [ $alastor = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on alastor"
+      scp alastor alastor:alastor_buildit
+      scp $dist.tar.gz alastor:alastor_$dist.tar.gz
+      ssh alastor "chmod 750 alastor_buildit;srun -n 1 -p pdebug --exclusive ./alastor_buildit" &
+   fi
+fi
+
+#
 # Build on xchem.
 #
 rm -f xchem
@@ -534,5 +598,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth up yana xchem davinci ellipse
+   rm -f hoth up yana alastor xchem davinci ellipse
 fi
