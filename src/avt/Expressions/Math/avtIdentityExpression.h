@@ -79,7 +79,7 @@ class EXPRESSION_API avtIdentityExpression : public avtUnaryMathExpression
                                     { return "Applying the identity filter"; }
 
     // "Tolerated" may be a better phrase than "Expected" here.
-    //virtual bool              NullInputIsExpected(void) { return true; }
+    virtual bool              NullInputIsExpected(void) { return true; }
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
