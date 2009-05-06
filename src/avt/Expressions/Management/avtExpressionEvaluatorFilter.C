@@ -54,6 +54,7 @@
 #include <avtIdentityExpression.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTypes.h>
+#include <avtExpressionTypeConversions.h>
 
 #include <ParsingExprList.h>
 #include <PickAttributes.h>
@@ -256,6 +257,9 @@ avtExpressionEvaluatorFilter::Execute(void)
 //    Use the ParsingExprList method to map AVT variable types to expression
 //    types.  (We essentially had two versions of the same routine.)
 //
+//    Brad Whitlock, Tue Jan 20 15:57:01 PST 2009
+//    I changed the name of a type conversion function.
+//
 // ****************************************************************************
 
 void
@@ -274,7 +278,7 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
         if (et == Expression::Mesh || et == Expression::Material ||
             et == Expression::Species || et == Expression::Unknown)
             continue;
-        avtVarType et_as_avt = ParsingExprList::GetAVTType(et);
+        avtVarType et_as_avt = ExprType_To_avtVarType(et);
 
         // consider a ScalarVar to be equivalent to a Curve Expression.
         if (vt != et_as_avt &&

@@ -95,6 +95,7 @@ MetaData_src= \
   MetaData/avtCurveMetaData.C\
   MetaData/avtDatabaseMetaData.C\
   MetaData/avtDefaultPlotMetaData.C\
+  MetaData/avtExpressionTypeConversions.C\
   MetaData/avtLabelMetaData.C\
   MetaData/avtMatSpeciesMetaData.C\
   MetaData/avtMaterialMetaData.C\

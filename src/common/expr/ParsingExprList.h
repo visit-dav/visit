@@ -44,7 +44,6 @@
 #include <SimpleObserver.h>
 #include <VisItParser.h>
 #include <string> 
-#include <avtTypes.h>
 
 // Forward declarations.
 class ExprNode;
@@ -74,6 +73,9 @@ class ExprNode;
 //    Hank Childs, Mon Jan  8 10:35:38 PST 2007
 //    Added GetExpressionTypeFromAVT.
 //
+//    Brad Whitlock, Tue Jan 20 15:49:56 PST 2009
+//    I removed some methods that caused AVT to bleed into this library.
+//
 // ****************************************************************************
 
 class EXPR_API ParsingExprList : public SimpleObserver
@@ -84,8 +86,6 @@ public:
     ~ParsingExprList();
 
     static ParsingExprList *Instance();
-    static avtVarType GetAVTType(Expression::ExprType);
-    static Expression::ExprType GetExpressionTypeFromAVT(avtVarType);
     static Expression* GetExpression(const char *varname);
     static Expression* GetExpression(std::string varname)
         { return GetExpression(varname.c_str()); }

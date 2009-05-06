@@ -162,8 +162,8 @@
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Colleagues Interactors Proxies Tools VisWindow
-SRC=$(Colleagues_src) $(Interactors_src) $(Proxies_src) $(Tools_src) $(VisWindow_src)
+SUBDIRS=Colleagues Interactors Proxies Tools VisWindow Exceptions
+SRC=$(Colleagues_src) $(Interactors_src) $(Proxies_src) $(Tools_src) $(VisWindow_src) $(Exceptions_src)
 
 Colleagues_src= \
   Colleagues/VisWinAnnotations.C \
@@ -230,6 +230,13 @@ Tools_src= \
 VisWindow_src= \
   VisWindow/VisWindow.C \
   VisWindow/VisWindowTypes.C
+Exceptions_src= \
+  Exceptions/BadColleagueException.C \
+  Exceptions/BadInteractorException.C \
+  Exceptions/BadPlotException.C \
+  Exceptions/BadWindowModeException.C \
+  Exceptions/PlotDimensionalityException.C
+
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ @VTK_INCLUDES@ $(MESA_INCLUDE)
 

@@ -42,6 +42,7 @@
 #include <ViewerFileServer.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtExpressionTypeConversions.h>
 #include <avtSimulationInformation.h>
 #include <avtSIL.h>
 #include <BadHostException.h>
@@ -2935,7 +2936,7 @@ ViewerFileServer::DetermineVarType(const std::string &host,
 
     if (exp != NULL)
     {
-        retval = ParsingExprList::GetAVTType(exp->GetType());
+        retval = ExprType_To_avtVarType(exp->GetType());
     }
     else
     {
@@ -3012,7 +3013,7 @@ ViewerFileServer::DetermineRealVarType(const std::string &host,
     }
     if (exp != NULL)
     {
-        retval = ParsingExprList::GetAVTType(exp->GetType());
+        retval = ExprType_To_avtVarType(exp->GetType());
     }
     else
     {

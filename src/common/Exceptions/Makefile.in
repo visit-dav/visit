@@ -153,13 +153,6 @@ Pipeline_src= \
 Plotter_src= \
   Plotter/InvalidColortableException.C
 
-VisWindow_src= \
-  VisWindow/BadColleagueException.C \
-  VisWindow/BadInteractorException.C \
-  VisWindow/BadPlotException.C \
-  VisWindow/BadWindowModeException.C \
-  VisWindow/PlotDimensionalityException.C
-
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @SILO_INCLUDE@ @CPPFLAGS@
 
