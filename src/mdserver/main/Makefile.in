@@ -270,16 +270,16 @@ clean:
 ## Other targets...
 ##
 $(tmpbin)/mdserver: $(LIBDEP) $(OBJ)
-	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) $(OBJ) $(LIBS)
+	$(CXX) -o $@ $(LDFLAGS) $(OBJ) $(LIBS)
 
 purify: $(LIBDEP) $(OBJ)
-	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir $(CXX) $(INCLUDE) -o $(tmpbin)/mdserver $(LDFLAGS) $(OBJ) $(LIBS)
+	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir $(CXX) -o $(tmpbin)/mdserver $(LDFLAGS) $(OBJ) $(LIBS)
 
 quantify: $(LIBDEP) $(OBJ)
-	quantify $(CXX) $(INCLUDE) -o $(tmpbin)/mdserver $(LDFLAGS) $(OBJ) $(LIBS)
+	quantify $(CXX) -o $(tmpbin)/mdserver $(LDFLAGS) $(OBJ) $(LIBS)
 
 $(tmpbin)/testmds: $(LIBDEP) $(TESTOBJ)
-	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) $(TESTOBJ) $(LIBS) -lmdserverproxy -lproxybase
+	$(CXX) -o $@ $(LDFLAGS) $(TESTOBJ) $(LIBS) -lmdserverproxy -lproxybase
 
 install_bin: $(tmpbin)/mdserver
 	$(INSTALL) $(tmpbin)/mdserver $(bindir)

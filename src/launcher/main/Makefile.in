@@ -43,6 +43,11 @@
 #    Brad Whitlock, Wed Nov 21 10:12:06 PST 2007
 #    Added testvcl program.
 #
+#    Hank Childs, Wed May  6 08:41:19 PDT 2009
+#    Remove reference to $INCLUDE, which is not a variable that our configure
+#    script uses.  It was working in most places, because it was not defined,
+#    but TACC's machines define INCLUDE as an environment variable.
+#
 ##############################################################################
 
 ##
@@ -79,16 +84,16 @@ clean:
 ## Other targets...
 ##
 $(tmpbin)/vcl: $(LIBDEP) $(OBJ)
-	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) $(OBJ) $(LIBS)
+	$(CXX) -o $@ $(LDFLAGS) $(OBJ) $(LIBS)
 
 $(tmpbin)/testvcl: $(LIBDEP) $(TESTOBJ)
-	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) $(TESTOBJ) -lvclproxy -lproxybase $(LIBS)
+	$(CXX) -o $@ $(LDFLAGS) $(TESTOBJ) -lvclproxy -lproxybase $(LIBS)
 
 purify: $(LIBDEP) $(OBJ)
-	purify $(CXX) $(INCLUDE) -o $(tmpbin)/vcl $(LDFLAGS) $(OBJ) $(LIBS)
+	purify $(CXX) -o $(tmpbin)/vcl $(LDFLAGS) $(OBJ) $(LIBS)
 
 quantify: $(LIBDEP) $(OBJ)
-	quantify $(CXX) $(INCLUDE) -o $(tmpbin)/vcl $(LDFLAGS) $(OBJ) $(LIBS)
+	quantify $(CXX) -o $(tmpbin)/vcl $(LDFLAGS) $(OBJ) $(LIBS)
 
 install_bin: $(tmpbin)/vcl
 	$(INSTALL) $(tmpbin)/vcl $(bindir)
