@@ -1270,10 +1270,14 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
 //  Modifications:
 //    Mark C. Miller, Tue Jan 13 10:50:19 PST 2009
 //    Added logic to examine cell/pt data arrays too.
+//
+//    Mark C. Miller, Wed May  6 13:51:30 PDT 2009
+//    Fix md for the mesh if we indeed add VERTEX cells.
 // ****************************************************************************
 
 vtkDataSet *
-avtTransformManager::AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds)
+avtTransformManager::AddVertexCellsToPointsOnlyDataset(avtDatabaseMetaData *md,
+    vtkDataSet *ds, int dom)
 {
     int i, doType = ds->GetDataObjectType();
 
@@ -1312,8 +1316,28 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds)
     if (hasEmptyCellDataArrays && hasEmptyPointDataArrays)
         return ds; // no-op
 
+    // Ok, really look this object up via reverse lookup
+    const char *mname;
+    if (!gdbCache->GetVTKObjectKey(&mname, 0, 0, dom, 0, ds))
+    {
+        EXCEPTION1(PointerNotInCacheException, ds);
+    }
+
     debug1 << "avtTransformManager: Adding " << ds->GetNumberOfPoints() << " VTK_VERTEX cells" << endl;
     debug1 << "to a dataset that consists solely of points but no cells." << endl;
+
+    // This is really a point mesh. So, ensure md reflects that.
+    // We're only doing this on engine though. Could be a problem.
+    for (i = 0; i < md->GetNumMeshes(); i++)
+    {
+        avtMeshMetaData &mmd = md->GetMeshes(i);
+        if (mmd.name == string(mname))
+        {
+            mmd.meshType = AVT_POINT_MESH;
+            mmd.topologicalDimension = 0;
+            break;
+        }
+    }
 
     //
     // The only way to arrive here is if we have non-zero number of points
@@ -1494,7 +1518,7 @@ vtkDataSet *ds, int dom)
     const char *vname;
     if (!gdbCache->GetVTKObjectKey(&vname, 0, 0, dom, 0, yvals))
     {
-        EXCEPTION1(PointerNotInCacheException, ds);
+        EXCEPTION1(PointerNotInCacheException, yvals);
     }
     const avtCurveMetaData *cmd = 0;
     for (i = 0; i < md->GetNumCurves(); i++)
@@ -1580,7 +1604,7 @@ avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
             ds = CSGToDiscrete(md, d_spec, ds, domains[i]);
 
             // Handle vtkPoints datasets that have points but no cells
-            ds = AddVertexCellsToPointsOnlyDataset(ds);
+            ds = AddVertexCellsToPointsOnlyDataset(md, ds, domains[i]);
 
             // Handle 1D datasets as curves (rect grids)
             ds = ConvertCurvesToRectGrids(md, ds, domains[i]);

@@ -89,6 +89,9 @@ class avtSourceFromDatabase;
 //    Mark C. Miller, Tue Feb 17 17:57:54 PST 2009
 //    Added FindMatchingCSGDiscretization to handle CSG meshes that don't
 //    vary with time.
+//
+//    Mark C. Miller, Wed May  6 13:51:05 PDT 2009
+//    Pass md and dom to AddVertexCellsToPointsOnlyDataset.
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -122,7 +125,8 @@ class DATABASE_API avtTransformManager
     vtkDataSet                *CSGToDiscrete(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int);
-    vtkDataSet                *AddVertexCellsToPointsOnlyDataset(vtkDataSet *ds);
+    vtkDataSet                *AddVertexCellsToPointsOnlyDataset(avtDatabaseMetaData *md,
+                                   vtkDataSet *ds, int dom);
     vtkDataSet                *ConvertCurvesToRectGrids(avtDatabaseMetaData *md,
                                    vtkDataSet *ds, int dom);
 
