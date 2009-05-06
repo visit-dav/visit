@@ -338,7 +338,7 @@ VTK_LIBS=@VTK_LIBS@ @VIEWER_MESA_LIBS@ $(GL_LIBS)
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lexpr \
-     -lexpr -lparser -lplugin -lqtviswindow -lviswindow_ser -lavtmath_ser -lplotter_ser \
+     -lparser -lplugin -lqtviswindow -lviswindow_ser -lavtmath_ser -lplotter_ser \
      -lavtfilters_ser  -ldatabase_ser -lmir_ser -lvisit_verdict -lavtwriter_ser \
      -lavtview -lpipeline_ser -lvisit_vtk -lrendering_visit_vtk -lavtivp_ser \
      -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
