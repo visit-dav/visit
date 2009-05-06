@@ -57,6 +57,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectSource.h>
 #include <avtDataset.h>
+#include <avtExpressionTypeConversions.h>
 #include <avtExtents.h>
 #include <avtIOInformation.h>
 #include <avtIntervalTree.h>
@@ -2399,9 +2400,13 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Cyrus Harrison, Fri Sep 14 13:59:30 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Brad Whitlock, Tue Jan 20 16:06:53 PST 2009
+//    I changed a type conversion function.
+//
 //    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
 //    Removed std:: qualification on some STL classes due to use of using
 //    statements at top 
+//
 // ****************************************************************************
 
 void               
@@ -2604,7 +2609,7 @@ avtDatabase::Query(PickAttributes *pa)
             ExprNode *tree = ParsingExprList::GetExpressionTree(vName);
             if (tree != NULL)
             {
-                varType = ParsingExprList::GetAVTType
+                varType = ExprType_To_avtVarType
                           (ParsingExprList::GetExpression(vName)->GetType());
                 delete tree;
             }

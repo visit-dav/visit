@@ -35,80 +35,13 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
-// ************************************************************************* //
-//                        avtSymmTransformExpression.h                       //
-// ************************************************************************* //
-
-#include <avtSymmTransformExpression.h>
-
-#include <stdio.h>
-
+#ifndef AVT_EXPRESSION_TYPE_CONVERSION_H
+#define AVT_EXPRESSION_TYPE_CONVERSION_H
+#include <avtTypes.h>
 #include <Expression.h>
-#include <avtExpressionTypeConversions.h>
+#include <dbatts_exports.h>
 
+DBATTS_API avtVarType           ExprType_To_avtVarType(Expression::ExprType type);
+DBATTS_API Expression::ExprType avtVarType_To_ExprType(avtVarType type);
 
-// ****************************************************************************
-//  Method: avtSymmTransformExpression constructor
-//
-//  Programmer: Hank Childs
-//  Creation:   January 21, 2006
-//
-// ****************************************************************************
-
-avtSymmTransformExpression::avtSymmTransformExpression()
-{
-    ;
-}
-
-
-// ****************************************************************************
-//  Method: avtSymmTransformExpression destructor
-//
-//  Programmer: Hank Childs
-//  Creation:   January 21, 2006
-//
-// ****************************************************************************
-
-avtSymmTransformExpression::~avtSymmTransformExpression()
-{
-    ;
-}
-
-
-// ****************************************************************************
-//  Method: avtSymmTransformExpression::GetMacro
-//
-//  Purpose:
-//      Applies the macro to create a new expression corresponding to
-//      the Laplacian.
-//
-//  Programmer: Hank Childs
-//  Creation:   January 21, 2006
-//
-//  Modifications:
-//
-//    Hank Childs, Mon Jan  8 10:31:22 PST 2007
-//    Do not assume that the expression created is a scalar.
-//
-//    Brad Whitlock, Tue Jan 20 16:24:40 PST 2009
-//    I changed a conversion function name.
-//
-// ****************************************************************************
-
-void
-avtSymmTransformExpression::GetMacro(std::vector<std::string> &args, 
-                                   std::string &ne, Expression::ExprType &type)
-{
-    char new_expr[1024];
-    sprintf(new_expr, "%s - eval_transform(%s, %s, %s)",
-                 args[0].c_str(), args[0].c_str(), args[0].c_str(),
-                 args[1].c_str());
-    ne = new_expr;
-    avtVarType et = DetermineVariableType(args[0]);
-    type = avtVarType_To_ExprType(et);
-    if (type == Expression::Unknown)
-        type = Expression::ScalarMeshVar;
-}
-
-
+#endif

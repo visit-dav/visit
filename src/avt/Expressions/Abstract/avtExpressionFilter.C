@@ -58,6 +58,7 @@
 #include <avtExprNode.h>
 #include <avtExtents.h>
 #include <avtCommonDataFunctions.h>
+#include <avtExpressionTypeConversions.h>
 
 #include <ParsingExprList.h>
 
@@ -787,6 +788,10 @@ avtExpressionFilter::ExamineContract(avtContract_p spec)
 //  Programmer: Hank Childs
 //  Creation:   January 8, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jan 20 15:55:24 PST 2009
+//    I changed the name of a conversion function.
+//
 // ****************************************************************************
 
 avtVarType
@@ -812,7 +817,7 @@ avtExpressionFilter::DetermineVariableType(std::string &varname)
     //
     Expression *exp = ParsingExprList::GetExpression(varname.c_str());
     if (exp != NULL)
-        return ParsingExprList::GetAVTType(exp->GetType());
+        return ExprType_To_avtVarType(exp->GetType());
 
     //
     // It's not in the input and it's not an expression.  Give up.

@@ -1,1 +1,1 @@
-../../common/Exceptions/VisWindow/BadWindowModeException.h
+../../avt/VisWindow/Exceptions/BadWindowModeException.h

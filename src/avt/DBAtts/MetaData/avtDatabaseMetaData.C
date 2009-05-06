@@ -5433,7 +5433,11 @@ avtDatabaseMetaData::GetNDomains(const std::string &var) const
 //    Kathleen Bonnell, Fri Sep 28 13:34:13 PDT 2007 
 //    Use 'VariableNamesEqual' instead of '=='. 
 //
+//    Brad Whitlock, Tue Jan 20 16:01:51 PST 2009
+//    Change conversion function.
+//
 // ****************************************************************************
+#include <avtExpressionTypeConversions.h>
 
 avtVarType
 avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
@@ -5447,7 +5451,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
         ParsingExprList *pel = ParsingExprList::Instance();
         Expression *e = pel->GetExpression(var_in);
         if (e != NULL)
-            return ParsingExprList::GetAVTType(e->GetType());
+            return ExprType_To_avtVarType(e->GetType());
     }
 
     std::string var; 
