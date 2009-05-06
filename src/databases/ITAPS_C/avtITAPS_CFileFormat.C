@@ -581,6 +581,9 @@ funcEnd: ;
 //    interface. Added logic where cells are inserted into the mesh to
 //    ensure we're not attempting to insert cells that we don't think VTK
 //    will think are valid.
+//
+//    Mark C. Miller, Wed May  6 13:52:16 PDT 2009
+//    Changed 'Invalid' in error message to 'Unsupported'.
 // ****************************************************************************
 
 vtkDataSet *
@@ -713,7 +716,7 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
             int vtkZoneType = ITAPSEntityTopologyToVTKZoneType(topoType);
             if (vtkZoneType == -1)
             {
-                debug3 << "Invalid VTK zone type for iMesh entity " << i
+                debug3 << "Unsupported VTK zone type for iMesh entity " << i
                        << " and topology type \"" << entTopologies[topoType]
                        << "\"" << endl;
                 continue;
@@ -733,7 +736,7 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
             }
             if (!valid)
             {
-                debug3 << "Invalid vert count " << jj
+                debug3 << "Unsupported vert count " << jj
                        << " for iMesh entity " << i << endl;
                 continue;
             }
