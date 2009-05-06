@@ -469,6 +469,11 @@ PF3DFileFormat::ReadVariableInformation()
 // Creation:   Fri Sep 19 14:42:40 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Wed May  6 11:09:23 PDT 2009
+//   I replaced the code that gets the cycle number by extracting it from
+//   the string run_id_c within the file, since that string doesn't
+//   necessarily contain the cycle number.  The new code extracts it from
+//   the last digit sequence in the filename.
 //   
 // ****************************************************************************
 
@@ -480,19 +485,17 @@ PF3DFileFormat::Initialize()
         const char *mName = "PF3DFileFormat::IdentifyFormat: ";
         const char *noread = "Could not read ";
 
-        // Read the cycle number.
-        bool allFields = true;
-        char *run_id_c = 0;
-        const char *key = "run_id_c";
-        if((allFields &= pdb->GetString(key, &run_id_c)) == false)
+        // Get the cycle number.
+        if (pdb->GetName().length() > 0)
         {
-            debug4 << mName << noread << key << endl;
-        }
-        else
-        {
-            sscanf(run_id_c, "%d", &cycle);
-            delete [] run_id_c;
-            debug4 << mName << key << " = " << cycle << endl;
+            const char *filename = pdb->GetName().c_str();
+            int iCycle = pdb->GetName().length()-1;
+            while (iCycle >= 0 && !isdigit(filename[iCycle]))
+                iCycle--;
+            while (iCycle >= 0 && isdigit(filename[iCycle]))
+                iCycle--;
+            iCycle++;
+            sscanf(&filename[iCycle], "%d", &cycle);
         }
 
 #define READ_VALUE(M, K, V) \
@@ -506,7 +509,7 @@ PF3DFileFormat::Initialize()
         }
 
         // Read in nx, ny, nx
-        key = "nx";
+        char *key = "nx";
         READ_VALUE(GetInteger, key, nx);
         key = "ny";
         READ_VALUE(GetInteger, key, ny);
@@ -2270,6 +2273,12 @@ PF3DFileFormat::MasterInformation::GetNDomains() const
 //
 //   Mark C. Miller, Tue Apr 28 11:05:17 PDT 2009
 //   Fixed compiler symbol redefinition error for a HAVE_PDB_PROPER build.
+//
+//   Eric Brugger, Wed May  6 11:09:23 PDT 2009
+//   Added code to handle a new version of the master information that is 
+//   more compact than before. Steve Langer wrote the code and I debugged it.
+//   Steve also removed a redundant line of code.
+//
 // ****************************************************************************
 
 bool
@@ -2518,6 +2527,158 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
     else
     {
         debug4 << mName << "Could not read mp_size!" << endl;
+    }
+
+    //
+    // Newer pf3d viz dumps require that some arrays be computed from
+    // other data in the file. "Fix" the arrays now so that the member
+    // information is in "canonical form" before returning from this function.
+    //
+    for (int i = 0; i < members.size(); ++i)
+    {
+        std::string name = members[i]->name;
+        int ndims = members[i]->ndims;
+        int ndom = nDomains;
+        int dims[3];
+        memcpy(dims, members[i]->dims, 3*sizeof(int));
+        if (name == "xyzloc")
+        {
+            //
+            // If xyzloc is a 2D array, leave it as is.  If it is a 1D
+            // array it contains [dx,dx,dy,dy,dz,dz].  Create a 2D array
+            // xyzloc=old_xyzloc_base*domloc and set member->data to that.
+            //
+            if (ndims != 2)
+            {
+                // Make an array of the proper size
+                double *xyzloc = new double[6*ndom*sizeof(double)];
+                // get a pointer to the domloc array
+                long *domloc = 0;
+                for (int it = 0; it < members.size(); ++it)
+                {
+                    std::string tname = members[it]->name;
+                    if (tname == "domloc")
+                    {
+                        domloc= (long *) members[it]->data;
+                        break;
+                    }
+                }
+                if (domloc == NULL)
+                {
+                    debug4 << mName << " domloc is not present in the master file" << endl;
+                    return false;
+                }
+                double xyzbase[6];
+                memcpy(xyzbase, members[i]->data, 6*sizeof(double));
+                for (int id = 0; id < ndom; ++id)
+                {
+                    long nn = id*6L;
+                    xyzloc[nn] =   xyzbase[0]*domloc[nn];
+                    xyzloc[nn+1] = xyzbase[1]*domloc[nn+1];
+                    xyzloc[nn+2] = xyzbase[2]*domloc[nn+2];
+                    xyzloc[nn+3] = xyzbase[3]*domloc[nn+3];
+                    xyzloc[nn+4] = xyzbase[4]*domloc[nn+4];
+                    xyzloc[nn+5] = xyzbase[5]*domloc[nn+5];
+                }
+                double *old = (double *) members[i]->data;
+                members[i]->data = xyzloc;
+                free_void_mem((void *)old, members[i]->dataType);
+                members[i]->ndims = 2;
+                members[i]->dims[0] = 6;
+                members[i]->dims[1] = ndom;
+            }
+        }
+        else if (name == "dom_prefix")
+        {
+            if (ndims != 2)
+            {
+                //
+                // If dom_prefix is not a 2D array, the domain prefixes must
+                // be computed.  Domain names are of the form    /domain%d/
+                // Always allow for 6 digit domain numbers, and increase the
+                // length if there are more than a million domains.  Leave one
+                // character for a trailing zero.
+                //
+                int len = 15;
+                int maxdom = 999999;
+                while (ndom > maxdom)
+                {
+                    len++;
+                    maxdom = 10*maxdom+9;
+                }
+                char *prefix = new char[len*ndom];
+                char *domnam = new char[len];
+                for (int j = 0; j < ndom; j++)
+                {
+                    sprintf(domnam, "/domain%d/", j);
+                    strncpy(prefix+j*len, domnam, len);
+                }
+                char *old = (char *) members[i]->data;
+                members[i]->data = prefix;
+                free_void_mem((void *)old, members[i]->dataType);
+                members[i]->ndims = 2;
+                members[i]->dims[0] = len;
+                members[i]->dims[1] = ndom;
+            }
+        }
+        else if (name == "viz_nams")
+        {
+            if (ndims == 2)
+            {
+                //
+                // If viz_nams is 2D, it just has the file names and all
+                // files are in the directory given by common_vizdir.
+                // Visit only uses the portion of the directory name
+                // after "/viz/", so we will create a directory name with
+                // information to satisfy that need.  Create a 3D array
+                // long enough to hold the file names, create a dummy
+                // directory name no longer than the file names, copy in
+                // the file names, and set all the directories to the
+                // dummy value.
+                //
+                char *oldnam = (char *) members[i]->data;
+                int len = dims[0];
+                if (len < 16)
+                {
+                    debug4 << mName << " file names are too short." << endl;
+                }
+                char *viz_nams = new char[len*2*ndom];
+                char *vizdir = new char[len];
+                //
+                // Set the directory name.  We need the cycle number to
+                // set this.  We are getting the cycle number from the last
+                // digit sequence in the filename, since the file does not
+                // appear to have that information in it.
+                //
+                int cycle = 0;
+                if (pdb->GetName().length() > 0)
+                {
+                    const char *filename = pdb->GetName().c_str();
+                    int iCycle = pdb->GetName().length()-1;
+                    while (iCycle >= 0 && !isdigit(filename[iCycle]))
+                        iCycle--;
+                    while (iCycle >= 0 && isdigit(filename[iCycle]))
+                        iCycle--;
+                    iCycle++;
+                    sscanf(&filename[iCycle], "%d", &cycle);
+                }
+                sprintf(vizdir, "/viz/vs%d/", cycle);
+                for (int j = 0; j < ndom; j++)
+                {
+                    long nd = j*2*len;
+                    // always use the same value for the directory
+                    strncpy(viz_nams+nd, vizdir, len);
+                    // file name is the second element for each domain
+                    strncpy(viz_nams+nd+len, oldnam+j*len, len);
+                }
+                members[i]->data = (void *) viz_nams;
+                free_void_mem((void *)oldnam, members[i]->dataType);
+                members[i]->ndims = 3;
+                members[i]->dims[0] = len;
+                members[i]->dims[1] = 2;
+                members[i]->dims[2] = ndom;
+            }
+        }
     }
 
     return retval;
