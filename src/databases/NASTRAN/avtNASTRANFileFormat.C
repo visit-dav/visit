@@ -185,13 +185,40 @@ avtNASTRANFileFormat::ActivateTimestep()
 //    Jeremy Meredith, Thu Aug  7 13:43:03 EDT 2008
 //    Format %s doesn't use space modifier.
 //
+//    Mark C. Miller, Wed May  6 11:43:37 PDT 2009
+//    Added logic to deal with funky NASTRAN format where the 'e' character
+//    may be missing from exponentiated numbers.
 // ****************************************************************************
 static float Getf(const char *s)
 {
     char *ends;
+    double val = 0.0;
 
-    errno = 0;
-    double val = strtod(s, &ends);
+    // Check for one of these funky 'NASTRAN exponential format' strings.
+    // This is where a value like '1.2345e-5' is actually represented in the 
+    // file as '1.2345-5' with the 'e' character missing. It is awkward but 
+    // apparently a NASTRAN standard. I guess the rationale is that given
+    // an 8 character field width limit, removing the 'e' character gives them
+    // one additional digit of precision.
+    const char *p = s;
+    char tmps[64];
+    char *q = tmps;
+    while (*p != '-' && *p != '+' && *p != 'e' && *p != 'E' && *p != '\0')
+        *q++ = *p++;
+    if (*p == '-' || *p == '+')
+    {
+        *q++ = 'e';
+        while (*p != '\0')
+            *q++ = *p++;
+        *q++ = '\0';
+        errno = 0;
+        val = strtod(tmps, &ends);
+    }
+    else
+    {
+        errno = 0;
+        val = strtod(s, &ends);
+    }
 
     if (errno != 0)
     {
