@@ -121,6 +121,9 @@ struct PARSER_API ParseElem
 //    Tom Fogal, Wed Apr 29 15:36:42 MDT 2009
 //    Check for empty `elems' so we don't deref an empty vector.
 //
+//    Kathleen Bonnell, Tue May  5 17:23:42 PDT 2009
+//    Revert GetParseTree changes back to Jeremy's fix from Nov 17, 2008.
+//
 // ****************************************************************************
 class PARSER_API Parser
 {
@@ -131,12 +134,7 @@ public:
     void    ParseOneToken(Token *);
     bool    Accept() { return accept; }
     virtual ParseTreeNode *Parse(const std::string &) = 0;
-    ParseTreeNode *GetParseTree() {
-      if(elems.empty()) {
-        return NULL;
-      }
-      return elems[0].node;
-    }
+    ParseTreeNode *GetParseTree() { return parseTree; }
     void    SetGrammar(Grammar * g) { G = g; }
 
 protected:
