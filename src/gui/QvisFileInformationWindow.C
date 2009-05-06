@@ -52,7 +52,7 @@
 // Static constants
 //
 const char *QvisFileInformationWindow::titleSeparator =
-"================================================";
+"==============================================================================";
 
 // ****************************************************************************
 // Method: QvisFileInformationWindow::QvisFileInformationWindow
@@ -115,6 +115,9 @@ QvisFileInformationWindow::~QvisFileInformationWindow()
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Mark C. Miller, Wed May  6 09:47:52 PDT 2009
+//   Made it set min 'size' instead of just width. Also, increased length of
+//   titleSeparator to achieve a bit larger size.
 // ****************************************************************************
 
 void
@@ -122,7 +125,8 @@ QvisFileInformationWindow::CreateWindowContents()
 {
     // Create a multi line edit to display the text.
     outputText = new QTextEdit(central);
-    outputText->setMinimumWidth(fontMetrics().width(titleSeparator));
+    outputText->setMinimumSize(fontMetrics().width(titleSeparator),
+                               fontMetrics().width(titleSeparator));
     outputText->setLineWrapMode(QTextEdit::NoWrap);
     outputText->setReadOnly(true);
     topLayout->addWidget(outputText);
