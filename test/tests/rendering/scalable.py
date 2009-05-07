@@ -107,8 +107,8 @@ srModeHistory=""
 # function to save temporary windows used to force renders
 def MySaveWindow():
     swa = GetSaveWindowAttributes()
-    swa.fileName = "current/scalable_tmp.tif"
-    swa.format = swa.TIFF
+    swa.fileName = "current/scalable_tmp.png"
+    swa.format = swa.PNG
     swa.family = 0
     SetSaveWindowAttributes(swa)
     SaveWindow() # required to force render

@@ -42,7 +42,7 @@ def TestNetworkReset():
     s.screenCapture = 0
     s.width = 400
     s.height = 400
-    s.format = s.TIFF
+    s.format = s.PNG
     s.fileName = base
     s.family = 1
     SetSaveWindowAttributes(s)
@@ -68,25 +68,25 @@ def TestNetworkReset():
 
     # Look at the file sizes to make sure that all are non-zero
     files = os.listdir(".")
-    tiffs = []
+    pngs = []
     for f in files:
         if(len(f) > len(base) and f[:len(base)] == base):
-            tiffs = tiffs + [f]
-    tiffs.sort()
+            pngs = pngs + [f]
+    pngs.sort()
 
-    # Iterate through the tiff files and look at their sizes. Remove them too.
-    tiffSize = ""
-    for tiff in tiffs:
-        filesize = os.stat(tiff)[6]
+    # Iterate through the png files and look at their sizes. Remove them too.
+    pngSize = ""
+    for png in pngs:
+        filesize = os.stat(png)[6]
         if filesize > 0:
-            tiffSize = tiffSize + "File size for %s greater than zero.\n" % tiff
+            pngSize = pngSize + "File size for %s greater than zero.\n" % png
         else:
-            tiffSize = tiffSize + "File size for %s is zero.\n" % tiff
-        # remove the tiff file.
-        os.unlink(tiff)
+            pngSize = pngSize + "File size for %s is zero.\n" % png
+        # remove the png file.
+        os.unlink(png)
 
     TestText("scalable2_0_01", usingSR)
-    TestText("scalable2_0_02", tiffSize)
+    TestText("scalable2_0_02", pngSize)
 
     DeleteAllPlots()
 
