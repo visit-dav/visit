@@ -188,6 +188,9 @@ avtNASTRANFileFormat::ActivateTimestep()
 //    Mark C. Miller, Wed May  6 11:43:37 PDT 2009
 //    Added logic to deal with funky NASTRAN format where the 'e' character
 //    may be missing from exponentiated numbers.
+//
+//    Mark C. Miller, Thu May  7 10:30:49 PDT 2009
+//    Fixed bug of triggering funky case in presence of leading spaces. 
 // ****************************************************************************
 static float Getf(const char *s)
 {
@@ -201,11 +204,16 @@ static float Getf(const char *s)
     // an 8 character field width limit, removing the 'e' character gives them
     // one additional digit of precision.
     const char *p = s;
-    char tmps[64];
+    char tmps[32];
     char *q = tmps;
+    bool haveSeenDigits = false;
     while (*p != '-' && *p != '+' && *p != 'e' && *p != 'E' && *p != '\0')
+    {
+        if ('0' <= *p && *p <= '9' || *p == '.')
+            haveSeenDigits = true;
         *q++ = *p++;
-    if (*p == '-' || *p == '+')
+    }
+    if (p != s && haveSeenDigits && (*p == '-' || *p == '+'))
     {
         *q++ = 'e';
         while (*p != '\0')
