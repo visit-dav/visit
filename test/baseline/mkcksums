@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Files changed since ckecksum file was last updated..."
-newFiles=`find . -name .svn -prune -o -newer cksums.txt \( -name '*.tif' -o -name '*.txt' \) -print`
+newFiles=`find . -name .svn -prune -o -newer cksums.txt \( -name '*.png' -o -name '*.txt' \) -print`
 
 rm -f newFiles.txt
 for file in $newFiles

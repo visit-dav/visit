@@ -685,7 +685,7 @@ def Test(file, altSWA=0):
 	print "***********************"
         next = sys.stdin.read(1)
 
-    (cur, diff, base, altbase) = GenFileNames(file, ".tif")
+    (cur, diff, base, altbase) = GenFileNames(file, ".png")
 
     # save the window in visit
     if altSWA != 0:
@@ -695,14 +695,14 @@ def Test(file, altSWA=0):
         sa.screenCapture=1
     sa.family   = 0
     sa.fileName = cur
-    sa.format   = sa.TIFF
+    sa.format   = sa.PNG
     sa
     SetSaveWindowAttributes(sa)
     SaveWindow()
 
     # do a leak check if requested
     if leakcheck:
-       sa.fileName = "current/leakcheck.tif" 
+       sa.fileName = "current/leakcheck.png" 
        SetSaveWindowAttributes(sa)
        LeakCheck(file, 5)
 
@@ -787,14 +787,14 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     html.write("  <td align=center>%.2f</td>\n" % (davg))
     if (diffState == 'Unknown'):
         html.write("  <td align=center>Not Available</td>\n")
-        html.write("  <td align=center><a href=\"c_%s.jpg\" onclick='return popup(\"c_%s.jpg\",\"image\");'><img src=\"c_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
+        html.write("  <td align=center><a href=\"c_%s.png\" onclick='return popup(\"c_%s.png\",\"image\");'><img src=\"c_%s_thumb.png\"></a></td>\n" % (file,file,file))
         html.write("  <td align=center>Not Available</td>\n")
     elif (diffState != 'None'):
-        html.write("  <td align=center><a href=\"b_%s.jpg\" onclick='return popup(\"b_%s.jpg\",\"image\");'><img src=\"b_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
-        html.write("  <td align=center><a href=\"c_%s.jpg\" onclick='return popup(\"c_%s.jpg\",\"image\");'><img src=\"c_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
-        html.write("  <td align=center><a href=\"d_%s.jpg\" onclick='return popup(\"d_%s.jpg\",\"image\");'><img src=\"d_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
+        html.write("  <td align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (file,file,file))
+        html.write("  <td align=center><a href=\"c_%s.png\" onclick='return popup(\"c_%s.png\",\"image\");'><img src=\"c_%s_thumb.png\"></a></td>\n" % (file,file,file))
+        html.write("  <td align=center><a href=\"d_%s.png\" onclick='return popup(\"d_%s.png\",\"image\");'><img src=\"d_%s_thumb.png\"></a></td>\n" % (file,file,file))
     else:
-        html.write("  <td colspan=3 align=center><a href=\"c_%s.jpg\" onclick='return popup(\"c_%s.jpg\",\"image\");'><img src=\"c_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
+        html.write("  <td colspan=3 align=center><a href=\"c_%s.png\" onclick='return popup(\"c_%s.png\",\"image\");'><img src=\"c_%s_thumb.png\"></a></td>\n" % (file,file,file))
     html.write(" </tr>\n")
 
     # write the individual testcase
@@ -822,11 +822,11 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     elif (diffState == 'Skipped'):
         testcase.write("    <td>Skipped</td>\n")
     else:
-        testcase.write("""    <td><a href="" onMouseOver="document.b.src='c_%s.jpg'" onMouseOut="document.b.src='b_%s.jpg'"><img name="b" border=0 src="b_%s.jpg"></img></a></td>\n"""%(file,file,file))
+        testcase.write("""    <td><a href="" onMouseOver="document.b.src='c_%s.png'" onMouseOut="document.b.src='b_%s.png'"><img name="b" border=0 src="b_%s.png"></img></a></td>\n"""%(file,file,file))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center>Current:</td>\n")
-    testcase.write("""    <td><a href="" onMouseOver="document.c.src='b_%s.jpg'" onMouseOut="document.c.src='c_%s.jpg'"><img name="c" border=0 src="c_%s.jpg"></img></a></td>\n"""%(file,file,file))
+    testcase.write("""    <td><a href="" onMouseOver="document.c.src='b_%s.png'" onMouseOut="document.c.src='c_%s.png'"><img name="c" border=0 src="c_%s.png"></img></a></td>\n"""%(file,file,file))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center rowspan=7>Diff Map:</td>\n")
@@ -837,7 +837,7 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     elif (diffState == 'Skipped'):
         testcase.write("    <td rowspan=7>Skipped</td>\n")
     else:
-        testcase.write("    <td rowspan=7><img src=d_%s.jpg></img></td>\n" %(file))
+        testcase.write("    <td rowspan=7><img src=d_%s.png></img></td>\n" %(file))
     testcase.write("    <td align=center><i>Error Metric</i></td>\n")
     testcase.write("    <td align=center><i>Value</i></td>\n")
     testcase.write("  </tr>\n")
@@ -908,8 +908,8 @@ def GetBackgroundImage(file):
     oldSWA = SaveWindowAttributes()
     tmpSWA = SaveWindowAttributes() 
     tmpSWA.family   = 0
-    tmpSWA.fileName = "current/" + file + "_bg.tif" 
-    tmpSWA.format   = tmpSWA.TIFF
+    tmpSWA.fileName = "current/" + file + "_bg.png" 
+    tmpSWA.format   = tmpSWA.PNG
     tmpSWA.screenCapture = 1
     SetSaveWindowAttributes(tmpSWA)
     SaveWindow()
@@ -1033,15 +1033,15 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 
     # create thumbnails and save jpegs
     newthumb    = newimg.resize(   thumbsize, Image.BICUBIC)
-    newthumb.save(   "html/c_%s_thumb.jpg"%file);
-    newimg.save(   "html/c_%s.jpg"%file, quality=90);
+    newthumb.save(   "html/c_%s_thumb.png"%file);
+    newimg.save(   "html/c_%s.png"%file, quality=90);
     if (dmax != 0):
         oldthumb    = oldimg.resize(   thumbsize, Image.BICUBIC)
         diffthumb   = mdiffimg.resize(  thumbsize, Image.BICUBIC)
-        oldthumb.save(   "html/b_%s_thumb.jpg"%file);
-        diffthumb.save(  "html/d_%s_thumb.jpg"%file);
-        oldimg.save(   "html/b_%s.jpg"%file, quality=90);
-        mdiffimg.save(  "html/d_%s.jpg"%file, quality=90);
+        oldthumb.save(   "html/b_%s_thumb.png"%file);
+        diffthumb.save(  "html/d_%s_thumb.png"%file);
+        oldimg.save(   "html/b_%s.png"%file, quality=90);
+        mdiffimg.save(  "html/d_%s.png"%file, quality=90);
 
     return (totpixels, plotpixels, diffpixels, dmean)
 
