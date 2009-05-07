@@ -27,8 +27,12 @@ bool H5G::open(hid_t filename, const char *groupname){
                 status = H5Gclose(classID);
                 if(status>=0)valid = false;
         }
-        classID = H5Gopen(filename,groupname);
-//        printf("%d\n",classID);
+        classID = H5Gopen(filename,groupname
+#ifndef H5_USE_16_API
+                          , H5P_DEFAULT
+#endif
+                          );
+//      printf("%d\n",classID);
         if((status>=0)&&(classID>=0)){
                 valid = true;
                 return true;
@@ -42,8 +46,12 @@ bool H5G::create(hid_t filename, const char *groupname){
                 status = H5Gclose(classID);
                 if(status>=0)valid = false;
         }
-        classID = H5Gcreate(filename,groupname,0);
-//        printf("%d\n",classID);
+        classID = H5Gcreate(filename,groupname,0
+#ifndef H5_USE_16_API
+                          , H5P_DEFAULT, H5P_DEFAULT
+#endif
+                          );
+//      printf("%d\n",classID);
 
         if((status>=0)&&(classID>=0)){
                 valid = true;

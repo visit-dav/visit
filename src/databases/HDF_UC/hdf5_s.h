@@ -1,7 +1,6 @@
 #ifndef _HDS_H
 #define _HDS_H
 
-#define H5_USE_16_API
 #include "hdf5.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,22 +27,24 @@ public:
         //close the dataset
         bool close();
         //get the id of the H5G group
-        hid_t getID(){return classID;}
+        hid_t getID() const {return classID;}
         //get the ndim
-        int64_t getNDim(hid_t dataset_id){return H5Sget_simple_extent_ndims(dataset_id);}
+        int64_t getNDim(hid_t dataset_id) const {
+            return H5Sget_simple_extent_ndims(dataset_id);}
         int64_t getDim(hid_t dataset_id,
                         hsize_t stddims[],
-                        hsize_t maxdims[]){return H5Sget_simple_extent_dims(dataset_id,stddims,maxdims);}
+                        hsize_t maxdims[]){
+            return H5Sget_simple_extent_dims(dataset_id,stddims,maxdims);}
         bool assignSpace(hid_t dataset_id);
         bool selectHSlab(hsize_t offset[], hsize_t count[]);
-        bool selectElements(hsize_t max,hsize_t num_dimm,std::vector<int32_t> *indices);
+        bool selectElements(hsize_t max, hsize_t num_dimm,
+                            const std::vector<hsize_t>& indices);
         bool selectNone();
-        
 
 private:
         //is the classID valid...i.e. is it tied to a file?
         bool valid;
-        hid_t classID;        
+        hid_t classID;  
         herr_t status;
-};        
+};      
 #endif
