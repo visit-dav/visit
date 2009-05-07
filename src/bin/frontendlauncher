@@ -286,7 +286,11 @@ if (-d "$visitdir/exe")
     # (Note -- don't add it on our own if we're launching a tool.)
     if ($using_dev or $progname eq "visit")
     {
-        push @visitargs, "-dv";
+        # stick the -dv at beginning of args to ensure it comes
+        # before any '-s' option.
+        @visitargs_tmp = ();
+        push @visitargs_tmp, "-dv", @visitargs;
+        @visitargs = @visitargs_tmp;
     }
 }
 else

@@ -89,7 +89,7 @@ public class SaveWindowAttributes extends AttributeSubject
         outputDirectory = new String(".");
         fileName = new String("visit");
         family = true;
-        format = FILEFORMAT_TIFF;
+        format = FILEFORMAT_PNG;
         width = 1024;
         height = 1024;
         screenCapture = false;

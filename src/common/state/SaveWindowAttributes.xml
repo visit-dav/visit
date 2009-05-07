@@ -39,7 +39,7 @@
       true
     </Field>
     <Field name="format" label="format" type="enum" subtype="FileFormat">
-      TIFF
+      PNG
     </Field>
     <Field name="width" label="width" type="int">
       1024
