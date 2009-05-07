@@ -205,7 +205,7 @@ SaveWindowAttributes::SaveWindowAttributes() :
 #endif
     fileName = "visit";
     family = true;
-    format = TIFF;
+    format = PNG;
     width = 1024;
     height = 1024;
     screenCapture = false;
