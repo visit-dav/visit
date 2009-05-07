@@ -1666,6 +1666,7 @@ function check_optional_3rdparty
             error "Unable to build CGNS.  ${CGNS_FILE} not found."
         fi
     fi
+
     if [[ "$DO_FASTBIT" == "yes" ]] ; then
         ensure_built_or_ready "fastbit" $FASTBIT_VERSION $FASTBIT_DIR $FASTBIT_FILE $FASTBIT_URL
         if [[ $? != 0 ]] ; then
@@ -9135,7 +9136,6 @@ if [[ "$DO_H5PART" == "yes" ]] ; then
 fi
 
 cd "$START_DIR"
-echo DO_FASTBIT=$DO_FASTBIT
 if [[ "$DO_FASTBIT" == "yes" ]] ; then
     check_if_installed "fastbit" $FASTBIT_VERSION
     if [[ $? == 0 ]] ; then
