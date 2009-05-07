@@ -52,6 +52,10 @@
 #    Cyrus Harrison, Tue Feb 19 13:52:01 PST 2008
 #    Removed value_for_material tests (they now reside in val4mat.py)
 #
+#    Kathleen Bonnell, Thu May  7 09:26:36 PDT 2009
+#    ident_mesh is no longer an error case, so remove the error test and
+#    save an image instead.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -369,7 +373,6 @@ DeleteAllPlots()
 DefineScalarExpression("ident_mesh", "quadmesh2d")
 AddPlot("Pseudocolor", "ident_mesh")
 DrawPlots()
-txt = GetLastError()
-TestText("ident_mesh_error", txt)
+Test("ident_mesh")
 
 Exit()
