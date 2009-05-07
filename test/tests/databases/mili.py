@@ -17,6 +17,10 @@
 #    Test ratio of volumes with material selection (only works on time
 #    varying Lagrangian calculations, like those in Mili files).
 #
+#    Kathleen Bonnell, Wed May  6 17:33:02 PDT 2009
+#    Substituted non-existent var "derived/stress/eff_stress" with
+#    "derived/eff_stress"
+#
 # ----------------------------------------------------------------------------
 
 
@@ -67,7 +71,7 @@ ChangeActivePlotsVar("derived/stress/yz")
 Test("mili_09")
 ChangeActivePlotsVar("derived/stress/xz")
 Test("mili_10")
-ChangeActivePlotsVar("derived/stress/eff_stress")
+ChangeActivePlotsVar("derived/eff_stress")
 Test("mili_11")
 ChangeActivePlotsVar("derived/prin_dev_stress/1")
 Test("mili_12")
