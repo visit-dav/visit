@@ -47,7 +47,7 @@
 #include <avtHistogramSpecification.h>
 #include <FileFunctions.h>
 
-#include <hdf5_fastquery.h>
+#include "hdf5_fastquery.h"
 
 #include "histogramCache.h"
 
@@ -141,7 +141,7 @@ class avtHDF_UCFileFormat : public avtMTSDFileFormat
     std::vector<avtDataSelection_p>   selList;
     std::vector<bool>                *selsApplied;
     std::string                       queryString;
-    std::vector<int32_t>              queryResults;
+    std::vector<hsize_t>              queryResults;
 
     int                               currentTimestep;
     int                               readerTimestep;

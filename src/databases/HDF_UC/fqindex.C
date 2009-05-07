@@ -1,5 +1,5 @@
-// $Id: fqindex.cpp,v 1.1 2007/09/06 16:54:14 kurts Exp $
-#include <math.h>        // std::log
+// $Id: fqindex.C,v 1.1 2009-05-06 19:14:36 prabhat Exp $
+#include <math.h>       // std::log
 #include "fqindex.h"
 
 /// Constructor.
@@ -19,7 +19,14 @@ H5_FQ_IndexUnbinned::H5_FQ_IndexUnbinned(const H5_FQ_Variable* c)
         getTimeValue();
     uint64_t tmp;
     std::string nm(c->name());
-    bool err = h5file.getBitmapKeysLength(nm, tval, &tmp);
+    std::string fbkey = "HDF5_FastQuery.";
+    fbkey += c->name();
+    fbkey += ".forceIndexRebuild";
+    bool err = ibis::gParameters().isTrue(fbkey.c_str());
+    if (err == false)
+        err = h5file.getBitmapKeysLength(nm, tval, &tmp);
+    else
+        tmp = 0;
     if (err && tmp > 0) {
         readOld(h5file, tval);
     }
@@ -27,8 +34,8 @@ H5_FQ_IndexUnbinned::H5_FQ_IndexUnbinned(const H5_FQ_Variable* c)
         buildNew();
     }
     if (ibis::gVerbose > 2) { // output a summary of the index
-        ibis::util::ioLock lock;
-        //print(std::cout);
+        ibis::util::logger lg;
+        print(lg.buffer());
     }
 } // H5_FQ_IndexUnbinned::H5_FQ_IndexUnbinned
 
@@ -41,49 +48,68 @@ void H5_FQ_IndexUnbinned::buildNew() {
 
     std::vector<int64_t> dims;
     reinterpret_cast<const H5_FQ_Variable*>(col)->getH5Index().
-      getVariableInfo(nm, tbl.getTimeValue(), dims, &type);
+        getVariableInfo(nm, tbl.getTimeValue(), dims, &type);
 
     switch (type) {
     case BaseFileInterface::H5_Int32: {
-        array_t<int> arr;
-        reinterpret_cast<const H5_FQ_Variable*>(col)->getValues(arr);
-        construct(arr);
-        isNewIndex = true;
-        break;
-    }
-
+        array_t<int32_t> arr;
+        int ierr =
+            reinterpret_cast<const H5_FQ_Variable*>(col)->getValuesArray(&arr);
+        if (ierr >= 0) {
+            construct(arr);
+            isNewIndex = true;
+        }
+        else if (ibis::gVerbose >= 0) {
+            col->logWarning("H5_FQ_IndexUnbinned",
+                            "getValuesArray failed with error code %d", ierr);
+        }
+        break;}
     case BaseFileInterface::H5_Int64: {
         array_t<int64_t> arr;
-        reinterpret_cast<const H5_FQ_Variable*>(col)->getValues(arr);
-        construct(arr);
-        isNewIndex = true;
-        break;
-    }
+        int ierr =
+            reinterpret_cast<const H5_FQ_Variable*>(col)->getValuesArray(&arr);
+        if (ierr >= 0) {
+            construct(arr);
+            isNewIndex = true;
+        }
+        else if (ibis::gVerbose >= 0) {
+            col->logWarning("H5_FQ_IndexUnbinned",
+                            "getValuesArray failed with error code %d", ierr);
+        }
+        break;}
     case BaseFileInterface::H5_Float: {
         array_t<float> arr;
-        reinterpret_cast<const H5_FQ_Variable*>(col)->getValues(arr);
-        construct(arr);
-        isNewIndex = true;
-        break;
-    }
+        int ierr =
+            reinterpret_cast<const H5_FQ_Variable*>(col)->getValuesArray(&arr);
+        if (ierr >= 0) {
+            construct(arr);
+            isNewIndex = true;
+        }
+        else if (ibis::gVerbose >= 0) {
+            col->logWarning("H5_FQ_IndexUnbinned",
+                            "getValuesArray failed with error code %d", ierr);
+        }
+        break;}
     case BaseFileInterface::H5_Double: {
         array_t<double> arr;
-        reinterpret_cast<const H5_FQ_Variable*>(col)->getValues(arr);
-        construct(arr);
-        isNewIndex = true;
-        break;
-    }
+        int ierr =
+            reinterpret_cast<const H5_FQ_Variable*>(col)->getValuesArray(&arr);
+        if (ierr >= 0) {
+            construct(arr);
+            isNewIndex = true;
+        }
+        else if (ibis::gVerbose >= 0) {
+            col->logWarning("H5_FQ_IndexUnbinned",
+                            "getValuesArray failed with error code %d", ierr);
+        }
+        break;}
     default: {
         col->logWarning("H5_FQ_IndexUnbinned", "can not generate index for "
                         "data type %d (dataset %s).  It only knows H5_Int32, "
-                        "H5_Int64, H5_Float and H5_Double.", static_cast<int>(type),
-                        nm.c_str());
-        break;
+                        "H5_Int64, H5_Float and H5_Double.",
+                        static_cast<int>(type), nm.c_str());
+        break;}
     }
-    }
-
-
-
 } // H5_FQ_IndexUnbinned::buildNew
 
 void H5_FQ_IndexUnbinned::readOld(H5_Index& h5file, int64_t tval) {
@@ -105,51 +131,46 @@ void H5_FQ_IndexUnbinned::readOld(H5_Index& h5file, int64_t tval) {
 
     switch (type) {
     case BaseFileInterface::H5_Int32: {
-        array_t<int> buf(nobs);
+        array_t<int32_t> buf(nobs);
         berr = h5file.getBitmapKeys(nm, tval, buf.begin());
         vals.resize(nobs);
         for (unsigned i = 0; i < nobs; ++ i)
             vals[i] = buf[i];
-        break;
-    }
+        break;}
     case BaseFileInterface::H5_Int64: {
         array_t<int64_t> buf(nobs);
         berr = h5file.getBitmapKeys(nm, tval, buf.begin());
         vals.resize(nobs);
         for (unsigned i = 0; i < nobs; ++ i)
             vals[i] = buf[i];
-        break;
-    }
+        break;}
     case BaseFileInterface::H5_Float: {
         array_t<float> buf(nobs);
         berr = h5file.getBitmapKeys(nm, tval, buf.begin());
         vals.resize(nobs);
         for (unsigned i = 0; i < nobs; ++ i)
             vals[i] = buf[i];
-        break;
-    }
+        break;}
     case BaseFileInterface::H5_Double: {
         vals.resize(nobs);
         berr = h5file.getBitmapKeys(nm, tval, vals.begin());
-        break;
-    }
+        break;}
     default: {
         col->logWarning("H5_FQ_IndexUnbinned::readOld",
-                        "can not read index for data type %d (dataset %s).  "
-                        "It only knows H5_Int32, H5_Int64, H5_Float and H5_Double.",
+                        "can not read index for data type %d (dataset %s).  It "
+                        "only knows H5_Int32, H5_Int64, H5_Float and H5_Double.",
                         static_cast<int>(type), col->name());
-        return;
-    }
+        return;}
     }
 
     // read in the offsets
     offsets.resize(nobs+1);
     {
-      uint32_t *buf = new uint32_t[nobs+1];
-      berr = h5file.getBitmapOffsets(nm, tval, buf);
-      for (unsigned i = 0; i <= nobs; ++ i)
-        offsets[i] = buf[i];
-      delete [] buf;
+        uint32_t *buf = new uint32_t[nobs+1];
+        berr = h5file.getBitmapOffsets(nm, tval, buf);
+        for (unsigned i = 0; i <= nobs; ++ i)
+            offsets[i] = buf[i];
+        delete [] buf;
     }
 
     // activate the first bitmap so that the size information is available
@@ -158,21 +179,21 @@ void H5_FQ_IndexUnbinned::readOld(H5_Index& h5file, int64_t tval) {
         bits[i] = 0;
     //activate(0);
     if (! dims.empty()) {
-      nrows = 1;
-      for (unsigned i = 0; i < dims.size(); ++ i)
-        nrows *= dims[i];
+        nrows = 1;
+        for (unsigned i = 0; i < dims.size(); ++ i)
+            nrows *= dims[i];
     }
     else {
-      nrows = 0;
+        nrows = 0;
     }
     fname = ibis::util::strnewdup(col->name());
 } // H5_FQ_IndexUnbinned::readOld
 
 /// Write the index to an active HDF5 file.
 void H5_FQ_IndexUnbinned::write(H5_Index& h5file) const {
-// Because the internally stored pointer to H5_Index is a const, the caller
-// must provide another H5_Index without the const qualifier.  Clearly,
-// this H5_Index can be same as the internally stored one.
+    // Because the internally stored pointer to H5_Index is a const, the caller
+    // must provide another H5_Index without the const qualifier.  Clearly,
+    // this H5_Index can be same as the internally stored one.
     const unsigned nobs = bits.size();
     if (nobs == 0) {
         col->logMessage("H5_FQ_IndexUnbinned::write", "no bitmaps to write");
@@ -264,7 +285,7 @@ void H5_FQ_IndexUnbinned::write(H5_Index& h5file) const {
         berr = h5file.setActualRange(nm, tval, range);
         berr = h5file.setExpectedRange(nm, tval, range);
     }
-   else if (col->type() == ibis::LONG) {
+    else if (col->type() == ibis::LONG) {
         array_t<int64_t> tmp(vals.size());
         for (unsigned i = 0; i < vals.size(); ++ i)
             tmp[i] = static_cast<int64_t>(vals[i]);
@@ -276,7 +297,7 @@ void H5_FQ_IndexUnbinned::write(H5_Index& h5file) const {
         berr = h5file.setExpectedRange(nm, tval, range);
     }
     else if (col->type() == ibis::INT) {
-        array_t<int> tmp(vals.size());
+        array_t<int32_t> tmp(vals.size());
         for (unsigned i = 0; i < vals.size(); ++ i)
             tmp[i] = static_cast<int>(vals[i]);
         berr = h5file.setBitmapKeys(nm, tval, tmp.begin(), nobs);
@@ -520,7 +541,14 @@ H5_FQ_IndexBinned::H5_FQ_IndexBinned(const H5_FQ_Variable *c,
         getTimeValue();
     uint64_t tmp;
     std::string nm(c->name());
-    bool err = h5file.getBitmapKeysLength(nm, tval, &tmp);
+    std::string fbkey = "HDF5_FastQuery.";
+    fbkey += c->name();
+    fbkey += ".forceIndexRebuild";
+    bool err = ibis::gParameters().isTrue(fbkey.c_str());
+    if (err == false)
+        err = h5file.getBitmapKeysLength(nm, tval, &tmp);
+    else
+        tmp = 0;
     if (err && tmp > 0) {
         // reading an existing index, no use for the binning option
         readOld(h5file, tval);
@@ -538,8 +566,8 @@ H5_FQ_IndexBinned::H5_FQ_IndexBinned(const H5_FQ_Variable *c,
         buildNew();
     }
     if (ibis::gVerbose > 2) { // output a summary of the index
-        ibis::util::ioLock lock;
-        //print(std::cout);
+        ibis::util::logger lg;
+        print(lg.buffer());
     }
 } // constructor
 
@@ -551,44 +579,67 @@ void H5_FQ_IndexBinned::buildNew() {
 
     std::vector<int64_t> dims;
     reinterpret_cast<const H5_FQ_Variable*>(col)->getH5Index().
-      getVariableInfo(nm, tbl.getTimeValue(), dims, &type);
+        getVariableInfo(nm, tbl.getTimeValue(), dims, &type);
 
     switch (type) {
     case BaseFileInterface::H5_Int32: {
-        array_t<int> arr;
-        reinterpret_cast<const H5_FQ_Variable*>(col)->getValues(arr);
-        construct(arr);
-        isNewIndex = true;
-        break;
-    }
+        array_t<int32_t> arr;
+        int ierr =
+            reinterpret_cast<const H5_FQ_Variable*>(col)->getValuesArray(&arr);
+        if (ierr >= 0) {
+            construct(arr);
+            isNewIndex = true;
+        }
+        else if (ibis::gVerbose >= 0) {
+            col->logWarning("H5_FQ_IndexBinned",
+                            "getValuesArray failed with error code %d", ierr);
+        }
+        break;}
     case BaseFileInterface::H5_Int64: {
         array_t<int64_t> arr;
-        reinterpret_cast<const H5_FQ_Variable*>(col)->getValues(arr);
-        construct(arr);
-        isNewIndex = true;
-        break;
-    }
+        int ierr = 
+            reinterpret_cast<const H5_FQ_Variable*>(col)->getValuesArray(&arr);
+        if (ierr >= 0) {
+            construct(arr);
+            isNewIndex = true;
+        }
+        else if (ibis::gVerbose >= 0) {
+            col->logWarning("H5_FQ_IndexBinned",
+                            "getValuesArray failed with error code %d", ierr);
+        }
+        break;}
     case BaseFileInterface::H5_Float: {
         array_t<float> arr;
-        reinterpret_cast<const H5_FQ_Variable*>(col)->getValues(arr);
-        construct(arr);
-        isNewIndex = true;
-        break;
-    }
+        int ierr =
+            reinterpret_cast<const H5_FQ_Variable*>(col)->getValuesArray(&arr);
+        if (ierr >= 0) {
+            construct(arr);
+            isNewIndex = true;
+        }
+        else if (ibis::gVerbose >= 0) {
+            col->logWarning("H5_FQ_IndexBinned",
+                            "getValuesArray failed with error code %d", ierr);
+        }
+        break;}
     case BaseFileInterface::H5_Double: {
         array_t<double> arr;
-        reinterpret_cast<const H5_FQ_Variable*>(col)->getValues(arr);
-        construct(arr);
-        isNewIndex = true;
-        break;
-    }
+        int ierr = 
+            reinterpret_cast<const H5_FQ_Variable*>(col)->getValuesArray(&arr);
+        if (ierr >= 0) {
+            construct(arr);
+            isNewIndex = true;
+        }
+        else if (ibis::gVerbose >= 0) {
+            col->logWarning("H5_FQ_IndexBinned",
+                            "getValuesArray failed with error code %d", ierr);
+        }
+        break;}
     default: {
         col->logWarning("H5_FQ_IndexBinned", "can not generate index for "
                         "data type %d (dataset %s).  It only knows H5_Int32, "
-                        "H5_Int64, H5_Float and H5_Double.", static_cast<int>(type),
-                        nm.c_str());
-        break;
-    }
+                        "H5_Int64, H5_Float and H5_Double.",
+                        static_cast<int>(type), nm.c_str());
+        break;}
     }
 } // H5_FQ_IndexBinned::buildNew
 
@@ -621,7 +672,7 @@ void H5_FQ_IndexBinned::readOld(H5_Index& h5file, int64_t tval) {
 
     switch (type) {
     case BaseFileInterface::H5_Int32: {
-        array_t<int> buf(nkeys);
+        array_t<int32_t> buf(nkeys);
         berr = h5file.getBitmapKeys(nm, tval, buf.begin());
         if (! berr) {
             clear();
@@ -634,8 +685,7 @@ void H5_FQ_IndexBinned::readOld(H5_Index& h5file, int64_t tval) {
                 bounds[i-1] = ibis::util::compactValue(maxval[i-1], buf[i]);
         }
         bounds[nobs-1] = DBL_MAX;
-        break;
-    }
+        break;}
     case BaseFileInterface::H5_Int64: {
         array_t<int64_t> buf(nkeys);
         berr = h5file.getBitmapKeys(nm, tval, buf.begin());
@@ -650,8 +700,7 @@ void H5_FQ_IndexBinned::readOld(H5_Index& h5file, int64_t tval) {
                 bounds[i-1] = ibis::util::compactValue(maxval[i-1], buf[i]);
         }
         bounds[nobs-1] = DBL_MAX;
-        break;
-    }
+        break;}
     case BaseFileInterface::H5_Float: {
         array_t<float> buf(nkeys);
         berr = h5file.getBitmapKeys(nm, tval, buf.begin());
@@ -666,8 +715,7 @@ void H5_FQ_IndexBinned::readOld(H5_Index& h5file, int64_t tval) {
                 bounds[i-1] = ibis::util::compactValue(maxval[i-1], buf[i]);
         }
         bounds[nobs-1] = DBL_MAX;
-        break;
-    }
+        break;}
     case BaseFileInterface::H5_Double: {
         array_t<double> buf(nkeys);
         berr = h5file.getBitmapKeys(nm, tval, buf.begin());
@@ -682,25 +730,23 @@ void H5_FQ_IndexBinned::readOld(H5_Index& h5file, int64_t tval) {
                 bounds[i-1] = ibis::util::compactValue(maxval[i-1], buf[i]);
         }
         bounds[nobs-1] = DBL_MAX;
-        break;
-    }
+        break;}
     default: {
         col->logWarning("H5_FQ_IndexBinned::readOld", "can not read index for "
                         "data type %d (dataset %s).  It only knows H5_Int32, "
-                        "H5_Int64, H5_Float and H5_Double.", static_cast<int>(type),
-                        col->name());
-        return;
-    }
+                        "H5_Int64, H5_Float and H5_Double.",
+                        static_cast<int>(type), col->name());
+        return;}
     }
 
     // read in the offsets
     offsets.resize(nobs+1);
     {
-      uint32_t *buf = new uint32_t[nobs+1];
-      berr = h5file.getBitmapOffsets(nm, tval, buf);
-       for (unsigned i = 0; i <= nobs; ++ i)
-        offsets[i] = buf[i];
-      delete [] buf;
+        uint32_t *buf = new uint32_t[nobs+1];
+        berr = h5file.getBitmapOffsets(nm, tval, buf);
+        for (unsigned i = 0; i <= nobs; ++ i)
+            offsets[i] = buf[i];
+        delete [] buf;
     }
     if (! berr) {
         col->logWarning("H5_FQ_IndexBinned::readOld",
@@ -716,21 +762,21 @@ void H5_FQ_IndexBinned::readOld(H5_Index& h5file, int64_t tval) {
         bits[i] = 0;
     // activate(0);
     if (! dims.empty()) {
-      nrows = 1;
-      for (unsigned i = 0; i < dims.size(); ++ i)
-        nrows *= dims[i];
+        nrows = 1;
+        for (unsigned i = 0; i < dims.size(); ++ i)
+            nrows *= dims[i];
     }
     else {
-      nrows = 0;
+        nrows = 0;
     }
     fname = ibis::util::strnewdup(col->name());
 } // H5_FQ_IndexBinned::readOld
 
 /// Write the index to an active HDF5 file.
 void H5_FQ_IndexBinned::write(H5_Index& h5file) const {
-// Because the internally stored pointer to H5_Index is a const, the caller
-// must provide another H5_Index without the const qualifier.  Clearly,
-// this H5_Index can be same as the internally stored one.
+    // Because the internally stored pointer to H5_Index is a const, the caller
+    // must provide another H5_Index without the const qualifier.  Clearly,
+    // this H5_Index can be same as the internally stored one.
     if (nobs == 0) {
         col->logMessage("H5_FQ_IndexBinned::write", "no bitmaps to write");
         return;
@@ -857,7 +903,7 @@ void H5_FQ_IndexBinned::write(H5_Index& h5file) const {
         berr = h5file.setExpectedRange(nm, tval, buf.begin());
     }
     else if (col->type() == ibis::INT) {
-        array_t<int> buf(nkeys);
+        array_t<int32_t> buf(nkeys);
         for (unsigned i = 0; i < nobs; ++ i) {
             buf[i] = static_cast<int>(minval[i]);
             buf[i+nobs] = static_cast<int>(maxval[i]);
@@ -885,6 +931,7 @@ void H5_FQ_IndexBinned::activate() const {
     // assumes that bounds, minval, maxval, bits and offsets have been
     // initialized properly.
     if (nobs == 0 || offsets.empty()) return;
+    ibis::util::timer mytimer("H5_FQ_IndexBinned::activate()", 3);
 
     bool berr;
     H5_Index& h5file = reinterpret_cast<const H5_FQ_Variable*>(col)->
@@ -948,12 +995,19 @@ void H5_FQ_IndexBinned::activate(uint32_t i) const {
     if (bits[i] != 0) return;
     if (bits.size() != nobs) return;
     if (offsets.empty()) return;
+    std::string evt = "H5_FQ_IndexBinned::activate";
+    if (ibis::gVerbose > 2) {
+        std::ostringstream oss;
+        oss << "(" << i << ")";
+        evt += oss.str();
+    }
     if (offsets[i] >= offsets[i+1]) {
-        col->logMessage("H5_FQ_IndexBinned::activate", "offsets[%u] (%u) "
+        col->logMessage(evt.c_str(), "offsets[%u] (%u) "
                         ">= offsets[%u] (%u)", i, offsets[i], i+1,
                         offsets[i+1]);
         return;
     }
+    ibis::util::timer mytimer(evt.c_str(), 3);
 
     bool berr;
     const H5_FQ_Timestep *ts =
@@ -961,16 +1015,17 @@ void H5_FQ_IndexBinned::activate(uint32_t i) const {
     const int64_t tval = ts->getTimeValue();
     H5_Index& h5file = reinterpret_cast<const H5_FQ_Variable*>(col)->
         getH5Index();
-    if (i == 0U && (nobs == 1U || (nobs <= 3U && offsets[1]*5/4 >= offsets[nobs])
-                   || (nobs > 3 && static_cast<long>
-                       (offsets[1]*log(nobs)) >= offsets[nobs]))) {
+    if (i == 0U && (nobs == 1U ||
+                    (nobs <= 3U && offsets[1]*5/4 >= offsets[nobs]) ||
+                    (nobs > 3 && static_cast<long>
+                     (offsets[1]*log(nobs)) >= offsets[nobs]))) {
         // if the first bitmap takes up a majority of the total bytes, read
         // them all
         str = new ibis::fileManager::storage(4*offsets[nobs]);
         berr = h5file.readBitmap(nm, tval, 0, offsets[nobs],
                                  (uint32_t*)(str->begin()));
         if (berr == false) {
-            col->logWarning("H5_FQ_IndexBinned::activate",
+            col->logWarning(evt.c_str(),
                             "unable to read all bitmaps at once (dataset %s)",
                             col->name());
             delete str;
@@ -993,7 +1048,7 @@ void H5_FQ_IndexBinned::activate(uint32_t i) const {
             bits[i] = new ibis::bitvector(buf);
         }
         else {
-            col->logWarning("H5_FQ_IndexBinned::activate",
+            col->logWarning(evt.c_str(),
                             "unable to read bitmap %u (dataset %s) at "
                             "offset %u (size %u)",
                             i, col->name(), static_cast<unsigned>(offsets[i]),
@@ -1004,12 +1059,17 @@ void H5_FQ_IndexBinned::activate(uint32_t i) const {
 
 // activate the ith through jth bitmap
 void H5_FQ_IndexBinned::activate(uint32_t i, uint32_t j) const {
-  //const unsigned nobs = vals.size();
-  //std::cout << "activate i, j \n" << std::endl;
     std::string nm(col->name());
     if (i >= nobs || i >= j) return; // empty range
     if (bits.size() != nobs) return;
     if (offsets.empty()) return;
+    std::string evt = "H5_FQ_IndexBinned::activate";
+    if (ibis::gVerbose > 2) {
+        std::ostringstream oss;
+        oss << "(" << i << ", " << j << ")";
+        evt += oss.str();
+    }
+    ibis::util::timer mytimer(evt.c_str(), 3);
 
     bool berr;
     const H5_FQ_Timestep *ts =
@@ -1017,9 +1077,10 @@ void H5_FQ_IndexBinned::activate(uint32_t i, uint32_t j) const {
     const int64_t tval = ts->getTimeValue();
     H5_Index& h5file = reinterpret_cast<const H5_FQ_Variable*>(col)->
         getH5Index();
-    if (i == 0U && (nobs == 1U || (nobs <= 3U && offsets[1]*5/4 >= offsets[nobs])
-                   || (nobs > 3 && static_cast<long>
-                       (offsets[1]*log(nobs)) >= offsets[nobs]))) {
+    if (i == 0U && (nobs == 1U ||
+                    (nobs <= 3U && offsets[1]*5/4 >= offsets[nobs]) ||
+                    (nobs > 3 && static_cast<long>
+                     (offsets[1]*log(nobs)) >= offsets[nobs]))) {
         // if the first bitmap takes up a majority of the total bytes, read
         // them all
         str = new ibis::fileManager::storage(4*offsets[nobs]);
@@ -1074,7 +1135,7 @@ void H5_FQ_IndexBinned::activate(uint32_t i, uint32_t j) const {
                     }
                 }
                 else {
-                    col->logWarning("H5_FQ_IndexBinned::activate",
+                    col->logWarning(evt.c_str(),
                                     "unable to read bitmaps [%u, %u) "
                                     "(dataset %s) at offset %u (size %u)",
                                     i, aj, col->name(), start,

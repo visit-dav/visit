@@ -1,11 +1,11 @@
-// $Id: fqindex.h,v 1.1 2007/09/06 16:54:14 kurts Exp $
+// $Id: fqindex.h,v 1.2 2009-05-06 21:51:12 kewu Exp $
 #ifndef _FASTQUERY_INDEX_H
 #define _FASTQUERY_INDEX_H
-#include "indexfile.h"        // the underline HDF5 operations
-#include "timestep.h"        // H5_FQ_Variable and H5_FQ_Timestep
-#include <index.h>        // FastBit abstract index class
-#include <irelic.h>        // FastBit unbinned index classes
-#include <ibin.h>        // FastBit binned index classes
+#include "indexfile.h"  // the underline HDF5 operations
+#include "timestep.h"   // H5_FQ_Variable and H5_FQ_Timestep
+#include <index.h>      // FastBit abstract index class
+#include <irelic.h>     // FastBit unbinned index classes
+#include <ibin.h>       // FastBit binned index classes
 
 /**
    This file defines the data structure of the index classes specialized

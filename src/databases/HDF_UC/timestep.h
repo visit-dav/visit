@@ -1,14 +1,14 @@
-// $Id: timestep.h,v 1.1 2007/09/06 16:54:14 kurts Exp $
+// $Id: timestep.h,v 1.8 2009-05-05 17:48:27 kewu Exp $
 #ifndef _FASTQUERY_TIMESTEP_H
 #define _FASTQUERY_TIMESTEP_H
-#include "indexfile.h"        // the underline HDF5 operations
-#include <column.h>            // ibis::column
-#include <part.h>            // ibis::part
-#include <meshQuery.h>        // ibis::meshQuery
+#include "indexfile.h"  // the underline HDF5 operations
+#include <column.h>     // ibis::column
+#include <part.h>       // ibis::part
+#include <meshQuery.h>  // ibis::meshQuery
 
 /**
    The class H5_FQ_Timestep is a container of the variables (HDF5
-   datasets).  It is needed to mirror the data model of FastBit.
+   datasets).  It mirrors a FastBit data partition.
 */
 class H5_FQ_Timestep : public ibis::part {
 public:
@@ -22,10 +22,12 @@ public:
     /// dimensions of the regular mesh that defines the data sets.
     const std::vector<uint32_t>& getMeshDims() const { return shapeSize;}
  
-    /// Build indexes for all datasets in the time step, using the default
-    /// option for bitmap indices.  By default, the bitmap indices are not
-    /// binned.
-    int buildIndexes();
+    /// Build indexes for all datasets in the time step.  If opt is nil, it
+    /// uses the default option for bitmap indexes, which builds unbinned
+    /// indexes.  The second argument in FastBit specifies the number of
+    /// threads used to build the indexes, but this implementation always
+    /// always uses one thread.
+    virtual int buildIndexes(const char* opt=0, int =1);
     /// Build index for the named dataset in the time step.  The optional
     /// argument is the binning option.  The format for binning option is
     /// "<binning xxxx />".  If the option is not specified or the string
@@ -33,7 +35,7 @@ public:
     /// specification is explained in:
     /// http://sdm.lbl.gov/fastbit/doc/indexSpec.html.
     int buildIndex(const char* name, const char *binning=0);
-    /// Create indices for a list of variable names.
+    /// Create indexes for a list of variable names.
     int createIndex(const std::vector<const char*>& names,
                     const char *binning=0);
 
@@ -60,7 +62,7 @@ public:
     const char* getQueryConditions(const char* token) const;
 
     /// Compute the number of hits by directly reading the data values.
-    /// Count the number of hits without using any possible indices.
+    /// Count the number of hits without using any possible indexes.
     int64_t sequentialScan(const char *token) const;
     /// Estimate the maximum number of hits, i.e., the number of
     /// records/cells/points satisfying the specified conditions.
@@ -83,7 +85,7 @@ public:
     /// token.  Make sure to call @c submitQuery before trying to call this
     /// function.
     int64_t getHitLocations(const char *token,
-                            std::vector<int32_t>& coord) const;
+                            std::vector<hsize_t>& coord) const;
                             
 
     /*
@@ -119,36 +121,54 @@ private:
     int releaseAllQueries();
 }; // class H5_FQ_Timestep
 
-
-
-
-
-
 /**
-   The class H5_FQ_variable is a thin wrapper on a HDF5 dataset.  It is
-   required to use the FastBit indexing structures.
+   The class H5_FQ_variable is a thin wrapper on ibis::column.  It maps
+   each variable to a column of FastBit data partition.
 */
 class H5_FQ_Variable : public ibis::column {
 public:
     H5_FQ_Variable(const H5_FQ_Timestep* tbl, const char* name);
     virtual ~H5_FQ_Variable() {};
 
-    /// Read all values into an array.  Return the number of values read.
-    template <typename E>
-    int getValues(array_t<E>& arr) const;
+    /// Read all values into an array_t object.  The argument arr must be
+    /// an array_t<Type>* with the correct Type.  Currently, the five
+    /// supported types mapped to C++ elementary types as follows:
+    ///
+    /// - H5_Float: array_t<float>*
+    /// - H5_Double: array_t<double>*
+    /// - H5_Int32: array_t<int32_t>*
+    /// - H5_Int64: array_t<int64_t>*
+    /// - H5_Byte: array_t<char>*
+    ///
+    /// It returns 0 to indicate success and a negative number to indicate
+    /// error.
+    virtual int getValuesArray(void* arr) const;
 
     /// Read values with specified coordinates.
     template <typename E>
     int getPointValues(array_t<E>& arr,
-                       const std::vector<int32_t>& coords) const;
-    virtual array_t<double>*   selectDoubles(const ibis::bitvector& mask) const;
+                       const std::vector<hsize_t>& coords) const;
+    virtual array_t<double>*  selectDoubles(const ibis::bitvector& mask) const;
     virtual array_t<float>*   selectFloats(const ibis::bitvector& mask) const;
+    virtual array_t<int32_t>* selectInts(const ibis::bitvector& mask) const;
+    virtual array_t<int64_t>* selectLongs(const ibis::bitvector& mask) const;
+    virtual array_t<char>*    selectBytes(const ibis::bitvector& mask) const;
 
     /// Return the H5_Index object containing this variable.
     H5_Index& getH5Index() const {return h5file_;}
 
-    virtual void loadIndex(const char*) const throw ();
+    virtual void loadIndex(const char*, int) const throw ();
     virtual long indexSize() const;
+    virtual double getActualMin() const;
+    virtual double getActualMax() const;
+
+protected:
+    /// Resolve a continuous range condition on a sorted column.
+    virtual int searchSorted(const ibis::qContinuousRange&,
+                             ibis::bitvector&) const;
+    /// Resolve a discrete range condition on a sorted column.
+    virtual int searchSorted(const ibis::qDiscreteRange&,
+                             ibis::bitvector&) const;
 
 private:
     // member variables

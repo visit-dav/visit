@@ -1,7 +1,6 @@
 #ifndef _HDA_H
 #define _HDA_H
 
-#define H5_USE_16_API
 #include "hdf5.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +33,7 @@ public:
         bool write(hid_t memtype,void* buffer);
         bool write_type(BaseFileInterface::DataType type,void* buffer);
         //get the id of the H5G group
-        hid_t getID(){return classID;}
+        hid_t getID() const {return classID;}
         //return the number of subgroups in this group
         hsize_t getGroupCount();
         
@@ -42,7 +41,7 @@ public:
 private:
         //is the classID valid...i.e. is it tied to a file?
         bool valid;
-        hid_t classID;        
+        hid_t classID;  
         herr_t status;
-};        
+};      
 #endif

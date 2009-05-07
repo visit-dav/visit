@@ -841,19 +841,23 @@ avtHDF_UCFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
 
       if (type==BaseFileInterface::H5_Float) {
         float start, end;
-        reader.getDataMinMax_Float(variables[i],
-                                   0,
-                                   start, 
-                                   end);
+        std::string varname = variables[i];
+        reader.getDataMinMax(varname,
+                             0,
+                             type,
+                             (void*)&start, 
+                             (void*)&end);
         begins[i] = start;
         ends[i] = end;
       }
       else if (type==BaseFileInterface::H5_Double) {
         double start, end;
-        reader.getDataMinMax_Double(variables[i],
-                                    0,
-                                    start,
-                                    end);
+        std::string varname = variables[i];
+        reader.getDataMinMax(varname,
+                             0,
+                             type,
+                             (void*)&start,
+                             (void*)&end);
         begins[i] = start;
         ends[i] = end;
       }
@@ -1060,7 +1064,7 @@ avtHDF_UCFileFormat::RegisterDataSelections(
   }
 
   if (querySpecified) {
-    //debug4 << "query Specified " << queryString << endl;
+    debug4 << "query Specified " << queryString << endl;
     runQuery();
   } else {
     debug4 << "query NOT specified " << endl;
@@ -1156,7 +1160,7 @@ avtHDF_UCFileFormat::ConstructIdentifiersFromDataRangeSelection(
 
   if (querySpecified) {
     
-    std::vector<int32_t> qResults;
+    std::vector<hsize_t> qResults;
     reader.executeQuery((char*)query.c_str(), 0, qResults);
     debug4 << "\t Execution of query string["<<query.size()<<" resulted in " << qResults.size() << " entries.." << endl;
    
@@ -1212,6 +1216,7 @@ int  avtHDF_UCFileFormat::get_string_from_identifiers(const vector<double>& Iden
     id_string = id_string + stringify(Identifiers[Identifiers.size()-1]) + " ))";
   }
 
+  debug4 << "id_string is "<< id_string << endl;
   return Identifiers.size();
 
 }

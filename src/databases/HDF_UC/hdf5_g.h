@@ -1,7 +1,6 @@
 #ifndef _HDG_H
 #define _HDG_H
 
-#define H5_USE_16_API
 #include "hdf5.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +31,7 @@ public:
 private:
         //is the classID valid...i.e. is it tied to a file?
         bool valid;
-        hid_t classID;        
+        hid_t classID;  
         herr_t status;
-};        
+};      
 #endif

@@ -28,7 +28,7 @@ bool H5A::open(hid_t filename, const char *groupname){
                 if(status>=0)valid = false;
         }
         classID = H5Aopen_name(filename,groupname);
-//        printf("%d\n",classID);
+//      printf("%d\n",classID);
         if((classID >= 0) && (status >= 0)){
                 valid = true;
                 return true;
@@ -51,8 +51,13 @@ bool H5A::create(hid_t filename, const char *groupname,hid_t memtype,hid_t attri
                 status = H5Aclose(classID);
                 if(status>=0)valid = false;
         }
-        classID = H5Acreate(filename,groupname,memtype,attribute_space,H5P_DEFAULT);
-//        printf("%d\n",classID);
+        classID = H5Acreate(filename, groupname, memtype, attribute_space,
+                            H5P_DEFAULT
+#ifndef H5_USE_16_API
+                            , H5P_DEFAULT
+#endif
+                            );
+//      printf("%d\n",classID);
         if((classID >= 0) && (status >= 0)){
                 valid = true;
                 return true;
@@ -60,7 +65,8 @@ bool H5A::create(hid_t filename, const char *groupname,hid_t memtype,hid_t attri
         else return false;
 }
 
-bool H5A::create_type(hid_t filename, const char *groupname,BaseFileInterface::DataType type,hid_t attribute_space){
+bool H5A::create_type(hid_t filename, const char *groupname,
+                      BaseFileInterface::DataType type, hid_t attribute_space) {
 
         //if currently valid, close and open a new
         if(valid){
@@ -69,19 +75,49 @@ bool H5A::create_type(hid_t filename, const char *groupname,BaseFileInterface::D
         }
         switch(type){
                 case BaseFileInterface::DataType(0):
-                        classID = H5Acreate(filename,groupname,H5T_NATIVE_FLOAT,attribute_space,H5P_DEFAULT);
+                        classID = H5Acreate(filename, groupname,
+                                            H5T_NATIVE_FLOAT, attribute_space,
+                                            H5P_DEFAULT
+#ifndef H5_USE_16_API
+                                            , H5P_DEFAULT
+#endif
+                                            );
                 break;
                 case BaseFileInterface::DataType(1):
-                        classID = H5Acreate(filename,groupname,H5T_NATIVE_DOUBLE,attribute_space,H5P_DEFAULT);
+                        classID = H5Acreate(filename, groupname,
+                                            H5T_NATIVE_DOUBLE, attribute_space,
+                                            H5P_DEFAULT
+#ifndef H5_USE_16_API
+                                            , H5P_DEFAULT
+#endif
+                                            );
                 break;
                 case BaseFileInterface::DataType(2):
-                        classID = H5Acreate(filename,groupname,H5T_NATIVE_INT32,attribute_space,H5P_DEFAULT);
+                        classID = H5Acreate(filename, groupname,
+                                            H5T_NATIVE_INT32, attribute_space,
+                                            H5P_DEFAULT
+#ifndef H5_USE_16_API
+                                            , H5P_DEFAULT
+#endif
+                                            );
                 break;
                 case BaseFileInterface::DataType(3):
-                        classID = H5Acreate(filename,groupname,H5T_NATIVE_INT64,attribute_space,H5P_DEFAULT);
+                        classID = H5Acreate(filename, groupname,
+                                            H5T_NATIVE_INT64, attribute_space,
+                                            H5P_DEFAULT
+#ifndef H5_USE_16_API
+                                            , H5P_DEFAULT
+#endif
+                                            );
                 break;
                 case BaseFileInterface::DataType(4):
-                        classID = H5Acreate(filename,groupname,H5T_NATIVE_CHAR,attribute_space,H5P_DEFAULT);
+                        classID = H5Acreate(filename, groupname,
+                                            H5T_NATIVE_CHAR, attribute_space,
+                                            H5P_DEFAULT
+#ifndef H5_USE_16_API
+                                            , H5P_DEFAULT
+#endif
+                                            );
                 break;
                 default:
                 break;
