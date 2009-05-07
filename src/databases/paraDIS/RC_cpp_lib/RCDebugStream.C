@@ -422,7 +422,7 @@ int
 DebugStream::DebugStreamBuf::overflow(int c)
 {
     curLevel = level;
-    for (uint i=0; i<allBuffers.size(); i++)
+    for (unsigned int i=0; i<allBuffers.size(); i++)
         allBuffers[i]->put(c);
     return c;
 }
