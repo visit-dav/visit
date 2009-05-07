@@ -54,10 +54,10 @@
 #include <vtkRectilinearGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtParallel.h>
 
 #include <InvalidDBTypeException.h>
 #include <ImproperUseException.h>
-
 
 using     std::string;
 using     std::vector;
@@ -104,6 +104,9 @@ avtBOVWriter::OpenFile(const string &stemname, int nb)
 //    Use the real number of blocks, not what is in the meta-data.  (There
 //    may be SIL selection or there may be a resample operator.
 //
+//    Dave Pugmire, Thu May  7 12:59:09 EDT 2009
+//    Allow multi-block export in parallel.
+//
 // ****************************************************************************
 
 void
@@ -111,11 +114,13 @@ avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            vector<string> &scalars, vector<string> &vectors,
                            vector<string> &materials)
 {
-    //
-    // We can only handle single block files.
-    //
-    if (nblocks != 1)
+    if (shouldChangeTotalZones || shouldChangeChunks)
     {
+        //We are running from visitconvert, multiblock is ok.
+    }
+    else if (nblocks != 1)
+    {
+        // We can only handle single block files from file export.
         EXCEPTION1(InvalidDBTypeException, 
                          "The BOV writer can only handle single block files.");
     }
@@ -323,6 +328,10 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Use const char* for string literals.
 //    Remove unnecessary format modifiers in sprintf that caused warnings.
 //
+//    Dave Pugmire (on behalf of Hank Childs), Thu May  7 12:59:09 EDT 2009
+//    Allow parallel writing of BOV files. Also, change bov file formatting
+//    to consider how many chunks are written.
+//
 // ****************************************************************************
 
 void
@@ -415,10 +424,15 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         brickletNK = approxCubeRoot;
     }
 
+    int numDecimals = 4;
     if (nBricklets > 1)
     {
+        numDecimals = (int)log10(nBricklets)+1;
+        if (numDecimals < 4)
+            numDecimals = 4;
+
         char str[1024];
-        sprintf(str, "%s_%%0.4d.bof.gz", stem.c_str());
+        sprintf(str, "%s_%%0.%dd.bof.gz", stem.c_str(), numDecimals);
         ofile << "DATA_FILE: " << str << endl;
     }
     else
@@ -504,6 +518,10 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
             {
                 for (int k = 0 ; k < brickletsPerZ ; k++)
                 {
+                    int brick = k*brickletsPerY*brickletsPerX 
+                              + j*brickletsPerX + i;
+                    if ((brick % PAR_Size()) != PAR_Rank())
+                        continue;
                     float brick_bounds[6];
                     float x_step = (bounds[1] - bounds[0]) / brickletsPerX;
                     brick_bounds[0] = bounds[0] + i*x_step;
@@ -517,11 +535,11 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                     int brick_dims[3] = { brickletNI, brickletNJ, brickletNK };
                     ResampleGrid(rgrid, ptr, samples, arr->GetNumberOfComponents(),brick_bounds,brick_dims);
                     char str[1024];
-                    int brick = k*brickletsPerY*brickletsPerX 
-                              + j*brickletsPerX + i;
                     if (nBricklets > 1)
                     {
-                        sprintf(str, "%s_%.4d.bof.gz", stem.c_str(), brick);
+                        char fmt[1024];
+                        sprintf(fmt, "%s_%%0.%dd.bof.gz", stem.c_str(), numDecimals);
+                        sprintf(str, fmt, brick);
                         void *gz_handle = gzopen(str, "w");
                         gzwrite(gz_handle, samples, 
                                 vals_per_bricklet*sizeof(float));

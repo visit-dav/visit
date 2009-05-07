@@ -69,6 +69,9 @@ exec perl -x $0 ${1+"$@"};
 #    Quote the $visitdir string by adding backslashes to special
 #    characters before passing it into a regular expression.
 #
+#    Dave Pugmire, Thu May  7 13:46:51 EDT 2009
+#    Add support for running visitconvert in parallel.
+#
 ###############################################################################
 
 
@@ -186,6 +189,11 @@ while (scalar(@ARGV) > 0) {
         print STDERR "NOTE:  Specifying tools as an argument to VisIt is ";
         print STDERR "no longer necessary.\nIn the future, you should ";
         print STDERR "just run '$progname' instead.\n\n";
+    }
+    elsif ($arg eq "-visitconvert_par" or
+           $arg eq "-convert_par")
+    {
+        $progname = "visitconvert_par";
     }
     elsif ($arg eq "-mpeg2encode"     or
            $arg eq "-mpeg_encode")
