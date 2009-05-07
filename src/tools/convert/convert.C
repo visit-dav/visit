@@ -59,6 +59,7 @@
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtExprNodeFactory.h>
 #endif
+#include <avtParallel.h>
 #include <DBOptionsAttributes.h>
 
 #include <VisItException.h>
@@ -213,21 +214,25 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
 //    Brad Whitlock, Tue Jun 24 16:58:35 PDT 2008
 //    The plugin manager is no longer a singleton.
 //
+//    Dave Pugmire (on behalf of Hank Childs), Thu May  7 13:43:28 EDT 2009
+//    Support for running visitconvert in parallel.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
 {
     int  i;
 
+    bool parallel = false;
+#ifdef PARALLEL
+    parallel = true;
+    PAR_Init(argc, argv);
+#endif
     VisItInit::Initialize(argc, argv);
 
     //
     // Initialize the plugin readers.
     //
-    bool parallel = false;
-#ifdef PARALLEL
-    parallel = true;
-#endif
     DatabasePluginManager *dbmgr = new DatabasePluginManager;
     dbmgr->Initialize(DatabasePluginManager::Engine, parallel);
     dbmgr->LoadPluginsNow();
@@ -305,8 +310,11 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(argv[i], "-no_options") == 0)
                 noOptions = true;
+
             else
-                UsageAndExit(dbmgr, argv[0]);
+            {
+                //Ignore....
+            }
         }
     }
 
@@ -501,6 +509,10 @@ int main(int argc, char *argv[])
     }
 
     delete dbmgr;
+
+#ifdef PARALLEL
+    PAR_Exit();
+#endif
 
     return 0;
 }
