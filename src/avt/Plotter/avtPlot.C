@@ -641,6 +641,10 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Kathleen Bonnell, Thu Jul 10 16:22:11 PDT 2008
 //    Test for Curve plots should test for topo dim 1, not 2.
 //
+//    Kathleen Bonnell, Thu May  7 18:03:55 PDT 2009
+//    Changed test for curve plots (before SetScaleMode) to use windwowmode
+//    instead of spatial/topological dimensions.
+//
 // ****************************************************************************
 
 avtActor_p
@@ -690,7 +694,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
               new avtContract(src->GetFullDataRequest(), 0);
 
         avtDataObject_p sd;
-        if (spatialDim == 2 && topologicalDim == 1)  
+        if (actor->GetWindowMode() == WINMODE_CURVE)
             sd = SetScaleMode(geo, xScaleModeCurve, yScaleModeCurve,
                               havePerformedLogXCurve, havePerformedLogYCurve);
         else 
