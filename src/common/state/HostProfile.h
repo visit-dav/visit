@@ -95,6 +95,7 @@ public:
     void SelectSublaunchPreCmd();
     void SelectSublaunchPostCmd();
     void SelectHostAliases();
+    void SelectHostNickname();
     void SelectManualClientHostName();
     void SelectMachinefile();
     void SelectHwAccelPreCommand();
@@ -130,6 +131,7 @@ public:
     void SetSublaunchPostCmdSet(bool sublaunchPostCmdSet_);
     void SetSublaunchPostCmd(const std::string &sublaunchPostCmd_);
     void SetHostAliases(const std::string &hostAliases_);
+    void SetHostNickname(const std::string &hostNickname_);
     void SetShareOneBatchJob(bool shareOneBatchJob_);
     void SetSshPortSpecified(bool sshPortSpecified_);
     void SetSshPort(int sshPort_);
@@ -188,6 +190,8 @@ public:
           std::string  &GetSublaunchPostCmd();
     const std::string  &GetHostAliases() const;
           std::string  &GetHostAliases();
+    const std::string  &GetHostNickname() const;
+          std::string  &GetHostNickname();
     bool               GetShareOneBatchJob() const;
     bool               GetSshPortSpecified() const;
     int                GetSshPort() const;
@@ -264,6 +268,7 @@ public:
         ID_sublaunchPostCmdSet,
         ID_sublaunchPostCmd,
         ID_hostAliases,
+        ID_hostNickname,
         ID_shareOneBatchJob,
         ID_sshPortSpecified,
         ID_sshPort,
@@ -310,6 +315,7 @@ private:
     bool         sublaunchPostCmdSet;
     std::string  sublaunchPostCmd;
     std::string  hostAliases;
+    std::string  hostNickname;
     bool         shareOneBatchJob;
     bool         sshPortSpecified;
     int          sshPort;

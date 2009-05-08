@@ -82,6 +82,8 @@
     </Field>
     <Field name="hostAliases" label="hostAliases" type="string">
     </Field>
+    <Field name="hostNickname" label="hostNickname" type="string">
+    </Field>
     <Field name="shareOneBatchJob" label="shareOneBatchJob" type="bool">
       false
     </Field>

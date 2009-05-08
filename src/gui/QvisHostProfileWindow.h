@@ -145,6 +145,9 @@ class QRadioButton;
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Hank Childs, Thu May  7 19:05:36 PDT 2009
+//    Added field for host nickname.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -204,6 +207,7 @@ private slots:
     void loadBalancingChanged(int);
     void hostNameChanged(const QString &host);
     void hostAliasesChanged(const QString &host);
+    void hostNicknameChanged(const QString &host);
     void userNameChanged(const QString &username);
     void toggleSSHPort(bool);
     void sshPortChanged(const QString &port);
@@ -238,6 +242,8 @@ private:
     QComboBox    *hostName;
     QLabel       *hostAliasesLabel;
     QLineEdit    *hostAliases;
+    QLabel       *hostNicknameLabel;
+    QLineEdit    *hostNickname;
     QLabel       *userNameLabel;
     QLineEdit    *userName;
     QLabel       *numProcLabel;
