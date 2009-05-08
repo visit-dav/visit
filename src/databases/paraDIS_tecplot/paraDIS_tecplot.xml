@@ -7,10 +7,7 @@ RC_c_lib/debugutil.c
 RC_c_lib/signals.c 
 RC_c_lib/fileutils.c 
 RC_c_lib/inventor.c
-RC_cpp_lib/RCDebugStream.C 
-RC_cpp_lib/Prefs.C 
 RC_cpp_lib/RangeList.C 
-RC_cpp_lib/test.C 
 RC_cpp_lib/timer.C 
 RC_cpp_lib/pathutil.C
      </Files>
@@ -21,10 +18,7 @@ RC_c_lib/debugutil.c
 RC_c_lib/signals.c 
 RC_c_lib/fileutils.c 
 RC_c_lib/inventor.c
-RC_cpp_lib/RCDebugStream.C 
-RC_cpp_lib/Prefs.C 
 RC_cpp_lib/RangeList.C 
-RC_cpp_lib/test.C 
 RC_cpp_lib/timer.C 
 RC_cpp_lib/pathutil.C
      </Files>
