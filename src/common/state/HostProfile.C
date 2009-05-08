@@ -79,7 +79,7 @@ HostProfile::ClientHostDetermination_FromString(const std::string &s, HostProfil
 }
 
 // Type map format string
-const char *HostProfile::TypeMapFormatString = "sssiibibsbsbsbsbbbs*bbsbsbsbssbbiisbsbbbsbsb";
+const char *HostProfile::TypeMapFormatString = "sssiibibsbsbsbsbbbs*bbsbsbsbsssbbiisbsbbbsbsb";
 
 // ****************************************************************************
 // Method: HostProfile::HostProfile
@@ -177,6 +177,7 @@ HostProfile::HostProfile(const HostProfile &obj) :
     sublaunchPostCmdSet = obj.sublaunchPostCmdSet;
     sublaunchPostCmd = obj.sublaunchPostCmd;
     hostAliases = obj.hostAliases;
+    hostNickname = obj.hostNickname;
     shareOneBatchJob = obj.shareOneBatchJob;
     sshPortSpecified = obj.sshPortSpecified;
     sshPort = obj.sshPort;
@@ -263,6 +264,7 @@ HostProfile::operator = (const HostProfile &obj)
     sublaunchPostCmdSet = obj.sublaunchPostCmdSet;
     sublaunchPostCmd = obj.sublaunchPostCmd;
     hostAliases = obj.hostAliases;
+    hostNickname = obj.hostNickname;
     shareOneBatchJob = obj.shareOneBatchJob;
     sshPortSpecified = obj.sshPortSpecified;
     sshPort = obj.sshPort;
@@ -330,6 +332,7 @@ HostProfile::operator == (const HostProfile &obj) const
             (sublaunchPostCmdSet == obj.sublaunchPostCmdSet) &&
             (sublaunchPostCmd == obj.sublaunchPostCmd) &&
             (hostAliases == obj.hostAliases) &&
+            (hostNickname == obj.hostNickname) &&
             (shareOneBatchJob == obj.shareOneBatchJob) &&
             (sshPortSpecified == obj.sshPortSpecified) &&
             (sshPort == obj.sshPort) &&
@@ -516,6 +519,7 @@ HostProfile::SelectAll()
     Select(ID_sublaunchPostCmdSet,     (void *)&sublaunchPostCmdSet);
     Select(ID_sublaunchPostCmd,        (void *)&sublaunchPostCmd);
     Select(ID_hostAliases,             (void *)&hostAliases);
+    Select(ID_hostNickname,            (void *)&hostNickname);
     Select(ID_shareOneBatchJob,        (void *)&shareOneBatchJob);
     Select(ID_sshPortSpecified,        (void *)&sshPortSpecified);
     Select(ID_sshPort,                 (void *)&sshPort);
@@ -736,6 +740,12 @@ HostProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
         node->AddNode(new DataNode("hostAliases", hostAliases));
     }
 
+    if(completeSave || !FieldsEqual(ID_hostNickname, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("hostNickname", hostNickname));
+    }
+
     if(completeSave || !FieldsEqual(ID_shareOneBatchJob, &defaultObject))
     {
         addToParent = true;
@@ -914,6 +924,8 @@ HostProfile::SetFromNode(DataNode *parentNode)
         SetSublaunchPostCmd(node->AsString());
     if((node = searchNode->GetNode("hostAliases")) != 0)
         SetHostAliases(node->AsString());
+    if((node = searchNode->GetNode("hostNickname")) != 0)
+        SetHostNickname(node->AsString());
     if((node = searchNode->GetNode("shareOneBatchJob")) != 0)
         SetShareOneBatchJob(node->AsBool());
     if((node = searchNode->GetNode("sshPortSpecified")) != 0)
@@ -1163,6 +1175,13 @@ HostProfile::SetHostAliases(const std::string &hostAliases_)
 {
     hostAliases = hostAliases_;
     Select(ID_hostAliases, (void *)&hostAliases);
+}
+
+void
+HostProfile::SetHostNickname(const std::string &hostNickname_)
+{
+    hostNickname = hostNickname_;
+    Select(ID_hostNickname, (void *)&hostNickname);
 }
 
 void
@@ -1519,6 +1538,18 @@ HostProfile::GetHostAliases()
     return hostAliases;
 }
 
+const std::string &
+HostProfile::GetHostNickname() const
+{
+    return hostNickname;
+}
+
+std::string &
+HostProfile::GetHostNickname()
+{
+    return hostNickname;
+}
+
 bool
 HostProfile::GetShareOneBatchJob() const
 {
@@ -1710,6 +1741,12 @@ HostProfile::SelectHostAliases()
 }
 
 void
+HostProfile::SelectHostNickname()
+{
+    Select(ID_hostNickname, (void *)&hostNickname);
+}
+
+void
 HostProfile::SelectManualClientHostName()
 {
     Select(ID_manualClientHostName, (void *)&manualClientHostName);
@@ -1786,6 +1823,7 @@ HostProfile::GetFieldName(int index) const
     case ID_sublaunchPostCmdSet:     return "sublaunchPostCmdSet";
     case ID_sublaunchPostCmd:        return "sublaunchPostCmd";
     case ID_hostAliases:             return "hostAliases";
+    case ID_hostNickname:            return "hostNickname";
     case ID_shareOneBatchJob:        return "shareOneBatchJob";
     case ID_sshPortSpecified:        return "sshPortSpecified";
     case ID_sshPort:                 return "sshPort";
@@ -1853,6 +1891,7 @@ HostProfile::GetFieldType(int index) const
     case ID_sublaunchPostCmdSet:     return FieldType_bool;
     case ID_sublaunchPostCmd:        return FieldType_string;
     case ID_hostAliases:             return FieldType_string;
+    case ID_hostNickname:            return FieldType_string;
     case ID_shareOneBatchJob:        return FieldType_bool;
     case ID_sshPortSpecified:        return FieldType_bool;
     case ID_sshPort:                 return FieldType_int;
@@ -1920,6 +1959,7 @@ HostProfile::GetFieldTypeName(int index) const
     case ID_sublaunchPostCmdSet:     return "bool";
     case ID_sublaunchPostCmd:        return "string";
     case ID_hostAliases:             return "string";
+    case ID_hostNickname:            return "string";
     case ID_shareOneBatchJob:        return "bool";
     case ID_sshPortSpecified:        return "bool";
     case ID_sshPort:                 return "int";
@@ -2103,6 +2143,11 @@ HostProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_hostAliases:
         {  // new scope
         retval = (hostAliases == obj.hostAliases);
+        }
+        break;
+    case ID_hostNickname:
+        {  // new scope
+        retval = (hostNickname == obj.hostNickname);
         }
         break;
     case ID_shareOneBatchJob:

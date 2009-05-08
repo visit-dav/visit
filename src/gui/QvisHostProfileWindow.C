@@ -319,6 +319,9 @@ QvisHostProfileWindow::CreateWindowContents()
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//   Hank Childs, Thu May  7 19:05:36 PDT 2009
+//   Added support for host nicknames.
+//
 // ****************************************************************************
 
 QWidget *
@@ -329,7 +332,6 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
     QVBoxLayout *innerLayout = new QVBoxLayout(activeProfileGroup);
     QGridLayout *profileLayout = new QGridLayout();
     innerLayout->addLayout(profileLayout);
-    
     profileLayout->setSpacing(HOST_PROFILE_SPACING);
     innerLayout->addStretch(5);
 
@@ -372,6 +374,14 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
     hostAliasesLabel = new QLabel(QString("*") + tr("Host name aliases"), activeProfileGroup);
     profileLayout->addWidget(hostAliasesLabel, row, 0);
     profileLayout->addWidget(hostAliases, row, 1);
+    row++;
+
+    hostNickname = new QLineEdit(activeProfileGroup);
+    connect(hostNickname, SIGNAL(textChanged(const QString &)),
+            this, SLOT(hostNicknameChanged(const QString &)));
+    hostNicknameLabel = new QLabel(QString("*") + tr("Host nickname"), activeProfileGroup);
+    profileLayout->addWidget(hostNicknameLabel, row, 0);
+    profileLayout->addWidget(hostNickname, row, 1);
     row++;
 
     userName = new QLineEdit(activeProfileGroup);
@@ -1201,6 +1211,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //    Cyrus Harrison, Tue Dec  9 14:55:27 PST 2008
 //    Finished Qt4 Port todo.
 //
+//   Hank Childs, Fri May  8 05:52:11 PDT 2009
+//   Add support for host nicknames.
+//
 // ****************************************************************************
 
 void
@@ -1236,6 +1249,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
     activeProfileCheckBox->blockSignals(true);
     hostName->blockSignals(true);
     hostAliases->blockSignals(true);
+    hostNickname->blockSignals(true);
     userName->blockSignals(true);
     loadBalancing->blockSignals(true);
     engineArguments->blockSignals(true);
@@ -1258,6 +1272,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
         hostName->setEditText("");
         hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str());
         hostAliases->setText("");
+        hostNickname->setText("");
         userName->setText("");
         userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         numProcessors->setValue(1);
@@ -1303,6 +1318,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
         // Replace the "localhost" machine name.
         hostName->setEditText(current.GetHost().c_str());
         hostAliases->setText(current.GetHostAliases().c_str());
+        hostNickname->setText(current.GetHostNickname().c_str());
         // If there is no user name then give it a valid user name.
         if(current.GetUserName() == "notset")
         {
@@ -1464,6 +1480,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
     activeProfileCheckBox->blockSignals(false);
     hostName->blockSignals(false);
     hostAliases->blockSignals(false);
+    hostNickname->blockSignals(false);
     userName->blockSignals(false);
     loadBalancing->blockSignals(false);
     engineArguments->blockSignals(false);
@@ -1591,6 +1608,8 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     hostName->setEnabled(enabled);
     hostAliasesLabel->setEnabled(enabled);
     hostAliases->setEnabled(enabled);
+    hostNicknameLabel->setEnabled(enabled);
+    hostNickname->setEnabled(enabled);
     userNameLabel->setEnabled(enabled);
     userName->setEnabled(enabled);
     timeout->setEnabled(enabled);
@@ -1717,13 +1736,17 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
 //   Added fields for commands to run pre and post the mpi command.
 //
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//   Initial Qt4 Port.
 //
-//    Cyrus Harrison, Tue Dec  9 14:55:27 PST 2008
-//    Finished Qt4 Port todo.
+//   Cyrus Harrison, Tue Dec  9 14:55:27 PST 2008
+//   Finished Qt4 Port todo.
+//
+//   Hank Childs, Fri May  8 05:52:11 PDT 2009
+//   Add support for host nicknames.
 //
 // ****************************************************************************
+
 bool
 QvisHostProfileWindow::GetCurrentValues(int which_widget)
 {
@@ -1981,6 +2004,26 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     }
     widget++;
 
+    // Do the host nickname
+    if(which_widget == widget || doAll)
+    {
+        temp = hostNickname->text();
+        temp = temp.trimmed();
+
+        std::string newNickname(temp.toStdString());
+        if (newNickname != current.GetHostNickname())
+            needNotify = true;
+
+        // Change all profiles with the same hostname
+        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+        {
+            HostProfile &prof = profiles->operator[](i);
+
+            if (prof.GetHost() == current.GetHost())
+                prof.SetHostNickname(newNickname);
+        }
+    }
+    widget++;
     // Do the manual client host name
     if(which_widget == widget || doAll)
     {
@@ -3022,6 +3065,33 @@ QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
 
         if (prof.GetHost() == current.GetHost())
             prof.SetHostAliases(aliases.toStdString());
+    }
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::hostNicknameChanged
+//
+// Purpose: 
+//   This is a slot function that sets the host nickname for the current
+//   profile.
+//
+// Programmer: Hank Childs
+// Creation:   May 7, 2009
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::hostNicknameChanged(const QString &nickname)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+    {
+        HostProfile &prof = profiles->operator[](i);
+
+        if (prof.GetHost() == current.GetHost())
+            prof.SetHostNickname(nickname.toStdString());
     }
 }
 

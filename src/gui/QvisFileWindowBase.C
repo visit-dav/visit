@@ -641,6 +641,9 @@ QvisFileWindowBase::UpdateWindowFromFiles(bool doAll)
 //
 // Modifications:
 //
+//    Hank Childs, Thu May  7 19:59:13 PDT 2009
+//    Add support for nicknames.
+//
 // ****************************************************************************
 
 void
@@ -658,7 +661,12 @@ QvisFileWindowBase::UpdateHostComboBox()
         // Create a constant reference to the i'th profile.
         const HostProfile &p = profiles->operator[](i);
 
-        stringVector hostNames(p.SplitHostPattern(p.GetHost()));
+        stringVector hostNames;
+        if (p.GetHostNickname() != "")
+            hostNames.push_back(p.GetHostNickname());
+        else
+            hostNames = p.SplitHostPattern(p.GetHost());
+
         for (int k = 0; k < hostNames.size(); ++k)
         {
             if(std::find(hosts.begin(), hosts.end(), hostNames[k]) == hosts.end())
@@ -1123,6 +1131,9 @@ QvisFileWindowBase::GetCurrentValues(bool allowPathChange)
 //    Cyrus Harrison, Thu Jun 26 09:54:36 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Hank Childs, Thu May  7 20:08:04 PDT 2009
+//    Added support for nicknames.
+//
 // ****************************************************************************
 
 bool
@@ -1136,6 +1147,13 @@ QvisFileWindowBase::ChangeHosts()
         // Take the string from the text field and strip whitespace.
         std::string host(hostComboBox->currentText().trimmed().toStdString());
         std::string currentHost(fileServer->GetHost());
+        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+        {
+            // Create a constant reference to the i'th profile.
+            const HostProfile &p = profiles->operator[](i);
+            if (p.GetHostNickname() == host)
+                host = p.GetHost();
+        }
 
         if(host != fileServer->GetHost())
         {
