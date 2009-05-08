@@ -5,7 +5,7 @@
 #include <vector>
 #include <iomanip> 
 #include <istream>
-#include "RCDebugStream.h"
+#include "DebugStream.h"
 
 namespace rclib {
   using namespace std;
@@ -320,18 +320,18 @@ namespace rclib {
       }
       if (newOrientation[axisNum] != 0) {
         if (newAxis != -1)  {
-          rcdebug2 << "AxisSwitch: newOrientation is not aligned with an axis" << endl; 
+          debug2 << "AxisSwitch: newOrientation is not aligned with an axis" << endl; 
           return false; 
         }
         newAxis = axisNum;
       }
     }
     if (newAxis == -1 || oldAxis == -1) {
-      rcdebug2 << "AxisSwitch: One or both orientations do not align with an axis" << endl; 
+      debug2 << "AxisSwitch: One or both orientations do not align with an axis" << endl; 
       return false; 
     }
     // So we're just switching axes, which is a trivial transformation computationally: 
-    rcdebug1 << "AxisSwitch: old and new orientations are aligned with an axis, so transforming with simple axis rotation" << endl; 
+    debug1 << "AxisSwitch: old and new orientations are aligned with an axis, so transforming with simple axis rotation" << endl; 
     int shft = newAxis - oldAxis; // spin in direction of axis "rotation"
     // declaring vector<Point<T> >::iterator is to make a declaration that itself depends on a template, so must use "typename" keyword to convince the compiler that I'm really declaring a type.  See Stroustrop sec 13.5, p 857
     typename vector<Point<T> >::iterator pos = pointsToRotate.begin(), endpos = pointsToRotate.end();
@@ -344,7 +344,7 @@ namespace rclib {
         tmpPt[newaxis] = (*pos)[axis]; 
       }
       firsttime = false; 
-      rcdebug5 << "Point " << pos->Stringify() << " rotated to " << tmpPt.Stringify() << endl; 
+      debug5 << "Point " << pos->Stringify() << " rotated to " << tmpPt.Stringify() << endl; 
       
       *pos = tmpPt; 
       
@@ -360,20 +360,20 @@ namespace rclib {
     void RotatePoints(Point<T> oldOrientation, Point<T> newOrientation, 
                         vector<Point<T> > &pointsToRotate) {
     
-    rcdebug2 << "RotateCylinder( " << oldOrientation.Stringify() << " ---> " << newOrientation.Stringify() << " )" << endl; 
+    debug2 << "RotateCylinder( " << oldOrientation.Stringify() << " ---> " << newOrientation.Stringify() << " )" << endl; 
     
     if (!oldOrientation || !newOrientation) {
       string err = string ("Error:  oldOrientation and newOrientation must both be nonzero, but oldOrientation is ") + oldOrientation.Stringify() + " and newOrientation is " + newOrientation.Stringify(); 
       throw err; 
     }
     if (oldOrientation == newOrientation) {
-      rcdebug2 <<"newOrientation == oldOrientation, nothing to do" << endl; 
+      debug2 <<"newOrientation == oldOrientation, nothing to do" << endl; 
       return; 
     }
     
     // First, if both old and new orientations are aligned along axes, then it's very simple: 
     if  (AxisSwitch(oldOrientation, newOrientation, pointsToRotate)) {
-      rcdebug2 << "RotateCylinder done: AxisSwitch succeeded" << endl;
+      debug2 << "RotateCylinder done: AxisSwitch succeeded" << endl;
       return;
     }
     
