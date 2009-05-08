@@ -37,13 +37,18 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtNaturalLogExpression.C                         //
+//                         avtNaturalLogExpression.C                         //
 // ************************************************************************* //
 
 #include <avtNaturalLogExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+
+
+#include <avtExprNode.h>
+#include <ExprToken.h>
+#include <DebugStream.h>
 
 #include <ExpressionException.h>
 
@@ -58,11 +63,16 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri May  8 13:21:52 PDT 2009
+//    Initialize defaultErrorValue, useDefaultOnError.
+//
 // ****************************************************************************
 
 avtNaturalLogExpression::avtNaturalLogExpression()
 {
-    ;
+    defaultErrorValue = 0.;
+    useDefaultOnError = false;
 }
 
 
@@ -105,6 +115,10 @@ avtNaturalLogExpression::~avtNaturalLogExpression()
 //    Hank Childs, Fri Nov 15 15:25:26 PST 2002
 //    Added support for vectors and arbitrary data types.
 //
+//    Kathleen Bonnell, Fri May  8 13:01:58 PDT 2009
+//    Added support for a default value to be used as a return value for
+//    non-positive values.  Updated exception message.
+//
 // ****************************************************************************
  
 void
@@ -115,13 +129,81 @@ avtNaturalLogExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int j = 0 ; j < ncomponents ; j++)
         {
-            float val = in->GetComponent(i, j);
+            double val = in->GetComponent(i, j);
             if (val <= 0)
             {
-                EXCEPTION2(ExpressionException, outputVariableName,
-                           "you cannot take the natural log of values <= 0");
+                if (useDefaultOnError)
+                    out->SetComponent(i, j, defaultErrorValue);
+                else
+                {
+                    string msg = "you cannot take the logarithm of values";
+                    msg += "<=0.  You might want to try ln(var, ";
+                    msg +=  "some-default-numeric-value).";
+                    EXCEPTION2(ExpressionException, outputVariableName,
+                            msg.c_str()); 
+                }
             }
-            out->SetComponent(i, j, log(val));
+            else
+                out->SetComponent(i, j, log(val));
+        }
+    }
+}
+
+
+
+// ****************************************************************************
+//  Method: avtNaturalLogExpression::ProcessArguments
+//
+//  Purpose:
+//      Parses optional arguments. 
+//      Allows the user to pass a default value to be used in error cases.
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     May 8, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtNaturalLogExpression::ProcessArguments(ArgsExpr *args, 
+                                          ExprPipelineState *state)
+{
+    // Check the number of arguments
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    int nargs = arguments->size();
+    if (nargs == 0)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                  "avtNaturalLogExpression: No arguments given.");
+    }
+
+    // First arg should be an expression, let it gen is filters. 
+    ArgExpr *first_arg = (*arguments)[0];
+    avtExprNode *first_tree = dynamic_cast<avtExprNode*>(first_arg->GetExpr());
+    first_tree->CreateFilters(state);
+
+    // If we have two arguments, we expect a numerical const for the second.
+    if (nargs == 2)
+    {
+        ArgExpr *sec = (*arguments)[1];
+        avtExprNode *second_tree = dynamic_cast<avtExprNode*>(sec->GetExpr());
+        double v = 0;
+        if (GetNumericVal(second_tree, v))
+        {
+            useDefaultOnError = true;
+            defaultErrorValue = v;
+            debug4 << "avtNaturalLogExpression:" << "Using " << v 
+                   << " as default value in error conditions" << endl;
+        }
+        else
+        {
+            string error_msg = "avtNaturalLogExpression: "
+                               "Invalid second argument."
+                               "Should be float or int";
+            debug5 << error_msg << endl;
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       error_msg.c_str());
         }
     }
 }

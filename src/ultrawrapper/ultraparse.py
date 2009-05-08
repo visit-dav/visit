@@ -162,13 +162,19 @@ def ultra_doOp_percurve(curve, t):
     usevar = "<%s>"%usevar
     if t.cmd in mathOpsNoArg:
         newvarDef = "%s(%s)" % (t.cmd, usevar)
+        if t.cmd == "ln" or t.cmd == "log10":
+            newvarDef = "%s(%s, -1.0e38)" % (t.cmd, usevar)
         createAndApplyExpression(curve, newvarDef, t.cmd)
 
     elif t.cmd in mathOpsXNoArg:
         usecmd = mathOpsNoArg[mathOpsXNoArg.index(t.cmd)]
         newvarDef = "curve_domain(%s, %s(coord(%s)[0]))"  % \
                                  (usevar, usecmd, usevar)
+        if usecmd == "ln" or t.cmd == "log10":
+            newvarDef = "curve_domain(%s, %s(coord(%s)[0], -1.0e38))"  % \
+                                 (usevar, usecmd, usevar)
         createAndApplyExpression(curve, newvarDef, t.cmd)
+        ResetView()
 
 
     elif t.cmd == 'ymin' or t.cmd == 'xmin':
