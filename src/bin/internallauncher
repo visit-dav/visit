@@ -485,6 +485,9 @@ $0 = shift @ARGV;
 #    Paul Navratil, Fri May  8 14:08:20 CDT 2009
 #    updated TACC support
 #
+#    Paul Navratil, Fri May  8 17:00:59 CDT 2009
+#    deleted ref to tacc_qsub, special qsub now gets auto-magically generated, like TFILE
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2439,7 +2442,22 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($IsRunningOnRanger_TACC)
             {
                 # full path to qsub hack until TACC non-interactive shells work correctly
-                @parcmd = ("$visitscriptdir/tacc_qsub") if ($plauncher eq "qsub");
+                $tqsubname = "$script_dir/tacc_qsub.$tuser.$tdate";
+                $tqsub_opened = 1;
+                open(TQSUB, ">$tqsubname") or $tqsub_opened = 0;
+                if ($tqsub_opened) {
+                    print TQSUB "#!/bin/bash -l\n";
+                    print TQSUB "qsub \$@\n";
+                    close(TQSUB);
+                    `chmod 755 $tqsubname`;
+
+                    @parcmd = ("$tqsubname") if ($plauncher eq "qsub");
+                }
+                else
+                {
+                    print STDERR "Could not create temporary qsub (\"$tqsubname\").\n";
+                    exit 1;
+                }
             }
 
 
