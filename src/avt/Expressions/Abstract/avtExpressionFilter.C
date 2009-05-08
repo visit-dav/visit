@@ -61,6 +61,7 @@
 #include <avtExpressionTypeConversions.h>
 
 #include <ParsingExprList.h>
+#include <ExprNode.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -827,4 +828,45 @@ avtExpressionFilter::DetermineVariableType(std::string &varname)
     return AVT_UNKNOWN_TYPE;
 }
 
+// ****************************************************************************
+//  Method: avtExpressionFilter::GetNumericVal
+//
+//  Purpose:
+//      Parses optional arguments. 
+//      Helper to obtain a constant floating point value from an expression 
+//      node. Handles IntegerConst, FloatConst, and Unary Minus 
+//      (with either IntegerConst, FloatConst as a child node)
+//
+//  Programmer:   Cyrus Harrison 
+//  Creation:     April 4, 2008
+//
+// ****************************************************************************
+
+bool
+avtExpressionFilter::GetNumericVal(ExprNode *node, double &val)
+{
+    bool ok = false;
+    val = 0;
+    string n_type = node->GetTypeName();
+    if ( n_type == "FloatConst")
+    {
+        val = dynamic_cast<FloatConstExpr*>(node)->GetValue();
+        ok = true;
+    }
+    else if (n_type == "IntegerConst")
+    {
+        val = dynamic_cast<IntegerConstExpr*>(node)->GetValue();
+        ok = true;
+    }
+    else if (n_type == "Unary")
+    {
+        ExprNode *child = dynamic_cast<UnaryExpr*>(node)->GetExpr();
+        if(GetNumericVal(child,val))
+        {
+            val *=-1;
+            ok = true;
+        }
+    }
+    return ok;
+}
 

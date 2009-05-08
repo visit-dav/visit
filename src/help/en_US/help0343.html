@@ -160,8 +160,8 @@
 </td>
 <td width="25%"><p>Array decompose</p>
 </td>
-<td width="54%"><p>array_decompose(expr1, expr2)</p>
-<p>expr1 must evaluate to an array variable. expr2 must evaluate to a number between 0 and the number of scalar components in the array variable minus 1. This expression isolates one scalar variable from an array variable.</p>
+<td width="54%"><p>array_decompose(expr<sub>1</sub>, expr<sub>2</sub>)</p>
+<p>expr<sub>1</sub> must evaluate to an array variable. expr<sub>2</sub> must evaluate to a number between 0 and the number of scalar components in the array variable minus 1. This expression isolates one scalar variable from an array variable.</p>
 <p>Example: array_decompose(array, 0)</p>
 </td>
 </tr>
@@ -230,7 +230,7 @@
 </td>
 <td width="25%"><p>Connectivity-based common mesh field evaluation</p>
 </td>
-<td width="54%"><p>conn_cmfe(expr1, expr2)</p>
+<td width="54%"><p>conn_cmfe(expr<sub>1</sub>, expr<sub>2</sub>)</p>
 <p>Examples:</p>
 <p><i>Map wave0020.silo's pressure variable the current mesh.</p>
 <p></i>conn_cmfe(&lt;wave0020.silo:pressure&gt;, quadmesh)</p>
@@ -564,9 +564,10 @@
 </td>
 <td width="25%"><p>Natural logarithm</p>
 </td>
-<td width="54%"><p>ln(expr)</p>
-<p>expr can be a database variable, constant, or other scalar expression. The ln expression computes the natural logarithm of the input scalar expression.</p>
+<td width="54%"><p>ln(expr<sub>1</sub>, expr<sub>2</sub>)</p>
+<p>expr<sub>1</sub> can be a database variable, constant, or other scalar expression. The ln expression computes the natural logarithm of the input scalar expression. expr<sub>2</sub> is optional and should be a numeric constant.  It is used to replace taking the ln of non-positive values in expr<sub>1</sub>, and prevents exceptions being thrown hen they are present.</p>
 <p>Example: ln(density)</p>
+<p>Example: ln(u, -1e38)</p>
 </td>
 </tr>
 <tr>
@@ -574,9 +575,10 @@
 </td>
 <td width="25%"><p>Base 10 logarithm</p>
 </td>
-<td width="54%"><p>log(expr)</p>
-<p>expr can be a database variable, constant, or other scalar expression. The log expression computes the base 10 logarithm of the input scalar expression.</p>
+<td width="54%"><p>log(expr<sub>1</sub>, expr<sub>2</sub>)</p>
+<p>expr<sub>1</sub> can be a database variable, constant, or other scalar expression. The log expression computes the base 10 logarithm of the input scalar expression. <sub>expr2</sub> is optional and should be a numeric constant.  It is used to replace taking the log of non-positive values in expr<sub>1</sub>, and prevents exceptions being thrown in this case.</p>
 <p>Example: log(density)</p>
+<p>Example: log(u, -1e38)</p>
 </td>
 </tr>
 <tr>

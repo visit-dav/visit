@@ -36,9 +36,9 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                            avtNaturalLogExpression.h                          //
-// ************************************************************************* //
+// ************************************************************************** //
+//                         avtNaturalLogExpression.h                          //
+// ************************************************************************** //
 
 #ifndef AVT_NATURALLOG_FILTER_H
 #define AVT_NATURALLOG_FILTER_H
@@ -46,7 +46,8 @@
 #include <avtUnaryMathExpression.h>
 
 class     vtkDataArray;
-
+class ArgsExpr;
+class ExprPipelineState;
 
 // ****************************************************************************
 //  Class: avtNaturalLogExpression
@@ -63,6 +64,9 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Kathleen Bonnell, Fri May  8 13:21:18 PDT 2009
+//    Added defaultErrorValue, useDefaultOnError, and ProcessArguments.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtNaturalLogExpression : public avtUnaryMathExpression
@@ -74,10 +78,13 @@ class EXPRESSION_API avtNaturalLogExpression : public avtUnaryMathExpression
     virtual const char       *GetType(void)  { return "avtNaturalLogExpression"; };
     virtual const char       *GetDescription(void) 
                                          { return "Calculating natural log"; };
+    virtual void              ProcessArguments(ArgsExpr *, ExprPipelineState *);
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
                                           int ncomponents, int ntuples);
+    double                    defaultErrorValue;
+    bool                      useDefaultOnError;
 };
 
 

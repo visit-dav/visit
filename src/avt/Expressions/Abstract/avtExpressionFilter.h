@@ -53,6 +53,7 @@
 class     vtkDataArray;
 class     ArgsExpr;
 class     ExprPipelineState;
+class     ExprNode;
 
 
 // ****************************************************************************
@@ -114,6 +115,9 @@ class     ExprPipelineState;
 //    Kathleen Bonnell, Thu Apr 16 09:50:56 PDT 2009
 //    Added GetOutputVariableName.
 //
+//    Kathleen Bonnell, Fri May  8 13:44:16 PDT 2009
+//    Added method GetNumericVal (moved from avtCylindricalRadiusExpression.h.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -137,6 +141,9 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     const char              *GetOutputVariableName() 
                                  { return outputVariableName; }
+
+    bool                     GetNumericVal(ExprNode *, double &res);
+
   protected:
     char                    *outputVariableName;
     int                      currentTimeState;

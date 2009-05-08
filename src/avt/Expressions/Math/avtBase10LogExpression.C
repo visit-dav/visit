@@ -36,14 +36,18 @@
 *
 *****************************************************************************/
 
-// ********************************************************************** //
-//                             avtBase10LogExpression.C                       //
-// ********************************************************************** //
+// ************************************************************************* //
+//                         avtBase10LogExpression.C                          //
+// ************************************************************************* //
 
 #include <avtBase10LogExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+
+#include <avtExprNode.h>
+#include <ExprToken.h>
+#include <DebugStream.h>
 
 #include <ExpressionException.h>
 
@@ -58,11 +62,16 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri May  8 13:21:52 PDT 2009
+//    Initialize defaultErrorValue, useDefaultOnError.
+//
 // ****************************************************************************
 
 avtBase10LogExpression::avtBase10LogExpression()
 {
-    ;
+    defaultErrorValue = 0.;
+    useDefaultOnError = false;
 }
 
 
@@ -105,6 +114,10 @@ avtBase10LogExpression::~avtBase10LogExpression()
 //    Hank Childs, Fri Nov 15 15:25:26 PST 2002
 //    Added support for vectors and arbitrary data types.
 //
+//    Kathleen Bonnell, Fri May  8 13:01:58 PDT 2009
+//    Added support for a default value to be used as a return value for
+//    non-positive values. Upated exception message.
+//
 // ****************************************************************************
 
 void
@@ -118,13 +131,84 @@ avtBase10LogExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
             float f = in->GetComponent(i, j);
             if (f <= 0)
             {
-                EXCEPTION2(ExpressionException, outputVariableName,
-                           "you cannot take the logarithm of values <= 0");
+                if (useDefaultOnError)
+                    out->SetComponent(i, j, defaultErrorValue);
+                else
+                {
+                    string msg = "you cannot take the logarithm of values";
+                    msg += "<=0.  You might want to try log10(var, ";
+                    msg +=  "some-default-numeric-value).";
+                    EXCEPTION2(ExpressionException, outputVariableName,
+                            msg.c_str()); 
+                }
             }
-            f = log10(f);
-            out->SetComponent(i, j, f);
+            else
+            {
+                out->SetComponent(i, j, log10(f));
+            }
         }
     }
 }
+
+
+
+// ****************************************************************************
+//  Method: avtBase10LogExpression::ProcessArguments
+//
+//  Purpose:
+//      Parses optional arguments. 
+//      Allows the user to pass a default value to be used in error cases.
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     May 8, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtBase10LogExpression::ProcessArguments(ArgsExpr *args, 
+                                         ExprPipelineState *state)
+{
+    // Check the number of arguments
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    int nargs = arguments->size();
+    if (nargs == 0)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                  "avtBase10LogExpression: No arguments given.");
+    }
+
+    // First arg should be an expression, let it gen is filters. 
+    ArgExpr *first_arg = (*arguments)[0];
+    avtExprNode *first_tree = dynamic_cast<avtExprNode*>(first_arg->GetExpr());
+    first_tree->CreateFilters(state);
+
+    // If we have two arguments, we expect a numerical const for the second.
+    if (nargs == 2)
+    {
+        ArgExpr *sec = (*arguments)[1];
+        avtExprNode *second_tree = dynamic_cast<avtExprNode*>(sec->GetExpr());
+        double v = 0;
+        if (GetNumericVal(second_tree, v))
+        {
+            useDefaultOnError = true;
+            defaultErrorValue = v;
+            debug4 << "avtBase10LogExpression:" << "Using " << v 
+                   << " as default value in error conditions" << endl;
+        }
+        else
+        {
+            string error_msg = "avtBase10LogExpression: "
+                               "Invalid second argument."
+                               "Should be float or int";
+            debug5 << error_msg << endl;
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       error_msg.c_str());
+        }
+    }
+}
+
+
 
 

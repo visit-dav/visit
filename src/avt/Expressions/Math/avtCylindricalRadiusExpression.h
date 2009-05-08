@@ -65,6 +65,11 @@ class     ExprNode;
 //  Programmer: Cyrus Harrison
 //  Creation:   April 2, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri May  8 12:59:29 PDT 2009
+//    Moved GetNumericVal to avtExpressionFilter so it could be used by 
+//    other expressions.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCylindricalRadiusExpression 
@@ -87,7 +92,6 @@ class EXPRESSION_API avtCylindricalRadiusExpression
 
   private:
             double            axisVector[3];
-            bool              GetNumericVal(ExprNode *, double &res);
     
 };
 
