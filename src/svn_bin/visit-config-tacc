@@ -4,82 +4,79 @@
     <Object name="VIEWER">
         <Object name="DEFAULT_VALUES">
             <Object name="HostProfileList">
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">ranger serial</Field>
-                    <Field name="host" type="string">ranger.tacc.utexas.edu</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit" </Field>
-                    <Field name="tunnelSSH" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">ranger normal</Field>
-                    <Field name="host" type="string">ranger.tacc.utexas.edu</Field>
-                    <Field name="numProcessors" type="int">32</Field>
+                 <Object name="HostProfile">
+                    <Field name="profileName" type="string">ranger normal queue</Field>
+                    <Field name="host" type="string">login2.ranger.tacc.utexas.edu</Field>
+                    <Field name="hostAliases" type="string"></Field>
+                    <Field name="hostNickname" type="string"></Field>
+                    <Field name="timeout" type="int">480</Field>
+                    <Field name="numProcessors" type="int">16</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="numNodes" type="int">4</Field>
                     <Field name="partitionSet" type="bool">true</Field>
                     <Field name="partition" type="string">normal</Field>
                     <Field name="bankSet" type="bool">true</Field>
-                    <Field name="bank" type="string">SET BANK HERE</Field>
+                    <Field name="bank" type="string">YOUR PROJECT ACCT</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">60</Field>
+                    <Field name="timeLimit" type="string">01:00:00</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">qsub/ibrun</Field>
+                    <Field name="forceStatic" type="bool">true</Field>
+                    <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit" </Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit"</Field>
                     <Field name="parallel" type="bool">true</Field>
-                    <Field name="launchArgsSet" type="bool">true</Field>
-                    <Field name="launchArgs" type="string">-V -cwd -N visit -o SGE_out.visit -e SGE_err.visit</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">ranger dev</Field>
-                    <Field name="host" type="string">ranger.tacc.utexas.edu</Field>
-                    <Field name="numProcessors" type="int">32</Field>
+                 <Object name="HostProfile">
+                    <Field name="profileName" type="string">ranger dev queue</Field>
+                    <Field name="host" type="string">login2.ranger.tacc.utexas.edu</Field>
+                    <Field name="hostAliases" type="string"></Field>
+                    <Field name="hostNickname" type="string">ranger</Field>
+                    <Field name="timeout" type="int">480</Field>
+                    <Field name="numProcessors" type="int">16</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="numNodes" type="int">1</Field>
                     <Field name="partitionSet" type="bool">true</Field>
                     <Field name="partition" type="string">development</Field>
                     <Field name="bankSet" type="bool">true</Field>
-                    <Field name="bank" type="string">SET BANK HERE</Field>
+                    <Field name="bank" type="string">YOUR PROJECT ACCT</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">60</Field>
+                    <Field name="timeLimit" type="string">00:10:00</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">qsub/ibrun</Field>
+                    <Field name="forceStatic" type="bool">true</Field>
+                    <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit" </Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit"</Field>
                     <Field name="parallel" type="bool">true</Field>
-                    <Field name="launchArgsSet" type="bool">true</Field>
-                    <Field name="launchArgs" type="string">-V -cwd -N visit -o SGE_out.visit -e SGE_err.visit</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">spur serial</Field>
-                    <Field name="host" type="string">spur.tacc.utexas.edu</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit" </Field>
-                    <Field name="tunnelSSH" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
+                 <Object name="HostProfile">
                     <Field name="profileName" type="string">spur parallel</Field>
                     <Field name="host" type="string">spur.tacc.utexas.edu</Field>
-                    <Field name="numProcessors" type="int">32</Field>
+                    <Field name="hostAliases" type="string"></Field>
+                    <Field name="hostNickname" type="string">spur</Field>
+                    <Field name="timeout" type="int">480</Field>
+                    <Field name="numProcessors" type="int">4</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="numNodes" type="int">1</Field>
                     <Field name="partitionSet" type="bool">true</Field>
                     <Field name="partition" type="string">vis</Field>
                     <Field name="bankSet" type="bool">true</Field>
-                    <Field name="bank" type="string">SET BANK HERE</Field>
+                    <Field name="bank" type="string">YOUR PROJECT ACCT</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">60</Field>
+                    <Field name="timeLimit" type="string">01:00:00</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">qsub/ibrun</Field>
+                    <Field name="forceStatic" type="bool">true</Field>
+                    <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit" </Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/share/apps/vis/visit"</Field>
                     <Field name="parallel" type="bool">true</Field>
-                    <Field name="launchArgsSet" type="bool">true</Field>
-                    <Field name="launchArgs" type="string">-V -cwd -N visit -o SGE_out.visit -e SGE_err.visit</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
-                <Field name="activeProfile" type="int">1</Field>
+                <Field name="activeProfile" type="int">0</Field>
             </Object>
         </Object>
     </Object>
