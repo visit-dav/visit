@@ -38,7 +38,7 @@
 // ************************************************************************* //
 //                            avtparaDISFileFormat.C                           //
 // ************************************************************************* //
-
+#define NO_BOOST 1
 #include <avtparaDISFileFormat.h>
 #include <DebugStream.h>
 #include "paradis_c_interface.h"
