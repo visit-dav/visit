@@ -1357,6 +1357,9 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
 //    Hank Childs, Thu Dec 18 10:54:27 CST 2008
 //    Refactored method to only serve up points.
 //
+//    Hank Childs, Fri May  8 11:49:17 PDT 2009
+//    Fix bug with reading ASCII data.
+//
 // ****************************************************************************
 
 float *
@@ -1467,6 +1470,7 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
     }
     else
     {
+        float *pts_tmp = pts;
         for (ii = 0 ; ii < nPts ; ii++)
         {
             fseek(fdMesh, (int64_t)iAsciiMeshFileStart + 
@@ -1474,14 +1478,14 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
                           (int64_t)ii*iAsciiMeshFileLineLen, SEEK_SET);
             if (iDim == 3)
             {
-                fscanf(fdMesh, " %f %f %f", pts, pts+1, pts+2);
+                fscanf(fdMesh, " %f %f %f", pts_tmp, pts_tmp+1, pts_tmp+2);
             }
             else
             {
-                fscanf(fdMesh, " %f %f", pts, pts+1);
-                pts[2] = 0.0f;
+                fscanf(fdMesh, " %f %f", pts_tmp, pts_tmp+1);
+                pts_tmp[2] = 0.0f;
             }
-            pts += 3;
+            pts_tmp += 3;
         }
     }
     return pts;
@@ -1617,6 +1621,9 @@ avtNek5000FileFormat::GetVar(int timestep, int domain, const char *varname)
 //    Change argument to GetFileName, as it now takes the time slice 
 //    corresponding to the VisIt time index, not the Nek time index.
 //
+//    Hank Childs, Fri May  8 11:47:27 PDT 2009
+//    Fix bug with reading ASCII files.
+//
 // ****************************************************************************
 
 float *
@@ -1706,14 +1713,15 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
     }
     else
     {
+        float *var_tmp = var;
         for (ii = 0 ; ii < nPts ; ii++)
         {
             fseek(fdVar, (int64_t)iAsciiCurrFileStart + 
                          (int64_t)element*iAsciiCurrFileLineLen*nPts + 
                          (int64_t)ii*iAsciiCurrFileLineLen + 
                          (int64_t)iAsciiOffset, SEEK_SET);
-            fscanf(fdVar, " %f", var);
-            var++;
+            fscanf(fdVar, " %f", var_tmp);
+            var_tmp++;
         }
     }
 
@@ -1846,6 +1854,9 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
 //    Change argument to GetFileName, as it now takes the time slice 
 //    corresponding to the VisIt time index, not the Nek time index.
 //
+//    Hank Childs, Fri May  8 11:47:55 PDT 2009
+//    Fix bug with reading ASCII data.
+//
 // ****************************************************************************
 
 float *
@@ -1955,6 +1966,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
     }
     else
     {
+        float *var_tmp = var;
         for (ii = 0 ; ii < nPts ; ii++)
         {
             fseek(fdVar, (int64_t)iAsciiCurrFileStart + 
@@ -1963,14 +1975,14 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
                          (int64_t)iAsciiOffset, SEEK_SET);
             if (iDim == 3)
             {
-                fscanf(fdVar, " %f %f %f", var, var+1, var+2);
+                fscanf(fdVar, " %f %f %f", var_tmp, var_tmp+1, var_tmp+2);
             }
             else
             {
-                fscanf(fdVar, " %f %f", var, var+1);
-                var[2] = 0.0f;
+                fscanf(fdVar, " %f %f", var_tmp, var_tmp+1);
+                var_tmp[2] = 0.0f;
             }
-            var += 3;
+            var_tmp += 3;
         }
     }
 
