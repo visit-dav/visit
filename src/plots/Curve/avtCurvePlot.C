@@ -349,6 +349,10 @@ avtCurvePlot::CustomizeBehavior(void)
 //    Brad Whitlock, Mon Nov 20 10:17:14 PDT 2006
 //    Changed so it uses a curve renderer.
 //
+//    Kathleen Bonnell, Thu May  7 17:56:28 PDT 2009
+//    Advertise window-mode here, since it never changes and may need
+//    to be known before plot executes.
+//
 // ****************************************************************************
 
 void
@@ -378,6 +382,7 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     decoMapper->SetLabelVisibility(atts.GetShowLabels());
 
     renderer->SetAtts(atts);
+    behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
 }
 
 // ****************************************************************************
