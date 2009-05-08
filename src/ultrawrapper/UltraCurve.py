@@ -121,6 +121,13 @@ class PlotCurveItem(UltraCurveItem):
 
 # ----------------------------------------------------------------------------
 # Class: CurveList
+#
+#   Modifications:
+#
+#    Kathleen Bonnell, Fri May  8 15:13:18 PDT 2009
+#    Raise an exception when lookup-fails for get_item.  Add try-except blocks
+#    around use of get_item in slice.
+#
 # ----------------------------------------------------------------------------
 class CurveList(object):
     """ A list containing UltraCurveItem's
@@ -186,8 +193,8 @@ class CurveList(object):
             for curve in self.curves:
                 if curve.id == index:
                     return curve 
-        # should I raise an exception here?
-        return None
+        # Lookup failed, Raise an exception
+        raise LookupError
 
     def __str__(self):
         if (self.curves) != []:
@@ -218,16 +225,28 @@ class CurveList(object):
                 s = t[i].partition(":")
                 if type(self.curves[0]) is MenuCurveItem:
                     if s[1] == '':
-                        rv.append(self.__getitem__(int(s[0])))
+                        try:
+                            rv.append(self.__getitem__(int(s[0])))
+                        except LookupError:
+                            pass
                     else:
                         for j in range(int(s[0]), int(s[2])+1):
-                            rv.append(self.__getitem__(j))
+                            try:
+                                rv.append(self.__getitem__(j))
+                            except LookupError:
+                                pass
                 else:
                     if s[1] == '':
-                        rv.append(self.__getitem__(s[0]))
+                        try:
+                            rv.append(self.__getitem__(s[0]))
+                        except LookupError:
+                            pass
                     else:
                         for j in range(ord(s[0]), ord(s[2])+1):
-                            rv.append(self.__getitem__(chr(j)))
+                            try:
+                                rv.append(self.__getitem__(chr(j)))
+                            except LookupError:
+                                pass 
         return rv
            
  
