@@ -633,6 +633,9 @@ TimingsManager::LookupTimer(const std::string &nm)
 //    Dave Pugmire, Wed Apr 15 08:36:39 EDT 2009
 //    Force fixed mode output for floating point numbers.
 //
+//    Hank Childs, Fri May  8 15:19:23 PDT 2009
+//    Add support for "neverOutput".
+//
 // ****************************************************************************
 
 void
@@ -644,6 +647,8 @@ TimingsManager::DumpTimings(void)
     if (!enabled)
         return;
     if (withholdOutput && !outputAllTimings)
+        return;
+    if (neverOutput)
         return;
     if (filename == "")
     {
@@ -736,6 +741,9 @@ TimingsManager::StopAllUnstoppedTimers()
 //    made those handles "dangling pointers".  So the timing information
 //    was frequently wrong.
 //
+//    Hank Childs, Fri May  8 15:19:23 PDT 2009
+//    Add support for "neverOutput".
+//
 // ****************************************************************************
 
 void
@@ -749,6 +757,8 @@ TimingsManager::DumpTimings(ostream &out)
         return;
     }
     if (withholdOutput && !outputAllTimings)
+        return;
+    if (neverOutput)
         return;
 
     int numT = times.size();
