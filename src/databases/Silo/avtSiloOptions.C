@@ -123,6 +123,9 @@ GetSiloReadOptions(void)
 //
 //    Mark C. Miller, Tue Mar 17 18:13:22 PDT 2009
 //    Use const char * option name symbols defined in avtSiloOptions.h
+
+//    Mark C. Miller, Fri May  8 17:09:39 PDT 2009
+//    Added compression/checksum options.
 // ****************************************************************************
 
 DBOptionsAttributes *
@@ -139,6 +142,8 @@ GetSiloWriteOptions(void)
     drivers.push_back("HDF5"); // 1
     rv->SetEnumStrings(SILO_WROPT_DRIVER, drivers);
     rv->SetBool(SILO_WROPT_SINGLE_FILE, false);
+    rv->SetBool(SILO_WROPT_CKSUMS, false);
+    rv->SetString(SILO_WROPT_COMPRESSION, "");
 
     return rv;
 }
