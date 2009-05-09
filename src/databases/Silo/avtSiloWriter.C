@@ -76,7 +76,6 @@ using std::string;
 using std::vector;
 using namespace SiloDBOptions;
 
-
 // ****************************************************************************
 //  Function: VN (Valid Silo Variable Name) 
 //
@@ -134,7 +133,7 @@ static const char *VN(const string &n)
 //   
 // ****************************************************************************
 
-string 
+static string 
 BeginVar(DBfile *dbfile, const string &name, int &nlevels)
 {
     stringVector names = SplitValues(name, '/');
@@ -171,7 +170,7 @@ BeginVar(DBfile *dbfile, const string &name, int &nlevels)
 //   
 // ****************************************************************************
 
-void
+static void
 EndVar(DBfile *dbfile, int nlevels)
 {
     for(int i = 0; i < nlevels; ++i)
@@ -200,10 +199,72 @@ EndVar(DBfile *dbfile, int nlevels)
 //   
 // ****************************************************************************
 
-string
+static string
 AbsoluteName(const string &name, int nlevels)
 {
     return (nlevels > 0) ? (string("/") + name) : name;
+}
+
+// ****************************************************************************
+// Function: SaveAndSetSiloLibState / RestoreSiloLibState
+//
+// Purpose: Manage Silo library global state 
+//
+// Programmer: Mark C. Miller
+// Creation:   May 8, 2009
+// ****************************************************************************
+static int oldFriendlyHDFNames = 0;
+static int oldCheckSums = 0;
+static string oldCompressionParams;
+
+static void
+SaveAndSetSiloLibState(int driver, bool checkSums, string compressionParams)
+{
+    int myRank = PAR_Rank();
+    cerr << "myRank = " << myRank << endl;
+#ifdef E_CHECKSUM
+    if (driver == DB_HDF5)
+        oldCheckSums = DBSetEnableChecksums(checkSums);
+    else
+    {
+        if (checkSums && !myRank)
+            cerr << "Checksums supported only on HDF5 driver" << endl;
+        oldCheckSums = DBSetEnableChecksums(0);
+    }
+#endif
+
+#if defined(SILO_VERSION_GE)
+#if SILO_VERSION_GE(4,7,0)
+    oldCompressionParams = string(DBGetCompression());
+    if (driver == DB_HDF5)
+    {
+        oldFriendlyHDFNames = DBSetFriendlyHDF5Names(1);
+        DBSetCompression(compressionParams.c_str());
+    }
+    else
+    {
+        if (compressionParams != "" && !myRank)
+            cerr << "Compression supported only on HDF5 driver" << endl;
+        oldFriendlyHDFNames = DBSetFriendlyHDF5Names(0);
+        DBSetCompression("");
+    }
+#endif
+#endif
+}
+
+static void
+RestoreSiloLibState()
+{
+#ifdef E_CHECKSUM
+    DBSetEnableChecksums(oldCheckSums);
+#endif
+
+#if defined(SILO_VERSION_GE)
+#if SILO_VERSION_GE(4,7,0)
+    DBSetFriendlyHDF5Names(oldFriendlyHDFNames);
+    DBSetCompression(oldCompressionParams.c_str());
+#endif
+#endif
 }
 
 // ****************************************************************************
@@ -225,6 +286,10 @@ AbsoluteName(const string &name, int nlevels)
 //
 //    Mark C. Miller, Tue Mar 17 18:09:10 PDT 2009
 //    Use const char option names defined in avtSiloOptions.h
+//
+//    Mark C. Miller, Fri May  8 17:04:15 PDT 2009
+//    Added compression and checksum options. Added call to save and set
+//    silo lib's global state.
 // ****************************************************************************
 
 avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
@@ -234,6 +299,7 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
     nblocks = 0;
     driver = DB_PDB;
     singleFile = false;
+    checkSums = false;
 
     for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
     {
@@ -242,7 +308,7 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
             switch (dbopts->GetEnum(SILO_WROPT_DRIVER))
             {
                 case 0: driver = DB_PDB; break;
-	        case 1: driver = DB_HDF5; break;
+                case 1: driver = DB_HDF5; break;
             }
         }
         else if (dbopts->GetName(i) == SILO_WROPT_SINGLE_FILE)
@@ -256,12 +322,17 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
             }
 #endif
         }
+        else if (dbopts->GetName(i) == SILO_WROPT_COMPRESSION)
+            compressionParams = dbopts->GetString(SILO_WROPT_COMPRESSION);
+        else if (dbopts->GetName(i) == SILO_WROPT_CKSUMS)
+            checkSums = dbopts->GetBool(SILO_WROPT_CKSUMS);
         else
             debug1 << "Ignoring unknown option \"" << dbopts->GetName(i) << "\"" << endl;
     }
 
     meshtype = AVT_UNKNOWN_MESH;
 
+    SaveAndSetSiloLibState(driver, checkSums, compressionParams);
 }
 
 
@@ -271,10 +342,15 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2003
 //
+//  Modifications:
+//    Mark C. Miller, Fri May  8 17:05:03 PDT 2009
+//    Added call to restore silo lib's global state.
 // ****************************************************************************
 
 avtSiloWriter::~avtSiloWriter()
 {
+    RestoreSiloLibState();
+
     if (optlist != NULL)
     {
         DBFreeOptlist(optlist);
@@ -834,6 +910,10 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //    Mark C. Miller, Mon Sep 22 22:03:55 PDT 2008
 //    Fixed single file, single block case to prevent it from making
 //    "domain" subdirs.
+//
+//    Mark C. Miller, Fri May  8 17:05:47 PDT 2009
+//    Moved work dealing with Silo lib's global behavior to
+//    SaveAndSetSiloLibState.
 // ****************************************************************************
 
 void
@@ -850,9 +930,6 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
         sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
 
-#ifdef E_CHECKSUM
-    int oldEnable = DBSetEnableChecksums(0);
-#endif
 
     DBfile *dbfile;
     if (chunk > 0 && singleFile)
@@ -878,10 +955,6 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
         }
     }
 
-#ifdef E_CHECKSUM
-    DBSetEnableChecksums(oldEnable);
-#endif
-    
     //
     // Use sub-routines to do the mesh-type specific writes.
     //
@@ -950,6 +1023,9 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //    Added code to write expressions that came from the database back out
 //    to the master file.
 //
+//    Mark C. Miller, Fri May  8 17:05:47 PDT 2009
+//    Moved work dealing with Silo lib's global behavior to
+//    SaveAndSetSiloLibState.
 // ****************************************************************************
 
 void
@@ -988,23 +1064,19 @@ avtSiloWriter::CloseFile(void)
 
     if (root)
     {
-        debug5 << "avtSiloWriter: proc " << procid << " writting silo root"
+        debug5 << "avtSiloWriter: proc " << procid << " writing silo root"
                << "file" << endl;
         char filename[1024];
         string fname = dir + stem;
         sprintf(filename, "%s.silo", fname.c_str());
-#ifdef E_CHECKSUM
-        int oldEnable = DBSetEnableChecksums(0);
-#endif
+
+
         DBfile *dbfile;
         if (singleFile)
             dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
         else
             dbfile = DBCreate(filename, 0, DB_LOCAL, 
                          "Silo file written by VisIt", driver);
-#ifdef E_CHECKSUM
-        DBSetEnableChecksums(oldEnable);
-#endif
 
         ConstructMultimesh(dbfile, mmd);
         for (i = 0 ; i < headerScalars.size() ; i++)

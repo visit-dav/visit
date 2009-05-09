@@ -124,6 +124,8 @@ avtSiloWriter : public virtual avtDatabaseWriter
     avtMeshType    meshtype;
     DBoptlist     *optlist;
     bool           singleFile;
+    bool           checkSums;
+    string         compressionParams;
 
     // places to hold args passed in WriteHeaders
     const avtDatabaseMetaData *headerDbMd;
