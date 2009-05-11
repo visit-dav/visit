@@ -364,6 +364,9 @@
 #   Tom Fogal, Mon May  4 17:43:32 MDT 2009
 #   (Temporarily) remove paraDIS reader, to get a nightly test run.
 #
+#   Jeremy Meredith, Mon May 11 17:14:29 EDT 2009
+#   Adding LAMMPS backport from trunk.
+#
 ##############################################################################
 
 @SET_MAKE@
