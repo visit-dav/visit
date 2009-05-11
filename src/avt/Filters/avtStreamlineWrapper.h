@@ -53,6 +53,22 @@ class vtkPolyData;
 class avtVector;
 class avtIVPSolver;
 
+// ****************************************************************************
+// Class: DomainType
+//
+// Purpose:
+//    Encapsulate the a domain/timestep.
+//    
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Mar 10 12:41:11 EDT 2009
+//
+// Modifications:
+//
+//   Dave Pugmire, Mon May 11 12:41:51 EDT 2009
+//   Fix operator< so that that std::map works.
+//
+// ****************************************************************************
 class AVTFILTERS_API DomainType
 {
   public:
@@ -74,7 +90,8 @@ class AVTFILTERS_API DomainType
     }
     bool operator<(const DomainType &dt) const
     {
-        return domain < dt.domain && timeStep < dt.timeStep;
+        return (domain < dt.domain) ||
+               (!(domain < dt.domain) && timeStep < dt.timeStep);
     }
 
     //Members
