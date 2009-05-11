@@ -44,6 +44,8 @@
 #include <VariableMenuPopulator.h>
 #include <vector>
 
+#include <vtkDataSet.h>
+
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
@@ -67,7 +69,6 @@ class SpreadsheetTabWidget;
 class avtLookupTable;
 
 class ViewerPlot;
-class vtkDataSet;
 
 // ****************************************************************************
 // Class: SpreadsheetViewer
@@ -139,7 +140,8 @@ private slots:
     void selectNone();
     void operationSum();
     void operationAverage();
-
+    void operationCurveX();
+    void operationCurveY();
 private:
     void updateSpreadsheet();
     bool moveSliceToCurrentPick();
@@ -157,6 +159,10 @@ private:
     void updateMenuEnabledState(int);
     int  GetCell(double, double, double);
     bool PickPointsChanged() const;
+    void GetBaseIndexFromMetaData(int *base_index) const;
+
+    void DisplayCurve(const double *vals, int nvals);
+    bool GetDataVsCoordinate(double *curve, const vtkIdType *, int nvals, int coord) const;
 
     // Cached plot attributes that are used to see if the Qt display needs
     // to update when the Update() method is called.

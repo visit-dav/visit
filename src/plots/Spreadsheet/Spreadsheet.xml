@@ -8,6 +8,7 @@
       avtOpenGLSpreadsheetTraceRenderer.C
       avtMesaSpreadsheetTraceRenderer.C
       SpreadsheetViewer.C
+      SpreadsheetCurveViewer.C
       SpreadsheetTable.C
       SpreadsheetTabWidget.C
     </Files>
@@ -21,6 +22,7 @@
     </Files>
     <Files components="VW">
       SpreadsheetViewer.h
+      SpreadsheetCurveViewer.h
       SpreadsheetTable.h
       SpreadsheetTabWidget.h
     </Files>

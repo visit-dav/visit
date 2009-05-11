@@ -75,9 +75,11 @@
 #include <PlotList.h>
 #include <Plot.h>
 
+#include <SpreadsheetCurveViewer.h>
 #include <SpreadsheetTable.h>
 #include <SpreadsheetTabWidget.h>
 #include <avtLookupTable.h>
+#include <avtDatabaseMetaData.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -357,6 +359,8 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
 #endif
     operationsMenu->addAction(tr("Sum"), this, SLOT(operationSum()));
     operationsMenu->addAction(tr("Average"), this, SLOT(operationAverage()));
+    operationsMenu->addAction(tr("Create curve: row vs. X"), this, SLOT(operationCurveX()));
+    operationsMenu->addAction(tr("Create curve: column vs. Y"), this, SLOT(operationCurveY()));
     updateMenuEnabledState(0);
 }
 
@@ -963,6 +967,49 @@ SpreadsheetViewer::updateSpreadsheet()
 }
 
 // ****************************************************************************
+// Method: SpreadsheetViewer::GetBaseIndexFromMetaData
+//
+// Purpose: 
+//   Set the base_index from the plot's metadata.
+//
+// Arguments:
+//   base_index : The base_index array to set.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  8 09:13:33 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::GetBaseIndexFromMetaData(int *base_index) const
+{
+    int base = 0;
+    const char *mName = "SpreadsheetViewer::GetBaseIndexFromMetaData: ";
+
+    const avtDatabaseMetaData *md = plot->GetMetaData();
+    if(md != 0)
+    {
+        const avtMeshMetaData *mmd = md->GetMesh(plot->GetMeshName());
+        if(mmd != 0)
+        {
+            if(plot->GetVariableCentering() == AVT_NODECENT)
+                base = mmd->nodeOrigin;
+            else
+                base = mmd->cellOrigin;
+        }
+    }
+    base_index[0] = base;
+    base_index[1] = base;
+    base_index[2] = base;
+    debug5 << mName << "From metadata, base_index = {"
+           << base_index[0] << ", "
+           << base_index[1] << ", "
+           << base_index[2] << "}\n";
+}
+
+// ****************************************************************************
 // Method: SpreadsheetViewer::displayStructuredGrid
 //
 // Purpose: 
@@ -984,6 +1031,10 @@ SpreadsheetViewer::updateSpreadsheet()
 //
 //   Brad Whitlock, Fri Jan 30 16:02:12 PST 2009
 //   I fixed a logic error that produced all zeros in the table.
+//
+//   Brad Whitlock, Fri May  8 09:09:29 PDT 2009
+//   Set the mesh's base index differently if there are no base_index or 
+//   realDims field data arrays. We use the mesh's cell and node origins.
 //
 // ****************************************************************************
 
@@ -1046,6 +1097,10 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
     }
     else
         debug5 << mName << "No real dims" << endl;
+
+    // Use the mesh's cellOrigin and nodeOrigin.
+    if(baseIndex == 0 && realDims == 0)
+        GetBaseIndexFromMetaData(base_index);
 
     if(arr != 0)
     {
@@ -1119,6 +1174,9 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
 // Creation:   Tue Feb 20 14:12:11 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Fri May  8 09:09:29 PDT 2009
+//   Set the mesh's base index differently if there is no base_index  
+//   field data array. We use the mesh's cell and node origins.
 //   
 // ****************************************************************************
 
@@ -1140,6 +1198,8 @@ SpreadsheetViewer::displayUnstructuredGrid()
         base_index[1] = (int)baseIndex->GetTuple1(1);
         base_index[2] = (int)baseIndex->GetTuple1(2);
     }
+    else
+        GetBaseIndexFromMetaData(base_index);
 
     vtkDataArray *arr = input->GetPointData()->GetScalars();
     if(arr != 0)
@@ -1532,6 +1592,9 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
 //   Made the labels work better on the Mac where we have only a single
 //   tab in the window.
 //
+//   Brad Whitlock, Fri May  8 09:16:45 PDT 2009
+//   Get a base index from the metadata.
+//
 // ****************************************************************************
 
 void
@@ -1553,13 +1616,14 @@ SpreadsheetViewer::updateSliderLabel()
             base_index[0] = (int)baseIndex->GetTuple1(0);
             base_index[1] = (int)baseIndex->GetTuple1(1);
             base_index[2] = (int)baseIndex->GetTuple1(2);
-            debug5 << mName << "base_index = {"
-                 << base_index[0] << ", "
-                 << base_index[1] << ", "
-                 << base_index[2] << "}\n";
         }
         else
-            debug5 << mName << "No base index" << endl;
+            GetBaseIndexFromMetaData(base_index);
+
+        debug5 << mName << "base_index = {"
+               << base_index[0] << ", "
+               << base_index[1] << ", "
+               << base_index[2] << "}\n";
     }
 
     QString kl;
@@ -2630,6 +2694,233 @@ SpreadsheetViewer::operationAverage()
         avgStr.sprintf(plotAtts->GetFormatString().c_str(), avg);
         QString msg(tr("The average value of the selected cells is: %1.").arg(avgStr));
         QMessageBox::information(this, "Average results", msg, QMessageBox::Ok);
+    }
+}
+
+// ****************************************************************************
+// Method: SpreadsheetViewer::GetDataVsCoordinate
+//
+// Purpose: 
+//   Extract data and make a curve.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  8 16:53:13 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SpreadsheetViewer::GetDataVsCoordinate(double *curve, const vtkIdType *indices, 
+    int nvals, int coord) const
+{
+    const char *mName = "SpreadsheetViewer::GetDataVsCoordinate: ";
+
+    // Get the variable and the variable dims from the dataset.
+    vtkDataArray *arr = input->GetPointData()->GetScalars();
+    bool cellCentered = false;
+    if(arr != 0)
+    {
+        debug5 << mName << "node centered scalars" << endl;
+    }
+    else if((arr = input->GetCellData()->GetScalars()) != 0)
+    {
+        cellCentered = true;
+        debug5 << mName << "cell centered scalars" << endl;
+    }
+    else
+        return false;
+
+    int comp = 0;
+    if(coord == 0)
+    {
+        if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
+            comp = 2;
+        else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
+            comp = 0;
+        else if(plotAtts->GetNormal() == SpreadsheetAttributes::Z)
+            comp = 0;
+    }
+    else
+    {
+        if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
+            comp = 1;
+        else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
+            comp = 2;
+        else if(plotAtts->GetNormal() == SpreadsheetAttributes::Z)
+            comp = 1;
+    }
+
+    bool retval = false;
+    if(input->IsA("vtkRectilinearGrid"))
+    {
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *)input;
+        if(comp == 0)
+        {
+            for(int k = 0; k < nvals; ++k)
+            {
+                curve[k*2  ] = rgrid->GetXCoordinates()->GetTuple1(k);
+                curve[k*2+1] = arr->GetTuple1(indices[k]);
+            }
+        }
+        else if(comp == 1)
+        {
+            for(int i = 0; i < nvals; ++i)
+            {
+                curve[i*2  ] = rgrid->GetYCoordinates()->GetTuple1(i);
+                curve[i*2+1] = arr->GetTuple1(indices[i]);
+            }
+        }
+        else if(comp == 2)
+        {
+            for(int i = 0; i < nvals; ++i)
+            {
+                curve[i*2  ] = rgrid->GetZCoordinates()->GetTuple1(i);
+                curve[i*2+1] = arr->GetTuple1(indices[i]);
+            }
+        }
+        retval = true;
+    }
+    else if(input->IsA("vtkStructuredGrid"))
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *)input;
+        if(cellCentered)
+        {
+            int dims[3], cdims[3];
+            sgrid->GetDimensions(dims);
+            cdims[0] = dims[0]-1;
+            cdims[1] = dims[1]-1;
+            cdims[2] = (dims[2] > 1) ? (dims[2]-1) : dims[2];
+
+            for(int i = 0; i < nvals; ++i)
+            {
+                // Turn cell indices[i] into a cell I,J,K
+                int K = indices[i] / (cdims[0]*cdims[1]);
+                int I2 = indices[i] - (K * (cdims[0]*cdims[1]));
+                int J = I2 / cdims[0];
+                int I = I2 % cdims[0];
+
+                // Turn cell I,J,K into node index
+                vtkIdType nodeId = K*dims[1]*dims[0] + J*dims[0] + I;
+
+                curve[i*2  ] = sgrid->GetPoint(nodeId)[comp];
+                curve[i*2+1] = arr->GetTuple1(indices[i]); 
+            }
+        }
+        else
+        {
+            for(int i = 0; i < nvals; ++i)
+            {
+                curve[i*2  ] = sgrid->GetPoint(indices[i])[comp];
+                curve[i*2+1] = arr->GetTuple1(indices[i]);
+            }
+        }
+        retval = true;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: SpreadsheetViewer::DisplayCurve
+//
+// Purpose: 
+//   Display curve data in a new window.
+//
+// Arguments:
+//   vals : The values to display.
+//   nvals : The number of values.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  8 16:52:44 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::DisplayCurve(const double *vals, int nvals)
+{
+    SpreadsheetCurveViewer *v = new SpreadsheetCurveViewer(plot, this);
+    v->setData(vals, nvals);
+    v->show();
+}
+
+// ****************************************************************************
+// Method: SpreadsheetViewer::operationCurveX
+//
+// Purpose: 
+//   Extract a row of data, match it with the X values and make a curve.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  8 16:52:04 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::operationCurveX()
+{
+    if(nTables > 0)
+    {
+        // These indices are indices into the arr array.
+        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
+        int nvals = 0;
+        vtkIdType *indices = t->selectedRowIndices(nvals);
+        if(nvals > 0)
+        {
+            double *curve = new double[nvals * 2];
+            if(GetDataVsCoordinate(curve, indices, nvals, 0))
+            {
+                DisplayCurve(curve, nvals);
+            }
+
+            delete [] curve;
+            delete [] indices;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: SpreadsheetViewer::operationCurveY
+//
+// Purpose: 
+//   Extract a column of data, match it with the X values and make a curve.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  8 16:52:04 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::operationCurveY()
+{
+    if(nTables > 0)
+    {
+        // These indices are indices into the arr array.
+        SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentWidget();
+        int nvals = 0;
+        vtkIdType *indices = t->selectedColumnIndices(nvals);
+        if(nvals > 0)
+        {
+            double *curve = new double[nvals * 2];
+            if(GetDataVsCoordinate(curve, indices, nvals, 1))
+            {
+                DisplayCurve(curve, nvals);
+            }
+
+            delete [] curve;
+            delete [] indices;
+        }
     }
 }
 
