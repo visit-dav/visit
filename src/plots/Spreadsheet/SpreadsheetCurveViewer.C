@@ -42,6 +42,7 @@
 #include <QFileDialog>
 #include <QLayout>
 #include <QMenu>
+#include <QMenuBar>
 #include <QPushButton>
 #include <QTextEdit>
 #include <QTextStream>
