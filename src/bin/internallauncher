@@ -488,6 +488,11 @@ $0 = shift @ARGV;
 #    Paul Navratil, Fri May  8 17:00:59 CDT 2009
 #    deleted ref to tacc_qsub, special qsub now gets auto-magically generated, like TFILE
 #
+#    Paul Navratil, Mon May 11 15:09:27 CDT 2009
+#    changed TACC-specific bits to use total procs and nodes format 
+#    for parallel engine request.  added error check for > 16way config, 
+#    will now generate (hopefully) helpful error message
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2493,12 +2498,16 @@ if ($procs_set or ($parallel and $parlaunch_set))
             $ppn = ceil($procs / $nodes);
             if ($IsRunningOnRanger_TACC)
             {
-                # if nodes set, assume user spec'd wayness in proc, total nodes in nodes
                 if ($nodes_set) 
-                { $tacc_way = $procs; $tacc_procs = 16*$nodes; }
-                # if wayness not set explicitly assume 1way
+                { $tacc_way = $ppn; $tacc_procs = 16*$nodes; }
+                # if nodes not set explicitly assume 1way
                 else 
                 { $tacc_way = 1; $tacc_procs = 16*$procs; }  
+                if ($tacc_way > 16) {
+                    print STDERR "TACC-hosted engine configured with $procs procs on $nodes nodes (${ppn}x).\n";
+                    print STDERR "Number of procs must be no more than 16x number of nodes.\n";
+                    exit(1);
+                }
                 push @parcmd, "-pe", "${tacc_way}way", $tacc_procs;
             }
             else
