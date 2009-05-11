@@ -371,6 +371,10 @@ avtXYZFileFormat::GetVectorVar(int timestep, const char *varname)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 26, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Mon May 11 13:09:39 EDT 2009
+//    Allow numeric first column for atomic number instead of element symbol.
+//
 // ****************************************************************************
 void
 avtXYZFileFormat::ReadTimeStep(int timestep)
@@ -423,6 +427,8 @@ avtXYZFileFormat::ReadTimeStep(int timestep)
                        &v[4][timestep][a],
                        &v[5][timestep][a]);
         e[timestep][a] = ElementNameToAtomicNumber(element);
+        if (e[timestep][a] < 0)
+            e[timestep][a] = atoi(element);
     }
 }
 
