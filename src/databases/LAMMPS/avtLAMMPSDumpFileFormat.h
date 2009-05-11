@@ -9,11 +9,10 @@
 #include <avtMTSDFileFormat.h>
 #include <avtFileFormatInterface.h>
 
+#include <string>
 #include <vector>
+using std::string;
 using std::vector;
-
-#define MAX_LAMMPS_DUMP_VARS 6
-
 
 // ****************************************************************************
 //  Class: avtLAMMPSDumpFileFormat
@@ -26,6 +25,9 @@ using std::vector;
 //  Creation:   February  6, 2009
 //
 //  Modifications:
+//    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
+//    Added support for new, more arbitrary LAMMPS atom dump style formatting.
+//    Includes bounds/unit cell, and an optional atom format string.
 //
 // ****************************************************************************
 
@@ -58,12 +60,17 @@ class avtLAMMPSDumpFileFormat : public avtMTSDFileFormat
     int                            nTimeSteps;
     int                            nVars;
     int                            nAtoms;
+    double                         xMin, xMax;
+    double                         yMin, yMax;
+    double                         zMin, zMax;
 
-    vector< vector<int> >          s; //species index
-    vector< vector<float> >        x;
-    vector< vector<float> >        y;
-    vector< vector<float> >        z;
-    vector< vector<float> >        v[MAX_LAMMPS_DUMP_VARS];
+    int                      currentTimestep;
+    bool                     xScaled,yScaled,zScaled;
+    int                      xIndex, yIndex, zIndex;
+    int                      speciesIndex, idIndex;
+    vector< vector<float> >  vars;
+    vector<int>              speciesVar;
+    vector< string >         varNames;
 
     virtual void    PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     void            OpenFileAtBeginning();

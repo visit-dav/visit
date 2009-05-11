@@ -59,7 +59,8 @@
 #include <InvalidFilesException.h>
 #include <AtomicProperties.h>
 
-using     std::string;
+#include <sstream>
+using std::istringstream;
 
 
 // ****************************************************************************
@@ -69,6 +70,9 @@ using     std::string;
 //  Creation:   February  9, 2009
 //
 //  Modifications:
+//    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
+//    Added support for new, more arbitrary LAMMPS atom dump style formatting.
+//    Includes bounds/unit cell, and an optional atom format string.
 //
 // ****************************************************************************
 
@@ -77,6 +81,9 @@ avtLAMMPSDumpFileFormat::avtLAMMPSDumpFileFormat(const char *fn)
 {
     metaDataRead = false;
     filename = fn;
+    xIndex = yIndex = zIndex = speciesIndex = idIndex = -1;
+    xMin = xMax = yMin = yMax = zMin = zMax = 0;
+    currentTimestep = -1;
 }
 
 
@@ -113,26 +120,20 @@ avtLAMMPSDumpFileFormat::GetNTimesteps(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   February  9, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
+//    Added support for new, more arbitrary LAMMPS atom dump style formatting.
+//    Only keep one time step at a time to prevent memory bloat.
+//
 // ****************************************************************************
 
 void
 avtLAMMPSDumpFileFormat::FreeUpResources(void)
 {
-    for (int t=0; t<nTimeSteps; t++)
-    {
-        s[t].clear();
-        x[t].clear();
-        y[t].clear();
-        z[t].clear();
-        for (int i=0; i<MAX_LAMMPS_DUMP_VARS; i++)
-            v[i][t].clear();
-    }
-    s.clear();
-    x.clear();
-    y.clear();
-    z.clear();
-    for (int i=0; i<MAX_LAMMPS_DUMP_VARS; i++)
-        v[i].clear();
+    for (int i=0; i<vars.size(); i++)
+        vars[i].clear();
+    vars.clear();
+    varNames.clear();
 }
 
 
@@ -180,6 +181,9 @@ avtLAMMPSDumpFileFormat::OpenFileAtBeginning()
 //  Creation:   February  9, 2009
 //
 //  Modifications:
+//    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
+//    Added support for new, more arbitrary LAMMPS atom dump style formatting.
+//    Includes adding unit cell vectors.
 //
 // ****************************************************************************
 
@@ -192,14 +196,19 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
                                                3, 1,
                                                AVT_POINT_MESH);
     mmd->nodesAreCritical = true;
+    for (int i=0; i<9; i++)
+        mmd->unitCellVectors[i] = 0;
+    mmd->unitCellVectors[0] = xMax - xMin;
+    mmd->unitCellVectors[4] = yMax - yMin;
+    mmd->unitCellVectors[8] = zMax - zMin;
     md->Add(mmd);
 
     AddScalarVarToMetaData(md, "species", "mesh", AVT_NODECENT);
-    for (int i=0; i<nVars; i++)
+    for (int v=0; v<nVars; v++)
     {
-        char name[20];
-        sprintf(name, "var%d", i);
-        AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
+        if (v == idIndex || v == speciesIndex)
+            continue;
+        AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_NODECENT);
     }
 }
 
@@ -222,6 +231,9 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 //  Creation:   February  9, 2009
 //
 //  Modifications:
+//    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
+//    Added support for new, more arbitrary LAMMPS atom dump style formatting.
+//    Includes support for scaled (unit cell) coordinates.
 //
 // ****************************************************************************
 
@@ -238,10 +250,16 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *meshname)
     pts->Delete();
     for (int j = 0 ; j < nAtoms ; j++)
     {
-        pts->SetPoint(j,
-                      x[timestep][j],
-                      y[timestep][j],
-                      z[timestep][j]);
+        double x = vars[xIndex][j];
+        double y = vars[zIndex][j];
+        double z = vars[yIndex][j];
+        if (xScaled)
+            x = xMin + (xMax-xMin) * x;
+        if (yScaled)
+            y = yMin + (yMax-yMin) * y;
+        if (zScaled)
+            z = zMin + (zMax-zMin) * z;
+        pts->SetPoint(j, x, y, z);
     }
  
     vtkCellArray *verts = vtkCellArray::New();
@@ -275,6 +293,8 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *meshname)
 //  Creation:   February  9, 2009
 //
 //  Modifications:
+//    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
+//    Added support for new, more arbitrary LAMMPS atom dump style formatting.
 //
 // ****************************************************************************
 
@@ -291,19 +311,22 @@ avtLAMMPSDumpFileFormat::GetVar(int timestep, const char *varname)
         float *ptr = (float *) scalars->GetVoidPointer(0);
         for (int i=0; i<nAtoms; i++)
         {
-            ptr[i] = s[timestep][i];
+            ptr[i] = speciesVar[i];
         }
         return scalars;
     }
 
-    // if it's not element, then it's one of the vars;
-    // figure out which one
-    if (strlen(varname) != 4)
+    int varIndex = -1;
+    for (int v=0; v<nVars; v++)
     {
-        EXCEPTION1(InvalidVariableException, varname);
+        if (varNames[v] == varname)
+        {
+            varIndex = v;
+            break;
+        }
     }
-    int varindex = varname[3] - '0';
-    if (varindex < 0 || varindex > nVars)
+
+    if (varIndex == -1)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
@@ -314,7 +337,7 @@ avtLAMMPSDumpFileFormat::GetVar(int timestep, const char *varname)
     float *ptr = (float *) scalars->GetVoidPointer(0);
     for (int i=0; i<nAtoms; i++)
     {
-        ptr[i] = v[varindex][timestep][i];
+        ptr[i] = vars[varIndex][i];
     }
     return scalars;
 }
@@ -357,6 +380,10 @@ avtLAMMPSDumpFileFormat::GetVectorVar(int timestep, const char *varname)
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  9, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
+//    Added support for new, more arbitrary LAMMPS atom dump style formatting.
+//
 // ****************************************************************************
 void
 avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
@@ -364,48 +391,50 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
     ReadAllMetaData();
 
     // don't read this time step if it's already in memory
-    if (x[timestep].size() > 0)
+    if (currentTimestep == timestep)
         return;
+    currentTimestep = timestep;
 
     OpenFileAtBeginning();
     in.seekg(file_positions[timestep]);
 
-    s[timestep].resize(nAtoms);
-    x[timestep].resize(nAtoms);
-    y[timestep].resize(nAtoms);
-    z[timestep].resize(nAtoms);
-    for (int i=0; i<MAX_LAMMPS_DUMP_VARS; i++)
+    speciesVar.resize(nAtoms);
+    for (int v=0; v<vars.size(); v++)
     {
-        v[i][timestep].resize(nAtoms);
+        // id and species are ints; don't bother with the float arrays for them
+        if (v == idIndex || v == speciesIndex)
+            continue;
+        vars[v].resize(nAtoms);
     }
+
+    vector<double> tmpVars(nVars);
+    int tmpID, tmpSpecies;
 
     char buff[1000];
     // read all the atoms
     for (int a=0; a<nAtoms; a++)
     {
         in.getline(buff,1000);
-        if (MAX_LAMMPS_DUMP_VARS != 6)
+        istringstream sin(buff);
+        for (int v=0; v<nVars; v++)
         {
-            EXCEPTION1(VisItException,
-                       "Internal error: avtLAMMPSDumpFileFormat has "
-                       "MAX_LAMMPS_DUMP_VARS mismatch.");
+            if (v==speciesIndex)
+                sin >> tmpSpecies;
+            else if (v==idIndex)
+                sin >> tmpID;
+            else
+                sin >> tmpVars[v];
         }
+        --tmpID;  // 1-origin; we need 0-origin
 
-        float tx, ty, tz, tv0, tv1, tv2, tv3, tv4, tv5;
-        int index, ts;
-        sscanf(buff,"%d %d %f %f %f %f %f %f %f %f %f",
-               &index, &ts, &tx, &ty, &tz,
-               &tv0, &tv1, &tv2, &tv3, &tv4, &tv5);
-        s[timestep][index-1] = ts-1;
-        x[timestep][index-1] = tx;
-        y[timestep][index-1] = ty;
-        z[timestep][index-1] = tz;
-        v[0][timestep][index-1] = tv0;
-        v[1][timestep][index-1] = tv1;
-        v[2][timestep][index-1] = tv2;
-        v[3][timestep][index-1] = tv3;
-        v[4][timestep][index-1] = tv4;
-        v[5][timestep][index-1] = tv5;
+        speciesVar[tmpID] = tmpSpecies;
+        for (int v=0; v<nVars; v++)
+        {
+            if (v == idIndex || v == speciesIndex)
+                continue;
+            vars[v][tmpID] = tmpVars[v];
+        }
+        speciesVar[tmpID] = tmpSpecies;
     }
 }
 
@@ -423,6 +452,11 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  9, 2009
+//
+//  Modifications:
+//    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
+//    Added support for new, more arbitrary LAMMPS atom dump style formatting.
+//    Includes bounds/unit cell, and an optional atom format string.
 //
 // ****************************************************************************
 void
@@ -452,6 +486,13 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
             in.getline(buff,1000);
             cycles.push_back(strtol(buff, NULL, 10));
         }
+        else if (item == "BOX BOUNDS")
+        {
+            in >> xMin >> xMax;
+            in >> yMin >> yMax;
+            in >> zMin >> zMax;
+            in.getline(buff, 1000); // get rest of Z line
+        }
         else if (item == "NUMBER OF ATOMS")
         {
             in.getline(buff,1000);
@@ -464,42 +505,68 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
                     EXCEPTION1(InvalidFilesException, filename.c_str());
             }
         }
-        else if (item == "ATOMS")
+        else if (item.substr(0,5) == "ATOMS")
         {
             istream::pos_type current_pos = in.tellg();
             file_positions.push_back(current_pos);
             if (nVars == -1)
             {
-                in.getline(buff,1000);
-                int index, ts;
-                float tx, ty, tz, tv0, tv1, tv2, tv3, tv4, tv5;
-                if (MAX_LAMMPS_DUMP_VARS != 6)
+                istringstream sin(&buff[11]);
+                string varName;
+                xScaled = yScaled = zScaled = false;
+                while (sin >> varName)
                 {
-                    EXCEPTION1(VisItException,
-                               "Internal error: avtLAMMPSDumpFileFormat has "
-                               "MAX_LAMMPS_DUMP_VARS mismatch.");
+                    if (varName == "id")
+                        idIndex = varNames.size();
+                    else if (varName == "type")
+                        speciesIndex = varNames.size();
+                    else if (varName == "x" || varName == "xs")
+                        xIndex = varNames.size();
+                    else if (varName == "y" || varName == "ys")
+                        yIndex = varNames.size();
+                    else if (varName == "z" || varName == "zs")
+                        zIndex = varNames.size();
+
+                    if (varName == "xs")
+                        xScaled = true;
+                    if (varName == "ys")
+                        yScaled = true;
+                    if (varName == "zs")
+                        zScaled = true;
+
+                    varNames.push_back(varName);
+
                 }
-                int n = sscanf(buff,"%d %d %f %f %f %f %f %f %f %f %f",
-                               &index, &ts, &tx, &ty, &tz,
-                               &tv0, &tv1, &tv2, &tv3, &tv4, &tv5);
-                nVars = n - 5;
+                nVars = varNames.size();
+                if (nVars == 0)
+                {
+                    // OLD FORMAT: Assume "id type x y z"
+                    varNames.push_back("id");
+                    varNames.push_back("type");
+                    varNames.push_back("x");
+                    varNames.push_back("y");
+                    varNames.push_back("z");
+                    idIndex = 0;
+                    speciesIndex = 1;
+                    xIndex = 2; xScaled = false;
+                    yIndex = 3; yScaled = false;
+                    zIndex = 4; zScaled = false;
+                    nVars = varNames.size();
+                }
+                vars.resize(nVars);
             }
         }
     }
 
+    if (xIndex<0 || yIndex<0 || zIndex<0 || idIndex<0 || speciesIndex<0)
+    {
+        EXCEPTION2(InvalidFilesException,
+                   filename,
+                   "Didn't get indices for all necessary vars");
+    }
+
     // don't read the meta data more than once
     metaDataRead = true;
-
-    // resize our atom arrays
-    s.resize(nTimeSteps);
-    x.resize(nTimeSteps);
-    y.resize(nTimeSteps);
-    z.resize(nTimeSteps);
-    for (int i=0; i<MAX_LAMMPS_DUMP_VARS; i++)
-    {
-        v[i].resize(nTimeSteps);
-    }
-    
 }
 
 
