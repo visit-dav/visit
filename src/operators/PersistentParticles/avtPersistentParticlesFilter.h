@@ -86,6 +86,9 @@ class avtPersistentParticlesFilter
 
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
+    virtual void         ExamineContract(avtContract_p);
+
+
 
   protected:
     PersistentParticlesAttributes   atts;
@@ -93,6 +96,8 @@ class avtPersistentParticlesFilter
     std::map<double , int >         particlePaths;
     vtkUnstructuredGrid*            particlePathData;
 
+
+    virtual void                    Execute(void);
     virtual void                    InspectPrincipalData(void);
     virtual void                    Iterate(int, avtDataTree_p);
     virtual void                    Finalize(void);
@@ -101,6 +106,7 @@ class avtPersistentParticlesFilter
 
    private:
      string                         mainVariable;   
+    int activeTimeStep;
 };
 
 

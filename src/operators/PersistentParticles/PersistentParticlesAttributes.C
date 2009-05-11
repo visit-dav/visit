@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *PersistentParticlesAttributes::TypeMapFormatString = "iiisb";
+const char *PersistentParticlesAttributes::TypeMapFormatString = "ibibisb";
 
 // ****************************************************************************
 // Method: PersistentParticlesAttributes::PersistentParticlesAttributes
@@ -62,7 +62,9 @@ PersistentParticlesAttributes::PersistentParticlesAttributes() :
     indexVariable("default")
 {
     startIndex = 0;
+    startIndexRelative = false;
     stopIndex = 1;
+    stopIndexRelative = false;
     stride = 1;
 }
 
@@ -85,7 +87,9 @@ PersistentParticlesAttributes::PersistentParticlesAttributes(const PersistentPar
     AttributeSubject(PersistentParticlesAttributes::TypeMapFormatString)
 {
     startIndex = obj.startIndex;
+    startIndexRelative = obj.startIndexRelative;
     stopIndex = obj.stopIndex;
+    stopIndexRelative = obj.stopIndexRelative;
     stride = obj.stride;
     indexVariable = obj.indexVariable;
     connectParticles = obj.connectParticles;
@@ -133,7 +137,9 @@ PersistentParticlesAttributes::operator = (const PersistentParticlesAttributes &
 {
     if (this == &obj) return *this;
     startIndex = obj.startIndex;
+    startIndexRelative = obj.startIndexRelative;
     stopIndex = obj.stopIndex;
+    stopIndexRelative = obj.stopIndexRelative;
     stride = obj.stride;
     indexVariable = obj.indexVariable;
     connectParticles = obj.connectParticles;
@@ -162,7 +168,9 @@ PersistentParticlesAttributes::operator == (const PersistentParticlesAttributes 
 {
     // Create the return value
     return ((startIndex == obj.startIndex) &&
+            (startIndexRelative == obj.startIndexRelative) &&
             (stopIndex == obj.stopIndex) &&
+            (stopIndexRelative == obj.stopIndexRelative) &&
             (stride == obj.stride) &&
             (indexVariable == obj.indexVariable) &&
             (connectParticles == obj.connectParticles));
@@ -309,11 +317,13 @@ PersistentParticlesAttributes::NewInstance(bool copy) const
 void
 PersistentParticlesAttributes::SelectAll()
 {
-    Select(ID_startIndex,       (void *)&startIndex);
-    Select(ID_stopIndex,        (void *)&stopIndex);
-    Select(ID_stride,           (void *)&stride);
-    Select(ID_indexVariable,    (void *)&indexVariable);
-    Select(ID_connectParticles, (void *)&connectParticles);
+    Select(ID_startIndex,         (void *)&startIndex);
+    Select(ID_startIndexRelative, (void *)&startIndexRelative);
+    Select(ID_stopIndex,          (void *)&stopIndex);
+    Select(ID_stopIndexRelative,  (void *)&stopIndexRelative);
+    Select(ID_stride,             (void *)&stride);
+    Select(ID_indexVariable,      (void *)&indexVariable);
+    Select(ID_connectParticles,   (void *)&connectParticles);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -352,10 +362,22 @@ PersistentParticlesAttributes::CreateNode(DataNode *parentNode, bool completeSav
         node->AddNode(new DataNode("startIndex", startIndex));
     }
 
+    if(completeSave || !FieldsEqual(ID_startIndexRelative, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("startIndexRelative", startIndexRelative));
+    }
+
     if(completeSave || !FieldsEqual(ID_stopIndex, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("stopIndex", stopIndex));
+    }
+
+    if(completeSave || !FieldsEqual(ID_stopIndexRelative, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("stopIndexRelative", stopIndexRelative));
     }
 
     if(completeSave || !FieldsEqual(ID_stride, &defaultObject))
@@ -414,8 +436,12 @@ PersistentParticlesAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("startIndex")) != 0)
         SetStartIndex(node->AsInt());
+    if((node = searchNode->GetNode("startIndexRelative")) != 0)
+        SetStartIndexRelative(node->AsBool());
     if((node = searchNode->GetNode("stopIndex")) != 0)
         SetStopIndex(node->AsInt());
+    if((node = searchNode->GetNode("stopIndexRelative")) != 0)
+        SetStopIndexRelative(node->AsBool());
     if((node = searchNode->GetNode("stride")) != 0)
         SetStride(node->AsInt());
     if((node = searchNode->GetNode("indexVariable")) != 0)
@@ -436,10 +462,24 @@ PersistentParticlesAttributes::SetStartIndex(int startIndex_)
 }
 
 void
+PersistentParticlesAttributes::SetStartIndexRelative(bool startIndexRelative_)
+{
+    startIndexRelative = startIndexRelative_;
+    Select(ID_startIndexRelative, (void *)&startIndexRelative);
+}
+
+void
 PersistentParticlesAttributes::SetStopIndex(int stopIndex_)
 {
     stopIndex = stopIndex_;
     Select(ID_stopIndex, (void *)&stopIndex);
+}
+
+void
+PersistentParticlesAttributes::SetStopIndexRelative(bool stopIndexRelative_)
+{
+    stopIndexRelative = stopIndexRelative_;
+    Select(ID_stopIndexRelative, (void *)&stopIndexRelative);
 }
 
 void
@@ -473,10 +513,22 @@ PersistentParticlesAttributes::GetStartIndex() const
     return startIndex;
 }
 
+bool
+PersistentParticlesAttributes::GetStartIndexRelative() const
+{
+    return startIndexRelative;
+}
+
 int
 PersistentParticlesAttributes::GetStopIndex() const
 {
     return stopIndex;
+}
+
+bool
+PersistentParticlesAttributes::GetStopIndexRelative() const
+{
+    return stopIndexRelative;
 }
 
 int
@@ -537,11 +589,13 @@ PersistentParticlesAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_startIndex:       return "startIndex";
-    case ID_stopIndex:        return "stopIndex";
-    case ID_stride:           return "stride";
-    case ID_indexVariable:    return "indexVariable";
-    case ID_connectParticles: return "connectParticles";
+    case ID_startIndex:         return "startIndex";
+    case ID_startIndexRelative: return "startIndexRelative";
+    case ID_stopIndex:          return "stopIndex";
+    case ID_stopIndexRelative:  return "stopIndexRelative";
+    case ID_stride:             return "stride";
+    case ID_indexVariable:      return "indexVariable";
+    case ID_connectParticles:   return "connectParticles";
     default:  return "invalid index";
     }
 }
@@ -566,11 +620,13 @@ PersistentParticlesAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_startIndex:       return FieldType_int;
-    case ID_stopIndex:        return FieldType_int;
-    case ID_stride:           return FieldType_int;
-    case ID_indexVariable:    return FieldType_variablename;
-    case ID_connectParticles: return FieldType_bool;
+    case ID_startIndex:         return FieldType_int;
+    case ID_startIndexRelative: return FieldType_bool;
+    case ID_stopIndex:          return FieldType_int;
+    case ID_stopIndexRelative:  return FieldType_bool;
+    case ID_stride:             return FieldType_int;
+    case ID_indexVariable:      return FieldType_variablename;
+    case ID_connectParticles:   return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -595,11 +651,13 @@ PersistentParticlesAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_startIndex:       return "int";
-    case ID_stopIndex:        return "int";
-    case ID_stride:           return "int";
-    case ID_indexVariable:    return "variablename";
-    case ID_connectParticles: return "bool";
+    case ID_startIndex:         return "int";
+    case ID_startIndexRelative: return "bool";
+    case ID_stopIndex:          return "int";
+    case ID_stopIndexRelative:  return "bool";
+    case ID_stride:             return "int";
+    case ID_indexVariable:      return "variablename";
+    case ID_connectParticles:   return "bool";
     default:  return "invalid index";
     }
 }
@@ -631,9 +689,19 @@ PersistentParticlesAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
         retval = (startIndex == obj.startIndex);
         }
         break;
+    case ID_startIndexRelative:
+        {  // new scope
+        retval = (startIndexRelative == obj.startIndexRelative);
+        }
+        break;
     case ID_stopIndex:
         {  // new scope
         retval = (stopIndex == obj.stopIndex);
+        }
+        break;
+    case ID_stopIndexRelative:
+        {  // new scope
+        retval = (stopIndexRelative == obj.stopIndexRelative);
         }
         break;
     case ID_stride:

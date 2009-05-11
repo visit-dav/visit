@@ -78,14 +78,18 @@ public:
 
     // Property setting methods
     void SetStartIndex(int startIndex_);
+    void SetStartIndexRelative(bool startIndexRelative_);
     void SetStopIndex(int stopIndex_);
+    void SetStopIndexRelative(bool stopIndexRelative_);
     void SetStride(int stride_);
     void SetIndexVariable(const std::string &indexVariable_);
     void SetConnectParticles(bool connectParticles_);
 
     // Property getting methods
     int               GetStartIndex() const;
+    bool              GetStartIndexRelative() const;
     int               GetStopIndex() const;
+    bool              GetStopIndexRelative() const;
     int               GetStride() const;
     const std::string &GetIndexVariable() const;
           std::string &GetIndexVariable();
@@ -106,7 +110,9 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_startIndex = 0,
+        ID_startIndexRelative,
         ID_stopIndex,
+        ID_stopIndexRelative,
         ID_stride,
         ID_indexVariable,
         ID_connectParticles
@@ -114,7 +120,9 @@ public:
 
 private:
     int         startIndex;
+    bool        startIndexRelative;
     int         stopIndex;
+    bool        stopIndexRelative;
     int         stride;
     std::string indexVariable;
     bool        connectParticles;

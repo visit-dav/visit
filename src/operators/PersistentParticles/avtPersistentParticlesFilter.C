@@ -147,6 +147,130 @@ avtPersistentParticlesFilter::Equivalent(const AttributeGroup *a)
     return (atts == *(PersistentParticlesAttributes*)a);
 }
 
+// ****************************************************************************
+//  Method: avtPersistentParticlesFilter::ExamineContact
+//
+//  Purpose: 
+//    Examine the contract to get the current state of the time slider. The time slider 
+//    state is needed in case that the start and end time are relative to the time slider. 
+//
+//  Programmer: Oliver Ruebel
+//  Creation:   May 07, 2009
+//
+//    Oliver Ruebel, Thu May 11 10:50
+//
+// ****************************************************************************
+void
+avtPersistentParticlesFilter::ExamineContract(avtContract_p in_contract)
+{
+    //Call the examine contract function of the super classes first
+    avtPluginFilter::ExamineContract(in_contract);
+    avtExecuteThenTimeLoopFilter::ExamineContract(in_contract);
+    //Save the current timestep
+    activeTimeStep = in_contract->GetDataRequest()->GetTimestep();
+}
+
+// ****************************************************************************
+//  Method: avtPersistentParticlesFilter::Execute
+//
+//  Purpose: 
+//    Defines what it means for this filter to "Execute". This is where the
+//    actual iteration over time happens. This functions is overwritten here
+//    to allow the dynamic setting of start and end-time of the iteration.
+//    The iteration over time is performed using avtExecuteThenTimeLoopFilter::Execute(void)
+//
+//  Programmer: Oliver Ruebel
+//  Creation:   May 07, 2009
+//
+//  Oliver Ruebel, Thu May 11 10:50
+//
+// ****************************************************************************
+
+void
+avtPersistentParticlesFilter::Execute(void)
+{
+    int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates(); 
+    int lastState = numStates-1;
+    int myStart = atts.GetStartIndex();
+    int myStop  = atts.GetStopIndex();
+
+    if( atts.GetStartIndexRelative() == atts.GetStopIndexRelative() )
+    {
+         if( atts.GetStartIndex() > atts.GetStopIndex() ){
+              std::string msg(GetType());
+              msg = msg +  " end time must always be larger than the start time. " + 
+                           " Please correct start and end times and try again.";
+              EXCEPTION1(ImproperUseException, msg);
+         }
+    }
+
+    //If the start index should be relative to the current time slider state
+    if( atts.GetStartIndexRelative() )
+    {
+         int startOffset = atts.GetStartIndex();
+         myStart = activeTimeStep+startOffset;
+         SetStartFrame(myStart);
+    }
+
+    //If the start index should be relative to the current time slider state
+    if( atts.GetStopIndexRelative() )
+    {
+         int stopOffset = atts.GetStopIndex();
+         myStop = activeTimeStep+stopOffset;
+    }
+
+    //if start or stop time are manupulated here then check if the times are 
+    //valid and correct if needed
+    if( atts.GetStartIndexRelative() || atts.GetStopIndexRelative() )
+    {
+         if (myStart < 0){
+               myStart = 0;
+               std::string msg(GetType());
+               msg += ":  Setting start time to 0.";
+               avtCallback::IssueWarning(msg.c_str());
+         }
+         if( myStart >= numStates ){
+               myStart = lastState;
+               std::string msg(GetType());
+               msg += ":  Clamping start time.";
+               avtCallback::IssueWarning(msg.c_str());
+         }
+         if (myStop >= numStates){
+               myStop = lastState;
+               std::string msg(GetType());
+               msg += ":  Clamping stop time.";
+               avtCallback::IssueWarning(msg.c_str());
+         }
+         if( myStop < 0 ){
+               myStop = 0;
+               std::string msg(GetType());
+               msg += ":  Setting stop time to 0.";
+               avtCallback::IssueWarning(msg.c_str());
+         }
+
+         if( myStart == myStop ){
+               std::string msg(GetType());
+               msg = msg + ":  Start and stop time are the same. The start time " +
+                      "must be smaller than the stop time.";
+               avtCallback::IssueWarning(msg.c_str());
+         }
+
+         if( myStart > myStop ){
+             std::string msg(GetType());
+             msg = msg + ": Start index is larger than stop index. The start time "+
+                    "must be smaller than the stop time.";
+             avtCallback::IssueWarning(msg.c_str());
+         }
+
+         //Update the start and end frame 
+         SetStartFrame(myStart);
+         SetEndFrame(myStop);
+    }
+
+    //Iterate over the time series
+    avtExecuteThenTimeLoopFilter::Execute();
+}
+
 
 // ****************************************************************************
 //  Method: avtPersistentParticlesFilter::InspectPrincipalData
@@ -356,7 +480,7 @@ avtPersistentParticlesFilter::Finalize(void)
             particlePaths = std::map<double , int>();
             particlePathData->Delete();
             particlePathData = NULL;
-      } 
+      }
 }
 
 
@@ -405,5 +529,3 @@ avtPersistentParticlesFilter::UpdateDataObjectInfo(void)
     out_data_atts.SetTopologicalDimension(2); //we have lines as output
     out_data_atts.SetCentering( AVT_NODECENT );
 }
-
-
