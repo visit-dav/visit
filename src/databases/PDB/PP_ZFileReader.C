@@ -969,6 +969,9 @@ PP_ZFileReader::InitializeVarStorage()
 //   Don't create an array variable for scalars that have extra dimensions
 //   that are equal to 1. Create a scalar instead.
 //
+//   Brad Whitlock, Thu May  7 16:58:42 PDT 2009
+//   I set the cell and node origins to 1.
+//
 // ****************************************************************************
 
 void
@@ -1267,6 +1270,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
         mmd->xLabel = "K-Axis";
         mmd->yLabel = "L-Axis";
         mmd->cellOrigin = 1;
+        mmd->nodeOrigin = 1;
         md->Add(mmd);
     }
 
@@ -1277,6 +1281,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
             "mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_CURVILINEAR_MESH);
         mmd->hasSpatialExtents = false;
         mmd->cellOrigin = 1;
+        mmd->nodeOrigin = 1;
         mmd->xLabel = "Z-Axis";
         mmd->yLabel = "R-Axis";
         md->Add(mmd);
@@ -1289,6 +1294,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
             "revolved_mesh", 1, 0, cellOrigin, 0, 3, 3, AVT_UNSTRUCTURED_MESH);
         mmd->hasSpatialExtents = false;
         mmd->cellOrigin = 1;
+        mmd->nodeOrigin = 1;
         md->Add(mmd);
     }
 
@@ -1400,7 +1406,10 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
 // Modifications:
 //   Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
 //   Added group origin to mesh metadata constructor.
-//   
+//
+//   Brad Whitlock, Thu May  7 16:58:42 PDT 2009
+//   I set the cell and node origins to 1.
+//
 // ****************************************************************************
 
 void
@@ -1471,6 +1480,7 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
             2, 1, AVT_UNSTRUCTURED_MESH);
         mmd->hasSpatialExtents = false;
         mmd->cellOrigin = cellOrigin;
+        mmd->nodeOrigin = 1;
         md->Add(mmd);
 
         // Add the variables to the metadata and create varStorage
@@ -1493,6 +1503,7 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
             3, 1, AVT_UNSTRUCTURED_MESH);
         mmd->hasSpatialExtents = false;
         mmd->cellOrigin = cellOrigin;
+        mmd->nodeOrigin = 1;
         md->Add(mmd);
 
         // Add the variables to the metadata.

@@ -76,7 +76,9 @@ bool operator < (const QSize &a, const QSize &b)
 // Creation:   Thu Aug 28 14:43:57 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon May 11 11:08:53 PDT 2009
+//   I added rowColFromIndex.
+//
 // ****************************************************************************
 
 class DataArrayModel : public QAbstractItemModel
@@ -175,11 +177,14 @@ DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
 //   Brad Whitlock, Fri Jan 30 16:14:20 PST 2009
 //   Guard against out of bounds slice indices.
 //
+//   Brad Whitlock, Mon May 11 11:45:40 PDT 2009
+//   I fixed a base_index problem.
+//
 // ****************************************************************************
 
 void
 DataArrayModel::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
-    int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex, int base_index[3])
+    int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex, int baseIndex[3])
 {
     // The data arrays.
     dataArray = arr;
@@ -189,6 +194,10 @@ DataArrayModel::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
     dims[0] = d[0];
     dims[1] = d[1];
     dims[2] = d[2];
+
+    base_index[0] = baseIndex[0];
+    base_index[1] = baseIndex[1];
+    base_index[2] = baseIndex[2];
 
     // The slice that this table will display.
     displayMode = dm;
@@ -1012,6 +1021,101 @@ SpreadsheetTable::selectedCellsAverage() const
     avg = (ncells > 0) ? (sum / double(ncells)) : sum;
     return avg;
 }
+
+// ****************************************************************************
+// Method: SpreadsheetTable::selectedColumnIndices
+//
+// Purpose: 
+//   Return the indices of the column.
+//
+// Arguments:
+//   nvals : The number of indices returned.
+//
+// Returns:    An array of indices.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 11 10:51:31 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkIdType *
+SpreadsheetTable::selectedColumnIndices(int &nvals) const
+{
+    vtkIdType *ids = 0;
+    nvals = 0;
+
+    QModelIndexList sel(selectedIndexes());
+    nvals = model()->rowCount();
+    if(nvals > 0)
+    {
+        int row = 0, col = 0;
+        ids = new vtkIdType[nvals];
+
+        for(QModelIndexList::iterator it = sel.begin(); it != sel.end(); ++it)
+        {
+            row = it->row();
+            col = it->column();
+            break;
+        }
+
+        for(int row = 0; row < nvals; ++row)
+            ids[nvals-1-row] = (vtkIdType)model()->index(row, col).internalId();
+    }
+
+    return ids;
+}
+
+// ****************************************************************************
+// Method: SpreadsheetTable::selectedColumnIndices
+//
+// Purpose: 
+//   Return the indices of the column.
+//
+// Arguments:
+//   nvals : The number of indices returned.
+//
+// Returns:    An array of indices.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 11 10:51:31 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkIdType *
+SpreadsheetTable::selectedRowIndices(int &nvals) const
+{
+    vtkIdType *ids = 0;
+    nvals = 0;
+
+    QModelIndexList sel(selectedIndexes());
+    nvals = model()->columnCount();
+    if(nvals > 0)
+    {
+        int row = 0, col = 0;
+        ids = new vtkIdType[nvals];
+
+        for(QModelIndexList::iterator it = sel.begin(); it != sel.end(); ++it)
+        {
+            row = it->row();
+            col = it->column();
+            break;
+        }
+
+        for(int col = 0; col < nvals; ++col)
+            ids[col] = (vtkIdType)model()->index(row, col).internalId();
+    }
+
+    return ids;
+}
+
 
 // ****************************************************************************
 // Method: SpreadsheetTable::addSelectedCellLabel()

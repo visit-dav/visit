@@ -35,79 +35,54 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef SPREADSHEET_TABLE_H
-#define SPREADSHEET_TABLE_H
-#include <string>
-#include <QTableView>
-#include <list>
+#ifndef SPREADSHEET_CURVE_VIEWER_H
+#define SPREADSHEET_CURVE_VIEWER_H
 
-#include <vtkDataArray.h>
+#include <QMainWindow>
 
-class avtLookupTable;
+class ViewerPlot;
+
+class QMenu;
+class QTextEdit;
 
 // ****************************************************************************
-// Class: SpreadsheetTable
+// Class: SpreadsheetCurveViewer
 //
 // Purpose:
-//   Subclass of QTable that can directly display VTK data without needing
-//   its own internal representation.
+//   This widget can display a data for a curve file.
 //
 // Notes:      
 //
 // Programmer: Brad Whitlock
-// Creation:   Tue Feb 20 11:15:35 PDT 2007
+// Creation:   Fri May  8 15:32:22 PDT 2009
 //
 // Modifications:
-//   Gunther H. Weber,  Fri Sep 14 11:39:24 PDT 2007
-//   Added list of pick letters to be displayed for selected cells
-//
-//   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
-//   Add support for updating column width after changing the font
-//
-//   Brad Whitlock, Tue Aug 26 15:09:37 PDT 2008
-//   Qt 4.
-//
-//   Brad Whitlock, Fri May  8 12:07:49 PDT 2009
-//   I added functions to return the vtkIdTypes for a row and col.
 //
 // ****************************************************************************
 
-class SpreadsheetTable : public QTableView
+class SpreadsheetCurveViewer : public QMainWindow
 {
     Q_OBJECT
 public:
-    typedef enum {SliceX, SliceY, SliceZ, UCDCell, UCDNode} DisplayMode;
+    SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent);
+    virtual ~SpreadsheetCurveViewer();
 
-    SpreadsheetTable(QWidget *parent = 0);
-    virtual ~SpreadsheetTable();
+    void setData(const double *vals, int nvals);
+private slots:
+    void saveCurve();
+    void copyToClipboard();
+    void operationPlot();
+private:
+    void saveCurveFile(const QString &name);
 
-    void setLUT(avtLookupTable *);
-    void setRenderInColor(bool);
-    void setFormatString(const QString &);
+    ViewerPlot *plot;
+    QTextEdit  *curveText;
+    QMenu      *fileMenu;
+    QMenu      *editMenu;
+    QMenu      *operationsMenu;
 
-    void setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
-                      int d[3], DisplayMode dm, int sliceindex,
-                      int base_index[3]);
-    void clearDataArray();
-
-    QString selectedCellsAsText() const;
-    double  selectedCellsSum() const;
-    double  selectedCellsAverage() const;
-    vtkIdType *selectedColumnIndices(int &nvals) const;
-    vtkIdType *selectedRowIndices(int &nvals) const;
-
-    void addSelectedCellLabel(int r, int c, const QString &label);
-    void clearSelectedCellLabels();
-
-    void setFont(QFont&);
-
-signals:
-    void selectionChanged();
-public slots:
-    void selectAll();
-    void selectNone();
-protected:
-    void updateColumnWidths();
+    QString     filename;
+    static int  counter;
 };
 
 #endif

@@ -77,7 +77,7 @@
 // ****************************************************************************
 
 Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), hasMaterial(false),
-    slice(0), sliceIndex(0), hsize(0), dataset(0), integrate(false),
+    cellCentered(true), slice(0), sliceIndex(0), hsize(0), dataset(0), integrate(false),
     log(Streaker::LOGTYPE_NONE), x_scale(1.), x_translate(0.), y_scale(1.), y_translate(0.)
 {
 }
@@ -200,7 +200,8 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
 
         if(line[0] == '#')
             continue;
-        else if(strncmp(line, "cellcentered", 12) == 0)
+        else if(strncmp(line, "cellcentered", 12) == 0 ||
+                strncmp(line, "zonecentered", 12) == 0)
             cellCentered = true;
         else if(strncmp(line, "nodecentered", 12) == 0)
             cellCentered = false;
@@ -556,6 +557,9 @@ Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
 //   Brad Whitlock, Tue May  5 16:25:02 PDT 2009
 //   I made cell-centering support be dynamic instead of compiled in.
 //
+//   Brad Whitlock, Thu May  7 16:58:42 PDT 2009
+//   I set the cell and node origins to 1.
+//
 // ****************************************************************************
 
 void
@@ -580,6 +584,8 @@ Streaker::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             mmd->yLabel = std::string("log10(") +  it->second.yvar + std::string(")");
         else
             mmd->yLabel = it->second.yvar;
+        mmd->cellOrigin = 1;
+        mmd->nodeOrigin = 1;
         md->Add(mmd);
 
         avtScalarMetaData *smd = new avtScalarMetaData;
