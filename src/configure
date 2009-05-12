@@ -3952,9 +3952,9 @@ fi
 
 VISITWRAPPER_RPATH=
 VISIT_LIB_DIR="$""(libdir)"
-COMPATIBILITY_VERSION=`sed -e "s/b//" VISIT_VERSION`
+COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
 if test "x$prefix" != xNONE; then
-    COMPATIBILITY_VERSION=`sed -e "s/b//" VISIT_VERSION`
+    COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
     PLATFORM=
     case "$UNAME" in
     Linux)
@@ -11893,7 +11893,7 @@ case $UNAME in
     SHLIB_POSTPROCESS=""
     SHLIB_POSTPROCESS_SER=""
     SHLIB_POSTPROCESS_PAR=""
-    COMPATIBILITY_VERSION=`sed -e "s/b//" VISIT_VERSION`
+    COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
 
     # Set SHLIB_LIBS so the right libraries are added to the link line but also ensure
     # that the shared library is created with a unique starting address so we can
