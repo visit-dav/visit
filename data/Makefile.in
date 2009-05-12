@@ -314,6 +314,9 @@
 #   Brad Whitlock, Wed Mar 11 10:48:23 PDT 2009
 #   Added multidir test program.
 #
+#   Cyrus Harrison, Tue May 12 13:04:19 PDT 2009
+#   Added mmadj_rect_2d test program.
+#
 ##############################################################################
 
 ##
@@ -341,7 +344,9 @@ SILOSRC=bigsil.C csg.C emptydomains.C fullframe.C galaxy.C ghost.C \
         global_node.C globe.C largefile.C lineout_test.C lowfrac.C \
         meshorigin.C multi_test.C noise.C noise2d.C one_quad.C \
         quad_disk.C sid97.C specmix.C testall.C thinplane.C tire.C \
-        wave.C mat_3x3_3across.C mat_3x3x3_3across.C multidir.C
+        wave.C mat_3x3_3across.C mat_3x3x3_3across.C multidir.C \
+        mmadj_rect_2d.C
+
 SILO_TARGET=$(SILOSRC:.C=)
 #SILO_TARGET=`echo $(SILOSRC) | sed -e 's/\.C//g'` is an alternative
 
@@ -415,6 +420,7 @@ test: $(EZ_TARGET)  @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET) $(BINSRC)
 	./meshorigin
 	./lineout_test
 	./multidir
+	./mmadj_rect_2d
 	-@if test -e /home/visit/data/sesame.pdb; then \
 	    ln -sf /home/visit/data/sesame.pdb . ;\
         elif test -e /project/projectdirs/visit/data/sesame.pdb; then \
@@ -478,6 +484,7 @@ testh5: @SILO_TARGET@ @HDF5_TARGET@
            ./meshorigin -driver DB_HDF5; \
            ./lineout_test -driver DB_HDF5; \
            ./multidir -driver DB_HDF5; \
+           ./mmadj_rect_2d -driver DB_HDF5; \
 	else \
 	   echo "HDF5 driver for Silo not available in this configuration" ;\
 	   exit 1;\
@@ -494,7 +501,8 @@ gen_data_clean:
 	$(RM) wave_1file* wave_tv_1file*
 	$(RM) [a-z]*.xmf mesh.h5
 	$(RM) -rf multidir_data
-
+	$(RM) -rf mmadj_rect_2d_data mmadj_rect_2d_root.silo
+    
 src_clean:
 	$(RM) $(OBJ) $(EZ_TARGET) @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET)
 
@@ -535,6 +543,9 @@ clean: bin_data_clean gen_data_clean src_clean
 
 ./multidir: multidir.o QuadMesh.o
 	$(CXX) -o $@ multidir.o QuadMesh.o $(LDFLAGS) $(LIBS)
+
+./mmadj_rect_2d: mmadj_rect_2d.o
+	$(CXX) -o $@ mmadj_rect_2d.o $(LDFLAGS) $(LIBS)
 
 ./bov: bov.o
 	$(CXX) -o $@ bov.o $(LDFLAGS) $(LIBS)
@@ -610,7 +621,7 @@ clean: bin_data_clean gen_data_clean src_clean
 ./xdmf: xdmf.o
 	$(CXX) -o $@ xdmf.o $(LDFLAGS) $(HDF5_LIB) $(ZLIB_LIB) @LIBS@
 
-install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test ./multidir
+install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test ./multidir ./mmadj_rect_2d
 	$(INSTALL) ./bigsil $(bindir)
 	$(INSTALL) ./distribution_curves $(bindir)
 	$(INSTALL) ./degen_meshes $(bindir)
@@ -636,6 +647,7 @@ install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test .
 	$(INSTALL) ./meshorigin $(bindir)
 	$(INSTALL) ./lineout_test $(bindir)
 	$(INSTALL) ./multidir $(bindir)
+	$(INSTALL) ./mmadj_rect_2d $(bindir)
 
 #
 # Inference rules for compressed binary data files
