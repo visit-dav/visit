@@ -159,6 +159,10 @@ avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Dave Pugmire, Mon Jun  2 09:33:26 EDT 2008
 //    Handle data with more than one component.
 //
+//    Hank Childs, Tue May 12 02:21:19 PDT 2009
+//    Fix problem with floating point precision inaccuracies leading to
+//    access of uninitialized memory.
+//
 // ****************************************************************************
 
 static void
@@ -185,7 +189,7 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
         {
             float x1 = rgrid->GetXCoordinates()->GetTuple1(j);
             float x2 = rgrid->GetXCoordinates()->GetTuple1(j+1);
-            if (x1 <= x && x <= x2)
+            if ((x1 <= x && x <= x2) || (j == grid_dims[0]-2))
             {
                 x_ind[i] = j;
                 float dist = x2-x1;
@@ -212,7 +216,7 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
         {
             float y1 = rgrid->GetYCoordinates()->GetTuple1(j);
             float y2 = rgrid->GetYCoordinates()->GetTuple1(j+1);
-            if (y1 <= y && y <= y2)
+            if ((y1 <= y && y <= y2) || (j == grid_dims[1]-2))
             {
                 y_ind[i] = j;
                 float dist = y2-y1;
@@ -239,7 +243,7 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
         {
             float z1 = rgrid->GetZCoordinates()->GetTuple1(j);
             float z2 = rgrid->GetZCoordinates()->GetTuple1(j+1);
-            if (z1 <= z && z <= z2)
+            if ((z1 <= z && z <= z2) || (j == grid_dims[2]-2))
             {
                 z_ind[i] = j;
                 float dist = z2-z1;
