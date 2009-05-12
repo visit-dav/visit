@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <IndexSelectPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <IndexSelectAttributes.h>
 
 #if defined(__APPLE__)

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SurfCompPrepPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <SurfCompPrepAttributes.h>
 
 #if defined(__APPLE__)

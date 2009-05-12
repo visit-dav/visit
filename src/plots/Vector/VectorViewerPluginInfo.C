@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <VectorPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtVectorPlot.h>
 
 #if defined(__APPLE__)

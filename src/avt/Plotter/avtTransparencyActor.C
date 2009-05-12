@@ -106,6 +106,9 @@ using     std::vector;
 //    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
 //    Initialize is2Dimensional.
 //
+//    Brad Whitlock, Fri Jan 23 15:27:34 PST 2009
+//    Pass the communicator to vtkParallelImageSpaceRedistributor.
+//
 // ****************************************************************************
 
 avtTransparencyActor::avtTransparencyActor()
@@ -118,6 +121,9 @@ avtTransparencyActor::avtTransparencyActor()
     
     parallelFilter = vtkParallelImageSpaceRedistributor::New();
     parallelFilter->SetRankAndSize(PAR_Rank(), PAR_Size());
+#ifdef PARALLEL
+    parallelFilter->SetCommunicator(VISIT_MPI_COMM);
+#endif
 
     //
     // Tell the mapper that we are going to set up an RGBA field ourselves.

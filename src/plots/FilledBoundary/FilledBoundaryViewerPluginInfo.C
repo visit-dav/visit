@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <FilledBoundaryPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtFilledBoundaryPlot.h>
 
 #if defined(__APPLE__)

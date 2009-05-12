@@ -16,6 +16,8 @@
       avtLAMMPSStructureFileFormat.C
       avtLAMMPSDumpFileFormat.C
     </Files>
-    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="LAMMPS.code">
+      <Function name="LAMMPSCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

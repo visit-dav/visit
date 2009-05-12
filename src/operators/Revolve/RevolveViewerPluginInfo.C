@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <RevolvePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <RevolveAttributes.h>
 
 #if defined(__APPLE__)

@@ -42,7 +42,7 @@
 
 #include <ZoneDumpPluginInfo.h>
 #include <ZoneDumpAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisZoneDumpWindow.h>
 
 #if defined(__APPLE__)

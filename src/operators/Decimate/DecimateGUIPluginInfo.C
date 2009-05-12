@@ -42,7 +42,7 @@
 
 #include <DecimatePluginInfo.h>
 #include <DecimateAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisDecimateWindow.h>
 
 #if defined(__APPLE__)

@@ -42,7 +42,7 @@
 
 #include <PoincarePluginInfo.h>
 #include <PoincareAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisPoincarePlotWindow.h>
 
 #if defined(__APPLE__)

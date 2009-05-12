@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SpreadsheetPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtSpreadsheetPlot.h>
 
 #if defined(__APPLE__)

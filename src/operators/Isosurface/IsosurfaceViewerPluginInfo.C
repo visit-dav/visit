@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <IsosurfacePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <IsosurfaceAttributes.h>
 
 #if defined(__APPLE__)

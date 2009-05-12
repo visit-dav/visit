@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ReplicatePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ReplicateAttributes.h>
 
 #if defined(__APPLE__)

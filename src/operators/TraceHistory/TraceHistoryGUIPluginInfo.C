@@ -42,7 +42,7 @@
 
 #include <TraceHistoryPluginInfo.h>
 #include <TraceHistoryAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisTraceHistoryWindow.h>
 
 #if defined(__APPLE__)

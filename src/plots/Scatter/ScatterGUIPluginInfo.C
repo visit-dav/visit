@@ -42,7 +42,7 @@
 
 #include <ScatterPluginInfo.h>
 #include <ScatterAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisScatterPlotWindow.h>
 
 #if defined(__APPLE__)

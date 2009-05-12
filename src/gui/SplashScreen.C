@@ -158,7 +158,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
 
     // If the window manager is dumb enough to put decorations on this
     // window, at least put a reasonable title on it.
-    QString caption(tr("VisIt %1 splash screen").arg(VERSION));
+    QString caption(tr("VisIt %1 splash screen").arg(VISIT_VERSION));
     setWindowTitle(caption);
 
     // Set up a box to put the picture in
@@ -197,10 +197,10 @@ SplashScreen::SplashScreen(bool cyclePictures)
     QString ver;
     bool drawVersion = false;
     int major = 0, minor = 0, patch = 0;
-    int ret = GetVisItVersionFromString(VERSION, major, minor, patch);
+    int ret = GetVisItVersionFromString(VISIT_VERSION, major, minor, patch);
     if(ret < 0)
     {
-        ver = QString(VERSION);
+        ver = QString(VISIT_VERSION);
         if(ver.right(1) == "b")
             ver = tr("Beta");
         drawVersion = true;
@@ -249,7 +249,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
     lLayout->addWidget(new QLabel(C, this));
 
     QString versionText;
-    versionText.sprintf("VisIt %s, ", VERSION);
+    versionText.sprintf("VisIt %s, ", VISIT_VERSION);
     versionText += tr("svn revision");
     versionText += " ";
     versionText += VISIT_SVN_REVISION;

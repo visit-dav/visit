@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <TraceHistoryPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <TraceHistoryAttributes.h>
 
 #if defined(__APPLE__)

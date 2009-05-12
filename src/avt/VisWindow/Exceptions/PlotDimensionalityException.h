@@ -42,7 +42,7 @@
 
 #ifndef PLOT_DIMENSIONALITY_EXCEPTION_H
 #define PLOT_DIMENSIONALITY_EXCEPTION_H
-#include <avtexception_exports.h>
+#include <viswindow_exports.h>
 
 #include <VisWindowException.h>
 #include <VisWindowTypes.h>
@@ -61,7 +61,7 @@
 //
 // ****************************************************************************
 
-class AVTEXCEPTION_API PlotDimensionalityException : public VisWindowException
+class VISWINDOW_API PlotDimensionalityException : public VisWindowException
 {
   public:
                     PlotDimensionalityException(WINDOW_MODE, WINDOW_MODE, int);

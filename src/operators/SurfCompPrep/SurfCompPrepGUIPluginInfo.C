@@ -42,7 +42,7 @@
 
 #include <SurfCompPrepPluginInfo.h>
 #include <SurfCompPrepAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSurfCompPrepWindow.h>
 
 #if defined(__APPLE__)

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <MeshPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtMeshPlot.h>
 
 #if defined(__APPLE__)

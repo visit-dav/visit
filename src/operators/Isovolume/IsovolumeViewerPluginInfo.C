@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <IsovolumePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <IsovolumeAttributes.h>
 
 #if defined(__APPLE__)

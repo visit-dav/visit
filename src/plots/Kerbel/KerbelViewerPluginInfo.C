@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <KerbelPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtKerbelPlot.h>
 
 #if defined(__APPLE__)

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <LabelPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtLabelPlot.h>
 
 #if defined(__APPLE__)

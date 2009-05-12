@@ -47,6 +47,9 @@
 #include <vector>
 #include <vtkPolyDataToPolyDataFilter.h>
 #include <vtkCell.h>
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 
 // ****************************************************************************
 //  Class: vtkParallelImageSpaceRedistributor
@@ -72,6 +75,10 @@
 //    Added a method to set rank and size to eliminate a circular code
 //    dependency. Changed the API.
 //
+//    Brad Whitlock, Fri Jan 23 15:07:24 PST 2009
+//    I added a SetCommunicator method so this library is not dependent on
+//    AVT.
+//
 // ****************************************************************************
 
 class PARALLEL_VISIT_VTK_API vtkParallelImageSpaceRedistributor :
@@ -83,7 +90,9 @@ class PARALLEL_VISIT_VTK_API vtkParallelImageSpaceRedistributor :
     vtkPolyData      *GetOutput();
     void             SetRenderer(vtkRenderer *renderer) {ren = renderer;};
     void             SetRankAndSize(int r, int s);
-
+#ifdef PARALLEL
+    void             SetCommunicator(const MPI_Comm &c);
+#endif
   protected:
                      vtkParallelImageSpaceRedistributor();
     virtual         ~vtkParallelImageSpaceRedistributor();
@@ -100,6 +109,9 @@ class PARALLEL_VISIT_VTK_API vtkParallelImageSpaceRedistributor :
     int             *x1,*y1,*x2,*y2;
     int              rank, size;
     int              width, height;
+#ifdef PARALLEL
+    MPI_Comm         comm;
+#endif
 
     unsigned char   *GetDataString(int &length, vtkPolyData *asVTK);
     vtkPolyData     *GetDataVTK(unsigned char *asChar,

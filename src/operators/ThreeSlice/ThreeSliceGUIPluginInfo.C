@@ -42,7 +42,7 @@
 
 #include <ThreeSlicePluginInfo.h>
 #include <ThreeSliceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisThreeSliceWindow.h>
 
 #if defined(__APPLE__)

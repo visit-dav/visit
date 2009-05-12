@@ -333,7 +333,7 @@ QvisHelpWindow::CreateWindowContents()
 QString
 QvisHelpWindow::ReleaseNotesFile() const
 {
-    QString relNotes, ver(VERSION);
+    QString relNotes, ver(VISIT_VERSION);
     if(ver.right(1) == "b")
         ver = ver.left(ver.length()-1);
     relNotes = QString("relnotes") + ver + QString(".html");

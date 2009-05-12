@@ -42,7 +42,7 @@
 
 #include <BoxPluginInfo.h>
 #include <BoxAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisBoxWindow.h>
 
 #if defined(__APPLE__)

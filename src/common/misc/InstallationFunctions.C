@@ -512,7 +512,7 @@ GetIsDevelopmentVersion()
 std::string
 GetVisItInstallationDirectory()
 {
-    return GetVisItInstallationDirectory(VERSION);
+    return GetVisItInstallationDirectory(VISIT_VERSION);
 }
 
 #if _MSC_VER <= 1310
@@ -610,7 +610,7 @@ GetVisItInstallationDirectory(const char *version)
 std::string
 GetVisItArchitectureDirectory()
 {
-    return GetVisItArchitectureDirectory(VERSION);
+    return GetVisItArchitectureDirectory(VISIT_VERSION);
 }
 
 std::string
@@ -641,7 +641,7 @@ GetVisItArchitectureDirectory(const char *version)
 #else
     // Get the installation dir for the version that's running. They all use
     // the same "visit" script so it's okay to do this.
-    std::string archDir(std::string("/usr/local/visit/") + std::string(VERSION));
+    std::string archDir(std::string("/usr/local/visit/") + std::string(VISIT_VERSION));
     const std::string adir = Environment::get("VISITARCHHOME");
     if(!adir.empty())
         archDir = adir;
@@ -872,7 +872,7 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
     int nStartups = 1;
     std::string rcFile(GetUserVisItDirectory());
     rcFile += "state";
-    rcFile += VERSION;
+    rcFile += VISIT_VERSION;
     rcFile += ".txt";
 
     FILE *f = 0;
@@ -929,7 +929,7 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 {
     std::string rcFile(GetUserVisItDirectory());
     rcFile += "state";
-    rcFile += VERSION;
+    rcFile += VISIT_VERSION;
     rcFile += ".txt";
 
     // Does the file exist?

@@ -1572,7 +1572,7 @@ RemoteProcess::ExchangeTypeRepresentations()
         std::string socketKey(header.CreateRandomKey());
 
         // Send the local component and platform information.
-        header.WriteHeader(writeConnections[0], VERSION,
+        header.WriteHeader(writeConnections[0], VISIT_VERSION,
                            "", socketKey);
 
         bool throwVersionException = false;
@@ -1585,7 +1585,7 @@ RemoteProcess::ExchangeTypeRepresentations()
             header.SetSecurityKey(securityKey);
 
             // Read the remote component and platform information.
-            header.ReadHeader(readConnections[0], VERSION);
+            header.ReadHeader(readConnections[0], VISIT_VERSION);
         }
         CATCH(IncompatibleVersionException)
         {
@@ -1874,7 +1874,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     //
     args.push_back("-v");
     int major=0, minor=0, patch=0;
-    if (GetVisItVersionFromString(VERSION, major, minor, patch) >= 2)
+    if (GetVisItVersionFromString(VISIT_VERSION, major, minor, patch) >= 2)
     {
         // Note: we didn't wrap GetVisItVersionFromString with abs() because
         // a negative value implies a beta version, and we only want to
@@ -1886,7 +1886,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     }
     else
     {
-        args.push_back(VERSION);
+        args.push_back(VISIT_VERSION);
     }
 
     //

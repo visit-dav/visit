@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ProjectPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ProjectAttributes.h>
 
 #if defined(__APPLE__)

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <CracksClipperPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <CracksClipperAttributes.h>
 
 #if defined(__APPLE__)

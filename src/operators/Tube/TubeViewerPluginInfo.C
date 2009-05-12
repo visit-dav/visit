@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <TubePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <TubeAttributes.h>
 
 #if defined(__APPLE__)

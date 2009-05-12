@@ -42,7 +42,7 @@
 
 #include <SiloDumpPluginInfo.h>
 #include <SiloDumpAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSiloDumpWindow.h>
 
 #if defined(__APPLE__)

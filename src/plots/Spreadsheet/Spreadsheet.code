@@ -273,7 +273,9 @@ Definition:
 // Creation:   Wed Feb 21 10:53:23 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 11 16:24:41 PDT 2008
+//   Removed name argument from SpreadsheetViewer constructor.
+//
 // ****************************************************************************
 #include <SpreadsheetViewer.h>
 #include <avtCallback.h>
@@ -285,7 +287,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayCreate(ViewerPlot *plot)
     if(!avtCallback::GetNowinMode())
     {
         // We're not in nowin mode so create the spreadsheet viewer.
-        SpreadsheetViewer *win = new SpreadsheetViewer(plot, 0, "SpreadsheetViewer");
+        SpreadsheetViewer *win = new SpreadsheetViewer(plot, 0);
         dpy = (void *)win;
     }
 

@@ -108,7 +108,7 @@ VLIFileManager::WriteConfigFile(const char *filename)
     // Create the color table node.
     DataNode *ctNode = new DataNode("VLIFile");
     topLevel.AddNode(ctNode);
-    ctNode->AddNode(new DataNode("Version", std::string(VERSION)));
+    ctNode->AddNode(new DataNode("Version", std::string(VISIT_VERSION)));
 
     // Let the vli file manager create and add its information to the node.
     ctNode->AddNode(Export());

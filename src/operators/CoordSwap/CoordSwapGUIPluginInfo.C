@@ -42,7 +42,7 @@
 
 #include <CoordSwapPluginInfo.h>
 #include <CoordSwapAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisCoordSwapWindow.h>
 
 #if defined(__APPLE__)

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <TruecolorPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtTruecolorPlot.h>
 
 #if defined(__APPLE__)

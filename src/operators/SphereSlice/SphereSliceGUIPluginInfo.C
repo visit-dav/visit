@@ -42,7 +42,7 @@
 
 #include <SphereSlicePluginInfo.h>
 #include <SphereSliceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSphereSliceWindow.h>
 
 #if defined(__APPLE__)

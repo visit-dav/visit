@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ThresholdPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ThresholdAttributes.h>
 
 #if defined(__APPLE__)

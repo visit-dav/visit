@@ -42,7 +42,7 @@
 
 #include <OnionPeelPluginInfo.h>
 #include <OnionPeelAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisOnionPeelWindow.h>
 
 #if defined(__APPLE__)

@@ -42,7 +42,7 @@
 
 #include <MoleculePluginInfo.h>
 #include <MoleculeAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisMoleculePlotWindow.h>
 
 #if defined(__APPLE__)

@@ -42,7 +42,7 @@
 
 #ifndef BAD_WINDOW_MODE_EXCEPTION_H
 #define BAD_WINDOW_MODE_EXCEPTION_H
-#include <avtexception_exports.h>
+#include <viswindow_exports.h>
 
 #include <VisWindowException.h>
 #include <VisWindowTypes.h>
@@ -60,7 +60,7 @@
 //
 // ****************************************************************************
 
-class AVTEXCEPTION_API BadWindowModeException : public VisWindowException
+class VISWINDOW_API BadWindowModeException : public VisWindowException
 {
   public:
                     BadWindowModeException(WINDOW_MODE);

@@ -42,7 +42,7 @@
 
 #include <ThresholdPluginInfo.h>
 #include <ThresholdAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisThresholdWindow.h>
 
 #if defined(__APPLE__)

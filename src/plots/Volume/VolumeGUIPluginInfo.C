@@ -42,7 +42,7 @@
 
 #include <VolumePluginInfo.h>
 #include <VolumeAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisVolumePlotWindow.h>
 
 #if defined(__APPLE__)

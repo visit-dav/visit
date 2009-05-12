@@ -190,7 +190,7 @@ ColorTableManager::WriteConfigFile(const char *filename)
     // Create the color table node.
     DataNode *ctNode = new DataNode("ColorTable");
     topLevel.AddNode(ctNode);
-    ctNode->AddNode(new DataNode("Version", std::string(VERSION)));
+    ctNode->AddNode(new DataNode("Version", std::string(VISIT_VERSION)));
 
     // Let the color table create add its information to tbe node.
     ccpl.CreateNode(ctNode, false, true);

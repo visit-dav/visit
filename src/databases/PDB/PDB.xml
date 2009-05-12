@@ -38,6 +38,8 @@
       Streaker.C
       JMFileFormat.C
     </Files>
-    <Attribute name="" purpose="" persistent="true">
+    <Attribute name="" purpose="" persistent="true" codefile="PDB.code">
+      <Function name="PDBCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

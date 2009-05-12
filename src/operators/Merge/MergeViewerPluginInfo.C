@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <MergePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <MergeOperatorAttributes.h>
 
 #if defined(__APPLE__)

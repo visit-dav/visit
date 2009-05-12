@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <DecimatePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <DecimateAttributes.h>
 
 #if defined(__APPLE__)

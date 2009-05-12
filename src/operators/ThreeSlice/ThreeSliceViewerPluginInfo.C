@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ThreeSlicePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ThreeSliceAttributes.h>
 
 #if defined(__APPLE__)

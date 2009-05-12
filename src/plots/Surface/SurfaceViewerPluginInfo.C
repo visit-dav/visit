@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SurfacePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtSurfacePlot.h>
 
 #if defined(__APPLE__)

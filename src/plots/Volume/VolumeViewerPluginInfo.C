@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <VolumePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtVolumePlot.h>
 
 #if defined(__APPLE__)

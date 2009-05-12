@@ -2788,7 +2788,7 @@ QvisGUIApplication::CreateMainWindow()
     // QvisWindowBase, which all windows use, are being set here through
     // the mainWin pointer.
     std::string title("VisIt ");
-    title += VERSION;
+    title += VISIT_VERSION;
     mainWin = new QvisMainWindow(orientation, title.c_str());
     connect(mainWin, SIGNAL(quit()), this, SLOT(Quit()));
     connect(mainWin, SIGNAL(saveSettings()), this, SLOT(SaveSettings()));
@@ -3863,7 +3863,7 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     // Create the root node called "VisIt" and create a "Version"
     // node under it.
     DataNode root("VisIt");
-    root.AddNode(new DataNode("Version", std::string(VERSION)));
+    root.AddNode(new DataNode("Version", std::string(VISIT_VERSION)));
     
     // Create a "GUI" node and add it under "VisIt".
     DataNode *guiNode = new DataNode("GUI");
@@ -7301,7 +7301,7 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     if(!GetIsDevelopmentVersion())
     {
         args.push_back("-v");
-        args.push_back(VERSION);
+        args.push_back(VISIT_VERSION);
     }
 
     // iterate over the formats

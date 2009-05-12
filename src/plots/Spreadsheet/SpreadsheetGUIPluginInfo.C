@@ -42,7 +42,7 @@
 
 #include <SpreadsheetPluginInfo.h>
 #include <SpreadsheetAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSpreadsheetPlotWindow.h>
 
 #if defined(__APPLE__)

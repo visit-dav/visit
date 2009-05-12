@@ -42,7 +42,7 @@
 
 #include <ProjectPluginInfo.h>
 #include <ProjectAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisProjectWindow.h>
 
 #if defined(__APPLE__)

@@ -42,7 +42,7 @@
 
 #include <HistogramPluginInfo.h>
 #include <HistogramAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisHistogramPlotWindow.h>
 
 #if defined(__APPLE__)

@@ -42,7 +42,7 @@
 
 #include <MetricThresholdPluginInfo.h>
 #include <MetricThresholdAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisMetricThresholdWindow.h>
 
 #if defined(__APPLE__)

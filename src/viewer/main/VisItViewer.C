@@ -277,7 +277,7 @@ VisItViewer::ProcessCommandLine(int argc, char **argv, bool addForceVersion)
         argv2[argc    ] = "-dir";
         argv2[argc + 1] = dirName;
         argv2[argc + 2] = "-forceversion";
-        argv2[argc + 3] = VERSION;
+        argv2[argc + 3] = VISIT_VERSION;
         argv2[argc + 4] = NULL;
         if (!addForceVersion)
         {
@@ -298,7 +298,7 @@ VisItViewer::ProcessCommandLine(int argc, char **argv, bool addForceVersion)
         for(int i = 0; i < argc; ++i)
             argv2[i] = argv[i];
         argv2[argc    ] = "-forceversion";
-        argv2[argc + 1] = VERSION;
+        argv2[argc + 1] = VISIT_VERSION;
         argv2[argc + 2] = NULL;
         if (!addForceVersion)
         {

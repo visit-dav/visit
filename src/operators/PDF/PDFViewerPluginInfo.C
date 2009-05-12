@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <PDFPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <PDFAttributes.h>
 
 #if defined(__APPLE__)

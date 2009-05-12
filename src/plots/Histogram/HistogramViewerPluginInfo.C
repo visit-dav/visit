@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <HistogramPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtHistogramPlot.h>
 
 #if defined(__APPLE__)

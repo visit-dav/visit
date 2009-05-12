@@ -42,7 +42,7 @@
 
 #include <LineSurfacePluginInfo.h>
 #include <LineSurfaceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisLineSurfaceWindow.h>
 
 #if defined(__APPLE__)

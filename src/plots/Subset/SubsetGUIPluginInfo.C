@@ -42,7 +42,7 @@
 
 #include <SubsetPluginInfo.h>
 #include <SubsetAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSubsetPlotWindow.h>
 
 #if defined(__APPLE__)

@@ -42,7 +42,7 @@
 
 #include <SubdivideQuadsPluginInfo.h>
 #include <SubdivideQuadsAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSubdivideQuadsWindow.h>
 
 #if defined(__APPLE__)

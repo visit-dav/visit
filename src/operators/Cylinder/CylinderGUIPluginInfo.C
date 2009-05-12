@@ -42,7 +42,7 @@
 
 #include <CylinderPluginInfo.h>
 #include <CylinderAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisCylinderWindow.h>
 
 #if defined(__APPLE__)

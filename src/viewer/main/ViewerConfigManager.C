@@ -168,7 +168,7 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
     // Create the VisIt node.
     DataNode *visitNode = new DataNode("VisIt");
     topLevel.AddNode(visitNode);
-    visitNode->AddNode(new DataNode("Version", std::string(VERSION)));
+    visitNode->AddNode(new DataNode("Version", std::string(VISIT_VERSION)));
 
     // Create a "VIEWER" node and add it under "VisIt".
     DataNode *viewerNode = new DataNode("VIEWER");
@@ -544,16 +544,16 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
         {
             QString differentVersionMessage;
             DataNode *versionNode = visitRoot->GetNode("Version");
-            std::string configVersion(VERSION);
+            std::string configVersion(VISIT_VERSION);
             if(versionNode != 0)
             {
                 configVersion = versionNode->AsString();
-                if(versionNode->AsString() != VERSION)
+                if(versionNode->AsString() != VISIT_VERSION)
                 {
                     differentVersionMessage = tr(
                         " Note that the session file was saved using VisIt %1 "
                         " and it may not be 100% compatible with VisIt %2.").
-                        arg(versionNode->AsString().c_str()).arg(VERSION);
+                        arg(versionNode->AsString().c_str()).arg(VISIT_VERSION);
                 }
             }
 

@@ -42,7 +42,7 @@
 
 #include <FilledBoundaryPluginInfo.h>
 #include <FilledBoundaryAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisFilledBoundaryPlotWindow.h>
 
 #if defined(__APPLE__)

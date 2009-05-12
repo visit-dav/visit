@@ -229,7 +229,7 @@ HelpMLFile::Open(const char *filename)
         fprintf(helpml, "        <title>VisIt Help Contents</title>\n");
         fprintf(helpml, "        <dateCreated>%s</dateCreated>\n",
             CurrentTime().c_str());
-        fprintf(helpml, "        <version>%s</version>\n", VERSION);
+        fprintf(helpml, "        <version>%s</version>\n", VISIT_VERSION);
         fprintf(helpml, "    </head>\n");
         fprintf(helpml, "    <body>\n");
     }

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <MoleculePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtMoleculePlot.h>
 
 #if defined(__APPLE__)

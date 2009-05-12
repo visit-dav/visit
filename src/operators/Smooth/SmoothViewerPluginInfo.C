@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SmoothPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <SmoothOperatorAttributes.h>
 
 #if defined(__APPLE__)

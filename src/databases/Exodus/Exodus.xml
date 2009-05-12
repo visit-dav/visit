@@ -7,4 +7,8 @@
     </Files>
     <CXXFLAGS> $(EXODUS_FLAGS) </CXXFLAGS>
     <LIBS>     $(EXODUS_LIBS)  </LIBS>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="Exodus.code">
+      <Function name="ExodusCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
   </Plugin>

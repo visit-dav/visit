@@ -42,7 +42,7 @@
 
 #include <ContextPluginInfo.h>
 #include <ContextAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisContextWindow.h>
 
 #if defined(__APPLE__)

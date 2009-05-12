@@ -42,7 +42,7 @@
 
 #include <ConePluginInfo.h>
 #include <ConeAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisConeWindow.h>
 
 #if defined(__APPLE__)

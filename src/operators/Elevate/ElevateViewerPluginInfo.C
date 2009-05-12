@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ElevatePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ElevateAttributes.h>
 
 #if defined(__APPLE__)

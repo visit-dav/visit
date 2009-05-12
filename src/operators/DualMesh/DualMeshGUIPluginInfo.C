@@ -42,7 +42,7 @@
 
 #include <DualMeshPluginInfo.h>
 #include <DualMeshAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisDualMeshWindow.h>
 
 #if defined(__APPLE__)

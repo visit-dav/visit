@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ClipPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ClipAttributes.h>
 
 #if defined(__APPLE__)

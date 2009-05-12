@@ -212,7 +212,7 @@ protected:
         HKEY hkey;
 
         /* Try and read the key from the system registry. */
-        regkey.sprintf("VISIT%s", VERSION);
+        regkey.sprintf("VISIT%s", VISIT_VERSION);
         if (*keyval == NULL)
             *keyval = new unsigned char[500];
         if(RegOpenKeyEx(which_root, regkey.toStdString().c_str(), 0, 

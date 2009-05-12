@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SubsetPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtSubsetPlot.h>
 
 #if defined(__APPLE__)

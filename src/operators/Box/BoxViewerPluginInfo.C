@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <BoxPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <BoxAttributes.h>
 
 #if defined(__APPLE__)

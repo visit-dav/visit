@@ -42,7 +42,7 @@
 
 #include <ClipPluginInfo.h>
 #include <ClipAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisClipWindow.h>
 
 #if defined(__APPLE__)

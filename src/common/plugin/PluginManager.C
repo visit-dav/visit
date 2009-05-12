@@ -686,7 +686,7 @@ PluginManager::ReadPluginInfo()
             pluginsWithNoVersion.push_back(pluginFile);
             success = false; 
         }
-        else if (!VisItVersionsCompatible(*VisItPluginVersion, VERSION))
+        else if (!VisItVersionsCompatible(*VisItPluginVersion, VISIT_VERSION))
         {
             pluginsWithWrongVersion.push_back(pluginFile);
             success = false; 

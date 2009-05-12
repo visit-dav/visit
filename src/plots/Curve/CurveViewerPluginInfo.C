@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <CurvePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtCurvePlot.h>
 
 #if defined(__APPLE__)

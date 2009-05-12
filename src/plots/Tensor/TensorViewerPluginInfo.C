@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <TensorPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtTensorPlot.h>
 
 #if defined(__APPLE__)

@@ -42,7 +42,7 @@
 
 #include <MergePluginInfo.h>
 #include <MergeOperatorAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisMergeWindow.h>
 
 #if defined(__APPLE__)

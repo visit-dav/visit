@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <BoundaryPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtBoundaryPlot.h>
 
 #if defined(__APPLE__)

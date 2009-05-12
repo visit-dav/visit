@@ -42,7 +42,7 @@
 
 #ifndef BAD_INTERACTOR_EXCEPTION_H
 #define BAD_INTERACTOR_EXCEPTION_H
-#include <avtexception_exports.h>
+#include <viswindow_exports.h>
 
 #include <VisWindowException.h>
 #include <VisWindowTypes.h>
@@ -60,7 +60,7 @@
 //
 // ****************************************************************************
 
-class AVTEXCEPTION_API BadInteractorException : public VisWindowException
+class VISWINDOW_API BadInteractorException : public VisWindowException
 {
   public:
                     BadInteractorException(INTERACTION_MODE);

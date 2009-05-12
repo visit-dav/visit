@@ -42,7 +42,7 @@
 
 #include <LineoutPluginInfo.h>
 #include <LineoutAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisLineoutWindow.h>
 
 #if defined(__APPLE__)

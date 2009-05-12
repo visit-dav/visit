@@ -42,7 +42,7 @@
 
 #include <ElevatePluginInfo.h>
 #include <ElevateAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisElevateWindow.h>
 
 #if defined(__APPLE__)

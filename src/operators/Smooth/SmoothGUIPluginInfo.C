@@ -42,7 +42,7 @@
 
 #include <SmoothPluginInfo.h>
 #include <SmoothOperatorAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSmoothWindow.h>
 
 #if defined(__APPLE__)

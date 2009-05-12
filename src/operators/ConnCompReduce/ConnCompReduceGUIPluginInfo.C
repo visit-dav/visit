@@ -42,7 +42,7 @@
 
 #include <ConnCompReducePluginInfo.h>
 #include <ConnCompReduceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisConnCompReduceWindow.h>
 
 #if defined(__APPLE__)

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <TransformPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <TransformAttributes.h>
 
 #if defined(__APPLE__)

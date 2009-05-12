@@ -158,7 +158,7 @@ RPCExecutor<CreateGroupListRPC>::Execute(CreateGroupListRPC *rpc)
     // Create a file that has all of the files in the groupList listed in it.
     ofstream out(rpc->filename.c_str());
 
-    out << "# VisIt group file, version " << VERSION << endl;
+    out << "# VisIt group file, version " << VISIT_VERSION << endl;
 
     std::vector<string>::iterator i;
     for(i=rpc->groupList.begin();i!=rpc->groupList.end();i++)

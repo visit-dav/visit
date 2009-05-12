@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <DeferExpressionPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <DeferExpressionAttributes.h>
 
 #if defined(__APPLE__)

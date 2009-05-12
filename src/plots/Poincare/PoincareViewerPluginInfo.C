@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <PoincarePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtPoincarePlot.h>
 
 #if defined(__APPLE__)

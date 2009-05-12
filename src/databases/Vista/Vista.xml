@@ -4,4 +4,8 @@
     <Files components="E,M">avtVistaFileFormat.C avtVistaAle3dFileFormat.C avtVistaDiabloFileFormat.C</Files>
     <CXXFLAGS> $(SILO_INCLUDE) $(HDF5_INCLUDE) </CXXFLAGS>
     <LIBS>     $(SILO_LIB)     $(HDF5_LIB)     </LIBS>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="Vista.code">
+      <Function name="VistaCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
   </Plugin>

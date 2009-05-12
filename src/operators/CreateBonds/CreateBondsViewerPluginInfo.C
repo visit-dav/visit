@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <CreateBondsPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <CreateBondsAttributes.h>
 
 #if defined(__APPLE__)
