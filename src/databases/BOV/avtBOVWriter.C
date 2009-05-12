@@ -332,6 +332,9 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Allow parallel writing of BOV files. Also, change bov file formatting
 //    to consider how many chunks are written.
 //
+//    Hank Childs, Mon May 11 23:21:35 CDT 2009
+//    Only have processor 0 write the header file.
+//
 // ****************************************************************************
 
 void
@@ -382,9 +385,13 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     char filename[1024];
     sprintf(filename, "%s.bov", stem.c_str());
-    ofstream ofile(filename);
-    ofile << "#BOV version: 1.0" << endl;
-    ofile << "# file written by VisIt conversion program " << endl;
+    ofstream *ofile = NULL;
+    if (PAR_Rank() == 0)
+    {
+        ofile = new ofstream(filename);
+        *ofile << "#BOV version: 1.0" << endl;
+        *ofile << "# file written by VisIt conversion program " << endl;
+    }
 
     int dims[3];
     rgrid->GetDimensions(dims);
@@ -433,26 +440,33 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
         char str[1024];
         sprintf(str, "%s_%%0.%dd.bof.gz", stem.c_str(), numDecimals);
-        ofile << "DATA_FILE: " << str << endl;
+        if (PAR_Rank() == 0)
+            *ofile << "DATA_FILE: " << str << endl;
     }
     else
     {
-        ofile << "DATA_FILE: " << stem.c_str() << endl;
+        if (PAR_Rank() == 0)
+            *ofile << "DATA_FILE: " << stem.c_str() << endl;
     }
 
-    ofile << "DATA SIZE: " << brickletsPerX*brickletNI << " "
-            << brickletsPerY*brickletNJ << " " << brickletsPerZ*brickletNK
-            << endl;
+    if (PAR_Rank() == 0)
+        *ofile << "DATA SIZE: " << brickletsPerX*brickletNI << " "
+               << brickletsPerY*brickletNJ << " " << brickletsPerZ*brickletNK
+               << endl;
 
     if (nBricklets > 1)
-        ofile << "DATA_BRICKLETS: " << brickletNI << " " << brickletNJ
-                << " " << brickletNK << endl;
+        if (PAR_Rank() == 0)
+            *ofile << "DATA_BRICKLETS: " << brickletNI << " " << brickletNJ
+                   << " " << brickletNK << endl;
 
-    ofile << "DATA FORMAT: FLOATS" << endl;
+    if (PAR_Rank() == 0)
+        *ofile << "DATA FORMAT: FLOATS" << endl;
 
     if (arr->GetNumberOfComponents() > 1)
-        ofile << "DATA_COMPONENTS: " << arr->GetNumberOfComponents() << endl;
-    ofile << "VARIABLE: \"" << arr->GetName()  << "\"" << endl;
+        if (PAR_Rank() == 0)
+            *ofile << "DATA_COMPONENTS: " << arr->GetNumberOfComponents() << endl;
+    if (PAR_Rank() == 0)
+        *ofile << "VARIABLE: \"" << arr->GetName()  << "\"" << endl;
 
     int nvals = dims[0]*dims[1]*dims[2]*arr->GetNumberOfComponents();
 
@@ -465,20 +479,27 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
             min = (min < ptr[i] ? min : ptr[i]);
             max = (max > ptr[i] ? max : ptr[i]);
         }
-        ofile << "VARIABLE PALETTE MIN: " << min << endl;
-        ofile << "VARIABLE PALETTE MAX: " << max << endl;
+        if (PAR_Rank() == 0)
+        {
+            *ofile << "VARIABLE PALETTE MIN: " << min << endl;
+            *ofile << "VARIABLE PALETTE MAX: " << max << endl;
+        }
     }
      
     double bounds[6];
     rgrid->GetBounds(bounds);
-    ofile << "BRICK ORIGIN: " << bounds[0] << " " << bounds[2] << " "
-            << bounds[4] << endl;
-    ofile << "BRICK SIZE: " << bounds[1]-bounds[0] << " " 
-            << bounds[3]-bounds[2] << " "
-            << bounds[5]-bounds[4] << endl;
-    ofile << "BRICK X_AXIS: 1.000 0.000 0.000" << endl;
-    ofile << "BRICK Y_AXIS: 0.000 1.000 0.000" << endl;
-    ofile << "BRICK Z_AXIS: 0.000 0.000 1.000" << endl;
+ 
+    if (PAR_Rank() == 0)
+    {
+        *ofile << "BRICK ORIGIN: " << bounds[0] << " " << bounds[2] << " "
+               << bounds[4] << endl;
+        *ofile << "BRICK SIZE: " << bounds[1]-bounds[0] << " " 
+               << bounds[3]-bounds[2] << " "
+               << bounds[5]-bounds[4] << endl;
+        *ofile << "BRICK X_AXIS: 1.000 0.000 0.000" << endl;
+        *ofile << "BRICK Y_AXIS: 0.000 1.000 0.000" << endl;
+        *ofile << "BRICK Z_AXIS: 0.000 0.000 1.000" << endl;
+    }
 
     // 
     // The information below is good to have.  But if we write it out, then
@@ -493,8 +514,11 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
 #endif
     if (nBricklets > 1)
     {
-        ofile << "DATA_ENDIAN: " << endian_str << endl;
-        ofile << "CENTERING: nodal" << endl;
+        if (PAR_Rank() == 0)
+        {
+            *ofile << "DATA_ENDIAN: " << endian_str << endl;
+            *ofile << "CENTERING: nodal" << endl;
+        }
     }
 
     if (nBricklets == 1 && brickletNI == dims[0] && brickletNJ == dims[1]
