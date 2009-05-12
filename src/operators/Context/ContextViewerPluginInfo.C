@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ContextPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ContextAttributes.h>
 
 #if defined(__APPLE__)

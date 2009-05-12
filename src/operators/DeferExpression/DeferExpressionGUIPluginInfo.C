@@ -42,7 +42,7 @@
 
 #include <DeferExpressionPluginInfo.h>
 #include <DeferExpressionAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisDeferExpressionWindow.h>
 
 #if defined(__APPLE__)

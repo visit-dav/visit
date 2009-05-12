@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ConnCompReducePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ConnCompReduceAttributes.h>
 
 #if defined(__APPLE__)

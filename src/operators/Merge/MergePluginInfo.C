@@ -45,9 +45,9 @@
 
 #include <visit-config.h>
 #if defined(__APPLE__)
-extern "C" const char *MergeVisItPluginVersion = VERSION;
+extern "C" const char *MergeVisItPluginVersion = VISIT_VERSION;
 #else
-extern "C" const char *VisItPluginVersion = VERSION;
+extern "C" const char *VisItPluginVersion = VISIT_VERSION;
 #endif
 
 #if defined(__APPLE__)

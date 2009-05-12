@@ -42,7 +42,7 @@
 
 #include <KerbelPluginInfo.h>
 #include <KerbelAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisKerbelPlotWindow.h>
 
 #if defined(__APPLE__)

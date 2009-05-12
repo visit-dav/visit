@@ -612,7 +612,7 @@ void VisItSetStripChartTabName (VisIt_SimulationMetaData mdd, char *name, char *
 ** *****************************************************************************/
 char *VisItGetVersion()
 {
-    return VERSION;
+    return VISIT_VERSION;
 }
 
 

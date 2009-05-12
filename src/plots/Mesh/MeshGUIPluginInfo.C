@@ -42,7 +42,7 @@
 
 #include <MeshPluginInfo.h>
 #include <MeshAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisMeshPlotWindow.h>
 
 #if defined(__APPLE__)

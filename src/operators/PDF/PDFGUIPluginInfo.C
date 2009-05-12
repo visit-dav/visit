@@ -42,7 +42,7 @@
 
 #include <PDFPluginInfo.h>
 #include <PDFAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisPDFWindow.h>
 
 #if defined(__APPLE__)

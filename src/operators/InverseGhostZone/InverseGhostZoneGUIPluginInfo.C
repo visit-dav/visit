@@ -42,7 +42,7 @@
 
 #include <InverseGhostZonePluginInfo.h>
 #include <InverseGhostZoneAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisInverseGhostZoneWindow.h>
 
 #if defined(__APPLE__)

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <CylinderPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <CylinderAttributes.h>
 
 #if defined(__APPLE__)

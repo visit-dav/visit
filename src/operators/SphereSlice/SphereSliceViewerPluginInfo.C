@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SphereSlicePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <SphereSliceAttributes.h>
 
 #if defined(__APPLE__)

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ContourPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtContourPlot.h>
 
 #if defined(__APPLE__)

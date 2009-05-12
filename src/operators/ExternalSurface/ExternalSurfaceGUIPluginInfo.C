@@ -42,7 +42,7 @@
 
 #include <ExternalSurfacePluginInfo.h>
 #include <ExternalSurfaceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisExternalSurfaceWindow.h>
 
 #if defined(__APPLE__)

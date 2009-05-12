@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ReflectPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ReflectAttributes.h>
 
 #if defined(__APPLE__)

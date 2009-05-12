@@ -42,7 +42,7 @@
 
 #ifndef BAD_COLLEAGUE_EXCEPTION_H
 #define BAD_COLLEAGUE_EXCEPTION_H
-#include <avtexception_exports.h>
+#include <viswindow_exports.h>
 
 
 #include <VisWindowException.h>
@@ -59,7 +59,7 @@
 //
 // ****************************************************************************
 
-class AVTEXCEPTION_API BadColleagueException : public VisWindowException
+class VISWINDOW_API BadColleagueException : public VisWindowException
 {
   public:
                     BadColleagueException();

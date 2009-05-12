@@ -44,9 +44,9 @@
 
 #include <visit-config.h>
 #if defined(__APPLE__)
-extern "C" const char *ITAPS_CVisItPluginVersion = VERSION;
+extern "C" const char *ITAPS_CVisItPluginVersion = VISIT_VERSION;
 #else
-extern "C" const char *VisItPluginVersion = VERSION;
+extern "C" const char *VisItPluginVersion = VISIT_VERSION;
 #endif
 
 #if defined(__APPLE__)
@@ -175,5 +175,6 @@ ITAPS_CGeneralPluginInfo::GetDfltExtsFromGen() const
 {
     std::vector<std::string> defaultExtensions;
     defaultExtensions.push_back("cub");
+
     return defaultExtensions;
 }

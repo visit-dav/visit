@@ -42,7 +42,7 @@
 
 #include <TubePluginInfo.h>
 #include <TubeAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisTubeWindow.h>
 
 #if defined(__APPLE__)

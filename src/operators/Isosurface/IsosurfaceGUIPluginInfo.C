@@ -42,7 +42,7 @@
 
 #include <IsosurfacePluginInfo.h>
 #include <IsosurfaceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisIsosurfaceWindow.h>
 
 #if defined(__APPLE__)

@@ -16,6 +16,8 @@
       avtCHGCARFileFormat.C
       avtPOSCARFileFormat.C
     </Files>
-    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="VASP.code">
+      <Function name="VASPCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

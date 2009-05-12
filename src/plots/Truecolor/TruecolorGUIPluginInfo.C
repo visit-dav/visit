@@ -42,7 +42,7 @@
 
 #include <TruecolorPluginInfo.h>
 #include <TruecolorAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisTruecolorPlotWindow.h>
 
 #if defined(__APPLE__)

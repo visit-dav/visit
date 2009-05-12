@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SubdivideQuadsPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <SubdivideQuadsAttributes.h>
 
 #if defined(__APPLE__)

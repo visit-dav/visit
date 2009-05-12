@@ -42,7 +42,7 @@
 
 #include <TransformPluginInfo.h>
 #include <TransformAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisTransformWindow.h>
 
 #if defined(__APPLE__)

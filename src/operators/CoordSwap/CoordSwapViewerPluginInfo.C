@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <CoordSwapPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <CoordSwapAttributes.h>
 
 #if defined(__APPLE__)

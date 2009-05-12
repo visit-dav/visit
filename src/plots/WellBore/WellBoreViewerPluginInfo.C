@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <WellBorePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtWellBorePlot.h>
 
 #if defined(__APPLE__)

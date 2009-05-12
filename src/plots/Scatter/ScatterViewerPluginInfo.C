@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ScatterPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtScatterPlot.h>
 
 #if defined(__APPLE__)

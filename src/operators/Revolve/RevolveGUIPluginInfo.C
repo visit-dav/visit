@@ -42,7 +42,7 @@
 
 #include <RevolvePluginInfo.h>
 #include <RevolveAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisRevolveWindow.h>
 
 #if defined(__APPLE__)

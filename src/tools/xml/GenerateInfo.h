@@ -695,9 +695,9 @@ class InfoGeneratorPlugin : public Plugin
     {
         c << "#include <visit-config.h>" << endl;
         c << "#if defined(__APPLE__)" << endl;
-        c << "extern \"C\" const char *"<<name<<"VisItPluginVersion = VERSION;" << endl;
+        c << "extern \"C\" const char *"<<name<<"VisItPluginVersion = VISIT_VERSION;" << endl;
         c << "#else" << endl;
-        c << "extern \"C\" const char *VisItPluginVersion = VERSION;" << endl;
+        c << "extern \"C\" const char *VisItPluginVersion = VISIT_VERSION;" << endl;
         c << "#endif" << endl;
         c << endl;
     }

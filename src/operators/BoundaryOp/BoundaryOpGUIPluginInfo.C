@@ -42,7 +42,7 @@
 
 #include <BoundaryOpPluginInfo.h>
 #include <BoundaryOpAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisBoundaryOpWindow.h>
 
 #if defined(__APPLE__)

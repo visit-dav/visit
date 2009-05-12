@@ -42,7 +42,7 @@
 
 #include <IndexSelectPluginInfo.h>
 #include <IndexSelectAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisIndexSelectWindow.h>
 
 #if defined(__APPLE__)

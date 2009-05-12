@@ -42,7 +42,7 @@
 
 #include <PseudocolorPluginInfo.h>
 #include <PseudocolorAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisPseudocolorPlotWindow.h>
 
 #if defined(__APPLE__)

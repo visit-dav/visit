@@ -112,6 +112,9 @@ static void AreaOwned(int rank, int size, int w, int h,
 //    Jeremy Meredith, Thu Oct 21 18:21:50 PDT 2004
 //    Rewrote basic screen-division algorithm.
 //
+//    Brad Whitlock, Fri Jan 23 15:09:07 PST 2009
+//    Initialize the communicator.
+//
 // ****************************************************************************
 vtkParallelImageSpaceRedistributor::vtkParallelImageSpaceRedistributor()
 {
@@ -119,6 +122,9 @@ vtkParallelImageSpaceRedistributor::vtkParallelImageSpaceRedistributor()
     rank = 0;
     size = 1;
     x1 = x2 = y1 = y2 = 0;
+#ifdef PARALLEL
+    comm = MPI_COMM_WORLD;
+#endif
 }
 
 // ****************************************************************************
@@ -135,6 +141,30 @@ vtkParallelImageSpaceRedistributor::~vtkParallelImageSpaceRedistributor()
     delete[] y1;
     delete[] y2;
 }
+
+#ifdef PARALLEL
+// ****************************************************************************
+// Method: vtkParallelImageSpaceRedistributor::SetCommunicator
+//
+// Purpose: 
+//   Set the communicator that this object will use.
+//
+// Arguments:
+//   c : The communicator.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 23 15:23:28 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkParallelImageSpaceRedistributor::SetCommunicator(const MPI_Comm &c)
+{
+    comm = c;
+}
+#endif
 
 // ****************************************************************************
 // Method: vtkParallelImageSpaceRedistributor::SetRankAndSize
@@ -207,7 +237,7 @@ vtkParallelImageSpaceRedistributor::GetOutput()
 //    point data.
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
-//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//    Changed MPI_COMM_WORLD to comm
 // ****************************************************************************
 void
 vtkParallelImageSpaceRedistributor::Execute(void)
@@ -386,7 +416,7 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     //
     vector<int> recvCount(size);
     MPI_Alltoall(&sendCount[0], 1, MPI_INT,
-                 &recvCount[0], 1, MPI_INT, VISIT_MPI_COMM);
+                 &recvCount[0], 1, MPI_INT, comm);
 
     int totalRecv = 0;
     for (i = 0 ; i < size ; i++)
@@ -423,7 +453,7 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     unsigned char *big_recv_buffer = new unsigned char[totalRecv];
     MPI_Alltoallv(big_send_buffer, &sendCount[0], &sendDisp[0], MPI_CHAR,
                   big_recv_buffer, &recvCount[0], &recvDisp[0], MPI_CHAR,
-                  VISIT_MPI_COMM);
+                  comm);
     visitTimer->StopTimer(TH_communicate, "communicate");
     visitTimer->DumpTimings();
 

@@ -1844,7 +1844,7 @@ ViewerSubject::DelayedProcessSettings()
             }
 
             // Get the version
-            std::string configVersion(VERSION);
+            std::string configVersion(VISIT_VERSION);
             DataNode *version = visitRoot->GetNode("Version");
             if(version != 0)
                 configVersion = version->AsString();

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SlicePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <SliceAttributes.h>
 
 #if defined(__APPLE__)

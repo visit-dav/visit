@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ConePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ConeAttributes.h>
 
 #if defined(__APPLE__)

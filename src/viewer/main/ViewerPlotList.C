@@ -2481,7 +2481,7 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     //
     if(attributesNode != 0) 
     {
-        newPlot->SetFromNode(attributesNode, std::string(VERSION));
+        newPlot->SetFromNode(attributesNode, std::string(VISIT_VERSION));
     }
 
     //

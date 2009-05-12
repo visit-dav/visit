@@ -148,14 +148,14 @@ QvisApplication::macEventFilter(EventHandlerCallRef er, EventRef event)
         {
             if(ekind == kEventWindowShown)
             {
-                QString mainWindowName(QString("VisIt ") + QString(VERSION));
+                QString mainWindowName(QString("VisIt ") + QString(VISIT_VERSION));
                 if(mainWindowName == QString(widget->windowTitle()))
                     emit showApplication();
                 //qDebug("ekind = kEventWindowShown");
             }
             else if(ekind == kEventWindowHidden)
             {
-                QString mainWindowName(QString("VisIt ") + QString(VERSION));
+                QString mainWindowName(QString("VisIt ") + QString(VISIT_VERSION));
                 if(mainWindowName == QString(widget->windowTitle()))
                     emit hideApplication();            
                 //qDebug("ekind = kEventWindowHidden");

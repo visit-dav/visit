@@ -42,7 +42,7 @@
 
 #include <LabelPluginInfo.h>
 #include <LabelAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisLabelPlotWindow.h>
 
 #if defined(__APPLE__)

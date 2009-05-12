@@ -42,7 +42,7 @@
 
 #include <CurvePluginInfo.h>
 #include <CurveAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisCurvePlotWindow.h>
 
 #if defined(__APPLE__)

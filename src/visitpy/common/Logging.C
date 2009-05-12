@@ -135,8 +135,8 @@ LogFile_Open(const char *filename)
     logFile = fopen(filename, "wb");
     if(logFile)
     {
-        fprintf(logFile, "# Visit %s log file\n", VERSION);
-        fprintf(logFile, "ScriptVersion = \"%s\"\n", VERSION);
+        fprintf(logFile, "# Visit %s log file\n", VISIT_VERSION);
+        fprintf(logFile, "ScriptVersion = \"%s\"\n", VISIT_VERSION);
         fprintf(logFile, "if ScriptVersion != Version():\n");
         fprintf(logFile, "    print \"This script is for VisIt %%s. "
                 "It may not work with version %%s\" %% "

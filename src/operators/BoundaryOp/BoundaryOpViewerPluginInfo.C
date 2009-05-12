@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <BoundaryOpPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <BoundaryOpAttributes.h>
 
 #if defined(__APPLE__)

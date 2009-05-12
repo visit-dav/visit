@@ -61,7 +61,7 @@
 #define STAGE_CLEAN_UP              4
 #define STAGE_ERROR                 10
 
-#define CURRENT_VERSION VERSION
+#define CURRENT_VERSION VISIT_VERSION
 
 #ifdef QT_NO_OPENSSL
 #define EXECUTABLE_HTML       "/codes/visit/executables.html"

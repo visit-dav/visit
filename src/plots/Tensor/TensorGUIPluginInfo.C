@@ -42,7 +42,7 @@
 
 #include <TensorPluginInfo.h>
 #include <TensorAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisTensorPlotWindow.h>
 
 #if defined(__APPLE__)

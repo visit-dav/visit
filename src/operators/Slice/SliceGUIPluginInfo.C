@@ -42,7 +42,7 @@
 
 #include <SlicePluginInfo.h>
 #include <SliceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSliceWindow.h>
 
 #if defined(__APPLE__)

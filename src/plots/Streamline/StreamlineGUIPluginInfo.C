@@ -42,7 +42,7 @@
 
 #include <StreamlinePluginInfo.h>
 #include <StreamlineAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisStreamlinePlotWindow.h>
 
 #if defined(__APPLE__)

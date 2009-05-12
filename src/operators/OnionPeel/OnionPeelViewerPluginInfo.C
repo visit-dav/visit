@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <OnionPeelPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <OnionPeelAttributes.h>
 
 #if defined(__APPLE__)

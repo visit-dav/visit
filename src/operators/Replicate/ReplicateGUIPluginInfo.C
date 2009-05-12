@@ -42,7 +42,7 @@
 
 #include <ReplicatePluginInfo.h>
 #include <ReplicateAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisReplicateWindow.h>
 
 #if defined(__APPLE__)

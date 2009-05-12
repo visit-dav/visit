@@ -42,7 +42,7 @@
 
 #include <VectorPluginInfo.h>
 #include <VectorAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisVectorPlotWindow.h>
 
 #if defined(__APPLE__)

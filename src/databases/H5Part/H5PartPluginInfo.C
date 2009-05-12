@@ -44,9 +44,9 @@
 
 #include <visit-config.h>
 #if defined(__APPLE__)
-extern "C" const char *H5PartVisItPluginVersion = VERSION;
+extern "C" const char *H5PartVisItPluginVersion = VISIT_VERSION;
 #else
-extern "C" const char *VisItPluginVersion = VERSION;
+extern "C" const char *VisItPluginVersion = VISIT_VERSION;
 #endif
 
 #if defined(__APPLE__)

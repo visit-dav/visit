@@ -42,7 +42,7 @@
 
 #ifndef VIS_WINDOW_EXCEPTION_H
 #define VIS_WINDOW_EXCEPTION_H
-#include <avtexception_exports.h>
+#include <viswindow_exports.h>
 
 
 #include <VisItException.h>
@@ -61,7 +61,7 @@
 //
 // ****************************************************************************
 
-class AVTEXCEPTION_API VisWindowException : public VisItException
+class VISWINDOW_API VisWindowException : public VisItException
 {
   public:
                           ~VisWindowException() VISIT_THROW_NOTHING {;};

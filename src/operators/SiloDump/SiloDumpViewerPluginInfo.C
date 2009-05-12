@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <SiloDumpPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <SiloDumpAttributes.h>
 
 #if defined(__APPLE__)

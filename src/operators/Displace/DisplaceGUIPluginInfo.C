@@ -42,7 +42,7 @@
 
 #include <DisplacePluginInfo.h>
 #include <DisplaceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisDisplaceWindow.h>
 
 #if defined(__APPLE__)

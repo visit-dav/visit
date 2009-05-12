@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <LineoutPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <LineoutAttributes.h>
 
 #if defined(__APPLE__)

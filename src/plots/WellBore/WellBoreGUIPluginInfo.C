@@ -42,7 +42,7 @@
 
 #include <WellBorePluginInfo.h>
 #include <WellBoreAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisWellBorePlotWindow.h>
 
 #if defined(__APPLE__)

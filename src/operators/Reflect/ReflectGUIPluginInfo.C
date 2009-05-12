@@ -42,7 +42,7 @@
 
 #include <ReflectPluginInfo.h>
 #include <ReflectAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisReflectWindow.h>
 
 #if defined(__APPLE__)

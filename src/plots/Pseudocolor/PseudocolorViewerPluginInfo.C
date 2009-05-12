@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <PseudocolorPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtPseudocolorPlot.h>
 
 #if defined(__APPLE__)

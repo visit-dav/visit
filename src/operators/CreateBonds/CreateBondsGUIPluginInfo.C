@@ -42,7 +42,7 @@
 
 #include <CreateBondsPluginInfo.h>
 #include <CreateBondsAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisCreateBondsWindow.h>
 
 #if defined(__APPLE__)

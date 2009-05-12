@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <StreamlinePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtStreamlinePlot.h>
 
 #if defined(__APPLE__)

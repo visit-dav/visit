@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <ExternalSurfacePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <ExternalSurfaceAttributes.h>
 
 #if defined(__APPLE__)

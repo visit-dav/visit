@@ -42,7 +42,7 @@
 
 #include <TopologyPluginInfo.h>
 #include <TopologyAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisTopologyPlotWindow.h>
 
 #if defined(__APPLE__)

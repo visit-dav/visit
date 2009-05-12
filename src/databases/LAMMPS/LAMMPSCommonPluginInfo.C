@@ -74,6 +74,7 @@ LAMMPSCommonPluginInfo::GetDatabaseType()
 //  Creation:   February  9, 2009
 //
 // ****************************************************************************
+
 avtDatabase *
 LAMMPSCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
@@ -108,3 +109,4 @@ LAMMPSCommonPluginInfo::SetupDatabase(const char *const *list,
 
     return db;
 }
+

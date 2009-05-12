@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <LineSurfacePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <LineSurfaceAttributes.h>
 
 #if defined(__APPLE__)

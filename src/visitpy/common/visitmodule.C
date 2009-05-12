@@ -38,7 +38,7 @@
 
 #include <Python.h>
 #include <stdio.h>
-#include <visit-config.h> // for VERSION
+#include <visit-config.h> // for VISIT_VERSION
 #if !defined(_WIN32)
 #include <strings.h>
 #else
@@ -1145,7 +1145,7 @@ STATIC PyObject *
 visit_Version(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
-    return PyString_FromString(VERSION);
+    return PyString_FromString(VISIT_VERSION);
 }
 
 // ****************************************************************************

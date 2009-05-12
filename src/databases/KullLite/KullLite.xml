@@ -3,4 +3,8 @@
     <Extensions> pdb mkf </Extensions>
     <CXXFLAGS> $(PDB_INCLUDE) </CXXFLAGS>
     <LIBS>     $(PDB_LIB)     </LIBS>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="KullLite.code">
+      <Function name="KullLiteCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
   </Plugin>

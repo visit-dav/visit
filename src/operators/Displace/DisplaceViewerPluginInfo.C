@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <DisplacePluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <DisplaceAttributes.h>
 
 #if defined(__APPLE__)

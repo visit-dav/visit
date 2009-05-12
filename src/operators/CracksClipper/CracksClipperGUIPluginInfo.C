@@ -42,7 +42,7 @@
 
 #include <CracksClipperPluginInfo.h>
 #include <CracksClipperAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisCracksClipperWindow.h>
 
 #if defined(__APPLE__)

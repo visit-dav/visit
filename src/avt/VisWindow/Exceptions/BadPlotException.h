@@ -42,7 +42,7 @@
 
 #ifndef BAD_PLOT_EXCEPTION_H
 #define BAD_PLOT_EXCEPTION_H
-#include <avtexception_exports.h>
+#include <viswindow_exports.h>
 
 #include <VisWindowException.h>
 
@@ -58,7 +58,7 @@
 //
 // ****************************************************************************
 
-class AVTEXCEPTION_API BadPlotException : public VisWindowException
+class VISWINDOW_API BadPlotException : public VisWindowException
 {
   public:
                     BadPlotException();

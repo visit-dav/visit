@@ -117,7 +117,7 @@ MovieTemplateConfig::CreateDefaultConfig()
         delete root;
 
     root = new DataNode("TemplateOptions");
-    root->AddNode(new DataNode("VERSION", std::string(VERSION)));
+    root->AddNode(new DataNode("VERSION", std::string(VISIT_VERSION)));
     root->AddNode(new DataNode("TITLE", std::string("New template")));
     root->AddNode(new DataNode("DESCRIPTION", std::string("Description")));
     root->AddNode(new DataNode("PREVIEWIMAGE", std::string("")));

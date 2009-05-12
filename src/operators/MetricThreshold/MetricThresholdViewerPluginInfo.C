@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <MetricThresholdPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <MetricThresholdAttributes.h>
 
 #if defined(__APPLE__)

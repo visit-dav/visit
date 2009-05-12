@@ -42,7 +42,7 @@
 
 #include <ContourPluginInfo.h>
 #include <ContourAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisContourPlotWindow.h>
 
 #if defined(__APPLE__)

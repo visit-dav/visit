@@ -40,6 +40,9 @@
       avtCCSMFileFormat.C
       NETCDFFileObject.C
     </Files>
-    <Attribute name="" purpose="" persistent="true">
+    <Attribute name="" purpose="" persistent="true" codefile="NETCDF.code">
+      <Function name="NETCDFCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+ 
     </Attribute>
   </Plugin>

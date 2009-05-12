@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <DualMeshPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <DualMeshAttributes.h>
 
 #if defined(__APPLE__)

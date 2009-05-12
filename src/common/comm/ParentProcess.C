@@ -98,7 +98,7 @@
 //
 // ****************************************************************************
 
-ParentProcess::ParentProcess() : version(VERSION), localUserName()
+ParentProcess::ParentProcess() : version(VISIT_VERSION), localUserName()
 {
     // Set some default values.
     hostName = std::string("localhost");

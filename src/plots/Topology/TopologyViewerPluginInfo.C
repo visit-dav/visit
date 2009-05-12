@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <TopologyPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <avtTopologyPlot.h>
 
 #if defined(__APPLE__)

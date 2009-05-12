@@ -42,7 +42,7 @@
 
 #include <SurfacePluginInfo.h>
 #include <SurfaceAttributes.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <QvisSurfacePlotWindow.h>
 
 #if defined(__APPLE__)
