@@ -10171,6 +10171,11 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Cyrus Harrison, Thu Jan  3 11:42:16 PST 2008
 //   Another stab at fixing the parsing conflict. 
 //
+//   Eric Brugger, Mon May 11 12:06:33 PDT 2009
+//   I added parsing that would allow the Hohlraum flux query to take an
+//   optional second integer value that would control if it used the emissivity
+//   divided by the absortivity in place of the emissivity.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10185,10 +10190,22 @@ visit_Query(PyObject *self, PyObject *args)
     
     bool parse_success = false;
     
-    parse_success = PyArg_ParseTuple(args, "sidddddd|O", &queryName, &arg1,
+    parse_success = PyArg_ParseTuple(args, "siidddddd|O", &queryName,
+                                     &arg1, &arg2,
                                      &(darg1[0]), &(darg1[1]), &(darg1[2]),
                                      &(darg2[0]), &(darg2[1]), &(darg2[2]),
                                      &tuple);
+    if(!parse_success)
+    {
+        PyErr_Clear();
+        darg1.resize(3);
+        darg2.resize(3);
+        parse_success = PyArg_ParseTuple(args, "sidddddd|O", &queryName, &arg1,
+                                         &(darg1[0]), &(darg1[1]), &(darg1[2]),
+                                         &(darg2[0]), &(darg2[1]), &(darg2[2]),
+                                         &tuple);
+    }
+
     if(!parse_success)
     {
         PyErr_Clear();

@@ -67,6 +67,10 @@
 //    Dave Bremer, Tue Jun 19 18:33:26 PDT 2007
 //    Lowered the number of lines per iteration.
 //  
+//    Eric Brugger, Fri May  8 08:59:34 PDT 2009
+//    I added a flag which has the query optionally use the emissivity divided
+//    by the absorbtivity in place of the emissivity.
+//
 // ****************************************************************************
 
 avtHohlraumFluxQuery::avtHohlraumFluxQuery():
@@ -79,6 +83,7 @@ avtHohlraumFluxQuery::avtHohlraumFluxQuery():
     theta  = 0.0f;
     phi    = 0.0f;
     radius = 1.0f;
+    divideEmisByAbsorb = false;
     radBins = NULL;
 
     //lower the default number of lines, to work around a problem 
@@ -114,7 +119,6 @@ avtHohlraumFluxQuery::~avtHohlraumFluxQuery()
 //  Creation:   Dec 8, 2006
 //
 //  Modifications:
-//
 //    Hank Childs, Fri May  2 08:58:15 PDT 2008
 //    Add some error checking.
 //
@@ -193,6 +197,25 @@ avtHohlraumFluxQuery::SetThetaPhi(float thetaInDegrees, float phiInDegrees)
 {
     theta = thetaInDegrees * M_PI / 180.0;
     phi   = phiInDegrees * M_PI / 180.0;
+}
+
+
+// ****************************************************************************
+//  Method: avtHohlraumFluxQuery::SetDivideEmisByAbsorb
+//
+//  Purpose:
+//    Set the flag that controls if the emissivity divided by the absorbtivity
+//    is used in place of the emissivity.
+//
+//  Programmer: Eric Brugger
+//  Creation:   May 8, 2009
+//
+// ****************************************************************************
+
+void
+avtHohlraumFluxQuery::SetDivideEmisByAbsorb(bool flag)
+{
+    divideEmisByAbsorb = flag;
 }
 
 
@@ -410,6 +433,11 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
 //  Programmer: David Bremer
 //  Creation:   Dec 8, 2006
 //
+//  Modifications:
+//    Eric Brugger, Fri May  8 08:59:34 PDT 2009
+//    I added a flag which has the query optionally use the emissivity divided
+//    by the absorbtivity in place of the emissivity.
+//
 // ****************************************************************************
 
 void
@@ -470,10 +498,21 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
         double *a = absorbtivityBins->GetTuple(currSeg);
         double *e = emissivityBins->GetTuple(currSeg);
         
-        for (ii = 0 ; ii < numBins ; ii++)
+        if (divideEmisByAbsorb)
         {
-            double tmp = exp(-a[ii]*segLen);
-            tmpBins[ii] = tmpBins[ii] * tmp + e[ii] * (1.0 - tmp);
+            for (ii = 0 ; ii < numBins ; ii++)
+            {
+                double tmp = exp(-a[ii]*segLen);
+                tmpBins[ii] = tmpBins[ii] * tmp + (e[ii] / a[ii]) * (1.0 - tmp);
+            }
+        }
+        else
+        {
+            for (ii = 0 ; ii < numBins ; ii++)
+            {
+                double tmp = exp(-a[ii]*segLen);
+                tmpBins[ii] = tmpBins[ii] * tmp + e[ii] * (1.0 - tmp);
+            }
         }
         currPt  = newPt;
         currSeg = newSeg;
