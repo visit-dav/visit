@@ -162,6 +162,9 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject 
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
 //    Initial Qt4 Port. 
 //
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Pass metadata & expression list to the QWizard constructor.
+//
 // ****************************************************************************
 #include <QvisParallelCoordinatesPlotWizard.h>
 #include <Expression.h>
@@ -194,6 +197,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
     }
 
     return (new QvisParallelCoordinatesPlotWizard(attr, parent, varName,
+                                                  md,expList,
                                                   doNothing));
 }
 
