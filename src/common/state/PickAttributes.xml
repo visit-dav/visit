@@ -8,6 +8,11 @@
       DomainZone
       DomainNode
     </Enum>
+    <Enum name="CoordinateType">
+      XY
+      RZ
+      ZR
+    </Enum>
     <Field name="variables" label="variables" type="stringVector">
       default
     </Field>
@@ -191,8 +196,8 @@
     <Field name="inputTopoDim" label="inputTopoDim" type="int" internal="true">
       -1
     </Field>
-    <Field name="meshCoordType" label="meshCoordType" type="int">
-      0
+    <Field name="meshCoordType" label="meshCoordType" type="enum" subtype="CoordinateType">
+      XY
     </Field>
     <Field name="createSpreadsheet" label="Create Spreadsheet of Pick" type="bool">
       false
@@ -229,9 +234,6 @@
     </Include>
     <Include file="source" quoted="false">
       float.h
-    </Include>
-    <Include file="source" quoted="false">
-      avtTypes.h
     </Include>
     <Include file="source" quoted="false">
       cstring

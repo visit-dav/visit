@@ -117,9 +117,9 @@ PickAttributes::PrintSelf(ostream &os)
     else if (cellPoint[0] != FLT_MAX)
     {
         os << "PickedPoint: ";
-        if (meshCoordType == AVT_RZ)
+        if (meshCoordType == RZ)
             os << "(Z,R) ";
-        else if (meshCoordType == AVT_ZR)
+        else if (meshCoordType == ZR)
             os << "(R,Z) ";
         if (needTransformMessage)
         {
@@ -378,9 +378,9 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
 
     std::string point = "Point";
-    if (meshCoordType == AVT_RZ)
+    if (meshCoordType == RZ)
         point += " (Z,R)";
-    else if (meshCoordType == AVT_ZR)
+    else if (meshCoordType == ZR)
         point += " (R,Z)";
 
     if (pickType == CurveNode)
@@ -659,6 +659,9 @@ Definition:
 //   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
 //   Reset meshCoordType. 
 //
+//   Brad Whitlock, Tue Jan 20 16:42:30 PST 2009
+//   Changed to using local CoordinateType enum.
+//
 // ****************************************************************************
 
 void
@@ -675,7 +678,7 @@ PickAttributes::PrepareForNewPick()
     needTransformMessage = false;
     ghostType = 0;
     hasMixedGhostTypes = -1;
-    meshCoordType = AVT_XY;
+    meshCoordType = XY;
 
     if (!incidentElements.empty())
         incidentElements.clear();
