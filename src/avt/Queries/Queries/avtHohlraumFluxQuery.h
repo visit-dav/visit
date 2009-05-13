@@ -62,6 +62,10 @@
 //    Brad Whitlock, Fri Apr 17 09:38:35 PDT 2009
 //    I added a PreExecute method.
 //
+//    Eric Brugger, Fri May  8 08:57:33 PDT 2009
+//    I added a flag which has the query optionally use the emissivity divided
+//    by the absorbtivity in place of the emissivity.
+//
 // ****************************************************************************
 
 class QUERY_API avtHohlraumFluxQuery : public avtLineScanQuery
@@ -79,11 +83,13 @@ class QUERY_API avtHohlraumFluxQuery : public avtLineScanQuery
     void                      SetRayCenter(float x, float y, float z);
     void                      SetRadius(float r);
     void                      SetThetaPhi(float thetaInDegrees, float phiInDegrees);
+    void                      SetDivideEmisByAbsorb(bool flag);
 
   protected:
     float                     rayCenter[3];
     float                     radius;
     float                     theta, phi;
+    bool                      divideEmisByAbsorb;
 
     std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
