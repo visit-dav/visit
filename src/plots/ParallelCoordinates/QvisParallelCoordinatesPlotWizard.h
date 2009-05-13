@@ -40,12 +40,16 @@
 #include <QvisWizard.h>
 
 #include <vectortypes.h>
+#include <QMap>
 
+class QListWidget;
+class QPushButton;
 class QButtonGroup;
 class QFrame;
 class QLabel;
 class QvisParallelCoordinatesWidget;
-
+class avtDatabaseMetaData;
+class ExpressionList;
 
 
 // ****************************************************************************
@@ -70,6 +74,9 @@ class QvisParallelCoordinatesWidget;
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
 //    Initial Qt4 Port. 
 //
+//    Cyrus Harrison, Wed May 13 08:28:27 PDT 2009
+//    Changed from sequential wizard style to a quicker list widget based gui.
+//
 // ****************************************************************************
 
 class QvisParallelCoordinatesPlotWizard : public QvisWizard
@@ -79,41 +86,56 @@ public:
     QvisParallelCoordinatesPlotWizard(AttributeSubject *s,
                                       QWidget *parent,
                                       const std::string &varName,
-                                      bool doNothing);
+                                      const avtDatabaseMetaData *md,
+                                      const ExpressionList *exprList,
+                                      bool array_var);
     
     virtual ~QvisParallelCoordinatesPlotWizard();
-
-private slots:
-    void choseAxisVariable(const QString &varName);
-    void decideIfAnotherAxis(int buttonIndex);
     
 protected slots:
-    virtual int nextId() const;
-
+    void OnScalarVarSelectionChanged();
+    void OnAxisVarSelectionChanged();
+    void OnAddButtonPressed();
+    void OnUpButtonPressed();
+    void OnDownButtonPressed();
+    void OnRemoveButtonPressed();
+    
 protected:
     virtual bool validateCurrentPage();
-    virtual void cleanupPage(int id);
+    
+    void  InitScalarVarNames(const avtDatabaseMetaData *md,
+                             const ExpressionList *expList);
+                            
+    void SetupAxisVariableSelectionPage();
+    void SetupFinishPage(const QString &title, 
+                         const QString &prompt,
+                         bool preview);
+    
+    void UpdateVarsList();
+    void UpdateAxisVarsList();
+    void UpdatePreview(QvisParallelCoordinatesWidget *preview);
     
     int  GetNextPageId() const;
-    void AddAxisVariablePage(int axisOrdinal,
-                             const QString &title,
-                             const QString &prompt);
-    void AddAxisYesNoPage(int axisOrdinal,
-                          const QString &title,
-                          const QString &prompt);
-    void AddFinishPage(const QString &title, const QString &prompt);
+    void SetParallelCoordinatesAttributes();
     
-    void InitializeParallelCoordinatesAttributes(const std::string &varName);
-    bool UniqueAxisVariableName(const std::string &varName);
+    int                                   numPages;
+    std::string                           varName;
     
-    QList<QWizardPage*>                    pages;
-    QList<QvisParallelCoordinatesWidget*>  thumbnails;
-    QList<QButtonGroup*>                   yesNoGroups;
-    QList<QLabel*>                         dupVarMessages; 
+    QLabel                               *warnLbl;
+    QListWidget                          *varsList;
+    QListWidget                          *axisVarsList;
+    QPushButton                          *addButton;
+    QPushButton                          *upButton;
+    QPushButton                          *downButton;
+    QPushButton                          *removeButton;
     
-    stringVector                           axisVarNames;
-    boolVector                             axisYesNos;
-    int                                    curAxisCount;
+    QvisParallelCoordinatesWidget        *selectionPreview;
+    QvisParallelCoordinatesWidget        *finalPreview;
+    
+    QStringList                           scalarVarNames;
+    QStringList                           scalarExprNames;
+    QStringList                           scalarDBExprNames;
+    QMap<QString,bool>                     usedVars;
 
 };
 
