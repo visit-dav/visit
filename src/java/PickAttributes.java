@@ -66,6 +66,10 @@ public class PickAttributes extends AttributeSubject
     public final static int PICKTYPE_DOMAINZONE = 4;
     public final static int PICKTYPE_DOMAINNODE = 5;
 
+    public final static int COORDINATETYPE_XY = 0;
+    public final static int COORDINATETYPE_RZ = 1;
+    public final static int COORDINATETYPE_ZR = 2;
+
 
     public PickAttributes()
     {
@@ -155,7 +159,7 @@ public class PickAttributes extends AttributeSubject
         hasMixedGhostTypes = -1;
         linesData = false;
         inputTopoDim = -1;
-        meshCoordType = 0;
+        meshCoordType = COORDINATETYPE_XY;
         createSpreadsheet = false;
         subsetName = new String("");
         floatFormat = new String("%g");
@@ -1494,7 +1498,14 @@ public class PickAttributes extends AttributeSubject
         str = str + intToString("hasMixedGhostTypes", hasMixedGhostTypes, indent) + "\n";
         str = str + boolToString("linesData", linesData, indent) + "\n";
         str = str + intToString("inputTopoDim", inputTopoDim, indent) + "\n";
-        str = str + intToString("meshCoordType", meshCoordType, indent) + "\n";
+        str = str + indent + "meshCoordType = ";
+        if(meshCoordType == COORDINATETYPE_XY)
+            str = str + "COORDINATETYPE_XY";
+        if(meshCoordType == COORDINATETYPE_RZ)
+            str = str + "COORDINATETYPE_RZ";
+        if(meshCoordType == COORDINATETYPE_ZR)
+            str = str + "COORDINATETYPE_ZR";
+        str = str + "\n";
         str = str + boolToString("createSpreadsheet", createSpreadsheet, indent) + "\n";
         str = str + stringToString("subsetName", subsetName, indent) + "\n";
         str = str + stringToString("floatFormat", floatFormat, indent) + "\n";

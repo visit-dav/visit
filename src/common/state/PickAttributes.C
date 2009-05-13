@@ -40,7 +40,6 @@
 #include <DataNode.h>
 #include <stdio.h>
 #include <float.h>
-#include <avtTypes.h>
 #include <cstring>
 #include <PickVarInfo.h>
 
@@ -77,6 +76,44 @@ PickAttributes::PickType_FromString(const std::string &s, PickAttributes::PickTy
         if(s == PickType_strings[i])
         {
             val = (PickType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for PickAttributes::CoordinateType
+//
+
+static const char *CoordinateType_strings[] = {
+"XY", "RZ", "ZR"
+};
+
+std::string
+PickAttributes::CoordinateType_ToString(PickAttributes::CoordinateType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return CoordinateType_strings[index];
+}
+
+std::string
+PickAttributes::CoordinateType_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return CoordinateType_strings[index];
+}
+
+bool
+PickAttributes::CoordinateType_FromString(const std::string &s, PickAttributes::CoordinateType &val)
+{
+    val = PickAttributes::XY;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == CoordinateType_strings[i])
+        {
+            val = (CoordinateType)i;
             return true;
         }
     }
@@ -163,7 +200,7 @@ PickAttributes::PickAttributes() :
     hasMixedGhostTypes = -1;
     linesData = false;
     inputTopoDim = -1;
-    meshCoordType = 0;
+    meshCoordType = XY;
     createSpreadsheet = false;
     floatFormat = "%g";
     timePreserveCoord = true;
@@ -1467,7 +1504,7 @@ PickAttributes::SetInputTopoDim(int inputTopoDim_)
 }
 
 void
-PickAttributes::SetMeshCoordType(int meshCoordType_)
+PickAttributes::SetMeshCoordType(PickAttributes::CoordinateType meshCoordType_)
 {
     meshCoordType = meshCoordType_;
     Select(ID_meshCoordType, (void *)&meshCoordType);
@@ -2027,10 +2064,10 @@ PickAttributes::GetInputTopoDim() const
     return inputTopoDim;
 }
 
-int
+PickAttributes::CoordinateType
 PickAttributes::GetMeshCoordType() const
 {
-    return meshCoordType;
+    return CoordinateType(meshCoordType);
 }
 
 bool
@@ -2609,7 +2646,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_hasMixedGhostTypes:          return FieldType_int;
     case ID_linesData:                   return FieldType_bool;
     case ID_inputTopoDim:                return FieldType_int;
-    case ID_meshCoordType:               return FieldType_int;
+    case ID_meshCoordType:               return FieldType_enum;
     case ID_createSpreadsheet:           return FieldType_bool;
     case ID_subsetName:                  return FieldType_string;
     case ID_floatFormat:                 return FieldType_string;
@@ -2700,7 +2737,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_hasMixedGhostTypes:          return "int";
     case ID_linesData:                   return "bool";
     case ID_inputTopoDim:                return "int";
-    case ID_meshCoordType:               return "int";
+    case ID_meshCoordType:               return "enum";
     case ID_createSpreadsheet:           return "bool";
     case ID_subsetName:                  return "string";
     case ID_floatFormat:                 return "string";
@@ -3231,9 +3268,9 @@ PickAttributes::PrintSelf(ostream &os)
     else if (cellPoint[0] != FLT_MAX)
     {
         os << "PickedPoint: ";
-        if (meshCoordType == AVT_RZ)
+        if (meshCoordType == RZ)
             os << "(Z,R) ";
-        else if (meshCoordType == AVT_ZR)
+        else if (meshCoordType == ZR)
             os << "(R,Z) ";
         if (needTransformMessage)
         {
@@ -3489,9 +3526,9 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
 
     std::string point = "Point";
-    if (meshCoordType == AVT_RZ)
+    if (meshCoordType == RZ)
         point += " (Z,R)";
-    else if (meshCoordType == AVT_ZR)
+    else if (meshCoordType == ZR)
         point += " (R,Z)";
 
     if (pickType == CurveNode)
@@ -3767,6 +3804,9 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 //   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
 //   Reset meshCoordType. 
 //
+//   Brad Whitlock, Tue Jan 20 16:42:30 PST 2009
+//   Changed to using local CoordinateType enum.
+//
 // ****************************************************************************
 
 void
@@ -3783,7 +3823,7 @@ PickAttributes::PrepareForNewPick()
     needTransformMessage = false;
     ghostType = 0;
     hasMixedGhostTypes = -1;
-    meshCoordType = AVT_XY;
+    meshCoordType = XY;
 
     if (!incidentElements.empty())
         incidentElements.clear();

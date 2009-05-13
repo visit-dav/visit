@@ -71,6 +71,12 @@ public:
         DomainZone,
         DomainNode
     };
+    enum CoordinateType
+    {
+        XY,
+        RZ,
+        ZR
+    };
 
     PickAttributes();
     PickAttributes(const PickAttributes &obj);
@@ -177,7 +183,7 @@ public:
     void SetHasMixedGhostTypes(int hasMixedGhostTypes_);
     void SetLinesData(bool linesData_);
     void SetInputTopoDim(int inputTopoDim_);
-    void SetMeshCoordType(int meshCoordType_);
+    void SetMeshCoordType(CoordinateType meshCoordType_);
     void SetCreateSpreadsheet(bool createSpreadsheet_);
     void SetSubsetName(const std::string &subsetName_);
     void SetFloatFormat(const std::string &floatFormat_);
@@ -271,7 +277,7 @@ public:
     int                GetHasMixedGhostTypes() const;
     bool               GetLinesData() const;
     int                GetInputTopoDim() const;
-    int                GetMeshCoordType() const;
+    CoordinateType     GetMeshCoordType() const;
     bool               GetCreateSpreadsheet() const;
     const std::string  &GetSubsetName() const;
           std::string  &GetSubsetName();
@@ -300,6 +306,11 @@ public:
     static bool PickType_FromString(const std::string &, PickType &);
 protected:
     static std::string PickType_ToString(int);
+public:
+    static std::string CoordinateType_ToString(CoordinateType);
+    static bool CoordinateType_FromString(const std::string &, CoordinateType &);
+protected:
+    static std::string CoordinateType_ToString(int);
 public:
 
     // Keyframing methods

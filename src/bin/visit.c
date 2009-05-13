@@ -256,7 +256,7 @@ main(int argc, char *argv[])
         }
         else if(ARG("-version"))
         {
-            printf("%s\n", VERSION);
+            printf("%s\n", VISIT_VERSION);
             return 0;
         }
         else if(ARG("-gui"))
@@ -630,7 +630,7 @@ ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
     /* 
      * Try and read the key from the system registry. 
      */
-    sprintf(regkey, "VISIT%s", VERSION);
+    sprintf(regkey, "VISIT%s", VISIT_VERSION);
     if (*keyval == 0)
         *keyval = (char *)malloc(500);
     
@@ -871,7 +871,7 @@ AddEnvironment(int useShortFileName)
         if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
                                  SHGFP_TYPE_CURRENT, szPath))) 
         {
-            SNPRINTF(visituserpath, 512, "%s\\VisIt %s", szPath, VERSION);
+            SNPRINTF(visituserpath, 512, "%s\\VisIt %s", szPath, VISIT_VERSION);
             haveVISITUSERHOME = 1;
         }
 
@@ -1647,8 +1647,8 @@ TestForConfigFiles(const char *component)
     char rcNamegui[512];
     char rcNamecli[512];
     // Has this version of visit already been run and this question asked? 
-    sprintf(rcNamegui, "%s\\state%s.txt", visItUserHome, VERSION);
-    sprintf(rcNamecli, "%s\\clistate%s.txt", visItUserHome, VERSION);
+    sprintf(rcNamegui, "%s\\state%s.txt", visItUserHome, VISIT_VERSION);
+    sprintf(rcNamecli, "%s\\clistate%s.txt", visItUserHome, VISIT_VERSION);
 
     if ((_access(rcNamegui, 0) == 0) ||  (_access(rcNamecli, 0) == 0))
     {
@@ -1665,7 +1665,7 @@ TestForConfigFiles(const char *component)
     char msg[512];
 
     string userHome = GetUserHomeDir();
-    if (GetPathToOlderConfigFiles(userHome.c_str(), VERSION, oldVersion, msg))
+    if (GetPathToOlderConfigFiles(userHome.c_str(), VISIT_VERSION, oldVersion, msg))
     {
         if (strcmp(component, "gui") == 0) 
         {
@@ -1674,7 +1674,7 @@ TestForConfigFiles(const char *component)
 
             if (msgboxID == IDYES)
             {
-                MigrateConfigFiles(userHome.c_str(), VERSION, oldVersion);
+                MigrateConfigFiles(userHome.c_str(), VISIT_VERSION, oldVersion);
             }
         }
         else
@@ -1684,7 +1684,7 @@ TestForConfigFiles(const char *component)
             std::cin >> copyConfigs;
             if (copyConfigs == 'y' || copyConfigs == 'Y')
             {
-                MigrateConfigFiles(userHome.c_str(), VERSION, oldVersion);
+                MigrateConfigFiles(userHome.c_str(), VISIT_VERSION, oldVersion);
             }
             // Create the clistate file.  Cannot use state.txt, as that is
             // needed by the gui to determine whether or not release notes

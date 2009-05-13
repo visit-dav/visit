@@ -266,7 +266,7 @@ avtPickQuery::PostExecute(void)
               "list. Please check the requested variables list and try again.");
         }
     }
-    pickAtts.SetMeshCoordType(GetInput()->GetInfo().GetAttributes().GetMeshCoordType());
+    pickAtts.SetMeshCoordType((PickAttributes::CoordinateType)GetInput()->GetInfo().GetAttributes().GetMeshCoordType());
 }
 
 
