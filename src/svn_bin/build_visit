@@ -917,10 +917,10 @@ export SZIP_VERSION=${SZIP_VERSION:-"2.1"}
 export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION:-"2.0"}
 export SZIP_BUILD_DIR=${SZIP_BUILD_DIR:-"szip-2.1"}
 
-export HDF5_FILE=${HDF5_FILE:-"hdf5-1.8.1.tar.gz"}
-export HDF5_VERSION=${HDF5_VERSION:-"1.8.1"}
-export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.6"}
-export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-1.8.1"}
+export HDF5_FILE=${HDF5_FILE:-"hdf5-1.8.2.tar.gz"}
+export HDF5_VERSION=${HDF5_VERSION:-"1.8.2"}
+export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.8"}
+export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-1.8.2"}
 
 export HDF4_FILE=${HDF4_FILE:-"HDF4.2r1.tar.gz"}
 export HDF4_VERSION=${HDF4_VERSION:-"4.2.1"}
@@ -965,12 +965,12 @@ export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio"}
 export H5PART_FILE=${H5PART_FILE-"H5Part-1.4.2.tar.gz"}
 export H5PART_VERSION=${H5PART_VERSION-"1.4.2"}
 export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION-"1.4"}
-export H5PART_DIR=${H5PART_DIR-"H5Part-1.4.2"}
+export H5PART_BUILD_DIR=${H5PART_DIR-"H5Part-1.4.2"}
 
-export FASTBIT_URL=${FASTBIT_URL-"https://codeforge.lbl.gov/frs/download.php/45/fastbit-ibis1.0.8.tar.gz"}
-export FASTBIT_FILE=${FASTBIT_FILE-"fastbit-ibis1.0.8.tar.gz"}
-export FASTBIT_VERSION=${FASTBIT_VERSION-"1.0.8"}
-export FASTBIT_DIR=${FASTBIT_DIR-"fastbit-ibis1.0.8"}
+export FASTBIT_URL=${FASTBIT_URL-"https://codeforge.lbl.gov/frs/download.php/62/fastbit-ibis1.0.9.tar.gz"}
+export FASTBIT_FILE=${FASTBIT_FILE-"fastbit-ibis1.0.9.tar.gz"}
+export FASTBIT_VERSION=${FASTBIT_VERSION-"1.0.9"}
+export FASTBIT_DIR=${FASTBIT_DIR-"fastbit-ibis1.0.9"}
 
 export CCMIO_FILE=${CCMIO_FILE:-"libccmio-2.6.1.tar.gz"}
 export CCMIO_VERSION=${CCMIO_VERSION:-"2.6.1"}
