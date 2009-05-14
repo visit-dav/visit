@@ -63,7 +63,7 @@
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
 #           H5part   1.4.2    H5Part-1.4.2.tar.gz    -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
-#           HDF5     1.6.5    hdf5-1.8.1.tar.gz      -5
+#           HDF5     1.8.2    hdf5-1.8.2.tar.gz      -5
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
 #           Silo     4.7      silo-4.7.tar.gz
@@ -609,11 +609,16 @@
 #     --enable-itaps instead of --enable-imesh --enable-ibase. Added a wee bit
 #     of logic to rename visitconvert tools in case we're using this script
 #     to build iMeshIO. 
-#     Gunther H. Weber, Thu May  7 11:20:50 PDT 2009
 #
+#     Gunther H. Weber, Thu May  7 11:20:50 PDT 2009
 #     Update H5Part to 1.4.2 and FastBit to 1.0.8 as required by changes
 #     to the HDF_UC database plugin. Download FastBit automatically from
 #     LBNL Codeforge if TAR ball not present.
+#
+#     Jeremy Meredith, Thu May 14 15:56:44 EDT 2009
+#     HDF5 seemed to be updated to 1.8.2 in some places, but others were
+#     left as 1.8.1 or 1.6.5.  I updated *all* references to be to 1.8.2.
+#     At the very least, this fixed ftp downloading of HDF5.
 #
 # *****************************************************************************
 #
@@ -1715,7 +1720,7 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        ensure_built_or_ready "hdf5" $HDF5_VERSION $HDF5_BUILD_DIR $HDF5_FILE ftp://ftp.hdfgroup.org/HDF5/prev-releases/hdf5-1.8.1/src
+        ensure_built_or_ready "hdf5" $HDF5_VERSION $HDF5_BUILD_DIR $HDF5_FILE ftp://ftp.hdfgroup.org/HDF5/prev-releases/hdf5-1.8.2/src
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_HDF5="no"
