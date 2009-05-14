@@ -70,6 +70,38 @@ avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
     colorNames    = colors;
 }
 
+Function: avtMaterialMetaData4
+Declaration: avtMaterialMetaData(const std::string &, const std::string &, int);
+Definition:
+// ****************************************************************************
+//  Method: avtMaterialMetaData constructor
+//
+//  Purpose: constructor that uses only material count 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Wed May 13 14:05:26 PDT 2009
+// ****************************************************************************
+
+avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
+    const std::string &mesh, int nm)
+    : AttributeSubject(avtMaterialMetaData::TypeMapFormatString)
+{
+    // Initialize all members.
+    *this = avtMaterialMetaData();
+
+    // Override members
+    name          = n;
+    originalName  = name;
+    meshName      = mesh;
+    numMaterials  = nm;
+    for (int i = 0; i < numMaterials; i++)
+    {
+        char tmpn[32];
+        sprintf(tmpn, "mat_%d", i);
+        materialNames.push_back(tmpn);
+    }
+}
+
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

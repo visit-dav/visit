@@ -79,6 +79,7 @@ public:
     // User-defined methods
     avtMaterialMetaData(const std::string &, const std::string &, int, const stringVector &);
     avtMaterialMetaData(const std::string &, const std::string &, int, const stringVector &, const stringVector &);
+    avtMaterialMetaData(const std::string &, const std::string &, int);
     void Print(ostream &, int = 0) const;
 
     // IDs that can be used to identify fields in case statements
