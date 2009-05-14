@@ -22,6 +22,8 @@
     </Function>
     <Function name="avtMaterialMetaData3" user="true" member="true">
     </Function>
+    <Function name="avtMaterialMetaData4" user="true" member="true">
+    </Function>
     <Function name="Print" user="true" member="true">
     </Function>
   </Attribute>
