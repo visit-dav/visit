@@ -41,11 +41,13 @@
 // ************************************************************************* //
 
 #include <avtNASTRANFileFormat.h>
+#include <avtNASTRANOptions.h>
 
+#include <errno.h>
+#include <map>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string>
-#include <errno.h>
 
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
@@ -53,13 +55,17 @@
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
+#include <avtMaterialMetaData.h>
 
+#include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
-#include <TimingsManager.h>
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <FileFunctions.h>
+#include <TimingsManager.h>
 #include <snprintf.h>
 
 //
@@ -78,6 +84,7 @@
 #endif
 
 using     std::string;
+using     std::map;
 
 #define ALL_LINES -1
 
@@ -89,15 +96,26 @@ using     std::string;
 //
 //  Modifications:
 //
+//    Mark C. Miller, Wed May 13 23:11:59 PDT 2009
+//    Added option to indicate number of materials.
 // ****************************************************************************
 
-avtNASTRANFileFormat::avtNASTRANFileFormat(const char *filename)
-    : avtSTSDFileFormat(filename), title()
+avtNASTRANFileFormat::avtNASTRANFileFormat(const char *filename,
+    DBOptionsAttributes *rdatts) : avtSTSDFileFormat(filename), title()
 {
     meshDS = 0;
+    matCountOpt = 0;
+
+    for (int i = 0; rdatts != 0 && i < rdatts->GetNumberOfOptions(); ++i)
+    {
+        if (rdatts->GetName(i) == NASTRAN_RDOPT_MAT_COUNT)
+            matCountOpt = rdatts->GetInt(NASTRAN_RDOPT_MAT_COUNT);
+        else
+            debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
+    }
 
 #ifdef MDSERVER
-    if(!ReadFile(filename, 100))
+    if(!ReadFile(filename, matCountOpt == -1 ? ALL_LINES : 100))
     {
         EXCEPTION1(InvalidFilesException, filename);
     }
@@ -144,6 +162,7 @@ avtNASTRANFileFormat::FreeUpResources(void)
     {
         meshDS->Delete();
         meshDS = 0;
+        matList.clear();
     }
 
     title = "";
@@ -306,6 +325,9 @@ static int Geti(const char *s)
 //    logic to increase vtkPoints object size resulted in having no effect
 //    because 1.1* current size was resulting in same size. Also, added
 //    logic to deal with CPENTA element types that are really pyramids.
+//
+//    Mark C. Miller, Wed May 13 23:11:27 PDT 2009
+//    Added support for materials.
 // ****************************************************************************
 
 bool
@@ -337,6 +359,9 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         nPoints = fileSize / (VisItOff_t) 130;
         nCells  = fileSize / (VisItOff_t) 150;
     }
+
+#if !defined(MDSERVER)
+
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(nPoints);
 #ifdef USE_POINT_INDICES_TO_INSERT
@@ -349,9 +374,12 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
     pts->Delete();
     pts = ugrid->GetPoints();
 
+#endif // if !defined(MDSERVER)
+
     char  line[1024];
     float pt[3];
     int verts[8];
+    int matid = 0;
     bool recognized = false;
     bool titleRead = false;
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
@@ -396,6 +424,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             *valend = '\0';
             int psi = Geti(valstart)-1;
 
+#if !defined(MDSERVER)
+
             if(psi < nPoints)
                 pts->SetPoint(psi, pt);
             else
@@ -415,9 +445,15 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 pts->SetNumberOfPoints(nPoints);
                 pts->SetPoint(psi, pt);
             }
+
+#endif // if !defined(MDSERVER)
+
 #else
+#if !defined(MDSERVER)
             pts->InsertNextPoint(pt);
 #endif
+#endif
+
         }
         else if(strncmp(line, "GRID", 4) == 0)
         {
@@ -449,6 +485,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             *valend = '\0';
             int psi = Geti(valstart)-1;
 
+#if !defined(MDSERVER)
+
             if(psi < nPoints)
                 pts->SetPoint(psi, pt);
             else
@@ -468,9 +506,18 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 pts->SetNumberOfPoints(nPoints);
                 pts->SetPoint(psi, pt);
             }
+
+#endif // if !defined(MDSERVER)
+
 #else
+
+#if !defined(MDSERVER)
             pts->InsertNextPoint(pt);
+#endif // if !defined(MDSERVER)
+
 #endif
+
+
         }
         else if(strncmp(line, "CHEXA", 5) == 0)
         {
@@ -520,7 +567,18 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             *valend = '\0';
             verts[0] = Geti(valstart)-1;
 
+            if (matCountOpt)
+            {
+                valstart -= INDEX_FIELD_WIDTH;
+                valend -= INDEX_FIELD_WIDTH;
+                *valend = '\0';
+                matid = Geti(valstart);
+            }
+
+#if !defined(MDSERVER)
             ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
+            if (matCountOpt) matList.push_back(matid);
+#endif
 
 #if 0
             debug4 << verts[0]
@@ -554,6 +612,14 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             *valend = '\0';
             verts[0] = Geti(valstart)-1;
 
+            if (matCountOpt)
+            {
+                valstart -= INDEX_FIELD_WIDTH;
+                valend -= INDEX_FIELD_WIDTH;
+                *valend = '\0';
+                matid = Geti(valstart);
+            }
+
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
@@ -562,7 +628,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                    << endl;
 #endif
 
+#if !defined(MDSERVER)
             ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+            if (matCountOpt) matList.push_back(matid);
+#endif
         }
         else if(strncmp(line, "CPYRAM", 6) == 0)
         {
@@ -589,6 +658,14 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             *valend = '\0';
             verts[0] = Geti(valstart)-1;
 
+            if (matCountOpt)
+            {
+                valstart -= INDEX_FIELD_WIDTH;
+                valend -= INDEX_FIELD_WIDTH;
+                *valend = '\0';
+                matid = Geti(valstart);
+            }
+
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
@@ -598,7 +675,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                    << endl;
 #endif
 
+#if !defined(MDSERVER)
             ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+            if (matCountOpt) matList.push_back(matid);
+#endif
         }
         else if(strncmp(line, "CPENTA", 6) == 0)
         {
@@ -629,6 +709,15 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
             verts[0] = Geti(valstart)-1;
+
+            if (matCountOpt)
+            {
+                valstart -= INDEX_FIELD_WIDTH;
+                valend -= INDEX_FIELD_WIDTH;
+                *valend = '\0';
+                matid = Geti(valstart);
+            }
+
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
@@ -643,10 +732,13 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // says that if 5th and 6th nodes are identical, then its really a 5 noded
             // pyramid.
             //
+#if !defined(MDSERVER)
             if (verts[4] == verts[5])
                 ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
             else
                 ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+            if (matCountOpt) matList.push_back(matid);
+#endif
         }
         else if(strncmp(line, "CQUAD4", 6) == 0)
         {
@@ -668,6 +760,14 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             *valend = '\0';
             verts[0] = Geti(valstart)-1;
 
+            if (matCountOpt)
+            {
+                valstart -= INDEX_FIELD_WIDTH;
+                valend -= INDEX_FIELD_WIDTH;
+                *valend = '\0';
+                matid = Geti(valstart);
+            }
+
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
@@ -676,7 +776,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                    << endl;
 #endif
 
+#if !defined(MDSERVER)
             ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+            if (matCountOpt) matList.push_back(matid);
+#endif
         }
         else if(strncmp(line, "CTRIA2", 6) == 0 ||
                 strncmp(line, "CTRIA3", 6) == 0)
@@ -693,6 +796,15 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
             verts[0] = Geti(valstart)-1;
+
+            if (matCountOpt)
+            {
+                valstart -= INDEX_FIELD_WIDTH;
+                valend -= INDEX_FIELD_WIDTH;
+                *valend = '\0';
+                matid = Geti(valstart);
+            }
+
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
@@ -700,7 +812,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                    << endl;
 #endif
 
+#if !defined(MDSERVER)
             ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+            if (matCountOpt) matList.push_back(matid);
+#endif
         }
         else if(strncmp(line, "CBAR", 4) == 0)
         {
@@ -712,13 +827,24 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             *valend = '\0';
             verts[0] = Geti(valstart)-1;
 
+            if (matCountOpt)
+            {
+                valstart -= INDEX_FIELD_WIDTH;
+                valend -= INDEX_FIELD_WIDTH;
+                *valend = '\0';
+                matid = Geti(valstart);
+            }
+
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
                    << endl;
 #endif
 
+#if !defined(MDSERVER)
             ugrid->InsertNextCell(VTK_LINE, 2, verts);
+            if (matCountOpt) matList.push_back(matid);
+#endif
         }
         else if(strncmp(line, "TITLE", 5) == 0)
         {
@@ -735,6 +861,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             recognized = true;
         }
+
+        uniqMatIds[matid] = 1;
     }
 
     visitTimer->StopTimer(readingFile, "Interpreting NASTRAN file");
@@ -754,11 +882,18 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         rpf->Delete();
         visitTimer->StopTimer(rpfTime, "Relevant points filter");
 #else
+#if !defined(MDSERVER)
         meshDS = ugrid;
 #endif
+#endif
     }
+#if !defined(MDSERVER)
     else
         ugrid->Delete();
+
+    if (matCountOpt == -1)
+        matCountOpt = uniqMatIds.size();
+#endif
 
     visitTimer->StopTimer(total, "Loading NASTRAN file");
 
@@ -776,6 +911,9 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Jul 5 17:24:35 PST 2005
 //
+//    Mark C. Miller, Wed May 13 23:12:41 PDT 2009
+//    Added materials using new MaterialMetaData constructor that takes only
+//    number of materials.
 // ****************************************************************************
 
 void
@@ -787,8 +925,46 @@ avtNASTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int tdim = 3;
     AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, NULL, 1, 1,
                       sdim, tdim);
+
+    if (matCountOpt > 0)
+    {
+        avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", "mesh",
+                                           matCountOpt);
+        md->Add(mmd);
+    }
+
 }
 
+// ****************************************************************************
+//  Method: avtNASTRANFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data from a Silo file.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      domain     The domain of interest.
+//      type       The type of auxiliary data.
+//      <unnamed>  The arguments for that -- not used for any Silo types.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   Wed May 13 17:14:48 PDT 2009
+// ****************************************************************************
+
+void *
+avtNASTRANFileFormat::GetAuxiliaryData(const char *var, const char *type,
+    void *, DestructorFunction &df)
+{
+    void *rv = NULL;
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        rv = (void *) GetMaterial(var);
+        df = avtMaterial::Destruct;
+    }
+
+    return rv;
+}
 
 // ****************************************************************************
 //  Method: avtNASTRANFileFormat::GetMesh
@@ -817,6 +993,52 @@ avtNASTRANFileFormat::GetMesh(const char *meshname)
     return ugrid;
 }
 
+// ****************************************************************************
+//  Method: avtNASTRANFileFormat::GetMaterial
+//
+//  Purpose:
+//      Gets the material of given name.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Wed May 13 17:51:17 PDT 2009
+//
+// ****************************************************************************
+
+avtMaterial *
+avtNASTRANFileFormat::GetMaterial(const char *mat)
+{
+    //
+    // This condition can happen if user specified mat count via read options
+    // and ReadFile found a different number of them.
+    //
+    if (matCountOpt != uniqMatIds.size())
+    {
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg), "Material count specified in read options, %d, "
+            "does not match what is actually found in the file, %d",
+            matCountOpt, uniqMatIds.size());
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
+    vector<string> names;
+    for (int i = 0; i < matCountOpt; i++)
+    {
+        char tmpn[32];
+        SNPRINTF(tmpn,sizeof(tmpn),"mat_%d",i);
+        names.push_back(tmpn);
+    }
+
+    //
+    // We have to do this copy because VisIt is expecting to be able to delete
+    // the avtMaterial object and we can't override it with our own variant
+    // that DOES NOT delete the matlist part of it because that member is
+    // private.
+    //
+    int *matlist = new int[matList.size()];
+    memcpy(matlist, &matList[0], matList.size() * sizeof(int));
+    return new avtMaterial(matCountOpt, names, matList.size(),
+                             &matList[0], 0, 0, 0, 0, 0);
+}
 
 // ****************************************************************************
 //  Method: avtNASTRANFileFormat::GetVar

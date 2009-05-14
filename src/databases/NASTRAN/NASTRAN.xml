@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="NASTRAN" type="database" label="NASTRAN Bulk data" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+  <Plugin name="NASTRAN" type="database" label="NASTRAN Bulk data" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
     <Extensions>
       nas
       f06

@@ -44,7 +44,13 @@
 #ifndef AVT_NASTRAN_FILE_FORMAT_H
 #define AVT_NASTRAN_FILE_FORMAT_H
 
+#include <vector>
+#include <map>
+
 #include <avtSTSDFileFormat.h>
+
+class DBOptionsAttributes;
+class avtMaterial;
 
 
 // ****************************************************************************
@@ -63,33 +69,19 @@
 class avtNASTRANFileFormat : public avtSTSDFileFormat
 {
 public:
-                       avtNASTRANFileFormat(const char *filename);
+                       avtNASTRANFileFormat(const char *filename, DBOptionsAttributes*);
     virtual           ~avtNASTRANFileFormat();
 
-    //
-    // This is used to return unconvention data -- ranging from material
-    // information to information about block connectivity.
-    //
-    // virtual void      *GetAuxiliaryData(const char *var, const char *type,
-    //                                  void *args, DestructorFunction &);
-    //
-
-    //
-    // These are used to declare what the current time and cycle are for the
-    // file.  These should only be defined if the file format knows what the
-    // time and/or cycle is.
-    //
-    // virtual bool      ReturnsValidCycle() const { return true; };
-    // virtual int       GetCycle(void);
-    // virtual bool      ReturnsValidTime() const { return true; };
-    // virtual double    GetTime(void);
-    //
+    virtual void         *GetAuxiliaryData(const char *var,
+                                           const char *type, void *args,
+                                           DestructorFunction &);
 
     virtual const char    *GetType(void)   { return "NASTRAN bulk data"; };
     virtual void           FreeUpResources(void); 
 
     virtual void           ActivateTimestep(void);
 
+    avtMaterial           *GetMaterial(const char *);
     virtual vtkDataSet    *GetMesh(const char *);
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
@@ -100,6 +92,9 @@ protected:
     // DATA MEMBERS
     vtkDataSet            *meshDS;
     std::string            title;
+    int                    matCountOpt;
+    std::vector<int>       matList;
+    std::map<int,int>      uniqMatIds;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };
