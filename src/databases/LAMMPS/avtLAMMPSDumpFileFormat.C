@@ -387,6 +387,9 @@ avtLAMMPSDumpFileFormat::GetVectorVar(int timestep, const char *varname)
 //    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
 //    Added support for new, more arbitrary LAMMPS atom dump style formatting.
 //
+//    Jeremy Meredith, Fri May 15 11:32:54 EDT 2009
+//    Fixed species to be 0-origin.  Also, only set it once.
+//
 // ****************************************************************************
 void
 avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
@@ -430,14 +433,13 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
         }
         --tmpID;  // 1-origin; we need 0-origin
 
-        speciesVar[tmpID] = tmpSpecies;
         for (int v=0; v<nVars; v++)
         {
             if (v == idIndex || v == speciesIndex)
                 continue;
             vars[v][tmpID] = tmpVars[v];
         }
-        speciesVar[tmpID] = tmpSpecies;
+        speciesVar[tmpID] = tmpSpecies - 1;
     }
 }
 
