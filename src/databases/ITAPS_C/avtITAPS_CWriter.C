@@ -55,6 +55,7 @@
 #include <vtkCellType.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkType.h>
 
@@ -252,10 +253,15 @@ static int compare_ehs(const void *a, const void *b)
 //
 //    Mark C. Miller, Tue Apr 21 16:06:48 PDT 2009
 //    Updated to newest iMesh/iBase specification.
+//
+//    Mark C. Miller, Thu May 14 21:30:51 PDT 2009
+//    Added chunkSet and nblocks arg. Added logic to ONLY create chunk set if
+//    there are indeed multiple blocks.
 // ****************************************************************************
 static void
-WriteMesh(vtkDataSet *_ds, int chunk,
+WriteMesh(vtkDataSet *_ds, int nblocks, int chunk,
     iMesh_Instance itapsMesh, iBase_EntitySetHandle rootSet,
+    iBase_EntitySetHandle *chunkSet,
     iBase_EntityHandle **pntHdls, iBase_EntityHandle **cellHdls,
     bool simplexify, bool addFacesFor3DEnts, bool preventDupsToiMesh)
 {
@@ -308,17 +314,20 @@ WriteMesh(vtkDataSet *_ds, int chunk,
         // moved here from where it was originally at the beginning of the 
         // try... statement.
         //
-        iBase_EntitySetHandle chunkSet;
-        iMesh_createEntSet(itapsMesh, 0, &chunkSet, &itapsError);
-        CheckITAPSError(itapsMesh, iMesh_createEntSet, NoL);
+        *chunkSet = rootSet;
+        if (nblocks > 1)
+        {
+            iMesh_createEntSet(itapsMesh, 0, chunkSet, &itapsError);
+            CheckITAPSError(itapsMesh, iMesh_createEntSet, NoL);
     
-        // add just created Vtx entites to chunkSet
-        iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, chunkSet, &itapsError);
-        CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
+            // add just created Vtx entites to chunkSet
+            iMesh_addEntArrToSet(itapsMesh, ptHdls, npts, *chunkSet, &itapsError);
+            CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
     
-        // remove just created Vtx entities from rootSet, ok?
-        //iMesh_rmvEntArrFromSet(itapsMesh, ptHdls, npts, &rootSet, &itapsError);
-        //CheckITAPSError(itapsMesh, iMesh_rmvEntArrFromSet, NoL);
+            // remove just created Vtx entities from rootSet, ok?
+            //iMesh_rmvEntArrFromSet(itapsMesh, ptHdls, npts, &rootSet, &itapsError);
+            //CheckITAPSError(itapsMesh, iMesh_rmvEntArrFromSet, NoL);
+        }
     
         int ncells = ds->GetNumberOfCells();
         iBase_EntityHandle *znHdls = new iBase_EntityHandle[ncells];
@@ -439,13 +448,16 @@ WriteMesh(vtkDataSet *_ds, int chunk,
         }
         *cellHdls = znHdls;
     
-        // add just created cell entites to chunkSet
-        iMesh_addEntArrToSet(itapsMesh, znHdls, ncells, chunkSet, &itapsError);
-        CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
+        if (nblocks > 1)
+        {
+            // add just created cell entites to chunkSet
+            iMesh_addEntArrToSet(itapsMesh, znHdls, ncells, *chunkSet, &itapsError);
+            CheckITAPSError(itapsMesh, iMesh_addEntArrToSet, NoL);
     
-        // remove just created cell entities from rootSet, ok?
-        //iMesh_rmvEntArrFromSet(itapsMesh, znHdls, ncells, &rootSet, &itapsError);
-        //CheckITAPSError(itapsMesh, iMesh_rmvEntArrFromSet, NoL);
+            // remove just created cell entities from rootSet, ok?
+            //iMesh_rmvEntArrFromSet(itapsMesh, znHdls, ncells, &rootSet, &itapsError);
+            //CheckITAPSError(itapsMesh, iMesh_rmvEntArrFromSet, NoL);
+        }
 
     }
     catch (iBase_Error TErr)
@@ -466,6 +478,76 @@ WriteMesh(vtkDataSet *_ds, int chunk,
         ds->Delete();
 
 funcEnd: ;
+}
+
+// ****************************************************************************
+//  Function: WriteMaterial
+//
+//  Purpose: Addes material info to the iMesh instance a la MOAB convention. 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Thu May 14 21:32:14 PDT 2009
+// ****************************************************************************
+
+static void 
+WriteMaterial(vtkCellData *cd, int chunk, iMesh_Instance itapsMesh,
+    iBase_EntitySetHandle rootSet, iBase_EntitySetHandle chunkSet,
+    iBase_EntityHandle *clHdls)
+{
+
+    vtkDataArray *arr = cd->GetArray("avtSubsets");
+    if (arr == NULL)
+    {
+        debug1 << "Subsets array not available" << endl;
+        return;
+    }
+    if (arr->GetDataType() != VTK_INT)
+    {
+        debug1 << "Subsets array not of right type" << endl;
+        return;
+    }
+
+    // create the tag we'll need
+    const char *matTagName = "MATERIAL_SET";
+    iBase_TagHandle matTag;
+    iMesh_createTag(itapsMesh, matTagName, 1, iBase_INTEGER, &matTag, &itapsError,
+        strlen(matTagName)+1);
+
+    // Iterate over zones examining material ids. Whenever we encounter a new
+    // material id, create an ent set for it. Map all material ids into the
+    // range 0...nmats-1
+    vtkIntArray *iarr = vtkIntArray::SafeDownCast(arr);
+    int *ia = (int *) iarr->GetVoidPointer(0);
+    int nzones = iarr->GetNumberOfTuples();
+    int nmats = 0;
+    vector<iBase_EntitySetHandle> matSets;
+    map<int, int> matValToSetMap;
+    for (int i = 0; i < nzones; i++)
+    {
+        iBase_EntitySetHandle matSet;
+
+        if (matValToSetMap.find(ia[i]) == matValToSetMap.end())
+        {
+            matValToSetMap[ia[i]] = nmats;
+
+            // Create the new entity set
+            iBase_EntitySetHandle newSet;
+            iMesh_createEntSet(itapsMesh, 0, &newSet, &itapsError);
+            matSets.push_back(newSet);
+
+            // Specify value for material tag
+            iMesh_setEntSetIntData(itapsMesh, newSet, matTag, nmats, &itapsError);
+
+            matSet = newSet;
+            nmats++;
+        }
+        else
+        {
+            matSet = matSets[matValToSetMap[ia[i]]];
+        }
+
+        iMesh_addEntToSet(itapsMesh, clHdls[i], matSet, &itapsError);
+    }
 }
 
 // ****************************************************************************
@@ -726,6 +808,9 @@ funcEnd: ;
 //
 //    Mark C. Miller, Tue Apr 21 16:07:33 PDT 2009
 //    Added logic to pass "2D" option for GRUMMP.
+//
+//    Mark C. Miller, Thu May 14 21:30:21 PDT 2009
+//    Added material output. Added nblocks/chunkSet args to WriteMesh.
 // ****************************************************************************
 
 void
@@ -750,9 +835,13 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
     CheckITAPSError(itapsMesh, iMesh_getRootSet, NoL);
 
     // Create mesh description in iMesh instance
-    iBase_EntityHandle *ptHdls, *clHdls;
-    WriteMesh(ds, chunk, itapsMesh, rootSet, &ptHdls, &clHdls,
+    iBase_EntityHandle *ptHdls = 0, *clHdls = 0;
+    iBase_EntitySetHandle chunkSet;
+    WriteMesh(ds, nblocks, chunk, itapsMesh, rootSet, &chunkSet, &ptHdls, &clHdls,
         simplexify, addFacesFor3DEnts, preventDupsToiMesh);
+
+    // Create material subsets
+    WriteMaterial(ds->GetCellData(), chunk, itapsMesh, rootSet, chunkSet, clHdls);
 
     // Create variables (tags) in iMesh instance
     WriteVariables(ds, chunk, itapsMesh, rootSet, ptHdls, clHdls);
