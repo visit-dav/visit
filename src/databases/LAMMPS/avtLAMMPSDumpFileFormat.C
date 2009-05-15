@@ -235,6 +235,9 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 //    Added support for new, more arbitrary LAMMPS atom dump style formatting.
 //    Includes support for scaled (unit cell) coordinates.
 //
+//    Jeremy Meredith, Fri May 15 11:00:49 EDT 2009
+//    Fixed typo....
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -251,8 +254,8 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *meshname)
     for (int j = 0 ; j < nAtoms ; j++)
     {
         double x = vars[xIndex][j];
-        double y = vars[zIndex][j];
-        double z = vars[yIndex][j];
+        double y = vars[yIndex][j];
+        double z = vars[zIndex][j];
         if (xScaled)
             x = xMin + (xMax-xMin) * x;
         if (yScaled)
