@@ -12,6 +12,10 @@
 #   exported variables with just setting PATH variable.
 #   Added log() and HandleCommonSkipCases() functions and
 #   exported them to subshells.
+#
+#   Tom Fogal, Sat May 16 14:55:06 MDT 2009
+#   Don't do any checks for third_party files.
+
 
 export PATH=/bin:/usr/bin
 export AUTOCONF_VERSION_NUMBER=2.59
@@ -44,6 +48,14 @@ function HandleCommonSkipCases()
     #
     if test $1 = D || test $1 = _U; then
         return 0
+    fi
+
+    #
+    # third_party is a free for all.
+    #
+    echo "$2" | /bin/grep "third_party" >/dev/null
+    if test $? -eq 0; then
+      return 0
     fi
 
     #
