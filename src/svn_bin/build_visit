@@ -631,6 +631,9 @@
 #     use DLG_BACKTITLE and/or DLG_PKGNAME to make this script less
 #     confusing when being used to install visit-related capabilities but
 #     named differently (e.g. iMeshIO for ITAPS project).
+#
+#     Mark C. Miller, Wed May 20 11:40:55 PDT 2009
+#     Fixed typo in NETCDF_BUILD_DIR name. It was missing '_BUILD'.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -951,7 +954,7 @@ export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
 export NETCDF_VERSION=${NETCDF_VERSION-"3.6.3"}
 export NETCDF_FILE=${NETCDF_FILE-"netcdf-${NETCDF_VERSION}.tar.gz"}
 export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"3.6"}
-export NETCDF_DIR=${NETCDF_DIR-"netcdf-3.6.3"}
+export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-3.6.3"}
 
 export CGNS_FILE=${CGNS_FILE:-"cgnslib_2.4-3.tar.gz"}
 export CGNS_VERSION=${CGNS_VERSION:-"2.4"}
