@@ -66,6 +66,11 @@ using std::vector;
 //    of reading the whole file at once.  Keep track of file positions
 //    for all time steps to accessing even late time steps is instantanous.
 //
+//    Jeremy Meredith, Wed May 20 11:17:19 EDT 2009
+//    Added support for CrystalMakers more "human-friendly" (but
+//    less computer friendly) style of XYZ file.
+//    nAtoms is now stored per-timestep, not globally.
+//
 // ****************************************************************************
 
 class avtXYZFileFormat : public avtMTSDFileFormat
@@ -84,13 +89,17 @@ class avtXYZFileFormat : public avtMTSDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
+    enum XYZStyle { Normal, CrystalMaker };
+
     ifstream                       in;
     std::vector<istream::pos_type> file_positions;
     std::string                    filename;
     bool                           metaDataRead;
     int                            nTimeSteps;
     int                            nVars;
-    int                            nAtoms;
+    vector<int>                    nAtoms;
+    XYZStyle                       fileStyle;
+    bool                           corruptElement;
 
     vector< vector<int> >          e;
     vector< vector<float> >        x;
