@@ -624,6 +624,13 @@
 #     Enhanced downloadv to check subversion.
 #     Update NetCDF version to workaround compilation issues.
 #
+#     Mark C. Miller, Wed May 20 11:14:15 PDT 2009
+#     Removed all refs to functions 'webget' and 'downloadv'. Those were
+#     made obsolete following changes of Feb 19, 2009. Adjusted some text
+#     were explicit refs to 'VisIt Build Process' or 'VisIt' were used to
+#     use DLG_BACKTITLE and/or DLG_PKGNAME to make this script less
+#     confusing when being used to install visit-related capabilities but
+#     named differently (e.g. iMeshIO for ITAPS project).
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -1181,70 +1188,6 @@ function uncompress_untar
                ;;
         esac
     fi
-}
-
-
-# *************************************************************************** #
-# Function: webget                                                            #
-#                                                                             #
-# Purpose: Downloads a file from the web.                                     #
-#                                                                             #
-# Programmer: Tom Fogal                                                       #
-# Date: Fri Oct  3 10:34:39 MDT 2008                                          #
-#                                                                             #
-# Modifications:                                                              #
-#                                                                             #
-# *************************************************************************** #
-function webget
-{
-    if test "${OPSYS}" = "Darwin" ; then
-        # MaxOS X comes with curl
-        curl -ksfo "$@"
-    else
-        wget ${WGET_OPTS} -o /dev/null "$@"
-        if test $? -ne 0 ; then
-            info "Download of '$@' failed."
-            return 1
-        fi
-    fi
-    return 0
-}
-
-# *************************************************************************** #
-# Function: downloadv                                                         #
-#                                                                             #
-# Purpose: Downloads a file from a list of possible locations.  Stops when    #
-#          a download succeeds.  Each argument should be a mirror of the same #
-#          file.  Dies if the file is unavailable from all locations.         #
-#                                                                             #
-# Programmer: Tom Fogal                                                       #
-# Date: Fri Oct  3 10:30:27 MDT 2008                                          #
-#                                                                             #
-# Modifications:                                                              #
-#                                                                             #
-#   Tom Fogal, Sat May 16 14:40:33 MDT 2009                                   #
-#   Fall back to svn if all else fails.                                       #
-#                                                                             #
-# *************************************************************************** #
-function downloadv
-{
-    for mirror in $@ ; do
-        info "Downloading ${mirror} . . ."
-        webget "${mirror}"
-        if test $? -eq 0 ; then
-            return 0
-        fi
-        info "Download failed.."
-    done
-    # Last chance: try svn.
-    if test "x${DO_SVN}" = "xyes" ; then
-        filename=$(basename "$@[0]")
-        svn cat "${SVN_ROOT_PATH}/trunk/third_party/${filename}" > ${filename}
-        if test $? -eq 0 ; then
-            return 0
-        fi
-    fi
-    error "Could not download any of '$@'."
 }
 
 # *************************************************************************** #
