@@ -5938,13 +5938,14 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
-echo "$as_me:$LINENO: checking for library containing strerror" >&5
-echo $ECHO_N "checking for library containing strerror... $ECHO_C" >&6
-if test "${ac_cv_search_strerror+set}" = set; then
+
+        echo "$as_me:$LINENO: checking for strerror in -lcposix" >&5
+echo $ECHO_N "checking for strerror in -lcposix... $ECHO_C" >&6
+if test "${ac_cv_lib_cposix_strerror+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  ac_func_search_save_LIBS=$LIBS
-ac_cv_search_strerror=no
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcposix  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -5989,80 +5990,24 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_search_strerror="none required"
+  ac_cv_lib_cposix_strerror=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
+ac_cv_lib_cposix_strerror=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-if test "$ac_cv_search_strerror" = no; then
-  for ac_lib in cposix; do
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-    cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_cposix_strerror" >&5
+echo "${ECHO_T}$ac_cv_lib_cposix_strerror" >&6
+if test $ac_cv_lib_cposix_strerror = yes; then
+  LIBS="$LIBS -lcposix"
+fi
 
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char strerror ();
-int
-main ()
-{
-strerror ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_search_strerror="-l$ac_lib"
-break
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
 
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-  done
-fi
-LIBS=$ac_func_search_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_search_strerror" >&5
-echo "${ECHO_T}$ac_cv_search_strerror" >&6
-if test "$ac_cv_search_strerror" != no; then
-  test "$ac_cv_search_strerror" = "none required" || LIBS="$ac_cv_search_strerror $LIBS"
-
-fi
 
 
 BUILD_FORTRAN=""
@@ -7502,22 +7447,42 @@ esac
 # All libs should be switched to use this new macro.
 #
 
-    withval=no
+
+
+
+
+
+
+
 
 # Check whether --with-hdf5 or --without-hdf5 was given.
 if test "${with_hdf5+set}" = set; then
   withval="$with_hdf5"
 
 else
-  if test -n "$DEFAULT_HDF5_LIBLOC"; then
-            withval=$DEFAULT_HDF5_LIBLOC:$DEFAULT_HDF5_LIBDEP
-        fi
+  withval=${DEFAULT_HDF5_LIBLOC}
+
 fi;
 
-    with_hdf5=$withval
+
+
+
+    if test "x${withval}" != "xno"; then
+            #
+            # look up _LIBLOC, _LIBDEP variables
+            #
+            if test -n "${DEFAULT_HDF5_LIBLOC}"; then
+                  withval=${DEFAULT_HDF5_LIBLOC}:${DEFAULT_HDF5_LIBDEP}
+
+fi
+
+fi
+
+
     HDF5_INCLUDE=""
     HDF5_LIB=""
     HDF5_TARGET=""
+
     incfile=hdf5.h
     libtags="hdf5"
     incdirs="include inc ."
@@ -7919,7 +7884,6 @@ echo "${ECHO_T}no" >&6
 
 
 
-
 # Check for possible zlib dependence. If there is, we'll just add -lz
 if test -n "$HDF5_LIB"; then
     if test -n "`strings $HDF5_LIBFILE | grep -i inflateInit`"; then
@@ -7948,22 +7912,42 @@ fi
 # Handle the Silo library
 #
 
-    withval=no
+
+
+
+
+
+
+
 
 # Check whether --with-silo or --without-silo was given.
 if test "${with_silo+set}" = set; then
   withval="$with_silo"
 
 else
-  if test -n "$DEFAULT_SILO_LIBLOC"; then
-            withval=$DEFAULT_SILO_LIBLOC:$DEFAULT_SILO_LIBDEP
-        fi
+  withval=${DEFAULT_SILO_LIBLOC}
+
 fi;
 
-    with_silo=$withval
+
+
+
+    if test "x${withval}" != "xno"; then
+            #
+            # look up _LIBLOC, _LIBDEP variables
+            #
+            if test -n "${DEFAULT_SILO_LIBLOC}"; then
+                  withval=${DEFAULT_SILO_LIBLOC}:${DEFAULT_SILO_LIBDEP}
+
+fi
+
+fi
+
+
     SILO_INCLUDE=""
     SILO_LIB=""
     SILO_TARGET=""
+
     incfile=silo.h
     libtags="siloxx siloh5 silo"
     incdirs="include inc ."
@@ -8365,7 +8349,6 @@ echo "${ECHO_T}no" >&6
 
 
 
-
 # Check for possible dependence on HDF5
 if test -n "$SILO_LIB"; then
     if test -n "`strings $SILO_LIBFILE | grep -i 'SILO built with HDF5'`"; then
@@ -8487,22 +8470,42 @@ fi
 # See of --with-pdb was specified. Use PDB lite otherwise.
 #
 
-    withval=no
+
+
+
+
+
+
+
 
 # Check whether --with-pdb or --without-pdb was given.
 if test "${with_pdb+set}" = set; then
   withval="$with_pdb"
 
 else
-  if test -n "$DEFAULT_PDB_LIBLOC"; then
-            withval=$DEFAULT_PDB_LIBLOC:$DEFAULT_PDB_LIBDEP
-        fi
+  withval=${DEFAULT_PDB_LIBLOC}
+
 fi;
 
-    with_pdb=$withval
+
+
+
+    if test "x${withval}" != "xno"; then
+            #
+            # look up _LIBLOC, _LIBDEP variables
+            #
+            if test -n "${DEFAULT_PDB_LIBLOC}"; then
+                  withval=${DEFAULT_PDB_LIBLOC}:${DEFAULT_PDB_LIBDEP}
+
+fi
+
+fi
+
+
     PDB_INCLUDE=""
     PDB_LIB=""
     PDB_TARGET=""
+
     incfile=pdb.h
     libtags="pdb"
     incdirs="include inc ."
@@ -8898,7 +8901,6 @@ echo "${ECHO_T}
 echo "${ECHO_T}no" >&6
 
     fi
-
 
 
 
@@ -10223,7 +10225,7 @@ ac_x_header_dirs='
 /usr/openwin/share/include'
 
 if test "$ac_x_includes" = no; then
-  # Guess where to find include files, by looking for Intrinsic.h.
+  # Guess where to find include files, by looking for Xlib.h.
   # First, try using that file with no special directory specified.
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -10231,7 +10233,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 _ACEOF
 if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
@@ -10258,7 +10260,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
   for ac_dir in $ac_x_header_dirs; do
-  if test -r "$ac_dir/X11/Intrinsic.h"; then
+  if test -r "$ac_dir/X11/Xlib.h"; then
     ac_x_includes=$ac_dir
     break
   fi
@@ -10272,18 +10274,18 @@ if test "$ac_x_libraries" = no; then
   # See if we find them without any special options.
   # Don't add to $LIBS permanently.
   ac_save_LIBS=$LIBS
-  LIBS="-lXt $LIBS"
+  LIBS="-lX11 $LIBS"
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 int
 main ()
 {
-XtMalloc (0)
+XrmInitialize ()
   ;
   return 0;
 }
@@ -20032,6 +20034,7 @@ if test "$enable_dbio_only" = yes; then
     PLOT_FILES=""
     OPERATOR_FILES=""
     VISITPY_FILES=""
+    SIMULATION=""
     SIMULATION_PROTOTYPE_FILES=""
     CQSCORE_FILES=""
     JAVA_FILES=""
