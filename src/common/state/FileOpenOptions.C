@@ -964,6 +964,9 @@ FileOpenOptions::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    dbinfo function argument while the options read from the config file
 //    are basically part of 'this' object. Adjusted logic to deal with
 //    options that have been made obsolete.
+//
+//    Mark C. Miller, Tue May 19 20:53:25 PDT 2009
+//    Terminate for loop searching for matching typeID early.
 // ****************************************************************************
 
 void
@@ -976,7 +979,7 @@ FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
         const std::string &id = dbinfo->GetTypesFullNames()[i];
         const std::string &name = dbinfo->GetTypes()[i];
         int index = -1;
-        for (size_t j=0; j<typeIDs.size(); j++)
+        for (size_t j=0; index==-1 && j<typeIDs.size(); j++)
         {
             if (typeIDs[j] == id)
                 index = j;
