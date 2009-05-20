@@ -4191,6 +4191,7 @@ if test "$enable_dbio_only" = yes; then
     PLOT_FILES=""
     OPERATOR_FILES=""
     VISITPY_FILES=""
+    SIMULATION=""
     SIMULATION_PROTOTYPE_FILES=""
     CQSCORE_FILES=""
     JAVA_FILES=""

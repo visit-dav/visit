@@ -132,9 +132,6 @@
 /* Define NO_SETBUF if streambuf::setbuf is not public. */
 #undef NO_SETBUF
 
-/* OSMesa Window Size Limit. */
-#undef VISIT_RENDERING_SIZE_LIMIT
-
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
@@ -152,9 +149,6 @@
 
 /* Disable ssh tunneling on Panther. */
 #undef PANTHERHACK
-
-/* Shared library extension */
-#undef VISIT_PLUGIN_EXTENSION
 
 /* Define PTY_SYSV if we have System V style pty functions -- BSD otherwise.
    */
@@ -211,26 +205,32 @@
 /* The size of a `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
+/* Define to enable Tuvok-based code */
+#undef USE_TUVOK
+
+/* Shared library extension */
+#undef VISIT_PLUGIN_EXTENSION
+
+/* OSMesa Window Size Limit. */
+#undef VISIT_RENDERING_SIZE_LIMIT
+
 /* Define the slash character */
 #undef VISIT_SLASH_CHAR
 
 /* Define the slash string */
 #undef VISIT_SLASH_STRING
 
-/* Define to 1 if you have the ANSI C header files. */
-#undef STDC_HEADERS
-
 /* Subversion revision */
 #undef VISIT_SVN_REVISION
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-#undef TIME_WITH_SYS_TIME
-
 /* Define VISIT_USE_PTY if we want to use PTYs. */
 #undef VISIT_USE_PTY
-
-/* Define to enable Tuvok-based code */
-#undef USE_TUVOK
 
 /* VisIt version */
 #undef VISIT_VERSION
