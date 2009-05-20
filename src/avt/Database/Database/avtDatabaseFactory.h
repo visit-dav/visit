@@ -110,6 +110,9 @@ class DatabasePluginManager;
 //    Brad Whitlock, Tue Jun 24 15:49:33 PDT 2008
 //    Pass the database plugin manager in because it's no longer a singleton.
 //
+//    Mark C. Miller, Tue May 19 21:26:53 PDT 2009
+//    Added methods to retrieve fallback and first format as well as default
+//    file open options.
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -129,6 +132,13 @@ class DATABASE_API avtDatabaseFactory
     static void                  SetFormatToTryFirst(const char *);
     static void                  SetDefaultFileOpenOptions(const
                                                            FileOpenOptions &f);
+
+    static const char           *GetFormatToTryFirst()
+                                     {return formatToTryFirst;};
+    static const char           *GetFallbackFormat()
+                                     {return fallbackFormat;};
+    static const FileOpenOptions &GetDefaultFileOpenOptions()
+                                     { return defaultFileOpenOptions;};
 
     static void                  SetCreateMeshQualityExpressions(bool f)
                                      {createMeshQualityExpressions = f;}
