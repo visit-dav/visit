@@ -44,6 +44,9 @@
 #include <avtITAPS_CUtility.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
+#include <avtMetaData.h>
+#include <avtOriginatingSource.h>
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -481,31 +484,72 @@ funcEnd: ;
 }
 
 // ****************************************************************************
-//  Function: WriteMaterial
+//  Method: WriteMaterial
 //
 //  Purpose: Addes material info to the iMesh instance a la MOAB convention. 
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   Thu May 14 21:32:14 PDT 2009
+//
+//  Modifications:
+//    Mark C. Miller, Wed May 20 09:55:31 PDT 2009
+//    Made it a method. Added logic to deal with case where materials have
+//    to be queried from originatin source.
+//
 // ****************************************************************************
 
-static void 
-WriteMaterial(vtkCellData *cd, int chunk, iMesh_Instance itapsMesh,
+void 
+avtITAPS_MOABWriter::WriteMaterial(vtkCellData *cd, int chunk, iMesh_Instance itapsMesh,
     iBase_EntitySetHandle rootSet, iBase_EntitySetHandle chunkSet,
     iBase_EntityHandle *clHdls)
 {
 
-    vtkDataArray *arr = cd->GetArray("avtSubsets");
-    if (arr == NULL)
-    {
-        debug1 << "Subsets array not available" << endl;
+    if (!hasMaterialsInProblem)
         return;
-    }
-    if (arr->GetDataType() != VTK_INT)
+
+    const int *ia = 0;
+    int nzones = 0;
+
+    if (mustGetMaterialsAdditionally)
     {
-        debug1 << "Subsets array not of right type" << endl;
-        return;
+        avtMaterial *mat = GetInput()->GetOriginatingSource()
+                                           ->GetMetaData()->GetMaterial(chunk);
+        if (mat == NULL)
+        {
+            debug1 << "Not able to get requested material" << endl;
+            return;
+        }
+
+        if (mat->GetMixlen() > 0)
+        {
+            debug1 << "Cannot handle mixed materials" << endl;
+            return;
+        }
+
+        nzones = mat->GetNZones();
+        ia = mat->GetMatlist();
     }
+    else
+    {
+        vtkDataArray *arr = cd->GetArray("avtSubsets");
+        if (arr == NULL)
+        {
+            debug1 << "Subsets array not available" << endl;
+            return;
+        }
+        if (arr->GetDataType() != VTK_INT)
+        {
+            debug1 << "Subsets array not of right type" << endl;
+            return;
+        }
+
+        vtkIntArray *iarr = vtkIntArray::SafeDownCast(arr);
+        ia = (int *) iarr->GetVoidPointer(0);
+        nzones = iarr->GetNumberOfTuples();
+    }
+
+    if (nzones == 0 || ia == 0)
+        return;
 
     // create the tag we'll need
     const char *matTagName = "MATERIAL_SET";
@@ -516,9 +560,6 @@ WriteMaterial(vtkCellData *cd, int chunk, iMesh_Instance itapsMesh,
     // Iterate over zones examining material ids. Whenever we encounter a new
     // material id, create an ent set for it. Map all material ids into the
     // range 0...nmats-1
-    vtkIntArray *iarr = vtkIntArray::SafeDownCast(arr);
-    int *ia = (int *) iarr->GetVoidPointer(0);
-    int nzones = iarr->GetNumberOfTuples();
     int nmats = 0;
     vector<iBase_EntitySetHandle> matSets;
     map<int, int> matValToSetMap;

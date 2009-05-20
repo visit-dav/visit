@@ -71,6 +71,9 @@ class DBOptionsAttributes;
 //
 //    Mark C. Miller, Tue Apr 21 15:53:42 PDT 2009
 //    Added storage for spatial and topoligical dimension of mesh.
+//
+//    Mark C. Miller, Wed May 20 09:56:36 PDT 2009
+//    Added WriteMaterial method
 // ****************************************************************************
 
 class avtITAPS_CWriter : public virtual avtDatabaseWriter
@@ -91,7 +94,13 @@ class avtITAPS_CWriter : public virtual avtDatabaseWriter
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
 
-    enum iMesh_EntityTopology VTKZoneTypeToITAPS_CZoneType(int);
+    virtual void   WriteMaterial(vtkCellData *cd, int chunk,
+                       iMesh_Instance itapsMesh,
+                       iBase_EntitySetHandle rootSet,
+                       iBase_EntitySetHandle chunkSet,
+                       iBase_EntityHandle *clHdls);
+
+    enum iMesh_EntityTopology VTKZoneTypeToITAPS_MOABZoneType(int);
 
   private:
     string         stem;
