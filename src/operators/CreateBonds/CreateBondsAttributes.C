@@ -61,7 +61,7 @@ CreateBondsAttributes::CreateBondsAttributes() :
     AttributeSubject(CreateBondsAttributes::TypeMapFormatString),
     elementVariable("element")
 {
-    atomicNumber1.push_back(0);
+    atomicNumber1.push_back(1);
     atomicNumber1.push_back(-1);
     atomicNumber2.push_back(-1);
     atomicNumber2.push_back(-1);

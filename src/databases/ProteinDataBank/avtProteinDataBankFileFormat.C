@@ -178,6 +178,12 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //    Added a simple residue type enumeration.  Needed to move
 //    HETNAM parsing into meta-data reading instead of atom data reading.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This
+//    also means we don't have to correct for 1-origin atomic numbers.
+//
 // ****************************************************************************
 
 void
@@ -229,8 +235,8 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtScalarMetaData *el_smd =
             new avtScalarMetaData(name_el, name_mesh, AVT_NODECENT);
         el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-        for (int a=0; a<MAX_ELEMENT_NUMBER; a++)
-	    el_smd->AddEnumNameValue(element_names[a], a+1);
+        for (int a=0; a<=MAX_ELEMENT_NUMBER; a++)
+	    el_smd->AddEnumNameValue(element_names[a], a);
         md->Add(el_smd);
 
         // Add the compound scalars

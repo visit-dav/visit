@@ -157,16 +157,22 @@ QvisPeriodicTableWidget::~QvisPeriodicTableWidget()
 //    Jeremy Meredith, Mon Feb 11 16:46:57 EST 2008
 //    Default to "-1" element number in case we didn't have anything selected.
 //   
+//    Jeremy Meredith, Wed May 20 11:50:45 EDT 2009
+//    Fixed logic error.  Was not actually defaulting to -1.
+//
 // ****************************************************************************
 
 void
 QvisPeriodicTableWidget::setSelectedElement(int element)
 {
     int index = -1;
-    for (index = 0; index < numGridSquares; index++)
+    for (int i = 0; i < numGridSquares; i++)
     {
-        if (indexToElement(index)-1 == element)
+        if (indexToElement(i) == element)
+        {
+            index = i;
             break;
+        }
     }
     setSelectedIndex(index);
 }
@@ -189,6 +195,10 @@ QvisPeriodicTableWidget::setSelectedElement(int element)
 //   Brad Whitlock, Tue Jun  3 14:22:28 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//   Added a fake "0" element which means "unknown", and hydrogen
+//   now starts at 1, so we don't need to correct for 1-origin indices.
+//
 // ****************************************************************************
 
 void 
@@ -202,7 +212,7 @@ QvisPeriodicTableWidget::keyPressEvent(QKeyEvent *e)
     {
     case Qt::Key_Escape:
         // emit an empty color.
-        emit selectedElement(indexToElement(activeIndex()-1));
+        emit selectedElement(indexToElement(activeIndex()));
         break;
     case Qt::Key_Return:
     case Qt::Key_Enter:
@@ -257,6 +267,10 @@ QvisPeriodicTableWidget::keyPressEvent(QKeyEvent *e)
 //    Brad Whitlock, Tue Jun  3 15:17:24 PDT 2008
 //    Make the highlight more obvious on the active item.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    Added a fake "0" element which means "unknown", and hydrogen
+//    now starts at 1, so we don't need to correct for 1-origin indices.
+//
 // ****************************************************************************
 
 void
@@ -302,7 +316,7 @@ QvisPeriodicTableWidget::drawItem(QPainter &paint, int index)
         paint.setPen(palette().color(QPalette::WindowText));
     paint.drawText(QRect(x,y,boxWidth,boxHeight),
                    Qt::AlignHCenter | Qt::AlignVCenter,
-                   element_names[element-1]);
+                   element_names[element]);
     if (hint)
     {
         paint.setFont(oldfont);
@@ -320,6 +334,10 @@ QvisPeriodicTableWidget::drawItem(QPainter &paint, int index)
 // Creation:   August 11, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.
 //   
 // ****************************************************************************
 
@@ -329,7 +347,7 @@ QvisPeriodicTableWidget::isValidIndex(int index) const
     return ((index >= 0) &&
             (index < numGridSquares) &&
             (indexToElement(index) <= MAX_ELEMENT_NUMBER) &&
-            (indexToElement(index) > 0));
+            (indexToElement(index) > 1));
 }
 
 // ****************************************************************************

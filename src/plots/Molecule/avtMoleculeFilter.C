@@ -292,6 +292,10 @@ avtMoleculeFilter::PreExecute()
 //    an atomic number -- this makes creating new element expressions
 //    to override ones in the file possible.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    Added a fake "0" element which means "unknown", and hydrogen
+//    now starts at 1, so we don't need to correct for 1-origin indices.
+//
 // ****************************************************************************
 void
 avtMoleculeFilter::PostExecute()
@@ -306,7 +310,7 @@ avtMoleculeFilter::PostExecute()
              it != used_values.end();
              it++)
         {
-            labels.push_back(element_names[*it - 1]);
+            labels.push_back(element_names[*it]);
         }
     }
     else if (name == "restype" || (name.length()>8 && name.substr(name.length()-8)=="/restype"))

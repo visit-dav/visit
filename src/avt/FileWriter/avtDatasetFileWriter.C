@@ -1132,6 +1132,12 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    Hank Childs, Fri Feb 15 16:28:29 PST 2008
 //    Fix memory leak.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This
+//    also means we don't have to correct for 1-origin atomic numbers.
+//
 // ****************************************************************************
 
 void
@@ -1213,23 +1219,23 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     // And make a .inc file with the current atomic properties
     //
     ofstream atomfile("atomicproperties.inc");
-    atomfile << "#declare atomic_radius = array["<<MAX_ELEMENT_NUMBER<<"]\n";
+    atomfile << "#declare atomic_radius = array["<<MAX_ELEMENT_NUMBER+1<<"]\n";
     atomfile << "{" << endl;
-    for (int i=0; i<MAX_ELEMENT_NUMBER; i++)
+    for (int i=0; i<=MAX_ELEMENT_NUMBER; i++)
     {
         atomfile << "  " << atomic_radius[i];
-        if (i<MAX_ELEMENT_NUMBER-1)
+        if (i<MAX_ELEMENT_NUMBER)
             atomfile << ",";
         atomfile << endl;
     }
     atomfile << "};" << endl;
     atomfile << endl;
-    atomfile << "#declare covalent_radius = array["<<MAX_ELEMENT_NUMBER<<"]\n";
+    atomfile << "#declare covalent_radius = array["<<MAX_ELEMENT_NUMBER+1<<"]\n";
     atomfile << "{" << endl;
-    for (int i=0; i<MAX_ELEMENT_NUMBER; i++)
+    for (int i=0; i<=MAX_ELEMENT_NUMBER; i++)
     {
         atomfile << "  " << covalent_radius[i];
-        if (i<MAX_ELEMENT_NUMBER-1)
+        if (i<MAX_ELEMENT_NUMBER)
             atomfile << ",";
         atomfile << endl;
     }

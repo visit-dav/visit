@@ -261,6 +261,12 @@ SetColor3ubv(const unsigned char *c)
 //    an atomic number -- this makes creating new element expressions
 //    to override ones in the file possible.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This 
+//    also means we don't have to correct for 1-origin atomic numbers.
+//
 // ****************************************************************************
 
 void
@@ -383,10 +389,10 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
     {
         int element_number = 0;
         if (element)
-            element_number = int(elementnos[i]-1);
+            element_number = int(elementnos[i]);
 
-        if (element_number < 0 || element_number >= MAX_ELEMENT_NUMBER)
-            element_number = MAX_ELEMENT_NUMBER-1;
+        if (element_number < 0 || element_number > MAX_ELEMENT_NUMBER)
+            element_number = 0;
 
         // Determine radius
         float radius = atts.GetRadiusFixed();
@@ -515,6 +521,12 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 //    Allow any variable starting with "element" to be treated as
 //    an atomic number -- this makes creating new element expressions
 //    to override ones in the file possible.
+//
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This 
+//    also means we don't have to correct for 1-origin atomic numbers.
 //
 // ****************************************************************************
 
@@ -668,11 +680,11 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                 int element_number = 0;
                 if (element)
                 {
-                    element_number = int(elementnos[atom]-1);
+                    element_number = int(elementnos[atom]);
                 }
 
-                if (element_number < 0 || element_number >= MAX_ELEMENT_NUMBER)
-                    element_number = MAX_ELEMENT_NUMBER-1;
+                if (element_number < 0 || element_number > MAX_ELEMENT_NUMBER)
+                    element_number = 0;
 
 #ifdef SHORTEN_BONDS
                 if (!primary_is_cell_centered &&
