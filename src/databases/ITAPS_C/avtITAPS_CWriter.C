@@ -496,10 +496,12 @@ funcEnd: ;
 //    Made it a method. Added logic to deal with case where materials have
 //    to be queried from originatin source.
 //
+//    Mark C. Miller, Wed May 20 10:48:39 PDT 2009
+//    Fixed class name (was avtITAPS_MOABWriter).
 // ****************************************************************************
 
 void 
-avtITAPS_MOABWriter::WriteMaterial(vtkCellData *cd, int chunk, iMesh_Instance itapsMesh,
+avtITAPS_CWriter::WriteMaterial(vtkCellData *cd, int chunk, iMesh_Instance itapsMesh,
     iBase_EntitySetHandle rootSet, iBase_EntitySetHandle chunkSet,
     iBase_EntityHandle *clHdls)
 {
