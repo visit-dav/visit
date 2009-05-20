@@ -55,6 +55,7 @@ using std::vector;
 
 class avtMeshMetaData;
 class DBOptionsAttributes;
+class vtkCellData;
 
 // ****************************************************************************
 //  Class: avtITAPS_CWriter
