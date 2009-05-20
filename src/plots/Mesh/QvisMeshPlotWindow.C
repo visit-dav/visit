@@ -241,7 +241,6 @@ QvisMeshPlotWindow::CreateWindowContents()
     // Create the opacity slider
     //
     opacityLabel = new QLabel(tr("Opacity"), central);
-    opacityLabel->setBuddy(opacitySlider);
     theLayout->addWidget(opacityLabel, 4, 0);
 
     opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
@@ -250,6 +249,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(changedOpacity(int, const void*)));
     theLayout->addWidget(opacitySlider, 4, 1, 1, 3);
+    opacityLabel->setBuddy(opacitySlider);
 
 
     // Create the showInternal toggle
