@@ -234,6 +234,9 @@ avtXYZFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timestep
 //    Changed to read only the requested time steps on demand instead
 //    of reading the whole file at once.
 //
+//    Jeremy Meredith, Wed May 20 11:16:46 EDT 2009
+//    nAtoms is now allowed to change at each timestep.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -244,10 +247,10 @@ avtXYZFileFormat::GetMesh(int timestep, const char *meshname)
     vtkPolyData *pd  = vtkPolyData::New();
     vtkPoints   *pts = vtkPoints::New();
 
-    pts->SetNumberOfPoints(nAtoms);
+    pts->SetNumberOfPoints(nAtoms[timestep]);
     pd->SetPoints(pts);
     pts->Delete();
-    for (int j = 0 ; j < nAtoms ; j++)
+    for (int j = 0 ; j < nAtoms[timestep] ; j++)
     {
         pts->SetPoint(j,
                       x[timestep][j],
@@ -258,7 +261,7 @@ avtXYZFileFormat::GetMesh(int timestep, const char *meshname)
     vtkCellArray *verts = vtkCellArray::New();
     pd->SetVerts(verts);
     verts->Delete();
-    for (int k = 0 ; k < nAtoms ; k++)
+    for (int k = 0 ; k < nAtoms[timestep] ; k++)
     {
         verts->InsertNextCell(1);
         verts->InsertCellPoint(k);
@@ -290,6 +293,9 @@ avtXYZFileFormat::GetMesh(int timestep, const char *meshname)
 //    Changed to read only the requested time steps on demand instead
 //    of reading the whole file at once.
 //
+//    Jeremy Meredith, Wed May 20 11:17:01 EDT 2009
+//    nAtoms is now allowed to change at each timestep.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -301,9 +307,9 @@ avtXYZFileFormat::GetVar(int timestep, const char *varname)
     if (string(varname) == "element")
     {
         vtkFloatArray *scalars = vtkFloatArray::New();
-        scalars->SetNumberOfTuples(nAtoms);
+        scalars->SetNumberOfTuples(nAtoms[timestep]);
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<nAtoms; i++)
+        for (int i=0; i<nAtoms[timestep]; i++)
         {
             ptr[i] = e[timestep][i];
         }
@@ -324,9 +330,9 @@ avtXYZFileFormat::GetVar(int timestep, const char *varname)
 
     // and now create the data array for it
     vtkFloatArray *scalars = vtkFloatArray::New();
-    scalars->SetNumberOfTuples(nAtoms);
+    scalars->SetNumberOfTuples(nAtoms[timestep]);
     float *ptr = (float *) scalars->GetVoidPointer(0);
-    for (int i=0; i<nAtoms; i++)
+    for (int i=0; i<nAtoms[timestep]; i++)
     {
         ptr[i] = v[varindex][timestep][i];
     }
@@ -375,6 +381,12 @@ avtXYZFileFormat::GetVectorVar(int timestep, const char *varname)
 //    Jeremy Meredith, Mon May 11 13:09:39 EDT 2009
 //    Allow numeric first column for atomic number instead of element symbol.
 //
+//    Jeremy Meredith, Wed May 20 11:17:19 EDT 2009
+//    Added support for CrystalMakers more "human-friendly" (but
+//    less computer friendly) style of XYZ file.
+//    nAtoms is now allowed to change at each timestep.
+//    Added checking for invalid atomic numbers.
+//
 // ****************************************************************************
 void
 avtXYZFileFormat::ReadTimeStep(int timestep)
@@ -388,24 +400,24 @@ avtXYZFileFormat::ReadTimeStep(int timestep)
     OpenFileAtBeginning();
     in.seekg(file_positions[timestep]);
 
-    e[timestep].resize(nAtoms);
-    x[timestep].resize(nAtoms);
-    y[timestep].resize(nAtoms);
-    z[timestep].resize(nAtoms);
+    e[timestep].resize(nAtoms[timestep]);
+    x[timestep].resize(nAtoms[timestep]);
+    y[timestep].resize(nAtoms[timestep]);
+    z[timestep].resize(nAtoms[timestep]);
     for (int i=0; i<MAX_XYZ_VARS; i++)
     {
-        v[i][timestep].resize(nAtoms);
+        v[i][timestep].resize(nAtoms[timestep]);
     }
 
     char buff[1000];
 
-    // skip the number of atoms
-    in.getline(buff,1000);
-    // skip the molecule name
-    in.getline(buff,1000);
+    // skip the header lines
+    int nheaderlines = (fileStyle == Normal) ? 2 : 10;
+    for (int l=0; l<nheaderlines; l++)
+        in.getline(buff,1000);
 
     // read all the atoms
-    for (int a=0; a<nAtoms; a++)
+    for (int a=0; a<nAtoms[timestep]; a++)
     {
         in.getline(buff,1000);
         char element[100];
@@ -415,20 +427,47 @@ avtXYZFileFormat::ReadTimeStep(int timestep)
                        "Internal error: avtXYZFileFormat has "
                        "MAX_XYZ_VARS mismatch.");
         }
-        int n = sscanf(buff,"%s %f %f %f %f %f %f %f %f %f",
-                       element,
-                       &x[timestep][a],
-                       &y[timestep][a],
-                       &z[timestep][a],
-                       &v[0][timestep][a],
-                       &v[1][timestep][a],
-                       &v[2][timestep][a],
-                       &v[3][timestep][a],
-                       &v[4][timestep][a],
-                       &v[5][timestep][a]);
+
+        if (fileStyle == Normal)
+        {
+            sscanf(buff,"%s %f %f %f %f %f %f %f %f %f",
+                   element,
+                   &x[timestep][a],
+                   &y[timestep][a],
+                   &z[timestep][a],
+                   &v[0][timestep][a],
+                   &v[1][timestep][a],
+                   &v[2][timestep][a],
+                   &v[3][timestep][a],
+                   &v[4][timestep][a],
+                   &v[5][timestep][a]);
+        }
+        else // (fileStyle == CrystalMaker)
+        {
+            char label[100];
+            float xs,ys,zs;
+            sscanf(buff,"%s %s %f %f %f %f %f %f %f %f %f %f %f %f",
+                   element,
+                   label,
+                   &xs,
+                   &ys,
+                   &zs,
+                   &x[timestep][a],
+                   &y[timestep][a],
+                   &z[timestep][a],
+                   &v[0][timestep][a],
+                   &v[1][timestep][a],
+                   &v[2][timestep][a],
+                   &v[3][timestep][a],
+                   &v[4][timestep][a],
+                   &v[5][timestep][a]);
+        }
+
         e[timestep][a] = ElementNameToAtomicNumber(element);
-        if (e[timestep][a] < 0)
+        if (e[timestep][a] <= 0)
             e[timestep][a] = atoi(element);
+        if (e[timestep][a] < 0 || e[timestep][a] > MAX_ELEMENT_NUMBER)
+            e[timestep][a] = 0; // not valid; 0==unknown
     }
 }
 
@@ -447,6 +486,12 @@ avtXYZFileFormat::ReadTimeStep(int timestep)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 26, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Wed May 20 11:17:19 EDT 2009
+//    Added support for CrystalMakers more "human-friendly" (but
+//    less computer friendly) style of XYZ file.
+//    nAtoms is now allowed to change at each timestep.
+//
 // ****************************************************************************
 void
 avtXYZFileFormat::ReadAllMetaData()
@@ -458,6 +503,7 @@ avtXYZFileFormat::ReadAllMetaData()
 
     char buff[1000];
 
+    fileStyle = Normal;
     nTimeSteps = 0;
     nVars = 0;
     while (in)
@@ -465,7 +511,9 @@ avtXYZFileFormat::ReadAllMetaData()
         // get the current file position
         istream::pos_type current_pos = in.tellg();
 
-        in >> nAtoms;
+        // get the first line
+        in.getline(buff,1000);
+
         // this is the first read to return EOF after the last timestep
         if (!in)
             break;
@@ -473,23 +521,69 @@ avtXYZFileFormat::ReadAllMetaData()
         // record the position as the start of this timestep
         file_positions.push_back(current_pos);
 
-        // the first line had better be a number
-        if (nAtoms == 0)
+        // we expect the first line to be a number for a simple XYZ file
+        int natoms_tmp = atoi(buff);
+
+        // if that failed, it's not a simple XYZ file
+        if (natoms_tmp != 0)
         {
-            EXCEPTION1(InvalidFilesException, filename.c_str());
+            // Simple XYZ file: we just skip the next line (molecule name)
+            // before the atoms actually start
+            in.getline(buff,1000);
+        }
+        else
+        {
+            // Nope, not a simple file!
+            // We'll make an exception here for CrystalMaker's files,
+            // which start with:
+            //   "This file generated by CrystalMaker <version> <c> etc...."
+            // and then the unit cell stuff, and then more header info
+            // and a different content structure.  Yuck.
+            in.seekg(current_pos, ios::beg);
+            in.getline(buff,1000);
+            if (strncmp(buff, "This file generated by CrystalMaker ", 36) != 0)
+            {
+                // No, not CrystalMaker either.  Fail!
+                EXCEPTION1(InvalidFilesException, filename.c_str());
+            }
+            fileStyle = CrystalMaker;
+
+            // next lines: 
+            in.getline(buff,1000); // blank
+            in.getline(buff,1000); // unit cell header
+            in.getline(buff,1000); // a/b/c unit cell values
+            in.getline(buff,1000); // alpha/beta/gamma unit cell euler? angles
+            in.getline(buff,1000); // blank
+
+            // now the atoms, so conveniently buried within a string of text:
+            in >> buff;            // "Total"
+            in >> buff;            // "of"
+            in >> natoms_tmp;      // <number>
+            in.getline(buff,1000); // "atoms in range" <endline>
+
+            // more header junk:
+            in.getline(buff,1000); // blank
+            in.getline(buff,1000); // first header line
+            in.getline(buff,1000); // second header line
+
+            // finally, the data follows.  Make sure we actually got a good
+            // number of atoms, though!
+            if (natoms_tmp == 0)
+            {
+                // we were deceived
+                EXCEPTION1(InvalidFilesException, filename.c_str());
+            }
         }
 
-        // finish the first line
-        in.getline(buff,1000);
-
-        // skip molecule name
-        in.getline(buff,1000);
+        nAtoms.push_back(natoms_tmp);
 
         // in the first time step, get the number of vars.
         if (nTimeSteps == 0)
         {
             in.getline(buff,1000);
             char element[100];
+            char label[100]; // crystalmaker only
+            float xs,ys,zs; // fractional coords; crystalmaker only
             float x,y,z,v0,v1,v2,v3,v4,v5;
             if (MAX_XYZ_VARS != 6)
             {
@@ -497,12 +591,23 @@ avtXYZFileFormat::ReadAllMetaData()
                            "Internal error: avtXYZFileFormat has "
                            "MAX_XYZ_VARS mismatch.");
             }
-            int n = sscanf(buff,"%s %f %f %f %f %f %f %f %f %f",
+
+            if (fileStyle == Normal)
+            {
+                int n = sscanf(buff,"%s %f %f %f %f %f %f %f %f %f",
                            element,&x,&y,&z,&v0,&v1,&v2,&v3,&v4,&v5);
-            nVars = n - 4;
+                nVars = n-4;
+            }
+            else // (fileStyle == CrystalMaker)
+            {
+                int n = sscanf(buff,"%s %s %f %f %f %f %f %f %f %f %f %f %f %f",
+                               element,label,&xs,&ys,&zs,&x,&y,&z,
+                                                   &v0,&v1,&v2,&v3,&v4,&v5);
+                nVars = n-8;
+            }
 
             // skip the remainin atoms
-            for (int a=1; a<nAtoms; a++)
+            for (int a=1; a<natoms_tmp; a++)
             {
                 in.getline(buff,1000);
             }
@@ -510,7 +615,7 @@ avtXYZFileFormat::ReadAllMetaData()
         else
         {
             // skip the remainin atoms
-            for (int a=0; a<nAtoms; a++)
+            for (int a=0; a<natoms_tmp; a++)
             {
                 in.getline(buff,1000);
             }
