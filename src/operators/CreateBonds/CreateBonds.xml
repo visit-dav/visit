@@ -5,7 +5,7 @@
         element
       </Field>
       <Field name="atomicNumber1" label="Second atomic number" type="intVector">
-         0 -1
+         1 -1
       </Field>
       <Field name="atomicNumber2" label="Second atomic number" type="intVector">
         -1 -1

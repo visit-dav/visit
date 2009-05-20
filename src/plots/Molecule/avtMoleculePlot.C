@@ -484,6 +484,9 @@ avtMoleculePlot::ReleaseData(void)
 //    an atomic number -- this makes creating new element expressions
 //    to override ones in the file possible.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    Actually made change suggested by previous comment.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -502,6 +505,7 @@ avtMoleculePlot::EnhanceSpecification(avtContract_p spec)
     {
         string pv(primaryVariable);
         if (pv != "element" &&
+            (pv.length()<=7 || pv.substr(0,7) != "element") &&
             (pv.length()<=8 || pv.substr(pv.length()-8) != "/element"))
         {
             added_vars.push_back("element");
@@ -619,6 +623,11 @@ avtMoleculePlot::GetLegend(void)
 //    an atomic number -- this makes creating new element expressions
 //    to override ones in the file possible.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.
+//
 // ****************************************************************************
 
 void
@@ -671,7 +680,7 @@ avtMoleculePlot::SetLegendRange()
             if (colortablename == "Default")
                 colortablename = string(ct->GetDefaultDiscreteColorTable());
 
-            numcolors = 110;
+            numcolors = MAX_ELEMENT_NUMBER+1;
 
             levelsLegend->SetLabelColorMap(elementColorMap);
         }
@@ -812,6 +821,12 @@ avtMoleculePlot::SetLegendRange()
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.
+//
 // ****************************************************************************
 void
 avtMoleculePlot::CreateLegendColorMaps()
@@ -824,7 +839,7 @@ avtMoleculePlot::CreateLegendColorMaps()
     }
 
     elementColorMap.clear();
-    for (int i=0; i<MAX_ELEMENT_NUMBER; i++)
+    for (int i=0; i<=MAX_ELEMENT_NUMBER; i++)
     {
         elementColorMap.insert(LevelColorMap::value_type(element_names[i], i));
     }

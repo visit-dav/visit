@@ -470,6 +470,10 @@ QvisColorGridWidget::mousePressEvent(QMouseEvent *e)
 //   Jeremy Meredith, Wed Dec 31 16:39:50 EST 2008
 //   Choose B/W foreground text color based on approx palette color intensity.
 //
+//   Jeremy Meredith, Wed May 20 11:47:52 EDT 2009
+//   Add support for both new (1-origin) and old (0-origin) element
+//   color tables.  Fixed a logic error, too.
+//
 // ****************************************************************************
 
 void
@@ -495,9 +499,21 @@ QvisColorGridWidget::drawItem(QPainter &paint, int index)
             else
                 paint.setPen(QColor(0,0,0));
             char txt[100];
-            if (numGridSquares == MAX_ELEMENT_NUMBER &&
-                index < MAX_ELEMENT_NUMBER)
+            // In 2.0 we added, at index 0, a "not a valid
+            // atomic number" index and color.  We still
+            // accept the old way (109 vs 110), though.
+            if (numGridSquares == MAX_ELEMENT_NUMBER+1 &&
+                index <= MAX_ELEMENT_NUMBER)
+            {
+                // current way
                 sprintf(txt,"%s",element_names[index]);
+            }
+            else if (numGridSquares == MAX_ELEMENT_NUMBER &&
+                     index < MAX_ELEMENT_NUMBER)
+            {
+                // old way
+                sprintf(txt,"%s",element_names[index+1]);
+            }
             else
                 sprintf(txt,"%d",index);
             paint.drawText(QRect(x,y,boxWidth,boxHeight),

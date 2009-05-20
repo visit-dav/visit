@@ -39,6 +39,14 @@
 // Modifications:
 //    Jeremy Meredith, Wed Oct 17 10:32:42 EDT 2007
 //    Filled in some holes in atomic radii.
+//
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This 
+//    also means we don't have to correct for 1-origin atomic numbers.
+//
+
 
 #include "AtomicProperties.h"
 
@@ -137,7 +145,8 @@ unsigned char old_shapelycolors[KNOWN_AMINO_ACIDS][3] = {
 };
 
 
-unsigned char jmolcolors[MAX_ELEMENT_NUMBER][3] = {
+unsigned char jmolcolors[MAX_ELEMENT_NUMBER+1][3] = {
+    { 0x20, 0x20, 0x20 }, // ?
     { 0xFF, 0xFF, 0xFF }, // H
     { 0xD9, 0xFF, 0xFF }, // He
     { 0xCC, 0x80, 0xFF }, // Li
@@ -249,7 +258,8 @@ unsigned char jmolcolors[MAX_ELEMENT_NUMBER][3] = {
     { 0xEB, 0x00, 0x26 }  // Mt
 };
 
-unsigned char rasmolcolors[MAX_ELEMENT_NUMBER][3] = {
+unsigned char rasmolcolors[MAX_ELEMENT_NUMBER+1][3] = {
+    { 0x20, 0x20, 0x20 }, // ?
     { 0xFF, 0xFF, 0xFF }, // H
     { 0xFF, 0xC0, 0xCB }, // He
     { 0xB2, 0x22, 0x22 }, // Li
@@ -361,7 +371,8 @@ unsigned char rasmolcolors[MAX_ELEMENT_NUMBER][3] = {
     { 0xFF, 0x14, 0x93 }  // Mt
 };
 
-float covalent_radius[MAX_ELEMENT_NUMBER] = {
+float covalent_radius[MAX_ELEMENT_NUMBER+1] = {
+     .1f,  // ?  0
     0.32f, // H  1
     0.93f, // He 2
     1.23f, // Li 3
@@ -473,7 +484,8 @@ float covalent_radius[MAX_ELEMENT_NUMBER] = {
     .1f
 };
 
-float atomic_radius[MAX_ELEMENT_NUMBER] = {
+float atomic_radius[MAX_ELEMENT_NUMBER+1] = {
+     .1f,  // ?  0
     0.79f, // H  1
     0.49f, // He 2
     2.05f, // Li 3
@@ -585,7 +597,8 @@ float atomic_radius[MAX_ELEMENT_NUMBER] = {
     .1f
 };
 
-const char *element_names[MAX_ELEMENT_NUMBER] = {
+const char *element_names[MAX_ELEMENT_NUMBER+1] = {
+    "?",  // 0
     "H",  // 1
     "He", // 2
     "Li", // 3
@@ -845,11 +858,20 @@ InitializeResidueNameToLongNameMap()
     residuename_to_longname["HOH"] = "Water";
 }
 
+//
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This 
+//    also means we don't have to correct for 1-origin atomic numbers.
+//
+//
 static void
 InitializeElementNameToAtomicNumberMap()
 {
     // These are sorted by covalent radius to make the map
     // tree more balanced.
+    elementname_to_atomicnumber["?"]  = 0;
     elementname_to_atomicnumber["H"]  = 1;
     elementname_to_atomicnumber["Ne"] = 10;
     elementname_to_atomicnumber["F"]  = 9;
@@ -962,6 +984,12 @@ InitializeAtomicPropertyMaps()
 //    Jeremy Meredith, Mon Aug 28 18:04:10 EDT 2006
 //    Sped up by skipping the map.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This 
+//    also means we don't have to correct for 1-origin atomic numbers.
+//
 int ElementNameToAtomicNumber(const char *element)
 {
     static char name[3];
@@ -981,6 +1009,10 @@ int ElementNameToAtomicNumber(const char *element)
 
     switch (name[0])
     {
+    case '?':
+        {
+            return 0;
+        }
     case 'A':
         {
             switch (name[1])
@@ -1361,6 +1393,12 @@ int ResidueLongnameMaxlen()
     return m;
 }
 
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This 
+//    also means we don't have to correct for 1-origin atomic numbers.
+//
 static void PrintColorTablesFor_avtColorTables()
 {
     cout << "static const float ct_shapely_colors[] = {\n";
@@ -1414,10 +1452,10 @@ static void PrintColorTablesFor_avtColorTables()
     cout << "};\n";
 
     cout << "static const float ct_jmol_colors[] = {\n";
-    for (int i=0; i<MAX_ELEMENT_NUMBER; i++)
+    for (int i=0; i<=MAX_ELEMENT_NUMBER; i++)
     {
         char s[1000];
-        float v = float(i)/float(MAX_ELEMENT_NUMBER-1);
+        float v = float(i)/float(MAX_ELEMENT_NUMBER);
         float r = float(jmolcolors[i][0]) / 255.f;
         float g = float(jmolcolors[i][1]) / 255.f;
         float b = float(jmolcolors[i][2]) / 255.f;
@@ -1439,10 +1477,10 @@ static void PrintColorTablesFor_avtColorTables()
     cout << "};\n";
 
     cout << "static const float ct_rasmol_colors[] = {\n";
-    for (int i=0; i<MAX_ELEMENT_NUMBER; i++)
+    for (int i=0; i<=MAX_ELEMENT_NUMBER; i++)
     {
         char s[1000];
-        float v = float(i)/float(MAX_ELEMENT_NUMBER-1);
+        float v = float(i)/float(MAX_ELEMENT_NUMBER);
         float r = float(rasmolcolors[i][0]) / 255.f;
         float g = float(rasmolcolors[i][1]) / 255.f;
         float b = float(rasmolcolors[i][2]) / 255.f;

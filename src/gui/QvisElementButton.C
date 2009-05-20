@@ -188,12 +188,17 @@ QvisElementButton::sizePolicy() const
 //    Jeremy Meredith, Mon Feb 11 16:46:57 EST 2008
 //    Allow a "-1" element number to mean "any element" wildcard.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.
+//
 // ****************************************************************************
 
 void
 QvisElementButton::setElementNumber(int e)
 {
-    if (e >= -1 && e < MAX_ELEMENT_NUMBER && number != e)
+    if (e >= -1 && e <= MAX_ELEMENT_NUMBER && number != e)
     {
         number = e;
         if (e == -1)
@@ -312,12 +317,17 @@ QvisElementButton::popupPressed()
 //    Jeremy Meredith, Mon Feb 11 16:46:57 EST 2008
 //    Allow a "-1" element number to mean "any element" wildcard.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.
+//
 // ****************************************************************************
 
 void
 QvisElementButton::elementSelected(int element)
 {
-    if (element >= -1 && element < MAX_ELEMENT_NUMBER)
+    if (element >= -1 && element <= MAX_ELEMENT_NUMBER)
     {
         number = element;
         if (element == -1)

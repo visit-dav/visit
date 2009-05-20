@@ -154,6 +154,12 @@ avtCreateBondsFilter::Equivalent(const AttributeGroup *a)
 //    Support wildcards in matches, and bail out if we matched the
 //    atom pattern but the distances were wrong.
 //
+//    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009
+//    MAX_ELEMENT_NUMBER now means the actual max element number, not the
+//    total number of known elements in visit.  Added a fake "0" element
+//    which means "unknown", and hydrogen now starts at 1.  This
+//    also means we don't have to correct for 1-origin atomic numbers.
+//
 // ****************************************************************************
 bool
 avtCreateBondsFilter::AtomsShouldBeBondedManual(float *atomicnumbers,
@@ -188,12 +194,12 @@ avtCreateBondsFilter::AtomsShouldBeBondedManual(float *atomicnumbers,
     for (int i=0; i<n; i++)
     {
         // a -1 in the element list means "any"
-        int e1 = element1[i] + 1;
-        int e2 = element2[i] + 1;
-        bool match11 = (e1 == 0) || (atomicnumbers[a1] == e1);
-        bool match12 = (e1 == 0) || (atomicnumbers[a2] == e1);
-        bool match21 = (e2 == 0) || (atomicnumbers[a1] == e2);
-        bool match22 = (e2 == 0) || (atomicnumbers[a2] == e2);
+        int e1 = element1[i];
+        int e2 = element2[i];
+        bool match11 = (e1 <= 0) || (atomicnumbers[a1] == e1);
+        bool match12 = (e1 <= 0) || (atomicnumbers[a2] == e1);
+        bool match21 = (e2 <= 0) || (atomicnumbers[a1] == e2);
+        bool match22 = (e2 <= 0) || (atomicnumbers[a2] == e2);
         if ((match11 && match22) || (match12 && match21))
         {
             double dmin = minDist[i];
