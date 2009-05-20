@@ -66,6 +66,7 @@
 #include <ColorControlPointList.h>
 #include <ColorControlPoint.h>
 #include <AtomicProperties.h>
+#include <StringHelpers.h>
 
 #include <avtCommonDataFunctions.h>
 
@@ -1138,6 +1139,10 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    which means "unknown", and hydrogen now starts at 1.  This
 //    also means we don't have to correct for 1-origin atomic numbers.
 //
+//    Jeremy Meredith, Wed May 20 13:48:34 EDT 2009
+//    Write atomicproperties and colortables .inc files to same directory
+//    as the pov files.
+//
 // ****************************************************************************
 
 void
@@ -1146,12 +1151,17 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     avtDataTree_p dt = GetInputDataTree();
 
     //
-    // Re-construct the basename.
+    // Re-construct the base file name without the extension.
     //
     char *basename = new char[strlen(filename)+1];
     int badExt = strlen(extensions[(int) POVRAY]);
     strncpy(basename, filename, strlen(filename)-badExt);
     basename[strlen(filename)-badExt] = '\0';
+
+    //
+    // Get the dir name in case user's not saving in current directory
+    //
+    string dirname(StringHelpers::Dirname(basename));
 
     //
     // It's easiest and safest to collect data and spatial extents
@@ -1187,7 +1197,8 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     //
     // And make a .inc file with the current visit colortables
     //
-    ofstream ctfile("colortables.inc");
+    string ct_fname = dirname + VISIT_SLASH_CHAR + "colortables.inc";
+    ofstream ctfile(ct_fname.c_str());
     const ColorTableAttributes *colortables =
         avtColorTables::Instance()->GetColorTables();
     int num = colortables->GetNumColorTables();
@@ -1218,7 +1229,8 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     //
     // And make a .inc file with the current atomic properties
     //
-    ofstream atomfile("atomicproperties.inc");
+    string atom_fname = dirname + VISIT_SLASH_CHAR + "atomicproperties.inc";
+    ofstream atomfile(atom_fname.c_str());
     atomfile << "#declare atomic_radius = array["<<MAX_ELEMENT_NUMBER+1<<"]\n";
     atomfile << "{" << endl;
     for (int i=0; i<=MAX_ELEMENT_NUMBER; i++)

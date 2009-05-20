@@ -508,11 +508,16 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
 //  Programmer: Mark C. Miller 
 //  Creation:   Unknown
 //
+//  Modifications:
+//    Jeremy Meredith, Wed May 20 13:46:39 EDT 2009
+//    Should default to "0" for start, and only use "-1" for 
+//    the "all-slash-string" case.
+//
 // ****************************************************************************
 static const char *
 basename(const char *path, int& start)
 {
-   start = -1;
+   start = 0;
 
    if (path == 0)
    {
@@ -546,6 +551,7 @@ basename(const char *path, int& start)
        // deal with string consisting of all VISIT_SLASH_CHAR chars
        if (j == -1)
        {
+           start = -1;
            strcpy(StaticStringBuf, VISIT_SLASH_STRING);
            return StaticStringBuf;
        }
@@ -581,27 +587,17 @@ StringHelpers::Basename(const char *path)
 //  Programmer: Mark C. Miller 
 //  Creation:   Unknown
 //
+//  Modifications:
+//    Jeremy Meredith, Wed May 20 13:46:39 EDT 2009
+//    Special cases were unnecessary; they fall out of the start position
+//    returned from the above implementation of basename naturally.  Fixed
+//    a couple of the special cases as well.
+//
 // ****************************************************************************
 const char *
 StringHelpers::Dirname(const char *path)
 {
     int start;
-
-   // deal with special cases first
-   if ((path == 0) ||                             // null path
-       (path[0] == '\0') ||                       // ""
-       ((path[0] == '.') && (path[1] == '\0')) || // "."
-       ((path[0] == '.') && (path[1] == '.') &&   // ".."
-        (path[2] == '\0')))
-   {
-       strcpy(StaticStringBuf, ".");
-       return StaticStringBuf;
-   }
-   else if ((path[0] == VISIT_SLASH_CHAR) && (path[1] == '\0'))
-   {
-       strcpy(StaticStringBuf, VISIT_SLASH_STRING);
-       return StaticStringBuf;
-   }
 
     // ok, figure out the basename
     basename(path, start);
@@ -609,6 +605,11 @@ StringHelpers::Dirname(const char *path)
     if (start == -1)
     {
         strcpy(StaticStringBuf, VISIT_SLASH_STRING);
+        return StaticStringBuf;
+    }
+    else if (start == 0)
+    {
+        strcpy(StaticStringBuf, ".");
         return StaticStringBuf;
     }
     else
