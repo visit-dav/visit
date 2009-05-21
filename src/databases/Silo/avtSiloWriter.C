@@ -223,6 +223,19 @@ static int oldFriendlyHDFNames = 0;
 static int oldCheckSums = 0;
 static string oldCompressionParams;
 
+//
+// This structure is really part of Silo but it is private to Silo. The
+// only reason we can actually manipulate it at all is that it is NOT
+// defined in Silo as a static structure in a given source file. We got
+// a bit lucky in this regard as the SILO_Globals structure is shared
+// among Silo's drivers and so can't be static. Nonetheless, its type
+// is not known outside of Silo and so we wind up (hackishly) having
+// to duplicate the type, here. We need this structure ONLY for Silo
+// version 4.7(.0) to work around a bug in that if enableCompression
+// is ever set to non-zero, it can never be reset. This then prevents
+// DBCreate from working with PDB driver because that driver is
+// designed to detect attempts to apply compression and fail if so.
+//
 #if defined(SILO_VERSION_GE)
 #if SILO_VERSION_GE(4,7,0) && !SILO_VERSION_GE(4,7,1)
 typedef struct SILO_Globals_copy_t {
@@ -255,7 +268,7 @@ SaveAndSetSiloLibState(int driver, bool checkSums, string compressionParams)
 
 #if defined(SILO_VERSION_GE)
 #if SILO_VERSION_GE(4,7,0)
-    oldCompressionParams = string(DBGetCompression());
+    oldCompressionParams = string(DBGetCompression()?DBGetCompression():"");
     if (driver == DB_HDF5)
     {
         oldFriendlyHDFNames = DBSetFriendlyHDF5Names(1);
