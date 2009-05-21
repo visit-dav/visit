@@ -212,16 +212,35 @@ AbsoluteName(const string &name, int nlevels)
 //
 // Programmer: Mark C. Miller
 // Creation:   May 8, 2009
+//
+// Modifications:
+//    Mark C. Miller, Thu May 21 13:20:42 PDT 2009
+//    Worked around bug in Silo-4.7 where once compression is set, it can
+//    never be unset.
 // ****************************************************************************
 static int oldFriendlyHDFNames = 0;
 static int oldCheckSums = 0;
 static string oldCompressionParams;
 
+#if defined(SILO_VERSION_GE)
+#if SILO_VERSION_GE(4,7,0) && !SILO_VERSION_GE(4,7,1)
+typedef struct SILO_Globals_copy_t {
+    long dataReadMask;
+    int allowOverwrites;
+    int enableChecksums;
+    int enableCompression;
+    int enableFriendlyHDF5Names;
+    int enableGrabDriver;
+    int maxDeprecateWarnings;
+} SILO_Globals_copy_t;
+extern SILO_Globals_copy_t SILO_Globals;
+#endif
+#endif
+
 static void
 SaveAndSetSiloLibState(int driver, bool checkSums, string compressionParams)
 {
     int myRank = PAR_Rank();
-    cerr << "myRank = " << myRank << endl;
 #ifdef E_CHECKSUM
     if (driver == DB_HDF5)
         oldCheckSums = DBSetEnableChecksums(checkSums);
@@ -243,10 +262,17 @@ SaveAndSetSiloLibState(int driver, bool checkSums, string compressionParams)
     }
     else
     {
+
         if (compressionParams != "" && !myRank)
             cerr << "Compression supported only on HDF5 driver" << endl;
         oldFriendlyHDFNames = DBSetFriendlyHDF5Names(0);
+#if !SILO_VERSION_GE(4,7,1)
         DBSetCompression("");
+        // Hack to work-around bug in Silo lib
+        SILO_Globals.enableCompression = 0;
+#else
+        DBSetCompression(0);
+#endif
     }
 #endif
 #endif
@@ -262,7 +288,16 @@ RestoreSiloLibState()
 #if defined(SILO_VERSION_GE)
 #if SILO_VERSION_GE(4,7,0)
     DBSetFriendlyHDF5Names(oldFriendlyHDFNames);
+#if !SILO_VERSION_GE(4,7,1)
     DBSetCompression(oldCompressionParams.c_str());
+    // Hack to work-around bug in Silo lib
+    SILO_Globals.enableCompression = 0;
+#else
+    if (oldCompressionParams == "")
+        DBSetCompression(0);
+    else
+        DBSetCompression(oldCompressionParams.c_str());
+#endif
 #endif
 #endif
 }
