@@ -73,6 +73,9 @@ class vtkFloatArray;
 //   Brad Whitlock, Tue May  5 16:22:56 PDT 2009
 //   I added support for setting the streak plot centering.
 //
+//   Brad Whitlock, Wed May 13 13:21:57 PDT 2009
+//   I added z_scale, z_translate.
+//
 // ****************************************************************************
 
 class Streaker
@@ -114,6 +117,8 @@ private:
         float       x_translate;
         float       y_scale;
         float       y_translate;
+        float       z_scale;
+        float       z_translate;
 
         vtkDataSet *dataset;
     };

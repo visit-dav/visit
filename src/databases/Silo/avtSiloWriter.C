@@ -50,6 +50,7 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -887,6 +888,9 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
 //    Made the local vars referenced by optlist static so they live outside
 //    of this call. DBAddOption doesn't copy them. It just records the pointer
 //
+//    Brad Whitlock, Tue May 19 12:17:48 PDT 2009
+//    Make sure that we save out the cellOrigin.
+//
 // ****************************************************************************
 
 void
@@ -901,6 +905,8 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
     DBAddOption(optlist, DBOPT_TIME, &ftime);
     static double dtime = atts.GetTime();
     DBAddOption(optlist, DBOPT_DTIME, &dtime);
+    static int cellOrigin = atts.GetCellOrigin();
+    DBAddOption(optlist, DBOPT_ORIGIN, &cellOrigin);
     if (atts.GetXUnits() != "")
         DBAddOption(optlist, DBOPT_XUNITS, (char *) atts.GetXUnits().c_str());
     if (atts.GetYUnits() != "")
@@ -1164,6 +1170,9 @@ avtSiloWriter::CloseFile(void)
 //    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
 //    Allow for subdirectories.
 //
+//    Brad Whitlock, Tue May 19 11:23:06 PDT 2009
+//    Account for ghost zones so they don't get saved out as real zones.
+//
 // ****************************************************************************
 
 void
@@ -1200,6 +1209,13 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
     }
     zoneCounts.push_back(nzones);
 
+    // Get the ghost zone array, if there is one.
+    bool hasGhostZones = false;
+    vtkDataArray *ghostZones = ug->GetCellData()->GetArray("avtGhostZones");
+    unsigned char *gz = 0;
+    if(ghostZones != 0)
+        gz = (unsigned char *)ghostZones->GetVoidPointer(0);
+
     //
     // Put the zone list into a digestable form for Silo.
     //
@@ -1208,85 +1224,110 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
     vector<int> shapesize;
     vector<int> zonelist;
     int         npointcells = 0;
-    for (i = 0 ; i < nzones ; i++)
+    int         nPasses = (gz != 0) ? 2 : 1;
+    int         realZones = 0;
+    for(int pass = 0; pass < nPasses; ++pass)
     {
-        //
-        // Get the i'th cell and put its connectivity info into the 'zonelist'
-        // array.
-        //
-        vtkCell *cell = ug->GetCell(i);
-        for (j = 0 ; j < cell->GetNumberOfPoints() ; j++)
+        for (i = 0 ; i < nzones ; i++)
         {
-            zonelist.push_back(cell->GetPointId(j));
-        }
+            if(pass == 0)
+            {
+                if(gz != 0 && gz[i] > 0)
+                {
+                    hasGhostZones = true;
+                    // Skip this ghost zone.
+                    continue;
+                }
 
-        //
-        // Silo keeps track of how many of each shape it has in a row.
-        // (This means that it doesn't have to explicitly store the size
-        // of each individual cell).  Maintain that information.
-        //
-        int lastshape = shapesize.size()-1;
-        int thisshapesize = cell->GetNumberOfPoints();
-        if (lastshape >= 0 && (thisshapesize == shapesize[lastshape]))
-            shapecnt[lastshape]++;
-        else
-        {
-            int silo_type = VTKZoneTypeToSiloZoneType(cell->GetCellType());
-            shapetype.push_back(silo_type);
-            shapesize.push_back(thisshapesize);
-            shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
-                                    // this size ie the one we are processing.
-        }
+                ++realZones;
+            }
+            else
+            {
+                if(gz[i] == 0)
+                {
+                    // Skip this real zone.
+                    continue;
+                }
+            }
 
-        // keep count to check if all cells are in fact point cells
-        if (cell->GetCellType() == VTK_VERTEX)
-        {
-            npointcells++;
-        }
+            //
+            // Get the i'th cell and put its connectivity info into the 'zonelist'
+            // array.
+            //
+            vtkCell *cell = ug->GetCell(i);
+            for (j = 0 ; j < cell->GetNumberOfPoints() ; j++)
+            {
+                zonelist.push_back(cell->GetPointId(j));
+            }
 
-        //
-        // Wedges, pyramids, and tets have a different ordering in Silo and VTK.
-        // Make the corrections for these cases.
-        //
-        if (dim == 2 && (cell->GetCellType() == VTK_PIXEL))
-        {
-            int startOfZone = zonelist.size() - 4;
-            int tmp = zonelist[startOfZone+2];
-            zonelist[startOfZone+2] = zonelist[startOfZone+3];
-            zonelist[startOfZone+3] = tmp;
-        }
-        if (dim == 3 && (cell->GetCellType() == VTK_TETRA))
-        {
-            int startOfZone = zonelist.size() - 4;
-            int tmp = zonelist[startOfZone];
-            zonelist[startOfZone]   = zonelist[startOfZone+1];
-            zonelist[startOfZone+1] = tmp;
-        }
-        if (dim == 3 && (cell->GetNumberOfPoints() == 6))
-        {
-            int startOfZone = zonelist.size() - 6;
-            int tmp = zonelist[startOfZone+5];
-            zonelist[startOfZone+5] = zonelist[startOfZone+2];
-            zonelist[startOfZone+2] = zonelist[startOfZone];
-            zonelist[startOfZone]   = zonelist[startOfZone+4];
-            zonelist[startOfZone+4] = tmp;
-        }
-        if (dim == 3 && (cell->GetNumberOfPoints() == 5))
-        {
-            int startOfZone = zonelist.size() - 5;
-            int tmp = zonelist[startOfZone+1];
-            zonelist[startOfZone+1] = zonelist[startOfZone+3];
-            zonelist[startOfZone+3] = tmp;
-        }
-        if (dim == 3 && (cell->GetCellType() == VTK_VOXEL))
-        {
-            int startOfZone = zonelist.size() - 8;
-            int tmp = zonelist[startOfZone+2];
-            zonelist[startOfZone+2] = zonelist[startOfZone+3];
-            zonelist[startOfZone+3] = tmp;
-            tmp = zonelist[startOfZone+6];
-            zonelist[startOfZone+6] = zonelist[startOfZone+7];
-            zonelist[startOfZone+7] = tmp;
+            //
+            // Silo keeps track of how many of each shape it has in a row.
+            // (This means that it doesn't have to explicitly store the size
+            // of each individual cell).  Maintain that information.
+            //
+            int lastshape = shapesize.size()-1;
+            int thisshapesize = cell->GetNumberOfPoints();
+            if (lastshape >= 0 && (thisshapesize == shapesize[lastshape]))
+                shapecnt[lastshape]++;
+            else
+            {
+                int silo_type = VTKZoneTypeToSiloZoneType(cell->GetCellType());
+                shapetype.push_back(silo_type);
+                shapesize.push_back(thisshapesize);
+                shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
+                                        // this size ie the one we are processing.
+            }
+
+            // keep count to check if all cells are in fact point cells
+            if (cell->GetCellType() == VTK_VERTEX)
+            {
+                npointcells++;
+            }
+
+            //
+            // Wedges, pyramids, and tets have a different ordering in Silo and VTK.
+            // Make the corrections for these cases.
+            //
+            if (dim == 2 && (cell->GetCellType() == VTK_PIXEL))
+            {
+                int startOfZone = zonelist.size() - 4;
+                int tmp = zonelist[startOfZone+2];
+                zonelist[startOfZone+2] = zonelist[startOfZone+3];
+                zonelist[startOfZone+3] = tmp;
+            }
+            if (dim == 3 && (cell->GetCellType() == VTK_TETRA))
+            {
+                int startOfZone = zonelist.size() - 4;
+                int tmp = zonelist[startOfZone];
+                zonelist[startOfZone]   = zonelist[startOfZone+1];
+                zonelist[startOfZone+1] = tmp;
+            }
+            if (dim == 3 && (cell->GetNumberOfPoints() == 6))
+            {
+                int startOfZone = zonelist.size() - 6;
+                int tmp = zonelist[startOfZone+5];
+                zonelist[startOfZone+5] = zonelist[startOfZone+2];
+                zonelist[startOfZone+2] = zonelist[startOfZone];
+                zonelist[startOfZone]   = zonelist[startOfZone+4];
+                zonelist[startOfZone+4] = tmp;
+            }
+            if (dim == 3 && (cell->GetNumberOfPoints() == 5))
+            {
+                int startOfZone = zonelist.size() - 5;
+                int tmp = zonelist[startOfZone+1];
+                zonelist[startOfZone+1] = zonelist[startOfZone+3];
+                zonelist[startOfZone+3] = tmp;
+            }
+            if (dim == 3 && (cell->GetCellType() == VTK_VOXEL))
+            {
+                int startOfZone = zonelist.size() - 8;
+                int tmp = zonelist[startOfZone+2];
+                zonelist[startOfZone+2] = zonelist[startOfZone+3];
+                zonelist[startOfZone+3] = tmp;
+                tmp = zonelist[startOfZone+6];
+                zonelist[startOfZone+6] = zonelist[startOfZone+7];
+                zonelist[startOfZone+7] = tmp;
+            }
         }
     }
     
@@ -1308,10 +1349,11 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         int *st = &(shapetype[0]);
         int *ss = &(shapesize[0]);
         int *sc = &(shapecnt[0]);
+        int lo_offset = 0;
+        int hi_offset = hasGhostZones ? (nzones - realZones) : 0;
         int nshapes = shapesize.size();
-
         DBPutZonelist2(dbfile, "zonelist", nzones, dim, zl, lzl, 
-                       0, 0, 0, st, ss, sc,nshapes, NULL);
+                       0, lo_offset, hi_offset, st, ss, sc,nshapes, NULL);
     
         //
         // Now write the actual mesh.
@@ -1331,7 +1373,13 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
     if (coords[2] != NULL)
         delete [] coords[2];
 
-    WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData(), npointcells == nzones);
+    WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData(),
+                 npointcells == nzones, hasGhostZones ? gz : 0);
+    if(hasGhostZones)
+    {
+        debug1 << "TODO: The materials need to be reordered for this ucdmesh because "
+                  "there are ghost zones." << endl;
+    }
     WriteMaterials(dbfile, ug->GetCellData(), chunk);
 }
 
@@ -1673,10 +1721,64 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
         delete [] coords[2];
 
     WriteUcdvars(dbfile, pd->GetPointData(), pd->GetCellData(),
-        npointcells == nzones);
+        npointcells == nzones, 0);
     WriteMaterials(dbfile, pd->GetCellData(), chunk);
 }
 
+// ****************************************************************************
+// Method: ReorderUcdvarUsingGhostZones
+//
+// Purpose: 
+//   If there are ghost zones then this function creates a copy of the input
+//   data array where the data is reordered such that the real zones come
+//   first and then the ghost zone data comes last. This matches how we're
+//   writing the zones in the ucdmesh. If there are no ghost zones then we
+//   just return in the input array.
+//
+// Arguments:
+//   arr : The data array to reorder.
+//   gz  : The ghost zones.
+//
+// Returns:    A data array having the proper ordering.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 19 12:11:41 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static vtkDataArray *
+ReorderUcdvarUsingGhostZones(vtkDataArray *arr, const unsigned char *gz)
+{
+    if(gz == 0)
+    {
+        arr->Register(NULL);
+        return arr;
+    }
+
+    // This also converts to float
+    vtkDataArray *retval = vtkFloatArray::New();
+    retval->SetNumberOfComponents(arr->GetNumberOfComponents());
+    retval->SetNumberOfTuples(arr->GetNumberOfTuples());
+    vtkIdType id = 0, dest = 0;
+    // Write the real values first
+    for(id = 0; id < arr->GetNumberOfTuples(); ++id)
+    {
+         if(gz[id] == 0)
+             retval->SetTuple(dest++, arr->GetTuple(id));
+    }
+    // Write the ghost values next
+    for(id = 0; id < arr->GetNumberOfTuples(); ++id)
+    {
+         if(gz[id] > 0)
+             retval->SetTuple(dest++, arr->GetTuple(id));
+    }
+
+    return retval;
+}
 
 // ****************************************************************************
 //  Method: avtSiloWriter::WriteUcdvarsHelper
@@ -1700,11 +1802,14 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
 //    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
 //    Allow for subdirectories.
 //
+//    Brad Whitlock, Tue May 19 11:50:57 PDT 2009
+//    Added support for reordering data using ghost zones.
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds, 
-    bool isPointMesh, int centering)
+    bool isPointMesh, int centering, const unsigned char *gz)
 {
     int i,j,k;
 
@@ -1736,6 +1841,8 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
          string varName = BeginVar(dbfile, arr->GetName(), nlevels);
          string meshName = AbsoluteName(meshname, nlevels);
 
+         vtkDataArray *arr2 = ReorderUcdvarUsingGhostZones(arr, gz);
+
          if (ncomps == 1)
          {
              // find min,max in this variable
@@ -1755,18 +1862,18 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              if (isPointMesh && centering == DB_NODECENT)
                  DBPutPointvar1(dbfile, (char *) varName.c_str(),
                           (char *) meshName.c_str(),
-                          (float *) arr->GetVoidPointer(0),
+                          (float *) arr2->GetVoidPointer(0),
                           nTuples, DB_FLOAT, optlist); 
              else
                  DBPutUcdvar1(dbfile, (char *) varName.c_str(),
                           (char *) meshName.c_str(),
-                          (float *) arr->GetVoidPointer(0), nTuples, NULL, 0,
+                          (float *) arr2->GetVoidPointer(0), nTuples, NULL, 0,
                           DB_FLOAT, centering, optlist);
          }
          else
          {
              float **vars     = new float*[ncomps];
-             float *ptr       = (float *) arr->GetVoidPointer(0);
+             float *ptr       = (float *) arr2->GetVoidPointer(0);
              char  **varnames = new char*[ncomps];
              for (j = 0 ; j < ncomps ; j++)
              {
@@ -1805,6 +1912,7 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              delete [] vars;
              delete [] varnames;
          }
+         arr2->Delete();
 
          EndVar(dbfile, nlevels);
 
@@ -1826,14 +1934,17 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
 //    Brad Whitlock, Fri Mar 6 14:32:43 PST 2009
 //    Use helper functions.
 //
+//    Brad Whitlock, Tue May 19 11:47:37 PDT 2009
+//    Add support for ghost zones.
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
-                               vtkCellData *cd, bool isPointMesh)
+    vtkCellData *cd, bool isPointMesh, const unsigned char *gz)
 {
-    WriteUcdvarsHelper(dbfile, pd, isPointMesh, DB_NODECENT);
-    WriteUcdvarsHelper(dbfile, cd, isPointMesh, DB_ZONECENT);
+    WriteUcdvarsHelper(dbfile, pd, isPointMesh, DB_NODECENT, 0);
+    WriteUcdvarsHelper(dbfile, cd, isPointMesh, DB_ZONECENT, gz);
 }
 
 // ****************************************************************************

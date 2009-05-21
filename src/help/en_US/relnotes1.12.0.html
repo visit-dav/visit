@@ -108,6 +108,12 @@ enhancements and bug-fixes that were added to this release.</p>
       increased from 4K to 32K characters.</li>
   <li>Added database readers for paraDIS data, and for paraDIS-style tecplot data.  </li>
   <li>VisIt's PDB reader supports another convention.</li>
+  <li>VisIt's Silo writer has been enhanced to properly save out ghost zones for
+      unstructured meshes as ghost instead of as real zones. This ensures they 
+      will be handled correctly when the Silo dataset is read back into VisIt.</li>
+  <li>VisIt's VTK reader has been enhanced so it exposes array variables for arrays
+      contain many components. If those arrays contain character or unsigned character
+      data then VisIt exposes them as label variables.</li>
 </ul>
 
 <a name="Plot_changes"></a>

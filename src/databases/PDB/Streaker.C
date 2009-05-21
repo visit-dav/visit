@@ -78,7 +78,8 @@
 
 Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), hasMaterial(false),
     cellCentered(true), slice(0), sliceIndex(0), hsize(0), dataset(0), integrate(false),
-    log(Streaker::LOGTYPE_NONE), x_scale(1.), x_translate(0.), y_scale(1.), y_translate(0.)
+    log(Streaker::LOGTYPE_NONE), x_scale(1.), x_translate(0.), y_scale(1.), y_translate(0.),
+    z_scale(1.), z_translate(0.)
 {
 }
 
@@ -219,7 +220,14 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
             const char *ptr = line + 10;
             int ci;
             StreakInfo s;
-            if(sscanf(ptr, "%s %s %s %s %s %d %g %g %g %g %s %s", 
+            if(sscanf(ptr, "%s %s %s %s %s %d %g %g %g %g %g %g %s %s", 
+                      varname, xvar, yvar, zvar, cs, &ci,
+                      &s.x_scale, &s.x_translate, &s.y_scale, &s.y_translate,
+                      &s.z_scale, &s.z_translate, integrate, log) == 14)
+            {
+                invalidStreak = false;
+            }
+            else if(sscanf(ptr, "%s %s %s %s %s %d %g %g %g %g %s %s", 
                       varname, xvar, yvar, zvar, cs, &ci,
                       &s.x_scale, &s.x_translate, &s.y_scale, &s.y_translate,
                       integrate, log) == 12)
@@ -690,7 +698,11 @@ Streaker::GetVar(const std::string &var, const PDBFileObjectVector &pdb)
 
     // Look up the variable in the node data.
     vtkDataSet *ds = pos->second.dataset;
-    vtkDataArray *arr = ds->GetPointData()->GetArray(var.c_str());
+    vtkDataArray *arr = 0;
+    if(pos->second.cellCentered)
+        arr = ds->GetCellData()->GetArray(var.c_str());
+    else 
+        arr = ds->GetPointData()->GetArray(var.c_str());
     if(arr != 0)
         arr->Register(NULL);
 
@@ -887,6 +899,9 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
 //   Brad Whitlock, Tue May  5 16:27:54 PDT 2009
 //   Do the centering dynamically.
 //
+//   Brad Whitlock, Wed May 13 13:41:33 PDT 2009
+//   I added z_scale, z_translate.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -984,6 +999,11 @@ Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PD
     points->Delete();
     sgrid->SetDimensions(sdims);
 
+    // Transform zvar.
+    float *zarr = (float *)zvar->GetVoidPointer(0);
+    for(int i = 0; i < zvar->GetNumberOfTuples(); ++i)
+        zarr[i] = zarr[i] * s.z_scale + s.z_translate;
+
     if(s.cellCentered)
     {
         // Create a cell-centered version of zvar. We can ignore the first row of
@@ -1004,7 +1024,7 @@ Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PD
 
         // Add the cvar array to the dataset.
         cvar->SetName(var.c_str());
-        sgrid->GetPointData()->AddArray(cvar);
+        sgrid->GetCellData()->AddArray(cvar);
     }
     else
     {

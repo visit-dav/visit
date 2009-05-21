@@ -105,6 +105,9 @@ class DBOptionsAttributes;
 //    I added helper functions so we can share code when writing variables.
 //    I also added code to export expressions.
 //
+//    Brad Whitlock, Tue May 19 12:22:38 PDT 2009
+//    I added an argument to WriteUcdvars.
+//
 // ****************************************************************************
 
 class
@@ -162,13 +165,15 @@ avtSiloWriter : public virtual avtDatabaseWriter
     void           WriteRectilinearMesh(DBfile *, vtkRectilinearGrid *, int);
     void           WriteUnstructuredMesh(DBfile *, vtkUnstructuredGrid *, int);
 
-    void           WriteUcdvars(DBfile *, vtkPointData *, vtkCellData *, bool=false);
+    void           WriteUcdvars(DBfile *, vtkPointData *, vtkCellData *, bool,
+                                const unsigned char *);
     void           WriteQuadvars(DBfile *, vtkPointData *, vtkCellData *,
                                     int, int *);
     void           WriteMaterials(DBfile *, vtkCellData *, int);
     int            VTKZoneTypeToSiloZoneType(int);
     void           WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds, 
-                                      bool isPointMesh, int centering);
+                                      bool isPointMesh, int centering,
+                                      const unsigned char *gz);
     void           WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
                                        int ndims, int *dims, int centering);
 
