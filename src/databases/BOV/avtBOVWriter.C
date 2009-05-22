@@ -339,6 +339,9 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Hank Childs, Mon May 11 23:21:35 CDT 2009
 //    Only have processor 0 write the header file.
 //
+//    Hank Childs, Thu May 21 18:57:31 PDT 2009
+//    Add a cast to make AIX happy.
+//
 // ****************************************************************************
 
 void
@@ -438,7 +441,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     int numDecimals = 4;
     if (nBricklets > 1)
     {
-        numDecimals = (int)log10(nBricklets)+1;
+        numDecimals = (int)log10((double)nBricklets)+1;
         if (numDecimals < 4)
             numDecimals = 4;
 
