@@ -2253,6 +2253,9 @@ avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
 //
 // Modifications:
 //   
+//   Hank Childs, Mon May 25 11:14:23 PDT 2009
+//   Add support for old Silo versions.
+//
 // ****************************************************************************
 
 void
@@ -2298,7 +2301,16 @@ avtSiloWriter::WriteExpressions(DBfile *dbfile)
         }
 
         // Write the definitions
+        // 4.6.1 chosen arbitrarily. 
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,1)
         DBPutDefvars(dbfile, "expressions", ecount, exprNames, exprTypes, exprDefs, NULL);
+#else
+        DBPutDefvars(dbfile, "expressions", ecount, (const char **) exprNames, exprTypes, (const char **) exprDefs, NULL);
+#endif
+#else
+        DBPutDefvars(dbfile, "expressions", ecount, (const char **) exprNames, exprTypes, (const char **) exprDefs, NULL);
+#endif
 
         // Clean up
         for(i = 0; i < ecount; ++i)

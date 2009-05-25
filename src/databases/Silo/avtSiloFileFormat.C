@@ -1240,6 +1240,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    skirt reading individual material object to 3 or greater. This fixes
 //    cases where material numbers are known at the multi-block level but
 //    all other material info is known only on the individual material blocks.
+//
+//    Hank Childs, Mon May 25 11:07:17 PDT 2009
+//    Add support for Silo releases before 4.6.3.
+//
 // ****************************************************************************
 
 void
@@ -1752,13 +1756,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         int num_amr_groups = 0;
         vector<int> amr_group_ids;
         vector<string> amr_block_names;
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,2)
         if (mm->mrgtree_name != 0)
         {
             // So far, we've coded only for MRG trees representing AMR hierarchies
             HandleMrgtreeForMultimesh(dbfile, mm, multimesh_names[i],
                 &mt, &num_amr_groups, &amr_group_ids, &amr_block_names);
         }
+#endif
 #endif
 
         char *name_w_dir = GenerateName(dirname, multimesh_names[i], topDir.c_str());
@@ -1770,9 +1776,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         mmd->validVariable = valid_var;
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+#ifdef SILO_VERSION_GE
+  #if SILO_VERSION_GE(4,6,2)
         if (mt == AVT_UNSTRUCTURED_MESH)
             mmd->disjointElements = hasDisjointElements || mm->disjoint_mode != 0; 
+  #else
+        if (mt == AVT_UNSTRUCTURED_MESH)
+            mmd->disjointElements = hasDisjointElements;
+  #endif
 #else
         if (mt == AVT_UNSTRUCTURED_MESH)
             mmd->disjointElements = hasDisjointElements;
@@ -2740,7 +2751,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             }
             else
             {
+                bool invalidateVar = false;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
                 if (mm->nmatnos > 0 && mm->nmatnos != mat->nmat)
+                    invalidateVar = true;
+#endif
+#endif
+                if (invalidateVar)
                 {
                     debug1 << "Invalidating material \"" << multimat_names[i] 
                            << "\" since its first non-empty block ";
@@ -2753,6 +2771,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         }
         else
         {
+#ifdef SILO_VERSION_GE
+    #if SILO_VERSION_GE(4,6,3)
             // Spoof the material object for code block below so it contains
             // all the info from the multi-mat.
             mat = DBAllocMaterial();
@@ -2760,6 +2780,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             mat->matnos = mm->matnos;
             mat->matnames = mm->material_names;
             mat->matcolors = mm->matcolors;
+    #endif
+#endif
         }
 
         //
@@ -9776,6 +9798,10 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    the effect of freeing the data-producer of having to re-enumerate that
 //    information on each and every individual material object in a large
 //    multi-mesh with many materials.
+//
+//    Hank Childs, Mon May 25 11:07:17 PDT 2009
+//    Add support for Silo releases before 4.6.3.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -9804,13 +9830,33 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
     //
     char **matnames = NULL;
     char *buffer = NULL;
-    if (silomat->matnames || (mm&&mm->material_names))
+    bool haveMatnames = silomat->matnames;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
+    if (mm&&mm->material_names))
+        haveMatnames = true;
+#endif
+#endif
+    if (haveMatnames)
     {
-        int nmat = (mm&&mm->nmatnos>0) ? mm->nmatnos : silomat->nmat;
+        int nmat = silomat->nmat;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
+        if (mm&&mm->nmatnos>0) 
+            nmat = mm->nmatnos;
+#endif
+#endif
         int max_dlen = 0;
         for (int i = 0 ; i < nmat ; i++)
         {
-            int dlen =int(log10(float(((mm&&mm->matnos)?mm->matnos[i]:silomat->matnos[i])+1))) + 1;
+            int matno = silomat->matnos[i];
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
+            if (mm&&mm->matnos)
+                matno = mm->matnos[i]:
+#endif
+#endif
+            int dlen =int(log10(float(matno+1))) + 1;
             if(dlen>max_dlen)
                 max_dlen = dlen;
         }
@@ -9821,9 +9867,17 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
         for (int i = 0 ; i < nmat ; i++)
         {
             matnames[i] = buffer + (256+max_dlen)*i;
-            sprintf(matnames[i], "%d %s",
-                (mm&&mm->matnos)?mm->matnos[i]:silomat->matnos[i],
-                (mm&&mm->material_names)?mm->material_names[i]:silomat->matnames[i]);
+            int matno = silomat->matnos[i];
+            const char *matname = silomat->matnames[i];
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
+            if (mm&&mm->matnos)
+                matno = mm->matnos[i]:
+            if (mm&&mm->material_names)
+                matname = mm->material_names[i]:
+#endif
+#endif
+            sprintf(matnames[i], "%d %s", matno, matname);
         }
     }
 
@@ -9864,8 +9918,18 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
         }
     }
 
-    avtMaterial *mat = new avtMaterial((mm&&mm->nmatnos>0)?mm->nmatnos:silomat->nmat,
-                                       (mm&&mm->matnos)?mm->matnos:silomat->matnos,
+    int nummats = silomat->nmat;
+    int *matnos = silomat->matnos;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
+    if (mm&&mm->nmatnos>0)
+        nummats = mm->nmatnos:
+    if (mm&&mm->matnos)
+        matnos = mm->matnos:
+#endif
+#endif
+    avtMaterial *mat = new avtMaterial(nummats, 
+                                       matnos,
                                        matnames,
                                        ndims,
                                        dims,
@@ -11525,9 +11589,14 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
 //    Mark C. Miller, Mon Nov 24 17:33:47 PST 2008
 //    Testing gpl commit hook with gnu general
 //    public      license text.
+//
+//    Hank Childs, Mon May 25 11:26:25 PDT 2009
+//    Fix macro compilation problem with old versions of Silo.
+//
 // ****************************************************************************
 
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+#ifdef SILO_VERSION_GE 
+#if SILO_VERSION_GE(4,6,3)
 static DBgroupelmap * 
 GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
 {
@@ -11643,6 +11712,7 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
     return retval;
 }
 #endif
+#endif
 
 // ****************************************************************************
 //  Function: HandleMrgtreeForMultimesh 
@@ -11655,14 +11725,21 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
 //  Creation:   November 18, 2008 
 //
 //  Modifications
+//
 //    Mark C. Miller Wed Nov 19 20:30:19 PST 2008
 //    Changed conditional for Silo version to 4.6.3
+//
+//    Hank Childs, Mon May 25 11:26:25 PDT 2009
+//    Fix macro compilation problem with old versions of Silo.
+//
 // ****************************************************************************
+
 static void
 HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_name,
     avtMeshType *mt, int *num_groups, vector<int> *group_ids, vector<string> *block_names)
 {
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
     int i, j, k, q;
     char tmpName[256];
     bool probablyAnAMRMesh = true;
@@ -11832,6 +11909,7 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
     DBFreeMrgtree(mrgTree);
     return;
 #endif
+#endif
 }
 
 // ****************************************************************************
@@ -11852,6 +11930,10 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 //
 //    Mark C. Miller, Tue Dec  9 23:34:39 PST 2008
 //    Testing hooks by adding tab characters
+//
+//    Hank Childs, Mon May 25 11:26:25 PDT 2009
+//    Add support for old versions of Silo.
+//
 // ****************************************************************************
 static void
 BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
@@ -11862,7 +11944,9 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
 
     return;
 
-#elif defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+#else
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
 
     int i, j;
     int num_levels = 0;
@@ -12116,6 +12200,8 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
        DBFreeGroupelmap(chldgm);
 
 #endif
+#endif
+#endif
 }
 
 // ****************************************************************************
@@ -12133,10 +12219,18 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
 //  Programmer: Mark C. Miller 
 //  Creation:   March 19, 2009 
 //
+//  Modifications:
+//
+//    Hank Childs, Mon May 25 11:07:17 PDT 2009
+//    Add support for Silo releases before 4.6.3.
+//
 // ****************************************************************************
+
 static int
 MultiMatHasAllMatInfo(const DBmultimat *const mm)
 {
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
     if (mm->nmatnos <= 0)
         return 0; // has nothing
 
@@ -12154,4 +12248,8 @@ MultiMatHasAllMatInfo(const DBmultimat *const mm)
     }
     else
         return 1;
+#endif
+#endif
+    return 0;
 }
+
