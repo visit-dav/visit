@@ -914,6 +914,9 @@ dnl
 dnl    Brad Whitlock, Fri Feb  6 14:53:51 PST 2009
 dnl    Added libsim V2.
 dnl
+dnl    Mark C. Miller, Mon Mar  2 17:25:10 PST 2009
+dnl    Added logic to itaps-impl option to add -D${impl_name} to CXXFLAGS
+dnl
 dnl    Mark C. Miller, Wed Mar  4 17:55:25 PST 2009
 dnl    Enabled dbio-only build. Add logic to set SVN_REVISION to 'unknown'
 dnl    if being built from a dist hierarchy. Removed clearmake. Sent stderr
