@@ -1485,7 +1485,7 @@ if (-e $VisItDir/help) then
               cp $VisItDir/help/$translation/visit.helpml $helpdir/$translation
            endif
        endif
-   end
+   endif
 endif
 
 #
