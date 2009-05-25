@@ -9,6 +9,7 @@
 ## --------------------- ##
 ## M4sh Initialization.  ##
 ## --------------------- ##
+# Extra comment, added manually by Hank, to beat pre-commit script
 
 # Be Bourne compatible
 if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then
