@@ -359,8 +359,10 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
 #endif
     operationsMenu->addAction(tr("Sum"), this, SLOT(operationSum()));
     operationsMenu->addAction(tr("Average"), this, SLOT(operationAverage()));
-    operationsMenu->addAction(tr("Create curve: row vs. X"), this, SLOT(operationCurveX()));
-    operationsMenu->addAction(tr("Create curve: column vs. Y"), this, SLOT(operationCurveY()));
+    operationsMenu->addAction(tr("Create curve: row vs. coordinate 0"), this, SLOT(operationCurveX0()));
+    operationsMenu->addAction(tr("Create curve: row vs. coordinate 1"), this, SLOT(operationCurveX1()));
+    operationsMenu->addAction(tr("Create curve: column vs. coordinate 0"), this, SLOT(operationCurveY0()));
+    operationsMenu->addAction(tr("Create curve: column vs. coordinate 1"), this, SLOT(operationCurveY1()));
     updateMenuEnabledState(0);
 }
 
@@ -665,7 +667,9 @@ SpreadsheetViewer::setColorTable(const char *ctName)
 // Creation:   Mon Sep 10 15:05:01 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 21 14:52:11 PDT 2009
+//   I changed the test since current pick is now an int.
+//
 // ****************************************************************************
 
 bool
@@ -683,9 +687,11 @@ SpreadsheetViewer::PickPointsChanged() const
     }
     else
     {
-        if (cachedAtts.GetCurrentPick()[0] != plotAtts->GetCurrentPick()[0] ||
-            cachedAtts.GetCurrentPick()[1] != plotAtts->GetCurrentPick()[1] ||
-            cachedAtts.GetCurrentPick()[2] != plotAtts->GetCurrentPick()[2])
+        if (cachedAtts.GetCurrentPick() != plotAtts->GetCurrentPick())
+        {
+            changed = true;
+        }
+        if (cachedAtts.GetCurrentPickType() != plotAtts->GetCurrentPickType())
         {
             changed = true;
         }
@@ -810,11 +816,10 @@ SpreadsheetViewer::Update(Subject *)
 #endif
             break;
         case SpreadsheetAttributes::ID_currentPick:
+        case SpreadsheetAttributes::ID_currentPickType:
         case SpreadsheetAttributes::ID_currentPickValid:
         case SpreadsheetAttributes::ID_pastPicks:
             // Check to see if the pick points changed.
-            pickPt.clear();
-            cellId.clear();
             needsPickUpdate |= PickPointsChanged();
             break;
         case SpreadsheetAttributes::ID_spreadsheetFont:
@@ -1729,6 +1734,81 @@ SpreadsheetViewer::updateMenuEnabledState(int tableIndex)
 }
 
 // ****************************************************************************
+// Method: SpreadsheetViewer::GetPickIJK
+//
+// Purpose: 
+//   Determine the IJK from the pick element.
+//
+// Arguments:
+//   pickId   : The pick element.
+//   pickType : 0 == zone, otherwise, node pick.
+//   ijk      : The return ijk values.
+//   
+// Returns:    
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 26 11:05:30 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::GetPickIJK(int pickId, int pickType, int *ijk) const
+{
+    ijk[0] = ijk[1] = ijk[2] = -1;
+    int dims[3];
+    if(input->IsA("vtkStructuredGrid"))
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *)input;
+        sgrid->GetDimensions(dims);
+        if(pickType == 0) // zone pick
+        {
+            dims[0]--;
+            dims[1]--;
+            dims[2]--;
+        }
+        int base_index[3] = {0,0,0};
+        GetBaseIndexFromMetaData(base_index);
+        int id = pickId - base_index[0];
+        int K = id / (dims[1] * dims[0]);
+        int offset = id - (K * (dims[1] * dims[0]));
+        int J = offset / dims[0];
+        int I = offset % dims[0];
+        ijk[0] = I;
+        ijk[1] = J;
+        ijk[2] = K;
+    }
+    else if(input->IsA("vtkRectilinearGrid"))
+    {
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *)input;
+        rgrid->GetDimensions(dims);
+        if(pickType == 0) // zone pick
+        {
+            dims[0]--;
+            dims[1]--;
+            dims[2]--;
+        }
+        int base_index[3] = {0,0,0};
+        GetBaseIndexFromMetaData(base_index);
+        int id = pickId - base_index[0];
+        int K = id / (dims[1] * dims[0]);
+        int offset = id - (K * (dims[1] * dims[0]));
+        int J = offset / dims[0];
+        int I = offset % dims[0];
+        ijk[0] = I;
+        ijk[1] = J;
+        ijk[2] = K;
+    }
+    else
+    {
+        ijk[0] = pickId;
+        ijk[1] = 0;
+        ijk[2] = 0;
+    }
+}
+
+// ****************************************************************************
 // Method: SpreadSheetViewer::moveSliceToCurrentPick()
 //
 // Purpose: 
@@ -1745,10 +1825,12 @@ SpreadsheetViewer::updateMenuEnabledState(int tableIndex)
 // Creation:   Mon Sep 10 15:05:01 PDT 2007
 //
 // Modifications:
-//   
 //   Hank Childs, Sun Oct 28 21:48:23 PST 2007
 //   Account for layers of ghost zones when calculating indices.
-//   
+//
+//   Brad Whitlock, Tue May 26 11:10:04 PDT 2009
+//   Calculate the ijk indices directly from the pick element.
+//
 // ****************************************************************************
 
 bool
@@ -1793,20 +1875,17 @@ SpreadsheetViewer::moveSliceToCurrentPick()
         if (sliceAxis != -1)
         {
             int ijk[3];
-
+#ifdef OLD_PICK_INDICES
+            // This is how we used to do it -- for reference in case the new way has flaws.
             double *currentPick = plotAtts->GetCurrentPick();
             int cellId = GetCell(currentPick[0], currentPick[1], currentPick[2]);
-
             vtkVisItUtility::GetLogicalIndices(input, true, cellId, ijk, false, false);
+#else
+            GetPickIJK(plotAtts->GetCurrentPick(), plotAtts->GetCurrentPickType(), ijk);
+#endif
             debug5 << mName << "ijk=" << ijk[0] << " " << ijk[1] << " " << ijk[2] << std::endl;
 
-            if (ijk[0] == -1)
-            {
-                debug1 << mName << "Cannot compute logical index for cell ";
-                debug1 << cellId << std::endl;
-            }
-            // ... Select appropriate slice
-            else if (ijk[0] != -1)
+            if (ijk[0] != -1)
             {
                 // If the slice index is not the current slice index then
                 // change the current slice index to match that of the pick.
@@ -1847,6 +1926,9 @@ SpreadsheetViewer::moveSliceToCurrentPick()
 //
 //   Brad Whitlock, Thu Aug 28 13:53:57 PDT 2008
 //   Qt 4.
+//
+//   Brad Whitlock, Thu May 21 15:03:49 PDT 2009
+//   I changed the indexing.
 //
 // ****************************************************************************
 
@@ -1896,18 +1978,13 @@ SpreadsheetViewer::selectPickPoints()
         if (sliceAxis != -1)
         {
             int ijk[3];
-
-            double *currentPick = plotAtts->GetCurrentPick();
-            int cellId = GetCell(currentPick[0], currentPick[1], currentPick[2]);
-
-            vtkVisItUtility::GetLogicalIndices(input, true, cellId, ijk, false, false);
+            GetPickIJK(plotAtts->GetCurrentPick(), plotAtts->GetCurrentPickType(), ijk);
 
             debug5 << mName << "CP: ijk=" << ijk[0] << " " << ijk[1] << " " << ijk[2] << std::endl;
 
             if (ijk[0] == -1)
             {
                 debug1 << mName << "Cannot compute logical index for cell ";
-                debug1 << cellId << std::endl;
             }
             // ... Select current cell in table
 #ifndef SINGLE_TAB_WINDOW
@@ -1961,12 +2038,11 @@ SpreadsheetViewer::selectPickPoints()
             // Now, go through the old picks 
             const vector<double>& pastPicks = plotAtts->GetPastPicks();
             const vector<string>& pastPickLetters = plotAtts->GetPastPickLetters();
-            int numOldPicks = pastPicks.size() / 3;
+            int numOldPicks = pastPicks.size() / 2;
             int old_ijk[3];
             for (int i = 0 ; i < numOldPicks ; i++)
             {
-                int cellId = GetCell(pastPicks[3*i], pastPicks[3*i+1], pastPicks[3*i+2]);
-                vtkVisItUtility::GetLogicalIndices(input, true, cellId, old_ijk, false, false);
+                GetPickIJK(pastPicks[2*i], pastPicks[2*i+1], old_ijk);
 
                 // If old pick is same cell as current pick then skip it
                 if (old_ijk[0] == ijk[0] && old_ijk[1] == ijk[1] && old_ijk[2] == ijk[2])
@@ -2866,7 +2942,7 @@ SpreadsheetViewer::DisplayCurve(const double *vals, int nvals)
 // ****************************************************************************
 
 void
-SpreadsheetViewer::operationCurveX()
+SpreadsheetViewer::operationCurveX(int coordIndex)
 {
     if(nTables > 0)
     {
@@ -2877,7 +2953,7 @@ SpreadsheetViewer::operationCurveX()
         if(nvals > 0)
         {
             double *curve = new double[nvals * 2];
-            if(GetDataVsCoordinate(curve, indices, nvals, 0))
+            if(GetDataVsCoordinate(curve, indices, nvals, coordIndex))
             {
                 DisplayCurve(curve, nvals);
             }
@@ -2886,6 +2962,18 @@ SpreadsheetViewer::operationCurveX()
             delete [] indices;
         }
     }
+}
+
+void
+SpreadsheetViewer::operationCurveX0()
+{
+    operationCurveX(0);
+}
+
+void
+SpreadsheetViewer::operationCurveX1()
+{
+    operationCurveX(1);
 }
 
 // ****************************************************************************
@@ -2902,7 +2990,7 @@ SpreadsheetViewer::operationCurveX()
 // ****************************************************************************
 
 void
-SpreadsheetViewer::operationCurveY()
+SpreadsheetViewer::operationCurveY(int coordIndex)
 {
     if(nTables > 0)
     {
@@ -2913,7 +3001,7 @@ SpreadsheetViewer::operationCurveY()
         if(nvals > 0)
         {
             double *curve = new double[nvals * 2];
-            if(GetDataVsCoordinate(curve, indices, nvals, 1))
+            if(GetDataVsCoordinate(curve, indices, nvals, coordIndex))
             {
                 DisplayCurve(curve, nvals);
             }
@@ -2922,6 +3010,18 @@ SpreadsheetViewer::operationCurveY()
             delete [] indices;
         }
     }
+}
+
+void
+SpreadsheetViewer::operationCurveY0()
+{
+    operationCurveY(0);
+}
+
+void
+SpreadsheetViewer::operationCurveY1()
+{
+    operationCurveY(1);
 }
 
 // ****************************************************************************
@@ -2945,83 +3045,3 @@ SpreadsheetViewer::tableSelectionChanged()
 {
     updateMenuEnabledState(zTabs->indexOf((QWidget *)sender()));
 }
-
-// ****************************************************************************
-// Method: SpreadsheetViewer::GetCell
-//
-// Purpose: 
-//     Given a pick location, this determines which cell the pick location lies
-//     in.
-//
-// Arguments:
-//     X       The x location of the pick.
-//     Y       The y location of the pick.
-//     Z       The z location of the pick.
-//
-// Returns:    The index of the cell that was picked.  <0 for errors.
-//
-// Programmer: Hank Childs
-// Creation:   September 4, 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-SpreadsheetViewer::GetCell(double X, double Y, double Z)
-{
-    int  i;
-    int  cell = -1;
-
-    if (input == NULL)
-        return -1;
-
-    double pt[3] = { X, Y, Z };
-
-    int prevPicks = cellId.size();
-    for (i = 0 ; i < prevPicks ; i++)
-    {
-        if (pickPt[3*i] == X && pickPt[3*i+1] == Y && pickPt[3*i+2] == Z)
-            return cellId[i];
-    }
-
-    if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-    {
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) input;
-        int ijk[3];
-        bool success =
-                 vtkVisItUtility::ComputeStructuredCoordinates(rgrid, pt, ijk);
-        if (!success)
-            return -1;
-        int dims[3];
-        rgrid->GetDimensions(dims);
-        cell = ijk[2]*(dims[0]-1)*(dims[1]-1) + ijk[1]*(dims[0]-1) + ijk[0];
-    }
-    else
-    {
-        vtkVisItCellLocator *loc = vtkVisItCellLocator::New();
-        loc->SetDataSet(input);
-        loc->BuildLocator();
-       
-        int subId = 0;
-        double cp[3] = {0., 0., 0.};
-        int foundCell;
-        double dist;
-        int success = loc->FindClosestPointWithinRadius(pt, FLT_MAX, cp,
-                                                   foundCell, subId, dist);
-        loc->Delete();
-
-        if (foundCell < 0)
-            cell = -1;
-        else
-            cell = foundCell;
-    }
-
-    pickPt.push_back(X);
-    pickPt.push_back(Y);
-    pickPt.push_back(Z);
-    cellId.push_back(cell);
-
-    return cell;
-}
-

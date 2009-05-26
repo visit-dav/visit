@@ -45,8 +45,6 @@
 #include <vtkStructuredGrid.h>
 #include <vtkCell.h>
 
-#include <vtkVisItUtility.h>
-#include <vtkVisItCellLocator.h>
 #include <DebugStream.h>
 
 // Include OpenGL
@@ -162,6 +160,9 @@ avtOpenGLSpreadsheetTraceRenderer::Render(vtkDataSet *ds, vtkDataArray *bounds,
 //   Gunther H. Weber, Thu Nov 29 15:04:29 PST 2007
 //   Support rendering outline of current cell
 //
+//   Brad Whitlock, Tue May 26 10:25:49 PDT 2009
+//   We already have the cellId from the pick if it's a zone pick.
+//
 // ****************************************************************************
 
 void
@@ -174,15 +175,12 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
     rgrid->GetDimensions(dims);
 
     // Compute id of current cell if necessary
-    int ijk[3];
-    double currPick[3] = {
-        atts.GetCurrentPick()[0], atts.GetCurrentPick()[1], atts.GetCurrentPick()[2]
-    };
-    bool drawCellOutline = atts.GetShowCurrentCellOutline() && atts.GetCurrentPickValid() &&
-        vtkVisItUtility::ComputeStructuredCoordinates(rgrid, currPick, ijk);
-    vtkIdType cellId = ijk[2]*(dims[0]-1)*(dims[1]-1) + ijk[1]*(dims[0]-1) + ijk[0];
+    bool drawCellOutline = atts.GetShowCurrentCellOutline() &&
+                           atts.GetCurrentPickValid() &&
+                           atts.GetCurrentPickType() == 0;
+    vtkIdType cellId = (vtkIdType)atts.GetCurrentPick();
 
-   if(dims[2] < 2)
+    if(dims[2] < 2)
     {
         if (atts.GetShowTracerPlane())
         {
@@ -390,6 +388,9 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
 //   Gunther H. Weber, Thu Nov 29 15:04:29 PST 2007
 //   Support rendering outline of current cell
 //
+//   Brad Whitlock, Tue May 26 10:28:03 PDT 2009
+//   I removed the locator code since we already know the cellId.
+//
 // ****************************************************************************
 
 void
@@ -400,31 +401,10 @@ avtOpenGLSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
     int dims[3];
     sgrid->GetDimensions(dims);
 
-    // Compute id of current cell if necessary. Building a locator here is probably
-    // not very efficient
-    bool drawCellOutline = false; 
-    double currPick[3] = {
-        atts.GetCurrentPick()[0], atts.GetCurrentPick()[1], atts.GetCurrentPick()[2]
-    };
-    vtkIdType cellId;
-    if (atts.GetShowCurrentCellOutline() && atts.GetCurrentPickValid()) 
-    {
-        vtkVisItCellLocator *loc = vtkVisItCellLocator::New();
-        loc->SetDataSet(sgrid);
-        loc->BuildLocator();
-       
-        int subId = 0;
-        double cp[3] = {0., 0., 0.};
-        double dist;
-        int success = loc->FindClosestPointWithinRadius(currPick, FLT_MAX, cp,
-                                                   cellId, subId, dist);
-        loc->Delete();
-
-        if (success)
-        {
-            drawCellOutline = true;
-        }
-    }
+    vtkIdType cellId = (vtkIdType)atts.GetCurrentPick();
+    bool drawCellOutline = atts.GetShowCurrentCellOutline() &&
+                           atts.GetCurrentPickValid() &&
+                           atts.GetCurrentPickType() == 0;
 
     if(dims[2] < 2)
     {
