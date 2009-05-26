@@ -158,12 +158,12 @@ protected:
     int                         wid;
     Netnode                    *terminalNode;
     std::vector<Netnode*>       nodeList;
-    avtDataRequest_p      dataRequest;
+    avtDataRequest_p            dataRequest;
     avtDataObjectWriter_p       writer;
     avtActor_p                  plotActor;
     double                      bgColor[3];
     double                      fgColor[3];
-    avtContract_p  contract;
+    avtContract_p               contract;
     NetnodeDB*                  netdb;
     avtPlot_p                   plot;
     std::string                 plottype;
