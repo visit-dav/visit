@@ -1390,7 +1390,7 @@ avtTransparencyActor::TransparenciesMightExist() const
 //  Purpose:
 //      Sets whether or not the actor is 2D.
 //
-//  Programmer: Hank CHilds
+//  Programmer: Hank Childs
 //  Creation:   September 8, 2004
 //
 // ****************************************************************************
@@ -1422,5 +1422,3 @@ avtTransparencyActor::SetIs2Dimensional(bool val)
 
     is2Dimensional = val;
 }
-
-
