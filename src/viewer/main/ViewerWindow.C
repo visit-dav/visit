@@ -54,6 +54,7 @@ using std::string;
 #include <avtDataObjectReader.h>
 #include <avtWholeImageCompositerWithZ.h>
 #include <avtToolInterface.h>
+#include <avtTransparencyActor.h>
 
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
@@ -2315,11 +2316,18 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
 //  Programmer: Eric Brugger
 //  Creation:   February 20, 2001
 //
+//  Modifications:
+//
+//    Tom Fogal, Mon May 25 18:05:11 MDT 2009
+//    Invalidate the transparency cache to ensure it'll get recalculated later.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::AddPlot(avtActor_p &actor)
 {
+    avtTransparencyActor* trans = visWindow->GetTransparencyActor();
+    trans->InvalidateTransparencyCache();
     visWindow->AddPlot(actor);
 }
 

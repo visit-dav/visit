@@ -108,6 +108,9 @@ class     vtkParallelImageSpaceRedistributor;
 //    Tom Fogal, Sun May 24 19:34:25 MDT 2009
 //    Added const to method.
 //
+//    Tom Fogal, Mon May 25 14:03:14 MDT 2009
+//    Added caching for transparency calculation.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtTransparencyActor
@@ -137,6 +140,9 @@ class PLOTTER_API avtTransparencyActor
 
     bool                             TransparenciesExist(void);
     bool                             TransparenciesMightExist(void) const;
+    void                             InvalidateTransparencyCache() {
+                                         cachedTransparencies = false;
+                                     }
 
     void                             AddToRenderer(vtkRenderer *);
     void                             RemoveFromRenderer(vtkRenderer *);
@@ -175,8 +181,11 @@ class PLOTTER_API avtTransparencyActor
     vtkMatrix4x4                                    *lastCamera;
 
     bool                                             renderingSuspended;
+    bool                                             transparenciesExist;
+    bool                                             cachedTransparencies;
 
     void                                             SetUpActor(void);
     void                                             PrepareDataset(int, int);
+    void                                             DetermineTransparencies();
 };
 #endif
