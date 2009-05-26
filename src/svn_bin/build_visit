@@ -634,8 +634,12 @@
 #
 #     Mark C. Miller, Wed May 20 11:40:55 PDT 2009
 #     Fixed typo in NETCDF_BUILD_DIR name. It was missing '_BUILD'.
-# *****************************************************************************
 #
+#     Tom Fogal, Mon May 25 15:42:30 MDT 2009
+#     Fixed NetCDF downloading (mirror was missing).
+#
+# *****************************************************************************
+#                                                                             #
 # *************************************************************************** #
 #                       Section 1, setting up inputs                          #
 # --------------------------------------------------------------------------- #
@@ -1778,7 +1782,9 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_NETCDF" == "yes" ]] ; then
-        ensure_built_or_ready "netcdf" $NETCDF_VERSION $NETCDF_BUILD_DIR $NETCDF_FILE
+        ensure_built_or_ready "netcdf" $NETCDF_VERSION $NETCDF_BUILD_DIR \
+          $NETCDF_FILE \
+          http://www.unidata.ucar.edu/downloads/netcdf/ftp/
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_NETCDF="no"
