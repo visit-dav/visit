@@ -9802,6 +9802,9 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    Hank Childs, Mon May 25 11:07:17 PDT 2009
 //    Add support for Silo releases before 4.6.3.
 //
+//    Tom Fogal, Mon May 25 18:53:30 MDT 2009
+//    Fixed some compilation errors && simplified some ifdef magic.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -9831,32 +9834,26 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
     char **matnames = NULL;
     char *buffer = NULL;
     bool haveMatnames = silomat->matnames;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
-    if (mm&&mm->material_names))
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+    if (mm&&mm->material_names)
         haveMatnames = true;
-#endif
 #endif
     if (haveMatnames)
     {
         int nmat = silomat->nmat;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
         if (mm&&mm->nmatnos>0) 
             nmat = mm->nmatnos;
-#endif
 #endif
         int max_dlen = 0;
         for (int i = 0 ; i < nmat ; i++)
         {
             int matno = silomat->matnos[i];
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
-            if (mm&&mm->matnos)
-                matno = mm->matnos[i]:
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+            if (mm && mm->matnos)
+                matno = mm->matnos[i];
 #endif
-#endif
-            int dlen =int(log10(float(matno+1))) + 1;
+            int dlen = int(log10(float(matno+1))) + 1;
             if(dlen>max_dlen)
                 max_dlen = dlen;
         }
@@ -9869,13 +9866,11 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
             matnames[i] = buffer + (256+max_dlen)*i;
             int matno = silomat->matnos[i];
             const char *matname = silomat->matnames[i];
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
             if (mm&&mm->matnos)
-                matno = mm->matnos[i]:
+                matno = mm->matnos[i];
             if (mm&&mm->material_names)
-                matname = mm->material_names[i]:
-#endif
+                matname = mm->material_names[i];
 #endif
             sprintf(matnames[i], "%d %s", matno, matname);
         }
@@ -9920,13 +9915,11 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
 
     int nummats = silomat->nmat;
     int *matnos = silomat->matnos;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,3)
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
     if (mm&&mm->nmatnos>0)
-        nummats = mm->nmatnos:
+        nummats = mm->nmatnos;
     if (mm&&mm->matnos)
-        matnos = mm->matnos:
-#endif
+        matnos = mm->matnos;
 #endif
     avtMaterial *mat = new avtMaterial(nummats, 
                                        matnos,
