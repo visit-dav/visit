@@ -105,6 +105,9 @@ class     vtkParallelImageSpaceRedistributor;
 //    Jeremy Meredith, Thu Oct 21 12:09:00 PDT 2004
 //    Renamed the parallel filter.
 //
+//    Tom Fogal, Sun May 24 19:34:25 MDT 2009
+//    Added const to method.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtTransparencyActor
@@ -142,7 +145,7 @@ class PLOTTER_API avtTransparencyActor
     void                             SuspendRendering() { renderingSuspended = true;  }
     void                             ResumeRendering()  { renderingSuspended = false; }
 
-    bool                             GetIs2Dimensional()
+    bool                             GetIs2Dimensional() const
                                                     { return is2Dimensional; };
     void                             SetIs2Dimensional(bool val);
 
@@ -176,8 +179,4 @@ class PLOTTER_API avtTransparencyActor
     void                                             SetUpActor(void);
     void                                             PrepareDataset(int, int);
 };
-
-
 #endif
-
-    
