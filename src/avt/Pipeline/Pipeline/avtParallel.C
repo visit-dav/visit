@@ -1250,6 +1250,10 @@ void BroadcastBool(bool &b)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Tom Fogal, Mon May 25 16:05:23 MDT 2009
+//    Added a check for empty vectors.
+//
 // ****************************************************************************
 void BroadcastIntVector(vector<int> &vi, int myrank)
 {
@@ -1260,6 +1264,13 @@ void BroadcastIntVector(vector<int> &vi, int myrank)
     MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (myrank!=0)
         vi.resize(len);
+
+    if(len == 0)
+    {
+        debug1 << "Don't know how to broadcast empty vector!  "
+               << "Bailing out early." << std::endl;
+        return;
+    }
 
     MPI_Bcast(&vi[0], len, MPI_INT, 0, VISIT_MPI_COMM);
 #endif
@@ -1307,6 +1318,9 @@ void BroadcastDouble(double &i)
 //    Hank Childs, Thu Jun 23 14:02:03 PDT 2005
 //    Change type of "myrank" to be int.  Too much cut-n-paste previously.
 //
+//    Tom Fogal, Mon May 25 16:06:09 MDT 2009
+//    Added check to make sure we don't try to broadcast an empty vector.
+//
 // ****************************************************************************
 void BroadcastDoubleVector(vector<double> &vi, int myrank)
 {
@@ -1317,6 +1331,14 @@ void BroadcastDoubleVector(vector<double> &vi, int myrank)
     MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (myrank!=0)
         vi.resize(len);
+
+    if(len == 0)
+    {
+        debug1 << "Don't know how to broadcast empty vector!  "
+               << "Bailing out early." << std::endl;
+        return;
+    }
+
 
     MPI_Bcast(&vi[0], len, MPI_DOUBLE, 0, VISIT_MPI_COMM);
 #endif
@@ -1383,6 +1405,10 @@ void BroadcastString(string &s, int myrank)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Tom Fogal, Mon May 25 15:53:31 MDT 2009
+//    Added a check for empty string vectors.
+//
 // ****************************************************************************
 void BroadcastStringVector(vector<string> &vs, int myrank)
 {
@@ -1392,7 +1418,15 @@ void BroadcastStringVector(vector<string> &vs, int myrank)
     int len;
     if (myrank==0)
         len = vs.size();
+
     MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
+
+    if(len == 0)
+    {
+        debug1 << "Don't know how to broadcast empty vector!  "
+               << "Bailing out early." << std::endl;
+        return;
+    }
 
     vector<int> lens(len);
     if (myrank == 0)
@@ -1457,6 +1491,10 @@ void BroadcastStringVector(vector<string> &vs, int myrank)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Tom Fogal, Mon May 25 16:07:08 MDT 2009
+//    Added check to make sure we don't try to broadcast an empty vector.
+//
 // ****************************************************************************
 void BroadcastStringVectorVector(vector< vector<string> > &vvs, int myrank)
 {
@@ -1467,6 +1505,13 @@ void BroadcastStringVectorVector(vector< vector<string> > &vvs, int myrank)
     MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (myrank!=0)
         vvs.resize(len);
+
+    if(len == 0)
+    {
+        debug1 << "Don't know how to broadcast empty vector!  "
+               << "Bailing out early." << std::endl;
+        return;
+    }
 
     for (int i=0; i<len; i++)
     {
