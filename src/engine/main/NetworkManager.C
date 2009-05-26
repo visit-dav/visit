@@ -91,6 +91,7 @@
 #include <avtParallel.h>
 #include <avtPickByNodeQuery.h>
 #include <avtPickByZoneQuery.h>
+#include <avtTransparencyActor.h>
 #include <avtZonePickQuery.h>
 #include <avtCurvePickQuery.h>
 #include <avtSoftwareShader.h>
@@ -5152,6 +5153,8 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
     }
 
     // see if there are any non-mesh plots in the list
+    // If there's both mesh and non-mesh plots, we don't make the mesh opaque
+    // (since it'd block other plots).
     bool hasNonMeshPlots = HasNonMeshPlots(plotIds);
 
     // see if we need the z-buffer to composite correctly in 2D.
@@ -5363,6 +5366,11 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    When initializing state, make sure to erase whatever memoization we had
 //    from the last frame.
 //
+//    Tom Fogal, Mon May 25 18:36:19 MDT 2009
+//    Force transparency calculation here, so the value we get cached for later
+//    rendering.  This prevents us from doing global comm while doing the
+//    rendering proper.
+//
 // ****************************************************************************
 
 void
@@ -5572,6 +5580,13 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         (viswin->GetWindowMode() == WINMODE_2D) ||
         (viswin->GetWindowMode() == WINMODE_CURVE) ||
         (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+
+    { // Force transparency calculation early for SR mode.
+        debug3 << "Forcing early calculation of transparency..." << std::endl;
+        avtTransparencyActor* trans = viswin->GetTransparencyActor();
+        trans->InvalidateTransparencyCache();
+        bool t = trans->TransparenciesExist();
+    }
 }
 
 // ****************************************************************************

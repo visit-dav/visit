@@ -109,9 +109,14 @@ using     std::vector;
 //    Brad Whitlock, Fri Jan 23 15:27:34 PST 2009
 //    Pass the communicator to vtkParallelImageSpaceRedistributor.
 //
+//    Tom Fogal, Sun May 24 21:31:20 MDT 2009
+//    Initialize transparenciesExist && cachedTransparencies.
+//
 // ****************************************************************************
 
-avtTransparencyActor::avtTransparencyActor()
+avtTransparencyActor::avtTransparencyActor() :
+    transparenciesExist(false),
+    cachedTransparencies(false)
 {
     appender = vtkAppendPolyData::New();
     myMapper = vtkPolyDataMapper::New();
@@ -1317,25 +1322,57 @@ avtTransparencyActor::ScaleByVector(const double vec[3])
 //  Creation:   December 3, 2003
 //
 //  Modifications:
+//
+//    Tom Fogal, Mon May 25 14:04:56 MDT 2009
+//    Changed interface; this method checks the memo'd cache.
+//
+// ****************************************************************************
+bool
+avtTransparencyActor::TransparenciesExist()
+{
+    if(!cachedTransparencies)
+    {
+        debug3 << "Unknown if transparencies exist; recalculating "
+               << "(this requires global communication)." << std::endl;
+        DetermineTransparencies();
+    }
+
+    return transparenciesExist;
+}
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::DetermineTransparencies
+//
+//  Purpose:
+//    Returns true if this actor is active (appender has inputs).
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 3, 2003
+//
+//  Modifications:
 //    Jeremy Meredith and Hank Childs, Thu Oct 21 15:27:44 PDT 2004
 //    This method was not getting updated soon enough for calls to
 //    it to return the correct value.  We took the key pieces
 //    from PrepareDataset to get the right answer here, and I
 //    added code to enforce that all processors have the same answer.
 //
+//    Tom Fogal, Mon May 25 14:06:37 MDT 2009
+//    Renamed from `TransparenciesExist'.  Use member variable to store the
+//    result, and note that the result is cached.
+//
 // ****************************************************************************
 
-bool
-avtTransparencyActor::TransparenciesExist()
+void
+avtTransparencyActor::DetermineTransparencies()
 {
-    bool has_stuff = false;
+    transparenciesExist = false;
     int numActors = datasets.size();
-    for (int i = 0 ; i < numActors && !has_stuff ; i++)
+    for (int i = 0 ; i < numActors && !transparenciesExist; i++)
     {
         if (useActor[i] && visibility[i] == true)
         {
             int numParts = datasets[i].size();
-            for (int j = 0 ; j < numParts && !has_stuff ; j++)
+            for (int j = 0 ; j < numParts && !transparenciesExist; j++)
             {
                 vtkDataSet       *in_ds  = datasets[i][j];
                 vtkActor         *actor  = actors[i][j];
@@ -1344,16 +1381,17 @@ avtTransparencyActor::TransparenciesExist()
                     actor->GetProperty()->GetOpacity() > 0. &&
                     actor->GetProperty()->GetOpacity() < 1.)
                 {
-                    has_stuff = true;
+                    transparenciesExist = true;
                 }
             }
         }
     }
 
     // We need all processors to agree!
-    has_stuff = UnifyMaximumValue(has_stuff);
+    transparenciesExist = UnifyMaximumValue(transparenciesExist);
 
-    return has_stuff;
+    // Note that we've memo'ized this value.
+    cachedTransparencies = true;
 }
 
 
