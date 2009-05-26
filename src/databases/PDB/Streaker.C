@@ -77,7 +77,7 @@
 // ****************************************************************************
 
 Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), hasMaterial(false),
-    cellCentered(true), slice(0), sliceIndex(0), hsize(0), dataset(0), integrate(false),
+    cellCentered(true), matchSilo(false), slice(0), sliceIndex(0), hsize(0), dataset(0), integrate(false),
     log(Streaker::LOGTYPE_NONE), x_scale(1.), x_translate(0.), y_scale(1.), y_translate(0.),
     z_scale(1.), z_translate(0.)
 {
@@ -175,6 +175,9 @@ Streaker::FreeUpResources()
 //   Brad Whitlock, Tue May  5 16:28:35 PDT 2009
 //   I added cellcentered and nodecentered commands.
 //
+//   Brad Whitlock, Tue May 26 13:45:40 PDT 2009
+//   I added the "matchsilo" option.
+//
 // ****************************************************************************
 
 void
@@ -194,6 +197,7 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
     // process the file.
     char  line[1024];
     bool  cellCentered = true;
+    bool  matchSilo = false;
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
     {
         // Get the line
@@ -206,6 +210,8 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
             cellCentered = true;
         else if(strncmp(line, "nodecentered", 12) == 0)
             cellCentered = false;
+        else if(strncmp(line, "matchsilo", 9) == 0)
+            matchSilo = true;
         else if(strncmp(line, "streakplot", 10) == 0)
         {
             bool invalidStreak = true;
@@ -282,6 +288,7 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
                 else
                     s.log = LOGTYPE_NONE;
                 s.cellCentered = cellCentered;
+                s.matchSilo = matchSilo;
 
                 AddStreak(varname, s, pdb);
             }
@@ -871,6 +878,124 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
 }
 
 // ****************************************************************************
+// Method: TransposeArray
+//
+// Purpose: 
+//   Transposes the data array in I,J.
+//
+// Arguments:
+//   arr  : The data array to transpose.
+//   dims : The dimensions of the data array.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 26 14:02:16 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static vtkDataArray *
+TransposeArray(vtkDataArray *arr, const int *dims)
+{
+    vtkDataArray *newarr = arr->NewInstance();
+    newarr->SetNumberOfComponents(arr->GetNumberOfComponents());
+    newarr->SetNumberOfTuples(arr->GetNumberOfTuples());
+    newarr->SetName(arr->GetName());
+    for(int j = 0; j < dims[1]; ++j)
+        for(int i = 0; i < dims[0]; ++i)
+        {
+            int dest_index = j * dims[0] + i;
+            int src_index = i * dims[1] + j;
+            newarr->SetTuple(dest_index, arr->GetTuple(src_index));
+        }
+    return newarr;
+}
+
+// ****************************************************************************
+// Method: TransposeIJ
+//
+// Purpose: 
+//   Transposes a structured grid in I,J.
+//
+// Arguments: 
+//   grid : The grid to transpose.
+//
+// Returns:    A new grid that has been transposed.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 26 13:57:32 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static vtkStructuredGrid *
+TransposeIJ(vtkStructuredGrid *grid)
+{
+    int dims[3];
+    grid->GetDimensions(dims);
+    int newdims[3];
+    newdims[0] = dims[1]; // Swap I,J dimensions
+    newdims[1] = dims[0];
+    newdims[2] = dims[2];
+
+    int i, j;
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(grid->GetPoints()->GetNumberOfPoints());
+    float *coords_dest = (float *)points->GetVoidPointer(0);
+    float *coords_src = (float *)grid->GetPoints()->GetVoidPointer(0);
+    // Transpose points when copying into the new points
+    for(j = 0; j < newdims[1]; ++j)
+        for(i = 0; i < newdims[0]; ++i)
+        {
+            int dest_index = (j * newdims[0] + i) * 3;
+            int src_index = (i * newdims[1] + j) * 3;
+            coords_dest[dest_index + 0]  = coords_src[src_index + 0];
+            coords_dest[dest_index + 1]  = coords_src[src_index + 1];
+            coords_dest[dest_index + 2]  = coords_src[src_index + 2];
+        }
+
+    vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+    sgrid->SetPoints(points);
+    points->Delete();
+    sgrid->SetDimensions(newdims);
+
+    // Now create transposed copies of the cell arrays.
+    int celldims[3];
+    celldims[0] = newdims[0] - 1;
+    celldims[1] = newdims[1] - 1;
+    celldims[2] = 1;
+    vtkDataArray *scalars = grid->GetCellData()->GetScalars();
+    for(i = 0; i < grid->GetCellData()->GetNumberOfArrays(); ++i)
+    {
+        vtkDataArray *arr = TransposeArray(grid->GetCellData()->GetArray(i), celldims);
+        if(grid->GetCellData()->GetArray(i) == scalars)
+            sgrid->GetCellData()->SetScalars(arr);
+        else
+            sgrid->GetCellData()->AddArray(arr);
+    }
+
+    // Now create transposed copies of the cell arrays.
+    scalars = grid->GetPointData()->GetScalars();
+    for(i = 0; i < grid->GetPointData()->GetNumberOfArrays(); ++i)
+    {
+        vtkDataArray *arr = TransposeArray(grid->GetPointData()->GetArray(i), newdims);
+        if(grid->GetPointData()->GetArray(i) == scalars)
+            sgrid->GetPointData()->SetScalars(arr);
+        else
+            sgrid->GetPointData()->AddArray(arr);
+    }
+
+    return sgrid;
+}
+
+// ****************************************************************************
 // Method: Streaker::ConstructDataset
 //
 // Purpose: 
@@ -901,6 +1026,9 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
 //
 //   Brad Whitlock, Wed May 13 13:41:33 PDT 2009
 //   I added z_scale, z_translate.
+//
+//   Brad Whitlock, Tue May 26 13:47:39 PDT 2009
+//   I added matchSilo support.
 //
 // ****************************************************************************
 
@@ -1069,6 +1197,14 @@ Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PD
 
     // cleanup
     yvar->Delete();
+
+    // Transpose I,J if the data should match Silo.
+    if(s.matchSilo)
+    {
+        vtkStructuredGrid *ds = TransposeIJ(sgrid);
+        sgrid->Delete();
+        sgrid = ds;
+    }
 
     return sgrid;
 }

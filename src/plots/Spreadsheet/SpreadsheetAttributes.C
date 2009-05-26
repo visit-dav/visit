@@ -78,7 +78,7 @@ SpreadsheetAttributes::NormalAxis_FromString(const std::string &s, SpreadsheetAt
 }
 
 // Type map format string
-const char *SpreadsheetAttributes::TypeMapFormatString = "ssbsbaiiDbd*ss*sbb";
+const char *SpreadsheetAttributes::TypeMapFormatString = "ssbsbaiisbbiibsd*s*";
 
 // ****************************************************************************
 // Method: SpreadsheetAttributes::SpreadsheetAttributes
@@ -105,10 +105,12 @@ SpreadsheetAttributes::SpreadsheetAttributes() :
     showTracerPlane = true;
     normal = Z;
     sliceIndex = 0;
-    currentPickValid = false;
     spreadsheetFont = "Courier,12,-1,5,50,0,0,0,0,0";
     showPatchOutline = true;
     showCurrentCellOutline = false;
+    currentPick = 0;
+    currentPickType = 0;
+    currentPickValid = false;
 }
 
 // ****************************************************************************
@@ -137,17 +139,15 @@ SpreadsheetAttributes::SpreadsheetAttributes(const SpreadsheetAttributes &obj) :
     tracerColor = obj.tracerColor;
     normal = obj.normal;
     sliceIndex = obj.sliceIndex;
-    currentPick[0] = obj.currentPick[0];
-    currentPick[1] = obj.currentPick[1];
-    currentPick[2] = obj.currentPick[2];
-
-    currentPickValid = obj.currentPickValid;
-    pastPicks = obj.pastPicks;
-    currentPickLetter = obj.currentPickLetter;
-    pastPickLetters = obj.pastPickLetters;
     spreadsheetFont = obj.spreadsheetFont;
     showPatchOutline = obj.showPatchOutline;
     showCurrentCellOutline = obj.showCurrentCellOutline;
+    currentPick = obj.currentPick;
+    currentPickType = obj.currentPickType;
+    currentPickValid = obj.currentPickValid;
+    currentPickLetter = obj.currentPickLetter;
+    pastPicks = obj.pastPicks;
+    pastPickLetters = obj.pastPickLetters;
 
     SelectAll();
 }
@@ -199,17 +199,15 @@ SpreadsheetAttributes::operator = (const SpreadsheetAttributes &obj)
     tracerColor = obj.tracerColor;
     normal = obj.normal;
     sliceIndex = obj.sliceIndex;
-    currentPick[0] = obj.currentPick[0];
-    currentPick[1] = obj.currentPick[1];
-    currentPick[2] = obj.currentPick[2];
-
-    currentPickValid = obj.currentPickValid;
-    pastPicks = obj.pastPicks;
-    currentPickLetter = obj.currentPickLetter;
-    pastPickLetters = obj.pastPickLetters;
     spreadsheetFont = obj.spreadsheetFont;
     showPatchOutline = obj.showPatchOutline;
     showCurrentCellOutline = obj.showCurrentCellOutline;
+    currentPick = obj.currentPick;
+    currentPickType = obj.currentPickType;
+    currentPickValid = obj.currentPickValid;
+    currentPickLetter = obj.currentPickLetter;
+    pastPicks = obj.pastPicks;
+    pastPickLetters = obj.pastPickLetters;
 
     SelectAll();
     return *this;
@@ -233,11 +231,6 @@ SpreadsheetAttributes::operator = (const SpreadsheetAttributes &obj)
 bool
 SpreadsheetAttributes::operator == (const SpreadsheetAttributes &obj) const
 {
-    // Compare the currentPick arrays.
-    bool currentPick_equal = true;
-    for(int i = 0; i < 3 && currentPick_equal; ++i)
-        currentPick_equal = (currentPick[i] == obj.currentPick[i]);
-
     // Create the return value
     return ((subsetName == obj.subsetName) &&
             (formatString == obj.formatString) &&
@@ -247,14 +240,15 @@ SpreadsheetAttributes::operator == (const SpreadsheetAttributes &obj) const
             (tracerColor == obj.tracerColor) &&
             (normal == obj.normal) &&
             (sliceIndex == obj.sliceIndex) &&
-            currentPick_equal &&
-            (currentPickValid == obj.currentPickValid) &&
-            (pastPicks == obj.pastPicks) &&
-            (currentPickLetter == obj.currentPickLetter) &&
-            (pastPickLetters == obj.pastPickLetters) &&
             (spreadsheetFont == obj.spreadsheetFont) &&
             (showPatchOutline == obj.showPatchOutline) &&
-            (showCurrentCellOutline == obj.showCurrentCellOutline));
+            (showCurrentCellOutline == obj.showCurrentCellOutline) &&
+            (currentPick == obj.currentPick) &&
+            (currentPickType == obj.currentPickType) &&
+            (currentPickValid == obj.currentPickValid) &&
+            (currentPickLetter == obj.currentPickLetter) &&
+            (pastPicks == obj.pastPicks) &&
+            (pastPickLetters == obj.pastPickLetters));
 }
 
 // ****************************************************************************
@@ -315,6 +309,9 @@ SpreadsheetAttributes::TypeName() const
 //   Copy pick letters. Move clearing of pick history to custom
 //   SetSubsetName() method.
 //
+//   Brad Whitlock, Thu May 21 14:43:24 PDT 2009
+//   Use pick element and type instead of the pick point.
+//
 // ****************************************************************************
 
 bool
@@ -359,15 +356,15 @@ SpreadsheetAttributes::CopyAttributes(const AttributeGroup *atts)
         // Add current pick to history, if valid
         if (currentPickValid)
         {
-            pastPicks.push_back(currentPick[0]);
-            pastPicks.push_back(currentPick[1]);
-            pastPicks.push_back(currentPick[2]);
+            pastPicks.push_back(GetCurrentPick());
+            pastPicks.push_back(GetCurrentPickType());
             pastPickLetters.push_back(GetCurrentPickLetter());
         }
 
         // Set current pick based on history
         currentPickValid = true;
-        SetCurrentPick(p->GetCellPoint());
+        SetCurrentPick(p->GetElementNumber());
+        SetCurrentPickType((int)p->GetPickType());
         SetCurrentPickLetter(p->GetPickLetter());
 
         return true;
@@ -464,14 +461,15 @@ SpreadsheetAttributes::SelectAll()
     Select(ID_tracerColor,            (void *)&tracerColor);
     Select(ID_normal,                 (void *)&normal);
     Select(ID_sliceIndex,             (void *)&sliceIndex);
-    Select(ID_currentPick,            (void *)currentPick, 3);
-    Select(ID_currentPickValid,       (void *)&currentPickValid);
-    Select(ID_pastPicks,              (void *)&pastPicks);
-    Select(ID_currentPickLetter,      (void *)&currentPickLetter);
-    Select(ID_pastPickLetters,        (void *)&pastPickLetters);
     Select(ID_spreadsheetFont,        (void *)&spreadsheetFont);
     Select(ID_showPatchOutline,       (void *)&showPatchOutline);
     Select(ID_showCurrentCellOutline, (void *)&showCurrentCellOutline);
+    Select(ID_currentPick,            (void *)&currentPick);
+    Select(ID_currentPickType,        (void *)&currentPickType);
+    Select(ID_currentPickValid,       (void *)&currentPickValid);
+    Select(ID_currentPickLetter,      (void *)&currentPickLetter);
+    Select(ID_pastPicks,              (void *)&pastPicks);
+    Select(ID_pastPickLetters,        (void *)&pastPickLetters);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -490,7 +488,9 @@ SpreadsheetAttributes::SelectAll()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May 26 11:42:36 PDT 2009
+//   Prevent the pick-related attributes from being saved.
+//
 // ****************************************************************************
 
 bool
@@ -554,36 +554,6 @@ SpreadsheetAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("sliceIndex", sliceIndex));
     }
 
-    if(completeSave || !FieldsEqual(ID_currentPick, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("currentPick", currentPick, 3));
-    }
-
-    if(completeSave || !FieldsEqual(ID_currentPickValid, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("currentPickValid", currentPickValid));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pastPicks, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pastPicks", pastPicks));
-    }
-
-    if(completeSave || !FieldsEqual(ID_currentPickLetter, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("currentPickLetter", currentPickLetter));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pastPickLetters, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pastPickLetters", pastPickLetters));
-    }
-
     if(completeSave || !FieldsEqual(ID_spreadsheetFont, &defaultObject))
     {
         addToParent = true;
@@ -602,7 +572,6 @@ SpreadsheetAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("showCurrentCellOutline", showCurrentCellOutline));
     }
 
-
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -611,7 +580,6 @@ SpreadsheetAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
 
     return (addToParent || forceAdd);
 }
-
 // ****************************************************************************
 // Method: SpreadsheetAttributes::SetFromNode
 //
@@ -668,22 +636,24 @@ SpreadsheetAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("sliceIndex")) != 0)
         SetSliceIndex(node->AsInt());
-    if((node = searchNode->GetNode("currentPick")) != 0)
-        SetCurrentPick(node->AsDoubleArray());
-    if((node = searchNode->GetNode("currentPickValid")) != 0)
-        SetCurrentPickValid(node->AsBool());
-    if((node = searchNode->GetNode("pastPicks")) != 0)
-        SetPastPicks(node->AsDoubleVector());
-    if((node = searchNode->GetNode("currentPickLetter")) != 0)
-        SetCurrentPickLetter(node->AsString());
-    if((node = searchNode->GetNode("pastPickLetters")) != 0)
-        SetPastPickLetters(node->AsStringVector());
     if((node = searchNode->GetNode("spreadsheetFont")) != 0)
         SetSpreadsheetFont(node->AsString());
     if((node = searchNode->GetNode("showPatchOutline")) != 0)
         SetShowPatchOutline(node->AsBool());
     if((node = searchNode->GetNode("showCurrentCellOutline")) != 0)
         SetShowCurrentCellOutline(node->AsBool());
+    if((node = searchNode->GetNode("currentPick")) != 0)
+        SetCurrentPick(node->AsInt());
+    if((node = searchNode->GetNode("currentPickType")) != 0)
+        SetCurrentPickType(node->AsInt());
+    if((node = searchNode->GetNode("currentPickValid")) != 0)
+        SetCurrentPickValid(node->AsBool());
+    if((node = searchNode->GetNode("currentPickLetter")) != 0)
+        SetCurrentPickLetter(node->AsString());
+    if((node = searchNode->GetNode("pastPicks")) != 0)
+        SetPastPicks(node->AsDoubleVector());
+    if((node = searchNode->GetNode("pastPickLetters")) != 0)
+        SetPastPickLetters(node->AsStringVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -766,43 +736,6 @@ SpreadsheetAttributes::SetSliceIndex(int sliceIndex_)
 }
 
 void
-SpreadsheetAttributes::SetCurrentPick(const double *currentPick_)
-{
-    currentPick[0] = currentPick_[0];
-    currentPick[1] = currentPick_[1];
-    currentPick[2] = currentPick_[2];
-    Select(ID_currentPick, (void *)currentPick, 3);
-}
-
-void
-SpreadsheetAttributes::SetCurrentPickValid(bool currentPickValid_)
-{
-    currentPickValid = currentPickValid_;
-    Select(ID_currentPickValid, (void *)&currentPickValid);
-}
-
-void
-SpreadsheetAttributes::SetPastPicks(const doubleVector &pastPicks_)
-{
-    pastPicks = pastPicks_;
-    Select(ID_pastPicks, (void *)&pastPicks);
-}
-
-void
-SpreadsheetAttributes::SetCurrentPickLetter(const std::string &currentPickLetter_)
-{
-    currentPickLetter = currentPickLetter_;
-    Select(ID_currentPickLetter, (void *)&currentPickLetter);
-}
-
-void
-SpreadsheetAttributes::SetPastPickLetters(const stringVector &pastPickLetters_)
-{
-    pastPickLetters = pastPickLetters_;
-    Select(ID_pastPickLetters, (void *)&pastPickLetters);
-}
-
-void
 SpreadsheetAttributes::SetSpreadsheetFont(const std::string &spreadsheetFont_)
 {
     spreadsheetFont = spreadsheetFont_;
@@ -821,6 +754,48 @@ SpreadsheetAttributes::SetShowCurrentCellOutline(bool showCurrentCellOutline_)
 {
     showCurrentCellOutline = showCurrentCellOutline_;
     Select(ID_showCurrentCellOutline, (void *)&showCurrentCellOutline);
+}
+
+void
+SpreadsheetAttributes::SetCurrentPick(int currentPick_)
+{
+    currentPick = currentPick_;
+    Select(ID_currentPick, (void *)&currentPick);
+}
+
+void
+SpreadsheetAttributes::SetCurrentPickType(int currentPickType_)
+{
+    currentPickType = currentPickType_;
+    Select(ID_currentPickType, (void *)&currentPickType);
+}
+
+void
+SpreadsheetAttributes::SetCurrentPickValid(bool currentPickValid_)
+{
+    currentPickValid = currentPickValid_;
+    Select(ID_currentPickValid, (void *)&currentPickValid);
+}
+
+void
+SpreadsheetAttributes::SetCurrentPickLetter(const std::string &currentPickLetter_)
+{
+    currentPickLetter = currentPickLetter_;
+    Select(ID_currentPickLetter, (void *)&currentPickLetter);
+}
+
+void
+SpreadsheetAttributes::SetPastPicks(const doubleVector &pastPicks_)
+{
+    pastPicks = pastPicks_;
+    Select(ID_pastPicks, (void *)&pastPicks);
+}
+
+void
+SpreadsheetAttributes::SetPastPickLetters(const stringVector &pastPickLetters_)
+{
+    pastPickLetters = pastPickLetters_;
+    Select(ID_pastPickLetters, (void *)&pastPickLetters);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -899,60 +874,6 @@ SpreadsheetAttributes::GetSliceIndex() const
     return sliceIndex;
 }
 
-const double *
-SpreadsheetAttributes::GetCurrentPick() const
-{
-    return currentPick;
-}
-
-double *
-SpreadsheetAttributes::GetCurrentPick()
-{
-    return currentPick;
-}
-
-bool
-SpreadsheetAttributes::GetCurrentPickValid() const
-{
-    return currentPickValid;
-}
-
-const doubleVector &
-SpreadsheetAttributes::GetPastPicks() const
-{
-    return pastPicks;
-}
-
-doubleVector &
-SpreadsheetAttributes::GetPastPicks()
-{
-    return pastPicks;
-}
-
-const std::string &
-SpreadsheetAttributes::GetCurrentPickLetter() const
-{
-    return currentPickLetter;
-}
-
-std::string &
-SpreadsheetAttributes::GetCurrentPickLetter()
-{
-    return currentPickLetter;
-}
-
-const stringVector &
-SpreadsheetAttributes::GetPastPickLetters() const
-{
-    return pastPickLetters;
-}
-
-stringVector &
-SpreadsheetAttributes::GetPastPickLetters()
-{
-    return pastPickLetters;
-}
-
 const std::string &
 SpreadsheetAttributes::GetSpreadsheetFont() const
 {
@@ -975,6 +896,60 @@ bool
 SpreadsheetAttributes::GetShowCurrentCellOutline() const
 {
     return showCurrentCellOutline;
+}
+
+int
+SpreadsheetAttributes::GetCurrentPick() const
+{
+    return currentPick;
+}
+
+int
+SpreadsheetAttributes::GetCurrentPickType() const
+{
+    return currentPickType;
+}
+
+bool
+SpreadsheetAttributes::GetCurrentPickValid() const
+{
+    return currentPickValid;
+}
+
+const std::string &
+SpreadsheetAttributes::GetCurrentPickLetter() const
+{
+    return currentPickLetter;
+}
+
+std::string &
+SpreadsheetAttributes::GetCurrentPickLetter()
+{
+    return currentPickLetter;
+}
+
+const doubleVector &
+SpreadsheetAttributes::GetPastPicks() const
+{
+    return pastPicks;
+}
+
+doubleVector &
+SpreadsheetAttributes::GetPastPicks()
+{
+    return pastPicks;
+}
+
+const stringVector &
+SpreadsheetAttributes::GetPastPickLetters() const
+{
+    return pastPickLetters;
+}
+
+stringVector &
+SpreadsheetAttributes::GetPastPickLetters()
+{
+    return pastPickLetters;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1006,15 +981,9 @@ SpreadsheetAttributes::SelectTracerColor()
 }
 
 void
-SpreadsheetAttributes::SelectCurrentPick()
+SpreadsheetAttributes::SelectSpreadsheetFont()
 {
-    Select(ID_currentPick, (void *)currentPick, 3);
-}
-
-void
-SpreadsheetAttributes::SelectPastPicks()
-{
-    Select(ID_pastPicks, (void *)&pastPicks);
+    Select(ID_spreadsheetFont, (void *)&spreadsheetFont);
 }
 
 void
@@ -1024,15 +993,15 @@ SpreadsheetAttributes::SelectCurrentPickLetter()
 }
 
 void
-SpreadsheetAttributes::SelectPastPickLetters()
+SpreadsheetAttributes::SelectPastPicks()
 {
-    Select(ID_pastPickLetters, (void *)&pastPickLetters);
+    Select(ID_pastPicks, (void *)&pastPicks);
 }
 
 void
-SpreadsheetAttributes::SelectSpreadsheetFont()
+SpreadsheetAttributes::SelectPastPickLetters()
 {
-    Select(ID_spreadsheetFont, (void *)&spreadsheetFont);
+    Select(ID_pastPickLetters, (void *)&pastPickLetters);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1067,14 +1036,15 @@ SpreadsheetAttributes::GetFieldName(int index) const
     case ID_tracerColor:            return "tracerColor";
     case ID_normal:                 return "normal";
     case ID_sliceIndex:             return "sliceIndex";
-    case ID_currentPick:            return "currentPick";
-    case ID_currentPickValid:       return "currentPickValid";
-    case ID_pastPicks:              return "pastPicks";
-    case ID_currentPickLetter:      return "currentPickLetter";
-    case ID_pastPickLetters:        return "pastPickLetters";
     case ID_spreadsheetFont:        return "spreadsheetFont";
     case ID_showPatchOutline:       return "showPatchOutline";
     case ID_showCurrentCellOutline: return "showCurrentCellOutline";
+    case ID_currentPick:            return "currentPick";
+    case ID_currentPickType:        return "currentPickType";
+    case ID_currentPickValid:       return "currentPickValid";
+    case ID_currentPickLetter:      return "currentPickLetter";
+    case ID_pastPicks:              return "pastPicks";
+    case ID_pastPickLetters:        return "pastPickLetters";
     default:  return "invalid index";
     }
 }
@@ -1107,14 +1077,15 @@ SpreadsheetAttributes::GetFieldType(int index) const
     case ID_tracerColor:            return FieldType_color;
     case ID_normal:                 return FieldType_enum;
     case ID_sliceIndex:             return FieldType_int;
-    case ID_currentPick:            return FieldType_doubleArray;
-    case ID_currentPickValid:       return FieldType_bool;
-    case ID_pastPicks:              return FieldType_doubleVector;
-    case ID_currentPickLetter:      return FieldType_string;
-    case ID_pastPickLetters:        return FieldType_stringVector;
     case ID_spreadsheetFont:        return FieldType_string;
     case ID_showPatchOutline:       return FieldType_bool;
     case ID_showCurrentCellOutline: return FieldType_bool;
+    case ID_currentPick:            return FieldType_int;
+    case ID_currentPickType:        return FieldType_int;
+    case ID_currentPickValid:       return FieldType_bool;
+    case ID_currentPickLetter:      return FieldType_string;
+    case ID_pastPicks:              return FieldType_doubleVector;
+    case ID_pastPickLetters:        return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1147,14 +1118,15 @@ SpreadsheetAttributes::GetFieldTypeName(int index) const
     case ID_tracerColor:            return "color";
     case ID_normal:                 return "enum";
     case ID_sliceIndex:             return "int";
-    case ID_currentPick:            return "doubleArray";
-    case ID_currentPickValid:       return "bool";
-    case ID_pastPicks:              return "doubleVector";
-    case ID_currentPickLetter:      return "string";
-    case ID_pastPickLetters:        return "stringVector";
     case ID_spreadsheetFont:        return "string";
     case ID_showPatchOutline:       return "bool";
     case ID_showCurrentCellOutline: return "bool";
+    case ID_currentPick:            return "int";
+    case ID_currentPickType:        return "int";
+    case ID_currentPickValid:       return "bool";
+    case ID_currentPickLetter:      return "string";
+    case ID_pastPicks:              return "doubleVector";
+    case ID_pastPickLetters:        return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -1221,36 +1193,6 @@ SpreadsheetAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (sliceIndex == obj.sliceIndex);
         }
         break;
-    case ID_currentPick:
-        {  // new scope
-        // Compare the currentPick arrays.
-        bool currentPick_equal = true;
-        for(int i = 0; i < 3 && currentPick_equal; ++i)
-            currentPick_equal = (currentPick[i] == obj.currentPick[i]);
-
-        retval = currentPick_equal;
-        }
-        break;
-    case ID_currentPickValid:
-        {  // new scope
-        retval = (currentPickValid == obj.currentPickValid);
-        }
-        break;
-    case ID_pastPicks:
-        {  // new scope
-        retval = (pastPicks == obj.pastPicks);
-        }
-        break;
-    case ID_currentPickLetter:
-        {  // new scope
-        retval = (currentPickLetter == obj.currentPickLetter);
-        }
-        break;
-    case ID_pastPickLetters:
-        {  // new scope
-        retval = (pastPickLetters == obj.pastPickLetters);
-        }
-        break;
     case ID_spreadsheetFont:
         {  // new scope
         retval = (spreadsheetFont == obj.spreadsheetFont);
@@ -1264,6 +1206,36 @@ SpreadsheetAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_showCurrentCellOutline:
         {  // new scope
         retval = (showCurrentCellOutline == obj.showCurrentCellOutline);
+        }
+        break;
+    case ID_currentPick:
+        {  // new scope
+        retval = (currentPick == obj.currentPick);
+        }
+        break;
+    case ID_currentPickType:
+        {  // new scope
+        retval = (currentPickType == obj.currentPickType);
+        }
+        break;
+    case ID_currentPickValid:
+        {  // new scope
+        retval = (currentPickValid == obj.currentPickValid);
+        }
+        break;
+    case ID_currentPickLetter:
+        {  // new scope
+        retval = (currentPickLetter == obj.currentPickLetter);
+        }
+        break;
+    case ID_pastPicks:
+        {  // new scope
+        retval = (pastPicks == obj.pastPicks);
+        }
+        break;
+    case ID_pastPickLetters:
+        {  // new scope
+        retval = (pastPickLetters == obj.pastPickLetters);
         }
         break;
     default: retval = false;

@@ -89,11 +89,10 @@ public:
     void SelectFormatString();
     void SelectColorTableName();
     void SelectTracerColor();
-    void SelectCurrentPick();
-    void SelectPastPicks();
-    void SelectCurrentPickLetter();
-    void SelectPastPickLetters();
     void SelectSpreadsheetFont();
+    void SelectCurrentPickLetter();
+    void SelectPastPicks();
+    void SelectPastPickLetters();
 
     // Property setting methods
     void SetSubsetName(const std::string &subsetName_);
@@ -104,14 +103,15 @@ public:
     void SetTracerColor(const ColorAttribute &tracerColor_);
     void SetNormal(NormalAxis normal_);
     void SetSliceIndex(int sliceIndex_);
-    void SetCurrentPick(const double *currentPick_);
-    void SetCurrentPickValid(bool currentPickValid_);
-    void SetPastPicks(const doubleVector &pastPicks_);
-    void SetCurrentPickLetter(const std::string &currentPickLetter_);
-    void SetPastPickLetters(const stringVector &pastPickLetters_);
     void SetSpreadsheetFont(const std::string &spreadsheetFont_);
     void SetShowPatchOutline(bool showPatchOutline_);
     void SetShowCurrentCellOutline(bool showCurrentCellOutline_);
+    void SetCurrentPick(int currentPick_);
+    void SetCurrentPickType(int currentPickType_);
+    void SetCurrentPickValid(bool currentPickValid_);
+    void SetCurrentPickLetter(const std::string &currentPickLetter_);
+    void SetPastPicks(const doubleVector &pastPicks_);
+    void SetPastPickLetters(const stringVector &pastPickLetters_);
 
     // Property getting methods
     const std::string    &GetSubsetName() const;
@@ -126,19 +126,19 @@ public:
           ColorAttribute &GetTracerColor();
     NormalAxis           GetNormal() const;
     int                  GetSliceIndex() const;
-    const double         *GetCurrentPick() const;
-          double         *GetCurrentPick();
-    bool                 GetCurrentPickValid() const;
-    const doubleVector   &GetPastPicks() const;
-          doubleVector   &GetPastPicks();
-    const std::string    &GetCurrentPickLetter() const;
-          std::string    &GetCurrentPickLetter();
-    const stringVector   &GetPastPickLetters() const;
-          stringVector   &GetPastPickLetters();
     const std::string    &GetSpreadsheetFont() const;
           std::string    &GetSpreadsheetFont();
     bool                 GetShowPatchOutline() const;
     bool                 GetShowCurrentCellOutline() const;
+    int                  GetCurrentPick() const;
+    int                  GetCurrentPickType() const;
+    bool                 GetCurrentPickValid() const;
+    const std::string    &GetCurrentPickLetter() const;
+          std::string    &GetCurrentPickLetter();
+    const doubleVector   &GetPastPicks() const;
+          doubleVector   &GetPastPicks();
+    const stringVector   &GetPastPickLetters() const;
+          stringVector   &GetPastPickLetters();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -170,14 +170,15 @@ public:
         ID_tracerColor,
         ID_normal,
         ID_sliceIndex,
-        ID_currentPick,
-        ID_currentPickValid,
-        ID_pastPicks,
-        ID_currentPickLetter,
-        ID_pastPickLetters,
         ID_spreadsheetFont,
         ID_showPatchOutline,
-        ID_showCurrentCellOutline
+        ID_showCurrentCellOutline,
+        ID_currentPick,
+        ID_currentPickType,
+        ID_currentPickValid,
+        ID_currentPickLetter,
+        ID_pastPicks,
+        ID_pastPickLetters
     };
 
 private:
@@ -189,14 +190,15 @@ private:
     ColorAttribute tracerColor;
     int            normal;
     int            sliceIndex;
-    double         currentPick[3];
-    bool           currentPickValid;
-    doubleVector   pastPicks;
-    std::string    currentPickLetter;
-    stringVector   pastPickLetters;
     std::string    spreadsheetFont;
     bool           showPatchOutline;
     bool           showCurrentCellOutline;
+    int            currentPick;
+    int            currentPickType;
+    bool           currentPickValid;
+    std::string    currentPickLetter;
+    doubleVector   pastPicks;
+    stringVector   pastPickLetters;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

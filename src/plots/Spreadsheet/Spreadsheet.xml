@@ -59,17 +59,6 @@
       <Field name="sliceIndex" label="Slice index" type="int">
         0
       </Field>
-      <Field name="currentPick" label="Current pick" type="doubleArray" length="3" internal="true">
-      </Field>
-      <Field name="currentPickValid" label="Current pick valid" type="bool" internal="true">
-        false
-      </Field>
-      <Field name="pastPicks" label="Past picks" type="doubleVector" internal="true">
-      </Field>
-      <Field name="currentPickLetter" label="Current pick letter" type="string">
-      </Field>
-      <Field name="pastPickLetters" label="Past pick letters" type="stringVector">
-      </Field>
       <Field name="spreadsheetFont" label="Spreadsheet Font" type="string">
         Courier,12,-1,5,50,0,0,0,0,0
       </Field>
@@ -79,6 +68,21 @@
       <Field name="showCurrentCellOutline" label="Show current cell outline" type="bool">
         false
       </Field>
+      <Field name="currentPick" label="Current pick" type="int" internal="true">
+        0
+      </Field>
+      <Field name="currentPickType" label="currentPickType" type="int">
+        0
+      </Field>
+      <Field name="currentPickValid" label="Current pick valid" type="bool" internal="true">
+        false
+      </Field>
+      <Field name="currentPickLetter" label="Current pick letter" type="string">
+      </Field>
+      <Field name="pastPicks" label="Past picks" type="doubleVector" internal="true">
+      </Field>
+      <Field name="pastPickLetters" label="Past pick letters" type="stringVector">
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="CopyAttributes" user="false" member="true">
@@ -86,6 +90,8 @@
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="SetSubsetName" user="false" member="true">
+      </Function> 
+      <Function name="CreateNode" user="false" member="true">
       </Function>
       <Function name="SpreadsheetViewerPluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>

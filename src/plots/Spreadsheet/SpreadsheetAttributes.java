@@ -70,7 +70,7 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
     public SpreadsheetAttributes()
     {
-        super(16);
+        super(17);
 
         subsetName = new String("Whole");
         formatString = new String("%1.6f");
@@ -80,21 +80,20 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
         tracerColor = new ColorAttribute(255, 0, 0, 150);
         normal = NORMALAXIS_Z;
         sliceIndex = 0;
-        currentPick = new double[3];
-        for (int i = 0; i < currentPick.length; ++i)
-            currentPick[i] = 0.;
-        currentPickValid = false;
-        pastPicks = new Vector();
-        currentPickLetter = new String("");
-        pastPickLetters = new Vector();
         spreadsheetFont = new String("Courier,12,-1,5,50,0,0,0,0,0");
         showPatchOutline = true;
         showCurrentCellOutline = false;
+        currentPick = 0;
+        currentPickType = 0;
+        currentPickValid = false;
+        currentPickLetter = new String("");
+        pastPicks = new Vector();
+        pastPickLetters = new Vector();
     }
 
     public SpreadsheetAttributes(SpreadsheetAttributes obj)
     {
-        super(16);
+        super(17);
 
         int i;
 
@@ -106,12 +105,13 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
         tracerColor = new ColorAttribute(obj.tracerColor);
         normal = obj.normal;
         sliceIndex = obj.sliceIndex;
-        currentPick = new double[3];
-        currentPick[0] = obj.currentPick[0];
-        currentPick[1] = obj.currentPick[1];
-        currentPick[2] = obj.currentPick[2];
-
+        spreadsheetFont = new String(obj.spreadsheetFont);
+        showPatchOutline = obj.showPatchOutline;
+        showCurrentCellOutline = obj.showCurrentCellOutline;
+        currentPick = obj.currentPick;
+        currentPickType = obj.currentPickType;
         currentPickValid = obj.currentPickValid;
+        currentPickLetter = new String(obj.currentPickLetter);
         pastPicks = new Vector(obj.pastPicks.size());
         for(i = 0; i < obj.pastPicks.size(); ++i)
         {
@@ -119,14 +119,10 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
             pastPicks.addElement(new Double(dv.doubleValue()));
         }
 
-        currentPickLetter = new String(obj.currentPickLetter);
         pastPickLetters = new Vector(obj.pastPickLetters.size());
         for(i = 0; i < obj.pastPickLetters.size(); ++i)
             pastPickLetters.addElement(new String((String)obj.pastPickLetters.elementAt(i)));
 
-        spreadsheetFont = new String(obj.spreadsheetFont);
-        showPatchOutline = obj.showPatchOutline;
-        showCurrentCellOutline = obj.showCurrentCellOutline;
 
         SelectAll();
     }
@@ -134,11 +130,6 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
     public boolean equals(SpreadsheetAttributes obj)
     {
         int i;
-
-        // Compare the currentPick arrays.
-        boolean currentPick_equal = true;
-        for(i = 0; i < 3 && currentPick_equal; ++i)
-            currentPick_equal = (currentPick[i] == obj.currentPick[i]);
 
         // Compare the elements in the pastPicks vector.
         boolean pastPicks_equal = (obj.pastPicks.size() == pastPicks.size());
@@ -167,14 +158,15 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
                 (tracerColor == obj.tracerColor) &&
                 (normal == obj.normal) &&
                 (sliceIndex == obj.sliceIndex) &&
-                currentPick_equal &&
-                (currentPickValid == obj.currentPickValid) &&
-                pastPicks_equal &&
-                (currentPickLetter.equals(obj.currentPickLetter)) &&
-                pastPickLetters_equal &&
                 (spreadsheetFont.equals(obj.spreadsheetFont)) &&
                 (showPatchOutline == obj.showPatchOutline) &&
-                (showCurrentCellOutline == obj.showCurrentCellOutline));
+                (showCurrentCellOutline == obj.showCurrentCellOutline) &&
+                (currentPick == obj.currentPick) &&
+                (currentPickType == obj.currentPickType) &&
+                (currentPickValid == obj.currentPickValid) &&
+                (currentPickLetter.equals(obj.currentPickLetter)) &&
+                pastPicks_equal &&
+                pastPickLetters_equal);
     }
 
     public String GetName() { return "Spreadsheet"; }
@@ -229,62 +221,58 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
         Select(7);
     }
 
-    public void SetCurrentPick(double[] currentPick_)
-    {
-        currentPick[0] = currentPick_[0];
-        currentPick[1] = currentPick_[1];
-        currentPick[2] = currentPick_[2];
-        Select(8);
-    }
-
-    public void SetCurrentPick(double e0, double e1, double e2)
-    {
-        currentPick[0] = e0;
-        currentPick[1] = e1;
-        currentPick[2] = e2;
-        Select(8);
-    }
-
-    public void SetCurrentPickValid(boolean currentPickValid_)
-    {
-        currentPickValid = currentPickValid_;
-        Select(9);
-    }
-
-    public void SetPastPicks(Vector pastPicks_)
-    {
-        pastPicks = pastPicks_;
-        Select(10);
-    }
-
-    public void SetCurrentPickLetter(String currentPickLetter_)
-    {
-        currentPickLetter = currentPickLetter_;
-        Select(11);
-    }
-
-    public void SetPastPickLetters(Vector pastPickLetters_)
-    {
-        pastPickLetters = pastPickLetters_;
-        Select(12);
-    }
-
     public void SetSpreadsheetFont(String spreadsheetFont_)
     {
         spreadsheetFont = spreadsheetFont_;
-        Select(13);
+        Select(8);
     }
 
     public void SetShowPatchOutline(boolean showPatchOutline_)
     {
         showPatchOutline = showPatchOutline_;
-        Select(14);
+        Select(9);
     }
 
     public void SetShowCurrentCellOutline(boolean showCurrentCellOutline_)
     {
         showCurrentCellOutline = showCurrentCellOutline_;
+        Select(10);
+    }
+
+    public void SetCurrentPick(int currentPick_)
+    {
+        currentPick = currentPick_;
+        Select(11);
+    }
+
+    public void SetCurrentPickType(int currentPickType_)
+    {
+        currentPickType = currentPickType_;
+        Select(12);
+    }
+
+    public void SetCurrentPickValid(boolean currentPickValid_)
+    {
+        currentPickValid = currentPickValid_;
+        Select(13);
+    }
+
+    public void SetCurrentPickLetter(String currentPickLetter_)
+    {
+        currentPickLetter = currentPickLetter_;
+        Select(14);
+    }
+
+    public void SetPastPicks(Vector pastPicks_)
+    {
+        pastPicks = pastPicks_;
         Select(15);
+    }
+
+    public void SetPastPickLetters(Vector pastPickLetters_)
+    {
+        pastPickLetters = pastPickLetters_;
+        Select(16);
     }
 
     // Property getting methods
@@ -296,14 +284,15 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
     public ColorAttribute GetTracerColor() { return tracerColor; }
     public int            GetNormal() { return normal; }
     public int            GetSliceIndex() { return sliceIndex; }
-    public double[]       GetCurrentPick() { return currentPick; }
-    public boolean        GetCurrentPickValid() { return currentPickValid; }
-    public Vector         GetPastPicks() { return pastPicks; }
-    public String         GetCurrentPickLetter() { return currentPickLetter; }
-    public Vector         GetPastPickLetters() { return pastPickLetters; }
     public String         GetSpreadsheetFont() { return spreadsheetFont; }
     public boolean        GetShowPatchOutline() { return showPatchOutline; }
     public boolean        GetShowCurrentCellOutline() { return showCurrentCellOutline; }
+    public int            GetCurrentPick() { return currentPick; }
+    public int            GetCurrentPickType() { return currentPickType; }
+    public boolean        GetCurrentPickValid() { return currentPickValid; }
+    public String         GetCurrentPickLetter() { return currentPickLetter; }
+    public Vector         GetPastPicks() { return pastPicks; }
+    public Vector         GetPastPickLetters() { return pastPickLetters; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -325,21 +314,23 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(7, buf))
             buf.WriteInt(sliceIndex);
         if(WriteSelect(8, buf))
-            buf.WriteDoubleArray(currentPick);
-        if(WriteSelect(9, buf))
-            buf.WriteBool(currentPickValid);
-        if(WriteSelect(10, buf))
-            buf.WriteDoubleVector(pastPicks);
-        if(WriteSelect(11, buf))
-            buf.WriteString(currentPickLetter);
-        if(WriteSelect(12, buf))
-            buf.WriteStringVector(pastPickLetters);
-        if(WriteSelect(13, buf))
             buf.WriteString(spreadsheetFont);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(9, buf))
             buf.WriteBool(showPatchOutline);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(10, buf))
             buf.WriteBool(showCurrentCellOutline);
+        if(WriteSelect(11, buf))
+            buf.WriteInt(currentPick);
+        if(WriteSelect(12, buf))
+            buf.WriteInt(currentPickType);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(currentPickValid);
+        if(WriteSelect(14, buf))
+            buf.WriteString(currentPickLetter);
+        if(WriteSelect(15, buf))
+            buf.WriteDoubleVector(pastPicks);
+        if(WriteSelect(16, buf))
+            buf.WriteStringVector(pastPickLetters);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -375,28 +366,31 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
                 SetSliceIndex(buf.ReadInt());
                 break;
             case 8:
-                SetCurrentPick(buf.ReadDoubleArray());
-                break;
-            case 9:
-                SetCurrentPickValid(buf.ReadBool());
-                break;
-            case 10:
-                SetPastPicks(buf.ReadDoubleVector());
-                break;
-            case 11:
-                SetCurrentPickLetter(buf.ReadString());
-                break;
-            case 12:
-                SetPastPickLetters(buf.ReadStringVector());
-                break;
-            case 13:
                 SetSpreadsheetFont(buf.ReadString());
                 break;
-            case 14:
+            case 9:
                 SetShowPatchOutline(buf.ReadBool());
                 break;
-            case 15:
+            case 10:
                 SetShowCurrentCellOutline(buf.ReadBool());
+                break;
+            case 11:
+                SetCurrentPick(buf.ReadInt());
+                break;
+            case 12:
+                SetCurrentPickType(buf.ReadInt());
+                break;
+            case 13:
+                SetCurrentPickValid(buf.ReadBool());
+                break;
+            case 14:
+                SetCurrentPickLetter(buf.ReadString());
+                break;
+            case 15:
+                SetPastPicks(buf.ReadDoubleVector());
+                break;
+            case 16:
+                SetPastPickLetters(buf.ReadStringVector());
                 break;
             }
         }
@@ -420,14 +414,15 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
             str = str + "NORMALAXIS_Z";
         str = str + "\n";
         str = str + intToString("sliceIndex", sliceIndex, indent) + "\n";
-        str = str + doubleArrayToString("currentPick", currentPick, indent) + "\n";
-        str = str + boolToString("currentPickValid", currentPickValid, indent) + "\n";
-        str = str + doubleVectorToString("pastPicks", pastPicks, indent) + "\n";
-        str = str + stringToString("currentPickLetter", currentPickLetter, indent) + "\n";
-        str = str + stringVectorToString("pastPickLetters", pastPickLetters, indent) + "\n";
         str = str + stringToString("spreadsheetFont", spreadsheetFont, indent) + "\n";
         str = str + boolToString("showPatchOutline", showPatchOutline, indent) + "\n";
         str = str + boolToString("showCurrentCellOutline", showCurrentCellOutline, indent) + "\n";
+        str = str + intToString("currentPick", currentPick, indent) + "\n";
+        str = str + intToString("currentPickType", currentPickType, indent) + "\n";
+        str = str + boolToString("currentPickValid", currentPickValid, indent) + "\n";
+        str = str + stringToString("currentPickLetter", currentPickLetter, indent) + "\n";
+        str = str + doubleVectorToString("pastPicks", pastPicks, indent) + "\n";
+        str = str + stringVectorToString("pastPickLetters", pastPickLetters, indent) + "\n";
         return str;
     }
 
@@ -441,13 +436,14 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
     private ColorAttribute tracerColor;
     private int            normal;
     private int            sliceIndex;
-    private double[]       currentPick;
-    private boolean        currentPickValid;
-    private Vector         pastPicks; // vector of Double objects
-    private String         currentPickLetter;
-    private Vector         pastPickLetters; // vector of String objects
     private String         spreadsheetFont;
     private boolean        showPatchOutline;
     private boolean        showCurrentCellOutline;
+    private int            currentPick;
+    private int            currentPickType;
+    private boolean        currentPickValid;
+    private String         currentPickLetter;
+    private Vector         pastPicks; // vector of Double objects
+    private Vector         pastPickLetters; // vector of String objects
 }
 

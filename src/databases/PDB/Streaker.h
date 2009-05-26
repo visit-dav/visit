@@ -108,6 +108,8 @@ private:
 
         bool        hasMaterial;
         bool        cellCentered;
+        bool        matchSilo;
+
         int         slice;
         int         sliceIndex;
         int         hsize;

@@ -97,6 +97,9 @@ class ViewerPlot;
 //   Brad Whitlock, Thu Aug 28 14:41:18 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Tue May 26 11:09:08 PDT 2009
+//   I added lineout operations.
+//
 // ****************************************************************************
 
 class SpreadsheetViewer : public QMainWindow, public Observer
@@ -140,8 +143,12 @@ private slots:
     void selectNone();
     void operationSum();
     void operationAverage();
-    void operationCurveX();
-    void operationCurveY();
+    void operationCurveX(int);
+    void operationCurveY(int);
+    void operationCurveX0();
+    void operationCurveY0();
+    void operationCurveX1();
+    void operationCurveY1();
 private:
     void updateSpreadsheet();
     bool moveSliceToCurrentPick();
@@ -160,6 +167,7 @@ private:
     int  GetCell(double, double, double);
     bool PickPointsChanged() const;
     void GetBaseIndexFromMetaData(int *base_index) const;
+    void GetPickIJK(int pickId, int pickType, int *ijk) const;
 
     void DisplayCurve(const double *vals, int nvals);
     bool GetDataVsCoordinate(double *curve, const vtkIdType *, int nvals, int coord) const;
@@ -233,10 +241,6 @@ private:
     QMenu                *operationsMenu;
     QAction              *fileMenu_SaveText;
     QAction              *editMenu_Copy;
-
-    // A cache for previous picks, to prevent cell lookups again.
-    std::vector<double>   pickPt;
-    std::vector<int>      cellId;
 };
 
 #endif
