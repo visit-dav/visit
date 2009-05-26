@@ -154,7 +154,7 @@ class PLOTTER_API avtTransparencyActor
     std::vector<std::vector <vtkDataSetMapper *> >   mappers;
     std::vector<std::vector <vtkActor *> >           actors;
 
-    std::map<int,double>                              inputsOpacities;
+    std::map<int,double>                             inputsOpacities;
 
     std::vector<std::vector <vtkPolyData *> >        preparedDataset;
 
