@@ -6060,6 +6060,24 @@ VisWindow::TransparenciesExist()
     return plots->TransparenciesExist();
 }
 
+// ****************************************************************************
+// Method: VisWindow::GetTransparencyActor
+//
+// Purpose:
+//   Grabs the active transparency actor.
+//
+// Programmer: Tom Fogal
+// Creation:   May 25, 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+avtTransparencyActor *
+VisWindow::GetTransparencyActor()
+{
+    return plots->GetTransparencyActor();
+}
+
 
 // ****************************************************************************
 // Method: VisWindow::ReAddToolsToRenderWindow

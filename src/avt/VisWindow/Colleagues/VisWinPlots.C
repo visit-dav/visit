@@ -1947,7 +1947,22 @@ VisWinPlots::TransparenciesExist()
     return transparencyActor->TransparenciesExist();
 }
 
+// ****************************************************************************
+//  Method: VisWinPlots::GetTransparencyActor
+//
+//  Purpose:
+//    Gives the transparency actor used when sorting geometry.
+//
+//  Programmer: Tom Fogal
+//  Creation:   May 25, 2009
+//
+// ****************************************************************************
 
+avtTransparencyActor *
+VisWinPlots::GetTransparencyActor()
+{
+    return transparencyActor;
+}
 
 // ****************************************************************************
 //  Method: VisWinPlots::SuspendOpaqueGeometry
