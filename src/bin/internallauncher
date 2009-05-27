@@ -493,6 +493,10 @@ $0 = shift @ARGV;
 #    for parallel engine request.  added error check for > 16way config, 
 #    will now generate (hopefully) helpful error message
 #
+#    Mark C. Miller, Tue May 26 15:49:57 PDT 2009
+#    Predicated usage and exit on help switch appearing AS THE ONLY other arg
+#    on the command line. This allows '--help' to be passed to visit cli
+#    scripts which may have their own help and argument processing.
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1005,6 +1009,7 @@ $ssh_tunneling  = 0;
 $leftdb = "";
 $rightdb = "";
 $noloopback = 0;
+$argc = scalar(@ARGV);
 
 # Parse the arguments 
 @visitargs = ();
@@ -1040,16 +1045,16 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-movie" )    { $exe_name = "cli"; $add_movie_args = 1; $exe_name_passed = 1;}
     elsif ($arg eq "-s")         { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
-    elsif ($arg eq "-help")      { print STDERR "\nUSAGE: visit [options]
-                                   $helpnote\n $usage\n"; exit(0); }
-    elsif ($arg eq "-h")         { print STDERR "\nUSAGE: visit [options]
-                                   $helpnote\n $usage\n"; exit(0); }
-    elsif ($arg eq "--help")     { print STDERR "\nUSAGE: visit [options]
-                                   $helpnote\n $usage\n"; exit(0); }
-    elsif ($arg eq "-fullhelp")  { print STDERR "\nUSAGE: visit [options]
-                                   $fullusage\n"; exit(0); }
-    elsif ($arg eq "--fullhelp") { print STDERR "\nUSAGE: visit [options]
-                                   $fullusage\n"; exit(0); }
+    elsif ($arg eq "-help" and $argc == 2)
+        { print STDERR "\nUSAGE: visit [options] $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "-h" and $argc == 2)
+        { print STDERR "\nUSAGE: visit [options] $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "--help" and $argc == 2)
+        { print STDERR "\nUSAGE: visit [options] $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "-fullhelp" and $argc == 2)
+        { print STDERR "\nUSAGE: visit [options] $fullusage\n"; exit(0); }
+    elsif ($arg eq "--fullhelp" and $argc == 2)
+        { print STDERR "\nUSAGE: visit [options] $fullusage\n"; exit(0); }
     elsif ($arg eq "-norun")     { $nr = shift; push @norun, $nr; push @visitargs, "-norun", $nr; }
     elsif ($arg eq "-arch")      { $print_arch = 1; } 
     elsif ($arg eq "-env")              { $envonly = 1; }
