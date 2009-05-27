@@ -5371,6 +5371,9 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    rendering.  This prevents us from doing global comm while doing the
 //    rendering proper.
 //
+//    Tom Fogal, Tue May 26 15:45:43 MDT 2009
+//    Minor touchups to debug statements.
+//
 // ****************************************************************************
 
 void
@@ -5582,10 +5585,13 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
     { // Force transparency calculation early for SR mode.
-        debug3 << "Forcing early calculation of transparency..." << std::endl;
+        debug5 << "Forcing early calculation of transparency..." << std::endl;
         avtTransparencyActor* trans = viswin->GetTransparencyActor();
         trans->InvalidateTransparencyCache();
         bool t = trans->TransparenciesExist();
+        debug3 << "Early transparency calculation says there "
+               << (t ? "is" : "is not")
+               << " some transparent geometry." << std::endl;
     }
 }
 
