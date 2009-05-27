@@ -74,6 +74,10 @@
 #
 #    Mark C. Miller, Thu May  7 14:51:53 PDT 2009
 #    Added some itaps tests to skip lists.
+#
+#    Tom Fogal, Wed May 27 17:36:36 MDT 2009
+#    Not getting these mails; changed my email to see if that helps.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -87,7 +91,7 @@ errorMsgCount=0;
 touch $errorLogFile
 
 # list of users who want email every night with the log file
-logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov tfogal@alumni.unh.edu"
+logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov tfogal@sci.utah.edu"
 
 eqzero() {
     if test "$1" = "0"; then
