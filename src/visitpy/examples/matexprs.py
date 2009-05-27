@@ -268,7 +268,7 @@ for k in dirMap.keys():
         SetSaveWindowAttributes(swa)
         SaveWindow()
     if clOpts.image_format != None:
-        swa.formatl = getattr(swa,clOpts.image_format.upper())
+        swa.format = getattr(swa,clOpts.image_format.upper())
         #swa.fileName = "%s.%s"%(k,clOpts.image_format.lower())
         swa.fileName = k
         SetSaveWindowAttributes(swa)
