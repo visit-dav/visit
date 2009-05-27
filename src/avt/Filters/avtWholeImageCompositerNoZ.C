@@ -71,21 +71,24 @@ static unsigned char local_bg_b;
 //
 // Programmer:   Mark C. Miller (plagerized from Katherine Price)
 // Date:         26Feb03 
+//
+// Modifications:
+//
+//   Tom Fogal, Tue May 26 16:18:14 MDT 2009
+//   Don't name last (unused) argument.
+//
 // ****************************************************************************
 
 static void
 #ifdef PARALLEL
-MergeZFPixelBuffers(void *ibuf, void *iobuf, int *count, MPI_Datatype *datatype)
+MergeZFPixelBuffers(void *ibuf, void *iobuf, int *count, MPI_Datatype *)
 #else
-MergeZFPixelBuffers(void *ibuf, void *iobuf, int *count, void *datatype)
+MergeZFPixelBuffers(void *ibuf, void *iobuf, int *count, void *)
 #endif
 {
     ZFPixel_t *in_zfpixels    = (ZFPixel_t *) ibuf;
     ZFPixel_t *inout_zfpixels = (ZFPixel_t *) iobuf;
     int i;
-
-    // quiet the compiler
-    datatype = datatype;
 
     for (i = 0; i < *count; i++)
     {
