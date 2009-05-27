@@ -68,8 +68,9 @@ class     avtSpecies;
 
 class     DBOptionsAttributes;
 
-typedef struct
+typedef struct _GroupInfo
 {
+    _GroupInfo() : haveGroups(false), ndomains(0), numgroups(0) {}
     bool                haveGroups;
     int                 ndomains;
     int                 numgroups;
