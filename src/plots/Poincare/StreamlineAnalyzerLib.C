@@ -416,9 +416,11 @@ poloidalWindingCheck( vector< Point > &points,
     unsigned int poloidalWinding = (poloidalWindingAve + 0.5);
 
     if( level == 2 )
-      cerr << "tested toroidalWinding/poloidalWinding  "
-           << toroidalWinding << "  "
-           << poloidalWinding << "  hits  ";
+    {
+        debug5<< "tested toroidalWinding/poloidalWinding  "
+              << toroidalWinding << "  "
+              << poloidalWinding << "  hits  ";
+    }
 
     // Count the number of times the poloidal winding matches the
     // windings between puncture points (i.e. the poloidal winding
@@ -431,26 +433,28 @@ poloidalWindingCheck( vector< Point > &points,
         ++nMatches;
 
         if( level == 2 ) {
-          cerr << 1 << " ";
+            debug5 << 1 << " ";
         }
       } else if ( level == 2 ) {
-        cerr << 0 << " ";
+          debug5 << 0 << " ";
       }
     }
 
     if( level == 2 )
-      cerr << endl;
+      debug5 << endl;
 
     double matchPercent = (double) nMatches / (double) (npts-toroidalWinding);
 
     if( level >= 1 )
-      cerr << "tested toroidalWinding/poloidalWinding  "
-           << toroidalWinding << "  "
-           << poloidalWinding << "  ("
-           << (double)toroidalWinding/(double)poloidalWinding << ")  "
-           << "consistency "
-           << 100.0 * matchPercent
-           << " percent" << endl;
+    {
+        debug5 << "tested toroidalWinding/poloidalWinding  "
+               << toroidalWinding << "  "
+               << poloidalWinding << "  ("
+               << (double)toroidalWinding/(double)poloidalWinding << ")  "
+               << "consistency "
+               << 100.0 * matchPercent
+               << " percent" << endl;
+    }
 
     if( bestMatchPercent <= matchPercent ) {
       nextBestMatchPercent = bestMatchPercent;
@@ -838,13 +842,16 @@ islandChecks( vector< Point >& points,
     nnodes += nodes[i];
     
     if( turns )
-      cerr << "Island " << i << " has "
-           << turns << " turns with "
-           << nodes[i]
-           << " nodes, overlap node " << overlap
-           << " firstTurn " << firstTurn
-           <<   " midTurn " << midTurn
-           <<  " lastTurn " << lastTurn << endl;
+    {
+
+        debug5 << "Island " << i << " has "
+               << turns << " turns with "
+               << nodes[i]
+               << " nodes, overlap node " << overlap
+               << " firstTurn " << firstTurn
+               <<   " midTurn " << midTurn
+               <<  " lastTurn " << lastTurn << endl;
+    }
   }
 
   // Get the average number of nodes.
@@ -853,10 +860,10 @@ islandChecks( vector< Point >& points,
   if( islands ) {
     for( unsigned int i=0; i<toroidalWinding; i++ ) {
       if( nodes[i] < nnodes - 1 || nnodes + 1 < nodes[i] ) {
-        cerr << "Appears to be islands but not self consistant." << endl;
+          debug5 << "Appears to be islands but not self consistant." << endl;
           
         for( unsigned int i=0; i<toroidalWinding; i++ )
-          cerr << nnodes << "  " << nodes[i] << endl;
+            debug5 << nnodes << "  " << nodes[i] << endl;
         
         break;
       }
@@ -921,9 +928,9 @@ basicChecks( vector< Point >& points,
     // The skip should be 1 and it should not be convex.
 //    convex = hullCheck( points, nodes, skip );
 
-    cerr << "nodes " << nodes << "  "
-         << "convex " << convex << "  "
-         << "skip " << skip << endl;
+    debug5 << "nodes " << nodes << "  "
+           << "convex " << convex << "  "
+           << "skip " << skip << endl;
 
     // The ordering can be in either direction so skip may be flipped.
     if( skip != 1 && skip + 1 == nodes )
@@ -938,9 +945,9 @@ basicChecks( vector< Point >& points,
 
     } else {
       type = 0;
-      cerr << "TOROIDALWINDING OF 1 BUT NOT AN ISLAND "
-           << (convex ? " CONVEX" : " CONCAVE") << " HULL "
-           << endl;
+      debug5 << "TOROIDALWINDING OF 1 BUT NOT AN ISLAND "
+             << (convex ? " CONVEX" : " CONCAVE") << " HULL "
+             << endl;
       return false;
     }
 
@@ -984,8 +991,8 @@ basicChecks( vector< Point >& points,
       }
 
       if( tmpSkip != skip && tmpSkip != toroidalWinding - skip ) {
-        cerr << endl << toroidalWinding << "CONVEX HULL BUT IRREGULAR SKIP "
-             << tmpSkip << "  " <<  skip << endl;
+          debug5 << endl << toroidalWinding << "CONVEX HULL BUT IRREGULAR SKIP "
+                 << tmpSkip << "  " <<  skip << endl;
       }
     }
 
@@ -1017,8 +1024,8 @@ basicChecks( vector< Point >& points,
     }
 
     if( tmpSkip != skip && tmpSkip != toroidalWinding - skip ) {
-      cerr << endl << toroidalWinding << " OVERLAP BUT IRREGULAR SKIP "
-           << tmpSkip << "  " <<  skip << endl;
+        debug5 << endl << toroidalWinding << " OVERLAP BUT IRREGULAR SKIP "
+               << tmpSkip << "  " <<  skip << endl;
     }
   }
 
@@ -1147,7 +1154,7 @@ basicChecks( vector< Point >& points,
                              (Vector) points[j] - globalCentroid ) == 1);
 
         if( baseCCW != groupCCW ) {
-          cerr << "CONVEX HULL BUT GROUPS GO IN DIFFERENT DIRECTIONS" << endl;
+            debug5 << "CONVEX HULL BUT GROUPS GO IN DIFFERENT DIRECTIONS" << endl;
 
           return false;
         }
@@ -1160,7 +1167,7 @@ basicChecks( vector< Point >& points,
                          (Vector) points[skip] - globalCentroid ) == 1);
     
     if( groupCCW != baseCCW ) {
-      cerr << "FLIPPING THE SKIP DIRECTION" << endl;
+        debug5 << "FLIPPING THE SKIP DIRECTION" << endl;
       skip = toroidalWinding - skip;
     }
 
@@ -1178,10 +1185,10 @@ basicChecks( vector< Point >& points,
           break;
 
         } else {
-          cerr << "CAN NOT DETERMINE NEXT BEST TOROIDALWINDING"
-               << " point " << j
-               << " toroidalWinding " << toroidalWinding
-               << endl;
+            debug5 << "CAN NOT DETERMINE NEXT BEST TOROIDALWINDING"
+                   << " point " << j
+                   << " toroidalWinding " << toroidalWinding
+                   << endl;
 
           return false;
         }
@@ -1204,10 +1211,10 @@ basicChecks( vector< Point >& points,
             break;
 
           } else {
-            cerr << "CAN NOT DETERMINE NEXT BEST TOROIDALWINDING"
-                 << " point " << j
-                 << " toroidalWinding " << toroidalWinding
-                 << endl;
+              debug5 << "CAN NOT DETERMINE NEXT BEST TOROIDALWINDING"
+                     << " point " << j
+                     << " toroidalWinding " << toroidalWinding
+                     << endl;
 
             return false;
           }
@@ -1313,12 +1320,12 @@ basicChecks( vector< Point >& points,
       break;
 
   if( poloidalWinding == toroidalWinding ) {
-    cerr << endl
-         << "ERROR in finding the - TOROIDALWINDING - POLOIDALWINDING - SKIP"
-         << " toroidalWinding " << toroidalWinding
-         << " poloidalWinding " << poloidalWinding
-         << " skip " << skip
-         << endl;
+      debug5 << endl
+             << "ERROR in finding the - TOROIDALWINDING - POLOIDALWINDING - SKIP"
+             << " toroidalWinding " << toroidalWinding
+             << " poloidalWinding " << poloidalWinding
+             << " skip " << skip
+             << endl;
 
     return false;
 
@@ -1366,27 +1373,27 @@ basicChecks( vector< Point >& points,
       (unsigned int) (angleSum / (2.0 * M_PI) + M_PI/2.0/toroidalWinding);
 
     if( poloidalWindingCheck != poloidalWinding ) {
-      cerr << endl
-           << "WARNING - POLOIDALWINDING MISMATCH "
-           << " angle sum " << (angleSum / (2.0 * M_PI))
-           << " toroidalWinding " << toroidalWinding
-           << " poloidalWindingCheck " << poloidalWindingCheck
-           << " poloidalWinding " << poloidalWinding
-           << " skip " << skip
-           << endl;
+        debug5 << endl
+               << "WARNING - POLOIDALWINDING MISMATCH "
+               << " angle sum " << (angleSum / (2.0 * M_PI))
+               << " toroidalWinding " << toroidalWinding
+               << " poloidalWindingCheck " << poloidalWindingCheck
+               << " poloidalWinding " << poloidalWinding
+               << " skip " << skip
+               << endl;
     }
   }
 
   if( avenode > (float) points.size() / (float) toroidalWinding + 1 ) {
-    cerr << endl
-         << "ERROR in finding the average nodes"
-         << " toroidalWinding " << toroidalWinding
-         << " poloidalWinding " << poloidalWinding
-         << " skip " << skip
-         << " toroidalWindingNextBest " << toroidalWindingNextBest
-         << " avenode " << avenode
-         << " number of points " << points.size()
-         << endl;
+      debug5 << endl
+             << "ERROR in finding the average nodes"
+             << " toroidalWinding " << toroidalWinding
+             << " poloidalWinding " << poloidalWinding
+             << " skip " << skip
+             << " toroidalWindingNextBest " << toroidalWindingNextBest
+             << " avenode " << avenode
+             << " number of points " << points.size()
+             << endl;
   }
 
   return true;
@@ -1410,7 +1417,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   toroidal_points.clear();
   poloidal_points.clear();
 
-  cerr << "Analyzing  " << endl;
+  debug5 << "Analyzing  " << endl;
 
   unsigned int npts = 0;
   float delta = 0.0;
@@ -1520,10 +1527,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   // At this point all of the puncture points (toroidal points) as
   // well as the poloidal points have been found.
-
-  cerr << "analyzing with "
-            << toroidal_points.size() << " toroidal points and "
-            << poloidal_points.size() << " poloidal points " << endl;
+    debug5 << "analyzing with "
+           << toroidal_points.size() << " toroidal points and "
+           << poloidal_points.size() << " poloidal points " << endl;
 
   // Get the average distance between points. If within 1/10 of the
   // distance the fieldline is probably on a rational surface.
@@ -1562,14 +1568,14 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     // Test against a user setable match limit. Default is 0.90 (90%)
     if( bestMatchPercent < matchPercentLimit ) 
     {
-      cerr << "Poor consistancy - probably chaotic" << endl;
+        debug5 << "Poor consistancy - probably chaotic" << endl;
 
-      cerr << "Poloidal set ";
+        debug5 << "Poloidal set ";
 
       for( unsigned int i=0; i<safetyFactorSet.size(); ++i)
-        cerr << "(" << i << "," << safetyFactorSet[i] << ") ";
+          debug5 << "(" << i << "," << safetyFactorSet[i] << ") ";
 
-      cerr << endl;
+      debug5 << endl;
 
       // Check the consistancy of the safety factor set but report the
       // findings.
@@ -1593,21 +1599,21 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       poloidalWinding = bestPoloidalWinding;
       skip = Blankinship( toroidalWinding, poloidalWinding );
 
-      cerr << "final toroidalWinding/poloidal  "
-                << toroidalWinding << "  "
-                << poloidalWinding << "  ("
-                << (double)toroidalWinding/(double)poloidalWinding << ")  "
-                << "consistency "
-                << 100.0 * bestMatchPercent
-                << " percent" << endl;
+        debug5 << "final toroidalWinding/poloidal  "
+               << toroidalWinding << "  "
+               << poloidalWinding << "  ("
+               << (double)toroidalWinding/(double)poloidalWinding << ")  "
+               << "consistency "
+               << 100.0 * bestMatchPercent
+               << " percent" << endl;
 
       // Find the base poloidal periodicity standard deviation.
       unsigned int bestPoloidalWinding = poloidalWinding;
       double best_sd =
         poloidalWindingStats( poloidal_points, poloidalWinding );
 
-      cerr << "Base poloidal  " << poloidalWinding
-                << "  " << best_sd << endl;
+      debug5 << "Base poloidal  " << poloidalWinding
+             << "  " << best_sd << endl;
 
       // Find the best poloidal periodicy standard deviation. 
       // Note dividing by three insures that there are at least three
@@ -1627,9 +1633,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       // result is the same because more groups can create smaller
       // regions.
       if( bestPoloidalWinding % poloidalWinding == 0 )
-        cerr<< "Integer ";
+          debug5<< "Integer ";
 
-      cerr << "Best Poloidal Winding " << bestPoloidalWinding
+      debug5 << "Best Poloidal Winding " << bestPoloidalWinding
                 << "  " << best_sd << endl;
 
 //     ++safetyFactorConsistant;
@@ -1645,16 +1651,16 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 //      ++poloidalPeriodicyMismatch;
 
         if( nextBestMatchPercent / bestMatchPercent < 0.95 )
-          cerr << endl << "**********************  "
-                    << nextBestToroidalWinding << "  " << nextBestPoloidalWinding
-                    << "  **********************" << endl;
+            debug5 << endl << "**********************  "
+                   << nextBestToroidalWinding << "  " << nextBestPoloidalWinding
+                   << "  **********************" << endl;
       } 
       else 
       {
-        cerr << endl << "!!!!!!!!!!!!!!!!!!!!!!  "
-                  << (bestPoloidalWinding > poloidalWinding ? "Higher " : "Lower ")
-                  << "order may be better"
-                  << "  !!!!!!!!!!!!!!!!!!!!!!" << endl;
+          debug5 << endl << "!!!!!!!!!!!!!!!!!!!!!!  "
+                 << (bestPoloidalWinding > poloidalWinding ? "Higher " : "Lower ")
+                 << "order may be better"
+                 << "  !!!!!!!!!!!!!!!!!!!!!!" << endl;
       }
     }
   }
@@ -1666,7 +1672,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   {
     type = RATIONAL;
     
-    cerr << "Appears to be a rational surface "
+    debug5 << "Appears to be a rational surface "
          << delta << endl;
   }
   
@@ -1687,8 +1693,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     double island_sd =
       poloidalWindingStats( poloidal_points, island_poloidal );
     
-    cerr << "Base island poloidal  " << island_poloidal
-         << "  " << island_sd << endl;
+    debug5 << "Base island poloidal  " << island_poloidal
+           << "  " << island_sd << endl;
 
     // Find the best island poloidal periodicy standard deviation.
     // Note dividing by two insures that there are at least two
@@ -1707,10 +1713,10 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     // If the best is an integer value of the base then the result is
     // the same because more groups can create smaller regions.
     if( island_poloidal % (poloidalWinding * (unsigned int) nnodes) == 0 )
-      cerr<< "Integer ";
+        debug5<< "Integer ";
     
-    cerr << "Island poloidal  " << island_poloidal
-              << "  " << island_sd << endl;
+    debug5 << "Island poloidal  " << island_poloidal
+           << "  " << island_sd << endl;
 
     // If the best island poloidal winding value is the poloidal
     // winding value times the number of nodes then there is self
@@ -1721,9 +1727,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       if( island_poloidal &&
           island_poloidal % (poloidalWinding * (unsigned int)(nnodes+i)) == 0 ) 
       {
-        cerr << "Zero crossing period matches the number of nodes ("
-             << nnodes << " " << i
-             <<  ") in the island" << endl;
+          debug5 << "Zero crossing period matches the number of nodes ("
+                 << nnodes << " " << i
+                 <<  ") in the island" << endl;
 
         nnodes += i;
 
@@ -1759,13 +1765,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
           
           if( k != toroidalWinding - skip && k != skip ) 
           {
-            cerr << endl
-                      << "ERROR in finding the overlap"
-                      << " toroidalWinding " << toroidalWinding
-                      << " poloidal " << poloidalWinding
-                      << " skip " << skip
-                      << " overlap group " << k
-                      << endl;
+              debug5 << endl
+                     << "ERROR in finding the overlap"
+                     << " toroidalWinding " << toroidalWinding
+                     << " poloidal " << poloidalWinding
+                     << " skip " << skip
+                     << " overlap group " << k
+                     << endl;
           }
           
           break;
@@ -1774,15 +1780,15 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     }
   }
 
-  cerr << "End of streamline " << 0 // fieldlineInfo.size()
-            << "  type " << type 
-            << "  toroidal windings " << toroidalWinding 
-            << "  poloidal windings " << poloidalWinding
-            << "  ("<< (double)toroidalWinding/(double)poloidalWinding << ")"
-            << "  skip "   << skip
-            << "  islands " << islands
-            << "  nnodes " << nnodes
-            << endl << endl;
+  debug5 << "End of streamline " << 0 // fieldlineInfo.size()
+         << "  type " << type 
+         << "  toroidal windings " << toroidalWinding 
+         << "  poloidal windings " << poloidalWinding
+         << "  ("<< (double)toroidalWinding/(double)poloidalWinding << ")"
+         << "  skip "   << skip
+         << "  islands " << islands
+         << "  nnodes " << nnodes
+         << endl << endl;
 
   FieldlineInfo fi;
 
@@ -1827,9 +1833,9 @@ fieldlineProperties( vector< Point > &points,
        ++toroidalWinding ) {
           
     if( points.size() <= 2 * toroidalWinding ) {
-      cerr << "Streamline has too few points ("
-           << points.size() << ") to determine the toroidalWinding accurately"
-           << " past " << toroidalWinding << " toroidalWindings " << endl;
+        debug5 << "Streamline has too few points ("
+               << points.size() << ") to determine the toroidalWinding accurately"
+               << " past " << toroidalWinding << " toroidalWindings " << endl;
       break;
     }
           
@@ -1840,7 +1846,7 @@ fieldlineProperties( vector< Point > &points,
       // Passed all checks so add it to the possibility list.
       toroidalWindingList.push_back( toroidalWinding );
       
-      cerr << toroidalWinding << " Passed IntersectCheck\n";
+      debug5 << toroidalWinding << " Passed IntersectCheck\n";
     }
   }
 
@@ -1856,13 +1862,13 @@ fieldlineProperties( vector< Point > &points,
 
       i--;
                 
-      cerr << "toroidalWindings " << toroidalWinding
-           << " FAILED Basic checks REMOVING";
+      debug5 << "toroidalWindings " << toroidalWinding
+             << " FAILED Basic checks REMOVING";
 
-      cerr << "  ToroidalWindings ";
+      debug5 << "  ToroidalWindings ";
       for( unsigned int j=0; j<toroidalWindingList.size(); j++ )
-        cerr << toroidalWindingList[j] << "  ";
-      cerr << " Remain" << endl;
+          debug5 << toroidalWindingList[j] << "  ";
+      debug5 << " Remain" << endl;
 
 
       //    if( type == 2 ) {
@@ -1871,13 +1877,13 @@ fieldlineProperties( vector< Point > &points,
 
     } else {
 
-      cerr << "toroidalWindings " << toroidalWinding 
-           << "  poloidalWindings " << poloidalWinding
-           << "  skip "   << skip
-           << "  groupCCW " << groupCCW
-           << "  islands " << islands
-           << "  nnodess " << nnodes
-           << "  next best toroidalWinding " << toroidalWindingNextBest;
+        debug5 << "toroidalWindings " << toroidalWinding 
+               << "  poloidalWindings " << poloidalWinding
+               << "  skip "   << skip
+               << "  groupCCW " << groupCCW
+               << "  islands " << islands
+               << "  nnodess " << nnodes
+               << "  next best toroidalWinding " << toroidalWindingNextBest;
 
       if( order == 2 && toroidalWindingList.size() > 1 && islands > 0 ) {
 
@@ -1910,7 +1916,7 @@ fieldlineProperties( vector< Point > &points,
         }
 
         if( toroidalWinding == 1 && multipleIslands ) {
-          cerr << " REMOVED - Multiple Islands" << endl;
+            debug5 << " REMOVED - Multiple Islands" << endl;
           toroidalWindingList.erase( toroidalWindingList.begin()+i );
           i--;
           continue;
@@ -1918,9 +1924,9 @@ fieldlineProperties( vector< Point > &points,
         } else {
                 
           if( i > 0 ) 
-            cerr << " REPLACED - Islands" << endl;
+              debug5 << " REPLACED - Islands" << endl;
           else
-            cerr << " START - Islands" << endl;
+              debug5 << " START - Islands" << endl;
 
           while ( i > 0 ) {
             toroidalWindingList.erase( toroidalWindingList.begin() );
@@ -1935,7 +1941,7 @@ fieldlineProperties( vector< Point > &points,
         }
 
       } else if( order != 2 && (toroidalWindingNextBest == 0 || islands > 0) ) {
-        cerr << endl;
+          debug5 << endl;
         continue;
 
         // If very low order and has less than three points in
@@ -1950,7 +1956,7 @@ fieldlineProperties( vector< Point > &points,
             
         // Found the next best in the list so delete the current one.
         if( inList != toroidalWindingList.end() ) {
-          cerr << " REMOVED - Too few points" << endl;
+            debug5 << " REMOVED - Too few points" << endl;
                 
           toroidalWindingList.erase( toroidalWindingList.begin()+i );
 
@@ -1962,7 +1968,7 @@ fieldlineProperties( vector< Point > &points,
 
       if( order == 0 ) {
 
-        cerr << " KEEP - low" << endl;
+          debug5 << " KEEP - low" << endl;
 
         // Take the lower ordered surface.
         unsigned int toroidalWindingNextBestTmp = toroidalWindingNextBest;
@@ -1987,14 +1993,14 @@ fieldlineProperties( vector< Point > &points,
                              islandTmp, nnodesTmp, groupCCWTmp,
                              toroidalWindingNextBestTmp ) ) {
                     
-              cerr << "toroidalWindings " << toroidalWindingTmp
-                   << "  poloidalWindings " << poloidalWindingTmp
-                   << "  skip "   << skipTmp
-                   << "  groupCCW " << groupCCWTmp
-                   << "  islands " << islandTmp
-                   << "  nnodess " << nnodesTmp
-                   << "  next best toroidalWinding " << toroidalWindingNextBestTmp
-                   << " REMOVED - low" << endl;           
+                debug5 << "toroidalWindings " << toroidalWindingTmp
+                       << "  poloidalWindings " << poloidalWindingTmp
+                       << "  skip "   << skipTmp
+                       << "  groupCCW " << groupCCWTmp
+                       << "  islands " << islandTmp
+                       << "  nnodess " << nnodesTmp
+                       << "  next best toroidalWinding " << toroidalWindingNextBestTmp
+                       << " REMOVED - low" << endl;           
             }
 
           } else {
@@ -2022,14 +2028,14 @@ fieldlineProperties( vector< Point > &points,
                   toroidalWindingList.end(), toroidalWindingNextBest );
                 
           if( inList != toroidalWindingList.end() ) {
-            cerr << " REMOVED - high" << endl;
+              debug5 << " REMOVED - high" << endl;
                   
             toroidalWindingList.erase( toroidalWindingList.begin()+i );
                   
             i--;
                   
           } else {
-            cerr << " KEEP - high" << endl;
+            debug5 << " KEEP - high" << endl;
           }
         }
       } else if( order == 2 ) {
@@ -2044,7 +2050,7 @@ fieldlineProperties( vector< Point > &points,
         if( i == 0 ) {
           bestNodes = nnodes;
 
-          cerr << " START " << endl;
+          debug5 << " START " << endl;
                 
         } else if( toroidalWindingList[0] <= 3 && bestNodes < 8 ) {
           bestNodes = nnodes;
@@ -2052,7 +2058,7 @@ fieldlineProperties( vector< Point > &points,
                 
           i--;
 
-          cerr << " REPLACED " << endl;
+          debug5 << " REPLACED " << endl;
 
           // The current toroidalWinding is the best so erase the first.
         } else if( bestNodes < nnodes ) {
@@ -2061,7 +2067,7 @@ fieldlineProperties( vector< Point > &points,
                 
           i--;
 
-          cerr << " REPLACED " << endl;
+          debug5 << " REPLACED " << endl;
 
           // The first toroidalWinding is the best so erase the current.
         } else {
@@ -2069,7 +2075,7 @@ fieldlineProperties( vector< Point > &points,
                 
           i--;
                 
-          cerr << " REMOVED " << endl;
+          debug5 << " REMOVED " << endl;
         }
       }
     }
@@ -2104,7 +2110,7 @@ fieldlineProperties( vector< Point > &points,
     toroidalWindingNextBest = 0;
   }
 
-  cerr << "End of streamline " << 0 // fieldlineInfo.size()
+  debug5 << "End of streamline " << 0 // fieldlineInfo.size()
             << "  type " << type 
             << "  toroidal windings " << toroidalWinding 
             << "  poloidal windings " << poloidalWinding
@@ -2500,8 +2506,10 @@ removeOverlap( vector< vector < Point > > &bins,
 
       // No more than one point should added.
       if( nodes > nnodes+1 )
-        cerr << "Island " << i
+      {
+        debug5 << "Island " << i
              << " nnodes mismatch " << nnodes << "  " << nodes << endl;
+      }
 
       // Erase all of the overlapping points.
       bins[i].erase( bins[i].begin()+nodes, bins[i].end() );
@@ -2518,7 +2526,7 @@ removeOverlap( vector< vector < Point > > &bins,
     
     if( nnodes == 0 ) {
 
-      cerr << "ZERO NODES " << endl;
+      debug5 << "ZERO NODES " << endl;
 
       nnodes = bins[0].size();
 
@@ -2536,7 +2544,7 @@ removeOverlap( vector< vector < Point > > &bins,
 
       // No more than one point should added.
       if( nodes > nnodes+1 )
-        cerr << "Surface " << i
+        debug5 << "Surface " << i
              << " nnodes mismatch " << nnodes << "  " << nodes << endl;
 
       // Erase all of the overlapping points.
@@ -2587,7 +2595,7 @@ smoothCurve( vector< vector < Point > > &bins,
           Vector v0 = (Vector) bins[i][j1] - (Vector) bins[i][j  ];
           Vector v1 = (Vector) bins[i][j ] - (Vector) bins[i][j_1];
 
-          cerr << i << " smooth " << j_1 << " "  << j << " "  << j1 << "  "
+          debug5 << i << " smooth " << j_1 << " "  << j << " "  << j1 << "  "
                << ( v0.length() > v1.length() ?
                     v0.length() / v1.length() :
                     v1.length() / v0.length() ) << endl;
@@ -2749,7 +2757,7 @@ smoothCurve( vector< vector < Point > > &bins,
               
               newPts[k].first /= newPts[k].second;
               
-              cerr << i << " insert " << j << "  " << newPts[k].first << endl;
+              debug5 << i << " insert " << j << "  " << newPts[k].first << endl;
               
               bins[i].insert( bins[i].begin()+j, newPts[k].first );
             }
@@ -2816,7 +2824,7 @@ mergeOverlap( vector< vector < Point > > &bins,
         for( unsigned int j=nnodes; j<bins[i].size(); j++ )
           tmp_bins[i].push_back( bins[i][j] );
 
-        cerr << i << " stored extra points " << tmp_bins[i].size() << endl;
+        debug5 << i << " stored extra points " << tmp_bins[i].size() << endl;
 
         // Erase all of the overlapping points.
         bins[i].erase( bins[i].begin()+nnodes, bins[i].end() );
@@ -2866,7 +2874,7 @@ mergeOverlap( vector< vector < Point > > &bins,
           if( angle > M_PI / 3.0 )
             bins[i].insert( bins[i].begin()+angleIndex, tmp_bins[i][j] );
 
-          cerr << i << "  " << modulo << "  " << j + nnodes
+          debug5 << i << "  " << modulo << "  " << j + nnodes
                << "  Prediction " << index_prediction
                << " actual " << angleIndex << "  "
                << (angleIndex == index_prediction) << endl;
@@ -2885,7 +2893,7 @@ mergeOverlap( vector< vector < Point > > &bins,
             index_prediction = angleIndex + (j+1) / modulo + 2;
         }
 
-        cerr << "ToroidalWinding " << i << " inserted "
+        debug5 << "ToroidalWinding " << i << " inserted "
              << prediction_true+prediction_false << " nodes "
              << " True " << prediction_true
              << " False " << prediction_false << endl;
@@ -2894,7 +2902,7 @@ mergeOverlap( vector< vector < Point > > &bins,
         // insert based on the predictions.
         if( 0 && prediction_true < prediction_false ) {
 
-          cerr << "ToroidalWinding " << i << " bad predicted insertion ";
+          debug5 << "ToroidalWinding " << i << " bad predicted insertion ";
 
           unsigned int cc = 0;
 
@@ -2910,7 +2918,7 @@ mergeOverlap( vector< vector < Point > > &bins,
             }
           }
 
-          cerr << "removed " << cc << " points" << endl;
+          debug5 << "removed " << cc << " points" << endl;
 
           unsigned int index = 1;
             
@@ -2919,7 +2927,7 @@ mergeOverlap( vector< vector < Point > > &bins,
             // Insert it between the other two.
             bins[i].insert( bins[i].begin()+index, tmp_bins[i][j] );
 
-            cerr << i << "  " << modulo << "  " << j + nnodes
+            debug5 << i << "  " << modulo << "  " << j + nnodes
                  << " actual " << index << endl;
 
             // Predict where the next insertion will take place.
@@ -2955,7 +2963,7 @@ mergeOverlap( vector< vector < Point > > &bins,
                   end0   = j + 1;
                   start1 = k + 1;
 
-                  cerr << " merge self intersection " 
+                  debug5 << " merge self intersection " 
                        << start0 << "  " << end0 << "  "
                        << start1 << "  " << end1 << endl;
 
@@ -3016,14 +3024,14 @@ mergeOverlap( vector< vector < Point > > &bins,
 
       // No more than one point should added.
       if( nodes > nnodes+1 )
-        cerr << "Surface fill " << i
+        debug5 << "Surface fill " << i
              << " nnodes mismatch " << nodes << endl;
 
       // Store the overlapping points.
       for( unsigned int j=nodes; j<bins[i].size(); j++ )
         tmp_bins[i].push_back( bins[i][j] );
 
-      cerr << i << " stored extra points " << tmp_bins[i].size() << endl;
+      debug5 << i << " stored extra points " << tmp_bins[i].size() << endl;
 
       // Erase all of the overlapping points.
       bins[i].erase( bins[i].begin()+nodes, bins[i].end() );
@@ -3074,7 +3082,7 @@ mergeOverlap( vector< vector < Point > > &bins,
         bins[index_wd].insert( bins[index_wd].begin()+index_pt,
                                tmp_bins[i][i0] );
 
-        cerr << "ToroidalWinding prediction " << toroidalWinding_prediction
+        debug5 << "ToroidalWinding prediction " << toroidalWinding_prediction
              << " actual " << index_wd
              << "  Index prediction  " << index_prediction
              << " actual " << index_pt << "  "
@@ -3093,7 +3101,7 @@ mergeOverlap( vector< vector < Point > > &bins,
         toroidalWinding_prediction = index_wd;
       }
 
-      cerr << "ToroidalWinding " << i << " inserted "
+      debug5 << "ToroidalWinding " << i << " inserted "
            << prediction_true+prediction_false << " nodes "
            << " True " << prediction_true
            << " False " << prediction_false << endl;

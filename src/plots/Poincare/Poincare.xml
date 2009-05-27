@@ -170,6 +170,12 @@
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="StreamlineAttsRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="PoincareAttsRequireRecalculation" user="true" member="true">
+      </Function>
       <Include file="source" quoted="false">
         PlaneAttributes.h
       </Include>

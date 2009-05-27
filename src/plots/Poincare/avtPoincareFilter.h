@@ -62,6 +62,9 @@
 //    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
 //    Changed color to colorBy
 //
+//    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
+//    Removed GetStreamlinePoints().
+//
 // ****************************************************************************
 
 #include "StreamlineAnalyzerLib.h"
@@ -114,8 +117,6 @@ class avtPoincareFilter : public avtStreamlineFilter
                             double color_value);
 
     // Poincare filter methods.
-    void                      GetStreamlinePoints(
-                                   vector<avtStreamlineWrapper*> &streamlines);
     void                      ClassifyStreamlines();
     avtDataTree               *CreatePoincareOutput();
 

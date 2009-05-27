@@ -119,7 +119,7 @@ QvisPoincarePlotWindow::~QvisPoincarePlotWindow()
 // Programmer: xml2window
 // Creation:   omitted
 //
-// Modifications: 
+// Modifications:
 //   
 // ****************************************************************************
 

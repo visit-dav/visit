@@ -2294,3 +2294,109 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
 
+// ****************************************************************************
+// Method: PoincareAttributes::ChangesRequireRecalculation
+//
+// Purpose: 
+//   Determine if attribute changes require recalculation.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+PoincareAttributes::ChangesRequireRecalculation(const PoincareAttributes &obj) const
+{
+    return StreamlineAttsRequireRecalculation(obj) ||
+           PoincareAttsRequireRecalculation(obj);
+}
+
+// ****************************************************************************
+// Method: PoincareAttributes::StreamlineAttsRequireRecalculation
+//
+// Purpose: 
+//   Determine if streamline attribute changes require recalculation.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+#define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
+#define POINT_DIFFERS(p1,p2) (PDIF(p1,p2,0) || PDIF(p1,p2,1) || PDIF(p1,p2,2))
+
+bool
+PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes &obj) const
+{
+    // If we're in point source mode and the points differ, sourcePointsDiffer
+    // evaluates to true.
+    bool sourcePointsDiffer = ((sourceType == SpecifiedPoint) &&
+                               POINT_DIFFERS(pointSource, obj.pointSource));
+
+    // If we're in line source mode and the line differs, sourceLineDiffers
+    // evaluates to true.
+    bool sourceLineDiffers = ((sourceType == SpecifiedLine) &&
+                              (POINT_DIFFERS(lineStart, obj.lineStart) ||
+                               POINT_DIFFERS(lineEnd, obj.lineEnd)));
+    
+    // If we're in plane source mode and the plane differs, sourcePlaneDiffers
+    // evaluates to true.
+    bool sourcePlaneDiffers = ((sourceType == SpecifiedPlane) &&
+                               (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
+                                POINT_DIFFERS(planeNormal, obj.planeNormal) ||
+                                POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
+                                planeRadius != obj.planeRadius));
+
+    // Other things need to be true before we start paying attention to
+    // point density.
+    bool densityMatters = (sourceType == SpecifiedLine ||
+                           sourceType == SpecifiedPlane) &&
+        (pointDensity != obj.pointDensity);
+
+    bool radiusMatters = (planeRadius != obj.planeRadius);
+
+    return (sourceType != obj.sourceType) ||
+           (termination != obj.termination) ||
+           (terminationType != obj.terminationType) ||
+           (integrationType != obj.integrationType) ||
+           (maxStepLength != obj.maxStepLength) ||
+           (relTol != obj.relTol) ||
+           (absTol != obj.absTol) ||
+           sourcePointsDiffer ||
+           sourceLineDiffers ||
+           sourcePlaneDiffers ||
+           densityMatters ||
+           radiusMatters;
+}
+
+// ****************************************************************************
+// Method: PoincareAttributes::PoincareAttsRequireRecalculation
+//
+// Purpose: 
+//   Determine if poincare attribute changes require recalculation.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const
+{
+    return maxToroidalWinding != obj.maxToroidalWinding ||
+           hitRate != obj.hitRate ||
+           adjustPlane != obj.adjustPlane ||
+           overlaps != obj.overlaps ||
+           numberPlanes != obj.numberPlanes ||
+           overrideToroidalWinding != obj.overrideToroidalWinding ||
+           colorBy != obj.colorBy ||
+           showCurves != obj.showCurves;
+}
+
