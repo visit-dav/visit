@@ -1279,6 +1279,9 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //    Make sure quitRPC is properly communicated to all processors; prevents
 //    runaway engines.
 //
+//    Tom Fogal, Wed May 27 14:07:19 MDT 2009
+//    Removed a duplicate debug statement.
+//
 // ****************************************************************************
 
 void
@@ -1334,7 +1337,6 @@ Engine::PAR_EventLoop()
             xfer->Process();
 
             idleTimeoutEnabled = true;
-            debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
             ResetTimeout(idleTimeoutMins * 60);
         }
     }
