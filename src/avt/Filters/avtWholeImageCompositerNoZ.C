@@ -39,7 +39,8 @@
 // ************************************************************************* //
 //                         avtWholeImageCompositerNoZ.C                      //
 // ************************************************************************* //
-#include <math.h>
+#include <cmath>
+#include <sstream>
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -144,7 +145,6 @@ MPI_Datatype avtWholeImageCompositerNoZ::mpiTypeZFPixel;
 void 
 avtWholeImageCompositerNoZ::InitializeMPIStuff(void)
 {
-
    MPI_Type_contiguous(3, MPI_UNSIGNED_CHAR, &avtWholeImageCompositerNoZ::mpiTypeZFPixel);
    MPI_Type_commit(&avtWholeImageCompositerNoZ::mpiTypeZFPixel);
    MPI_Op_create(MergeZFPixelBuffers, 1,
@@ -226,6 +226,9 @@ avtWholeImageCompositerNoZ::~avtWholeImageCompositerNoZ()
 //    Initialize arrays that don't get initialized if their rank is not 0.
 //    (This removes some purify warnings ... no crashes are fixed.)
 //
+//    Tom Fogal, Tue May 26 16:27:45 MDT 2009
+//    Use `empty' where possible.  Create more verbose errors.
+//
 // ****************************************************************************
 
 void
@@ -236,13 +239,22 @@ avtWholeImageCompositerNoZ::Execute(void)
     vtkImageData *mergedLocalImage = NULL, *mergedGlobalImage = NULL;
 
     // sanity checks
-    if (inputImages.size() == 0)
-       EXCEPTION0(ImproperUseException);
+    if (inputImages.empty())
+    {
+       EXCEPTION1(ImproperUseException, "No images to composite!");
+    }
     for (i = 0; i < inputImages.size(); i++)
     {
-      inputImages[i]->GetImage().GetSize(&numRows, &numCols);
-      if (numRows != outRows || numCols != outCols) 
-         EXCEPTION0(ImproperUseException);
+        inputImages[i]->GetImage().GetSize(&numRows, &numCols);
+        if (numRows != outRows || numCols != outCols)
+        {
+            std::ostringstream badsize;
+            badsize << "Input image " << i << " has dimensions "
+                    << numRows << "x" << numCols << ", which does not match "
+                    << "output image dimensions ("
+                    << outRows << "x" << outCols << ")!" << std::endl;
+            EXCEPTION1(ImproperUseException, badsize.str().c_str());
+        }
     }
 
     int nPixels = outRows * outCols;
@@ -337,10 +349,8 @@ avtWholeImageCompositerNoZ::Execute(void)
 // Issues:       A combination of several different constraints conspire to
 //               create a problem with getting background color information
 //               into the MPI reduce operator, MergeZFPixelBuffers. So, to
-//               get around this problem, we pass the background color as
-//               the last ZFPixel entry in the array of ZFPixels. We allocate
-//               one extr ZFPixel for this purpose.
-//   
+//               get around this problem, we pass the background color
+//               using static memory.
 //
 // Programmer:   Mark C. Miller (plagiarized from Kat Price's MeshTV version)
 // Date:         04Mar03 
@@ -349,6 +359,9 @@ avtWholeImageCompositerNoZ::Execute(void)
 //    Jeremy Meredith, October 20, 2004
 //    Allowed for the use of an allreduce instead of a simple reduce.
 //
+//    Tom Fogal, Wed May 27 14:32:08 MDT 2009
+//    Fixed comment.
+//
 // ****************************************************************************
 void
 avtWholeImageCompositerNoZ::MergeBuffers(int npixels, bool doParallel,
@@ -356,7 +369,7 @@ avtWholeImageCompositerNoZ::MergeBuffers(int npixels, bool doParallel,
                                          unsigned char *iorgb)
 {
    int io;
-   int chunk       = npixels < chunkSize ? npixels : chunkSize;
+   int chunk = npixels < chunkSize ? npixels : chunkSize;
 
    //
    // Setup global data used by MPI merge operator
@@ -400,5 +413,4 @@ avtWholeImageCompositerNoZ::MergeBuffers(int npixels, bool doParallel,
 
       npixels -= len;
    }
-
 }
