@@ -1399,7 +1399,7 @@ avtTransparencyActor::DetermineTransparencies()
 //  Method: avtTransparencyActor::TransparenciesMightExist
 //
 //  Purpose:
-//    Returns true if their might be some transparency on some processor 
+//    Returns true if there might be some transparency on some processor
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   January 20, 2005
