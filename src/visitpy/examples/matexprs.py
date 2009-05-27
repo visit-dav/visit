@@ -243,9 +243,9 @@ for k in dirMap.keys():
     DrawPlots()
     v = GetViewCurve()
     if clOpts.x_min != None:
-        v.domaingCoords = (clOpts.x_min, v.domainCoords[1])
+        v.domainCoords = (clOpts.x_min, v.domainCoords[1])
     if clOpts.x_max != None:
-        v.domaingCoords = (v.domainCoords[0], clOpts.x_max)
+        v.domainCoords = (v.domainCoords[0], clOpts.x_max)
     if clOpts.log_x:
         v.domainScale = v.LOG
     if clOpts.data_min != None:
