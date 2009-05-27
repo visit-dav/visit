@@ -232,6 +232,10 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Tom Fogal, Tue May 26 21:56:21 MDT 2009
+//    Initialize buffer to avoid sending uninitialized mem in subsequent bcast.
+//
 // ****************************************************************************
 
 void
@@ -254,7 +258,7 @@ MPIXfer::Process()
                 int              i;
                 unsigned char    c;
                 char             *cptr;
-                PAR_StateBuffer  buf;
+                PAR_StateBuffer  buf = {0};
                 BufferConnection newInput;
 
                 // Add the message's opcode and length into the buffer
