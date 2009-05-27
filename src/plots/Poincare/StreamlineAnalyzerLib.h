@@ -45,6 +45,7 @@
 //#include <Core/Geometry/Vector.h>
 
 #include <avtVector.h>
+#include <DebugStream.h>
 
 typedef avtVector Point ;
 typedef avtVector Vector;
