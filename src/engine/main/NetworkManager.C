@@ -2187,6 +2187,8 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    avtDataObject_p.
 //
 //    Tom Fogal, Thu May 28 15:42:19 MDT 2009
+//    Invalidate the cache earlier, to make sure we don't use cached values
+//    from the last rendering.
 //    Move an image dump up.  It was giving misleading results before.
 //
 // ****************************************************************************
@@ -2204,6 +2206,12 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
     std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
 
     bool dump_renders = avtDebugDumpOptions::DumpEnabled();
+
+    { // Make sure transparency gets recalculated.
+        debug5 << "Invalidating transparency cache." << std::endl;
+        avtTransparencyActor* trans = viswin->GetTransparencyActor();
+        trans->InvalidateTransparencyCache();
+    }
 
     TRY
     {
