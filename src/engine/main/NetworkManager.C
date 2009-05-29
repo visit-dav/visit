@@ -2186,6 +2186,9 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    I added the checkThreshold argument and made the routine return
 //    avtDataObject_p.
 //
+//    Tom Fogal, Thu May 28 15:42:19 MDT 2009
+//    Move an image dump up.  It was giving misleading results before.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -2267,6 +2270,12 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
         imageCompositer->AddImageInput(theImage, 0, 0);
         visitTimer->StopTimer(t1A, "Setting up background image");
 
+        // Dump the composited image when debugging.  Note that we only
+        // want all processors to dump it if we have done an Allreduce
+        // in the compositor, and this only happens in two pass mode.
+        if (dump_renders)
+            DumpImage(theImage, "after_OpaqueComposite",
+                      this->MemoMultipass(viswin));
         //
         // Parallel composite (via 1 stage `pipeline')
         //
@@ -2304,13 +2313,6 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
             compositedImageAsDataObject = imageCompositer->GetOutput();
         }
 
-        // Dump the composited image when debugging.  Note that we only
-        // want all processors to dump it if we have done an Allreduce
-        // in the compositor, and this only happens in two pass mode.
-        if (dump_renders)
-            DumpImage(compositedImageAsDataObject,
-                      "after_OpaqueComposite",
-                      this->MemoMultipass(viswin));
         CallProgressCallback("NetworkManager", "Compositing", 1, 1);
 
         // ************************************************************
