@@ -74,7 +74,7 @@
 #include <ViewerProxy.h>
 
 #include <visit-config.h>
-#include <Utility.h>
+#include <InstallationFunctions.h>
 #include <DataNode.h>
 #include <DebugStream.h>
 #include <MovieSequence.h>

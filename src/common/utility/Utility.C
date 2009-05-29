@@ -52,7 +52,6 @@ using std::vector;
 
 #if defined(_WIN32)
 #include <windows.h>
-#include <userenv.h> // for GetProfilesDirectory
 #else
 #include <unistd.h>
 #include <sys/types.h>
