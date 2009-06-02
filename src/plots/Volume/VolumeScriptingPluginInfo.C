@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        VolumeScriptingPluginInfo.C
 // ************************************************************************* //
-#include <VolumePluginInfo.h>
 #include <PyVolumeAttributes.h>
+#include <VolumePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Volume_GetScriptingInfo

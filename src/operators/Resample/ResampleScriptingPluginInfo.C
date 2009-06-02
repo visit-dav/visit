@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ResampleScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ResamplePluginInfo.h>
 #include <PyResampleAttributes.h>
+#include <ResamplePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Resample_GetScriptingInfo

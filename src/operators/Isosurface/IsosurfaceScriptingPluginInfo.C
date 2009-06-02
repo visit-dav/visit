@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        IsosurfaceScriptingPluginInfo.C
 // ************************************************************************* //
-#include <IsosurfacePluginInfo.h>
 #include <PyIsosurfaceAttributes.h>
+#include <IsosurfacePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Isosurface_GetScriptingInfo

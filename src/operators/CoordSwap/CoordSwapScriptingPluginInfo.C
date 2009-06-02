@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        CoordSwapScriptingPluginInfo.C
 // ************************************************************************* //
-#include <CoordSwapPluginInfo.h>
 #include <PyCoordSwapAttributes.h>
+#include <CoordSwapPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo CoordSwap_GetScriptingInfo

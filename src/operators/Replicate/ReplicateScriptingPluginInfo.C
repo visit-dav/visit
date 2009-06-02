@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ReplicateScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ReplicatePluginInfo.h>
 #include <PyReplicateAttributes.h>
+#include <ReplicatePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Replicate_GetScriptingInfo

@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        BoxScriptingPluginInfo.C
 // ************************************************************************* //
-#include <BoxPluginInfo.h>
 #include <PyBoxAttributes.h>
+#include <BoxPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Box_GetScriptingInfo

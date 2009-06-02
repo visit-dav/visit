@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        TubeScriptingPluginInfo.C
 // ************************************************************************* //
-#include <TubePluginInfo.h>
 #include <PyTubeAttributes.h>
+#include <TubePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Tube_GetScriptingInfo

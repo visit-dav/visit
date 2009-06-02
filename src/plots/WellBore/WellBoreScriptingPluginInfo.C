@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        WellBoreScriptingPluginInfo.C
 // ************************************************************************* //
-#include <WellBorePluginInfo.h>
 #include <PyWellBoreAttributes.h>
+#include <WellBorePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo WellBore_GetScriptingInfo

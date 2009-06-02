@@ -35,41 +35,66 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef VIEWERRPC_CALLBACKS_H
-#define VIEWERRPC_CALLBACKS_H
-#include <Python.h>
-#include <ViewerRPC.h>
+#include <avtExprNode.h>
+
+#include <avtConditionalExpression.h>
+#include <avtLogicalAndExpression.h>
+#include <avtLogicalNegationExpression.h>
+#include <avtLogicalOrExpression.h>
+#include <avtTestEqualToExpression.h>
+#include <avtTestGreaterThanExpression.h>
+#include <avtTestGreaterThanOrEqualToExpression.h>
+#include <avtTestLessThanExpression.h>
+#include <avtTestLessThanOrEqualToExpression.h>
+#include <avtTestNotEqualToExpression.h>
 
 // ****************************************************************************
-// Class: ViewerRPCCallbacks
+// Method: avtFunctionExpr::CreateConditionalFilters
 //
-// Purpose:
-//   Keeps track of user-defined callbacks for specific ViewerRPC values.
+// Purpose: 
+//   Creates conditional and logic expression filters.
 //
-// Notes:      
+// Arguments:
+//   functionName : The name of the expression filter to create.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Feb  4 09:21:44 PST 2008
+// Returns:    An expression filter or 0 if one could not be created.
+//
+// Note:       
+//
+// Programmer: 
+// Creation:   Thu May 21 08:55:58 PDT 2009
 //
 // Modifications:
-//   Brad Whitlock, Wed Feb  6 10:26:09 PST 2008
-//   Added callback data.
-//
+//   
 // ****************************************************************************
 
-class ViewerRPCCallbacks
+avtExpressionFilter *
+avtFunctionExpr::CreateConditionalFilters(const string &functionName) const
 {
-public:
-    ViewerRPCCallbacks();
-    ~ViewerRPCCallbacks();
+    avtExpressionFilter *f = 0;
 
-    void GetCallbackNames(stringVector &names);
-    bool RegisterCallback(const std::string &, PyObject *, PyObject *);
-    PyObject *GetCallback(ViewerRPC::ViewerRPCType);
-    PyObject *GetCallbackData(ViewerRPC::ViewerRPCType);
-private:
-    PyObject *pycb[ViewerRPC::MaxRPC];
-    PyObject *pycb_data[ViewerRPC::MaxRPC];
-};
+    if (functionName == "if")
+        f = new avtConditionalExpression();
+    else if (functionName == "and")
+        f = new avtLogicalAndExpression();
+    else if (functionName == "or")
+        f = new avtLogicalOrExpression();
+    else if (functionName == "not")
+        f = new avtLogicalNegationExpression();
+    else if (functionName == "le" || functionName == "lte")
+        f = new avtTestLessThanOrEqualToExpression();
+    else if (functionName == "ge" || functionName == "gte")
+        f = new avtTestGreaterThanOrEqualToExpression();
+    else if (functionName == "lt")
+        f = new avtTestLessThanExpression();
+    else if (functionName == "gt")
+        f = new avtTestGreaterThanExpression();
+    else if (functionName == "eq" || functionName == "equal" || 
+             functionName == "equals")
+        f = new avtTestEqualToExpression();
+    else if (functionName == "ne" || functionName == "neq" ||
+             functionName == "notequal" || functionName == "notequals")
+        f = new avtTestNotEqualToExpression();
 
-#endif
+    return f;
+}

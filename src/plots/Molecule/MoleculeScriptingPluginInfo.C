@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        MoleculeScriptingPluginInfo.C
 // ************************************************************************* //
-#include <MoleculePluginInfo.h>
 #include <PyMoleculeAttributes.h>
+#include <MoleculePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Molecule_GetScriptingInfo

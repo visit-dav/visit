@@ -1894,8 +1894,8 @@ class InfoGeneratorPlugin : public Plugin
         c << "// ************************************************************************* //" << endl;
         c << "//                        "<<name<<"ScriptingPluginInfo.C" << endl;
         c << "// ************************************************************************* //" << endl;
-        c << "#include <"<<name<<"PluginInfo.h>" << endl;
         c << "#include <Py"<<atts->name<<".h>" << endl;
+        c << "#include <"<<name<<"PluginInfo.h>" << endl;
         c << "" << endl;
         AddMacOSXMacro(c, "Scripting");
         c << "// ****************************************************************************" << endl;

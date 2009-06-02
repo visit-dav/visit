@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        CreateBondsScriptingPluginInfo.C
 // ************************************************************************* //
-#include <CreateBondsPluginInfo.h>
 #include <PyCreateBondsAttributes.h>
+#include <CreateBondsPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo CreateBonds_GetScriptingInfo

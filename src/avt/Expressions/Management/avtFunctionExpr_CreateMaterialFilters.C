@@ -35,41 +35,54 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef VIEWERRPC_CALLBACKS_H
-#define VIEWERRPC_CALLBACKS_H
-#include <Python.h>
-#include <ViewerRPC.h>
+#include <avtExprNode.h>
+
+#include <avtMIRvfExpression.h>
+#include <avtMatErrorExpression.h>
+#include <avtMatvfExpression.h>
+#include <avtNMatsExpression.h>
+#include <avtPerMaterialValueExpression.h>
+#include <avtSpecMFExpression.h>
 
 // ****************************************************************************
-// Class: ViewerRPCCallbacks
+// Method: avtFunctionExpr::CreateMaterialFilters
 //
-// Purpose:
-//   Keeps track of user-defined callbacks for specific ViewerRPC values.
+// Purpose: 
+//   Creates material filters.
 //
-// Notes:      
+// Arguments:
+//   functionName : The name of the expression filter to create.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Feb  4 09:21:44 PST 2008
+// Returns:    An expression filter or 0 if one could not be created.
+//
+// Note:       
+//
+// Programmer: 
+// Creation:   Thu May 21 08:55:58 PDT 2009
 //
 // Modifications:
-//   Brad Whitlock, Wed Feb  6 10:26:09 PST 2008
-//   Added callback data.
-//
+//   
 // ****************************************************************************
 
-class ViewerRPCCallbacks
+avtExpressionFilter *
+avtFunctionExpr::CreateMaterialFilters(const string &functionName) const
 {
-public:
-    ViewerRPCCallbacks();
-    ~ViewerRPCCallbacks();
+    avtExpressionFilter *f = 0;
 
-    void GetCallbackNames(stringVector &names);
-    bool RegisterCallback(const std::string &, PyObject *, PyObject *);
-    PyObject *GetCallback(ViewerRPC::ViewerRPCType);
-    PyObject *GetCallbackData(ViewerRPC::ViewerRPCType);
-private:
-    PyObject *pycb[ViewerRPC::MaxRPC];
-    PyObject *pycb_data[ViewerRPC::MaxRPC];
-};
+    if (functionName == "matvf")
+        f = new avtMatvfExpression();
+    else if (functionName == "mirvf")
+        f = new avtMIRvfExpression();
+    else if (functionName == "materror")
+        f = new avtMatErrorExpression();
+    else if (functionName == "value_for_material")
+        f = new avtPerMaterialValueExpression();     
+    else if (functionName == "val4mat")
+        f = new avtPerMaterialValueExpression();
+    else if (functionName == "specmf")
+        f = new avtSpecMFExpression();
+    else if (functionName == "nmats")
+        f = new avtNMatsExpression();
 
-#endif
+    return f;
+}

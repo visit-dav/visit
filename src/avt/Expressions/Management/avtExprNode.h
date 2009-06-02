@@ -147,6 +147,16 @@ class EXPRESSION_API avtFunctionExpr : public avtExprNode, public FunctionExpr
     virtual void CreateFilters(ExprPipelineState *);
   private:
     avtExpressionFilter *CreateFilters(std::string);
+
+    avtExpressionFilter *CreateMeshQualityFilters(const std::string &) const;
+    avtExpressionFilter *CreateMeshFilters(const std::string &) const;
+    avtExpressionFilter *CreateImageProcessingFilters(const std::string &) const;
+    avtExpressionFilter *CreateMaterialFilters(const std::string &) const;
+    avtExpressionFilter *CreateCMFEFilters(const std::string &) const;
+    avtExpressionFilter *CreateConditionalFilters(const std::string &) const;
+    avtExpressionFilter *CreateMathFilters(const std::string &) const;
+    avtExpressionFilter *CreateVectorMatrixFilters(const std::string &) const;
+    avtExpressionFilter *CreateTimeAndValueFilters(const std::string &) const;
 };
 
 class EXPRESSION_API avtVarExpr : public avtExprNode, public VarExpr

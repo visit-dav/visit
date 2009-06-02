@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        TransformScriptingPluginInfo.C
 // ************************************************************************* //
-#include <TransformPluginInfo.h>
 #include <PyTransformAttributes.h>
+#include <TransformPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Transform_GetScriptingInfo

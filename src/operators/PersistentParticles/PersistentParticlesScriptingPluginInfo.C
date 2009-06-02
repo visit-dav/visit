@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        PersistentParticlesScriptingPluginInfo.C
 // ************************************************************************* //
-#include <PersistentParticlesPluginInfo.h>
 #include <PyPersistentParticlesAttributes.h>
+#include <PersistentParticlesPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo PersistentParticles_GetScriptingInfo

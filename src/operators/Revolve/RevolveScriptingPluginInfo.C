@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        RevolveScriptingPluginInfo.C
 // ************************************************************************* //
-#include <RevolvePluginInfo.h>
 #include <PyRevolveAttributes.h>
+#include <RevolvePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Revolve_GetScriptingInfo

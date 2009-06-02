@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ProjectScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ProjectPluginInfo.h>
 #include <PyProjectAttributes.h>
+#include <ProjectPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Project_GetScriptingInfo

@@ -689,10 +689,18 @@ elif [[ "$OPSYS" == "Linux" ]]; then
       export MESA_TARGET=${MESA_TARGET:-"linux"}
       QT_PLATFORM="linux-g++-64"
    elif [[ "$(uname -m)" == "ppc64" ]] ; then
-      C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
-      CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
-      export MESA_TARGET=${MESA_TARGET:-"linux"}
-      QT_PLATFORM="linux-g++"
+      if [[ "$C_COMPILER" == "xlc" ]] ; then
+          C_OPT_FLAGS="$C_OPT_FLAGS -qpic"
+          CXX_OPT_FLAGS="$CXX_OPT_FLAGS -qpic"
+          export CXX_COMPILER=${CXX_COMPILER-"xlC"}
+          export MESA_TARGET=${MESA_TARGET-"linux"}
+          QT_PLATFORM="linux-xlc" #aix-xlc"
+      else
+          C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+          CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
+          export MESA_TARGET=${MESA_TARGET-"linux"}
+          QT_PLATFORM="linux-g++"
+      fi
    elif [[ "$(uname -m)" == "ia64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
@@ -841,6 +849,8 @@ export DO_VERBOSE="no"
 export ON_VERBOSE="off"
 export DO_JAVA="no"
 export ON_JAVA="off"
+export DO_SILO="no"
+export ON_SILO="off"
 export DO_SZIP="no"
 export ON_SZIP="off"
 export DO_CCMIO="no"
@@ -3018,9 +3028,11 @@ function build_cmake
     info "Bootstrapping CMake . . ."
     cd $CMAKE_BUILD_DIR || error "Can't cd to CMake build dir."
     if [[ "$OPSYS" == "AIX" ]]; then
-        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap
+        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
+    elif [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
+        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     else
-        env CXXFLAGS="" CFLAGS="" ./bootstrap
+        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     fi
     if [[ $? != 0 ]] ; then
        warn "Bootstrap for cmake failed, giving up."
@@ -3038,14 +3050,7 @@ function build_cmake
     fi
 
     info "Installing CMake . . ."
-    mkdir "$VISITDIR/cmake"
-    mkdir "$VISITDIR/cmake/${CMAKE_VERSION}"
-    mkdir "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
-    mkdir "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
-    cp bin/ccmake "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
-    cp bin/cmake "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
-    cp bin/cpack "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
-    cp bin/ctest "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    $MAKE install
     info "Successfully built CMake"
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/cmake"
@@ -3745,11 +3750,22 @@ function build_python
     # Call configure
     #
     cd $PYTHON_BUILD_DIR || error "Can't cd to Python build dir."
-    PYTHON_OPT="$C_OPT_FLAGS"
-    info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\"" \
+    cCompiler="${C_COMPILER}"
+    cFlags="${C_OPT_FLAGS}"
+    cxxCompiler="${CXX_COMPILER}"
+    cxxFlags="${CXX_OPT_FLAGS}"
+    if [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
+        cCompiler="gxlc"
+        cxxCompiler="gxlC"
+        cFlags=`echo ${C_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
+        cxxFlags=`echo ${CXX_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
+    fi
+    PYTHON_OPT="$cFlags"
+
+    info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
          "--prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
     
-    ./configure OPT="$PYTHON_OPT" CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
                 --prefix="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" --disable-ipv6
 
     if [[ $? != 0 ]] ; then
@@ -3930,7 +3946,13 @@ function build_silo
     else
        WITHSILOQTARG="--disable-silex"
     fi
-    
+
+    echo ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix="$VISITDIR/silo/$SILO_VERSION/$VISITARCH" \
+        "$WITHHDF5ARG" "$WITHSZIPARG" "$WITHSILOQTARG" \
+        --without-readline --disable-fortran
+
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/silo/$SILO_VERSION/$VISITARCH" \
@@ -4045,6 +4067,8 @@ function build_szip
     info "Configuring SZIP . . ."
     cd ${SZIP_BUILD_DIR} || error "Can't cd to szip build dir."
     info "Invoking command to configure SZIP"
+    echo "Invoking command to configure SZIP: ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" LIBS=\"-lm\" CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
+
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
@@ -4145,6 +4169,10 @@ function build_hdf5
         sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
         cf_szip="--with-szlib=${sz_dir}"
     fi
+    echo ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
+        ${cf_szip}
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
@@ -8206,6 +8234,8 @@ usage () {
   printf "\t  %s\n" "   'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
   printf "%-11s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"
   printf "%-11s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
+  printf "%-11s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
+  printf "%-11s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
   printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
   printf "%s <%s> %s\n" "--svn" "revision" \
     "Obtain <revision> of VisIt source code from the SVN server"
@@ -8348,6 +8378,8 @@ for arg in "${arguments[@]}" ; do
             arch) VISITARCH="${arg}";;
             cflags) C_OPT_FLAGS=$(strip_quotes "${arg}");;
             cxxflags) CXX_OPT_FLAGS=$(strip_quotes "${arg}");;
+            cc) C_COMPILER="${arg}";;
+            cxx) CXX_COMPILER="${arg}";;
             flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"
                          CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g";;
             makeflags) MAKE_OPT_FLAGS="${arg}";;
@@ -8374,6 +8406,8 @@ for arg in "${arguments[@]}" ; do
         --cgns) DO_CGNS="yes"; ON_CGNS="on";;
         --cmake) DO_CMAKE="yes"; ON_CMAKE="on";;
         --cxxflags) next_arg="cxxflags";;
+        --cc) next_arg="cc";;
+        --cxx) next_arg="cxx";;
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
         --debug) set -vx;;
         --fastbit) DO_FASTBIT="yes"; ON_FASTBIT="on"

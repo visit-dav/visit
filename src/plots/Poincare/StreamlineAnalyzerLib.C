@@ -904,7 +904,7 @@ basicChecks( vector< Point >& points,
   avenode = 0;
   island = 0;
   
-  bool convex;
+  bool convex=false;
 
   // A toroidalWinding of one is valid only if it is an island. An island with
   // one toroidalWinding must have a non-convex hull otherwise it is a surface.

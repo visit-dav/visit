@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        CracksClipperScriptingPluginInfo.C
 // ************************************************************************* //
-#include <CracksClipperPluginInfo.h>
 #include <PyCracksClipperAttributes.h>
+#include <CracksClipperPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo CracksClipper_GetScriptingInfo

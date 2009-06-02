@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        SphereSliceScriptingPluginInfo.C
 // ************************************************************************* //
-#include <SphereSlicePluginInfo.h>
 #include <PySphereSliceAttributes.h>
+#include <SphereSlicePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo SphereSlice_GetScriptingInfo

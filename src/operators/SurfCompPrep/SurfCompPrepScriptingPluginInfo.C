@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        SurfCompPrepScriptingPluginInfo.C
 // ************************************************************************* //
-#include <SurfCompPrepPluginInfo.h>
 #include <PySurfCompPrepAttributes.h>
+#include <SurfCompPrepPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo SurfCompPrep_GetScriptingInfo

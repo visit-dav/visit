@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        CurveScriptingPluginInfo.C
 // ************************************************************************* //
-#include <CurvePluginInfo.h>
 #include <PyCurveAttributes.h>
+#include <CurvePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Curve_GetScriptingInfo

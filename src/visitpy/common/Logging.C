@@ -35,6 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <Python.h>
 
 #include <ViewerProxy.h>
 #include <ViewerRPC.h>

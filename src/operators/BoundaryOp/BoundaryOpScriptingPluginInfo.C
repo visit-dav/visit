@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        BoundaryOpScriptingPluginInfo.C
 // ************************************************************************* //
-#include <BoundaryOpPluginInfo.h>
 #include <PyBoundaryOpAttributes.h>
+#include <BoundaryOpPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo BoundaryOp_GetScriptingInfo

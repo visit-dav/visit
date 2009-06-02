@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        SmoothScriptingPluginInfo.C
 // ************************************************************************* //
-#include <SmoothPluginInfo.h>
 #include <PySmoothOperatorAttributes.h>
+#include <SmoothPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Smooth_GetScriptingInfo

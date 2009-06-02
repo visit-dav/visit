@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        PDFScriptingPluginInfo.C
 // ************************************************************************* //
-#include <PDFPluginInfo.h>
 #include <PyPDFAttributes.h>
+#include <PDFPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo PDF_GetScriptingInfo

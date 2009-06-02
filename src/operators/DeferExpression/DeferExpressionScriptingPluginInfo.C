@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        DeferExpressionScriptingPluginInfo.C
 // ************************************************************************* //
-#include <DeferExpressionPluginInfo.h>
 #include <PyDeferExpressionAttributes.h>
+#include <DeferExpressionPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo DeferExpression_GetScriptingInfo

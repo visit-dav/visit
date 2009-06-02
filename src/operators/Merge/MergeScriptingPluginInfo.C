@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        MergeScriptingPluginInfo.C
 // ************************************************************************* //
-#include <MergePluginInfo.h>
 #include <PyMergeOperatorAttributes.h>
+#include <MergePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Merge_GetScriptingInfo

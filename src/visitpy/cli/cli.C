@@ -35,6 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <Python.h>
 
 // The following 2 include lines are only for the MIPSpro 7.41 compiler.
 // There is some conflict between Python.h and Utility.h in including
@@ -46,8 +47,6 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
-
-#include <Python.h>
 
 #include <FileFunctions.h>
 #include <InstallationFunctions.h>

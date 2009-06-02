@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        MeshScriptingPluginInfo.C
 // ************************************************************************* //
-#include <MeshPluginInfo.h>
 #include <PyMeshAttributes.h>
+#include <MeshPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Mesh_GetScriptingInfo

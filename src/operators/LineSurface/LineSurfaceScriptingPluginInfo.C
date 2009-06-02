@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        LineSurfaceScriptingPluginInfo.C
 // ************************************************************************* //
-#include <LineSurfacePluginInfo.h>
 #include <PyLineSurfaceAttributes.h>
+#include <LineSurfacePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo LineSurface_GetScriptingInfo
