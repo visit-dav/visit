@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        KerbelScriptingPluginInfo.C
 // ************************************************************************* //
-#include <KerbelPluginInfo.h>
 #include <PyKerbelAttributes.h>
+#include <KerbelPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Kerbel_GetScriptingInfo

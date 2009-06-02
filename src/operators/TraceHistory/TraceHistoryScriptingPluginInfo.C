@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        TraceHistoryScriptingPluginInfo.C
 // ************************************************************************* //
-#include <TraceHistoryPluginInfo.h>
 #include <PyTraceHistoryAttributes.h>
+#include <TraceHistoryPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo TraceHistory_GetScriptingInfo

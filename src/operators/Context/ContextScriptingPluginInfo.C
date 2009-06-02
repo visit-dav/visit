@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ContextScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ContextPluginInfo.h>
 #include <PyContextAttributes.h>
+#include <ContextPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Context_GetScriptingInfo

@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ContourScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ContourPluginInfo.h>
 #include <PyContourAttributes.h>
+#include <ContourPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Contour_GetScriptingInfo

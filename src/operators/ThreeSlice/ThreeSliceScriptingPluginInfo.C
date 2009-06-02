@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ThreeSliceScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ThreeSlicePluginInfo.h>
 #include <PyThreeSliceAttributes.h>
+#include <ThreeSlicePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo ThreeSlice_GetScriptingInfo

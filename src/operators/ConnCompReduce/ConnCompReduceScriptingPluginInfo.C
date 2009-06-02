@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ConnCompReduceScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ConnCompReducePluginInfo.h>
 #include <PyConnCompReduceAttributes.h>
+#include <ConnCompReducePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo ConnCompReduce_GetScriptingInfo

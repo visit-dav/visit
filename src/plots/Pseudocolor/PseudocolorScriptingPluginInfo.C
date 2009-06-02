@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        PseudocolorScriptingPluginInfo.C
 // ************************************************************************* //
-#include <PseudocolorPluginInfo.h>
 #include <PyPseudocolorAttributes.h>
+#include <PseudocolorPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Pseudocolor_GetScriptingInfo

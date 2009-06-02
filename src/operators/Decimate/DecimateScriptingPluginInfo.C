@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        DecimateScriptingPluginInfo.C
 // ************************************************************************* //
-#include <DecimatePluginInfo.h>
 #include <PyDecimateAttributes.h>
+#include <DecimatePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Decimate_GetScriptingInfo

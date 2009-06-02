@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ElevateScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ElevatePluginInfo.h>
 #include <PyElevateAttributes.h>
+#include <ElevatePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Elevate_GetScriptingInfo

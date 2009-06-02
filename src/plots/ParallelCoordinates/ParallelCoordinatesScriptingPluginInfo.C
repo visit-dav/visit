@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ParallelCoordinatesScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ParallelCoordinatesPluginInfo.h>
 #include <PyParallelCoordinatesAttributes.h>
+#include <ParallelCoordinatesPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo ParallelCoordinates_GetScriptingInfo

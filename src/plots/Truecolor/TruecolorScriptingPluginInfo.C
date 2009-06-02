@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        TruecolorScriptingPluginInfo.C
 // ************************************************************************* //
-#include <TruecolorPluginInfo.h>
 #include <PyTruecolorAttributes.h>
+#include <TruecolorPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Truecolor_GetScriptingInfo

@@ -3683,14 +3683,19 @@ case $UNAME in
     ;;
 
   Linux)
-    # Expecting g++
-    if test -z "$SHLIB_CREATEPROG"; then
-        SHLIB_CREATEPROG="$""(CXX) -shared -o"
+    if test "`echo $CXX | cut -c1-3`" = "xlC"; then
+        if test -z "$SHLIB_CREATEPROG"; then
+            SHLIB_CREATEPROG="$""(CXX) -qmkshrobj -o"
+        fi
+    else # Expecting g++
+        if test -z "$SHLIB_CREATEPROG"; then
+            SHLIB_CREATEPROG="$""(CXX) -shared -o"
+        fi
+        # Set RPATH relative to executable
+        EXE_LDFLAGS="$EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
+        PLUGIN_LDFLAGS="$PLUGIN_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
+        DATA_EXE_LDFLAGS="$DATA_EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../src/lib"
     fi
-    # Set RPATH relative to executable
-    EXE_LDFLAGS="$EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
-    PLUGIN_LDFLAGS="$PLUGIN_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
-    DATA_EXE_LDFLAGS="$DATA_EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../src/lib"
     ;;
 
   Darwin)

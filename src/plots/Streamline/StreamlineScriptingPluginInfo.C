@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        StreamlineScriptingPluginInfo.C
 // ************************************************************************* //
-#include <StreamlinePluginInfo.h>
 #include <PyStreamlineAttributes.h>
+#include <StreamlinePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Streamline_GetScriptingInfo

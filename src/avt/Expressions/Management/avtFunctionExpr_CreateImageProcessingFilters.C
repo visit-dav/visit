@@ -35,41 +35,46 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef VIEWERRPC_CALLBACKS_H
-#define VIEWERRPC_CALLBACKS_H
-#include <Python.h>
-#include <ViewerRPC.h>
+#include <avtExprNode.h>
+
+#include <avtAbelInversionExpression.h>
+#include <avtConservativeSmoothingExpression.h>
+#include <avtMeanFilterExpression.h>
+#include <avtMedianFilterExpression.h>
 
 // ****************************************************************************
-// Class: ViewerRPCCallbacks
+// Method: avtFunctionExpr::CreateImageProcessingFilters
 //
-// Purpose:
-//   Keeps track of user-defined callbacks for specific ViewerRPC values.
+// Purpose: 
+//   Creates image processing filters.
 //
-// Notes:      
+// Arguments:
+//   functionName : The name of the expression filter to create.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Feb  4 09:21:44 PST 2008
+// Returns:    An expression filter or 0 if one could not be created.
+//
+// Note:       
+//
+// Programmer: 
+// Creation:   Thu May 21 08:55:58 PDT 2009
 //
 // Modifications:
-//   Brad Whitlock, Wed Feb  6 10:26:09 PST 2008
-//   Added callback data.
-//
+//   
 // ****************************************************************************
 
-class ViewerRPCCallbacks
+avtExpressionFilter *
+avtFunctionExpr::CreateImageProcessingFilters(const string &functionName) const
 {
-public:
-    ViewerRPCCallbacks();
-    ~ViewerRPCCallbacks();
+    avtExpressionFilter *f = 0;
 
-    void GetCallbackNames(stringVector &names);
-    bool RegisterCallback(const std::string &, PyObject *, PyObject *);
-    PyObject *GetCallback(ViewerRPC::ViewerRPCType);
-    PyObject *GetCallbackData(ViewerRPC::ViewerRPCType);
-private:
-    PyObject *pycb[ViewerRPC::MaxRPC];
-    PyObject *pycb_data[ViewerRPC::MaxRPC];
-};
+    if (functionName == "conservative_smoothing")
+        f = new avtConservativeSmoothingExpression;
+    else if (functionName == "mean_filter")
+        f = new avtMeanFilterExpression;
+    else if (functionName == "median_filter")
+        f = new avtMedianFilterExpression;
+    else if (functionName == "abel_inversion")
+        f = new avtAbelInversionExpression;
 
-#endif
+    return f;
+}

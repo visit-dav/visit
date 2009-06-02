@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        DualMeshScriptingPluginInfo.C
 // ************************************************************************* //
-#include <DualMeshPluginInfo.h>
 #include <PyDualMeshAttributes.h>
+#include <DualMeshPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo DualMesh_GetScriptingInfo

@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        DisplaceScriptingPluginInfo.C
 // ************************************************************************* //
-#include <DisplacePluginInfo.h>
 #include <PyDisplaceAttributes.h>
+#include <DisplacePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Displace_GetScriptingInfo

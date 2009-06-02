@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        RemoveCellsScriptingPluginInfo.C
 // ************************************************************************* //
-#include <RemoveCellsPluginInfo.h>
 #include <PyRemoveCellsAttributes.h>
+#include <RemoveCellsPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo RemoveCells_GetScriptingInfo

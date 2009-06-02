@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        IsovolumeScriptingPluginInfo.C
 // ************************************************************************* //
-#include <IsovolumePluginInfo.h>
 #include <PyIsovolumeAttributes.h>
+#include <IsovolumePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Isovolume_GetScriptingInfo

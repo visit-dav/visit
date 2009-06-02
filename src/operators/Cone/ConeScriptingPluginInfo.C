@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ConeScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ConePluginInfo.h>
 #include <PyConeAttributes.h>
+#include <ConePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Cone_GetScriptingInfo

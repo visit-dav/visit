@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        SiloDumpScriptingPluginInfo.C
 // ************************************************************************* //
-#include <SiloDumpPluginInfo.h>
 #include <PySiloDumpAttributes.h>
+#include <SiloDumpPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo SiloDump_GetScriptingInfo

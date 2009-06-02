@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        SpreadsheetScriptingPluginInfo.C
 // ************************************************************************* //
-#include <SpreadsheetPluginInfo.h>
 #include <PySpreadsheetAttributes.h>
+#include <SpreadsheetPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Spreadsheet_GetScriptingInfo

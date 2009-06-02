@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        VectorScriptingPluginInfo.C
 // ************************************************************************* //
-#include <VectorPluginInfo.h>
 #include <PyVectorAttributes.h>
+#include <VectorPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Vector_GetScriptingInfo

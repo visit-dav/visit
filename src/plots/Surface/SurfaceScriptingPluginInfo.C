@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        SurfaceScriptingPluginInfo.C
 // ************************************************************************* //
-#include <SurfacePluginInfo.h>
 #include <PySurfaceAttributes.h>
+#include <SurfacePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Surface_GetScriptingInfo

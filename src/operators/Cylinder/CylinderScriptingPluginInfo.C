@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        CylinderScriptingPluginInfo.C
 // ************************************************************************* //
-#include <CylinderPluginInfo.h>
 #include <PyCylinderAttributes.h>
+#include <CylinderPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Cylinder_GetScriptingInfo

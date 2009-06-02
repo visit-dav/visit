@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        InverseGhostZoneScriptingPluginInfo.C
 // ************************************************************************* //
-#include <InverseGhostZonePluginInfo.h>
 #include <PyInverseGhostZoneAttributes.h>
+#include <InverseGhostZonePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo InverseGhostZone_GetScriptingInfo

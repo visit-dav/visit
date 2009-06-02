@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ThresholdScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ThresholdPluginInfo.h>
 #include <PyThresholdAttributes.h>
+#include <ThresholdPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Threshold_GetScriptingInfo

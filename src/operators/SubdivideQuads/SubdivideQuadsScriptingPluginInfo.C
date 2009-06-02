@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        SubdivideQuadsScriptingPluginInfo.C
 // ************************************************************************* //
-#include <SubdivideQuadsPluginInfo.h>
 #include <PySubdivideQuadsAttributes.h>
+#include <SubdivideQuadsPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo SubdivideQuads_GetScriptingInfo

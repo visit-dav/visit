@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ScatterScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ScatterPluginInfo.h>
 #include <PyScatterAttributes.h>
+#include <ScatterPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Scatter_GetScriptingInfo

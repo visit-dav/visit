@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        LabelScriptingPluginInfo.C
 // ************************************************************************* //
-#include <LabelPluginInfo.h>
 #include <PyLabelAttributes.h>
+#include <LabelPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Label_GetScriptingInfo

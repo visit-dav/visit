@@ -37,6 +37,7 @@
 *****************************************************************************/
 #ifndef CALLBACK_MANAGER_H
 #define CALLBACK_MANAGER_H
+#include <Python.h>
 #include <map>
 #include <vector>
 #include <string>
@@ -45,7 +46,6 @@
 
 #include <SimpleObserver.h>
 #include <ObserverToCallback.h>
-#include <Python.h>
 
 class AttributeSubject;
 class Threading;

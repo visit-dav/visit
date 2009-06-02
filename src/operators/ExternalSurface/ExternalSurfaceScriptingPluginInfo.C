@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ExternalSurfaceScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ExternalSurfacePluginInfo.h>
 #include <PyExternalSurfaceAttributes.h>
+#include <ExternalSurfacePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo ExternalSurface_GetScriptingInfo

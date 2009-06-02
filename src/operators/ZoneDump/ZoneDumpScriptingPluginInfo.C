@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ZoneDumpScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ZoneDumpPluginInfo.h>
 #include <PyZoneDumpAttributes.h>
+#include <ZoneDumpPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo ZoneDump_GetScriptingInfo

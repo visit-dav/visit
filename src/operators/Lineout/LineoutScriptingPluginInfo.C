@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        LineoutScriptingPluginInfo.C
 // ************************************************************************* //
-#include <LineoutPluginInfo.h>
 #include <PyLineoutAttributes.h>
+#include <LineoutPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Lineout_GetScriptingInfo

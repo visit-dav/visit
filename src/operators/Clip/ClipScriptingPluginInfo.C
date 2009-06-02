@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        ClipScriptingPluginInfo.C
 // ************************************************************************* //
-#include <ClipPluginInfo.h>
 #include <PyClipAttributes.h>
+#include <ClipPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Clip_GetScriptingInfo

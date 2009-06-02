@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        SubsetScriptingPluginInfo.C
 // ************************************************************************* //
-#include <SubsetPluginInfo.h>
 #include <PySubsetAttributes.h>
+#include <SubsetPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Subset_GetScriptingInfo

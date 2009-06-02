@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        PoincareScriptingPluginInfo.C
 // ************************************************************************* //
-#include <PoincarePluginInfo.h>
 #include <PyPoincareAttributes.h>
+#include <PoincarePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Poincare_GetScriptingInfo

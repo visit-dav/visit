@@ -35,41 +35,61 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef VIEWERRPC_CALLBACKS_H
-#define VIEWERRPC_CALLBACKS_H
-#include <Python.h>
-#include <ViewerRPC.h>
+#include <avtExprNode.h>
+
+#include <avtConnCMFEExpression.h>
+#include <avtCurveCMFEExpression.h>
+#include <avtEvalPlaneExpression.h>
+#include <avtEvalPointExpression.h>
+#include <avtEvalTransformExpression.h>
+#include <avtPosCMFEExpression.h>
+#include <avtSymmPlaneExpression.h>
+#include <avtSymmPointExpression.h>
+#include <avtSymmTransformExpression.h>
 
 // ****************************************************************************
-// Class: ViewerRPCCallbacks
+// Method: avtFunctionExpr::CreateCMFEFilters
 //
-// Purpose:
-//   Keeps track of user-defined callbacks for specific ViewerRPC values.
+// Purpose: 
+//   Creates CMFE expression filters.
 //
-// Notes:      
+// Arguments:
+//   functionName : The name of the expression filter to create.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Feb  4 09:21:44 PST 2008
+// Returns:    An expression filter or 0 if one could not be created.
+//
+// Note:       
+//
+// Programmer: 
+// Creation:   Thu May 21 08:55:58 PDT 2009
 //
 // Modifications:
-//   Brad Whitlock, Wed Feb  6 10:26:09 PST 2008
-//   Added callback data.
-//
+//   
 // ****************************************************************************
 
-class ViewerRPCCallbacks
+avtExpressionFilter *
+avtFunctionExpr::CreateCMFEFilters(const string &functionName) const
 {
-public:
-    ViewerRPCCallbacks();
-    ~ViewerRPCCallbacks();
+    avtExpressionFilter *f = 0;
 
-    void GetCallbackNames(stringVector &names);
-    bool RegisterCallback(const std::string &, PyObject *, PyObject *);
-    PyObject *GetCallback(ViewerRPC::ViewerRPCType);
-    PyObject *GetCallbackData(ViewerRPC::ViewerRPCType);
-private:
-    PyObject *pycb[ViewerRPC::MaxRPC];
-    PyObject *pycb_data[ViewerRPC::MaxRPC];
-};
+    if (functionName == "conn_cmfe")
+        f = new avtConnCMFEExpression;
+    else if (functionName == "curve_cmfe")
+        f = new avtCurveCMFEExpression;
+    else if (functionName == "pos_cmfe")
+        f = new avtPosCMFEExpression;
+    else if (functionName == "eval_transform")
+        f = new avtEvalTransformExpression;
+    else if (functionName == "symm_transform")
+        f = new avtSymmTransformExpression;
+    else if (functionName == "eval_plane")
+        f = new avtEvalPlaneExpression;
+    else if (functionName == "symm_plane")
+        f = new avtSymmPlaneExpression;
+    else if (functionName == "eval_point")
+        f = new avtEvalPointExpression;
+    else if (functionName == "symm_point")
+        f = new avtSymmPointExpression;
 
-#endif
+    return f;
+}

@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        TopologyScriptingPluginInfo.C
 // ************************************************************************* //
-#include <TopologyPluginInfo.h>
 #include <PyTopologyAttributes.h>
+#include <TopologyPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Topology_GetScriptingInfo

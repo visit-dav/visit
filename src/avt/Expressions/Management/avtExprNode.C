@@ -40,145 +40,6 @@
 //                                avtExprNode.C                              //
 // ************************************************************************* //
 
-#include <avtUnaryMinusExpression.h>
-#include <avtBinaryAddExpression.h>
-#include <avtBinaryAndExpression.h>
-#include <avtBinarySubtractExpression.h>
-#include <avtBinaryMultiplyExpression.h>
-#include <avtBinaryDivideExpression.h>
-#include <avtBinaryPowerExpression.h>
-#include <avtCeilingExpression.h>
-#include <avtColorComposeExpression.h>
-#include <avtHSVColorComposeExpression.h>
-#include <avtFloorExpression.h>
-#include <avtModuloExpression.h>
-#include <avtRoundExpression.h>
-#include <avtSinExpression.h>
-#include <avtSinhExpression.h>
-#include <avtCosExpression.h>
-#include <avtCoshExpression.h>
-#include <avtExpExpression.h>
-#include <avtDistanceToBestFitLineExpression.h>
-#include <avtRandomExpression.h>
-#include <avtArctanExpression.h>
-#include <avtArctan2Expression.h>
-#include <avtArcsinExpression.h>
-#include <avtArccosExpression.h>
-#include <avtDegreeToRadianExpression.h>
-#include <avtDeterminantExpression.h>
-#include <avtEigenvalueExpression.h>
-#include <avtEigenvectorExpression.h>
-#include <avtExpressionFilter.h>
-#include <avtInverseExpression.h>
-#include <avtTraceExpression.h>
-#include <avtTensorMaximumShearExpression.h>
-#include <avtTransposeExpression.h>
-#include <avtPrincipalDeviatoricTensorExpression.h>
-#include <avtPrincipalTensorExpression.h>
-#include <avtEffectiveTensorExpression.h>
-#include <avtStrainAlmansiExpression.h>
-#include <avtStrainGreenLagrangeExpression.h>
-#include <avtStrainInfinitesimalExpression.h>
-#include <avtStrainRateExpression.h>
-#include <avtDisplacementExpression.h>
-#include <avtCurvatureExpression.h>
-#include <avtGradientExpression.h>
-#include <avtCurlExpression.h>
-#include <avtDivergenceExpression.h>
-#include <avtLaplacianExpression.h>
-#include <avtRectilinearLaplacianExpression.h>
-#include <avtResradExpression.h>
-#include <avtMagnitudeExpression.h>
-#include <avtNeighborExpression.h>
-#include <avtNodeDegreeExpression.h>
-#include <avtNormalizeExpression.h>
-#include <avtDominantMaterialExpression.h>
-#include <avtMatvfExpression.h>
-#include <avtMIRvfExpression.h>
-#include <avtMatErrorExpression.h>
-#include <avtNMatsExpression.h>
-#include <avtRadianToDegreeExpression.h>
-#include <avtRevolvedVolume.h>
-#include <avtSideVolume.h>
-#include <avtCornerAngle.h>
-#include <avtEdgeLength.h>
-#include <avtRevolvedSurfaceArea.h>
-#include <avtSpecMFExpression.h>
-#include <avtTanExpression.h>
-#include <avtTanhExpression.h>
-#include <avtAbsValExpression.h>
-#include <avtNaturalLogExpression.h>
-#include <avtBase10LogExpression.h>
-#include <avtSquareRootExpression.h>
-#include <avtSquareExpression.h>
-#include <avtCylindricalCoordinatesExpression.h>
-#include <avtCylindricalRadiusExpression.h>
-#include <avtPolarCoordinatesExpression.h>
-#include <avtVariableSkewExpression.h>
-#include <avtVectorComposeExpression.h>
-#include <avtVectorDecomposeExpression.h>
-#include <avtVectorCrossProductExpression.h>
-#include <avtArrayComposeExpression.h>
-#include <avtArrayComposeWithBinsExpression.h>
-#include <avtArrayDecomposeExpression.h>
-#include <avtMeshCoordinateExpression.h>
-#include <avtProcessorIdExpression.h>
-#include <avtDegreeExpression.h>
-#include <avtVMetrics.h>
-#include <avtRecenterExpression.h>
-#include <avtLocalizedCompactnessExpression.h>
-#include <avtApplyDDFExpression.h>
-#include <avtConstantCreatorExpression.h>
-#include <avtRelativeDifferenceExpression.h>
-#include <avtConditionalExpression.h>
-#include <avtLogicalAndExpression.h>
-#include <avtLogicalNegationExpression.h>
-#include <avtLogicalOrExpression.h>
-#include <avtTestEqualToExpression.h>
-#include <avtTestGreaterThanExpression.h>
-#include <avtTestGreaterThanOrEqualToExpression.h>
-#include <avtTestLessThanExpression.h>
-#include <avtTestLessThanOrEqualToExpression.h>
-#include <avtTestNotEqualToExpression.h>
-#include <avtNeighborEvaluatorExpression.h>
-#include <avtDataIdExpression.h>
-#include <avtZoneTypeExpression.h>
-#include <avtExpressionComponentMacro.h>
-#include <avtAbelInversionExpression.h>
-#include <avtConservativeSmoothingExpression.h>
-#include <avtAverageOverTimeExpression.h>
-#include <avtMinOverTimeExpression.h>
-#include <avtMaxOverTimeExpression.h>
-#include <avtSumOverTimeExpression.h>
-#include <avtWhenConditionIsTrueExpression.h>
-#include <avtValueAtExtremaExpression.h>
-#include <avtMeanFilterExpression.h>
-#include <avtMedianFilterExpression.h>
-#include <avtConnCMFEExpression.h>
-#include <avtCurveCMFEExpression.h>
-#include <avtPosCMFEExpression.h>
-#include <avtExternalNodeExpression.h>
-#include <avtSurfaceNormalExpression.h>
-#include <avtEvalTransformExpression.h>
-#include <avtSymmTransformExpression.h>
-#include <avtEvalPlaneExpression.h>
-#include <avtSymmPlaneExpression.h>
-#include <avtEvalPointExpression.h>
-#include <avtSymmPointExpression.h>
-#include <avtTimeExpression.h>
-#include <avtMinMaxExpression.h>
-#include <avtConnComponentsExpression.h>
-#include <avtTensorContractionExpression.h>
-#include <avtViscousStressExpression.h>
-#include <avtPerformColorTableLookupExpression.h>
-#include <avtPerMaterialValueExpression.h>
-#include <avtApplyEnumerationExpression.h>
-#include <avtConstantFunctionExpression.h>
-#include <avtCurveDomainExpression.h>
-#include <avtCurveExpression.h>
-#include <avtGeodesicVectorQuantizeExpression.h>
-#include <avtKeyAggregatorExpression.h>
-
 #include <stdio.h>
 #include <ExpressionException.h>
 #include <ExprToken.h>
@@ -186,6 +47,47 @@
 #include <avtExprNode.h>
 #include <DebugStream.h>
 #include <snprintf.h>
+
+#include <avtApplyDDFExpression.h>
+#include <avtApplyEnumerationExpression.h>
+#include <avtArrayComposeExpression.h>
+#include <avtArrayComposeWithBinsExpression.h>
+#include <avtArrayDecomposeExpression.h>
+#include <avtBinaryAddExpression.h>
+#include <avtBinaryAndExpression.h>
+#include <avtBinaryDivideExpression.h>
+#include <avtBinaryMultiplyExpression.h>
+#include <avtBinaryPowerExpression.h>
+#include <avtBinarySubtractExpression.h>
+#include <avtColorComposeExpression.h>
+#include <avtConnComponentsExpression.h>
+#include <avtConstantCreatorExpression.h>
+#include <avtConstantFunctionExpression.h>
+#include <avtCurvatureExpression.h>
+#include <avtCurveDomainExpression.h>
+#include <avtCurveExpression.h>
+#include <avtCylindricalCoordinatesExpression.h>
+#include <avtDegreeExpression.h>
+#include <avtDisplacementExpression.h>
+#include <avtDistanceToBestFitLineExpression.h>
+#include <avtGeodesicVectorQuantizeExpression.h>
+#include <avtGradientExpression.h>
+#include <avtHSVColorComposeExpression.h>
+#include <avtKeyAggregatorExpression.h>
+#include <avtLaplacianExpression.h>
+#include <avtLocalizedCompactnessExpression.h>
+#include <avtMinMaxExpression.h>
+#include <avtPerformColorTableLookupExpression.h>
+#include <avtProcessorIdExpression.h>
+#include <avtRecenterExpression.h>
+#include <avtRectilinearLaplacianExpression.h>
+#include <avtRelativeDifferenceExpression.h>
+#include <avtResradExpression.h>
+#include <avtTimeExpression.h>
+#include <avtUnaryMinusExpression.h>
+#include <avtVariableSkewExpression.h>
+#include <avtVectorComposeExpression.h>
+#include <avtVectorDecomposeExpression.h>
 
 using std::string;
 
@@ -541,61 +443,35 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Kathleen Bonnell, Mon Apr 27 15:47:49 PDT 2009
 //    Added sinh, cosh, tanh.
 //
+//    Brad Whitlock, Thu May 21 09:20:24 PDT 2009
+//    I separated out lots of related functions into methods in another file
+//    to make this file easier to compile.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
 avtFunctionExpr::CreateFilters(string functionName)
 {
-    if (functionName == "sin")
-        return new avtSinExpression();
-    if (functionName == "sinh")
-        return new avtSinhExpression();
-    if (functionName == "cos")
-        return new avtCosExpression();
-    if (functionName == "cosh")
-        return new avtCoshExpression();
-    if (functionName == "tan")
-        return new avtTanExpression();
-    if (functionName == "tanh")
-        return new avtTanhExpression();
-    if (functionName == "atan")
-        return new avtArctanExpression();
-    if (functionName == "atan2")
-        return new avtArctan2Expression();
-    if (functionName == "asin")
-        return new avtArcsinExpression();
-    if (functionName == "acos")
-        return new avtArccosExpression();
-    if (functionName == "deg2rad")
-        return new avtDegreeToRadianExpression();
-    if (functionName == "rad2deg")
-        return new avtRadianToDegreeExpression();
-    if (functionName == "abs")
-        return new avtAbsValExpression();
-    if (functionName == "ln")
-        return new avtNaturalLogExpression();
-    if (functionName == "exp")
-        return new avtExpExpression();
-    if ((functionName == "log") || (functionName == "log10"))
-        return new avtBase10LogExpression();
-    if (functionName == "sqrt")
-        return new avtSquareRootExpression();
-    if ((functionName == "sq") || (functionName == "sqr"))
-        return new avtSquareExpression();
-    if (functionName == "mod" || functionName == "modulo")
-        return new avtModuloExpression();
-    if (functionName == "ceil")
-        return new avtCeilingExpression();
-    if (functionName == "floor")
-        return new avtFloorExpression();
-    if (functionName == "round")
-        return new avtRoundExpression();
-    if ((functionName == "random") || (functionName == "rand"))
-        return new avtRandomExpression();
-    if (functionName == "cross")
-        return new avtVectorCrossProductExpression();
-    if (functionName == "dot")
-        return new avtBinaryMultiplyExpression();
+    avtExpressionFilter *f = 0;
+    if((f = CreateMathFilters(functionName)) != 0)
+        return f;
+    if((f = CreateVectorMatrixFilters(functionName)) != 0)
+        return f;
+    if((f = CreateMeshQualityFilters(functionName)) != 0)
+        return f;
+    if((f = CreateMeshFilters(functionName)) != 0)
+        return f;
+    if((f = CreateMaterialFilters(functionName)) != 0)
+        return f;
+    if((f = CreateConditionalFilters(functionName)) != 0)
+        return f;
+    if((f = CreateCMFEFilters(functionName)) != 0)
+        return f;
+    if((f = CreateImageProcessingFilters(functionName)) != 0)
+        return f;
+    if((f = CreateTimeAndValueFilters(functionName)) != 0)
+        return f;
+
     if (functionName == "enumerate")
         return new avtApplyEnumerationExpression();
     if (functionName == "array_compose")
@@ -604,70 +480,16 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtArrayComposeWithBinsExpression();
     if (functionName == "array_decompose")
         return new avtArrayDecomposeExpression();
-    if (functionName == "matvf")
-        return new avtMatvfExpression();
-    if (functionName == "mirvf")
-        return new avtMIRvfExpression();
-    if (functionName == "materror")
-        return new avtMatErrorExpression();
-    if (functionName == "value_for_material")
-        return new avtPerMaterialValueExpression();     
-    if (functionName == "val4mat")
-        return new avtPerMaterialValueExpression();
-    if (functionName == "specmf")
-        return new avtSpecMFExpression();
-    if (functionName == "dominant_mat")
-        return new avtDominantMaterialExpression();
-    if (functionName == "nmats")
-        return new avtNMatsExpression();
-    if (functionName == "zonetype")
-        return new avtZoneTypeExpression();
     if (functionName == "localized_compactness")
         return new avtLocalizedCompactnessExpression();
     if (functionName == "recenter")
         return new avtRecenterExpression();
-    if (functionName == "det" || functionName == "determinant")
-        return new avtDeterminantExpression();
-    if (functionName == "eigenvalue")
-        return new avtEigenvalueExpression();
-    if (functionName == "eigenvector")
-        return new avtEigenvectorExpression();
-    if (functionName == "inverse")
-        return new avtInverseExpression();
-    if (functionName == "trace")
-        return new avtTraceExpression();
-    if (functionName == "effective_tensor")
-        return new avtEffectiveTensorExpression();
-    if (functionName == "tensor_maximum_shear")
-        return new avtTensorMaximumShearExpression();
-    if (functionName == "principal_tensor")
-        return new avtPrincipalTensorExpression();
-    if (functionName == "principal_deviatoric_tensor")
-        return new avtPrincipalDeviatoricTensorExpression();
-    if (functionName == "strain_almansi")
-        return new avtStrainAlmansiExpression();
-    if (functionName == "strain_green_lagrange")
-        return new avtStrainGreenLagrangeExpression();
-    if (functionName == "strain_infinitesimal")
-        return new avtStrainInfinitesimalExpression();
-    if (functionName == "strain_rate")
-        return new avtStrainRateExpression();
-    if (functionName == "contraction")
-        return new avtTensorContractionExpression();
-    if (functionName == "transpose")
-        return new avtTransposeExpression();
-    if (functionName == "viscous_stress")
-        return new avtViscousStressExpression();
     if (functionName == "displacement")
         return new avtDisplacementExpression();
     if (functionName == "degree")
         return new avtDegreeExpression();
     if (functionName == "cylindrical")
         return new avtCylindricalCoordinatesExpression();
-    if (functionName == "polar")
-        return new avtPolarCoordinatesExpression();
-    if (functionName == "coord" || functionName == "coords")
-        return new avtMeshCoordinateExpression();
     if (functionName == "procid")
         return new avtProcessorIdExpression();
     if (functionName == "mean_curvature")
@@ -694,14 +516,9 @@ avtFunctionExpr::CreateFilters(string functionName)
         g->SetAlgorithm(NODAL_TO_ZONAL_QUAD_HEX);
         return g;
     }
+
     if (functionName == "key_aggregate" || functionName == "key_agg")
         return new avtKeyAggregatorExpression;
-    if (functionName == "gradient")
-        return new avtGradientExpression();
-    if (functionName == "curl")
-        return new avtCurlExpression();
-    if (functionName == "divergence")
-        return new avtDivergenceExpression();
     if (functionName == "laplacian" || functionName == "Laplacian")
         return new avtLaplacianExpression();
     if (functionName == "rectilinear_laplacian")
@@ -710,250 +527,13 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtConnComponentsExpression();
     if (functionName == "resrad")
         return new avtResradExpression();
-    if (functionName == "magnitude")
-        return new avtMagnitudeExpression();
-    if (functionName == "normalize")
-        return new avtNormalizeExpression();
     if (functionName == "relative_difference")
         return new avtRelativeDifferenceExpression();
     if (functionName == "var_skew")
         return new avtVariableSkewExpression();
     if (functionName == "apply_ddf")
         return new avtApplyDDFExpression();
-    if (functionName == "if")
-        return new avtConditionalExpression();
-    if (functionName == "and")
-        return new avtLogicalAndExpression();
-    if (functionName == "or")
-        return new avtLogicalOrExpression();
-    if (functionName == "not")
-        return new avtLogicalNegationExpression();
-    if (functionName == "le" || functionName == "lte")
-        return new avtTestLessThanOrEqualToExpression();
-    if (functionName == "ge" || functionName == "gte")
-        return new avtTestGreaterThanOrEqualToExpression();
-    if (functionName == "lt")
-        return new avtTestLessThanExpression();
-    if (functionName == "gt")
-        return new avtTestGreaterThanExpression();
-    if (functionName == "eq" || functionName == "equal" || 
-             functionName == "equals")
-        return new avtTestEqualToExpression();
-    if (functionName == "ne" || functionName == "neq" ||
-             functionName == "notequal" || functionName == "notequals")
-        return new avtTestNotEqualToExpression();
-    if (functionName == "neighbor")
-        return new avtNeighborExpression();
-    if (functionName == "external_node")
-        return new avtExternalNodeExpression();
-    if (functionName == "node_degree")
-        return new avtNodeDegreeExpression();
-    // Begin Verdict Metrics
-    if (functionName == "area")
-        return new avtVMetricArea();
-    if (functionName == "aspect")
-        return new avtVMetricAspectRatio();
-    if (functionName == "skew")
-        return new avtVMetricSkew();
-    if (functionName == "taper")
-        return new avtVMetricTaper();
-    if (functionName == "volume")
-        return new avtVMetricVolume();
-    if (functionName == "volume2")
-    {
-        avtVMetricVolume *vol = new avtVMetricVolume();
-        vol->UseVerdictHex(false);
-        return vol;
-    }
-    if (functionName == "min_corner_angle")
-    {
-        avtCornerAngle *ca = new avtCornerAngle();
-        ca->SetTakeMin(true);
-        return ca;
-    }
-    if (functionName == "max_corner_angle")
-    {
-        avtCornerAngle *ca = new avtCornerAngle();
-        ca->SetTakeMin(false);
-        return ca;
-    }
-    if (functionName == "min_edge_length")
-    {
-        avtEdgeLength *el = new avtEdgeLength();
-        el->SetTakeMin(true);
-        return el;
-    }
-    if (functionName == "max_edge_length")
-    {
-        avtEdgeLength *el = new avtEdgeLength();
-        el->SetTakeMin(false);
-        return el;
-    }
-    if (functionName == "min_side_volume")
-    {
-        avtSideVolume *sv = new avtSideVolume();
-        sv->SetTakeMin(true);
-        return sv;
-    }
-    if (functionName == "max_side_volume")
-    {
-        avtSideVolume *sv = new avtSideVolume();
-        sv->SetTakeMin(false);
-        return sv;
-    }
-    if (functionName == "stretch")
-        return new avtVMetricStretch();
-    if (functionName == "diagonal")
-        return new avtVMetricDiagonal();
-    if (functionName == "dimension")
-        return new avtVMetricDimension();
-    if (functionName == "oddy")
-        return new avtVMetricOddy();
-    if (functionName == "condition")
-        return new avtVMetricCondition();
-    if (functionName == "jacobian")
-        return new avtVMetricJacobian();
-    if (functionName == "scaled_jacobian")
-        return new avtVMetricScaledJacobian();
-    if (functionName == "shear")
-        return new avtVMetricShear();
-    if (functionName == "shape")
-        return new avtVMetricShape();
-    if (functionName == "relative_size")
-        return new avtVMetricRelativeSize();
-    if (functionName == "shape_and_size")
-        return new avtVMetricShapeAndSize();
-    if (functionName == "aspect_gamma")
-        return new avtVMetricAspectGamma();
-    if (functionName == "warpage")
-        return new avtVMetricWarpage();
-    if (functionName == "maximum_angle")
-        return new avtVMetricMaximumAngle();
-    if (functionName == "minimum_angle")
-        return new avtVMetricMinimumAngle();
-    if (functionName == "revolved_volume")
-        return new avtRevolvedVolume;
-    if (functionName == "revolved_surface_area")
-        return new avtRevolvedSurfaceArea;
-    if (functionName == "conservative_smoothing")
-        return new avtConservativeSmoothingExpression;
-    if (functionName == "mean_filter")
-        return new avtMeanFilterExpression;
-    if (functionName == "median_filter")
-        return new avtMedianFilterExpression;
-    if (functionName == "abel_inversion")
-        return new avtAbelInversionExpression;
-    if (functionName == "conn_cmfe")
-        return new avtConnCMFEExpression;
-    if (functionName == "curve_cmfe")
-        return new avtCurveCMFEExpression;
-    if (functionName == "pos_cmfe")
-        return new avtPosCMFEExpression;
-    if (functionName == "eval_transform")
-        return new avtEvalTransformExpression;
-    if (functionName == "symm_transform")
-        return new avtSymmTransformExpression;
-    if (functionName == "eval_plane")
-        return new avtEvalPlaneExpression;
-    if (functionName == "symm_plane")
-        return new avtSymmPlaneExpression;
-    if (functionName == "eval_point")
-        return new avtEvalPointExpression;
-    if (functionName == "symm_point")
-        return new avtSymmPointExpression;
-    if (functionName == "time")
-        return new avtTimeExpression(avtTimeExpression::MODE_TIME);
-    if (functionName == "cycle")
-        return new avtTimeExpression(avtTimeExpression::MODE_CYCLE);
-    if (functionName == "timestep")
-        return new avtTimeExpression(avtTimeExpression::MODE_INDEX);
-    if (functionName == "surface_normal" || 
-             functionName == "point_surface_normal")
-    {
-        avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
-        ff->DoPointNormals(true);
-        return ff;
-    }
-    if (functionName == "cell_surface_normal")
-    {
-        avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
-        ff->DoPointNormals(false);
-        return ff;
-    }
-    if (functionName == "zoneid")
-    {
-        avtDataIdExpression *ff = new avtDataIdExpression;
-        ff->CreateZoneIds();
-        ff->CreateLocalNumbering();
-        return ff;
-    }
-    if (functionName == "global_zoneid")
-    {
-        avtDataIdExpression *ff = new avtDataIdExpression;
-        ff->CreateZoneIds();
-        ff->CreateGlobalNumbering();
-        return ff;
-    }
-    if (functionName == "nodeid")
-    {
-        avtDataIdExpression *ff = new avtDataIdExpression;
-        ff->CreateNodeIds();
-        ff->CreateLocalNumbering();
-        return ff;
-    }
-    if (functionName == "global_nodeid")
-    {
-        avtDataIdExpression *ff = new avtDataIdExpression;
-        ff->CreateNodeIds();
-        ff->CreateGlobalNumbering();
-        return ff;
-    }
-    if (functionName == "biggest_neighbor")
-    {
-        avtNeighborEvaluatorExpression *ff = new avtNeighborEvaluatorExpression;
-        ff->SetEvaluationType(avtNeighborEvaluatorExpression::BIGGEST_NEIGHBOR);
-        return ff;
-    }
-    if (functionName == "smallest_neighbor")
-    {
-        avtNeighborEvaluatorExpression *ff = new avtNeighborEvaluatorExpression;
-        ff->SetEvaluationType(avtNeighborEvaluatorExpression::SMALLEST_NEIGHBOR);
-        return ff;
-    }
-    if (functionName == "neighbor_average")
-    {
-        avtNeighborEvaluatorExpression *ff = new avtNeighborEvaluatorExpression;
-        ff->SetEvaluationType(avtNeighborEvaluatorExpression::AVERAGE_NEIGHBOR);
-        return ff;
-    }
-    if (functionName == "cylindrical_radius")
-    {
-        return new avtCylindricalRadiusExpression;
-    }
-    if (functionName == "cylindrical_theta")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("cylindrical", 1);
-        return ecm;
-    }
-    if (functionName == "polar_radius")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("polar", 0);
-        return ecm;
-    }
-    if (functionName == "polar_theta")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("polar", 1);
-        return ecm;
-    }
-    if (functionName == "polar_phi")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("polar", 2);
-        return ecm;
-    }
+
     if (functionName == "distance_to_best_fit_line")
         return new avtDistanceToBestFitLineExpression(true);
     if (functionName == "distance_to_best_fit_line2")
@@ -988,136 +568,6 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtCurveDomainExpression();
     if (functionName == "curve")
         return new avtCurveExpression();
-
-    if (functionName == "average_over_time")
-        return new avtAverageOverTimeExpression();
-    if (functionName == "min_over_time")
-        return new avtMinOverTimeExpression();
-    if (functionName == "max_over_time")
-        return new avtMaxOverTimeExpression();
-    if (functionName == "sum_over_time")
-        return new avtSumOverTimeExpression();
-    if (functionName == "first_time_when_condition_is_true")
-    {
-        avtWhenConditionIsTrueExpression *e = 
-                                          new avtWhenConditionIsTrueExpression;
-        e->SetWhenConditionIsFirstTrue(true);
-        e->SetOutputType(WCT_OUTPUT_TIME);
-        return e;
-    }
-    if (functionName == "last_time_when_condition_is_true")
-    {
-        avtWhenConditionIsTrueExpression *e = 
-                                          new avtWhenConditionIsTrueExpression;
-        e->SetWhenConditionIsFirstTrue(false);
-        e->SetOutputType(WCT_OUTPUT_TIME);
-        return e;
-    }
-    if (functionName == "first_cycle_when_condition_is_true")
-    {
-        avtWhenConditionIsTrueExpression *e = 
-                                          new avtWhenConditionIsTrueExpression;
-        e->SetWhenConditionIsFirstTrue(true);
-        e->SetOutputType(WCT_OUTPUT_CYCLE);
-        return e;
-    }
-    if (functionName == "last_cycle_when_condition_is_true")
-    {
-        avtWhenConditionIsTrueExpression *e = 
-                                          new avtWhenConditionIsTrueExpression;
-        e->SetWhenConditionIsFirstTrue(false);
-        e->SetOutputType(WCT_OUTPUT_CYCLE);
-        return e;
-    }
-    if (functionName == "first_time_index_when_condition_is_true")
-    {
-        avtWhenConditionIsTrueExpression *e = 
-                                          new avtWhenConditionIsTrueExpression;
-        e->SetWhenConditionIsFirstTrue(true);
-        e->SetOutputType(WCT_OUTPUT_TIME_INDEX);
-        return e;
-    }
-    if (functionName == "last_time_index_when_condition_is_true")
-    {
-        avtWhenConditionIsTrueExpression *e = 
-                                          new avtWhenConditionIsTrueExpression;
-        e->SetWhenConditionIsFirstTrue(false);
-        e->SetOutputType(WCT_OUTPUT_TIME_INDEX);
-        return e;
-    }
-    if (functionName == "var_when_condition_is_first_true")
-    {
-        avtWhenConditionIsTrueExpression *e = 
-                                          new avtWhenConditionIsTrueExpression;
-        e->SetWhenConditionIsFirstTrue(true);
-        e->SetOutputType(WCT_OUTPUT_VARIABLE);
-        return e;
-    }
-    if (functionName == "var_when_condition_is_last_true")
-    {
-        avtWhenConditionIsTrueExpression *e = 
-                                          new avtWhenConditionIsTrueExpression;
-        e->SetWhenConditionIsFirstTrue(false);
-        e->SetOutputType(WCT_OUTPUT_VARIABLE);
-        return e;
-    }
-    if (functionName == "time_at_minimum")
-    {
-        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
-        e->SetAtMaximum(false);
-        e->SetOutputType(VE_OUTPUT_TIME);
-        return e;
-    }
-    if (functionName == "cycle_at_minimum")
-    {
-        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
-        e->SetAtMaximum(false);
-        e->SetOutputType(VE_OUTPUT_CYCLE);
-        return e;
-    }
-    if (functionName == "time_index_at_minimum")
-    {
-        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
-        e->SetAtMaximum(false);
-        e->SetOutputType(VE_OUTPUT_TIME_INDEX);
-        return e;
-    }
-    if (functionName == "value_at_minimum")
-    {
-        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
-        e->SetAtMaximum(false);
-        e->SetOutputType(VE_OUTPUT_VARIABLE);
-        return e;
-    }
-    if (functionName == "time_at_maximum")
-    {
-        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
-        e->SetAtMaximum(true);
-        e->SetOutputType(VE_OUTPUT_TIME);
-        return e;
-    }
-    if (functionName == "cycle_at_maximum")
-    {
-        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
-        e->SetAtMaximum(true);
-        e->SetOutputType(VE_OUTPUT_CYCLE);
-        return e;
-    }
-    if (functionName == "time_index_at_maximum")
-    {
-        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
-        e->SetAtMaximum(true);
-        e->SetOutputType(VE_OUTPUT_TIME_INDEX);
-        return e;
-    }
-    if (functionName == "value_at_maximum")
-    {
-        avtValueAtExtremaExpression *e = new avtValueAtExtremaExpression;
-        e->SetAtMaximum(true);
-        e->SetOutputType(VE_OUTPUT_VARIABLE);
-        return e;
-    }
-
 
     return NULL;
 }
