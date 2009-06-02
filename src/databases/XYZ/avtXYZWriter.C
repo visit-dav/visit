@@ -196,6 +196,5 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
 void
 avtXYZWriter::CloseFile(void)
 {
-    cerr << "close\n";
     out.close();
 }
