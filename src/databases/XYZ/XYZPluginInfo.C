@@ -158,7 +158,7 @@ XYZGeneralPluginInfo::EnabledByDefault() const
 bool
 XYZGeneralPluginInfo::HasWriter() const
 {
-    return false;
+    return true;
 }
 // ****************************************************************************
 //  Method:  XYZGeneralPluginInfo::GetDfltExtsFromGen

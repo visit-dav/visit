@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="XYZ" type="database" label="XYZ" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+  <Plugin name="XYZ" type="database" label="XYZ" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="true" hasoptions="false" specifiedFilenames="false">
     <Extensions>
       xyz
       XYZ
     </Extensions>
-    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
