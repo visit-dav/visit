@@ -185,6 +185,9 @@ avtLAMMPSDumpFileFormat::OpenFileAtBeginning()
 //    Added support for new, more arbitrary LAMMPS atom dump style formatting.
 //    Includes adding unit cell vectors.
 //
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for unit cell origin (previously assumed to be 0,0,0);
+//
 // ****************************************************************************
 
 void
@@ -201,6 +204,9 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
     mmd->unitCellVectors[0] = xMax - xMin;
     mmd->unitCellVectors[4] = yMax - yMin;
     mmd->unitCellVectors[8] = zMax - zMin;
+    mmd->unitCellOrigin[0] = xMin;
+    mmd->unitCellOrigin[1] = yMin;
+    mmd->unitCellOrigin[2] = zMin;
     md->Add(mmd);
 
     AddScalarVarToMetaData(md, "species", "mesh", AVT_NODECENT);

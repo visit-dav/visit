@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *ReplicateAttributes::TypeMapFormatString = "bDDDiiibb";
+const char *ReplicateAttributes::TypeMapFormatString = "bDDDiiibbbD";
 
 // ****************************************************************************
 // Method: ReplicateAttributes::ReplicateAttributes
@@ -74,6 +74,10 @@ ReplicateAttributes::ReplicateAttributes() :
     zReplications = 1;
     mergeResults = true;
     replicateUnitCellAtoms = false;
+    shiftPeriodicAtomOrigin = false;
+    newPeriodicOrigin[0] = 0;
+    newPeriodicOrigin[1] = 0;
+    newPeriodicOrigin[2] = 0;
 }
 
 // ****************************************************************************
@@ -112,6 +116,11 @@ ReplicateAttributes::ReplicateAttributes(const ReplicateAttributes &obj) :
     zReplications = obj.zReplications;
     mergeResults = obj.mergeResults;
     replicateUnitCellAtoms = obj.replicateUnitCellAtoms;
+    shiftPeriodicAtomOrigin = obj.shiftPeriodicAtomOrigin;
+    newPeriodicOrigin[0] = obj.newPeriodicOrigin[0];
+    newPeriodicOrigin[1] = obj.newPeriodicOrigin[1];
+    newPeriodicOrigin[2] = obj.newPeriodicOrigin[2];
+
 
     SelectAll();
 }
@@ -173,6 +182,11 @@ ReplicateAttributes::operator = (const ReplicateAttributes &obj)
     zReplications = obj.zReplications;
     mergeResults = obj.mergeResults;
     replicateUnitCellAtoms = obj.replicateUnitCellAtoms;
+    shiftPeriodicAtomOrigin = obj.shiftPeriodicAtomOrigin;
+    newPeriodicOrigin[0] = obj.newPeriodicOrigin[0];
+    newPeriodicOrigin[1] = obj.newPeriodicOrigin[1];
+    newPeriodicOrigin[2] = obj.newPeriodicOrigin[2];
+
 
     SelectAll();
     return *this;
@@ -211,6 +225,11 @@ ReplicateAttributes::operator == (const ReplicateAttributes &obj) const
     for(int i = 0; i < 3 && zVector_equal; ++i)
         zVector_equal = (zVector[i] == obj.zVector[i]);
 
+    // Compare the newPeriodicOrigin arrays.
+    bool newPeriodicOrigin_equal = true;
+    for(int i = 0; i < 3 && newPeriodicOrigin_equal; ++i)
+        newPeriodicOrigin_equal = (newPeriodicOrigin[i] == obj.newPeriodicOrigin[i]);
+
     // Create the return value
     return ((useUnitCellVectors == obj.useUnitCellVectors) &&
             xVector_equal &&
@@ -220,7 +239,9 @@ ReplicateAttributes::operator == (const ReplicateAttributes &obj) const
             (yReplications == obj.yReplications) &&
             (zReplications == obj.zReplications) &&
             (mergeResults == obj.mergeResults) &&
-            (replicateUnitCellAtoms == obj.replicateUnitCellAtoms));
+            (replicateUnitCellAtoms == obj.replicateUnitCellAtoms) &&
+            (shiftPeriodicAtomOrigin == obj.shiftPeriodicAtomOrigin) &&
+            newPeriodicOrigin_equal);
 }
 
 // ****************************************************************************
@@ -364,15 +385,17 @@ ReplicateAttributes::NewInstance(bool copy) const
 void
 ReplicateAttributes::SelectAll()
 {
-    Select(ID_useUnitCellVectors,     (void *)&useUnitCellVectors);
-    Select(ID_xVector,                (void *)xVector, 3);
-    Select(ID_yVector,                (void *)yVector, 3);
-    Select(ID_zVector,                (void *)zVector, 3);
-    Select(ID_xReplications,          (void *)&xReplications);
-    Select(ID_yReplications,          (void *)&yReplications);
-    Select(ID_zReplications,          (void *)&zReplications);
-    Select(ID_mergeResults,           (void *)&mergeResults);
-    Select(ID_replicateUnitCellAtoms, (void *)&replicateUnitCellAtoms);
+    Select(ID_useUnitCellVectors,      (void *)&useUnitCellVectors);
+    Select(ID_xVector,                 (void *)xVector, 3);
+    Select(ID_yVector,                 (void *)yVector, 3);
+    Select(ID_zVector,                 (void *)zVector, 3);
+    Select(ID_xReplications,           (void *)&xReplications);
+    Select(ID_yReplications,           (void *)&yReplications);
+    Select(ID_zReplications,           (void *)&zReplications);
+    Select(ID_mergeResults,            (void *)&mergeResults);
+    Select(ID_replicateUnitCellAtoms,  (void *)&replicateUnitCellAtoms);
+    Select(ID_shiftPeriodicAtomOrigin, (void *)&shiftPeriodicAtomOrigin);
+    Select(ID_newPeriodicOrigin,       (void *)newPeriodicOrigin, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -459,6 +482,18 @@ ReplicateAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("replicateUnitCellAtoms", replicateUnitCellAtoms));
     }
 
+    if(completeSave || !FieldsEqual(ID_shiftPeriodicAtomOrigin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("shiftPeriodicAtomOrigin", shiftPeriodicAtomOrigin));
+    }
+
+    if(completeSave || !FieldsEqual(ID_newPeriodicOrigin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("newPeriodicOrigin", newPeriodicOrigin, 3));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -513,6 +548,10 @@ ReplicateAttributes::SetFromNode(DataNode *parentNode)
         SetMergeResults(node->AsBool());
     if((node = searchNode->GetNode("replicateUnitCellAtoms")) != 0)
         SetReplicateUnitCellAtoms(node->AsBool());
+    if((node = searchNode->GetNode("shiftPeriodicAtomOrigin")) != 0)
+        SetShiftPeriodicAtomOrigin(node->AsBool());
+    if((node = searchNode->GetNode("newPeriodicOrigin")) != 0)
+        SetNewPeriodicOrigin(node->AsDoubleArray());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -586,6 +625,22 @@ ReplicateAttributes::SetReplicateUnitCellAtoms(bool replicateUnitCellAtoms_)
 {
     replicateUnitCellAtoms = replicateUnitCellAtoms_;
     Select(ID_replicateUnitCellAtoms, (void *)&replicateUnitCellAtoms);
+}
+
+void
+ReplicateAttributes::SetShiftPeriodicAtomOrigin(bool shiftPeriodicAtomOrigin_)
+{
+    shiftPeriodicAtomOrigin = shiftPeriodicAtomOrigin_;
+    Select(ID_shiftPeriodicAtomOrigin, (void *)&shiftPeriodicAtomOrigin);
+}
+
+void
+ReplicateAttributes::SetNewPeriodicOrigin(const double *newPeriodicOrigin_)
+{
+    newPeriodicOrigin[0] = newPeriodicOrigin_[0];
+    newPeriodicOrigin[1] = newPeriodicOrigin_[1];
+    newPeriodicOrigin[2] = newPeriodicOrigin_[2];
+    Select(ID_newPeriodicOrigin, (void *)newPeriodicOrigin, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -664,6 +719,24 @@ ReplicateAttributes::GetReplicateUnitCellAtoms() const
     return replicateUnitCellAtoms;
 }
 
+bool
+ReplicateAttributes::GetShiftPeriodicAtomOrigin() const
+{
+    return shiftPeriodicAtomOrigin;
+}
+
+const double *
+ReplicateAttributes::GetNewPeriodicOrigin() const
+{
+    return newPeriodicOrigin;
+}
+
+double *
+ReplicateAttributes::GetNewPeriodicOrigin()
+{
+    return newPeriodicOrigin;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -684,6 +757,12 @@ void
 ReplicateAttributes::SelectZVector()
 {
     Select(ID_zVector, (void *)zVector, 3);
+}
+
+void
+ReplicateAttributes::SelectNewPeriodicOrigin()
+{
+    Select(ID_newPeriodicOrigin, (void *)newPeriodicOrigin, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -710,15 +789,17 @@ ReplicateAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_useUnitCellVectors:     return "useUnitCellVectors";
-    case ID_xVector:                return "xVector";
-    case ID_yVector:                return "yVector";
-    case ID_zVector:                return "zVector";
-    case ID_xReplications:          return "xReplications";
-    case ID_yReplications:          return "yReplications";
-    case ID_zReplications:          return "zReplications";
-    case ID_mergeResults:           return "mergeResults";
-    case ID_replicateUnitCellAtoms: return "replicateUnitCellAtoms";
+    case ID_useUnitCellVectors:      return "useUnitCellVectors";
+    case ID_xVector:                 return "xVector";
+    case ID_yVector:                 return "yVector";
+    case ID_zVector:                 return "zVector";
+    case ID_xReplications:           return "xReplications";
+    case ID_yReplications:           return "yReplications";
+    case ID_zReplications:           return "zReplications";
+    case ID_mergeResults:            return "mergeResults";
+    case ID_replicateUnitCellAtoms:  return "replicateUnitCellAtoms";
+    case ID_shiftPeriodicAtomOrigin: return "shiftPeriodicAtomOrigin";
+    case ID_newPeriodicOrigin:       return "newPeriodicOrigin";
     default:  return "invalid index";
     }
 }
@@ -743,15 +824,17 @@ ReplicateAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_useUnitCellVectors:     return FieldType_bool;
-    case ID_xVector:                return FieldType_doubleArray;
-    case ID_yVector:                return FieldType_doubleArray;
-    case ID_zVector:                return FieldType_doubleArray;
-    case ID_xReplications:          return FieldType_int;
-    case ID_yReplications:          return FieldType_int;
-    case ID_zReplications:          return FieldType_int;
-    case ID_mergeResults:           return FieldType_bool;
-    case ID_replicateUnitCellAtoms: return FieldType_bool;
+    case ID_useUnitCellVectors:      return FieldType_bool;
+    case ID_xVector:                 return FieldType_doubleArray;
+    case ID_yVector:                 return FieldType_doubleArray;
+    case ID_zVector:                 return FieldType_doubleArray;
+    case ID_xReplications:           return FieldType_int;
+    case ID_yReplications:           return FieldType_int;
+    case ID_zReplications:           return FieldType_int;
+    case ID_mergeResults:            return FieldType_bool;
+    case ID_replicateUnitCellAtoms:  return FieldType_bool;
+    case ID_shiftPeriodicAtomOrigin: return FieldType_bool;
+    case ID_newPeriodicOrigin:       return FieldType_doubleArray;
     default:  return FieldType_unknown;
     }
 }
@@ -776,15 +859,17 @@ ReplicateAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_useUnitCellVectors:     return "bool";
-    case ID_xVector:                return "doubleArray";
-    case ID_yVector:                return "doubleArray";
-    case ID_zVector:                return "doubleArray";
-    case ID_xReplications:          return "int";
-    case ID_yReplications:          return "int";
-    case ID_zReplications:          return "int";
-    case ID_mergeResults:           return "bool";
-    case ID_replicateUnitCellAtoms: return "bool";
+    case ID_useUnitCellVectors:      return "bool";
+    case ID_xVector:                 return "doubleArray";
+    case ID_yVector:                 return "doubleArray";
+    case ID_zVector:                 return "doubleArray";
+    case ID_xReplications:           return "int";
+    case ID_yReplications:           return "int";
+    case ID_zReplications:           return "int";
+    case ID_mergeResults:            return "bool";
+    case ID_replicateUnitCellAtoms:  return "bool";
+    case ID_shiftPeriodicAtomOrigin: return "bool";
+    case ID_newPeriodicOrigin:       return "doubleArray";
     default:  return "invalid index";
     }
 }
@@ -869,6 +954,21 @@ ReplicateAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_replicateUnitCellAtoms:
         {  // new scope
         retval = (replicateUnitCellAtoms == obj.replicateUnitCellAtoms);
+        }
+        break;
+    case ID_shiftPeriodicAtomOrigin:
+        {  // new scope
+        retval = (shiftPeriodicAtomOrigin == obj.shiftPeriodicAtomOrigin);
+        }
+        break;
+    case ID_newPeriodicOrigin:
+        {  // new scope
+        // Compare the newPeriodicOrigin arrays.
+        bool newPeriodicOrigin_equal = true;
+        for(int i = 0; i < 3 && newPeriodicOrigin_equal; ++i)
+            newPeriodicOrigin_equal = (newPeriodicOrigin[i] == obj.newPeriodicOrigin[i]);
+
+        retval = newPeriodicOrigin_equal;
         }
         break;
     default: retval = false;

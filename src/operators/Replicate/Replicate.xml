@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Replicate" type="operator" label="Replicate" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="Replicate.xpm">
-    <Attribute name="ReplicateAttributes" purpose="This class contains attributes for the replicate operator." persistent="true">
+  <Plugin name="Replicate" type="operator" label="Replicate" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Replicate.xpm">
+    <Attribute name="ReplicateAttributes" purpose="This class contains attributes for the replicate operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Field name="useUnitCellVectors" label="Use provided unit cell vectors" type="bool">
       </Field>
       <Field name="xVector" label="Vector for X" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
@@ -32,6 +32,14 @@
       </Field>
       <Field name="replicateUnitCellAtoms" label="Periodically replicate atoms at unit cell boundaries" type="bool" enabler="mergeResults:true">
         false
+      </Field>
+      <Field name="shiftPeriodicAtomOrigin" label="Shift atoms to new periodic origin" type="bool">
+        false
+      </Field>
+      <Field name="newPeriodicOrigin" label="New periodic atom origin" type="doubleArray" length="3" enabler="shiftPeriodicAtomOrigin:true">
+        0.000000
+        0.000000
+        0.000000
       </Field>
     </Attribute>
   </Plugin>

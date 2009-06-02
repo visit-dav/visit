@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *avtMeshMetaData::TypeMapFormatString = "ssbiiiiissssssbDDiisss*iissi*bibbbbibFbDibb";
+const char *avtMeshMetaData::TypeMapFormatString = "ssbiiiiissssssbDDiisss*iissi*bibbbbibFFbDibb";
 
 // ****************************************************************************
 // Method: avtMeshMetaData::avtMeshMetaData
@@ -102,6 +102,9 @@ avtMeshMetaData::avtMeshMetaData() :
     unitCellVectors[6] = 0;
     unitCellVectors[7] = 0;
     unitCellVectors[8] = 1;
+    unitCellOrigin[0] = 0;
+    unitCellOrigin[1] = 0;
+    unitCellOrigin[2] = 0;
     rectilinearGridHasTransform = false;
     rectilinearGridTransform[0] = 1;
     rectilinearGridTransform[1] = 0;
@@ -186,6 +189,10 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &obj) :
     nodesAreCritical = obj.nodesAreCritical;
     for(int i = 0; i < 9; ++i)
         unitCellVectors[i] = obj.unitCellVectors[i];
+
+    unitCellOrigin[0] = obj.unitCellOrigin[0];
+    unitCellOrigin[1] = obj.unitCellOrigin[1];
+    unitCellOrigin[2] = obj.unitCellOrigin[2];
 
     rectilinearGridHasTransform = obj.rectilinearGridHasTransform;
     for(int i = 0; i < 16; ++i)
@@ -282,6 +289,10 @@ avtMeshMetaData::operator = (const avtMeshMetaData &obj)
     for(int i = 0; i < 9; ++i)
         unitCellVectors[i] = obj.unitCellVectors[i];
 
+    unitCellOrigin[0] = obj.unitCellOrigin[0];
+    unitCellOrigin[1] = obj.unitCellOrigin[1];
+    unitCellOrigin[2] = obj.unitCellOrigin[2];
+
     rectilinearGridHasTransform = obj.rectilinearGridHasTransform;
     for(int i = 0; i < 16; ++i)
         rectilinearGridTransform[i] = obj.rectilinearGridTransform[i];
@@ -327,6 +338,11 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
     for(int i = 0; i < 9 && unitCellVectors_equal; ++i)
         unitCellVectors_equal = (unitCellVectors[i] == obj.unitCellVectors[i]);
 
+    // Compare the unitCellOrigin arrays.
+    bool unitCellOrigin_equal = true;
+    for(int i = 0; i < 3 && unitCellOrigin_equal; ++i)
+        unitCellOrigin_equal = (unitCellOrigin[i] == obj.unitCellOrigin[i]);
+
     // Compare the rectilinearGridTransform arrays.
     bool rectilinearGridTransform_equal = true;
     for(int i = 0; i < 16 && rectilinearGridTransform_equal; ++i)
@@ -369,6 +385,7 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
             (loadBalanceScheme == obj.loadBalanceScheme) &&
             (nodesAreCritical == obj.nodesAreCritical) &&
             unitCellVectors_equal &&
+            unitCellOrigin_equal &&
             (rectilinearGridHasTransform == obj.rectilinearGridHasTransform) &&
             rectilinearGridTransform_equal &&
             (nodeOrigin == obj.nodeOrigin) &&
@@ -553,6 +570,7 @@ avtMeshMetaData::SelectAll()
     Select(ID_loadBalanceScheme,              (void *)&loadBalanceScheme);
     Select(ID_nodesAreCritical,               (void *)&nodesAreCritical);
     Select(ID_unitCellVectors,                (void *)unitCellVectors, 9);
+    Select(ID_unitCellOrigin,                 (void *)unitCellOrigin, 3);
     Select(ID_rectilinearGridHasTransform,    (void *)&rectilinearGridHasTransform);
     Select(ID_rectilinearGridTransform,       (void *)rectilinearGridTransform, 16);
     Select(ID_nodeOrigin,                     (void *)&nodeOrigin);

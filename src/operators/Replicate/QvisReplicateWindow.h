@@ -68,6 +68,9 @@ class QvisVariableButton;
 // Creation:   omitted
 //
 // Modifications:
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for shifting atoms to a new unit cell origin.
+//
 //   
 // ****************************************************************************
 
@@ -95,6 +98,8 @@ class QvisReplicateWindow : public QvisOperatorWindow
     void zReplicationsProcessText();
     void mergeResultsChanged(bool val);
     void replicateUnitCellAtomsChanged(bool val);
+    void shiftPeriodicAtomOriginChanged(bool val);
+    void newPeriodicOriginProcessText();
   private:
     QCheckBox *useUnitCellVectors;
     QLineEdit *xVector;
@@ -105,12 +110,16 @@ class QvisReplicateWindow : public QvisOperatorWindow
     QLineEdit *zReplications;
     QCheckBox *mergeResults;
     QCheckBox *replicateUnitCellAtoms;
+    QCheckBox *shiftPeriodicAtomOrigin;
+    QLineEdit *newPeriodicOrigin;
+    QLabel *useUnitCellVectorsLabel;
     QLabel *xVectorLabel;
     QLabel *yVectorLabel;
     QLabel *zVectorLabel;
     QLabel *xReplicationsLabel;
     QLabel *yReplicationsLabel;
     QLabel *zReplicationsLabel;
+    QLabel *newPeriodicOriginLabel;
 
     ReplicateAttributes *atts;
 };

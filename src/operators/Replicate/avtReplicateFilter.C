@@ -276,6 +276,12 @@ avtReplicateFilter::UpdateDataObjectInfo(void)
 //    a single dataset, but this was mostly for convenience and this
 //    constraint can be relaxed with a straightforward loop over all datasets.
 //
+//    Jeremy Meredith, Tue Jun  2 16:18:49 EDT 2009
+//    Added support for shifting atoms to a unit cell at a different origin
+//    than the current one.  It appears MD sims might shift things, e.g. to
+//    sit at 0,0,0, even if a simulation with periodic boundary conditions
+//    has it starting at some other point.
+//
 // ****************************************************************************
 static void TransformVector(const double m[16], double v[3])
 {
@@ -371,9 +377,10 @@ avtReplicateFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
             output->Update();
             // If we're merging into a single data set, we can also
             // replicate periodically the unit cell boundary atoms
-            if (atts.GetReplicateUnitCellAtoms())
+            if (atts.GetReplicateUnitCellAtoms() ||
+                atts.GetShiftPeriodicAtomOrigin())
             {
-                vtkPolyData *newoutput = ReplicateUnitCellAtoms(output);
+                vtkPolyData *newoutput = ReplicateAndShiftUnitCellAtoms(output);
                 if (newoutput)
                 {
                     //output->Delete();
@@ -687,11 +694,23 @@ avtReplicateFilter::ReplicatePointSet(vtkPointSet *ds, double offset[3])
 //    Replicate operator, however, we actually know exactly what these numbers
 //    are as they are part of these operator attributes.
 //
+//    This function also shifts atoms to be within the unit cell starting
+//    at a new origin if requested.  For example, atoms might be between
+//    x=50 and x=150 (unit cell x vector = <100,0,0>) but x=60 is supposed
+//    to be the "center" of the problem, not x=100, so we want to shift the
+//    atoms in the [110,150] range to the [10,50] range, leading us with a
+//    new X range of [10,110], and thus 60 is at the center.
+//
 //  Arguments:
 //    in         the polydata containing potential atoms (Verts) to replicate
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 22, 2007
+//
+//    Jeremy Meredith, Tue Jun  2 16:20:28 EDT 2009
+//    Added support for shifting atoms to a unit cell at a different origin
+//    than the current one.
+//
 //
 // ****************************************************************************
 static void
@@ -711,8 +730,11 @@ CalculateBoundaryConditions(double *normpt, float maxx, float maxy, float maxz,
 }
 
 vtkPolyData *
-avtReplicateFilter::ReplicateUnitCellAtoms(vtkPolyData *in)
+avtReplicateFilter::ReplicateAndShiftUnitCellAtoms(vtkPolyData *in)
 {
+    bool replicate = atts.GetReplicateUnitCellAtoms();
+    bool shift     = atts.GetShiftPeriodicAtomOrigin();
+
     // Make sure we have molecular data; if there are polygons
     // in here, some of our assumptions will be wrong.
     if (in->GetNumberOfCells() != in->GetNumberOfVerts() + in->GetNumberOfLines() ||
@@ -721,16 +743,46 @@ avtReplicateFilter::ReplicateUnitCellAtoms(vtkPolyData *in)
         return NULL;
     }
 
+
     // Get the unit cell vectors and construct transform matrices from them.
-    const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-    const float *unitCell = datts.GetUnitCellVectors();
     vtkMatrix4x4 *ucvM = vtkMatrix4x4::New();
-    vtkMatrix4x4 *ucvI = vtkMatrix4x4::New();
     ucvM->Identity();
-    for (int i=0; i<3; i++)
+    if (atts.GetUseUnitCellVectors())
+    {
+        const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+        const float *unitCell = datts.GetUnitCellVectors();
+        for (int i=0; i<3; i++)
+            for (int j=0; j<3; j++)
+                ucvM->Element[j][i] = unitCell[3*i+j];
+        ucvM->Element[0][3] = datts.GetUnitCellOrigin()[0];
+        ucvM->Element[1][3] = datts.GetUnitCellOrigin()[1];
+        ucvM->Element[2][3] = datts.GetUnitCellOrigin()[2];
+    }
+    else
+    {
         for (int j=0; j<3; j++)
-            ucvM->Element[j][i] = unitCell[3*i+j];
+        {
+            ucvM->Element[j][0] = atts.GetXVector()[j];
+            ucvM->Element[j][1] = atts.GetYVector()[j];
+            ucvM->Element[j][2] = atts.GetZVector()[j];
+        }
+        // TODO: we're letting users specify an x/y/z vector and treat
+        //       it as if it's unit cell vecs, but we don't yet have
+        //       a way to allow an origin.
+    }
+    vtkMatrix4x4 *ucvI = vtkMatrix4x4::New();
     vtkMatrix4x4::Invert(ucvM, ucvI);
+
+    // In case we're recentering for a new periodic origin, turn
+    // the world space origin into a normalized space origin to
+    // make the shifting trivial.
+    double shiftOriginOriginal[4] = {
+        atts.GetNewPeriodicOrigin()[0],
+        atts.GetNewPeriodicOrigin()[1],
+        atts.GetNewPeriodicOrigin()[2],
+        1.0};
+    double shiftOriginNorm[4] = {0,0,0,1};
+    ucvI->MultiplyPoint(shiftOriginOriginal, shiftOriginNorm);
 
     // Get some info from the input dataset.
     vtkPointData *inPD   = in->GetPointData();
@@ -746,21 +798,28 @@ avtReplicateFilter::ReplicateUnitCellAtoms(vtkPolyData *in)
     float maxx = float(atts.GetXReplications());
     float maxy = float(atts.GetYReplications());
     float maxz = float(atts.GetZReplications());
-    for (int c=0; c<nPts; c++)
+    if (replicate)
     {
-        double pt[4] = {0,0,0,1};
-        double normpt[4] = {0,0,0,1};
-        in->GetPoint(c, pt);
-        ucvI->MultiplyPoint(pt, normpt);
-        bool ib, jb, kb;
-        CalculateBoundaryConditions(normpt, maxx,maxy,maxz, ib,jb,kb);
-        // Every atom has at least one image: the original.
-        // Each boundary we match means a doubling of this number of images.
-        int images=1;
-        if (ib) images*=2;
-        if (jb) images*=2;
-        if (kb) images*=2;
-        newpts += images;
+        for (int c=0; c<nPts; c++)
+        {
+            double pt[4] = {0,0,0,1};
+            double normpt[4] = {0,0,0,1};
+            in->GetPoint(c, pt);
+            ucvI->MultiplyPoint(pt, normpt);
+            bool ib, jb, kb;
+            CalculateBoundaryConditions(normpt, maxx,maxy,maxz, ib,jb,kb);
+            // Every atom has at least one image: the original.
+            // Each boundary we match means a doubling of this number of images.
+            int images=1;
+            if (ib) images*=2;
+            if (jb) images*=2;
+            if (kb) images*=2;
+            newpts += images;
+        }
+    }
+    else
+    {
+        newpts = nPts;
     }
 
     // Construct an output data set
@@ -787,7 +846,33 @@ avtReplicateFilter::ReplicateUnitCellAtoms(vtkPolyData *in)
     int outc = 0;
     for (int c=0; c<nPts; c++)
     {
-        outPts->SetPoint(outc, inPts->GetPoint(c));
+        if (atts.GetShiftPeriodicAtomOrigin())
+        {
+            // get the point in normalized coordinated
+            double pt[4]     = {0,0,0,1};
+            double normpt[4] = {0,0,0,1};
+            in->GetPoint(c, pt);
+            ucvI->MultiplyPoint(pt, normpt);
+            // shift to the new origin
+            normpt[0] -= shiftOriginNorm[0];
+            normpt[1] -= shiftOriginNorm[1];
+            normpt[2] -= shiftOriginNorm[2];
+            // put in the first replication quadrant
+            normpt[0] -= floor(normpt[0]);
+            normpt[1] -= floor(normpt[1]);
+            normpt[2] -= floor(normpt[2]);
+            // and undo the origin shift
+            normpt[0] += shiftOriginNorm[0];
+            normpt[1] += shiftOriginNorm[1];
+            normpt[2] += shiftOriginNorm[2];
+            // now put it back
+            ucvM->MultiplyPoint(normpt, pt);
+            outPts->SetPoint(outc, pt);
+        }
+        else
+        {
+            outPts->SetPoint(outc, inPts->GetPoint(c));
+        }
         outPD->CopyData(inPD, c, outc);
         outVerts->InsertNextCell(1);
         outVerts->InsertCellPoint(outc);
@@ -795,43 +880,61 @@ avtReplicateFilter::ReplicateUnitCellAtoms(vtkPolyData *in)
         outc++;
     }
     // Make new points/verts for those that matched a boundary condition
-    for (int c=0; c<nPts; c++)
+    if (replicate)
     {
-        double pt[4]     = {0,0,0,1};
-        double normpt[4] = {0,0,0,1};
-        in->GetPoint(c, pt);
-        ucvI->MultiplyPoint(pt, normpt);
-        bool ib, jb, kb;
-        CalculateBoundaryConditions(normpt, maxx,maxy,maxz, ib,jb,kb);
-
-        double normnewpt[4] = {0,0,0,1};
-        double newpt[4]     = {0,0,0,1};
-        for (int itest=0; itest<=1; itest++)
+        for (int c=0; c<nPts; c++)
         {
-            for (int jtest=0; jtest<=1; jtest++)
-            {
-                for (int ktest=0; ktest<=1; ktest++)
-                {
-                    // we already added the original image of this
-                    // atom; don't do it again.
-                    if (!itest && !jtest && !ktest)
-                        continue;
+            double pt[4]     = {0,0,0,1};
+            double normpt[4] = {0,0,0,1};
+            in->GetPoint(c, pt);
+            ucvI->MultiplyPoint(pt, normpt);
+            bool ib, jb, kb;
+            CalculateBoundaryConditions(normpt, maxx,maxy,maxz, ib,jb,kb);
 
-                    // Apply the tests for this image, and add it if it passes
-                    if ((!itest || ib) &&
-                        (!jtest || jb) &&
-                        (!ktest || kb))
+            double normnewpt[4] = {0,0,0,1};
+            double newpt[4]     = {0,0,0,1};
+            for (int itest=0; itest<=1; itest++)
+            {
+                for (int jtest=0; jtest<=1; jtest++)
+                {
+                    for (int ktest=0; ktest<=1; ktest++)
                     {
-                        normnewpt[0] = itest ? maxx-normpt[0] : normpt[0];
-                        normnewpt[1] = jtest ? maxy-normpt[1] : normpt[1];
-                        normnewpt[2] = ktest ? maxz-normpt[2] : normpt[2];
-                        ucvM->MultiplyPoint(normnewpt, newpt);
-                        outPts->SetPoint(outc, newpt);
-                        outPD->CopyData(inPD, c, outc);
-                        outVerts->InsertNextCell(1);
-                        outVerts->InsertCellPoint(outc);
-                        outCD->CopyData(inCD, c, outc);
-                        outc++;
+                        // we already added the original image of this
+                        // atom; don't do it again.
+                        if (!itest && !jtest && !ktest)
+                            continue;
+
+                        // Apply the tests for this image, and add it if it passes
+                        if ((!itest || ib) &&
+                            (!jtest || jb) &&
+                            (!ktest || kb))
+                        {
+                            normnewpt[0] = itest ? maxx-normpt[0] : normpt[0];
+                            normnewpt[1] = jtest ? maxy-normpt[1] : normpt[1];
+                            normnewpt[2] = ktest ? maxz-normpt[2] : normpt[2];
+                            if (atts.GetShiftPeriodicAtomOrigin())
+                            {
+                                // shift to the new origin
+                                normnewpt[0] -= shiftOriginNorm[0];
+                                normnewpt[1] -= shiftOriginNorm[1];
+                                normnewpt[2] -= shiftOriginNorm[2];
+                                // put in the first replication quadrant
+                                normnewpt[0] -= floor(normnewpt[0]);
+                                normnewpt[1] -= floor(normnewpt[1]);
+                                normnewpt[2] -= floor(normnewpt[2]);
+                                // and undo the origin shift
+                                normnewpt[0] += shiftOriginNorm[0];
+                                normnewpt[1] += shiftOriginNorm[1];
+                                normnewpt[2] += shiftOriginNorm[2];
+                            }
+                            ucvM->MultiplyPoint(normnewpt, newpt);
+                            outPts->SetPoint(outc, newpt);
+                            outPD->CopyData(inPD, c, outc);
+                            outVerts->InsertNextCell(1);
+                            outVerts->InsertCellPoint(outc);
+                            outCD->CopyData(inCD, c, outc);
+                            outc++;
+                        }
                     }
                 }
             }
