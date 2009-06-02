@@ -73,6 +73,13 @@ class vtkRectilinearGrid;
 //    Added support for replicating individual atoms in molecular data
 //    that lie exactly on a unit cell boundary.
 //
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for unit cell origin (previously assumed to be 0,0,0);
+//    Allowed periodic boundary atom replication to use the specified
+//    replication vectors as the unit cell (though it still assumes 0,0,0
+//    origin in this case).  Add support for shifting atoms to a new
+//    unit cell origin.
+//
 // ****************************************************************************
 
 class avtReplicateFilter : public virtual avtSIMODataTreeIterator,
@@ -104,7 +111,7 @@ class avtReplicateFilter : public virtual avtSIMODataTreeIterator,
     vtkDataSet           *ReplicateRectilinear(vtkRectilinearGrid *, double[3]);
     vtkDataSet           *ReplicatePointSet(vtkPointSet *, double[3]);
     vtkDataArray         *OffsetDataArray(vtkDataArray *, double);
-    vtkPolyData          *ReplicateUnitCellAtoms(vtkPolyData *in);
+    vtkPolyData          *ReplicateAndShiftUnitCellAtoms(vtkPolyData *in);
 
     virtual bool          FilterUnderstandsTransformedRectMesh();
 };

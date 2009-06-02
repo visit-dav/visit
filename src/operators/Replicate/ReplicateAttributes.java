@@ -61,7 +61,7 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
 {
     public ReplicateAttributes()
     {
-        super(9);
+        super(11);
 
         useUnitCellVectors = false;
         xVector = new double[3];
@@ -81,11 +81,16 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
         zReplications = 1;
         mergeResults = true;
         replicateUnitCellAtoms = false;
+        shiftPeriodicAtomOrigin = false;
+        newPeriodicOrigin = new double[3];
+        newPeriodicOrigin[0] = 0;
+        newPeriodicOrigin[1] = 0;
+        newPeriodicOrigin[2] = 0;
     }
 
     public ReplicateAttributes(ReplicateAttributes obj)
     {
-        super(9);
+        super(11);
 
         int i;
 
@@ -110,6 +115,12 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
         zReplications = obj.zReplications;
         mergeResults = obj.mergeResults;
         replicateUnitCellAtoms = obj.replicateUnitCellAtoms;
+        shiftPeriodicAtomOrigin = obj.shiftPeriodicAtomOrigin;
+        newPeriodicOrigin = new double[3];
+        newPeriodicOrigin[0] = obj.newPeriodicOrigin[0];
+        newPeriodicOrigin[1] = obj.newPeriodicOrigin[1];
+        newPeriodicOrigin[2] = obj.newPeriodicOrigin[2];
+
 
         SelectAll();
     }
@@ -133,6 +144,11 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 3 && zVector_equal; ++i)
             zVector_equal = (zVector[i] == obj.zVector[i]);
 
+        // Compare the newPeriodicOrigin arrays.
+        boolean newPeriodicOrigin_equal = true;
+        for(i = 0; i < 3 && newPeriodicOrigin_equal; ++i)
+            newPeriodicOrigin_equal = (newPeriodicOrigin[i] == obj.newPeriodicOrigin[i]);
+
         // Create the return value
         return ((useUnitCellVectors == obj.useUnitCellVectors) &&
                 xVector_equal &&
@@ -142,7 +158,9 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
                 (yReplications == obj.yReplications) &&
                 (zReplications == obj.zReplications) &&
                 (mergeResults == obj.mergeResults) &&
-                (replicateUnitCellAtoms == obj.replicateUnitCellAtoms));
+                (replicateUnitCellAtoms == obj.replicateUnitCellAtoms) &&
+                (shiftPeriodicAtomOrigin == obj.shiftPeriodicAtomOrigin) &&
+                newPeriodicOrigin_equal);
     }
 
     public String GetName() { return "Replicate"; }
@@ -233,6 +251,28 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
         Select(8);
     }
 
+    public void SetShiftPeriodicAtomOrigin(boolean shiftPeriodicAtomOrigin_)
+    {
+        shiftPeriodicAtomOrigin = shiftPeriodicAtomOrigin_;
+        Select(9);
+    }
+
+    public void SetNewPeriodicOrigin(double[] newPeriodicOrigin_)
+    {
+        newPeriodicOrigin[0] = newPeriodicOrigin_[0];
+        newPeriodicOrigin[1] = newPeriodicOrigin_[1];
+        newPeriodicOrigin[2] = newPeriodicOrigin_[2];
+        Select(10);
+    }
+
+    public void SetNewPeriodicOrigin(double e0, double e1, double e2)
+    {
+        newPeriodicOrigin[0] = e0;
+        newPeriodicOrigin[1] = e1;
+        newPeriodicOrigin[2] = e2;
+        Select(10);
+    }
+
     // Property getting methods
     public boolean  GetUseUnitCellVectors() { return useUnitCellVectors; }
     public double[] GetXVector() { return xVector; }
@@ -243,6 +283,8 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
     public int      GetZReplications() { return zReplications; }
     public boolean  GetMergeResults() { return mergeResults; }
     public boolean  GetReplicateUnitCellAtoms() { return replicateUnitCellAtoms; }
+    public boolean  GetShiftPeriodicAtomOrigin() { return shiftPeriodicAtomOrigin; }
+    public double[] GetNewPeriodicOrigin() { return newPeriodicOrigin; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -265,6 +307,10 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(mergeResults);
         if(WriteSelect(8, buf))
             buf.WriteBool(replicateUnitCellAtoms);
+        if(WriteSelect(9, buf))
+            buf.WriteBool(shiftPeriodicAtomOrigin);
+        if(WriteSelect(10, buf))
+            buf.WriteDoubleArray(newPeriodicOrigin);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -301,6 +347,12 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
             case 8:
                 SetReplicateUnitCellAtoms(buf.ReadBool());
                 break;
+            case 9:
+                SetShiftPeriodicAtomOrigin(buf.ReadBool());
+                break;
+            case 10:
+                SetNewPeriodicOrigin(buf.ReadDoubleArray());
+                break;
             }
         }
     }
@@ -317,6 +369,8 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
         str = str + intToString("zReplications", zReplications, indent) + "\n";
         str = str + boolToString("mergeResults", mergeResults, indent) + "\n";
         str = str + boolToString("replicateUnitCellAtoms", replicateUnitCellAtoms, indent) + "\n";
+        str = str + boolToString("shiftPeriodicAtomOrigin", shiftPeriodicAtomOrigin, indent) + "\n";
+        str = str + doubleArrayToString("newPeriodicOrigin", newPeriodicOrigin, indent) + "\n";
         return str;
     }
 
@@ -331,5 +385,7 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
     private int      zReplications;
     private boolean  mergeResults;
     private boolean  replicateUnitCellAtoms;
+    private boolean  shiftPeriodicAtomOrigin;
+    private double[] newPeriodicOrigin;
 }
 

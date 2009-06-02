@@ -131,6 +131,9 @@ QvisReplicateWindow::~QvisReplicateWindow()
 //    Cyrus Harrison, 
 //    Qt4 Port- Autogen + replicated changes Jeremy outlined above.
 //
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for shifting atoms to a new unit cell origin.
+//
 // ****************************************************************************
 
 void
@@ -196,6 +199,20 @@ QvisReplicateWindow::CreateWindowContents()
             this, SLOT(replicateUnitCellAtomsChanged(bool)));
     mainLayout->addWidget(replicateUnitCellAtoms, 8,0,1,2);
 
+    shiftPeriodicAtomOrigin = new QCheckBox(tr("Shift atoms to new periodic origin"),
+                                           central);
+    connect(shiftPeriodicAtomOrigin, SIGNAL(toggled(bool)),
+            this, SLOT(shiftPeriodicAtomOriginChanged(bool)));
+    mainLayout->addWidget(shiftPeriodicAtomOrigin, 9,0, 1,2);
+
+    newPeriodicOriginLabel = new QLabel(tr("New periodic atom origin"),
+                                        central);
+    mainLayout->addWidget(newPeriodicOriginLabel,10,0);
+    newPeriodicOrigin = new QLineEdit(central);
+    connect(newPeriodicOrigin, SIGNAL(returnPressed()),
+            this, SLOT(newPeriodicOriginProcessText()));
+    mainLayout->addWidget(newPeriodicOrigin, 10,1);
+
 }
 
 
@@ -214,6 +231,9 @@ QvisReplicateWindow::CreateWindowContents()
 //    Cyrus Harrison, 
 //    Qt4 Port - replicateUnitCellAtoms does not have a label (text is 
 //    integrated in the checkbox)
+//
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for shifting atoms to a new unit cell origin.
 //
 // ****************************************************************************
 
@@ -293,14 +313,12 @@ QvisReplicateWindow::UpdateWindow(bool doAll)
             zReplications->setText(IntToQString(atts->GetZReplications()));
             break;
           case ReplicateAttributes::ID_mergeResults:
-            if (atts->GetMergeResults() == true)
-            {
-                replicateUnitCellAtoms->setEnabled(true);
-            }
-            else
-            {
-                replicateUnitCellAtoms->setEnabled(false);
-            }
+            replicateUnitCellAtoms->setEnabled(atts->GetMergeResults());
+            shiftPeriodicAtomOrigin->setEnabled(atts->GetMergeResults());
+            newPeriodicOriginLabel->setEnabled(atts->GetMergeResults() &&
+                                               atts->GetShiftPeriodicAtomOrigin());
+            newPeriodicOrigin->setEnabled(atts->GetMergeResults() &&
+                                          atts->GetShiftPeriodicAtomOrigin());
             mergeResults->blockSignals(true);
             mergeResults->setChecked(atts->GetMergeResults());
             mergeResults->blockSignals(false);
@@ -309,6 +327,18 @@ QvisReplicateWindow::UpdateWindow(bool doAll)
             replicateUnitCellAtoms->blockSignals(true);
             replicateUnitCellAtoms->setChecked(atts->GetReplicateUnitCellAtoms());
             replicateUnitCellAtoms->blockSignals(false);
+            break;
+          case ReplicateAttributes::ID_shiftPeriodicAtomOrigin:
+            shiftPeriodicAtomOrigin->blockSignals(true);
+            shiftPeriodicAtomOrigin->setChecked(atts->GetShiftPeriodicAtomOrigin());
+            shiftPeriodicAtomOrigin->blockSignals(false);
+            newPeriodicOriginLabel->setEnabled(atts->GetMergeResults() &&
+                                               atts->GetShiftPeriodicAtomOrigin());
+            newPeriodicOrigin->setEnabled(atts->GetMergeResults() &&
+                                          atts->GetShiftPeriodicAtomOrigin());
+            break;
+          case ReplicateAttributes::ID_newPeriodicOrigin:
+            newPeriodicOrigin->setText(DoublesToQString(atts->GetNewPeriodicOrigin(), 3));
             break;
         }
     }
@@ -327,6 +357,9 @@ QvisReplicateWindow::UpdateWindow(bool doAll)
 // Creation:   omitted
 //
 // Modifications:
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for shifting atoms to a new unit cell origin.
+//
 //   
 // ****************************************************************************
 
@@ -419,6 +452,19 @@ QvisReplicateWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do newPeriodicOrigin
+    if(which_widget == ReplicateAttributes::ID_newPeriodicOrigin || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(newPeriodicOrigin, val, 3))
+            atts->SetNewPeriodicOrigin(val);
+        else
+        {
+            ResettingError(tr("New periodic origin"),
+                DoublesToQString(atts->GetNewPeriodicOrigin(),3));
+            atts->SetNewPeriodicOrigin(atts->GetNewPeriodicOrigin());
+        }
+    }
 }
 
 
@@ -499,4 +545,19 @@ QvisReplicateWindow::replicateUnitCellAtomsChanged(bool val)
     Apply();
 }
 
+
+void
+QvisReplicateWindow::shiftPeriodicAtomOriginChanged(bool val)
+{
+    atts->SetShiftPeriodicAtomOrigin(val);
+    Apply();
+}
+
+
+void
+QvisReplicateWindow::newPeriodicOriginProcessText()
+{
+    GetCurrentValues(ReplicateAttributes::ID_newPeriodicOrigin);
+    Apply();
+}
 

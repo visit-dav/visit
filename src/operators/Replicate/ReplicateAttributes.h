@@ -76,6 +76,7 @@ public:
     void SelectXVector();
     void SelectYVector();
     void SelectZVector();
+    void SelectNewPeriodicOrigin();
 
     // Property setting methods
     void SetUseUnitCellVectors(bool useUnitCellVectors_);
@@ -87,6 +88,8 @@ public:
     void SetZReplications(int zReplications_);
     void SetMergeResults(bool mergeResults_);
     void SetReplicateUnitCellAtoms(bool replicateUnitCellAtoms_);
+    void SetShiftPeriodicAtomOrigin(bool shiftPeriodicAtomOrigin_);
+    void SetNewPeriodicOrigin(const double *newPeriodicOrigin_);
 
     // Property getting methods
     bool         GetUseUnitCellVectors() const;
@@ -101,6 +104,9 @@ public:
     int          GetZReplications() const;
     bool         GetMergeResults() const;
     bool         GetReplicateUnitCellAtoms() const;
+    bool         GetShiftPeriodicAtomOrigin() const;
+    const double *GetNewPeriodicOrigin() const;
+          double *GetNewPeriodicOrigin();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -124,7 +130,9 @@ public:
         ID_yReplications,
         ID_zReplications,
         ID_mergeResults,
-        ID_replicateUnitCellAtoms
+        ID_replicateUnitCellAtoms,
+        ID_shiftPeriodicAtomOrigin,
+        ID_newPeriodicOrigin
     };
 
 private:
@@ -137,6 +145,8 @@ private:
     int    zReplications;
     bool   mergeResults;
     bool   replicateUnitCellAtoms;
+    bool   shiftPeriodicAtomOrigin;
+    double newPeriodicOrigin[3];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

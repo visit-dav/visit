@@ -248,6 +248,9 @@ class     avtWebpage;
 //    Hank Childs, Tue Jan 20 12:03:05 CST 2009
 //    Added dynamicDomainDecomposition.
 //
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for unit cell origin (previously assumed to be 0,0,0);
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -503,6 +506,11 @@ class PIPELINE_API avtDataAttributes
     void                     SetUnitCellVectors(const float *v)
                              { for (int i=0;i<9;i++) unitCellVectors[i]=v[i]; }
 
+    const float             *GetUnitCellOrigin(void) const
+                                   { return unitCellOrigin; }
+    void                     SetUnitCellOrigin(const float *v)
+                             { for (int i=0;i<3;i++) unitCellOrigin[i]=v[i]; }
+
     bool                     GetRectilinearGridHasTransform() const
                              { return rectilinearGridHasTransform; }
     void                     SetRectilinearGridHasTransform(bool v)
@@ -552,6 +560,7 @@ class PIPELINE_API avtDataAttributes
     avtMeshCoordType         meshCoordType;
     bool                     nodesAreCritical;
     float                    unitCellVectors[9];
+    float                    unitCellOrigin[3];
     bool                     rectilinearGridHasTransform;
     double                   rectilinearGridTransform[16];
 

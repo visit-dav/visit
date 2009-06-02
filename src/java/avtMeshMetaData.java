@@ -60,7 +60,7 @@ public class avtMeshMetaData extends AttributeSubject
 {
     public avtMeshMetaData()
     {
-        super(41);
+        super(42);
 
         name = new String("mesh");
         originalName = new String("");
@@ -113,6 +113,10 @@ public class avtMeshMetaData extends AttributeSubject
         unitCellVectors[6] = 0f;
         unitCellVectors[7] = 0f;
         unitCellVectors[8] = 1f;
+        unitCellOrigin = new float[3];
+        unitCellOrigin[0] = 0f;
+        unitCellOrigin[1] = 0f;
+        unitCellOrigin[2] = 0f;
         rectilinearGridHasTransform = false;
         rectilinearGridTransform = new double[16];
         rectilinearGridTransform[0] = 1;
@@ -138,7 +142,7 @@ public class avtMeshMetaData extends AttributeSubject
 
     public avtMeshMetaData(avtMeshMetaData obj)
     {
-        super(41);
+        super(42);
 
         int i;
 
@@ -197,6 +201,11 @@ public class avtMeshMetaData extends AttributeSubject
         for(i = 0; i < obj.unitCellVectors.length; ++i)
             unitCellVectors[i] = obj.unitCellVectors[i];
 
+        unitCellOrigin = new float[3];
+        unitCellOrigin[0] = obj.unitCellOrigin[0];
+        unitCellOrigin[1] = obj.unitCellOrigin[1];
+        unitCellOrigin[2] = obj.unitCellOrigin[2];
+
         rectilinearGridHasTransform = obj.rectilinearGridHasTransform;
         rectilinearGridTransform = new double[16];
         for(i = 0; i < obj.rectilinearGridTransform.length; ++i)
@@ -246,6 +255,11 @@ public class avtMeshMetaData extends AttributeSubject
         for(i = 0; i < 9 && unitCellVectors_equal; ++i)
             unitCellVectors_equal = (unitCellVectors[i] == obj.unitCellVectors[i]);
 
+        // Compare the unitCellOrigin arrays.
+        boolean unitCellOrigin_equal = true;
+        for(i = 0; i < 3 && unitCellOrigin_equal; ++i)
+            unitCellOrigin_equal = (unitCellOrigin[i] == obj.unitCellOrigin[i]);
+
         // Compare the rectilinearGridTransform arrays.
         boolean rectilinearGridTransform_equal = true;
         for(i = 0; i < 16 && rectilinearGridTransform_equal; ++i)
@@ -288,6 +302,7 @@ public class avtMeshMetaData extends AttributeSubject
                 (loadBalanceScheme == obj.loadBalanceScheme) &&
                 (nodesAreCritical == obj.nodesAreCritical) &&
                 unitCellVectors_equal &&
+                unitCellOrigin_equal &&
                 (rectilinearGridHasTransform == obj.rectilinearGridHasTransform) &&
                 rectilinearGridTransform_equal &&
                 (nodeOrigin == obj.nodeOrigin) &&
@@ -533,35 +548,51 @@ public class avtMeshMetaData extends AttributeSubject
         Select(35);
     }
 
+    public void SetUnitCellOrigin(float[] unitCellOrigin_)
+    {
+        unitCellOrigin[0] = unitCellOrigin_[0];
+        unitCellOrigin[1] = unitCellOrigin_[1];
+        unitCellOrigin[2] = unitCellOrigin_[2];
+        Select(36);
+    }
+
+    public void SetUnitCellOrigin(float e0, float e1, float e2)
+    {
+        unitCellOrigin[0] = e0;
+        unitCellOrigin[1] = e1;
+        unitCellOrigin[2] = e2;
+        Select(36);
+    }
+
     public void SetRectilinearGridHasTransform(boolean rectilinearGridHasTransform_)
     {
         rectilinearGridHasTransform = rectilinearGridHasTransform_;
-        Select(36);
+        Select(37);
     }
 
     public void SetRectilinearGridTransform(double[] rectilinearGridTransform_)
     {
         for(int i = 0; i < 16; ++i)
              rectilinearGridTransform[i] = rectilinearGridTransform_[i];
-        Select(37);
+        Select(38);
     }
 
     public void SetNodeOrigin(int nodeOrigin_)
     {
         nodeOrigin = nodeOrigin_;
-        Select(38);
+        Select(39);
     }
 
     public void SetContainsExteriorBoundaryGhosts(boolean containsExteriorBoundaryGhosts_)
     {
         containsExteriorBoundaryGhosts = containsExteriorBoundaryGhosts_;
-        Select(39);
+        Select(40);
     }
 
     public void SetHideFromGUI(boolean hideFromGUI_)
     {
         hideFromGUI = hideFromGUI_;
-        Select(40);
+        Select(41);
     }
 
     // Property getting methods
@@ -601,6 +632,7 @@ public class avtMeshMetaData extends AttributeSubject
     public int      GetLoadBalanceScheme() { return loadBalanceScheme; }
     public boolean  GetNodesAreCritical() { return nodesAreCritical; }
     public float[]  GetUnitCellVectors() { return unitCellVectors; }
+    public float[]  GetUnitCellOrigin() { return unitCellOrigin; }
     public boolean  GetRectilinearGridHasTransform() { return rectilinearGridHasTransform; }
     public double[] GetRectilinearGridTransform() { return rectilinearGridTransform; }
     public int      GetNodeOrigin() { return nodeOrigin; }
@@ -683,14 +715,16 @@ public class avtMeshMetaData extends AttributeSubject
         if(WriteSelect(35, buf))
             buf.WriteFloatArray(unitCellVectors);
         if(WriteSelect(36, buf))
-            buf.WriteBool(rectilinearGridHasTransform);
+            buf.WriteFloatArray(unitCellOrigin);
         if(WriteSelect(37, buf))
-            buf.WriteDoubleArray(rectilinearGridTransform);
+            buf.WriteBool(rectilinearGridHasTransform);
         if(WriteSelect(38, buf))
-            buf.WriteInt(nodeOrigin);
+            buf.WriteDoubleArray(rectilinearGridTransform);
         if(WriteSelect(39, buf))
-            buf.WriteBool(containsExteriorBoundaryGhosts);
+            buf.WriteInt(nodeOrigin);
         if(WriteSelect(40, buf))
+            buf.WriteBool(containsExteriorBoundaryGhosts);
+        if(WriteSelect(41, buf))
             buf.WriteBool(hideFromGUI);
     }
 
@@ -810,18 +844,21 @@ public class avtMeshMetaData extends AttributeSubject
                 SetUnitCellVectors(buf.ReadFloatArray());
                 break;
             case 36:
-                SetRectilinearGridHasTransform(buf.ReadBool());
+                SetUnitCellOrigin(buf.ReadFloatArray());
                 break;
             case 37:
-                SetRectilinearGridTransform(buf.ReadDoubleArray());
+                SetRectilinearGridHasTransform(buf.ReadBool());
                 break;
             case 38:
-                SetNodeOrigin(buf.ReadInt());
+                SetRectilinearGridTransform(buf.ReadDoubleArray());
                 break;
             case 39:
-                SetContainsExteriorBoundaryGhosts(buf.ReadBool());
+                SetNodeOrigin(buf.ReadInt());
                 break;
             case 40:
+                SetContainsExteriorBoundaryGhosts(buf.ReadBool());
+                break;
+            case 41:
                 SetHideFromGUI(buf.ReadBool());
                 break;
             }
@@ -867,6 +904,7 @@ public class avtMeshMetaData extends AttributeSubject
         str = str + intToString("loadBalanceScheme", loadBalanceScheme, indent) + "\n";
         str = str + boolToString("nodesAreCritical", nodesAreCritical, indent) + "\n";
         str = str + floatArrayToString("unitCellVectors", unitCellVectors, indent) + "\n";
+        str = str + floatArrayToString("unitCellOrigin", unitCellOrigin, indent) + "\n";
         str = str + boolToString("rectilinearGridHasTransform", rectilinearGridHasTransform, indent) + "\n";
         str = str + doubleArrayToString("rectilinearGridTransform", rectilinearGridTransform, indent) + "\n";
         str = str + intToString("nodeOrigin", nodeOrigin, indent) + "\n";
@@ -913,6 +951,7 @@ public class avtMeshMetaData extends AttributeSubject
     private int      loadBalanceScheme;
     private boolean  nodesAreCritical;
     private float[]  unitCellVectors;
+    private float[]  unitCellOrigin;
     private boolean  rectilinearGridHasTransform;
     private double[] rectilinearGridTransform;
     private int      nodeOrigin;

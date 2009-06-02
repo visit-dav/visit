@@ -122,6 +122,7 @@ public:
         ID_loadBalanceScheme,
         ID_nodesAreCritical,
         ID_unitCellVectors,
+        ID_unitCellOrigin,
         ID_rectilinearGridHasTransform,
         ID_rectilinearGridTransform,
         ID_nodeOrigin,
@@ -166,6 +167,7 @@ public:
     LoadBalanceScheme loadBalanceScheme;
     bool              nodesAreCritical;
     float             unitCellVectors[9];
+    float             unitCellOrigin[3];
     bool              rectilinearGridHasTransform;
     double            rectilinearGridTransform[16];
     int               nodeOrigin;

@@ -114,6 +114,11 @@
       0.000000
       1.000000
     </Field>
+    <Field name="unitCellOrigin" label="Unit cell vectors" type="floatArray" length="3" access="public">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
     <Field name="rectilinearGridHasTransform" label="RectilinearGrid has transform" type="bool" access="public">
       false
     </Field>

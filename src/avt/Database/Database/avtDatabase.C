@@ -774,6 +774,10 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
 //    Removed std:: qualification on some STL classes due to use of using
 //    statements at top 
+//
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for unit cell origin (previously assumed to be 0,0,0);
+//
 // ****************************************************************************
 
 void
@@ -843,6 +847,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetMeshCoordType(mmd->meshCoordType);
         atts.SetNodesAreCritical(mmd->nodesAreCritical);
         atts.SetUnitCellVectors(mmd->unitCellVectors);
+        atts.SetUnitCellOrigin(mmd->unitCellOrigin);
         if (mmd->rectilinearGridHasTransform)
         {
             atts.SetRectilinearGridHasTransform(true);
