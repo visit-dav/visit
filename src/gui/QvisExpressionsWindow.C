@@ -831,15 +831,20 @@ QvisExpressionsWindow::Apply(bool forceUpdate)
 //    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Jeremy Meredith, Tue Jun  2 10:40:48 EDT 2009
+//    Fix null pointer dereference when there's no current item (e.g. empty
+//    window).
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::apply()
 {
     // Apply will recreate the window and unselect the current expression.
     // If we have an expression selected, reselect it afterwards.
-    
-    int reselect = (exprListBox->currentRow() != -1);
-    QString item = exprListBox->currentItem()->text();
+    bool reselect = (exprListBox->currentRow() != -1);
+    QString item;
+    if (reselect)
+        item = exprListBox->currentItem()->text();
     
     Apply(true);
 
