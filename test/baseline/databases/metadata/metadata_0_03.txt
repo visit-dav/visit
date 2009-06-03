@@ -140,6 +140,7 @@ GetMeshes(0).containsGlobalZoneIds = 0
 GetMeshes(0).loadBalanceScheme = GetMeshes(0).LOAD_BALANCE_UNKNOWN  # LOAD_BALANCE_UNKNOWN, LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER, LOAD_BALANCE_STRIDE_ACROSS_BLOCKS, LOAD_BALANCE_RANDOM_ASSIGNMENT, LOAD_BALANCE_DBPLUGIN_DYNAMIC, LOAD_BALANCE_RESTRICTED, LOAD_BALANCE_ABSOLUTE
 GetMeshes(0).nodesAreCritical = 0
 GetMeshes(0).unitCellVectors = (1, 0, 0, 0, 1, 0, 0, 0, 1)
+GetMeshes(0).unitCellOrigin = (0, 0, 0)
 GetMeshes(0).rectilinearGridHasTransform = 0
 GetMeshes(0).rectilinearGridTransform = (1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
 GetMeshes(0).nodeOrigin = 0
