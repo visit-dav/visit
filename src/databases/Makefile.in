@@ -367,6 +367,9 @@
 #   Jeremy Meredith, Mon May 11 17:14:29 EDT 2009
 #   Adding LAMMPS backport from trunk.
 #
+#   Dave Pugmire, Wed Jun  3 13:56:09 EDT 2009
+#   Added PlasmaState reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -398,7 +401,7 @@ HDF5_TARGET= \
 MILI=Mili
 SILO_TARGET=Silo SAMI Vista
 PDB_TARGET=Cale KullLite PDB
-NETCDF=NETCDF S3D
+NETCDF=NETCDF S3D PlasmaState
 VISUS=ViSUS
 H5PART=H5Part
 FASTBIT=HDF_UC
