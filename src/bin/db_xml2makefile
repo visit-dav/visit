@@ -167,6 +167,14 @@ else
     fi
 fi
 
+# Use the presence of libvisitenginev1_par in the make-variables to determine
+# whether we should build parallel plugins.
+EPARDSO=""
+EV1="`grep enginev1_par ../../include/make-variables`"
+if test -n "$EV1" ; then
+    EPARDSO="\$(TOPDIR)/plugins/databases/libE${NAME}Database_par.so"
+fi
+
 sed -e "s%@TOPDIR@%$TOPDIR%" \
     -e "s%@CXXFLAGS@%$CXXFLAGS%g" \
     -e "s%@LIBS@%$LIBS%g" \
@@ -176,4 +184,5 @@ sed -e "s%@TOPDIR@%$TOPDIR%" \
     -e "s%@MSPECIFICSRC@%$MSPECIFICSRC%g" \
     -e "s%@ESRC@%$ESRC%g" \
     -e "s%@ESPECIFICSRC@%$ESPECIFICSRC%g" \
+    -e "s%@EPARDSO@%$EPARDSO%g" \
     $binDir/db_mktmpl > Makefile 

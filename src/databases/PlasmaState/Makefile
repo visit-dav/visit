@@ -1,57 +1,65 @@
 ##
 ## Programs and options...
 ##
-include /apps/visit/branches/1.12RC_trunk/src/include/make-variables
-TOPDIR=/apps/visit/branches/1.12RC_trunk/src
+TOPDIR=/scratch/whitlocb/trunk/src
+include $(TOPDIR)/include/make-variables
 
 
 ##
 ## Libraries and includes...
 ##
 VTK_INCLUDE= \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk/Common \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk/Filtering \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk/Graphics \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk/Hybrid \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk/IO \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk/Imaging \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk/Rendering \
-  -I/apps/visit/branches/1.12RC_trunk/src/include/vtk/Utilities
-CXXFLAGS=$(CXXFLAGSORIG) $(NETCDF_INCLUDE)
-CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I/apps/visit/branches/1.12RC_trunk/src/include -I/apps/visit/branches/1.12RC_trunk/src/include/visit $(PY_CXXFLAGS)
-LDFLAGS=$(LDFLAGSORIG) $(PLUGIN_LDFLAGS) -L/apps/visit/branches/1.12RC_trunk/src/plugins/databases
+  -I$(TOPDIR)/include/vtk \
+  -I$(TOPDIR)/include/vtk/Common \
+  -I$(TOPDIR)/include/vtk/Filtering \
+  -I$(TOPDIR)/include/vtk/Graphics \
+  -I$(TOPDIR)/include/vtk/Hybrid \
+  -I$(TOPDIR)/include/vtk/IO \
+  -I$(TOPDIR)/include/vtk/Imaging \
+  -I$(TOPDIR)/include/vtk/Rendering \
+  -I$(TOPDIR)/include/vtk/Utilities
+CXXFLAGS=$(CXXFLAGSORIG) 
+CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I$(TOPDIR)/include -I$(TOPDIR)/include/visit $(PY_CXXFLAGS)
+LDFLAGS=$(LDFLAGSORIG) $(PLUGIN_LDFLAGS) -L$(TOPDIR)/plugins/databases
+
+LIBG_QT_LIBS=$(QT_CORE_LIB) $(QT_GUI_LIB)
+LIBV_QT_LIBS=$(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_OPENGL_LIB)
 
 ##
 ## Files...
 ##
 PLUGINDIR=databases
-PLUGINNAME=PlasmaStateDatabase
+PLUGINNAME=Database
 
 WIDGETS=
 VIEWERWIDGETS=
-ISRC=PlasmaStatePluginInfo.C
-COMMONSRC=PlasmaStatePluginInfo.C PlasmaStateCommonPluginInfo.C
-MSRC=PlasmaStateMDServerPluginInfo.C avtPlasmaStateFileFormat.C
-ESRC=PlasmaStateEnginePluginInfo.C avtPlasmaStateFileFormat.C
+ISRC=PluginInfo.C
+COMMONSRC=PluginInfo.C CommonPluginInfo.C 
+MSRC=MDServerPluginInfo.C avtFileFormat.C 
+MSPECIFICSRC=
+ESRC=EnginePluginInfo.C avtFileFormat.C 
+ESPECIFICSRC=
 
 
 SRC=$(ISRC) $(COMMONSRC) $(MSRC) $(ESRC)
 
-SHLIB_FORCED=$(NETCDF_CXX_LIB) $(NETCDF_LIB) 
+SHLIB_FORCED=
 
+GUI_LIBS_FORCED=
+ENGINE_LIBS_FORCED=
+MDSERVER_LIBS_FORCED=
+VIEWER_LIBS_FORCED=
 ELIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)
 MLIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(ZLIB_LIB) $(MESA_LIBS) $(GL_LIBS)
 ILIBS=
-MLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lplugin -lvisit_vtk -llightweight_visit_vtk  $(MLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
-ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
-EPARLIBS=-lpipeline_par -ldatabase_par -lmir_par -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)
+MLIBS=-lpipeline_ser -ldatabase_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lplugin -lvisit_vtk -llightweight_visit_vtk  $(MLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
+ESERLIBS=-lpipeline_ser -ldatabase_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
+EPARLIBS=-lpipeline_par -ldatabase_par -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)
 
-IDSO=/apps/visit/branches/1.12RC_trunk/src/plugins/databases/libIPlasmaStateDatabase.so
-MDSO=/apps/visit/branches/1.12RC_trunk/src/plugins/databases/libMPlasmaStateDatabase.so
-ESERDSO=/apps/visit/branches/1.12RC_trunk/src/plugins/databases/libEPlasmaStateDatabase_ser.so
-EPARDSO=/apps/visit/branches/1.12RC_trunk/src/plugins/databases/libEPlasmaStateDatabase_par.so
-
+IDSO=$(TOPDIR)/plugins/databases/libIDatabase.so
+MDSO=
+ESERDSO=$(TOPDIR)/plugins/databases/libEDatabase_ser.so
+EPARDSO=
 
 DISTRIB=
 
@@ -98,10 +106,10 @@ clean:
 message:
 	@echo
 	@echo "****************************************************************************"
-	@echo "*** Building PlasmaState Database Plugin"
+	@echo "*** Building  Database Plugin"
 	@echo "****************************************************************************"
 
 ##
 ## Automatic dependency stuff
 ##
-include /apps/visit/branches/1.12RC_trunk/src/include/make-targets
+include $(TOPDIR)/include/make-targets

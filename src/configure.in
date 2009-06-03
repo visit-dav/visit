@@ -1106,7 +1106,14 @@ AC_ARG_ENABLE(dbio-only,
 if test "$enable_dbio_only" = yes; then
     enable_scripting=no
     AC_DEFINE(DBIO_ONLY, [1], [Define if this is a database I/O only build])
+    NON_DBIO_SERLIBS=""
+    NON_DBIO_PARLIBS=""
+else
+    NON_DBIO_SERLIBS="$""(NON_DBIO_SERLIBS)"
+    NON_DBIO_PARLIBS="$""(NON_DBIO_SERLIBS)"
 fi
+AC_SUBST(NON_DBIO_SERLIBS)
+AC_SUBST(NON_DBIO_PARLIBS)
 
 #
 # Check for CMake
