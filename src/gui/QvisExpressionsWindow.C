@@ -189,6 +189,8 @@ const char *expr_meshquality[] = {
     "stretch",
     "taper",
     "warpage",
+    "face_planarity",
+    "relative_face_planarity",
     NULL
 };
 

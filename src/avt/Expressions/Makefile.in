@@ -429,6 +429,7 @@ Math_src= \
 MeshQuality_src= \
   MeshQuality/avtCornerAngle.C \
   MeshQuality/avtEdgeLength.C \
+  MeshQuality/avtFacePlanarity.C \
   MeshQuality/avtNeighborExpression.C \
   MeshQuality/avtNodeDegreeExpression.C \
   MeshQuality/avtRevolvedSurfaceArea.C \
