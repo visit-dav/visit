@@ -1334,6 +1334,7 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
         md->GetMeshes(it->second).hideFromGUI = true;
 }
 
+// ****************************************************************************
 //  Method: avtDatabase::AddMeshQualityExpressions
 //
 //  Purpose:
@@ -1375,6 +1376,8 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
 //    Eric Brugger, Thu Aug  7 08:52:06 PDT 2008
 //    Updated for verdict version 110.
 //
+//    Mark C. Miller, Wed Jun  3 14:51:09 PDT 2009
+//    Added face_planarity expressions.
 // ****************************************************************************
 
 void
@@ -1424,7 +1427,7 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
             continue;
 
         nmeshes_done++;
-        const int nPairs = 24;
+        const int nPairs = 26;
         MQExprTopoPair exprs[nPairs];
         exprs[0]  = MQExprTopoPair("area", 2);
         exprs[1]  = MQExprTopoPair("aspect_gamma", 3);
@@ -1450,6 +1453,8 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         exprs[21] = MQExprTopoPair("taper", -1);
         exprs[22] = MQExprTopoPair("volume", 3);
         exprs[23] = MQExprTopoPair("warpage", 2);
+        exprs[24] = MQExprTopoPair("face_planarity", 3);
+        exprs[25] = MQExprTopoPair("relative_face_planarity", 3);
 
         for (int j = 0 ; j < nPairs ; j++)
         {

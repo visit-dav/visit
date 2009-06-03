@@ -36,17 +36,14 @@
 *
 *****************************************************************************/
 #include <avtExprNode.h>
-
 #include <avtCornerAngle.h>
-#include <avtCornerAngle.h>
-#include <avtEdgeLength.h>
 #include <avtEdgeLength.h>
 #include <avtExternalNodeExpression.h>
+#include <avtFacePlanarity.h>
 #include <avtNeighborExpression.h>
 #include <avtNodeDegreeExpression.h>
 #include <avtRevolvedSurfaceArea.h>
 #include <avtRevolvedVolume.h>
-#include <avtSideVolume.h>
 #include <avtSideVolume.h>
 #include <avtVMetricArea.h>
 #include <avtVMetricAspectGamma.h>
@@ -66,7 +63,6 @@
 #include <avtVMetricSkew.h>
 #include <avtVMetricStretch.h>
 #include <avtVMetricTaper.h>
-#include <avtVMetricVolume.h>
 #include <avtVMetricVolume.h>
 #include <avtVMetricWarpage.h>
 
@@ -88,6 +84,8 @@
 //
 // Modifications:
 //   
+//    Mark C. Miller, Wed Jun  3 14:50:50 PDT 2009
+//    Added face_planarity expressions.
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -188,6 +186,17 @@ avtFunctionExpr::CreateMeshQualityFilters(const string &functionName) const
         f = new avtRevolvedVolume;
     else if (functionName == "revolved_surface_area")
         f = new avtRevolvedSurfaceArea;
+    else if (functionName == "face_planarity")
+    {
+        avtFacePlanarity *fp = new avtFacePlanarity();
+        return fp;
+    }
+    else if (functionName == "relative_face_planarity")
+    {
+        avtFacePlanarity *fp = new avtFacePlanarity();
+        fp->SetTakeRelative(true);
+        return fp;
+    }
 
     return f;
 }
