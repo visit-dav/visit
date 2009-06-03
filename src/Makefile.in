@@ -154,7 +154,6 @@ SUBDIRS_STD=include lib bin third_party_builtin common @VTKQT@ visit_vtk \
 	@GUI@ @VISITPY@ @JAVA_TARGET@ sim plots operators databases @HELP@ \
 	tools
 SUBDIRS=@SUBDIRS@
-SUBDIRS=@SUBDIRS@
 
 #
 # Make sure that the installation directories exist

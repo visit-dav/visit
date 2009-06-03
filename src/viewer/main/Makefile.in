@@ -341,7 +341,7 @@ LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lparser -lplugin -lqtviswindow -lviswindow_ser -lavtmath_ser -lplotter_ser \
      -lavtfilters_ser  -ldatabase_ser -lmir_ser -lvisit_verdict -lavtwriter_ser \
      -lavtview -lpipeline_ser -lvisit_vtk -lrendering_visit_vtk -lavtivp_ser \
-     -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
+     -llightweight_visit_vtk -lrendering_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
      -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
      $(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_NETWORK_LIB) $(QT_OPENGL_LIB) \
      $(VTK_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) @LIBS@ @PTHREAD_LIB@
