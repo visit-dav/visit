@@ -36,8 +36,8 @@ Eulerian for domain 35 is 1
 Eulerian for domain 36 is 1
 
 
-u -- Min = 0.993591 (node 132 in domain 10 at coord <-2, -2.08219e-06, 0>)
-u -- Max = 1 (node 0 in domain 1 at coord <2, 0, 0>)
+u -- Min = 0.993591 (node 133 in domain 10 at coord <-2.1, -2.1863e-06, 0>)
+u -- Max = 1 (node 13 in domain 1 at coord <2.09353, 0.164764, 0>)
 
 
 The total Surface Area is 625.615 cm^2
