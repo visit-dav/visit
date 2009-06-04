@@ -387,6 +387,12 @@
 #    Hank Childs, Sat May  2 10:59:41 CDT 2009
 #    Added configs for TACC.  Also change incorrect "fi" to be an "endif".
 #
+#    Brad Whitlock, Wed Jun 3 16:53:34 PST 2009
+#    I added conditional tests to prevent unwanted pieces from being copied
+#    into the distribution in the event that there are missing pieces. For
+#    example, don't copy help files if there's no GUI. Don't make symlinks
+#    to an app if it does not exist.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -988,50 +994,108 @@ cp $VisItDir/bin/internallauncher $verdir/bin/
 # Copy the executables to the distribution.
 #
 echo "Copying executables to the distribution..."
-cp $VisItDir/exe/cli           $bindir/cli
+set gui_exists="FALSE"
+set cli_exists="FALSE"
+if(-e $VisItDir/exe/cli) then
+   cp $VisItDir/exe/cli           $bindir/cli
+   set cli_exists="TRUE"
+endif
 cp $VisItDir/exe/engine_ser    $bindir/engine_ser
 if(-e $VisItDir/exe/engine_par) then
    cp $VisItDir/exe/engine_par $bindir/engine_par
 endif
-cp $VisItDir/exe/gui           $bindir/gui
-cp $VisItDir/exe/mdserver      $bindir/mdserver
-cp $VisItDir/exe/vcl           $bindir/vcl
-cp $VisItDir/exe/viewer        $bindir/viewer
-cp $VisItDir/bin/depcomp       $bindir/depcomp
+if(-e $VisItDir/exe/gui) then
+   cp $VisItDir/exe/gui           $bindir/gui
+   set gui_exists="TRUE"
+endif
+if(-e $VisItDir/exe/mdserver) then
+   cp $VisItDir/exe/mdserver      $bindir/mdserver
+endif
+if(-e $VisItDir/exe/vcl) then
+   cp $VisItDir/exe/vcl           $bindir/vcl
+endif
+if(-e $VisItDir/exe/viewer) then
+   cp $VisItDir/exe/viewer        $bindir/viewer
+endif
+if(-e $VisItDir/bin/depcomp) then
+   cp $VisItDir/bin/depcomp       $bindir/depcomp
+endif
 # copy qt's moc, too
 cp $VisItDir/bin/moc           $bindir/moc
 # copy the xml plugin creation tools
 cp $VisItDir/exe/xml2*         $bindir
-cp $VisItDir/exe/xmltest       $bindir
-cp $VisItDir/exe/xmledit       $bindir
+if(-e $bindir/xml2atts) then
+   ln -s frontendlauncher distribution/visit/bin/xml2atts
+   ln -s frontendlauncher distribution/visit/bin/xml2avt
+   ln -s frontendlauncher distribution/visit/bin/xml2info
+   ln -s frontendlauncher distribution/visit/bin/xml2java
+   ln -s frontendlauncher distribution/visit/bin/xml2projectfile
+   ln -s frontendlauncher distribution/visit/bin/xml2python
+   ln -s frontendlauncher distribution/visit/bin/xml2window
+endif
+if(-e $VisItDir/exe/xmltest) then
+   cp $VisItDir/exe/xmltest       $bindir
+   ln -s frontendlauncher distribution/visit/bin/xmltest
+endif
+if(-e $VisItDir/exe/xmledit) then
+   cp $VisItDir/exe/xmledit       $bindir
+   ln -s frontendlauncher distribution/visit/bin/xmledit
+endif
 # copy silex
-cp $VisItDir/exe/silex         $bindir
+if(-e $VisItDir/exe/silex) then
+   cp $VisItDir/exe/silex         $bindir
+   ln -s frontendlauncher distribution/visit/bin/silex
+endif
 # copy curv3dprep
-cp $VisItDir/exe/curv3dprep    $bindir
+if(-e $VisItDir/exe/curv3dprep) then
+   cp $VisItDir/exe/curv3dprep    $bindir
+   ln -s frontendlauncher distribution/visit/bin/curv3dprep
+endif
 # copy text2polys and time_annotation
-cp $VisItDir/exe/text2polys    $bindir
-cp $VisItDir/exe/time_annotation $bindir
-cp $VisItDir/exe/visitconvert_ser $bindir
+if(-e $VisItDir/exe/text2polys) then
+   cp $VisItDir/exe/text2polys    $bindir
+   ln -s frontendlauncher distribution/visit/bin/text2polys
+endif
+if(-e $VisItDir/exe/time_annotation) then
+   cp $VisItDir/exe/time_annotation $bindir
+   ln -s frontendlauncher distribution/visit/bin/time_annotation
+endif
+if(-e $VisItDir/exe/visitconvert_ser) then
+   cp $VisItDir/exe/visitconvert_ser $bindir
+   ln -s frontendlauncher distribution/visit/bin/visitconvert
+endif
 if(-e $VisItDir/exe/visitconvert_ser_lite) then
    cp $VisItDir/exe/visitconvert_ser_lite $bindir
 endif
-cp $VisItDir/exe/visit_composite  $bindir
-cp $VisItDir/exe/visit_transition $bindir
 if(-e $VisItDir/exe/visitconvert_par) then
    cp $VisItDir/exe/visitconvert_par $bindir/visitconvert_par
 endif
+if(-e $VisItDir/exe/visit_composite) then
+   cp $VisItDir/exe/visit_composite  $bindir
+   ln -s frontendlauncher distribution/visit/bin/visit_composite
+endif
+if(-e $VisItDir/exe/visit_transition) then
+   cp $VisItDir/exe/visit_transition $bindir
+   ln -s frontendlauncher distribution/visit/bin/visit_transition
+endif
 if(-e $VisItDir/exe/makemili_ser) then
    cp $VisItDir/exe/makemili_ser $bindir/makemili_ser
+   ln -s frontendlauncher distribution/visit/bin/makemili
 endif
 if(-e $VisItDir/exe/visit_writer.so) then
    cp $VisItDir/exe/visit_writer.so $bindir/visit_writer.so
 endif
 # Copy the MPEG encoder and the makemovie script.
-cp $VisItDir/exe/mpeg2encode   $bindir
+if(-e $VisItDir/exe/mpeg2encode) then
+   cp $VisItDir/exe/mpeg2encode   $bindir
+endif
 cp $VisItDir/bin/makemovie.py  $bindir
 cp $VisItDir/bin/makemoviemain.py  $bindir
 # copy surfcomp
-cp $VisItDir/exe/surfcomp      $bindir
+if(-e $VisItDir/exe/surfcomp) then
+   cp $VisItDir/exe/surfcomp      $bindir
+   ln -s frontendlauncher distribution/visit/bin/surfcomp
+endif
 # Copy the movie templates
 cp $VisItDir/bin/movietemplates/*.mt  $bindir/movietemplates
 cp $VisItDir/bin/movietemplates/*.ui  $bindir/movietemplates
@@ -1048,27 +1112,8 @@ cp $VisItDir/bin/translations/*.ts $bindir/translations
 #
 # Make symlinks for the programs
 #
-ln -s frontendlauncher distribution/visit/bin/visitconvert
-ln -s frontendlauncher distribution/visit/bin/visit_composite
-ln -s frontendlauncher distribution/visit/bin/visit_transition
-ln -s frontendlauncher distribution/visit/bin/curv3dprep
-ln -s frontendlauncher distribution/visit/bin/makemili
-ln -s frontendlauncher distribution/visit/bin/mpeg2encode
-ln -s frontendlauncher distribution/visit/bin/silex
-ln -s frontendlauncher distribution/visit/bin/surfcomp
-ln -s frontendlauncher distribution/visit/bin/text2polys
-ln -s frontendlauncher distribution/visit/bin/time_annotation
 ln -s frontendlauncher distribution/visit/bin/visit
-ln -s frontendlauncher distribution/visit/bin/xml2atts
-ln -s frontendlauncher distribution/visit/bin/xml2avt
-ln -s frontendlauncher distribution/visit/bin/xml2info
-ln -s frontendlauncher distribution/visit/bin/xml2java
 ln -s frontendlauncher distribution/visit/bin/xml2makefile
-ln -s frontendlauncher distribution/visit/bin/xml2projectfile
-ln -s frontendlauncher distribution/visit/bin/xml2python
-ln -s frontendlauncher distribution/visit/bin/xml2window
-ln -s frontendlauncher distribution/visit/bin/xmledit
-ln -s frontendlauncher distribution/visit/bin/xmltest
 
 
 # If we're on Darwin, Make some bundles so VisIt can run when it's unpackaged
@@ -1082,20 +1127,22 @@ if("$os" == "darwin") then
     @ i = 1
     set pwd = `pwd`
     foreach app ($graphicalApps)
-        echo "Making application bundle for $app"
-        mkdir $bindir/$app.app
-        mkdir $bindir/$app.app/Contents
-        mkdir $bindir/$app.app/Contents/MacOS
-        mkdir $bindir/$app.app/Contents/Resources
-        cd $bindir/$app.app/Contents
-        ln -s ../../../lib  lib
-        cd MacOS
-        ln -s ../../../$app  $app
-        ln -s ../../../../../../bin/visit visit
-        cd $pwd
-        cp $VisItDir/common/icons/$iconFiles[$i].icns $bindir/$app.app/Contents/Resources
-        sed "s/PROGRAMNAME/$menuNames[$i]/g" $VisItDir/include/$plist[$i] | sed "s/VERSION/$Version/g" | sed "s/CREATORCODE/$creatorCodes[$i]/g" | sed "s/ICONFILE/$iconFiles[$i]/g" > $bindir/$app.app/Contents/Info.plist
-        echo "APPL$creatorCodes[$i]" > $bindir/$app.app/Contents/PkgInfo
+        if(-e $bindir/$app) then
+            echo "Making application bundle for $app"
+            mkdir $bindir/$app.app
+            mkdir $bindir/$app.app/Contents
+            mkdir $bindir/$app.app/Contents/MacOS
+            mkdir $bindir/$app.app/Contents/Resources
+            cd $bindir/$app.app/Contents
+            ln -s ../../../lib  lib
+            cd MacOS
+            ln -s ../../../$app  $app
+            ln -s ../../../../../../bin/visit visit
+            cd $pwd
+            cp $VisItDir/common/icons/$iconFiles[$i].icns $bindir/$app.app/Contents/Resources
+            sed "s/PROGRAMNAME/$menuNames[$i]/g" $VisItDir/include/$plist[$i] | sed "s/VERSION/$Version/g" | sed "s/CREATORCODE/$creatorCodes[$i]/g" | sed "s/ICONFILE/$iconFiles[$i]/g" > $bindir/$app.app/Contents/Info.plist
+            echo "APPL$creatorCodes[$i]" > $bindir/$app.app/Contents/PkgInfo
+        endif
         @ i++
     end
 endif
@@ -1203,49 +1250,51 @@ endif
 #
 # Copy Python to the distribution
 #
-set pyver = `basename $VisItDir/lib/python/lib/python?.?`;
-mkdir $libdir/python
-mkdir $libdir/python/lib
-mkdir $libdir/python/lib/$pyver
-mkdir $libdir/python/lib/$pyver/config
-mkdir $libdir/python/lib/$pyver/lib-dynload
-mkdir $libdir/python/lib/$pyver/lib-tk
-#mkdir $libdir/python/lib/$pyver/plat-...?
-mkdir $libdir/python/lib/$pyver/site-packages
-mkdir $libdir/python/lib/$pyver/site-packages/PIL
-mkdir $libdir/python/lib/$pyver/xml
-mkdir $libdir/python/lib/$pyver/xml/dom
-mkdir $libdir/python/lib/$pyver/xml/parsers
-mkdir $libdir/python/lib/$pyver/xml/sax
-cp $VisItDir/lib/python/lib/$pyver/*.txt                $libdir/python/lib/$pyver
-cp $VisItDir/lib/python/lib/$pyver/*.py                 $libdir/python/lib/$pyver
-cp $VisItDir/lib/python/lib/$pyver/*.pyc                $libdir/python/lib/$pyver
-cp $VisItDir/lib/python/lib/$pyver/*.pyo                $libdir/python/lib/$pyver
-ls $VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT >& /dev/null
-if ($status == 0) then
-  cp $VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT     $libdir/python/lib/$pyver
-endif
-cp $VisItDir/lib/python/lib/$pyver/config/*             $libdir/python/lib/$pyver/config
-cp $VisItDir/lib/python/lib/$pyver/lib-dynload/*        $libdir/python/lib/$pyver/lib-dynload
-cp $VisItDir/lib/python/lib/$pyver/lib-tk/*             $libdir/python/lib/$pyver/lib-tk
-ls $VisItDir/lib/python/lib/$pyver/site-packages/PIL.* >& /dev/null
-if ($status == 0) then
-  cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL.* $libdir/python/lib/$pyver/site-packages
-endif
-ls $VisItDir/lib/python/lib/$pyver/site-packages/PIL/* >& /dev/null
-if ($status == 0) then
-  cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL/*  $libdir/python/lib/$pyver/site-packages/PIL
-endif
-ls $VisItDir/lib/python/lib/$pyver/site-packages/pyparsing* >& /dev/null
-if ($status == 0) then
-  cp $VisItDir/lib/python/lib/$pyver/site-packages/pyparsing.* $libdir/python/lib/$pyver/site-packages
-endif
-cp $VisItDir/lib/python/lib/$pyver/xml/*.{py,pyc,pyo}         $libdir/python/lib/$pyver/xml
-cp $VisItDir/lib/python/lib/$pyver/xml/dom/*.{py,pyc,pyo}     $libdir/python/lib/$pyver/xml/dom
-cp $VisItDir/lib/python/lib/$pyver/xml/parsers/*.{py,pyc,pyo} $libdir/python/lib/$pyver/xml/parsers
-cp $VisItDir/lib/python/lib/$pyver/xml/sax/*.{py,pyc,pyo}     $libdir/python/lib/$pyver/xml/sax
+if("$cli_exists" == "TRUE") then
+    set pyver = `basename $VisItDir/lib/python/lib/python?.?`;
+    mkdir $libdir/python
+    mkdir $libdir/python/lib
+    mkdir $libdir/python/lib/$pyver
+    mkdir $libdir/python/lib/$pyver/config
+    mkdir $libdir/python/lib/$pyver/lib-dynload
+    mkdir $libdir/python/lib/$pyver/lib-tk
+    #mkdir $libdir/python/lib/$pyver/plat-...?
+    mkdir $libdir/python/lib/$pyver/site-packages
+    mkdir $libdir/python/lib/$pyver/site-packages/PIL
+    mkdir $libdir/python/lib/$pyver/xml
+    mkdir $libdir/python/lib/$pyver/xml/dom
+    mkdir $libdir/python/lib/$pyver/xml/parsers
+    mkdir $libdir/python/lib/$pyver/xml/sax
+    cp $VisItDir/lib/python/lib/$pyver/*.txt                $libdir/python/lib/$pyver
+    cp $VisItDir/lib/python/lib/$pyver/*.py                 $libdir/python/lib/$pyver
+    cp $VisItDir/lib/python/lib/$pyver/*.pyc                $libdir/python/lib/$pyver
+    cp $VisItDir/lib/python/lib/$pyver/*.pyo                $libdir/python/lib/$pyver
+    ls $VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT >& /dev/null
+    if ($status == 0) then
+      cp $VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT     $libdir/python/lib/$pyver
+    endif
+    cp $VisItDir/lib/python/lib/$pyver/config/*             $libdir/python/lib/$pyver/config
+    cp $VisItDir/lib/python/lib/$pyver/lib-dynload/*        $libdir/python/lib/$pyver/lib-dynload
+    cp $VisItDir/lib/python/lib/$pyver/lib-tk/*             $libdir/python/lib/$pyver/lib-tk
+    ls $VisItDir/lib/python/lib/$pyver/site-packages/PIL.* >& /dev/null
+    if ($status == 0) then
+      cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL.* $libdir/python/lib/$pyver/site-packages
+    endif
+    ls $VisItDir/lib/python/lib/$pyver/site-packages/PIL/* >& /dev/null
+    if ($status == 0) then
+      cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL/*  $libdir/python/lib/$pyver/site-packages/PIL
+    endif
+    ls $VisItDir/lib/python/lib/$pyver/site-packages/pyparsing* >& /dev/null
+    if ($status == 0) then
+      cp $VisItDir/lib/python/lib/$pyver/site-packages/pyparsing.* $libdir/python/lib/$pyver/site-packages
+    endif
+    cp $VisItDir/lib/python/lib/$pyver/xml/*.{py,pyc,pyo}         $libdir/python/lib/$pyver/xml
+    cp $VisItDir/lib/python/lib/$pyver/xml/dom/*.{py,pyc,pyo}     $libdir/python/lib/$pyver/xml/dom
+    cp $VisItDir/lib/python/lib/$pyver/xml/parsers/*.{py,pyc,pyo} $libdir/python/lib/$pyver/xml/parsers
+    cp $VisItDir/lib/python/lib/$pyver/xml/sax/*.{py,pyc,pyo}     $libdir/python/lib/$pyver/xml/sax
 
-ln -s "python/lib/$pyver/config/lib${pyver}.$SHLIB_SOEXT" $libdir
+    ln -s "python/lib/$pyver/config/lib${pyver}.$SHLIB_SOEXT" $libdir
+endif
 
 #
 # Copy the VTK libraries to the distribution.
@@ -1446,7 +1495,7 @@ cp $VisItDir/include/qt/private/*.h             $incdir/qt/private
 #
 # Copy the help files to the distribution.
 #
-if (-e $VisItDir/help) then
+if (-e $VisItDir/help && "$gui_exists" == "TRUE") then
    set tmpDir = `pwd`
    cd $VisItDir/help
    set translations=`find . -type d`

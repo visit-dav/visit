@@ -142,6 +142,9 @@
 #    Mark C. Miller, Wed Mar  4 18:02:00 PST 2009
 #    Made it work for dbio-only build.
 #
+#    Brad Whitlock, Wed Jun 3 15:45:55 PST 2009
+#    I added an engine-only build option.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -149,6 +152,13 @@
 @DIRTARGETS@
 
 SUBDIRS_DBIO_ONLY=include lib bin third_party_builtin common visit_vtk avt databases tools
+
+SUBDIRS_ENGINE_ONLY=include lib bin third_party_builtin common visit_vtk avt engine \
+        sim plots operators databases 
+
+SUBDIRS_SERVER_COMPONENTS_ONLY=include lib bin third_party_builtin common visit_vtk \
+        avt engine launcher mdserver sim plots operators databases 
+
 SUBDIRS_STD=include lib bin third_party_builtin common @VTKQT@ visit_vtk \
         avt engine launcher @METADATA_SERVER@ winutil @VIEWER@ \
 	@GUI@ @VISITPY@ @JAVA_TARGET@ sim plots operators databases @HELP@ \

@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS SUBDIRS ALLSUBDIRS SRC BUILD_DBIO_ONLY NON_DBIO_SERLIBS NON_DBIO_PARLIBS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE VIEWER VISWINDOW VIEWERLIB VIEWEROBJ VIEWERLIB_SRC VIEWEREXE_SRC GUI GUILIB GUIOBJ GUIFRAMEWORKS ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS SLIVR_GUI_IMPL SLIVR_GUI_HDR HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB VISITWRAPPER_RPATH CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_TUVOK TUVOK_LIB TUVOK_INCLUDE BUILD_ZLIB ZLIB_LIB HDF5_INCLUDE HDF5_LIB HDF5_TARGET SILO_INCLUDE SILO_LIB SILO_TARGET EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB_INCLUDE PDB_LIB PDB_TARGET MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR FASTBIT FASTBIT_INCLUDE FASTBIT_LIB FASTBIT_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB QT_LDFLAGS QT_LIBS QT_CORE QT_CORE_LIB QT_DESIGNER QT_DESIGNER_LIB QT_GUI QT_GUI_LIB QT_HELP QT_HELP_LIB QT_CLUCENE QT_CLUCENE_LIB QT_NETWORK QT_NETWORK_LIB QT_OPENGL QT_OPENGL_LIB QT_SCRIPT QT_SCRIPT_LIB QT_SQL QT_SQL_LIB QT_SVG QT_SVG_LIB QT_TEST QT_TEST_LIB QT_XML QT_XML_LIB QT_QUI QT_QUI_LIB QT_CXXFLAGS QT_MOC VTKQT_CPPFLAGS VTKQT VTKQT_LIBS X_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS DATA_EXE_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS LIBSIM_RUNTIME_SER LIBSIM_RUNTIME_PAR CREATE_MILI_LINK CREATE_HDF4_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_FASTBIT_LINK CREATE_CCMIO_LINK VAC_CV_LIBDIR_CREATE_LINKS VAC_CV_LIBDIR_DESTROY_LINKS MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS SUBDIRS ALLSUBDIRS SRC BUILD_DBIO_ONLY NON_DBIO_SERLIBS NON_DBIO_PARLIBS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE VIEWER VIEWERLIB VIEWEROBJ VIEWERLIB_SRC VIEWEREXE_SRC GUI GUILIB GUIOBJ GUIFRAMEWORKS ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS SLIVR_GUI_IMPL SLIVR_GUI_HDR HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB VISITWRAPPER_RPATH CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN XML2MAKEFILE_CXX OS_RULE BUILD_TUVOK TUVOK_LIB TUVOK_INCLUDE BUILD_ZLIB ZLIB_LIB HDF5_INCLUDE HDF5_LIB HDF5_TARGET SILO_INCLUDE SILO_LIB SILO_TARGET EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB_INCLUDE PDB_LIB PDB_TARGET MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR FASTBIT FASTBIT_INCLUDE FASTBIT_LIB FASTBIT_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB QT_LDFLAGS QT_LIBS QT_CORE QT_CORE_LIB QT_DESIGNER QT_DESIGNER_LIB QT_GUI QT_GUI_LIB QT_HELP QT_HELP_LIB QT_CLUCENE QT_CLUCENE_LIB QT_NETWORK QT_NETWORK_LIB QT_OPENGL QT_OPENGL_LIB QT_SCRIPT QT_SCRIPT_LIB QT_SQL QT_SQL_LIB QT_SVG QT_SVG_LIB QT_TEST QT_TEST_LIB QT_XML QT_XML_LIB QT_QUI QT_QUI_LIB QT_CXXFLAGS QT_MOC VTKQT_CPPFLAGS VTKQT VTKQT_LIBS X_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS DATA_EXE_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS LIBSIM_RUNTIME_SER LIBSIM_RUNTIME_PAR CREATE_MILI_LINK CREATE_HDF4_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_FASTBIT_LINK CREATE_CCMIO_LINK VAC_CV_LIBDIR_CREATE_LINKS VAC_CV_LIBDIR_DESTROY_LINKS MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
 ac_subst_files='VARIABLES TARGETS DIRTARGETS LIBTARGETS PARLIBTARGETS SOURCE_DEPENDENCIES'
 
 # Initialize some variables set by options.
@@ -867,12 +867,15 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-dbio-only      build only the components necessary to support
                           database I/O
+  --enable-engine-only    build only the compute engine
+  --enable-server-components-only
+                          build only the server components
+                          (engine,mdserver,vcl)
   --enable-fake-exceptions       do not make use of C++'s exception library
   --enable-ignore-hangups        ignore hangup signals (this avoids RHEL3 bug)
   --enable-parallel       make the parallel version
   --enable-viewer-mesa-stub     use the mesa stub library in the viewer
   --disable-ogl           do not check for the SGI ogl library
-  --disable-mdserver      build without mdserver
   --disable-scripting     build without CLI Python scripting capability
   --enable-visitmodule    build a VisIt Python module
   --disable-annotations   build without annotations
@@ -1602,6 +1605,39 @@ else
 fi
 
 
+
+#
+# Check for engine-only build. Disable clients,etc. Just build the engine.
+#
+# Check whether --enable-engine-only or --disable-engine-only was given.
+if test "${enable_engine_only+set}" = set; then
+  enableval="$enable_engine_only"
+
+fi;
+if test "$enable_engine_only" = yes && test "$enable_dbio_only" = yes; then
+   { { echo "$as_me:$LINENO: error: --enable-dbio-only is not compatible with --enable-engine-only" >&5
+echo "$as_me: error: --enable-dbio-only is not compatible with --enable-engine-only" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+#
+# Check for server-components-only build. Disable clients,etc. Just build the engine,mdserver,vcl.
+#
+# Check whether --enable-server-components-only or --disable-server-components-only was given.
+if test "${enable_server_components_only+set}" = set; then
+  enableval="$enable_server_components_only"
+
+fi;
+if test "$enable_server_components_only" = yes && test "$enable_dbio_only" = yes; then
+   { { echo "$as_me:$LINENO: error: --enable-server-components-only is not compatible with --enable-engine-only" >&5
+echo "$as_me: error: --enable-server-components-only is not compatible with --enable-engine-only" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test "$enable_server_components_only" = yes && test "$enable_engine_only" = yes; then
+   { echo "$as_me:$LINENO: WARNING: --enable-server-components-only overrides --enable-engine-only" >&5
+echo "$as_me: WARNING: --enable-server-components-only overrides --enable-engine-only" >&2;}
+   enable_engine_only=no
+fi
 
 #
 # Check for CMake
@@ -2497,7 +2533,7 @@ else
   UseViewerMesaStub=yes
 fi;
 
-if test "$UseViewerMesaStub" = "yes"; then
+if test "$UseViewerMesaStub" = "yes" && test ! "$enable_engine_only" = yes && test ! "$enable_server_components_only" = yes ; then
    echo "$as_me:$LINENO: result: enabled" >&5
 echo "${ECHO_T}enabled" >&6
    VIEWER_MESA_STUB_CPPFLAGS="-DMESA_STUB"
@@ -3382,20 +3418,6 @@ fi
 
 
 
-#
-# Check for the common directory
-#
-echo "$as_me:$LINENO: checking for common" >&5
-echo $ECHO_N "checking for common... $ECHO_C" >&6
-if test -d common; then
-    echo "$as_me:$LINENO: result: found" >&5
-echo "${ECHO_T}found" >&6
-    COMMON="common"
-else
-    echo "$as_me:$LINENO: result: not found" >&5
-echo "${ECHO_T}not found" >&6
-    COMMON=""
-fi
 
 #
 # Check for the avtprep directory
@@ -3509,21 +3531,9 @@ fi
 
 
 #
-# Check to see if the mdserver was enabled.
+# The mdserver is enabled unless we're doing an engine-only build.
 #
-echo "$as_me:$LINENO: checking if mdserver is enabled" >&5
-echo $ECHO_N "checking if mdserver is enabled... $ECHO_C" >&6
-# Check whether --enable-mdserver or --disable-mdserver was given.
-if test "${enable_mdserver+set}" = set; then
-  enableval="$enable_mdserver"
-  UseMDSERVER="$enable_mdserver"
-else
-  UseMDSERVER=yes
-fi;
-if test "$UseMDSERVER" = "yes"; then
-    echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-
+if test ! "$enable_engine_only" = yes; then
                 echo "$as_me:$LINENO: checking for mdserver" >&5
 echo $ECHO_N "checking for mdserver... $ECHO_C" >&6
     if test -d mdserver; then
@@ -3538,8 +3548,6 @@ echo "${ECHO_T}not found" >&6
         METADATA_SERVER=""
     fi
 else
-    echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
     METADATA_SERVER=""
 fi
 
@@ -3558,7 +3566,7 @@ if test "${enable_scripting+set}" = set; then
 else
   UseScripting=yes
 fi;
-if test "X$UseScripting" = "Xyes"; then
+if test "X$UseScripting" = "Xyes" && test ! "$enable_engine_only" = yes && test ! "$enable_server_components_only" = yes; then
     echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
     enable_scripting=yes
@@ -3602,13 +3610,8 @@ fi
 
 
 
-echo "$as_me:$LINENO: checking for viewer" >&5
-echo $ECHO_N "checking for viewer... $ECHO_C" >&6
-if test -d viewer; then
-    echo "$as_me:$LINENO: result: found" >&5
-echo "${ECHO_T}found" >&6
+if test ! "$enable_engine_only" = yes && test ! "$enable_server_components_only" = yes; then
     VIEWER="viewer"
-    VISWINDOW="VisWindow"
     VIEWERLIB="$""(VDSO)"
     VIEWEROBJ="$""(VOBJ)"
     # The private source can go into the executable on all UNIX versions
@@ -3622,7 +3625,6 @@ echo "${ECHO_T}found" >&6
     fi
 else
     VIEWER=""
-    VISWINDOW=""
     VIEWERLIB=""
     VIEWEROBJ=""
     VIEWERLIB_SRC=""
@@ -3634,12 +3636,7 @@ fi
 
 
 
-
-echo "$as_me:$LINENO: checking for gui" >&5
-echo $ECHO_N "checking for gui... $ECHO_C" >&6
-if test -d gui; then
-    echo "$as_me:$LINENO: result: found" >&5
-echo "${ECHO_T}found" >&6
+if test ! "$enable_engine_only" = yes && test ! "$enable_server_components_only" = yes; then
     GUI="gui"
     GUILIB="$""(GDSO)"
     GUIOBJ="$""(GOBJ)"
@@ -3649,8 +3646,6 @@ echo "${ECHO_T}found" >&6
         GUIFRAMEWORKS=""
     fi
 else
-    echo "$as_me:$LINENO: result: not found" >&5
-echo "${ECHO_T}not found" >&6
     GUI=""
     GUILIB=""
     GUIOBJ=""
@@ -5655,7 +5650,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5658:" \
+echo "$as_me:5653:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6085,6 +6080,14 @@ if test $emptycxxflags = "yes"; then
         CXXFLAGS="-O2 $CXXFLAGS"
     fi
 fi
+
+# Give the option of using a different C++ compiler for xml2makefile since we
+# might want to give the local C++ compiler to generate a local tool, even if
+# we're cross-compiling
+if test -z "$XML2MAKEFILE_CXX"; then
+    XML2MAKEFILE_CXX="$""(CXX)"
+fi
+
 
 # Set the compilation rule to include the OS, so that clearmake won't wink
 # in object files across OSes.
@@ -10163,7 +10166,7 @@ fi # if test ! "$enable_dbio_only" = yes; then
 #
 # Only enable VTKQT if we're building the viewer.
 #
-if test -n "$VIEWER"; then
+if test ! "$enable_dbio_only" = yes && test ! "$enable_engine_only" = yes && test ! "$enable_server_components_only" = yes; then
    VTKQT_CPPFLAGS="-I$""(TOPDIR)/vtkqt"
    VTKQT="vtkqt"
    #
@@ -20123,6 +20126,72 @@ if test "$enable_dbio_only" = yes; then
         avt/Database/Makefile
         avt/Pipeline/Makefile"
 fi
+if test "$enable_engine_only" = yes; then
+    CONVERT_SER=""
+    CONVERT_PAR=""
+    SUBDIRS="$""(SUBDIRS_ENGINE_ONLY)"
+    ALLSUBDIRS="$""(ALLSUBDIRS_ENGINE_ONLY)"
+    GUI_FILES=""
+    HELP_FILES=""
+    WINUTIL_FILES=""
+    VIEWER_FILES=""
+    MDSERVER_FILES=""
+    LAUNCHER_FILES=""
+    VTKQT_FILES=""
+    VISITPY_FILES=""
+    CQSCORE_FILES=""
+    JAVA_FILES=""
+    TOOLS_FILES=""
+    COMPONENT_FILES="avt/Makefile
+                 avt/DBAtts/Makefile
+                 avt/DDF/Makefile
+                 avt/Database/Makefile
+                 avt/Expressions/Makefile
+                 avt/FileWriter/Makefile
+                 avt/Filters/Makefile
+                 avt/IVP/Makefile
+                 avt/Math/Makefile
+                 avt/MIR/Makefile
+                 avt/Pipeline/Makefile
+                 avt/Plotter/Makefile
+                 avt/Preprocessor/Makefile
+                 avt/Queries/Makefile
+                 avt/Shapelets/Makefile
+                 avt/View/Makefile
+                 avt/VisWindow/Makefile"
+fi
+if test "$enable_server_components_only" = yes; then
+    CONVERT_SER=""
+    CONVERT_PAR=""
+    SUBDIRS="$""(SUBDIRS_SERVER_COMPONENTS_ONLY)"
+    ALLSUBDIRS="$""(ALLSUBDIRS_SERVER_COMPONENTS_ONLY)"
+    GUI_FILES=""
+    HELP_FILES=""
+    WINUTIL_FILES=""
+    VIEWER_FILES=""
+    VTKQT_FILES=""
+    VISITPY_FILES=""
+    CQSCORE_FILES=""
+    JAVA_FILES=""
+    TOOLS_FILES=""
+    COMPONENT_FILES="avt/Makefile
+                 avt/DBAtts/Makefile
+                 avt/DDF/Makefile
+                 avt/Database/Makefile
+                 avt/Expressions/Makefile
+                 avt/FileWriter/Makefile
+                 avt/Filters/Makefile
+                 avt/IVP/Makefile
+                 avt/Math/Makefile
+                 avt/MIR/Makefile
+                 avt/Pipeline/Makefile
+                 avt/Plotter/Makefile
+                 avt/Preprocessor/Makefile
+                 avt/Queries/Makefile
+                 avt/Shapelets/Makefile
+                 avt/View/Makefile
+                 avt/VisWindow/Makefile"
+fi
 
                                                                                                                                                                                                                             ac_config_files="$ac_config_files $STANDARD_FILES $GUI_FILES $HELP_FILES $WINUTIL_FILES $VIEWER_FILES $ENGINE_FILES $MDSERVER_FILES $LAUNCHER_FILES $COMMON_FILES $TOOLS_FILES $VISIT_VTK_FILES $VTKQT_FILES $COMPONENT_FILES $PLOT_FILES $OPERATOR_FILES $DATABASE_FILES $DATA_FILES $VISITPY_FILES $SIMULATION_PROTOTYPE_FILES $CQSCORE_FILES $THIRD_PARTY_BUILTIN_FILES $JAVA_FILES"
           ac_config_commands="$ac_config_commands default"
@@ -20822,7 +20891,6 @@ s,@SCRIPTINGLIB@,$SCRIPTINGLIB,;t t
 s,@SCRIPTINGOBJ@,$SCRIPTINGOBJ,;t t
 s,@PY_BUILD_VISITMODULE@,$PY_BUILD_VISITMODULE,;t t
 s,@VIEWER@,$VIEWER,;t t
-s,@VISWINDOW@,$VISWINDOW,;t t
 s,@VIEWERLIB@,$VIEWERLIB,;t t
 s,@VIEWEROBJ@,$VIEWEROBJ,;t t
 s,@VIEWERLIB_SRC@,$VIEWERLIB_SRC,;t t
@@ -20863,6 +20931,7 @@ s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@MAKEDEPEND@,$MAKEDEPEND,;t t
 s,@BUILD_FORTRAN@,$BUILD_FORTRAN,;t t
+s,@XML2MAKEFILE_CXX@,$XML2MAKEFILE_CXX,;t t
 s,@OS_RULE@,$OS_RULE,;t t
 s,@BUILD_TUVOK@,$BUILD_TUVOK,;t t
 s,@TUVOK_LIB@,$TUVOK_LIB,;t t

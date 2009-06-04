@@ -101,6 +101,9 @@
 #    Eric Brugger, Fri May  1 13:02:00 PDT 2009
 #    Added mcurvit directory.
 #
+#    Brad Whitlock, Wed Jun 3 15:47:33 PST 2009
+#    I added an engine-only build option.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -109,16 +112,19 @@
 
 MILI=makemili
 
-OPTIONAL=avtprep classwriter doxygenate embedviewer windowmaker \
+OPTIONAL=avtprep classwriter doxygenate windowmaker \
 	 escan mpeg_encode clidriver DataManualExamples clipeditor mcurvit
 
 SILO_TARGET=curv3dprep
 
 SUBDIRS_DBIO_ONLY=convert
+SUBDIRS_ENGINE_ONLY=xml
+SUBDIRS_SERVER_COMPONENTS_ONLY=xml
 SUBDIRS_STD=imagetools annotations convert @SILO_TARGET@ embedviewer @MILI@ mpeg2encode \
         protocol surfcomp writer xml xmledit
 
 ALLSUBDIRS_DBIO_ONLY=$(SUBDIRS_DBIO_ONLY)
+ALLSUBDIRS_ENGINE_ONLY=$(SUBDIRS_ENGINE_ONLY)
 ALLSUBDIRS_STD=$(SUBDIRS_STD) $(MILI) $(OPTIONAL)
 
 SUBDIRS=@SUBDIRS@
