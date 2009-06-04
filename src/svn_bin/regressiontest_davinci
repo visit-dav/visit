@@ -75,6 +75,9 @@
 #
 #    Mark C. Miller, Wed Feb  4 07:50:54 PST 2009
 #    Added 'killed' to grep filter on summary file to produce summary email.
+#
+#    Mark C. Miller, Thu Jun  4 12:28:52 PDT 2009
+#    Changed refs to 'tif' files to 'png'
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -463,12 +466,12 @@ for m in $modes; do
                         continue
                     fi
                     baseNameTxt=`basename $baseFile .txt`
-                    baseNameTif=`basename $baseFile .tif`
+                    baseNamePng=`basename $baseFile .png`
                     baseName=""
                     if test -f ./baseline/$theCat/$thePyFileBase/$baseNameTxt.txt; then
                         baseName=$baseNameTxt
-                    elif test -f ./baseline/$theCat/$thePyFileBase/$baseNameTif.tif; then
-                        baseName=$baseNameTif
+                    elif test -f ./baseline/$theCat/$thePyFileBase/$baseNamePng.png; then
+                        baseName=$baseNamePng
                         cp html/[cdb]_${baseName}.jpg html_${dateTag}/. 1>/dev/null 2>&1
                         cp html/[cdb]_${baseName}_thumb.jpg html_${dateTag}/. 1>/dev/null 2>&1
                     fi
