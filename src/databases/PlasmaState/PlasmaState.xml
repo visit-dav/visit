@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Plugin name="PlasmaState" type="database" label="SAS" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(NETCDF_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(NETCDF_LIB)
+    </LIBS>
+    <Extensions>
+      nc
+      cdf
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
