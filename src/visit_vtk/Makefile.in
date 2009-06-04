@@ -45,6 +45,10 @@
 #
 #   Mark C. Miller, Wed Mar  4 17:57:55 PST 2009
 #   Enabled dbio-only build.
+#
+#   Brad Whitlock, Thu Jun 4 08:50:02 PDT 2009
+#   I added SUBDIRS_ENGINE_ONLY.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -52,6 +56,8 @@
 @DIRTARGETS@
 
 SUBDIRS_DBIO_ONLY=lightweight full
+SUBDIRS_ENGINE_ONLY=lightweight full rendering parallel
+SUBDIRS_SERVER_COMPONENTS_ONLY=lightweight full rendering parallel
 SUBDIRS_STD=lightweight full rendering parallel
 SUBDIRS=@SUBDIRS@
 

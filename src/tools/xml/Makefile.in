@@ -67,6 +67,10 @@
 #    Brad Whitlock, Wed May  7 15:57:51 PDT 2008
 #    Qt 4.
 #
+#    Brad Whitlock, Thu Jun 4 08:51:01 PDT 2009
+#    I made it possible to compile xml2makefile with a different compiler
+#    in case we're cross-compiling.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -139,7 +143,7 @@ $(PROGRAM4) xml2info: $(SRC) GenerateInfo.h $(DEPENDENT_HEADERS)
 	$(CXX) main4.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES4)
 
 $(PROGRAM5) xml2makefile: $(SRC) GenerateMakefile.h $(DEPENDENT_HEADERS)
-	$(CXX) main5.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES5)
+	@XML2MAKEFILE_CXX@ main5.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES5)
 
 $(PROGRAM6) xml2avt: $(SRC) GenerateAVT.h $(DEPENDENT_HEADERS)
 	$(CXX) main6.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES6)
