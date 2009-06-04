@@ -407,7 +407,6 @@ avtPlasmaStateFileFormat::MonitorPopulateMD(avtDatabaseMetaData *md, int timeSta
 
         avtCurveMetaData *crv = new avtCurveMetaData();
         crv->name = vars[i].nm;
-        crv->centering = vars[i].centering;
         crv->xLabel = "";
         crv->yLabel = "";
         crv->xUnits = "";
