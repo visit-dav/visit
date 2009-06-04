@@ -78,6 +78,10 @@
 #
 #    Mark C. Miller, Thu Jun  4 12:28:52 PDT 2009
 #    Changed refs to 'tif' files to 'png'
+#
+#    Mark C. Miller, Thu Jun  4 13:00:00 PDT 2009
+#    Temporarily disable copying only failed results to public html dir.
+#    Instead, copy everything. 
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -486,7 +490,12 @@ for m in $modes; do
         mkdir /project/projectdirs/visit/www/${dateTag} 1>/dev/null 2>&1
         chgrp visit /project/projectdirs/visit/www/${dateTag}
         chmod g+rwX,o+rX /project/projectdirs/visit/www/${dateTag}
-        cp -r html_$dateTag /project/projectdirs/visit/www/${dateTag}/${theMode}
+#
+# Temporarily disable copying only failed results.
+# Instead, copy everything.
+#        cp -r html_$dateTag /project/projectdirs/visit/www/${dateTag}/${theMode}
+#
+        cp -r html /project/projectdirs/visit/www/${dateTag}/${theMode}
         chgrp -R visit /project/projectdirs/visit/www/${dateTag}/${theMode}
         chmod -R g+rwX,o+rX /project/projectdirs/visit/www/${dateTag}/${theMode}
         rm -rf html_$dateTag
