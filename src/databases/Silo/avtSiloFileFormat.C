@@ -1244,6 +1244,8 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Mon May 25 11:07:17 PDT 2009
 //    Add support for Silo releases before 4.6.3.
 //
+//    Mark C. Miller, Thu Jun  4 20:53:32 PDT 2009
+//    Added missing hideFromGUI support for several object types.
 // ****************************************************************************
 
 void
@@ -1910,6 +1912,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         mmd->validVariable = valid_var;
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
+        mmd->hideFromGUI = qm->guihide;
         md->Add(mmd);
 
         delete [] name_w_dir;
@@ -1992,6 +1995,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         mmd->groupPieceName = "block";
         mmd->disjointElements = hasDisjointElements;
         mmd->validVariable = valid_var;
+        mmd->hideFromGUI = um->guihide;
         md->Add(mmd);
 
         delete [] name_w_dir;
@@ -2018,6 +2022,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char *name_w_dir = GenerateName(dirname, ptmesh_names[i], topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir, 1, 0,pm->origin,
                                               0, pm->ndims, 0, AVT_POINT_MESH); mmd->groupTitle = "blocks";
+        mmd->hideFromGUI = pm->guihide;
         mmd->groupPieceName = "block";
         mmd->validVariable = valid_var;
         if (pm->units[0] != NULL)
@@ -2140,6 +2145,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         mmd->blockTitle = "regions";
         mmd->validVariable = valid_var;
+        mmd->hideFromGUI = csgm->guihide;
         if (csgm->zones->zonenames)
         {
             vector<string> znames;
@@ -2236,7 +2242,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
         string  varUnits;
-        bool    guiHide = false;
 
         if (haveAddedNodelistEnumerations.find(meshname) ==
             haveAddedNodelistEnumerations.end())
@@ -2261,7 +2266,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                               : AVT_NODECENT);
                     nvals = uv->nvals;
                     treatAsASCII = (uv->ascii_labels);
-                    guiHide = uv->guihide;
                     if(uv->units != 0)
                         varUnits = string(uv->units);
                     DBFreeUcdvar(uv);
@@ -2280,7 +2284,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                     : AVT_ZONECENT);
                     nvals = qv->nvals;
                     treatAsASCII = (qv->ascii_labels);
-                    guiHide = qv->guihide;
                     if(qv->units != 0)
                         varUnits = string(qv->units);
                     DBFreeQuadvar(qv);
@@ -2298,7 +2301,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     }
                     nvals = pv->nvals;
                     treatAsASCII = (pv->ascii_labels);
-                    guiHide = pv->guihide;
                     if(pv->units != 0)
                         varUnits = string(pv->units);
                     DBFreeMeshvar(pv);
@@ -2319,7 +2321,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     }
                     nvals = csgv->nvals;
                     treatAsASCII = (csgv->ascii_labels);
-                    guiHide = csgv->guihide;
                     if(csgv->units != 0)
                         varUnits = string(csgv->units);
                     DBFreeCsgvar(csgv);
@@ -2339,7 +2340,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                        meshname, centering);
             smd->validVariable = valid_var;
             smd->treatAsASCII = treatAsASCII;
-            smd->hideFromGUI = guiHide;
+            smd->hideFromGUI = mv->guihide;
             if(varUnits != "")
             {
                 smd->hasUnits = true;
@@ -2360,7 +2361,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                              meshname, centering, nvals);
             vmd->validVariable = valid_var;
-            vmd->hideFromGUI = guiHide;
+            vmd->hideFromGUI = mv->guihide;
             if(varUnits != "")
             {
                 vmd->hasUnits = true;
@@ -2690,6 +2691,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
                                           mat->nmat, matnames);
         mmd->validVariable = valid_var;
+        //mmd->hideFromGUI = mat->guihide;
         md->Add(mmd);
 
         delete [] name_w_dir;
@@ -2867,6 +2869,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                           mat ? mat->nmat : 0, matnames);
 
         mmd->validVariable = valid_var;
+        //mmd->hideFromGUI = mm->guihide;
         md->Add(mmd);
 
         delete [] name_w_dir;
@@ -2927,6 +2930,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         avtSpeciesMetaData *smd = new avtSpeciesMetaData(name_w_dir,
                                   meshname_w_dir, spec->matname, spec->nmat,
                                   numSpecies, speciesNames);
+        //smd->hideFromGUI = spec->guihide;
         md->Add(smd);
 
         delete [] name_w_dir;
@@ -3041,6 +3045,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         else
             smd = new avtSpeciesMetaData(name_w_dir, "", "", 0,
                                          numSpecies, speciesNames);
+        //smd->hideFromGUI = ms->guihide;
         smd->validVariable = valid_var;
         md->Add(smd);
 
@@ -4534,6 +4539,7 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
     string xLabel, yLabel, zLabel;
     double   extents[6] = {DBL_MAX, -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, -DBL_MAX};
     double  *extents_to_use = NULL;
+    bool hideFromGUI;
 
     long mask = DBGetDataReadMask();
     DBSetDataReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
@@ -4599,6 +4605,8 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
                 yLabel = csgm->labels[1];
             if (csgm->labels[2] != NULL)
                 zLabel = csgm->labels[2];
+
+            hideFromGUI = csgm->guihide;
         }
 
         DBFreeCsgmesh(csgm);
@@ -4625,6 +4633,7 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
         mmd->xLabel = xLabel;
         mmd->yLabel = yLabel;
         mmd->zLabel = zLabel;
+        mmd->hideFromGUI = hideFromGUI;
         //mmd->loadBalanceScheme = LOAD_BALANCE_DBPLUGIN_DYNAMIC;
 
         if (mm->nblocks > 1)
@@ -9805,6 +9814,8 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    Tom Fogal, Mon May 25 18:53:30 MDT 2009
 //    Fixed some compilation errors && simplified some ifdef magic.
 //
+//    Mark C. Miller, Thu Jun  4 20:43:29 PDT 2009
+//    Fixed a slew of syntax errors preventing compilation.
 // ****************************************************************************
 
 avtMaterial *
@@ -9834,24 +9845,30 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
     char **matnames = NULL;
     char *buffer = NULL;
     bool haveMatnames = silomat->matnames;
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
     if (mm&&mm->material_names)
         haveMatnames = true;
+#endif
 #endif
     if (haveMatnames)
     {
         int nmat = silomat->nmat;
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
         if (mm&&mm->nmatnos>0) 
             nmat = mm->nmatnos;
+#endif
 #endif
         int max_dlen = 0;
         for (int i = 0 ; i < nmat ; i++)
         {
             int matno = silomat->matnos[i];
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
-            if (mm && mm->matnos)
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
+            if (mm&&mm->matnos)
                 matno = mm->matnos[i];
+#endif
 #endif
             int dlen = int(log10(float(matno+1))) + 1;
             if(dlen>max_dlen)
@@ -9866,11 +9883,13 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
             matnames[i] = buffer + (256+max_dlen)*i;
             int matno = silomat->matnos[i];
             const char *matname = silomat->matnames[i];
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
             if (mm&&mm->matnos)
                 matno = mm->matnos[i];
             if (mm&&mm->material_names)
                 matname = mm->material_names[i];
+#endif
 #endif
             sprintf(matnames[i], "%d %s", matno, matname);
         }
@@ -9915,11 +9934,13 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
 
     int nummats = silomat->nmat;
     int *matnos = silomat->matnos;
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
     if (mm&&mm->nmatnos>0)
         nummats = mm->nmatnos;
     if (mm&&mm->matnos)
         matnos = mm->matnos;
+#endif
 #endif
     avtMaterial *mat = new avtMaterial(nummats, 
                                        matnos,
