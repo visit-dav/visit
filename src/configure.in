@@ -1110,7 +1110,7 @@ if test "$enable_dbio_only" = yes; then
     NON_DBIO_PARLIBS=""
 else
     NON_DBIO_SERLIBS="$""(NON_DBIO_SERLIBS)"
-    NON_DBIO_PARLIBS="$""(NON_DBIO_SERLIBS)"
+    NON_DBIO_PARLIBS="$""(NON_DBIO_PARLIBS)"
 fi
 AC_SUBST(NON_DBIO_SERLIBS)
 AC_SUBST(NON_DBIO_PARLIBS)
@@ -1305,11 +1305,17 @@ AC_SUBST(LIBCOGNOMEN, $ax_lib_cog)
 # Set up some Mesa variables.
 #
 AC_MSG_CHECKING(for Mesa)
+MESA_LIBGL="MesaGL"
 if test -n "$MESA"; then
    AC_MSG_RESULT(found)
    MESA_DIR=$MESA
    MESA_INCLUDE="-I$""(TOPDIR)/include/mesa"
-   MESA_LIBS="-lOSMesa -lMesaGL"
+   if test -e $MESA/lib/libGL.so ; then
+       MESA_LIBS="-lOSMesa -lGL"
+       MESA_LIBGL="GL"
+   else
+       MESA_LIBS="-lOSMesa -lMesaGL"
+   fi
 else
    AC_MSG_RESULT(not found)
    MESA_DIR=""
@@ -1319,6 +1325,7 @@ fi
 AC_SUBST(MESA_DIR)
 AC_SUBST(MESA_INCLUDE)
 AC_SUBST(MESA_LIBS)
+AC_SUBST(MESA_LIBGL)
 
 #
 # Check to see if we should use the mesa stub library in the viewer.
@@ -2131,6 +2138,11 @@ case $withval in
                 ZLIB_LIB="-lz"
                 AC_DEFINE(HAVE_ZLIB_H,1)
             fi
+        else
+            # have_zlib_h is empty so use the builtin version.
+            BUILD_ZLIB=zlib
+            ZLIB_LIB="-lz"
+            AC_DEFINE(HAVE_ZLIB_H,1)
         fi
         ;;
     builtin)
@@ -3464,7 +3476,7 @@ if test "$UNAME" = "Linux"; then
 else
     LDFLAGS="-L$MESA/lib $LDFLAGS"
 fi
-LIBS="-lOSMesa -lMesaGL $GL_LIBS $X_LIBS $PTHREAD_LIB"
+LIBS="$MESA_LIBS $GL_LIBS $X_LIBS $PTHREAD_LIB"
 OSMESA_SIZE_LIMIT="4096"
 AC_TRY_RUN([
         #include <fstream>
