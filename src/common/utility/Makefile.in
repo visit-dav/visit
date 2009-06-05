@@ -134,7 +134,7 @@ $(tmpbin)/MRUCache_test: MRUCache_test.o $(LIBSHARED)
 	$(CXX) -o $@ $(LDFLAGS) MRUCache_test.o
 
 $(tmpbin)/StringHelpers_test: StringHelpers_test.o $(LIBSHARED)
-	$(CXX) -o $@ $(LDFLAGS) StringHelpers_test.o -lutility
+	$(CXX) $(INCLUDE) -o $@ StringHelpers_test.o  $(LDFLAGS) @EXE_LDFLAGS@ -lutility
 
 ##
 ## Automatic dependency stuff
