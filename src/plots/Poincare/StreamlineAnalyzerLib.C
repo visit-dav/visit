@@ -2690,7 +2690,7 @@ smoothCurve( vector< vector < Point > > &bins,
       {
         unsigned int nodes = bins[i].size();
 
-        vector<pair< Point, unsigned int >> newPts(add*nodes);
+        vector<pair< Point, unsigned int > > newPts(add*nodes);
 
         for( unsigned int j=0; j<add*nodes; j++ )
           newPts[j] = pair< Point, unsigned int > (Point(0,0,0), 0 );
@@ -3003,7 +3003,7 @@ mergeOverlap( vector< vector < Point > > &bins,
     }
   } else {
 
-    vector<vector < Point >> tmp_bins(toroidalWinding);
+    vector<vector < Point > > tmp_bins(toroidalWinding);
 
     // This gives the minimal number of nodes for each group.
     surfaceOverlapCheck( bins, toroidalWinding, skip, nnodes );
