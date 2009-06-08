@@ -61,9 +61,11 @@
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <FileFunctions.h>
+#include <snprintf.h>
 
 #define PATRAN_PACKET_NODE_DATA        1
 #define PATRAN_PACKET_ELEMENT_DATA     2
+#define PATRAN_PACKET_CELL_DATA        4
 #define PATRAN_PACKET_NAMED_COMPONENTS 21
 #define PATRAN_PACKET_TITLE            25
 #define PATRAN_PACKET_SUMMARY          26
@@ -71,6 +73,7 @@
 #define SHORT_FIELD_WIDTH              8
 #define LONG_FIELD_WIDTH               16
 
+#define MAX_CELL_PROPERTIES            5
 
 //#define DEBUG_PRINT_HEADER
 //#define DEBUG_PRINT_CELL_VERTS
@@ -107,6 +110,8 @@ using     std::string;
 //  Creation:   Thu Jul 28 13:53:21 PST 2005
 //
 //  Modifications:
+//    Brad Whitlock, Mon Jun  8 10:01:53 PDT 2009
+//    I added properties.
 //
 // ****************************************************************************
 
@@ -118,6 +123,8 @@ avtPATRANFileFormat::avtPATRANFileFormat(const char *filename)
     elementIds = 0;
     componentList = 0;
     componentListSize = -1;
+    for(int i = 0; i < MAX_CELL_PROPERTIES; ++i)
+        properties[i] = 0;
 
 #ifdef MDSERVER
     debug4 << "avtPATRANFileFormat::avtPATRANFileFormat\n";
@@ -162,6 +169,10 @@ avtPATRANFileFormat::~avtPATRANFileFormat()
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Jul 28 13:53:21 PST 2005
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jun  8 10:02:42 PDT 2009
+//    I added properties.
+//
 // ****************************************************************************
 
 void
@@ -191,6 +202,15 @@ avtPATRANFileFormat::FreeUpResources(void)
         delete [] componentList;
         componentList = 0;
         componentListSize = 0;
+    }
+
+    for(int i = 0; i < MAX_CELL_PROPERTIES; ++i)
+    {
+        if(properties[i] != 0)
+        {
+            properties[i]->Delete();
+            properties[i] = 0;
+        }
     }
 
     title = "";
@@ -521,6 +541,23 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
 
     vtkFloatArray *emats = vtkFloatArray::New();
     vtkFloatArray *cids = vtkFloatArray::New();
+
+    bool have_cell_data = false;
+    for(int i = 0; i < MAX_CELL_PROPERTIES; ++i)
+    {
+        if(properties[i] != 0)
+            properties[i]->Delete();
+
+        char tmpname[100];
+        SNPRINTF(tmpname, 100, "property%d", i+1);
+        properties[i] = vtkFloatArray::New();
+        properties[i]->SetName(tmpname);
+#ifndef MDSERVER
+        properties[i]->Allocate(nCells);
+        memset(properties[i]->GetVoidPointer(0), 0, sizeof(float)*nCells);
+#endif
+    }
+
 #ifndef MDSERVER
     // Allocate memory for the componentList, elementMats, elementIds.
     emats->SetNumberOfComponents(1);
@@ -682,6 +719,22 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
                 }
 #endif
             }
+            else if(IT == PATRAN_PACKET_CELL_DATA)
+            {
+                have_cell_data = true;
+#ifndef MDSERVER
+                char *valstart = line + (MAX_CELL_PROPERTIES-1) * LONG_FIELD_WIDTH;
+                char *valend = valstart + LONG_FIELD_WIDTH;
+                for(int col = MAX_CELL_PROPERTIES-1; col >= 0; col--)
+                {
+                    *valend = '\0';
+                    double tmp = atof(valstart);
+                    valstart -= LONG_FIELD_WIDTH;
+                    valend -= LONG_FIELD_WIDTH;
+                    properties[col]->InsertNextTuple(&tmp);
+                }
+#endif
+            }
             else if(IT == PATRAN_PACKET_TITLE)
             {
                 title = line;
@@ -735,6 +788,19 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
         cids->Delete();
     }
 
+    // If we did not find any cell data, delete them.
+    if(!have_cell_data)
+    {
+        for(int i = 0; i < MAX_CELL_PROPERTIES; ++i)
+        {
+            if(properties[i] != 0)
+            {
+                properties[i]->Delete();
+                properties[i] = 0;
+            }
+        }
+    }
+
     visitTimer->StopTimer(total, "Loading PATRAN file");
 
     return recognized;
@@ -750,6 +816,10 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Jul 28 13:53:21 PST 2005
+//
+//  Modifications:
+//    Brad Whitlock, Mon Jun  8 10:09:05 PDT 2009
+//    I added properties, which are cell data.
 //
 // ****************************************************************************
 
@@ -778,6 +848,16 @@ avtPATRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtMaterialMetaData *mmd = new avtMaterialMetaData("named_components",
             "mesh", componentNames.size(), componentNames);
         md->Add(mmd);
+    }
+
+    // Add cell data.
+    for(int i = 0; i < MAX_CELL_PROPERTIES; ++i)
+    {
+        if(properties[i] != 0)
+        {
+            md->Add(new avtScalarMetaData(properties[i]->GetName(), "mesh",
+                                          AVT_ZONECENT));
+        }
     }
 }
 
@@ -838,6 +918,10 @@ avtPATRANFileFormat::GetMesh(const char *meshname)
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Jul 28 13:53:21 PST 2005
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jun  8 10:12:06 PDT 2009
+//    Return the properties arrays if they are requested.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -858,6 +942,19 @@ avtPATRANFileFormat::GetVar(const char *varname)
         vtkFloatArray *f = vtkFloatArray::New();
         f->DeepCopy(elementIds);
         arr = f;
+    }
+    else
+    {
+        for(int i = 0; i < MAX_CELL_PROPERTIES; ++i)
+        {
+            if(properties[i] != 0 && 
+               strcmp(properties[i]->GetName(), varname) == 0)
+            {
+                properties[i]->Register(NULL);
+                arr = properties[i];
+                break;
+            }
+        }
     }
 
     return arr;

@@ -3929,10 +3929,11 @@ function build_silo
        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
        WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
-       SILO_LINK_OPT="-L$HDF5LIB -lhdf5 -lz"
+       SILO_LINK_OPT="-L$HDF5LIB -lhdf5"
     else
        WITHHDF5ARG="--without-hdf5"
     fi
+    SILO_LINK_OPT="$SILO_LINK_OPT -lz"
     if [[ "$DO_SZIP" == "yes" ]] ; then
        export SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
        WITHSZIPARG="--with-szlib=$SZIPDIR"
