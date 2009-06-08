@@ -1,4 +1,4 @@
-#                         Copyright (c) 2000 - 2008
+#                         Copyright (c) 2000 - 2009
 #                  Lawrence Livermore National Security, LLC
 #            Produced at the Lawrence Livermore National Laboratory
 #                              LLNL-CODE-400124
@@ -222,6 +222,9 @@
 #    Jeremy Meredith, Tue Mar 24 16:41:59 EDT 2009
 #    Added DeformSphereGlyph
 #
+#    Eric Brugger, Mon Jun  8 14:51:25 PDT 2009
+#    Added the TriangulateRegularPoints operator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -239,7 +242,8 @@ REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \
 	 Edge Elevate ExternalSurface \
          IndexSelect InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
          PDF PersistentParticles Project Reflect Replicate Resample Revolve Slice Smooth \
-         SphereSlice ThreeSlice Threshold Transform Tube ZoneDump
+         SphereSlice ThreeSlice Threshold Transform TriangulateRegPoints \
+         Tube ZoneDump
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Lineout Slice Threshold
