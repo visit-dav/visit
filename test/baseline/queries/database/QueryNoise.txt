@@ -13,12 +13,12 @@ The actual number of zones is 117649.
 
 For noise.silo(hgslice)
 Total cross sectional area (XSA): 400
-Total rotated (x=0) volume (VOL): -6.85453e-06
+Total rotated (x=0) volume (VOL): 7.64728e-05
 
 Distance to boundary WRT dA / XSA = 5.56917
-Distance to boundary WRT dA / VOL = 2227.67
+Distance to boundary WRT dA / VOL = 2.91302e+07
 Distance to boundary WRT dV / XSA = -100.807
-Distance to boundary WRT dV / VOL = -40322.9
+Distance to boundary WRT dV / VOL = -5.27285e+08
 Distance to origin   WRT dA       = 3060.28
 
 NOTE -- additional calculations are available if
@@ -38,19 +38,19 @@ The actual number of zones is 2401.
 
 MinMax Actual:
 airVfGradient -- Min = 0.004 (node 96814 at coord <-4.4898, 4.4898, 5.30612>)
-airVfGradient -- Max = 0.734716 (node 44289 at coord <5.71429, 4.08163, -3.26531>)
+airVfGradient -- Max = 0.752533 (node 44289 at coord <5.71429, 4.08163, -3.26531>)
 
 
 MinMax Original:
 airVfGradient -- Min = 0.004 (zone 18341 at coord <-3.67347, 2.85714, -6.93878>)
-airVfGradient -- Max = 0.781298 (zone 13361 at coord <3.67347, 1.22449, -7.7551>)
+airVfGradient -- Max = 0.787188 (zone 13361 at coord <3.67347, 1.22449, -7.7551>)
 
 MinMax Actual:
-grad -- Min = 0.0167807 (node 69799 at coord <10, 8.36735, 1.02041>)
-grad -- Max = 0.710979 (node 88892 at coord <7.14286, 1.02041, 4.28571>)
+grad -- Min = 0.0167808 (node 69799 at coord <10, 8.36735, 1.02041>)
+grad -- Max = 0.710979 (node 88892 at coord <7.14286, 1.02041, 4.28572>)
 
 
 MinMax Original:
-grad -- Min = 0.00145272 (node 69914 at coord <-4.28571, 9.59184, 1.02041>)
+grad -- Min = 0.00145262 (node 69914 at coord <-4.28571, 9.59184, 1.02041>)
 grad -- Max = 1.23754 (node 98491 at coord <6.73469, -2.2449, 5.91837>)
 

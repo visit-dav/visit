@@ -1,1 +1,1 @@
-The skewness of the distribution is -2.29537e-09.
+The skewness of the distribution is -2.29557e-09.

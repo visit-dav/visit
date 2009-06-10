@@ -52,7 +52,7 @@ d:  <zonal>
 E:  rect3d.silo  timestep 0
 quadmesh3d 
 Point: (in transformed space) 
-       <0.49485, 0.656489, 0.162047>
+       <0.49485, 0.656489, 0.162046>
 Zone:  23384
 Incident Nodes:  24752  24753  24783  24784  26023  26024  26054  26055  
 d:  <zonal> = 0.15144
