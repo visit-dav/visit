@@ -317,6 +317,8 @@
 #   Cyrus Harrison, Tue May 12 13:04:19 PDT 2009
 #   Added mmadj_rect_2d test program.
 #
+#   Mark C. Miller, Wed Jun 10 08:39:39 PDT 2009
+#   Fixed clean target. Removed dune references
 ##############################################################################
 
 ##
@@ -358,7 +360,7 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
        boxlib_test_data exodus_test_data tecplot_test_data \
        KullLite_test_data NASTRAN_test_data ANSYS_test_data PATRAN_test_data \
        visus_test_data netcdf_test_data CGNS_test_data GDAL_test_data \
-       vtk_xml_test_data dune_test_data overlink_test_data \
+       vtk_xml_test_data overlink_test_data \
        vtk_cylindrical_test_data ProteinDataBank_test_data \
        Fluent_test_data OpenFOAM_test_data EnSight_test_data \
        FITS_test_data GGCM_test_data Chombo_test_data Enzo_test_data \
@@ -497,11 +499,12 @@ bin_data_clean:
 
 gen_data_clean:
 	$(RM) c0*.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra multi_ucd3d*
-	$(RM) curve.visit wave*.visit *.bov multi00*.values *_indices*.values
+	$(RM) curve.visit wave*.visit *.bov multi00*.values *_indices*.values multi_ucd.*.vtk.gz
 	$(RM) wave_1file* wave_tv_1file*
 	$(RM) [a-z]*.xmf mesh.h5
-	$(RM) -rf multidir_data
+	$(RM) -rf multidir_test_data
 	$(RM) -rf mmadj_rect_2d_data mmadj_rect_2d_root.silo
+        $(RM) -f streak_*.pdb streak_*.pdb.streak manhattan.imgvol multi_ucd.visit
     
 src_clean:
 	$(RM) $(OBJ) $(EZ_TARGET) @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET)
