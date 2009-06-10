@@ -29,6 +29,9 @@
 #    Paul Navratil, Wednesday April 22 14:12:00 CST 2009
 #    Added case for userid "pnav".
 #
+#    Hank Childs, Wed Jun 10 09:59:48 PDT 2009
+#    Switch myself to my gmail account.
+#
 # *****************************************************************************
 
 
@@ -43,7 +46,7 @@ case $1 in
         ;;
     # Hank Childs, Lawrence Livermore National Laboratory
     "hrchilds")
-        emaddr=childs3@llnl.gov
+        emaddr=hankchilds@gmail.com
         ;;
     # Mark Miller, Lawrence Livermore National Laboratory
     "miller86")
