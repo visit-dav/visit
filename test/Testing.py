@@ -1099,6 +1099,12 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 #   Mark C. Miller, Thu Mar  6 09:39:43 PST 2008
 #   Made logic for relative diff clearer. Switched to use min operation in
 #   denominator and switch order of min/abs there.
+#
+#   Mark C. Miller, Tue Jun  9 09:23:30 PDT 2009
+#   Removed refs to old Clearcase VOB paths. Fixed setting of 'inStart' for
+#   string replacement to use inWords[w] for search rather than inWordT
+#   which is potentially altered due to translate call and may not be found
+#   in tmpText.
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
@@ -1117,12 +1123,7 @@ def FilterTestText(inText, baseText):
     #
     if numdifftol != 0.0:
 
-	# this is to support using VisIt tests to test Silo updates
-        if silo == 1:
-            tmpText = string.replace(inText, "/view/visit_VOBowner_testsilo", "")      
-	else:
-            tmpText = string.replace(inText, "/view/visit_VOBowner_testopt", "")      
-
+        tmpText = inText
 
 	#
 	# Break the strings into words. Pass over words looking for words that
@@ -1145,7 +1146,7 @@ def FilterTestText(inText, baseText):
 		   baseWordT.count(".") == 2 and baseWordT.endswith("."):
 		    inWordT = inWordT.rstrip(".")
 		    baseWordT = baseWordT.rstrip(".")
-                inStart = string.find(tmpText, inWordT, inStart)
+                inStart = string.find(tmpText, inWords[w], inStart)
 
 		#
 		# Attempt to convert this word to a number. Exception indicates
@@ -1191,10 +1192,8 @@ def FilterTestText(inText, baseText):
         return tmpText
 
     else:
-        if silo == 1:
-            return string.replace(inText, "/view/visit_VOBowner_testsilo", "")
-	else:
-            return string.replace(inText, "/view/visit_VOBowner_test", "")
+
+        return inText
 
 
 # ----------------------------------------------------------------------------

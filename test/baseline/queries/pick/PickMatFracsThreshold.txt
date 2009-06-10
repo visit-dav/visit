@@ -30,7 +30,7 @@ vel:  <nodal>
 
 B:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.573804, 0.542346, 0.533333>
+Point: <0.573804, 0.542347, 0.533333>
 Zone:  18647 domain <17, 21, 15>
 Incident Nodes:  
     19733   domain <17, 21, 15>
