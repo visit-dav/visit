@@ -16,6 +16,9 @@
 #    Sean Ahern, Thu May 15 16:53:56 EDT 2008
 #    Fixed \t printing problems by turning them into spaces.
 #
+#    Hank Childs, Wed Jun 10 10:41:53 PDT 2009
+#    Ported to very old implementations of sh.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -27,15 +30,15 @@ P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
-if [[ $# == 1 ]] ; then
-   if [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
+if [ $# = 1 ] ; then
+   if [ "$1" = "-help" -o "$1" = "-h" -o "$1" = "-?" ] ; then
        issueHelp="yes"
    fi
 else
    issueHelp="yes"
 fi
 
-if [[ "$issueHelp" == "yes" ]] ; then
+if [ "$issueHelp" = "yes" ] ; then
    echo ""
    echo "Usage:   ${0##*/} <dir>"
    echo "Usage:   ${0##*/} <known-dir-combo>"
@@ -66,25 +69,25 @@ fi
 
 DIR=""
 ROOT="/"
-if [[ "$1" != "all" && "$1" != "sdt"  ]] ; then
+if [ "$1" != "all" -a "$1" != "sdt" ] ; then
     svn ls ${VISIT_SVN_TRUNK}/${1} 2>/dev/null > /dev/null
-    if [[ $? != 0 ]] ; then
+    if [ $? != 0 ] ; then
        echo "The trunk location $1 does not appear to exist."
        echo "Aborting checkout"
        exit 1
     fi
-    if [[ "${1#/}" == "${1}" ]] ; then
+    if [ "${1#/}" = "${1}" ] ; then
        TMP="/${1}"
        ROOT="${TMP%/*}"
     else
        ROOT="${1%/*}"
     fi
-    if [[ "$ROOT" == "" ]] ; then
+    if [ "$ROOT" = "" ] ; then
        ROOT="/"
     fi
 fi
 
-function checkout_dir
+checkout_dir()
 {
     cd trunk
     echo "Getting files for \"${1}\" from remote repo..."
@@ -92,25 +95,25 @@ function checkout_dir
     cd ..
 }
 
-if [[ -d trunk ]] ; then
+if [ -d trunk ] ; then
   cd trunk
-  if [[ ! -f .branchname ]] ; then
+  if [ ! -f .branchname ] ; then
      echo "The subdirectory I want to place the check out in (trunk) does not appear "
      echo "to be a valid check out."
      exit 1
   fi
   NAME=$(cat .branchname)
-  if [[ "$NAME" != "trunk" ]] ; then
+  if [ "$NAME" != "trunk" ] ; then
      echo "The subdirectory I want to place the check out in (trunk) does not appear "
      echo "to be a valid check out."
      exit 1
   fi
-  if [[ ! -f .rootpath ]] ; then
+  if [ ! -f .rootpath ] ; then
      echo "The subdirectory I want to place the check out in is not consistent"
      exit 1
   fi
   ROOT2=$(cat .rootpath)
-  if [[ "$ROOT" != "$ROOT2" ]] ; then
+  if [ "$ROOT" != "$ROOT2" ] ; then
      echo "The directory you are requesting is from a different directory in the repo."
      echo "This is not allowed."
      echo "Your previous checkout(s) have been from ${ROOT2}"
@@ -128,14 +131,14 @@ else
   cd ..
 fi
 
-if [[ "$1" == "sdt" ]] ; then
+if [ "$1" = "sdt" ] ; then
    echo "Checking out /src"
    checkout_dir "/src"
    echo "Checking out /data"
    checkout_dir "/data"
    echo "Checking out /test"
    checkout_dir "/test"
-elif [[ "$1" == "all" ]] ; then
+elif [ "$1" = "all" ] ; then
    echo "Checking out /src"
    checkout_dir "/src"
    echo "Checking out /data"
