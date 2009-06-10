@@ -82,6 +82,13 @@
 #    Mark C. Miller, Thu Jun  4 13:00:00 PDT 2009
 #    Temporarily disable copying only failed results to public html dir.
 #    Instead, copy everything. 
+#
+#    Mark C. Miller, Mon Jun  8 14:09:34 PDT 2009
+#    Change configure invokations to use ./configure CXXFLAGS=... instead of
+#    env CXXFLAGS=... ./configure.
+#
+#    Mark C. Miller Mon Jun  8 21:22:04 PDT 2009
+#    Removed diff tolerances due to transition of baselines to Davinci.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -324,7 +331,7 @@ echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> config_log.txt 2>&1
 echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no --enable-buildall 1>> config_log.txt 2>&1
+./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-viewer-mesa-stub=no --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "FIRST configure failed" config_log.txt 
 cd ..
 
@@ -360,7 +367,7 @@ if test -n "$undistcleanedFilesCount" -a $undistcleanedFilesCount -ne 0; then
 fi
 
 # ok, now really go ahead and configure and build VisIt
-env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no --enable-buildall 1>> config_log.txt 2>&1
+./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-viewer-mesa-stub=no --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "SECOND configure failed" config_log.txt 
 gmake -j 4 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
@@ -434,9 +441,9 @@ cd test
 for m in $modes; do
 
     if test "$skipList" = ""; then
-        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -m "$m" -l 1200 -notrackmem -pixdiff 5 -avgdiff 5 -numdiff 0.0001
+        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -m "$m" -l 1200 -notrackmem
     else
-        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -s "$skipList" -m "$m" -l 1200 -notrackmem -pixdiff 5 -avgdiff 5 -numdiff 0.0001
+        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -s "$skipList" -m "$m" -l 1200 -notrackmem
     fi
     curerror=$?
     theMode=`echo $m | tr ',' '_'`
