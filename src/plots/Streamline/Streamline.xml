@@ -20,6 +20,7 @@
         ColorByLength
         ColorByTime
         ColorBySeedPointID
+        ColorByVariable
       </Enum>
       <Enum name="DisplayMethod">
         Lines
@@ -179,6 +180,8 @@
       </Field>
       <Field name="pathlines" label="Do pathlines" type="bool">
         false
+      </Field>
+      <Field name="coloringVariable" label="unnamed1" type="string">
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

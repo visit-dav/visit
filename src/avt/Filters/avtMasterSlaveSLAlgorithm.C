@@ -44,6 +44,7 @@
 #include <TimingsManager.h>
 #include <iostream>
 #include <iomanip>
+#include <VisItStreamUtil.h>
 
 using namespace std;
 

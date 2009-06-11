@@ -47,6 +47,7 @@
 #include <vtkVisItInterpolatedVelocityField.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 #include <DebugStream.h>
 
 // ****************************************************************************
@@ -81,6 +82,44 @@ avtIVPVTKField::avtIVPVTKField( vtkVisItInterpolatedVelocityField* velocity )
 avtIVPVTKField::~avtIVPVTKField()
 {
     iv->Delete();
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::HasGhostZones
+//
+//  Purpose:
+//      Determine if this vector field has ghost zones.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 8, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtIVPVTKField::HasGhostZones() const
+{
+    return (iv->GetDataSet()->GetCellData()->GetArray("avtGhostZones") != NULL);
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::GetExtents
+//
+//  Purpose:
+//      Get field bounding box.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 8, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtIVPVTKField::GetExtents(double *extents) const
+{
+    iv->GetDataSet()->GetBounds(extents);
 }
 
 
@@ -193,6 +232,58 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVecRef& x ) const
 
     return omega;
 }
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::ComputeScalarVariable
+//
+//  Purpose:
+//      Computes the variable value at a point.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 5, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+double
+avtIVPVTKField::ComputeScalarVariable(const double& t,
+                                      const avtVecRef& x) const
+{
+    vtkDataSet *ds = iv->GetDataSet();
+    vtkCell *cell = ds->GetCell(iv->GetLastCell());
+    int numPts = cell->GetNumberOfPoints();
+    
+    int subId;
+    double pcoords[3], dist2, v;
+    double *weights = new double[numPts];
+
+    avtVec y(x.dim());
+    cell->EvaluatePosition((double *)x.values(), NULL, subId, pcoords, dist2, weights);
+    
+    double value = 0.0;
+    //See if we have node centered data...
+    if (ds->GetPointData()->GetScalars() != NULL)
+    {
+        vtkDataArray *data = ds->GetPointData()->GetScalars();
+        for (int i = 0; i < numPts; i++)
+        {
+            int id = cell->PointIds->GetId(i);
+            data->GetTuple(id, &v);
+            value += v*weights[i];
+        }
+    }
+    else if (ds->GetCellData()->GetScalars() != NULL)
+    {
+        vtkDataArray *data = ds->GetCellData()->GetScalars();
+        int id = cell->PointIds->GetId(0);
+        data->GetTuple(id,&value);
+    }
+
+    delete [] weights;
+    return value;
+}
+
 
 // ****************************************************************************
 //  Method: avtIVPVTKField::IsInsider

@@ -36,115 +36,82 @@
 *
 *****************************************************************************/
 
-#ifndef AVT_BEZIERSEGMENT_H
-#define AVT_BEZIERSEGMENT_H
+#ifndef VISIT_STREAM_UTILITY_H
+#define VISIT_STREAM_UTILITY_H
 
-#include <avtVecArray.h>
+#include <visitstream.h>
+#include <utility_exports.h>
+#include <vector>
+#include <list>
+#include <map>
 
 // ****************************************************************************
-//  Class avtBezierSegment
+//  Method: ostream operator<<
 //
-//  Modifications:
-//    Kathleen Bonnell, Thu Aug  7, 08:26:32 PDT 2008
-//    Changed for loops to use size_t to eliminate signed/unsigned int 
-//    comparison warnings.
+//  Purpose:
+//      Output vectors, lists and maps to a stream.
 //
-//    Jeremy Meredith, Thu Aug  7 14:38:59 EDT 2008
-//    Removed unused variables.
+//  Returns:    the stream
 //
-//    Dave Pugmire, Wed Jun 10 11:39:12 EDT 2009
-//    Add firstV and lastV methods.
+//  Programmer: Dave Pugmire
+//  Creation:   June 8, 2009
 //
 // ****************************************************************************
 
-class avtBezierSegment: public avtVecArray
+template<class T>
+inline std::ostream& operator<<(std::ostream& out,
+                                const std::vector<T> &v)
 {
-public:
+    typename std::vector<T>::const_iterator b = v.begin();
+    typename std::vector<T>::const_iterator e = v.end();
 
-    avtBezierSegment()
+    out<<"[";
+    while (b != e)
     {
+        out<<*b;
+        std::advance(b,1);
+        if (b != e)
+            out<<" ";
     }
+    out<<"]";
+    return out;
+}
 
-    avtBezierSegment( unsigned int dim, unsigned int order ) :
-        avtVecArray( dim, order )
+template<class T>
+inline std::ostream& operator<<(std::ostream& out,
+                                const std::list<T> &l)
+{
+    typename std::list<T>::const_iterator b = l.begin();
+    typename std::list<T>::const_iterator e = l.end();
+
+    out<<"[";
+    while (b != e)
     {
+        out<<*b;
+        std::advance(b,1);
+        if (b != e)
+            out<<" ";
     }
+    out<<"]";
+    return out;
+}
 
-    unsigned int degree() const 
-    { 
-        return size()-1; 
-    }
+template<class S, class T>
+inline std::ostream& operator<<(std::ostream& out,
+                                const std::map<S,T> &m)
+{
+    typename std::map<S,T>::const_iterator b = m.begin();
+    typename std::map<S,T>::const_iterator e = m.end();
 
-    unsigned int order() const
+    out<<"[";
+    while (b != e)
     {
-        return size();
+        out<<"("<<b->first<<" "<<b->second<<")";
+        std::advance(b,1);
+        if (b != e)
+            out<<" ";
     }
-
-    avtVec firstV() const
-    {
-        avtVec v;
-        if (size() > 0)
-            v = (*this)[0];
-        return v;
-    }
-
-    avtVec lastV() const
-    {
-        avtVec v;
-        if (size() > 0)
-            v = (*this)[size()-1];
-        return v;
-    }
-
-    avtVec evaluate( const double& param )
-    {
-        // BezierSegment evaluation using deCasteljau's scheme
-        avtVecArray tmp( *this );
-        
-        for( size_t l=1; l<order(); ++l )
-        {
-            for( size_t i=degree(); i>=l; --i )
-                tmp[i] = lerp( param, tmp[i-1], tmp[i] );
-        }
-         
-        return tmp[degree()];
-    }
-
-    avtVec derivative( const double& param, unsigned int order = 1 )
-    {
-        avtVecArray tmp( *this );
-        
-        for( size_t i=0; i<order; ++i )
-            tmp[i] = tmp[i+1] - tmp[i];
-
-        order = degree() - order + 1;
-
-        for( size_t l=1; l<order; ++l )
-            for( size_t i=order-1; i>=l; --i )
-                tmp[i] = lerp( param, tmp[i-1], tmp[i] );
-                
-        return tmp[degree()];
-    }
-
-    double length( double t0=0.0, double t1=1.0, double eps=1e-6 )
-    {
-        double len = 0.0;
-        int N = 10;
-        double dt = (t1-t0)/(double)(N-1);
-        avtVec p0 = evaluate( t0 );
-        double t = t0+dt;
-        for ( int i = 1; i < N; i++ )
-        {
-            avtVec p1 = evaluate( t );
-            len += (p1-p0).length();
-            p0 = p1;
-            t += dt;
-        }
-        
-        return len;
-    }
-};
-
-#endif // AVT_BEZIERSEGMENT_H
-
-
+    out<<"]";
+    return out;
+}
+#endif

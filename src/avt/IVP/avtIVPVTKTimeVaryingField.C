@@ -44,6 +44,7 @@
 #include <iostream>
 #include <vtkCell.h>
 #include <vtkDataSet.h>
+#include <vtkCellData.h>
 #include <vtkVisItInterpolatedVelocityField.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
@@ -57,12 +58,12 @@
 //
 // ****************************************************************************
 
-avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkVisItInterpolatedVelocityField *velocity1,
+avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkVisItInterpolatedVelocityField *velocity,
                                                       double t1,
                                                       double t2)
 {
-    iv1 = velocity1;
-    iv1->Register( NULL );
+    iv = velocity;
+    iv->Register( NULL );
     time1 = t1;
     time2 = t2;
     normalized = false;
@@ -79,8 +80,47 @@ avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkVisItInterpolatedVeloci
 
 avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 {
-    iv1->Delete();
+    iv->Delete();
 }
+
+// ****************************************************************************
+//  Method: avtIVPVTKTimeVaryingField::HasGhostZones
+//
+//  Purpose:
+//      Determine if this vector field has ghost zones.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 8, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtIVPVTKTimeVaryingField::HasGhostZones() const
+{
+    return (iv->GetDataSet()->GetCellData()->GetArray("avtGhostZones") != NULL);
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKTimeVaryingField::GetExtents
+//
+//  Purpose:
+//      Get field bounding box.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 8, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtIVPVTKTimeVaryingField::GetExtents(double *extents) const
+{
+    iv->GetDataSet()->GetBounds(extents);
+}
+
 
 
 // ****************************************************************************
@@ -129,7 +169,7 @@ avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
 
     // Evaluate the field at both timesteps.
     avtVec y1(x.dim()), param(pad(x,t)), y2(x.dim());
-    if ( ! iv1->Evaluate(param.values(), y1.values(), t))
+    if ( ! iv->Evaluate(param.values(), y1.values(), t))
     {
         if (DebugStream::Level5())
             debug5<<"  **OUT of BOUNDS**\n";
@@ -177,13 +217,13 @@ EXCEPTION0(ImproperUseException); // didn't do this.
     avtVec y( x.dim() );
     avtVec param = pad(x,t);
     
-    int result = iv1->Evaluate( param.values(), y.values() );
+    int result = iv->Evaluate( param.values(), y.values() );
     
     if( !result )
         throw Undefined();
 
-    vtkDataSet *ds = iv1->GetDataSet();
-    vtkIdType cellID = iv1->GetLastCell();
+    vtkDataSet *ds = iv->GetDataSet();
+    vtkIdType cellID = iv->GetLastCell();
     vtkCell *cell = ds->GetCell( cellID );
     
     vtkDoubleArray *cellVectors;
@@ -198,8 +238,8 @@ EXCEPTION0(ImproperUseException); // didn't do this.
     inVectors->GetTuples( cell->PointIds, cellVectors );
 
     double *cellVel = cellVectors->GetPointer(0);
-    double *w = iv1->GetLastWeights();
-    double *pcoords = iv1->GetLastPCoords();
+    double *w = iv->GetLastWeights();
+    double *pcoords = iv->GetLastPCoords();
     cell->Derivatives( 0, pcoords, cellVel, 3, derivs);
     //cout<<"pcoords= "<<pcoords[0]<<" "<<pcoords[1]<<" "<<pcoords[2]<<endl;
 
@@ -222,6 +262,26 @@ EXCEPTION0(ImproperUseException); // didn't do this.
     //cout<<"omega= "<<omega<<endl;
 
     return omega;
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKTimeVaryingField::ComputeScalarVariable
+//
+//  Purpose:
+//      Computes the variable value at a point.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 5, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+double
+avtIVPVTKTimeVaryingField::ComputeScalarVariable(const double& t,
+                                                 const avtVecRef& x) const
+{
+    EXCEPTION0(ImproperUseException); // didn't do this.
 }
 
 // ****************************************************************************
@@ -250,7 +310,7 @@ avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
     avtVec param = pad(x,t);
 
     return (t >= time1 && t <= time2 &&
-            iv1->Evaluate(param.values(), y.values(), t) );
+            iv->Evaluate(param.values(), y.values(), t) );
 }
 
 

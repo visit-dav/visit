@@ -73,6 +73,9 @@
 //   Use a single vtkVisItInterpolatedVelocityField, which saves on
 //   computation.
 //
+//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//   Added ComputeScalarVariable, HasGhostZones and GetExtents methods.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
@@ -85,16 +88,20 @@ class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
     // avtIVPField interface
     avtVec         operator()(const double& t, const avtVecRef& x) const;
     double         ComputeVorticity(const double& t, const avtVecRef& x) const;
+    double         ComputeScalarVariable(const double& t, 
+                                         const avtVecRef& x) const;
     
     bool           IsInside( const double& t, const avtVecRef& x ) const;
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
     virtual bool   GetValidTimeRange(double range[]) const;
+    virtual bool   HasGhostZones() const;
+    virtual void   GetExtents(double *extents) const;
 
   protected:
 
     double                               time1, time2;
-    vtkVisItInterpolatedVelocityField   *iv1;
+    vtkVisItInterpolatedVelocityField   *iv;
     bool           normalized;
     
 };

@@ -159,6 +159,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Hank Childs, Sat May  2 22:14:38 PDT 2009
 //   Add support for point lists.
 //
+//   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
+//   Add color by variable.
+//
 // ****************************************************************************
 
 void
@@ -413,35 +416,35 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     coloringMethod->addItem(tr("Arc length"),3);
     coloringMethod->addItem(tr("Time"),4);
     coloringMethod->addItem(tr("Seed point ID"),5);
+    coloringMethod->addItem(tr("Variable"),6);
     connect(coloringMethod, SIGNAL(activated(int)),
             this, SLOT(coloringMethodChanged(int)));
     aLayout->addWidget(new QLabel(tr("Color by"), pageAppearance), 4,0);
     aLayout->addWidget(coloringMethod, 4,1);
+
+    varLabel = new QLabel(tr("Color Variable"), pageAppearance);
+    var = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
+                                 pageAppearance);
+    aLayout->addWidget(varLabel,5,0);
+    aLayout->addWidget(var,5,1);
+    connect(var, SIGNAL(activated(const QString &)),
+            this, SLOT(coloringVariableChanged(const QString&)));
 
     colorTableName = new QvisColorTableButton(pageAppearance);
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     colorTableNameLabel = new QLabel(tr("Color table"), pageAppearance);
     colorTableNameLabel->setBuddy(colorTableName);
-    aLayout->addWidget(colorTableNameLabel,5,0);
-    aLayout->addWidget(colorTableName, 5,1, Qt::AlignLeft);
+    aLayout->addWidget(colorTableNameLabel,6,0);
+    aLayout->addWidget(colorTableName, 6,1, Qt::AlignLeft);
 
     singleColor = new QvisColorButton(pageAppearance);
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
     singleColorLabel = new QLabel(tr("Single color"), pageAppearance);
     singleColorLabel->setBuddy(singleColor);
-    aLayout->addWidget(singleColorLabel,6,0);
-    aLayout->addWidget(singleColor, 6,1, Qt::AlignLeft);
-
-#if 0
-// This is unfinished. A) you would not declare the widget locally and B) there's no varChanged slot.
-    QvisVariableButton *var = new QvisVariableButton(true, true, true,
-                                                     QvisVariableButton::Scalars, pageAppearance);
-    connect(var, SIGNAL(activated(const QString &)),
-            this, SLOT(varChanged(const QString&)));
-    aLayout->addWidget(var,7,0);
-#endif
+    aLayout->addWidget(singleColorLabel,7,0);
+    aLayout->addWidget(singleColor, 7,1, Qt::AlignLeft);
 
     //
     // Create advanced widgets.
@@ -774,6 +777,22 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             coloringMethod->blockSignals(true);
             coloringMethod->setCurrentIndex(int(streamAtts->GetColoringMethod()));
             coloringMethod->blockSignals(false);
+
+            if (streamAtts->GetColoringMethod() == StreamlineAttributes::ColorByVariable)
+            {
+                varLabel->setEnabled(true);
+                var->setEnabled(true);
+                varLabel->show();
+                var->show();
+            }
+            else
+            {
+                varLabel->setEnabled(false);
+                var->setEnabled(false);
+                varLabel->hide();
+                var->hide();
+            }
+
             }
             break;
         case StreamlineAttributes::ID_colorTableName:
@@ -1788,6 +1807,13 @@ void
 QvisStreamlinePlotWindow::coloringMethodChanged(int val)
 {
     streamAtts->SetColoringMethod((StreamlineAttributes::ColoringMethod)val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::coloringVariableChanged(const QString &var)
+{
+    streamAtts->SetColoringVariable(var.toStdString());
     Apply();
 }
 

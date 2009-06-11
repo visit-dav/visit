@@ -92,15 +92,26 @@ struct avtIVPStateHelper;
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion.
 //
+//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//   Added ComputeSpeed, ComputeScalarVariable and associated member data.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPStep: public avtBezierSegment
 {
 public:
     avtIVPStep() : avtBezierSegment()
-                  { tStart = tEnd = vorticity = 0.0; 
-                    velStart = avtVec(0.,0.,0.); velEnd = avtVec(0.,0.,0.); }
+    { tStart = tEnd = scalarValue = 0.0; speed = 0.0; vorticity = 0.0;
+      velStart = avtVec(0.,0.,0.); velEnd = avtVec(0.,0.,0.); }
     
+    void   ComputeSpeed(const avtIVPField *field)
+    {
+        speed = velEnd.length();
+    }
+    void   ComputeScalarVariable(const avtIVPField *field)
+    {
+        scalarValue = field->ComputeScalarVariable(tEnd, lastV());
+    }
     void   ComputeVorticity(const avtIVPField *field)
     {
         double tMid = tStart + (tEnd-tStart)/2.0;
@@ -109,13 +120,15 @@ public:
         if ( field->IsInside( tMid, pt ) )
             vorticity = field->ComputeVorticity( tMid, pt );
     }
-
-    void     Serialize(MemStream::Mode mode, MemStream &buff)
+    
+    void   Serialize(MemStream::Mode mode, MemStream &buff)
     {
         //debug1 << "avtIVPStep::Serialize()\n";
         buff.io( mode, tStart );
         buff.io( mode, tEnd );
+        buff.io( mode, speed );
         buff.io( mode, vorticity );
+        buff.io( mode, scalarValue );
         buff.io( mode, velStart );
         buff.io( mode, velEnd );
         
@@ -132,7 +145,7 @@ public:
     
     double tStart, tEnd;
     avtVec velStart, velEnd;
-    double vorticity;
+    double speed, vorticity, scalarValue;
 };
 
 

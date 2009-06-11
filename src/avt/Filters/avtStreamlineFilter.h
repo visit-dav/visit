@@ -78,6 +78,7 @@ class DomainType;
 #define STREAMLINE_COLOR_ARCLENGTH   3
 #define STREAMLINE_COLOR_TIME        4
 #define STREAMLINE_COLOR_ID          5
+#define STREAMLINE_COLOR_VARIABLE    6
 
 #define STREAMLINE_DISPLAY_LINES     0
 #define STREAMLINE_DISPLAY_TUBES     1
@@ -229,7 +230,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      SetRadius(double rad);
     void                      SetPointDensity(int den);
     void                      SetStreamlineDirection(int dir);
-    void                      SetColoringMethod(int);
+    void                      SetColoringMethod(int, const std::string &var="");
 
   protected:
     int    sourceType;   
@@ -245,6 +246,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     int    pointDensity1, pointDensity2, pointDensity3;
     int    streamlineDirection;
     int    coloringMethod;
+    std::string coloringVariable;
     int    dataSpatialDimension;
 
     avtContract_p lastContract;

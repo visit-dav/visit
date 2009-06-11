@@ -291,24 +291,6 @@ class SlaveInfo
     vector<int> domainHistory;
 };
 
-template<class T>
-inline std::ostream& operator<<(std::ostream& out, const std::vector<T> &v);
-
-template<class T>
-inline std::ostream& operator<<(std::ostream& out, const std::vector<T> &v)
-{
-    out<<"[";
-    for (int i = 0; i < v.size(); i++)
-    {
-        out<<v[i];
-        if (i != (v.size()-1))
-            out<<" ";
-    }
-    out << "]";
-    return out;
-}
-
-
 #endif
 
 #endif

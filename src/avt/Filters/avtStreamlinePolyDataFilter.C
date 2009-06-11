@@ -269,6 +269,9 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
 //   Dave Pugmire, Mon Feb  2 14:39:35 EST 2009
 //   Moved this method from avtStreamlineWrapper to avtStreamlinePolyDataFilter.
 //
+//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//   Handle color by variable.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -299,15 +302,19 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl,
 
         avtIVPStep *step = (*siter);
 
-        // Set the speed/vorticity.
+        // Set the color-by scalar.
         if (coloringMethod == STREAMLINE_COLOR_SPEED)
         {
-            avtVec deriv = step->velEnd;
-            val = deriv.values()[0]*deriv.values()[0] 
-                + deriv.values()[1]*deriv.values()[1];
-            if (dataSpatialDimension == 3)
-                val += deriv.values()[2]*deriv.values()[2];
-            val = sqrt(val);
+            val = step->speed;
+        }
+        else if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
+        {
+            val = step->scalarValue;
+        }
+        else if (coloringMethod == STREAMLINE_COLOR_VORTICITY)
+        {
+            double dT = (step->tEnd - step->tStart);
+            val = step->vorticity * dT;
         }
         else if (coloringMethod ==  STREAMLINE_COLOR_ARCLENGTH)
         {
@@ -322,15 +329,13 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl,
             val = (float)id;
         }
         
-        if (coloringMethod == STREAMLINE_COLOR_VORTICITY || 
-            displayMethod == STREAMLINE_DISPLAY_RIBBONS)
+        //Ribbon display, record the angle.
+        if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
         {
             double dT = (step->tEnd - step->tStart);
             float scaledVort = step->vorticity * dT;
             theta += scaledVort;
             thetas.push_back(theta);
-            if (coloringMethod == STREAMLINE_COLOR_VORTICITY)
-                val = scaledVort;
         }
         
         scalars->InsertTuple1(i, val);
