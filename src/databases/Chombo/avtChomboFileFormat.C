@@ -55,6 +55,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkCellType.h>
 
 #include <DBOptionsAttributes.h>
 
@@ -357,7 +358,18 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Gunther H. Weber, Wed Mar 25 13:31:56 PDT 2009
 //    Close file to prevent file handle depletion
 //
+//    Gunther H. Weber, Wed Jun 10 18:28:24 PDT 2009
+//    Added ability to handle particle data in Chombo files.
+//
 // ****************************************************************************
+
+extern "C"  herr_t
+add_var(hid_t loc_id, const char *varname, void *opData)
+{
+  std::list<std::string> *l = (std::list<std::string>*)opData;
+  l->push_back(varname);
+  return 0;
+}
 
 void
 avtChomboFileFormat::InitializeReader(void)
@@ -901,6 +913,36 @@ avtChomboFileFormat::InitializeReader(void)
     H5Tclose(box3d_id);
 
     //
+    // Look for particles
+    //
+    std::list<std::string> varList;
+    if (H5Giterate(file_handle, "/particles", 0, add_var, &varList) == 0)
+    {
+        bool hasXPos = false;
+        bool hasYPos = false;
+        bool hasZPos = false;
+        for (std::list<std::string>::iterator it = varList.begin(); it != varList.end(); ++it)
+        {
+            if (*it == "position_x") hasXPos = true;
+            else if (*it == "position_y") hasYPos = true;
+            else if (*it == "position_z") hasZPos = true;
+            else
+            {
+                particleVarnames.push_back(*it);
+            }
+        }
+
+        if (hasXPos && hasYPos && (dimension == 2 || hasZPos))
+        {
+            hasParticles = true;
+        }
+        else
+        {
+            debug1 << "Ignoring particles since position information is missing." << std::endl;
+        }
+    }
+ 
+    //
     // Re-enable HDF5's automatic diagnostic output
     //
     H5Eset_auto(h5e_autofunc, h5e_clientdata);
@@ -1221,6 +1263,9 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Hank Childs, Sun Jan 25 15:55:17 PST 2009
 //    Change test for whether or not we are using ghost data.
 //
+//    Gunther H. Weber, Wed Jun 10 18:28:24 PDT 2009
+//    Added ability to handle particle data in Chombo files.
+//
 // ****************************************************************************
 
 void
@@ -1297,6 +1342,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // variables that should be combined into vectors.  Identify these and
     // make expressions for the vectors.
     //
+    std::list<std::string> addedExpressionNames;
     for (i = 0; i < nVars; i++)
     {
         int id2 = -1;
@@ -1352,6 +1398,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 vec.SetDefinition(defn);
                 vec.SetType(Expression::VectorMeshVar);
                 md->AddExpression(&vec);
+                addedExpressionNames.push_back(str);
             }
             else
             {
@@ -1379,10 +1426,118 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 vec.SetDefinition(defn);
                 vec.SetType(Expression::VectorMeshVar);
                 md->AddExpression(&vec);
+                addedExpressionNames.push_back(str);
             }
         }
     }
 
+    // Add particle mesh and vars if available
+    if (hasParticles)
+    {
+        // Add particle mesh
+        AddMeshToMetaData(md, string("particles"), AVT_POINT_MESH, 0, 1, 0, dimension, 0);
+
+        for (std::vector<std::string>::iterator it = particleVarnames.begin();
+                it != particleVarnames.end(); ++it)
+        {
+            AddScalarVarToMetaData(md, *it, std::string("particles"), AVT_NODECENT);
+        }
+
+        //
+        // Chombo has no vector variables.  But it clearly has some scalar
+        // variables that should be combined into vectors.  Identify these and
+        // make expressions for the vectors.
+        //
+        for (i = 0; i < particleVarnames.size(); i++)
+        {
+            int id2 = -1;
+            bool startsWithFirst = false;
+            bool foundVector = false;
+            size_t len = particleVarnames[i].size();
+            if (particleVarnames[i][len-2] == '_' &&
+                    (particleVarnames[i][len-1] == 'x' || particleVarnames[i][len-1] == 'X' ||
+                     particleVarnames[i][len-1] == 'u' || particleVarnames[i][len-1] == 'U'))
+            {
+                char yChar = '\0', zChar = '\0';
+                if (particleVarnames[i][len-1] == 'x')
+                {
+                    yChar = 'y';
+                    zChar = 'z';
+                }
+                else if (particleVarnames[i][len-1] == 'X')
+                {
+                    yChar = 'Y';
+                    zChar = 'Z';
+                }
+                else if (particleVarnames[i][len-1] == 'u')
+                {
+                    yChar = 'v';
+                    zChar = 'w';
+                }
+                else if (particleVarnames[i][len-1] == 'U')
+                {
+                    yChar = 'V';
+                    zChar = 'W';
+                }
+
+                std::string yName = particleVarnames[i];
+                yName[len-1] = yChar;
+                int matchY = -1;
+                for (j = 0 ; j < particleVarnames.size() ; j++)
+                {
+                    if (particleVarnames[j] == yName)
+                    {
+                        matchY = j;
+                        break;
+                    }
+                }
+                if (matchY < 0)
+                    continue;
+                if (dimension == 2)
+                {
+                    Expression vec;
+                    std::string expressionName(particleVarnames[i], 0, len-2);
+                    if (std::find(addedExpressionNames.begin(), addedExpressionNames.end(),
+                                expressionName) != addedExpressionNames.end())
+                        expressionName.insert(0, std::string("particle_"));
+                    vec.SetName(expressionName);
+                    char defn[1024];
+                    SNPRINTF(defn, 1024, "{<%s>, <%s>}", particleVarnames[i].c_str(), yName.c_str());
+                    vec.SetDefinition(defn);
+                    vec.SetType(Expression::VectorMeshVar);
+                    md->AddExpression(&vec);
+                }
+                else
+                {
+                    std::string zName = particleVarnames[i];
+                    zName[len-1] = zChar;
+                    int matchZ = -1;
+                    for (j = 0 ; j < particleVarnames.size() ; j++)
+                    {
+                        if (particleVarnames[j] == zName)
+                        {
+                            matchZ = j;
+                            break;
+                        }
+                    }
+                    if (matchZ < 0)
+                        continue;
+                    Expression vec;
+                    std::string expressionName(particleVarnames[i], 0, len-2);
+                    if (std::find(addedExpressionNames.begin(), addedExpressionNames.end(),
+                                expressionName) != addedExpressionNames.end())
+                        expressionName.insert(0, std::string("particle_"));
+                    vec.SetName(expressionName);
+                    char defn[1024];
+                    SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", particleVarnames[i].c_str(), 
+                            yName.c_str(), zName.c_str());
+                    vec.SetDefinition(defn);
+                    vec.SetType(Expression::VectorMeshVar);
+                    md->AddExpression(&vec);
+                }
+            }
+        }
+    }
     //
     // If any materials were found, add them here
     // 
@@ -1585,6 +1740,9 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Hank Childs, Sun Jan 25 15:55:31 PST 2009
 //    Change test for whether or not we are allowed to use ghost data.
 //
+//    Gunther H. Weber, Wed Jun 10 18:28:24 PDT 2009
+//    Added ability to handle particle data in Chombo files.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1592,170 +1750,193 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 {
     int   i;
 
-    if (strcmp(meshname, "Mesh") != 0)
-        EXCEPTION1(InvalidVariableException, meshname);
-
-    if (!initializedReader)
-        InitializeReader();
-
-    int level, local_patch;
-    GetLevelAndLocalPatchNumber(patch, level, local_patch);
-
-    if (level >= num_levels)
+    if (strcmp(meshname, "Mesh") == 0)
     {
-        EXCEPTION1(InvalidVariableException, meshname);
-    }
+        if (!initializedReader)
+            InitializeReader();
 
-    if (local_patch >= patchesPerLevel[level])
-    {
-        EXCEPTION2(BadDomainException, local_patch, patchesPerLevel[level]);
-    }
+        int level, local_patch;
+        GetLevelAndLocalPatchNumber(patch, level, local_patch);
 
-    int dims[3];
-    int numGhostI = 0, numGhostJ = 0, numGhostK = 0;
-    if (!allowedToUseGhosts)
-    {
-        dims[0] = hiI[patch]-lowI[patch]+1;
-        dims[1] = hiJ[patch]-lowJ[patch]+1;
-        dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1 : 1);
-    }
-    else
-    {
-        numGhostI = numGhosts[3*level];
-        numGhostJ = numGhosts[3*level+1];
-        numGhostK = numGhosts[3*level+2];
-     
-        dims[0] = hiI[patch]-lowI[patch]+1+2*numGhostI;
-        dims[1] = hiJ[patch]-lowJ[patch]+1+2*numGhostJ;
-        dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1+2*numGhostK : 1);
-    }
+        if (level >= num_levels)
+        {
+            EXCEPTION1(InvalidVariableException, meshname);
+        }
 
-    vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
-    rg->SetDimensions(dims);
+        if (local_patch >= patchesPerLevel[level])
+        {
+            EXCEPTION2(BadDomainException, local_patch, patchesPerLevel[level]);
+        }
 
-    vtkFloatArray  *xcoord = vtkFloatArray::New();
-    vtkFloatArray  *ycoord = vtkFloatArray::New();
-    vtkFloatArray  *zcoord = vtkFloatArray::New();
-
-    xcoord->SetNumberOfTuples(dims[0]);
-    ycoord->SetNumberOfTuples(dims[1]);
-    zcoord->SetNumberOfTuples(dims[2]);
-
-    float *ptr = xcoord->GetPointer(0);
-    if (!allowedToUseGhosts)
-        ptr[0] = lowI[patch]*dx[level];
-    else
-        ptr[0] = (lowI[patch]-numGhostI)*dx[level];
-
-    for (i = 1; i < dims[0]; i++)
-        ptr[i] = ptr[0] + i*dx[level];
-
-    ptr = ycoord->GetPointer(0);
-    if (!allowedToUseGhosts)
-        ptr[0] = lowJ[patch]*dx[level];
-    else
-        ptr[0] = (lowJ[patch]-numGhostJ)*dx[level];
-
-    for (i = 1; i < dims[1]; i++)
-        ptr[i] = ptr[0] + i*dx[level];
-
-    if (dimension == 3)
-    {
-        ptr = zcoord->GetPointer(0);
+        int dims[3];
+        int numGhostI = 0, numGhostJ = 0, numGhostK = 0;
         if (!allowedToUseGhosts)
-            ptr[0] = lowK[patch]*dx[level];
+        {
+            dims[0] = hiI[patch]-lowI[patch]+1;
+            dims[1] = hiJ[patch]-lowJ[patch]+1;
+            dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1 : 1);
+        }
         else
-            ptr[0] = (lowK[patch]-numGhostK)*dx[level];
+        {
+            numGhostI = numGhosts[3*level];
+            numGhostJ = numGhosts[3*level+1];
+            numGhostK = numGhosts[3*level+2];
 
-        for (i = 1; i < dims[2]; i++)
+            dims[0] = hiI[patch]-lowI[patch]+1+2*numGhostI;
+            dims[1] = hiJ[patch]-lowJ[patch]+1+2*numGhostJ;
+            dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1+2*numGhostK : 1);
+        }
+
+        vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
+        rg->SetDimensions(dims);
+
+        vtkFloatArray  *xcoord = vtkFloatArray::New();
+        vtkFloatArray  *ycoord = vtkFloatArray::New();
+        vtkFloatArray  *zcoord = vtkFloatArray::New();
+
+        xcoord->SetNumberOfTuples(dims[0]);
+        ycoord->SetNumberOfTuples(dims[1]);
+        zcoord->SetNumberOfTuples(dims[2]);
+
+        float *ptr = xcoord->GetPointer(0);
+        if (!allowedToUseGhosts)
+            ptr[0] = lowI[patch]*dx[level];
+        else
+            ptr[0] = (lowI[patch]-numGhostI)*dx[level];
+
+        for (i = 1; i < dims[0]; i++)
             ptr[i] = ptr[0] + i*dx[level];
-    }
-    else
-       zcoord->SetTuple1(0, 0.);
 
-    rg->SetXCoordinates(xcoord);
-    rg->SetYCoordinates(ycoord);
-    rg->SetZCoordinates(zcoord);
+        ptr = ycoord->GetPointer(0);
+        if (!allowedToUseGhosts)
+            ptr[0] = lowJ[patch]*dx[level];
+        else
+            ptr[0] = (lowJ[patch]-numGhostJ)*dx[level];
 
-    xcoord->Delete();
-    ycoord->Delete();
-    zcoord->Delete();
+        for (i = 1; i < dims[1]; i++)
+            ptr[i] = ptr[0] + i*dx[level];
 
-    //
-    // Determine the indices of the mesh within its group.  Add that to the
-    // VTK dataset as field data.
-    //
-    vtkIntArray *arr = vtkIntArray::New();
-    arr->SetNumberOfTuples(3);
-    arr->SetValue(0, lowI[patch]);
-    arr->SetValue(1, lowJ[patch]);
-    arr->SetValue(2, (dimension == 3 ? lowK[patch] : 0));
-    arr->SetName("base_index");
-    rg->GetFieldData()->AddArray(arr);
-    arr->Delete();
+        if (dimension == 3)
+        {
+            ptr = zcoord->GetPointer(0);
+            if (!allowedToUseGhosts)
+                ptr[0] = lowK[patch]*dx[level];
+            else
+                ptr[0] = (lowK[patch]-numGhostK)*dx[level];
 
-    if (allowedToUseGhosts)
-    {
+            for (i = 1; i < dims[2]; i++)
+                ptr[i] = ptr[0] + i*dx[level];
+        }
+        else
+            zcoord->SetTuple1(0, 0.);
+
+        rg->SetXCoordinates(xcoord);
+        rg->SetYCoordinates(ycoord);
+        rg->SetZCoordinates(zcoord);
+
+        xcoord->Delete();
+        ycoord->Delete();
+        zcoord->Delete();
+
         //
-        // Store real dims so that pick reports correct indices
+        // Determine the indices of the mesh within its group.  Add that to the
+        // VTK dataset as field data.
         //
-        // If: G G R R R R G G G  (G = ghost, R = real)
-        //     0 1 2 3 4 5 6 7 9
-        // then dims = 9
-        // avtRealDims[0] = IDX of node that borders first real zone
-        // -> node #2
-        // avtRealDims[1] = IDX of node that borders last real zone
-        // -> node #6
-        // 
-        arr = vtkIntArray::New();
-        arr->SetNumberOfTuples(6);
-        arr->SetValue(0, numGhostI);
-        arr->SetValue(1, dims[0]-numGhostI-1);
-        arr->SetValue(2, numGhostJ);
-        arr->SetValue(3, dims[1]-numGhostJ-1);
-        arr->SetValue(4, numGhostK);
-        arr->SetValue(5, dims[2]-numGhostK-1);
-        arr->SetName("avtRealDims");
+        vtkIntArray *arr = vtkIntArray::New();
+        arr->SetNumberOfTuples(3);
+        arr->SetValue(0, lowI[patch]);
+        arr->SetValue(1, lowJ[patch]);
+        arr->SetValue(2, (dimension == 3 ? lowK[patch] : 0));
+        arr->SetName("base_index");
         rg->GetFieldData()->AddArray(arr);
         arr->Delete();
-    
 
-        //
-        // Calculate the problem domian in the current level
-        //
-        //
-        // Generate ghost zone information
-        //
-        if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
+        if (allowedToUseGhosts)
         {
-            unsigned char realVal = 0, ghostInternal = 0, ghostExternal = 0;
-            avtGhostData::AddGhostZoneType(ghostInternal, 
-                                           DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-            avtGhostData::AddGhostZoneType(ghostExternal, 
-                                           ZONE_EXTERIOR_TO_PROBLEM);
-    
-            vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-            ghostCells->SetName("avtGhostZones");
-    
-            ghostCells->Allocate(rg->GetNumberOfCells());
-    
-            if (dimension == 3)
+            //
+            // Store real dims so that pick reports correct indices
+            //
+            // If: G G R R R R G G G  (G = ghost, R = real)
+            //     0 1 2 3 4 5 6 7 9
+            // then dims = 9
+            // avtRealDims[0] = IDX of node that borders first real zone
+            // -> node #2
+            // avtRealDims[1] = IDX of node that borders last real zone
+            // -> node #6
+            // 
+            arr = vtkIntArray::New();
+            arr->SetNumberOfTuples(6);
+            arr->SetValue(0, numGhostI);
+            arr->SetValue(1, dims[0]-numGhostI-1);
+            arr->SetValue(2, numGhostJ);
+            arr->SetValue(3, dims[1]-numGhostJ-1);
+            arr->SetValue(4, numGhostK);
+            arr->SetValue(5, dims[2]-numGhostK-1);
+            arr->SetName("avtRealDims");
+            rg->GetFieldData()->AddArray(arr);
+            arr->Delete();
+
+
+            //
+            // Calculate the problem domian in the current level
+            //
+            //
+            // Generate ghost zone information
+            //
+            if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
             {
-                for (int k=lowK[patch] - numGhostK; k<hiK[patch] + numGhostK; ++k)
+                unsigned char realVal = 0, ghostInternal = 0, ghostExternal = 0;
+                avtGhostData::AddGhostZoneType(ghostInternal, 
+                        DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+                avtGhostData::AddGhostZoneType(ghostExternal, 
+                        ZONE_EXTERIOR_TO_PROBLEM);
+
+                vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+                ghostCells->SetName("avtGhostZones");
+
+                ghostCells->Allocate(rg->GetNumberOfCells());
+
+                if (dimension == 3)
+                {
+                    for (int k=lowK[patch] - numGhostK; k<hiK[patch] + numGhostK; ++k)
+                        for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
+                            for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
+                            {
+                                if (i>=lowI[patch] && i<hiI[patch] &&
+                                        j>=lowJ[patch] && j<hiJ[patch] && 
+                                        k>=lowK[patch] && k<hiK[patch])  
+                                {
+                                    ghostCells->InsertNextValue(realVal);
+                                }
+                                else
+                                {
+                                    if (i>=lowProbI[level] && i<=hiProbI[level] &&
+                                            j>=lowProbJ[level] && j<=hiProbJ[level] &&
+                                            k>=lowProbK[level] && k<=hiProbK[level])
+                                    {
+                                        ghostCells->InsertNextValue(ghostInternal);
+                                    }
+                                    else
+                                    {
+                                        ghostCells->InsertNextValue(ghostExternal);
+                                    }
+                                }
+                            }
+                }
+                else
+                {
                     for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
                         for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
                         {
                             if (i>=lowI[patch] && i<hiI[patch] &&
-                                j>=lowJ[patch] && j<hiJ[patch] && 
-                                k>=lowK[patch] && k<hiK[patch])  
+                                    j>=lowJ[patch] && j<hiJ[patch])
                             {
                                 ghostCells->InsertNextValue(realVal);
                             }
                             else
                             {
                                 if (i>=lowProbI[level] && i<=hiProbI[level] &&
-                                    j>=lowProbJ[level] && j<=hiProbJ[level] &&
-                                    k>=lowProbK[level] && k<=hiProbK[level])
+                                        j>=lowProbJ[level] && j<=hiProbJ[level])
                                 {
                                     ghostCells->InsertNextValue(ghostInternal);
                                 }
@@ -1765,39 +1946,196 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                                 }
                             }
                         }
+                }
+
+                rg->GetCellData()->AddArray(ghostCells);
+                rg->SetUpdateGhostLevel(0);
+                ghostCells->Delete();
+            }
+        }
+
+        return rg;
+    }
+    else if (strcmp(meshname, "particles") == 0)
+    {
+        if (!initializedReader)
+            InitializeReader();
+
+        if (file_handle < 0)
+        {
+            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+            if (file_handle < 0)
+            {
+                EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
+                        "it is not even an HDF5 file.");
+            }
+        }
+
+        const char particlesGroupName[] = "/particles/";
+        const char posVarname[] = "position_x";
+        char datasetname[strlen(particlesGroupName)+strlen(posVarname)+1];
+        std::strcpy(datasetname, particlesGroupName);
+        std::strcat(datasetname, posVarname);
+
+        hsize_t nParticles = 0;
+        double *xPos = 0;
+        double *yPos = 0;
+        double *zPos = 0;
+
+        hid_t dataSet = H5Dopen(file_handle, datasetname);
+        if ( dataSet > 0)
+        {
+            hid_t dataSpace = H5Dget_space(dataSet);
+            if (H5Sis_simple(dataSpace))
+            {
+                if (H5Sget_simple_extent_ndims(dataSpace) == 1)
+                {
+                    H5Sget_simple_extent_dims(dataSpace, &nParticles, NULL);
+                    xPos = new double[nParticles];
+                    H5Dread(dataSet, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, xPos);
+                }
+                H5Dclose(dataSet);
             }
             else
             {
-                for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
-                    for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
+                H5Dclose(dataSet);
+                H5Fclose(file_handle);
+                file_handle = -1;
+                EXCEPTION1(InvalidDBTypeException, "x coordinate data set "
+                        "does not have rank two.");
+            }
+        }
+        else
+        {
+            EXCEPTION1(InvalidDBTypeException, "Cannot open x coordinate data set!");
+        }
+
+        datasetname[strlen(datasetname)-1] = 'y';
+        dataSet = H5Dopen(file_handle, datasetname);
+        if ( dataSet > 0)
+        {
+            hid_t dataSpace = H5Dget_space(dataSet);
+            if (H5Sis_simple(dataSpace))
+            {
+                hsize_t nParticlesCheck;
+                if (H5Sget_simple_extent_ndims(dataSpace) == 1)
+                {
+                    H5Sget_simple_extent_dims(dataSpace, &nParticlesCheck, NULL);
+                    if (nParticles == nParticlesCheck)
                     {
-                        if (i>=lowI[patch] && i<hiI[patch] &&
-                                j>=lowJ[patch] && j<hiJ[patch])
+                        yPos = new double[nParticles];
+                        H5Dread(dataSet, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, yPos);
+                    }
+                    else
+                    {
+                        delete[] xPos;
+                        H5Dclose(dataSet);
+                        H5Fclose(file_handle);
+                        file_handle = -1;
+                        EXCEPTION1(InvalidDBTypeException, "y coordinate data set "
+                        "has different size from x coordinate data set.");
+                    }
+                }
+                H5Dclose(dataSet);
+            }
+            else
+            {
+                delete[] xPos;
+                H5Dclose(dataSet);
+                H5Fclose(file_handle);
+                file_handle = -1;
+                EXCEPTION1(InvalidDBTypeException, "y coordinate data set "
+                        "does not have rank two.");
+            }
+        }
+        else
+        {
+            delete[] xPos;
+            EXCEPTION1(InvalidDBTypeException, "Cannot open y coordinate data set!");
+        }
+
+        if (dimension > 2)
+        {
+            datasetname[strlen(datasetname)-1] = 'z';
+            dataSet = H5Dopen(file_handle, datasetname);
+            if ( dataSet > 0)
+            {
+                hid_t dataSpace = H5Dget_space(dataSet);
+                if (H5Sis_simple(dataSpace))
+                {
+                    hsize_t nParticlesCheck;
+                    if (H5Sget_simple_extent_ndims(dataSpace) == 1)
+                    {
+                        H5Sget_simple_extent_dims(dataSpace, &nParticlesCheck, NULL);
+                        if (nParticles == nParticlesCheck)
                         {
-                            ghostCells->InsertNextValue(realVal);
+                            zPos = new double[nParticles];
+                            H5Dread(dataSet, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, zPos);
                         }
                         else
                         {
-                            if (i>=lowProbI[level] && i<=hiProbI[level] &&
-                                    j>=lowProbJ[level] && j<=hiProbJ[level])
-                            {
-                                ghostCells->InsertNextValue(ghostInternal);
-                            }
-                            else
-                            {
-                                ghostCells->InsertNextValue(ghostExternal);
-                            }
+                            delete[] xPos;
+                            delete[] yPos;
+                            H5Dclose(dataSet);
+                            H5Fclose(file_handle);
+                            file_handle = -1;
+                            EXCEPTION1(InvalidDBTypeException, "z coordinate data set "
+                                    "has different size from x coordinate data set.");
                         }
                     }
+                    H5Dclose(dataSet);
+                }
+                else
+                {
+                    delete[] xPos;
+                    delete[] yPos;
+                    H5Dclose(dataSet);
+                    H5Fclose(file_handle);
+                    file_handle = -1;
+                    EXCEPTION1(InvalidDBTypeException, "z coordinate data set "
+                            "does not have rank two.");
+                }
             }
-
-            rg->GetCellData()->AddArray(ghostCells);
-            rg->SetUpdateGhostLevel(0);
-            ghostCells->Delete();
+            else
+            {
+                delete[] xPos;
+                delete[] yPos;
+                EXCEPTION1(InvalidDBTypeException, "Cannot open z coordinate data set!");
+            }
         }
-    }
 
-    return rg;
+        H5Fclose(file_handle);
+        file_handle = -1;
+
+        vtkPoints *points = vtkPoints::New();
+        points->SetNumberOfPoints(nParticles);
+        if (dimension > 2)
+            for (int i=0; i <nParticles; ++i) points->SetPoint(i, xPos[i], yPos[i], zPos[i]);
+        else
+            for (int i=0; i <nParticles; ++i) points->SetPoint(i, xPos[i], yPos[i], 0);
+
+        delete[] xPos;
+        delete[] yPos;
+        delete[] zPos;
+
+        //
+        // Create a vtkUnstructuredGrid to contain the point cells.
+        //
+        vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::New();
+        ugrid->SetPoints(points);
+        points->Delete();
+        ugrid->Allocate(nParticles);
+        vtkIdType onevertex;
+        for(int i = 0; i < nParticles; ++i)
+        {
+            onevertex = i;
+            ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
+        }
+
+        return ugrid;
+    }
+    else
+        EXCEPTION1(InvalidVariableException, meshname);
 }
 
 
@@ -1848,6 +2186,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Gunther H. Weber, Wed Mar 25 13:31:56 PDT 2009
 //    Open and close file to prevent file handle depletion
 //
+//    Gunther H. Weber, Wed Jun 10 18:28:24 PDT 2009
+//    Added ability to handle particle data in Chombo files.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1868,184 +2209,247 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
             break;
         }
     }
-    if (varIdx < 0)
-        EXCEPTION1(InvalidVariableException, varname);
-
-    int level, local_patch;
-    GetLevelAndLocalPatchNumber(patch, level, local_patch);
-
-    if (level >= num_levels)
+    if (varIdx >= 0)
     {
-        EXCEPTION1(InvalidVariableException, varname);
-    }
+        int level, local_patch;
+        GetLevelAndLocalPatchNumber(patch, level, local_patch);
 
-    if (local_patch >= patchesPerLevel[level])
-    {
-        EXCEPTION2(BadDomainException, local_patch, patchesPerLevel[level]);
-    }
-
-    hsize_t numGhostI = numGhosts[3*level];
-    hsize_t numGhostJ = numGhosts[3*level+1];
-    hsize_t numGhostK = numGhosts[3*level+2];
-
-    //
-    // Figure out how much data to read and what it's offset is into the
-    // bigger array.  This will be needed so we can read a hyperslab from
-    // the HDF file.
-    //
-    int patchStart = patch-local_patch;
-    hsize_t nvals = 0;
-    for (i = patchStart ; i < patch ; i++)
-    {
-        hsize_t numZones = nodeCentered ?
-            (hsize_t(hiI[i]-lowI[i]+1)+2*numGhostI)
-            * (hsize_t(hiJ[i]-lowJ[i]+1)+2*numGhostJ) :
-            (hsize_t(hiI[i]-lowI[i])+2*numGhostI)
-            * (hsize_t(hiJ[i]-lowJ[i])+2*numGhostJ);
-        if (dimension == 3)
-            if (nodeCentered)
-                numZones *= hsize_t(hiK[i]-lowK[i]+1)+2*numGhostK;
-            else
-                numZones *= hsize_t(hiK[i]-lowK[i])+2*numGhostK;
-        nvals += numZones*nVars;
-    }
-
-#if HDF5_VERSION_GE(1,6,4)
-    hsize_t start = nvals;
-#else
-    hssize_t start = nvals;
-#endif
-    hsize_t amt = nodeCentered ?
-        (hsize_t(hiI[patch]-lowI[patch]+1)+2*numGhostI)
-        * (hsize_t(hiJ[patch]-lowJ[patch]+1)+2*numGhostJ) :
-        (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI)
-        * (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
-    if (dimension == 3)
-        if (nodeCentered)
-            amt *= hsize_t(hiK[patch]-lowK[patch]+1)+2*numGhostK;
-        else
-            amt *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
-
-    start += amt*varIdx;
-
-    if (amt > std::numeric_limits<vtkIdType>::max())
-    {
-        EXCEPTION1(InvalidFilesException, "Grid contains more cells than installed "
-                "VTK can handle. Installing a VTK version with 64-bit indices "
-                "enabled may help.");
-    }
-
-    vtkDoubleArray *farr = vtkDoubleArray::New();
-    farr->SetNumberOfComponents(1);
-    farr->SetNumberOfTuples(amt);
-    double *ptr = farr->GetPointer(0);
-
-    // 
-    // Now do the HDF magic.  Disclosure: this code was cobbled together
-    // from examples I found on the internet.  If you think that there is a
-    // more efficient way to do this (in lines of code or in performance), you
-    // are probably right...
-    //
-    char name[1024];
-    SNPRINTF(name, 1024, "level_%d", level);
-    if (file_handle < 0)
-    {
-        file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
-        if (file_handle < 0)
+        if (level >= num_levels)
         {
-            EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
-                                               "it is not even an HDF5 file.");
+            EXCEPTION1(InvalidVariableException, varname);
         }
-    }
-    hid_t level_id = H5Gopen(file_handle, name);
-    if (level_id < 0)
-    {
-        EXCEPTION1(InvalidFilesException, "Chombo file does not contain group for requested level.");
-    }
 
-    hid_t data = H5Dopen(level_id, "data:datatype=0");
-    if (data < 0)
-    {
-        EXCEPTION1(InvalidFilesException, "Level does not contain data.");
-    }
-
-    hid_t space_id = H5Dget_space(data);
-    hid_t rank     = H5Sget_simple_extent_ndims(space_id);
-    hsize_t dims[1];
-    int status_n   = H5Sget_simple_extent_dims(space_id, dims, NULL);
-    H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &amt, NULL);
-    
-    hid_t memdataspace = H5Screate_simple(1, &amt, NULL);
-    
-    H5Dread(data, H5T_NATIVE_DOUBLE, memdataspace, space_id, H5P_DEFAULT, ptr);
-
-    H5Sclose(memdataspace);
-    H5Sclose(space_id);
-    H5Dclose(data);
-    H5Gclose(level_id);
-
-    if (!allowedToUseGhosts)
-    {
-        //
-        // Strip out the ghost information.  Note: this is probably an inefficient
-        // path.  We would probably be better served leaving the ghost information
-        // and not creating ghost zones later in the process.  But that requires
-        // handling for external boundaries to the problem, which are not in place
-        // yet.  
-        //
-        if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
+        if (local_patch >= patchesPerLevel[level])
         {
-            vtkDoubleArray *new_farr = vtkDoubleArray::New();
-            size_t new_amt = nodeCentered ?
-                size_t(hiI[patch]-lowI[patch]+1)
-                * size_t(hiJ[patch]-lowJ[patch]+1) :
-                size_t(hiI[patch]-lowI[patch])
-                * size_t(hiJ[patch]-lowJ[patch]);
+            EXCEPTION2(BadDomainException, local_patch, patchesPerLevel[level]);
+        }
+
+        hsize_t numGhostI = numGhosts[3*level];
+        hsize_t numGhostJ = numGhosts[3*level+1];
+        hsize_t numGhostK = numGhosts[3*level+2];
+
+        //
+        // Figure out how much data to read and what it's offset is into the
+        // bigger array.  This will be needed so we can read a hyperslab from
+        // the HDF file.
+        //
+        int patchStart = patch-local_patch;
+        hsize_t nvals = 0;
+        for (i = patchStart ; i < patch ; i++)
+        {
+            hsize_t numZones = nodeCentered ?
+                (hsize_t(hiI[i]-lowI[i]+1)+2*numGhostI)
+                * (hsize_t(hiJ[i]-lowJ[i]+1)+2*numGhostJ) :
+                (hsize_t(hiI[i]-lowI[i])+2*numGhostI)
+                * (hsize_t(hiJ[i]-lowJ[i])+2*numGhostJ);
             if (dimension == 3)
                 if (nodeCentered)
-                    new_amt *= (hiK[patch]-lowK[patch]+1);
+                    numZones *= hsize_t(hiK[i]-lowK[i]+1)+2*numGhostK;
                 else
-                    new_amt *= (hiK[patch]-lowK[patch]);
-            new_farr->SetNumberOfTuples(new_amt);
-    
-            size_t nJ = nodeCentered ? hiJ[patch] - lowJ[patch] + 1 : hiJ[patch] - lowJ[patch];
-            size_t nI = nodeCentered ? hiI[patch] - lowI[patch] + 1 : hiI[patch] - lowI[patch];
-    
-            size_t nJ2 = nJ + 2*numGhostJ;
-            size_t nI2 = nI + 2*numGhostI;
-    
-            double *new_ptr = new_farr->GetPointer(0);
-            double *old_ptr = farr->GetPointer(0);
-            if (dimension == 3)
+                    numZones *= hsize_t(hiK[i]-lowK[i])+2*numGhostK;
+            nvals += numZones*nVars;
+        }
+
+#if HDF5_VERSION_GE(1,6,4)
+        hsize_t start = nvals;
+#else
+        hssize_t start = nvals;
+#endif
+        hsize_t amt = nodeCentered ?
+            (hsize_t(hiI[patch]-lowI[patch]+1)+2*numGhostI)
+            * (hsize_t(hiJ[patch]-lowJ[patch]+1)+2*numGhostJ) :
+            (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI)
+            * (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
+        if (dimension == 3)
+            if (nodeCentered)
+                amt *= hsize_t(hiK[patch]-lowK[patch]+1)+2*numGhostK;
+            else
+                amt *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
+
+        start += amt*varIdx;
+
+        if (amt > std::numeric_limits<vtkIdType>::max())
+        {
+            EXCEPTION1(InvalidFilesException, "Grid contains more cells than installed "
+                    "VTK can handle. Installing a VTK version with 64-bit indices "
+                    "enabled may help.");
+        }
+
+        vtkDoubleArray *farr = vtkDoubleArray::New();
+        farr->SetNumberOfComponents(1);
+        farr->SetNumberOfTuples(amt);
+        double *ptr = farr->GetPointer(0);
+
+        // 
+        // Now do the HDF magic.  Disclosure: this code was cobbled together
+        // from examples I found on the internet.  If you think that there is a
+        // more efficient way to do this (in lines of code or in performance), you
+        // are probably right...
+        //
+        char name[1024];
+        SNPRINTF(name, 1024, "level_%d", level);
+        if (file_handle < 0)
+        {
+            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+            if (file_handle < 0)
             {
-                size_t nK = nodeCentered ? hiK[patch] - lowK[patch] + 1 : hiK[patch] - lowK[patch];
-                size_t nK2 = nK + 2*numGhostK;
-                for (size_t k = 0 ; k < nK ; k++)
+                EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
+                        "it is not even an HDF5 file.");
+            }
+        }
+        hid_t level_id = H5Gopen(file_handle, name);
+        if (level_id < 0)
+        {
+            EXCEPTION1(InvalidFilesException, "Chombo file does not contain group for requested level.");
+        }
+
+        hid_t data = H5Dopen(level_id, "data:datatype=0");
+        if (data < 0)
+        {
+            EXCEPTION1(InvalidFilesException, "Level does not contain data.");
+        }
+
+        hid_t space_id = H5Dget_space(data);
+        hid_t rank     = H5Sget_simple_extent_ndims(space_id);
+        hsize_t dims[1];
+        int status_n   = H5Sget_simple_extent_dims(space_id, dims, NULL);
+        H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &amt, NULL);
+
+        hid_t memdataspace = H5Screate_simple(1, &amt, NULL);
+
+        H5Dread(data, H5T_NATIVE_DOUBLE, memdataspace, space_id, H5P_DEFAULT, ptr);
+
+        H5Sclose(memdataspace);
+        H5Sclose(space_id);
+        H5Dclose(data);
+        H5Gclose(level_id);
+
+        if (!allowedToUseGhosts)
+        {
+            //
+            // Strip out the ghost information.  Note: this is probably an inefficient
+            // path.  We would probably be better served leaving the ghost information
+            // and not creating ghost zones later in the process.  But that requires
+            // handling for external boundaries to the problem, which are not in place
+            // yet.  
+            //
+            if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
+            {
+                vtkDoubleArray *new_farr = vtkDoubleArray::New();
+                size_t new_amt = nodeCentered ?
+                    size_t(hiI[patch]-lowI[patch]+1)
+                    * size_t(hiJ[patch]-lowJ[patch]+1) :
+                    size_t(hiI[patch]-lowI[patch])
+                    * size_t(hiJ[patch]-lowJ[patch]);
+                if (dimension == 3)
+                    if (nodeCentered)
+                        new_amt *= (hiK[patch]-lowK[patch]+1);
+                    else
+                        new_amt *= (hiK[patch]-lowK[patch]);
+                new_farr->SetNumberOfTuples(new_amt);
+
+                size_t nJ = nodeCentered ? hiJ[patch] - lowJ[patch] + 1 : hiJ[patch] - lowJ[patch];
+                size_t nI = nodeCentered ? hiI[patch] - lowI[patch] + 1 : hiI[patch] - lowI[patch];
+
+                size_t nJ2 = nJ + 2*numGhostJ;
+                size_t nI2 = nI + 2*numGhostI;
+
+                double *new_ptr = new_farr->GetPointer(0);
+                double *old_ptr = farr->GetPointer(0);
+                if (dimension == 3)
+                {
+                    size_t nK = nodeCentered ? hiK[patch] - lowK[patch] + 1 : hiK[patch] - lowK[patch];
+                    size_t nK2 = nK + 2*numGhostK;
+                    for (size_t k = 0 ; k < nK ; k++)
+                        for (size_t j = 0 ; j < nJ ; j++)
+                            for (size_t i = 0 ; i < nI ; i++)
+                            {
+                                size_t idx_new = hsize_t(k)*nJ*nI + j*nI + i;
+                                size_t idx_old = (k+numGhostK)*nJ2*nI2 + (j+numGhostJ)*nI2
+                                    + (i+numGhostI);
+                                new_ptr[idx_new] = old_ptr[idx_old];
+                            }
+                }
+                else
+                {
                     for (size_t j = 0 ; j < nJ ; j++)
                         for (size_t i = 0 ; i < nI ; i++)
                         {
-                            size_t idx_new = hsize_t(k)*nJ*nI + j*nI + i;
-                            size_t idx_old = (k+numGhostK)*nJ2*nI2 + (j+numGhostJ)*nI2
-                                           + (i+numGhostI);
+                            size_t idx_new = j*nI + i;
+                            size_t idx_old = (j+numGhostJ)*nI2 + (i+numGhostI);
                             new_ptr[idx_new] = old_ptr[idx_old];
                         }
+                }
+                farr->Delete();
+                farr = new_farr;
+            }
+        }
+
+        return farr;
+    }
+    else
+    {
+        if (hasParticles)
+        {
+            const char particlesGroupName[] = "/particles/";
+            char datasetname[strlen(particlesGroupName)+strlen(varname)+1];
+            std::strcpy(datasetname, particlesGroupName);
+            std::strcat(datasetname, varname);
+            if (file_handle < 0)
+            {
+                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+                if (file_handle < 0)
+                {
+                    EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
+                            "it is not even an HDF5 file.");
+                }
+            }
+ 
+            hsize_t nParticles = 0;
+            hid_t dataSet = H5Dopen(file_handle, datasetname);
+            if ( dataSet > 0)
+            {
+                hid_t dataSpace = H5Dget_space(dataSet);
+                if (H5Sis_simple(dataSpace))
+                {
+                    if (H5Sget_simple_extent_ndims(dataSpace) == 1)
+                    {
+                        H5Sget_simple_extent_dims(dataSpace, &nParticles, NULL);
+                        vtkDoubleArray *array = vtkDoubleArray::New();
+                        array->SetNumberOfTuples(nParticles);
+                        double *vals = (double *) array->GetVoidPointer(0);
+                        H5Dread(dataSet, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals);
+                        H5Dclose(dataSet);
+                        H5Fclose(file_handle);
+                        file_handle = -1;
+                        return array;
+                    }
+                    H5Dclose(dataSet);
+                    H5Fclose(file_handle);
+                    file_handle = -1;
+                }
+                else
+                {
+                    H5Dclose(dataSet);
+                    H5Fclose(file_handle);
+                    file_handle = -1;
+
+                    EXCEPTION1(InvalidVariableException, "Variable data set "
+                            "does not have rank two.");
+                }
             }
             else
             {
-                for (size_t j = 0 ; j < nJ ; j++)
-                    for (size_t i = 0 ; i < nI ; i++)
-                    {
-                        size_t idx_new = j*nI + i;
-                        size_t idx_old = (j+numGhostJ)*nI2 + (i+numGhostI);
-                        new_ptr[idx_new] = old_ptr[idx_old];
-                    }
+                H5Fclose(file_handle);
+                file_handle = -1;
+                EXCEPTION1(InvalidVariableException, "Cannot open variable data set!");
             }
-            farr->Delete();
-            farr = new_farr;
+        }
+        else
+        {
+            EXCEPTION1(InvalidVariableException, varname);
         }
     }
-
-    return farr;
 }
 
 // ****************************************************************************

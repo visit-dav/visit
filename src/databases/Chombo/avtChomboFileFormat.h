@@ -124,6 +124,9 @@ class DBOptionsAttributes;
 //    Hank Childs, Sun Jan 25 15:38:50 PST 2009
 //    Improve support for ghost data.
 //
+//    Gunther H. Weber, Wed Jun 10 18:25:34 PDT 2009
+//    Added support for particle data in Chombo files
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -155,6 +158,8 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     hid_t                  file_handle;
     std::vector<std::string>  varnames;
     int                    nMaterials;
+    bool                   hasParticles;
+    std::vector<std::string>  particleVarnames;
     double                 dtime;
     int                    cycle;
     //int                    max_level;
