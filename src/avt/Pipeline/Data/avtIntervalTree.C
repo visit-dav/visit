@@ -1559,11 +1559,15 @@ avtIntervalTree::GetElementsListFromRay(double origin[3], double rayDir[3],
 //
 //  Modifications:
 //
+//    Kathleen Bonnell, Thu Jun 11 08:25:03 PDT 2009
+//    Added optional tolerance argument, to be passed to PointsEqual method.
+//
 // ****************************************************************************
 
 void
 avtIntervalTree::GetElementsListFromLine(double pt1[3], double pt2[3],
-                          intVector &list, doubleVector &pts) const
+                          intVector &list, doubleVector &pts, 
+                          const double *tol) const
 {
     if (hasBeenCalculated == false)
     {
@@ -1614,7 +1618,9 @@ avtIntervalTree::GetElementsListFromLine(double pt1[3], double pt2[3],
                 {  
                     int suc2 = IntersectsWithLine(pt2, pt1, stackIndex, 
                                               nDims, nodeExtents, isect2);
-                    if (suc2 && !vtkVisItUtility::PointsEqual(isect, isect2))
+
+                    if (suc2 && 
+                        !vtkVisItUtility::PointsEqual(isect, isect2, tol))
                     {
                         list.push_back(nodeIDs[stackIndex]);
                         pts.push_back(isect[0]);
@@ -1669,7 +1675,9 @@ IntersectsWithRay(double origin[3], double rayDir[3], int block,
     }
 
     if (vtkCellIntersections::IntersectBox(bnds, origin, rayDir, isect))
+    {
         return true;
+    }
     else 
         return false;
 }
@@ -1716,7 +1724,12 @@ IntersectsWithLine(double pt1[3], double pt2[3], int block,  int nDims,
     }
 
     if (vtkCellIntersections::LineIntersectBox(bnds,pt1, pt2, isect))
+    {
+#if 0
+debug2 << "  line intersects box with bounds " << bnds[0] << " " << bnds[1] << " " << bnds[2] << " " << bnds[3] << " " << bnds[4] << " " << bnds[5] << endl;
+#endif
         return true;
+    }
     else 
         return false;
 }
