@@ -504,7 +504,7 @@ gen_data_clean:
 	$(RM) [a-z]*.xmf mesh.h5
 	$(RM) -rf multidir_test_data
 	$(RM) -rf mmadj_rect_2d_data mmadj_rect_2d_root.silo
-        $(RM) -f streak_*.pdb streak_*.pdb.streak manhattan.imgvol multi_ucd.visit
+	$(RM) -f streak_*.pdb streak_*.pdb.streak manhattan.imgvol multi_ucd.visit
     
 src_clean:
 	$(RM) $(OBJ) $(EZ_TARGET) @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET)
