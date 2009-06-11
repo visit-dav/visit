@@ -506,7 +506,24 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //   Hank Childs, Thu Jan 24 09:44:45 PST 2008
 //   Make use of new data members.
 //
+//    Kathleen Bonnell, Thu Jun 11 08:29:51 PDT 2009
+//    Calculate the min side-length of a cell, to be used as a tolerance when
+//    determining if PointsEqual.
+//
 // ****************************************************************************
+
+double 
+GetMinRange(double *b, int ndims)
+{
+    double r1 = 1e38;
+    double r2 = 1e38;
+    double r3 = 1e38;
+    r1 = b[1] - b[0];
+    r2 = b[3] - b[2];
+    if (ndims == 3)
+        r3 = b[5] - b[4];
+    return (r1<r2 ? (r1 <r3 ? r1 : r3) : (r2 < r3 ? r2 : r3));
+}
 
 vtkDataSet *
 avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
@@ -521,18 +538,23 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     int ncells = in_ds->GetNumberOfCells();
     avtIntervalTree itree(ncells, ndims, false);
     double bounds[6];
+    double tol = 1e38;
     for (int i = 0; i < ncells; i++)
     {
         in_ds->GetCellBounds(i, bounds);
         itree.AddElement(i, bounds);
+        double min = GetMinRange(bounds, ndims);
+        if (min < tol)
+            tol = min;
     }
+    tol = tol/2.;
     itree.Calculate();
 
     intVector isectedCells;
     doubleVector isectedPts;
     intVector lineCells;
     doubleVector linePts;
-    itree.GetElementsListFromLine(point1, point2, lineCells, linePts);
+    itree.GetElementsListFromLine(point1, point2, lineCells, linePts, &tol);
 
     if (lineCells.size() == 0) 
     {
@@ -582,14 +604,14 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
                 cellIntersections->CellIntersectWithLine(cell, point2, point1, 
                                         t, isect2))
             {
-                if (vtkVisItUtility::PointsEqual(isect, isect2))
+                if (vtkVisItUtility::PointsEqual(isect, isect2, &tol))
                 {
                     // Discard single-point intersections that are equivalent
                     // to an endpoint.
                     doMore = false;
                     if (vtkVisItUtility::CellContainsPoint(cell, point1))
                     {
-                        if (!vtkVisItUtility::PointsEqual(point1, isect))
+                        if (!vtkVisItUtility::PointsEqual(point1, isect, &tol))
                         {
                             p1[0] = point1[0];    
                             p1[1] = point1[1];    
@@ -599,7 +621,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
                     }
                     else if (vtkVisItUtility::CellContainsPoint(cell, point2))
                     {
-                        if (!vtkVisItUtility::PointsEqual(point2, isect))
+                        if (!vtkVisItUtility::PointsEqual(point2, isect, &tol))
                         {
                             p1[0] = point2[0];    
                             p1[1] = point2[1];    
@@ -636,7 +658,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
                 p2[0] = isectedPts[j*3];
                 p2[1] = isectedPts[j*3+1];
                 p2[2] = isectedPts[j*3+2];
-                if (vtkVisItUtility::PointsEqual(p1, p2))
+                if (vtkVisItUtility::PointsEqual(p1, p2, &tol))
                 {
                     dupFound = true;
                     if (lineCells[i] < isectedCells[j])

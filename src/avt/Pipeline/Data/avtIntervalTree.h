@@ -91,6 +91,9 @@
 //    Hank Childs, Thu Jun 12 11:32:45 PDT 2008
 //    Implement a copy constructor.
 //
+//    Kathleen Bonnell, Thu Jun 11 08:24:04 PDT 2009
+//    Added optional tolerance argument to GetElementListsFromLine.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIntervalTree
@@ -117,7 +120,8 @@ class PIPELINE_API avtIntervalTree
     void                      GetElementsListFromRay(double [3], double[3],
                                           intVector &, doubleVector &) const; 
     void                      GetElementsListFromLine(double [3], double[3],
-                                          intVector &, doubleVector &) const; 
+                                          intVector &, doubleVector &, 
+                                          const double* = NULL) const; 
 
     void                      AddElement(int, double *);
     void                      Calculate(bool = false);
