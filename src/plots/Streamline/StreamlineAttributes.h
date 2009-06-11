@@ -76,7 +76,8 @@ public:
         ColorByVorticity,
         ColorByLength,
         ColorByTime,
-        ColorBySeedPointID
+        ColorBySeedPointID,
+        ColorByVariable
     };
     enum DisplayMethod
     {
@@ -134,6 +135,7 @@ public:
     void SelectPointList();
     void SelectColorTableName();
     void SelectSingleColor();
+    void SelectColoringVariable();
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
@@ -171,6 +173,7 @@ public:
     void SetMaxDomainCacheSize(int maxDomainCacheSize_);
     void SetWorkGroupSize(int workGroupSize_);
     void SetPathlines(bool pathlines_);
+    void SetColoringVariable(const std::string &coloringVariable_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -219,6 +222,8 @@ public:
     int                  GetMaxDomainCacheSize() const;
     int                  GetWorkGroupSize() const;
     bool                 GetPathlines() const;
+    const std::string    &GetColoringVariable() const;
+          std::string    &GetColoringVariable();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -306,7 +311,8 @@ public:
         ID_maxStreamlineProcessCount,
         ID_maxDomainCacheSize,
         ID_workGroupSize,
-        ID_pathlines
+        ID_pathlines,
+        ID_coloringVariable
     };
 
 private:
@@ -345,6 +351,7 @@ private:
     int            maxDomainCacheSize;
     int            workGroupSize;
     bool           pathlines;
+    std::string    coloringVariable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

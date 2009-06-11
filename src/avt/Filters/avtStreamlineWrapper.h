@@ -69,6 +69,7 @@ class avtIVPSolver;
 //   Fix operator< so that that std::map works.
 //
 // ****************************************************************************
+
 class AVTFILTERS_API DomainType
 {
   public:

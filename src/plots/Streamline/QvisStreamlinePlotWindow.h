@@ -51,6 +51,7 @@ class QSpinBox;
 class QvisColorTableButton;
 class QvisColorButton;
 class QvisLineWidthWidget;
+class QvisVariableButton;
 class StreamlineAttributes;
 
 // ****************************************************************************
@@ -95,6 +96,9 @@ class StreamlineAttributes;
 //    
 //   Hank Childs, Sat May  2 22:10:26 PDT 2009
 //   Added option for specifying seed points as a point list.
+//
+//   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
+//   Add color by variable.
 //
 // ****************************************************************************
 
@@ -158,6 +162,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void lightingFlagChanged(bool val);
     void pathlineFlagChanged(bool val);
     void useWholeBoxChanged(bool val);
+    void coloringVariableChanged(const QString &var);
     void boxExtentsProcessText();
   private:
     int plotType;
@@ -219,6 +224,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QSpinBox  *maxDomainCache;
     QLabel    *workGroupSizeLabel;
     QSpinBox  *workGroupSize;
+    QvisVariableButton *var;
+    QLabel    *varLabel;
 
     StreamlineAttributes *streamAtts;
 };

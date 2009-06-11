@@ -339,9 +339,11 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //
 //   Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
 //   Initial steps to unification with Poincare attributes.
-//   
 //   Hank Childs, Sun May  3 12:32:13 CDT 2009
 //   Added support for point list source types.
+//
+//   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
+//   Add color by variable.
 //
 // ****************************************************************************
 
@@ -391,7 +393,8 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetPointListSource(atts.GetPointList());
     streamlineFilter->SetBoxSource(atts.GetBoxExtents());
     streamlineFilter->SetUseWholeBox(atts.GetUseWholeBox());
-    streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()));
+    streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()),
+                                        atts.GetColoringVariable());
 #endif
 
     //
@@ -544,22 +547,22 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 //    Hank Childs, Tue Aug 12 15:04:40 PDT 2008
 //    If we don't have any streamlines, make sure something sensible shows up.
 //
+//   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
+//   Don't clamp max to 0.0. We can now color by a variable.
+//
 // ****************************************************************************
 
 void
 avtStreamlinePlot::SetLegendRanges()
 {
-    double min, max;
+    double min=0.0, max=0.0;
     varMapper->GetVarRange(min, max);
-
-    if (max < 0.)
-        max = 0.;
-
+    
     //
     // Set the range for the legend's text and colors.
     //
-    varLegend->SetVarRange(0., max);
-    varLegend->SetRange(0., max);
+    varLegend->SetVarRange(min, max);
+    varLegend->SetRange(min, max);
 }
 
 

@@ -69,6 +69,9 @@
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Add GetValidTimeRange.
 //
+//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//   Added ComputeScalarVariable, HasGhostZones and GetExtents methods.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPField
@@ -89,11 +92,15 @@ class IVP_API avtIVPField
                                     const avtVecRef& x) const = 0;
     virtual double       ComputeVorticity(const double& t, 
                                           const avtVecRef& x ) const = 0;
+    virtual double       ComputeScalarVariable(const double& t,
+                                               const avtVecRef& x) const = 0;
 
     virtual bool         IsInside(const double& t, 
                                   const avtVecRef& x) const = 0;
     virtual unsigned int GetDimension() const = 0;
     virtual bool         GetValidTimeRange(double range[]) const = 0;
+    virtual bool         HasGhostZones() const = 0;
+    virtual void         GetExtents(double *extents) const = 0;
 };
 
 #endif

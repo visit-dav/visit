@@ -45,6 +45,7 @@
 
 #include <avtIVPSolver.h>
 #include <MemStream.h>
+#include <string>
 #include <list>
 
 // ****************************************************************************
@@ -95,11 +96,19 @@
 //    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
 //    Removed the plane intersection code.
 //
+//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//   Removed the wantVorticity, extents and ghostzone flags. Extents and ghost
+//   zones are handled by the vtkDataSet itself. The wantVorticity was replaced
+//   with a scalarValueType which can be 'or'-d together to specify what to
+//   compute.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
 {
   public:
+    enum ScalarValueType {NONE=0, SPEED=1, VORTICITY=2, SCALAR_VARIABLE=4};
+
     typedef std::list<avtIVPStep*>::const_iterator iterator;
     avtStreamline(const avtIVPSolver* model, const double& t_start, 
                   const avtVec& p_start, int ID=-1);
@@ -108,11 +117,13 @@ class IVP_API avtStreamline
 
     avtIVPSolver::Result Advance(const avtIVPField* field,
                                  avtIVPSolver::TerminateType termType,
-                                 double end,
-                                 bool vorticity=false,
-                                 bool haveGhostZones=false,
-                                 double *extents=NULL);
+                                 double end);
 
+    void      SetScalarValueType( ScalarValueType t )
+    {
+        scalarValueType = t;
+    }
+    
     // Min/Max T of integrated streamlines.
     double    TMin() const;
     double    TMax() const;
@@ -142,23 +153,18 @@ class IVP_API avtStreamline
     avtIVPSolver::Result DoAdvance(avtIVPSolver* ivp,
                                    const avtIVPField* field,
                                    avtIVPSolver::TerminateType termType,
-                                   double end,                             
-                                   bool haveGhostZones=false,
-                                   double *extents=NULL);
+                                   double end);
 
-    void      HandleGhostZones(bool forward,
-                               bool haveGhostZones,
-                               double *extents);
+    void      HandleGhostZones(bool forward, double *extents);
 
     // Integration steps.
-    //std::list<const avtIVPStep*> _steps;
     std::list<avtIVPStep*> _steps;
 
     // Initial T and seed point.
     double _t0;
     avtVec _p0;
     
-    bool wantVorticity;
+    ScalarValueType    scalarValueType;
 
     // Solver.
     avtIVPSolver*       _ivpSolver;

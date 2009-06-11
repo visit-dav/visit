@@ -59,11 +59,15 @@
 //    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//
+//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//   Remove wantVorticity, intialize scalarValueType.
 //  
 // ****************************************************************************
 
 avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
-                             const avtVec& p_start, int ID)
+                             const avtVec& p_start, int ID) :
+    scalarValueType(NONE)
 {
     _t0 = t_start;
     _p0 = p_start;
@@ -71,7 +75,6 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
     
     _ivpSolver = model->Clone();
     _ivpSolver->Reset(_t0, _p0);
-    wantVorticity = false;
 }
 
 
@@ -81,12 +84,17 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//   Remove wantVorticity, intialize scalarValueType.
+//
 // ****************************************************************************
 
-avtStreamline::avtStreamline()
+avtStreamline::avtStreamline() :
+    scalarValueType(NONE)
 {
     _ivpSolver = NULL;
-    wantVorticity = false;
 }
 
 
@@ -139,19 +147,20 @@ avtStreamline::~avtStreamline()
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
 //
+//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//   Removed the wantVorticity, extents and ghostzone flags. Extents and ghost
+//   zones are handled by the vtkDataSet itself. The wantVorticity was replaced
+//   with a scalarValueType which can be 'or'-d together to specify what to
+//   compute.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
 avtStreamline::Advance(const avtIVPField* field,
                        avtIVPSolver::TerminateType termType,
-                       double end,
-                       bool vorticity,
-                       bool haveGhostZones,
-                       double *extents)
+                       double end)
 {
-    wantVorticity = vorticity;
-    avtIVPSolver::Result res = DoAdvance(_ivpSolver, field, termType, end,
-                                         haveGhostZones, extents);
+    avtIVPSolver::Result res = DoAdvance(_ivpSolver, field, termType, end);
     return res;
 }
 
@@ -204,18 +213,23 @@ avtStreamline::Advance(const avtIVPField* field,
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
+//
+//    Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//    Removed the wantVorticity, extents and ghostzone flags. Extents and ghost
+//    zones are handled by the vtkDataSet itself. The wantVorticity was replaced
+//    with a scalarValueType which can be 'or'-d together to specify what to
+//    compute.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
 avtStreamline::DoAdvance(avtIVPSolver* ivp,
                          const avtIVPField* field,
                          avtIVPSolver::TerminateType termType,
-                         double end,
-                         bool haveGhostZones,
-                         double *extents)
+                         double end)
 {
     avtIVPSolver::Result result;
-    
+
     // catch cases where the start position is outside the 
     // domain of field
     if (!field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()))
@@ -237,6 +251,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             result = ivp->Step(field, termType, end, step);
             if (DebugStream::Level5())
                 debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
+
         }
         catch( avtIVPField::Undefined& )
         {
@@ -264,10 +279,16 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             if( fabs(h) < 1e-9 )
             {
                 delete step;
-                HandleGhostZones((end > 0.0), haveGhostZones, extents);
+                if (!field->HasGhostZones())
+                {
+                    double bbox[6];
+                    field->GetExtents(bbox);
+                    HandleGhostZones((end > 0.0), bbox);
+                }
+
                 if (DebugStream::Level5())
                     debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN\n";
-                return avtIVPSolver::OUTSIDE_DOMAIN;            
+                return avtIVPSolver::OUTSIDE_DOMAIN;        
             }
             
             ivp->SetNextStepSize( h );
@@ -280,13 +301,19 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
         catch( std::exception& )
         {
         }
+
         // record step if it was successful
         if (result == avtIVPSolver::OK ||
             result == avtIVPSolver::TERMINATE)
         {
-            if ( wantVorticity )
-                step->ComputeVorticity( field );
-
+            //Set scalar value, if any...
+            if (scalarValueType & VORTICITY)
+                step->ComputeVorticity(field);
+            if (scalarValueType & SPEED)
+                step->ComputeSpeed(field);
+            if (scalarValueType & SCALAR_VARIABLE)
+                step->ComputeScalarVariable(field);
+            
             if (end < 0) //backwards
                 _steps.push_front( step );
             else 
@@ -338,13 +365,11 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 // ****************************************************************************
 
 void
-avtStreamline::HandleGhostZones(bool forward,
-                                bool haveGhostZones,
-                                double *extents)
+avtStreamline::HandleGhostZones(bool forward, double *extents)
 {
-    if ( haveGhostZones || extents==NULL || size() == 0 )
+    if (size() == 0 || extents == NULL)
         return;
-
+    
     // Determine the minimum non-zero data extent.
     double range[3], minRange = -1.0;
     range[0] = (extents[1]-extents[0]);
@@ -361,7 +386,8 @@ avtStreamline::HandleGhostZones(bool forward,
     
     if ( minRange < 0.0 )
         return;
-
+    
+    //Get the direction of the last step.
     avtVec dir, pt;
     if (forward)
     {
@@ -381,7 +407,7 @@ avtStreamline::HandleGhostZones(bool forward,
     double len = dir.length();
     if ( len == 0.0 )
         return;
-
+    
     //Jump out .1% of the min distance.
     dir /= len;
     double leapingDistance = minRange * 0.001;
@@ -553,8 +579,9 @@ void
 avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff, 
                          avtIVPSolver *solver)
 {
-    buff.io( mode, _p0 );
-    buff.io( mode, _t0 );
+    buff.io(mode, _p0);
+    buff.io(mode, _t0);
+    buff.io(mode, scalarValueType);
 
     // R/W the steps.
     if ( mode == MemStream::WRITE )
