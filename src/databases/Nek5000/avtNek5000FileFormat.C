@@ -2130,6 +2130,10 @@ avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName
 //    Hank Childs, Wed Feb  4 15:40:22 CST 2009
 //    Always indicate that there is a mesh at time 0.
 //
+//    Hank Childs, Fri Jun 12 16:43:51 PDT 2009
+//    Add workaround for bug reported by Stefan Kerkemeier, where timestep
+//    0 is not getting reported correctly.
+//
 // ****************************************************************************
 
 void
@@ -2145,7 +2149,15 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
     }
 
     if (readTimeInfoFor[curTimestep] == true)
+    {
+        // avtMTMDFileFormatInterface tramples on this.  Fight back.
+        metadata->SetTime(curTimestep, aTimes[curTimestep]);
+        metadata->SetTimeIsAccurate(true, curTimestep);
+        metadata->SetCycle(curTimestep, aCycles[curTimestep]);
+        metadata->SetCycleIsAccurate(true, curTimestep);
+
         return;
+    }
 
     ifstream f;
     char dummy[64];
