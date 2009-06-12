@@ -58,6 +58,11 @@
 //  Programmer: Dave Pugmire
 //  Creation:   Thu May 28 08:54:35 PDT 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire Fri Jun 12 13:05:05 EDT 2009
+//  Replace dims with a new axis data structure.
+//
 // ****************************************************************************
 
 class avtPlasmaStateFileFormat : public avtMTMDFileFormat
@@ -94,9 +99,16 @@ class avtPlasmaStateFileFormat : public avtMTMDFileFormat
         std::string mesh;
         std::string units;
         std::vector<std::string> dims;
-        avtCentering centering;
         bool timeVarying;
     } varInfo;
+
+    typedef struct
+    {
+        std::string filenm, nm;
+        std::string dim;
+        std::string units;
+        int num;
+    } axisInfo;
 
     typedef struct
     {
@@ -105,13 +117,14 @@ class avtPlasmaStateFileFormat : public avtMTMDFileFormat
         bool timeVarying;
     } meshInfo;
 
-    std::map<std::string, int>  dims;
+    std::vector<axisInfo>       axes;
     std::vector<varInfo>        vars;
     std::vector<meshInfo>       meshes;
 
-    void                   GetDimensions();
     void                   GetVariables();
+    void                   GetAxes();
     void                   GetMeshSet();
+    const axisInfo&        GetAxis(const std::string &dim) const;
 };
 
 
