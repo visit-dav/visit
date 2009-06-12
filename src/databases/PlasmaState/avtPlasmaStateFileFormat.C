@@ -58,6 +58,7 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <VisItStreamUtil.h>
 
 using namespace std;
 
@@ -67,6 +68,11 @@ using namespace std;
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Thu May 28 08:54:35 PDT 2009
+//
+//  Modifications:
+//
+//  Dave Pugmire Fri Jun 12 13:05:05 EDT 2009
+//  Replace dimensions with axes.
 //
 // ****************************************************************************
 
@@ -79,9 +85,8 @@ avtPlasmaStateFileFormat::avtPlasmaStateFileFormat(const char *filename)
     if (!file.is_valid())
         EXCEPTION1(InvalidFilesException, filename);
 
-
     //Read in metadata.
-    GetDimensions();
+    GetAxes();
     GetVariables();
     GetMeshSet();
 
@@ -100,7 +105,7 @@ avtPlasmaStateFileFormat::avtPlasmaStateFileFormat(const char *filename)
     if (fileType == PLASMA_STATE)
         nTimeSteps = 1;
     else
-        nTimeSteps = dims["timeDim"];
+        nTimeSteps = GetAxis("timeDim").num;
 }
 
 
@@ -201,27 +206,60 @@ avtPlasmaStateFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int 
 }
 
 // ****************************************************************************
-//  Method: avtPlasmaStateFileFormat::GetDimensions
+//  Method: avtPlasmaStateFileFormat::GetAxes
 //
 //  Purpose:
-//      Read dimensions.
+//      Read axes.
 //
 //  Programmer: Dave Pugmire
-//  Creation:   Thu May 28 08:54:35 PDT 2009
+//  Creation:   Fri Jun 12, 2009
 //
 // ****************************************************************************
 
 void
-avtPlasmaStateFileFormat::GetDimensions()
+avtPlasmaStateFileFormat::GetAxes()
 {
-    int ndim = file.num_dims();
-    for (int i=0; i < ndim; i++)
+    axes.resize(0);
+    int nvars = file.num_vars();
+    for (int i=0; i<nvars; i++)
     {
-        NcDim *d = file.get_dim(i);
+        NcVar *v = file.get_var(i);
+        if (!v || !v->is_valid() || v->num_dims() != 1)
+            continue;
+
+        NcDim *d = v->get_dim(0);
         if (!d || !d->is_valid())
             continue;
 
-        dims[d->name()] = d->size();
+        // Get the time axis, other wise skip it!
+        if (string(v->name()) != "time" &&
+            string(d->name()) == "timeDim")
+        {
+            continue;
+        }
+
+        axisInfo info;
+        info.filenm = v->name();
+        info.nm = v->name();
+        size_t idx = info.nm.rfind("_");
+        if (idx != -1)
+            info.nm = info.nm.substr(0,idx);
+        info.dim = d->name();
+        info.num = d->size();
+
+        info.units = "";
+        if (v->num_atts() > 0)
+        {
+            NcAtt *units = v->get_att("units");
+            if (units && units->is_valid())
+            {
+                string s = units->as_string(0);
+                if (s != "" && s != "-")
+                    info.units = s;
+            }
+        }
+        
+        axes.push_back(info);
     }
 }
 
@@ -234,25 +272,31 @@ avtPlasmaStateFileFormat::GetDimensions()
 //  Programmer: Dave Pugmire
 //  Creation:   Thu May 28 08:54:35 PDT 2009
 //
+//  Modifications:
+//
+//  Dave Pugmire Fri Jun 12 13:05:05 EDT 2009
+//  Move axis variables into the axes memberdata.
+//
 // ****************************************************************************
 
 void
 avtPlasmaStateFileFormat::GetVariables()
 {
     vars.resize(0);
-
+    
     int nvars = file.num_vars();
     for (int i=0; i<nvars; i++)
     {
         NcVar *v = file.get_var(i);
-        if (!v || !v->is_valid())
+        if (!v || !v->is_valid() || v->num_dims() <= 1)
             continue;
-        
+
         varInfo info;
         info.filenm = v->name();
         info.nm = FixName(v->name());
         info.timeVarying = false;
 
+        vector<string> dims0;
         for (int j = 0; j < v->num_dims(); j++)
         {
             NcDim *d = v->get_dim(j);
@@ -262,17 +306,21 @@ avtPlasmaStateFileFormat::GetVariables()
             if (string(d->name()) == string("timeDim"))
                 info.timeVarying = true;
             else
-                info.dims.push_back(d->name());
+                dims0.push_back(d->name());
         }
-
-        if (info.dims.size() == 0)
+        
+        if (dims0.size() == 0)
             continue;
+
+        //Reverse the dims (need this for 2D vars).
+        for (int j = dims0.size()-1; j>= 0; j--)
+            info.dims.push_back(dims0[j]);
 
         //Form the mesh name.
         info.mesh = info.dims[0];
         for (int i = 1; i < info.dims.size(); i++)
             info.mesh = info.mesh + "_X_" + info.dims[i];
-
+        
         //Units, if any.
         info.units = "";
         NcAtt *units = v->get_att("units");
@@ -282,12 +330,7 @@ avtPlasmaStateFileFormat::GetVariables()
             if (s != "" && s != "-")
                 info.units = s;
         }
-
-        //Centering.
-        info.centering = AVT_NODECENT;
-        if (info.nm.find("zone") != -1)
-            info.centering = AVT_ZONECENT;
-
+        
         vars.push_back(info);
     }
 }
@@ -335,6 +378,28 @@ avtPlasmaStateFileFormat::GetMeshSet()
 }
 
 // ****************************************************************************
+//  Method: avtPlasmaStateFileFormat::GetAxis
+//
+//  Purpose:
+//      Lookup an axis by name.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Fri Jun 12, 2009
+//
+// ****************************************************************************
+
+const avtPlasmaStateFileFormat::axisInfo&
+avtPlasmaStateFileFormat::GetAxis(const std::string &dim) const
+{
+    for (int i = 0; i < axes.size(); i++)
+    {
+        if (axes[i].dim == dim)
+            return axes[i];
+    }
+    EXCEPTION1(InvalidVariableException, dim);
+}
+
+// ****************************************************************************
 //  Method: avtPlasmaStateFileFormat::MonitorPopulateMD
 //
 //  Purpose:
@@ -344,6 +409,11 @@ avtPlasmaStateFileFormat::GetMeshSet()
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Thu May 28 08:54:35 PDT 2009
+//
+//  Modifications:
+//
+//  Dave Pugmire Fri Jun 12 13:05:05 EDT 2009
+//  Uses new axes data to populate metadata.
 //
 // ****************************************************************************
 
@@ -366,9 +436,21 @@ avtPlasmaStateFileFormat::MonitorPopulateMD(avtDatabaseMetaData *md, int timeSta
         mesh->blockTitle = "blocks";
         mesh->blockPieceName = "block";
         mesh->hasSpatialExtents = false;
-        mesh->xUnits = "m"; //Get these!
-        mesh->yUnits = "m";
-        mesh->zUnits = "m";
+        
+        mesh->xLabel = GetAxis(meshes[i].dims[0]).nm;
+        mesh->xUnits = GetAxis(meshes[i].dims[0]).units;
+        mesh->yUnits = "";
+        mesh->zUnits = "";
+        if (meshes[i].dims.size() > 1)
+        {
+            mesh->yUnits = GetAxis(meshes[i].dims[1]).units;
+            mesh->yLabel = GetAxis(meshes[i].dims[1]).nm;
+        }
+        if (meshes[i].dims.size() > 2)
+        {
+            mesh->zUnits = GetAxis(meshes[i].dims[2]).units;
+            mesh->zLabel = GetAxis(meshes[i].dims[2]).nm;
+        }
         md->Add(mesh);
 
         debug5<<"Mesh: "<<mesh->name<<" "<<mesh->spatialDimension<<" "<<mesh->topologicalDimension<<endl;
@@ -383,9 +465,9 @@ avtPlasmaStateFileFormat::MonitorPopulateMD(avtDatabaseMetaData *md, int timeSta
         avtScalarMetaData *var = new avtScalarMetaData();
         var->name = vars[i].nm;
         var->meshName = vars[i].mesh;
-        var->centering = vars[i].centering;
         var->hasDataExtents = false;
         var->treatAsASCII = false;
+        var->centering = AVT_NODECENT;
         
         var->hasUnits = false;
         if (vars[i].units != "")
@@ -407,13 +489,10 @@ avtPlasmaStateFileFormat::MonitorPopulateMD(avtDatabaseMetaData *md, int timeSta
 
         avtCurveMetaData *crv = new avtCurveMetaData();
         crv->name = vars[i].nm;
-        crv->xLabel = "";
+        crv->xLabel = GetAxis(vars[i].dims[0]).nm;
+        crv->xUnits = GetAxis(vars[i].dims[0]).units;
         crv->yLabel = "";
-        crv->xUnits = "";
-        //See if we can parse the x units from the var name.
-        size_t left = vars[i].nm.find("["), right = vars[i].nm.find("]");
-        if (left !=-1 && right != -1 && (right-left-1 > 0))
-            crv->xUnits = vars[i].nm.substr(left+1,right-left-1);
+        crv->yUnits = "";
 
         crv->yUnits = vars[i].units;
         md->Add(crv);
@@ -463,6 +542,11 @@ avtPlasmaStateFileFormat::PlasmaStatePopulateMD(avtDatabaseMetaData *md, int tim
 //  Programmer: Dave Pugmire
 //  Creation:   Thu May 28 08:54:35 PDT 2009
 //
+//  Modifications.
+//
+//  Dave Pugmire Fri Jun 12 13:05:05 EDT 2009
+//  Uses new axes data. Read out the axis values.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -483,10 +567,19 @@ avtPlasmaStateFileFormat::GetMesh(int timestate, int domain, const char *meshnam
                 coords[j] = vtkFloatArray::New();
                 if (j < numDims)
                 {
-                    d[j] = dims[meshes[i].dims[j]];
+                    const axisInfo &aInfo = GetAxis(meshes[i].dims[j]);
+                    d[j] = aInfo.num;
                     coords[j]->SetNumberOfTuples(d[j]);
+
+                    //Read out the axis values.
+                    NcVar *v = file.get_var(aInfo.filenm.c_str());
+                    NcValues *values = v->values();
+                    if (!values)
+                        EXCEPTION1(InvalidVariableException, meshname);
+                    double *data = (double *)(values->base());
+                    
                     for (int k = 0; k < d[j]; k++)
-                        coords[j]->SetComponent(k, 0, k);
+                        coords[j]->SetComponent(k, 0, data[k]);
                 }
                 else
                 {
@@ -524,7 +617,7 @@ avtPlasmaStateFileFormat::GetMesh(int timestate, int domain, const char *meshnam
             if (!input)
                 EXCEPTION1(InvalidVariableException, meshname);
             
-            int npts = dims[vars[i].dims[0]];
+            int npts = GetAxis(vars[i].dims[0]).num;
 
             vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(npts, VTK_FLOAT);
             vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
@@ -536,10 +629,18 @@ avtPlasmaStateFileFormat::GetMesh(int timestate, int domain, const char *meshnam
             int offset = 0;
             if (vars[i].timeVarying)
                 offset = timestate*npts;
+
+            //Read out the axis values.
+            const axisInfo &aInfo = GetAxis(vars[i].dims[0]);
+            NcVar *va = file.get_var(aInfo.filenm.c_str());
+            NcValues *values = va->values();
+            if (!values)
+                EXCEPTION1(InvalidVariableException, meshname);
+            double *data = (double *)(values->base());
             
             for (int j = 0; j < npts; j++)
             {
-                xc->SetValue(j, (float)j);
+                xc->SetValue(j, (float)data[j]);
                 yv->SetValue(j, v->as_float(j+offset));
             }
             rg->GetPointData()->SetScalars(yv);
@@ -572,6 +673,11 @@ avtPlasmaStateFileFormat::GetMesh(int timestate, int domain, const char *meshnam
 //  Programmer: Dave Pugmire
 //  Creation:   Thu May 28 08:54:35 PDT 2009
 //
+//  Modifications.
+//
+//  Dave Pugmire Fri Jun 12 13:05:05 EDT 2009
+//  Uses new axes data.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -600,7 +706,8 @@ avtPlasmaStateFileFormat::GetVar(int timestate, int domain, const char *varname)
     if (vInfo.dims.size() != 2)
         EXCEPTION1(InvalidVariableException, varname);
 
-    int xDim = dims[vInfo.dims[0]], yDim = dims[vInfo.dims[1]];
+    int xDim = GetAxis(vInfo.dims[0]).num;
+    int yDim = GetAxis(vInfo.dims[1]).num;
     int nTuples = xDim*yDim;
     vtkFloatArray *rv = vtkFloatArray::New();
     
@@ -614,15 +721,8 @@ avtPlasmaStateFileFormat::GetVar(int timestate, int domain, const char *varname)
     
     //Get the data array and offset to the nth time step.
     double *data = &(((double *)values->base())[timestate*nTuples]);
-    
-    //Need to transpose it.
-    int cnt = 0;
-    for (int x = 0; x < xDim; x++)
-        for (int y = 0; y < yDim; y++)
-        {
-            p[y*xDim + x] = data[cnt];
-            cnt++;
-        }
+    for (int i = 0; i < nTuples; i++)
+        p[i] = data[i];
     
     return rv;
 }
