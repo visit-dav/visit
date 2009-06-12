@@ -331,6 +331,10 @@ VisWinUserInfo::SetVisibility(bool val)
 //   Brad Whitlock, Wed Mar 26 14:41:55 PDT 2008
 //   Changed height to scale in the text attributes.
 //
+//   Brad Whitlock, Thu Jun 11 11:18:13 PDT 2009
+//   If we can't get the username, use the string "user" as the username so
+//   the code doesn't crash.
+//
 // ****************************************************************************
 
 void
@@ -350,9 +354,9 @@ VisWinUserInfo::UpdateUserText()
 #else
         user = getenv("USER");
         if (user == NULL)
-        {
             user = getenv("LOGNAME");
-        }
+        if(user == NULL)
+            user = "user";
 #endif
 
         //

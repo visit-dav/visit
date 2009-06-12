@@ -43,7 +43,9 @@
 #include <vtkTexture.h>
 
 #include "vtkOpenGLTexturedBackgroundMapper.h"
+#ifdef VTK_USE_MANGLED_MESA
 #include "vtkMesaTexturedBackgroundMapper.h"
+#endif
 
 // ****************************************************************************
 // Method: vtkTexturedBackgroundActor::vtkTexturedBackgroundActor
@@ -193,6 +195,7 @@ vtkTexturedBackgroundActor::GetInitializedMapper()
 {
     if(GetMapper() == NULL)
     {
+#ifdef VTK_USE_MANGLED_MESA
         if(vtkGraphicsFactory::GetUseMesaClasses())
         {
             vtkMesaTexturedBackgroundMapper *m = 
@@ -200,11 +203,14 @@ vtkTexturedBackgroundActor::GetInitializedMapper()
             this->SetMapper(m);
         }
         else
-        {  
+        {
+#endif
             vtkOpenGLTexturedBackgroundMapper *m = 
                 vtkOpenGLTexturedBackgroundMapper::New();
             this->SetMapper(m);
+#ifdef VTK_USE_MANGLED_MESA
         }
+#endif
     }
     return GetMapper();
 }
@@ -324,6 +330,7 @@ vtkTexturedBackgroundActor::SetTextureAndRenderers(const char *imgFile,
         texture = tex;
     }
 
+#ifdef VTK_USE_MANGLED_MESA
     if(vtkGraphicsFactory::GetUseMesaClasses())
     {
         vtkMesaTexturedBackgroundMapper *m = 
@@ -331,11 +338,14 @@ vtkTexturedBackgroundActor::SetTextureAndRenderers(const char *imgFile,
         m->SetTextureAndRenderers(texture, bg, canvas);
     }
     else
-    {  
+    {
+#endif
         vtkOpenGLTexturedBackgroundMapper *m = 
             (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
         m->SetTextureAndRenderers(texture, bg, canvas);
+#ifdef VTK_USE_MANGLED_MESA
     }
+#endif
 
     return (texture == 0) ? -1 : 0;
 }
@@ -363,6 +373,7 @@ vtkTexturedBackgroundActor::SetTextureAndRenderers(const char *imgFile,
 void
 vtkTexturedBackgroundActor::SetSphereMode(bool sphereMode)
 {
+#ifdef VTK_USE_MANGLED_MESA
     if(vtkGraphicsFactory::GetUseMesaClasses())
     {
         vtkMesaTexturedBackgroundMapper *m = 
@@ -371,10 +382,13 @@ vtkTexturedBackgroundActor::SetSphereMode(bool sphereMode)
     }
     else
     {  
+#endif
         vtkOpenGLTexturedBackgroundMapper *m = 
             (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
         m->SetSphereMode(sphereMode);
+#ifdef VTK_USE_MANGLED_MESA
     }
+#endif
 }
 
 // ****************************************************************************
@@ -401,6 +415,7 @@ vtkTexturedBackgroundActor::SetSphereMode(bool sphereMode)
 void
 vtkTexturedBackgroundActor::SetImageRepetitions(int nx, int ny)
 {
+#ifdef VTK_USE_MANGLED_MESA
     if(vtkGraphicsFactory::GetUseMesaClasses())
     {
         vtkMesaTexturedBackgroundMapper *m = 
@@ -409,9 +424,12 @@ vtkTexturedBackgroundActor::SetImageRepetitions(int nx, int ny)
     }
     else
     {  
+#endif
         vtkOpenGLTexturedBackgroundMapper *m = 
             (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
         m->SetImageRepetitions(nx, ny);
+#ifdef VTK_USE_MANGLED_MESA
     }
+#endif
 }
 

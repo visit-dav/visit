@@ -248,6 +248,10 @@
 //    Brad Whitlock, Wed Oct 15 14:27:59 PDT 2008
 //    Added support for additional Java source.
 //
+//    Brad Whitlock, Wed Jun 10 11:44:51 PDT 2009
+//    I changed the code so Mesa sources are not added unless configure
+//    detected that VTK uses mangled mesa.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin : public Plugin
@@ -597,8 +601,10 @@ class MakefileGeneratorPlugin : public Plugin
                     int suffix = vfiles[i].lastIndexOf(".");
                     if(suffix > 0 && vfiles[i].indexOf("Mesa") != -1)
                     {
+#ifdef VISIT_USE_MANGLED_MESA
                         if(vGraphicsObjects.length() == 0) vGraphicsObjects += " ";
                         vGraphicsObjects += (vfiles[i].left(suffix) + "_mesa.o ");
+#endif
                     }
                     else if(suffix > 0 && vfiles[i].indexOf("OpenGL") != -1)
                     {
@@ -628,12 +634,14 @@ class MakefileGeneratorPlugin : public Plugin
                     int suffix = efiles[i].lastIndexOf(".");
                     if(suffix > 0 && efiles[i].indexOf("Mesa") != -1)
                     {
+#ifdef VISIT_USE_MANGLED_MESA
                         QString root(efiles[i].left(suffix));
 
                         if(eserGraphicsObjects.length() == 0) eserGraphicsObjects += " ";
                         if(eparGraphicsObjects.length() == 0) eparGraphicsObjects += " ";
                         eserGraphicsObjects += (root + "_mesa.o ");
                         eparGraphicsObjects += (root + "_par_mesa.o ");
+#endif
                     }
                     else if(suffix > 0 && efiles[i].indexOf("OpenGL") != -1)
                     {

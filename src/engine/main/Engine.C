@@ -1423,6 +1423,9 @@ Engine::PAR_ProcessInput()
 //    Sean Ahern, Wed Dec 12 12:04:15 EST 2007
 //    Made a distinction between the execution and the idle timeouts.
 //
+//    Brad Whitlock, Thu Jun 11 15:12:36 PST 2009
+//    I disabled the call to NeedsRead when we don't have select().
+//
 // ****************************************************************************
 
 bool
@@ -1444,8 +1447,10 @@ Engine::EventLoop()
         // Block until the connection needs to be read. Then process its
         // new input.
         //
+#ifdef HAVE_SELECT
         if (xfer->GetInputConnection()->NeedsRead(true))
         {
+#endif
             TRY
             {
                 // We've got some work to do.  Reset the alarm.
@@ -1467,7 +1472,9 @@ Engine::EventLoop()
                 errFlag = true;
             }
             ENDTRY
+#ifdef HAVE_SELECT
         }
+#endif
     }
 
     return errFlag;
@@ -2506,12 +2513,16 @@ Engine::SendKeepAliveReply()
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Brad Whitlock, Thu Jun 11 15:08:46 PST 2009
+//    I disabled this code if we don't have select().
+//
 // ****************************************************************************
 
 bool
 Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
 {
-
+#ifdef HAVE_SELECT
 #ifdef PARALLEL
     MPIXfer *xfer = (MPIXfer*)data;
 #else
@@ -2556,6 +2567,9 @@ Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
         xfer->SendInterruption(INTERRUPT_MESSAGE_TAG);
 #endif
     return abort;
+#else
+    return false;
+#endif
 }
 
 // ****************************************************************************

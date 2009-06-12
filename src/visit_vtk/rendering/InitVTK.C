@@ -46,7 +46,9 @@
 #include <vtkVisItDataSetMapper.h>
 #include <vtkVisItOpenGLPolyDataMapper.h>
 #include <vtkVisItOpenGLTexture.h>
+#ifdef VTK_USE_MANGLED_MESA
 #include <vtkVisItMesaPolyDataMapper.h>
+#endif
 #include <vtkVisItRectilinearGrid.h>
 #include <vtkVisItStructuredGrid.h>
 #if defined(__APPLE__)
@@ -83,7 +85,9 @@ class vtkVisItGraphicsFactory : public vtkObjectFactory
 //
 VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLTexture);
+#ifdef VTK_USE_MANGLED_MESA
 VTK_CREATE_CREATE_FUNCTION(vtkVisItMesaPolyDataMapper);
+#endif
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
@@ -137,10 +141,12 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          "vtkVisItOpenGLPolyDataMapper override vtkOpenGLPolyDataMapper",
                          1,
                          vtkObjectFactoryCreatevtkVisItOpenGLPolyDataMapper);
+#ifdef VTK_USE_MANGLED_MESA
   this->RegisterOverride("vtkMesaPolyDataMapper", "vtkVisItMesaPolyDataMapper",
                          "vtkVisItMesaPolyDataMapper override vtkMesaPolyDataMapper",
                          1,
                          vtkObjectFactoryCreatevtkVisItMesaPolyDataMapper);
+#endif
   this->RegisterOverride("vtkCellDataToPointData", "vtkVisItCellDataToPointData",
                          "vtkVisItCellDataToPointData override vtkCellDataToPointData",
                          1,
@@ -221,12 +227,16 @@ InitVTK::Initialize(void)
 //    Use vtkGraphicsFactory and vtkImagingFactory static variables to
 //    handle Mesa objects.
 //
+//    Brad Whitlock, Wed Jun 10 11:59:54 PDT 2009
+//    Force mangled mesa to be defined before telling the factories to use
+//    mesa classes.
+//
 // ****************************************************************************
 
 void
 InitVTK::ForceMesa(void)
 {
-#if !defined(_WIN32)
+#if !defined(_WIN32) && defined(VTK_USE_MANGLED_MESA)
     vtkGraphicsFactory::SetUseMesaClasses(1);
     vtkImagingFactory::SetUseMesaClasses(1);
 #endif
@@ -235,7 +245,7 @@ InitVTK::ForceMesa(void)
 void
 InitVTK::UnforceMesa(void)
 {
-#if !defined(_WIN32)
+#if !defined(_WIN32) && defined(VTK_USE_MANGLED_MESA)
     vtkGraphicsFactory::SetUseMesaClasses(0);
     vtkImagingFactory::SetUseMesaClasses(0);
 #endif

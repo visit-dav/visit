@@ -196,9 +196,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 1.12</font></b></p>
 <ul>
   <li>xml2projectfile is now built by default</li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>VisIt's configure script now provides an --enable-engine-only option that lets you
+      build just the compute engine and its plugins. This option is useful when you need to 
+      build just a compute engine for a remote server.</li>
+  <li>VisIt's configure script now provides an --enable-server-components-only option that
+      lets you build only the compute engine, mdserver, vcl, and their plugins.</li>
+  <li>VisIt's compute engine was ported to BlueGene/P.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

@@ -81,9 +81,6 @@
 /* Define if you have pyparsing. */
 #undef HAVE_PYPARSING
 
-/* Define to 1 if you have the `select' function. */
-#undef HAVE_SELECT
-
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
 
@@ -234,6 +231,12 @@
 
 /* VisIt version */
 #undef VISIT_VERSION
+
+/* Enable use of mangled Mesa classes in VisIt. */
+#undef VISIT_USE_MANGLED_MESA
+
+/* Define if we want to use VisIt's no-spin BCast. */
+#undef VISIT_USE_NOSPIN_BCAST
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */

@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <SocketConnection.h>
+#include <visit-config.h>
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <win32commhelpers.h>
@@ -47,7 +48,9 @@
 #include <unistd.h>
 #include <signal.h>
 #endif
+#ifdef HAVE_SELECT
 #include <SysCall.h>
+#endif
 #include <LostConnectionException.h>
 
 // ****************************************************************************
@@ -470,11 +473,15 @@ SocketConnection::DirectWrite(const unsigned char *buf, long ntotal)
 //    Tom Fogal, Sat Feb 16 15:47:15 EST 2008
 //    Restart the system call if it gets interrupted.
 //
+//    Brad Whitlock, Thu Jun 11 15:14:50 PST 2009
+//    Don't call select if we don't have it.
+//
 // ****************************************************************************
 
 bool
 SocketConnection::NeedsRead(bool blocking) const
 {
+#ifdef HAVE_SELECT
     // Set up a file descriptor set that only consists of the descriptor
     // used by this connection.
     fd_set readSet;
@@ -500,4 +507,8 @@ SocketConnection::NeedsRead(bool blocking) const
     }
 
     return (ret > 0);
+#else
+    // Assume that read will block for input.
+    return true;
+#endif
 }

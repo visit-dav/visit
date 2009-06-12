@@ -177,8 +177,11 @@
 #   Thomas R. Treadway, Tue Mar 27 12:52:26 PDT 2007
 #   Added $(MESA_LIBS)  
 #
-#    Thomas R. Treadway, Wed May  9 11:39:17 PDT 2007
-#    Added OpenGL libraries (framework) for MacOS X10.3 build
+#   Thomas R. Treadway, Wed May  9 11:39:17 PDT 2007
+#   Added OpenGL libraries (framework) for MacOS X10.3 build
+#
+#   Brad Whitlock, Wed Jun 10, 12:13:23 PDT 2009
+#   I changed how Mesa sources are added to the project.
 #
 ##############################################################################
 
@@ -211,8 +214,8 @@ SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
 
 CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
-SEROBJ=$(SRC:.C=.o) $(SEROPENGL_OBJ) $(SERMESA_OBJ)
-PAROBJ=$(SRC:.C=_par.o) $(PAROPENGL_OBJ) $(PARMESA_OBJ)
+SEROBJ=$(SRC:.C=.o) $(SEROPENGL_OBJ) @SERMESA_OBJ@
+PAROBJ=$(SRC:.C=_par.o) $(PAROPENGL_OBJ) @PARMESA_OBJ@
 LIB=libplotter
 LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(GL_LIBS) $(ZLIB_LIB) $(GLEW_LIBS)
 SERLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)

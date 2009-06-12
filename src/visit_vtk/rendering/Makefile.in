@@ -347,9 +347,9 @@ SRC=InitVTK.C \
     vtkMultiFontVectorText.C \
     vtkVectorFontCharacterData.C
 
-CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I../../include -I. $(GLEW_INCLUDE)
+CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @X_CPPFLAGS@ @ANNOTATION_FLAGS@ -I../../include -I. $(GLEW_INCLUDE)
 
-OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) $(MESA_OBJ)
+OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) @MESA_OBJ@
 LIB=librendering_visit_vtk
 LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(GL_LIBS) -framework Carbon
 LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk $(GLEW_LIBS) $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)

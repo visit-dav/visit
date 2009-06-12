@@ -1631,7 +1631,12 @@ for ($os) {
             push @supportedarchs, "linux-x86_64";
         }
         elsif ($mach =~ /ppc64/) {
-            push @supportedarchs, "linux-ppc64";
+            if ($exe_name eq "engine" && $req_compiler eq "powerpc-bgp-linux-g++") {
+                push @supportedarchs, "linux-ppc64-powerpc-bgp-linux-g++";
+            }
+            else {
+                push @supportedarchs, "linux-ppc64";
+            }
         }
         else {
             if ($req_compiler eq "icc") {

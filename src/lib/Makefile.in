@@ -180,6 +180,10 @@
 #    builds, this can lead to very bad things, like removing everything in
 #    this directory! So, I added logic for all these cases to test for
 #    non-empty string before doing something with it.
+#
+#    Brad Whitlock, Fri Jun 12 14:34:34 PST 2009
+#    I changed the links for libGLU in case it has several names.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -293,8 +297,8 @@ libmesagl:
 	-test -n "$(LIBMESAGL)" && ln -s @MESA_DIR@/lib/$(LIBMESAGL)*  .
 
 libGLU:
-	-test -n "$(LIBGLU)" && $(RM) $(LIBGLU)
-	-test -n "$(LIBGLU)" && ln -s @MESA_DIR@/lib/$(LIBGLU)  .
+	-test -n "$(LIBGLU)" && $(RM) $(LIBGLU)*
+	-test -n "$(LIBGLU)" && ln -s @MESA_DIR@/lib/$(LIBGLU)*  .
 
 libosmesa:
 	-test -n "$(LIBOSMESA)" && $(RM) $(LIBOSMESA)*

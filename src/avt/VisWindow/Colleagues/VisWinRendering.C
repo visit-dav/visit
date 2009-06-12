@@ -65,6 +65,7 @@
 
 // HACK HACK
 #include <GL/gl.h>
+#ifdef VTK_USE_MANGLED_MESA
 extern "C" {
 #if defined(_WIN32)
 // On Windows, we get these functions from a DLL so we have to have
@@ -76,6 +77,7 @@ void mglDepthMask(GLboolean);
 void mglColorMask(GLboolean,GLboolean,GLboolean,GLboolean);
 #endif
 }
+#endif
 
 static void RemoveCullers(vtkRenderer *);
 
@@ -995,7 +997,11 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    Hank Childs, Wed Mar  1 11:26:15 PST 2006
 //    Add some exception handling.
 //
+//    Brad Whitlock, Wed Jun 10 12:26:48 PDT 2009
+//    Don't use mgl functions unless we have mangled mesa.
+//
 // ****************************************************************************
+
 void
 VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
                               bool doOpaque, bool doTranslucent,
@@ -1041,6 +1047,7 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
         // data.  Unless I override vtkRenderWindow, vtkOpenGLRenderWindow,
         // vtkXOpenGLRenderWindow, vtkWin32OpenGLRenderWindow,
         // vtkMesaRenderWindow, vtkXMesaRenderWindow, and so on....
+#ifdef VTK_USE_MANGLED_MESA
         if (renWin->IsA("vtkMesaRenderWindow"))
         {
             mglDepthMask(GL_FALSE);
@@ -1053,6 +1060,7 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
         }
         else
         {
+#endif
             glDepthMask(GL_FALSE);
             renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf,renWin->GetDoubleBuffer());
             glDepthMask(GL_TRUE);
@@ -1060,7 +1068,9 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
             glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
             renWin->SetZbufferData(r0,c0,w-1,h-1,zbuf);
             glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+#ifdef VTK_USE_MANGLED_MESA
         }
+#endif
     }
 
     //
