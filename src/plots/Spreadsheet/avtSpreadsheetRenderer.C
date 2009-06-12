@@ -47,7 +47,9 @@
 #include <avtCallback.h>
 
 #include <avtOpenGLSpreadsheetTraceRenderer.h>
+#ifdef VTK_USE_MANGLED_MESA
 #include <avtMesaSpreadsheetTraceRenderer.h>
+#endif
 
 // ****************************************************************************
 // Method: avtSpreadsheetRenderer::avtSpreadsheetRenderer
@@ -207,6 +209,9 @@ avtSpreadsheetRenderer::SetForegroundColor(const double *fg)
 //   Support showing current cell outline. Calculate bounds from data set if
 //   "avtOriginalBounds" does not exist.
 //
+//   Brad Whitlock, Wed Jun 10 14:10:34 PST 2009
+//   I made Mesa suport be conditional.
+//
 // ****************************************************************************
 
 void
@@ -229,9 +234,11 @@ avtSpreadsheetRenderer::RenderTracePlane(vtkDataSet *ds)
     {
         if(rendererImplementation == 0)
         {
+#ifdef VTK_USE_MANGLED_MESA
             if(avtCallback::GetSoftwareRendering())
                 rendererImplementation = new avtMesaSpreadsheetTraceRenderer;
             else
+#endif
                 rendererImplementation = new avtOpenGLSpreadsheetTraceRenderer;
         }
          

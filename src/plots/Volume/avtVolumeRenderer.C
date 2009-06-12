@@ -52,14 +52,16 @@
 
 #include <avtCallback.h>
 #include <avtOpenGLSplattingVolumeRenderer.h>
-#include <avtMesaSplattingVolumeRenderer.h>
 #include <avtOpenGL3DTextureVolumeRenderer.h>
-#include <avtMesa3DTextureVolumeRenderer.h>
 #ifdef USE_TUVOK
 # include <avtOpenGLTuvokVolumeRenderer.h>
 #endif
 #ifdef HAVE_LIBSLIVR
 # include <avtOpenGLSLIVRVolumeRenderer.h>
+#endif
+#ifdef VTK_USE_MANGLED_MESA
+#include <avtMesaSplattingVolumeRenderer.h>
+#include <avtMesa3DTextureVolumeRenderer.h>
 #endif
 
 #include <DebugStream.h>
@@ -250,6 +252,9 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Tom Fogal, Wed Mar 25 13:19:40 MST 2009
 //    Don't try to instantiate a Tuvok renderer unless USE_TUVOK is defined.
 //
+//    Brad Whitlock, Wed Jun 10 14:00:37 PST 2009
+//    I made Mesa support be conditional.
+//
 // ****************************************************************************
 
 void
@@ -262,6 +267,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         if (rendererImplementation)
             delete rendererImplementation;
 
+#ifdef VTK_USE_MANGLED_MESA
         if (avtCallback::GetSoftwareRendering())
         {
             if (atts.GetRendererType() == VolumeAttributes::Splatting)
@@ -292,7 +298,8 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
             }
         }
         else
-        { 
+        {
+#endif
             if (atts.GetRendererType() == VolumeAttributes::Splatting)
             {
                 debug5 << "Creating a (HW) Splatting renderer." << std::endl;
@@ -319,7 +326,9 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
             }
         }
         currentRendererIsValid = true;
+#ifdef VTK_USE_MANGLED_MESA
     }
+#endif
 
     if (!initialized)
     {

@@ -400,6 +400,12 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    some firewalls that try to close sockets that don't send data within
 //    some short period of time.
 //
+//    Brad Whitlock, Wed Jun 10 16:46:39 PST 2009
+//    I added code to catch LostConnectionException. I was getting it while
+//    debugging an engine that crashed right after connecting. We were
+//    were allowing the exception to propagate to a level where the viewer
+//    self-quit because it incorrectly thought the GUI had died.
+//
 // ****************************************************************************
 
 bool
@@ -612,6 +618,18 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
                          "might want to check the job control system "
                          "on \"%2\" to be sure the job is no longer present").
                       arg(ek.HostName().c_str()).arg(ek.HostName().c_str());
+        Error(msg);
+    }
+    CATCH(LostConnectionException)
+    {
+        // Delete the new engine since we lost the connection to it.
+        delete newEngine.proxy;
+        ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
+
+        // Tell the user that the engine was not launched
+        QString msg = tr("Communication with the compute engine on "
+                         "host \"%1\" has been lost.").
+                      arg(ek.HostName().c_str());
         Error(msg);
     }
     ENDTRY

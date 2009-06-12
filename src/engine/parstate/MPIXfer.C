@@ -46,8 +46,13 @@
 #include <TimingsManager.h>
 
 #include <visitstream.h>
+#include <visit-config.h>
 
+#if defined(HAVE_SELECT) && defined(VISIT_USE_NOSPIN_BCAST)
 int MPIXfer::nanoSecsOfSleeps = 50000000; // 1/20th of a second
+#else
+int MPIXfer::nanoSecsOfSleeps = 0;        // Use MPI_Bcast
+#endif
 int MPIXfer::secsOfSpinBeforeSleeps = 5;  // 5 seconds
 void (*MPIXfer::slaveProcessInstruction)() = NULL;
 const int UI_BCAST_TAG = GetUniqueStaticMessageTag();

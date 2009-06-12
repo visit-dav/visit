@@ -46,7 +46,6 @@
 
 #include <vtkCamera.h>
 #include <vtkImageData.h>
-//#include <vtkMesaRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkWindowToImageFilter.h>
@@ -182,8 +181,6 @@ avtDrawer::Execute(void)
     vtkCamera *camera = ren->GetActiveCamera();
     viewInfo.SetCameraFromView(camera);
 
-//    vtkMesaRenderWindow *win = vtkMesaRenderWindow::New();
-//    win->SetOffScreenRendering(1);
     vtkRenderWindow *win = vtkRenderWindow::New();
     win->SetSize(windowSize);
     win->AddRenderer(ren);

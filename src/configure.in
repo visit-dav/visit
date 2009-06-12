@@ -956,6 +956,11 @@ dnl
 dnl    Hank Childs, Tue May  5 01:03:49 CDT 2009
 dnl    Put -lGLU into the SLIVR libs.
 dnl
+dnl    Brad Whitlock, Thu Jun 11 15:31:48 PST 2009
+dnl    I've made many changes, including: --enable-engine-only, 
+dnl    --enable-server-components-only, --disable-select, --disable-nospin-bcast.
+dnl    These are aimed at getting VisIt to build on BlueGene/P.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1386,6 +1391,9 @@ AC_LANG_C
 # Set up some VTK variables.
 #
 AC_MSG_CHECKING(for VTK)
+MESA_OBJ=""
+SERMESA_OBJ=""
+PARMESA_OBJ=""
 if test -n "$VTK"; then
     AC_MSG_RESULT(found)
     VTK_DIR=$VTK
@@ -1396,6 +1404,16 @@ if test -n "$VTK"; then
         VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
     else
         VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib -lvtkexpat -lvtksys"
+    fi
+
+    # Determine whether VTK was built with mangled Mesa support. If it wasn't
+    # then there is code in VisIt that we do not want to compile.
+    useMangledMesa=`grep "define VTK_USE_MANGLED_MESA" $VTK/vtkToolkits.h`
+    if test -n "$useMangledMesa" ; then
+        AC_DEFINE(VISIT_USE_MANGLED_MESA, [1], [Enable use of mangled Mesa classes in VisIt.])
+        MESA_OBJ="$""(MESA_OBJ)"
+        SERMESA_OBJ="$""(SERMESA_OBJ)"
+        PARMESA_OBJ="$""(PARMESA_OBJ)"
     fi
 else
     AC_MSG_RESULT(not found)
@@ -1408,7 +1426,9 @@ AC_SUBST(VTK_DIR)
 AC_SUBST(VTK_INCLUDES)
 AC_SUBST(VTK_LIBS)
 AC_SUBST(VTK_LIGHTWEIGHT_LIBS)
-
+AC_SUBST(MESA_OBJ)
+AC_SUBST(SERMESA_OBJ)
+AC_SUBST(PARMESA_OBJ)
 
 #
 # Check for the avtprep directory
@@ -3404,10 +3424,13 @@ fi
 #
 if test "$no_x" != "yes"; then
     AC_CHECK_LIB(X11,  main, X_LIBS="-lX11 -lXt $X_LIBS"         ,,$X_LIBS)
+    X_CPPFLAGS="-DHAVE_XLIB"
 else
     X_LIBS=""
+    X_CPPFLAGS="-DHAVE_XLIB"
 fi
 AC_SUBST(X_LIBS)
+AC_SUBST(X_CPPFLAGS)
 
 #
 # Look for pthreads. If they are present then define a flag
@@ -3586,19 +3609,35 @@ this might have happened.]
 AC_TYPE_UID_T
 
 #
-# If tflops_override is 'no' then do the following checks.
+# Check to see if we want to use VisIt's no-spin Bcast function. We want to use it
+# unless the user gave --disable-nospin-bcast
 #
-if test 'no' = $tflops_override; then
-    dnl
-    dnl Check for library functions.  If we don't have one, we can't continue.
-    dnl
-    AC_CHECK_FUNCS(select div strerror,
-                   ,
-                   AC_MSG_ERROR([$0 wasn't able to find a necessary library
-                                function (see above).])
-                  )
+AC_ARG_ENABLE(nospin-bcast,
+              [  --disable-nospin-bcast           Use straight MPI_BCast instead of VisIt's no-spin BCast for getting commands from rank 0],
+              UseSelect="$enable_nospin_bcast",UseNoSpinBCast=yes)
+if test "$UseNoSpinBCast" == "yes" ; then
+    AC_DEFINE(VISIT_USE_NOSPIN_BCAST, [1], [Define if we want to use VisIt's no-spin BCast.])
 fi
 
+#
+# Check to see if we want to use the select() function. We want to use it
+# unless the user gave --disable-select
+#
+AC_ARG_ENABLE(select,
+              [  --disable-select           build without using the select function],
+              UseSelect="$enable_select",UseSelect=yes)
+if test "$UseSelect" == "yes" ; then
+    SELECT_FUNCTION="select" 
+fi
+
+#
+# Check for library functions.  If we don't have one, we can't continue.
+#
+AC_CHECK_FUNCS($SELECT_FUNCTION div strerror,
+               ,
+               AC_MSG_ERROR([$0 wasn't able to find a necessary library
+                            function (see above).])
+              )
 
 #
 # Figure out how to create shared libraries

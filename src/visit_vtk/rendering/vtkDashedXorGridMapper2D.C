@@ -60,7 +60,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windows.h>
 #elif defined(__APPLE__)
 #include <Carbon/Carbon.h>
-#else
+#elif defined(HAVE_X11)
 #include <X11/Intrinsic.h>
 #endif
 
@@ -315,7 +315,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     r.size.height = info->h;
     CGContextClearRect(overlay->ctx, r);
 
-#else
+#elif defined(HAVE_X11)
 //
 // X11 coding and macros
 //
@@ -375,6 +375,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     SET_FOREGROUND_D(actorColor);
 #endif
 
+#if defined(_WIN32) || defined(__APPLE__) || defined(HAVE_X11)
     int numPts;
     vtkPolyData *input= vtkPolyData::SafeDownCast(this->GetInput());
     vtkIdType npts, *pts;
@@ -635,5 +636,6 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     CLEAN_UP();
     if ( this->TransformCoordinate )
         p->Delete();
+#endif
 }
  

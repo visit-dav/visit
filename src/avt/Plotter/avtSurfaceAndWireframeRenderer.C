@@ -53,7 +53,9 @@
 
 #include <avtCallback.h>
 #include <avtOpenGLSurfaceAndWireframeRenderer.h>
+#ifdef VTK_USE_MANGLED_MESA
 #include <avtMesaSurfaceAndWireframeRenderer.h>
+#endif
 
 #include <ImproperUseException.h>
 
@@ -186,19 +188,20 @@ avtSurfaceAndWireframeRenderer::~avtSurfaceAndWireframeRenderer()
 //    Hank Childs, Sat Dec  3 20:37:07 PST 2005
 //    Change test for whether or not we are doing software rendering.
 //
+//    Brad Whitlock, Wed Jun 10 12:14:32 PDT 2009
+//    Conditional compilation for Mesa.
+//
 // ****************************************************************************
 
 avtSurfaceAndWireframeRenderer *
 avtSurfaceAndWireframeRenderer::New(void)
 {
+#ifdef VTK_USE_MANGLED_MESA
     if (avtCallback::GetSoftwareRendering())
-    {
         return new avtMesaSurfaceAndWireframeRenderer;
-    }
     else
-    {
+#endif
         return new avtOpenGLSurfaceAndWireframeRenderer;
-    }
 }
 
 
