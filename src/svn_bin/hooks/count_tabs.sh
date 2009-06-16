@@ -43,6 +43,10 @@
 #   Mark C. Miller, Thu Mar 12 09:23:57 PDT 2009
 #   Shortened switch statement for exception cases. Added bin/db_mktmpl as
 #   an exception
+#
+#   Brad Whitlock, Tue Jun 16 09:26:57 PDT 2009
+#   Allow aclocal.m4 to have tabs.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -70,7 +74,7 @@ while read fline; do
         *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake|*.tcl)
             continue
             ;;
-        */src/configure|*/svn_bin/build_visit|*/bin/db_mktmpl)
+        */src/configure|*/src/aclocal.m4|*/svn_bin/build_visit|*/bin/db_mktmpl)
             continue
             ;;
         *Makefile)
