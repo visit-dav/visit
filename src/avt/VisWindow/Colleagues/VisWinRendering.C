@@ -50,6 +50,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkInteractorStyle.h>
+#include <vtkToolkits.h>
 
 #include <RenderingAttributes.h>
 

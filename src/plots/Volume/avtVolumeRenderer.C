@@ -47,6 +47,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkToolkits.h>
 #include <math.h>
 #include <float.h>
 

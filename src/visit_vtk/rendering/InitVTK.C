@@ -46,6 +46,7 @@
 #include <vtkVisItDataSetMapper.h>
 #include <vtkVisItOpenGLPolyDataMapper.h>
 #include <vtkVisItOpenGLTexture.h>
+#include <vtkToolkits.h>
 #ifdef VTK_USE_MANGLED_MESA
 #include <vtkVisItMesaPolyDataMapper.h>
 #endif

@@ -48,6 +48,8 @@
 #include <avtSurfaceAndWireframeRenderer.h> 
 #include <avtWarpFilter.h>
 
+#include <vtkToolkits.h>
+
 #include <avtCallback.h>
 #ifdef VTK_USE_MANGLED_MESA
 #include <avtMesaCurveRenderer.h>

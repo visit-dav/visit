@@ -20,6 +20,7 @@
 #include "vtkMath.h"
 #include "vtkStructuredGrid.h"
 #include "vtkRenderWindow.h"
+#include "vtkToolkits.h"
 
 #ifdef VTK_USE_MANGLED_MESA
 #include "vtkMesaStructuredGridMapper.h"
