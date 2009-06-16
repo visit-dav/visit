@@ -3614,7 +3614,7 @@ AC_TYPE_UID_T
 #
 AC_ARG_ENABLE(nospin-bcast,
               [  --disable-nospin-bcast           Use straight MPI_BCast instead of VisIt's no-spin BCast for getting commands from rank 0],
-              UseSelect="$enable_nospin_bcast",UseNoSpinBCast=yes)
+              UseNoSpinBCast="$enable_nospin_bcast",UseNoSpinBCast=yes)
 if test "$UseNoSpinBCast" == "yes" ; then
     AC_DEFINE(VISIT_USE_NOSPIN_BCAST, [1], [Define if we want to use VisIt's no-spin BCast.])
 fi
@@ -3627,7 +3627,8 @@ AC_ARG_ENABLE(select,
               [  --disable-select           build without using the select function],
               UseSelect="$enable_select",UseSelect=yes)
 if test "$UseSelect" == "yes" ; then
-    SELECT_FUNCTION="select" 
+    SELECT_FUNCTION="select"
+    AC_DEFINE(HAVE_SELECT, [1], [Define if we want to use select function.])
 fi
 
 #
