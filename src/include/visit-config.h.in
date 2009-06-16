@@ -211,6 +211,9 @@
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
+/* Define to enable Tuvok-based code */
+#undef USE_TUVOK
+
 /* Shared library extension */
 #undef VISIT_PLUGIN_EXTENSION
 

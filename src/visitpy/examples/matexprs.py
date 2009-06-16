@@ -6,6 +6,13 @@
 #
 # Programmer: Mark C. Miller
 # Date:       Wed May 27 13:15:07 PDT 2009
+#
+#
+# Modifications:
+#   Mark C. Miller, Mon Jun 15 17:52:15 PDT 2009
+#   Removed subclassing used to override behavior of Optparse in presence of
+#   unrecognized options. By using Argv(), VisIt-specific options never wind
+#   up getting passed to this script.
 ###############################################################################
 import sys, re, os, glob
 from optparse import *
@@ -22,41 +29,10 @@ def ColorTupleFromHexString(s):
             255)
 
 #
-# We have to override the _process_args method of OptionParser
-# to get desired behavior in the presence of unrecognized options.
-# Ordinarily, OptionParser errors out if it encounters an option
-# it does not recognize, stopping processing of any further options
-# making it rather difficult for options to visit to co-exist on
-# same command line as options to this script. 
-#
-class MyOptionParser(OptionParser):
-    def _process_args(self, largs, rargs, values):
-        while rargs:
-            arg = rargs[0]
-            if arg == "--":
-                del rargs[0]
-                return
-            elif arg[0:2] == "--":
-                try:
-                    self._process_long_opt(rargs, values)
-                except BadOptionError: # These two lines result in allowing
-                    pass               # an unrecognized option to be overlooked
-            elif arg[:1] == "-" and len(arg) > 1:
-                try:
-                    self._process_short_opts(rargs, values)
-                except BadOptionError: # These two lines result in allowing
-                    pass               # an unrecognized option to be overlooked
-            elif self.allow_interspersed_args:
-                largs.append(arg)
-                del rargs[0]
-            else:
-                return
-
-#
 # Command-line options
 #
 def BuildCommandLineOptions():
-    parser = MyOptionParser()
+    parser = OptionParser()
 
     parser.add_option("--image-width",
         help="Set width of images [%default].",
@@ -176,6 +152,13 @@ if "-h" in sys.argv or \
     parser.print_help()
     sys.exit(1)
 
+#
+# Argv() is a function defined by VisIt's cli that
+# returns ONLY the options after the argument (filename)
+# to the '-s' command-line option. In theory, that
+# should be only the arguments that this script itself
+# should interpret.
+# 
 (clOpts, clArgs) = parser.parse_args(list(Argv()))
 
 #
