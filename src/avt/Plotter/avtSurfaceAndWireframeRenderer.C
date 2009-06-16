@@ -50,6 +50,7 @@
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkToolkits.h>
 
 #include <avtCallback.h>
 #include <avtOpenGLSurfaceAndWireframeRenderer.h>

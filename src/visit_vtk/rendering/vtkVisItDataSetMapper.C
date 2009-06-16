@@ -23,6 +23,7 @@
 #include "vtkPolyData.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkRectilinearGridMapper.h"
+#include "vtkToolkits.h"
 
 #include "vtkOpenGLRectilinearGridMapper.h"
 #include "vtkOpenGLStructuredGridMapper.h"

@@ -49,6 +49,8 @@
 #include <avtLabelFilter.h>
 #include <avtLabelsMapper.h>
 #include <avtLabelSubsetsFilter.h>
+
+#include <vtkToolkits.h>
 #ifdef VTK_USE_MANGLED_MESA
 #include <avtMesaLabelRenderer.h>
 #endif

@@ -20,6 +20,7 @@
 #include "vtkMath.h"
 #include "vtkRectilinearGrid.h"
 #include "vtkRenderWindow.h"
+#include "vtkToolkits.h"
 
 #ifdef VTK_USE_MANGLED_MESA
 #include "vtkMesaRectilinearGridMapper.h"
