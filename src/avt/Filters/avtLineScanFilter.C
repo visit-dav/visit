@@ -693,6 +693,11 @@ avtLineScanFilter::ExecuteData(vtkDataSet *ds, int dom, std::string)
 //  Programmer: Hank Childs
 //  Creation:   July 6, 2006
 //
+//  Modifications:
+//  
+//    Hank Childs, Mon Jun 15 22:56:06 PDT 2009
+//    Fix stupid off-by-one when there are more than two intersections.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -788,7 +793,7 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
                     {
                         if (fabs(inter[ii]-inter[jj]) < 1e-10)
                         {
-                            inter[ii] = inter[nInter];
+                            inter[ii] = inter[nInter-1];
                             nInter--;
                         }
                     }
