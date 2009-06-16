@@ -81,6 +81,9 @@
 /* Define if you have pyparsing. */
 #undef HAVE_PYPARSING
 
+/* Define if we want to use select function. */
+#undef HAVE_SELECT
+
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
 
@@ -208,9 +211,6 @@
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
-/* Define to enable Tuvok-based code */
-#undef USE_TUVOK
-
 /* Shared library extension */
 #undef VISIT_PLUGIN_EXTENSION
 
@@ -226,17 +226,17 @@
 /* Subversion revision */
 #undef VISIT_SVN_REVISION
 
-/* Define VISIT_USE_PTY if we want to use PTYs. */
-#undef VISIT_USE_PTY
-
-/* VisIt version */
-#undef VISIT_VERSION
-
 /* Enable use of mangled Mesa classes in VisIt. */
 #undef VISIT_USE_MANGLED_MESA
 
 /* Define if we want to use VisIt's no-spin BCast. */
 #undef VISIT_USE_NOSPIN_BCAST
+
+/* Define VISIT_USE_PTY if we want to use PTYs. */
+#undef VISIT_USE_PTY
+
+/* VisIt version */
+#undef VISIT_VERSION
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
