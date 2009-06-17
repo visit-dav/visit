@@ -335,6 +335,9 @@ HandleReadOptions(bool noOptions, DatabasePluginManager *dbmgr, const char *arg0
 //    Mark C. Miller, Tue May 19 21:55:37 PDT 2009
 //    Added support for handling read options. Allowed for multiple '-variable'
 //    options on the command line.
+//
+//    Mark C. Miller, Wed Jun 17 14:23:51 PDT 2009
+//    Replaced CATCH(...) with CATCHALL
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -453,7 +456,7 @@ int main(int argc, char *argv[])
         else
             db = avtDatabaseFactory::FileList(dbmgr, argv+1, 1, 0, pluginList);
     }
-    CATCH(...)
+    CATCHALL
     {
         cerr << "The file " << argv[1] << " does not exist or could "
              << "not be opened." << endl;

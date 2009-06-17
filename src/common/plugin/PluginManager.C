@@ -868,6 +868,8 @@ PluginManager::LoadSinglePluginNow(const std::string& id)
 //    Brad Whitlock, Thu Apr 23 11:56:46 PDT 2009
 //    Added Simulation case.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 bool
@@ -894,7 +896,7 @@ PluginManager::LoadSinglePlugin(int index)
     {
         PluginOpen(libfiles[index]);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         if (category==GUI || category==Viewer)
         {

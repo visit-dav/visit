@@ -132,6 +132,9 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //
 //    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
 //    Added logic to manage buffering of debug logs; an extra 'b' after level.
+//
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 int
@@ -350,7 +353,7 @@ main(int argc, char *argv[])
         delete[] argv3;
         
     }
-    CATCHALL(...)
+    CATCHALL
     {
         retval = -1;
     }

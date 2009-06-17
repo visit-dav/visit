@@ -380,6 +380,8 @@ LoadBalancer::CheckDynamicLoadBalancing(avtContract_p input)
 //    Check here to see if we should do DBPLUGIN_DYNAMIC, rather than
 //    setting it as a global.
 //    
+//    Mark C. Miller, Wed Jun 17 14:25:59 PDT 2009
+//    Replaced CATCH(...) with CATCHALL.
 // ****************************************************************************
 
 LoadBalanceScheme
@@ -403,7 +405,7 @@ LoadBalancer::DetermineAppropriateScheme(avtContract_p input)
     {
         meshName = md->MeshForVar(data->GetVariable());
     }
-    CATCH(...)
+    CATCHALL
     {
         // Probably a CMFE.
         return scheme;

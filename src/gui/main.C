@@ -81,6 +81,9 @@
 //
 //    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //    Moved setting of component name to before Initialize
+//
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 int
@@ -102,7 +105,7 @@ main(int argc, char **argv)
             // Execute the GUI and return its return code.
             retval = VisitGUI.Exec();
         }
-        CATCHALL(...)
+        CATCHALL
         {
             retval = -1;
         }

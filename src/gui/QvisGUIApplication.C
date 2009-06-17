@@ -1709,6 +1709,8 @@ QvisGUIApplication::FinalInitialization()
 //   Brad Whitlock, Mon Oct 22 18:25:42 PST 2001
 //   Changed the exception handling keywords to macros.
 //
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 int
@@ -1721,7 +1723,7 @@ QvisGUIApplication::Exec()
         // Execute the application's main loop.
         retval = mainApp->exec();
     }
-    CATCHALL(...)
+    CATCHALL
     {
         // return an error code.
         retval = -1;

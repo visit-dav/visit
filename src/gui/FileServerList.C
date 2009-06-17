@@ -483,6 +483,8 @@ FileServerList::Notify()
 //   Brad Whitlock, Thu Jul 29 13:43:04 PST 2004
 //   I added smartFileGroupingFlag.
 //
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -627,7 +629,7 @@ FileServerList::SilentNotify()
                 else
                     info = 0;
             }
-            CATCHALL(...)
+            CATCHALL
             {
                 info = 0;
                 tryAgain = false;
@@ -828,6 +830,8 @@ FileServerList::SetHost(const string &host)
 //   Added SSH tunneling option to MDServerProxy::Create, and set it to false.
 //   If we need to tunnel, the VCL will do the host/port translation for us.
 //
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -858,7 +862,7 @@ FileServerList::StartServer(const string &host)
         // Add the default path to the recent path list.
         AddPathToRecentList(host, info->path);
     }
-    CATCHALL(...) // Clean-up handler
+    CATCHALL
     {
         connectingServer = false;
         delete info->server;
@@ -980,6 +984,8 @@ FileServerList::LoadPlugins()
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -997,7 +1003,7 @@ FileServerList::SendKeepAlives()
                 pos->second->server->SendKeepAlive();
                 ++pos;
             }
-            CATCHALL(...)
+            CATCHALL
             {
                 debug2 << "Could not send keep alive signal to mdserver on "
                        << pos->first.c_str() << " so that mdserver will be closed."
@@ -1496,6 +1502,9 @@ FileServerList::CloseFile()
 //
 //   Mark C. Miller, Thu Aug  3 13:33:20 PDT 2006
 //   Fixed missing line to set readFileFailed to false
+//
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -1591,7 +1600,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
                     CloseServer(filename.host);
                     StartServer(filename.host);
                 }
-                CATCHALL(...)
+                CATCHALL
                 {
                     tryAgain = false;
                 }
@@ -2973,6 +2982,8 @@ FileServerList::DecodePath(const string &path)
 //   I made it use a wrapper that tries to restart the mdserver. This prevents
 //   us from ever trying to use a NULL pointer.
 //
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 #define SAFE_GET_SEPARATOR(host, func)    TRY\
@@ -2984,7 +2995,7 @@ FileServerList::DecodePath(const string &path)
             sep = info->server->func();\
         }\
     }\
-    CATCHALL(...)\
+    CATCHALL\
     {\
     }\
     ENDTRY

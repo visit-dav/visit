@@ -145,6 +145,9 @@
 #    Brad Whitlock, Wed Jun 3 15:45:55 PST 2009
 #    I added an engine-only build option.
 #
+#    Mark C. Miller, Tue Jun 16 15:32:47 PDT 2009
+#    Added logic to check for possible environment variable collision with
+#    VisIt's Makefile variables.
 ##############################################################################
 
 @SET_MAKE@
@@ -198,7 +201,7 @@ DISTCLEAN_FILES= Makefile config.cache config.log config.status \
 	include/make-depend-gnu include/make-depend-std \
 	include/make-targets-gnu include/make-targets-std
 
-message:
+message: check-make-and-env-vars
 
 maintainer-clean: distclean
 	-$(RM) ${DISTCLEAN_FILES}
@@ -206,3 +209,22 @@ maintainer-clean: distclean
 
 visitmodule:
 	do (cd visitpy && $(MAKE) $@) || exit 1; done
+
+check-make-and-env-vars:
+	@echo "Checking for possible collisions between environment"; \
+	echo -n "and VisIt's Make variables..."; \
+	env | cut -d'=' -f1 | sort | uniq > env_vars.txt; \
+	find . -name .svn -prune -o -name Makefile | grep -v .svn | xargs -n 1 -i cat '{}' | tr ' ' '\n'| grep '$$([A-Z_]*)' | sed -e 's#.*$$(\(.*\)).*#\1#' | sort | uniq > make_vars.txt; \
+	em_vars=`grep -x -f env_vars.txt make_vars.txt`; \
+	rm -f env_vars.txt make_vars.txt
+	if test -n "$$em_vars"; then \
+	    echo ""; \
+	    echo "The following variables in your environment may collide with"; \
+	    echo "variables in VisIt's Makefiles. You may want to temporarily"; \
+	    echo "adjust your environment by removing them using unsetenv (csh)"; \
+            echo "or unset (sh) before proceeding..."; \
+	    echo $$em_vars | tr ' ' '\n'; \
+	    sleep 10; \
+	else \
+	    echo "OK"; \
+	fi

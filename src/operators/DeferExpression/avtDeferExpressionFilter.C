@@ -147,6 +147,8 @@ avtDeferExpressionFilter::Equivalent(const AttributeGroup *a)
 //    Brad Whitlock, Fri Mar 9 17:31:44 PST 2007
 //    Updated because of small change to ExpressionList.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 avtContract_p
@@ -200,7 +202,7 @@ avtDeferExpressionFilter::ModifyContract(avtContract_p spec)
         rv = avtExpressionEvaluatorFilter::ModifyContract(spec);
         *el = orig_el;
     }
-    CATCHALL(...)
+    CATCHALL
     {
         *el = orig_el;
 

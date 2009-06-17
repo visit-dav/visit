@@ -1292,6 +1292,8 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
 //   Brad Whitlock, Tue Jul 29 11:39:03 PDT 2003
 //   Changed interface to ParentProcess::Connect.
 //
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -1308,7 +1310,7 @@ LauncherApplication::TerminateConnectionRequest(int argc, char *argv[])
         // Connect back to the process and say that we could not connect.
         killer.Connect(1, 1, &argc, &argv, true, 3);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         // We know that we're going to get here, but no action is required.
     }
