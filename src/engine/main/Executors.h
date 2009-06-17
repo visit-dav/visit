@@ -1315,6 +1315,8 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 //    Brad Whitlock, Tue Jun 24 16:02:35 PDT 2008
 //    Changed how the database plugin manager is accessed.
 //
+//    Mark C. Miller, Wed Jun 17 16:10:59 PDT 2009
+//    Added logic to send replies and catch exceptions.
 // ****************************************************************************
 template<>
 void
@@ -1331,15 +1333,26 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
            << endl;
     for (int i = 0; i < rpc->GetDatabaseFiles().size(); ++i)
         debug5 << "file["<<i<<"]="<<rpc->GetDatabaseFiles()[i].c_str() << endl;
-    netmgr->GetDatabasePluginManager()->PluginAvailable(rpc->GetFileFormat());
 
-    avtDatabaseFactory::SetCreateMeshQualityExpressions(
-                            rpc->GetCreateMeshQualityExpressions()); 
-    avtDatabaseFactory::SetCreateTimeDerivativeExpressions(
-                            rpc->GetCreateTimeDerivativeExpressions()); 
+    TRY
+    {
+        netmgr->GetDatabasePluginManager()->PluginAvailable(rpc->GetFileFormat());
 
-    netmgr->DefineDB(rpc->GetDatabaseName(), rpc->GetDatabasePath(),
-                rpc->GetDatabaseFiles(), rpc->GetTime(), rpc->GetFileFormat());
+        avtDatabaseFactory::SetCreateMeshQualityExpressions(
+            rpc->GetCreateMeshQualityExpressions()); 
+        avtDatabaseFactory::SetCreateTimeDerivativeExpressions(
+            rpc->GetCreateTimeDerivativeExpressions()); 
+
+        netmgr->DefineDB(rpc->GetDatabaseName(), rpc->GetDatabasePath(),
+            rpc->GetDatabaseFiles(), rpc->GetTime(), rpc->GetFileFormat());
+
+        rpc->SendReply();
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
 }
 
 // ****************************************************************************

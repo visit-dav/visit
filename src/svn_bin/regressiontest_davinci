@@ -89,6 +89,9 @@
 #
 #    Mark C. Miller Mon Jun  8 21:22:04 PDT 2009
 #    Removed diff tolerances due to transition of baselines to Davinci.
+#
+#    Mark C. Miller, Wed Jun 17 14:57:12 PDT 2009
+#    Changed URL in email to specify portal.nersc.gov
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -450,8 +453,8 @@ for m in $modes; do
     rm -f short_summary
     touch short_summary
     echo "Failed results should be obtainable on davinci.nersc.gov" >> short_summary
-    echo "file:///project/projectdirs/visit/www/${dateTag}/${theMode}/index.html" >> short_summary
-    grep 'category\|failed\|killed' summary >> short_summary
+    echo "http://portal.nersc.gov/project/visit/${dateTag}/${theMode}/index.html" >> short_summary
+    grep 'category\|failed' summary >> short_summary
     checkAndHandleError $curerror warning "test mode $m failed" short_summary 
 
     failedPyFiles=`grep failed short_summary | cut -d':' -f1`

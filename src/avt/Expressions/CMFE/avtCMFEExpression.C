@@ -362,6 +362,8 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    Hank Childs, Tue May  5 14:15:45 PDT 2009
 //    Fix parsing problem with names that have subdirectories.
 //
+//    Mark C. Miller, Wed Jun 17 14:23:25 PDT 2009
+//    Replaced CATCH(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -459,7 +461,7 @@ avtCMFEExpression::Execute()
     {
         dob->Update(spec);
     }
-    CATCH(...)
+    CATCHALL
     {
         //
         // Now switch back #1 and #2

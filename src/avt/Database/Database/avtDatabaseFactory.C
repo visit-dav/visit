@@ -264,6 +264,8 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Brad Whitlock, Tue Jun 24 15:33:58 PDT 2008
 //    Pass in the database plugin manager since it's no longer a singleton.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 avtDatabase *
@@ -380,7 +382,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                        nBlocks, forceReadAllCyclesAndTimes,
                                        treatAllDBsAsTimeVarying);
                 }
-                CATCHALL(...)
+                CATCHALL
                 {
                     rv = NULL;
                 }
@@ -410,7 +412,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                fileIndex, nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying);
         }
-        CATCHALL(...)
+        CATCHALL
         {
             rv = NULL;
         }

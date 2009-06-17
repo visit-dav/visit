@@ -1896,6 +1896,8 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1956,7 +1958,7 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
         // return it
         CATCH_RETURN2(1, writer);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         // Zero out the workingNet to ensure that the exception doesn't
         // cause a crash next time we try to build a network.  Remember
@@ -2191,6 +2193,8 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    from the last rendering.
 //    Move an image dump up.  It was giving misleading results before.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 avtDataObject_p
@@ -2375,7 +2379,7 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
         
         this->RenderCleanup(windowID);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         // rethrow
         RETHROW;
@@ -3172,6 +3176,8 @@ NetworkManager::StopQueryMode(void)
 //    Add else statement to make Klocwork happy.  Also make sure we don't
 //    delete already freed memory during error condition.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
  
 void
@@ -3437,7 +3443,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
         }
         visitTimer->DumpTimings();
     }
-    CATCHALL( ... )
+    CATCHALL
     {
         if (lQ != NULL)
             delete lQ;
@@ -3525,6 +3531,8 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 //    Hank Childs, Fri Feb 15 13:13:21 PST 2008
 //    Prevent possible problem of freeing freed memory during error condition.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -3632,7 +3640,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
         }
         visitTimer->DumpTimings();
     }
-    CATCHALL( ... )
+    CATCHALL
     {
         if (query != NULL)
             delete query;

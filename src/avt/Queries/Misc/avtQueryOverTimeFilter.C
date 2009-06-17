@@ -101,6 +101,8 @@ using std::string;
 //    Added 'useVarForYAxis'.  Retrieve time curve specs here rather than
 //    in Execute method at every timestep.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
@@ -130,7 +132,7 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
         nResultsToStore = tqs.GetEntry("nResultsToStore")->AsInt(); 
         delete query;
     }
-    CATCHALL(...)
+    CATCHALL
     {
         numAdditionalFilters = 2; // it's a guess
         debug1 << "There was a problem trying to instantiate a query for "
@@ -216,6 +218,8 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //    Kathleen Bonnell, Tue Jul  8 18:10:34 PDT 2008
 //    Removed call to query.GetTimeCurveSpecs.  Now handled in constructor.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -296,7 +300,7 @@ avtQueryOverTimeFilter::Execute(void)
     {
         query->PerformQuery(&qatts);
     }
-    CATCHALL( ... )
+    CATCHALL
     {
         SetOutputDataTree(dummy);
         success = false;

@@ -262,6 +262,8 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Hank Childs, Sat Mar 21 10:34:16 PST 2009
 //    Fix compilation error.
 //
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 avtDataObject_p
@@ -396,7 +398,7 @@ IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
 
         this->RenderCleanup(windowID);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         RETHROW;
     }

@@ -304,7 +304,26 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     DBfile               *OpenFile(int, bool skipGlobalInfo = false);
     DBfile               *OpenFile(const char *, bool skipGlobalInfo = false);
     virtual void          CloseFile(int);
+
     void                  ReadDir(DBfile *,const char *,avtDatabaseMetaData *);
+    void                  ReadTopDirStuff(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*,char**);
+    void                  ReadMultimeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadQuadmeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadUcdmeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadPointmeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadCurves(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadCSGmeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadMultivars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadQuadvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadUcdvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadPointvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadCSGvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadMaterials(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadMultimats(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadSpecies(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadMultispecies(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadDefvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+
     void                  DoRootDirectoryWork(avtDatabaseMetaData*);
     void                  BroadcastGlobalInfo(avtDatabaseMetaData*);
     void                  StoreMultimeshInfo(const char *const dirname, int which_mm,

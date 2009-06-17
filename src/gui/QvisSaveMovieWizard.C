@@ -3159,6 +3159,8 @@ QvisSaveMovieWizard::page12_UpdateButtons()
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 bool
@@ -3187,7 +3189,7 @@ QvisSaveMovieWizard::LoadTemplateSpecification(const std::string &spec)
                    << "\" could not be read" << endl;
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         debug1 << mName << "The defaults file \"" << spec.c_str()
                << "\" could not be read and VisIt caught an unknown exception "

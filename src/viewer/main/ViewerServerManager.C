@@ -626,6 +626,8 @@ ViewerServerManager::CloseLaunchers()
 //   Brad Whitlock, Wed Nov 21 15:01:35 PST 2007
 //   Changed map storage type.
 //
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -641,7 +643,7 @@ ViewerServerManager::SendKeepAlivesToLaunchers()
             pos->second.launcher->SendKeepAlive();
             ++pos;
         }
-        CATCHALL(...)
+        CATCHALL
         {
             debug2 << "Could not send keep alive signal to launcher on "
                    << pos->first.c_str() << " so that launcher will be closed."

@@ -683,6 +683,8 @@ MDServerConnection::GetPluginErrors()
 //   Hank Childs, Wed Dec 19 08:39:46 PST 2007
 //   Added timing information.
 //
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
 
 void
@@ -745,7 +747,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
                                               treatAllDBsAsTimeVarying);
             visitTimer->StopTimer(t0, "Get metadata from inside ReadMetaData");
         }
-        CATCHALL(...)
+        CATCHALL
         {
             EXCEPTION2(InvalidFilesException, file.c_str(), plugins);
         }

@@ -953,6 +953,8 @@ EngineProxy::OpenDatabase(const std::string &format, const std::string &file,
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
 //   Added createMeshQualityExpressions, createTimeDerivativeExpressions.
 //
+//   Mark C. Miller, Wed Jun 17 16:10:27 PDT 2009
+//   Added logic to recieve possible error message and re-constitute it.
 // ****************************************************************************
 
 void
@@ -963,6 +965,20 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 {
     defineVirtualDatabaseRPC(fileFormat,wholeDBName, pathToFiles, files, time,
         createMeshQualityExpressions, createTimeDerivativeExpressions);
+
+    while (defineVirtualDatabaseRPC.GetStatus() == VisItRPC::incomplete ||
+           defineVirtualDatabaseRPC.GetStatus() == VisItRPC::warning)
+    {
+        defineVirtualDatabaseRPC.RecvReply();
+    }
+
+    // Check for an error
+    if (defineVirtualDatabaseRPC.GetStatus() == VisItRPC::error)    
+    {
+        RECONSTITUTE_EXCEPTION(defineVirtualDatabaseRPC.GetExceptionType(),
+                               defineVirtualDatabaseRPC.Message());
+    }
+
 }
 
 // ****************************************************************************
