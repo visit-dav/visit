@@ -263,7 +263,7 @@ ViewerActionBase::Activate(bool interactive)
         // Hide the menu since we're done with the action.
         window->HideMenu();
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }

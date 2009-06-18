@@ -490,7 +490,7 @@ ViewerClientConnection::ReadFromClientAndProcess(int)
         // Emit a signal so the viewer can delete this dead connection.
         emit DisconnectClient(this);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }

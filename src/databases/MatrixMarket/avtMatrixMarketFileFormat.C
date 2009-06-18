@@ -235,6 +235,10 @@ avtMatrixMarketFileFormat::GetVar(const char *varname)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 13, 2009
 //
+//  Modifications:
+//
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 vtkDataArray *
@@ -325,7 +329,7 @@ avtMatrixMarketFileFormat::ReadData()
             }
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         fclose(f);
         RETHROW;

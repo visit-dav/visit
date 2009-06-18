@@ -63,6 +63,8 @@ extern void DataCallbacksCleanup(void);
 //
 //  Modifications:
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void *visit_get_engine()
@@ -126,7 +128,7 @@ int visit_process_input(void *e)
     {
         debug1 << "Caught a VisIt exception: " << e.Message() << endl;
     }
-    CATCHALL (...)
+    CATCHALL
     {
         // Unknown processing error!  Ignoring....
         CATCH_RETURN2(1, 1);

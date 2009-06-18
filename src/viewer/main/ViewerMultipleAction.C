@@ -643,6 +643,8 @@ ViewerMultipleAction::UpdateConstruction()
 //   Added exception handling to prevent exceptions from being propagated into
 //   the Qt event loop.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -654,7 +656,7 @@ ViewerMultipleAction::ActivateHelper(QAction *a)
         toggled = a->isChecked();
         Activate();
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }

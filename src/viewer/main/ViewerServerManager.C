@@ -1112,6 +1112,8 @@ ViewerConnectionPrinter::~ViewerConnectionPrinter()
 //   Brad Whitlock, Fri Jan 9 15:13:01 PST 2009
 //   Catch the rest of the possible exceptions.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -1135,7 +1137,7 @@ ViewerConnectionPrinter::HandleRead(int)
     {
         debug1 << "Lost connection in ViewerConnectionPrinter::HandleRead" << endl;
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
