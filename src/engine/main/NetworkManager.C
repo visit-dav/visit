@@ -2516,7 +2516,7 @@ NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imag
         else
             debug1 << mName << "No plots have been set up for scalable rendering." << endl;
     }
-    CATCHALL(...)
+    CATCHALL
     {
         retval = false;
     }
