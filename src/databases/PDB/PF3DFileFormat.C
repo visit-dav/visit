@@ -2279,6 +2279,12 @@ PF3DFileFormat::MasterInformation::GetNDomains() const
 //   more compact than before. Steve Langer wrote the code and I debugged it.
 //   Steve also removed a redundant line of code.
 //
+//   Eric Brugger, Thu Jun 18 14:45:48 PDT 2009
+//   Doubled the size of the buffer to read __@history, to avoid an out of
+//   bounds memory write deep down in a call to PD_read.  Valgrind shows it
+//   as the source of the out of bounds memory write, but I couldn't find
+//   the problem with with a few hours of debugging.
+//
 // ****************************************************************************
 
 bool
@@ -2352,6 +2358,11 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
                 bufferSize += 8;
             }
         }
+        // Multiply by 2, to avoid an out of bounds memory write deep
+        // down in the call to PD_read.  Valgrid shows it as the source
+        // of the out of bounds memory write, but I couldn't find the
+        // problem with a few hours of debugging.
+        bufferSize = bufferSize * 2;
         debug4 << mName << "Calculated a buffer size of: " << bufferSize
                << " bytes" << endl;
 
