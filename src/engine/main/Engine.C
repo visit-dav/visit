@@ -595,6 +595,63 @@ Engine::EnableSimulationPlugins()
     simulationPluginsEnabled = true;
 }
 
+#ifdef PARALLEL
+#include <PluginBroadcaster.h>
+
+// ****************************************************************************
+// Class: PAR_PluginBroadcaster
+//
+// Purpose: 
+//   This object helps the plugin managers broadcast information about libI
+//   plugins to other processors. This can save 1000's of processors reading
+//   ~200 libI files at the same time.
+//
+// Arguments:
+//   ids      : The plugin ids.
+//   names    : The plugin names.
+//   versions : The plugin versions.
+//   libfiles : The names of the plugin files.
+//   enabled  : Whether the plugins are enabled
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 17 13:16:20 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class PAR_PluginBroadcaster : public PluginBroadcaster
+{
+public:
+    PAR_PluginBroadcaster() : PluginBroadcaster()
+    {
+    }
+
+    virtual ~PAR_PluginBroadcaster()
+    {
+    }
+
+    virtual void BroadcastStringVector(stringVector &v)
+    {
+        ::BroadcastStringVector(v, PAR_Rank());
+    }
+
+    virtual void BroadcastBoolVector(boolVector &v)
+    {
+        ::BroadcastBoolVector(v, PAR_Rank());
+    }
+
+    virtual void BroadcastStringVectorVector(std::vector<std::vector<std::string> > &v)
+    {
+        ::BroadcastStringVectorVector(v, PAR_Rank());
+    }
+};
+#endif
+
 // ****************************************************************************
 //  Method:  Engine::SetUpViewerInterface
 //
@@ -704,6 +761,13 @@ Engine::EnableSimulationPlugins()
 //    Brad Whitlock, Thu Apr 23 12:11:35 PDT 2009
 //    Differentiate between simulation and engine plugins.
 //
+//    Brad Whitlock, Wed Jun 17 13:23:58 PDT 2009
+//    I passed an instance of PAR_PluginBroadcaster to the plugin managers 
+//    so they could skip reading libI plugins for most processors in parallel.
+//    Rank 0 reads the libI plugins and then shares their information with 
+//    other processors over MPI. I also added timing information for loading
+//    plugins in parallel.
+//
 // ****************************************************************************
 
 void
@@ -761,6 +825,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     //
     // Initialize the plugin managers.
     //
+    int pluginsTotal = visitTimer->StartTimer();
     if(pluginDir.size() > 0)
     {
         netmgr->GetPlotPluginManager()->SetPluginDir(pluginDir.c_str());
@@ -770,9 +835,25 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     PluginManager::PluginCategory pCat = simulationPluginsEnabled ? 
         PluginManager::Simulation : PluginManager::Engine;
 #ifdef PARALLEL
-    netmgr->GetPlotPluginManager()->Initialize(pCat, true);
-    netmgr->GetOperatorPluginManager()->Initialize(pCat, true);
-    netmgr->GetDatabasePluginManager()->Initialize(pCat, true);
+    bool readInfo = PAR_UIProcess();
+    PAR_PluginBroadcaster broadcaster;
+    int pluginInit = visitTimer->StartTimer();
+    netmgr->GetPlotPluginManager()->Initialize(pCat, true, NULL, 
+                                               readInfo, 
+                                               &broadcaster);
+    visitTimer->StopTimer(pluginInit, "Loading plot plugin info");
+
+    pluginInit = visitTimer->StartTimer();
+    netmgr->GetOperatorPluginManager()->Initialize(pCat, true, NULL, 
+                                               readInfo, 
+                                               &broadcaster);
+    visitTimer->StopTimer(pluginInit, "Loading operator plugin info");
+
+    pluginInit = visitTimer->StartTimer();
+    netmgr->GetDatabasePluginManager()->Initialize(pCat, true, NULL, 
+                                               readInfo, 
+                                               &broadcaster);
+    visitTimer->StopTimer(pluginInit, "Loading database plugin info");
 #else
     netmgr->GetPlotPluginManager()->Initialize(pCat, false);
     netmgr->GetOperatorPluginManager()->Initialize(pCat, false);
@@ -784,6 +865,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     netmgr->GetPlotPluginManager()->LoadPluginsOnDemand();
     netmgr->GetOperatorPluginManager()->LoadPluginsOnDemand();
     netmgr->GetDatabasePluginManager()->LoadPluginsOnDemand();
+    visitTimer->StopTimer(pluginsTotal, "Setting up plugins.");
 
 #if !defined(_WIN32)
     // Set up the alarm signal handler.

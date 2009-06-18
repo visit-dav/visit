@@ -105,6 +105,11 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
+# These libraries are needed for the Mac to link the regular visitconver_ser
+# and visitconvert_par targets.
+SERLIBS_FOR_MACOSX=-lavtmath_ser -lmir_ser
+PARLIBS_FOR_MACOSX=-lavtmath_par -lmir_par
+
 SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lvisit_verdict -lplotter_ser -lparallel_visit_vtk_ser -lavtfilters_ser -lavtview -lavtddf_ser -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lvisit_verdict -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
 PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lvisit_verdict -lplotter_par -lparallel_visit_vtk_par -lavtfilters_par -lavtview -lavtddf_par -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lvisit_verdict -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 LIBDEP=
@@ -166,11 +171,11 @@ $(PAROBJ_LITE): $(SRC)
 	$(CXX) -DDISABLE_EXPRESSIONS $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
 @OS_RULE@
 
-@CONVERT_SER@ or_no_ser: $(LIBDEP) $(SEROBJ) @CONVERT_SER@_lite
-	$(CXX) -o $@ $(SEROBJ) $(LDFLAGS) $(SERLIBS)
+@CONVERT_SER@ or_no_ser: $(LIBDEP) $(SEROBJ) @CONVERT_SER_LITE@
+	$(CXX) -o $@ $(SEROBJ) $(LDFLAGS) $(SERLIBS) $(SERLIBS_FOR_MACOSX)
 
-@CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ) @CONVERT_PAR@_lite
-	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
+@CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ) @CONVERT_PAR_LITE@
+	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) $(PARLIBS_FOR_MACOSX) @MPI_LIBS@
 
 ##
 ## Having this target explicitly instead of derived from @CONVERT_SER@

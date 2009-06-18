@@ -73,6 +73,9 @@
 #    Brad Whitlock, Wed Jul 13 10:42:09 PDT 2005
 #    Updated LIBS.
 #
+#    Brad Whitlock, Thu Jun 18 11:34:28 PDT 2009
+#    I added PluginBroadcaster.
+#
 ##############################################################################
 
 ##
@@ -90,7 +93,7 @@ CPPFLAGS=@CPPFLAGS@ -I. -I../../include -I../../include/visit
 ##
 ## Files...
 ##
-SRC=PluginManager.C DatabasePluginManager.C \
+SRC=PluginManager.C PluginBroadcaster.C DatabasePluginManager.C \
     PlotPluginManager.C OperatorPluginManager.C \
     InvalidDirectoryException.C InvalidPluginException.C DatabasePluginInfo.C
 OBJ=$(SRC:.C=.o)

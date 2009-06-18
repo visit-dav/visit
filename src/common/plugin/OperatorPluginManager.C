@@ -42,6 +42,7 @@
 
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
+#include <PluginBroadcaster.h>
 #include <DebugStream.h>
 #include <InvalidPluginException.h>
 #include <visitstream.h>
@@ -91,6 +92,9 @@ OperatorPluginManager::~OperatorPluginManager()
 //  Arguments:
 //    pluginCategory:   either GUI, Viewer, or Engine
 //    parallel      :   true if need parallel libraries
+//    pluginDir     :   Allows us to pass in the plugin dir that we want to use.
+//    readInfo      :   Whether the plugin info should be read directly.
+//    cb            :   A callback from which we can obtain plugin info.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 26, 2001
@@ -106,16 +110,19 @@ OperatorPluginManager::~OperatorPluginManager()
 //    Brad Whitlock, Tue Jun 24 11:08:52 PDT 2008
 //    Removed singleton characteristics.
 //
+//    Brad Whitlock, Wed Jun 17 13:05:54 PDT 2009
+//    I added readInfo, broadcaster arguments to allow parallel optimizations.
+//
 // ****************************************************************************
 
 void
 OperatorPluginManager::Initialize(const PluginCategory pluginCategory,
-                                  bool par, const char *pluginDir)
+    bool par, const char *pluginDir, bool readInfo, PluginBroadcaster *broadcaster)
 {
     category = pluginCategory;
     parallel = par;
     SetPluginDir(pluginDir);
-    ReadPluginInfo();
+    ObtainPluginInfo(readInfo, broadcaster);
 }
 
 // ****************************************************************************
