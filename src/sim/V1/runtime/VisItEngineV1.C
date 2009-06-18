@@ -86,6 +86,8 @@
 //    Brad Whitlock, Thu Jan 25 15:08:59 PST 2007
 //    Added new functions.
 //
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void *get_engine()
@@ -149,7 +151,7 @@ int process_input(void *e)
     {
         debug1 << "Caught a damn VisIt exception: " << e.Message() << endl;
     }
-    CATCHALL (...)
+    CATCHALL
     {
         // Unknown processing error!  Ignoring....
         CATCH_RETURN2(1, 1);

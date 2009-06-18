@@ -8453,6 +8453,8 @@ ViewerWindowManager::StopTimer()
 //    Added code to make sure that exceptions do not get propagated into the
 //    Qt event loop.
 //
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -8537,7 +8539,7 @@ ViewerWindowManager::AnimationCallback()
                 viewerSubject->ProcessFromParent();
             }
         }
-        CATCHALL(...)
+        CATCHALL
         {
             ; // nothing
         }

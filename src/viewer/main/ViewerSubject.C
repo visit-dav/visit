@@ -1058,6 +1058,8 @@ ViewerSubject::HeavyInitialization()
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //   
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -1078,7 +1080,7 @@ ViewerSubject::CreateViewerDelayedState()
         // uses the buffered state.
         viewerDelayedMethods = new ViewerMethods(viewerDelayedState->GetState());
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -1139,6 +1141,8 @@ ViewerSubject::GetViewerDelayedMethods()
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -1172,7 +1176,7 @@ ViewerSubject::AddInputToXfer(ViewerClientConnection *client,
         // Schedule the input to be processed by the main event loop.
         QTimer::singleShot(10, this, SLOT(ProcessFromParent()));
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -1196,6 +1200,8 @@ ViewerSubject::AddInputToXfer(ViewerClientConnection *client,
 //   I added code to catch VisItException since we should not allow it to
 //   escape from a Qt slot.
 //   
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -1229,7 +1235,7 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
             QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -1809,6 +1815,8 @@ ViewerSubject::OpenScriptOnStartup()
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -1859,7 +1867,7 @@ ViewerSubject::DelayedProcessSettings()
             delete localSettings;  localSettings = 0;
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -6982,6 +6990,8 @@ ViewerSubject::LineQuery()
 //    rescheduling the method to run again and were losing the sync. When the
 //    sync was not being sent back to the CLI, it hung. VisIt00005692.
 //
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -7018,7 +7028,7 @@ ViewerSubject::ProcessFromParent()
             xfer.Process();
             processingFromParent = false;
         }
-        CATCHALL(...)
+        CATCHALL
         {
             processingFromParent = false;
             // Consume the exception.
@@ -7205,6 +7215,8 @@ ViewerSubject::EnableSocketSignals()
 //    Added exception handling code so exceptions cannot get back into the
 //    Qt event loop.
 //
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -7360,7 +7372,7 @@ ViewerSubject::ProcessRendererMessage()
             }
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
     }
     ENDTRY
@@ -7529,6 +7541,8 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //   Added exception handling code to prevent exceptions from being thrown
 //   back into the Qt event loop.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -7551,7 +7565,7 @@ ViewerSubject::SendKeepAlives()
             ClearStatus();
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -7573,6 +7587,8 @@ ViewerSubject::SendKeepAlives()
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -7582,7 +7598,7 @@ ViewerSubject::HandleViewerRPC()
     {
         HandleViewerRPCEx();
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -8235,6 +8251,8 @@ ViewerSubject::PostponeAction(ViewerActionBase *action)
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -8298,7 +8316,7 @@ ViewerSubject::HandlePostponedAction()
                    << tName << " because its window is gone." << endl;
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -8447,6 +8465,8 @@ ViewerSubject::BroadcastToAllClients(void *data1, Subject *data2)
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -8458,7 +8478,7 @@ ViewerSubject::HandleSync()
         SNPRINTF(msg, 100, "Sync %d;", GetViewerState()->GetSyncAttributes()->GetSyncTag());
         MessageRendererThread(msg);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -8483,6 +8503,8 @@ ViewerSubject::HandleSync()
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -8506,7 +8528,7 @@ ViewerSubject::HandleClientMethod()
             BroadcastToAllClients((void *)this, GetViewerState()->GetClientMethod());
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -8537,6 +8559,8 @@ ViewerSubject::HandleClientMethod()
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -8575,7 +8599,7 @@ ViewerSubject::HandleClientInformation()
             InterpretCommands("\n");
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -8603,6 +8627,8 @@ ViewerSubject::HandleClientInformation()
 //   I added code to catch VisItException since we should not allow it to
 //   escape from a Qt slot.
 //
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -8620,7 +8646,7 @@ ViewerSubject::DiscoverClientInformation()
         GetViewerState()->GetClientMethod()->ClearArgs();
         BroadcastToAllClients((void *)this, GetViewerState()->GetClientMethod());
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -8648,6 +8674,8 @@ ViewerSubject::DiscoverClientInformation()
 //    Added exception handling to make sure that exceptions do not escape
 //    back into the Qt event loop.
 //
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -8657,7 +8685,7 @@ ViewerSubject::ConnectWindow(ViewerWindow *win)
     {
         win->GetActionManager()->EnableActions(ViewerWindowManager::Instance()->GetWindowAtts());
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -9026,6 +9054,8 @@ ViewerSubject::OpenClient()
 //    Added exception handling to make sure that exceptions do not escape
 //    back into the Qt event loop.
 //
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -9055,7 +9085,7 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
         engineCommandObserver.erase(ek);
         engineKeyToNotifier.erase(ek);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -9094,6 +9124,8 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
 //    Added exception handling to make sure that exceptions do not escape
 //    back into the Qt event loop.
 //   
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -9117,7 +9149,7 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
         GetViewerState()->GetDatabaseMetaData()->SelectAll();
         GetViewerState()->GetDatabaseMetaData()->Notify();
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -9149,6 +9181,8 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
 //    Added exception handling to make sure that exceptions do not escape
 //    back into the Qt event loop.
 //
+//    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -9166,7 +9200,7 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
         GetViewerState()->GetSILAttributes()->SelectAll();
         GetViewerState()->GetSILAttributes()->Notify();
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -9189,6 +9223,8 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //   
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -9222,7 +9258,7 @@ ViewerSubject::HandleColorTable()
             QvisColorTableButton::updateColorTableButtons();
         }
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
@@ -9252,6 +9288,8 @@ ViewerSubject::HandleColorTable()
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
 //   
+//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void
@@ -9276,7 +9314,7 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
         SNPRINTF(msg, 200, "simcmd %p;", (void*)simCmd);
         MessageRendererThread(msg);
     }
-    CATCHALL(...)
+    CATCHALL
     {
         ; // nothing
     }
