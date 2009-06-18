@@ -148,6 +148,10 @@
 #    Mark C. Miller, Tue Jun 16 15:32:47 PDT 2009
 #    Added logic to check for possible environment variable collision with
 #    VisIt's Makefile variables.
+#
+#    Brad Whitlock, Thu Jun 18 10:42:16 PDT 2009
+#    I made the new check be configurable.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -201,7 +205,7 @@ DISTCLEAN_FILES= Makefile config.cache config.log config.status \
 	include/make-depend-gnu include/make-depend-std \
 	include/make-targets-gnu include/make-targets-std
 
-message: check-make-and-env-vars
+message: @CHECK_MAKE_AND_ENV_VARS@
 
 maintainer-clean: distclean
 	-$(RM) ${DISTCLEAN_FILES}

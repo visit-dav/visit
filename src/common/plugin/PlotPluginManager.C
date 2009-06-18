@@ -42,6 +42,7 @@
 
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
+#include <PluginBroadcaster.h>
 #include <DebugStream.h>
 #include <InvalidPluginException.h>
 #include <visitstream.h>
@@ -92,6 +93,8 @@ PlotPluginManager::~PlotPluginManager()
 //    pluginCategory:   either GUI, Viewer, or Engine
 //    parallel      :   true if need parallel libraries
 //    pluginDir     :   Allows us to pass in the plugin dir that we want to use.
+//    readInfo      :   Whether the plugin info should be read directly.
+//    broadcaster   :   An object that can be used to broadcast plugin info.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 26, 2001
@@ -106,16 +109,19 @@ PlotPluginManager::~PlotPluginManager()
 //    Brad Whitlock, Tue Jun 24 11:10:16 PDT 2008
 //    Removed singleton characteristics.
 //
+//    Brad Whitlock, Wed Jun 17 10:26:03 PDT 2009
+//    I added readInfo, broadcaster arguments.
+//
 // ****************************************************************************
 
 void
 PlotPluginManager::Initialize(const PluginCategory pluginCategory,
-                              bool par, const char *pluginDir)
+    bool par, const char *pluginDir, bool readInfo, PluginBroadcaster *broadcaster)
 {
     category = pluginCategory;
     parallel = par;
     SetPluginDir(pluginDir);
-    ReadPluginInfo();
+    ObtainPluginInfo(readInfo, broadcaster);
 }
 
 // ****************************************************************************

@@ -1102,6 +1102,13 @@ AC_SUBST(SUBDIRS)
 AC_SUBST(ALLSUBDIRS)
 AC_SUBST(SRC)
 AC_SUBST(BUILD_DBIO_ONLY)
+if test "$UNAME" = "Darwin"; then
+    # Skip the check because it uses an incompatible xargs argument.
+    CHECK_MAKE_AND_ENV_VARS=""
+else
+    CHECK_MAKE_AND_ENV_VARS="check-make-and-env-vars"
+fi
+AC_SUBST(CHECK_MAKE_AND_ENV_VARS)
 
 #
 # Check for database-only build. Disable a slew of things if so.
@@ -1457,8 +1464,19 @@ AC_MSG_CHECKING(for convert)
 if test -d tools/convert; then
     AC_MSG_RESULT(found)
     CONVERT_SER="$""(tmpbin)/visitconvert_ser"
+    if test "$UNAME" = "Darwin"; then
+        CONVERT_SER_LITE=""
+    else
+        CONVERT_SER_LITE="$""(tmpbin)/visitconvert_ser_lite"
+    fi
+
     if test -n "$PARALLEL"; then
         CONVERT_PAR="$""(tmpbin)/visitconvert_par"
+        if test "$UNAME" = "Darwin"; then
+            CONVERT_PAR_LITE=""
+        else
+            CONVERT_PAR_LITE="$""(tmpbin)/visitconvert_par_lite"
+        fi
     else
         CONVERT_PAR=""
     fi
@@ -1466,9 +1484,13 @@ else
     AC_MSG_RESULT(not found)
     CONVERT_SER=""
     CONVERT_PAR=""
+    CONVERT_SER_LITE=""
+    CONVERT_PAR_LITE=""
 fi
 AC_SUBST(CONVERT_SER)
 AC_SUBST(CONVERT_PAR)
+AC_SUBST(CONVERT_SER_LITE)
+AC_SUBST(CONVERT_PAR_LITE)
 
 #
 #

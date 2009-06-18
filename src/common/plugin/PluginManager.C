@@ -53,6 +53,7 @@
 #include <InvalidDirectoryException.h>
 #include <InvalidPluginException.h>
 #include <InstallationFunctions.h>
+#include <PluginBroadcaster.h>
 #include <visitstream.h>
 
 #if __APPLE__
@@ -775,6 +776,94 @@ PluginManager::ReadPluginInfo()
 }
 
 // ****************************************************************************
+// Method: PluginManager::BroadcastGeneralInfo
+//
+// Purpose: 
+//   This method broadcasts the general libI information to other processors
+//   using a PluginBroadcaster object.
+//
+// Arguments:
+//   broadcaster : The broadcaster to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 18 11:22:52 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PluginManager::BroadcastGeneralInfo(PluginBroadcaster *broadcaster)
+{
+    broadcaster->BroadcastStringVector(ids);
+    broadcaster->BroadcastStringVector(names);
+    broadcaster->BroadcastStringVector(versions);
+    broadcaster->BroadcastStringVector(libfiles);
+    broadcaster->BroadcastBoolVector(enabled);
+}
+
+// ****************************************************************************
+// Method: PluginManager::ObtainPluginInfo
+//
+// Purpose: 
+//   This method gets the plugin info by calling ReadPluginInfo or from the
+//   rpiCallback function.
+//
+// Arguments:
+//   readInfo    : Whether to read the plugin info directly.
+//   broadcaster : The broadcaster to use for sending plugin info to other procs.
+//
+// Returns:    
+//
+// Note:       In most cases, ReadPluginInfo will be called. However, in parallel
+//             we can install a callback function lets us share the plugin info
+//             read by processor 0 with the other processors via broadcasts.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 17 10:15:11 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PluginManager::ObtainPluginInfo(bool readInfo, PluginBroadcaster *broadcaster)
+{
+    if(readInfo || broadcaster == 0)
+        ReadPluginInfo();
+
+    if(broadcaster != 0)
+    {
+        BroadcastGeneralInfo(broadcaster);
+
+        // If we used the broadcaster to populate ids, names, etc. then that would
+        // not have set up the appropriate items in allindexmap. Do that now.
+        if(allindexmap.size() == 0)
+        {
+            for(size_t i = 0; i < ids.size(); ++i)
+                allindexmap[ids[i]] = i;
+        }
+
+        debug5 << "Shared information about " << ids.size() << " " << managerName
+               << " plugins." << endl;
+    }
+
+#if 0
+    // Keep this for debugging
+    for(size_t i = 0; i < ids.size(); ++i)
+    {
+        debug1 << "plugin " << i << ":\n";
+        debug1 << "\tid      = " << ids[i] << endl;
+        debug1 << "\tname    = " << names[i] << endl;
+        debug1 << "\tversion = " << versions[i] << endl;
+        debug1 << "\tlibfile = " << libfiles[i] << endl;
+        debug1 << "\tenabled = " << (enabled[i] ? "true" : "false") << endl;
+        debug1 << "\tallindexmap[id] = " << allindexmap[ids[i]] << endl;
+    }
+#endif
+}
+
+// ****************************************************************************
 // Method: PluginManager::IsGeneralPlugin
 //
 // Purpose: 
@@ -1160,6 +1249,32 @@ PluginManager::GetPluginInitializationErrors()
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: AddUniquePluginDir
+//
+// Purpose: 
+//   Adds a plugin directory to the pluginDirs vector if it has not been added
+//   yet. This prevents a plugin directory from being added more than once
+//   as can happen when the user provides a redundant -plugindir command line
+//   option.
+//
+// Arguments:
+//   path : The path to add.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 17 16:26:31 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddUniquePluginDir(stringVector &pluginDirs, const std::string &path)
+{
+    if(std::find(pluginDirs.begin(), pluginDirs.end(), path) == pluginDirs.end())
+        pluginDirs.push_back(path);
+}
+
+// ****************************************************************************
 // Method: PluginManager::SetPluginDir
 //
 // Purpose: 
@@ -1189,6 +1304,9 @@ PluginManager::GetPluginInitializationErrors()
 //    Modified path-parsing for Windows.  ';' is the only valid separator
 //    between paths since ':' could indicate a drive.
 //
+//    Brad Whitlock, Wed Jun 17 16:28:14 PDT 2009
+//    I made it use AddUniquePluginDir so we don't add a path multiple times.
+//
 // ****************************************************************************
 
 void
@@ -1213,8 +1331,8 @@ PluginManager::SetPluginDir(const char *PluginDir)
                 {
                     PathAppend(tmp, "LLNL");
                     PathAppend(tmp, "VisIt");
-                    pluginDirs.push_back(string(tmp) + VISIT_SLASH_STRING + 
-                                         managerName + "s");
+                    AddUniquePluginDir(pluginDirs, string(tmp) + VISIT_SLASH_STRING + 
+                                       managerName + "s");
                     delete [] tmp;
                     return;
                 }
@@ -1259,7 +1377,7 @@ PluginManager::SetPluginDir(const char *PluginDir)
         }
         if (!dir.empty())
         {
-           pluginDirs.push_back(string(dir) + VISIT_SLASH_STRING + managerName + "s");
+            AddUniquePluginDir(pluginDirs, string(dir) + VISIT_SLASH_STRING + managerName + "s");
         }
         dir = "";
         if (*c)

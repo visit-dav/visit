@@ -1215,25 +1215,6 @@ void BroadcastInt(int &i)
 }
 
 // ****************************************************************************
-//  Function:  BroadcastBool
-//
-//  Purpose: Broadcast a bool from processor 0 to all other processors
-//
-//  Arguments:
-//    b          reference to the bool 
-//
-//  Programmer:  Mark C. Miller 
-//  Creation:    June 7, 2005 
-//
-// ****************************************************************************
-void BroadcastBool(bool &b)
-{
-    int tmp = b ? 1 : 0;
-    BroadcastInt(tmp);
-    b = tmp == 1 ? true : false;
-}
-
-// ****************************************************************************
 //  Function:  BroadcastIntVector
 //
 //  Purpose:
@@ -1247,7 +1228,6 @@ void BroadcastBool(bool &b)
 //  Creation:    July 15, 2003
 //
 //  Modifications:
-//
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 //
@@ -1273,6 +1253,74 @@ void BroadcastIntVector(vector<int> &vi, int myrank)
     }
 
     MPI_Bcast(&vi[0], len, MPI_INT, 0, VISIT_MPI_COMM);
+#endif
+}
+
+// ****************************************************************************
+//  Function:  BroadcastBool
+//
+//  Purpose: Broadcast a bool from processor 0 to all other processors
+//
+//  Arguments:
+//    b          reference to the bool 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    June 7, 2005 
+//
+// ****************************************************************************
+void BroadcastBool(bool &b)
+{
+    int tmp = b ? 1 : 0;
+    BroadcastInt(tmp);
+    b = tmp == 1 ? true : false;
+}
+
+// ****************************************************************************
+//  Function:  BroadcastBoolVector
+//
+//  Purpose:
+//    Broadcast a vector<bool> from processor 0 to all other processors
+//
+//  Arguments:
+//    vi         the vector<bool>
+//    myrank     the rank of this process
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Jun 18 12:02:26 PDT 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+void BroadcastBoolVector(vector<bool> &vb, int myrank)
+{
+#ifdef PARALLEL
+    int len;
+    if (myrank==0)
+        len = vb.size();   
+    MPI_Bcast(&len, 1, MPI_INT, 0, VISIT_MPI_COMM);
+    if (myrank!=0)
+        vb.resize(len);
+
+    if(len == 0)
+    {
+        debug1 << "Don't know how to broadcast empty vector!  "
+               << "Bailing out early." << std::endl;
+        return;
+    }
+
+    std::vector<unsigned char> v;
+    v.resize(len);
+    if (myrank==0)
+    {
+        for (size_t i = 0; i < vb.size(); ++i)
+            v[i] = vb[i] ? 1 : 0;
+    }
+    MPI_Bcast(&v[0], len, MPI_UNSIGNED_CHAR, 0, VISIT_MPI_COMM);
+    if (myrank!=0)
+    {
+        for (size_t i = 0; i < vb.size(); ++i)
+            vb[i] = v[i]==1;
+    }
 #endif
 }
 

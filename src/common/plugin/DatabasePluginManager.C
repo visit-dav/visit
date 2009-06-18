@@ -42,6 +42,7 @@
 
 #include <DatabasePluginManager.h>
 #include <DatabasePluginInfo.h>
+#include <PluginBroadcaster.h>
 #include <DebugStream.h>
 #include <InvalidPluginException.h>
 #include <visitstream.h>
@@ -101,6 +102,9 @@ DatabasePluginManager::~DatabasePluginManager()
 //  Arguments:
 //    pluginCategory:   either GUI, Viewer, or Engine
 //    parallel      :   true if need parallel libraries
+//    pluginDir     :   Allows us to pass in the plugin dir that we want to use.
+//    readInfo      :   Whether the plugin info should be read directly.
+//    broadcaster   :   An object that can be used to broadcast plugin info.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 22, 2002
@@ -113,17 +117,45 @@ DatabasePluginManager::~DatabasePluginManager()
 //    Brad Whitlock, Tue Jun 24 11:13:19 PDT 2008
 //    Removed plugin characteristics.
 //
+//    Brad Whitlock, Wed Jun 17 13:05:54 PDT 2009
+//    I added readInfo, broadcaster arguments to allow parallel optimizations.
+//
 // ****************************************************************************
 
 void
 DatabasePluginManager::Initialize(const PluginCategory pluginCategory,
-                                  bool                 par,
-                                  const char *         pluginDir)
+    bool par, const char *pluginDir, bool readInfo, PluginBroadcaster *broadcaster)
 {
     category = pluginCategory;
     parallel = par;
     SetPluginDir(pluginDir);
-    ReadPluginInfo();
+    ObtainPluginInfo(readInfo, broadcaster);
+}
+
+// ****************************************************************************
+// Method: DatabasePluginManager::BroadcastGeneralInfo
+//
+// Purpose: 
+//   Broadcasts the general libI plugin information to other processors.
+//
+// Arguments:
+//   broadcaster : The broadcaster object to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 18 11:30:15 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DatabasePluginManager::BroadcastGeneralInfo(PluginBroadcaster *broadcaster)
+{
+    PluginManager::BroadcastGeneralInfo(broadcaster);
+
+    broadcaster->BroadcastBoolVector(haswriter);
+    broadcaster->BroadcastStringVectorVector(extensions);
+    broadcaster->BroadcastStringVectorVector(filenames);
 }
 
 // ****************************************************************************

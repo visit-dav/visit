@@ -43,10 +43,11 @@
 #ifndef PLUGIN_MANAGER_H
 #define PLUGIN_MANAGER_H
 #include <plugin_exports.h>
-#include <string>
-#include <vector>
+#include <vectortypes.h>
 #include <map>
 #include <utility>
+
+class PluginBroadcaster;
 
 // ****************************************************************************
 //  Class: PluginManager
@@ -99,6 +100,11 @@
 //    I added Simulation to the plugin categories, which will be a superset
 //    of Engine.
 //
+//    Brad Whitlock, Wed Jun 17 10:10:20 PDT 2009
+//    I added a callback for ReadPluginInfo so we can enable an optimization
+//    that lets non-rank 0 processes not call it in parallel, saving a lot of
+//    file system accesses.
+//
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -114,6 +120,7 @@ class PLUGIN_API PluginManager
         Scripting,
         Simulation
     };
+
   public:
     virtual ~PluginManager();
 
@@ -147,7 +154,10 @@ class PLUGIN_API PluginManager
 
   protected:
                                     PluginManager(const std::string&);
+    void                            ObtainPluginInfo(bool, PluginBroadcaster *);
     void                            ReadPluginInfo();
+    virtual void                    BroadcastGeneralInfo(PluginBroadcaster *);
+
     void                            ReadPluginDir(std::vector<
                                                    std::vector<
                                                     std::pair<std::string,
