@@ -239,7 +239,7 @@ check-make-and-env-vars:
 	        echo "The following variables in your environment may collide with"; \
 	        echo "variables in VisIt's Makefiles. You may want to temporarily"; \
 	        echo "adjust your environment by removing them using unsetenv (csh)"; \
-                echo "or unset (sh) before proceeding..."; \
+	        echo "or unset (sh) before proceeding..."; \
 	        echo $$em_vars | tr ' ' '\n'; \
 	        sleep 10; \
 	    else \
