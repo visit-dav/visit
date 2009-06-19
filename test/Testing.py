@@ -274,6 +274,8 @@ def ScaledValue(val, minval, maxval):
 #   Brad Whitlock, Mon Mar 26 11:23:23 PDT 2007
 #   Added code to delete all plots.
 #
+#   Mark C. Miller, Thu Jun 18 21:42:59 PDT 2009
+#   Changed save format to PNG
 # ----------------------------------------------------------------------------
 
 def FinishTrackingMemoryUsage(html):
@@ -421,7 +423,7 @@ def FinishTrackingMemoryUsage(html):
     # Save the window
     swa = GetSaveWindowAttributes()
     swa.fileName = "html/%s" % curveImage
-    swa.format = swa.JPEG
+    swa.format = swa.PNG
     swa.family = 0
     SetSaveWindowAttributes(swa)
     SaveWindow()
