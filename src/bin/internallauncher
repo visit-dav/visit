@@ -855,6 +855,9 @@ $fullusage = "$usage
                              '-debug_<compname> <level>' args are allowed.
         -debug_engine_rank <r>
                              Restrict debug output to the specified rank.
+        -debug-processor-stride N
+                             Have only every Nth processor output debug logs.
+                             Prevents overwhelming parallel file systems.
         -clobber_vlogs       By default, VisIt maintains debug logs from the 5
                              most recent invokations or restarts of each VisIt
                              component. They are named something like

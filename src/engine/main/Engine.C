@@ -1364,6 +1364,12 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //    Tom Fogal, Wed May 27 14:07:19 MDT 2009
 //    Removed a duplicate debug statement.
 //
+//    Brad Whitlock, Fri Jun 19 09:05:31 PDT 2009
+//    I rewrote the code for receiving the command to other processors.
+//    Instead of receiving 1..N 1K size messages per command, with N being 
+//    more common, we now receive 1 size message and then we receive the 
+//    entire command at once.
+//
 // ****************************************************************************
 
 void
@@ -1403,17 +1409,28 @@ Engine::PAR_EventLoop()
             debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
             ResetTimeout(idleTimeoutMins * 60);
 
-            // Get state information from the UI process.
-            MPIXfer::VisIt_MPI_Bcast((void *)&par_buf, 1,
-                PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
+            // Get the next message length.
+            int msgLength = 0;
+            MPIXfer::VisIt_MPI_Bcast((void *)&msgLength, 1, MPI_INT,
+                                     0, VISIT_MPI_COMM);
+
+            // Read the incoming message. Use regular MPI_Bcast since this
+            // message is guaranteed to come right after the other one.
+#ifdef VISIT_BLUE_GENE_P
+            // Make the buffer be 32-byte aligned
+            unsigned char *buf = 0;
+            posix_memalign((void **)&buf, 32, msgLength);
+#else
+            unsigned char *buf = (unsigned char*)malloc(msgLength * sizeof(unsigned char));
+#endif
+            MPI_Bcast((void *)buf, msgLength, MPI_UNSIGNED_CHAR, 0, VISIT_MPI_COMM);
+            par_conn.Append(buf, msgLength);
+            free(buf);
 
             // We have work to do, so reset the alarm.
             idleTimeoutEnabled = false;
             debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
             ResetTimeout(executionTimeoutMins * 60);
-
-            // Add the state information to the connection.
-            par_conn.Append((unsigned char *)par_buf.buffer, par_buf.nbytes);
 
             // Process the state information.
             xfer->Process();

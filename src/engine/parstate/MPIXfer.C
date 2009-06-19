@@ -238,8 +238,10 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 //
-//    Tom Fogal, Tue May 26 21:56:21 MDT 2009
-//    Initialize buffer to avoid sending uninitialized mem in subsequent bcast.
+//    Brad Whitlock, Fri Jun 19 09:05:31 PDT 2009
+//    I rewrote the code for sending the command to other processors.
+//    Instead of sending 1..N 1K size messages, with N being more common, we
+//    now send 1 size message and then we send the entire command at once.
 //
 // ****************************************************************************
 
@@ -260,55 +262,58 @@ MPIXfer::Process()
         {
             if(PAR_UIProcess())
             {
-                int              i;
-                unsigned char    c;
-                char             *cptr;
-                PAR_StateBuffer  buf = {0};
-                BufferConnection newInput;
+                int i, msgLength = curLength + sizeof(int)*2;
+#ifdef VISIT_BLUE_GENE_P
+                // Make the buffer be 32-byte aligned
+                unsigned char *buf = 0;
+                posix_memalign((void **)&buf, 32, msgLength);
+#else
+                unsigned char *buf = (unsigned char*)malloc(msgLength * sizeof(unsigned char));
+#endif
+                unsigned char *tmp = buf;
 
                 // Add the message's opcode and length into the buffer
                 // that we'll broadcast to other processes so their
                 // Xfer objects know what's up.
-                buf.nbytes = 0;
-                cptr = (char *)&curOpcode;
+                unsigned char *cptr = (unsigned char *)&curOpcode;
                 for(i = 0; i < sizeof(int); ++i)
-                    buf.buffer[buf.nbytes++] = *cptr++;
-                cptr = (char *)&curLength;
+                    *tmp++ = *cptr++;
+                cptr = (unsigned char *)&curLength;
                 for(i = 0; i < sizeof(int); ++i)
-                    buf.buffer[buf.nbytes++] = *cptr++;
+                    *tmp++ = *cptr++;
 
                 // Transcribe the message into a buffer that we'll
                 // communicate to other processes and also a new
                 // temporary connection that we'll feed to the interested
                 // object.
+                BufferConnection newInput;
+                unsigned char c;
                 for(i = curLength; i > 0; --i)
                 {
                     // Read a character from the input connection.
                     bufferedInput.ReadChar(&c);
 
-                    buf.buffer[buf.nbytes++] = c;
+                    *tmp++ = c;
                     newInput.WriteChar(c);
-
-                    // Buffer or send it to other processes.
-                    if(buf.nbytes >= INPUT_BUFFER_SIZE)
-                    {
-                        if (slaveProcessInstruction)
-                            slaveProcessInstruction();
-                        VisIt_MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
-                                  0, VISIT_MPI_COMM);
-
-                        buf.nbytes = 0;
-                    }
                 }
 
-                // Write last part of message if it exists.
-                if(buf.nbytes > 0)
-                {
-                    if (slaveProcessInstruction)
-                        slaveProcessInstruction();
-                    VisIt_MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
+                // Send the current opcode and message length. Note that we
+                // use VisIt_MPI_Bcast for this call since we need to match
+                // what's happening in PAR_EventLoop in the engine. This version
+                // of bcast allows engines to reduce their activity instead of
+                // using a spin-wait bcast.
+                if (slaveProcessInstruction)
+                    slaveProcessInstruction();
+                VisIt_MPI_Bcast((void *)&msgLength, 1, MPI_INT,
                               0, VISIT_MPI_COMM);
-                }
+
+                // Use regular bcast since the previous call to bcast will 
+                // already have gotten the attention of the other processors.
+                if (slaveProcessInstruction)
+                    slaveProcessInstruction();
+                MPI_Bcast((void *)buf, msgLength, MPI_UNSIGNED_CHAR,
+                           0, VISIT_MPI_COMM);
+                free(buf);
 
                 // Read the object from the newInput into its local copy.
                 subjectList[curOpcode]->Read(newInput);

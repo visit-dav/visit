@@ -224,6 +224,9 @@ NewHandler(void)
 //    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
 //    Added logic to manage buffering of debug logs; an extra 'b' after level.
 //
+//    Brad Whitlock, Thu Jun 18 15:21:06 PDT 2009
+//    I added -debug-processor-stride
+//
 // ****************************************************************************
 
 void
@@ -234,7 +237,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
          return;
     initializeCalled = true;
 
-    int i, debuglevel = 0, engineDebugRank=-1;
+    int i, debuglevel = 0, engineDebugRank=-1, debugStride = 1;
 #if defined(_WIN32)
     bool usePid = true;
 #else
@@ -306,6 +309,16 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
                     ++i;
                 }
 	    }
+        }
+        else if (strcmp("-debug-processor-stride", argv[i]) == 0)
+        {
+            if(i+1 < argc)
+            {
+                debugStride = atoi(argv[i+1]);
+                ++i;
+            }
+            else
+                cerr << "Warning: debug processor stride not specified." << endl;
         }
         else if (strcmp("-clobber_vlogs", argv[i]) == 0)
         {
@@ -390,6 +403,13 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
         debuglevel = 0;
     }
     
+    // Turn off the processors that don't meet the debug stride.
+    if(n > 1 && debuglevel >= 1)
+    {
+        if((r % debugStride) > 0)
+            debuglevel = 0;
+    }
+
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
     DebugStreamFull::Initialize(progname, debuglevel, sigs, clobberVlogs, bufferDebug);
