@@ -9,6 +9,9 @@
 #  Modifications:
 #    Mark C. Miller, Mon Mar  2 12:44:59 PST 2009
 #    Added tests for 3D and 2D ANNOTTAION_INT nodelists
+#
+#    Mark C. Miller, Thu Jun 18 21:43:45 PDT 2009
+#    Added TestSection() for annotation int nodelists.
 # ----------------------------------------------------------------------------
 
 
@@ -47,6 +50,7 @@ Test("overlink_04")
 #
 # Test ANNOTATION_INT objects and read options
 #
+TestSection("ANNOTATION_INT nodelists")
 DeleteAllPlots()
 CloseDatabase("../data/overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo")
 
