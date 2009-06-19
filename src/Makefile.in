@@ -152,6 +152,12 @@
 #    Brad Whitlock, Thu Jun 18 10:42:16 PDT 2009
 #    I made the new check be configurable.
 #
+#    Mark C. Miller, Thu Jun 18 21:22:07 PDT 2009
+#    Made logic to check for env. var collisions work on Darwin. Made
+#    execution of target dependent on the LACK OF existence of a '-g' in
+#    CXXFLAGS. This way, this target will not get executed for developers
+#    for common cases but will for users. Made the check NOT configurable.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -205,7 +211,7 @@ DISTCLEAN_FILES= Makefile config.cache config.log config.status \
 	include/make-depend-gnu include/make-depend-std \
 	include/make-targets-gnu include/make-targets-std
 
-message: @CHECK_MAKE_AND_ENV_VARS@
+message: check-make-and-env-vars
 
 maintainer-clean: distclean
 	-$(RM) ${DISTCLEAN_FILES}
@@ -215,20 +221,28 @@ visitmodule:
 	do (cd visitpy && $(MAKE) $@) || exit 1; done
 
 check-make-and-env-vars:
-	@echo "Checking for possible collisions between environment"; \
-	echo -n "and VisIt's Make variables..."; \
-	env | cut -d'=' -f1 | sort | uniq > env_vars.txt; \
-	find . -name .svn -prune -o -name Makefile | grep -v .svn | xargs -n 1 -i cat '{}' | tr ' ' '\n'| grep '$$([A-Z_]*)' | sed -e 's#.*$$(\(.*\)).*#\1#' | sort | uniq > make_vars.txt; \
-	em_vars=`grep -x -f env_vars.txt make_vars.txt`; \
-	rm -f env_vars.txt make_vars.txt
-	if test -n "$$em_vars"; then \
-	    echo ""; \
-	    echo "The following variables in your environment may collide with"; \
-	    echo "variables in VisIt's Makefiles. You may want to temporarily"; \
-	    echo "adjust your environment by removing them using unsetenv (csh)"; \
-            echo "or unset (sh) before proceeding..."; \
-	    echo $$em_vars | tr ' ' '\n'; \
-	    sleep 10; \
-	else \
-	    echo "OK"; \
+	@isdbg=$$(echo $(CXXFLAGS) | tr ' ' '\n' | grep -e '-g'); \
+	if test -z "$$isdbg"; then \
+	    echo "Checking for possible collisions between environment"; \
+	    echo -n "and VisIt's Make variables..."; \
+	    env | cut -d'=' -f1 | sort | uniq > env_vars.txt; \
+	    os=$$(uname -s); \
+	    if test "$$os" == "Darwin"; then \
+	        find . -name .svn -prune -o -name Makefile | grep -v .svn | xargs -n 1 -I '{}' cat '{}' | tr ' ' '\n'| grep '$$([A-Z_]*)' | sed -e 's#.*$$(\(.*\)).*#\1#' | sort | uniq > make_vars.txt; \
+	    else \
+	        find . -name .svn -prune -o -name Makefile | grep -v .svn | xargs -n 1 -i cat '{}' | tr ' ' '\n'| grep '$$([A-Z_]*)' | sed -e 's#.*$$(\(.*\)).*#\1#' | sort | uniq > make_vars.txt; \
+	    fi; \
+	    em_vars=$$(grep -x -f env_vars.txt make_vars.txt); \
+	    rm -f env_vars.txt make_vars.txt; \
+	    if test -n "$$em_vars"; then \
+	        echo ""; \
+	        echo "The following variables in your environment may collide with"; \
+	        echo "variables in VisIt's Makefiles. You may want to temporarily"; \
+	        echo "adjust your environment by removing them using unsetenv (csh)"; \
+                echo "or unset (sh) before proceeding..."; \
+	        echo $$em_vars | tr ' ' '\n'; \
+	        sleep 10; \
+	    else \
+	        echo "OK"; \
+	    fi \
 	fi
