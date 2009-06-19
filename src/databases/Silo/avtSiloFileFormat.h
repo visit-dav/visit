@@ -222,6 +222,16 @@ typedef struct _GroupInfo
 //    Replaced DBtoc* arg to ReadXXX functions with list of names of objects
 //    to process. Added RemoveMultixxx functions to help manage cached
 //    multi-objects in presence of exceptions.
+//
+//    Mark C. Miller, Mon Mar 16 23:33:32 PDT 2009
+//    Removed usingOldExtents. Moved logic for 'old' extents interface to
+//    CommonPluginInfo where old (obsolete) options can be merged with current
+//    interface.
+//
+//    Mark C. Miller, Thu Jun 18 20:54:17 PDT 2009
+//    Replaced DBtoc* arg to ReadXXX functions with list of names of objects
+//    to process. Added RemoveMultixxx functions to help manage cached
+//    multi-objects in presence of exceptions.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
