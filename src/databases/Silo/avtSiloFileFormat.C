@@ -114,7 +114,6 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <algorithm>
 
 using std::string;
 using std::vector;
