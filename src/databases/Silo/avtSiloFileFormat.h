@@ -217,6 +217,11 @@ typedef struct _GroupInfo
 //    Removed usingOldExtents. Moved logic for 'old' extents interface to
 //    CommonPluginInfo where old (obsolete) options can be merged with current
 //    interface.
+//
+//    Mark C. Miller, Thu Jun 18 20:54:17 PDT 2009
+//    Replaced DBtoc* arg to ReadXXX functions with list of names of objects
+//    to process. Added RemoveMultixxx functions to help manage cached
+//    multi-objects in presence of exceptions.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -305,31 +310,31 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     DBfile               *OpenFile(const char *, bool skipGlobalInfo = false);
     virtual void          CloseFile(int);
 
-    void                  ReadDir(DBfile *,const char *,avtDatabaseMetaData *);
-    void                  ReadTopDirStuff(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*,char**);
-    void                  ReadMultimeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadQuadmeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadUcdmeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadPointmeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadCurves(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadCSGmeshes(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadMultivars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadQuadvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadUcdvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadPointvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadCSGvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadMaterials(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadMultimats(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadSpecies(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadMultispecies(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
-    void                  ReadDefvars(DBfile*, DBtoc*, const char*,avtDatabaseMetaData*);
+    void                  ReadDir(DBfile*,const char*,avtDatabaseMetaData*);
+    void                  ReadTopDirStuff(DBfile*,const char*,avtDatabaseMetaData*,char**);
+    void                  ReadMultimeshes(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadQuadmeshes(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadUcdmeshes(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadPointmeshes(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadCurves(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadCSGmeshes(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadMultivars(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadQuadvars(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadUcdvars(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadPointvars(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadCSGvars(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadMaterials(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadMultimats(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadSpecies(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadMultispecies(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
+    void                  ReadDefvars(DBfile*,int,char**,const char*,avtDatabaseMetaData*);
 
     void                  DoRootDirectoryWork(avtDatabaseMetaData*);
     void                  BroadcastGlobalInfo(avtDatabaseMetaData*);
-    void                  StoreMultimeshInfo(const char *const dirname, int which_mm,
+    void                  StoreMultimeshInfo(const char *const dirname,
                                              const char *const name_w_dir,
                                              int meshnum, const DBmultimesh *const mm);
-    void                  AddCSGMultimesh(const char *const dirname, int which_mm,
+    void                  AddCSGMultimesh(const char *const dirname,
                                           const char *const multimesh_name,
                                           avtDatabaseMetaData *md,
                                           const DBmultimesh *const mm, DBfile *dbfile);
@@ -417,12 +422,16 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     DBmultimesh          *GetMultimesh(const char *path, const char *name);
     DBmultimesh          *QueryMultimesh(const char *path, const char *name);
+    void                  RemoveMultimesh(DBmultimesh *mm);
     DBmultivar           *GetMultivar(const char *path, const char *name);
     DBmultivar           *QueryMultivar(const char *path, const char *name);
+    void                  RemoveMultivar(DBmultivar *mv);
     DBmultimat           *GetMultimat(const char *path, const char *name);
     DBmultimat           *QueryMultimat(const char *path, const char *name);
+    void                  RemoveMultimat(DBmultimat *mm);
     DBmultimatspecies    *GetMultimatspec(const char *path, const char *name);
     DBmultimatspecies    *QueryMultimatspec(const char *path, const char *name);
+    void                  RemoveMultimatspec(DBmultimatspecies *ms);
 };
 
 
