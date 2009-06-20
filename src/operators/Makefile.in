@@ -240,10 +240,10 @@ OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells @SILO_TARGET@ \
 REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \
          Decimate DeferExpression DeformSphereGlyph Delaunay Displace DualMesh \
 	 Edge Elevate ExternalSurface \
-         IndexSelect InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
-         PDF PersistentParticles Project Reflect Replicate Resample Revolve Slice Smooth \
-         SphereSlice ThreeSlice Threshold Transform TriangulateRegPoints \
-         Tube ZoneDump
+         IndexSelect InverseGhostZone Isosurface Isovolume Lineout Merge \
+         OnionPeel PDF PersistentParticles Project Reflect Replicate Resample \
+         Revolve Slice Smooth SphereSlice ThreeSlice Threshold Transform \
+         TriangulateRegularPoints Tube ZoneDump
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Lineout Slice Threshold
