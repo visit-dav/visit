@@ -629,6 +629,9 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Mark C. Miller, Mon Jun 22 15:16:05 PDT 2009
+//   Replaced typo of '%`' with '%1' in in an arg to QObject::tr().
 // ****************************************************************************
 
 const avtDatabaseMetaData *
