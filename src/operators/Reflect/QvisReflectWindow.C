@@ -442,7 +442,7 @@ QvisReflectWindow::UpdateOctantMenuContents()
 void
 QvisReflectWindow::GetCurrentValues(int which_field)
 {
-    bool okay, doAll = (which_field == -1);
+    bool doAll = (which_field == -1);
     QString msg, temp;
 
     // Do specifiedX

@@ -432,7 +432,7 @@ QvisIsosurfaceWindow::ProcessSelectByText()
 void
 QvisIsosurfaceWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
  
     // Dp the steby line edit.
     if(which_widget == 0 || doAll)

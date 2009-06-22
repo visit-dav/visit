@@ -187,7 +187,6 @@ void
 QvisTraceHistoryWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    char str[1024];
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -249,7 +248,7 @@ QvisTraceHistoryWindow::UpdateWindow(bool doAll)
 void
 QvisTraceHistoryWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
 
     // Do exprs
