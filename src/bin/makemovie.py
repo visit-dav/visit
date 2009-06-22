@@ -734,6 +734,7 @@ class MakeMovie:
         self.log = 0
         self.debug_real = [0,0,0,0,0]
         self.emailAddresses = ""
+        self.engineRestartInterval = 1000000
 
         # Compute engine properties.
         self.useSessionEngineInformation = 1
@@ -817,6 +818,9 @@ class MakeMovie:
     #
     #   Brad Whitlock, Mon Apr  7 13:25:22 PDT 2008
     #   Added a -noffmpeg flag.
+    #
+    #   Eric Brugger, Tue Jun 16 15:12:46 PDT 2009
+    #   Added -enginerestartinterval flag.
     #
     ###########################################################################
 
@@ -934,6 +938,10 @@ class MakeMovie:
         print ""
         print "    -noffmpeg          Don't use ffmpeg for the mpeg encoder even if it"
         print "                       is available."
+        print ""
+        print "    -enginerestartinterval number Restarts the compute engine after"
+        print "                                  the specified number of images are"
+        print "                                  generated."
         print ""
         print "Parallel arguments:"
         print "    -np   <# procs>    The number of processors to use."
@@ -1196,7 +1204,10 @@ class MakeMovie:
     #   changed how stereo works.
     #
     #   Brad Whitlock, Mon Apr  7 13:26:40 PDT 2008
-    #   Added -noffmpeg
+    #   Added -noffmpeg.
+    #
+    #   Eric Brugger, Tue Jun 16 15:12:46 PDT 2009
+    #   Added -enginerestartinterval flag.
     #
     ###########################################################################
 
@@ -1399,6 +1410,19 @@ class MakeMovie:
                     sys.exit(-1)
             elif(commandLine[i] == "-noffmpeg"):
                 self.ffmpegForMPEG = 0
+            elif(commandLine[i] == "-enginerestartinterval"):
+                if((i+1) < len(commandLine)):
+                    try:
+                        self.engineRestartInterval = int(commandLine[i+1])
+                        if(self.engineRestartInterval < 0):
+                            self.engineRestartInterval = 0
+                    except ValueError:
+                        self.engineRestartInterval = 1000000
+                        print "A bad value was provided for engine restart interval. Using an engine restart interval of 1000000."
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
 
             #
             # Parallel engine options.
@@ -2000,6 +2024,8 @@ class MakeMovie:
     # Date:       Mon May 9 17:52:22 PST 2005
     #
     # Modifications:
+    #   Eric Brugger, Tue Jun 16 15:12:46 PDT 2009
+    #   Added -enginerestartinterval flag.
     #
     ###########################################################################
     def IterateAndSaveFrames(self):
@@ -2030,6 +2056,7 @@ class MakeMovie:
         drawThePlots = 0
         nTotalFrames = self.frameEnd - self.frameStart + 1
         lastProgress = -1
+        framesGenerated = 0
         while(i <= self.frameEnd):
             t = float(i - self.frameStart) / float(nTotalFrames);
             progress = int(t * self.percentAllocationFrameGen * 100.)
@@ -2061,6 +2088,11 @@ class MakeMovie:
 
             self.numFrames = self.numFrames + 1
             i = i + self.frameStep
+
+            framesGenerated = framesGenerated + 1
+            if (framesGenerated >= self.engineRestartInterval):
+                CloseComputeEngine()
+                framesGenerated = 0
 
         # Restore the old rendering attributes.
         SetRenderingAttributes(old_ra)
