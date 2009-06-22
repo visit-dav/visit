@@ -598,8 +598,6 @@ QvisThresholdWindow::PopulateThresholdVariablesList()
     int guiVarNum = 0;
     int curVarNum;
     
-    char listVarText[21];
-    
     if (threshVars->rowCount() != guiVarCount)
     {
         debug3 << "QTW/PTVL/1: Threshold GUI out of sync with internal data."

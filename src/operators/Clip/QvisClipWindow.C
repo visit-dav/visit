@@ -638,7 +638,7 @@ QvisClipWindow::UpdateWindow(bool doAll)
 void
 QvisClipWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
 
     // Do plane1Origin
     if(which_widget == ClipAttributes::ID_plane1Origin || doAll)

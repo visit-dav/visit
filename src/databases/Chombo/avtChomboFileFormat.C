@@ -46,6 +46,7 @@
 #include <string>
 #include <cstring>
 #include <limits>
+#include <algorithm>
 
 #include <vtkFieldData.h>
 #include <vtkCellData.h>
@@ -1973,7 +1974,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 
         const char particlesGroupName[] = "/particles/";
         const char posVarname[] = "position_x";
-        char datasetname[strlen(particlesGroupName)+strlen(posVarname)+1];
+        char *datasetname = new char[strlen(particlesGroupName)+strlen(posVarname)+1];
         std::strcpy(datasetname, particlesGroupName);
         std::strcat(datasetname, posVarname);
 
@@ -2029,6 +2030,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                     else
                     {
                         delete[] xPos;
+                        delete[] datasetname;
                         H5Dclose(dataSet);
                         H5Fclose(file_handle);
                         file_handle = -1;
@@ -2041,6 +2043,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             else
             {
                 delete[] xPos;
+                delete[] datasetname;
                 H5Dclose(dataSet);
                 H5Fclose(file_handle);
                 file_handle = -1;
@@ -2051,6 +2054,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         else
         {
             delete[] xPos;
+            delete[] datasetname;
             EXCEPTION1(InvalidDBTypeException, "Cannot open y coordinate data set!");
         }
 
@@ -2076,6 +2080,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                         {
                             delete[] xPos;
                             delete[] yPos;
+                            delete[] datasetname;
                             H5Dclose(dataSet);
                             H5Fclose(file_handle);
                             file_handle = -1;
@@ -2089,6 +2094,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                 {
                     delete[] xPos;
                     delete[] yPos;
+                    delete[] datasetname;
                     H5Dclose(dataSet);
                     H5Fclose(file_handle);
                     file_handle = -1;
@@ -2100,6 +2106,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             {
                 delete[] xPos;
                 delete[] yPos;
+                delete[] datasetname;
                 EXCEPTION1(InvalidDBTypeException, "Cannot open z coordinate data set!");
             }
         }
@@ -2117,6 +2124,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         delete[] xPos;
         delete[] yPos;
         delete[] zPos;
+        delete[] datasetname;
 
         //
         // Create a vtkUnstructuredGrid to contain the point cells.
@@ -2391,10 +2399,6 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
     {
         if (hasParticles)
         {
-            const char particlesGroupName[] = "/particles/";
-            char datasetname[strlen(particlesGroupName)+strlen(varname)+1];
-            std::strcpy(datasetname, particlesGroupName);
-            std::strcat(datasetname, varname);
             if (file_handle < 0)
             {
                 file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -2405,8 +2409,13 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
                 }
             }
  
+            const char particlesGroupName[] = "/particles/";
+            char *datasetname = new char[strlen(particlesGroupName)+strlen(varname)+1];
+            std::strcpy(datasetname, particlesGroupName);
+            std::strcat(datasetname, varname);
             hsize_t nParticles = 0;
             hid_t dataSet = H5Dopen(file_handle, datasetname);
+            delete[] datasetname;
             if ( dataSet > 0)
             {
                 hid_t dataSpace = H5Dget_space(dataSet);
@@ -2450,6 +2459,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
             EXCEPTION1(InvalidVariableException, varname);
         }
     }
+    return NULL;
 }
 
 // ****************************************************************************
