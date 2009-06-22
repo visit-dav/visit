@@ -638,6 +638,8 @@
 #     Tom Fogal, Mon May 25 15:42:30 MDT 2009
 #     Fixed NetCDF downloading (mirror was missing).
 #
+#     Mark C. Miller, Mon Jun 22 13:56:05 PDT 2009
+#     Removed dup ON_SILO/DO_SILO lines.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -849,8 +851,6 @@ export DO_VERBOSE="no"
 export ON_VERBOSE="off"
 export DO_JAVA="no"
 export ON_JAVA="off"
-export DO_SILO="no"
-export ON_SILO="off"
 export DO_SZIP="no"
 export ON_SZIP="off"
 export DO_CCMIO="no"
