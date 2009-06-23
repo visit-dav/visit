@@ -3,13 +3,13 @@ Testing clipped SAMRAI (3D):
 
 A:  summary.samrai  timestep 0
 amr_mesh level 1 patch level1,patch0 
-Point: <5.22482, 5.72228, 3.14577e-15>
+Point: <5.22482, 5.72228, 3.55271e-15>
 Zone:  65
 Incident Nodes:  70  71  83  84  239  240  252  253  
 
 B:  summary.samrai  timestep 0
 amr_mesh level 1 patch level1,patch0 
-Point: <5.22482, 5.72228, 3.14577e-15>
+Point: <5.22482, 5.72228, 3.55271e-15>
 Zone:  65
 Incident Nodes:  70  71  83  84  239  240  252  253  
 Primitive Var _number_0:  <zonal> = 10
@@ -17,7 +17,7 @@ Primitive Var _number_0:  <zonal> = 10
 
 C:  summary.samrai  timestep 0
 amr_mesh level 1 patch level1,patch0 
-Point: <5.22482, 5.72228, 3.14577e-15>
+Point: <5.22482, 5.72228, 3.55271e-15>
 Zone:  65
 Incident Nodes:  70  71  83  84  239  240  252  253  
 

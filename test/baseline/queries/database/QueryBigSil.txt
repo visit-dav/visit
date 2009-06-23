@@ -27,7 +27,7 @@ Eulerian for domain 26 is 1
 Eulerian for domain 27 is 1
 
 
-dist -- Min = 0.0412393 (node 219 in domain 14 at coord <0.47619, 0.47619, 0.47619>)
+dist -- Min = 0.0412393 (node 219 in domain 14 at coord <0.476191, 0.476191, 0.476191>)
 dist -- Max = 0.866025 (node 0 in domain 1 at coord <0, 0, 0>)
 
 
