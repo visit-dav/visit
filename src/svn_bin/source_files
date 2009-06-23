@@ -9,6 +9,9 @@ exec perl -x $0 ${1+"$@"};
 #
 #   Mark C. Miller, Wed May 20 16:43:25 PDT 2009
 #   Added svn_bin to dbio-only distributions
+#
+#   Mark C. Miller, Mon Jun 22 22:05:56 PDT 2009
+#   Adjusted to deal with tree in which there is no 'data' dir.
 
 if  (! -d "src")
 {
@@ -131,8 +134,11 @@ else
     push @files, get_svn_recursive    "./src/cqscore";
     push @files, get_svn_recursive    "./src/third_party_builtin";
     push @files, get_norecursive      "./src/SVN_REVISION";
-    push @files, get_norecursive      "./data/Makefile.in";
-    push @files, get_norecursive      "./data/*.C";
+    if  (-d "data")
+    {
+        push @files, get_norecursive      "./data/Makefile.in";
+        push @files, get_norecursive      "./data/*.C";
+    }
 }
 
 foreach (sort @files)
