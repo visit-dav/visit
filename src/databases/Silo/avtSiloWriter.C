@@ -339,6 +339,11 @@ RestoreSiloLibState()
 //    Mark C. Miller, Fri May  8 17:04:15 PDT 2009
 //    Added compression and checksum options. Added call to save and set
 //    silo lib's global state.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
 // ****************************************************************************
 
 avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
@@ -379,8 +384,8 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
             debug1 << "Ignoring unknown option \"" << dbopts->GetName(i) << "\"" << endl;
     }
 
-    meshtype = AVT_UNKNOWN_MESH;
-
+    nmeshes = 0;
+    meshtypes = NULL;
     SaveAndSetSiloLibState(driver, checkSums, compressionParams);
 }
 
@@ -394,6 +399,11 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
 //  Modifications:
 //    Mark C. Miller, Fri May  8 17:05:03 PDT 2009
 //    Added call to restore silo lib's global state.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
 // ****************************************************************************
 
 avtSiloWriter::~avtSiloWriter()
@@ -405,6 +415,7 @@ avtSiloWriter::~avtSiloWriter()
         DBFreeOptlist(optlist);
         optlist = NULL;
     }
+    if (meshtypes != NULL) delete [] meshtypes;
 }
 
 
@@ -426,6 +437,10 @@ avtSiloWriter::~avtSiloWriter()
 //    Separate dir and file name, so only file name can be used as stem 
 //    for mesh and var names.
 //
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
 // ****************************************************************************
 
 void
@@ -442,6 +457,15 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
         dir  = stem.substr(0,idx+1);
         stem = stem.substr(idx+1,stem_len);
     }
+
+    // Get the number of datasets on this processor and allocate the
+    // meshtypes array using it for the size.
+    avtDataTree_p rootnode = GetInputDataTree();
+    int nchunks = rootnode->GetNumberOfLeaves();
+
+    nmeshes = 0;
+    if (meshtypes != NULL) delete [] meshtypes;
+    meshtypes = new int[nchunks];
 }
 
 
@@ -463,6 +487,10 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
 //    Added meshtype as a member variable, and only start with the initial
 //    guess from the mesh meta-data.
 //
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
 // ****************************************************************************
 
 void
@@ -479,12 +507,6 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
     headerScalars   = scalars;
     headerVectors   = vectors;
     headerMaterials = materials;
-
-    // Initial guess for mesh type.  Note that we're assuming there is
-    // one mesh type for all domains, but it's possible this is not
-    // always true.  Parallel unification of the actual chunks written
-    // out is needed to solve this correctly.
-    meshtype = mmd->meshType;
 
     ConstructChunkOptlist(md);
 }
@@ -523,41 +545,23 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Brad Whitlock, Fri Mar 6 15:00:31 PST 2009
 //    Allow subdirectories.
 //
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.  I also commented
+//    out some logic that had to do with outputting spatial extents when
+//    built in parallel since this caused some out of bounds memory
+//    references.
+//
 // ****************************************************************************
 
 void
-avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
+avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
+    int *meshtypes)
 {
     int   i,j,k;
 
     int nlevels = 0;
     string meshName = BeginVar(dbfile, mmd->name, nlevels);
-
-    //
-    // Determine what the Silo type is.
-    //
-    int *meshtypes = new int[nblocks];
-    int silo_mesh_type = DB_INVALID_OBJECT;
-    switch (meshtype)
-    {
-      case AVT_RECTILINEAR_MESH:
-      case AVT_CURVILINEAR_MESH:
-        silo_mesh_type = DB_QUADMESH;
-        break;
-
-      case AVT_UNSTRUCTURED_MESH:
-      case AVT_SURFACE_MESH:
-      case AVT_POINT_MESH:
-        silo_mesh_type = DB_UCDMESH;
-        break;
-
-      default:
-        silo_mesh_type = DB_INVALID_OBJECT;
-        break;
-    }
-
-    if (hasMaterialsInProblem && !mustGetMaterialsAdditionally)
-       silo_mesh_type = DB_UCDMESH;  // After we do MIR.
 
     avtDataAttributes& atts = GetInput()->GetInfo().GetAttributes();
     int ndims = atts.GetSpatialDimension();
@@ -566,11 +570,12 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
     // Construct the names for each mesh.
     //
     char **mesh_names = new char*[nblocks];
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
     double *extents = new double[nblocks * ndims * 2];
+#endif
     k = 0;
     for (i = 0 ; i < nblocks ; i++)
     {
-        meshtypes[i] = silo_mesh_type;
         char tmp[1024];
         if (singleFile)
         {
@@ -584,18 +589,22 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
         mesh_names[i] = new char[strlen(tmp)+1];
         strcpy(mesh_names[i], tmp);
 
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
         for (j = 0; j < ndims; j++)
            extents[k++] = spatialMins[i*ndims+j];
         for (j = 0; j < ndims; j++)
            extents[k++] = spatialMaxs[i*ndims+j];
+#endif
     }
 
     //
     // Build zone-counts array
     //
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
     int *zone_counts = new int[nblocks];
     for (i = 0; i < nblocks; i++)
         zone_counts[i] = zoneCounts[i];
+#endif
 
     DBoptlist *tmpOptlist = DBMakeOptlist(20);
 
@@ -635,9 +644,10 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
         delete [] mesh_names[i];
     }
     delete [] mesh_names;
-    delete [] meshtypes;
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
     delete [] extents;
     delete [] zone_counts;
+#endif
 
     EndVar(dbfile, nlevels);
 }
@@ -675,11 +685,15 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
 //    option list. The address of a temporary variable was taken and then
 //    it went out of scope.
 //
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
-                                 const avtMeshMetaData *mmd)
+    const avtMeshMetaData *mmd, int *meshtypes)
 {
     int   i,j,k;
 
@@ -688,32 +702,6 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     //
     int nlevels = 0;
     string varName = BeginVar(dbfile, sname, nlevels);
-
-    //
-    // Determine what the Silo type is.
-    //
-    int *vartypes = new int[nblocks];
-    int silo_var_type = DB_INVALID_OBJECT;
-    switch (meshtype)
-    {
-      case AVT_RECTILINEAR_MESH:
-      case AVT_CURVILINEAR_MESH:
-        silo_var_type = DB_QUADVAR;
-        break;
-
-      case AVT_UNSTRUCTURED_MESH:
-      case AVT_SURFACE_MESH:
-      case AVT_POINT_MESH:
-        silo_var_type = DB_UCDVAR;
-        break;
-
-      default:
-        silo_var_type = DB_INVALID_OBJECT;
-        break;
-    }
-
-    if (hasMaterialsInProblem && !mustGetMaterialsAdditionally)
-       silo_var_type = DB_UCDVAR;  // After we do MIR.
 
     //
     // lookup extents for this variable and setup the info we'll need
@@ -736,10 +724,24 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     // Construct the names for each var.
     //
     k = 0;
+    int *vartypes = new int[nblocks];
     char **var_names = new char*[nblocks];
     for (i = 0 ; i < nblocks ; i++)
     {
-        vartypes[i] = silo_var_type;
+        switch (meshtypes[i])
+        {
+          case DB_QUADMESH:
+            vartypes[i] = DB_QUADVAR;
+            break;
+
+          case DB_UCDMESH:
+            vartypes[i] = DB_UCDVAR;
+            break;
+
+          default:
+            vartypes[i] = DB_INVALID_OBJECT;
+            break;
+        }
         char tmp[1024];
         if (singleFile)
         {
@@ -968,6 +970,11 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //    Mark C. Miller, Fri May  8 17:05:47 PDT 2009
 //    Moved work dealing with Silo lib's global behavior to
 //    SaveAndSetSiloLibState.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
 // ****************************************************************************
 
 void
@@ -1015,28 +1022,29 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     switch (ds->GetDataObjectType())
     {
        case VTK_UNSTRUCTURED_GRID:
-         meshtype = AVT_UNSTRUCTURED_MESH;
+         meshtypes[nmeshes] = DB_UCDMESH;
          WriteUnstructuredMesh(dbfile, (vtkUnstructuredGrid *) ds, chunk);
          break;
 
        case VTK_STRUCTURED_GRID:
-         meshtype = AVT_CURVILINEAR_MESH;
+         meshtypes[nmeshes] = DB_QUADMESH;
          WriteCurvilinearMesh(dbfile, (vtkStructuredGrid *) ds, chunk);
          break;
 
        case VTK_RECTILINEAR_GRID:
-         meshtype = AVT_RECTILINEAR_MESH;
+         meshtypes[nmeshes] = DB_QUADMESH;
          WriteRectilinearMesh(dbfile, (vtkRectilinearGrid *) ds, chunk);
          break;
 
        case VTK_POLY_DATA:
-         meshtype = AVT_UNSTRUCTURED_MESH;
+         meshtypes[nmeshes] = DB_UCDMESH;
          WritePolygonalMesh(dbfile, (vtkPolyData *) ds, chunk);
          break;
 
        default:
          EXCEPTION0(ImproperUseException);
     }
+    nmeshes++;
 
     DBClose(dbfile);
 }
@@ -1080,6 +1088,11 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //    Mark C. Miller, Fri May  8 17:05:47 PDT 2009
 //    Moved work dealing with Silo lib's global behavior to
 //    SaveAndSetSiloLibState.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
 // ****************************************************************************
 
 void
@@ -1101,25 +1114,15 @@ avtSiloWriter::CloseFile(void)
         return;
     }
 
-    int nprocs = PAR_Size();
-    int rootid = nprocs + 1;
-    int procid = PAR_Rank();
+    // Determine the meshtypes of the all the meshes.
+    int *globalMeshtypes = NULL;
+    int *globalNMesh = NULL;
 
-    // get number of of datasets local to this processor
-    avtDataTree_p rootnode = GetInputDataTree();
-    int nchunks = rootnode->GetNumberOfLeaves();
+    CollectIntArraysOnRootProc(globalMeshtypes, globalNMesh,
+                               meshtypes, nmeshes);
 
-    // find the lowest ranked processor with data
-    if (nchunks > 0)
-        rootid = procid;
-
-    // find min rootid
-    bool root = ThisProcessorHasMinimumValue((double)rootid);
-
-    if (root)
+    if (PAR_Rank() == 0)
     {
-        debug5 << "avtSiloWriter: proc " << procid << " writing silo root"
-               << "file" << endl;
         char filename[1024];
         string fname = dir + stem;
         sprintf(filename, "%s.silo", fname.c_str());
@@ -1132,13 +1135,17 @@ avtSiloWriter::CloseFile(void)
             dbfile = DBCreate(filename, 0, DB_LOCAL, 
                          "Silo file written by VisIt", driver);
 
-        ConstructMultimesh(dbfile, mmd);
+        ConstructMultimesh(dbfile, mmd, globalMeshtypes);
         for (i = 0 ; i < headerScalars.size() ; i++)
-            ConstructMultivar(dbfile, headerScalars[i], mmd);
+            ConstructMultivar(dbfile, headerScalars[i], mmd, globalMeshtypes);
         for (i = 0 ; i < headerVectors.size() ; i++)
-            ConstructMultivar(dbfile, headerVectors[i], mmd);
+            ConstructMultivar(dbfile, headerVectors[i], mmd, globalMeshtypes);
         for (i = 0 ; i < headerMaterials.size() ; i++)
             ConstructMultimat(dbfile, headerMaterials[i], mmd);
+
+        delete [] globalNMesh;
+        delete [] globalMeshtypes;
+
         WriteExpressions(dbfile);
         DBClose(dbfile);
     }
