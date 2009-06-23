@@ -1643,6 +1643,79 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
 
 
 // ****************************************************************************
+//  Function: CollectIntArraysOnRootProc
+//
+//  Purpose:
+//      Collects a collection of arrays from all the processors on the root
+//      process.  The arrays can be of different sizes.  The receiveBuf and
+//      receiveCounts are allocated in this routine and must be deleted by
+//      the caller.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 22, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+CollectIntArraysOnRootProc(int *&receiveBuf, int *&receiveCounts,
+    int *sendBuf, int sendCount)
+{
+#ifdef PARALLEL
+    int rank = PAR_Rank();
+    int nProc = PAR_Size();
+
+    // Determine the receive counts.
+    receiveCounts = NULL;
+    if (rank == 0)
+    {
+        receiveCounts = new int[nProc];
+    }
+    MPI_Gather(&sendCount, 1, MPI_INT, receiveCounts, 1, MPI_INT,
+               0, VISIT_MPI_COMM);
+
+    // Determine the processor offsets.
+    int *procOffset = NULL;
+    if (rank == 0)
+    {
+        procOffset = new int[nProc];
+        procOffset[0] = 0;
+        for (int i = 1; i < nProc; i++)
+            procOffset[i] = procOffset[i-1] + receiveCounts[i-1];
+    }
+
+    // Allocate the receive buffer.
+    receiveBuf = NULL;
+    if (rank == 0)
+    {
+        // Determine the size of the receive buffer.
+        int nReceiveBuf = 0;
+        for (int i  = 0 ; i < nProc; i++)
+            nReceiveBuf += receiveCounts[i];
+
+        // Allocate it.
+        receiveBuf = new int[nReceiveBuf];
+    }
+
+    MPI_Gatherv(sendBuf, sendCount, MPI_INT, receiveBuf,
+                receiveCounts, procOffset, MPI_INT, 0, VISIT_MPI_COMM);
+
+    if (rank == 0)
+    {
+        delete [] procOffset;
+    }
+#else
+    receiveCounts = new int[1];
+    receiveCounts[0] = sendCount;
+
+    receiveBuf = new int[sendCount];
+    for (int i = 0; i < sendCount; i++)
+        receiveBuf[i] = sendBuf[i];
+#endif
+}
+
+// ****************************************************************************
 //  Function: GetUniqueMessageTag
 //
 //  Purpose: Returns a suitable, unique message tag to be used in MPI_Send/Recv 

@@ -108,6 +108,10 @@ class DBOptionsAttributes;
 //    Brad Whitlock, Tue May 19 12:22:38 PDT 2009
 //    I added an argument to WriteUcdvars.
 //
+//    Eric Brugger, Mon Jun 22 16:35:47 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
 // ****************************************************************************
 
 class
@@ -124,7 +128,8 @@ avtSiloWriter : public virtual avtDatabaseWriter
     string         matname;
     int            nblocks;
     int            driver;
-    avtMeshType    meshtype;
+    int            nmeshes;
+    int           *meshtypes;
     DBoptlist     *optlist;
     bool           singleFile;
     bool           checkSums;
@@ -153,9 +158,10 @@ avtSiloWriter : public virtual avtDatabaseWriter
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
 
-    void           ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *);
+    void           ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *,
+                                      int *);
     void           ConstructMultivar(DBfile *dbfile, const string &,
-                                     const avtMeshMetaData *);
+                                     const avtMeshMetaData *, int *);
     void           ConstructMultimat(DBfile *dbfile, const string &,
                                      const avtMeshMetaData *);
     void           ConstructChunkOptlist(const avtDatabaseMetaData *);

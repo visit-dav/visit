@@ -98,6 +98,8 @@ PIPELINE_API void    BroadcastStringVectorVector(std::vector<std::vector<std::st
                                                  int myrank);
 PIPELINE_API bool    GetListToRootProc(std::vector<std::string> &, int);
 
+PIPELINE_API void    CollectIntArraysOnRootProc(int *&, int *&, int *, int);
+
 PIPELINE_API int     GetUniqueMessageTag();
 PIPELINE_API int     GetUniqueStaticMessageTag();
 
