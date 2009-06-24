@@ -401,15 +401,10 @@ skipList_dueTo_clientServer="\
           davinci,scalable,parallel:tests/queries/bestfitline.py"
 
 skipList_dueTo_parallelRendering="\
-          davinci,scalable,parallel:tests/databases/boxlib.py \
-          davinci,scalable,parallel:tests/databases/chgcar.py:chgcar_11"
+          davinci,scalable,parallel:tests/databases/boxlib.py"
 
 skipList_dueTo_temporaryBugs="\
-          davinci,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
-          davinci,scalable,parallel:tests/operators/transform.py:ops_transform05 \
-          davinci,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-          davinci,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-          davinci,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
+          davinci,scalable,parallel:tests/operators/transform.py:ops_transform05"
 
 skipList_for_Davinci="\
           davinci,serial:tests/meshtype/csg.py:csg_02 \
