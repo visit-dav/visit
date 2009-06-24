@@ -98,6 +98,10 @@
 #
 #    Mark C. Miller, Tue Jun 23 18:28:53 PDT 2009
 #    Increased processor count for makes from 4 to 6.
+#
+#    Mark C. Miller, Wed Jun 24 11:27:59 PDT 2009
+#    Removed setting of PYTHONPATH prior to runtest to get PIL as VisIt's
+#    python on Davinci now has PIL installed.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -436,9 +440,9 @@ cd test
 for m in $modes; do
 
     if test "$skipList" = ""; then
-        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -m "$m" -l 1200 -notrackmem
+        ./runtest -q -m "$m" -l 1200 -notrackmem
     else
-        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -s "$skipList" -m "$m" -l 1200 -notrackmem
+        ./runtest -q -s "$skipList" -m "$m" -l 1200 -notrackmem
     fi
     curerror=$?
     theMode=`echo $m | tr ',' '_'`
