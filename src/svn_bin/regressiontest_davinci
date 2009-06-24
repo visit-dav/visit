@@ -92,6 +92,9 @@
 #
 #    Mark C. Miller, Wed Jun 17 14:57:12 PDT 2009
 #    Changed URL in email to specify portal.nersc.gov
+#
+#    Mark C. Miller, Tue Jun 23 15:14:43 PDT 2009
+#    Removed some items from the skip list.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -402,9 +405,6 @@ skipList_dueTo_parallelRendering="\
           davinci,scalable,parallel:tests/databases/chgcar.py:chgcar_11"
 
 skipList_dueTo_temporaryBugs="\
-          davinci,scalable,parallel:tests/databases/defer_expr.py \
-          davinci,parallel:tests/databases/defer_expr.py \
-          davinci,serial:tests/databases/defer_expr.py \
           davinci,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
           davinci,scalable,parallel:tests/operators/transform.py:ops_transform05 \
           davinci,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
@@ -415,18 +415,12 @@ skipList_for_Davinci="\
           davinci,serial:tests/meshtype/csg.py:csg_02 \
           davinci,parallel:tests/meshtype/csg.py:csg_02 \
           davinci,scalable,parallel:tests/meshtype/csg.py:csg_02 \
-          davinci,serial:tests/databases/itaps.py \
-          davinci,parallel:tests/databases/itaps.py \
-          davinci,scalable,parallel:tests/databases/itaps.py \
-          davinci,serial:tests/databases/vista.py \
-          davinci,parallel:tests/databases/vista.py \
-          davinci,scalable,parallel:tests/databases/vista.py \
-          davinci,serial:tests/hybrid/lineout.py:Lineout2d_output_15 \
-          davinci,parallel:tests/hybrid/lineout.py:Lineout2d_output_15 \
-          davinci,scalable,parallel:tests/hybrid/lineout.py:Lineout2d_output_15 \
-          davinci,serial:tests/databases/visus.py \
-          davinci,parallel:tests/databases/visus.py \
-          davinci,scalable,parallel:tests/databases/visus.py"
+          davinci,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
+          davinci,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
+          davinci,scalable,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
+          davinci,serial:tests/databases/visus.py:visus_07,visus_08,visus_09 \
+          davinci,parallel:tests/databases/visus.py:visus_07,visus_08,visus_09 \
+          davinci,scalable,parallel:tests/databases/visus.py:visus_07,visus_08,visus_09"
           
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs $skipList_for_Davinci"
 
