@@ -93,8 +93,12 @@ struct HexMetricVals
   VERDICT_REAL volume ;
   /** \sa v_hex_stretch */
   VERDICT_REAL stretch ;
-  /** \sa v_hex_diagonal */
-  VERDICT_REAL diagonal ;
+  /** \sa v_hex_max_diagonal */
+  VERDICT_REAL max_diagonal ;
+  /** \sa v_hex_min_diagonal */
+  VERDICT_REAL min_diagonal ;
+  /** \sa v_hex_diagonal_ratio */
+  VERDICT_REAL diagonal_ratio ;
   /** \sa v_hex_dimension */
   VERDICT_REAL dimension ;
   /** \sa v_hex_oddy */
@@ -294,30 +298,32 @@ struct TriMetricVals
 //! 
 //@{
 
-#define V_HEX_ASPECT                 1      /*!< \hideinitializer */
-#define V_HEX_SKEW                   2      /*!< \hideinitializer */
-#define V_HEX_TAPER                  4      /*!< \hideinitializer */
-#define V_HEX_VOLUME                 8      /*!< \hideinitializer */
-#define V_HEX_STRETCH                16     /*!< \hideinitializer */
-#define V_HEX_DIAGONAL               32     /*!< \hideinitializer */
-#define V_HEX_DIMENSION              64     /*!< \hideinitializer */
-#define V_HEX_ODDY                   128    /*!< \hideinitializer */
-#define V_HEX_CONDITION              256    /*!< \hideinitializer */
-#define V_HEX_JACOBIAN               512    /*!< \hideinitializer */
-#define V_HEX_SCALED_JACOBIAN        1024   /*!< \hideinitializer */
-#define V_HEX_SHEAR                  2048   /*!< \hideinitializer */
-#define V_HEX_SHAPE                  4096   /*!< \hideinitializer */
-#define V_HEX_RELATIVE_SIZE_SQUARED  8192   /*!< \hideinitializer */
-#define V_HEX_SHAPE_AND_SIZE         16384  /*!< \hideinitializer */
-#define V_HEX_SHEAR_AND_SIZE         32768  /*!< \hideinitializer */
-#define V_HEX_DISTORTION             65536  /*!< \hideinitializer */
-#define V_HEX_ALL                    131071 /*!< \hideinitializer */
+#define V_HEX_ASPECT                 0x000001    /*!< \hideinitializer */
+#define V_HEX_SKEW                   0x000002    /*!< \hideinitializer */
+#define V_HEX_TAPER                  0x000004    /*!< \hideinitializer */
+#define V_HEX_VOLUME                 0x000008    /*!< \hideinitializer */
+#define V_HEX_STRETCH                0x000010    /*!< \hideinitializer */
+#define V_HEX_DIAGONAL_RATIO         0x000020    /*!< \hideinitializer */
+#define V_HEX_DIMENSION              0x000040    /*!< \hideinitializer */
+#define V_HEX_ODDY                   0x000080    /*!< \hideinitializer */
+#define V_HEX_CONDITION              0x000100    /*!< \hideinitializer */
+#define V_HEX_JACOBIAN               0x000200    /*!< \hideinitializer */
+#define V_HEX_SCALED_JACOBIAN        0x000400    /*!< \hideinitializer */
+#define V_HEX_SHEAR                  0x000800    /*!< \hideinitializer */
+#define V_HEX_SHAPE                  0x001000    /*!< \hideinitializer */
+#define V_HEX_RELATIVE_SIZE_SQUARED  0x002000    /*!< \hideinitializer */
+#define V_HEX_SHAPE_AND_SIZE         0x004000    /*!< \hideinitializer */
+#define V_HEX_SHEAR_AND_SIZE         0x008000    /*!< \hideinitializer */
+#define V_HEX_DISTORTION             0x010000    /*!< \hideinitializer */
+#define V_HEX_MIN_DIAGONAL           0x020000    /*!< \hideinitializer */
+#define V_HEX_MAX_DIAGONAL           0x040000    /*!< \hideinitializer */
+#define V_HEX_ALL                    0x07ffff    /*!< \hideinitializer */
 /*!< \hideinitializer */
 #define V_HEX_TRADITIONAL            V_HEX_ASPECT          + \
                                      V_HEX_SKEW            + \
                                      V_HEX_TAPER           + \
                                      V_HEX_STRETCH         + \
-                                     V_HEX_DIAGONAL        + \
+                                     V_HEX_DIAGONAL_RATIO  + \
                                      V_HEX_ODDY            + \
                                      V_HEX_CONDITION       + \
                                      V_HEX_JACOBIAN        + \
@@ -626,7 +632,13 @@ struct TriMetricVals
     //! Calculates hex diagonal metric   
     /** Minimum diagonal length / maximum diagonal length. 
       Reference --- Unknown */ 
-    C_FUNC_DEF VERDICT_REAL v_hex_diagonal( int num_nodes, VERDICT_REAL coordinates[][3] ); 
+    C_FUNC_DEF VERDICT_REAL v_hex_diagonal_ratio( int num_nodes, VERDICT_REAL coordinates[][3] ); 
+
+    //! Calculates max hex diagonal metric   
+    C_FUNC_DEF VERDICT_REAL v_hex_max_diagonal( int num_nodes, VERDICT_REAL coordinates[][3] ); 
+
+    //! Calculates min hex diagonal metric   
+    C_FUNC_DEF VERDICT_REAL v_hex_min_diagonal( int num_nodes, VERDICT_REAL coordinates[][3] ); 
 
     //! Calculates hex dimension metric   
     /** Pronto-specific characteristic length for stable time step calculation.  

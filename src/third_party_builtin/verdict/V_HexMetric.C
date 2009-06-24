@@ -717,11 +717,32 @@ C_FUNC_DEF VERDICT_REAL v_hex_stretch( int /*num_nodes*/, VERDICT_REAL coordinat
 }
 
 /*!
+  Min diagonal length of a hex
+*/
+C_FUNC_DEF VERDICT_REAL v_hex_min_diagonal( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
+{
+  double min_diag = diag_length( 0, coordinates );
+  
+  return (VERDICT_REAL)min_diag;
+}
+
+/*!
+  Max diagonal length of a hex
+*/
+C_FUNC_DEF VERDICT_REAL v_hex_max_diagonal( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
+{
+  double max_diag = diag_length( 1, coordinates );
+  
+  return (VERDICT_REAL)max_diag;
+}
+
+
+/*!
   diagonal ratio of a hex
   
   Minimum diagonal length / maximum diagonal length
 */
-C_FUNC_DEF VERDICT_REAL v_hex_diagonal( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
+C_FUNC_DEF VERDICT_REAL v_hex_diagonal_ratio( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
 {
   
   double min_diag = diag_length( 0, coordinates ); 
@@ -3010,8 +3031,12 @@ C_FUNC_DEF void v_hex_quality( int num_nodes, VERDICT_REAL coordinates[][3],
   }
 
 
-  if(metrics_request_flag & V_HEX_DIAGONAL)
-    metric_vals->diagonal = v_hex_diagonal(num_nodes, coordinates);
+  if(metrics_request_flag & V_HEX_DIAGONAL_RATIO)
+    metric_vals->diagonal_ratio = v_hex_diagonal_ratio(num_nodes, coordinates);
+  if(metrics_request_flag & V_HEX_MAX_DIAGONAL)
+    metric_vals->max_diagonal = v_hex_max_diagonal(num_nodes, coordinates);
+  if(metrics_request_flag & V_HEX_MIN_DIAGONAL)
+    metric_vals->min_diagonal = v_hex_min_diagonal(num_nodes, coordinates);
   if(metrics_request_flag & V_HEX_DIMENSION)
     metric_vals->dimension = v_hex_dimension(num_nodes, coordinates);
   if(metrics_request_flag & V_HEX_DISTORTION)
@@ -3049,11 +3074,11 @@ C_FUNC_DEF void v_hex_quality( int num_nodes, VERDICT_REAL coordinates[][3],
   else
     metric_vals->stretch = (VERDICT_REAL) VERDICT_MAX( metric_vals->stretch, -VERDICT_DBL_MAX );
 
-  //diagonal
-  if( metric_vals->diagonal > 0 )
-    metric_vals->diagonal = (VERDICT_REAL) VERDICT_MIN( metric_vals->diagonal, VERDICT_DBL_MAX );
+  //diagonal ratio
+  if( metric_vals->diagonal_ratio > 0 )
+    metric_vals->diagonal_ratio = (VERDICT_REAL) VERDICT_MIN( metric_vals->diagonal_ratio, VERDICT_DBL_MAX );
   else
-    metric_vals->diagonal = (VERDICT_REAL) VERDICT_MAX( metric_vals->diagonal, -VERDICT_DBL_MAX );
+    metric_vals->diagonal_ratio = (VERDICT_REAL) VERDICT_MAX( metric_vals->diagonal_ratio, -VERDICT_DBL_MAX );
 
   //dimension
   if( metric_vals->dimension > 0 )

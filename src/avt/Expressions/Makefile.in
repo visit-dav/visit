@@ -246,6 +246,9 @@
 #
 #   Brad Whitlock, Tue Jun 2 10:14:37 PDT 2009
 #   I split up avtExprNode into several files to speed compilation on xlC.
+#   
+#   Sean Ahern, Wed Jun 24 15:19:46 EDT 2009
+#   Renamed Diagonal to DiagonalRatio.  Added MaxDiagonal and MinDiagonal.
 #
 ##############################################################################
 
@@ -439,7 +442,9 @@ MeshQuality_src= \
   MeshQuality/avtVMetricAspectGamma.C \
   MeshQuality/avtVMetricAspectRatio.C \
   MeshQuality/avtVMetricCondition.C \
-  MeshQuality/avtVMetricDiagonal.C \
+  MeshQuality/avtVMetricMaxDiagonal.C \
+  MeshQuality/avtVMetricMinDiagonal.C \
+  MeshQuality/avtVMetricDiagonalRatio.C \
   MeshQuality/avtVMetricDimension.C \
   MeshQuality/avtVMetricJacobian.C \
   MeshQuality/avtVMetricMaximumAngle.C \

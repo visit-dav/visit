@@ -37,51 +37,29 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtVMetricDiagonal.C                         //
+//                          avtVMetricMinDiagonal.h                             //
 // ************************************************************************* //
 
-#include "avtVMetricDiagonal.h"
-
-#include <vtkCellType.h>
-#include <vtkDataSet.h>
-#include <vtkFloatArray.h>
-
-#include <verdict.h>
-
-#include <DebugStream.h>
+#ifndef AVT_VMETRIC_MIN_DIAGONAL_H
+#define AVT_VMETRIC_MIN_DIAGONAL_H
+#include <expression_exports.h>
+#include <avtVerdictExpression.h>
 
 // ****************************************************************************
-//  Method: avtVMetricDiagonal::Metric
+//  Class: avtVMetricMinDiagonal
 //
 //  Purpose:
-//      Inspect an element and calculate the diagonal.
+//    This metric measures min diagonal length.
 //
-//  Arguments:
-//      coords    The set of xyz points for the cell.
-//      numPoints The number of xyz points for the cell.
-//      type      The vtk type of the cell.
-//
-//  Returns:      The diagonal of the cell, or defaultValue if not supported.
-//
-//  Programmer:   Akira Haddox
-//  Creation:     June 13, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
-//    Update for new verdict interface.
+//  Programmer: Sean Ahern
+//  Creation:   June 24, 2009
 //
 // ****************************************************************************
 
-double avtVMetricDiagonal::Metric (double coords[][3], int type)
+class EXPRESSION_API avtVMetricMinDiagonal : public avtVerdictExpression
 {
-#ifdef HAVE_VERDICT 
-    switch (type)
-    {
-        case VTK_HEXAHEDRON:
-        case VTK_VOXEL:
-            return v_hex_diagonal(8, coords);
-    }
+    public:
+        double Metric(double coords[][3], int type);
+};
+
 #endif
-    return -1;
-}
