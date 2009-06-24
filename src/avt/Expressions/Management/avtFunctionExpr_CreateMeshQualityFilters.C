@@ -49,7 +49,9 @@
 #include <avtVMetricAspectGamma.h>
 #include <avtVMetricAspectRatio.h>
 #include <avtVMetricCondition.h>
-#include <avtVMetricDiagonal.h>
+#include <avtVMetricDiagonalRatio.h>
+#include <avtVMetricMinDiagonal.h>
+#include <avtVMetricMaxDiagonal.h>
 #include <avtVMetricDimension.h>
 #include <avtVMetricJacobian.h>
 #include <avtVMetricMaximumAngle.h>
@@ -154,8 +156,12 @@ avtFunctionExpr::CreateMeshQualityFilters(const string &functionName) const
     }
     else if (functionName == "stretch")
         f = new avtVMetricStretch();
-    else if (functionName == "diagonal")
-        f = new avtVMetricDiagonal();
+    else if (functionName == "diagonal_ratio")
+        f = new avtVMetricDiagonalRatio();
+    else if (functionName == "max_diagonal")
+        f = new avtVMetricMaxDiagonal();
+    else if (functionName == "min_diagonal")
+        f = new avtVMetricMinDiagonal();
     else if (functionName == "dimension")
         f = new avtVMetricDimension();
     else if (functionName == "oddy")

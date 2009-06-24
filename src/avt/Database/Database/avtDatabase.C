@@ -1378,6 +1378,10 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Wed Jun  3 14:51:09 PDT 2009
 //    Added face_planarity expressions.
+//
+//    Sean Ahern, Wed Jun 24 17:13:50 EDT 2009
+//    Renamed diagonal to diagonal_ratio.  Added max_diagonal and
+//    min_diagonal.
 // ****************************************************************************
 
 void
@@ -1427,34 +1431,37 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
             continue;
 
         nmeshes_done++;
-        const int nPairs = 26;
+        const int nPairs = 28;
+        // Static allocation?!  Really??!!
         MQExprTopoPair exprs[nPairs];
         exprs[0]  = MQExprTopoPair("area", 2);
         exprs[1]  = MQExprTopoPair("aspect_gamma", 3);
         exprs[2]  = MQExprTopoPair("aspect", -1);
         exprs[3]  = MQExprTopoPair("condition", -1);
-        exprs[4]  = MQExprTopoPair("diagonal", 3);
-        exprs[5]  = MQExprTopoPair("dimension", 3);
-        exprs[6]  = MQExprTopoPair("jacobian", -1);
-        exprs[7]  = MQExprTopoPair("max_edge_length", -1);
-        exprs[8]  = MQExprTopoPair("max_side_volume", 3);
-        exprs[9]  = MQExprTopoPair("maximum_angle", 2);
-        exprs[10] = MQExprTopoPair("min_edge_length", -1);
-        exprs[11] = MQExprTopoPair("min_side_volume", 3);
-        exprs[12] = MQExprTopoPair("minimum_angle", 2);
-        exprs[13] = MQExprTopoPair("oddy", -1);
-        exprs[14] = MQExprTopoPair("relative_size", -1);
-        exprs[15] = MQExprTopoPair("scaled_jacobian", -1);
-        exprs[16] = MQExprTopoPair("shape", -1);
-        exprs[17] = MQExprTopoPair("shape_and_size", -1);
-        exprs[18] = MQExprTopoPair("shear", -1);
-        exprs[19] = MQExprTopoPair("skew", -1);
-        exprs[20] = MQExprTopoPair("stretch", -1);
-        exprs[21] = MQExprTopoPair("taper", -1);
-        exprs[22] = MQExprTopoPair("volume", 3);
-        exprs[23] = MQExprTopoPair("warpage", 2);
-        exprs[24] = MQExprTopoPair("face_planarity", 3);
-        exprs[25] = MQExprTopoPair("relative_face_planarity", 3);
+        exprs[4]  = MQExprTopoPair("diagonal_ratio", 3);
+        exprs[5]  = MQExprTopoPair("min_diagonal", 3);
+        exprs[6]  = MQExprTopoPair("max_diagonal", 3);
+        exprs[7]  = MQExprTopoPair("dimension", 3);
+        exprs[8]  = MQExprTopoPair("jacobian", -1);
+        exprs[9]  = MQExprTopoPair("max_edge_length", -1);
+        exprs[10]  = MQExprTopoPair("max_side_volume", 3);
+        exprs[11]  = MQExprTopoPair("maximum_angle", 2);
+        exprs[12] = MQExprTopoPair("min_edge_length", -1);
+        exprs[13] = MQExprTopoPair("min_side_volume", 3);
+        exprs[14] = MQExprTopoPair("minimum_angle", 2);
+        exprs[15] = MQExprTopoPair("oddy", -1);
+        exprs[16] = MQExprTopoPair("relative_size", -1);
+        exprs[17] = MQExprTopoPair("scaled_jacobian", -1);
+        exprs[18] = MQExprTopoPair("shape", -1);
+        exprs[19] = MQExprTopoPair("shape_and_size", -1);
+        exprs[20] = MQExprTopoPair("shear", -1);
+        exprs[21] = MQExprTopoPair("skew", -1);
+        exprs[22] = MQExprTopoPair("stretch", -1);
+        exprs[23] = MQExprTopoPair("taper", -1);
+        exprs[24] = MQExprTopoPair("volume", 3);
+        exprs[25] = MQExprTopoPair("warpage", 2);
+        exprs[26] = MQExprTopoPair("face_planarity", 3);
+        exprs[27] = MQExprTopoPair("relative_face_planarity", 3);
 
         for (int j = 0 ; j < nPairs ; j++)
         {

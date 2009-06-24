@@ -37,31 +37,29 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtVMetricDiagonal.h                             //
+//                          avtVMetricDiagonalRatio.h                             //
 // ************************************************************************* //
 
-#ifndef AVT_VMETRIC_DIAGONAL_H
-#define AVT_VMETRIC_DIAGONAL_H
+#ifndef AVT_VMETRIC_DIAGONAL_RATIO_H
+#define AVT_VMETRIC_DIAGONAL_RATIO_H
 #include <expression_exports.h>
 #include <avtVerdictExpression.h>
 
 // ****************************************************************************
-//  Class: avtVMetricDiagonal
+//  Class: avtVMetricDiagonalRatio
 //
 //  Purpose:
-//    This metric measures aspect ratio.
+//    This metric measures diagonal ratio.
 //
 //  Programmer: Akira Haddox
 //  Creation:   June 13, 2002
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricDiagonal : public avtVerdictExpression
+class EXPRESSION_API avtVMetricDiagonalRatio : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);
 };
 
 #endif
-
-
