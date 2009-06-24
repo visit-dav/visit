@@ -95,6 +95,9 @@
 #
 #    Mark C. Miller, Tue Jun 23 15:14:43 PDT 2009
 #    Removed some items from the skip list.
+#
+#    Mark C. Miller, Tue Jun 23 18:28:53 PDT 2009
+#    Increased processor count for makes from 4 to 6.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -375,16 +378,16 @@ fi
 # ok, now really go ahead and configure and build VisIt
 ./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-viewer-mesa-stub=no --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "SECOND configure failed" config_log.txt 
-gmake -j 4 1>> make_log.txt 2>&1
-checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
+gmake -j 6 1>> make_log.txt 2>&1
+checkAndHandleError $? fatal "gmake -j 6 failed in src" make_log.txt
 cd ..
 
 # build data
 cd data
 rm -f make_log.txt
 gmake clean 1> /dev/null 2>&1
-gmake -j 4 test 1>> make_log.txt 2>&1
-checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt 
+gmake -j 6 test 1>> make_log.txt 2>&1
+checkAndHandleError $? fatal "gmake -j 6 failed in data" make_log.txt 
 cd ..
 
 # set the datestamp used for all test modes
