@@ -646,6 +646,9 @@
 #     and Silo so that you don't have upteen different places to edit the
 #     version number, they are consistent with other lib symbols and they
 #     are correct and up to date.
+#
+#     Mark C. Miller, Wed Jun 24 15:40:59 PDT 2009
+#     Fixed missing opening double quote for call to info in build_silo.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3958,7 +3961,7 @@ function build_silo
        WITHSILOQTARG="--disable-silex"
     fi
 
-    info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
