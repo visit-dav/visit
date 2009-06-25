@@ -51,14 +51,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 1.12</font></b></p>
 <ul>
-  <li>You can now transform the time shown in the database information and time slider
-      annotations. The new controls for time in the Annotations window allow you to
-      scale time and add an offset.</li>
+  <li>You can now transform the time shown in the database information and time slider annotations. The new controls for time in the Annotations window allow you to scale time and add an offset.</li>
   <li>New expressions are available that compute hyperbolic sine, consine and tangent.<li>
   <li>You can now execute Ultra (curve plotting software) commands from within VisIt. This is accomplished from the CLI by using the new 'LoadUltra()' command, which will replace VisIt's command prompt with an Ultra prompt, allowing only Ultra commands to be entered. 'end' or 'quit' must be entered to return to VisIt's cli prompt.  Use 'help' at the Ultra prompt for information about currently supported commands.</li>
-  <li>The Spreadsheet plot was enhanced so it is now possible to extract rows or 
-      columns of data and create Curve plots of the data vs. the X or Y mesh coordinates. 
-      This allows plotting of curves from what is essentially a "logical lineout".</li>
+  <li>The Spreadsheet plot was enhanced so it is now possible to extract rows or columns of data and create Curve plots of the data vs. the X or Y mesh coordinates.  This allows plotting of curves from what is essentially a "logical lineout".</li>
   <li></li>
 </ul>
 
@@ -117,6 +113,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's PATRAN reader now serves up cell-centered variables defined with
       card 4 as scalars that can be plotted. For lack of a better method of
       naming them, they are called: property1, property2, and so on.</li>
+  <li>VisIt's MFIX reader was fixed to support multiple time states.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -133,7 +130,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed the Box operator to work correctly with curves.</li>
   <li>The Revolve operator was fixed so it can once more revolve about a user-defined axis of revolution.</li>
-  <li></li>
+  <li>Fixed Lineout operator's no-sampling mode to enable handling of very small-scale data </li>
   <li></li>
   <li></li>
 </ul>
