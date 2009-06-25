@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -34,15 +34,18 @@
 * OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 * DAMAGE.
 *
-// Modifications:
-//   Thomas R. Treadway, Mon Jul 16 13:45:29 PDT 2007
-//   quad_t conflicts with quad_t in #include <sys/types.h>
 *****************************************************************************/
 
 #include <math.h>
 #include <stdio.h>
 #include <visit-config.h>
 #include <string.h>
+
+#ifndef _WIN32
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 
 static const float minvals[] = {10.,10.,10.};
 static const float maxvals[] = {20.,20.,20.};
@@ -336,6 +339,8 @@ write_multi_bov()
     float *data = new float[20 * 30 * 40 * ncomps];
     char filename[100];
 
+    printf("Creating multi*.bov\n");
+
     // Write the BOV files.
     int findex = 0;
     for(int k = 0; k < 2; ++k)
@@ -398,6 +403,129 @@ write_multi_bov()
 }
 
 // ****************************************************************************
+// Method: write_nodal_multi_bov
+//
+// Purpose: 
+//   
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 25 10:41:07 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+write_nodal_multi_bov()
+{
+    const int X_DOMAINS = 20;
+    const int Y_DOMAINS = 30;
+    const int Z_DOMAINS = 40;
+
+    const int X_CELLS = 10;
+    const int Y_CELLS = 10;
+    const int Z_CELLS = 10;
+
+    const float cX = float(X_DOMAINS) / 2.f;
+    const float cY = float(Y_DOMAINS) / 2.f;
+    const float cZ = float(Z_DOMAINS) / 2.f;
+
+    float *data = new float[X_CELLS * Y_CELLS * Z_CELLS];
+    char filename[100];
+
+    printf("Creating nodal_multi*.bov\n");
+
+#ifndef _WIN32
+    mkdir("nodal_bov", S_IRUSR | S_IWUSR | S_IXUSR);
+    chdir("nodal_bov");
+#endif
+
+    // Write the BOV files.
+    int findex = 0;
+    for(int k = 0; k < Z_DOMAINS; ++k)
+    {
+        float zmin = float(k);
+        float zmax = float(k)+1.f;
+
+        for(int j = 0; j < Y_DOMAINS; ++j)
+        {
+            float ymin = float(j);
+            float ymax = float(j)+1.f;
+
+            for(int i = 0; i < X_DOMAINS; ++i)
+            {
+                float xmin = float(i);
+                float xmax = float(i)+1.f;
+
+                float *fptr = data;
+                for(int kk = 0; kk < Z_CELLS; ++kk)
+                {
+                    float tz_val = float(kk) / float(Z_CELLS-1);
+                    float z_val = float(k) + tz_val;
+                    float dZ = z_val - cZ;
+                    float dZ2 = dZ * dZ;
+                    for(int jj = 0; jj < Y_CELLS; ++jj)
+                    {
+                        float ty_val = float(jj) / float(Y_CELLS-1);
+                        float y_val = float(j) + ty_val;
+                        float dY = y_val - cY;
+                        float dY2 = dY * dY;
+                        for(int ii = 0; ii < X_CELLS; ++ii)
+                        {
+                            float tx_val = float(ii) / float(X_CELLS-1);
+                            float x_val = float(i) + tx_val;
+                            float dX = x_val - cX;
+                            *fptr++ = sqrt(dX*dX + dY2 + dZ2);
+                        }
+                    }
+                }
+
+                snprintf(filename, 100, "multi%05d.values", findex);
+                write_BOV_data(filename, data, X_CELLS * Y_CELLS * Z_CELLS);
+
+                findex++;
+            }
+        }
+    }
+    delete [] data;
+
+#ifndef _WIN32
+    chdir("..");
+#endif
+
+    // Write the BOV header.
+    FILE *fp = fopen("nodal_multi.bov", "wt");
+    fprintf(fp, "TIME: 0\n");
+#ifndef _WIN32
+    fprintf(fp, "DATA_FILE: nodal_bov/multi%%05d.values\n");
+#else
+    fprintf(fp, "DATA_FILE: multi%%05d.values\n");
+#endif
+    fprintf(fp, "DATA_SIZE: %d %d %d\n", 
+        X_CELLS * X_DOMAINS, Y_CELLS * Y_DOMAINS, Z_CELLS * Z_DOMAINS);
+    fprintf(fp, "DATA_FORMAT: FLOAT\n");
+    fprintf(fp, "DATA_COMPONENTS: 1\n");
+    fprintf(fp, "VARIABLE: vec\n");
+#ifdef WORDS_BIGENDIAN
+    fprintf(fp, "DATA_ENDIAN: BIG\n");
+#else
+    fprintf(fp, "DATA_ENDIAN: LITTLE\n");
+#endif
+    fprintf(fp, "CENTERING: nodal\n");
+    fprintf(fp, "BRICK_ORIGIN: 0. 0. 0.\n");
+    fprintf(fp, "BRICK_SIZE: %d %d %d\n",
+        X_DOMAINS, Y_DOMAINS, Z_DOMAINS);
+    fprintf(fp, "DATA_BRICKLETS: %d %d %d\n", X_CELLS, Y_CELLS, Z_CELLS);
+    fclose(fp);
+}
+
+// ****************************************************************************
 // Purpose: This program writes out a couple of different BOV files.
 // 
 // Programmer: Brad Whitlock
@@ -416,11 +544,21 @@ write_multi_bov()
 //   Brad Whitlock, Wed Apr  8 09:57:28 PDT 2009
 //   I added short data.
 //
+//   Brad Whitlock, Tue Jun 23 16:33:57 PDT 2009
+//   I made it write a nodal multiblock dataset with 24K domains.
+//
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
+    bool writeNodal = false;
+    for(int i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "-writenodal") == 0)
+            writeNodal = true;
+    }
+
     unsigned short *sdata = new unsigned short[nels + offset];
     write_BOV_types("SHORT", "SHORT", 1, sdata, false);
     delete [] sdata;
@@ -455,6 +593,10 @@ main(int argc, char *argv[])
 
     // Write out a multiblock dataset.
     write_multi_bov();
+
+    // Write out a nodal multiblock dataset.
+    if(writeNodal)
+        write_nodal_multi_bov();
 
     return 0;
 }
