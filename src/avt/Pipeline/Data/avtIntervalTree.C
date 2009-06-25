@@ -1725,9 +1725,6 @@ IntersectsWithLine(double pt1[3], double pt2[3], int block,  int nDims,
 
     if (vtkCellIntersections::LineIntersectBox(bnds,pt1, pt2, isect))
     {
-#if 0
-debug2 << "  line intersects box with bounds " << bnds[0] << " " << bnds[1] << " " << bnds[2] << " " << bnds[3] << " " << bnds[4] << " " << bnds[5] << endl;
-#endif
         return true;
     }
     else 
