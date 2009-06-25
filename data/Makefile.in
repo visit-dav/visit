@@ -556,7 +556,7 @@ clean: bin_data_clean gen_data_clean src_clean
 	$(CXX) -o $@ mmadj_rect_2d.o $(LDFLAGS) $(LIBS)
 
 ./bov: bov.o
-	$(CXX) -o $@ bov.o $(LDFLAGS) $(LIBS)
+	$(CXX) -o $@ bov.o $(LDFLAGS) -lm
 
 ./sid97: sid97.o
 	$(CXX) -o $@ sid97.o $(LDFLAGS) $(LIBS)
