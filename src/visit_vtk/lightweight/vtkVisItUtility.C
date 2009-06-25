@@ -1087,10 +1087,8 @@ bool
 vtkVisItUtility::PointsEqual(double pt1[3], double pt2[3], const double *_eps)
 {
     double eps = 1e-6;
-#if 0
     if (_eps != NULL && *_eps < eps)
         eps = *_eps;
-#endif
     bool e1 = false, e2 = false, e3 = false;
     if ((pt1[0] > pt2[0] - eps) && (pt1[0] < pt2[0]+eps))
         e1 = true;
