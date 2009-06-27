@@ -2170,7 +2170,7 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
    // Do what we came here for.
    dob->Merge(*destdob);
 
-   // The data object reader will delete the string we allocated above.
+   // The data object reader will delete the dstStr string we allocated above.
    delete avtreader;
 }
 
@@ -2183,7 +2183,7 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
 //      divided into groups which are known to have merged results. One processor
 //      in each even numbered group is paired with one processor in each odd
 //      numbered group and vice versa. As long as the processor identified to
-//      swap with is in the range of the communicator, the avtDataObjectInformation
+//      swap with is in the range of the communicator, the avtDataObject
 //      is swapped and merged between these pairs of processors. The group
 //      size is doubled and the process of pairing and swapping is repeated.
 //      This continues until the group size equals or exceeds the communicator
@@ -2195,38 +2195,66 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
 //  Programmer: Mark C. Miller (copied from avtDataObjectInformation)
 //  Creation:   June 25, 2009
 //
+//  Modifications:
+//
+//    Mark C. Miller, Sat Jun 27 07:45:17 PDT 2009
+//    Added simple status reporting
 // ****************************************************************************
 
 static void
-ParallelMergeClonedWriterOutputs(avtDataObject_p dob, int lenTag, int strTag)
+ParallelMergeClonedWriterOutputs(avtDataObject_p dob, int lenTag, int strTag,
+    NonBlockingRPC *rpc)
 {
-   int groupSize = 1;
-   int myRank, commSize;
+    int groupSize = 1;
+    int myRank, commSize;
 
-   MPI_Comm_size(VISIT_MPI_COMM, &commSize);
-   MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
-   groupSize = 1;
+    MPI_Comm_size(VISIT_MPI_COMM, &commSize);
+    MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
 
-   // walk up the communication tree, swapping and merging infos
-   while (groupSize < commSize)
-   {
-      int swapWithProc = -1;
-      int myGroupNum = myRank / groupSize;
-      int myGroupIdx = myRank % groupSize;
+    //
+    // Determine number of times we'll iterate up the tree
+    //
+    int ntree = 0;
+    while (groupSize < commSize)
+    {
+        groupSize <<= 1;
+        ntree++;
+    }
+    
+    // walk up the communication tree, swapping and merging infos
+    int n = 1;
+    groupSize = 1;
+    while (groupSize < commSize)
+    {
+        int swapWithProc = -1;
+        int myGroupNum = myRank / groupSize;
+        int myGroupIdx = myRank % groupSize;
 
-      // determine processor to swap with
-      if (myGroupNum % 2)   // myGroupNum is odd
-         swapWithProc = (myGroupNum - 1) * groupSize + myGroupIdx;
-      else                  // myGroupNum is even
-         swapWithProc = (myGroupNum + 1) * groupSize + myGroupIdx;
+        // determine processor to swap with
+        if (myGroupNum % 2)   // myGroupNum is odd
+            swapWithProc = (myGroupNum - 1) * groupSize + myGroupIdx;
+        else                  // myGroupNum is even
+            swapWithProc = (myGroupNum + 1) * groupSize + myGroupIdx;
 
-      // only do the swap between 0th processors in each group AND only
-      // if the processor to swap with is in range of communicator
-      if ((myGroupIdx == 0) && (0 <= swapWithProc) && (swapWithProc < commSize))
-         SwapAndMergeClonedWriterOutputs(dob, swapWithProc, lenTag, strTag);
-      
-      groupSize <<= 1;
-   }
+        // only do the swap between 0th processors in each group AND only
+        // if the processor to swap with is in range of communicator
+        if ((myGroupIdx == 0) && (0 <= swapWithProc) && (swapWithProc < commSize))
+            SwapAndMergeClonedWriterOutputs(dob, swapWithProc, lenTag, strTag);
+        
+        //
+        // Only the root will have non-zero rpc.
+        //
+        if (rpc)
+        {
+            rpc->SendStatus((int) (100. * float(n)/float(ntree)),
+                rpc->GetCurStageNum(),
+                "Synchronizing",
+                rpc->GetMaxStageNum());
+        }
+ 
+        n++;
+        groupSize <<= 1;
+    }
 }
 
 // ****************************************************************************
@@ -2451,6 +2479,10 @@ static void SumWithINT_MAX_Func(void *ibuf, void *iobuf, int *, MPI_Datatype *)
 //
 //    Mark C. Miller, Fri Jun 26 18:59:00 PDT 2009
 //    Removed extraneous debug statements
+//
+//    Mark C. Miller, Sat Jun 27 07:56:29 PDT 2009
+//    Passed rpc to ParallelMerge function so it could report a simple
+//    status.
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -2545,7 +2577,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             }
 
             if (!thresholdExceeded || sendDataAnyway)
-                ParallelMergeClonedWriterOutputs(ui_dob, mpiSwapLenTag, mpiSwapStrTag);
+                ParallelMergeClonedWriterOutputs(ui_dob, mpiSwapLenTag, mpiSwapStrTag, rpc);
 
         }
         visitTimer->StopTimer(collectData, "Collecting data");
@@ -2630,7 +2662,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             {
                 avtDataObject_p dob = writer->GetInput();
                 dob = dob->Clone();
-                ParallelMergeClonedWriterOutputs(dob, mpiSwapLenTag, mpiSwapStrTag);
+                ParallelMergeClonedWriterOutputs(dob, mpiSwapLenTag, mpiSwapStrTag, 0);
             }
         }
         else
