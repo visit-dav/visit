@@ -2448,6 +2448,9 @@ static void SumWithINT_MAX_Func(void *ibuf, void *iobuf, int *, MPI_Datatype *)
 //    Replaced '+=' assignment to currentCellCount from reducedCurrentCellCount
 //    to just '=' assignment. This is correct because the reduced value has
 //    already been summed.
+//
+//    Mark C. Miller, Fri Jun 26 18:59:00 PDT 2009
+//    Removed extraneous debug statements
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -2462,8 +2465,6 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
     static const bool polysOnly = true;
     int mpiSwapLenTag   = GetUniqueMessageTag();
     int mpiSwapStrTag   = GetUniqueMessageTag();
-debug1 << "mpiSwapLenTag = " << mpiSwapLenTag << endl;
-debug1 << "mpiSwapStrTag = " << mpiSwapStrTag << endl;
 
     //
     // When respond with null is true, this routine still has an obligation
