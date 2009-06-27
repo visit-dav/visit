@@ -2443,6 +2443,11 @@ static void SumWithINT_MAX_Func(void *ibuf, void *iobuf, int *, MPI_Datatype *)
 //    back to data objects and b) merge together. Care was taken to ensure
 //    all other logic with respect to SR mode thresholds and INT_MAX special
 //    case for volume rendering was upheld.
+//
+//    Mark C. Miller, Fri Jun 26 18:52:34 PDT 2009
+//    Replaced '+=' assignment to currentCellCount from reducedCurrentCellCount
+//    to just '=' assignment. This is correct because the reduced value has
+//    already been summed.
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -2457,6 +2462,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
     static const bool polysOnly = true;
     int mpiSwapLenTag   = GetUniqueMessageTag();
     int mpiSwapStrTag   = GetUniqueMessageTag();
+debug1 << "mpiSwapLenTag = " << mpiSwapLenTag << endl;
+debug1 << "mpiSwapStrTag = " << mpiSwapStrTag << endl;
 
     //
     // When respond with null is true, this routine still has an obligation
@@ -2533,7 +2540,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             }
             else
             {
-                currentCellCount += reducedCurrentCellCount;
+                currentCellCount = reducedCurrentCellCount;
             }
 
             if (!thresholdExceeded || sendDataAnyway)
@@ -2615,7 +2622,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             }
             else
             {
-                currentCellCount += reducedCurrentCellCount;
+                currentCellCount = reducedCurrentCellCount;
             }
 
             if (!thresholdExceeded || sendDataAnyway)
