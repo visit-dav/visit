@@ -135,6 +135,11 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Cyrus Harrison, Mon Jun 29 15:58:02 PDT 2009
+//    If a script file is passed - add its directory to the end of sys.path
+//    to enable easy importing. 
+//
 // ****************************************************************************
 
 int
@@ -308,21 +313,21 @@ main(int argc, char *argv[])
         std::string visitUserRc(GetUserVisItRCFile());
 
         VisItStat_t s;
-	std::string visitrc;
+        std::string visitrc;
         if(VisItStat(visitUserRc.c_str(), &s) == 0)
         {
-	    visitrc = visitUserRc;
-	}
-	else if (VisItStat(visitSystemRc.c_str(), &s) == 0)
-	{
-	    visitrc = visitSystemRc;
-	}
+            visitrc = visitUserRc;
+        }
+        else if (VisItStat(visitSystemRc.c_str(), &s) == 0)
+        {
+            visitrc = visitSystemRc;
+        }
 
-	if (visitrc.size())
-	{
+        if (visitrc.size())
+        {
             PyRun_SimpleString("ClearMacros()");
             cli_runscript(visitrc.c_str());
-	}
+        }
 
         // If a database was specified, load it.
         if(loadFile != 0)
@@ -334,7 +339,18 @@ main(int argc, char *argv[])
         }
 
         // If there was a file to execute, do it.
-        cli_runscript(runFile);
+        if(runFile !=0)
+        {
+            // add the script file's dir to the cli's sys.path
+            PyRun_SimpleString((char*)"import sys,os");
+            std::string pycmd =  "os.path.abspath('" + 
+                                        std::string(runFile)+ "')";
+            pycmd = "os.path.split(" + pycmd + ")[0]";
+            pycmd = "sys.path.append(" + pycmd +  ")";
+            PyRun_SimpleString(pycmd.c_str());
+            
+            cli_runscript(runFile);
+        }
 
         // Enter the python interpreter loop.
         //int argc3 = 1;
