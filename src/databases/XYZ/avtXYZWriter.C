@@ -117,6 +117,10 @@ avtXYZWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //  Programmer: Jeremy Meredith
 //  Creation:   June  2, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Jun 30 12:14:58 EDT 2009
+//    Added check for negative atomic numbers.
+//
 // ****************************************************************************
 
 void
@@ -167,7 +171,7 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
         int atomicNumber = 0;
         if (element)
             atomicNumber = element->GetTuple1(ids[0]);
-        if (atomicNumber > MAX_ELEMENT_NUMBER)
+        if (atomicNumber < 0 || atomicNumber > MAX_ELEMENT_NUMBER)
             atomicNumber = 0;
 
         // write out the element, coordinates, and any variables
