@@ -130,8 +130,6 @@ static void ResetEngineTimeout(void *p, int secs);
 // message tag for interrupt messages used in static abort callback function
 #ifdef PARALLEL
 const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
-static void SumWithINT_MAX_Func(void *ibuf, void *iobuf, int *, MPI_Datatype *);
-static MPI_Op SumWithINT_MAX_Op = MPI_OP_NULL;
 #endif
 
 // ****************************************************************************
@@ -499,12 +497,6 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     PAR_CreateTypes();
 
     //
-    // Create MPI operator used for reducing cell counts in presence
-    // if INT_MAX values.
-    //
-    MPI_Op_create(SumWithINT_MAX_Func, 1, &SumWithINT_MAX_Op);
-
-    //
     // Initialize error logging
     //
     VisItInit::SetComponentName("engine");
@@ -577,10 +569,6 @@ Engine::Finalize(void)
     delete this->renderingDisplay;
     // Now null it out; in case the destructor actually *does* get called.
     this->renderingDisplay = NULL;
-
-#ifdef PARALLEL
-    MPI_Op_free(&SumWithINT_MAX_Op);
-#endif
 
     VisItInit::Finalize();
 }
@@ -2127,15 +2115,26 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //  Programmer: Mark C. Miller (borrowed from avtDataObjectInformation)
 //  Creation:   June 25, 2009 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jun 30 18:04:47 PDT 2009
+//    Moved communication related to cell counting and determining if
+//    scalable threshold is exceeded from a separate MPI_Allreduce in
+//    WriteData() to be 'in band' with this swap and merge operation.
+//    The paired processors ALWAYS communicate string size and cell count
+//    info in the first sendrecv. However, they may or may NOT engage in the
+//    2nd sendrecv of the data depending on cell count.
 // ****************************************************************************
 static void
 SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
-   int swapWithProc, int mpiSwapLenTag, int mpiSwapStrTag)
+    int *reducedCellCount, int scalableThreshold, bool sendDataAnyway,
+    int swapWithProc, int mpiSwapLenTag, int mpiSwapStrTag)
 {
 
    MPI_Status mpiStatus;
    char *srcStr, *dstStr;
    int   srcLen,  dstLen;
+   int   srcCnt = *reducedCellCount,  dstCnt;
 
    // serialize the data object information into a string
    avtDataObjectString srcDobStr;
@@ -2144,34 +2143,83 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
    dobwrtr->Write(srcDobStr);
    srcDobStr.GetWholeString(srcStr, srcLen);
 
-   // swap string lengths
-   MPI_Sendrecv(&srcLen, 1, MPI_INT, swapWithProc, mpiSwapLenTag,
-                &dstLen, 1, MPI_INT, swapWithProc, mpiSwapLenTag,
+   // swap string lengths and cell counts
+   int srcTmp[2] = {srcLen, srcCnt};
+   int dstTmp[2];
+   MPI_Sendrecv(&srcTmp, 2, MPI_INT, swapWithProc, mpiSwapLenTag,
+                &dstTmp, 2, MPI_INT, swapWithProc, mpiSwapLenTag,
                 VISIT_MPI_COMM, &mpiStatus);
 
-   dstStr = new char [dstLen];
+   dstLen = dstTmp[0];
+   dstCnt = dstTmp[1];
 
-   // swap strings
-   MPI_Sendrecv(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiSwapStrTag,
-                dstStr, dstLen, MPI_CHAR, swapWithProc, mpiSwapStrTag,
-                VISIT_MPI_COMM, &mpiStatus);
+    // If dstCnt already at INT_MAX, it is the 'special' case I think for
+    // volume rendering. Set it in the output (srcCnt) 
+    if (dstCnt == INT_MAX)
+        srcCnt = INT_MAX;
 
-   avtDataObjectReader *avtreader = new avtDataObjectReader;
-   avtreader->Read(dstLen, dstStr);
-   avtDataObject_p destdob = avtreader->GetOutput();
+    // If dstCnt is at INT_MAX-1, it is an 'ordinary' overflow condition.
+    // Again, set it in the output (srcCnt)
+    if (dstCnt == INT_MAX-1)
+    {
+        if (srcCnt != INT_MAX)
+            srcCnt = INT_MAX-1;
+    }
 
-   // We can't tell the reader to read (Update) unless we tell it
-   // what we want it to read.  Fortunately, we can just ask it
-   // for a general specification.
-   avtOriginatingSource *src = destdob->GetOriginatingSource();
-   avtContract_p spec = src->GetGeneralContract();
-   destdob->Update(spec);
+    //
+    // If we get here, we have real cell count summation work to do.
+    //
+    if (srcCnt < INT_MAX-1)
+    {
+        // First check for possible 'ordinary' overflow in that both inputs could
+        // be valid (e.g. non-INT_MAX) integers but their sum is out of range. If
+        // that is the case, we use the value 'INT_MAX-1' to represent it because
+        // the value INT_MAX is used for some special purpose for volume rendering.
+        double tmp = (double) srcCnt + (double) dstCnt;
+        if (tmp >= INT_MAX-1)
+            srcCnt = INT_MAX-1;
+        else
+            srcCnt = srcCnt + dstCnt;
+    }
 
-   // Do what we came here for.
-   dob->Merge(*destdob);
+    //
+    // At this point, srcCnt contains either a valid summation of the cell counts
+    // from both the src and dst processors OR one of the special values, INT_MAX
+    // or INT_MAX-1. We only need to do the data exchange if the cell count is
+    // below threshold OR we're being asked to send data regardless (the metadata
+    // case where we send basically the data tree--labels and domain ids--without
+    // the actual data).
+    //
 
-   // The data object reader will delete the dstStr string we allocated above.
-   delete avtreader;
+    if ((srcCnt < scalableThreshold) || sendDataAnyway)
+    {
+        dstStr = new char [dstLen];
+
+        // swap strings
+        MPI_Sendrecv(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiSwapStrTag,
+                     dstStr, dstLen, MPI_CHAR, swapWithProc, mpiSwapStrTag,
+                     VISIT_MPI_COMM, &mpiStatus);
+
+        avtDataObjectReader *avtreader = new avtDataObjectReader;
+        avtreader->Read(dstLen, dstStr);
+        avtDataObject_p destdob = avtreader->GetOutput();
+
+        // We can't tell the reader to read (Update) unless we tell it
+        // what we want it to read.  Fortunately, we can just ask it
+        // for a general specification.
+        avtOriginatingSource *src = destdob->GetOriginatingSource();
+        avtContract_p spec = src->GetGeneralContract();
+        destdob->Update(spec);
+
+        // Do what we came here for.
+        dob->Merge(*destdob);
+
+        // The data object reader will delete the dstStr string we allocated above.
+        delete avtreader;
+    }
+
+   *reducedCellCount = srcCnt;
+
 }
 
 // ****************************************************************************
@@ -2199,11 +2247,16 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
 //
 //    Mark C. Miller, Sat Jun 27 07:45:17 PDT 2009
 //    Added simple status reporting
+//
+//    Mark C. Miller, Tue Jun 30 18:04:18 PDT 2009
+//    Added args for reducedCellCount, scalableThreshold and sendDataAnyway.
 // ****************************************************************************
 
 static void
-ParallelMergeClonedWriterOutputs(avtDataObject_p dob, int lenTag, int strTag,
-    NonBlockingRPC *rpc)
+ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
+    int lenTag, int strTag,
+    int *reducedCellCount, int scalableThreshold,
+    bool sendDataAnyway, NonBlockingRPC *rpc)
 {
     int groupSize = 1;
     int myRank, commSize;
@@ -2221,7 +2274,7 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob, int lenTag, int strTag,
         ntree++;
     }
     
-    // walk up the communication tree, swapping and merging infos
+    // walk up the communication tree, swapping and merging data
     int n = 1;
     groupSize = 1;
     while (groupSize < commSize)
@@ -2239,8 +2292,11 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob, int lenTag, int strTag,
         // only do the swap between 0th processors in each group AND only
         // if the processor to swap with is in range of communicator
         if ((myGroupIdx == 0) && (0 <= swapWithProc) && (swapWithProc < commSize))
-            SwapAndMergeClonedWriterOutputs(dob, swapWithProc, lenTag, strTag);
-        
+        {
+            SwapAndMergeClonedWriterOutputs(dob, reducedCellCount,
+                scalableThreshold, sendDataAnyway, swapWithProc, lenTag, strTag);
+        }
+
         //
         // Only the root will have non-zero rpc.
         //
@@ -2255,65 +2311,6 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob, int lenTag, int strTag,
         n++;
         groupSize <<= 1;
     }
-}
-
-// ****************************************************************************
-// Function: SumWithINT_MAX_Func
-//
-// Purpose:  User defined MPI reduction operator to perform an MPI_SUM
-//           operation of a single integer value (cell count) but taking into
-//           account the possibility of INT_MAX being one of the summands and
-//           causing overflow.
-//
-// Programmer: Mark C. Miller
-// Created:    Thu Jun 25 10:27:24 PDT 2009
-// ****************************************************************************
-static void SumWithINT_MAX_Func(void *ibuf, void *iobuf, int *, MPI_Datatype *)
-{
-    int *ival = (int *) ibuf;
-    int *ioval = (int *) iobuf;
-
-    // If iobuf is already at INT_MAX, it is the 'special' case I think for
-    // volume rendering. Leave it alone.
-    if (*ioval == INT_MAX)
-        return;
-
-    // If iobuf is at INT_MAX-1, it is an 'ordinary' overflow condition.
-    // Again, we leave it alone.
-    if (*ioval == INT_MAX-1)
-        return;
-
-    // If ibuf is at INT_MAX, set INT_MAX in iobuf and we're done.
-    if (*ival == INT_MAX)
-    {
-        *ioval = INT_MAX;
-        return;
-    }
-
-    // If ibuf is at INT_MAX-1, it is an 'ordinary' overflow condition.
-    // Set it in iobuf and we're done.
-    if (*ival == INT_MAX-1)
-    {
-        *ioval = INT_MAX-1;
-        return;
-    }
-
-    //
-    // If we get here, we have real summation work to do.
-    //
-    
-    // First check for possible 'ordinary' overflow in that both inputs could
-    // be valid (e.g. non-INT_MAX) integers but their sum is out of range. If
-    // that is the case, we use the value 'INT_MAX-1' to represent it because
-    // the value INT_MAX is used for some special purpose for volume rendering.
-    double tmp = (double) *ioval + (double) *ival;
-    if (tmp >= INT_MAX)
-    {
-        *ioval = INT_MAX-1;
-        return;
-    }
-
-    *ioval = *ioval + *ival;
 }
 #endif
 
@@ -2483,6 +2480,15 @@ static void SumWithINT_MAX_Func(void *ibuf, void *iobuf, int *, MPI_Datatype *)
 //    Mark C. Miller, Sat Jun 27 07:56:29 PDT 2009
 //    Passed rpc to ParallelMerge function so it could report a simple
 //    status.
+//
+//    Mark C. Miller, Tue Jun 30 17:53:44 PDT 2009
+//    Replaced initial MPI_Allreduce and its user-defined MPI_Op function
+//    with the same communication 'in-band' with the tree of SwapAndMerge
+//    operations. This required re-introduction of the finalizing MPI_Bcast
+//    to ensure all processors had common values for cell count and whether
+//    the scalable threshold was exceeded. But a collective call after the
+//    data merge and send to viewer I felt was much less harmless than one
+//    before any data merging can even start.
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -2546,16 +2552,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             // while we merge other proc's output into the cloned dob
             ui_dob = ui_dob->Clone();
 
-            // If we're here to respondWithNull, that means we're really only going
-            // to communicate the 'metadata' part of the data objects and NOT the
-            // raw data. In that case, we do NOT need to do an initial communication
-            // to determine how much total geometry (cells) we'll have because the
-            // metadata part is 'small' and we need ALL of it to ship back to the
-            // viewer anyways.
-            int reducedCurrentCellCount = 0;
-            if (!sendDataAnyway)
-                MPI_Allreduce(&currentCellCount, &reducedCurrentCellCount, 1,
-                    MPI_INT, SumWithINT_MAX_Op, VISIT_MPI_COMM);
+            int reducedCurrentCellCount = currentCellCount;
+            ParallelMergeClonedWriterOutputs(ui_dob, mpiSwapLenTag, mpiSwapStrTag,
+                &reducedCurrentCellCount, scalableThreshold, sendDataAnyway, rpc);
 
             if (currentTotalGlobalCellCount == INT_MAX ||
                 currentCellCount == INT_MAX ||
@@ -2575,10 +2574,6 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             {
                 currentCellCount = reducedCurrentCellCount;
             }
-
-            if (!thresholdExceeded || sendDataAnyway)
-                ParallelMergeClonedWriterOutputs(ui_dob, mpiSwapLenTag, mpiSwapStrTag, rpc);
-
         }
         visitTimer->StopTimer(collectData, "Collecting data");
 
@@ -2640,13 +2635,14 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                              (writer->GetInput()->GetNumberOfCells(polysOnly) *
                                                       cellCountMultiplier);
 
-            int reducedCurrentCellCount = 0;
-            if (!sendDataAnyway)
-                MPI_Allreduce(&numCells, &reducedCurrentCellCount, 1,
-                    MPI_INT, SumWithINT_MAX_Op, VISIT_MPI_COMM);
+            int reducedCurrentCellCount = numCells;
+            avtDataObject_p dob = writer->GetInput();
+            dob = dob->Clone();
+            ParallelMergeClonedWriterOutputs(dob, mpiSwapLenTag, mpiSwapStrTag,
+                &reducedCurrentCellCount, scalableThreshold, sendDataAnyway, 0);
 
             if (currentTotalGlobalCellCount == INT_MAX ||
-                currentCellCount == INT_MAX ||
+                numCells == INT_MAX ||
                 reducedCurrentCellCount == INT_MAX ||
                 reducedCurrentCellCount == INT_MAX-1 || // 'ordinary' overflow
                 currentTotalGlobalCellCount + reducedCurrentCellCount > scalableThreshold)
@@ -2657,13 +2653,6 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             {
                 currentCellCount = reducedCurrentCellCount;
             }
-
-            if (!thresholdExceeded || sendDataAnyway)
-            {
-                avtDataObject_p dob = writer->GetInput();
-                dob = dob->Clone();
-                ParallelMergeClonedWriterOutputs(dob, mpiSwapLenTag, mpiSwapStrTag, 0);
-            }
         }
         else
         {
@@ -2671,6 +2660,11 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                    << "does not require parallel streams." << endl;
         }
     }
+
+    int tmp[2] = {currentCellCount, thresholdExceeded?1:0};
+    MPI_Bcast(tmp, 2, MPI_INT, 0, VISIT_MPI_COMM);
+    currentCellCount  = tmp[0];
+    thresholdExceeded = tmp[1]==1;
 
     // return requested arguments
     if (currentNetworkGlobalCellCount != 0)
