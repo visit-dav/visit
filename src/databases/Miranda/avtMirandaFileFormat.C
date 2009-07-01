@@ -55,7 +55,6 @@
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkUnstructuredGrid.h>
 
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
@@ -145,6 +144,9 @@ static void Fix2DFileOrder(int a, int b, int *fileOrder)
 //
 //    Dave Bremer, Fri Jun 13 15:54:11 PDT 2008
 //    Fix a bug in the use of the fileorder tag that comes up with some 2D data.
+//
+//    Dave Bremer, June 25, 2009
+//    Updated to read curvilinear or rectilinear data.
 // ****************************************************************************
 
 avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttributes *readOpts)
@@ -161,6 +163,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
     iFileOrder[0] = -1;
     iFileOrder[1] = -1;
     iFileOrder[2] = -1;
+    bCurvilinear = false;
 
     // Verify that the 'magic' and version number are right
     f >> buf1 >> buf2;
@@ -295,6 +298,14 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
             if (order.size()==2)
                 iFileOrder[2] = 3 - (iFileOrder[0]+iFileOrder[1]);
         }
+        else if (STREQUAL("curvilinear:", tag.c_str())==0)
+        {
+            string  isCurved;
+            f >> isCurved;
+
+            if (STREQUAL("yes", isCurved.c_str()) == 0)
+                bCurvilinear = true;
+        }
         else
         {
             sprintf(buf, "Error parsing file.  Unknown tag %s", tag.c_str());
@@ -407,6 +418,11 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         if (iFileOrder[0] != -1)
             Fix2DFileOrder(1, 2, iFileOrder);
     }
+
+    if (bCurvilinear && iFileOrder[0] == -1)
+        EXCEPTION1(InvalidDBTypeException, 
+                   "A curvilinear mesh must set the fileorder" );
+
 
 }
 
@@ -524,7 +540,9 @@ avtMirandaFileFormat::FreeUpResources(void)
 //    All components of a material set are also added as scalars.
 //    Those scalars are returned unmodified, whereas a material set
 //    is cleaned first.
-//    
+//
+//    Dave Bremer, June 25, 2009
+//    Updated to set up curvilinear or rectilinear data.
 // ****************************************************************************
 
 void
@@ -537,7 +555,6 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = meshname;
-    mesh->meshType = AVT_RECTILINEAR_MESH;
     mesh->numBlocks = nblocks;
     mesh->cellOrigin = 1;
     mesh->spatialDimension = dim;
@@ -545,26 +562,39 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     mesh->blockTitle = "blocks";
     mesh->blockPieceName = "p%06d";
     mesh->groupPieceName = "global_index";
-    
-    if (dim == 3)
+
+    if (!bCurvilinear)
     {
-        double extents[6] = {fOrigin[0] - fStride[0]/2.0,
-                             fOrigin[0] - fStride[0]/2.0 + (iNumBlocks[0]*iBlockSize[0])*fStride[0],
-                             fOrigin[1] - fStride[1]/2.0,
-                             fOrigin[1] - fStride[1]/2.0 + (iNumBlocks[1]*iBlockSize[1])*fStride[1],
-                             fOrigin[2] - fStride[2]/2.0,
-                             fOrigin[2] - fStride[2]/2.0 + (iNumBlocks[2]*iBlockSize[2])*fStride[2]
-                        };
-        mesh->SetExtents(extents);
+        mesh->meshType = AVT_RECTILINEAR_MESH;
+        if (dim == 3)
+        {
+            double extents[6] = {fOrigin[0] - fStride[0]/2.0,
+                                 fOrigin[0] - fStride[0]/2.0 + (iNumBlocks[0]*iBlockSize[0])*fStride[0],
+                                 fOrigin[1] - fStride[1]/2.0,
+                                 fOrigin[1] - fStride[1]/2.0 + (iNumBlocks[1]*iBlockSize[1])*fStride[1],
+                                 fOrigin[2] - fStride[2]/2.0,
+                                 fOrigin[2] - fStride[2]/2.0 + (iNumBlocks[2]*iBlockSize[2])*fStride[2]
+                            };
+            mesh->SetExtents(extents);
+        }
+        else
+        {
+            double extents[4] = {fOrigin[0] - fStride[0]/2.0,
+                                 fOrigin[0] - fStride[0]/2.0 + (iNumBlocks[0]*iBlockSize[0])*fStride[0],
+                                 fOrigin[1] - fStride[1]/2.0,
+                                 fOrigin[1] - fStride[1]/2.0 + (iNumBlocks[1]*iBlockSize[1])*fStride[1]};
+            mesh->SetExtents(extents);
+        }
+        mesh->hasSpatialExtents = true;
     }
     else
     {
-        double extents[4] = {fOrigin[0] - fStride[0]/2.0,
-                             fOrigin[0] - fStride[0]/2.0 + (iNumBlocks[0]*iBlockSize[0])*fStride[0],
-                             fOrigin[1] - fStride[1]/2.0,
-                             fOrigin[1] - fStride[1]/2.0 + (iNumBlocks[1]*iBlockSize[1])*fStride[1]};
-        mesh->SetExtents(extents);
-        
+        mesh->meshType = AVT_CURVILINEAR_MESH;
+        mesh->hasSpatialExtents = false;
+    }
+
+    if (dim == 2)
+    {
         if (flatDim == 0)
         {
             mesh->xLabel = "Y";
@@ -577,23 +607,24 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             mesh->yLabel = "Z";
             mesh->zLabel = "";
         }
-        
     }
-    mesh->hasSpatialExtents = true;
+
+
     md->Add(mesh);
 
     // Add the variables    
+    enum avtCentering centering = (bCurvilinear) ? AVT_NODECENT : AVT_ZONECENT;
     int ii;
     for (ii = 0 ; ii < aVarNames.size() ; ii++)
     {
         if (aVarNumComps[ii] == 1)
         {
-            AddScalarVarToMetaData(md, aVarNames[ii], meshname, AVT_ZONECENT);
+            AddScalarVarToMetaData(md, aVarNames[ii], meshname, centering);
         }
         else
         {
             AddVectorVarToMetaData(md, aVarNames[ii], meshname, 
-                                   AVT_ZONECENT, aVarNumComps[ii]);
+                                   centering, aVarNumComps[ii]);
         }
     }
 
@@ -602,7 +633,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // Add material set components as scalar vars as well as a material set
         for (ii = 0 ; ii < aMatNames.size() ; ii++)
         {
-            AddScalarVarToMetaData(md, aMatNames[ii], meshname, AVT_ZONECENT);
+            AddScalarVarToMetaData(md, aMatNames[ii], meshname, centering);
         }
         avtMaterialMetaData *matmd = new avtMaterialMetaData;
         matmd->name = "materialset";
@@ -615,8 +646,12 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // Find domain boundaries
     if (!avtDatabase::OnlyServeUpMetaData() && nblocks > 1)
     {
-        avtRectilinearDomainBoundaries *rdb =
-                                      new avtRectilinearDomainBoundaries(true);
+        avtStructuredDomainBoundaries *rdb;
+        if (bCurvilinear)
+            rdb = new avtCurvilinearDomainBoundaries(true);
+        else
+            rdb = new avtRectilinearDomainBoundaries(true);
+
         rdb->SetNumDomains(nblocks);
         int bbox[6];
         for (ii = 0 ; ii < nblocks ; ii++)
@@ -629,6 +664,18 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             bbox[3] = iBlockY * iBlockSize[1] + iBlockSize[1];
             bbox[4] = iBlockZ * iBlockSize[2];
             bbox[5] = iBlockZ * iBlockSize[2] + iBlockSize[2];
+
+            if (bCurvilinear)
+            {
+                if (iBlockX == iNumBlocks[0]-1)
+                    bbox[1]--;
+
+                if (iBlockY == iNumBlocks[1]-1)
+                    bbox[3]--;
+
+                if (iBlockZ == iNumBlocks[2]-1)
+                    bbox[5]--;
+            }
 
             rdb->SetIndicesForRectGrid(ii, bbox);
         }
@@ -774,10 +821,119 @@ avtMirandaFileFormat::DomainToIJK(int domain, int &i, int &j, int &k)
 //  Programmer: dbremer -- generated by xml2avt
 //  Creation:   Tue Jan 23 17:00:13 PST 2007
 //
+//  Modifications:
+//  Dave Bremer, June 25, 2009
+//  Refactored into curvilinear and rectilinear methods.
 // ****************************************************************************
 
 vtkDataSet *
 avtMirandaFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname*/)
+{
+    if (bCurvilinear)
+        return GetCurvilinearMesh(domain);
+    else
+        return GetRectilinearMesh(domain);
+}
+
+
+// ****************************************************************************
+//  Method: avtMirandaFileFormat::GetCurvilinearMesh
+//
+//  Purpose:
+//      Gets the curvilinear mesh associated with this file.
+//
+//  Arguments:
+//      domain  The index of the domain.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Jun 17 17:30:41 PDT 2009
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtMirandaFileFormat::GetCurvilinearMesh(int domain)
+{
+    vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+
+    int neighbors[8], realdim[3], ii, jj;
+    float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+
+    FindNeighborDomains(domain, neighbors, realdim);
+
+    sgrid->SetDimensions(realdim);
+    int nSrcTuples = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+
+    for (ii = 0; ii < 8; ii++)
+    {
+        if (neighbors[ii] == -1)
+            continue;
+
+        char filename[512];
+        if (snprintf(filename, 512, gridTemplate.c_str(), neighbors[ii]) < 0)
+            EXCEPTION1(InvalidFilesException, "");
+
+        FILE *fd = fopen(filename, "rb");
+        if (fd == NULL)
+            EXCEPTION1(InvalidFilesException, filename);
+
+        aRawBlocks[ii] = new float[nSrcTuples*3];
+
+        int iDst = 0;
+        for (jj = 0; jj < 3; jj++)
+        {
+            if (dim == 2 && jj == flatDim)
+                continue;
+
+            ReadRawScalar(fd, jj, aRawBlocks[ii] + iDst*nSrcTuples, filename);
+            iDst++;
+        }
+
+        if (dim == 2)
+            memset(aRawBlocks[ii] + 2*nSrcTuples, 0, nSrcTuples*sizeof(float));
+
+        fclose(fd);
+    }
+
+    vtkFloatArray *array = vtkFloatArray::New();
+    array->SetNumberOfComponents(3);
+    array->SetNumberOfTuples(realdim[0]*realdim[1]*realdim[2]);
+
+    PackData( (float *)(array->GetVoidPointer(0)), aRawBlocks, realdim, 3, true );
+
+    vtkPoints *p = vtkPoints::New();
+    p->SetData(array);
+    array->Delete();
+
+    sgrid->SetPoints(p);
+
+    for (ii = 0; ii < 8; ii++)
+    {
+        if (aRawBlocks[ii])
+            delete[] aRawBlocks[ii];
+    }
+
+    return sgrid;
+}
+
+
+// ****************************************************************************
+//  Method: avtMirandaFileFormat::GetRectilinearMesh
+//
+//  Purpose:
+//      Gets the rectilinear mesh associated with this file.  This was the
+//      GetMesh call until I extended the Miranda reader to handle curvilinear
+//      data.
+//
+//  Arguments:
+//      domain  The index of the domain.
+//
+//  Programmer: Dave Bremer
+//  Creation:   June 25, 2009
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtMirandaFileFormat::GetRectilinearMesh(int domain)
 {
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     if (dim == 3)
@@ -854,9 +1010,7 @@ ByteSwap32(void *val)
 //  Method: avtMirandaFileFormat::GetVar
 //
 //  Purpose:
-//      Gets a scalar variable associated with this file.  Although VTK has
-//      support for many different types, the best bet is vtkFloatArray, since
-//      that is supported everywhere through VisIt.
+//      Gets a scalar variable associated with this file.
 //
 //  Arguments:
 //      timestate  The index of the timestate.  If GetNTimesteps returned
@@ -877,13 +1031,18 @@ ByteSwap32(void *val)
 //
 //    Dave Bremer, Mon Mar 19 19:04:11 PDT 2007
 //    Fix fopen on windows.  Add error checking.
+//
+//    Dave Bremer, June 25, 2009
+//    Updated to handle curvilinear meshes, which requires treating data as
+//    nodal, and reading ghost data from adjacent domains.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
     int ii, iVar = -1, nPrevComp = 0;
-    
+
     for (ii = 0 ; ii < aVarNames.size() ; ii++) 
     {
         if (aVarNames[ii] == varname)
@@ -910,45 +1069,45 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
-    
-    int nTuples = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+
+    int neighbors[8], realdim[3];
+    float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+
+    FindNeighborDomains(domain, neighbors, realdim);
+
+    for (ii = 0; ii < 8; ii++)
+    {
+        if (neighbors[ii] == -1)
+            continue;
+
+        char filename[512];
+        if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
+            EXCEPTION1(InvalidFilesException, "");
+
+        FILE *fd = fopen(filename, "rb");
+        if (fd == NULL)
+            EXCEPTION1(InvalidFilesException, filename);
+
+        aRawBlocks[ii] = new float[iBlockSize[0]*iBlockSize[1]*iBlockSize[2]];
+        ReadRawScalar(fd, nPrevComp, aRawBlocks[ii], filename);
+
+        fclose(fd);
+    }
+
+    int nTuples = realdim[0]*realdim[1]*realdim[2];
     vtkFloatArray *var = vtkFloatArray::New();
     var->SetNumberOfTuples( nTuples );
 
-    char filename[512];
-    sprintf(filename, fileTemplate.c_str(), aCycles[timestate], domain);
+    PackData( (float *)(var->GetVoidPointer(0)), aRawBlocks, realdim, 1, false );
 
-    FILE *fd = fopen(filename, "rb");
-    if (fd == NULL)
-        EXCEPTION1(InvalidFilesException, filename);
-
-    int err = fseek(fd, nPrevComp*(nTuples*sizeof(float) + 2*sizeof(int32_t)), SEEK_SET);
-    if (err)
-        EXCEPTION1(InvalidFilesException, filename);
-
-    int header, nItemsRead;
-    fread(&header, sizeof(int32_t), 1, fd);
-    nItemsRead = fread(var->GetVoidPointer(0), sizeof(float), nTuples, fd);
-    if (nItemsRead != nTuples)
-        EXCEPTION1(InvalidFilesException, filename);
-
-    fclose(fd);
-    
-    if (header != nTuples*sizeof(float))
+    for (ii = 0; ii < 8; ii++)
     {
-        //If this is true, we need to swap endian
-        ByteSwap32(&header);
-        if (header != nTuples*sizeof(float))
-            EXCEPTION1(InvalidFilesException, filename);
-        
-        float *f = (float *)var->GetVoidPointer(0);
-        for (ii = 0 ; ii < nTuples ; ii++)
-        {
-            ByteSwap32(f + ii);
-        }
+        if (aRawBlocks[ii])
+            delete[] aRawBlocks[ii];
     }
     return var;
 }
+
 
 
 // ****************************************************************************
@@ -977,13 +1136,18 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
 //
 //    Dave Bremer, Mon Mar 19 19:04:11 PDT 2007
 //    Fix fopen on windows.  Add error checking.
+//
+//    Dave Bremer, June 25, 2009
+//    Updated to handle curvilinear meshes, which requires treating data as
+//    nodal, and reading ghost data from adjacent domains.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
     int ii, jj, iVar = -1, nPrevComp = 0;
-    
+
     for (ii = 0 ; ii < aVarNames.size() ; ii++) 
     {
         if (aVarNames[ii] == varname)
@@ -993,11 +1157,13 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
         }
         nPrevComp += aVarNumComps[ii];
     }
-    if (iVar == -1 || aVarNumComps[ii] <= 1)
+    if (iVar == -1 || aVarNumComps[iVar] <= 1)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
-    
+
+    int nComps = aVarNumComps[iVar];
+
     bool bFlattenVec = false;
     if (aVarNumComps[iVar] == 3 && dim == 2 && 
         aVarMinMax[iVar][flatDim*2] == 0.0f &&
@@ -1005,76 +1171,56 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
     {
         bFlattenVec = true;
     }
-    
-    int nTuples = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+
+    int neighbors[8], realdim[3];
+    float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+
+    FindNeighborDomains(domain, neighbors, realdim);
+
+    int nDstTuples = realdim[0]*realdim[1]*realdim[2];
+    int nSrcTuples = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+
     vtkFloatArray *var = vtkFloatArray::New();
-    var->SetNumberOfComponents( aVarNumComps[ii] );
-    var->SetNumberOfTuples( nTuples );
+    var->SetNumberOfComponents( nComps );
+    var->SetNumberOfTuples( nDstTuples );
 
-    char filename[512];
-    sprintf(filename, fileTemplate.c_str(), aCycles[timestate], domain);
-    
-    FILE *fd = fopen(filename, "rb");
-    if (fd == NULL)
-        EXCEPTION1(InvalidFilesException, filename);
-    int err = fseek(fd, nPrevComp*(nTuples*sizeof(float) + 2*sizeof(int32_t)), SEEK_SET);
-    if (err)
-        EXCEPTION1(InvalidFilesException, filename);
-
-    float *tmp = new float[nTuples];
-    
-    int nComps = aVarNumComps[ii];
-    int iCurrComp = 0;
-    for (ii = 0 ; ii < nComps ; ii++)
+    for (ii = 0; ii < 8; ii++)
     {
-        if (bFlattenVec && ii==flatDim)
-        {
-            fseek(fd, nTuples*sizeof(float) + 2*sizeof(int32_t), SEEK_CUR);
+        if (neighbors[ii] == -1)
             continue;
-        }
-    
-        int32_t header, footer, nItemsRead;
-        fread(&header, sizeof(int32_t), 1, fd);
-        nItemsRead = fread(tmp, sizeof(float), nTuples, fd);
-        fread(&footer, sizeof(int32_t), 1, fd);
-        if (nItemsRead != nTuples)
+
+        char filename[512];
+        if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
+            EXCEPTION1(InvalidFilesException, "");
+
+        FILE *fd = fopen(filename, "rb");
+        if (fd == NULL)
             EXCEPTION1(InvalidFilesException, filename);
 
-        if (header != nTuples*sizeof(float))
-        {
-            //If this is true, we need to swap endian
-            ByteSwap32(&header);
-            if (header != nTuples*sizeof(float))
-            {
-                delete[] tmp;
-                EXCEPTION1(InvalidFilesException, filename);
-            }
+        aRawBlocks[ii] = new float[nSrcTuples*nComps];
 
-            float *f = tmp;
-            for (jj = 0 ; jj < nTuples ; jj++)
-            {
-                ByteSwap32(f + jj);
-            }
-        }
-        for (jj = 0 ; jj < nTuples ; jj++)
+        int iCurrComp = 0;
+        for (jj = 0; jj < nComps; jj++)
         {
-            var->SetComponent(jj, iCurrComp, tmp[jj]);
+            if (bFlattenVec && jj==flatDim)
+                continue;
+
+            ReadRawScalar(fd, nPrevComp+jj, aRawBlocks[ii] + iCurrComp*nSrcTuples, filename);
+
+            iCurrComp++;
         }
-        iCurrComp++;
+        if (bFlattenVec)
+            memset(aRawBlocks[ii] + 2*nSrcTuples, 0, nSrcTuples*sizeof(float));
+
+        fclose(fd);
     }
-    fclose(fd);
-    delete[] tmp;
+    PackData( (float *)(var->GetVoidPointer(0)), aRawBlocks, realdim, nComps, true );
 
-    // I return a 3D vector here with the last component set to 0,
-    // because code downstream prefers it this way.
-    if (bFlattenVec)
+    for (ii = 0; ii < 8; ii++)
     {
-        for (jj = 0 ; jj < nTuples ; jj++)
-        {
-            var->SetComponent(jj, 2, 0.0f);
-        }
+        if (aRawBlocks[ii])
+            delete[] aRawBlocks[ii];
     }
-    
     return var;
 }
 
@@ -1095,6 +1241,10 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
 //    Dave Bremer, Mon Mar 19 19:04:11 PDT 2007
 //    Fix fopen on windows.  Add error checking.
 //
+//    Dave Bremer, June 25, 2009
+//    Updated to handle curvilinear meshes, which requires treating data as
+//    nodal, and reading ghost data from adjacent domains.
+//
 // ****************************************************************************
 void *
 avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,  
@@ -1103,9 +1253,9 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
 {
     void *rv = NULL;
     int   nbricks = iNumBlocks[0] * iNumBlocks[1] * iNumBlocks[2];
-    int   ii, jj;
+    int   ii, jj, kk, mm;
     
-    if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+    if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0 && !bCurvilinear)
     {
         if (strcmp(var, "mesh") != 0)
         {
@@ -1148,63 +1298,62 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
         for (ii = 0 ; ii < aVarNumComps.size() ; ii++)
             iFirstComp += aVarNumComps[ii];
     
-        int nTuples = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
-        char filename[512];
-        sprintf(filename, fileTemplate.c_str(), aCycles[timestate], domain);
-    
-        FILE *fd = fopen(filename, "rb");
-        if (fd == NULL)
-            EXCEPTION1(InvalidFilesException, filename);
-        int err = fseek(fd, iFirstComp*(nTuples*sizeof(float) + 2*sizeof(int32_t)), SEEK_SET);
-        if (err)
-            EXCEPTION1(InvalidFilesException, filename);
+        int neighbors[8], realdim[3];
+        float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 
-        for (ii = 0 ; ii < nMats ; ii++)
+        FindNeighborDomains(domain, neighbors, realdim);
+
+        int nDstTuples = realdim[0]*realdim[1]*realdim[2];
+        int nSrcTuples = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+
+        for (ii = 0; ii < 8; ii++)
         {
-            matNums[ii] = ii;
-            matNames[ii] = strdup( aMatNames[ii].c_str() );
-        
-            volFracs[ii] = new float[nTuples];
-            
-            int32_t header, footer;
-            fread(&header, sizeof(int32_t), 1, fd);
-            int nItemsRead = fread(volFracs[ii], sizeof(float), nTuples, fd);
-            fread(&footer, sizeof(int32_t), 1, fd);
-            if (nItemsRead != nTuples)
+            if (neighbors[ii] == -1)
+                continue;
+
+            char filename[512];
+            if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
+                EXCEPTION1(InvalidFilesException, "");
+
+            FILE *fd = fopen(filename, "rb");
+            if (fd == NULL)
                 EXCEPTION1(InvalidFilesException, filename);
 
-            if (header != nTuples*sizeof(float))
-            {
-                //If this is true, we need to swap endian
-                ByteSwap32(&header);
-                if (header != nTuples*sizeof(float))
-                {
-                    EXCEPTION1(InvalidFilesException, filename);
-                }
+            aRawBlocks[ii] = new float[nSrcTuples*nMats];
 
-                float *f = volFracs[ii];
-                for (jj = 0 ; jj < nTuples ; jj++)
-                {
-                    ByteSwap32(f + jj);
-                }
+            for (jj = 0; jj < nMats; jj++)
+            {
+                ReadRawScalar(fd, iFirstComp+jj, aRawBlocks[ii] + jj*nSrcTuples, filename);
             }
+            fclose(fd);
         }
-        
+
+        float *dst = new float[nDstTuples * nMats];
+        for (jj = 0; jj < nMats; jj++)
+        {
+            matNums[jj] = jj;
+            matNames[jj] = strdup( aMatNames[jj].c_str() );
+
+            volFracs[jj] = dst + jj*nDstTuples;
+        }
+
+        PackData(dst, aRawBlocks, realdim, nMats, false);
+
         /* For debugging, I'm going to clean up the data so that it
            can be processed.  I have zones with material fractions
            that range from -epsilon to 1+epsilon.  DJB */
-        
-        for (ii = 0 ; ii < nTuples ; ii++)
+
+        for (ii = 0 ; ii < nDstTuples ; ii++)
         {
             double sum = 0.00f;
             for (jj = 0 ; jj < nMats ; jj++)
             {
                 if (volFracs[jj][ii] > 1.0 - 1e-5)
                     volFracs[jj][ii] = 1.0f;
-                
+
                 if (volFracs[jj][ii] < 1e-5)   
                     volFracs[jj][ii] = 0.0f;
-                
+
                 sum += volFracs[jj][ii];
             }
             for (jj = 0 ; jj < nMats ; jj++)
@@ -1212,32 +1361,278 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
                 volFracs[jj][ii] /= sum;
             }
         }
-        
+
+        if (bCurvilinear)
+        {
+            //In this case, we have node-centered material fractions 
+            //that need to be averaged onto the zones.
+
+            int numZIterations = (dim == 3) ? realdim[2]-1 : 1;
+
+            for (mm = 0; mm < nMats; mm++)
+            {
+                int tt = 0;
+                float *f = volFracs[mm];
+                for (kk = 0; kk < numZIterations; kk++)
+                    for (jj = 0; jj < realdim[1]-1; jj++)
+                        for (ii = 0; ii < realdim[0]-1; ii++, tt++)
+                        {
+                            if (dim == 3)
+                                f[tt] = 
+                                    (f[ii   + jj*realdim[0]     + kk*realdim[0]*realdim[1]] +
+                                     f[ii+1 + jj*realdim[0]     + kk*realdim[0]*realdim[1]] +
+                                     f[ii   + (jj+1)*realdim[0] + kk*realdim[0]*realdim[1]] +
+                                     f[ii+1 + (jj+1)*realdim[0] + kk*realdim[0]*realdim[1]] +
+                                     f[ii   + jj*realdim[0]     + (kk+1)*realdim[0]*realdim[1]] +
+                                     f[ii+1 + jj*realdim[0]     + (kk+1)*realdim[0]*realdim[1]] +
+                                     f[ii   + (jj+1)*realdim[0] + (kk+1)*realdim[0]*realdim[1]] +
+                                     f[ii+1 + (jj+1)*realdim[0] + (kk+1)*realdim[0]*realdim[1]]) / 8.0;
+                            else //dim == 2
+                                f[tt] = 
+                                    (f[ii   + jj*realdim[0]     + kk*realdim[0]*realdim[1]] +
+                                     f[ii+1 + jj*realdim[0]     + kk*realdim[0]*realdim[1]] +
+                                     f[ii   + (jj+1)*realdim[0] + kk*realdim[0]*realdim[1]] +
+                                     f[ii+1 + (jj+1)*realdim[0] + kk*realdim[0]*realdim[1]]) / 4.0;
+                        }
+            }
+            realdim[0]--;
+            realdim[1]--;
+            if (dim == 3)
+                realdim[2]--;
+        }
+
         rv = (void *)new avtMaterial( nMats,
                                       matNums,
                                       matNames,
                                       dim, 
-                                      iBlockSize,
+                                      realdim,
                                       0 /*major_order*/,
                                       volFracs,
                                       domainName);
         df = avtMaterial::Destruct;
         
-        fclose(fd);
         for (ii = 0 ; ii < nMats ; ii++)
         {
             free(matNames[ii]);
-            delete[] volFracs[ii];
         }
         delete[] matNums;
         delete[] matNames;
         delete[] volFracs;
+        delete[] dst;
+        for (ii = 0; ii < 8; ii++)
+        {
+            if (aRawBlocks[ii])
+                delete[] aRawBlocks[ii];
+        }
     }
 
     return rv;
 }
 
 
+// ****************************************************************************
+//  Method: avtMirandaFileFormat::FindNeighborDomains
+//
+//  Purpose:
+//      For a given domain, find the neighbor domains from which ghost nodes 
+//      should be read.  Rectilinear data will have no ghost nodes.
+//
+//  Arguments:
+//      domain     domain of interest
+//      neighbors  8 output values.  neighbors[0] = domain, others are neighbors
+//                 in the increasing x, y, and z directions, or -1 if no 
+//                 neighbor in that direction.
+//      realdim    3 output values--the dimensions of the domain including any
+//                 ghost nodes.
+//
+//  Programmer: Dave Bremer
+//  Creation:   June 25, 2009
+//
+// ****************************************************************************
+void
+avtMirandaFileFormat::FindNeighborDomains(int domain, int *neighbors, 
+                                          int *realdim)
+{
+    int ii, jj, kk;
+    for (ii = 0; ii < 3; ii++)
+        realdim[ii] = iBlockSize[ii];
 
 
+    if (!bCurvilinear)
+    {
+        // don't need to read any neighbors for rectilinear case
+        neighbors[0] = domain;
+        for (ii = 1; ii < 8; ii++)
+            neighbors[ii] = -1;
+    }
+    else
+    {
+        int di, dj, dk;
+        int incr[3];
+        DomainToIJK(domain, di, dj, dk);
+
+        if (di < iNumBlocks[0]-1)
+            realdim[0]++;
+
+        if (dj < iNumBlocks[1]-1)
+            realdim[1]++;
+
+        if (dk < iNumBlocks[2]-1)
+            realdim[2]++;
+
+        //fileorder flag must be set for curvilinear meshes
+        if (iFileOrder[0] == -1)
+            EXCEPTION1(InvalidFilesException, "");
+
+        incr[iFileOrder[0]] = 1;
+        incr[iFileOrder[1]] = iNumBlocks[iFileOrder[0]];
+        incr[iFileOrder[2]] = iNumBlocks[iFileOrder[0]] * iNumBlocks[iFileOrder[1]];
+
+        int *curr = neighbors;
+        for (kk = 0; kk < 2; kk++)
+        {
+            for (jj = 0; jj < 2; jj++)
+            {
+                for (ii = 0; ii < 2; ii++)
+                {
+                    if ( di + ii >= iNumBlocks[0] ||
+                         dj + jj >= iNumBlocks[1] ||
+                         dk + kk >= iNumBlocks[2] )
+                        *curr = -1;
+                    else
+                        *curr = domain + ii*incr[0] + jj*incr[1] + kk*incr[2];
+
+                    curr++;
+                }
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMirandaFileFormat::PackData
+//
+//  Purpose:
+//      Takes 8, 4, 2, or 1 blocks--a domain and its neighbors, if any, in the 
+//      increasing x, y, and z directions--and packs the block and one layer 
+//      of ghost nodes into an output buffer.  This is used for mesh, var, vec,
+//      and mat data.
+//
+//  Arguments:
+//      dst         output buffer
+//      src         array of pointers to 8 neighbor buffers.  NULL val means no 
+//                  neighbor on that side
+//      dstDim      size of output buffer
+//      nComp       number of components to pack.  If src is an xyz vec, all the
+//                  x values come first, then all y, then all z.
+//      interleave  if true, components in dst are in x, y, z tuples, otherwise
+//                  separate into blocks of x, y, and z.  mesh and vec data are
+//                  interleaved, mat data is separated.
+//
+//  Programmer: Dave Bremer
+//  Creation:   June 25, 2009
+//
+// ****************************************************************************
+void
+avtMirandaFileFormat::PackData(float *dst, const float * const *src, 
+                               const int *dstDim, int nComp, bool interleave)
+{
+    int bb, ii, jj, kk, cc;
+    int srcDim[8][3] = {{iBlockSize[0], iBlockSize[1], iBlockSize[2]},
+                        {1,             iBlockSize[1], iBlockSize[2]},
+                        {iBlockSize[0], 1,             iBlockSize[2]},
+                        {1,             1,             iBlockSize[2]},
+                        {iBlockSize[0], iBlockSize[1], 1},
+                        {1,             iBlockSize[1], 1},
+                        {iBlockSize[0], 1,             1},
+                        {1,             1,             1}};
+
+    int dstOffset[8][3] = {{0,             0,             0},
+                           {iBlockSize[0], 0,             0},
+                           {0,             iBlockSize[1], 0},
+                           {iBlockSize[0], iBlockSize[1], 0},
+                           {0,             0,             iBlockSize[2]},
+                           {iBlockSize[0], 0,             iBlockSize[2]},
+                           {0,             iBlockSize[1], iBlockSize[2]},
+                           {iBlockSize[0], iBlockSize[1], iBlockSize[2]} };
+
+    for (bb = 0; bb < 8; bb++)
+    {
+        if (src[bb] == NULL)
+            continue;
+
+        for (kk = 0; kk < srcDim[bb][2]; kk++)
+        {
+            for (jj = 0; jj < srcDim[bb][1]; jj++)
+            {
+                for (ii = 0; ii < srcDim[bb][0]; ii++)
+                {
+                    int iCurrDstTuple = ii + dstOffset[bb][0] + 
+                                        (jj + dstOffset[bb][1]) * dstDim[0] +
+                                        (kk + dstOffset[bb][2]) * dstDim[0] * dstDim[1];
+
+                    for (cc = 0; cc < nComp; cc++)
+                    {
+                        float s = src[bb][ii + 
+                                          jj*iBlockSize[0] + 
+                                          kk*iBlockSize[0]*iBlockSize[1] + 
+                                          cc*iBlockSize[0]*iBlockSize[1]*iBlockSize[2]];
+                        if (interleave)
+                            dst[iCurrDstTuple*nComp + cc] = s;
+                        else
+                            dst[iCurrDstTuple + cc*dstDim[0]*dstDim[1]*dstDim[2]] = s;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMirandaFileFormat::ReadRawScalar
+//
+//  Purpose:
+//      Reads one block of scalar values out of a miranda file.
+//
+//  Arguments:
+//      fd        open file descriptor
+//      iComp     index of component to read
+//      out       already allocated output buffer
+//      filename  name of fd, only used for error reporting
+//
+//  Programmer: Dave Bremer
+//  Creation:   June 25, 2009
+//
+// ****************************************************************************
+void
+avtMirandaFileFormat::ReadRawScalar(FILE *fd, int iComp, float *out, const char *filename)
+{
+    int nPoints = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+    int header, nItemsRead, ii;
+    int err;
+
+    err = fseek(fd, iComp*(nPoints*sizeof(float) + 2*sizeof(int32_t)), SEEK_SET);
+    if (err)
+        EXCEPTION1(InvalidFilesException, filename);
+
+    fread(&header, sizeof(int32_t), 1, fd);
+    nItemsRead = fread(out, sizeof(float), nPoints, fd);
+    if (nItemsRead != nPoints)
+        EXCEPTION1(InvalidFilesException, filename);
+
+    if (header != nPoints*sizeof(float))
+    {
+        //If this is true, we need to swap endian
+        ByteSwap32(&header);
+        if (header != nPoints*sizeof(float))
+            EXCEPTION1(InvalidFilesException, filename);
+
+        float *f = out;
+        for (ii = 0 ; ii < nPoints ; ii++, f++) {
+            ByteSwap32(f);
+        }
+    }
+}
 
