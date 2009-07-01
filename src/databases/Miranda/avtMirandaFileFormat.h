@@ -67,6 +67,14 @@ class DBOptionsAttributes;
 //    Added support for version 1.2 of the .raw files, which specifies block
 //    ordering using a tag of the form "fileorder: ZYX", rather than using a
 //    separate grid file per process.
+//
+//    Dave Bremer, June 25, 2009
+//    Added support for curvilinear meshes.  If curvilinear, the metadata file
+//    will have the tag "curvilinear: yes".  Curvilinear data will be node
+//    centered, while rectilinear data will remain zone centered.  The files
+//    do not contain any duplicate points along the boundaries, so for each
+//    mesh, var, vec, or mat read, neighboring domains be need to be opened 
+//    and ghost nodes extracted.
 // ****************************************************************************
 
 class avtMirandaFileFormat : public avtMTMDFileFormat
@@ -122,9 +130,21 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
     int                    iFileOrder[3]; // 2,1,0; or 0,1,2; or another permutation
                                           // maps a domain index to i,j,k block
                                           // replaces gridTemplate and domainMap
-    
+
+    bool                   bCurvilinear;
+
+
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     virtual void           DomainToIJK(int domain, int &i, int &j, int &k);
+
+    virtual vtkDataSet    *GetCurvilinearMesh(int domain);
+    virtual vtkDataSet    *GetRectilinearMesh(int domain);
+
+    virtual void           PackData(float *dst, const float * const *src, 
+                                    const int *dstDim, int nComp, bool interleave);
+
+    virtual void           ReadRawScalar(FILE *fd, int iComp, float *out, const char *filename);
+    virtual void           FindNeighborDomains(int domain, int *neighbors, int *realdim);
 
     static  void           SkipToEndOfLine( ifstream &f, bool bCheckForBadTokens = true );
     static  double         GetFortranDouble( ifstream &f );
