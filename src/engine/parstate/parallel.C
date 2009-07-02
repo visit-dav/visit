@@ -39,8 +39,9 @@
 #ifdef PARALLEL
 #include <unistd.h>
 #include <parallel.h>
+#include <engine_parstate_exports.h>
 
-MPI_Datatype PAR_STATEBUFFER;
+ENGINE_PARSTATE_API MPI_Datatype PAR_STATEBUFFER;
 
 // *******************************************************************
 // Function: PAR_CreateTypes
