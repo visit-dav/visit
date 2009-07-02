@@ -28,6 +28,7 @@ LDFLAGS=@LDFLAGS@
 EXE_LDFLAGS=@EXE_LDFLAGS@
 PLUGIN_LDFLAGS=@PLUGIN_LDFLAGS@
 LDFLAGSORIG=@LDFLAGS@
+PARALLEL_CPPFLAGS=@PARALLEL_CPPFLAGS@
 PY_LDFLAGS=@PY_LDFLAGS@
 # Start Qt variables
 QT_CXXFLAGS=@QT_CXXFLAGS@
@@ -209,4 +210,3 @@ exec_prefix=@exec_prefix@
 bindir=@bindir@
 libdir=@libdir@
 includedir=@includedir@
-
