@@ -60,7 +60,7 @@ ZipWrapperCommonPluginInfo::GetDatabaseType()
 }
 
 // ****************************************************************************
-//  Method: ZipWrapperCommonPluginInfo::SetupZipWrapperDatabase
+//  Method: ZipWrapperCommonPluginInfo::SetupDatabase
 //
 //  Purpose:
 //      Sets up a ZipWrapper database.
@@ -85,7 +85,8 @@ ZipWrapperCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
     return new avtGenericDatabase(
-               new avtZipWrapperFileFormatInterface(list,nList,nBlock,readOptions,this));
+               new avtZipWrapperFileFormatInterface(list, nList, nBlock,
+                                                    readOptions, this));
 }
 
 // ****************************************************************************
