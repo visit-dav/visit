@@ -32,6 +32,11 @@
 # (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN ANY  WAY OUT OF  THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+# Modifications:
+#
+#   Tom Fogal, Tue Jun 30 21:23:20 MDT 2009
+#   Build cognomen as a C library.
+#
 ##############################################################################
 
 ##
@@ -40,6 +45,7 @@
 @SET_MAKE@
 @VARIABLES@
 
+CFLAGS=-Icognomen/include -I../../include -DIN_COGNOMEN @CFLAGS@
 CXXFLAGS=-Icognomen/include @CXXFLAGS@
 CPPFLAGS=-Icognomen/include @CPPFLAGS@
 LIBS=@MPI_LIBS@
@@ -47,9 +53,9 @@ LIBS=@MPI_LIBS@
 ##
 ## Files...
 ##
-SRC=src/cognomen.C
+SRC=src/cognomen.c
 HDR=src/cognomen.h
-OBJ=$(SRC:.C=.o)
+OBJ=$(SRC:.c=_par.o)
 LIB=libcognomen
 
 ##

@@ -14,27 +14,29 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with Cognomen.  If not, see <http://www.gnu.org/licenses/>.
  *****
- * Types utilized in Cognomen.
+ * `bool' type which uses C99 if possible, else mimics C99.
  *****/
-#ifndef COG_TYPES_H
-#define COG_TYPES_H
+#ifndef COG_BOOL_H
+#define COG_BOOL_H
 
-#define _SIZEOF_COG_ID 16
-#define _SIZEOF_COG_SET 16
+#include <visit-config.h>
 
-#include <stdlib.h>
+/* This implementation was recommended by the autoconf manual. */
+#if HAVE_STDBOOL_H
+#   include <stdbool.h>
+#else
+#   if ! HAVE_BOOL
+#       ifdef __cplusplus
+typedef bool _Bool;
+#       else
+#undef _Bool
+typedef unsigned char _Bool;
+#       endif
+#   endif
+#   define bool _Bool
+#   define false 0
+#   define true 1
+#   define __bool_true_false_are_defined 1
+#endif 
 
-typedef union {
-    char _sz[_SIZEOF_COG_ID];
-    int id;
-} cog_id;
-
-typedef union {
-    char _sz[_SIZEOF_COG_SET];
-    struct {
-        cog_id *v;
-        size_t size;
-    } set;
-} cog_set;
-
-#endif /* COG_TYPES_H */
+#endif /* COG_BOOL_H */
