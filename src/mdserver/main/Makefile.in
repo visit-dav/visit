@@ -195,6 +195,9 @@
 #    Tom Fogal, Tue Jun 30 22:11:57 MDT 2009
 #    Add symbol export define.
 #
+#    Tom Fogal, Thu Jul  2 01:58:08 MDT 2009
+#    Add comm exports, since we catch an exception thrown by comm.
+#
 ##############################################################################
 
 ##
@@ -227,7 +230,7 @@ LIBS= \
     @LIBS@ \
     @PTHREAD_LIB@
 LIBDEP=
-CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@ -DMDSERVER_MAIN_EXPORTS
+CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@ -DMDSERVER_MAIN_EXPORTS -DCOMM_EXPORTS
 CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
 
 ##
