@@ -16,15 +16,6 @@
  *****
  * Types utilized in Cognomen.
  *****/
-
-/*
- * Modifications:
- *   Mark C. Miller, Thu Jul  2 12:14:01 PDT 2009
- *   Added names for anon. typedefs and structs. Added conditional
- *   compilation of name for inner-struct of _cog_set so it would
- *   work with C++ or C compiler
- */
-
 #ifndef COG_TYPES_H
 #define COG_TYPES_H
 
@@ -33,21 +24,17 @@
 
 #include <stdlib.h>
 
-typedef union _cog_id {
+typedef union {
     char _sz[_SIZEOF_COG_ID];
     int id;
 } cog_id;
 
-typedef union _cog_set {
+typedef union {
     char _sz[_SIZEOF_COG_SET];
-    struct _set {
+    struct {
         cog_id *v;
         size_t size;
-#ifdef __cplusplus
-    } _cog_set::set;
-#else
     } set;
-#endif
 } cog_set;
 
 #endif /* COG_TYPES_H */
