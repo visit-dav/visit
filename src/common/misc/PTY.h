@@ -44,6 +44,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <misc_exports.h>
 
 // ****************************************************************************
 //  Purpose: PTY Functions
@@ -55,11 +56,14 @@
 //    Jeremy Meredith, Tue Oct 22 14:59:54 PDT 2002
 //    Added an optional child signal handler to pty_fork.
 //
+//    Tom Fogal, Tue Jun 30 21:05:32 MDT 2009
+//    Add defines for symbol versioning.
+//
 // ****************************************************************************
 
-int    ptym_open(char*);
-int    ptys_open(int, char*);
-pid_t  pty_fork(int&, void (*)(int) =NULL, char * =NULL);
+int   MISC_API ptym_open(char*);
+int   MISC_API ptys_open(int, char*);
+pid_t MISC_API pty_fork(int&, void (*)(int) =NULL, char * =NULL);
 
 #endif
 
