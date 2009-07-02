@@ -255,6 +255,9 @@
 //    Tom Fogal, Tue Jun 30 22:35:24 MDT 2009
 //    I forced GENERAL_PLUGIN_EXPORTS into CXXFLAGS.
 //
+//    Tom Fogal, Wed Jul  1 13:40:21 MDT 2009
+//    Added some export defines.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin : public Plugin
@@ -353,10 +356,26 @@ class MakefileGeneratorPlugin : public Plugin
         out << "  -I"<<vtkdir<<"/Rendering \\"<<endl;
         out << "  -I"<<vtkdir<<"/Utilities"<<endl;
         if(type == "database")
+        {
             out << "CXXFLAGS=$(CXXFLAGSORIG)";
+        }
         else
             out << "CXXFLAGS=$(CXXFLAGSORIG) $(QT_CXXFLAGS)";
         out << " -DGENERAL_PLUGIN_EXPORTS";
+        // This creates too many exports; we want to use the define
+        // conditionally based on which lib? we're compiling.  That is, for
+        // libM's we want to define MDSERVER_PLUGIN_EXPORTS, but not
+        // ENGINE_PLUGIN_EXPORTS.  The opposite is true for libE's.
+        // However we don't compile those separately right now, so we'll
+        // just define both regardless.  This adds more symbols than it
+        // needs to.
+        out << " -DMDSERVER_PLUGIN_EXPORTS";
+        out << " -DENGINE_PLUGIN_EXPORTS";
+        if(type == "plot" || type == "operator")
+        {
+            out << " -DGUI_PLUGIN_EXPORTS -DVIEWER_PLUGIN_EXPORTS";
+            out << " -DSCRIPTING_PLUGIN_EXPORTS";
+        }
         for (size_t i=0; i<cxxflags.size(); i++)
             out << " " << cxxflags[i];
         out << endl;
