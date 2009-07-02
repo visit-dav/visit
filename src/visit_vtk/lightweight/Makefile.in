@@ -64,6 +64,9 @@
 #    Gunther H. Weber, Fri Apr  3 17:24:22 PDT 2009
 #    Added vtkVisItCellLocator from "full".
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -99,7 +102,8 @@ SRC=InitVTKNoGraphics.C \
     vtkVisItUtility.C 
 
 
-CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. @MESA_INCLUDE@
+CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. \
+         @MESA_INCLUDE@ -DVISIT_VTK_LIGHT_EXPORTS
 
 OBJ=$(SRC:.C=.o)
 LIB=liblightweight_visit_vtk

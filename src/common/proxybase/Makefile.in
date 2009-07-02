@@ -40,6 +40,8 @@
 #   Eric Brugger, Fri Jun 29 09:35:48 PDT 2007
 #   Removed the setting of the NOT_DISTRIB variable.
 #
+#   Tom Fogal, Tue Jun 30 19:56:34 MDT 2009
+#   Add define for proper symbol export.
 ##############################################################################
 
 ##
@@ -49,7 +51,7 @@
 @VARIABLES@
 
 CPPFLAGS=-I../../include -I../../include/visit @CPPFLAGS@ @PLATFORM_CPPFLAGS@
-CXXFLAGS=@CXXFLAGS@ @PTHREAD_CXXFLAGS@
+CXXFLAGS=@CXXFLAGS@ @PTHREAD_CXXFLAGS@ -DPROXYBASE_EXPORTS
 
 ##
 ## Files...

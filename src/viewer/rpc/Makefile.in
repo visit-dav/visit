@@ -61,6 +61,9 @@
 #    Thomas R. Treadway, Thu Jul 26 16:19:55 PDT 2007
 #    Added a couple more libraries for MacOS X.
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -70,7 +73,7 @@
 @VARIABLES@
 
 CXXFLAGS=-I../../include/visit @CXXFLAGS@
-CPPFLAGS=-I. @CPPFLAGS@ 
+CPPFLAGS=-I. @CPPFLAGS@  -DVIEWER_RPC_EXPORTS
 
 ##
 ## Files...

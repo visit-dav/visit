@@ -129,6 +129,8 @@
 #    Hank Childs, Thu Jan 29 10:17:19 PST 2009
 #    Added NamedSelectionRPC.
 #
+#    Tom Fogal, Tue Jun 30 19:59:36 MDT 2009
+#    Add define for proper symbol export.
 ###############################################################################
 
 ##
@@ -138,7 +140,7 @@
 @VARIABLES@
 
 CXXFLAGS=-I../../include/visit @CXXFLAGS@
-CPPFLAGS=-I. @CPPFLAGS@ 
+CPPFLAGS=-I. @CPPFLAGS@ -DENGINE_RPC_EXPORTS
 
 ##
 ## Files...

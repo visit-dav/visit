@@ -321,6 +321,10 @@
 #   Mark C. Miller, Tue Jan 27 18:03:23 PST 2009
 #   Removed refs to $(FILIB) which was for the FAST INTERVAL LIBRARY and
 #   was replaced by some Boost builtin libs.
+#
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -349,7 +353,8 @@ LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@ @EXE_LDFLAGS@
 LIBDEP=
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ 
-CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ @VIEWER_MESA_STUB_CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
+CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ @VIEWER_MESA_STUB_CPPFLAGS@ \
+         $(VTK_INCLUDE) -I../../vtkqt -DVIEWER_EXPORTS \
          -I./icons -I../../include -I../../include/visit -I.
 
 

@@ -302,7 +302,7 @@
 LIB=libengine
 
 CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @PLATFORM_CPPFLAGS@ @CPPFLAGS@ \
-         -I. -I../../include/visit
+         -I. -I../../include/visit -DENGINE_MAIN_EXPORTS
 
 COMMONLIBS=-L../../lib -lplugin -lavtview \
         -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk \

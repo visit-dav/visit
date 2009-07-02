@@ -76,6 +76,9 @@
 #    Brad Whitlock, Thu Jun 18 11:34:28 PDT 2009
 #    I added PluginBroadcaster.
 #
+#    Tom Fogal, Tue Jun 30 19:56:07 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -88,7 +91,7 @@
 ## Libraries and includes...
 ##
 CXXFLAGS=@CXXFLAGS@ 
-CPPFLAGS=@CPPFLAGS@ -I. -I../../include -I../../include/visit
+CPPFLAGS=@CPPFLAGS@ -I. -I../../include -I../../include/visit -DPLUGIN_EXPORTS
 
 ##
 ## Files...

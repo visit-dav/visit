@@ -309,6 +309,10 @@
 #    Mark C. Miller, Wed Mar  4 17:58:30 PST 2009
 #    Moved vtkMultiFontVectorText.C and vtkVectorFontCharacterData.C from
 #    full dir.
+#
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -347,7 +351,9 @@ SRC=InitVTK.C \
     vtkMultiFontVectorText.C \
     vtkVectorFontCharacterData.C
 
-CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @X_CPPFLAGS@ @ANNOTATION_FLAGS@ -I../../include -I. $(GLEW_INCLUDE)
+CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @X_CPPFLAGS@ \
+         @ANNOTATION_FLAGS@ -I../../include -I. $(GLEW_INCLUDE) \
+         -DRENDERING_VISIT_VTK_EXPORTS
 
 OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) @MESA_OBJ@
 LIB=librendering_visit_vtk

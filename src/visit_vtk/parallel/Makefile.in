@@ -48,6 +48,9 @@
 #    Brad Whitlock, Mon Nov 26 17:40:32 PST 2007
 #    Changed PARLIBS for the Mac.
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -63,7 +66,7 @@
 ##
 SRC=vtkParallelImageSpaceRedistributor.C
 
-CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ -I.
+CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ -I. -DPARALLEL_VISIT_VTK_EXPORTS
 
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)

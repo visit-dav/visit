@@ -97,6 +97,9 @@
 #    Jeremy Meredith, Mon Dec 10 17:01:25 EST 2007
 #    I added a dependency on libutil.
 #
+#    Tom Fogal, Tue Jun 30 19:53:07 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -105,7 +108,8 @@
 @SET_MAKE@
 @VARIABLES@
 
-CPPFLAGS=-I../../include -I../../include/visit @CPPFLAGS@ @PLATFORM_CPPFLAGS@
+CPPFLAGS=-I../../include -I../../include/visit @CPPFLAGS@ @PLATFORM_CPPFLAGS@ \
+         -DCOMM_EXPORTS
 CXXFLAGS=@CXXFLAGS@ @PTHREAD_CXXFLAGS@
 
 ##

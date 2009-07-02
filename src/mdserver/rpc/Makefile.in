@@ -78,6 +78,9 @@
 #    Jeremy Meredith, Wed Jan 23 16:25:19 EST 2008
 #    Added SetMFileOpenOptionsRPC.
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -87,7 +90,7 @@
 @VARIABLES@
 
 CXXFLAGS=-I../../include -I../../include/visit @CXXFLAGS@
-CPPFLAGS=-I. @CPPFLAGS@ 
+CPPFLAGS=-I. @CPPFLAGS@ -DMDSERVER_RPC_EXPORTS
 
 ##
 ## Files...

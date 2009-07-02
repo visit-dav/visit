@@ -386,6 +386,9 @@
 #    Jeremy Meredith, Mon Feb 11 16:49:26 EST 2008
 #    Added QvisElementSelectionWidget.
 #
+#    Tom Fogal, Tue Jun 30 22:17:25 MDT 2009
+#    Add define for symbol hiding.
+#
 ##############################################################################
 
 ##
@@ -403,6 +406,7 @@ LIBS=-lplugin $(QT_QUI_LIB) $(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_XML_LIB) $(QT_NETW
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@ @EXE_LDFLAGS@
 LIBDEP=
 CXXFLAGS=-I. @CXXFLAGS@ @QT_CXXFLAGS@ -I../include/visit
+CPPFLAGS=-I. @CPPFLAGS@ -DGUI_EXPORTS -I../include
 
 ##
 ## Files...

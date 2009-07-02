@@ -88,6 +88,9 @@
 #    script uses.  It was working in most places, because it was not defined,
 #    but TACC's machines define INCLUDE as an environment variable.
 #
+#    Tom Fogal, Tue Jun 30 19:57:39 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -96,7 +99,8 @@
 @SET_MAKE@
 @VARIABLES@
 
-CPPFLAGS=-I. -I../../include @CPPFLAGS@ @VTK_INCLUDES@ @SILO_INCLUDE@
+CPPFLAGS=-I. -I../../include @CPPFLAGS@ @VTK_INCLUDES@ @SILO_INCLUDE@ \
+         -DUTILITY_EXPORTS
 LIBS=
 
 ##
