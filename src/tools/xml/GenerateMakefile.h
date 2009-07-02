@@ -252,6 +252,9 @@
 //    I changed the code so Mesa sources are not added unless configure
 //    detected that VTK uses mangled mesa.
 //
+//    Tom Fogal, Tue Jun 30 22:35:24 MDT 2009
+//    I forced GENERAL_PLUGIN_EXPORTS into CXXFLAGS.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin : public Plugin
@@ -353,6 +356,7 @@ class MakefileGeneratorPlugin : public Plugin
             out << "CXXFLAGS=$(CXXFLAGSORIG)";
         else
             out << "CXXFLAGS=$(CXXFLAGSORIG) $(QT_CXXFLAGS)";
+        out << " -DGENERAL_PLUGIN_EXPORTS";
         for (size_t i=0; i<cxxflags.size(); i++)
             out << " " << cxxflags[i];
         out << endl;
