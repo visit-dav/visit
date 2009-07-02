@@ -99,6 +99,10 @@
 #
 #    Mark C. Miller, Wed Mar  4 18:03:18 PST 2009
 #    Enabled dbio-only build.
+#
+#    Tom Fogal, Tue Jun 30 19:52:21 MDT 2009
+#    Add define for symbol export.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -154,7 +158,7 @@ Plotter_src= \
   Plotter/InvalidColortableException.C
 
 
-CPPFLAGS=@COMPONENT_CPPFLAGS@ @SILO_INCLUDE@ @CPPFLAGS@
+CPPFLAGS=@COMPONENT_CPPFLAGS@ @SILO_INCLUDE@ @CPPFLAGS@ -DAVTEXCEPTION_EXPORTS
 
 OBJ=$(SRC:.C=.o)
 LIB=libavtexceptions

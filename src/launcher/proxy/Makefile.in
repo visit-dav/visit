@@ -36,6 +36,9 @@
 #   Brad Whitlock, Fri Apr 23 10:47:32 PDT 2004
 #   Added more libraries to enable prebinding on MacOS X.
 #
+#   Tom Fogal, Tue Jun 30 20:01:12 MDT 2009
+#   Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -45,7 +48,7 @@
 @VARIABLES@
 
 CXXFLAGS=-I../../include -I../../include/visit @CXXFLAGS@
-CPPFLAGS=-I. @CPPFLAGS@ 
+CPPFLAGS=-I. @CPPFLAGS@ -DLAUNCHER_PROXY_EXPORTS
 
 ##
 ## Files...

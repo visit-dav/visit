@@ -88,7 +88,8 @@
 @MPI_CC@
 @MPI_CXX@
 
-CPPFLAGS=-I. -I../../include -I../../include/visit @ENGINE_CPPFLAGS@ @CPPFLAGS@
+CPPFLAGS=-I. -I../../include -I../../include/visit @ENGINE_CPPFLAGS@ \
+         @CPPFLAGS@ -DENGINE_PARSTATE_EXPORTS
 
 ##
 ## Files...

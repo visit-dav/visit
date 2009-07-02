@@ -66,6 +66,9 @@
 #    Brad Whitlock, Wed Nov 26 11:19:34 PDT 2008
 #    I added Appearance.C
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -75,7 +78,7 @@
 @VARIABLES@
 
 CXXFLAGS=-I. -I../include/visit -I../include $(QT_CXXFLAGS) @CXXFLAGS@
-CPPFLAGS=-I. @CPPFLAGS@
+CPPFLAGS=-I. @CPPFLAGS@ -DWINUTIL_EXPORTS
 LDFLAGS=$(LDFLAGSORIG) $(QT_LDFLAGS)
 
 ##

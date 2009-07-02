@@ -316,6 +316,9 @@
 #    Gunther H. Weber, Fri Apr  3 17:24:22 PDT 2009
 #    Moved vtkVisItCellLocator to "lightweight".
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -373,7 +376,8 @@ SRC= vtkAxisDepthSort.C \
     vtkVisItTIFFWriter.C \
     vtkVolumeFromVolume.C
 
-CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I../../include -I.
+CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ \
+         @ANNOTATION_FLAGS@ -I../../include -I. -DVISIT_VTK_EXPORTS
 OBJ=$(SRC:.C=.o)
 LIB=libvisit_vtk
 LIBS_FOR_MACOSX_PREBINDING=-framework Carbon

@@ -192,6 +192,9 @@
 #    Jeremy Meredith, Fri Feb 13 11:56:33 EST 2009
 #    Added linking of visit verdict library.
 #
+#    Tom Fogal, Tue Jun 30 22:11:57 MDT 2009
+#    Add symbol export define.
+#
 ##############################################################################
 
 ##
@@ -224,7 +227,7 @@ LIBS= \
     @LIBS@ \
     @PTHREAD_LIB@
 LIBDEP=
-CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@
+CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@ -DMDSERVER_MAIN_EXPORTS
 CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
 
 ##

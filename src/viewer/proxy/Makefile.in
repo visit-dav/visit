@@ -72,6 +72,9 @@
 #    Brad Whitlock, Wed Mar 12 15:58:12 PDT 2008
 #    Added proxy example.
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -81,6 +84,7 @@
 @VARIABLES@
 
 CXXFLAGS=@CXXFLAGS@ -I. -I../../include/visit
+CPPFLAGS=@CPPFLAGS@ -I. -I../../include -DVIEWER_PROXY_EXPORTS
 
 ##
 ## Files...

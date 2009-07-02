@@ -297,6 +297,9 @@
 #    Added SingleAttributeConfigManager.  This class simplifies
 #    reading/writing single attribute groups.
 #
+#    Tom Fogal, Tue Jun 30 19:57:16 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -306,7 +309,7 @@
 @VARIABLES@
 
 CXXFLAGS=-I../../include -I../../include/visit @CXXFLAGS@
-CPPFLAGS=-I. @CPPFLAGS@ 
+CPPFLAGS=-I. @CPPFLAGS@  -DSTATE_EXPORTS
 
 ##
 ## Files...

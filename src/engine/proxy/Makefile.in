@@ -73,6 +73,9 @@
 #    Thomas R. Treadway, Wed Feb  7 17:53:04 PST 2007
 #    Added $(GLEW_LIBS) for MacOS X.
 #
+#    Tom Fogal, Tue Jun 30 20:00:16 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -83,6 +86,7 @@
 
 CXXFLAGS=@VTK_INCLUDES@ @CXXFLAGS@ \
          -I. -I../../include/visit
+CPPFLAGS:=@CPPFLAGS@ $(CPPFLAGS) -DENGINE_PROXY_EXPORTS
 
 ##
 ## Files...

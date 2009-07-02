@@ -89,6 +89,10 @@
 #    Brad Whitlock, Fri May  9 10:22:52 PDT 2008
 #    Qt 4.
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
+#
 ##############################################################################
 
 ##
@@ -98,7 +102,7 @@
 @VARIABLES@
 
 CXXFLAGS=@CXXFLAGS@ $(QT_CXXFLAGS)
-CPPFLAGS=@CPPFLAGS@ -I. -I../include/visit @VTK_INCLUDES@
+CPPFLAGS=@CPPFLAGS@ -I. -I../include/visit @VTK_INCLUDES@ -DVTKQT_EXPORTS
 
 ##
 ## Files...

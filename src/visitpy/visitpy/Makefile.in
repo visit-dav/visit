@@ -48,6 +48,9 @@
 #    Jeremy Meredith, Tue Nov 18 16:00:53 EST 2008
 #    Added PyAxesArray.
 #
+#    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -55,6 +58,8 @@
 ##
 @SET_MAKE@
 @VARIABLES@
+
+CPPFLAGS=@CPPFLAGS@ -DVISITPY_EXPORTS
 
 ##
 ## Files...

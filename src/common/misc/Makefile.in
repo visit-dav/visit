@@ -73,6 +73,9 @@
 #    Mark C. Miller, Tue Apr 21 14:37:24 PDT 2009
 #    Added DebugStreamFull.[Ch] (really a rename of DebugStream.[Ch])
 #
+#    Tom Fogal, Tue Jun 30 19:54:23 MDT 2009
+#    Add define for proper symbol export.
+#
 ##############################################################################
 
 ##
@@ -82,7 +85,7 @@
 @VARIABLES@
 
 CXXFLAGS=-I. -I../../include -I../../include/visit @CXXFLAGS@
-CPPFLAGS=-I. @CPPFLAGS@
+CPPFLAGS=-I. @CPPFLAGS@ -DMISC_EXPORTS
 
 ##
 ## Files...
