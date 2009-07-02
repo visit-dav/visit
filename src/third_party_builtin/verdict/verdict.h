@@ -56,7 +56,11 @@
   #endif
 #else
   #ifdef __cplusplus
-    #define C_FUNC_DEF extern "C"
+    #if __GNUC__ >= 4 && defined(VERDICT_EXPORTS)
+    # define C_FUNC_DEF extern "C" __attribute__ ((visibility("default")))
+    #else
+    # define C_FUNC_DEF extern "C"
+    #endif
   #else
     #define C_FUNC_DEF
   #endif

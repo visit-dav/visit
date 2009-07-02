@@ -36,6 +36,9 @@
 #    Jeremy Meredith, Wed Feb 11 16:40:13 EST 2009
 #    Initial creation.
 #
+#    Tom Fogal, Tue Jun 30 20:31:24 MDT 2009
+#    Define for symbol visibility.
+#
 ##############################################################################
 
 ##
@@ -43,6 +46,7 @@
 ##
 @SET_MAKE@
 @VARIABLES@
+
 
 ##
 ## Files...
@@ -60,7 +64,7 @@ SRC=\
   VerdictVector.C
 
 
-CPPFLAGS=-I.
+CPPFLAGS=-I. -DVERDICT_EXPORTS
 
 OBJ=$(SRC:.C=.o)
 LIB=libvisit_verdict
