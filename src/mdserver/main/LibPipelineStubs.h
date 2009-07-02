@@ -55,89 +55,95 @@
 //
 //   Mark C. Miller, Tue Feb 17 17:55:08 PST 2009
 //   Added operator= and New() for vtkCSGGrid class
+//
+//   Tom Fogal, Tue Jun 30 22:12:29 MDT 2009
+//   Qualify class with export define.
+//
 // ****************************************************************************
+
+#include <mdsmain_exports.h>
 
 class vtkPolyData;
 class vtkDataSet;
 class vtkImageData;
 class vtkDataObject;
 
-class vtkAppendFilter {
+class MDSERVER_MAIN_API vtkAppendFilter {
   public:
     void  AddInput(vtkDataSet*);
     void *New();
 };
 
-class vtkAppendPolyData {
+class MDSERVER_MAIN_API vtkAppendPolyData {
   public:
     void  AddInput(vtkPolyData*);
     void *New();
 };
 
-class vtkCleanPolyData {
+class MDSERVER_MAIN_API vtkCleanPolyData {
   public:
     void *New();
 };
 
-class vtkDataSetReader {
+class MDSERVER_MAIN_API vtkDataSetReader {
   public:
     void *GetOutput();
     void *New();
 };
 
-class vtkDataSetWriter {
+class MDSERVER_MAIN_API vtkDataSetWriter {
   public:
     void  SetInput(vtkDataSet*);
     void *New();
 };
 
-class vtkDataWriter {
+class MDSERVER_MAIN_API vtkDataWriter {
   public:
     char *RegisterAndGetOutputString();
 };
 
-class vtkWriter {
+class MDSERVER_MAIN_API vtkWriter {
   public:
     void  SetInput(vtkDataObject*);
 };
 
-class vtkPolyDataReader {
+class MDSERVER_MAIN_API vtkPolyDataReader {
   public:
     void *GetOutput();
     void *New();
 };
 
-class vtkRectilinearGridReader {
+class MDSERVER_MAIN_API vtkRectilinearGridReader {
   public:
     void *GetOutput();
     void *New();
 };
 
-class vtkStructuredGridReader {
+class MDSERVER_MAIN_API vtkStructuredGridReader {
   public:
     void *GetOutput();
     void *New();
 };
 
-class vtkStructuredPointsReader {
+class MDSERVER_MAIN_API vtkStructuredPointsReader {
   public:
     void *GetOutput();
     void *New();
 };
 
-class vtkStructuredPointsWriter {
+class MDSERVER_MAIN_API vtkStructuredPointsWriter {
   public:
     void SetInput(vtkImageData*);
     void *New();
 };
 
-class vtkUnstructuredGridReader {
+class MDSERVER_MAIN_API vtkUnstructuredGridReader {
   public:
     void *GetOutput();
     void *New();
 };
 
-class vtkCSGGrid {
+class MDSERVER_MAIN_API vtkCSGGrid {
   public:
     void DiscretizeSpace(int,int,int,double,double,double,double,double,double,double);
     void DiscretizeSpace2(int,int,int,double,double,double,double,double,double,double);
