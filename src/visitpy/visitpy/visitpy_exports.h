@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define VISITPY_API
+# if __GNUC__ >= 4 && defined(VISITPY_EXPORTS)
+#   define VISITPY_API __attribute__ ((visibility("default")))
+# else
+#   define VISITPY_API /* hidden by default */
+# endif
 #endif
 
 #endif

@@ -46,7 +46,11 @@
 #define VTKQT_API __declspec(dllimport)
 #endif
 #else
-#define VTKQT_API
+# if __GNUC__ >= 4 && defined(VTKQT_EXPORTS)
+#   define VTKQT_API __attribute__ ((visibility("default")))
+# else
+#   define VTKQT_API /* hidden by default */
+# endif
 #endif
 
 #endif

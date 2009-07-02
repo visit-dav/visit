@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define PARALLEL_VISIT_VTK_API
+# if __GNUC__ >= 4 && defined(PARALLEL_VISIT_VTK_EXPORTS)
+#   define PARALLEL_VISIT_VTK_API __attribute__ ((visibility("default")))
+# else
+#   define PARALLEL_VISIT_VTK_API /* hidden by default */
+# endif
 #endif
 
 #endif

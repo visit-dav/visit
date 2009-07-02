@@ -54,7 +54,11 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-#   define PROXYBASE_API
+# if __GNUC__ >= 4 && defined(PROXYBASE_EXPORTS)
+#   define PROXYBASE_API __attribute__ ((visibility("default")))
+# else
+#   define PROXYBASE_API /* hidden by default */
+# endif
 #endif
 
 #endif

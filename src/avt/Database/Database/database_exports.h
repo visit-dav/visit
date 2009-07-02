@@ -60,7 +60,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define DATABASE_API
+# if __GNUC__ >= 4 && defined(DATABASE_EXPORTS)
+#   define DATABASE_API __attribute__ ((visibility("default")))
+# else
+#   define DATABASE_API /* hidden by default */
+# endif
 #endif
 
 #endif

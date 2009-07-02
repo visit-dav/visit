@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define VISIT_VTK_LIGHT_API
+# if __GNUC__ >= 4 && defined(VISIT_VTK_LIGHT_EXPORTS)
+#   define VISIT_VTK_LIGHT_API __attribute__ ((visibility("default")))
+# else
+#   define VISIT_VTK_LIGHT_API /* hidden by default */
+# endif
 #endif
 
 #endif

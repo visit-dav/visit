@@ -56,7 +56,11 @@
 # endif
 #else
 # define DESCRIPTOR int
-# define COMM_API
+# if __GNUC__ >= 4  && defined(COMM_EXPORTS)
+#   define COMM_API __attribute__ ((visibility("default")))
+# else
+#   define COMM_API /* hidden by default */
+# endif
 #endif
 
 #endif

@@ -56,7 +56,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define DBATTS_API
+# if __GNUC__ >= 4 && defined(DBATTS_EXPORTS)
+#   define DBATTS_API __attribute__ ((visibility("default")))
+# else
+#   define DBATTS_API /* hidden by default */
+# endif
 #endif
 
 #endif

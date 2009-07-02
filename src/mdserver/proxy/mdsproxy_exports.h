@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define MDSERVER_PROXY_API
+# if __GNUC__ >= 4 && defined(MDSERVER_PROXY_EXPORTS)
+#   define MDSERVER_PROXY_API __attribute__ ((visibility("default")))
+# else
+#   define MDSERVER_PROXY_API /* hidden by default */
+# endif
 #endif
 
 #endif

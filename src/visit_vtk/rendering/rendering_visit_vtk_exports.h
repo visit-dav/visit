@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define RENDERING_VISIT_VTK_API
+# if __GNUC__ >= 4 && defined(RENDERING_VISIT_VTK_EXPORTS)
+#   define RENDERING_VISIT_VTK_API __attribute__ ((visibility("default")))
+# else
+#   define RENDERING_VISIT_VTK_API /* hidden by default */
+# endif
 #endif
 
 #endif

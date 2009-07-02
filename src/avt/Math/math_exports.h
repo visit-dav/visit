@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define MATH_API
+# if __GNUC__ >= 4 && defined(MATH_EXPORTS)
+#   define MATH_API __attribute__ ((visibility("default")))
+# else
+#   define MATH_API /* hidden by default */
+# endif
 #endif
 
 #endif

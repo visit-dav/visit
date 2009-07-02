@@ -56,7 +56,12 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define EXPRESSION_API
+// We dynamic_cast a lot of symbols in this library.
+# if __GNUC__ >= 4
+#   define EXPRESSION_API __attribute__ ((visibility("default")))
+# else
+#   define EXPRESSION_API /* no visibility support */
+# endif
 #endif
 
 #endif

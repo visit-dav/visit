@@ -54,7 +54,13 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-# define AVTEXCEPTION_API
+// Exceptions are a special case: they must always be public, for proper
+// typeinfo lookups!
+# if __GNUC__ >= 4
+#   define AVTEXCEPTION_API __attribute__ ((visibility("default")))
+# else
+#   define AVTEXCEPTION_API /* no visibility support */
+# endif
 #endif
 
 #endif

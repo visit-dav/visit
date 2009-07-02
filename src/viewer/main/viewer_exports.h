@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define VIEWER_API
+# if __GNUC__ >= 4 && defined(VIEWER_EXPORTS)
+#   define VIEWER_API __attribute__ ((visibility("default")))
+# else
+#   define VIEWER_API /* hidden by default */
+# endif
 #endif
 
 #endif

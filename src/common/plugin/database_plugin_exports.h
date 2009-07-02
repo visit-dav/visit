@@ -40,28 +40,35 @@
 #define DATABASE_PLUGIN_EXPORTS_H
 
 #if defined(_WIN32)
-
-# if defined(_MSC_VER)
-// Disable inheritance by dominance warning message.
-#   pragma warning(disable:4250)
-// Disable DLL interface warning.
-#   pragma warning(disable:4251)
+# define DBP_EXPORT __declspec(dllexport)
+#else
+# if __GNUC__ >= 4
+#   define DBP_EXPORT __attribute__((visibility("default")))
+# else
+#   define DBP_EXPORT /* nothing */
 # endif
+#endif
+
+#if defined(_WIN32) && defined(_MSC_VER)
+// Disable inheritance by dominance warning message.
+# pragma warning(disable:4250)
+// Disable DLL interface warning.
+# pragma warning(disable:4251)
+#endif
 
 //
 // This file makes sure that the entry point to each plugin is exported
 // in the DLL. It must be exported to be visible to GetProcAddress.
 //
-extern "C" __declspec(dllexport) const char *VisItPluginVersion;
-# ifdef GENERAL_PLUGIN_EXPORTS
-extern "C" __declspec(dllexport) GeneralDatabasePluginInfo* GetGeneralInfo();
-# endif
-# ifdef MDSERVER_PLUGIN_EXPORTS
-extern "C" __declspec(dllexport) MDServerDatabasePluginInfo* GetMDServerInfo();
-# endif
-# ifdef ENGINE_PLUGIN_EXPORTS
-extern "C" __declspec(dllexport) EngineDatabasePluginInfo* GetEngineInfo();
-# endif
+extern "C" DBP_EXPORT const char *VisItPluginVersion;
+#ifdef GENERAL_PLUGIN_EXPORTS
+extern "C" DBP_EXPORT GeneralDatabasePluginInfo* GetGeneralInfo();
+#endif
+#ifdef MDSERVER_PLUGIN_EXPORTS
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo();
+#endif
+#ifdef ENGINE_PLUGIN_EXPORTS
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo();
 #endif
 
 #endif

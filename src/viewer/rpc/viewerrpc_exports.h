@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define VIEWER_RPC_API
+# if __GNUC__ >= 4 && defined(VIEWER_RPC_EXPORTS)
+#   define VIEWER_RPC_API __attribute__ ((visibility("default")))
+# else
+#   define VIEWER_RPC_API /* hidden by default */
+# endif
 #endif
 
 #endif

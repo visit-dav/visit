@@ -46,7 +46,11 @@
 #define PREP_API __declspec(dllimport)
 #endif
 #else
-#define PREP_API
+# if __GNUC__ >= 4 && defined(PREP_EXPORTS)
+#   define PREP_API __attribute__ ((visibility("default")))
+# else
+#   define PREP_API /* hidden by default */
+# endif
 #endif
 
 #endif

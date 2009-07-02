@@ -54,7 +54,11 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-# define STATE_API
+# if __GNUC__ >= 4 && defined(STATE_EXPORTS)
+#   define STATE_API __attribute__ ((visibility("default")))
+# else
+#   define STATE_API /* hidden by default */
+# endif
 #endif
 
 #endif

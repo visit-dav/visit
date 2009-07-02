@@ -56,7 +56,11 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-# define PLUGIN_API
+# if __GNUC__ >= 4 && defined(PLUGIN_EXPORTS)
+#   define PLUGIN_API __attribute__ ((visibility("default")))
+# else
+#   define PLUGIN_API /* hidden by default */
+# endif
 #endif
 
 #endif
