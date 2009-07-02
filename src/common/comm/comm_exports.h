@@ -40,23 +40,23 @@
 #define COMM_EXPORTS_H
 
 #if defined(_WIN32)
-#define DESCRIPTOR unsigned int
-#if defined(COMM_EXPORTS) || defined(visitcommon_EXPORTS)
-#define COMM_API __declspec(dllexport)
-#else
-#define COMM_API __declspec(dllimport)
-#endif
-#if defined(_MSC_VER)
+# define DESCRIPTOR unsigned int
+# if defined(COMM_EXPORTS) || defined(visitcommon_EXPORTS)
+#   define COMM_API __declspec(dllexport)
+# else
+#   define COMM_API __declspec(dllimport)
+# endif
+# if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
-#pragma warning(disable:4251)
+#   pragma warning(disable:4251)
 // Turn off warning non-dll class is base for dll-interface class.
-#pragma warning(disable:4275)
+#   pragma warning(disable:4275)
 // Turn off warning about identifier truncation
-#pragma warning(disable:4786)
-#endif
+#   pragma warning(disable:4786)
+# endif
 #else
-#define DESCRIPTOR int
-#define COMM_API
+# define DESCRIPTOR int
+# define COMM_API
 #endif
 
 #endif
