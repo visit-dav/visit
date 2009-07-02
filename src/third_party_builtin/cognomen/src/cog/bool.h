@@ -25,7 +25,7 @@
 #if HAVE_STDBOOL_H
 #   include <stdbool.h>
 #else
-#   if ! HAVE_BOOL
+#   if ! HAVE__BOOL
 #       ifdef __cplusplus
 typedef bool _Bool;
 #       else
