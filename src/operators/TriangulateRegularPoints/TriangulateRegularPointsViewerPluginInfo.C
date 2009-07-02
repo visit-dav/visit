@@ -1,8 +1,8 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-400124
+* LLNL-CODE-400142
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <TriangulateRegularPointsPluginInfo.h>
-#include <qapplication.h>
+#include <QApplication>
 #include <TriangulateRegularPointsAttributes.h>
 
 #if defined(__APPLE__)
@@ -58,7 +58,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
 {
     TriangulateRegularPointsViewerPluginInfo::InitializeGlobalObjects();
     return new TriangulateRegularPointsViewerPluginInfo;

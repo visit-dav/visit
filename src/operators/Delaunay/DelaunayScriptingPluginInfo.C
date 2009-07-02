@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        DelaunayScriptingPluginInfo.C
 // ************************************************************************* //
-#include <DelaunayPluginInfo.h>
 #include <PyDelaunayAttributes.h>
+#include <DelaunayPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Delaunay_GetScriptingInfo
@@ -56,7 +56,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
 {
     return new DelaunayScriptingPluginInfo;
 }

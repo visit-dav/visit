@@ -56,7 +56,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
 {
     return new PersistentParticlesScriptingPluginInfo;
 }

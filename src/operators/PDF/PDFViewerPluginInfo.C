@@ -58,7 +58,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
 {
     PDFViewerPluginInfo::InitializeGlobalObjects();
     return new PDFViewerPluginInfo;

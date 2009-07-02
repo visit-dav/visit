@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        DeformSphereGlyphScriptingPluginInfo.C
 // ************************************************************************* //
-#include <DeformSphereGlyphPluginInfo.h>
 #include <PyDeformSphereGlyphAttributes.h>
+#include <DeformSphereGlyphPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo DeformSphereGlyph_GetScriptingInfo
@@ -56,7 +56,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
 {
     return new DeformSphereGlyphScriptingPluginInfo;
 }

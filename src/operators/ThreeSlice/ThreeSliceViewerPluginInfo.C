@@ -58,7 +58,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
 {
     ThreeSliceViewerPluginInfo::InitializeGlobalObjects();
     return new ThreeSliceViewerPluginInfo;
