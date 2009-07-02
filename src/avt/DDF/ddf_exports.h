@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define AVTDDF_API
+# if __GNUC__ >= 4 && defined(AVTDDF_EXPORTS)
+#   define AVTDDF_API __attribute__ ((visibility("default")))
+# else
+#   define AVTDDF_API /* hidden by default */
+# endif
 #endif
 
 #endif

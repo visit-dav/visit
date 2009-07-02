@@ -40,26 +40,34 @@
 #define Operator_PLUGIN_EXPORTS_H
 
 #if defined(_WIN32)
+# define OP_EXPORT __declspec(dllexport)
+#else
+# if __GNUC__ >= 4
+#   define OP_EXPORT __attribute__((visibility("default")))
+# else
+#   define OP_EXPORT /* nothing */
+# endif
+#endif
+
 //
 // This file makes sure that the entry point to each plugin is exported
 // in the DLL. It must be exported to be visible to GetProcAddress.
 //
-extern "C" __declspec(dllexport) const char *VisItPluginVersion;
-# ifdef GENERAL_PLUGIN_EXPORTS
-extern "C" __declspec(dllexport) GeneralOperatorPluginInfo* GetGeneralInfo();
-# endif
-# ifdef GUI_PLUGIN_EXPORTS
-extern "C" __declspec(dllexport) GUIOperatorPluginInfo* GetGUIInfo();
-# endif
-# ifdef VIEWER_PLUGIN_EXPORTS
-extern "C" __declspec(dllexport) ViewerOperatorPluginInfo* GetViewerInfo();
-# endif
-# ifdef ENGINE_PLUGIN_EXPORTS
-extern "C" __declspec(dllexport) EngineOperatorPluginInfo* GetEngineInfo();
-# endif
-# ifdef SCRIPTING_PLUGIN_EXPORTS
-extern "C" __declspec(dllexport) ScriptingOperatorPluginInfo* GetScriptingInfo();
-# endif
+extern "C" OP_EXPORT const char *VisItPluginVersion;
+#ifdef GENERAL_PLUGIN_EXPORTS
+extern "C" OP_EXPORT GeneralOperatorPluginInfo* GetGeneralInfo();
+#endif
+#ifdef GUI_PLUGIN_EXPORTS
+extern "C" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo();
+#endif
+#ifdef VIEWER_PLUGIN_EXPORTS
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo();
+#endif
+#ifdef ENGINE_PLUGIN_EXPORTS
+extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo();
+#endif
+#ifdef SCRIPTING_PLUGIN_EXPORTS
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo();
 #endif
 
 #endif

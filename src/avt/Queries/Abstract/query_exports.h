@@ -56,7 +56,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define QUERY_API
+# if __GNUC__ >= 4 && defined(QUERY_EXPORTS)
+#   define QUERY_API __attribute__ ((visibility("default")))
+# else
+#   define QUERY_API /* hidden by default */
+# endif
 #endif
 
 #endif

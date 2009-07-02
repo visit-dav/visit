@@ -46,7 +46,11 @@
 #define ENGINE_PARSTATE_API __declspec(dllimport)
 #endif
 #else
-#define ENGINE_PARSTATE_API
+# if __GNUC__ >= 4 && defined(ENGINE_PARSTATE_EXPORTS)
+#   define ENGINE_PARSTATE_API __attribute__ ((visibility("default")))
+# else
+#   define ENGINE_PARSTATE_API /* hidden by default */
+# endif
 #endif
 
 #endif

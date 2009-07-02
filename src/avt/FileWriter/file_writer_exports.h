@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define AVTFILEWRITER_API
+# if __GNUC__ >= 4 && defined(AVTFILEWRITER_EXPORTS)
+#   define AVTFILEWRITER_API __attribute__ ((visibility("default")))
+# else
+#   define AVTFILEWRITER_API /* hidden by default */
+# endif
 #endif
 
 #endif

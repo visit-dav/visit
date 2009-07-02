@@ -54,7 +54,11 @@
 # pragma warning(disable:4786)
 # endif
 #else
-#   define PARSER_API
+# if __GNUC__ >= 4 && defined(PARSER_EXPORTS)
+#   define PARSER_API __attribute__ ((visibility("default")))
+# else
+#   define PARSER_API /* hidden by default */
+# endif
 #endif
 
 #endif

@@ -68,7 +68,11 @@
 
 #endif
 #else
-#define PIPELINE_API
+# if __GNUC__ >= 4 && defined(PIPELINE_EXPORTS)
+#   define PIPELINE_API __attribute__ ((visibility("default")))
+# else
+#   define PIPELINE_API /* hidden by default */
+# endif
 #ifndef VISIT_LONG_LONG
 #define VISIT_LONG_LONG long long
 #endif

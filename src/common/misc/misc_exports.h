@@ -54,7 +54,11 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-#   define MISC_API
+# if __GNUC__ >= 4 && defined(MISC_EXPORTS)
+#   define MISC_API __attribute__ ((visibility("default")))
+# else
+#   define MISC_API /* hidden by default */
+# endif
 #endif
 
 #endif

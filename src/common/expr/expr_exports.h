@@ -54,7 +54,11 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-# define EXPR_API
+# if __GNUC__ >= 4 && defined(EXPR_EXPORTS)
+#   define EXPR_API __attribute__ ((visibility("default")))
+# else
+#   define EXPR_API /* hidden by default */
+# endif
 #endif
 
 #endif

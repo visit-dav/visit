@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define LAUNCHER_RPC_API
+# if __GNUC__ >= 4 && defined(LAUNCHER_RPC_EXPORTS)
+#   define LAUNCHER_RPC_API __attribute__ ((visibility("default")))
+# else
+#   define LAUNCHER_RPC_API /* hidden by default */
+# endif
 #endif
 
 #endif

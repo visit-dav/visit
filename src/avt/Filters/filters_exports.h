@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define AVTFILTERS_API
+# if __GNUC__ >= 4 && defined(AVTFILTERS_EXPORTS)
+#   define AVTFILTERS_API __attribute__ ((visibility("default")))
+# else
+#   define AVTFILTERS_API /* hidden by default */
+# endif
 #endif
 
 #endif

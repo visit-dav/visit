@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define VISWINDOW_API
+# if __GNUC__ >= 4 && defined(VISWINDOW_EXPORTS)
+#   define VISWINDOW_API __attribute__ ((visibility("default")))
+# else
+#   define VISWINDOW_API /* hidden by default */
+# endif
 #endif
 
 #endif

@@ -54,7 +54,11 @@
 #pragma warning(disable:4786)
 #endif
 #else
-#define QTVISWINDOW_API
+# if __GNUC__ >= 4 && defined(QTVISWINDOW_EXPORTS)
+#   define QTVISWINDOW_API __attribute__ ((visibility("default")))
+# else
+#   define QTVISWINDOW_API /* hidden by default */
+# endif
 #endif
 
 #endif
