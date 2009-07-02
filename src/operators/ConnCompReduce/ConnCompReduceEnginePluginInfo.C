@@ -57,7 +57,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
 {
     return new ConnCompReduceEnginePluginInfo;
 }

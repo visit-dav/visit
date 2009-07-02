@@ -59,7 +59,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" GUIOperatorPluginInfo* GetGUIInfo()
+extern "C" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo()
 {
     return new DeformSphereGlyphGUIPluginInfo;
 }

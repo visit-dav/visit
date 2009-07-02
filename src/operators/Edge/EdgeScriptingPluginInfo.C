@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        EdgeScriptingPluginInfo.C
 // ************************************************************************* //
-#include <EdgePluginInfo.h>
 #include <PyEdgeAttributes.h>
+#include <EdgePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo Edge_GetScriptingInfo
@@ -56,7 +56,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
 {
     return new EdgeScriptingPluginInfo;
 }

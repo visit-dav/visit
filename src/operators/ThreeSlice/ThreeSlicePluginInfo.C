@@ -45,9 +45,9 @@
 
 #include <visit-config.h>
 #if defined(__APPLE__)
-extern "C" const char *ThreeSliceVisItPluginVersion = VISIT_VERSION;
+extern "C" OP_EXPORT const char *ThreeSliceVisItPluginVersion = VISIT_VERSION;
 #else
-extern "C" const char *VisItPluginVersion = VISIT_VERSION;
+extern "C" OP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
 #endif
 
 #if defined(__APPLE__)
@@ -64,7 +64,7 @@ extern "C" const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" GeneralOperatorPluginInfo* GetGeneralInfo()
+extern "C" OP_EXPORT GeneralOperatorPluginInfo* GetGeneralInfo()
 {
     return new ThreeSliceGeneralPluginInfo;
 }
