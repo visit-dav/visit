@@ -325,6 +325,9 @@
 #    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
 #    Add define for proper symbol export.
 #
+#    Tom Fogal, Thu Jul  2 01:52:50 MDT 2009
+#    Comm needs to be exported since we throw one of its exceptions.
+#
 ##############################################################################
 
 ##
@@ -354,7 +357,7 @@ LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@ @EXE_LDFLAGS@
 LIBDEP=
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ 
 CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ @VIEWER_MESA_STUB_CPPFLAGS@ \
-         $(VTK_INCLUDE) -I../../vtkqt -DVIEWER_EXPORTS \
+         $(VTK_INCLUDE) -I../../vtkqt -DVIEWER_EXPORTS -DCOMM_EXPORTS \
          -I./icons -I../../include -I../../include/visit -I.
 
 
