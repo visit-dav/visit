@@ -39,8 +39,8 @@
 // ************************************************************************* //
 //                        MultiCurveScriptingPluginInfo.C
 // ************************************************************************* //
-#include <MultiCurvePluginInfo.h>
 #include <PyMultiCurveAttributes.h>
+#include <MultiCurvePluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetScriptingInfo MultiCurve_GetScriptingInfo
@@ -56,7 +56,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
 {
     return new MultiCurveScriptingPluginInfo;
 }
