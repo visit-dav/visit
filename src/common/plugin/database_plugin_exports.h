@@ -41,27 +41,27 @@
 
 #if defined(_WIN32)
 
-#if defined(_MSC_VER)
+# if defined(_MSC_VER)
 // Disable inheritance by dominance warning message.
-#pragma warning(disable:4250)
+#   pragma warning(disable:4250)
 // Disable DLL interface warning.
-#pragma warning(disable:4251)
-#endif
+#   pragma warning(disable:4251)
+# endif
 
 //
 // This file makes sure that the entry point to each plugin is exported
 // in the DLL. It must be exported to be visible to GetProcAddress.
 //
 extern "C" __declspec(dllexport) const char *VisItPluginVersion;
-#ifdef GENERAL_PLUGIN_EXPORTS
+# ifdef GENERAL_PLUGIN_EXPORTS
 extern "C" __declspec(dllexport) GeneralDatabasePluginInfo* GetGeneralInfo();
-#endif
-#ifdef MDSERVER_PLUGIN_EXPORTS
+# endif
+# ifdef MDSERVER_PLUGIN_EXPORTS
 extern "C" __declspec(dllexport) MDServerDatabasePluginInfo* GetMDServerInfo();
-#endif
-#ifdef ENGINE_PLUGIN_EXPORTS
+# endif
+# ifdef ENGINE_PLUGIN_EXPORTS
 extern "C" __declspec(dllexport) EngineDatabasePluginInfo* GetEngineInfo();
-#endif
+# endif
 #endif
 
 #endif

@@ -40,21 +40,21 @@
 #define EXPR_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(EXPR_EXPORTS) || defined(visitcommon_EXPORTS)
-#define EXPR_API __declspec(dllexport)
-#else
-#define EXPR_API __declspec(dllimport)
-#endif
-#ifdef _MSC_VER
+# if defined(EXPR_EXPORTS) || defined(visitcommon_EXPORTS)
+#   define EXPR_API __declspec(dllexport)
+# else
+#   define EXPR_API __declspec(dllimport)
+# endif
+# ifdef _MSC_VER
 // Turn off warning about lack of DLL interface
-#pragma warning(disable:4251)
+#   pragma warning(disable:4251)
 // Turn off warning non-dll class is base for dll-interface class.
-#pragma warning(disable:4275)
+#   pragma warning(disable:4275)
 // Turn off warning about identifier truncation
-#pragma warning(disable:4786)
-#endif
+#   pragma warning(disable:4786)
+# endif
 #else
-#define EXPR_API
+# define EXPR_API
 #endif
 
 #endif
