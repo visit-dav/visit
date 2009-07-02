@@ -57,7 +57,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
 {
     return new TensorEnginePluginInfo;
 }

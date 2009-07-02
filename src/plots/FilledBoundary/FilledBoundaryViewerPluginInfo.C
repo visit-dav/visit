@@ -58,7 +58,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
 {
     FilledBoundaryViewerPluginInfo::InitializeGlobalObjects();
     return new FilledBoundaryViewerPluginInfo;

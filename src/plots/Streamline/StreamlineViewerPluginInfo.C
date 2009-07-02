@@ -58,7 +58,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
 {
     StreamlineViewerPluginInfo::InitializeGlobalObjects();
     return new StreamlineViewerPluginInfo;

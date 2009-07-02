@@ -59,7 +59,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" GUIPlotPluginInfo* GetGUIInfo()
+extern "C" PLOT_EXPORT GUIPlotPluginInfo* GetGUIInfo()
 {
     return new HistogramGUIPluginInfo;
 }

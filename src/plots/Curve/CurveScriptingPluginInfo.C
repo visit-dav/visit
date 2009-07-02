@@ -56,7 +56,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
 {
     return new CurveScriptingPluginInfo;
 }

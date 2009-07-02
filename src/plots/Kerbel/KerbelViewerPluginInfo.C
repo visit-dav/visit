@@ -58,7 +58,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
 {
     KerbelViewerPluginInfo::InitializeGlobalObjects();
     return new KerbelViewerPluginInfo;

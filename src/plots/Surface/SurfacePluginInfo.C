@@ -45,9 +45,9 @@
 
 #include <visit-config.h>
 #if defined(__APPLE__)
-extern "C" const char *SurfaceVisItPluginVersion = VISIT_VERSION;
+extern "C" PLOT_EXPORT const char *SurfaceVisItPluginVersion = VISIT_VERSION;
 #else
-extern "C" const char *VisItPluginVersion = VISIT_VERSION;
+extern "C" PLOT_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
 #endif
 
 #if defined(__APPLE__)
@@ -64,7 +64,7 @@ extern "C" const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" GeneralPlotPluginInfo* GetGeneralInfo()
+extern "C" PLOT_EXPORT GeneralPlotPluginInfo* GetGeneralInfo()
 {
     return new SurfaceGeneralPluginInfo;
 }
