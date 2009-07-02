@@ -37,6 +37,9 @@
 #   Tom Fogal, Tue Jun 30 21:23:20 MDT 2009
 #   Build cognomen as a C library.
 #
+#   Tom Fogal, Thu Jul  2 11:30:33 MDT 2009
+#   Fixed an error in the ordering of include link creation.
+#
 ##############################################################################
 
 ##
@@ -61,7 +64,7 @@ LIB=libcognomen
 ##
 ## Standard targets...
 ##
-all: message $(LIBSHARED) ../../include/cognomen
+all: message ../../include/cognomen $(LIBSHARED)
 
 clean:
 	$(RM) $(OBJ) $(LIBSHARED) credits.html
