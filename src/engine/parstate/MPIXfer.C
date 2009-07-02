@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #ifdef PARALLEL
+#include <cstdlib>
 #include <MPIXfer.h>
 #include <avtParallel.h>
 #include <parallel.h>
