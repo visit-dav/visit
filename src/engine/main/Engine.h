@@ -85,6 +85,7 @@ class Xfer;
 #include <avtDataObjectWriter.h>
 #include <BufferConnection.h>
 #include <SaveWindowAttributes.h>
+#include <engine_main_exports.h>
 
 #ifdef PARALLEL
 #include <parallel.h>
@@ -207,9 +208,12 @@ class Xfer;
 //    Brad Whitlock, Thu Apr 23 12:08:17 PDT 2009
 //    I added simulationPluginsEnabled.
 //
+//    Tom Fogal, Tue Jun 30 21:00:37 MDT 2009
+//    Adapted for symbol visibility.
+//
 // ****************************************************************************
 
-class Engine
+class ENGINE_MAIN_API Engine
 {
   public:
                    ~Engine();
