@@ -138,13 +138,25 @@ lerp(in value, in imin, in imax, out omin, out omax)
 //    lerp the IceT buffer onto the range [0,1] as we convert.  This seems to
 //    be what the rest of VisIt expects.
 //
+//    Tom Fogal, Fri May 29 20:32:50 MDT 2009
+//    Query the correct depth max from IceT.
+//
 // ****************************************************************************
 static float *
 utofv(const unsigned int * const src, size_t n_elem)
 {
     float *res = new float[n_elem];
+    unsigned int depth_max;
+    {
+      // IceT gives an unsigned int, but the accessor function only accepts
+      // GLint.  We'll grab the latter and rely on a conversion to get the
+      // correct type.
+      GLint far_depth;
+      icetGetIntegerv(ICET_ABSOLUTE_FAR_DEPTH, &far_depth);
+      depth_max = far_depth;
+    }
     for(size_t i=0; i < n_elem; ++i) {
-        res[i] = lerp(src[i], 0U,UINT_MAX, 0.0f,1.0f);
+        res[i] = lerp(src[i], 0U,depth_max, 0.0f,1.0f);
     }
     return res;
 }
