@@ -42,6 +42,7 @@
 #include <MPIXfer.h>
 #include <BufferConnection.h>
 #include <QuitRPC.h>
+#include <engine_parstate_exports.h>
 
 #define INPUT_BUFFER_SIZE 1000
 
@@ -54,6 +55,6 @@ typedef struct
 extern MPI_Datatype PAR_STATEBUFFER;
 
 // Parallel Prototypes
-void PAR_CreateTypes();
+void ENGINE_PARSTATE_API PAR_CreateTypes();
 
 #endif
