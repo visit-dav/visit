@@ -46,6 +46,7 @@ cog_identify()
 {
     int sz;
     long id;
+    int proc;
     const int rank = mpi_rank();
 
     id = gethostid();
@@ -56,7 +57,7 @@ cog_identify()
     }
     map_id = (long *) xmalloc(sizeof(long) * sz);
 
-    for(int proc=0; proc < sz; ++proc) {
+    for(proc=0; proc < sz; ++proc) {
         if(proc == rank) {
             MPI_Bcast(&id, 1, MPI_LONG, proc, MPI_COMM_WORLD);
             map_id[proc] = id;
@@ -83,11 +84,12 @@ cog_me(cog_id * const id)
 void
 cog_set_local(cog_set * const local, const int rank)
 {
+    int i;
     long hostid = map_id[rank];
 
     /* first we need to know how big their set should be. */
     size_t n_local=0;
-    for(int i=0; i < mpi_size(); ++i) {
+    for(i=0; i < mpi_size(); ++i) {
         if(map_id[i] == hostid) {
             ++n_local;
         }
@@ -97,7 +99,7 @@ cog_set_local(cog_set * const local, const int rank)
 
     /* Now we can copy all of the ids into the set. */
     size_t count=0;
-    for(int i=0; i < mpi_size(); ++i) {
+    for(i=0; i < mpi_size(); ++i) {
         if(map_id[i] == hostid) {
             cog_id v;
             v.id = i;
@@ -111,10 +113,11 @@ cog_set_local(cog_set * const local, const int rank)
 int
 cog_set_min(const cog_set * const cset)
 {
+    size_t i;
     /* We might be able to rely on the set being ordered ...
      * For now we'll just search, though. */
     int min = INT_MAX;
-    for(size_t i=0; i < cset->set.size; ++i) {
+    for(i=0; i < cset->set.size; ++i) {
         if(cset->set.v[i].id < min) {
             min = cset->set.v[i].id;
         }
@@ -126,10 +129,11 @@ cog_set_min(const cog_set * const cset)
 int
 cog_set_max(const cog_set * const cset)
 {
+    size_t i;
     /* Likewise to _min, it seems like we have an ordering guarantee we could
      * optimize this with.  Ignore for now .. */
     int max = -1;
-    for(size_t i=0; i < cset->set.size; ++i) {
+    for(i=0; i < cset->set.size; ++i) {
         if(cset->set.v[i].id > max) {
             max = cset->set.v[i].id;
         }
@@ -141,8 +145,9 @@ cog_set_max(const cog_set * const cset)
 bool
 cog_set_intersect(const cog_set * const cset, int id)
 {
+    size_t i;
     /* Essentially a search for the given rank in a set. */
-    for(size_t i=0; i < cset->set.size; ++i) {
+    for(i=0; i < cset->set.size; ++i) {
         if(cset->set.v[i].id == id) {
             return true;
         }
