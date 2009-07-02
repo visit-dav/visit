@@ -181,6 +181,9 @@
 //   Kathleen Bonnell, Tue Mar  3 10:41:17 PST 2009
 //   Added Permits2DViewScaling & PermitsCurveViewScaling to Viewer plot Info.
 //
+//   Tom Fogal, Wed Jul  1 23:46:57 MDT 2009
+//   Make sure to export interface symbols.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -691,13 +694,21 @@ class InfoGeneratorPlugin : public Plugin
             h << "#endif" << endl;
         }
     }
+    // Gives the macro which causes symbol export to occur.
+    QString Export(const std::string& tp)
+    {
+        if(tp == "database") { return "DBP_EXPORT"; }
+        if(tp == "plot") { return "PLOT_EXPORT"; }
+        if(tp == "operator") { return "OP_EXPORT"; }
+        return "";
+    }
     void AddVersion(QTextStream &c)
     {
         c << "#include <visit-config.h>" << endl;
         c << "#if defined(__APPLE__)" << endl;
-        c << "extern \"C\" const char *"<<name<<"VisItPluginVersion = VISIT_VERSION;" << endl;
+        c << "extern \"C\" " << Export(type.toStdString()) << " const char *"<<name<<"VisItPluginVersion = VISIT_VERSION;" << endl;
         c << "#else" << endl;
-        c << "extern \"C\" const char *VisItPluginVersion = VISIT_VERSION;" << endl;
+        c << "extern \"C\" " << Export(type.toStdString()) << " const char *VisItPluginVersion = VISIT_VERSION;" << endl;
         c << "#endif" << endl;
         c << endl;
     }
@@ -731,11 +742,11 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         if (type=="operator")
-            c << "extern \"C\" GeneralOperatorPluginInfo* GetGeneralInfo()" << endl;
+            c << "extern \"C\" OP_EXPORT GeneralOperatorPluginInfo* GetGeneralInfo()" << endl;
         else if (type=="plot")
-            c << "extern \"C\" GeneralPlotPluginInfo* GetGeneralInfo()" << endl;
+            c << "extern \"C\" PLOT_EXPORT GeneralPlotPluginInfo* GetGeneralInfo()" << endl;
         else if (type=="database")
-            c << "extern \"C\" GeneralDatabasePluginInfo* GetGeneralInfo()" << endl;
+            c << "extern \"C\" DBP_EXPORT GeneralDatabasePluginInfo* GetGeneralInfo()" << endl;
         c << "{" << endl;
         c << "    return new "<<name<<"GeneralPluginInfo;" << endl;
         c << "}" << endl;
@@ -1153,9 +1164,9 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         if (type=="operator")
-            c << "extern \"C\" GUIOperatorPluginInfo* GetGUIInfo()" << endl;
+            c << "extern \"C\" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo()" << endl;
         else if (type=="plot")
-            c << "extern \"C\" GUIPlotPluginInfo* GetGUIInfo()" << endl;
+            c << "extern \"C\" PLOT_EXPORT GUIPlotPluginInfo* GetGUIInfo()" << endl;
         c << "{" << endl;
         c << "    return new "<<name<<"GUIPluginInfo;" << endl;
         c << "}" << endl;
@@ -1348,9 +1359,9 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         if (type=="operator")
-            c << "extern \"C\" ViewerOperatorPluginInfo* GetViewerInfo()" << endl;
+            c << "extern \"C\" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()" << endl;
         else if (type=="plot")
-            c << "extern \"C\" ViewerPlotPluginInfo* GetViewerInfo()" << endl;
+            c << "extern \"C\" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()" << endl;
         c << "{" << endl;
         c << "    "<<name<<"ViewerPluginInfo::InitializeGlobalObjects();" << endl;
         c << "    return new "<<name<<"ViewerPluginInfo;" << endl;
@@ -1729,7 +1740,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted" << endl;
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
-            c << "extern \"C\" MDServerDatabasePluginInfo* GetMDServerInfo()" << endl;
+            c << "extern \"C\" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()" << endl;
             c << "{" << endl;
             c << "    return new "<<name<<"MDServerPluginInfo;" << endl;
             c << "}" << endl;
@@ -1762,7 +1773,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted" << endl;
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
-            c << "extern \"C\" EngineDatabasePluginInfo* GetEngineInfo()" << endl;
+            c << "extern \"C\" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()" << endl;
             c << "{" << endl;
             c << "    return new "<<name<<"EnginePluginInfo;" << endl;
             c << "}" << endl;
@@ -1823,9 +1834,9 @@ class InfoGeneratorPlugin : public Plugin
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             if (type=="operator")
-                c << "extern \"C\" EngineOperatorPluginInfo* GetEngineInfo()" << endl;
+                c << "extern \"C\" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()" << endl;
             else if (type=="plot")
-                c << "extern \"C\" EnginePlotPluginInfo* GetEngineInfo()" << endl;
+                c << "extern \"C\" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()" << endl;
             c << "{" << endl;
             c << "    return new "<<name<<"EnginePluginInfo;" << endl;
             c << "}" << endl;
@@ -1909,9 +1920,9 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         if(type=="plot")
-            c << "extern \"C\" ScriptingPlotPluginInfo* GetScriptingInfo()" << endl;
+            c << "extern \"C\" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()" << endl;
         else if(type == "operator")
-            c << "extern \"C\" ScriptingOperatorPluginInfo* GetScriptingInfo()" << endl;
+            c << "extern \"C\" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()" << endl;
         c << "{" << endl;
         c << "    return new "<<name<<"ScriptingPluginInfo;" << endl;
         c << "}" << endl;
