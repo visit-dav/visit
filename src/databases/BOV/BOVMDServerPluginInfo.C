@@ -52,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
 {
     return new BOVMDServerPluginInfo;
 }

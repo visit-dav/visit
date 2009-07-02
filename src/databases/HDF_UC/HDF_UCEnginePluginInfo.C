@@ -52,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
 {
     return new HDF_UCEnginePluginInfo;
 }
