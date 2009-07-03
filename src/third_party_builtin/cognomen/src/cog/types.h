@@ -23,6 +23,13 @@
  *   Added names for anon. typedefs and structs. Added conditional
  *   compilation of name for inner-struct of _cog_set so it would
  *   work with C++ or C compiler
+ *
+ *   Mark C. Miller, Thu Jul  2 18:25:22 PDT 2009
+ *   Removed conditional compilation of name for inner struct of
+ *   _cog_set and separated definition of the inner struct from
+ *   declaration of the member, 'set'.  When both the definition of
+ *   the struct and declaration of 'set' were combined gcc-3.2.3 was
+ *   complaining of a missing semicolon.
  */
 
 #ifndef COG_TYPES_H
