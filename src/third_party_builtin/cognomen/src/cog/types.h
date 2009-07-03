@@ -43,11 +43,8 @@ typedef union _cog_set {
     struct _set {
         cog_id *v;
         size_t size;
-#ifdef __cplusplus
-    } _cog_set::set;
-#else
-    } set;
-#endif
+    };
+    struct _set set;
 } cog_set;
 
 #endif /* COG_TYPES_H */
