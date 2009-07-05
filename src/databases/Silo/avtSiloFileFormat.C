@@ -579,6 +579,10 @@ avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
 //    Mark C. Miller, Wed Mar 21 10:37:01 PDT 2007
 //    Re-factored Silo work to a static function so it can be called from
 //    multiple places.
+//
+//    Mark C. Miller, Sun Jul  5 10:40:30 PDT 2009
+//    Added logic to rethrow an invalid files exception to match test
+//    suite behavior.
 // ****************************************************************************
 
 static int GetCycle(DBfile *dbfile)
@@ -601,6 +605,11 @@ avtSiloFileFormat::GetCycle()
         const bool canSkipGlobalInfo = true;
         DBfile *dbfile = OpenFile(tocIndex, canSkipGlobalInfo);
         retval = ::GetCycle(dbfile);
+    }
+    CATCH(InvalidFilesException)
+    {
+        debug1 << "Unable to GetCycle()" << endl;
+        RETHROW;
     }
     CATCHALL
     {
@@ -647,6 +656,10 @@ avtSiloFileFormat::GetCycleFromFilename(const char *f) const
 //    Mark C. Miller, Wed Mar 21 10:37:01 PDT 2007
 //    Re-factored Silo work to a static function so it can be called from
 //    multiple places.
+//
+//    Mark C. Miller, Sun Jul  5 10:40:30 PDT 2009
+//    Added logic to rethrow an invalid files exception to match test
+//    suite behavior.
 // ****************************************************************************
 
 static double GetTime(DBfile *dbfile)
@@ -674,6 +687,11 @@ double avtSiloFileFormat::GetTime()
         const bool canSkipGlobalInfo = true;
         DBfile *dbfile = OpenFile(tocIndex, canSkipGlobalInfo);
         retval = ::GetTime(dbfile);
+    }
+    CATCH(InvalidFilesException)
+    {
+        debug1 << "Unable to GetTime()" << endl;
+        RETHROW;
     }
     CATCHALL
     {
