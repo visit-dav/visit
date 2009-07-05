@@ -190,7 +190,7 @@ class MISC_API VisItException
 #define TRY                 try {
 #define CATCH(T)            } catch(T)   { VisItException::LogCatch(#T, __FILE__,  __LINE__);
 #define CATCH2(T, A)        } catch(T &A) { VisItException::LogCatch(#T, __FILE__,  __LINE__);
-#define CATCHALL            } catch(...) { VisItException::LogCatch("unknown", __FILE__,  __LINE__);
+#define CATCHALL            } catch(...) { VisItException::LogCatch("VisItException", __FILE__,  __LINE__);
 #define ENDTRY              }
 #define RETHROW             throw
 #define CATCH_RETURN(n)     return
@@ -303,7 +303,7 @@ int  exception_default_id();
     } \
     else \
     { \
-        VisItException::LogCatch("unknown", __FILE__,  __LINE__); \
+        VisItException::LogCatch("VisItException", __FILE__,  __LINE__); \
         exception_caught = true; \
 
 
