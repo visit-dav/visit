@@ -102,6 +102,10 @@
 #    Mark C. Miller, Wed Jun 24 11:27:59 PDT 2009
 #    Removed setting of PYTHONPATH prior to runtest to get PIL as VisIt's
 #    python on Davinci now has PIL installed.
+#
+#    Mark C. Miller, Mon Jul  6 22:07:07 PDT 2009
+#    Modified to create symlinks for results that are identical to baseline
+#    instead of making copies.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -437,6 +441,14 @@ mkdir test/cores
 error=0
 cd test
 
+#
+# Update the baseline dir used for creating symlink
+# targets for www 'post to' directory
+#
+pushd /project/projectdirs/visit/www/trunk/test 1>/dev/null
+svn update 1>/dev/null
+popd 1>/dev/null
+
 for m in $modes; do
 
     if test "$skipList" = ""; then
@@ -455,53 +467,43 @@ for m in $modes; do
 
     failedPyFiles=`grep failed short_summary | cut -d':' -f1`
     if test -n "$failedPyFiles"; then
+
         mkdir html_$dateTag
         cp html/index.html html_$dateTag/.
 
-        # loop through short summary, finding only those files that need to be
-        # copied for 'posting' of failed results.
-        theCat=""
-        while read thisLine; do
-            newCat=`echo "$thisLine" | grep -e '--- category' | tr '-' ' ' | tr -s ' ' | cut -d' ' -f3`
-            if test -n "$newCat"; then
-                theCat=$newCat
-                echo "theCat = \"$theCat\""
-            else
-                if test -z "$theCat"; then
+        for thePyFile in tests/*/*.py; do
+            theCat=`echo $thePyFile | cut -d'/' -f2`
+            thePyFileBase=`echo $thePyFile | cut -d'/' -f3 | cut -d'.' -f1`
+            for baseFile in ./baseline/$theCat/$thePyFileBase/*; do
+                if test -d $baseFile; then
                     continue
                 fi
-                thePyFileBase=`echo "$thisLine" | tr -s ' ' | cut -d' ' -f1 | cut -d'.' -f1`
-                for baseFile in ./baseline/$theCat/$thePyFileBase/*; do
-                    if test -d $baseFile; then
-                        continue
-                    fi
-                    baseNameTxt=`basename $baseFile .txt`
-                    baseNamePng=`basename $baseFile .png`
-                    baseName=""
-                    if test -f ./baseline/$theCat/$thePyFileBase/$baseNameTxt.txt; then
-                        baseName=$baseNameTxt
-                    elif test -f ./baseline/$theCat/$thePyFileBase/$baseNamePng.png; then
-                        baseName=$baseNamePng
+                baseNameTxt=`basename $baseFile .txt`
+                baseNamePng=`basename $baseFile .png`
+                baseName=""
+                if test -f ./baseline/$theCat/$thePyFileBase/$baseNameTxt.txt; then
+                    baseName=$baseNameTxt
+                elif test -f ./baseline/$theCat/$thePyFileBase/$baseNamePng.png; then
+                    baseName=$baseNamePng
+                    if test -f ./diff/$theCat/$thePyFileBase/$baseNamePng.png; then
                         cp html/[cdb]_${baseName}.png html_${dateTag}/. 1>/dev/null 2>&1
-                        cp html/[cdb]_${baseName}_thumb.png html_${dateTag}/. 1>/dev/null 2>&1
+                    else
+                        ln -s /project/projectdirs/visit/www/trunk/test/baseline/$theCat/$thePyFileBase/$baseNamePng.png html_${dateTag}/b_${baseName}.png
                     fi
-                    cp html/$baseName.html html_$dateTag/. 1>/dev/null 2>&1
-                done
-                cp html/${theCat}_${thePyFileBase}.html html_${dateTag}/. 1>/dev/null 2>&1
-                cp html/${theCat}_${thePyFileBase}_py.html html_${dateTag}/. 1>/dev/null 2>&1
-            fi
-        done < short_summary
+                    cp html/[cdb]_${baseName}_thumb.png html_${dateTag}/. 1>/dev/null 2>&1
+                fi
+                cp html/$baseName.html html_$dateTag/. 1>/dev/null 2>&1
+            done
+            cp html/${theCat}_${thePyFileBase}.html html_${dateTag}/. 1>/dev/null 2>&1
+            cp html/${theCat}_${thePyFileBase}_py.html html_${dateTag}/. 1>/dev/null 2>&1
+        done
 
         # 'post' the results by copying to public directory
         mkdir /project/projectdirs/visit/www/${dateTag} 1>/dev/null 2>&1
         chgrp visit /project/projectdirs/visit/www/${dateTag}
         chmod g+rwX,o+rX /project/projectdirs/visit/www/${dateTag}
-#
-# Temporarily disable copying only failed results.
-# Instead, copy everything.
-#        cp -r html_$dateTag /project/projectdirs/visit/www/${dateTag}/${theMode}
-#
-        cp -r html /project/projectdirs/visit/www/${dateTag}/${theMode}
+
+        cp -dr html_$dateTag /project/projectdirs/visit/www/${dateTag}/${theMode}
         chgrp -R visit /project/projectdirs/visit/www/${dateTag}/${theMode}
         chmod -R g+rwX,o+rX /project/projectdirs/visit/www/${dateTag}/${theMode}
         rm -rf html_$dateTag
