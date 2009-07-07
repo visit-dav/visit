@@ -482,8 +482,8 @@ for m in $modes; do
                         baseName=$baseNameTxt
                     elif test -f ./baseline/$theCat/$thePyFileBase/$baseNamePng.png; then
                         baseName=$baseNamePng
-                        cp html/[cdb]_${baseName}.jpg html_${dateTag}/. 1>/dev/null 2>&1
-                        cp html/[cdb]_${baseName}_thumb.jpg html_${dateTag}/. 1>/dev/null 2>&1
+                        cp html/[cdb]_${baseName}.png html_${dateTag}/. 1>/dev/null 2>&1
+                        cp html/[cdb]_${baseName}_thumb.png html_${dateTag}/. 1>/dev/null 2>&1
                     fi
                     cp html/$baseName.html html_$dateTag/. 1>/dev/null 2>&1
                 done
