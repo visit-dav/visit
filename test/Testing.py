@@ -771,6 +771,8 @@ def Test(file, altSWA=0):
 #
 # Purpose:
 #  Writes HTML stuff for a single test image 
+# Modifications:
+#  Generate 'mouse-over' hrefs ONLY for case where there are diffs.
 # ----------------------------------------------------------------------------
 
 def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
@@ -822,13 +824,20 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     elif (diffState == 'Unknown'):
         testcase.write("    <td>Not Available</td>\n")
     elif (diffState == 'Skipped'):
-        testcase.write("    <td>Skipped</td>\n")
+        testcase.write("""    <td><img name="b" border=0 src="b_%s.png"></img></td>\n"""%file)
     else:
         testcase.write("""    <td><a href="" onMouseOver="document.b.src='c_%s.png'" onMouseOut="document.b.src='b_%s.png'"><img name="b" border=0 src="b_%s.png"></img></a></td>\n"""%(file,file,file))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center>Current:</td>\n")
-    testcase.write("""    <td><a href="" onMouseOver="document.c.src='b_%s.png'" onMouseOut="document.c.src='c_%s.png'"><img name="c" border=0 src="c_%s.png"></img></a></td>\n"""%(file,file,file))
+    if (diffState == 'None'):
+        testcase.write("""    <td><img name="c" border=0 src="c_%s.png"></img></td>\n"""%file)
+    elif (diffState == 'Unknown'):
+        testcase.write("    <td>Not Available</td>\n")
+    elif (diffState == 'Skipped'):
+        testcase.write("    <td>Skipped</td>\n")
+    else:
+        testcase.write("""    <td><a href="" onMouseOver="document.c.src='b_%s.png'" onMouseOut="document.c.src='c_%s.png'"><img name="c" border=0 src="c_%s.png"></img></a></td>\n"""%(file,file,file))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center rowspan=7>Diff Map:</td>\n")
@@ -839,7 +848,7 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     elif (diffState == 'Skipped'):
         testcase.write("    <td rowspan=7>Skipped</td>\n")
     else:
-        testcase.write("    <td rowspan=7><img src=d_%s.png></img></td>\n" %(file))
+        testcase.write("""    <td><a href="" onMouseOver="document.d.src='b_%s.png'" onMouseOut="document.d.src='d_%s.png'"><img name="d" border=0 src="d_%s.png"></img></a></td>\n"""%(file,file,file))
     testcase.write("    <td align=center><i>Error Metric</i></td>\n")
     testcase.write("    <td align=center><i>Value</i></td>\n")
     testcase.write("  </tr>\n")
@@ -1036,14 +1045,14 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
     # create thumbnails and save jpegs
     newthumb    = newimg.resize(   thumbsize, Image.BICUBIC)
     newthumb.save(   "html/c_%s_thumb.png"%file);
-    newimg.save(   "html/c_%s.png"%file, quality=90);
+    newimg.save(   "html/c_%s.png"%file);
     if (dmax != 0):
         oldthumb    = oldimg.resize(   thumbsize, Image.BICUBIC)
         diffthumb   = mdiffimg.resize(  thumbsize, Image.BICUBIC)
         oldthumb.save(   "html/b_%s_thumb.png"%file);
         diffthumb.save(  "html/d_%s_thumb.png"%file);
-        oldimg.save(   "html/b_%s.png"%file, quality=90);
-        mdiffimg.save(  "html/d_%s.png"%file, quality=90);
+        oldimg.save(   "html/b_%s.png"%file);
+        mdiffimg.save(  "html/d_%s.png"%file);
 
     return (totpixels, plotpixels, diffpixels, dmean)
 
