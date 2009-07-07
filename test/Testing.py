@@ -772,7 +772,11 @@ def Test(file, altSWA=0):
 # Purpose:
 #  Writes HTML stuff for a single test image 
 # Modifications:
+#  Mark C. Miller, Mon Jul  6 22:07:07 PDT 2009
 #  Generate 'mouse-over' hrefs ONLY for case where there are diffs.
+#  When there are no diffs, reference baseline instead of current. The
+#  rationale for this later change is so that we can then create symlinks
+#  for the html content instead of making copies and taking more disk space.
 # ----------------------------------------------------------------------------
 
 def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
@@ -791,14 +795,14 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     html.write("  <td align=center>%.2f</td>\n" % (davg))
     if (diffState == 'Unknown'):
         html.write("  <td align=center>Not Available</td>\n")
-        html.write("  <td align=center><a href=\"c_%s.png\" onclick='return popup(\"c_%s.png\",\"image\");'><img src=\"c_%s_thumb.png\"></a></td>\n" % (file,file,file))
+        html.write("  <td align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (file,file,file))
         html.write("  <td align=center>Not Available</td>\n")
     elif (diffState != 'None'):
         html.write("  <td align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (file,file,file))
         html.write("  <td align=center><a href=\"c_%s.png\" onclick='return popup(\"c_%s.png\",\"image\");'><img src=\"c_%s_thumb.png\"></a></td>\n" % (file,file,file))
         html.write("  <td align=center><a href=\"d_%s.png\" onclick='return popup(\"d_%s.png\",\"image\");'><img src=\"d_%s_thumb.png\"></a></td>\n" % (file,file,file))
     else:
-        html.write("  <td colspan=3 align=center><a href=\"c_%s.png\" onclick='return popup(\"c_%s.png\",\"image\");'><img src=\"c_%s_thumb.png\"></a></td>\n" % (file,file,file))
+        html.write("  <td colspan=3 align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (file,file,file))
     html.write(" </tr>\n")
 
     # write the individual testcase
@@ -820,7 +824,7 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     testcase.write("    </td>\n")
     testcase.write("    <td align=center>Baseline:</td>\n")
     if (diffState == 'None'):
-        testcase.write("    <td>Same As Current</td>\n")
+        testcase.write("""    <td><img name="b" border=0 src="b_%s.png"></img></td>\n"""%file)
     elif (diffState == 'Unknown'):
         testcase.write("    <td>Not Available</td>\n")
     elif (diffState == 'Skipped'):
@@ -831,7 +835,7 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center>Current:</td>\n")
     if (diffState == 'None'):
-        testcase.write("""    <td><img name="c" border=0 src="c_%s.png"></img></td>\n"""%file)
+        testcase.write("    <td>Same As Baseline</td>\n")
     elif (diffState == 'Unknown'):
         testcase.write("    <td>Not Available</td>\n")
     elif (diffState == 'Skipped'):
@@ -945,6 +949,11 @@ def GetBackgroundImage(file):
 #    Jeremy Meredith, Tue Jun  7 12:14:11 PDT 2005
 #    Fixed error reporting for missing baseline images.
 #
+#    Mark C. Miller, Mon Jul  6 22:07:07 PDT 2009
+#    Modified to instead of always generating thumb of current (new) image
+#    and only of baseline (old) and diffs when there are diffs to do the
+#    opposite. That is always generate thumb of baseline (old) image and
+#    current and diffs when there are diffs.
 # ----------------------------------------------------------------------------
 
 def DiffUsingPIL(file, cur, diff, baseline, altbase):
@@ -1043,15 +1052,15 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
     thumbsize = (100,100)
 
     # create thumbnails and save jpegs
-    newthumb    = newimg.resize(   thumbsize, Image.BICUBIC)
-    newthumb.save(   "html/c_%s_thumb.png"%file);
-    newimg.save(   "html/c_%s.png"%file);
+    oldthumb    = oldimg.resize(   thumbsize, Image.BICUBIC)
+    oldthumb.save(   "html/b_%s_thumb.png"%file);
+    oldimg.save(   "html/b_%s.png"%file);
     if (dmax != 0):
-        oldthumb    = oldimg.resize(   thumbsize, Image.BICUBIC)
+        newthumb    = newimg.resize(   thumbsize, Image.BICUBIC)
         diffthumb   = mdiffimg.resize(  thumbsize, Image.BICUBIC)
-        oldthumb.save(   "html/b_%s_thumb.png"%file);
+        newthumb.save(   "html/c_%s_thumb.png"%file);
         diffthumb.save(  "html/d_%s_thumb.png"%file);
-        oldimg.save(   "html/b_%s.png"%file);
+        newimg.save(   "html/c_%s.png"%file);
         mdiffimg.save(  "html/d_%s.png"%file);
 
     return (totpixels, plotpixels, diffpixels, dmean)
