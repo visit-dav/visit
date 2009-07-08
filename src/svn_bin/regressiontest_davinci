@@ -109,6 +109,9 @@
 #
 #    Mark C. Miller, Tue Jul  7 09:37:05 PDT 2009
 #    Fix logic triggering creation of a link to a baseline.
+#
+#    Mark C. Miller, Wed Jul  8 13:08:15 PDT 2009
+#    Fix and improve logic copying diff, current, baseline to html dir.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -488,11 +491,10 @@ for m in $modes; do
                     baseName=$baseNameTxt
                 elif test -f ./baseline/$theCat/$thePyFileBase/$baseNamePng.png; then
                     baseName=$baseNamePng
-                    if test -f ./html/$theCat/$thePyFileBase/d_$baseNamePng.png; then
-                        cp html/[cdb]_${baseName}.png html_${dateTag}/. 1>/dev/null 2>&1
-                    else
-                        ln -s /project/projectdirs/visit/www/trunk/test/baseline/$theCat/$thePyFileBase/$baseNamePng.png html_${dateTag}/b_${baseName}.png
+                    if test -f ./html/d_$baseNamePng.png; then
+                        cp html/[cd]_${baseName}.png html_${dateTag}/. 1>/dev/null 2>&1
                     fi
+                    ln -s /project/projectdirs/visit/www/trunk/test/baseline/$theCat/$thePyFileBase/$baseNamePng.png html_${dateTag}/b_${baseName}.png
                     cp html/[cdb]_${baseName}_thumb.png html_${dateTag}/. 1>/dev/null 2>&1
                 fi
                 cp html/$baseName.html html_$dateTag/. 1>/dev/null 2>&1
