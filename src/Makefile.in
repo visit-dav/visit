@@ -158,6 +158,11 @@
 #    CXXFLAGS. This way, this target will not get executed for developers
 #    for common cases but will for users. Made the check NOT configurable.
 #
+#    Mark C. Miller, Tue Jul  7 14:42:20 PDT 2009
+#    Made env. var collision check exit the make if it finds problems. The
+#    expectation is that this is a reasonable stop-gap since the issue will
+#    go away entirely upon moving to CMake.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -237,11 +242,10 @@ check-make-and-env-vars:
 	    if test -n "$$em_vars"; then \
 	        echo ""; \
 	        echo "The following variables in your environment may collide with"; \
-	        echo "variables in VisIt's Makefiles. You may want to temporarily"; \
-	        echo "adjust your environment by removing them using unsetenv (csh)"; \
-	        echo "or unset (sh) before proceeding..."; \
+	        echo "variables in VisIt's Makefiles. Please temporarily remove"; \
+	        echo "using unsetenv (csh) or unset (sh) before proceeding..."; \
 	        echo $$em_vars | tr ' ' '\n'; \
-	        sleep 10; \
+	        exit 1; \
 	    else \
 	        echo "OK"; \
 	    fi \
