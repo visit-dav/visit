@@ -45,6 +45,7 @@
 #include <vtkCellData.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkPolygon.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -2373,6 +2374,9 @@ AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jul  9 08:09:26 PDT 2009
+//   Add support for polygons.
+//
 // ****************************************************************************
 
 void
@@ -2398,6 +2402,20 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
             nodes[2] = face->GetPointId(2);
             nodes[3] = face->GetPointId(3);
             list.AddQuad(nodes, cellId);
+        }
+        else if (face->GetCellType() == VTK_POLYGON)
+        {
+            static vtkIdList *tris = vtkIdList::New();
+            vtkPolygon *polygon = (vtkPolygon *) face;
+            polygon->Triangulate(tris);
+            int numTris = tris->GetNumberOfIds() / 3;
+            for (int i = 0 ; i < numTris ; i++)
+            {
+                nodes[0] = polygon->GetPointId(tris->GetId(3*i+0));
+                nodes[1] = polygon->GetPointId(tris->GetId(3*i+1));
+                nodes[2] = polygon->GetPointId(tris->GetId(3*i+2));
+                list.AddTri(nodes, cellId);
+            }
         }
     }
 }
