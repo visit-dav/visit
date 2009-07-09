@@ -76,6 +76,9 @@ exec perl -x $0 ${1+"$@"};
 #    Added logic to avoid backtick pwd if possible. That is causing problems
 #    on LLNL systems when ANY lscratch filesystem happens to be down and
 #    the user may be starting VisIt from ANOTHER lscratch filesystem.
+#
+#    Mark C. Miller, Wed Jul  8 16:52:17 PDT 2009
+#    Alter fix applied above for pwd to use getcwd() instead of $ENV{PWD}.
 ###############################################################################
 
 
@@ -84,13 +87,16 @@ exec perl -x $0 ${1+"$@"};
 # -----------------------------------------------------------------------------
 
 # Set a secure and reasonable path
+
+use Cwd;
+
 $ENV{PATH} = join ':' , ("$ENV{PATH}","/bin","/usr/bin","/usr/sbin",
                          "/usr/local/bin", "/usr/bsd","/usr/ucb" );
 
 # set base directory
 chomp( $progname= `basename $0`);
 chomp( $progdir = `dirname $0` );
-chomp( $cwd     = $ENV{PWD}    );
+chomp( $cwd     = getcwd()    );
 if (!$cwd) {
     chomp( $cwd     = `pwd`        );
 }

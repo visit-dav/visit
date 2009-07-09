@@ -502,9 +502,13 @@ $0 = shift @ARGV;
 #    Added logic to avoid backtick pwd if possible. That is causing problems
 #    on LLNL systems when ANY lscratch filesystem happens to be down and
 #    the user may be starting VisIt from ANOTHER lscratch filesystem.
+#
+#    Mark C. Miller, Wed Jul  8 16:52:17 PDT 2009
+#    Alter fix applied above for pwd to use getcwd() instead of $ENV{PWD}.
 ###############################################################################
 
 use POSIX qw(ceil);
+use Cwd;
 
 # -----------------------------------------------------------------------------
 #                                 Setup
@@ -513,7 +517,7 @@ use POSIX qw(ceil);
 $visitdir = $ENV{VISITDIR};
 $progname = $ENV{VISITPROGRAM};
 $ver      = $ENV{VISITVERSION};
-$cwd      = $ENV{PWD};
+$cwd      = getcwd();
 if (!$cwd)
 {
     $cwd = `pwd`;
@@ -2450,7 +2454,11 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 }
 
                 # cache the binary on each node so lustre doesn't get hammered for large jobs
-                $pwd = `pwd`;
+                $pwd = getcwd();
+                if (!$pwd)
+                {
+                    $pwd = `pwd`;
+                }
                 chomp $pwd;
                 print TFILE "cache_binary $pwd $visitbindir/engine_par\n";
             }
