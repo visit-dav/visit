@@ -2438,6 +2438,9 @@ class MakeMovie:
     #   Brad Whitlock, Mon Apr  7 13:30:21 PDT 2008
     #   Added support for the ffmpeg encoder in case the user has it installed.
     #
+    #   Hank Childs, Thu Jul  9 08:29:10 PDT 2009
+    #   Incorporate fixes for new ffmpeg syntax from "Max"/iprmaster.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
@@ -2483,7 +2486,7 @@ class MakeMovie:
             if self.ffmpegForMPEG:
                 # Use the user's ffmpeg encoder program.
                 framePattern = self.tmpDir+self.slash+linkbase+"%04d"+formatExt
-                command = "ffmpeg -f image2 -i %s -mbd rd -flags +4mv+trell+aic -flags qprd -bf 2 -cmp 2 -g 25 -pass 1 -y -b %s %s\n" % (framePattern, bitrate, absMovieName)
+                command = "ffmpeg -f image2 -i %s -mbd rd -flags +mv4+aic -trellis 1 -flags qprd -bf 2 -cmp 2 -g 25 -pass 1 -y -b %s %s\n" % (framePattern, bitrate, absMovieName)
                 def print_ffmpeg_line_cb(line, this):
                     print line
                     this.Debug(5, line)
