@@ -868,6 +868,14 @@ void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
 //    Updated to handle vertical, text on left or right, and horizontal,
 //    text on top or bottom.
 //
+//    Jeremy Meredith, Fri Jul 10 10:46:03 EDT 2009
+//    Changed the fuzz factor used to determine if we need to drop
+//    legend level values.  It used to be 1.1, but this value wound up
+//    dropping contour levels in the legend even in perfectly normal
+//    cases.  I changed it to 0.9 so that it allows the fonts to
+//    squeeze together a little more and still show the intended number
+//    of contour levels.
+//
 // **********************************************************************
 
 void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
@@ -935,12 +943,13 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
       numColors = numLabels = 1;
     else
       {
+      double fuzzFactor = 0.9; // <1 allows a little font squeezing
       numColors = this->definedLabels.size();
       if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
           Orientation == VERTICAL_TEXT_ON_LEFT)
         {
-        if ((this->FontHeight * 1.1 * numColors * viewSize[1]) > barHeight)
-          numColors = (int) (barHeight / (this->FontHeight * 1.1 * viewSize[1]));
+        if ((this->FontHeight * fuzzFactor * numColors * viewSize[1]) > barHeight)
+          numColors = (int) (barHeight / (this->FontHeight * fuzzFactor * viewSize[1]));
         }
       numLabels = numColors;
       }
