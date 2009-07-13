@@ -119,9 +119,9 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
     {
         stride = 1;
     }
-    if (startTime >= endTime)
+    if (startTime > endTime)
     {
-        std::string msg("Start time must be smaller than end time for " );
+        std::string msg("Start time must be smaller than or equal to the end time for " );
         msg += GetType();
         msg += ".\n";
         EXCEPTION1(ImproperUseException, msg);
@@ -129,10 +129,10 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
 
     nFrames = (int) ceil((((float)endTime -startTime))/(float)stride) + 1; 
 
-    if (nFrames <= 1)
+    if (nFrames < 1)
     {
         std::string msg(GetType());
-        msg = msg +  " requires more than 1 frame, please correct start " + 
+        msg = msg +  " requires at least 1 frame, please correct start " + 
                "and end times and try again.";
         EXCEPTION1(ImproperUseException, msg);
     }

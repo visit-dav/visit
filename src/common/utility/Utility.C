@@ -53,6 +53,9 @@ using std::vector;
 #if defined(_WIN32)
 #include <windows.h>
 #else
+#if defined(__APPLE__)
+#include <malloc/malloc.h> // for mstat
+#endif
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -211,6 +214,9 @@ LongestCommonSuffixLength(const char * const *list, int listN)
 //    Modified to use unsigned ints so we can go above 2 gigabytes (up to
 //    4 gigabytes).
 //
+//    Brad Whitlock, Tue Jun 23 17:07:57 PDT 2009
+//    I added a Mac implementation.
+//
 // ****************************************************************************
 
 void
@@ -218,7 +224,12 @@ GetMemorySize(unsigned int &size, unsigned int &rss)
 {
     size = 0;
     rss  = 0;
-#if !defined(_WIN32)
+#if defined(__APPLE__)
+    struct mstats m = mstats();
+    size = (unsigned int)m.bytes_used; // The bytes used out of the bytes_total.
+    rss = (unsigned int)m.bytes_total; // not quite accurate but this should be the total
+                                       // amount allocated by malloc.
+#elif !defined(_WIN32)
     FILE *file = fopen("/proc/self/statm", "r");
     if (file == NULL)
     {
