@@ -58,6 +58,7 @@
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
+#include <avtNekDomainBoundaries.h>
 #include <avtParallel.h>
 #include <avtStructuredDomainBoundaries.h>
 #include <avtIsenburgSGG.h>
@@ -65,6 +66,7 @@
 #include <avtVariableCache.h>
 
 #include <Expression.h>
+#include <Utility.h>
 
 #include <DebugStream.h>
 #include <BadDomainException.h>
@@ -1363,6 +1365,10 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
 //    Change most int's and long's to long longs to support >4GB files.
 //
+//    Brad Whitlock, Tue Jun 23 15:57:36 PST 2009
+//    I made it use Nek domain boundaries for nodal data since this can
+//    dramatically cut memory usage for the domain boundaries structure.
+//
 // ****************************************************************************
 
 void
@@ -1450,72 +1456,99 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     if (!avtDatabase::OnlyServeUpMetaData() && nbricks > 1)
     {
-        avtRectilinearDomainBoundaries *rdb = 
-                                      new avtRectilinearDomainBoundaries(true);
-        rdb->SetNumDomains(nbricks);
-        for (long long i = 0 ; i < nbricks ; i++)
+        unsigned int size, rss;
+        GetMemorySize(size, rss);
+        debug5 << "Memory size before creating domain boundaries object: "
+               << size << ", rss=" << rss << endl;
+        if(nodalCentering)
         {
-            long long nx = full_size[0] / bricklet_size[0];
-            long long ny = full_size[1] / bricklet_size[1];
-            long long nz = full_size[2] / bricklet_size[2];
-            long long z_off = i / (nx*ny);
-            long long y_off = (i % (nx*ny)) / nx;
-            long long x_off = i % nx;
-            int extents[6];
-            long long correction = (nodalCentering ? 1 : 0);
-            extents[0] = x_off * (bricklet_size[0]-correction);
-            extents[1]  = (x_off+1) * (bricklet_size[0]-correction);
-            extents[2] = y_off * (bricklet_size[1]-correction);
-            extents[3]  = (y_off+1) * (bricklet_size[1]-correction);
-            if (dim > 2)
+            avtNekDomainBoundaries *db = new avtNekDomainBoundaries;
+            int nb = (int)nbricks;
+            int bs[3];
+            bs[0] = (int)bricklet_size[0];
+            bs[1] = (int)bricklet_size[1];
+            bs[2] = (int)bricklet_size[2];
+            db->SetDomainInfo(nb, bs);
+
+            void_ref_ptr vr = void_ref_ptr(db, avtNekDomainBoundaries::Destruct);
+            cache->CacheVoidRef("any_mesh",
+                           AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+        }
+        else
+        {
+            avtRectilinearDomainBoundaries *rdb = 
+                                          new avtRectilinearDomainBoundaries(true);
+            rdb->SetNumDomains(nbricks);
+            for (long long i = 0 ; i < nbricks ; i++)
             {
-                extents[4] = z_off * (bricklet_size[2]-correction);
-                extents[5]  = (z_off+1) * (bricklet_size[2]-correction);
+                long long nx = full_size[0] / bricklet_size[0];
+                long long ny = full_size[1] / bricklet_size[1];
+                long long nz = full_size[2] / bricklet_size[2];
+                long long z_off = i / (nx*ny);
+                long long y_off = (i % (nx*ny)) / nx;
+                long long x_off = i % nx;
+                int extents[6];
+                long long correction = (nodalCentering ? 1 : 0);
+                extents[0] = x_off * (bricklet_size[0]-correction);
+                extents[1]  = (x_off+1) * (bricklet_size[0]-correction);
+                extents[2] = y_off * (bricklet_size[1]-correction);
+                extents[3]  = (y_off+1) * (bricklet_size[1]-correction);
+                if (dim > 2)
+                {
+                    extents[4] = z_off * (bricklet_size[2]-correction);
+                    extents[5]  = (z_off+1) * (bricklet_size[2]-correction);
+                }
+                else 
+                    extents[4] = extents[5] = 0;
+                rdb->SetIndicesForRectGrid(i, extents);
             }
-            else 
-                extents[4] = extents[5] = 0;
-            rdb->SetIndicesForRectGrid(i, extents);
-        }
-        rdb->CalculateBoundaries();
+            rdb->CalculateBoundaries();
 
-        void_ref_ptr vr = void_ref_ptr(rdb,
-                                   avtStructuredDomainBoundaries::Destruct);
-        cache->CacheVoidRef("any_mesh",
-                       AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+            void_ref_ptr vr = void_ref_ptr(rdb,
+                                       avtStructuredDomainBoundaries::Destruct);
+            cache->CacheVoidRef("any_mesh",
+                           AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+
 /*
-        avtIsenburgSGG *rdb = new avtIsenburgSGG;
-        rdb->SetNumberOfDomains(nbricks);
-        for (int i = 0 ; i < nbricks ; i++)
-        {
-            int sz[3] = { bricklet_size[0], bricklet_size[1], bricklet_size[2] };
-            int ori[3];
-            int nei[6];
-            int nx = full_size[0] / bricklet_size[0];
-            int ny = full_size[1] / bricklet_size[1];
-            int nz = full_size[2] / bricklet_size[2];
-            int z_off = i / (nx*ny);
-            int y_off = (i % (nx*ny)) / nx;
-            int x_off = i % nx;
+            avtIsenburgSGG *rdb = new avtIsenburgSGG;
+            rdb->SetNumberOfDomains(nbricks);
+            for (int i = 0 ; i < nbricks ; i++)
+            {
+                int sz[3] = { bricklet_size[0], bricklet_size[1], bricklet_size[2] };
+                int ori[3];
+                int nei[6];
+                int nx = full_size[0] / bricklet_size[0];
+                int ny = full_size[1] / bricklet_size[1];
+                int nz = full_size[2] / bricklet_size[2];
+                int z_off = i / (nx*ny);
+                int y_off = (i % (nx*ny)) / nx;
+                int x_off = i % nx;
+    
+                ori[0] = x_off * (bricklet_size[0]);
+                ori[1] = y_off * (bricklet_size[1]);
+                ori[2] = z_off * (bricklet_size[2]);
+                nei[0] = (x_off == 0 ? -1 : i-1);
+                nei[1] = (x_off == (nx-1) ? -1 : i+1);
+                nei[2] = (y_off == 0 ? -1 : i-nx);
+                nei[3] = (y_off == (ny-1) ? -1 : i+nx);
+                nei[4] = (z_off == 0 ? -1 : i-nx*ny);
+                nei[5] = (z_off == (nz-1) ? -1 : i+nx*ny);
+                rdb->SetInfoForDomain(i, ori, sz, nei);
+            }
+            rdb->FinalizeDomainInformation();
 
-            ori[0] = x_off * (bricklet_size[0]);
-            ori[1] = y_off * (bricklet_size[1]);
-            ori[2] = z_off * (bricklet_size[2]);
-            nei[0] = (x_off == 0 ? -1 : i-1);
-            nei[1] = (x_off == (nx-1) ? -1 : i+1);
-            nei[2] = (y_off == 0 ? -1 : i-nx);
-            nei[3] = (y_off == (ny-1) ? -1 : i+nx);
-            nei[4] = (z_off == 0 ? -1 : i-nx*ny);
-            nei[5] = (z_off == (nz-1) ? -1 : i+nx*ny);
-            rdb->SetInfoForDomain(i, ori, sz, nei);
-        }
-        rdb->FinalizeDomainInformation();
-
-        void_ref_ptr vr = void_ref_ptr(rdb,
-                                   avtStreamingGhostGenerator::Destruct);
-        cache->CacheVoidRef("any_mesh",
-                       AUXILIARY_DATA_STREAMING_GHOST_GENERATION, -1, -1, vr);
+            void_ref_ptr vr = void_ref_ptr(rdb,
+                                       avtStreamingGhostGenerator::Destruct);
+            cache->CacheVoidRef("any_mesh",
+                           AUXILIARY_DATA_STREAMING_GHOST_GENERATION, -1, -1, vr);
  */
+        }
+
+        GetMemorySize(size, rss);
+        debug5 << "Memory size after creating domain boundaries object: "
+               << size << ", rss=" << rss << endl;
     }
+
     md->SetCycle(timestep, cycle);
 }
 
