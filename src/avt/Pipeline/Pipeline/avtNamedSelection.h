@@ -80,6 +80,9 @@ class PairCompare {
 //    Hank Childs, Mon Apr  6 16:31:10 PDT 2009
 //    Add methods for creating condition strings.
 //
+//    Hank Childs, Mon Jul 13 17:16:00 PDT 2009
+//    Added method for determining size of selection.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelection
@@ -99,6 +102,8 @@ class PIPELINE_API avtNamedSelection
 
     virtual bool        GetDomainList(std::vector<int> &) { return false; };
     virtual avtDataSelection *CreateSelection(void) { return NULL; };
+
+    virtual int         GetSize(void) = 0;
 
     virtual SELECTION_TYPE  GetType(void) = 0;
 
@@ -128,6 +133,7 @@ class PIPELINE_API avtZoneIdNamedSelection : public avtNamedSelection
     virtual void  Read(const std::string &);
     virtual void  Write(const std::string &);
     virtual bool  GetDomainList(std::vector<int> &);
+    virtual int   GetSize(void) { return zoneId.size(); };
     virtual SELECTION_TYPE  GetType(void) { return ZONE_ID; };
 
     void          GetMatchingIds(unsigned int *, int, std::vector<int> &);
@@ -150,6 +156,7 @@ class PIPELINE_API avtFloatingPointIdNamedSelection : public avtNamedSelection
     
     virtual void  Read(const std::string &);
     virtual void  Write(const std::string &);
+    virtual int   GetSize(void) { return ids.size(); };
 
     virtual avtDataSelection *CreateSelection(void);
     virtual const std::string CreateConditionString(void);

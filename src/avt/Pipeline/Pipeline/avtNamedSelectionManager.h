@@ -64,6 +64,11 @@ class     avtNamedSelection;
 //    Hank Childs, Sun Apr 19 22:42:09 PDT 2009
 //    Add argument to DeleteNamedSelection.
 //
+//    Hank Childs, Mon Jul 13 15:53:54 PDT 2009
+//    Add arguments to [Get|Save]NamedSelection for automatic saving and
+//    loading of selections to help with fault tolerance, save/restore 
+//    sessions, etc.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelectionManager
@@ -82,8 +87,8 @@ class PIPELINE_API avtNamedSelectionManager
 
     void          DeleteNamedSelection(const std::string &, 
                                        bool expectThisSelToBeThere = true);
-    void          LoadNamedSelection(const std::string &);
-    void          SaveNamedSelection(const std::string &);
+    bool          LoadNamedSelection(const std::string &, bool = false);
+    void          SaveNamedSelection(const std::string &, bool = false);
 
   protected:
     static avtNamedSelectionManager    *instance;
@@ -95,6 +100,9 @@ class PIPELINE_API avtNamedSelectionManager
     // meaningful, that's fine.
                          avtNamedSelectionManager(const avtNamedSelectionManager &) {;};
     avtNamedSelectionManager          &operator=(const avtNamedSelectionManager &) { return *this; };
+
+    std::string          CreateQualifiedSelectionName(const std::string &, bool);
+    avtNamedSelection   *IterateOverNamedSelections(const std::string &);
 };
 
 
