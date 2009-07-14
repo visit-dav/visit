@@ -649,6 +649,10 @@
 #
 #     Mark C. Miller, Wed Jun 24 15:40:59 PDT 2009
 #     Fixed missing opening double quote for call to info in build_silo.
+#
+#     Hank Childs, Tue Jul 14 15:32:09 PDT 2009
+#     Fix problem where .conf file is setting up CXXFLAGS and CFLAGS improperly.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7649,8 +7653,8 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "CC=\"$C_COMPILER\"" >> $HOSTCONF
     echo "CXX=\"$CXX_COMPILER\"" >> $HOSTCONF
-    echo "CFLAGS=\"$C_OPT_FLAGS\"" >> $HOSTCONF
-    echo "CXXFLAGS=\"$CXXFLAGS\"" >> $HOSTCONF
+    echo "CFLAGS=\"$C_OPT_FLAGS \$CFLAGS\"" >> $HOSTCONF
+    echo "CXXFLAGS=\"$CXXFLAGS \$CXXFLAGS\"" >> $HOSTCONF
     if [[ "$parallel" == "yes" ]] ; then
         echo "MPI_LIBS=\"$PAR_LIBS\"" >> $HOSTCONF
     fi
