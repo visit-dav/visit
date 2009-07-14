@@ -163,6 +163,10 @@
 #    expectation is that this is a reasonable stop-gap since the issue will
 #    go away entirely upon moving to CMake.
 #
+#    Hank Childs, Tue Jul 14 14:28:36 PDT 2009
+#    Remove '==' inside test, as it doesn't work on my machine (it is not
+#    compliant).
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -232,7 +236,7 @@ check-make-and-env-vars:
 	    echo -n "and VisIt's Make variables..."; \
 	    env | cut -d'=' -f1 | sort | uniq > env_vars.txt; \
 	    os=$$(uname -s); \
-	    if test "$$os" == "Darwin"; then \
+	    if test "$$os" = "Darwin"; then \
 	        find . -name .svn -prune -o -name Makefile | grep -v .svn | xargs -n 1 -I '{}' cat '{}' | tr ' ' '\n'| grep '$$([A-Z_]*)' | sed -e 's#.*$$(\(.*\)).*#\1#' | sort | uniq > make_vars.txt; \
 	    else \
 	        find . -name .svn -prune -o -name Makefile | grep -v .svn | xargs -n 1 -i cat '{}' | tr ' ' '\n'| grep '$$([A-Z_]*)' | sed -e 's#.*$$(\(.*\)).*#\1#' | sort | uniq > make_vars.txt; \

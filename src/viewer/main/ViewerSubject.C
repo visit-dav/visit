@@ -9723,6 +9723,11 @@ ViewerSubject::SetCreateVectorMagnitudeExpressions()
 //  Programmer:  Hank Childs
 //  Creation:    January 28, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jul 14 14:03:58 PDT 2009
+//    Tell the plot about its named selection.
+//    
 // ****************************************************************************
 
 void
@@ -9752,6 +9757,7 @@ ViewerSubject::ApplyNamedSelection()
     }
     ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
     int networkId = plot->GetNetworkID();
+    plot->SetNamedSelection(selName);
     const EngineKey   &engineKey = plot->GetEngineKey();
     for (int i = 1 ; i < plotIDs.size() ; i++)
     {

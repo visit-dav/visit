@@ -3592,6 +3592,9 @@ ViewerPlot::SetSpatialExtentsType(avtExtentType extsType)
 //    Brad Whitlock, Wed Mar 21 22:43:18 PST 2007
 //    Pass GetPlotName to MakePlot.
 //
+//    Hank Childs, Tue Jul 14 14:28:36 PDT 2009
+//    Add support for named selections.
+//
 // ****************************************************************************
 
 bool
@@ -3606,6 +3609,16 @@ ViewerPlot::ExecuteEngineRPC()
 
     ViewerEngineManager *engineMgr = ViewerEngineManager::Instance();
     plotAtts->GetAtts(cacheIndex, curPlotAtts);
+
+    // If there is a named selection, we need to tell the engine before the
+    // plot is created.
+    if (namedSelection != "")
+    {
+        std::vector<std::string> ids;
+        ids.push_back(GetPlotName());
+        engineMgr->ApplyNamedSelection(engineKey, ids, namedSelection);
+    }
+
     bool successful;
     if (viewerPlotList->GetMaintainDataMode())
     {
@@ -4525,6 +4538,9 @@ ViewerPlot::CheckCache(const int i0, const int i1, const bool force)
 //   Brad Whitlock, Mon Apr 5 11:38:14 PDT 2004
 //   I changed the names of certain fields that are saved out.
 //
+//   Hank Childs, Tue Jul 14 11:22:58 PDT 2009
+//   Added support for named selections.
+//
 // ****************************************************************************
 
 void
@@ -4604,6 +4620,7 @@ ViewerPlot::CreateNode(DataNode *parentNode)
     CompactSILRestrictionAttributes *csilr = silr->MakeCompactAttributes();
     csilr->CreateNode(plotNode, false, true);
     delete csilr;
+    plotNode->AddNode(new DataNode("namedSelection", namedSelection));
 }
 
 // ****************************************************************************
@@ -4626,6 +4643,9 @@ ViewerPlot::CreateNode(DataNode *parentNode)
 //
 //   Brad Whitlock, Mon Apr 5 11:41:57 PDT 2004
 //   I changed the name of certain fields.
+//
+//   Hank Childs, Tue Jul 14 11:22:58 PDT 2009
+//   Added support for named selections.
 //
 // ****************************************************************************
 
@@ -4791,6 +4811,8 @@ ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
         }
         ENDTRY
     }
+    if((node = plotNode->GetNode("namedSelection")) != 0)
+        SetNamedSelection(node->AsString());
 }
 
 // ****************************************************************************
