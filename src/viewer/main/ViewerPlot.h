@@ -291,6 +291,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Tue Mar  3 15:03:19 PST 2009
 //    Renamed CanDoLogViewScaling to PermitsLogViewScaling.
 //
+//    Hank Childs, Tue Jul 14 14:28:36 PDT 2009
+//    Added methods and data member for named selections.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -352,6 +355,8 @@ class VIEWER_API ViewerPlot : public ViewerBase
     avtSILRestriction_p GetSILRestriction() const;
     const avtDatabaseMetaData *GetMetaData() const;
     ExpressionList GetExpressions() const;
+    void SetNamedSelection(const std::string &s) { namedSelection = s; };
+    const std::string &GetNamedSelection(void) { return namedSelection; };
 
     //
     // Returns the database state that the plot currently displays.
@@ -532,6 +537,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     AttributeSubjectMap    *databaseAtts;
     DatabaseAttributes     *curDatabaseAtts;
     avtSILRestriction_p     silr;
+    std::string             namedSelection;
     avtExtentType           spatialExtentsType;
 
     double                  bgColor[3];
