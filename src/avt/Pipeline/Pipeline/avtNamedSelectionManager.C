@@ -126,6 +126,10 @@ avtNamedSelectionManager::GetInstance(void)
 //    Hank Childs, Sun Apr 19 22:42:09 PDT 2009
 //    Fix problem with named selections not being overwritten.
 //
+//    Hank Childs, Mon Jul 13 15:53:54 PDT 2009
+//    Automatically save out an internal named selection, for fault tolerance
+//    and for save/restore sessions.
+//
 // ****************************************************************************
 
 void
@@ -164,6 +168,13 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
         int curSize = selList.size();
         selList.resize(curSize+1);
         selList[curSize] = ns;
+
+        //
+        // Save out the named selection in case of engine crash / 
+        // save/restore session, etc.
+        //  
+        SaveNamedSelection(selName, true);
+
         return;
     }
 
@@ -257,6 +268,12 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     delete [] selForDoms;
     delete [] selForZonesIn;
     delete [] selForZones;
+
+    //
+    // Save out the named selection in case of engine crash / 
+    // save/restore session, etc.
+    //  
+    SaveNamedSelection(selName, true);
 }
 
 
@@ -322,18 +339,28 @@ avtNamedSelectionManager::DeleteNamedSelection(const std::string &name,
 //  Programmer: Hank Childs
 //  Creation:   January 30, 2009
 //
-//  Tom Fogal, Sun May  3 19:21:44 MDT 2009
-//  Fix string formatting when an exception occurs.
+//  Modifications:
+//  
+//    Tom Fogal, Sun May  3 19:21:44 MDT 2009
+//    Fix string formatting when an exception occurs.
+//
+//    Hank Childs, Mon Jul 13 15:53:54 PDT 2009
+//    Automatically save out an internal named selection, for fault tolerance
+//    and for save/restore sessions.
 //
 // ****************************************************************************
 
-void
-avtNamedSelectionManager::LoadNamedSelection(const std::string &name)
+bool
+avtNamedSelectionManager::LoadNamedSelection(const std::string &name, 
+                                             bool lookForInternalVar)
 {
-    std::string qualName = GetUserVisItDirectory() + name + ".ns";
+    std::string qualName = CreateQualifiedSelectionName(name, 
+                                                        lookForInternalVar);
     ifstream ifile(qualName.c_str());
     if (ifile.fail())
     {
+        if (lookForInternalVar)
+            return false;
         std::ostringstream msg;
         msg << "Unable to load named selection from file: '"
             << qualName << "'";
@@ -367,6 +394,8 @@ avtNamedSelectionManager::LoadNamedSelection(const std::string &name)
     int curSize = selList.size();
     selList.resize(curSize+1);
     selList[curSize] = ns;
+
+    return true;
 }
 
 
@@ -379,12 +408,20 @@ avtNamedSelectionManager::LoadNamedSelection(const std::string &name)
 //  Programmer: Hank Childs
 //  Creation:   January 30, 2009
 //
+//  Modifications:
+//  
+//    Hank Childs, Mon Jul 13 15:53:54 PDT 2009
+//    Automatically save out an internal named selection, for fault tolerance
+//    and for save/restore sessions.
+//
 // ****************************************************************************
 
 void
-avtNamedSelectionManager::SaveNamedSelection(const std::string &name)
+avtNamedSelectionManager::SaveNamedSelection(const std::string &name, 
+                                             bool useInternalVarName)
 {
-    std::string qualName = GetUserVisItDirectory() + name + ".ns";
+    std::string qualName = CreateQualifiedSelectionName(name,
+                                                 useInternalVarName);
     avtNamedSelection *ns = GetNamedSelection(name);
     if (ns == NULL)
     {
@@ -405,10 +442,44 @@ avtNamedSelectionManager::SaveNamedSelection(const std::string &name)
 //  Programmer: Hank Childs
 //  Creation:   February 2, 2009
 //
+//  Modifications:
+//   
+//    Hank Childs, Mon Jul 13 15:53:54 PDT 2009
+//    Try to load a named selection from a file, assuming that we are in a
+//    save/restore session situation or that the engine crashed.
+//
 // ****************************************************************************
 
 avtNamedSelection *
 avtNamedSelectionManager::GetNamedSelection(const std::string &name)
+{
+    avtNamedSelection *rv = IterateOverNamedSelections(name);
+    if (rv != NULL)
+        return rv;
+
+    if (LoadNamedSelection(name, true))
+    {
+        return IterateOverNamedSelections(name);
+    }
+
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtNamedSelectionManager::IterateOverNamedSelections
+//
+//  Purpose:
+//      An internal method that locates a named selection.  This method
+//      exists so there isn't duplicated code floating around.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 13, 2009
+//
+// ****************************************************************************
+
+avtNamedSelection *
+avtNamedSelectionManager::IterateOverNamedSelections(const std::string &name)
 {
     for (int i = 0 ; i < selList.size() ; i++)
     {
@@ -417,6 +488,31 @@ avtNamedSelectionManager::GetNamedSelection(const std::string &name)
     }
 
     return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtNamedSelectionManager::CreateQualifiedSelectionName
+//
+//  Purpose:
+//      An internal method that creates a (directory qualified) file name.  
+//      This method exists so there isn't duplicated code floating around.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 13, 2009
+//
+// ****************************************************************************
+
+std::string
+avtNamedSelectionManager::CreateQualifiedSelectionName(const std::string &name,
+                                                       bool useInternalVarName)
+{
+    std::string qualName;
+    if (useInternalVarName)
+        qualName = GetUserVisItDirectory() + "_internal_" + name + ".ns";
+    else
+        qualName = GetUserVisItDirectory() + name + ".ns";
+    return qualName;
 }
 
 
