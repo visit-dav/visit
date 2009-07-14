@@ -1145,19 +1145,30 @@ QvisExpressionsWindow::notHiddenChanged()
 //    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Cyrus Harrison, Tue Jul 14 16:02:15 PDT 2009
+//    Fixed crash when no user expressions are defined and the user clicks
+//    show database expressions.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::displayAllVarsChanged()
 {
+
     // This updates the window, which rebuilds the expression list.
     // If we have an expression selected, reselect it afterwards.
     int reselect = (exprListBox->currentRow() != -1);
-    QString item = exprListBox->currentItem()->text();
-
+    
+    QString item ="";
+    
+    if (reselect)
+        item = exprListBox->currentItem()->text();
+    
     UpdateWindow(true);
 
     if (reselect)
     {
+        QString item = exprListBox->currentItem()->text();
+        
         for (int i=0; i<exprListBox->count(); i++)
         {
             if (exprListBox->item(i)->text() == item)
@@ -1169,6 +1180,7 @@ QvisExpressionsWindow::displayAllVarsChanged()
             }
         }
     }
+
 }
 
 // ****************************************************************************
