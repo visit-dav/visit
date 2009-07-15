@@ -177,6 +177,10 @@
 #    Allow the sliced vector plot to show all vectors (even ones not from
 #    from original cells/nodes) to match the old behavior.
 #
+#    Kathleen Bonnell, Wed Jul 15 10:22:54 PDT 2009
+#    Changed some zone picks to Node picks for PickPointMeshes, should yield
+#    same results.  Added Subset plot test for PickPointMeshes.
+#
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -1769,11 +1773,11 @@ def PickPointMeshes():
     DrawPlots()
     ResetView()
 
-    Pick(100, 240)
+    NodePick(100, 240)
     s = GetPickOutput()
     Pick(223, 197)
     s = s + GetPickOutput()
-    Pick(138, 66)
+    NodePick(138, 66)
     s = s + GetPickOutput()
 
     DeleteAllPlots()
@@ -1784,21 +1788,21 @@ def PickPointMeshes():
     SetPlotOptions(mesh)
     DrawPlots()
 
-    Pick(100, 240)
+    NodePick(100, 240)
     s = s + GetPickOutput()
     Pick(223, 197)
     s = s + GetPickOutput()
-    Pick(138, 66)
+    NodePick(138, 66)
     s = s + GetPickOutput()
 
     mesh.pointType = mesh.Point
     SetPlotOptions(mesh)
 
-    Pick(100, 240)
+    NodePick(100, 240)
     s = s + GetPickOutput()
     Pick(223, 197)
     s = s + GetPickOutput()
-    Pick(138, 66)
+    NodePick(138, 66)
     s = s + GetPickOutput()
 
     DeleteAllPlots()
@@ -1820,21 +1824,34 @@ def PickPointMeshes():
 
     vars = ("d", "p", "u", "v")
 
-    Pick(122, 72, vars)
+    NodePick(122, 72, vars)
     s = s + GetPickOutput()
     Pick(134, 229, vars)
     s = s + GetPickOutput()
-    Pick(278, 266, vars)
+    NodePick(278, 266, vars)
     s = s + GetPickOutput()
 
     m.pointType = mesh.Point
     SetPlotOptions(m)
 
-    Pick(122, 72, vars)
+    NodePick(122, 72, vars)
     s = s + GetPickOutput()
     Pick(134, 229, vars)
     s = s + GetPickOutput()
-    Pick(278, 266, vars)
+    NodePick(278, 266, vars)
+    s = s + GetPickOutput()
+
+    DeleteAllPlots()
+    OpenDatabase("../data/noise.silo")
+    AddPlot("Subset", "PointMesh")
+    DrawPlots()
+    ResetView()
+
+    NodePick(100, 240)
+    s = s+ GetPickOutput()
+    Pick(223, 197)
+    s = s + GetPickOutput()
+    NodePick(138, 66)
     s = s + GetPickOutput()
 
     TestText("PickPointMeshes", s)

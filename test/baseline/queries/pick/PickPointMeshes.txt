@@ -142,3 +142,21 @@ u:  <nodal> = -0.383952
 
 v:  <nodal> = 0.923353
 
+
+P:  noise.silo  timestep 0
+PointMesh 
+Point: <-4.75198, 8.34088, 9.56872>
+Node:  62
+Incident Zones:  62  
+
+Q:  noise.silo  timestep 0
+PointMesh 
+Point: <8.56503, 5.32013, -4.20841>
+Node:  83
+Incident Zones:  83  
+
+R:  noise.silo  timestep 0
+PointMesh 
+Point: <-1.43786, -9.24374, 1.96653>
+Node:  84
+Incident Zones:  84  
