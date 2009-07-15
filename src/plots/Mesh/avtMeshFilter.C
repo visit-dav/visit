@@ -461,6 +461,9 @@ avtMeshFilter::UpdateDataObjectInfo(void)
 //    Don't turn on zone numbers for point meshes.  It doesn't make sense, and
 //    it can wind up doing strange things later (e.g. with pick -- see '6550).
 //
+//    Kathleen Bonnell, Tue Jul 14 13:42:37 PDT 2009
+//    Added test for MayRequireNodes for turning Node numbers on.
+//
 // ****************************************************************************
  
 avtContract_p
@@ -490,7 +493,8 @@ avtMeshFilter::ModifyContract(avtContract_p spec)
         }
 
         avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-        if (spec->GetDataRequest()->MayRequireZones())
+        if (spec->GetDataRequest()->MayRequireZones() ||
+            spec->GetDataRequest()->MayRequireNodes())
         {
             keepNodeZone = true;
             rv->GetDataRequest()->TurnNodeNumbersOn();

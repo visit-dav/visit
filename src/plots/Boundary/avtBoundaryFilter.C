@@ -350,6 +350,9 @@ avtBoundaryFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Wed Jul 25 14:44:14 PDT 2007
 //    Change name of method being called.
 //
+//    Kathleen Bonnell, Tue Jul 14 13:42:37 PDT 2009
+//    Added test for MayRequireNodes for turning Node numbers on.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -379,7 +382,8 @@ avtBoundaryFilter::ModifyContract(avtContract_p spec)
         }
 
         avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-        if (spec->GetDataRequest()->MayRequireZones())
+        if (spec->GetDataRequest()->MayRequireZones() ||
+            spec->GetDataRequest()->MayRequireNodes())
         {
             keepNodeZone = true;
             spec->GetDataRequest()->TurnNodeNumbersOn();

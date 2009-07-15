@@ -381,6 +381,9 @@ avtSubsetFilter::UpdateDataObjectInfo(void)
 //    Tell the contract that we want simplified nesting representations
 //    when possible.
 //
+//    Kathleen Bonnell, Tue Jul 14 13:42:37 PDT 2009
+//    Added test for MayRequireNodes for turning Node numbers on.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -413,7 +416,8 @@ avtSubsetFilter::ModifyContract(avtContract_p spec)
         }
 
         avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-        if (spec->GetDataRequest()->MayRequireZones())
+        if (spec->GetDataRequest()->MayRequireZones() ||
+            spec->GetDataRequest()->MayRequireNodes())
         {
             keepNodeZone = true;
             spec->GetDataRequest()->TurnNodeNumbersOn();
