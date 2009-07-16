@@ -3561,6 +3561,9 @@ QvisGUIApplication::GetInitializedWindowPointer(int i)
 //    Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Thu Jul 16 14:16:26 PDT 2009
+//    Catch plugin loading exceptions and quit the GUI and viewer.
+//
 // ****************************************************************************
 
 void
@@ -3570,8 +3573,25 @@ QvisGUIApplication::LoadPlugins()
 
     int timeid = visitTimer->StartTimer();
     SplashScreenProgress(tr("Loading plugins..."), 92);
-    GetViewerProxy()->LoadPlugins();
-    visitTimer->StopTimer(timeid, "Loading plugins");
+    TRY
+    {
+        GetViewerProxy()->LoadPlugins();
+        visitTimer->StopTimer(timeid, "Loading plugins");
+    }
+    CATCH2(VisItException, obj)
+    {
+        visitTimer->StopTimer(timeid, "Loading plugins");
+        // There was an error loading plugins so quit
+        cerr << "VisIt experienced a fatal error loading plugins. The cause "
+             << "of the failure was: " << obj.GetExceptionType() << ": " 
+             << obj.Message() << endl;
+        // Close the viewer
+        GetViewerProxy()->Close();
+        // Close the gui
+        qApp->quit();
+        CATCH_RETURN(1);
+    }
+    ENDTRY
 
     timeid = visitTimer->StartTimer();
     SplashScreenProgress(tr("Creating plugin windows..."), 98);
