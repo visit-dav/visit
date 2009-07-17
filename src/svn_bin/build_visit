@@ -786,8 +786,8 @@ export SVNREVISION=${SVNREVISION:-"HEAD"}
 if [[ $VISITARCH == "" ]] ; then
     export VISITARCHTMP=${ARCH}_${C_COMPILER}
     if [[ "$CXX_COMPILER" == "g++" ]] ; then
-        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
-        if [[ ${#VERSION} == 5 ]] ; then
+        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
+        if [[ ${#VERSION} == 3 ]] ; then
             VISITARCHTMP=${VISITARCHTMP}-${VERSION}
         fi
     fi
