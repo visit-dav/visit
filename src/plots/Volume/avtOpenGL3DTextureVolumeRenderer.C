@@ -215,18 +215,15 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Brad Whitlock, Thu Jan 10 14:47:34 PST 2008
 //    Added reducedDetail argument.
 //
+//    Brad Whitlock, Wed Apr 22 12:06:12 PDT 2009
+//    I changed the interface.
+//
 // ****************************************************************************
 
 void
-avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
-                                         vtkDataArray *data,
-                                         vtkDataArray *opac,
-                                         const avtViewInfo &view,
-                                         const VolumeAttributes &atts,
-                                         float vmin, float vmax, float vsize,
-                                         float omin, float omax, float osize,
-                                         float *gx, float *gy, float *gz,
-                                         float *gmn, bool reducedDetail)
+avtOpenGL3DTextureVolumeRenderer::Render(
+    const avtVolumeRendererImplementation::RenderProperties &props,
+    const avtVolumeRendererImplementation::VolumeData &volume)
 {
     static bool haveIssuedWarning = false;
 #ifndef VTK_IMPLEMENT_MESA_CXX
@@ -276,11 +273,11 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     int ncolors=256;
     int nopacities=256;
     unsigned char rgba[256*4];
-    atts.GetTransferFunction(rgba);
+    props.atts.GetTransferFunction(rgba);
     
     // Get the dimensions
     int dims[3];
-    grid->GetDimensions(dims);
+    volume.grid->GetDimensions(dims);
 
     int nx=dims[0];
     int ny=dims[1];
@@ -296,14 +293,14 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     LightList lights = avtCallback::GetCurrentLightList();
 
     // Determine if we need to invalidate the old texture
-    if (volumetex && (atts != oldAtts || lights != oldLights))
+    if (volumetex && (props.atts != oldAtts || lights != oldLights))
     {
         glDeleteTextures(1, (GLuint*)&volumetexId);
         volumetexId = 0;
         delete[] volumetex;
         volumetex = NULL;
     }
-    oldAtts = atts;
+    oldAtts = props.atts;
     oldLights = lights;
 
 
@@ -376,27 +373,27 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                         continue;
                     }
 
-                    int index = grid->ComputePointId(ijk);
+                    int index = volume.grid->ComputePointId(ijk);
 
-                    float  v = data->GetTuple1(index);
-                    float  o = opac->GetTuple1(index);
+                    float  v = volume.data.data->GetTuple1(index);
+                    float  o = volume.opacity.data->GetTuple1(index);
 
                     // drop empty ones
                     if (v < -1e+37)
                         continue;
 
                     // normalize the value
-                    v = (v < vmin ? vmin : v);
-                    v = (v > vmax ? vmax : v);
-                    v = (v-vmin)/vsize;
-                    o = (o < omin ? omin : o);
-                    o = (o > omax ? omax : o);
-                    o = (o-omin)/osize;
+                    v = (v < volume.data.min ? volume.data.min : v);
+                    v = (v > volume.data.max ? volume.data.max : v);
+                    v = (v-volume.data.min)/volume.data.size;
+                    o = (o < volume.opacity.min ? volume.opacity.min : o);
+                    o = (o > volume.opacity.max ? volume.opacity.max : o);
+                    o = (o-volume.opacity.min)/volume.opacity.size;
 
                     // opactity map
                     float opacity;
                     opacity = float(rgba[int(o*(nopacities-1))*4 + 3])*
-                        atts.GetOpacityAttenuation()/256.;
+                        props.atts.GetOpacityAttenuation()/256.;
                     opacity = MAX(0,MIN(1,opacity));
 
                     // drop transparent splats 
@@ -405,17 +402,17 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
                     // do shading
                     float brightness;
-                    const bool shading = atts.GetLightingFlag();
+                    const bool shading = props.atts.GetLightingFlag();
                     if (shading)
                     {
                         // Get the gradient
-                        float gi = gx[index];
-                        float gj = gy[index];
-                        float gk = gz[index];
+                        float gi = volume.gx[index];
+                        float gj = volume.gy[index];
+                        float gk = volume.gz[index];
 
                         // Amount of shading should be somewhat proportional
                         // to the magnitude of the gradient
-                        float gm = pow(gmn[index], 0.25f);
+                        float gm = pow(volume.gmn[index], 0.25f);
 
                         // Get the base lit brightness based on the 
                         // light direction and the gradient
@@ -511,7 +508,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
     // Set up camera parameters
     vtkCamera *camera = vtkCamera::New();
-    view.SetCameraFromView(camera);
+    props.view.SetCameraFromView(camera);
     vtkMatrix4x4 *cameraMatrix = camera->GetViewTransformMatrix();
 
     //
@@ -533,7 +530,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
             {
                 int ijk[] = {i,j,k};
                 double worldpt[4] = {0,0,0,1};
-                grid->GetPoint(grid->ComputePointId(ijk), worldpt);
+                volume.grid->GetPoint(volume.grid->ComputePointId(ijk), worldpt);
 
                 // Get the world space coordinates
 
@@ -586,7 +583,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     // Do the actual contouring 
     glBegin(GL_TRIANGLES);
     glColor4f(1.,1.,1.,1.);
-    int ns = atts.GetNum3DSlices();
+    int ns = props.atts.GetNum3DSlices();
     if (ns < 1)
         ns = 1;
     if (ns > 500)
@@ -616,8 +613,8 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     if (!alreadyBlending)
         glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
-    opac->Delete();
-    data->Delete();
+    volume.opacity.data->Delete();
+    volume.data.data->Delete();
     camera->Delete();
 }
 

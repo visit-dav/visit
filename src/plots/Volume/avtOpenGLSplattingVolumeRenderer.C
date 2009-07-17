@@ -174,18 +174,15 @@ avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
 //    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 //    The gcc-4.x compiler no longer just warns about automatic type conversion.
 //
+//    Brad Whitlock, Wed Apr 22 12:01:26 PDT 2009
+//    I changed the interface.
+//
 // ****************************************************************************
 
 void
-avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
-                                         vtkDataArray *data,
-                                         vtkDataArray *opac,
-                                         const avtViewInfo &view,
-                                         const VolumeAttributes &atts,
-                                         float vmin, float vmax, float vsize,
-                                         float omin, float omax, float osize,
-                                         float *gx, float *gy, float *gz,
-                                         float *gmn, bool reducedDetail)
+avtOpenGLSplattingVolumeRenderer::Render(
+    const avtVolumeRendererImplementation::RenderProperties &props,
+    const avtVolumeRendererImplementation::VolumeData &volume)
 {
     // Create the texture for a gaussian splat
     const int GRIDSIZE=32;
@@ -211,13 +208,13 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
     }
 
     int dims[3];
-    grid->GetDimensions(dims);
+    volume.grid->GetDimensions(dims);
 
     // get attribute parameters
     int ncolors=256;
     int nopacities=256;
     unsigned char rgba[256*4];
-    atts.GetTransferFunction(rgba);
+    props.atts.GetTransferFunction(rgba);
     
     // Set up OpenGL parameters
     glDisable(GL_LIGHTING);
@@ -233,7 +230,7 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
     // set up parameters
     vtkCamera *camera = vtkCamera::New();
-    view.SetCameraFromView(camera);
+    props.view.SetCameraFromView(camera);
     vtkMatrix4x4 *cameraMatrix = camera->GetViewTransformMatrix();
     vtkMatrix4x4 *I = vtkMatrix4x4::New();
     I->DeepCopy(cameraMatrix);
@@ -368,9 +365,9 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
 
     // Set up splat size and the splat stuff
-    vtkDataArray *xc = grid->GetXCoordinates();
-    vtkDataArray *yc = grid->GetYCoordinates();
-    vtkDataArray *zc = grid->GetZCoordinates();
+    vtkDataArray *xc = volume.grid->GetXCoordinates();
+    vtkDataArray *yc = volume.grid->GetYCoordinates();
+    vtkDataArray *zc = volume.grid->GetZCoordinates();
 
     float width  = xc->GetTuple1(1) - xc->GetTuple1(0);
     float height = yc->GetTuple1(1) - yc->GetTuple1(0);
@@ -445,25 +442,25 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
             for (*c3 = *c3min; *c3 != *c3max; *c3 += *c3s)
             {
                 int ijk[3]={i,j,k};
-                int index = grid->ComputePointId(ijk);
-                float  v = data->GetTuple1(index);
-                float  o = opac->GetTuple1(index);
+                int index = volume.grid->ComputePointId(ijk);
+                float  v = volume.data.data->GetTuple1(index);
+                float  o = volume.opacity.data->GetTuple1(index);
 
                 // drop empty ones
                 if (v < -1e+37)
                     continue;
 
                 // normalize the value
-                v = (v < vmin ? vmin : v);
-                v = (v > vmax ? vmax : v);
-                v = (v-vmin)/vsize;
-                o = (o < omin ? omin : o);
-                o = (o > omax ? omax : o);
-                o = (o-omin)/osize;
+                v = (v < volume.data.min ? volume.data.min : v);
+                v = (v > volume.data.max ? volume.data.max : v);
+                v = (v-volume.data.min)/volume.data.size;
+                o = (o < volume.opacity.min ? volume.opacity.min : o);
+                o = (o > volume.opacity.max ? volume.opacity.max : o);
+                o = (o-volume.opacity.min)/volume.opacity.size;
 
                 // opactity map:
                 float opacity;
-                opacity = float(rgba[int(o*(nopacities-1))*4 + 3])*atts.GetOpacityAttenuation()/256.;
+                opacity = float(rgba[int(o*(nopacities-1))*4 + 3])*props.atts.GetOpacityAttenuation()/256.;
                 opacity = MAX(0,MIN(1,opacity));
 
                 // drop transparent splats 
@@ -471,20 +468,20 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
                     continue;
 
                 // get the point
-                double *p = grid->GetPoint(index);
+                double *p = volume.grid->GetPoint(index);
 
                 // do shading
                 float brightness;
-                const bool shading = atts.GetLightingFlag();
+                const bool shading = props.atts.GetLightingFlag();
                 if (shading)
                 {
-                    float gi = gx[index];
-                    float gj = gy[index];
-                    float gk = gz[index];
+                    float gi = volume.gx[index];
+                    float gj = volume.gy[index];
+                    float gk = volume.gz[index];
 
                     // Amount of shading should be somewhat proportional
                     // to the magnitude of the gradient
-                    float gm = pow(gmn[index], 0.25f);
+                    float gm = pow(volume.gmn[index], 0.25f);
 
                     // Get the base lit brightness 
                     float grad[3] = {gi,gj,gk};
@@ -548,8 +545,8 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
     if (!alreadyBlending)
         glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
-    opac->Delete();
-    data->Delete();
+    volume.opacity.data->Delete();
+    volume.data.data->Delete();
     camera->Delete();
     I->Delete();
 }

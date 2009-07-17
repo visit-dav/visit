@@ -52,6 +52,7 @@
 #include <float.h>
 
 #include <avtCallback.h>
+#include <avtVolumeRendererImplementation.h>
 #include <avtOpenGLSplattingVolumeRenderer.h>
 #include <avtOpenGL3DTextureVolumeRenderer.h>
 #ifdef USE_TUVOK
@@ -253,6 +254,10 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Tom Fogal, Wed Mar 25 13:19:40 MST 2009
 //    Don't try to instantiate a Tuvok renderer unless USE_TUVOK is defined.
 //
+//    Brad Whitlock, Wed Apr 22 11:59:28 PDT 2009
+//    I collapsed some arguments into structs and added code to get the
+//    render window size.
+//
 //    Brad Whitlock, Wed Jun 10 14:00:37 PST 2009
 //    I made Mesa support be conditional.
 //
@@ -344,11 +349,36 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 
     if (haveScalars)
     {
+        int *sz = VTKRen->GetRenderWindow()->GetSize();
+        avtVolumeRendererImplementation::RenderProperties props;
+        double bg[3];
+        VTKRen->GetBackground(bg);
+        props.backgroundColor[0] = bg[0];
+        props.backgroundColor[1] = bg[1];
+        props.backgroundColor[2] = bg[2];
+        props.windowSize[0] = sz[0];
+        props.windowSize[1] = sz[1];
+        props.view = view;
+        props.atts = atts;
+        props.reducedDetail = reducedDetail;
+
+        avtVolumeRendererImplementation::VolumeData vd;
+        vd.grid = grid;
+        vd.data.data = data;
+        vd.data.min = vmin;
+        vd.data.max = vmax;
+        vd.data.size = vsize;
+        vd.opacity.data = opac;
+        vd.opacity.min = omin;
+        vd.opacity.max = omax;
+        vd.opacity.size = osize;
+        vd.gx = gx;
+        vd.gy = gy;
+        vd.gz = gz;
+        vd.gmn = gmn;
+
         StackTimer t2("Implementation Render");
-        rendererImplementation->Render(grid, data, opac, view, atts,
-                                       vmin, vmax, vsize,
-                                       omin, omax, osize,
-                                       gx, gy, gz, gmn, reducedDetail);
+        rendererImplementation->Render(props, vd);
     }
 }
 

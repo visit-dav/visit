@@ -65,6 +65,9 @@
 //    Made this class not inherit from avtVolumeRenderer.  It now 
 //    gets most of its state from the arguments to Render.
 //
+//    Brad Whitlock, Wed Apr 22 12:00:37 PDT 2009
+//    I changed the Render interface.
+//
 // ****************************************************************************
 
 class avtOpenGLSplattingVolumeRenderer : public avtVolumeRendererImplementation
@@ -74,15 +77,7 @@ class avtOpenGLSplattingVolumeRenderer : public avtVolumeRendererImplementation
     virtual                ~avtOpenGLSplattingVolumeRenderer();
 
   protected:
-    virtual void            Render(vtkRectilinearGrid *grid,
-                                   vtkDataArray *data,
-                                   vtkDataArray *opac,
-                                   const avtViewInfo &view,
-                                   const VolumeAttributes&,
-                                   float vmin, float vmax, float vsize,
-                                   float omin, float omax, float osize,
-                                   float *gx, float *gy, float *gz,
-                                   float *gmn, bool);
+    virtual void            Render(const RenderProperties &props, const VolumeData &volume);
 
     float                  *alphatex;
     unsigned int            alphatexId;

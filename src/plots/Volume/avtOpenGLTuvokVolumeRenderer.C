@@ -51,6 +51,7 @@
 #include <vtkFloatArray.h>
 #include <vtkMatrix4x4.h>
 #include <vtkRectilinearGrid.h>
+
 #include <tuvok/../VisItDebugOut.h>
 #include <tuvok/Controller/Controller.h>
 #include <tuvok/IO/CoreVolume.h>
@@ -58,7 +59,8 @@
 #include <tuvok/Renderer/GL/ImmediateGLSBVR.h>
 
 #include <avtViewInfo.h>
-#include <../../common/misc/Environment.h>
+#include <Environment.h>
+#include <InstallationFunctions.h>
 #include <ImproperUseException.h>
 #include <VolumeAttributes.h>
 #include <DebugStream.h>
@@ -162,33 +164,104 @@ avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer()
 //   First pass at an implementation; camera settings are a bit off right now.
 //
 // ****************************************************************************
+
+#if 0
+// This is Brad's render code, which sets up the renderer much as it gets set
+// up in ImageVis3D, at least for now. This was the only way I could get it
+// to work with a version of Tuvok on my Mac. I didn't see obvious *explicit*
+// ways to set the data into the renderer so I didn't try doing that. ImageVis3D
+// does everything through calls to LoadDataset.
 void
-avtOpenGLTuvokVolumeRenderer::Render(vtkRectilinearGrid *grid,
-                                     vtkDataArray *data,
-                                     vtkDataArray *opac,
-                                     const avtViewInfo &view,
-                                     const VolumeAttributes &atts,
-                                     float vmin, float vmax, float vsize,
-                                     float omin, float omax, float osize,
-                                     float *gx, float *gy, float *gz,
-                                     float *gmn, bool reducedDetail)
+avtOpenGLTuvokVolumeRenderer::Render(
+    const avtVolumeRendererImplementation::RenderProperties &props,
+    const avtVolumeRendererImplementation::VolumeData &volume)
 {
     initialize_glew();
+
     if(NULL == this->renderer)
     {
-        this->renderer = create_renderer(atts);
+        bool bUseOnlyPowerOfTwo = true, bDownSampleTo8Bits = false, bDisableBorder = false, simple=false;
+        MasterController &masterController = Controller::Instance();
+        this->renderer = masterController.RequestNewVolumerenderer(MasterController::OPENGL_SBVR,
+            bUseOnlyPowerOfTwo, bDownSampleTo8Bits, bDisableBorder, simple);
+
+        std::string shaderDir;
+        if(Environment::exists("TUVOK_SHADER_DIR"))
+            shaderDir = Environment::get("TUVOK_SHADER_DIR");
+        else
+        {
+#ifdef WIN32
+            shaderDir = GetVisItArchitectureDirectory() + "/shaders";
+#else
+            shaderDir = GetVisItArchitectureDirectory() + "/bin/shaders";
+#endif
+        }
+
+        this->renderer->AddShaderPath(shaderDir);
+        this->renderer->LoadDataset("/Users/whitlock2/data/SCIData/engine.uvf");
+        this->renderer->ScheduleCompleteRedraw();
+        this->renderer->SetBlendPrecision(AbstrRenderer::BP_8BIT);
+
+        this->renderer->Initialize();
+
+        this->renderer->SetGlobalBBox(true);
+        this->renderer->SetLocalBBox(true);
+        this->renderer->SetRenderCoordArrows(true);
     }
-    debug_view(view);
 
-    tuvok_set_data(this->renderer, grid, data, gmn,
-                   data->GetNumberOfTuples());
+    //  Resize the renderer's buffer so it matches the window size.
+    this->renderer->Resize(UINTVECTOR2(props.windowSize[0],props.windowSize[1]));
 
-    tuvok_set_transfer_fqn(*this->renderer, atts);
+    // Set the background color
+    FLOATVECTOR3 bg[2];
+    bg[0] = FLOATVECTOR3(
+        props.backgroundColor[0],
+        props.backgroundColor[1],
+        props.backgroundColor[2]);
+    bg[1] = FLOATVECTOR3(
+        props.backgroundColor[0],
+        props.backgroundColor[1],
+        props.backgroundColor[2]);
+    this->renderer->SetBackgroundColors(bg);
 
-    tuvok_set_view(*this->renderer, view);
+    GLfloat rmat[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, rmat);
+    // Null out the translation components
+    rmat[12] = 0.f;
+    rmat[13] = 0.f;
+    rmat[14] = 0.f;
+    rmat[15] = 1.f;
+    this->renderer->SetRotation(rmat);
+
+    // Tell the renderer to draw the scene.
+    this->renderer->ScheduleCompleteRedraw();
+    this->renderer->Paint();
+}
+#else
+// This is Tom's original Render code.
+void
+avtOpenGLTuvokVolumeRenderer::Render(
+    const avtVolumeRendererImplementation::RenderProperties &props,
+    const avtVolumeRendererImplementation::VolumeData &volume)
+{
+    initialize_glew();
+
+    if(NULL == this->renderer)
+    {
+        this->renderer = create_renderer(props.atts);
+    }
+    debug_view(props.view);
+
+    tuvok_set_data(this->renderer, volume.grid, volume.data.data, volume.gmn,
+                   volume.data.data->GetNumberOfTuples());
+
+    tuvok_set_transfer_fqn(*this->renderer, props.atts);
+
+    tuvok_set_view(*this->renderer, props.view);
 
     this->renderer->Paint();
 }
+#endif
 
 // ****************************************************************************
 //  Function: create_renderer
