@@ -1742,6 +1742,10 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 //   Flash file dumps ending in Z be considered for automatic grouping. Finally,
 //   I made it return the length of the digit string.
 //
+//   Brad Whitlock, Fri Jul 17 13:33:52 PDT 2009
+//   I made the routine exclude the .h5 file extension from the pattern search
+//   so we can group HDF5 files via automatic file grouping.
+//
 // ****************************************************************************
 
 bool
@@ -1749,28 +1753,45 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
     int &digitLength) const
 {
     int i, isave = 0, ipat = 0;
+    const char *H5_ext = ".h5";
     char pattern[256];
     for(i = 0; i < 256; ++i) pattern[i] = '\0';
 
-    /* Go up to the beginning of the digit string.  */
-    for (i = 0; i < file.size();)
+    std::string searchstring;
+    bool excludedH5 = false;
+    if(extraSmartFileGrouping)
     {
-        for (; i < file.size() &&
-             (file[i] < '0' || file[i] > '9'); i++)
+        // Exclude the .h5 file extension from the numeric pattern search.
+        if(file.size() > 3 && file.substr(file.size()-3, file.size()-1) == H5_ext)
         {
-            pattern[i] = file[i];
+            searchstring = file.substr(0, file.size()-3);
+            excludedH5 = true;
         }
-        if (i < file.size())
+        else
+            searchstring = file;
+    }
+    else
+        searchstring = file;
+
+    /* Go up to the beginning of the digit string.  */
+    for (i = 0; i < searchstring.size();)
+    {
+        for (; i < searchstring.size() &&
+             (searchstring[i] < '0' || searchstring[i] > '9'); i++)
+        {
+            pattern[i] = searchstring[i];
+        }
+        if (i < searchstring.size())
             isave = i;
-        for (; file[i] >= '0' && file[i] <= '9'; i++)
-            pattern[i] = file[i];
+        for (; searchstring[i] >= '0' && searchstring[i] <= '9'; i++)
+            pattern[i] = searchstring[i];
     }
 
     /* Skip over the digit string.  */
     digitLength = 0;
-    for (i = isave; file[i] >= '0' && file[i] <= '9'; i++)
+    for (i = isave; searchstring[i] >= '0' && searchstring[i] <= '9'; i++)
         ++digitLength;
-    char charAfterDigit = file[i];
+    char charAfterDigit = searchstring[i];
 
     // If we're doing extra smart file grouping then be a little more lenient
     // when considering patterns.
@@ -1778,23 +1799,27 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
     if(extraSmartFileGrouping)
     {
         specialMatch = (charAfterDigit == '_') ||
-                       (charAfterDigit == 'z' && (i == file.size()-1));
+                       (charAfterDigit == 'z' && (i == searchstring.size()-1));
     }
 
     /* We have a match on *[0-9]?.  Now let's determine the full pattern.  */
-    if (file[isave] >= '0' && file[isave] <= '9' &&
+    if (searchstring[isave] >= '0' && searchstring[isave] <= '9' &&
         (charAfterDigit == '\0' || charAfterDigit == '.'  || specialMatch)
        )
     {
         ipat = isave;
 
         pattern[ipat++] = '*';
-        for (; i < file.size(); i++)
-            pattern[ipat++] = file[i];
+        for (; i < searchstring.size(); i++)
+            pattern[ipat++] = searchstring[i];
         pattern[ipat++] = '\0';
     }
 
     p = std::string(pattern);
+
+    if(excludedH5)
+        p += H5_ext;
+
     return (ipat > 0);
 }
 
