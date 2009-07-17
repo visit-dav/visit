@@ -393,6 +393,13 @@
 #    example, don't copy help files if there's no GUI. Don't make symlinks
 #    to an app if it does not exist.
 #
+#    Gunther H. Weber, Fri Jul 17 15:19:41 PDT 2009
+#    Determine HDF5 and Szip major relase version via readlink and cut instead
+#    of using hardcoded values of 5 and 2 respectively. Replaced invokation of
+#    grep with egrep to prevent copying of shared libraries for which we want
+#    to create symbolic links at a later time.
+#    MERGE CHANGE: Reverted to grep in merge.
+#   
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -1323,9 +1330,14 @@ if(-e $VisItDir/lib/$HdfHDF5LibName) then
        if ("$os" == "aix" || "$os" == "osf") then
            cp $VisItDir/lib/libhdf5.so $libdir/libhdf5.so
        else
-           cp $VisItDir/lib/libhdf5.so.5.0.1 $libdir/libhdf5.so.5.0.1
-           ln -s libhdf5.so.5.0.1 $libdir/libhdf5.so.5
-           ln -s libhdf5.so.5.0.1 $libdir/libhdf5.so
+           ls -l $libdir/*hdf5*
+           set HDF5LibFile = `readlink -f $VisItDir/lib/libhdf5.so`
+           set HDF5Filename = `basename $HDF5LibFile`
+           set HDF5MajorVersion = `echo $HDF5Filename | cut -c 12`
+           echo $HDF5LibFile $libdir/
+           cp $HDF5LibFile $libdir/
+           ln -s $HDF5Filename $libdir/libhdf5.so.$HDF5MajorVersion
+           ln -s $HDF5Filename $libdir/libhdf5.so
        endif
     else
         cp $VisItDir/lib/$HdfHDF5LibName $libdir/$HdfHDF5LibName
@@ -1336,9 +1348,12 @@ if(-e $VisItDir/lib/$HdfSzipLibName) then
        if ("$os" == "aix" || "$os" == "osf") then
            cp $VisItDir/lib/libsz.so $libdir/libsz.so
        else
-           cp $VisItDir/lib/libsz.so.2.0.0 $libdir/libsz.so.2.0.0
-           ln -s libsz.so.2.0.0 $libdir/libsz.so.2
-           ln -s libsz.so.2.0.0 $libdir/libsz.so
+           set SZipLibFile = `readlink -f $VisItDir/lib/libsz.so`
+           set SZipFilename = `basename $SZipLibFile`
+           set SZipMajorVersion = `echo $SZipFilename | cut -c 10`
+           cp $SZipLibFile $libdir/
+           ln -s $SZipFilename $libdir/libsz.so.$SZipMajorVersion
+           ln -s $SZipFilename $libdir/libsz.so
        endif
     else
         cp $VisItDir/lib/$HdfSzipLibName $libdir/$HdfSzipLibName
