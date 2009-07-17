@@ -64,6 +64,8 @@
 //  Creation   Fri Aug 17 17:55:44 PST 2007
 //
 //  Modifications:
+//    Brad Whitlock, Wed Apr 22 12:09:09 PDT 2009
+//    I changed the interface.
 //
 // ****************************************************************************
 
@@ -74,15 +76,7 @@ public:
     virtual                ~avtOpenGLSLIVRVolumeRenderer();
 
 protected:
-    virtual void            Render(vtkRectilinearGrid *grid,
-                                   vtkDataArray *data,
-                                   vtkDataArray *opac,
-                                   const avtViewInfo &view,
-                                   const VolumeAttributes&,
-                                   float vmin, float vmax, float vsize,
-                                   float omin, float omax, float osize,
-                                   float *gx, float *gy, float *gz,
-                                   float *gmn, bool reducedDetail);
+    virtual void            Render(const RenderProperties &props, const VolumeData &volume);
     struct SlivrContext
     {
         SlivrContext();

@@ -365,18 +365,15 @@ avtOpenGLSLIVRVolumeRenderer::OnlyLightingFlagIsDifferent(
 //   Brad Whitlock, Mon Jan 12 13:51:42 PST 2009
 //   I changed the method back so it uses helper methods.
 //
+//   Brad Whitlock, Wed Apr 22 12:10:06 PDT 2009
+//   I changed the interface.
+//
 // ****************************************************************************
 
 void
-avtOpenGLSLIVRVolumeRenderer::Render(vtkRectilinearGrid *grid,
-                                     vtkDataArray *data,
-                                     vtkDataArray *opac,
-                                     const avtViewInfo &view,
-                                     const VolumeAttributes &atts,
-                                     float vmin, float vmax, float vsize,
-                                     float omin, float omax, float osize,
-                                     float *gx, float *gy, float *gz,
-                                     float *gmn, bool reducedDetail)
+avtOpenGLSLIVRVolumeRenderer::Render(
+    const avtVolumeRendererImplementation::RenderProperties &props,
+    const avtVolumeRendererImplementation::VolumeData &volume)
 {
     const char *mName = "avtOpenGLSLIVRVolumeRenderer::Render: ";
 
@@ -389,31 +386,37 @@ avtOpenGLSLIVRVolumeRenderer::Render(vtkRectilinearGrid *grid,
     }
 
     // Get the sampling rate that the renderer will use.
-    float samplingRate = atts.GetRendererSamples();
+    float samplingRate = props.atts.GetRendererSamples();
     if(samplingRate < 1.f)
         samplingRate = 1.f;
     else if(samplingRate > 20.f) // 20 taking from show_volume example program
         samplingRate = 20.f;
 
     // Ignore the legend flag.
-    oldAtts.SetLegendFlag(atts.GetLegendFlag());
+    oldAtts.SetLegendFlag(props.atts.GetLegendFlag());
     // Ignore the renderSamples value
-    oldAtts.SetRendererSamples(atts.GetRendererSamples());
+    oldAtts.SetRendererSamples(props.atts.GetRendererSamples());
 
     // Delete context if significant attributes changed
     if (context != 0)
-        CheckContext(context, atts);
+        CheckContext(context, props.atts);
 
     // If the context needs to be created, do so now.
-    CreateContext(grid, data, opac, atts, vmin, vmax, omin, omax, gmn);
+    CreateContext(volume.grid,
+                  volume.data.data, volume.opacity.data,
+                  props.atts, 
+                  volume.data.min, volume.data.max,
+                  volume.opacity.min, volume.opacity.max,
+                  volume.gmn);
+
     if(context == 0)
         return;
 
     // Render the context.
     debug5 << mName << "Rendering..." << endl;
-    if(reducedDetail)
+    if(props.reducedDetail)
     {
-        if(atts.GetLightingFlag())
+        if(props.atts.GetLightingFlag())
              context->renderer->set_shading(false);
 
         context->renderer->set_sampling_rate(1.);
@@ -422,7 +425,7 @@ avtOpenGLSLIVRVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
         context->renderer->set_sampling_rate(samplingRate);
 
-        if(atts.GetLightingFlag())
+        if(props.atts.GetLightingFlag())
              context->renderer->set_shading(true);
     }
     else

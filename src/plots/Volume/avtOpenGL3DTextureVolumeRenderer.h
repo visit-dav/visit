@@ -62,6 +62,9 @@
 //    Brad Whitlock, Thu Jan 10 14:47:34 PST 2008
 //    Added reducedDetail argument.
 //
+//    Brad Whitlock, Wed Apr 22 12:05:30 PDT 2009
+//    I changed the interface.
+//
 // ****************************************************************************
 
 class avtOpenGL3DTextureVolumeRenderer : public avtVolumeRendererImplementation
@@ -71,15 +74,7 @@ class avtOpenGL3DTextureVolumeRenderer : public avtVolumeRendererImplementation
     virtual                ~avtOpenGL3DTextureVolumeRenderer();
 
   protected:
-    virtual void            Render(vtkRectilinearGrid *grid,
-                                   vtkDataArray *data,
-                                   vtkDataArray *opac,
-                                   const avtViewInfo &view, 
-                                   const VolumeAttributes&,
-                                   float vmin, float vmax, float vsize,
-                                   float omin, float omax, float osize,
-                                   float *gx, float *gy, float *gz, float *gmn,
-                                   bool reducedDetail);
+    virtual void            Render(const RenderProperties &props, const VolumeData &volume);
 
     unsigned char          *volumetex;
     unsigned int            volumetexId;

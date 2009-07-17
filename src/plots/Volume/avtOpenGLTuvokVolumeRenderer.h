@@ -59,9 +59,11 @@ class AbstrRenderer;
 //  Creation:   Thu Dec 18 09:58:53 MST 2008
 //
 //  Modifications:
-//
 //    Tom Fogal, Thu Mar  5 14:32:13 MST 2009
 //    Add a Tuvok renderer instance.
+//
+//    Brad Whitlock, Wed Apr 22 12:12:35 PDT 2009
+//    I changed the interface.
 //
 // ****************************************************************************
 
@@ -72,15 +74,7 @@ class avtOpenGLTuvokVolumeRenderer : public avtVolumeRendererImplementation
     virtual                ~avtOpenGLTuvokVolumeRenderer();
 
   protected:
-    virtual void            Render(vtkRectilinearGrid *grid,
-                                   vtkDataArray *data,
-                                   vtkDataArray *opac,
-                                   const avtViewInfo &view, 
-                                   const VolumeAttributes&,
-                                   float vmin, float vmax, float vsize,
-                                   float omin, float omax, float osize,
-                                   float *gx, float *gy, float *gz, float *gmn,
-                                   bool reducedDetail);
+    virtual void            Render(const RenderProperties &props, const VolumeData &volume);
   private:
     AbstrRenderer *renderer;
 };
