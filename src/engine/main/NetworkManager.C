@@ -63,6 +63,7 @@
 #include <avtPluginFilter.h>
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
+#include <AnnotationObject.h>
 #include <AnnotationObjectList.h>
 #include <AnnotationAttributes.h>
 #include <PickAttributes.h>
@@ -2871,6 +2872,10 @@ NetworkManager::UpdateVisualCues(int windowID)
 //    Brad Whitlock, Mon Jan 28 10:46:25 PDT 2008
 //    Changed for new AnnotationAttributes.
 //
+//    Brad Whitlock, Fri Jul 17 10:10:44 PDT 2009
+//    Added code to make sure that 3D text annotations are drawn when we
+//    want 3D annotations to be drawn.
+//
 // ****************************************************************************
 
 void
@@ -2922,6 +2927,15 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
               newAtts.GetAxes3D().SetTriadFlag(false);
               newAtts.GetAxes2D().SetVisible(false);
               viswin->DeleteAllAnnotationObjects();
+              { // Add back in the 3D annotation objects.
+                  AnnotationObjectList aolist2;
+                  for(int aIndex = 0; aIndex < aolist.GetNumAnnotations(); ++aIndex)
+                  {
+                      if(aolist[aIndex].GetObjectType() == AnnotationObject::Text3D)
+                          aolist2.AddAnnotation(aolist[aIndex]);
+                  }
+                  viswin->CreateAnnotationObjectsFromList(aolist2);
+              }
               break;
 
           case 2: // all annotations
