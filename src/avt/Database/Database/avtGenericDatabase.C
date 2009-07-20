@@ -462,6 +462,11 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    synchronize ghost and nesting information.  This replaces the `blind
 //    skip' logic used previously.
 //
+//    Hank Childs, Mon Jul 20 07:37:23 PDT 2009
+//    Only apply the collective test for simplified nesting if that field is
+//    in the contract.  Also, disable the collective test if we are doing
+//    on demand streaming.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -660,17 +665,20 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                 alreadyDidGhosts     = true;
                 didSimplifiedNesting = true;
             }
+
         }
         visitTimer->StopTimer(t0, "Creating simplified nesting rep.");
+        // Figure out the nesting globally to make sure all processors will
+        // synchronously communicate (or not) later.
+        // Stuff them into ints first.  MPI_MAX isn't defined on MPI_BOOLs.
+        if (canDoCollectiveCommunication)
+        {
+            alreadyDidNesting = static_cast<bool>
+                (UnifyMaximumValue(static_cast<int>(alreadyDidNesting)));
+            alreadyDidGhosts = static_cast<bool>
+                (UnifyMaximumValue(static_cast<int>(alreadyDidGhosts)));
+        }
     }
-
-    // Figure out the nesting globally to make sure all processors will
-    // synchronously communicate (or not) later.
-    // Stuff them into ints first.  MPI_MAX isn't defined on MPI_BOOLs.
-    alreadyDidNesting = static_cast<bool>
-        (UnifyMaximumValue(static_cast<int>(alreadyDidNesting)));
-    alreadyDidGhosts = static_cast<bool>
-        (UnifyMaximumValue(static_cast<int>(alreadyDidGhosts)));
 
     //
     // Add node numbers if requested.
