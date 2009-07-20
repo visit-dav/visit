@@ -658,6 +658,8 @@ Digits(double min, double max)
 //  Note: taken from VisWinAxes
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Jul 20 14:41:26 EDT 2009
+//    Fix case where range == 0.
 //
 // ****************************************************************************
 
@@ -669,7 +671,9 @@ LabelExponent(double min, double max)
     //
     double range = (fabs(min) > fabs(max) ? fabs(min) : fabs(max));
 
-    double pow10 = log10(range);
+    double pow10 = -5.0;
+    if (range > 0)
+        pow10 = log10(range);
 
     //
     // Cutoffs for using scientific notation.
