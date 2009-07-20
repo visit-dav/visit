@@ -55,16 +55,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>New expressions are available that compute hyperbolic sine, consine and tangent.<li>
   <li>You can now execute Ultra (curve plotting software) commands from within VisIt. This is accomplished from the CLI by using the new 'LoadUltra()' command, which will replace VisIt's command prompt with an Ultra prompt, allowing only Ultra commands to be entered. 'end' or 'quit' must be entered to return to VisIt's cli prompt.  Use 'help' at the Ultra prompt for information about currently supported commands.</li>
   <li>The Spreadsheet plot was enhanced so it is now possible to extract rows or columns of data and create Curve plots of the data vs. the X or Y mesh coordinates.  This allows plotting of curves from what is essentially a "logical lineout".</li>
-  <li></li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 1.12</font></b></p>
 <ul>
   <li>VisIt can now connect to simulations using SSH tunneling.</li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="File_format"></a>
@@ -114,15 +110,41 @@ enhancements and bug-fixes that were added to this release.</p>
       card 4 as scalars that can be plotted. For lack of a better method of
       naming them, they are called: property1, property2, and so on.</li>
   <li>VisIt's MFIX reader was fixed to support multiple time states.</li>
+  <li>VisIt's Enzo reader now supports the new packed AMR version of
+       this format.</li>
+  <li>VisIt now has a LAMMPS reader which supports two of LAMMPS file
+       formats: the input format used in the read_data command,
+       and the output dump format of several variants.</li>
+  <li>VisIt's XYZ file format now supports Exporting data.</li>
+  <li>The XYZ file format reader now supports both atomic numbers and atomic
+       symbols in the first column, it now allows differing numbers of
+       atoms in each time step, and it also now supports the CrystalMaker
+       variant of the format.</li>
+  <li>VisIt's PFLOTRAN reader now supports the most current variant of the format.
+       Note that variable centering has changed; this improves support for the
+       old format as well, but turns off automatic domain decomposition for this
+       old format.  It also works around a bug in some HDF5 implementations which
+       caused problems when reading integer data.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.12</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>The Mesh plot now supports transulcent mesh lines.</li>
+  <li>The Parallel Coordinates plot now supports a graduated color scheme
+       for focus rendering, similar to the way the context is rendered.</li>
+  <li>The multidimensional axes, such as the ones used in the Parallel Coordinates
+       plot, have been improved with support for scientific notation, correct number
+       of significant digits in tick mark labels, and better fonts.</li>
+  <li>Subset plots of whole meshes -- a simple way to get a single-color
+       lit and shaded plot of an entire dataset -- now work correctly.</li>
+  <li>The Parallel Coordinates plot now supports histograms for the context,
+       which allows it to function with constant speed when using supported
+       formats like FastBit.</li>
+  <li>The Parallel Coordinates plot now also supports optionally using histograms
+       for the focus instead of plotting all data values.  For a fixed
+       display resolution, this is functionally equivalent when using a single
+       color focus, but scales to arbitrarily large data sets.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -131,7 +153,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed the Box operator to work correctly with curves.</li>
   <li>The Revolve operator was fixed so it can once more revolve about a user-defined axis of revolution.</li>
   <li>Fixed Lineout operator's no-sampling mode to enable handling of very small-scale data </li>
-  <li></li>
+  <li>The Replicate operator now has a new feature which allows it to shift
+       the origin/extents of a periodic-boundary condition atomic data set.</li>
   <li></li>
 </ul>
 
@@ -140,17 +163,13 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added hyperbolic versions of sine, cosine and tangent: sinh, cosh, tanh</li>
   <li>Added optional numeric argument for ln and log10 expressions. The value specified will be used in liu of taking ln/log10 of non-positive values and will prevent VisIt from throwing exceptions when non-positive values are encountered.</li>
-  <li></li>
-  <li></li>
+  <li>Better support for various centering options in expressions, including
+       single-cell meshes and other unusual cases.</li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 1.12</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -180,15 +199,16 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's Spreadsheet plot now highlights the correct cell for node picks.</li>
   <li>VisIt's can now group files ending in <i>.h5</i> when smart file grouping is used.</li>
   <li>3D Text annotations now are drawn when scalable rendering is used.</li>
+  <li>The POV-Ray file writer now correctly writes its generated include files
+       (such as color tables, atomic property definitions) to the same directory
+       as the rest of the output files.</li>
+  <li>Some bugs related to axes and the Parallel Coordinates plot were fixed,
+       including a crash, which could occur in unusual circumstances.</li>
 </ul>
 
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 1.12</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Dev_changes"></a>
