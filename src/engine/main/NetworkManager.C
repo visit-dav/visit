@@ -2194,8 +2194,12 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    from the last rendering.
 //    Move an image dump up.  It was giving misleading results before.
 //
+//    Tom Fogal, Fri May 29 20:50:23 MDT 2009
+//    Remove transparency cache invalidation from here ...
+//
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -2211,12 +2215,6 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
     std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
 
     bool dump_renders = avtDebugDumpOptions::DumpEnabled();
-
-    { // Make sure transparency gets recalculated.
-        debug5 << "Invalidating transparency cache." << std::endl;
-        avtTransparencyActor* trans = viswin->GetTransparencyActor();
-        trans->InvalidateTransparencyCache();
-    }
 
     TRY
     {
@@ -5406,6 +5404,10 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    Tom Fogal, Tue May 26 15:45:43 MDT 2009
 //    Minor touchups to debug statements.
 //
+//    Tom Fogal, Fri May 29 20:50:23 MDT 2009
+//    ... and move it (transparency cache invalidation) to here.
+//    Secondly, don't invalidate it twice!
+//
 // ****************************************************************************
 
 void
@@ -5433,6 +5435,12 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
     std::vector<int>& plotsCurrentlyInWindow =
         viswinInfo.plotsCurrentlyInWindow;
     VisWindow *viswin = viswinInfo.viswin;
+
+    { // Make sure transparency gets recalculated.
+        debug5 << "Invalidating transparency cache." << std::endl;
+        avtTransparencyActor* trans = viswin->GetTransparencyActor();
+        trans->InvalidateTransparencyCache();
+    }
 
     this->r_mgmt.needToSetUpWindowContents = false;
     this->r_mgmt.cellCounts = new int[2 * plotIds.size()];
@@ -5616,10 +5624,9 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         (viswin->GetWindowMode() == WINMODE_CURVE) ||
         (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
-    { // Force transparency calculation early for SR mode.
+    { // Force transparency calculation early here, to ensure it gets cached.
         debug5 << "Forcing early calculation of transparency..." << std::endl;
         avtTransparencyActor* trans = viswin->GetTransparencyActor();
-        trans->InvalidateTransparencyCache();
         bool t = trans->TransparenciesExist();
         debug3 << "Early transparency calculation says there "
                << (t ? "is" : "is not")
