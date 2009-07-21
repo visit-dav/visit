@@ -24,6 +24,9 @@
 #   Tom Fogal, Sun Mar 22 16:10:25 MST 2009
 #   I added a case for build_visit to be ignored.
 #
+#   Tom Fogal, Mon Jul 20 21:12:09 MDT 2009
+#   Allow PNGs.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -103,6 +106,9 @@ while read fline; do
             continue
             ;;
         *svn_bin/build_visit)
+            continue
+            ;;
+        *png)
             continue
             ;;
     esac
