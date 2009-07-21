@@ -47,6 +47,9 @@
 #   Brad Whitlock, Tue Jun 16 09:26:57 PDT 2009
 #   Allow aclocal.m4 to have tabs.
 #
+#   Tom Fogal, Mon Jul 20 21:10:02 MDT 2009
+#   Allow PNGs to have tabs.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -78,6 +81,9 @@ while read fline; do
             continue
             ;;
         *Makefile)
+            continue
+            ;;
+        *png)
             continue
             ;;
     esac
