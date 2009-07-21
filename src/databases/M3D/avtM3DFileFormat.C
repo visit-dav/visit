@@ -63,6 +63,8 @@
 
 using namespace std;
 
+static bool doPlanes = false;
+
 // ****************************************************************************
 //  Method: avtM3DFileFormat constructor
 //
@@ -169,6 +171,9 @@ avtM3DFileFormat::FreeUpResources(void)
 //    Dave Pugmire, Fri Aug 8 15:22:11 EDT 2008
 //    Memory problem caused by CellInfo, VarInfo not being allocated on the heap.
 //
+//    Dave Pugmire, Tue Jul 21 16:23:42 EDT 2009
+//    Turn off 2D and 3D planes for now.
+//
 // ****************************************************************************
 
 void
@@ -183,31 +188,37 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
     char str[512];
 
     // The 3D wedge mesh.
-    sprintf( str, "%s/mesh", m_FullString.c_str() );
+    if (doPlanes)
+        sprintf( str, "%s/mesh", m_FullString.c_str() );
+    else
+        sprintf( str, "mesh", m_FullString.c_str() );
     string meshname = str;
     AddMeshToMetaData( md, meshname, mt, extents, nblocks, block_origin,
 		       spatial_dimension, topological_dimension );
     m_meshes.push_back( meshname );
 
-    //The 3D planes.
-    for ( int i = 0; i < m_nPlanes; i++ )
+    if (doPlanes)
     {
-	meshname = GetPlaneName( m_Plane3DString, i );
-	topological_dimension = 2;
-	AddMeshToMetaData( md, meshname, mt, extents, nblocks, block_origin,
-			   spatial_dimension, topological_dimension );
-	m_meshesPlane3D.push_back( meshname );
-    }
-
-    //The 2D planes.
-    for ( int i = 0; i < m_nPlanes; i++ )
-    {
-	meshname = GetPlaneName( m_Plane2DString, i );
-	spatial_dimension = 3;
-	topological_dimension = 2;
-	AddMeshToMetaData( md, meshname, mt, extents, nblocks, block_origin,
-			   spatial_dimension, topological_dimension );
-	m_meshesPlane2D.push_back( meshname );
+        //The 3D planes.
+        for ( int i = 0; i < m_nPlanes; i++ )
+        {
+            meshname = GetPlaneName( m_Plane3DString, i );
+            topological_dimension = 2;
+            AddMeshToMetaData( md, meshname, mt, extents, nblocks, block_origin,
+                               spatial_dimension, topological_dimension );
+            m_meshesPlane3D.push_back( meshname );
+        }
+        
+        //The 2D planes.
+        for ( int i = 0; i < m_nPlanes; i++ )
+        {
+            meshname = GetPlaneName( m_Plane2DString, i );
+            spatial_dimension = 3;
+            topological_dimension = 2;
+            AddMeshToMetaData( md, meshname, mt, extents, nblocks, block_origin,
+                               spatial_dimension, topological_dimension );
+            m_meshesPlane2D.push_back( meshname );
+        }
     }
 
     // Add all the variables.
@@ -220,7 +231,10 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
 	//Add for each full mesh.
 	for ( int m = 0; m < m_meshes.size(); m++ )
 	{
-	    sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
+            if (doPlanes)
+                sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
+            else
+                sprintf( str, "%s", varname.c_str() );
 	    string meshvarname = str;
 	    
 	    avtCentering cent = AVT_NODECENT;
@@ -229,29 +243,32 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                                                  m_scalarVarNames[i]->varDim ) );
 	}
 
-	//Add for each 3D plane.
-	for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
-	{
-	    sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
-	    string meshvarname = str;
-
-	    avtCentering cent = AVT_NODECENT;
-	    AddScalarVarToMetaData( md, meshvarname, m_meshesPlane3D[m], cent );
-	    m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->dataID,
-                                                 m_scalarVarNames[i]->varDim, m ) );
-	}
-
-	//Add for each 2D plane.
-	for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
-	{
-	    sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
-	    string meshvarname = str;
-
-	    avtCentering cent = AVT_NODECENT;
-	    AddScalarVarToMetaData( md, meshvarname, m_meshesPlane2D[m], cent );
-	    m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->dataID,
-                                                 m_scalarVarNames[i]->varDim, m ) );
-	}
+        if (doPlanes)
+        {
+            //Add for each 3D plane.
+            for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
+            {
+                sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
+                string meshvarname = str;
+                
+                avtCentering cent = AVT_NODECENT;
+                AddScalarVarToMetaData( md, meshvarname, m_meshesPlane3D[m], cent );
+                m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->dataID,
+                                                     m_scalarVarNames[i]->varDim, m ) );
+            }
+            
+            //Add for each 2D plane.
+            for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
+            {
+                sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
+                string meshvarname = str;
+                
+                avtCentering cent = AVT_NODECENT;
+                AddScalarVarToMetaData( md, meshvarname, m_meshesPlane2D[m], cent );
+                m_scalarVars.push_back( new VarInfo( meshvarname, m_scalarVarNames[i]->dataID,
+                                                     m_scalarVarNames[i]->varDim, m ) );
+            }
+        }
     }
 
     //Vector vars.
@@ -262,7 +279,10 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
 	//Add for each full mesh.
 	for ( int m = 0; m < m_meshes.size(); m++ )
 	{
-	    sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
+            if (doPlanes)
+                sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
+            else
+                sprintf( str, "%s", varname.c_str() );
 	    string meshvarname = str;
 	    
 	    avtCentering cent = AVT_NODECENT;
@@ -272,31 +292,34 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                                                  m_vectorVarNames[i]->varDim ) );
 	}
 
-	//Add for each 3D plane.
-	for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
-	{
-	    sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
-	    string meshvarname = str;
-
-	    avtCentering cent = AVT_NODECENT;
-	    int vector_dim = m_vectorVarNames[i]->varDim;
-	    AddVectorVarToMetaData( md, meshvarname, m_meshesPlane3D[m], cent, vector_dim );
-	    m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->dataID,
-                                                 m_vectorVarNames[i]->varDim, m ) );
-	}
-
-	//Add for each 2D plane.
-	for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
-	{
-	    sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
-	    string meshvarname = str;
-
-	    avtCentering cent = AVT_NODECENT;
-	    int vector_dim = m_vectorVarNames[i]->varDim;
-	    AddVectorVarToMetaData( md, meshvarname, m_meshesPlane2D[m], cent, vector_dim );
-	    m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->dataID,
-                                                 m_vectorVarNames[i]->varDim, m ) );
-	}
+        if (doPlanes)
+        {
+            //Add for each 3D plane.
+            for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
+            {
+                sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
+                string meshvarname = str;
+                
+                avtCentering cent = AVT_NODECENT;
+                int vector_dim = m_vectorVarNames[i]->varDim;
+                AddVectorVarToMetaData( md, meshvarname, m_meshesPlane3D[m], cent, vector_dim );
+                m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->dataID,
+                                                     m_vectorVarNames[i]->varDim, m ) );
+            }
+            
+            //Add for each 2D plane.
+            for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
+            {
+                sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
+                string meshvarname = str;
+                
+                avtCentering cent = AVT_NODECENT;
+                int vector_dim = m_vectorVarNames[i]->varDim;
+                AddVectorVarToMetaData( md, meshvarname, m_meshesPlane2D[m], cent, vector_dim );
+                m_vectorVars.push_back( new VarInfo( meshvarname, m_vectorVarNames[i]->dataID,
+                                                     m_vectorVarNames[i]->varDim, m ) );
+            }
+        }
     }
 
     //Tensor vars.
@@ -307,7 +330,11 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
 	//Add for each full mesh.
 	for ( int m = 0; m < m_meshes.size(); m++ )
 	{
-	    sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
+            if (doPlanes)
+                sprintf( str, "%s/%s", m_FullString.c_str(), varname.c_str() );
+            else
+                sprintf( str, "%s", varname.c_str() );
+            
 	    string meshvarname = str;
 	    
 	    int tensor_dim = m_tensorVarNames[i]->varDim;
@@ -317,31 +344,34 @@ avtM3DFileFormat::PopulateDatabaseMetaData( avtDatabaseMetaData *md, int timeSta
                                                  m_tensorVarNames[i]->varDim ) );
 	}
 
-	//Add for each 3D plane.
-	for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
-	{
-	    sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
-	    string meshvarname = str;
-
-	    int tensor_dim = m_tensorVarNames[i]->varDim;
-	    avtCentering cent = AVT_NODECENT;
-	    AddTensorVarToMetaData( md, varname, m_meshesPlane3D[m], cent, tensor_dim );
-	    m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->dataID,
-                                                 m_tensorVarNames[i]->varDim, m ) );
-	}
-
-	//Add for each 2D plane.
-	for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
-	{
-	    sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
-	    string meshvarname = str;
-
-	    int tensor_dim = m_tensorVarNames[i]->varDim;
-	    avtCentering cent = AVT_NODECENT;
-	    AddTensorVarToMetaData( md, varname, m_meshesPlane2D[m], cent, tensor_dim );
-	    m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->dataID,
-                                                 m_tensorVarNames[i]->varDim, m ) );
-	}
+        if (doPlanes)
+        {
+            //Add for each 3D plane.
+            for ( int m = 0; m < m_meshesPlane3D.size(); m++ )
+            {
+                sprintf( str, "%s/%s", m_meshesPlane3D[m].c_str(), varname.c_str() );
+                string meshvarname = str;
+                
+                int tensor_dim = m_tensorVarNames[i]->varDim;
+                avtCentering cent = AVT_NODECENT;
+                AddTensorVarToMetaData( md, varname, m_meshesPlane3D[m], cent, tensor_dim );
+                m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->dataID,
+                                                     m_tensorVarNames[i]->varDim, m ) );
+            }
+            
+            //Add for each 2D plane.
+            for ( int m = 0; m < m_meshesPlane2D.size(); m++ )
+            {
+                sprintf( str, "%s/%s", m_meshesPlane2D[m].c_str(), varname.c_str() );
+                string meshvarname = str;
+                
+                int tensor_dim = m_tensorVarNames[i]->varDim;
+                avtCentering cent = AVT_NODECENT;
+                AddTensorVarToMetaData( md, varname, m_meshesPlane2D[m], cent, tensor_dim );
+                m_tensorVars.push_back( new VarInfo( meshvarname, m_tensorVarNames[i]->dataID,
+                                                     m_tensorVarNames[i]->varDim, m ) );
+            }
+        }
     }
 }
 
@@ -834,6 +864,9 @@ avtM3DFileFormat::ReadAttribute( hid_t parentID, const char *attr, void *value )
 //    Dave Pugmire, Fri Aug 8 15:22:11 EDT 2008
 //    Memory problem caused by CellInfo, VarInfo not being allocated on the heap.
 //
+//    Dave Pugmire, Tue Jul 21 16:23:42 EDT 2009
+//    Turn off 2D and 3D planes for now.
+//
 // ****************************************************************************
 void
 avtM3DFileFormat::LoadFile()
@@ -949,7 +982,8 @@ avtM3DFileFormat::LoadFile()
     }
 
     // Finally, calculate the angular spacing of each plane.
-    CalcPlaneAngularSpacing();
+    if (doPlanes)
+        CalcPlaneAngularSpacing();
 
     debug1 << "SUCCESS in opening M3D file " << m_filename << endl;
 }
