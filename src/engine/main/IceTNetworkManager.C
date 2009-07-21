@@ -688,13 +688,15 @@ IceTNetworkManager::Readback(VisWindow * const viswin,
 //    Hank Childs, Thu Jan 15 11:07:53 CST 2009
 //    Changed GetSize call to GetCaptureRegion, since that works for 2D.
 //
+//    Tom Fogal, Fri May 29 20:37:59 MDT 2009
+//    Remove an unused variable.
+//
 // ****************************************************************************
 void
 IceTNetworkManager::StopTimer(int windowID)
 {
     char msg[1024];
     VisWindow *viswin = this->viswinMap.find(windowID)->second.viswin;
-    GLubyte *pixels = NULL;
     int rows,cols, width_start, height_start;
     // This basically gets the width and the height.
     // The distinction is for 2D rendering, where we only want the
