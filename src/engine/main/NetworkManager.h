@@ -402,6 +402,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Brad Whitlock, Mon Mar  2 16:56:35 PST 2009
 //    I added a SaveWindow method.
 //
+//    Tom Fogal, Tue Jul 21 19:27:00 MDT 2009
+//    Propagate bool for skipping SR threshold down.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -421,6 +424,7 @@ class NetworkManager
         bool needToSetUpWindowContents;
         bool viewportedMode;
         bool needZBufferToCompositeEvenIn2D;
+        bool checkThreshold;           ///< skip SR geometry threshold check?
     };
 
  public:
