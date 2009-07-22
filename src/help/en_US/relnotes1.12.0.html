@@ -209,6 +209,17 @@ enhancements and bug-fixes that were added to this release.</p>
        including a crash, which could occur in unusual circumstances.</li>
   <li>Updated the M3D database reader.</li>
   <li>Made improvements to the AdamsBashforth solver used for streamline calculation.</li>
+  <li>Compilation fixes were added for recent GNU compilers.</li>
+  <li>A bug was fixed which caused small-scale AMR datasets to deadlock when
+      operating in parallel.</li>
+  <li>Some third party libraries were updated in <TT>build_visit</TT>, mostly
+      to work around compilation issues on modern systems.</li>
+  <li>A compositing bug involving 'white pixels' was fixed.  For details, see
+      <A HREF="https://email.ornl.gov/mailman/htdig/visit-users/2009-March/003152.html"
+      >this</A> mailing list thread.</li>
+  <li>The IceT compositing code path will now fall back to other compositors
+      when transparency is in use, making it 'safe' to leave enabled in all
+      cases.</li>
 </ul>
 
 <a name="Config_changes"></a>
