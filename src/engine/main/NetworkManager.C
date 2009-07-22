@@ -2200,6 +2200,9 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
 //
+//    Tom Fogal, Tue Jul 21 19:23:53 MDT 2009
+//    Account for SR threshold check.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -2222,6 +2225,7 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
         this->StartTimer(); /* stopped in RenderCleanup */
 
         int t1 = visitTimer->StartTimer();
+        this->r_mgmt.checkThreshold = checkThreshold;
         this->RenderSetup(plotIds, getZBuffer, annotMode, windowID, leftEye);
         visitTimer->StopTimer(t1, "Render setup");
 
@@ -5408,6 +5412,9 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    ... and move it (transparency cache invalidation) to here.
 //    Secondly, don't invalidate it twice!
 //
+//    Tom Fogal, Tue Jul 21 19:27:49 MDT 2009
+//    Account for skipping the SR check.
+//
 // ****************************************************************************
 
 void
@@ -5491,7 +5498,8 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
     // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
     // the misfortune of oscillating switching of modes around the threshold)
     int scalableThreshold = GetScalableThreshold(windowID);
-    if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
+    if (this->r_mgmt.checkThreshold &&
+        GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
     {
         // We need to give a null result back to the component which
         // requested the render, but we can't do that here because our
@@ -5629,8 +5637,8 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         avtTransparencyActor* trans = viswin->GetTransparencyActor();
         bool t = trans->TransparenciesExist();
         debug3 << "Early transparency calculation says there "
-               << (t ? "is" : "is not")
-               << " some transparent geometry." << std::endl;
+               << (t ? "is some" : "is no")
+               << " transparent geometry." << std::endl;
     }
 }
 
@@ -5654,6 +5662,9 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
 //
 //    Tom Fogal, Mon Sep  1 14:47:31 EDT 2008
 //    Remove an assert.
+//
+//    Tom Fogal, Tue Jul 21 19:25:39 MDT 2009
+//    Account for skipping the SR check.
 //
 // ****************************************************************************
 
@@ -5680,6 +5691,7 @@ NetworkManager::RenderCleanup(int windowID)
     this->r_mgmt.handledCues = false;
     this->r_mgmt.needToSetUpWindowContents = false;
     this->r_mgmt.viewportedMode = false;
+    this->r_mgmt.checkThreshold = false;
 }
 
 // ****************************************************************************
@@ -5840,9 +5852,9 @@ NetworkManager::MultipassRendering(VisWindow *viswin) const
     bool multipass = false;
     int mpass = visitTimer->StartTimer();
 
+#ifdef PARALLEL
     // If we're not doing 3D rendering in this window, then we'll never need
     // multipass rendering.
-#ifdef PARALLEL
     if(viswin->GetWindowMode() == WINMODE_3D)
     {
         multipass = viswin->TransparenciesExist();
