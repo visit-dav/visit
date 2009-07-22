@@ -400,6 +400,10 @@
 #    to create symbolic links at a later time.
 #    MERGE CHANGE: Reverted to grep in merge.
 #   
+#    Gunther H. Weber, Wed Jul 22 15:56:01 PDT 2009
+#    Use/copy libtcmalloc_minimal instead of libtcmalloc to avoid dependency
+#    on libunwind on 64-bit machines.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -1164,8 +1168,8 @@ if ((-e $VisItDir/lib/libgcc_s.so.1) || (-e $VisItDir/lib/libgcc_s.a)) then
 endif
 # Add support for all the tcmalloc libs ... meaning libtcmalloc.so, 
 # libtcmalloc.so.0, & libtcmalloc.so.0.0.0.
-if (-e $VisItDir/lib/libtcmalloc.so) then
-    cp $VisItDir/lib/libtcmalloc* $libdir
+if (-e $VisItDir/lib/libtcmalloc_minimal.so) then
+    cp $VisItDir/lib/libtcmalloc_minimal* $libdir
 endif
 
 #

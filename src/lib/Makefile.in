@@ -184,6 +184,10 @@
 #    Brad Whitlock, Fri Jun 12 14:34:34 PST 2009
 #    I changed the links for libGLU in case it has several names.
 #
+#    Gunther H. Weber, Wed Jul 22 13:42:01 PDT 2009
+#    Link to tcmalloc_minimal instead of regular version to avoid additional
+#    dependencies (e.g. unwind) on 64-bit machines.   
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -375,8 +379,8 @@ create_gdal_link:
 	ln -s @GDAL_LIB@ .
 
 create_tcmalloc_link:
-	$(RM) libtcmalloc.@SHLIB_LIBEXT@*
-	ln -s @TCMALLOC_DIR@/libtcmalloc.@SHLIB_LIBEXT@* .
+	$(RM) libtcmalloc_minimal.@SHLIB_LIBEXT@*
+	ln -s @TCMALLOC_DIR@/libtcmalloc_minimal.@SHLIB_LIBEXT@* .
 
 create_exodus_link:
 	$(RM) libexoIIv2c.@SHLIB_LIBEXT@

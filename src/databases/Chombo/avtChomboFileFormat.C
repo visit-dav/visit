@@ -275,17 +275,21 @@ avtChomboFileFormat::GetTime(void)
 //
 //    Mark C. Miller, Wed Sep 24 11:43:38 PDT 2008
 //    Modified regular expression to meet specifications in ticket 8737
+//
+//    Gunther H. Weber, Wed Jul 22 11:48:18 PDT 2009
+//    Modified regular expression to meet new specifications set by Terry
+//    Ligocki (ANAG/APDEC).
+//
 // ****************************************************************************
 
 int
 avtChomboFileFormat::GetCycleFromFilename(const char *fname) const
 {
-    int ret = avtFileFormat::INVALID_CYCLE;
-
     if (fname == 0 || fname[0] == '\0')
-        return ret;
-
-    return GuessCycle(fname, "<^([a-zA-Z_]*)([0-9]*\\.)?([0-9]*)\\.(2|3)d\\.hdf5$> \\3");
+        return avtFileFormat::INVALID_CYCLE;
+    else 
+        return GuessCycle(fname,
+                "<^.*[^0-9]([0-9][0-9]*)\\.(2|3)[dD]\\.(hdf5|h5)$> \\1");
 }
 
 
@@ -1267,6 +1271,10 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Gunther H. Weber, Wed Jun 10 18:28:24 PDT 2009
 //    Added ability to handle particle data in Chombo files.
 //
+//    Gunther H. Weber, Wed Jul 22 15:42:27 PDT 2009
+//    Only set cycle in metadata if it can be determined. Otherwise announce
+//    that it is not accurate.
+//
 // ****************************************************************************
 
 void
@@ -1666,7 +1674,15 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     md->SetTime(timestep, dtime);
-    md->SetCycle(timestep, cycle);
+    if (cycle != avtFileFormat::INVALID_CYCLE)
+    {
+        md->SetCycle(timestep, cycle);
+        md->SetCycleIsAccurate(true, timestep);
+    }
+    else
+    {
+        md->SetCycleIsAccurate(false, timestep);
+    }
 }
 
 

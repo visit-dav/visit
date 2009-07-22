@@ -9512,12 +9512,12 @@ fi;
 if test "$google_perftools_specified" = "yes"; then
    if test "$withval" != "no"; then
       TCMALLOC_DIR=`echo $withval | cut -f1 -d' '`
-      TCMALLOC_LIB="-ltcmalloc"
+      TCMALLOC_LIB="-ltcmalloc_minimal"
    fi
 else
    if test "$DEFAULT_TCMALLOC_DIR" != "" ; then
       TCMALLOC_DIR=$DEFAULT_TCMALLOC_DIR
-      TCMALLOC_LIB="-ltcmalloc"
+      TCMALLOC_LIB="-ltcmalloc_minimal"
    fi
 fi
 if test "$TCMALLOC_LIB" != "" ; then
