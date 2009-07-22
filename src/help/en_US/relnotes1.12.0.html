@@ -125,11 +125,13 @@ enhancements and bug-fixes that were added to this release.</p>
        old format as well, but turns off automatic domain decomposition for this
        old format.  It also works around a bug in some HDF5 implementations which
        caused problems when reading integer data.</li>
+  <li>Added a reader for PlasmaState monitor files.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.12</font></b></p>
 <ul>
+  <li>The Poincar&eacute; plot has been added, which supports topological analysis of magnetic fieldlines in fusion codes.</li>
   <li>The Mesh plot now supports transulcent mesh lines.</li>
   <li>The Parallel Coordinates plot now supports a graduated color scheme
        for focus rendering, similar to the way the context is rendered.</li>
@@ -145,6 +147,7 @@ enhancements and bug-fixes that were added to this release.</p>
        for the focus instead of plotting all data values.  For a fixed
        display resolution, this is functionally equivalent when using a single
        color focus, but scales to arbitrarily large data sets.</li>
+  <li>Streamlines can be colored by a mesh variable.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -204,6 +207,8 @@ enhancements and bug-fixes that were added to this release.</p>
        as the rest of the output files.</li>
   <li>Some bugs related to axes and the Parallel Coordinates plot were fixed,
        including a crash, which could occur in unusual circumstances.</li>
+  <li>Updated the M3D database reader.</li>
+  <li>Made improvements to the AdamsBashforth solver used for streamline calculation.</li>
 </ul>
 
 <a name="Config_changes"></a>
