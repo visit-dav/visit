@@ -1445,7 +1445,9 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
             writer->SetInput(image);
         }
         else
+        {
             writer = netmgr->CreateNullDataWriter();
+        }
 
         // Send the data back to the viewer.
         bool useCompression = netmgr->GetShouldUseCompression(rpc->GetWindowID());

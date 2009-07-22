@@ -2202,6 +2202,8 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //
 //    Tom Fogal, Tue Jul 21 19:23:53 MDT 2009
 //    Account for SR threshold check.
+//    Make sure to call *our* render methods.  Allows derived classes to fall
+//    back on this class, even if it overrides rendering methods.
 //
 // ****************************************************************************
 
@@ -2252,7 +2254,7 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
         // FIRST PASS - Opaque only
         // ************************************************************
 
-        avtImage_p theImage = this->RenderGeometry();
+        avtImage_p theImage = NetworkManager::RenderGeometry();
 
         CallProgressCallback("NetworkManager", "Compositing", 0, 1);
 
@@ -2341,7 +2343,7 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
             CopyTo(tmp_img, compositedImageAsDataObject);
 
             compositedImageAsDataObject =
-                this->RenderTranslucent(windowID, tmp_img);
+                NetworkManager::RenderTranslucent(windowID, tmp_img);
             visitTimer->StopTimer(t1C, "Translucent rendering");
         }
 
