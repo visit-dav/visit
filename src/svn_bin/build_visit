@@ -3446,7 +3446,7 @@ function build_vtk
     #
     info "Executing CMake on VTK"
     cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
-    CMAKE_BIN=../${CMAKE_BUILD_DIR}/bin/cmake
+    CMAKE_BIN=${CMAKE_INSTALL}/cmake
     if [[ "$OPSYS" == "Darwin" ]]; then
     ${CMAKE_BIN} \
         -DBUILD_SHARED_LIBS:BOOL=ON\

@@ -321,6 +321,16 @@ avtPixieFileFormat::Initialize()
                 EXCEPTION1(InvalidDBTypeException,
                         "Cannot be a Pixie file because it looks like a VizSchema file.");
             }
+
+            hid_t vsVsVersion = H5Aopen_name(runInfo, "vsVsVersion");
+            if (vsVsVersion >= 0)
+            {
+                H5Aclose(vsVsVersion);
+                H5Gclose(runInfo);
+                EXCEPTION1(InvalidDBTypeException,
+                        "Cannot be a Pixie file because it looks like a VizSchema file.");
+            }
+
             hid_t software = H5Aopen_name(runInfo, "software");
             hid_t version = H5Aopen_name(runInfo, "version");
             H5Gclose(runInfo);

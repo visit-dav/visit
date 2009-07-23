@@ -505,6 +505,15 @@ $0 = shift @ARGV;
 #
 #    Mark C. Miller, Wed Jul  8 16:52:17 PDT 2009
 #    Alter fix applied above for pwd to use getcwd() instead of $ENV{PWD}.
+#
+#    Gunther H. Weber, Wed Jul 15 17:09:34 PDT 2009
+#    Modifications for Franklin: Explictly add path to qsub since otherwise it
+#    will not be found when using Windows version of VisIt as front end. Only
+#    add number of nodes option to qsub/aprun when the user specifies number of
+#    nodes in the host profile. Change batch job directory to user's scratch to
+#    ensure that current directory is visible to compute nodes making it
+#    possible to write log files etc. from compute nodes.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1524,6 +1533,14 @@ if ( $host =~ /^nid/ )
              "/opt/xt-libc/2.1.41HD/amd64/lib",
              "/opt/torque/2.3.4-200809011357/lib",
              "/opt/moab/5.2.4-s11143/lib");
+        if ($ENV{PATH} eq "")
+        {
+            $ENV{PATH} = "/opt/torque/2.3.4-200809011357/bin";
+        }
+        else
+        {
+            $ENV{PATH} = join ':' , ("$ENV{PATH}","/opt/torque/2.3.4-200809011357/bin");
+        }
     }
 }
 
@@ -2360,7 +2377,15 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($security_key_set) { push @visitcmd, "-key", $security_key; }
             push @visitcmd, @post_args;
 
-            $cdcmd     = "cd $cwd\n";
+            if ($IsRunningOnFranklinNERSC)
+            {
+                # Need a location visible from compute nodes
+                $cdcmd     = "cd /scratch/scratchdirs/$ENV{USER}\n";
+            }
+            else
+            {
+                $cdcmd     = "cd $cwd\n";
+            }
             $limitcmd  = "ulimit -c 0\n";
 
             if ($sublauncher eq "mpiexec")
@@ -2540,18 +2565,20 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 }
                 push @parcmd, "-pe", "${tacc_way}way", $tacc_procs;
             }
+            elsif ($IsRunningOnFranklinNERSC)
+            {
+                push @parcmd, "-l", "mppwidth=$procs";
+                if ($nodes_set) {
+                    push @parcmd, "-l", "mppnppn=$nodes";
+                }
+            }
             else
             {
                 $qsubNumNodeStr = "nodes";
                 $qsubPPNStr = "ppn";
                 $qsubSeparator = ":";
                 if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
-                if ( $IsRunningOnFranklinNERSC ) {
-                    $qsubNumNodeStr = "mppwidth";
-                    $qsubPPNStr = "mppnppn";
-                    $qsubSeparator = ",";
-                }
-                if ( $IsRunningOnLens_ORNL ) {$qsubPPNStr = "ppn";}
+                elsif ( $IsRunningOnLens_ORNL ) {$qsubPPNStr = "ppn";}
                 if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn:vis";}
                 else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn"; }
             }
