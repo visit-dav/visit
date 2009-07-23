@@ -6747,6 +6747,9 @@ visit_EnableTool(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
 //   Get the plugin manager via the viewer proxy.
 //
+//   Cyrus Harrison, Thu Jul 23 12:22:05 PDT 2009
+//   Clear error after unsucessful tuple parse.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6756,7 +6759,10 @@ visit_ListPlots(PyObject *self, PyObject *args)
 
     int stringOnly = 0;
     if (!PyArg_ParseTuple(args, "i", &stringOnly))
+    {
         stringOnly = 0;
+        PyErr_Clear();
+    }
 
     MUTEX_LOCK();
     //
