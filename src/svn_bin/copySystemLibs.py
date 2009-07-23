@@ -39,7 +39,7 @@ visitExecDir = visitDir + "/current/linux-x86_64"
 execName = visitExecDir + "/bin/engine_par"
 pluginNameList = glob.glob(visitExecDir + "/plugins/*/*.so")
 # Change this to the Lustre mount point on you machine
-lustrePrefix = "/scratch/scratchdirs"
+lustrePrefix = "/scratch2"
 
 # Check if the VisIt parallel engine executable exists
 if not os.access(execName, os.X_OK):
@@ -51,18 +51,26 @@ libList = [ execName ] + pluginNameList
 # Examine dependencies
 for lib in libList:
    print "Examining dependencies for " + lib
-   lddOut = os.popen("ldd %s" % lib)
+   lddOut = os.popen("env LD_LIBRARY_PATH=%s ldd %s" % (os.environ["LD_LIBRARY_PATH"]+":"+visitExecDir+"/lib", lib))
    for line in lddOut.readlines():
      if line.strip() != "statically linked":
-       (libname, sep, libpath, addr) = line.strip().split()
-       if sep != "=>":
-          sys.exit("Error: Unexpected separator %s!" % sep)
-       elif not os.access(libpath, os.R_OK):
-          sys.exit("Error: File %s is not readable!" % libpath)
+       if len(line.strip().split()) == 4:
+         (libname, sep, libpath, addr) = line.strip().split()
+         if sep != "=>":
+            sys.exit("Error: Unexpected separator %s!" % sep)
        else:
-          if not libpath in libList:
-              print "Adding " + libpath + " to library list."
-              libList.append(libpath)
+         (libpath, addr) = line.strip().split()
+       if libpath != "not":
+         if not os.access(libpath, os.R_OK):
+            sys.exit("Error: File \"%s\" is not readable!" % libpath)
+         else:
+            if not libpath in libList:
+                print "Adding " + libpath + " to library list."
+                libList.append(libpath)
+       else:
+         print "Couldn't parse library location in ldd output!"
+         print "Offending line: %s" % (line.strip())
+         sys.exit()
 
 # Create direcotory for system libraties and copy all
 # libraries that are not on Lustre into it. (Note: Copying
@@ -77,10 +85,17 @@ for lib in libList:
   else:
     print "Skipping lib " + lib
 
+# Copy env command
+print "Copying env command"
+os.system("cp /usr/bin/env " + visitExecDir + "/bin/")
+
 # Change permissions
 print "Changing permissions"
 os.system("chmod -R a+rX " + visitExecDir + "/system_libs/")
+os.system("chmod -R a+rX " + visitExecDir + "/bin/env")
 # The following is franklin.nersc.gov specific. Make VisIt  install
-# also writable by TechX
+# also writable by USG
 os.system("chmod -R g+w " + visitExecDir + "/system_libs/")
-os.system("chgrp -R facets " + visitExecDir + "/system_libs/")
+os.system("chmod -R g+w " + visitExecDir + "/bin/env")
+os.system("chgrp -R usg " + visitExecDir + "/system_libs/")
+os.system("chgrp -R usg " + visitExecDir + "/bin/env")
