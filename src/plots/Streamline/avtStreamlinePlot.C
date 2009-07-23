@@ -367,7 +367,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     //
     streamlineFilter->SetSourceType(atts.GetSourceType());
     streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
-    streamlineFilter->SetPathlines(atts.GetPathlines());
+    streamlineFilter->SetPathlines(false);//atts.GetPathlines());
     streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
                                              atts.GetMaxStreamlineProcessCount(),
                                              atts.GetMaxDomainCacheSize(),

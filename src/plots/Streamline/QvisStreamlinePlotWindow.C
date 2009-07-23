@@ -197,9 +197,11 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     mainLayout->addWidget(directionType, 3,1);
 
     pathlineFlag = new QCheckBox(tr("Pathlines"), central);
+    /*
     connect(pathlineFlag, SIGNAL(toggled(bool)),
             this, SLOT(pathlineFlagChanged(bool)));
     mainLayout->addWidget(pathlineFlag, 4,0);
+    */
 
     // Add some space....
     mainLayout->addWidget(new QLabel(tr(""), central), 5,0);
@@ -865,9 +867,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             workGroupSize->blockSignals(false);
             break;
         case StreamlineAttributes::ID_pathlines:
+          /*
             pathlineFlag->blockSignals(true);
             pathlineFlag->setChecked(streamAtts->GetPathlines());
             pathlineFlag->blockSignals(false);
+          */
             break;
         }
     }
