@@ -653,6 +653,9 @@
 #     Hank Childs, Tue Jul 14 15:32:09 PDT 2009
 #     Fix problem where .conf file is setting up CXXFLAGS and CFLAGS improperly.
 #
+#     Tom Fogal, Thu Jul 23 15:52:24 MDT 2009
+#     Make sure the user knows why we couldn't use the dialog interface.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -8594,16 +8597,23 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         DLG=""
     fi
     if [[ "$DLG" == "" ]] ; then
+        warn "Could not find 'dialog'; looking for 'whiptail'."
         DLG=$(which whiptail)
         if [[ "${DLG#no }" != "${DLG}" ]] ; then
            DLG=""
         fi
         if [[ "$DLG" == "" ]] ; then
             GRAPHICAL="no"
+            warn "'whiptail' not found."
             warn ""
             warn "Unable to find utility for graphical build..."
             warn "Continuing in command line mode..."
             warn ""
+            test -t 1
+            if test $? != 1 ; then
+              warn "Please hit enter to continue."
+              (read junkvar)
+            fi
         fi
     fi
 fi
