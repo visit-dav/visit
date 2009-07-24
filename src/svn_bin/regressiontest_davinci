@@ -112,6 +112,10 @@
 #
 #    Mark C. Miller, Wed Jul  8 13:08:15 PDT 2009
 #    Fix and improve logic copying diff, current, baseline to html dir.
+#
+#    Tom Fogal, Thu Jul 23 16:58:54 PDT 2009
+#    Changed parallel SR to IceT parallel SR.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -409,30 +413,30 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 theDay=`date +%A`
 
 # set mode to run in
-modes="davinci,serial davinci,parallel davinci,scalable,parallel"
+modes="davinci,serial davinci,parallel davinci,scalable,parallel,icet"
 
 # set list of tests/modes to skip
 skipList_dueTo_clientServer="\
-          davinci,scalable,parallel:tests/hybrid/locus.py \
-          davinci,scalable,parallel:tests/rendering/saveformats.py \
-          davinci,scalable,parallel:tests/queries/bestfitline.py"
+          davinci,scalable,parallel,icet:tests/hybrid/locus.py \
+          davinci,scalable,parallel,icet:tests/rendering/saveformats.py \
+          davinci,scalable,parallel,icet:tests/queries/bestfitline.py"
 
 skipList_dueTo_parallelRendering="\
-          davinci,scalable,parallel:tests/databases/boxlib.py"
+          davinci,scalable,parallel,icet:tests/databases/boxlib.py"
 
 skipList_dueTo_temporaryBugs="\
-          davinci,scalable,parallel:tests/operators/transform.py:ops_transform05"
+          davinci,scalable,parallel,icet:tests/operators/transform.py:ops_transform05"
 
 skipList_for_Davinci="\
           davinci,serial:tests/meshtype/csg.py:csg_02 \
           davinci,parallel:tests/meshtype/csg.py:csg_02 \
-          davinci,scalable,parallel:tests/meshtype/csg.py:csg_02 \
+          davinci,scalable,parallel,icet:tests/meshtype/csg.py:csg_02 \
           davinci,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
           davinci,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
-          davinci,scalable,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
+          davinci,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
           davinci,serial:tests/databases/visus.py:visus_07,visus_08,visus_09 \
           davinci,parallel:tests/databases/visus.py:visus_07,visus_08,visus_09 \
-          davinci,scalable,parallel:tests/databases/visus.py:visus_07,visus_08,visus_09"
+          davinci,scalable,parallel,icet:tests/databases/visus.py:visus_07,visus_08,visus_09"
           
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs $skipList_for_Davinci"
 
