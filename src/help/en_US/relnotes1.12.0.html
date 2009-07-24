@@ -55,6 +55,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>New expressions are available that compute hyperbolic sine, consine and tangent.<li>
   <li>You can now execute Ultra (curve plotting software) commands from within VisIt. This is accomplished from the CLI by using the new 'LoadUltra()' command, which will replace VisIt's command prompt with an Ultra prompt, allowing only Ultra commands to be entered. 'end' or 'quit' must be entered to return to VisIt's cli prompt.  Use 'help' at the Ultra prompt for information about currently supported commands.</li>
   <li>The Spreadsheet plot was enhanced so it is now possible to extract rows or columns of data and create Curve plots of the data vs. the X or Y mesh coordinates.  This allows plotting of curves from what is essentially a "logical lineout".</li>
+  <li>An option to replace only selected plots was added. It is available from the right click popup menu in the File Panel.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -222,6 +223,7 @@ enhancements and bug-fixes that were added to this release.</p>
       cases.</li>
   <li><TT>build_visit</TT> will pause when notifying the user that it cannot
       find required programs for the curses-based interface.</li>
+  <li>Fixed a parallel bug with DDFs that caused all processors to unnecessarily write results to disk.</li>
 </ul>
 
 <a name="Config_changes"></a>
