@@ -240,6 +240,11 @@ avtContourFilter::~avtContourFilter()
 //    Hank Childs, Mon Jan  5 15:18:09 CST 2009
 //    Add a data selection.
 //
+//    Eric Brugger, Fri Jul 24 10:59:44 PDT 2009
+//    Added the variable name to the call to GetMetaData()->GetDataExtents()
+//    so that it would get the correct interval tree.  This fix was provided
+//    Hank Childs.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -275,7 +280,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
     //
     // Get the interval tree of data extents.
     //
-    avtIntervalTree *it = GetMetaData()->GetDataExtents();
+    avtIntervalTree *it = GetMetaData()->GetDataExtents(varname);
     if (it != NULL && it->GetDimension() != 1)
     {
         debug1 << "The interval tree returned for the contour variable "
