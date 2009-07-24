@@ -115,6 +115,7 @@
 #
 #    Tom Fogal, Thu Jul 23 16:58:54 PDT 2009
 #    Changed parallel SR to IceT parallel SR.
+#    Updated Hank's email.
 #
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
@@ -129,7 +130,7 @@ errorMsgCount=0;
 touch $errorLogFile
 
 # list of users who want email every night with the log file
-logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov"
+logrecipients="miller86@llnl.gov hankchilds@gmail.com jsmeredith@ornl.gov"
 
 eqzero() {
     if test "$1" = "0"; then
