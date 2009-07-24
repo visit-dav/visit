@@ -35,101 +35,43 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
-#ifndef QVIS_POSTABLE_WINDOW
-#define QVIS_POSTABLE_WINDOW
-#include <gui_exports.h>
-#include <QString>
-#include <QvisWindowBase.h>
-
-class DataNode;
-class QvisNotepadArea;
-class QPushButton;
-class QVBoxLayout;
-class QVBoxLayout;
+#ifndef QVIS_POSTABLE_MAIN_WINDOW_H
+#define QVIS_POSTABLE_MAIN_WINDOW_H
+#include <QvisPostableWindow.h>
 
 // ****************************************************************************
-// Class: QvisPostableWindow
+// Class: QvisPostableMainWindow
 //
 // Purpose:
-//   This is a base class for postable windows.
+//   This is a small window that we post the Main window's controls into when
+//   we run on small screens.
 //
 // Notes:      
 //
 // Programmer: Brad Whitlock
-// Creation:   Tue Jul 25 17:28:28 PST 2000
+// Creation:   Thu Jul 23 17:03:01 PDT 2009
 //
 // Modifications:
-//   Brad Whitlock, Wed Aug 30 13:40:41 PST 2000
-//   Made it inherit from QvisWindowBase.
-//
-//   Brad Whitlock, Wed May 2 11:09:42 PDT 2001
-//   Removed interpreter member.
-//
-//   Brad Whitlock, Tue Sep 25 12:28:53 PDT 2001
-//   Made post() and unpost() virtual.
-//
-//   Brad Whitlock, Fri Feb 15 11:16:41 PDT 2002
-//   Made CreateEntireWindow public.
-//
-//   Brad Whitlock, Fri Sep 5 15:50:16 PST 2003
-//   Added postWhenShown static member.
-//
-//   Brad Whitlock, Mon Nov 14 10:42:26 PDT 2005
-//   Added postEnabled static member.
-//
-//   Brad Whitlock, Wed Apr  9 10:50:05 PDT 2008
-//   QString for caption and shortName.
-//
-//   Brad Whitlock, Fri May 30 09:59:10 PDT 2008
-//   Qt 4.
-//
-//   Brad Whitlock, Thu Jul 23 16:14:30 PDT 2009
-//   I added SetAddStretch and SetDismissEnabled.
-//
+//   
 // ****************************************************************************
 
-class GUI_API QvisPostableWindow : public QvisWindowBase
+class QvisPostableMainWindow : public QvisPostableWindow
 {
-    Q_OBJECT
 public:
-    QvisPostableWindow(const QString &captionString = QString::null,
-                       const QString &shortName = QString::null,
-                       QvisNotepadArea *n = 0);
-    virtual ~QvisPostableWindow();
-    virtual void CreateWindowContents() = 0;
-    QWidget *GetCentralWidget();
-    const QString &GetShortCaption();
-    bool posted();
-    virtual void CreateEntireWindow();
+    QvisPostableMainWindow(const QString &captionString = QString::null,
+                           const QString &shortName = QString::null,
+                           QvisNotepadArea *n = 0);
+    virtual ~QvisPostableMainWindow();
 
+    virtual void CreateWindowContents();
     virtual void CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *, const int *borders);
 
-    static void  SetPostEnabled(bool);
-    void         SetDismissEnabled(bool);
-    void         SetAddStretch(bool);
-protected:
-    virtual void UpdateWindow(bool doAll);
-public slots:
-    virtual void raise();
-    virtual void show();
-    virtual void hide();
-    virtual void post();
-    virtual void unpost();
-protected:
-    bool               isCreated;
-    bool               isPosted;
-    bool               addLayoutStretch;
-    QString            shortCaption;
-    QWidget            *central;
-    QVBoxLayout        *topLayout;
-    QPushButton        *postButton;
-    QPushButton        *dismissButton;
-    QvisNotepadArea    *notepad;
-
-    static bool         postWhenShown;
-    static bool         postEnabled;
+    QWidget *ContentsWidget();
+    QVBoxLayout *ContentsLayout();
+private:
+    QWidget     *contentsWidget;
+    QVBoxLayout *contentsLayout;
 };
 
 #endif
