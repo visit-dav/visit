@@ -50,6 +50,7 @@ class QComboBox;
 class QCheckBox;
 class QSplitter;
 class QTimer;
+class QVBoxLayout;
 class QvisFilePanel;
 class QvisNotepadArea;
 class QvisPlotManagerWidget;
@@ -351,6 +352,7 @@ private slots:
     void lockView();
     void unlockEverything();
 private:
+    void CreateMainContents(QWidget *parent, QSplitter *splitter, QVBoxLayout *L);
     void CreateGlobalArea(QWidget *par);
     void UpdateFileMenuPopup(QMenu *, QAction *);
     void UpdateGlobalArea(bool doAll);

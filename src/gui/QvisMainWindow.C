@@ -58,6 +58,7 @@
 #include <QvisFilePanel.h>
 #include <QvisNotepadArea.h>
 #include <QvisPostableWindow.h>
+#include <QvisPostableMainWindow.h>
 #include <QvisPlotManagerWidget.h>
 
 #include <DataNode.h>
@@ -316,6 +317,10 @@
 //
 //    Brad Whitlock, Mon Apr  6 15:17:13 PDT 2009
 //    I added 2 missing signal/slot connections.
+//
+//    Brad Whitlock, Thu Jul 23 17:03:45 PDT 2009
+//    I changed the window so when we run on short screens, the notepad
+//    becomes the dominant window control and we post everything else into it.
 //
 // ****************************************************************************
 
@@ -669,7 +674,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     spinModeAct = winPopup->addAction(tr("Spin"),
                                      this, SLOT(toggleSpinMode()));
     
-#ifndef Q_WS_MACX
+
+ #ifndef Q_WS_MACX
     // We put the Help menu here on all platforms other than the Mac.  The Mac
     // help menu is done lower down.
 
@@ -677,32 +683,45 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     AddHelpMenu();
 #endif
 
-    // Make a central widget to contain the other widgets
-    splitter = new QSplitter(this);
-    splitter->setOrientation(Qt::Vertical);
-    setCentralWidget(splitter);
+    if(qApp->desktop()->height() < 1024)
+    {
+        splitter = 0;
 
-    //
-    // Create the file panel and make it an observer of the file server.
-    //
-    filePanel = new QvisFilePanel(this);
-    splitter->addWidget(filePanel);
-    connect(filePanel, SIGNAL(reopenOnNextFrame()),
-            this, SIGNAL(reopenOnNextFrame()));
-    filePanel->ConnectFileServer(fileServer);
-    filePanel->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+        // Make the notepad be the main area.
+        notepad = new QvisNotepadArea(this);
+        setCentralWidget(notepad);
 
-    // create the plot manager    
-    QWidget     *globalAreaWidget = new QWidget(this);
-    CreateGlobalArea(globalAreaWidget);
-    splitter->addWidget(globalAreaWidget);    
-    plotManager = new QvisPlotManagerWidget(menuBar(), globalAreaWidget);
-    plotManager->ConnectPlotList(GetViewerState()->GetPlotList());
-    plotManager->ConnectFileServer(fileServer);
-    plotManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
-    plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
-    plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
-    globalAreaWidget->layout()->addWidget(plotManager);
+        // Create a postable window to house the main window's stuff.
+        QvisPostableMainWindow *pmw = new QvisPostableMainWindow(
+            tr("Main Controls"), tr("Main"), notepad);
+
+        // Create the main window's widgets into the postable window
+        pmw->ContentsWidget()->setMinimumHeight(400);
+        CreateMainContents(pmw->ContentsWidget(), 0, pmw->ContentsLayout());
+
+        // Post the window
+        pmw->post();
+    }
+    else
+    {
+        // Make a central widget to contain the other widgets
+        splitter = new QSplitter(this);
+        splitter->setOrientation(Qt::Vertical);
+        setCentralWidget(splitter);
+
+        CreateMainContents(splitter, splitter, 0);
+
+        // Create the notepad widget.
+        notepad = new QvisNotepadArea( splitter );
+
+        // May want to read these from the config file but here are the defaults.
+        int hgt = qApp->desktop()->height();
+        QList<int> splitterSizes;
+        splitterSizes.append(int(hgt * 0.3));
+        splitterSizes.append(int(hgt * 0.3));
+        splitterSizes.append(int(hgt * 0.4));
+        splitter->setSizes(splitterSizes);
+    }
 
 #if defined(Q_WS_MACX)
     // Mac OS X application guidelines require the Help menu to be the last
@@ -712,41 +731,6 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     AddHelpMenu();
 #endif
     
-    // Adjust splitter sizes and whether the notepad is visible.
-    QList<int> splitterSizes;
-    int nVisiblePanels = 2;
-    if(qApp->desktop()->height() < 1024)
-    {
-        // No notepad
-        notepad = 0;
-
-        debug1 << "The screen's vertical resolution is less than 1024 "
-                  "so the notepad will not be available." << endl;
-        QvisPostableWindow::SetPostEnabled(false);
-    }
-    else 
-    {
-        // Create the notepad widget. Use a big stretch factor so the
-        // notpad widget will fill all the remaining space.
-        notepad = new QvisNotepadArea( splitter );
-        ++nVisiblePanels;
-    }
-
-    // May want to read these from the config file but here are the defaults.
-    int hgt = qApp->desktop()->height();
-    if(nVisiblePanels == 2)
-    {
-        splitterSizes.append(int(hgt * 0.5));
-        splitterSizes.append(int(hgt * 0.5));
-    }
-    else
-    {
-        splitterSizes.append(int(hgt * 0.3));
-        splitterSizes.append(int(hgt * 0.3));
-        splitterSizes.append(int(hgt * 0.4));
-    }
-    splitter->setSizes(splitterSizes);
-
     // Create the output button and put it in the status bar as a
     // permanent widget.
     // need to add a label to the status bar so the output button 
@@ -777,46 +761,6 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     move(QPoint(100,100));
 #endif
 }
-
-
-// ****************************************************************************
-// Method: QvisMainWindow::AddHelpMenu
-//
-// Purpose: 
-//   Creates the Help menu on the menubar.
-//
-// Programmer: Sean Ahern
-// Creation:   Wed Dec 31 11:28:51 EST 2008
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisMainWindow::AddHelpMenu(void)
-{
-    menuBar()->addSeparator();
-    helpPopup = menuBar()->addMenu(tr("&Help"));
-
-    helpPopup->addAction(tr("About . . ."),
-                         this, SIGNAL(activateAboutWindow()));
-
-    helpPopup->addAction(tr("Copyright . . ."),
-                         this, SIGNAL(activateCopyrightWindow()));
-
-    helpPopup->addAction(tr("Help . . ."),
-                         this, SIGNAL(activateHelpWindow()),
-                         QKeySequence(Qt::Key_F1));
-
-    helpPopup->addAction(tr("Release notes . . ."),
-                         this, SIGNAL(activateReleaseNotesWindow()));
-
-    helpPopup->addSeparator();
-    
-    updateVisItAct = helpPopup->addAction(tr("Check for new version . . ."),
-                                          this, SIGNAL(updateVisIt()));
-}
-
 
 // ****************************************************************************
 // Method: QvisMainWindow::~QvisMainWindow
@@ -873,6 +817,94 @@ QvisMainWindow::~QvisMainWindow()
     delete outputButton;
     delete outputRed;
     delete outputBlue;
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::AddHelpMenu
+//
+// Purpose: 
+//   Creates the Help menu on the menubar.
+//
+// Programmer: Sean Ahern
+// Creation:   Wed Dec 31 11:28:51 EST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::AddHelpMenu(void)
+{
+    menuBar()->addSeparator();
+    helpPopup = menuBar()->addMenu(tr("&Help"));
+
+    helpPopup->addAction(tr("About . . ."),
+                         this, SIGNAL(activateAboutWindow()));
+
+    helpPopup->addAction(tr("Copyright . . ."),
+                         this, SIGNAL(activateCopyrightWindow()));
+
+    helpPopup->addAction(tr("Help . . ."),
+                         this, SIGNAL(activateHelpWindow()),
+                         QKeySequence(Qt::Key_F1));
+
+    helpPopup->addAction(tr("Release notes . . ."),
+                         this, SIGNAL(activateReleaseNotesWindow()));
+
+    helpPopup->addSeparator();
+    
+    updateVisItAct = helpPopup->addAction(tr("Check for new version . . ."),
+                                          this, SIGNAL(updateVisIt()));
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::CreateMainContents
+//
+// Purpose: 
+//   This method creates most of the interesting window controls.
+//
+// Arguments:
+//   parent : The parent that will contain the widgets.
+//   s      : The splitter to use.
+//   L      : The layout to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 23 16:26:55 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::CreateMainContents(QWidget *parent, QSplitter *s, QVBoxLayout *L)
+{
+    //
+    // Create the file panel and make it an observer of the file server.
+    //
+    filePanel = new QvisFilePanel(parent);
+    if(s != 0)
+        s->addWidget(filePanel);
+    if(L != 0)
+        L->addWidget(filePanel, 10);
+    connect(filePanel, SIGNAL(reopenOnNextFrame()),
+            this, SIGNAL(reopenOnNextFrame()));
+    filePanel->ConnectFileServer(fileServer);
+    filePanel->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+
+    // create the plot manager    
+    QWidget     *globalAreaWidget = new QWidget(parent);
+    CreateGlobalArea(globalAreaWidget);
+    if(s != 0)
+        s->addWidget(globalAreaWidget);
+    if(L != 0)
+        L->addWidget(globalAreaWidget, 10);
+    plotManager = new QvisPlotManagerWidget(menuBar(), globalAreaWidget);
+    plotManager->ConnectPlotList(GetViewerState()->GetPlotList());
+    plotManager->ConnectFileServer(fileServer);
+    plotManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
+    plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
+    plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    globalAreaWidget->layout()->addWidget(plotManager);
 }
 
 // ****************************************************************************
@@ -1751,13 +1783,19 @@ QvisMainWindow::GetPlotManager()
 //   Brad Whitlock, Mon Jul 24 17:43:44 PST 2006
 //   I made it use a splitter.
 //
+//   Brad Whitlock, Thu Jul 23 15:27:08 PDT 2009
+//   Guard against NULL splitter.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::SetOrientation(int orientation)
 {
-    splitter->setOrientation((orientation < 2) ? 
-                              Qt::Vertical : Qt::Horizontal);
+    if(splitter != 0)
+    {
+        splitter->setOrientation((orientation < 2) ? 
+                                  Qt::Vertical : Qt::Horizontal);
+    }
 }
 
 // ****************************************************************************
@@ -1775,6 +1813,9 @@ QvisMainWindow::SetOrientation(int orientation)
 // Modifications:
 //   Brad Whitlock, Tue Sep 19 12:06:45 PDT 2006
 //   Compensate for window decorations on the Mac.
+//
+//   Brad Whitlock, Thu Jul 23 15:27:08 PDT 2009
+//   Guard against NULL splitter.
 //
 // ****************************************************************************
 
@@ -1799,13 +1840,16 @@ QvisMainWindow::CreateNode(DataNode *parentNode)
 #endif
 
     // Add splitter values as a proportion of the window height.
-    QList<int> splitterSizes(splitter->sizes());
-    floatVector ss;
-    for(int i = 0; i < splitterSizes.size(); ++i)
-        ss.push_back(float(splitterSizes[i]) / 
-                     float(splitter->height()));
-    if(ss.size() >= 2)
-        node->AddNode(new DataNode("SPLITTER_VALUES", ss));
+    if(splitter != 0)
+    {
+        QList<int> splitterSizes(splitter->sizes());
+        floatVector ss;
+        for(int i = 0; i < splitterSizes.size(); ++i)
+            ss.push_back(float(splitterSizes[i]) / 
+                         float(splitter->height()));
+        if(ss.size() >= 2)
+            node->AddNode(new DataNode("SPLITTER_VALUES", ss));
+    }
 }
 
 // ****************************************************************************
@@ -1834,6 +1878,9 @@ QvisMainWindow::CreateNode(DataNode *parentNode)
 //
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Brad Whitlock, Thu Jul 23 15:27:08 PDT 2009
+//   Guard against NULL splitter.
 //
 // ****************************************************************************
 
@@ -1923,22 +1970,25 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
     }
 
     // Default splitter values.
-    if(splitterSizes.size() == 0)
+    if(splitter != 0)
     {
-        debug1 << mName << "Using default splitter values." << endl;
-        if(notepad != 0 && notepad->isVisible())
+        if(splitterSizes.size() == 0)
         {
-            splitterSizes.push_back(int(0.3 * h));
-            splitterSizes.push_back(int(0.3 * h));
-            splitterSizes.push_back(int(0.4 * h));
+            debug1 << mName << "Using default splitter values." << endl;
+            if(notepad != 0 && notepad->isVisible())
+            {
+                splitterSizes.push_back(int(0.3 * h));
+                splitterSizes.push_back(int(0.3 * h));
+                splitterSizes.push_back(int(0.4 * h));
+            }
+            else
+            {
+                splitterSizes.push_back(int(0.5 * h));
+                splitterSizes.push_back(int(0.5 * h));
+            }
         }
-        else
-        {
-            splitterSizes.push_back(int(0.5 * h));
-            splitterSizes.push_back(int(0.5 * h));
-        }
+        splitter->setSizes(splitterSizes);
     }
-    splitter->setSizes(splitterSizes);
 }
 
 //
