@@ -648,6 +648,9 @@ avtDatasetFileWriter::WriteSTLFile(const char *filename, bool binary)
 //    Jeremy Meredith, Tue Dec 30 09:14:08 PST 2003
 //    Removed the Curve writer and renamed this one to Curve.
 //
+//    Brad Whitlock, Fri Jul 24 11:16:02 PDT 2009
+//    Output the numbers with more precision.
+//
 // ****************************************************************************
 
 void
@@ -690,7 +693,7 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename)
         {
             double pt[3]; 
             pts->GetPoint(line_segments[i][j], pt);
-            ofile << pt[0] << " " << pt[1] << endl;
+            ofile << std::setprecision(16) << pt[0] << " " << pt[1] << endl;
         }
     }
 
