@@ -257,8 +257,8 @@ check-make-and-env-vars:
                 echo "Please temporarily remove these variables from your enviornment"; \
 	        echo "using unsetenv (csh) or unset (sh) before proceeding. Or,"; \
 	        echo "you may instead and at your own risk, override this error by"; \
-                echo "adding 'VISIT_NOCKENV=1' to your make command line."; \
-                echo "(e.g. 'make VISIT_NOCKENV=1')."; \
+                echo "adding 'VISIT_NOCKENV=1' to your make command line or set."; \
+                echo "set VISIT_NOCKENV to 1 in your enviornment."; \
 	        exit 1; \
 	    else \
 	        echo "OK"; \
