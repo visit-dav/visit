@@ -328,6 +328,10 @@ static int Geti(const char *s)
 //
 //    Mark C. Miller, Wed May 13 23:11:27 PDT 2009
 //    Added support for materials.
+//
+//    Mark C. Miller, Mon Jul 27 20:52:42 PDT 2009
+//    Moved re-setting of matCountOpt from -1 (which means to search) to
+//    OUTSIDE of conditional compilation for !mdserver.
 // ****************************************************************************
 
 bool
@@ -890,10 +894,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 #if !defined(MDSERVER)
     else
         ugrid->Delete();
+#endif
 
     if (matCountOpt == -1)
         matCountOpt = uniqMatIds.size();
-#endif
 
     visitTimer->StopTimer(total, "Loading NASTRAN file");
 

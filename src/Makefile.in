@@ -167,6 +167,10 @@
 #    Remove '==' inside test, as it doesn't work on my machine (it is not
 #    compliant).
 #
+#    Mark C. Miller, Tue Jul 28 09:37:55 PDT 2009
+#    Added ability to override env-make var collision test and changed its
+#    warning message to indicate that.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -231,7 +235,7 @@ visitmodule:
 
 check-make-and-env-vars:
 	@isdbg=$$(echo $(CXXFLAGS) | tr ' ' '\n' | grep -e '-g'); \
-	if test -z "$$isdbg"; then \
+	if test -z "$$isdbg" -a -z "$(VISIT_NOCKENV)"; then \
 	    echo "Checking for possible collisions between environment"; \
 	    echo -n "and VisIt's Make variables..."; \
 	    env | cut -d'=' -f1 | sort | uniq > env_vars.txt; \
@@ -245,10 +249,16 @@ check-make-and-env-vars:
 	    rm -f env_vars.txt make_vars.txt; \
 	    if test -n "$$em_vars"; then \
 	        echo ""; \
-	        echo "The following variables in your environment may collide with"; \
-	        echo "variables in VisIt's Makefiles. Please temporarily remove"; \
-	        echo "using unsetenv (csh) or unset (sh) before proceeding..."; \
+	        echo "The following variables in your environment MAY collide with"; \
+	        echo "variables in VisIt's Makefiles..."; \
+	        echo "------------------------------------------------------------"; \
 	        echo $$em_vars | tr ' ' '\n'; \
+	        echo "------------------------------------------------------------"; \
+                echo "Please temporarily remove these variables from your enviornment"; \
+	        echo "using unsetenv (csh) or unset (sh) before proceeding. Or,"; \
+	        echo "you may instead and at your own risk, override this error by"; \
+                echo "adding 'VISIT_NOCKENV=1' to your make command line."; \
+                echo "(e.g. 'make VISIT_NOCKENV=1')."; \
 	        exit 1; \
 	    else \
 	        echo "OK"; \
