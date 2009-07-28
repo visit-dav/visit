@@ -117,6 +117,9 @@
 #    Changed parallel SR to IceT parallel SR.
 #    Updated Hank's email.
 #
+#    Mark C. Miller, Tue Jul 28 11:42:04 PDT 2009
+#    Added compositing test to skip list. Adding some line_scan results to
+#    skip list.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -437,7 +440,11 @@ skipList_for_Davinci="\
           davinci,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
           davinci,serial:tests/databases/visus.py:visus_07,visus_08,visus_09 \
           davinci,parallel:tests/databases/visus.py:visus_07,visus_08,visus_09 \
-          davinci,scalable,parallel,icet:tests/databases/visus.py:visus_07,visus_08,visus_09"
+          davinci,scalable,parallel,icet:tests/databases/visus.py:visus_07,visus_08,visus_09 \
+          davinci,parallel:tests/rendering/compositing.py \
+          davinci,scalable,parallel,icet:tests/rendering/compositing.py \
+          davinci,parallel:tests/queries/line_scan.py:ls_1_16,ls_1_18 \
+          davinci,scalable,parallel,icet:tests/queries/line_scan.py:ls_1_16,ls_1_18"
           
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs $skipList_for_Davinci"
 
