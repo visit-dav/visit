@@ -120,6 +120,9 @@
 #    Mark C. Miller, Tue Jul 28 11:42:04 PDT 2009
 #    Added compositing test to skip list. Adding some line_scan results to
 #    skip list.
+#
+#    Mark C. Miller, Wed Jul 29 09:26:23 PDT 2009
+#    Change to post not just failed results but all results.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -484,7 +487,8 @@ for m in $modes; do
     checkAndHandleError $curerror warning "test mode $m failed" short_summary 
 
     failedPyFiles=`grep failed short_summary | cut -d':' -f1`
-    if test -n "$failedPyFiles"; then
+    #if test -n "$failedPyFiles"; then
+    if test 1; then
 
         mkdir html_$dateTag
         cp html/index.html html_$dateTag/.
