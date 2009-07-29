@@ -123,6 +123,10 @@
 #
 #    Mark C. Miller, Wed Jul 29 09:26:23 PDT 2009
 #    Change to post not just failed results but all results.
+#
+#    Tom Fogal, Wed Jul 29 13:09:57 MDT 2009
+#    Added Sean's email to the list of people who always get emails.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -137,6 +141,7 @@ touch $errorLogFile
 
 # list of users who want email every night with the log file
 logrecipients="miller86@llnl.gov hankchilds@gmail.com jsmeredith@ornl.gov"
+logrecipients="${logrecipients} ahern@ornl.gov"
 
 eqzero() {
     if test "$1" = "0"; then
