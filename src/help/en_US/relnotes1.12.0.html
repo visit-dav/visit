@@ -202,7 +202,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's component launcher program was fixed so users can use "Parse from SSH_CLIENT" in their host profiles when connecting to libsim-instrumented simulations that run on remote computers. That setting would previously cause simulations to crash when VisIt connected to them.</li>
   <li>Fixed log-view scaling so that it works correctly with 2d Contour plots.</li>
   <li>VisIt's Spreadsheet plot now highlights the correct cell for node picks.</li>
-  <li>VisIt's can now group files ending in <i>.h5</i> when smart file grouping is used.</li>
+  <li>VisIt can now group files ending in <i>.h5</i> when smart file grouping is used.</li>
   <li>3D Text annotations now are drawn when scalable rendering is used.</li>
   <li>The POV-Ray file writer now correctly writes its generated include files
        (such as color tables, atomic property definitions) to the same directory
@@ -227,6 +227,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a parallel bug with DDFs that caused all processors to unnecessarily write results to disk.</li>
   <li>The Xmdv writer now writes numbers with more precision.</li>
   <li>Save as curve now writes numbers with more precision.</li>
+  <li>VisIt's Point3D reader could crash the metadata server when changing files.</li>
 </ul>
 
 <a name="Config_changes"></a>

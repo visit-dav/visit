@@ -84,7 +84,7 @@ avtPoint3DFileFormat::avtPoint3DFileFormat(const char *fname)
 {
     haveReadData = false;
     column1 = NULL;
-    column1 = NULL;
+    column2 = NULL;
     column3 = NULL;
     column4 = NULL;
     points  = NULL;

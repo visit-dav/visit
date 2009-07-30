@@ -728,14 +728,8 @@ endif
 #
 # Determine the names of the hdf5 shared libraries.
 #
-set HdfHDF5LibName = ""
-if (! -e $VisItDir/lib/libhdf5.$SHLIB_SOEXT) then
-    set HdfHDF5LibName = "libhdf5.$SHLIB_SOEXT"
-endif
-set HdfSzipLibName = ""
-if (! -e $VisItDir/lib/libsz.$SHLIB_SOEXT) then
-    set HdfSzipLibName = "libsz.$SHLIB_SOEXT"
-endif
+set HdfHDF5LibName = "libhdf5.$SHLIB_SOEXT"
+set HdfSzipLibName = "libsz.$SHLIB_SOEXT"
 
 #
 # Determine the os version string and hardware os string.
