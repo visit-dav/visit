@@ -127,6 +127,8 @@
 #    Tom Fogal, Wed Jul 29 13:09:57 MDT 2009
 #    Added Sean's email to the list of people who always get emails.
 #
+#    Mark C. Miller, Thu Jul 30 08:23:14 PDT 2009
+#    Made it count fact that script was changed as +1 in numChangedFiles.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -347,6 +349,9 @@ done
 
 # See if any files actually changed
 numChangedFiles=`grep '^[ADUCG]' nersc_repo_update_$dateTag | grep -v '^At revision' | wc -l | tr -s ' ' | cut -d' ' -f2`
+if test $scriptWasChanged -eq 1; then
+    numChangedFiles=`expr $numChangedFiles + 1`
+fi
 if test $numChangedFiles -eq 0; then
     if test $skipIfNoChanges -eq 1; then
         checkAndHandleError 1 flush "No Changes Found. Skipping Tests"
