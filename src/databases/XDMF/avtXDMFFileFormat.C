@@ -1518,6 +1518,45 @@ avtXDMFFileFormat::ParseGridInformation(string &baseIndex,
     }
 }
 
+// ****************************************************************************
+//  Method: avtXDMFFileFormat::ParseTime
+//
+//  Purpose:
+//      Parse a Time node in the DOM tree.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   Wed Jul 29 18:08:15 PDT 2009
+//
+// ****************************************************************************
+
+void
+avtXDMFFileFormat::ParseTime(string &time)
+{
+    while (xdmfParser.GetNextAttribute())
+    {
+        if (strcmp(xdmfParser.GetAttributeName(), "VALUE") == 0)
+        {
+            time = string(xdmfParser.GetAttributeValueAsUpper());
+        }
+    }
+
+    //
+    // Process the rest of the information.
+    //
+    XDMFParser::ElementType elementType = xdmfParser.GetNextElement();
+    while (elementType != XDMFParser::TYPE_EOF)
+    {
+        if (elementType == XDMFParser::TYPE_START_TAG)
+        {
+            xdmfParser.SkipToEndTag();
+        }
+        else if (elementType == XDMFParser::TYPE_END_TAG)
+        {
+            break;
+        }
+        elementType = xdmfParser.GetNextElement();
+    }
+}
 
 // ****************************************************************************
 //  Method: avtXDMFFileFormat::ParseUniformGrid
@@ -1550,6 +1589,8 @@ avtXDMFFileFormat::ParseGridInformation(string &baseIndex,
 //    I enhanced the routine to be insensitive to the case for element names,
 //    attribute names, and attribute values that were not names.
 //
+//    Mark C. Miller, Thu Jul 30 11:12:17 PDT 2009
+//    Added parsing of <Time Value="xxx" /> element.
 // ****************************************************************************
 
 void
@@ -1570,6 +1611,7 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     vector<VarInfo*> varList;
     string    baseIndex;
     string    ghostOffsets;
+    string    time;
 
     //
     // Process the elements of the grid.
@@ -1596,6 +1638,10 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
             else if (strcmp(xdmfParser.GetElementName(), "INFORMATION") == 0)
             {
                 ParseGridInformation(baseIndex, ghostOffsets);
+            }
+            else if (strcmp(xdmfParser.GetElementName(), "TIME") == 0)
+            {
+                ParseTime(time);
             }
             else
             {
@@ -1867,6 +1913,11 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
                 &meshInfo->ghostOffsets[2], &meshInfo->ghostOffsets[3],
                 &meshInfo->ghostOffsets[0], &meshInfo->ghostOffsets[1]);
         }
+    }
+
+    if (time != "")
+    {
+        sscanf(time.c_str(), "%lf", &meshInfo->time);
     }
 
     for (int i = 0; i < nMeshData; i++)
@@ -3608,4 +3659,20 @@ avtXDMFFileFormat::GetVectorVar(int domain, const char *varname)
     delete [] buf;
 
     return rv;
+}
+
+// ****************************************************************************
+//  Method: avtXDMFFileFormat::GetTime
+//
+//  Programmer: Mark C. Miller
+//  Created:    Thu Jul 30 11:12:53 PDT 2009
+//
+// ****************************************************************************
+
+double avtXDMFFileFormat::GetTime()
+{
+    if (fileMeshList.size())
+        return fileMeshList[0]->time;
+    else
+        return avtFileFormat::INVALID_TIME;
 }
