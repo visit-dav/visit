@@ -99,6 +99,21 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A LAMMPS reader has been added. It supports two of LAMMPS file formats: the input format used in the read_data command, and the output dump format of several variants.</li>
   <li>A paraDIS reader has been added. It supports paraDIS data and paraDIS-style tecplot data.</li>
   <li>The Nek3D reader was replaced with the Nek5000 reader. The Nek5000 reader has better performance than the Nek3D reader and corrects a number of bugs that were present in the Nek3D reader.</li>
+  <li>NASTRAN reader was enhanced to handle a specialized exponentiation notation where
+      the 'e' character is intentionally NOT used to provide one additional character
+      of precision in the mantissa of floating point data.</li>
+  <li>NASTRAN reader was enhanced to handle materials. A read option can be set to
+      either specify the number of materials before opening the file or tell VisIt to
+      search for materials during the open (which may substantially increase time to
+      open a file). By default, materials are NOT enabled.</li> 
+  <li>A bug in the Silo plugin effecting plotting of multi-material objects with
+      name and/or color options specified was fixed.</li> 
+  <li>Fixed processing of hideFromGUI option for numerous Silo objects in the Silo plugin.</li>
+  <li>Performance of ITAPS plugin with debugging output was improved substantially.</li>
+  <li>ITAPS plugin was enhanced to handle a Zoltan mesh PARALLEL_PARTITION grouping.</li>
+  <li>Robustness of Silo plugin was improved so that otherwise good Silo files with
+      some bad objects may still load into VisIt properly.</li>
+  <li>XDMF plugin was enhanced to handle the Time tag.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -171,6 +186,13 @@ In the gui, the <i>Hohlraum Flux</i>query now has a new text field labeled "Divi
   <li><TT>build_visit</TT> will pause when notifying the user that it cannot find required programs for the curses-based interface.</li>
   <li>Fixed a parallel bug with DDFs that caused all processors to unnecessarily write results to disk.</li>
   <li>Save as curve now writes numbers with more precision.</li>
+  <li>build_visit now properly handles Silo as optional instead of always requiring it.</li> 
+  <li>visitconvert now supports read options.</li>
+  <li>Parallel data collection algorithm on engine, just prior to shipment to viewer
+      was improved to address scaling issues. The improvement is substantial for large
+      numbers of cpus (say more than 1,000).</li>
+  <li>A problem launching VisIt from one portion of a Lustre filesystem when another portion
+      is down was fixed.</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -186,6 +208,13 @@ In the gui, the <i>Hohlraum Flux</i>query now has a new text field labeled "Divi
   <li>The configure script now provides an --enable-engine-only option that lets you build just the compute engine and its plugins. This option is useful when you need to build just a compute engine for a remote server.</li>
   <li>The configure script now provides an --enable-server-components-only option that lets you build only the compute engine, mdserver, vcl, and their plugins.</li>
   <li>The compute engine was ported to BlueGene/P.</li>
+  <li>VisIt's configure script now provides an --enable-dbio-only option that builds only
+      enough of VisIt to link the visitconvert tool. This basically involves only the
+      parts of VisIt necessary to perform database I/O operations.</li>
+  <li>For builds in which CXXFLAGS does NOT contain '-g', top-level Makefile now performs a
+      check to see if any environment variables <i>might</i> collide with VisIt make
+      variables. If such a situation is detected, a warning message is issued and the
+      make is aborted. The warning message indicates how to correct.<li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
