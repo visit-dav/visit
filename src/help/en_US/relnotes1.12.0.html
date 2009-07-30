@@ -114,6 +114,18 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Robustness of Silo plugin was improved so that otherwise good Silo files with
       some bad objects may still load into VisIt properly.</li>
   <li>XDMF plugin was enhanced to handle the Time tag.</li>
+  <li>The simulation reader was not freeing unstructured data.</li>
+  <li>The M3D reader was updated.</li>
+  <li>The Point3D reader could crash the metadata server when changing files.</li>
+  <li>The Xmdv writer now writes numbers with more precision.</li>
+  <li>The XDMF reader was enhanced to recognize "xdmf" as an extension.</li>
+  <li>The XDMF reader is now case insensitive for all keywords in the xml file.</li>
+  <li>A bug was corrected in the XDMF reader where integer data was not properly handled in an HDF5 file.</li>
+  <li>A memory error was corrected in the PDB PF3D reader.</li>
+  <li>The PDB PF3D reader was enhanced to support a new version of the PF3D format.</li>
+  <li>The Silo writer was enhanced so it saves expression definitions stored in the files associated with the data being exported when exporting databases. This permits VisIt to transform an input database, export, and still retain the expression definitions from the original database.</li>
+  <li>The Silo writer was enhanced to handle the case where the meshes in a multimesh or multivar were not all of the same type.</li>
+  <li>The Nek3D reader was replaced with the Nek5000 reader. The Nek5000 reader has better performance than the Nek3D reader and corrects a number of bugs that were present in the Nek3D reader.</li>
 </ul>
 
 <a name="Plot_changes"></a>
