@@ -51,7 +51,22 @@
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
                 <Object name="HostProfile">
-                    <Field name="profileName" type="string">parallel</Field>
+                    <Field name="profileName" type="string">regular</Field>
+                    <Field name="host" type="string">franklin.nersc.gov</Field>
+                    <Field name="numProcessors" type="int">64</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">regular</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">01:00:00</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/aprun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/scratch2/ProjectData/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="tunnelSSH" type="bool">true</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">interactive</Field>
                     <Field name="host" type="string">franklin.nersc.gov</Field>
                     <Field name="numProcessors" type="int">16</Field>
                     <Field name="partitionSet" type="bool">true</Field>
@@ -63,7 +78,20 @@
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
-                <Field name="activeProfile" type="int">1</Field>
+                 <Object name="HostProfile">
+                    <Field name="profileName" type="string">debug</Field>
+                    <Field name="host" type="string">franklin.nersc.gov</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">debug</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/aprun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/scratch2/ProjectData/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="tunnelSSH" type="bool">true</Field>
+                </Object>
+                <Field name="activeProfile" type="int">0</Field>
             </Object>
         </Object>
     </Object>
