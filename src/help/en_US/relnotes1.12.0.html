@@ -51,11 +51,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 1.12</font></b></p>
 <ul>
-  <li>You can now transform the time shown in the database information and time slider annotations. The new controls for time in the Annotations window allow you to scale time and add an offset.</li>
-  <li>New expressions are available that compute hyperbolic sine, consine and tangent.<li>
-  <li>You can now execute Ultra (curve plotting software) commands from within VisIt. This is accomplished from the CLI by using the new 'LoadUltra()' command, which will replace VisIt's command prompt with an Ultra prompt, allowing only Ultra commands to be entered. 'end' or 'quit' must be entered to return to VisIt's cli prompt.  Use 'help' at the Ultra prompt for information about currently supported commands.</li>
-  <li>The Spreadsheet plot was enhanced so it is now possible to extract rows or columns of data and create Curve plots of the data vs. the X or Y mesh coordinates.  This allows plotting of curves from what is essentially a "logical lineout".</li>
-  <li>An option to replace only selected plots was added. It is available from the right click popup menu in the File Panel.</li>
+  <li>It is now possible to transform the time shown in the database information and time slider annotations. The new controls for time in the Annotations window allow you to scale time and add an offset.</li>
+  <li>It is now possible to execute Ultra (curve plotting software) commands from within VisIt. This is accomplished from the CLI by using the new 'LoadUltra()' command, which will replace VisIt's command prompt with an Ultra prompt, allowing only Ultra commands to be entered. 'end' or 'quit' must be entered to return to VisIt's cli prompt.  Use 'help' at the Ultra prompt for information about currently supported commands.</li>
+  <li>It is now possible to replace only selected plots. It is available from the right click popup menu in the File Panel.</li>
   <li>VisIt's Main window has been reorganized when running on computers with displays whose vertical resolutions is less than 1024 pixels. When running on such a display, the entire Main window is now a notepad area and the usual Main window contents are posted as a tab into the notepad. This permits other VisIt postable windows to be posted instead of preventing postable windows from posting.</li>
 </ul>
 
@@ -63,188 +61,131 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Advanced features added in version 1.12</font></b></p>
 <ul>
   <li>VisIt can now connect to simulations using SSH tunneling.</li>
+  <li>The makemovie script was enhanced to take the option -enginerestartinterval. It causes the engine to be restarted every time the specified number of images is created. This is useful if there is a memory leak in VisIt that causes makemovie to hang after some number of images is created.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 1.12</font></b></p>
 <ul>
-  <li>VisIt's PDB reader now supports "streak plots". A streak plot is a 1D
-      slice through an array that is stacked vertically and shown over time
-      along the X axis. Streak plots reveal time-varying behavior present in
-      the 1D slice as a 2D dataset. Streak plots are mainly for the investigation
-      of "history data", which are various arrays stored to the PDB file by
-      a simulation's user. Since history data are arbitrary and may not even
-      be mesh data, VisIt does not know how to handle them in general. The PDB
-      reader allows the user to provide a simple "schema" file that contains
-      "streakplot" commands that inform the PDB reader how to slice and assemble
-      various history data arrays into streak plot datasets that VisIt can
-      visualize.
-  </li>
-  <li>VisIt's Pixie reader was fixed so moving meshes work properly.</li>
-  <li>VisIt's Silo plugin was enhanced so it can preserve directory
-      hierarchies for variables when exporting databases. This means that 
-      variables that contain slashes "/" in the names will cause intermediate
-      directories to be created, which is most often how those variables 
-      acquired the "/" characters.</li>
-  <li>VisIt can accept expression definitions from files that it opens.
-      VisIt's Silo plugin was enhanced so it saves those expression definitions
-      when exporting databases. This permits VisIt to transform an input
-      database, export, and still retain the expression definitions from
-      the original database.</li>
-  <li>VisIt's Dyna3D reader has been enhanced so it is more tolerant of
-      variable length material cards and malformed material cards.</li>
-  <li>VisIt's Mili reader is now available for the windows platform.</li>
-  <li>VisIt's STL reader has been fixed so it no longer crashes on MacOS X.</li>
-  <li>VisIt's BOV reader has been enhanced so it supports short integer (16 bit) 
-      data. Use the <b>SHORT</b> keyword for the DATA_FORMAT in the BOV header file
-      to specify that your BOV file contains short integer data.</li>
-  <li>The accepted maximum line length in VisIt's PlainText reader has been
-      increased from 4K to 32K characters.</li>
-  <li>Added database readers for paraDIS data, and for paraDIS-style tecplot data.  </li>
-  <li>VisIt's PDB reader supports another convention.</li>
-  <li>VisIt's Silo writer has been enhanced to properly save out ghost zones for
-      unstructured meshes as ghost instead of as real zones. This ensures they 
-      will be handled correctly when the Silo dataset is read back into VisIt.</li>
-  <li>VisIt's VTK reader has been enhanced so it exposes array variables for arrays
-      contain many components. If those arrays contain character or unsigned character
-      data then VisIt exposes them as label variables.</li>
-  <li>VisIt's PATRAN reader now serves up cell-centered variables defined with
-      card 4 as scalars that can be plotted. For lack of a better method of
-      naming them, they are called: property1, property2, and so on.</li>
-  <li>VisIt's MFIX reader was fixed to support multiple time states.</li>
-  <li>VisIt's Enzo reader now supports the new packed AMR version of
-       this format.</li>
-  <li>VisIt now has a LAMMPS reader which supports two of LAMMPS file
-       formats: the input format used in the read_data command,
-       and the output dump format of several variants.</li>
-  <li>VisIt's XYZ file format now supports Exporting data.</li>
-  <li>The XYZ file format reader now supports both atomic numbers and atomic
-       symbols in the first column, it now allows differing numbers of
-       atoms in each time step, and it also now supports the CrystalMaker
-       variant of the format.</li>
-  <li>VisIt's PFLOTRAN reader now supports the most current variant of the format.
-       Note that variable centering has changed; this improves support for the
-       old format as well, but turns off automatic domain decomposition for this
-       old format.  It also works around a bug in some HDF5 implementations which
-       caused problems when reading integer data.</li>
-  <li>Added a reader for PlasmaState monitor files.</li>
+  <li>The PDB reader now supports "streak plots". A streak plot is a 1D slice through an array that is stacked vertically and shown over time along the X axis. Streak plots reveal time-varying behavior present in the 1D slice as a 2D dataset. Streak plots are mainly for the investigation of "history data", which are various arrays stored to the PDB file by a simulation's user. Since history data are arbitrary and may not even be mesh data, VisIt does not know how to handle them in general. The PDB reader allows the user to provide a simple "schema" file that contains "streakplot" commands that inform the PDB reader how to slice and assemble various history data arrays into streak plot datasets that VisIt can visualize.</li>
+  <li>The Pixie reader was fixed so moving meshes work properly.</li>
+  <li>The Dyna3D reader has been enhanced so it is more tolerant of variable length material cards and malformed material cards.</li>
+  <li>The Mili reader is now available for the windows platform.</li>
+  <li>The STL reader has been fixed so it no longer crashes on MacOS X.</li>
+  <li>The BOV reader has been enhanced so that it supports short integer (16 bit) data. Use the <b>SHORT</b> keyword for the DATA_FORMAT in the BOV header file to specify that your BOV file contains short integer data.</li>
+  <li>The PlainText reader has been enhanced so that it accepts a maximum line length or 32K characters, up from 4K characters.</li>
+  <li>The PDB reader supports another convention.</li>
+  <li>The VTK reader has been enhanced so it exposes array variables for arrays containing many components. If those arrays contain character or unsigned character data then VisIt exposes them as label variables.</li>
+  <li>The PATRAN reader now serves up cell-centered variables defined with card 4 as scalars that can be plotted. For lack of a better method of naming them, they are called: property1, property2, and so on.</li>
+  <li>The MFIX reader was fixed to support multiple time states.</li>
+  <li>The Enzo reader now supports the new packed AMR version of this format.</li>
+  <li>The XYZ file format now supports Exporting data.</li>
+  <li>The XYZ file reader now supports both atomic numbers and atomic symbols in the first column, it now allows differing numbers of atoms in each time step, and it also now supports the CrystalMaker variant of the format.</li>
+  <li>The PFLOTRAN reader now supports the most current variant of the format.  Note that variable centering has changed; this improves support for the old format as well, but turns off automatic domain decomposition for this old format.  It also works around a bug in some HDF5 implementations which caused problems when reading integer data.</li>
+  <li>The simulation reader was not freeing unstructured data.</li>
+  <li>The M3D reader was updated.</li>
+  <li>The Point3D reader could crash the metadata server when changing files.</li>
+  <li>The Xmdv writer now writes numbers with more precision.</li>
+  <li>The XDMF reader was enhanced to recognize "xdmf" as an extension.</li>
+  <li>The XDMF reader is now case insensitive for all keywords in the xml file.</li>
+  <li>A bug was corrected in the XDMF reader where integer data was not properly handled in an HDF5 file.</li>
+  <li>A memory error was corrected in the PDB PF3D reader.</li>
+  <li>The PDB PF3D reader was enhanced to support a new version of the PF3D format.</li>
+  <li>The Silo writer has been enhanced to properly save out ghost zones for unstructured meshes as ghost instead of as real zones. This ensures they will be handled correctly when the Silo dataset is read back into VisIt.</li>
+  <li>The Silo writer was enhanced so it saves expression definitions stored in the files associated with the data being exported when exporting databases. This permits VisIt to transform an input database, export, and still retain the expression definitions from the original database.</li>
+  <li>The Silo writer was enhanced so that it preserves directory hierarchies for variables when exporting databases. This means that variables that contain slashes "/" in the names will cause intermediate directories to be created, which is most often how those variables acquired the "/" characters.</li>
+  <li>The Silo writer was enhanced to handle the case where the meshes in a multimesh or multivar were not all of the same type.</li>
+  <li>A PlasmaState reader has been added.</li>
+  <li>A LAMMPS reader has been added. It supports two of LAMMPS file formats: the input format used in the read_data command, and the output dump format of several variants.</li>
+  <li>A paraDIS reader has been added. It supports paraDIS data and paraDIS-style tecplot data.</li>
+  <li>The Nek3D reader was replaced with the Nek5000 reader. The Nek5000 reader has better performance than the Nek3D reader and corrects a number of bugs that were present in the Nek3D reader.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.12</font></b></p>
 <ul>
-  <li>The Poincar&eacute; plot has been added, which supports topological analysis of magnetic fieldlines in fusion codes.</li>
-  <li>The Mesh plot now supports transulcent mesh lines.</li>
-  <li>The Parallel Coordinates plot now supports a graduated color scheme
-       for focus rendering, similar to the way the context is rendered.</li>
-  <li>The multidimensional axes, such as the ones used in the Parallel Coordinates
-       plot, have been improved with support for scientific notation, correct number
-       of significant digits in tick mark labels, and better fonts.</li>
-  <li>Subset plots of whole meshes -- a simple way to get a single-color
-       lit and shaded plot of an entire dataset -- now work correctly.</li>
-  <li>The Parallel Coordinates plot now supports histograms for the context,
-       which allows it to function with constant speed when using supported
-       formats like FastBit.</li>
-  <li>The Parallel Coordinates plot now also supports optionally using histograms
-       for the focus instead of plotting all data values.  For a fixed
-       display resolution, this is functionally equivalent when using a single
-       color focus, but scales to arbitrarily large data sets.</li>
-  <li>Streamlines can be colored by a mesh variable.</li>
+  <li>The <i>Poincar&eacute;</i> plot has been added, which supports topological analysis of magnetic fieldlines in fusion codes.</li>
+  <li>The <i>Spreadsheet</i> plot was enhanced so it is now possible to extract rows or columns of data and create <i>Curve</i> plots of the data vs. the X or Y mesh coordinates. This allows plotting of curves from what is essentially a "logical lineout".</li>
+  <li>The <i>Spreadsheet</i> plot now highlights the correct cell for node picks.</li>
+  <li>The <i>Mesh</i> plot now supports transulcent mesh lines.</li>
+  <li>A <i>Subset</i> plot of a whole mesh, a simple way to get a single-color lit and shaded plot of an entire dataset, now works correctly.</li>
+  <li>The multidimensional axes, such as the ones used in the <i>Parallel Coordinates</i> plot, have been improved with support for scientific notation, correct number of significant digits in tick mark labels, and better fonts.</li>
+  <li>The <i>Parallel Coordinates</i> plot now supports a graduated color scheme for focus rendering, similar to the way the context is rendered.</li>
+  <li>The <i>Parallel Coordinates</i> plot now supports histograms for the context, which allows it to function with constant speed when using supported formats like FastBit.</li>
+  <li>The <i>Parallel Coordinates</i> plot now also supports optionally using histograms for the focus instead of plotting all data values. For a fixed display resolution, this is functionally equivalent when using a single color focus, but scales to arbitrarily large data sets.</li>
+  <li>Some bugs related to axes and the <i>Parallel Coordinates</i> plot were fixed, including a crash, which could occur in unusual circumstances.</li>
+  <li>The <i>Streamline</i> plot has been enhanced so that streamlines can be colored by a mesh variable.</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 1.12</font></b></p>
 <ul>
-  <li>Fixed the Box operator to work correctly with curves.</li>
-  <li>The Revolve operator was fixed so it can once more revolve about a user-defined axis of revolution.</li>
-  <li>Fixed Lineout operator's no-sampling mode to enable handling of very small-scale data </li>
-  <li>The Replicate operator now has a new feature which allows it to shift
-       the origin/extents of a periodic-boundary condition atomic data set.</li>
-  <li></li>
+  <li>The <i>Box</i> operator now works correctly with curves.</li>
+  <li>The <i>Revolve</i> operator was fixed so it can once more revolve about a user-defined axis of revolution.</li>
+  <li>The <i>Lineout</i> operator was fixed so that the no-sampling mode handles very small-scale data.</li>
+  <li>The <i>Replicate</i> operator has a new feature which allows it to shift the origin/extents of a periodic-boundary condition atomic data set.</li>
+  <li>The <i>Contour</i> operator was corrected so that it would properly handle the case where the operator was iso surfacing based on the non default variable and the database reader providing the data provided interval trees for the variables in the file.</li>
+  <li>The <i>TriangulateRegularPoints</i> operator was added. It will triangulate a set of points into a mesh assuming that the points come from regularly sampling a topologically 2 dimensional surface. If there are holes in the surface it will maintain those holes. The operator will try to determine the sampling interval in the x and y directions. If it gets it wrong the user can input them manually. The algorithm is amazingly tolerant of incorrect sampling intervals that are greater than the actual sampling interval. Values smaller than the actual sampling interval will result in gaps in the surface.</li>
 </ul>
 
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 1.12</font></b></p>
 <ul>
-  <li>Added hyperbolic versions of sine, cosine and tangent: sinh, cosh, tanh</li>
-  <li>Added optional numeric argument for ln and log10 expressions. The value specified will be used in liu of taking ln/log10 of non-positive values and will prevent VisIt from throwing exceptions when non-positive values are encountered.</li>
-  <li>Better support for various centering options in expressions, including
-       single-cell meshes and other unusual cases.</li>
+  <li>Added hyperbolic versions of sine, cosine and tangent: sinh, cosh, and tanh.</li>
+  <li>An optional numeric argument was added to the ln and log10 expressions. The value specified will be used in liu of taking ln/log10 of non-positive values and will prevent VisIt from throwing exceptions when non-positive values are encountered.</li>
+  <li>Better support for various centering options was added to expressions, including single-cell meshes and other unusual cases.</li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 1.12</font></b></p>
 <ul>
+  <li>The <i>Hohlraum Flux</i> query could crash the parallel compute engine if a processor did not have data.</li>
+  <li>The <i>Hohlraum Flux</i> query could return all zeroes in the event that many of the line segments produced by its line scan were duplicates. This prevented the query from linking the line scans into larger connected lines along which the <i>Hohlraum Flux</i> query integrates its results.</li>
+  <li>The <i>Hohlraum Flux</i> query was enhanced so that it takes an additional argument that indicates if it should use the emissivity divided by the absorbtivity in place of the emissivity.<br><br>
+  In the cli, the <i>Hohlraum Flux</i> query now takes an optional second integer value that controls this behavior. The old syntax, which is still supported is:<br><br>
+Query("Hohlraum Flux", 100, 0.5, 0.5, 0., 0.1, 0., 0., ("a0", "e0"))<br><br>
+The new syntax is now:<br><br>
+Query("Hohlraum Flux", 100, 0, 0.5, 0.5, 0., 0.1, 0., 0., ("a0", "e0"))<br><br>
+The third argument controls the optional behavior. Using a "0" gives the old behavior and using a "1" gives the new optional behavior.<br><br>
+In the gui, the <i>Hohlraum Flux</i>query now has a new text field labeled "Divide Emis by Absorb" that controls this behavior. As with the cli, using a "0" gives the old behavior and using a "1" gives the new behavior.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 1.12</font></b></p>
 <ul>
-  <li>Various compilation issues were resolved for compiling VisIt on
-      Linux-PPC systems.  Thanks to Patrick Shinpaugh for the fixes!</li>
-  <li>When using the context menu in the plot list, copying a plot via the
-      <i>Copy plot</i> menu option would result in no plots being selected.
-      The default behavior has been modified so the new, copied plot is
-      made active.</li>
-  <li>The Fortran libsim interface could crash the simulation in the event that
-      VisIt was unable to connect to the simulation.</li>
-  <li>VisIt was not sending expression definitions to the compute engine
-      prior to executing a database query. This could cause database queries 
-      to fail if the expressions had not already been sent to the compute
-      engine for another reason such as for creating a plot.</li>
-  <li>VisIt's <i>Hohlraum Flux</i> query could crash the parallel compute engine if
-      a processor did not have data.</li>
-  <li>VisIt's <i>Hohlraum Flux</i> query could return all zeroes in the event that
-      many of the line segments produced by its line scan were duplicates. This prevented
-      the query from linking the line scans into larger connected lines along which
-      the <i>Hohlraum Flux</i> query integrates its results.</li>
-  <li>VisIt's simulation database reader was not freeing unstructured data.</li>
+  <li>Various compilation issues were resolved for compiling VisIt on Linux-PPC systems.  Thanks to Patrick Shinpaugh for the fixes!</li>
+  <li>When using the context menu in the plot list, copying a plot via the <i>Copy plot</i> menu option would result in no plots being selected. The default behavior has been modified so the new, copied plot is made active.</li>
+  <li>The Fortran libsim interface could crash the simulation in the event that VisIt was unable to connect to the simulation.</li>
+  <li>VisIt was not sending expression definitions to the compute engine prior to executing a database query. This could cause database queries to fail if the expressions had not already been sent to the compute engine for another reason such as for creating a plot.</li>
   <li>VisIt's component launcher program was fixed so users can use "Parse from SSH_CLIENT" in their host profiles when connecting to libsim-instrumented simulations that run on remote computers. That setting would previously cause simulations to crash when VisIt connected to them.</li>
-  <li>Fixed log-view scaling so that it works correctly with 2d Contour plots.</li>
-  <li>VisIt's Spreadsheet plot now highlights the correct cell for node picks.</li>
+  <li>Fixed log-view scaling so that it works correctly with 2d <i>Contour</i> plots.</li>
   <li>VisIt can now group files ending in <i>.h5</i> when smart file grouping is used.</li>
   <li>3D Text annotations now are drawn when scalable rendering is used.</li>
-  <li>The POV-Ray file writer now correctly writes its generated include files
-       (such as color tables, atomic property definitions) to the same directory
-       as the rest of the output files.</li>
-  <li>Some bugs related to axes and the Parallel Coordinates plot were fixed,
-       including a crash, which could occur in unusual circumstances.</li>
-  <li>Updated the M3D database reader.</li>
+  <li>The POV-Ray file writer now correctly writes its generated include files (such as color tables, atomic property definitions) to the same directory as the rest of the output files.</li>
   <li>Made improvements to the AdamsBashforth solver used for streamline calculation.</li>
   <li>Compilation fixes were added for recent GNU compilers.</li>
-  <li>A bug was fixed which caused small-scale AMR datasets to deadlock when
-      operating in parallel.</li>
-  <li>Some third party libraries were updated in <TT>build_visit</TT>, mostly
-      to work around compilation issues on modern systems.</li>
-  <li>A compositing bug involving 'white pixels' was fixed.  For details, see
-      <A HREF="https://email.ornl.gov/mailman/htdig/visit-users/2009-March/003152.html"
-      >this</A> mailing list thread.</li>
-  <li>The IceT compositing code path will now fall back to other compositors
-      when transparency is in use, making it 'safe' to leave enabled in all
-      cases.</li>
-  <li><TT>build_visit</TT> will pause when notifying the user that it cannot
-      find required programs for the curses-based interface.</li>
+  <li>A bug was fixed which caused small-scale AMR datasets to deadlock when operating in parallel.</li>
+  <li>Some third party libraries were updated in <TT>build_visit</TT>, mostly to work around compilation issues on modern systems.</li>
+  <li>A compositing bug involving 'white pixels' was fixed. For details, see <A HREF="https://email.ornl.gov/mailman/htdig/visit-users/2009-March/003152.html">this</A> mailing list thread.</li>
+  <li>The IceT compositing code path will now fall back to other compositors when transparency is in use, making it 'safe' to leave enabled in all cases.</li>
+  <li><TT>build_visit</TT> will pause when notifying the user that it cannot find required programs for the curses-based interface.</li>
   <li>Fixed a parallel bug with DDFs that caused all processors to unnecessarily write results to disk.</li>
-  <li>The Xmdv writer now writes numbers with more precision.</li>
   <li>Save as curve now writes numbers with more precision.</li>
-  <li>VisIt's Point3D reader could crash the metadata server when changing files.</li>
 </ul>
 
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 1.12</font></b></p>
 <ul>
+  <li>A parallel interactive pdebug host profile was added for LLNL's hera system.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 1.12</font></b></p>
 <ul>
-  <li>xml2projectfile is now built by default</li>
-  <li>VisIt's configure script now provides an --enable-engine-only option that lets you
-      build just the compute engine and its plugins. This option is useful when you need to 
-      build just a compute engine for a remote server.</li>
-  <li>VisIt's configure script now provides an --enable-server-components-only option that
-      lets you build only the compute engine, mdserver, vcl, and their plugins.</li>
-  <li>VisIt's compute engine was ported to BlueGene/P.</li>
+  <li>The xml2projectfile utility is now built by default.</li>
+  <li>The configure script now provides an --enable-engine-only option that lets you build just the compute engine and its plugins. This option is useful when you need to build just a compute engine for a remote server.</li>
+  <li>The configure script now provides an --enable-server-components-only option that lets you build only the compute engine, mdserver, vcl, and their plugins.</li>
+  <li>The compute engine was ported to BlueGene/P.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
