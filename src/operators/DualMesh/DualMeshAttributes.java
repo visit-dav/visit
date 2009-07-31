@@ -69,7 +69,8 @@ public class DualMeshAttributes extends AttributeSubject implements Plugin
     {
         super(1);
 
-        }
+        mode = CONVERSIONMODE_AUTO;
+    }
 
     public DualMeshAttributes(DualMeshAttributes obj)
     {
