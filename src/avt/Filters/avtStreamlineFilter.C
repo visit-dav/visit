@@ -1777,6 +1777,9 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Added color by secondary variable. Remove vorticity/ghostzones flags.
+//   
+//    Dave Pugmire, Thu Jul 30 20:47:08 PDT 2009
+//    Move cell centering back to avtStreamlinePlot
 //
 // ****************************************************************************
 
@@ -1793,20 +1796,9 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 
     // prepare streamline integration ingredients
     vtkVisItInterpolatedVelocityField* velocity1 = vtkVisItInterpolatedVelocityField::New();
-    
-    // See if we have cell cenetered data...
-    vtkCellDataToPointData *cellToPt1 = NULL;
-    if (ds->GetPointData()->GetVectors() == NULL)
-    {
-        cellToPt1 = vtkCellDataToPointData::New();
-        
-        cellToPt1->SetInput(ds);
-        cellToPt1->Update();
-        velocity1->SetDataSet(cellToPt1->GetOutput());
-    }
-    else
-        velocity1->SetDataSet(ds);
 
+    velocity1->SetDataSet(ds);
+    
     if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
         ds->GetPointData()->SetActiveScalars(coloringVariable.c_str());
     
@@ -1896,8 +1888,6 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         slSeg->status = avtStreamlineWrapper::TERMINATE;
     
     velocity1->Delete();
-    if (cellToPt1)
-        cellToPt1->Delete();
     
     if (DebugStream::Level5())
         debug5<<"::IntegrateDomain() result= "<<result<<endl;
