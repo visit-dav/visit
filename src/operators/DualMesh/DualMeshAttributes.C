@@ -98,6 +98,7 @@ const char *DualMeshAttributes::TypeMapFormatString = "i";
 DualMeshAttributes::DualMeshAttributes() : 
     AttributeSubject(DualMeshAttributes::TypeMapFormatString)
 {
+    mode = Auto;
 }
 
 // ****************************************************************************
