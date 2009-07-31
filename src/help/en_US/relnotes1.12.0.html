@@ -83,14 +83,22 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The XYZ file reader now supports both atomic numbers and atomic symbols in the first column, it now allows differing numbers of atoms in each time step, and it also now supports the CrystalMaker variant of the format.</li>
   <li>The PFLOTRAN reader now supports the most current variant of the format.  Note that variable centering has changed; this improves support for the old format as well, but turns off automatic domain decomposition for this old format.  It also works around a bug in some HDF5 implementations which caused problems when reading integer data.</li>
   <li>The simulation reader was not freeing unstructured data.</li>
+  <li>The performance of ITAPS reader with debugging output was improved substantially.</li>
+  <li>The ITAPS reader was enhanced to handle a Zoltan mesh PARALLEL_PARTITION grouping.</li>
   <li>The M3D reader was updated.</li>
+  <li>The NASTRAN reader was enhanced to handle a specialized exponentiation notation where the 'e' character is intentionally NOT used to provide one additional character of precision in the mantissa of floating point data.</li>
+  <li>The NASTRAN reader was enhanced to handle materials. A read option can be set to either specify the number of materials before opening the file or tell VisIt to search for materials during the open (which may substantially increase time to open a file). By default, materials are NOT enabled.</li> 
   <li>The Point3D reader could crash the metadata server when changing files.</li>
   <li>The Xmdv writer now writes numbers with more precision.</li>
   <li>The XDMF reader was enhanced to recognize "xdmf" as an extension.</li>
   <li>The XDMF reader is now case insensitive for all keywords in the xml file.</li>
+  <li>The XDMF reader was enhanced to handle the Time tag.</li>
   <li>A bug was corrected in the XDMF reader where integer data was not properly handled in an HDF5 file.</li>
   <li>A memory error was corrected in the PDB PF3D reader.</li>
   <li>The PDB PF3D reader was enhanced to support a new version of the PF3D format.</li>
+  <li>A bug in the Silo reader effecting plotting of multi-material objects with name and/or color options specified was fixed.</li> 
+  <li>The robustness of Silo reader was improved so that otherwise good Silo files with some bad objects may still load into VisIt properly.</li>
+  <li>Fixed processing of the hideFromGUI option for numerous Silo objects in the Silo reader.</li>
   <li>The Silo writer has been enhanced to properly save out ghost zones for unstructured meshes as ghost instead of as real zones. This ensures they will be handled correctly when the Silo dataset is read back into VisIt.</li>
   <li>The Silo writer was enhanced so it saves expression definitions stored in the files associated with the data being exported when exporting databases. This permits VisIt to transform an input database, export, and still retain the expression definitions from the original database.</li>
   <li>The Silo writer was enhanced so that it preserves directory hierarchies for variables when exporting databases. This means that variables that contain slashes "/" in the names will cause intermediate directories to be created, which is most often how those variables acquired the "/" characters.</li>
@@ -99,21 +107,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A LAMMPS reader has been added. It supports two of LAMMPS file formats: the input format used in the read_data command, and the output dump format of several variants.</li>
   <li>A paraDIS reader has been added. It supports paraDIS data and paraDIS-style tecplot data.</li>
   <li>The Nek3D reader was replaced with the Nek5000 reader. The Nek5000 reader has better performance than the Nek3D reader and corrects a number of bugs that were present in the Nek3D reader.</li>
-  <li>NASTRAN reader was enhanced to handle a specialized exponentiation notation where
-      the 'e' character is intentionally NOT used to provide one additional character
-      of precision in the mantissa of floating point data.</li>
-  <li>NASTRAN reader was enhanced to handle materials. A read option can be set to
-      either specify the number of materials before opening the file or tell VisIt to
-      search for materials during the open (which may substantially increase time to
-      open a file). By default, materials are NOT enabled.</li> 
-  <li>A bug in the Silo plugin effecting plotting of multi-material objects with
-      name and/or color options specified was fixed.</li> 
-  <li>Fixed processing of hideFromGUI option for numerous Silo objects in the Silo plugin.</li>
-  <li>Performance of ITAPS plugin with debugging output was improved substantially.</li>
-  <li>ITAPS plugin was enhanced to handle a Zoltan mesh PARALLEL_PARTITION grouping.</li>
-  <li>Robustness of Silo plugin was improved so that otherwise good Silo files with
-      some bad objects may still load into VisIt properly.</li>
-  <li>XDMF plugin was enhanced to handle the Time tag.</li>
   <li>The simulation reader was not freeing unstructured data.</li>
   <li>The M3D reader was updated.</li>
   <li>The Point3D reader could crash the metadata server when changing files.</li>
@@ -168,7 +161,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The <i>Hohlraum Flux</i> query could crash the parallel compute engine if a processor did not have data.</li>
   <li>The <i>Hohlraum Flux</i> query could return all zeroes in the event that many of the line segments produced by its line scan were duplicates. This prevented the query from linking the line scans into larger connected lines along which the <i>Hohlraum Flux</i> query integrates its results.</li>
-  <li>The <i>Hohlraum Flux</i> query was enhanced so that it takes an additional argument that indicates if it should use the emissivity divided by the absorbtivity in place of the emissivity.<br><br>
+  <li>The <i>Hohlraum Flux</i> query was enhanced so that it takes an additional optional argument that indicates if it should use the emissivity divided by the absorbtivity in place of the emissivity.<br><br>
   In the cli, the <i>Hohlraum Flux</i> query now takes an optional second integer value that controls this behavior. The old syntax, which is still supported is:<br><br>
 Query("Hohlraum Flux", 100, 0.5, 0.5, 0., 0.1, 0., 0., ("a0", "e0"))<br><br>
 The new syntax is now:<br><br>
@@ -198,13 +191,10 @@ In the gui, the <i>Hohlraum Flux</i>query now has a new text field labeled "Divi
   <li><TT>build_visit</TT> will pause when notifying the user that it cannot find required programs for the curses-based interface.</li>
   <li>Fixed a parallel bug with DDFs that caused all processors to unnecessarily write results to disk.</li>
   <li>Save as curve now writes numbers with more precision.</li>
-  <li>build_visit now properly handles Silo as optional instead of always requiring it.</li> 
-  <li>visitconvert now supports read options.</li>
-  <li>Parallel data collection algorithm on engine, just prior to shipment to viewer
-      was improved to address scaling issues. The improvement is substantial for large
-      numbers of cpus (say more than 1,000).</li>
-  <li>A problem launching VisIt from one portion of a Lustre filesystem when another portion
-      is down was fixed.</li>
+  <li><TT>build_visit</TT> now properly handles Silo as optional instead of always requiring it.</li> 
+  <li>The visitconvert utility now supports read options.</li>
+  <li>The parallel data collection algorithm in the engine, which executes just prior to the shipping of data to viewer, was improved to address scaling issues. The improvement is substantial for large numbers of cpus (say more than 1,000).</li>
+  <li>A problem launching VisIt from one portion of a Lustre filesystem when another portion is down was fixed.</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -219,14 +209,9 @@ In the gui, the <i>Hohlraum Flux</i>query now has a new text field labeled "Divi
   <li>The xml2projectfile utility is now built by default.</li>
   <li>The configure script now provides an --enable-engine-only option that lets you build just the compute engine and its plugins. This option is useful when you need to build just a compute engine for a remote server.</li>
   <li>The configure script now provides an --enable-server-components-only option that lets you build only the compute engine, mdserver, vcl, and their plugins.</li>
+  <li>The configure script now provides an --enable-dbio-only option that builds only enough of VisIt to link the visitconvert tool. This basically involves only the parts of VisIt necessary to perform database I/O operations.</li>
   <li>The compute engine was ported to BlueGene/P.</li>
-  <li>VisIt's configure script now provides an --enable-dbio-only option that builds only
-      enough of VisIt to link the visitconvert tool. This basically involves only the
-      parts of VisIt necessary to perform database I/O operations.</li>
-  <li>For builds in which CXXFLAGS does NOT contain '-g', top-level Makefile now performs a
-      check to see if any environment variables <i>might</i> collide with VisIt make
-      variables. If such a situation is detected, a warning message is issued and the
-      make is aborted. The warning message indicates how to correct.<li>
+  <li>For builds in which CXXFLAGS does NOT contain '-g', the top-level Makefile now performs a check to see if any environment variables <i>might</i> collide with VisIt make variables. If such a situation is detected, a warning message is issued and the make is aborted. The warning message indicates how to correct the situation.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

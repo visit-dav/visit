@@ -17,7 +17,7 @@ Unix and Mac OS X:
 
     where
 
-        "version" will be 1.11.2 for the current distribution.
+        "version" will be 1.12.0 for the current distribution.
 
         "platform" will be one of the following:  aix, aix64-xlc, darwin,
         irix6, linux-altix, linux-ia64, linux-x86_64, linux_chaos, linux_rhel3,
@@ -29,17 +29,17 @@ Unix and Mac OS X:
 
     For example
 
-        visit-install 1.11.2 linux_rhel3 /usr/local/visit
+        visit-install 1.12.0 linux_rhel3 /usr/local/visit
 
-    will install the linux_rhel3, 1.11.2 version of visit in the directory
+    will install the linux_rhel3, 1.12.0 version of visit in the directory
     "/usr/local/visit".  Note that you will need to have the file
-    "visit1_11_2.linux_rhel3.tar.gz" present in the current directory for this
+    "visit1_12_0.linux_rhel3.tar.gz" present in the current directory for this
     to function properly.  You can install multiple binaries into the
     same directory.  For example, you could then execute
 
-        visit-install 1.11.2 linux /usr/local/visit
+        visit-install 1.12.0 darwin /usr/local/visit
 
-    to add a linux, 1.11.2 version of visit to the same directory.
+    to add a linux, 1.12.0 version of visit to the same directory.
 
 2.  Add the bin directory below the installation directory
     (/usr/local/visit/bin in our example) to each user's search path.
@@ -77,8 +77,8 @@ Unix and Mac OS X:
 
 Windows:
 
-1.  Copy the file visit1.11.2.exe to your desktop.
+1.  Copy the file visit1.12.0.exe to your desktop.
 
-2.  Double click on the visit1.11.2.exe icon to run the installer.
+2.  Double click on the visit1.12.0.exe icon to run the installer.
 
 3.  Follow the directions provided by the installer.
