@@ -275,6 +275,8 @@ function MM_initTimelines() { //v4.0
   </tr>
   <tr>
     <td>16. <a href="#16">Cannot connect to a remote computer</a></td>
+    <td>32. <a href="#32">Which libraries should I enable in
+        <TT>build_visit</TT>?</a></td>
   </tr>
 </table>
 <p>&nbsp;</p>
@@ -736,6 +738,30 @@ SIGABRT</em></p>
 <p> Load     "dri"</p>
 <h2><a name="31"></a>31. When I downloaded the Windows installation and ran it, I got an error message saying "publisher cannot be verified. Are you sure you want to continue?" What is wrong?</h2>
 <p> There is nothing wrong and you may safely proceed with the installation.</p>
+<h2><a name="32"></a>32. Which libraries should I enable in
+<TT>build_visit</TT>?</h2>
+<p>In general: <I>as few as you can.</I><p>
+<p>An overwhelming majority of the libraries that one can enable via
+   <TT>build_visit</TT> are used for a single purpose: supporting a file reader
+   ("database") to allow reading data of that type.  If you don't select a
+   particular library in <TT>build_visit</TT>, the only drawback is that you
+   won't be able to use VisIt to read data files which were written using that
+   library.</P>
+<P>VisIt supports many file formats which are used across numerous scientific
+   disciplines.  As a user in one or two of those scientific disciplines, it's
+   likely that you'll only use a few of those databases in your daily
+   visualization needs, and unheard of that you would need all of them.  To put
+   things in perspective: VisIt supports upwards of a hundred different file
+   formats.  Many of those formats are only applicable to a specific group
+   within a scientific domain.</P>
+<P>Finally, while we make every effort to streamline the
+<TT>build_visit</TT> process, there are simply too many platforms and
+too many third party libraries to do exhaustive testing.  By only
+enabling what you need, you're less likely to encounter build failures
+in <TT>build_visit</TT> -- it can't fail to build if you don't try to
+build it!</P>
+<P><B>A good rule of thumb is:</B> if you haven't heard of a library,
+   you don't need to enable it.</P>
 <p>&nbsp;</p>
 <!-- InstanceEndEditable -->
 <div align="center"> 
