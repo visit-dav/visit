@@ -6,6 +6,8 @@
 # Date: Thu Apr 5 09:19:51 PDT 2007
 #
 # Modifications:
+#   Brad Whitlock, Fri Jul 31 10:56:00 PDT 2009
+#   I updated it to use a newer page style and I made it use SVN.
 #
 ###############################################################################
 import os, string
@@ -60,16 +62,14 @@ def UpdateLinksOnPage(filename, currentPageIndex, lastPageIndex):
     os.rename(tmpnam, filename)
 
 def UpdateGalleryLinks():
-    filedir = "/data_vobs/VisIt/docs/WebSite"
-    files = os.listdir(filedir)
+    filedir = "."
+    files = os.listdir(".")
 
-    # Count all of the gallery pages and check them out.
+    # Count all of the gallery pages.
     nGalleryPages = 0
     while 1:
         gallery = "gallery_%02d.html" % nGalleryPages
         if gallery in files:
-            command = 'cleartool checkout -c "adding new page" %s/%s' % (filedir, gallery)
-            os.system(command)
             nGalleryPages = nGalleryPages + 1
         else:
             break
@@ -87,6 +87,17 @@ def UpdateGalleryLinks():
     out.write('<html>\n')
     out.write('<head>\n')
     out.write('<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">\n')
+    out.write('<meta name="LLNLRandR" content="UCRL-WEB-229972">\n')
+    out.write('<meta name="review" content="March 2003">\n')
+    out.write('<meta name="copyright" content="This document is copyrighted U.S. Department of Energy under Contract DE-AC52-07NA27344">\n')
+    out.write('<meta name="language" content="en">\n')
+    out.write('<meta name="rating" content="general">\n')
+    out.write('<meta name="distribution" content="global">\n')
+    out.write('<meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">\n')
+    out.write('<meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">\n')
+    out.write('<meta http-equiv="Expires" content="never">\n')
+    out.write('<meta name="date" content="2007-11-08">\n')
+    out.write('<meta name="Author" content="Eric Brugger">\n')
     out.write('<!-- InstanceBeginEditable name="doctitle" -->\n')
     out.write('<title>VisIt Gallery</title>\n')
     out.write('<!-- InstanceEndEditable -->\n')
@@ -111,7 +122,7 @@ def UpdateGalleryLinks():
     out.write('<!-- InstanceBeginEditable name="imagearea" -->\n')
     out.write('<table width="90%%"  border="0" cellspacing="5" cellpadding="0">\n')
     out.write('  <tr>\n')
-    out.write('    <td width="500" align="top"><img src="media/gallery/gallery_%d.jpg" width="500" height="500"></td>\n' % nGalleryPages)
+    out.write('    <td width="500" align="top"><img src="media/gallery/gallery_%d.jpg" alt="Add title here" width="500" height="500"></td>\n' % nGalleryPages)
     out.write('    <td valign="top"><h2>Add title here...</h2>\n')
     out.write('      <p>Add text here...</p>\n')
     out.write('    </td>\n')
@@ -121,11 +132,11 @@ def UpdateGalleryLinks():
     out.write('<div align="center"> \n')
     out.write('  <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>\n')
     out.write('    <span class="body_text">Updated: \n')
-    out.write('    <!-- #BeginDate format:Am1 -->March 29, 2007<!-- #EndDate -->\n')
+    out.write('    <!-- #BeginDate format:Am1 -->July 31, 2009<!-- #EndDate -->\n')
     out.write('    </span></p>\n')
     out.write('  <table width="100%%" border="0" cellspacing="0" cellpadding="0">\n')
     out.write('    <tr> \n')
-    out.write('      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-217877, \n')
+    out.write('      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-229972, \n')
     out.write('        <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy \n')
     out.write('        and legal notice</a></span></td>\n')
     out.write('      <td width="5">&nbsp;</td>\n')
@@ -136,8 +147,8 @@ def UpdateGalleryLinks():
     out.write('</html>\n')
     out.close()
 
-    # Make the new file be a VOB element.
-    command = 'cleartool mkelem -c "new file" ' + outname
+    # Enter the new file into SVN.
+    command = 'svn add ' + outname
     os.system(command)
 
 def main():
