@@ -656,6 +656,9 @@
 #     Tom Fogal, Thu Jul 23 15:52:24 MDT 2009
 #     Make sure the user knows why we couldn't use the dialog interface.
 #
+#     Tom Fogal, Thu Jul 30 19:20:29 MDT 2009
+#     Unset CDPATH to make sure we don't inherit a bad setting.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -666,6 +669,8 @@
 # etc.  Note that this script is really only known to work with gcc.          #
 # *************************************************************************** #
 
+# Can cause problems in some build systems.
+unset CDPATH
 export OPSYS=${OPSYS:-$(uname -s)}
 export PROC=${PROC:-$(uname -p)}
 export REL=${REL:-$(uname -r)}
