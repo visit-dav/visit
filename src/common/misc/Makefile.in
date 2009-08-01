@@ -73,6 +73,9 @@
 #    Mark C. Miller, Tue Apr 21 14:37:24 PDT 2009
 #    Added DebugStreamFull.[Ch] (really a rename of DebugStream.[Ch])
 #
+#    Tom Fogal, Sat Jun 27 19:44:13 MDT 2009
+#    Added RuntimeSetting.
+#
 #    Tom Fogal, Tue Jun 30 19:54:23 MDT 2009
 #    Add define for proper symbol export.
 #
@@ -91,9 +94,11 @@ CPPFLAGS=-I. @CPPFLAGS@ -DMISC_EXPORTS
 ## Files...
 ##
 SRC=DebugStreamFull.C Environment.C FileFunctions.C InstallationFunctions.C \
-    PTY.C StackTimer.C TimingsManager.C VisItException.C VisItInit.C
-HDR=DebugStreamFull.h DebugStream.h Environment.h FileFunctions.C InstallationFunctions.h \
-    PTY.h StackTimer.h TimingsManager.h VisItException.h VisItInit.h
+    PTY.C RuntimeSetting.C StackTimer.C TimingsManager.C VisItException.C \
+    VisItInit.C
+HDR=DebugStreamFull.h DebugStream.h Environment.h FileFunctions.C \
+    InstallationFunctions.h PTY.h RuntimeSetting.h StackTimer.h \
+    TimingsManager.h VisItException.h VisItInit.h
 OBJ=$(SRC:.C=.o)
 LIB=libmisc
 
