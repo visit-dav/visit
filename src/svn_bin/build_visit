@@ -638,6 +638,9 @@
 #     Tom Fogal, Mon May 25 15:42:30 MDT 2009
 #     Fixed NetCDF downloading (mirror was missing).
 #
+#     Tom Fogal, Wed Jun 10 16:19:38 MDT 2009
+#     Update Mesa to 7.5.
+#
 #     Mark C. Miller, Mon Jun 22 13:56:05 PDT 2009
 #     Removed dup ON_SILO/DO_SILO lines.
 #
@@ -934,15 +937,10 @@ export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.4.5.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION:-"2.4.5"}
 export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.4.5"}
 
-if [[ "$OPSYS" == "Linux" ]]; then
-export MESA_FILE=${MESA_FILE:-"Mesa-5.0-mangled.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"5.0"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-5.0"}  # The directory in the tarball
-else
-export MESA_FILE=${MESA_FILE:-"MesaLib-6.4.2.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"6.4.2"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-6.4.2"}  # The directory in the tarball
-fi
+export MESA_FILE=${MESA_FILE:-"MesaLib-7.5.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"7.5"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.5"}
+export MESA_MIRRORS="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.5/MesaLib-7.5.tar.gz"
 
 # The old Python version at LLNL does not work on Mac, we need a newer version
 export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. 
@@ -1333,13 +1331,16 @@ function download_file
 #   Cyrus Harrison, Thu Apr  9 19:21:13 PDT 2009
 #   Applied patch from Rick Wagner to fix curl downloads on OSX.
 #
+#   Tom Fogal, Sun Jul 26 17:19:26 MDT 2009
+#   Follow redirects.  Don't use a second argument.
+#
 # *************************************************************************** 
 
 function try_download_file
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
         # MaxOS X comes with curl
-        curl -ksfo $2 $1
+        curl -ksfLO $1
     else
         check_wget
         if [[ $? != 0 ]] ; then
@@ -2756,38 +2757,79 @@ function build_mesa
     # Build Mesa.
     #
     info "Building Mesa . . . (~2 minutes)"
-    cd $MESA_BUILD_DIR || error "Can't cd to mesa build dir."
-    $MAKE ${MAKE_OPT_FLAGS} $MESA_TARGET
+    cd $MESA_BUILD_DIR || error "Couldn't cd to mesa build dir."
+    PF="${VISITDIR}/mesa/${MESA_VERSION}/${VISITARCH}"
+
+    # We do the build twice due to a VTK issue.  VTK can establish a
+    # rendering context via the system's GL using glX, via mangled Mesa
+    # using glX, and via offscreen mangled Mesa.  For VisIt, we use
+    # either the system's GL, or offscreen mangled Mesa.  To placate
+    # VTK, we'll build a mangled+glX version, but then we'll build the
+    # offscreen one that we really want.  This ensures we have the 'MesaGL'
+    # that VTK needs to link, but if we use 'OSMesa' we get a real, OSMesa
+    # library with no glX dependence.
+    #
+    # Due to this issue, it is critical that one links "-lOSMesa -lMesaGL" when
+    # they want to render/link to an offscreen Mesa context.  The two libraries
+    # will have a host of duplicate symbols, and it is important that we pick
+    # up the ones from OSMesa.
+    info "Configuring Mesa (Mangled glX) ..."
+    ./configure \
+      CFLAGS="${CFLAGS} -DUSE_MGL_NAMESPACE"     \
+      CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE" \
+      --prefix=${PF}                             \
+      --without-demos                            \
+      --with-driver=xlib                         \
+      --enable-gl-osmesa                         \
+      --disable-gallium                          \
+      --disable-egl
+    # Make sure we build 'MesaGL*' libraries, to avoid conflict with GL
+    # libraries supplied by the vendor.
+    if test `uname` = "Darwin" ; then
+        sed -i bak "s,GL_LIB = GL,GL_LIB=MesaGL,g" configs/autoconf || exit 1
+        sed -i bak "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" configs/autoconf || exit 1
+    else
+        sed -i "s,GL_LIB = GL,GL_LIB=MesaGL,g" configs/autoconf || exit 1
+        sed -i "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" configs/autoconf || exit 1
+    fi
+    make ${MAKE_OPT_FLAGS}
+    info "Installing Mesa (Mangled glX) ..."
+    make install
+
+    # Now install #2, the OSMesa that we want/need.
+    make clean &>/dev/null
+    info "Configuring Mesa (Mangled Offscreen) ..."
+    ./configure \
+      CFLAGS="${CFLAGS} -DUSE_MGL_NAMESPACE"     \
+      CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE" \
+      --prefix=${PF}                             \
+      --without-demos                            \
+      --with-driver=osmesa                       \
+      --disable-gallium                          \
+      --disable-egl
+    # Make sure we build 'MesaGL*' libraries, to avoid conflict with GL
+    # libraries supplied by the vendor.
+    if test `uname` = "Darwin" ; then
+        sed -i bak "s,GL_LIB = GL,GL_LIB=MesaGL,g" configs/autoconf || exit 1
+        sed -i bak "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" configs/autoconf || exit 1
+    else
+        sed -i "s,GL_LIB = GL,GL_LIB=MesaGL,g" configs/autoconf || exit 1
+        sed -i "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" configs/autoconf || exit 1
+    fi
+    make ${MAKE_OPT_FLAGS}
+    info "Installing Mesa (Mangled Offscreen) ..."
+    make install
+
+    # Some versions of Mesa erroneously install GLEW as well.  We need to make
+    # sure we get VisIt's GLEW when we include it, so remove the ones Mesa
+    # installs.
+    rm -f ${PF}/include/GL/gl*ew.h
+
     if [[ $? != 0 ]] ; then
        warn "Mesa build failed.  Giving up"
        return 1
     fi
     
-    #
-    # Install into the VisIt third party location.
-    #
-    info "Installing Mesa . . ."
-
-    mkdir "$VISITDIR/mesa"
-    mkdir "$VISITDIR/mesa/${MESA_VERSION}"
-    mkdir "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH"
-    mkdir "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include"
-    mkdir "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
-    mkdir "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL"
-    cp include/GL/*.h "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL"
-    for file in libMesaGL libOSMesa libGLU
-    do  
-       if [[ -d lib64 ]] ; then
-          cp lib64/${file}.$SO_EXT* \
-             "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
-       elif [[ -d lib ]] ; then
-          cp lib/${file}.$SO_EXT* \
-             "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
-       else
-          find . -name ${file}.$SO_EXT\* -exec cp {} \
-             "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib" \;
-       fi
-    done
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
@@ -2805,12 +2847,12 @@ function build_mesa
            "$INSTALLNAMEPATH/libMesaGL.$SO_EXT" \
            "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.$SO_EXT"
         install_name_tool -id \
-           "$INSTALLNAMEPATH/libGLU.$SO_EXT" \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.$SO_EXT"
+           "$INSTALLNAMEPATH/libMesaGLU.$SO_EXT" \
+           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGLU.$SO_EXT"
         install_name_tool -change \
            libMesaGL.$SO_EXT \
            "$INSTALLNAMEPATH/libMesaGL.$SO_EXT" \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.$SO_EXT"
+           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGLU.$SO_EXT"
         if [[ $? != 0 ]] ; then
            warn "Mesa dynamic library install failed.  Giving up"
            return 1
