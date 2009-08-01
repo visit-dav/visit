@@ -498,7 +498,7 @@ avtResampleFilter::ResampleInput(void)
     //
     // If the selection this filter exists to create has already been handled,
     // or if there are no pieces for this processor to process, then we can skip
-    // execution. But, take care to emmulate the same collective
+    // execution. But, take care to emulate the same collective
     // calls other processors may make before returning.
     //
     if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
@@ -1162,7 +1162,7 @@ avtResampleFilter::ModifyContract(avtContract_p oldataRequest)
     // Best copy constructor we have??
     //
     avtContract_p spec = new avtContract(oldataRequest,
-                                              oldataRequest->GetDataRequest());
+                                         oldataRequest->GetDataRequest());
 
     //
     // First tell the file format reader that we are going to be doing a
