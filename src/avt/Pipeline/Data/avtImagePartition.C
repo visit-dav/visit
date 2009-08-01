@@ -40,16 +40,15 @@
 //                            avtImagePartition.C                            //
 // ************************************************************************* //
 
-#include <avtImagePartition.h>
-
-#include <math.h>
-
+#include <algorithm>
+#include <cmath>
 #ifdef PARALLEL
-#include <mpi.h>
+#   include <mpi.h>
 #endif
 
-#include <avtParallel.h>
+#include <avtImagePartition.h>
 
+#include <avtParallel.h>
 #include <ImproperUseException.h>
 
 
@@ -314,12 +313,15 @@ avtImagePartition::GetPartition(int part, int &minW, int &maxW, int &minH,
 //    Hank Childs, Fri Dec 10 11:07:07 PST 2004
 //    Account for tiles.
 //
+//    Tom Fogal, Wed Jun 17 15:54:31 MDT 2009
+//    Fix size of array, preventing access to uninitialized values.
+//
 // ****************************************************************************
 
 void
 avtImagePartition::EstablishPartitionBoundaries(int *samples)
 {
-    int   i;
+    int i;
 
     int first_scanline = (shouldDoTiling ? tile_height_min : 0);
     int last_scanline = (shouldDoTiling ? tile_height_max : height);
@@ -327,8 +329,9 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
     //
     // Find out how many samples there are in each scanline across all procs.
     //
-    int *allSamples = new int[height];
-    SumIntArrayAcrossAllProcessors(samples, allSamples, height);
+    const int n_scanlines = last_scanline - first_scanline;
+    std::vector<int> allSamples(n_scanlines);
+    SumIntArrayAcrossAllProcessors(samples, &allSamples[0], n_scanlines);
 
     //
     // Find out how many total samples there are and what the target is.
@@ -336,6 +339,11 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
     int totalSamples = 0;
     for (i = first_scanline ; i < last_scanline ; i++)
     {
+        // We need to iterate over scanlines, but our arrays are (of course)
+        // 0-based.  Construct a value which gives the array index that
+        // corresponds to the current scanline.
+        size_t idx = i - first_scanline;
+
         //
         // There has been some problems with overflows when we have lots of
         // sample points and we are in send cells mode (since send cells
@@ -343,18 +351,18 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
         //
         // Normalize the number of samples.
         //
-        if (allSamples[i] > 0 && allSamples[i] < 1000)
+        if (allSamples[idx] > 0 && allSamples[idx] < 1000)
         {
-            allSamples[i] = 1;
+            allSamples[idx] = 1;
         }
         else
         {
-            allSamples[i] /= 1000;
+            allSamples[idx] /= 1000;
         }
-        totalSamples += allSamples[i];
+        totalSamples += allSamples[idx];
     }
     int target  = totalSamples / numProcessors;
-    target      = (target <= 0 ? 1 : target); // Correction for when have
+    target      = (target <= 0 ? 1 : target); // Correction for when we have
                                               // nothing to render.
     int tooHigh = (int) (target*1.5);
     int tooLow  = (int) (target*1.);
@@ -364,7 +372,10 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
     partitionStartsOnScanline[currentPartition] = first_scanline;
     for (i = first_scanline ; i < last_scanline ; i++)
     {
-        if (amountForCurrentPartition + allSamples[i] > tooHigh)
+        // Need 0-based array index; see comment above.
+        size_t idx = i - first_scanline;
+
+        if (amountForCurrentPartition + allSamples[idx] > tooHigh)
         {
             if (amountForCurrentPartition > tooLow &&
                 currentPartition+1 < numProcessors)
@@ -382,8 +393,8 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
             }
         }
 
-        stpAssignments[i] = currentPartition;
-        amountForCurrentPartition += allSamples[i];
+        stpAssignments[idx] = currentPartition;
+        amountForCurrentPartition += allSamples[idx];
     }
     partitionStopsOnScanline[currentPartition] = last_scanline-1;
     currentPartition++;
@@ -400,7 +411,6 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
     }
 
     establishedPartitionBoundaries = true;
-    delete [] allSamples;
 }
 
 
@@ -433,6 +443,10 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Tom Fogal, Wed Jun 17 18:52:52 MDT 2009
+//    Check index validity before using the index.
+//
 // ****************************************************************************
 
 void
@@ -458,7 +472,7 @@ avtImagePartition::DetermineAssignments(int *amount)
     //
 
     int   i, j;
-    int   numPartitions = numProcessors; // for clarity when iterating
+    const int numPartitions = numProcessors; // for clarity when iterating
 
     //
     // Create a buffer big enough to receive the amounts that each processor
@@ -473,9 +487,9 @@ avtImagePartition::DetermineAssignments(int *amount)
 
     //
     // Set up a data structure that has the partition and processor associated
-    // with the number of bytes, so we can know which processor, partition
+    // with the number of bytes, so we can know which (processor, partition)
     // pair this entry came from _after_ our sort.  Also throw out the entries
-    // where there is zero bytes exchanged, since they will be numerous and
+    // where there are zero bytes exchanged, since they will be numerous and
     // they contribute nothing.
     //
     int possibleEntries = numProcessors*numPartitions;
@@ -504,16 +518,10 @@ avtImagePartition::DetermineAssignments(int *amount)
     QuicksortTuple3(list, totalEntries);
 
     bool *usedProcessor = new bool[numProcessors];
-    for (i = 0 ; i < numProcessors ; i++)
-    {
-        usedProcessor[i] = false;
-    }
+    std::fill(usedProcessor, usedProcessor+numProcessors, false);
 
     bool *usedPartition = new bool[numPartitions];
-    for (i = 0 ; i < numPartitions ; i++)
-    {
-        usedPartition[i] = false;
-    }
+    std::fill(usedPartition, usedPartition+numPartitions, false);
 
     //
     // Start at the end of the list, since that has the maximum entry.
@@ -568,11 +576,11 @@ avtImagePartition::DetermineAssignments(int *amount)
     int  lastPartition = 0;
     while ((lastProcessor<numProcessors) && (lastPartition<numPartitions))
     {
-        while (usedProcessor[lastProcessor] && (lastProcessor < numProcessors))
+        while ((lastProcessor < numProcessors) && usedProcessor[lastProcessor])
         {
             lastProcessor++;
         }
-        while (usedPartition[lastPartition] && (lastPartition < numPartitions))
+        while ((lastPartition < numPartitions) && usedPartition[lastPartition])
         {
             lastPartition++;
         }
