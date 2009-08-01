@@ -368,6 +368,7 @@ avtResampleFilter::BypassResample(void)
 //
 //    Tom Fogal, Wed Jun 24 20:28:04 MDT 2009
 //    Use new GetBounds method.
+//    Don't allow overlaps, we can't composite them with transparency.
 //
 // ****************************************************************************
 
@@ -520,7 +521,7 @@ avtResampleFilter::ResampleInput(void)
 
     if (doDistributedResample)
     {
-        partition.SetShouldProduceOverlaps(true);
+        partition.SetShouldProduceOverlaps(false);
         avtDataObject_p dob;
         CopyTo(dob, samples);
         communicator.SetInput(dob);
