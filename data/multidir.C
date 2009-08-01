@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 #include <cmath>
+#include <cstring>
 #include <string>
 #include <visitstream.h>
 #include <snprintf.h>

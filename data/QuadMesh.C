@@ -35,6 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <cstring>
 #include <QuadMesh.h>
 #include <visitstream.h>
 

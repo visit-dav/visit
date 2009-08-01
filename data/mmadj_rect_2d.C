@@ -41,11 +41,12 @@
 // and provides connectivity info via Silo's Mulitmeshadj Object.
 //
 
-#include <silo.h>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <sys/stat.h>
+#include <silo.h>
 
 using namespace std;
 
