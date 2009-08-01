@@ -129,6 +129,9 @@ split(std::string str, size_t node, size_t display)
 //    Kathleen Bonnell, Tue Sep  2 15:53:44 PDT 2008
 //    Ifdef out XDisplay stuff for windows.
 //
+//    Tom Fogal, Sat May 30 12:32:51 MDT 2009
+//    Add debug messages so we can figure out which display was created.
+//
 // ****************************************************************************
 VisItDisplay *
 Display::Create(enum visitDisplayType vtype)
@@ -136,10 +139,12 @@ Display::Create(enum visitDisplayType vtype)
     switch(vtype)
     {
         case D_MESA:
+            debug3 << "Creating Mesa (SW-based) display." << std::endl;
             return new MesaDisplay();
             break;
 #ifndef WIN32
         case D_X:
+            debug3 << "Creating X (HW-based) display." << std::endl;
             return new XDisplay();
             break;
 #endif
