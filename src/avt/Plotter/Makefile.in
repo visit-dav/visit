@@ -183,6 +183,9 @@
 #   Brad Whitlock, Wed Jun 10, 12:13:23 PDT 2009
 #   I changed how Mesa sources are added to the project.
 #
+#   Tom Fogal, Sat Jul 18 19:44:48 MDT 2009
+#   Added GLEW initialization wrapper.
+#
 ##############################################################################
 
 ##
@@ -208,11 +211,10 @@ SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
     avtDecorationsDrawable.C avtDecorationsMapper.C avtLabeledCurveMapper.C \
     avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C avtDrawable.C \
     avtPointGlypher.C avtVariablePointGlyphMapper.C avtSoftwareShader.C \
-    avtLevelsPointGlyphMapper.C avtCurveLegend.C
+    avtLevelsPointGlyphMapper.C avtCurveLegend.C avtGLEWInitializer.C
 
 
-
-CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
+CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ $(GLEW_INCLUDE)
 
 SEROBJ=$(SRC:.C=.o) $(SEROPENGL_OBJ) @SERMESA_OBJ@
 PAROBJ=$(SRC:.C=_par.o) $(PAROPENGL_OBJ) @PARMESA_OBJ@
