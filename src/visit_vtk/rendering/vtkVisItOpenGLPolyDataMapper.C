@@ -15,6 +15,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
+#include <avtGLEWInitializer.h>  // Make sure GLEW gets included first.
 #include "vtkVisItOpenGLPolyDataMapper.h"
 
 #include "vtkCellArray.h"
@@ -42,9 +43,6 @@ static const int dlSize = 8192;
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
   #include <visit-config.h>
-  #ifdef HAVE_LIBGLEW
-    #include <GL/glew.h>
-  #endif
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
   #else
@@ -142,9 +140,6 @@ vtkVisItOpenGLPolyDataMapper::vtkVisItOpenGLPolyDataMapper()
   this->ColorTextureSize = 0;
   this->ColorTextureLooksDiscrete = false;
   this->OpenGLSupportsVersion1_2 = false;
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  this->GLEW_initialized = false;
-#endif
 }
 
 // Destructor (don't call ReleaseGraphicsResources() since it is virtual
@@ -207,6 +202,9 @@ void vtkVisItOpenGLPolyDataMapper::ReleaseGraphicsResources(vtkWindow *win)
 //    Hank Childs, Tue May 25 10:04:36 PDT 2004
 //    Break big display lists into groups of smaller display lists.
 //
+//    Tom Fogal, Sat Jul 25 20:40:06 MDT 2009
+//    Make sure GLEW is initialized.
+//
 // ****************************************************************************
  
 void vtkVisItOpenGLPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
@@ -217,6 +215,8 @@ void vtkVisItOpenGLPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
   vtkPlane *plane;
   int i, numClipPlanes;
   double planeEquation[4];
+
+  avt::glew::initialize();
 
   //
   // make sure that we've been properly initialized
@@ -4496,6 +4496,9 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
 //    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 //    The gcc-4.x compiler no longer just warns about automatic type conversion.
 //
+//    Tom Fogal, Sat Jul 25 20:33:02 MDT 2009
+//    Use GLEW initializer.  Simplify.
+//
 // ****************************************************************************
 
 void
@@ -4503,6 +4506,8 @@ vtkVisItOpenGLPolyDataMapper::BeginColorTexturing()
 {
     if(!this->ColorTexturingAllowed)
         return;
+
+    avt::glew::initialize();
 
     if(!this->ColorTextureLoaded)
     {
@@ -4569,24 +4574,11 @@ vtkVisItOpenGLPolyDataMapper::BeginColorTexturing()
     // after texturing. This ensures that the specular highlights look
     // right when we're in texturing mode.
     //
-#ifdef VTK_IMPLEMENT_MESA_CXX
-    // Mesa
-    glEnable(GL_COLOR_SUM_EXT);
-    glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-#else
-    // OpenGL
-#ifdef HAVE_LIBGLEW
-    if(!this->GLEW_initialized)
-    {
-        this->GLEW_initialized = glewInit() == GLEW_OK;
-    }
-    if(this->GLEW_initialized && GLEW_EXT_secondary_color)
+    if(GLEW_EXT_secondary_color)
     {
         glEnable(GL_COLOR_SUM_EXT);
         glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
     }
-#endif     
-#endif
 }      
 
 // ****************************************************************************
@@ -4599,6 +4591,9 @@ vtkVisItOpenGLPolyDataMapper::BeginColorTexturing()
 // Creation:   Thu Aug 24 15:59:01 PST 2006
 //
 // Modifications:
+//
+//   Tom Fogal, Sat Jul 25 20:41:09 MDT 2009
+//   Simplify.
 //   
 // ****************************************************************************
 
@@ -4614,14 +4609,8 @@ vtkVisItOpenGLPolyDataMapper::EndColorTexturing()
         glDisable(GL_TEXTURE_1D);
     }
 
-#ifdef VTK_IMPLEMENT_MESA_CXX
-    // Mesa
-    glDisable(GL_COLOR_SUM_EXT);
-#else
-    // OpenGL
-#ifdef HAVE_LIBGLEW
-    if(this->GLEW_initialized && GLEW_EXT_secondary_color)
+    if(GLEW_EXT_secondary_color)
+    {
         glDisable(GL_COLOR_SUM_EXT);
-#endif     
-#endif
+    }
 }
