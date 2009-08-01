@@ -54,6 +54,9 @@
 #    Tom Fogal, Wed Mar 18 20:56:48 MST 2009
 #    Updated the version of GLEW; tarball name changed.
 #
+#    Tom Fogal, Sat Jul 25 17:34:02 MDT 2009
+#    Update how we handle GLEW: don't rely on a tarball.
+#
 ##############################################################################
 
 ##
@@ -74,25 +77,24 @@ SRC=glew/src/glew.c
 HDR=
 OBJ=$(SRC:.c=.o)
 LIB=libGLEW
+INC=$(TOPDIR)/include/glew
 
 ##
 ## Standard targets...
 ##
-all: message $(LIBSHARED)
+all: message $(INC) $(OBJ) $(LIBSHARED)
 
+# NOTE: temporarily leave credits.html, to prevent developers ending up with
+# old stale copies.  Remove in a few weeks or so.
+#   -- Sat Jul 25 17:32:23 MDT 2009
 clean:
 	$(RM) $(OBJ) $(LIBSHARED) credits.html
 	$(RM) $(TOPDIR)/include/glew
 
-DISTCLEAN_FILES=-rf glew ../../include/glew
+DISTCLEAN_FILES=-f ../../include/glew
 
-credits.html:
-	gunzip < glew-1.5.1-tjf.tar.gz | tar xvf - > /dev/null
-	cp glew/doc/credits.html .
-	cd ../../include/ && \
-	rm glew; ln -s ../third_party_builtin/glew/glew/include glew
-
-glew/src/glew.c: credits.html
+$(INC):
+	(cd ../../include && ln -s ../third_party_builtin/glew/glew/include glew)
 
 ##
 ## Other targets
