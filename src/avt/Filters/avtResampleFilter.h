@@ -79,6 +79,9 @@
 //    Hank Childs, Wed Dec 31 13:45:03 PST 2008
 //    Change name of attributes from ResampleAtts to InternalResampleAtts.
 //
+//    Tom Fogal, Tue Jun 23 20:28:01 MDT 2009
+//    Added GetBounds method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
@@ -106,6 +109,7 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
 
     void                  GetDimensions(int &, int &, int &, const double *,
                                         bool);
+    bool                  GetBounds(double[6]) const;
     bool                  InputNeedsNoResampling(void);
     void                  ResampleInput(void);
     void                  BypassResample(void);

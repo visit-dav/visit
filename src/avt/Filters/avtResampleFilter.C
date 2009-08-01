@@ -366,6 +366,9 @@ avtResampleFilter::BypassResample(void)
 //    Allow for data set with no variables to get pushed through, for the case
 //    where a mesh plot is resampled.
 //
+//    Tom Fogal, Wed Jun 24 20:28:04 MDT 2009
+//    Use new GetBounds method.
+//
 // ****************************************************************************
 
 void
@@ -373,37 +376,9 @@ avtResampleFilter::ResampleInput(void)
 {
     int  i, j, k;
 
-    bool is3D = true;
-
     avtDataset_p output = GetTypedOutput();
     double bounds[6] = { 0, 0, 0, 0, 0, 0 };
-    if (atts.GetUseBounds())
-    {
-        bounds[0] = atts.GetMinX();
-        bounds[1] = atts.GetMaxX();
-        bounds[2] = atts.GetMinY();
-        bounds[3] = atts.GetMaxY();
-        bounds[4] = atts.GetMinZ();
-        bounds[5] = atts.GetMaxZ();
-    }
-    else
-    {
-        avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-        avtExtents *exts = datts.GetEffectiveSpatialExtents();
-        if (exts->HasExtents())
-        {
-            exts->CopyTo(bounds);
-        }
-        else
-        {
-            GetSpatialExtents(bounds);
-        }
-    }
-    if (fabs(bounds[4]) < 1e-100 && fabs(bounds[5]) < 1e-100)
-    {
-        is3D = false;
-        bounds[5] += 0.1;
-    }
+    bool is3D = GetBounds(bounds);
 
     debug4 << "Resampling over space: " << bounds[0] << ", " << bounds[1]
            << ": " << bounds[2] << ", " << bounds[3] << ": " << bounds[4]
@@ -878,6 +853,57 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
 
     debug5 << "Resampling onto grid of dimensions: " << width << ", "
            << height << ", " << depth << endl;
+}
+
+// ****************************************************************************
+//  Method: avtResampleFilter::GetBounds
+//
+//  Purpose:
+//      Obtains the bounds of the resampled volume.  This could come from
+//      attributes, or the existing spatial extents of the input.
+//
+//  Arguments:
+//      bounds       Output array.  Format is min/max X, then m/m Y, m/m Z.
+//
+//  Returns: whether or not these specify 3-dimensional bounds.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool avtResampleFilter::GetBounds(double bounds[6]) const
+{
+    bool is3D = true;
+    if (atts.GetUseBounds())
+    {
+        bounds[0] = atts.GetMinX();
+        bounds[1] = atts.GetMaxX();
+        bounds[2] = atts.GetMinY();
+        bounds[3] = atts.GetMaxY();
+        bounds[4] = atts.GetMinZ();
+        bounds[5] = atts.GetMaxZ();
+    }
+    else
+    {
+        const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+        avtExtents *exts = datts.GetEffectiveSpatialExtents();
+        if (exts->HasExtents())
+        {
+            exts->CopyTo(bounds);
+        }
+        else
+        {
+            GetSpatialExtents(bounds);
+        }
+    }
+    if (fabs(bounds[4]) < 1e-100 && fabs(bounds[5]) < 1e-100)
+    {
+        is3D = false;
+        bounds[5] += 0.1;
+    }
+    return is3D;
 }
 
 
