@@ -3,11 +3,14 @@
     <CXXFLAGS>
       $(SLIVR_INCLUDE)
       $(GLEW_INCLUDE)
+      -I$(TOPDIR)/include/tuvok/IO/3rdParty/boost
+      -I$(TOPDIR)/include/tuvok/IO/3rdParty
       -I$(TOPDIR)/include/tuvok/3rdParty
+      -I$(TOPDIR)/include/tuvok
     </CXXFLAGS>
     <LDFLAGS>
       $(TUVOK_LIB)
-      $(QT_LDFLAGS) $(QT_CORE_LIB) $(QT_GUI_LIB)
+      $(QT_LDFLAGS) $(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_OPENGL_LIB)
     </LDFLAGS>
     <Files components="G">
       $(SLIVR_GUI_IMPL)
