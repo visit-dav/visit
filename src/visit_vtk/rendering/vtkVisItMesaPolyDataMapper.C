@@ -15,13 +15,12 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// Make sure this is first, so any includes of gl.h can be stoped if needed
+// Make sure this is first, so any includes of gl.h can be stopped if needed
 #define VTK_IMPLEMENT_MESA_CXX
 
-#include "MangleMesaInclude/gl_mangle.h"
-#include "MangleMesaInclude/gl.h"
-
 #include <math.h>
+#include <avtGLEWInitializer.h>
+
 #include "vtkVisItMesaPolyDataMapper.h"
 #include "vtkRenderWindow.h"
 #include "vtkMesaProperty.h"
