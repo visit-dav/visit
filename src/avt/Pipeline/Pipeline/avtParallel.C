@@ -255,11 +255,17 @@ PAR_UIProcess(void)
 //  Programmer: Tom Fogal
 //  Creation:   October 17, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed Jun 10 15:55:35 MDT 2009
+//    Wrap in ifdef parallel.
+//
 // ****************************************************************************
 
 void
 PAR_WaitForDebugger(void)
 {
+#ifdef PARALLEL
     volatile int i = 0;
     if(PAR_Rank() == 0)
     {
@@ -268,6 +274,7 @@ PAR_WaitForDebugger(void)
         } while(i == 0);
     }
     Barrier();
+#endif
 }
 
 // ****************************************************************************
