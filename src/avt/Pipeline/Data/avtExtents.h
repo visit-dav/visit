@@ -78,6 +78,9 @@ class   vtkMatrix4x4;
 //    doesn't define a second assignment operator with a non-const return
 //    type that does a bitwise copy.
 //
+//    Tom Fogal, Tue Jun 23 20:14:16 MDT 2009
+//    I made some methods const.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtExtents
@@ -87,9 +90,9 @@ class PIPELINE_API avtExtents
                           avtExtents(const avtExtents &);
     virtual              ~avtExtents();
 
-    void                  Print(ostream &);
+    void                  Print(ostream &) const;
 
-    bool                  HasExtents(void);
+    bool                  HasExtents(void) const;
     int                   GetDimension(void)  { return dimension; };
 
     void                  CopyTo(double *);
@@ -102,7 +105,7 @@ class PIPELINE_API avtExtents
     void                  Merge(const double *);
 
     void                  Write(avtDataObjectString &,
-                                const avtDataObjectWriter *);
+                                const avtDataObjectWriter *) const;
     int                   Read(char *);
 
     void                  Transform(vtkMatrix4x4 *);
@@ -112,7 +115,4 @@ class PIPELINE_API avtExtents
     double               *extents;
 };
 
-
 #endif
-
-
