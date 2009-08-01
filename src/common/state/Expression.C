@@ -857,9 +857,12 @@ Expression::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // 
 //    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
 //    Changed it to 10 for Curve expressions.
+//
+//    Tom Fogal, Tue Jun 23 20:57:07 MDT 2009
+//    Const is ignored on by-value return types.
 // 
 // ****************************************************************************
-const int
+int
 Expression::GetNumTypes()
 {
     return 10;
@@ -914,10 +917,13 @@ Expression::GetTypeString(const Expression::ExprType t)
 //  Modifications:
 //    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
 //    Added CurveMeshVar. 
+//
+//    Tom Fogal, Tue Jun 23 20:58:01 MDT 2009
+//    Const is ignored on by-value return types.
 // 
 // ****************************************************************************
 
-const Expression::ExprType
+Expression::ExprType
 Expression::GetTypeId(const std::string s)
 {
     if (s == "Scalar Mesh Variable")
