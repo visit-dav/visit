@@ -50,9 +50,7 @@
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
   #include <visit-config.h>
-  #ifdef HAVE_LIBGLEW
-    #include <GL/glew.h>
-  #endif
+  #include <avtGLEWInitializer.h>
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
   #else
@@ -664,6 +662,9 @@ ShaderModeData::SetHint(int hint, int val)
 //   Brad Whitlock, Fri Sep 15 13:32:08 PST 2006
 //   Made sure that GLEW can initialize okay.
 //
+//   Tom Fogal, Sat Jul 25 19:46:22 MDT 2009
+//   Use new glew initialization wrapper.
+//
 // ****************************************************************************
 
 bool
@@ -671,14 +672,7 @@ ShaderModeData::ModeAvailable()
 {
     if(!GLSL_init)
     {
-        GLenum err = glewInit();
-        if(err != GLEW_OK)
-        {
-            debug1 << "ShaderModeData::ModeAvailable: glewInit() failed: "
-                   << glewGetErrorString(err) << endl;
-            return false;
-        }
-        GLSL_init = true;
+        GLSL_init = avt::glew::initialize();
     }
     return GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader;
 }
