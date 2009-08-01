@@ -61,6 +61,9 @@
 //    Update moc location to reflect use of QT 4.  Remove unnecessary blocks.
 //    Temporarily prevent creation of Purify configurations.
 //
+//    Tom Fogal, Mon May  4 19:02:06 MDT 2009
+//    Add a const, fix a warning
+//
 // ****************************************************************************
     void WriteProject_TOP_LEVEL_Version8(QTextStream &out)
     {
@@ -537,7 +540,7 @@
              const QString &tpPreproc)
     {
         QString pluginDefs = "";
-        char *pluginSuffix = "Database";
+        const char *pluginSuffix = "Database";
         QString configs[] = {"Release", "Debug", "Purify"};
         // for now, don't create purify
         int nConfigs =2;
