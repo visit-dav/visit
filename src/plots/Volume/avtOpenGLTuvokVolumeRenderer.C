@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -45,7 +45,6 @@
 
 #include "avtOpenGLTuvokVolumeRenderer.h"
 
-#include <GL/glew.h>
 #include <vtkCamera.h>
 #include <vtkDataArray.h>
 #include <vtkFloatArray.h>
@@ -54,16 +53,21 @@
 
 #include <tuvok/../VisItDebugOut.h>
 #include <tuvok/Controller/Controller.h>
-#include <tuvok/IO/CoreVolume.h>
-#include <tuvok/IO/CoreVolumeInfo.h>
-#include <tuvok/Renderer/GL/ImmediateGLSBVR.h>
+#include <tuvok/IO/UnbrickedDataset.h>
+#include <tuvok/IO/UnbrickedDSMetadata.h>
+#include <tuvok/Renderer/AbstrRenderer.h>
+#include <tuvok/Renderer/GL/GLFrameCapture.h>
 
+#include <avtCallback.h>
+#include <avtGLEWInitializer.h>
+#include <avtParallel.h>
 #include <avtViewInfo.h>
-#include <Environment.h>
-#include <InstallationFunctions.h>
-#include <ImproperUseException.h>
-#include <VolumeAttributes.h>
 #include <DebugStream.h>
+#include <FileFunctions.h>
+#include <ImproperUseException.h>
+#include <InstallationFunctions.h>
+#include <RuntimeSetting.h>
+#include <VolumeAttributes.h>
 
 // Don't warn if a function is unused.  Useful for keeping a function static
 // even if it's only used while debugging.
@@ -75,19 +79,14 @@
 #endif
 
 static AbstrRenderer* create_renderer(const VolumeAttributes &);
-static VolumeDatasetInfo *create_dataset_info(vtkRectilinearGrid *);
+static tuvok::UnbrickedDSMetadata *create_dataset_info(vtkRectilinearGrid *);
 
 FQN_UNUSED static void debug_vtk_array(vtkDataArray *);
-FQN_UNUSED static void debug_transfer_function(const std::vector<unsigned char>& rgba);
 FQN_UNUSED static void debug_view(const avtViewInfo &);
-static void initialize_glew();
 static void tuvok_set_data(AbstrRenderer *, vtkRectilinearGrid *,
                            vtkDataArray *, float *, size_t);
 static void tuvok_set_transfer_fqn(AbstrRenderer &, const VolumeAttributes &);
 static void tuvok_set_view(AbstrRenderer &, const avtViewInfo &);
-static std::vector<unsigned char> float_to_8bit(float *, size_t);
-
-static bool glew_initialized = false;
 
 // ****************************************************************************
 //  Method: avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer
@@ -103,14 +102,17 @@ static bool glew_initialized = false;
 //    Connect the appropriate type of debug output.
 //    NULL out our renderer, until we know what kind of one to make.
 //
+//    Tom Fogal, Tue Jul  7 12:01:34 MDT 2009
+//    Use initializer list.
+//
 // ****************************************************************************
 
 avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
+  : renderer(NULL)
 {
     Controller::Instance().AddDebugOut(new VisItDebugOut());
     // enable tuvok logging output -- very slow, do not leave enabled!
     Controller::Debug::Out().SetOutput(true, true, true, true);
-    this->renderer = NULL;
 }
 
 // ****************************************************************************
@@ -163,6 +165,10 @@ avtOpenGLTuvokVolumeRenderer::~avtOpenGLTuvokVolumeRenderer()
 //   Tom Fogal, Thu Mar 19 00:14:16 MST 2009
 //   First pass at an implementation; camera settings are a bit off right now.
 //
+//   Tom Fogal, Sun Jul 26 15:22:47 MDT 2009
+//   Second pass; take most of Brad's code and work it into the
+//   UnbrickedDataset methodology of setting data.
+//
 // ****************************************************************************
 
 #if 0
@@ -176,7 +182,7 @@ avtOpenGLTuvokVolumeRenderer::Render(
     const avtVolumeRendererImplementation::RenderProperties &props,
     const avtVolumeRendererImplementation::VolumeData &volume)
 {
-    initialize_glew();
+    avt::glew::initialize();
 
     if(NULL == this->renderer)
     {
@@ -244,7 +250,13 @@ avtOpenGLTuvokVolumeRenderer::Render(
     const avtVolumeRendererImplementation::RenderProperties &props,
     const avtVolumeRendererImplementation::VolumeData &volume)
 {
-    initialize_glew();
+    avt::glew::initialize();
+
+    // Bit of a hack.  Tuvok changes some sort of texture state, which is doing
+    // Bad Things (tm) to the rest of VisIt's rendering code.  We'll need to
+    // track down and fix Tuvok at some point, but in the meantime pushing and
+    // popping our texture state will workaround the issue.
+    glPushAttrib(GL_TEXTURE_BIT);
 
     if(NULL == this->renderer)
     {
@@ -259,7 +271,40 @@ avtOpenGLTuvokVolumeRenderer::Render(
 
     tuvok_set_view(*this->renderer, props.view);
 
+    this->renderer->SetGlobalBBox(true);
+    this->renderer->SetLocalBBox(true);
+    this->renderer->SetRenderCoordArrows(true);
+
+    //  Resize the renderer's buffer so it matches the window size.
+    this->renderer->Resize(UINTVECTOR2(props.windowSize[0],props.windowSize[1]));
+
+    // Set the background color
+    FLOATVECTOR3 bg[2];
+    bg[0] = FLOATVECTOR3(
+        props.backgroundColor[0],
+        props.backgroundColor[1],
+        props.backgroundColor[2]);
+    bg[1] = FLOATVECTOR3(
+        props.backgroundColor[0],
+        props.backgroundColor[1],
+        props.backgroundColor[2]);
+    this->renderer->SetBackgroundColors(bg);
+
+#if 0
+    // Works well in the UI, but messes up testing via the CLI.  Hrm.
+    GLfloat rmat[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, rmat);
+    // Null out the translation components
+    rmat[12] = 0.f;
+    rmat[13] = 0.f;
+    rmat[14] = 0.f;
+    rmat[15] = 1.f;
+    this->renderer->SetRotation(rmat);
+#endif
+
     this->renderer->Paint();
+
+    glPopAttrib(); // fix texture state; see comment above PushAttrib.
 }
 #endif
 
@@ -286,6 +331,9 @@ avtOpenGLTuvokVolumeRenderer::Render(
 //    Rename so statics follow a consistent + distinct convention.  Make a more
 //    compatible renderer.
 //
+//    Tom Fogal, Fri May  1 18:11:20 MDT 2009
+//    Updated for revised Tuvok API.  Use RuntimeSettings to lookup shader dir.
+//
 // ****************************************************************************
 static AbstrRenderer *
 create_renderer(const VolumeAttributes &)
@@ -297,33 +345,40 @@ create_renderer(const VolumeAttributes &)
     // switch downsample to true if OpenGL crashes for you.
     const bool downsample = false;
     const bool disable_border = false;
-    const bool simple = true;
+    const bool no_clip_planes = false; // mac long shader workaround.
+    // Don't assume bit width relations between dataset and TFqns.
+    const bool bias_tfqn_scaling = true;
 
     MasterController &mc = Controller::Instance();
-    AbstrRenderer *ren = mc.RequestNewVolumerenderer(
+    AbstrRenderer *ren = mc.RequestNewVolumeRenderer(
                             MasterController::OPENGL_SBVR,
                             use_only_PoT_textures, downsample,
-                            disable_border, simple);
-
+                            disable_border, no_clip_planes, bias_tfqn_scaling
+                         );
     // We need to know where Tuvok stores its shaders, since it must load them
-    // at runtime.  They're in our source tree, but of course we can't even
-    // assume that's present.  We'll need to coordinate with copying the
-    // shaders around at install time, but for now we'll just use an
-    // environment variable.
-    if(!Environment::exists("TUVOK_SHADER_DIR"))
-    {
-        EXCEPTION1(ImproperUseException,
-                   "Don't know where to find Tuvok Shaders!  Please set the "
-                   "TUVOK_SHADER_DIR environment variable.");
+    // at runtime.  They should be placed relative to the VisIt binary, but use
+    // a RuntimeSetting to allow overrides.
+    const std::string shader_dir = RuntimeSetting::lookups("tuvok-shader-dir");
+    debug5 << "Adding shader path: " << shader_dir << std::endl;
+    { // Make sure the shader path makes sense.
+      VisItStat_t statbuf; // ignored, just want the return val.
+      if(VisItStat(shader_dir.c_str(), &statbuf) != 0)
+      {
+        std::ostringstream dir_error;
+        dir_error << "Tuvok cannot find its shaders in '" << shader_dir << "'"
+                  << "!  Try using the --tuvoks-shaders command line option, "
+                  << "or setting the VISIT_TUVOK_SHADER_DIR environment "
+                  << "variable.";
+        EXCEPTION1(ImproperUseException, dir_error.str().c_str());
+      }
     }
-    ren->AddShaderPath(Environment::get("TUVOK_SHADER_DIR").c_str());
-    ren->SetDataSet(new CoreVolume());
+    ren->AddShaderPath(shader_dir.c_str());
+    ren->SetDataset(new tuvok::UnbrickedDataset());
+    ren->SetGlobalBBox(true);
+    // Tuvok needs to know how big to make its FBOs.  We'll resize it when we
+    // actually render, but make sure we have something for now.
+    ren->Resize(UINTVECTOR2(300,300));
     ren->Initialize();
-    // Tuvok needs to know how big to make its FBOs.  We'll need to modify
-    // VisIt to somehow pass the information of the view window size down to
-    // here, but we need something for now.  Make it huge to ensure our window
-    // doesn't exceed the FBO size.
-    ren->Resize(UINTVECTOR2(1200,1200));  // HACK!
     ren->SetRendermode(AbstrRenderer::RM_1DTRANS);
     ren->SetUseLighting(false);
     ren->SetBlendPrecision(AbstrRenderer::BP_8BIT);
@@ -340,8 +395,7 @@ create_renderer(const VolumeAttributes &)
 //
 //  Purpose: Translates our/vtk's metadata into the object Tuvok wants it as.
 //
-//  Returns: An object which should be given to a VolumeDataset to replace its
-//           existing metadata.
+//  Returns: An object representing metadata as tuvok understands it.
 //
 //  Programmer: Tom Fogal
 //  Creation:   Fri Mar  6 11:23:52 MST 2009
@@ -351,11 +405,14 @@ create_renderer(const VolumeAttributes &)
 //    Tom Fogal, Wed Mar 18 21:47:31 MST 2009
 //    Rename so statics follow a consistent + distinct convention.
 //
+//    Tom Fogal, Fri May  1 20:23:13 MDT 2009
+//    Updated for revised Tuvok API.
+//
 // ****************************************************************************
-static VolumeDatasetInfo *
+static tuvok::UnbrickedDSMetadata *
 create_dataset_info(vtkRectilinearGrid *grid)
 {
-    CoreVolumeInfo *vds_info = new CoreVolumeInfo();
+    tuvok::UnbrickedDSMetadata *vds_info = new tuvok::UnbrickedDSMetadata();
     {
         int dims[3];
         grid->GetDimensions(dims);
@@ -368,37 +425,6 @@ create_dataset_info(vtkRectilinearGrid *grid)
                << dims[2] << std::endl;
     }
     return vds_info;
-}
-
-// ****************************************************************************
-//  Function: initialize_glew
-//
-//  Purpose: Does a one-time GLEW initialization.
-//
-//  Programmer: Tom Fogal
-//  Creation:   Fri Mar  6 14:03:22 MST 2009
-//
-//  Modifications:
-//
-// ****************************************************************************
-static void
-initialize_glew()
-{
-    if(!glew_initialized) {
-#if 1
-        GLenum err = glewInit();
-#else
-        // Lets one use HW rendering in serial w/ -nowin.
-        GLenum err = glewInitLibrary("/usr/lib/libGL.so",
-                                     GLEW_NAME_CONVENTION_GL);
-#endif
-        if(GLEW_OK != err) {
-            debug1 << "GLEW initialization failed: " << glewGetErrorString(err)
-                   << std::endl;
-        } else {
-            glew_initialized = true;
-        }
-    }
 }
 
 /// prints VTK array information to the debug stream.
@@ -425,22 +451,6 @@ lerp(in value, in imin, in imax, out omin, out omax)
   out ret = omin + (value-imin) * (static_cast<double>(omax-omin) /
                                                       (imax-imin));
   return ret;
-}
-
-static void
-debug_transfer_function(const std::vector<unsigned char>& rgba)
-{
-#define UC(x) static_cast<unsigned char>(x)
-    for(size_t i=0; i < rgba.size(); i+=4)
-    {
-        debug5 << "tf(" << setw(3) << i/4 << "): "
-               << setw(5) << setprecision(3) << setfill(' ')
-               << setiosflags(std::ios_base::right)
-               << lerp(rgba[i+0], UC(0),UC(255), 0.f,1.f) << ", "
-               << lerp(rgba[i+1], UC(0),UC(255), 0.f,1.f) << ", "
-               << lerp(rgba[i+2], UC(0),UC(255), 0.f,1.f) << ", "
-               << lerp(rgba[i+3], UC(0),UC(255), 0.f,1.f) << std::endl;
-    }
 }
 
 static void
@@ -496,33 +506,28 @@ debug_view(const avtViewInfo &v)
 //
 //  Modifications:
 //
+//    Tom Fogal, Fri May  1 20:25:02 MDT 2009
+//    Updated for revised Tuvok API.  Get rid of 8bit case, no longer relevant.
+//
 // ****************************************************************************
 static void
 tuvok_set_data(AbstrRenderer *ren, vtkRectilinearGrid *grid,
                vtkDataArray *data, float *gr_mag, size_t n_mag)
 {
     // base class doesn't have these `Set' methods; we can only set this kind
-    // of thing manually from the subclass we'll be using (for now).
-    CoreVolume &vol = dynamic_cast<CoreVolume&>(ren->GetDataSet());
-
-    vol.SetInfo(create_dataset_info(grid));
+    // of thing manually from the subclass we'll be using.
+    tuvok::UnbrickedDataset &vol = dynamic_cast<tuvok::UnbrickedDataset&>
+                                               (ren->GetDataset());
+    vol.SetMetadata(create_dataset_info(grid));
     vol.SetGradientMagnitude(gr_mag, n_mag);
     debug_vtk_array(data);
 
     // This will break if we're not given float data, but that's guaranteed
     // for now!
-#if 0
+    // We could also send down unsigned char data at this point.  Anything else
+    // would require some simple but non-zero amount of work inside Tuvok.
     vol.SetData(static_cast<float*>(data->GetVoidPointer(0)),
                 data->GetNumberOfTuples());
-#else
-    debug5 << "Converting to 32bit data to 8bit data." << std::endl;
-    std::vector<unsigned char> eight_bit_data;
-    eight_bit_data = float_to_8bit(
-                         static_cast<float*>(data->GetVoidPointer(0)),
-                         data->GetNumberOfTuples()
-                     );
-    vol.SetData(&eight_bit_data.at(0), data->GetNumberOfTuples());
-#endif
 }
 
 // ****************************************************************************
@@ -535,6 +540,9 @@ tuvok_set_data(AbstrRenderer *ren, vtkRectilinearGrid *grid,
 //
 //  Modifications:
 //
+//    Tom Fogal, Sun Jul 26 15:30:33 MDT 2009
+//    New, simpler API.  Disable (very) verbose debugging.
+//
 // ****************************************************************************
 static void
 tuvok_set_transfer_fqn(AbstrRenderer &ren, const VolumeAttributes &atts)
@@ -542,11 +550,7 @@ tuvok_set_transfer_fqn(AbstrRenderer &ren, const VolumeAttributes &atts)
     std::vector<unsigned char> rgba(256*4);
     atts.GetTransferFunction(&rgba.at(0));
 
-    // TF seems to be working; don't spam the logs right now.
-    //debug_transfer_function(rgba);
-
-    TransferFunction1D *tf = ren.Get1DTrans();
-    tf->Set(rgba);
+    ren.Set1DTrans(rgba);
     // Ensure tuvok knows that it must re-upload the TF to the GPU.
     ren.Changed1DTrans();
 }
@@ -584,9 +588,6 @@ tuvok_set_view(AbstrRenderer &ren, const avtViewInfo &v)
     eye[1] = Eye[1];
     eye[2] = Eye[2];
 
-    // This API is going to change, as you might guess from the code.  But the
-    // information given will remain the same; only how we grab the object &&
-    // the function name will differ.
     // The arguments this API expects are:
     //      field of view
     //      near plane Z value
@@ -595,45 +596,19 @@ tuvok_set_view(AbstrRenderer &ren, const avtViewInfo &v)
     //      reference point in world coordinates
     //      view up vector
     // The simplest way to think of this data is `the stuff one would pass to
-    // "gluLookAt" and "gluPerspective"' in any other app.  VisIt's notion of a
-    // camera seems to be a bit different ...
-    ImmediateGLSBVR& glren =
-        dynamic_cast<ImmediateGLSBVR&>(ren);
-    glren.Hack(
+    // "gluLookAt" and "gluPerspective"' in any other app.
+    ren.SetViewParameters(
         static_cast<float>(v.viewAngle),
         static_cast<float>(v.nearPlane),
         static_cast<float>(v.farPlane),
         eye, ref, vup
     );
-}
-
-// ****************************************************************************
-//  Function: float_to_8bit
-//
-//  Purpose: Temporary hack to convert an FP dataset to an 8bit dataset.
-//           Does so in an absolutely terrible way.
-//
-//  Programmer: Tom Fogal
-//  Creation:   Wed Mar 25 12:33:53 MST 2009
-//
-//  Modifications:
-//
-// ****************************************************************************
-struct lerpf_8 : std::unary_function<float, unsigned char> {
-  unsigned char operator()(float f) const {
-    return lerp(f, std::numeric_limits<float>::min(),
-                   std::numeric_limits<float>::max(),
-                   std::numeric_limits<unsigned char>::min(),
-                   std::numeric_limits<unsigned char>::max());
-  }
-};
-
-static std::vector<unsigned char>
-float_to_8bit(float *data, size_t v)
-{
-  std::vector<unsigned char> ret(v);
-  std::transform(data, data + v, ret.begin(), lerpf_8());
-  return ret;
+#if 1
+    eye[0] = 0.f; eye[1] = 0.f; eye[2] = 1.6f;
+    ref[0] = 0.f; ref[1] = 0.f; ref[2] = 0.f;
+    vup[0] = 0.f; vup[1] = 1.f; vup[2] = 0.f;
+    ren.SetViewParameters(50.0f, 0.1f, 100.0f, eye,ref,vup);
+#endif
 }
 
 #endif // USE_TUVOK
