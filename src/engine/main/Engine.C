@@ -3485,6 +3485,10 @@ Engine::GetProcessAttributes()
 //    Tom Fogal, Sun Mar  8 00:25:52 MST 2009
 //    Allow a HW context even in serial mode.
 //
+//    Tom Fogal, Tue Jun  9 20:12:21 MDT 2009
+//    Set the callback HW/SW rendering, since code outside of the Engine will
+//    use that to query what kind of rendering to do.
+//
 // ****************************************************************************
 
 void
@@ -3521,12 +3525,14 @@ Engine::SetupDisplay()
     if(this->nDisplays > 0)
     {
         this->renderingDisplay = Display::Create(Display::D_X);
+        avtCallback::SetSoftwareRendering(false);
         display = 0;
     }
 #endif
     if(this->renderingDisplay == NULL)
     {
         this->renderingDisplay = Display::Create(Display::D_MESA);
+        avtCallback::SetSoftwareRendering(true);
     }
     if(this->renderingDisplay->Initialize(display,
                                split(this->X_Args, PAR_Rank(), display)))
