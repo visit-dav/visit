@@ -72,6 +72,9 @@
 //    Brad Whitlock, Tue Aug 10 17:06:50 PST 2004
 //    Removed some Windows API stuff that was not necessary.
 //
+//    Tom Fogal, Tue Jun 23 20:05:12 MDT 2009
+//    Made `source' argument in CopyTo const.
+//
 // ****************************************************************************
 
 template <class T>
@@ -233,7 +236,7 @@ ref_ptr<T>::Print(ostream &out)
 
 template <class S, class T>
 inline void
-CopyTo(ref_ptr<S> &lhs, ref_ptr<T> &rhs)
+CopyTo(ref_ptr<S> &lhs, const ref_ptr<T> &rhs)
 {
     ref_ptr<S> newone((S *)*rhs, rhs.GetN());
     lhs = newone;
