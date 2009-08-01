@@ -117,10 +117,15 @@ avtExtents::~avtExtents()
 //  Programmer: Hank Childs
 //  Creation:   February 25, 2004
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Jun 23 20:14:38 MDT 2009
+//    Marked as const.
+//
 // ****************************************************************************
 
 void
-avtExtents::Print(ostream &out)
+avtExtents::Print(ostream &out) const
 {
     out << "Extents (dim = " << dimension << ") = ";
     if (extents == NULL)
@@ -193,10 +198,15 @@ avtExtents::operator=(const avtExtents &exts)
 //  Programmer: Hank Childs
 //  Creation:   September 4, 2001
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Jun 23 20:14:38 MDT 2009
+//    Marked as const.
+//
 // ****************************************************************************
 
 bool
-avtExtents::HasExtents(void)
+avtExtents::HasExtents(void) const
 {
     return (extents != NULL ? true : false);
 }
@@ -388,10 +398,14 @@ avtExtents::Merge(const double *exts)
 //    Jeremy Meredith, Thu Feb  7 14:44:42 EST 2008
 //    Support arbitrarily large dimension.
 //
+//    Tom Fogal, Tue Jun 23 20:15:40 MDT 2009
+//    Marked as const.
+//
 // ****************************************************************************
 
 void
-avtExtents::Write(avtDataObjectString &str, const avtDataObjectWriter *wrtr)
+avtExtents::Write(avtDataObjectString &str,
+                  const avtDataObjectWriter *wrtr) const
 {
     if (extents == NULL)
     {
