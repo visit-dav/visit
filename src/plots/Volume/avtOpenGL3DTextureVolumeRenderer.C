@@ -62,10 +62,7 @@
 #ifndef VTK_IMPLEMENT_MESA_CXX
   // Include GLEW.
   #include <visit-config.h>
-  #ifdef HAVE_LIBGLEW
-     #include <GL/glew.h>
-     static bool glew_initialized = false;
-  #endif
+  #include <avtGLEWInitializer.h>
 
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
@@ -106,6 +103,9 @@
 //    I removed the code to get the glTexImage3D extension and initialized 
 //    the GLEW library.
 //
+//    Tom Fogal, Sat Jul 25 19:45:26 MDT 2009
+//    Use new GLEW initialization wrapper.
+//
 // ****************************************************************************
 
 avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
@@ -114,16 +114,7 @@ avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
     volumetexId = 0;
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
-#ifdef HAVE_LIBGLEW
-    GLenum err = glewInit();
-    if(err != GLEW_OK)
-    {
-        debug1 << "avtOpenGL3DTextureVolumeRenderer ctor: "
-               << glewGetErrorString(err) << endl;
-    }
-    else
-        glew_initialized = true;
-#endif
+    avt::glew::initialize();
 #endif
 }
 
