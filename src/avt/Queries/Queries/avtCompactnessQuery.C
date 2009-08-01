@@ -227,6 +227,10 @@ avtCompactnessQuery::PreExecute(void)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Tom Fogal, Wed Jun 17 20:52:19 MDT 2009
+//    Throw the exception earlier, to ensure we don't deref an empty vector.
+//
 // ****************************************************************************
 
 void
@@ -243,6 +247,10 @@ avtCompactnessQuery::MidExecute(void)
         centMassX /= totalRotMass;
         centMassY /= totalRotMass;
     }
+    const char err_except[] = "There were no boundaries, but these "
+                   "are needed to compute some of the compactness queries.  "
+                   "You may be using this query in an unexpected way; please "
+                   "contact a VisIt developer.";
 
 #ifdef PARALLEL
     // Calculate up the boundary points array across all processors.
@@ -255,6 +263,12 @@ avtCompactnessQuery::MidExecute(void)
 
     xBound.resize(totalSize);
     yBound.resize(totalSize);
+
+    if (xBound.size() == 0)
+    {
+        EXCEPTION1(VisItException, err_except);
+    }
+
     int position = mySize;
     for (int proc = 0; proc < nprocs; proc++)
     {
@@ -263,26 +277,31 @@ avtCompactnessQuery::MidExecute(void)
             // Sending
             int len = mySize;
             MPI_Bcast(&len, 1, MPI_INT, proc, VISIT_MPI_COMM);
-            MPI_Bcast(&xBound[0], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
-            MPI_Bcast(&yBound[0], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+            if(len > 0)
+            {
+                MPI_Bcast(&xBound[0], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+                MPI_Bcast(&yBound[0], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+            }
         }
         else
         {
             // Receiving
             int len;
             MPI_Bcast(&len, 1, MPI_INT, proc, VISIT_MPI_COMM);
-            MPI_Bcast(&xBound[position], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
-            MPI_Bcast(&yBound[position], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+            if(len > 0)
+            {
+                MPI_Bcast(&xBound[position], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+                MPI_Bcast(&yBound[position], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+            }
             position += len;
         }
     }
-#endif
-
+#else
     if (xBound.size() == 0)
-        EXCEPTION1(VisItException, "There were no boundaries, but these "
-                   "are needed to compute some of the compactness queries.  "
-                   "You may be using this query in an unexpected way; please "
-                   "contact a VisIt developer.");
+    {
+        EXCEPTION1(VisItException, err_except);
+    }
+#endif
 }
 
 // ****************************************************************************
