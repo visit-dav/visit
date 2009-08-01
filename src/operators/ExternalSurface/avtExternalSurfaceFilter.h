@@ -68,6 +68,9 @@ class avtGhostZoneAndFacelistFilter;
 //    Hank Childs, Tue Aug 23 09:49:57 PDT 2005
 //    Add support for ghost zone removal.
 //
+//    Tom Fogal, Tue Jun 23 20:48:20 MDT 2009
+//    Added const version of GetFacadedFilter.
+//
 // ****************************************************************************
 
 class avtExternalSurfaceFilter : virtual public avtPluginFilter,
@@ -92,7 +95,7 @@ class avtExternalSurfaceFilter : virtual public avtPluginFilter,
     ExternalSurfaceAttributes        atts;
 
     virtual avtFilter   *GetFacadedFilter();
+    virtual const avtFilter   *GetFacadedFilter() const;
 };
-
 
 #endif

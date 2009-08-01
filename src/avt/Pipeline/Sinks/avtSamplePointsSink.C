@@ -139,4 +139,23 @@ avtSamplePointsSink::GetInput(void)
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtSamplePointsSink::GetInput
+//
+//  Purpose:
+//      Gets the input of the sink (properly typed as an avtDataObject).
+//
+//  Returns:    The input of the sink.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2008
+//
+// ****************************************************************************
 
+const avtDataObject_p
+avtSamplePointsSink::GetInput(void) const
+{
+    avtDataObject_p rv;
+    CopyTo(rv, input);
+    return rv;
+}

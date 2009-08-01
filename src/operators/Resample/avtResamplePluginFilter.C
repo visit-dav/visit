@@ -207,3 +207,19 @@ avtResamplePluginFilter::GetFacadedFilter(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtResamplePluginFilter::GetFacadedFilter
+//
+//  Purpose:
+//      Gets the filter that the filter that we are a facade of.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+
+const avtFilter *
+avtResamplePluginFilter::GetFacadedFilter(void) const
+{
+    return resampler;
+}

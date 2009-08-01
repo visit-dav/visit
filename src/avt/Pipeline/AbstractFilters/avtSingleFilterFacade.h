@@ -66,6 +66,9 @@
 //    Hank Childs, Tue Jun  7 15:04:09 PDT 2005
 //    Use new interface for creating facaded filters.
 //
+//    Tom Fogal, Tue Jun 23 20:37:54 MDT 2009
+//    Added const versions of some methods.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSingleFilterFacade : public avtFacadeFilter
@@ -77,11 +80,10 @@ class PIPELINE_API avtSingleFilterFacade : public avtFacadeFilter
   protected:
     virtual int               GetNumberOfFacadedFilters(void) { return 1; };
     virtual avtFilter        *GetIthFacadedFilter(int);
+    virtual const avtFilter  *GetIthFacadedFilter(int) const;
 
     virtual avtFilter        *GetFacadedFilter(void) = 0;
+    virtual const avtFilter  *GetFacadedFilter(void) const = 0;
 };
 
-
 #endif
-
-

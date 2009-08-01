@@ -65,6 +65,9 @@ class     avtResampleFilter;
 //    Hank Childs, Wed Dec 31 14:27:47 PST 2008
 //    Renamed ResamplePluginAttributes to ResampleAttributes.
 //
+//    Tom Fogal, Tue Jun 23 20:52:29 MDT 2009
+//    Added const version of GetFacadedFilter.
+//
 // ****************************************************************************
 
 class avtResamplePluginFilter : virtual public avtPluginFilter,
@@ -88,7 +91,7 @@ class avtResamplePluginFilter : virtual public avtPluginFilter,
     ResampleAttributes         atts;
 
     virtual avtFilter   *GetFacadedFilter();
+    virtual const avtFilter   *GetFacadedFilter() const;
 };
-
 
 #endif

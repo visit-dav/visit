@@ -183,6 +183,27 @@ avtMultipleInputSink::GetInput(void)
     return sinks[0]->GetInput();
 }
 
+// ****************************************************************************
+//  Method: avtMultipleInputSink::GetInput
+//
+//  Purpose:
+//      The GetInput routine must be defined for sinks.  Meet that interface.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+const avtDataObject_p
+avtMultipleInputSink::GetInput(void) const
+{
+    if (nSinks <= 0)
+    {
+        EXCEPTION2(BadIndexException, 0, nSinks);
+    }
+
+    return sinks[0]->GetInput();
+}
+
 
 // ****************************************************************************
 //  Method: avtMultipleInputSink::SetTypedInput

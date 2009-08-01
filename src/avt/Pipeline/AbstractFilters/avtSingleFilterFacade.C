@@ -72,3 +72,22 @@ avtSingleFilterFacade::GetIthFacadedFilter(int f)
 }
 
 
+// ****************************************************************************
+//  Method: avtSingleFilterFacade::GetIthFacadedFilter
+//
+//  Purpose:
+//      Gets one of the filters.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+
+const avtFilter *
+avtSingleFilterFacade::GetIthFacadedFilter(int f) const
+{
+    if (f != 0)
+        EXCEPTION0(ImproperUseException);
+
+    return GetFacadedFilter();
+}

@@ -61,6 +61,11 @@ class     avtCurveConstructorFilter;
 //  Programmer: Hank Childs
 //  Creation:   October 3, 2003
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Jun 23 20:40:51 MDT 2009
+//    Added const version of GetFacadedFilter.
+//
 // ****************************************************************************
 
 class avtCurveFilter : public avtSingleFilterFacade
@@ -76,13 +81,11 @@ class avtCurveFilter : public avtSingleFilterFacade
   protected:
     avtCurveConstructorFilter    *ccf;
 
-    virtual avtContract_p
-                              ModifyContract(avtContract_p spec);
+    virtual avtContract_p     ModifyContract(avtContract_p spec);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtFilter        *GetFacadedFilter(void);
+    virtual const avtFilter  *GetFacadedFilter(void) const;
 };
 
 
 #endif
-
-

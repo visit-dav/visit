@@ -76,6 +76,9 @@
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Tom Fogal, Tue Jun 23 19:54:03 MDT 2009
+//    Added a const version of GetInput.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSink
@@ -88,6 +91,7 @@ class PIPELINE_API avtDataObjectSink
 
     void                          SetInput(avtDataObject_p);
     virtual avtDataObject_p       GetInput(void) = 0;
+    virtual const avtDataObject_p GetInput(void) const = 0;
 
   protected:
     virtual void                  SetTypedInput(avtDataObject_p) = 0;

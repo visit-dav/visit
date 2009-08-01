@@ -86,6 +86,9 @@ class avtCoordSystemConvert;
 //    Jeremy Meredith, Tue Apr 15 13:17:24 EDT 2008
 //    Added linear transform.
 //
+//    Tom Fogal, Tue Jun 23 20:53:28 MDT 2009
+//    Added const version of GetFacadedFilter.
+//
 // ****************************************************************************
 
 class avtTransformFilter : public virtual avtPluginFilter,
@@ -111,7 +114,7 @@ class avtTransformFilter : public virtual avtPluginFilter,
     avtCoordSystemConvert         *csc;
 
     virtual avtFilter             *GetFacadedFilter(void);
+    virtual const avtFilter       *GetFacadedFilter(void) const;
 };
-
 
 #endif
