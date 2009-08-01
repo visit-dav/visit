@@ -498,6 +498,9 @@ $0 = shift @ARGV;
 #    on the command line. This allows '--help' to be passed to visit cli
 #    scripts which may have their own help and argument processing.
 #
+#    Tom Fogal, Sun Jun 28 22:18:04 MDT 2009
+#    Made gdb at least print out a backtrace.
+#
 #    Mark C. Miller, Tue Jul  7 18:00:34 PDT 2009
 #    Added logic to avoid backtick pwd if possible. That is causing problems
 #    on LLNL systems when ANY lscratch filesystem happens to be down and
@@ -2837,10 +2840,14 @@ else
                 # If the user did not break in main, continue.
                 if($breakmain eq 0) { print GDBFILE "continue\n"; }
             }
+            if(!$gdb_xterm)
+            {
+                print GDBFILE "bt full\n";
+            }
             close GDBFILE;
 
             # Run gdb directly
-            @debugcmd = ("gdb", $real_exe, "-x", $gdbfilename);
+            @debugcmd = ("gdb", "-q", $real_exe, "-x", $gdbfilename);
             if($gdb_xterm)
             {
                 # Run GDB under an xterm
