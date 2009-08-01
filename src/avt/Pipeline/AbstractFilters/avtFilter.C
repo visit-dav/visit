@@ -837,12 +837,17 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
 //  Programmer: Hank Childs
 //  Creation:   September 4, 2001
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Jun 23 20:21:36 MDT 2009
+//    Marked as const.
+//
 // ****************************************************************************
 
 bool
-avtFilter::TrySpatialExtents(double *outexts)
+avtFilter::TrySpatialExtents(double *outexts) const
 {
-    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
 
     //
     // Our first preference is for the effective extents.
@@ -890,7 +895,7 @@ avtFilter::TrySpatialExtents(double *outexts)
 // ****************************************************************************
 
 void
-avtFilter::GetSpatialExtents(double *newexts)
+avtFilter::GetSpatialExtents(double *newexts) const
 {
     if (TrySpatialExtents(newexts))
     {
@@ -900,7 +905,7 @@ avtFilter::GetSpatialExtents(double *newexts)
          return;
     }
 
-    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     atts.GetCumulativeTrueSpatialExtents()->CopyTo(newexts);
 
     UnifyMinMax(newexts, atts.GetSpatialDimension()*2, 6);
