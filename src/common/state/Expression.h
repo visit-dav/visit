@@ -134,9 +134,9 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    static const int GetNumTypes();
+    static int GetNumTypes();
     static const char * GetTypeString(const Expression::ExprType t);
-    static const Expression::ExprType GetTypeId(const std::string s);
+    static Expression::ExprType GetTypeId(const std::string s);
 
     // IDs that can be used to identify fields in case statements
     enum {
