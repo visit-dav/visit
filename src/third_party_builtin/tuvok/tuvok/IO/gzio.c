@@ -25,14 +25,13 @@
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
    DEALINGS IN THE SOFTWARE.
 */
-#include "gzio.h"
 #include <assert.h>
 #include <stdlib.h>
+#include "gzio.h"
 
 #ifdef WIN32
   #pragma warning( disable : 4706) // disable "assignment in conditional" warning 
 #endif
-
 
 #define CHUNK (1024 * 1024 * 64)
 

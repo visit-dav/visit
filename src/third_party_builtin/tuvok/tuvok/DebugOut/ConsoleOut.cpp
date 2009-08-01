@@ -37,6 +37,19 @@
 #include "ConsoleOut.h"
 #include "Basics/Console.h"
 
+/// ANSI escape codes for various colors.
+///@{
+static const char C_DGRAY[]  = "\033[01;30m";
+static const char C_NORM[]   = "\033[00m";
+static const char C_RED[]    = "\033[01;31m";
+static const char C_YELLOW[] = "\033[01;33m";
+static const char C_GREEN[]  = "\033[01;32m";
+static const char C_MAG[]    = "\033[01;35m";
+static const char C_LBLUE[]  = "\033[01;36m";
+static const char C_WHITE[]  = "\033[01;27m";
+///@}
+
+
 ConsoleOut::ConsoleOut() {
   Message("ConsoleOut::ConsoleOut:","Starting up ConsoleDebug out");
 }
@@ -57,6 +70,7 @@ void ConsoleOut::printf(const char* format, ...) const
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
+  va_end(args);
   Console::printf("%s\n",buff);
 }
 
@@ -70,7 +84,13 @@ void ConsoleOut::Message(const char* source, const char* format, ...) {
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
-  Console::printf("MESSAGE (%s): %s\n",source, buff);
+  va_end(args);
+
+#ifndef DETECTED_OS_WINDOWS
+  this->printf("%sMESSAGE%s (%s): %s", C_DGRAY, C_NORM, source, buff);
+#else
+  this->printf("MESSAGE (%s): %s", source, buff);
+#endif
 }
 
 void ConsoleOut::Warning(const char* source, const char* format, ...) {
@@ -83,7 +103,12 @@ void ConsoleOut::Warning(const char* source, const char* format, ...) {
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
-  Console::printf("WARNING (%s): %s\n",source, buff);
+  va_end(args);
+#ifndef DETECTED_OS_WINDOWS
+  this->printf("%sWARNING%s (%s): %s", C_YELLOW, C_NORM, source, buff);
+#else
+  this->printf("WARNING (%s): %s", source, buff);
+#endif
 }
 
 void ConsoleOut::Error(const char* source, const char* format, ...) {
@@ -96,5 +121,11 @@ void ConsoleOut::Error(const char* source, const char* format, ...) {
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
-  Console::printf("ERROR (%s): %s\n",source, buff);
+  va_end(args);
+
+#ifndef DETECTED_OS_WINDOWS
+  this->printf("%sERROR%s (%s): %s", C_RED, C_NORM, source, buff);
+#else
+  this->printf("ERROR (%s): %s", source, buff);
+#endif
 }

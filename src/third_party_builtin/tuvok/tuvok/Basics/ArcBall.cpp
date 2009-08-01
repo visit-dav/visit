@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -39,11 +39,12 @@
 
 float ArcBall::ms_fEpsilon = 1.0e-5f;
 
-ArcBall::ArcBall(UINT32 iWinWidth, UINT32 iWinHeight, int iWinOffsetX, int iWinOffsetY) :
+ArcBall::ArcBall(UINT32 iWinWidth, UINT32 iWinHeight, int iWinOffsetX, int iWinOffsetY, bool bUseTranslation) :
     m_vStartDrag(),
     m_iWinDim(iWinWidth, iWinHeight),
     m_iWinOffsets(iWinOffsetX, iWinOffsetY),
-    m_fRadius(1.0f)
+    m_fRadius(1.0f),
+    m_bUseTranslation(bUseTranslation)
 {
 }
 
@@ -83,6 +84,12 @@ FLOATVECTOR3 ArcBall::MapToSphere(UINTVECTOR2 vPosition) const {
   vNormPosition.x =  -(((vPosition.x-m_iWinOffsets.x) / (float(m_iWinDim.x - 1) / 2.0f)) - 1.0f);
   vNormPosition.y =  ((vPosition.y-m_iWinOffsets.y) / (float(m_iWinDim.y - 1) / 2.0f)) - 1.0f;
 
+  if (m_bUseTranslation) {
+    FLOATMATRIX4 mTranslation(m_mTranslation);
+    mTranslation.m43 = 0;
+    vNormPosition = (FLOATVECTOR4(vNormPosition,0.0f,1.0f) * mTranslation).xy();
+  }
+
   // Compute the length of the vector to the point from the center
   float length = vNormPosition.length();
 
@@ -102,8 +109,6 @@ FLOATVECTOR3 ArcBall::MapToSphere(UINTVECTOR2 vPosition) const {
       vResult.y = vNormPosition.y;
       vResult.z = length-m_fRadius;
   }
-
-  vResult = vResult * m_mTranslation;
 
   return vResult;
 }

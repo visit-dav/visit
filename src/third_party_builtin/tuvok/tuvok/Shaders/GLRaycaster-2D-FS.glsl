@@ -110,7 +110,10 @@ void main(void)
       float fVolumValYm = texture3D(texVolume, vCurrentPosTex+vec3(0,+vVoxelStepsize.y,0)).x;
       float fVolumValZp = texture3D(texVolume, vCurrentPosTex+vec3(0,0,+vVoxelStepsize.z)).x;
       float fVolumValZm = texture3D(texVolume, vCurrentPosTex+vec3(0,0,-vVoxelStepsize.z)).x;
-      float fGradientMag = length(vec3(fVolumValXm-fVolumValXp, fVolumValYp-fVolumValYm, fVolumValZm-fVolumValZp)); 
+      vec3  vGradient = vec3((fVolumValXm-fVolumValXp)/2.0,
+                             (fVolumValYp-fVolumValYm)/2.0,
+                             (fVolumValZm-fVolumValZp)/2.0);
+      float fGradientMag = length(vGradient); 
 
       /// apply 2D transfer function
 	    vec4  vTransVal = texture2D(texTrans2D, vec2(fVolumVal*fTransScale, 1.0-fGradientMag*fGradientScale));

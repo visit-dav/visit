@@ -60,6 +60,8 @@ class DXRaycaster : public DXRenderer {
     DXRaycaster(MasterController* pMasterController, bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits, bool bDisableBorder);
     virtual ~DXRaycaster();
 
+    virtual ERendererType GetRendererType() {return RT_RC;}
+
   protected:
     virtual void Render3DInLoop(size_t iCurrentBrick, int iStereoID);
     virtual void RenderHQMIPInLoop(const Brick& b);

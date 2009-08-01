@@ -36,23 +36,14 @@
 
 #include "SystemInfo.h"
 
+#include "StdDefines.h"
 #ifdef _WIN32
   #include <windows.h>
-  // undef stupid windows defines to max and min
-  #ifdef max
-  #undef max
-  #endif
-
-  #ifdef min
-  #undef min
-  #endif
 #else
-  #ifdef TUVOK_OS_APPLE
+  #ifdef DETECTED_OS_APPLE
     #include <sys/sysctl.h>
   #else
-    #include <cerrno>
     #include <cstdio>
-    #include <fstream>
     #include <iostream>
     #include <sstream>
     #include <sys/resource.h>
@@ -99,7 +90,7 @@ UINT32 SystemInfo::ComputeNumCPUs() {
     GetSystemInfo(&siSysInfo);
     return siSysInfo.dwNumberOfProcessors;
   #else
-    #ifdef TUVOK_OS_APPLE
+    #ifdef DETECTED_OS_APPLE
       return 0;
     #else
       return 0;
@@ -163,12 +154,12 @@ static UINT64 lnx_mem_proc() {
 
 static UINT64 lnx_mem() {
   UINT64 m;
-  if((m = lnx_mem_sysinfo()) == 0) {
-    DBG("sysinfo failed, falling back to rlimit");
+  if((m = lnx_mem_proc()) == 0) {
+    DBG("proc failed, falling back to rlimit");
     if((m = lnx_mem_rlimit()) == 0) {
-      DBG("rlimit failed, falling back to proc");
-      if((m = lnx_mem_proc()) == 0) {
-        DBG("proc failed, pretending you have 1GB of memory");
+      DBG("rlimit failed, falling back to sysinfo");
+      if((m = lnx_mem_sysinfo()) == 0) {
+        DBG("all memory lookups failed; pretending you have 1Gb of memory.");
         return 1024*1024*1024;
       }
     }
@@ -184,7 +175,7 @@ UINT64 SystemInfo::ComputeCPUMemSize() {
     GlobalMemoryStatusEx (&statex);
     return statex.ullTotalPhys;
   #else
-    #ifdef TUVOK_OS_APPLE
+    #ifdef DETECTED_OS_APPLE
       UINT64 phys = 0;
       int mib[2] = { CTL_HW, HW_PHYSMEM };
       size_t len = sizeof(phys);
@@ -254,7 +245,7 @@ UINT64 SystemInfo::ComputeCPUMemSize() {
               if( SUCCEEDED( GetVideoMemoryViaDirectDraw( hMonitor, &dwAvailableVidMem ) ) ) {
                 SAFE_RELEASE( pD3D9 );
                 FreeLibrary( hD3D9 );
-                return UINT64(DedicatedVideoMemory);
+                return UINT64(dwAvailableVidMem);
               } else {
                 SAFE_RELEASE( pD3D9 );
                 FreeLibrary( hD3D9 );
@@ -277,7 +268,7 @@ UINT64 SystemInfo::ComputeCPUMemSize() {
 #else
   UINT64 SystemInfo::ComputeGPUMemory( )
   {
-    #ifdef TUVOK_OS_APPLE
+    #ifdef DETECTED_OS_APPLE
       return 0;
     #else // Linux
       return 0;

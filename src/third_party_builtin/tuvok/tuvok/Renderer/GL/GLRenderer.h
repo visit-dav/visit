@@ -32,8 +32,6 @@
            SCI Institute
            University of Utah
 */
-
-
 #pragma once
 
 #ifndef GLRENDERER_H
@@ -55,6 +53,7 @@ class GLRenderer : public AbstrRenderer {
     GLRenderer(MasterController* pMasterController, bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits, bool bDisableBorder);
     virtual ~GLRenderer();
     virtual bool Initialize();
+    virtual void Set1DTrans(const std::vector<unsigned char>&);
     virtual void Changed1DTrans();
     virtual void Changed2DTrans();
 
@@ -90,7 +89,7 @@ class GLRenderer : public AbstrRenderer {
     GLTargetBinder  m_TargetBinder;
     GLTexture1D*    m_p1DTransTex;
     GLTexture2D*    m_p2DTransTex;
-    unsigned char*  m_p1DData;
+    std::vector<unsigned char> m_p1DData;
     unsigned char*  m_p2DData;
     GLFBOTex*       m_pFBO3DImageLast;
     GLFBOTex*       m_pFBO3DImageCurrent[2];
@@ -101,11 +100,12 @@ class GLRenderer : public AbstrRenderer {
     GLSLProgram*    m_pProgram1DTrans[2];
     GLSLProgram*    m_pProgram2DTrans[2];
     GLSLProgram*    m_pProgramIso;
+    GLSLProgram*    m_pProgramColor;
     GLSLProgram*    m_pProgramHQMIPRot;
 
     void SetRenderTargetArea(ERenderArea eREnderArea);
     void SetRenderTargetAreaScissor(ERenderArea eREnderArea);
-    virtual void SetViewPort(UINTVECTOR2 viLowerLeft, UINTVECTOR2 viUpperRight);
+    void SetViewPort(UINTVECTOR2 viLowerLeft, UINTVECTOR2 viUpperRight);
 
     bool Render2DView(ERenderArea eREnderArea, EWindowMode eDirection, UINT64 iSliceIndex);
     void RenderBBox(const FLOATVECTOR4 vColor = FLOATVECTOR4(1,0,0,1));
@@ -113,7 +113,7 @@ class GLRenderer : public AbstrRenderer {
                     const FLOATVECTOR3& vExtend);
     void RenderClipPlane(size_t iStereoID);
     void NewFrameClear(ERenderArea eREnderArea);
-    bool Execute3DFrame(ERenderArea eREnderArea);
+    bool Execute3DFrame(ERenderArea eREnderArea, float &fMsecPassed);
     void RerenderPreviousResult(bool bTransferToFramebuffer);
     void DrawLogo();
     void DrawBackGradient();
@@ -121,10 +121,10 @@ class GLRenderer : public AbstrRenderer {
     /// Defines a value to use for scaling the TF.  Client apps which hand us
     /// over the raw data will usually want to override this to be 1, since
     /// they generally won't support any notion of TF scaling.
-    virtual float CalculateScaling() const;
+    virtual float CalculateScaling();
     virtual void SetDataDepShaderVars();
 
-    virtual void Render3DView();
+    virtual float Render3DView();
     virtual void Render3DPreLoop() {};
     virtual void Render3DInLoop(size_t iCurentBrick, int iStereoID) = 0;
     virtual void Render3DPostLoop() {}
@@ -141,6 +141,11 @@ class GLRenderer : public AbstrRenderer {
 
     void BBoxPreRender();
     void BBoxPostRender();
+
+    void PlaneIn3DPreRender();
+    void PlaneIn3DPostRender();
+    void RenderPlanesIn3D(bool bDepthPassOnly);
+
     virtual void ClearDepthBuffer();
     virtual void ClearColorBuffer();
 
@@ -154,9 +159,12 @@ class GLRenderer : public AbstrRenderer {
     GLSLProgram*    m_pProgramTrans;
     GLSLProgram*    m_pProgram1DTransSlice;
     GLSLProgram*    m_pProgram2DTransSlice;
+    GLSLProgram*    m_pProgram1DTransSlice3D;
+    GLSLProgram*    m_pProgram2DTransSlice3D;
     GLSLProgram*    m_pProgramMIPSlice;
     GLSLProgram*    m_pProgramTransMIP;
     GLSLProgram*    m_pProgramIsoCompose;
+    GLSLProgram*    m_pProgramColorCompose;
     GLSLProgram*    m_pProgramCVCompose;
     GLSLProgram*    m_pProgramComposeAnaglyphs;
 

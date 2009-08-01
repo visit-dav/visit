@@ -36,15 +36,13 @@
 
 
 #include "MasterController.h"
-#include "Controller.h"
 #include "../Basics/SystemInfo.h"
 #include "../DebugOut/TextfileOut.h"
-#include "../DebugOut/MultiplexOut.h"
 #include "../IO/IOManager.h"
 #include "../Renderer/GPUMemMan/GPUMemMan.h"
+#include "../Renderer/GPUMemMan/GPUMemManDataStructs.h"
 #include "../Renderer/GL/GLRaycaster.h"
 #include "../Renderer/GL/GLSBVR.h"
-#include "../Renderer/GL/ImmediateGLSBVR.h"
 
 #if defined(_WIN32) && defined(USE_DIRECTX)
 #include "../Renderer/DX/DXSBVR.h"
@@ -53,7 +51,9 @@
 
 #include "../Scripting/Scripting.h"
 
-MasterController::MasterController()
+MasterController::MasterController() :
+  m_bDeleteDebugOutOnExit(false),
+  m_pProvenance(NULL)
 {
   m_pSystemInfo   = new SystemInfo();
   m_pIOManager    = new IOManager();
@@ -74,6 +74,7 @@ MasterController::~MasterController() {
   delete m_pSystemInfo;
   delete m_pIOManager;
   delete m_pGPUMemMan;
+  delete m_pScriptEngine;
   m_DebugOut.clear();
 }
 
@@ -108,59 +109,65 @@ const AbstrDebugOut *MasterController::DebugOut() const {
            : static_cast<const AbstrDebugOut*>(&m_DebugOut);
 }
 
-AbstrRenderer* MasterController::
-RequestNewVolumerenderer(EVolumeRendererType eRendererType,
-                         bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits,
-                         bool bDisableBorder, bool bSimple) {
-  std::string msg("Starting up new renderer ");
+AbstrRenderer*
+MasterController::RequestNewVolumeRenderer(
+    EVolumeRendererType eRendererType, bool bUseOnlyPowerOfTwo,
+    bool bDownSampleTo8Bits, bool bDisableBorder,
+    bool bNoRCClipplanes, bool bBiasAndScaleTF)
+{
+  std::string api;
+  std::string method;
+  AbstrRenderer *retval;
 
   switch (eRendererType) {
-    case OPENGL_SBVR:
-      msg += "(API=OpenGL, Method=Slice Based)";
-      AbstrRenderer *ren;
-      if(bSimple) {
-        ren = new ImmediateGLSBVR(bUseOnlyPowerOfTwo, bDownSampleTo8Bits,
-                                  bDisableBorder);
-      } else {
-        ren = new GLSBVR(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits,
-                         bDisableBorder);
-      }
-      m_vVolumeRenderer.push_back(ren);
-      break;
-    case OPENGL_RAYCASTER:
-      msg += "(API=OpenGL, Method=Raycaster)";
-      /// @todo implement simplified raycaster!
-      if(bSimple) { WARNING("simple raycaster unimplemented"); }
-      m_vVolumeRenderer.push_back(new GLRaycaster(this, bUseOnlyPowerOfTwo,
-                                                  bDownSampleTo8Bits,
-                                                  bDisableBorder));
-      break;
+  case OPENGL_SBVR :
+    api = "OpenGL";
+    method = "Slice Based Volume Renderer";
+    retval = new GLSBVR(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits,
+                        bDisableBorder);
+    break;
+
+  case OPENGL_RAYCASTER :
+    api = "OpenGL";
+    method = "Raycaster";
+    retval = new GLRaycaster(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits,
+                             bDisableBorder, bNoRCClipplanes);
+    break;
+
 #if defined(_WIN32) && defined(USE_DIRECTX)
-    case DIRECTX_SBVR :
-      msg += "(API=DirectX, Method=SBVR)");
-      m_vVolumeRenderer.push_back(new DXSBVR(this, bUseOnlyPowerOfTwo,
-                                             bDownSampleTo8Bits,
-                                             bDisableBorder));
-      break;
-    case DIRECTX_RAYCASTER :
-      msg += "(API=DirectX, Method=Raycaster)");
-      m_vVolumeRenderer.push_back(new DXRaycaster(this, bUseOnlyPowerOfTwo,
-                                                  bDownSampleTo8Bits,
-                                                  bDisableBorder));
-      break;
+  case DIRECTX_SBVR :
+    api = "DirectX";
+    method = "Slice Based Volume Renderer";
+    retval = new DXSBVR(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits,
+                        bDisableBorder);
+    break;
+
+  case DIRECTX_RAYCASTER :
+    api = "DirectX";
+    method = "Raycaster";
+    retval = new DXRaycaster(this, bUseOnlyPowerOfTwo, bDownSampleTo8Bits,
+                             bDisableBorder);
+    break;
 #else
-    case DIRECTX_SBVR: // FALL THROUGH
-    case DIRECTX_RAYCASTER:
-      m_DebugOut.Error(_func_,"DirectX 10 renderer not yet implemented. "
-                       "Please select OpenGL as the render API in the "
-                       "settings dialog.");
-      return NULL;
+  case DIRECTX_RAYCASTER :
+  case DIRECTX_SBVR :
+    m_DebugOut.Error(_func_,"DirectX 10 renderer not yet implemented."
+                            "Please select OpenGL as the render API "
+                            "in the settings dialog.");
+    return NULL;
 #endif
-    default:
-      m_DebugOut.Error(_func_,"Unsupported Volume renderer requested");
-      return NULL;
+
+  default :
+    m_DebugOut.Error(_func_, "Unsupported Volume renderer requested");
+    return NULL;
   };
-  m_DebugOut.Message(_func_, "%s", msg.c_str());
+
+  m_DebugOut.Message(_func_, "Starting up new renderer (API=%s, Method=%s)",
+                     api.c_str(), method.c_str());
+  if(bBiasAndScaleTF) {
+    retval->SetScalingMethod(AbstrRenderer::SMETH_BIAS_AND_SCALE);
+  }
+  m_vVolumeRenderer.push_back(retval);
   return m_vVolumeRenderer[m_vVolumeRenderer.size()-1];
 }
 
@@ -183,7 +190,7 @@ void MasterController::ReleaseVolumerenderer(AbstrRenderer* pVolumeRenderer) {
 }
 
 
-void MasterController::Filter( std::string , UINT32 ,
+void MasterController::Filter(std::string, UINT32,
                               void*, void *, void *, void * ) {
 };
 
@@ -193,16 +200,21 @@ void MasterController::RegisterCalls(Scripting* pScriptEngine) {
   pScriptEngine->RegisterCommand(this, "setwarninglog", "on/off", "toggle recording of warnings");
   pScriptEngine->RegisterCommand(this, "setemessagelog", "on/off", "toggle recording of messages");
   pScriptEngine->RegisterCommand(this, "printerrorlog", "", "print recorded errors");
-  pScriptEngine->RegisterCommand(this, "printwarninglog", "", "print recorded errwarningsors");
+  pScriptEngine->RegisterCommand(this, "printwarninglog", "", "print recorded warnings");
   pScriptEngine->RegisterCommand(this, "printmessagelog", "", "print recorded messages");
   pScriptEngine->RegisterCommand(this, "clearerrorlog", "", "clear recorded errors");
   pScriptEngine->RegisterCommand(this, "clearwarninglog", "", "clear recorded warnings");
   pScriptEngine->RegisterCommand(this, "clearmessagelog", "", "clear recorded messages");
   pScriptEngine->RegisterCommand(this, "fileoutput", "filename","write debug output to 'filename'");
   pScriptEngine->RegisterCommand(this, "toggleoutput", "on/off on/off on/off on/off","toggle messages, warning, errors, and other output");
+  pScriptEngine->RegisterCommand(this, "set_tf_1d", "",
+                                 "Sets the 1D transfer from the "
+                                 "(string) argument.");
 }
 
-bool MasterController::Execute(const std::string& strCommand, const std::vector< std::string >& strParams, std::string& strMessage) {
+bool MasterController::Execute(const std::string& strCommand,
+                               const std::vector<std::string>& strParams,
+                               std::string& strMessage) {
   strMessage = "";
   if (strCommand == "seterrorlog") {
     m_DebugOut.SetListRecordingErrors(strParams[0] == "on");
@@ -258,9 +270,33 @@ bool MasterController::Execute(const std::string& strCommand, const std::vector<
     textout->SetShowOther(m_DebugOut.ShowOther());
 
     m_DebugOut.AddDebugOut(textout);
-  
+
+    return true;
+  }
+  if(strCommand == "set_tf_1d") {
+    assert(strParams.size() > 0);
+    for(AbstrRendererList::iterator iter = m_vVolumeRenderer.begin();
+        iter != m_vVolumeRenderer.end(); ++iter) {
+      TransferFunction1D *tf1d = m_vVolumeRenderer[0]->Get1DTrans();
+      std::istringstream serialized_tf(strParams[0]);
+      tf1d->Load(serialized_tf);
+    }
     return true;
   }
 
   return false;
+}
+
+void MasterController::RegisterProvenanceCB(provenance_func *pfunc)
+{
+  this->m_pProvenance = pfunc;
+}
+
+void MasterController::Provenance(const std::string kind,
+                                  const std::string cmd,
+                                  const std::string args)
+{
+  if(this->m_pProvenance) {
+    this->m_pProvenance(kind, cmd, args);
+  }
 }

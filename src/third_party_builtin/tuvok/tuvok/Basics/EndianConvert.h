@@ -41,12 +41,13 @@
 #ifndef ENDIANCONVERT_H
 #define ENDIANCONVERT_H
 
-#include "../StdTuvokDefines.h"
 #include <cassert>
-
+#include <cstdio>
 #ifndef WIN32
   #include <unistd.h>
 #endif
+
+#include "StdDefines.h"
 
 #define ENDIANCONVERT_THREAD_SAFE  ///< Switch on to ensure Thread-safeness. Quick and untested hack.
 

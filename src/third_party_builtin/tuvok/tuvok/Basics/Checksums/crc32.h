@@ -40,12 +40,11 @@
 #ifndef CRC32_H
 #define CRC32_H
 
-#include "../../StdTuvokDefines.h"
-#include "../MathTools.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "../../StdTuvokDefines.h"
 
 typedef unsigned long DWORD;
 

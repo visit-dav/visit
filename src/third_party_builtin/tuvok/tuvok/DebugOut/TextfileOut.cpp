@@ -34,15 +34,14 @@
   \date    August 2008
 */
 
-#include "TextfileOut.h"
-
+#include <fstream>
+#include <stdarg.h>
 #ifdef WIN32
   #include <windows.h>
 #endif
+#include "TextfileOut.h"
+#include <ctime>
 
-#include <stdarg.h>
-
-#include <fstream>
 using namespace std;
 
 TextfileOut::TextfileOut(std::string strFilename) :
@@ -60,6 +59,7 @@ void TextfileOut::printf(const char* format, ...) const
   if (!m_bShowOther) return;
 
   char buff[16384];
+
   va_list args;
   va_start(args, format);
 #ifdef WIN32
@@ -67,11 +67,32 @@ void TextfileOut::printf(const char* format, ...) const
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
+  va_end(args);
+
+  time_t epoch_time;
+  time(&epoch_time);
+
+#ifdef DETECTED_OS_WINDOWS
+  struct tm now;
+  localtime_s(&now, &epoch_time);
+#define ADDR_NOW (&now)
+#else
+  struct tm* now;
+  now = localtime(&epoch_time);
+#define ADDR_NOW (now)
+#endif
+  char datetime[64];
 
   ofstream fs;
   fs.open(m_strFilename.c_str(),  ios_base::app);
   if (fs.fail()) return;
-  fs << buff << endl;
+
+  if(strftime(datetime, 64, "(%d.%m.%Y %H:%M:%S)", ADDR_NOW) > 0) {
+    fs << datetime << " " << buff << std::endl;
+  } else {
+    fs << buff << std::endl;
+  }
+
   fs.flush();
   fs.close();
 }
@@ -79,18 +100,40 @@ void TextfileOut::printf(const char* format, ...) const
 void TextfileOut::_printf(const char* format, ...) const
 {
   char buff[16384];
+
   va_list args;
   va_start(args, format);
+
 #ifdef WIN32
   _vsnprintf_s( buff, 16384, sizeof(buff), format, args);
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
+  va_end(args);
+
+  time_t epoch_time;
+  time(&epoch_time);
+
+#ifdef DETECTED_OS_WINDOWS
+  struct tm now;
+  localtime_s(&now, &epoch_time);
+#undef ADDR_NOW
+#define ADDR_NOW (&now)
+#else
+  struct tm* now;
+  now = localtime(&epoch_time);
+#define ADDR_NOW (now)
+#endif
+  char datetime[64];
 
   ofstream fs;
   fs.open(m_strFilename.c_str(),  ios_base::app);
   if (fs.fail()) return;
-  fs << buff << endl;
+  if(strftime(datetime, 64, "(%d.%m.%Y %H:%M:%S)", ADDR_NOW) > 0) {
+    fs << datetime << " " << buff << std::endl;
+  } else {
+    fs << buff << std::endl;
+  }
   fs.flush();
   fs.close();
 }
@@ -105,7 +148,8 @@ void TextfileOut::Message(const char* source, const char* format, ...) {
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
-  this->_printf("MESSAGE (%s): %s",source, buff);
+  va_end(args);
+  this->_printf("MESSAGE (%s): %s", source, buff);
 }
 
 void TextfileOut::Warning(const char* source, const char* format, ...) {
@@ -118,7 +162,8 @@ void TextfileOut::Warning(const char* source, const char* format, ...) {
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
-  this->_printf("WARNING (%s): %s",source, buff);
+  va_end(args);
+  this->_printf("WARNING (%s): %s", source, buff);
 }
 
 void TextfileOut::Error(const char* source, const char* format, ...) {
@@ -131,5 +176,6 @@ void TextfileOut::Error(const char* source, const char* format, ...) {
 #else
   vsnprintf( buff, sizeof(buff), format, args);
 #endif
-  this->_printf("ERROR (%s): %s",source, buff);
+  va_end(args);
+  this->_printf("ERROR (%s): %s", source, buff);
 }

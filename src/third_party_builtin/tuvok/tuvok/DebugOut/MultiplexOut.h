@@ -41,9 +41,8 @@
 #ifndef MULTIPLEXOUT_H
 #define MULTIPLEXOUT_H
 
-#include "../StdTuvokDefines.h"
-#include "AbstrDebugOut.h"
 #include <vector>
+#include "AbstrDebugOut.h"
 
 class MultiplexOut : public AbstrDebugOut {
   public:
@@ -69,5 +68,4 @@ class MultiplexOut : public AbstrDebugOut {
   private:
     std::vector<AbstrDebugOut*> m_vpDebugger;
 };
-
 #endif // MULTIPLEXOUT_H

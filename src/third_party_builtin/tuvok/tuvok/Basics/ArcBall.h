@@ -41,19 +41,20 @@
 #ifndef ARCBALL_H
 #define ARCBALL_H
 
-#include "../StdTuvokDefines.h"
-#include <vector>
+#include "StdDefines.h"
 #include "../Basics/Vectors.h"
 
 /** \class ArcBall */
 class ArcBall
 {
 public:
-  ArcBall(UINT32 iWinWidth=0, UINT32 iWinHeight=0, int iWinOffsetX=0, int iWinOffsetY=0);
+  ArcBall(UINT32 iWinWidth=0, UINT32 iWinHeight=0, int iWinOffsetX=0, int iWinOffsetY=0, bool bUseTranslation = false);
 
   void SetRadius(float fRadius) {m_fRadius = fRadius;}
   void SetTranslation(const FLOATMATRIX4& mTranslation) {m_mTranslation = mTranslation;}
   const FLOATMATRIX4& GetTranslation() const {return m_mTranslation;}
+  void SetUseTranslation(bool bUseTranslation) {m_bUseTranslation = bUseTranslation;}
+  bool GetUseTranslation() {return m_bUseTranslation;}
   void SetWindowSize(UINT32 iWinWidth, UINT32 iWinHeight);
   void SetWindowOffset(int iWinOffsetX, int iWinOffsetY);
   void Click(UINTVECTOR2 vPosition);
@@ -67,6 +68,7 @@ protected:
   INTVECTOR2   m_iWinOffsets;  ///< Horizontal/Vertical window offset
   float        m_fRadius;      ///< radius of the ball
   FLOATMATRIX4 m_mTranslation; ///< translation of the ball
+  bool         m_bUseTranslation; ///< whether to the translation of the ball
 
 
   FLOATVECTOR3 MapToSphere(UINTVECTOR2 vPosition) const;

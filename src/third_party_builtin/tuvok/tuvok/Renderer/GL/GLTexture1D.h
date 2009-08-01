@@ -33,7 +33,6 @@
            University of Utah
   \date    August 2008
 */
-
 #pragma once
 
 #ifndef GLTEXTURE1D_H
@@ -69,5 +68,4 @@ class GLTexture1D : public GLTexture {
     GLenum m_format;
     GLenum m_type;
 };
-
 #endif // GLTEXTURE1D_H

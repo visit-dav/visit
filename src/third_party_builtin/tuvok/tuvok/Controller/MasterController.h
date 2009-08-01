@@ -47,25 +47,23 @@
 #include "../DebugOut/MultiplexOut.h"
 #include "../DebugOut/ConsoleOut.h"
 
-#include "../Renderer/AbstrRenderer.h"
-#include "../Renderer/GPUMemMan/GPUMemManDataStructs.h"
-
 #include "../Scripting/Scriptable.h"
+
+class AbstrRenderer;
 class IOManager;
 class GPUMemMan;
 class Scripting;
 class SystemInfo;
+typedef std::deque<AbstrRenderer*> AbstrRendererList;
 
 /** \class MasterController
- * Centralized controller for ImageVis3D.
+ * Centralized controller for Tuvok.
  *
  * MasterController is a router for all of the components of
- * ImageVis3D.  Modules only depend on / utilize the controller,
- * never other modules.  For example, the GUI does not inform the
- * renderer that a re-render is necessary when a window is resized.
- * Instead, it informs the abstract interface through this controller,
- * and the renderer implementation decides on its own how it wants to
- * handle the resize event. */
+ * Tuvok.  Modules only depend on / utilize the controller,
+ * never other modules.
+ * You probably don't want to create an instance directly.  Use the singleton
+ * provided by Controller::Instance(). */
 class MasterController : public Scriptable {
 public:
   enum EVolumeRendererType {
@@ -80,11 +78,13 @@ public:
   virtual ~MasterController();
 
   /// Create a new renderer.
-  AbstrRenderer* RequestNewVolumerenderer(EVolumeRendererType eRendererType,
+  AbstrRenderer* RequestNewVolumeRenderer(EVolumeRendererType eRendererType,
                                           bool bUseOnlyPowerOfTwo,
                                           bool bDownSampleTo8Bits,
                                           bool bDisableBorder,
-                                          bool simple);
+                                          bool bNoRCClipplanes,
+                                          bool bBiasAndScaleTF=false);
+
   /// Indicate that a renderer is no longer needed.
   void ReleaseVolumerenderer(AbstrRenderer* pVolumeRenderer);
 
@@ -101,6 +101,11 @@ public:
   AbstrDebugOut* DebugOut();
   const AbstrDebugOut *DebugOut() const;
   ///@}
+
+  /// Returns the most recently registered renderer.
+  const AbstrRenderer *Renderer() const {
+    return m_vVolumeRenderer[m_vVolumeRenderer.size()-1];
+  }
 
   /// The GPU memory manager moves data from CPU to GPU memory, and
   /// removes data from GPU memory.
@@ -137,14 +142,32 @@ public:
                        const std::vector< std::string >& strParams,
                        std::string& strMessage);
 
+  /// Provenance recording.
+  ///@{
+  /// Callback function prototype.
+  /// @param classification  type of event that occured
+  /// @param command         command to use for IV3D's scripting.
+  /// @param arguments       args for aforementioned command.  Might be empty.
+  typedef void (provenance_func)(const std::string classification,
+                                 const std::string command,
+                                 const std::string arguments);
+  /// Register new callback.  Overwrites the previous callback.
+  void RegisterProvenanceCB(provenance_func *);
+  /// Calls most recently registered provenance callback.
+  void Provenance(const std::string, const std::string,
+                  const std::string args = std::string());
+  ///@}
+
+
 private:
-  SystemInfo*    m_pSystemInfo;
-  GPUMemMan*     m_pGPUMemMan;
-  IOManager*     m_pIOManager;
-  MultiplexOut   m_DebugOut;
-  ConsoleOut     m_DefaultOut;
-  Scripting*     m_pScriptEngine;
-  bool           m_bDeleteDebugOutOnExit;
+  SystemInfo*      m_pSystemInfo;
+  GPUMemMan*       m_pGPUMemMan;
+  IOManager*       m_pIOManager;
+  MultiplexOut     m_DebugOut;
+  ConsoleOut       m_DefaultOut;
+  Scripting*       m_pScriptEngine;
+  bool             m_bDeleteDebugOutOnExit;
+  provenance_func* m_pProvenance;
 
   AbstrRendererList m_vVolumeRenderer;
 };

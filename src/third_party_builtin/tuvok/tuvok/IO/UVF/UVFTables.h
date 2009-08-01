@@ -6,16 +6,6 @@
 #include <limits>
 #include "UVFBasic.h"
 
-#ifndef UVFVERSION
-  #define UVFVERSION 1
-#else
-  #if UVFVERSION != 1
-    #pragma message("[UVFTables.h] Version mismatch.\n")
-    >> VERSION MISMATCH <<
-  #endif
-#endif
-
-
 /************************************************
 Tables
 *************************************************/

@@ -39,13 +39,15 @@
 #ifndef IOMANAGER_H
 #define IOMANAGER_H
 
-#include "../StdTuvokDefines.h"
+#include <algorithm>
+#include <fstream>
 #include <limits>
 #include <string>
+#include "../StdTuvokDefines.h"
 #include "../Controller/MasterController.h"
-#include "../IO/UVF/UVF.h"
 #include "../Basics/MC.h"
 #include "../Basics/SysTools.h"
+#include "../Basics/LargeRAWFile.h"
 
 #define BRICKSIZE (256)
 #define BRICKOVERLAP (4)
@@ -55,6 +57,11 @@ class AbstrConverter;
 class AbstrRenderer;
 class FileStackInfo;
 class RangeInfo;
+
+namespace tuvok {
+  class Dataset;
+  class UVFDataset;
+};
 
 class MergeDataset {
 public:
@@ -120,22 +127,22 @@ public:
            if (i == 1) {
              for (UINT64 j = 0;j<iCopySize;j++) {
                pTargetBuffer[j] = std::max<T>(T(std::min<double>(strFiles[0].fScale*(pTargetBuffer[j]+strFiles[0].fBias),
-                                                                 std::numeric_limits<T>::max())),
+                                                                 static_cast<double>(std::numeric_limits<T>::max()))),
                                               T(std::min<double>(strFiles[i].fScale*(pSourceBuffer[j]+strFiles[i].fBias),
-                                                                 std::numeric_limits<T>::max())) );
+                                                                 static_cast<double>(std::numeric_limits<T>::max()))) );
              }
            } else {
              for (UINT64 j = 0;j<iCopySize;j++) {
                pTargetBuffer[j] = std::max<T>(pTargetBuffer[j],
                                               T(std::min<double>(strFiles[i].fScale*(pSourceBuffer[j]+strFiles[i].fBias),
-                                                                 std::numeric_limits<T>::max())) );
+                                                                 static_cast<double>(std::numeric_limits<T>::max()))) );
              }
            }
          } else {
            if (i == 1) {
              for (UINT64 j = 0;j<iCopySize;j++) {
-               T a = T(std::min<double>(strFiles[0].fScale*(pTargetBuffer[j]+strFiles[0].fBias), std::numeric_limits<T>::max()));
-               T b = T(std::min<double>(strFiles[i].fScale*(pSourceBuffer[j]+strFiles[i].fBias), std::numeric_limits<T>::max()));
+               T a = T(std::min<double>(strFiles[0].fScale*(pTargetBuffer[j]+strFiles[0].fBias), static_cast<double>(std::numeric_limits<T>::max())));
+               T b = T(std::min<double>(strFiles[i].fScale*(pSourceBuffer[j]+strFiles[i].fBias), static_cast<double>(std::numeric_limits<T>::max())));
 
                T val = a + b;
 
@@ -146,7 +153,8 @@ public:
              }
            } else {
              for (UINT64 j = 0;j<iCopySize;j++) {
-               T b = T(std::min<double>(strFiles[i].fScale*(pSourceBuffer[j]+strFiles[i].fBias),std::numeric_limits<T>::max()));
+               T b = T(std::min<double>(strFiles[i].fScale*(pSourceBuffer[j]+strFiles[i].fBias),
+				                        static_cast<double>(std::numeric_limits<T>::max())));
                T val = pTargetBuffer[j] + b;
 
                if (val < pTargetBuffer[j] || val < b) // overflow
@@ -174,11 +182,10 @@ public:
 
 private:
   bool bIsOK;
-
 };
 
 
-class MCData  {
+class MCData {
 public:
   MCData(const std::string& strTargetFile) :
     m_strTargetFile(strTargetFile)
@@ -215,8 +222,17 @@ public:
 
   virtual bool PerformMC(LargeRAWFile* pSourceFile, const std::vector<UINT64> vBrickSize, const std::vector<UINT64> vBrickOffset) {
 
-    UINT64 iSize = 1;
-    for (size_t i = 0;i<vBrickSize.size();i++) iSize *= vBrickSize[i];
+    UINT64 uSize = 1;
+    for (size_t i = 0;i<vBrickSize.size();i++) uSize *= vBrickSize[i];
+	// Can't use bricks that we can't store in a single array.
+	// Really, the whole reason we're bricking is to prevent larger-than-core
+	// data, so this should never happen anyway -- we'd have no way to create
+	// such a brick.
+	assert(uSize <= std::numeric_limits<size_t>::max());
+
+	size_t iSize = static_cast<size_t>(
+				     std::min<UINT64>(uSize, std::numeric_limits<size_t>::max())
+				   );
     if (!m_pData) {   // since we know that no brick is larger than the first we can create a fixed array on first invocation
       m_pData = new T[iSize];
 
@@ -238,13 +254,19 @@ public:
     // apply scale
   	m_pMarchingCubes->m_Isosurface->Transform(m_matScale);
 
-    m_outStream << "# Marching Cubes mesh from a " << vBrickSize[0] << " " << vBrickSize[1] << " " << vBrickSize[2] << " brick. At " << vBrickOffset[0] << " " << vBrickOffset[1] << " " << vBrickOffset[2] << "." << std::endl;
+    // scale brick offsets
+    std::vector<float> vScaledBrickOffset(vBrickOffset.size());
+    vScaledBrickOffset[0] = static_cast<float>(vBrickOffset[0]) * m_matScale.m11;
+    vScaledBrickOffset[1] = static_cast<float>(vBrickOffset[1]) * m_matScale.m22;
+    vScaledBrickOffset[2] = static_cast<float>(vBrickOffset[2]) * m_matScale.m33;
+
+    m_outStream << "# Marching Cubes mesh from a " << vBrickSize[0] << " " << vBrickSize[1] << " " << vBrickSize[2] << " brick. At " << vScaledBrickOffset[0] << " " << vScaledBrickOffset[1] << " " << vScaledBrickOffset[2] << "." << std::endl;
 
 		//Saving to disk (1/3 vertices)
 		for (int i = 0;i<m_pMarchingCubes->m_Isosurface->iVertices;i++) {
-			m_outStream << "v " << (m_pMarchingCubes->m_Isosurface->vfVertices[i].x + vBrickOffset[0]) << " "
-                          << (m_pMarchingCubes->m_Isosurface->vfVertices[i].y + vBrickOffset[1]) << " "
-                          << (m_pMarchingCubes->m_Isosurface->vfVertices[i].z + vBrickOffset[2]) << std::endl;
+			m_outStream << "v " << (m_pMarchingCubes->m_Isosurface->vfVertices[i].x + vScaledBrickOffset[0]) << " "
+                          << (m_pMarchingCubes->m_Isosurface->vfVertices[i].y + vScaledBrickOffset[1]) << " "
+                          << (m_pMarchingCubes->m_Isosurface->vfVertices[i].z + vScaledBrickOffset[2]) << std::endl;
 		}
 		// Saving to disk (2/3 normals)
 		for (int i = 0;i<m_pMarchingCubes->m_Isosurface->iVertices;i++) {
@@ -279,33 +301,38 @@ public:
 
   std::vector<FileStackInfo*> ScanDirectory(std::string strDirectory);
   bool ConvertDataset(FileStackInfo* pStack,
-                      const std::string& strTargetFilename);
+                      const std::string& strTargetFilename,
+                      const std::string& strTempDir);
   bool ConvertDataset(const std::string& strFilename,
                       const std::string& strTargetFilename,
+                      const std::string& strTempDir,
                       bool bNoUserInteraction=false);
   bool MergeDatasets(const std::vector <std::string>& strFilenames,
                      const std::vector <double>& vScales,
                      const std::vector<double>& vBiases,
                      const std::string& strTargetFilename,
+                     const std::string& strTempDir,
                      bool bUseMaxMode=true, bool bNoUserInteraction=false);
-  VolumeDataset* ConvertDataset(FileStackInfo* pStack,
-                                const std::string& strTargetFilename,
-                                AbstrRenderer* requester);
-  VolumeDataset* ConvertDataset(const std::string& strFilename,
-                                const std::string& strTargetFilename,
-                                AbstrRenderer* requester);
-  VolumeDataset* LoadDataset(const std::string& strFilename,
-                             AbstrRenderer* requester);
-  bool AnalyzeDataset(const std::string& strFilename, RangeInfo& info);
+  tuvok::UVFDataset* ConvertDataset(FileStackInfo* pStack,
+                                    const std::string& strTargetFilename,
+                                    const std::string& strTempDir,
+                                    AbstrRenderer* requester);
+  tuvok::UVFDataset* ConvertDataset(const std::string& strFilename,
+                                    const std::string& strTargetFilename,
+                                    const std::string& strTempDir,
+                                    AbstrRenderer* requester);
+  tuvok::Dataset* LoadDataset(const std::string& strFilename,
+                              AbstrRenderer* requester);
+  bool AnalyzeDataset(const std::string& strFilename, RangeInfo& info, const std::string& strTempDir);
   bool NeedsConversion(const std::string& strFilename,
                        bool& bChecksumFail) const;
   bool NeedsConversion(const std::string& strFilename) const;
 
-  bool ExportDataset(const VolumeDataset* pSourceData, UINT64 iLODlevel,
+  bool ExportDataset(const tuvok::UVFDataset* pSourceData, UINT64 iLODlevel,
                      const std::string& strTargetFilename,
                      const std::string& strTempDir);
-  bool ExtractIsosurface(const VolumeDataset* pSourceData, UINT64 iLODlevel,
-                         double fIsovalue,
+  bool ExtractIsosurface(const tuvok::UVFDataset* pSourceData,
+                         UINT64 iLODlevel, double fIsovalue,
                          const DOUBLEVECTOR3& vfRescaleFactors,
                          const std::string& strTargetFilename,
                          const std::string& strTempDir);
@@ -317,7 +344,6 @@ public:
   std::string GetExportDialogString() const;
 
 private:
-  std::string                   m_TempDir;
   std::vector<AbstrConverter*>  m_vpConverters;
   AbstrConverter*               m_pFinalConverter;
 };

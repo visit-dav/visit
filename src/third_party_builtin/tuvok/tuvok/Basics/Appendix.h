@@ -40,10 +40,9 @@
 #ifndef APPENDIX_H
 #define APPENDIX_H
 
-#include "../StdTuvokDefines.h"
 #include <vector>
 #include <string>
-
+#include "StdDefines.h"
 
 /** \class FileInfo */
 class FileInfo {

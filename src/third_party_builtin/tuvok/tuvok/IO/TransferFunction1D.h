@@ -3,7 +3,7 @@
 
    The MIT License
 
-   Copyright (c) 2009 Scientific Computing and Imaging Institute,
+   Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
 
@@ -34,15 +34,14 @@
   \version 1.0
   \date    September 2008
 */
-
 #pragma once
 
 #ifndef TRANSFERFUNCTION1D
 #define TRANSFERFUNCTION1D
 
-#include "../StdTuvokDefines.h"
 #include <string>
 #include <vector>
+#include "../StdTuvokDefines.h"
 #include "../Basics/Vectors.h"
 #include "../Basics/Grids.h"
 
@@ -60,7 +59,7 @@ public:
   ~TransferFunction1D(void);
 
   void SetStdFunction(float fCenterPoint=0.5f, float fInvGradient=0.5f);
-  void SetStdFunction(float fCenterPoint, float fInvGradient, int iComponent);
+  void SetStdFunction(float fCenterPoint, float fInvGradient, int iComponent, bool bInvertedStep);
   /// Set the transfer function from an external source.  Assumes the vector
   /// has 4-components per element, in RGBA order.
   void Set(const std::vector<unsigned char>&);
@@ -71,20 +70,20 @@ public:
 
   bool Load(const std::string& filename);
   bool Load(const std::string& filename, size_t iTargetSize);
-  bool Load(std::ifstream& file);
-  bool Load(std::ifstream& file, size_t iTargetSize);
+  bool Load(std::istream& file);
+  bool Load(std::istream& file, size_t iTargetSize);
+  bool Save(std::ostream& file) const;
   bool Save(const std::string& filename) const;
-  bool Save(std::ofstream& file) const;
 
   void Clear();
 
-  void GetByteArray(unsigned char** pcData,
+  void GetByteArray(std::vector<unsigned char>& vData,
                     unsigned char cUsedRange = 255) const;
   void GetShortArray(unsigned short** psData,
                      unsigned short sUsedRange=4095) const;
   void GetFloatArray(float** pfData) const;
 
-  std::vector< FLOATVECTOR4 > vColorData;
+  std::vector<FLOATVECTOR4> vColorData;
 
   void ComputeNonZeroLimits();
   const UINT64VECTOR2& GetNonZeroLimits() { return m_vValueBBox;}
@@ -93,7 +92,6 @@ private:
   UINT64VECTOR2 m_vValueBBox;
 
   float Smoothstep(float x) const;
-
 };
 
 #endif // TRANSFERFUNCTION1D

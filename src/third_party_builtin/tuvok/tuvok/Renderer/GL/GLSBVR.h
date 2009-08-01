@@ -34,8 +34,6 @@
   \version 1.0
   \date    August 2008
 */
-
-
 #pragma once
 
 #ifndef GLSBVR_H
@@ -70,14 +68,17 @@ class GLSBVR : public GLRenderer {
      * @param strFilename path to a file */
     virtual bool LoadDataset(const std::string& strFilename);
 
-    virtual bool SupportsClearView() {return !m_bAvoidSeperateCompositing;}
+    virtual bool SupportsClearView() {return !m_bAvoidSeperateCompositing && m_pDataset->GetInfo().GetComponentCount() == 1;}
 
     virtual void EnableClipPlane();
     virtual void DisableClipPlane();
 
+    virtual ERendererType GetRendererType() {return RT_SBVR;}
+
   protected:
     SBVRGeogen    m_SBVRGeogen;
     GLSLProgram*  m_pProgramIsoNoCompose;
+    GLSLProgram*  m_pProgramColorNoCompose;
 
     void SetBrickDepShaderVars(const Brick& currentBrick);
 
@@ -94,5 +95,4 @@ class GLSBVR : public GLRenderer {
 
     virtual void ComposeSurfaceImage(int iStereoID);
 };
-
 #endif // GLSBVR_H

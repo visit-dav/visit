@@ -1,16 +1,13 @@
+#include <sstream>
 #include "UVF.h"
-#include <Basics/SysTools.h>
 #include <Basics/Checksums/crc32.h>
 #include <Basics/Checksums/MD5.h>
-#include <sstream>
-
+#include "DataBlock.h"
 
 using namespace std;
 using namespace UVFTables;
 
-
 UINT64 UVF::ms_ulReaderVersion = UVFVERSION;
-
 
 UVF::UVF(std::wstring wstrFilename) : 
   m_bFileIsLoaded(false),
@@ -68,18 +65,22 @@ bool UVF::IsUVFFile(const std::wstring& wstrFilename, bool& bChecksumFail) {
   return true;
 }
 
-bool UVF::Open(bool bVerify, bool bReadWrite, std::string* pstrProblem) {
+bool UVF::Open(bool bMustBeSameVersion, bool bVerify, bool bReadWrite, std::string* pstrProblem) {
   if (m_bFileIsLoaded) return true;
 
   m_bFileIsLoaded = m_streamFile.Open(bReadWrite);
 
   if (!m_bFileIsLoaded) {
-    (*pstrProblem) = "file not found or access denied";
+    if (pstrProblem) (*pstrProblem) = "file not found or access denied";
     return false;
   }
   m_bFileIsReadWrite = bReadWrite;
 
   if (ParseGlobalHeader(bVerify,pstrProblem)) {
+    if (bMustBeSameVersion && ms_ulReaderVersion != m_GlobalHeader.ulFileVersion) {
+      if (pstrProblem) (*pstrProblem) = "wrong UVF file version";
+      return false;
+    }
     ParseDataBlocks();    
     return true;
   } else {

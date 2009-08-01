@@ -1,10 +1,9 @@
 #include "Histogram2DDataBlock.h"
-#include <memory.h>
-#include <Basics/Vectors.h>
+#include "Basics/Vectors.h"
+#include "RasterDataBlock.h"
 
 using namespace std;
 using namespace UVFTables;
-
 
 Histogram2DDataBlock::Histogram2DDataBlock() : 
   DataBlock(),
@@ -90,12 +89,12 @@ bool Histogram2DDataBlock::Compute(RasterDataBlock* source, size_t iMaxValue) {
     }
   }
 
-  unsigned char *pcSourceData = NULL;
+  std::vector<unsigned char> vcSourceData;
 
   vector<UINT64> vLOD = source->GetSmallestBrickIndex();
   vector<UINT64> vOneAndOnly;
   for (size_t i = 0;i<vBricks.size();i++) vOneAndOnly.push_back(0);
-  if (!source->GetData(&pcSourceData, vLOD, vOneAndOnly)) return false;
+  if (!source->GetData(vcSourceData, vLOD, vOneAndOnly)) return false;
 
   vector<UINT64> vSize = source->GetSmallestBrickSize();
 
@@ -126,9 +125,9 @@ bool Histogram2DDataBlock::Compute(RasterDataBlock* source, size_t iMaxValue) {
           if (z > 0)          {iFront  = iCenter-size_t(vSize[0])*size_t(vSize[1]);vScale.z++;}
           if (z < vSize[2]-1) {iBack   = iCenter+size_t(vSize[0])*size_t(vSize[1]);vScale.z++;}
 
-          FLOATVECTOR3   vGradient((float(pcSourceData[iLeft])-float(pcSourceData[iRight]))/(255*vScale.x),
-                                   (float(pcSourceData[iTop])-float(pcSourceData[iBottom]))/(255*vScale.y),
-                                   (float(pcSourceData[iFront])-float(pcSourceData[iBack]))/(255*vScale.z));
+          FLOATVECTOR3 vGradient((float(vcSourceData[iLeft])-float(vcSourceData[iRight]))/(255*vScale.x),
+                                 (float(vcSourceData[iTop])-float(vcSourceData[iBottom]))/(255*vScale.y),
+                                 (float(vcSourceData[iFront])-float(vcSourceData[iBack]))/(255*vScale.z));
 
           if (vGradient.length() > m_fMaxGradMagnitude) m_fMaxGradMagnitude = vGradient.length();
         }
@@ -155,18 +154,18 @@ bool Histogram2DDataBlock::Compute(RasterDataBlock* source, size_t iMaxValue) {
           if (z > 0)          {iFront  = iCenter-size_t(vSize[0])*size_t(vSize[1]);vScale.z++;}
           if (z < vSize[2]-1) {iBack   = iCenter+size_t(vSize[0])*size_t(vSize[1]);vScale.z++;}
 
-          FLOATVECTOR3   vGradient((float(pcSourceData[iLeft])-float(pcSourceData[iRight]))/(255*vScale.x),
-                                   (float(pcSourceData[iTop])-float(pcSourceData[iBottom]))/(255*vScale.y),
-                                   (float(pcSourceData[iFront])-float(pcSourceData[iBack]))/(255*vScale.z));
+          FLOATVECTOR3 vGradient((float(vcSourceData[iLeft])-float(vcSourceData[iRight]))/(255*vScale.x),
+                                 (float(vcSourceData[iTop])-float(vcSourceData[iBottom]))/(255*vScale.y),
+                                 (float(vcSourceData[iFront])-float(vcSourceData[iBack]))/(255*vScale.z));
 
           unsigned char iGardientMagnitudeIndex = (unsigned char)(min<int>(255,int(vGradient.length()/m_fMaxGradMagnitude*255.0f)));
-          m_vHistData[pcSourceData[iCenter]][iGardientMagnitudeIndex]++;
+          m_vHistData[vcSourceData[iCenter]][iGardientMagnitudeIndex]++;
         }
       }
     }
   } else {
     if (source->ulElementBitSize[0][0] == 16) {
-      unsigned short *psSourceData = (unsigned short*)pcSourceData;
+      unsigned short *psSourceData = (unsigned short*)(&(vcSourceData.at(0)));
       for (size_t z = 0;z<size_t(vSize[2]);z++) {
         for (size_t y = 0;y<size_t(vSize[1]);y++) {
           for (size_t x = 0;x<size_t(vSize[0]);x++) {
@@ -228,12 +227,9 @@ bool Histogram2DDataBlock::Compute(RasterDataBlock* source, size_t iMaxValue) {
         }
       }
     } else {
-      delete [] pcSourceData;
       return false;
     }
   }
-
-  delete [] pcSourceData;
 
   // set data block information
   strBlockID = "2D Histogram for datablock " + source->strBlockID;

@@ -35,7 +35,9 @@
   \date    December 2008
 */
 
-#include <QtCore/QtPlugin>
+#ifndef TUVOK_NO_QT
+# include <QtCore/QtPlugin>
+#endif
 
 #ifndef TUVOK_NO_IO
   #ifndef QT_SHARED

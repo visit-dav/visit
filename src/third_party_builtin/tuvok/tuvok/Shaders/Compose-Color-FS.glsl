@@ -66,7 +66,7 @@ void main(void){
 	vec3 vViewDir    = normalize(vec3(0.0,0.0,0.0)-vPosition.xyz);
   float l = length(vNormal);
   vec3 vLightColor = vLightAmbient * l + (1.0-l) * vColor.rgb +
-                     vColor.rgb*clamp(dot(vNormal, -vLightDir),0.0,1.0);
+                     vColor.rgb*clamp(abs(dot(vNormal, -vLightDir)),0.0,1.0);
 
 	/// write result to fragment color
 	gl_FragColor    = vec4(vLightColor.x, vLightColor.y, vLightColor.z, 1.0);

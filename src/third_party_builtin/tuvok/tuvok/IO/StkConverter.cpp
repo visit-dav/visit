@@ -32,10 +32,14 @@
            SCI Institute
            University of Utah
 */
+#include "boost/cstdint.hpp"
+#ifndef TUVOK_NO_IO
+# include "../3rdParty/tiff/tiffio.h"
+#else
+  struct TIFF;
+#endif
 #include "StkConverter.h"
 #include "../Basics/SysTools.h"
-#include "../3rdParty/boost/cstdint.hpp"
-#include "../3rdParty/tiff/tiffio.h"
 #include "../Controller/Controller.h"
 
 struct stk {
@@ -50,7 +54,9 @@ static void stk_read_write_strips(TIFF *, LargeRAWFile &);
 StkConverter::StkConverter()
 {
   m_vConverterDesc = "Stk Volume (Metamorph)";
+#ifndef TUVOK_NO_IO
   m_vSupportedExt.push_back("STK");
+#endif
 }
 
 bool
@@ -67,6 +73,10 @@ StkConverter::ConvertToRAW(const std::string& strSourceFilename,
                            std::string& strIntermediateFile,
                            bool& bDeleteIntermediateFile)
 {
+#ifdef TUVOK_NO_IO
+  T_ERROR("Tuvok was not built with IO support!");
+  return false;
+#else
   AbstrDebugOut& dbg = Controller::Debug::Out();
   dbg.Message(_func_, "Attempting to convert stk file: %s",
               strSourceFilename.c_str());
@@ -128,6 +138,7 @@ StkConverter::ConvertToRAW(const std::string& strSourceFilename,
   TIFFClose(tif);
 
   return true;
+#endif
 }
 
 // unimplemented!
@@ -142,6 +153,9 @@ StkConverter::ConvertToNative(const std::string&, const std::string&,
 static bool
 stk_read_metadata(TIFF *tif, struct stk &metadata)
 {
+#ifdef TUVOK_NO_IO
+  return false;
+#else
   // read the number of bits per component from the tiff tag.
   TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &metadata.bpp);
   TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &metadata.x);
@@ -164,11 +178,13 @@ stk_read_metadata(TIFF *tif, struct stk &metadata)
   metadata.samples = 1;
   TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &metadata.samples);
   return true;
+#endif
 }
 
 static void
 stk_read_write_strips(TIFF *tif, LargeRAWFile &raw)
 {
+#ifndef TUVOK_NO_IO
   const tstrip_t n_strips = TIFFNumberOfStrips(tif);
   tdata_t buf = static_cast<tdata_t>(_TIFFmalloc(TIFFStripSize(tif)));
   for(tstrip_t s=0; s < n_strips; ++s) {
@@ -178,4 +194,5 @@ stk_read_write_strips(TIFF *tif, LargeRAWFile &raw)
     raw.WriteRAW(static_cast<unsigned char*>(buf), n_bytes);
   }
   _TIFFfree(buf);
+#endif
 }

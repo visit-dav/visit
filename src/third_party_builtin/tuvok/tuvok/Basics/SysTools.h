@@ -40,10 +40,8 @@
 #ifndef SYSTOOLS_H
 #define SYSTOOLS_H
 
-#include "../StdTuvokDefines.h"
-
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #ifdef _WIN32
@@ -62,6 +60,8 @@
   typedef wchar_t WCHAR;
   typedef unsigned char CHAR;
 #endif
+
+#include "StdDefines.h"
 
 class AbstrDebugOut;
 
@@ -182,6 +182,9 @@ namespace SysTools {
                                      const std::wstring& ext,
                                      const std::wstring& dir=L"");
 
+  bool GetTempDirectory(std::string& path);
+  bool GetTempDirectory(std::wstring& path);
+
 #ifdef _WIN32
   std::vector<std::wstring> GetDirContents(const std::wstring& dir,
                                            const std::wstring& fileName=L"*",
@@ -219,11 +222,6 @@ namespace SysTools {
                          std::wstring &filename, const bool save,
                          HWND owner=NULL, DWORD* nFilterIndex=NULL);
 #endif
-
-  /// Removes the given file or directory.  Warns if the file could not be
-  /// deleted.
-  /// @return true if the remove succeeded.
-  bool Remove(const std::string &, AbstrDebugOut &);
 
   class CmdLineParams {
     public:

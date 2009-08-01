@@ -67,9 +67,10 @@
   #define MIN(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
-#include "../StdTuvokDefines.h"
 #include <cassert>
 #include <cmath>
+#include <istream>
+#include <iomanip>
 #include <limits>
 #include <vector>
 
@@ -83,19 +84,15 @@
 
 #ifdef WIN32
   #pragma warning( disable : 4201 )  // Disable warning messages about nameless union
-
   #ifdef USEDX
     #pragma message("    [vectors.h] Using DX extensions.\n")
-//  #else
-//    #pragma message("    [vectors.h] NOT using DX extensions.\n")
   #endif
-
   #ifdef USEGL
     #pragma message("    [vectors.h] Using GL extensions.\n")
-//  #else
-//    #pragma message("    [vectors.h] NOT using GL extensions.\n")
   #endif
 #endif
+
+#include "StdDefines.h"
 
 template <class T> class MATRIX2;
 template <class T> class MATRIX3;
@@ -372,6 +369,8 @@ template <class T> VECTOR3<T> operator / ( T scalar, const VECTOR3<T>& vec ) {re
 template <class T> VECTOR3<T> operator % ( T scalar, const VECTOR3<T>& vec ) {return VECTOR3<T>(scalar%vec.x,scalar%vec.y,scalar%vec.z);}
 
 template <class T=int> class VECTOR4 {
+  template <class U>
+  friend std::istream& operator >>(std::istream &, VECTOR4<U>&);
 public:
   T x,y,z,w;
 
@@ -450,7 +449,16 @@ public:
   VECTOR4<T>& operator*=(const T& other) { x *= other; y *= other; z *= other;  w *= other; return *this; }
   VECTOR4<T>& operator/=(const T& other) { x /= other; y /= other; z /= other;  w /= other; return *this; }
 
-  friend std::ostream& operator<<(std::ostream &os,const VECTOR4<T>& v){os << v.x << '\t' << v.y << '\t' << v.z << '\t' << v.w; return os;}
+  friend std::ostream& operator<<(std::ostream &os,const VECTOR4<T>& v) {
+    os << "[" << std::setiosflags(std::ios::left)
+       << std::setw(7) << std::setprecision(3) << v.x
+       << std::resetiosflags(std::ios::left)
+       << std::setw(7) << std::setprecision(3) << v.y
+       << std::setw(7) << std::setprecision(3) << v.z
+       << std::setw(7) << std::setprecision(3) << v.w
+       << "]";
+    return os;
+  }
 
 
   T max() const {return MAX(MAX(x,y),MAX(z,w));}
@@ -498,6 +506,7 @@ public:
   VECTOR2<T> zx() const {return VECTOR2<T>(z,x);}
   VECTOR2<T> zy() const {return VECTOR2<T>(z,y);}
   VECTOR2<T> zz() const {return VECTOR2<T>(z,z);}
+  VECTOR2<T> zw() const {return VECTOR2<T>(z,w);}
 
   VECTOR3<T> xyz() const {return VECTOR3<T>(x,y,z);}
 
@@ -520,8 +529,17 @@ public:
       dehomo().glNormal();
     }
   #endif
-
 };
+
+template <class T>
+std::istream& operator >>(std::istream &is, VECTOR4<T>& v4)
+{
+  is >> v4[0];
+  is >> v4[1];
+  is >> v4[2];
+  is >> v4[3];
+  return is;
+}
 
 template <class T> VECTOR4<T> operator + ( T scalar, const VECTOR4<T>& vec ) {return VECTOR4<T>(scalar+vec.x,scalar+vec.y,scalar+vec.z,scalar+vec.w);}
 template <class T> VECTOR4<T> operator - ( T scalar, const VECTOR4<T>& vec ) {return VECTOR4<T>(scalar-vec.x,scalar-vec.y,scalar-vec.z,scalar-vec.w);}
@@ -536,6 +554,8 @@ typedef VECTOR2<> INTVECTOR2;
 typedef VECTOR4<UINT32> UINTVECTOR4;
 typedef VECTOR3<UINT32> UINTVECTOR3;
 typedef VECTOR2<UINT32> UINTVECTOR2;
+
+typedef VECTOR3<UINT64> UINT64VECTOR3;
 
 typedef VECTOR4<unsigned short> USHORTVECTOR4;
 typedef VECTOR3<unsigned short> USHORTVECTOR3;
@@ -556,7 +576,7 @@ public:
       T  m11,m12,
         m21,m22;
     };
-    T array[9];
+    T array[4];
   };
 
   MATRIX2() : m11(1), m12(0),

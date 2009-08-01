@@ -60,6 +60,8 @@ class DXSBVR : public DXRenderer {
     DXSBVR(MasterController* pMasterController, bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits, bool bDisableBorder);
     virtual ~DXSBVR();
 
+    virtual ERendererType GetRendererType() {return RT_SBVR;}
+
   protected:
     virtual void Render3DInLoop(size_t iCurrentBrick, int iStereoID);
     virtual void RenderHQMIPInLoop(const Brick& b);

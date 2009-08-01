@@ -72,5 +72,4 @@ class GLTexture : public GLObject {
     GLuint  m_iGLID;
     UINT32  m_iSizePerElement;
 };
-
 #endif // GLTEXTURE_H

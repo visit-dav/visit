@@ -33,61 +33,35 @@
            University of Utah
   \date    November 2008
 */
-
 #pragma once
 
 #ifndef FRAMECAPTURE_H
 #define FRAMECAPTURE_H
 
-#include "../StdTuvokDefines.h"
 #include <string>
-#include "../Basics/SysTools.h"
+#include "../StdTuvokDefines.h"
 #include "../Basics/Vectors.h"
-#include <QtGui/QImage>
 
 class FrameCapture {
   public:
     FrameCapture() {}
     virtual ~FrameCapture() {}
 
-    virtual bool CaptureSingleFrame(const std::string& strFilename, bool bPreserveTransparency) const = 0;
-    bool CaptureSequenceFrame(const std::string& strFilename, bool bPreserveTransparency, std::string* strRealFilename=NULL) {
-      std::string strSequenceName = SysTools::FindNextSequenceName(strFilename);
-      if (strRealFilename) (*strRealFilename) = strSequenceName;
-      return CaptureSingleFrame(strSequenceName, bPreserveTransparency);
-    }
+    virtual bool CaptureSingleFrame(const std::string& strFilename,
+                                    bool bPreserveTransparency) const = 0;
+    /// Given a base filename, figures out the next appropriate name and writes
+    /// out the current image buffer to that file.
+    /// @param[in] strFilename the last filename which was written out.
+    /// @param[in] bPreserveTransparency  ... obvious.
+    /// @param[out] strRealFilename (optional) if nonnull, filename written is
+    ///             returned here.
+    /// @return true if image writing was successful.
+    bool CaptureSequenceFrame(const std::string& strFilename,
+                              bool bPreserveTransparency,
+                              std::string* strRealFilename=NULL) const;
   protected:
     bool SaveImage(const std::string& strFilename, const UINTVECTOR2& vSize,
-                   unsigned char* pData, bool bPreserveTransparency) const {
-      QImage qTargetFile(QSize(vSize.x, vSize.y), QImage::Format_ARGB32);
-
-      size_t i = 0;
-      if (bPreserveTransparency) {
-        for (int y = 0;y<int(vSize.y);y++) {
-          for (int x = 0;x<int(vSize.x);x++) {
-            qTargetFile.setPixel(x,(vSize.y-1)-y,
-                                 qRgba(int(pData[i+0]),
-                                       int(pData[i+1]),
-                                       int(pData[i+2]),
-                                       int(pData[i+3])));
-            i+=4;
-          }
-        }
-      } else {
-        for (int y = 0;y<int(vSize.y);y++) {
-          for (int x = 0;x<int(vSize.x);x++) {
-            qTargetFile.setPixel(x,(vSize.y-1)-y,
-                                qRgba(int(pData[i+0]),
-                                      int(pData[i+1]),
-                                      int(pData[i+2]),
-                                      255));
-            i+=4;
-          }
-        }
-      }
-
-      return qTargetFile.save(strFilename.c_str());
-    }
+                   unsigned char* pData, bool bPreserveTransparency) const;
 };
 
 #endif // FRAMECAPTURE_H

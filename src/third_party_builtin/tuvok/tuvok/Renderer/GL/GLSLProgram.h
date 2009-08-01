@@ -32,20 +32,24 @@
            SCI Institute, University of Utah
   \date    October 2008
 */
-
 #pragma once
 
 #ifndef GLSLPROGRAM_H
 #define GLSLPROGRAM_H
 
-#define GLSL_ALLOW_IMPLICIT_CASTS ///< if enabled, SetUniformVector allows for implicit casting, which can cost performance
-#define GLSLPROGRAM_STRICT        ///< if enabled, GLSL-compiler warnings are treated as errors
+/// if enabled, SetUniformVector allows for implicit casting, which can
+/// impact performance
+#define GLSL_ALLOW_IMPLICIT_CASTS
+/// if enabled, GLSL-compiler warnings are treated as errors
+#define GLSLPROGRAM_STRICT
 
 #ifdef _DEBUG
-  #define GLSL_DEBUG  ///< switches on debugging output - can be changed per-class.
+  /// switches on debugging output - can be changed per-class.
+  #define GLSL_DEBUG
 #endif
 
-// on windows warn if GLSL_DEBUG differs from _DEBUG (i.e.. if the lines above are not used)
+/// on windows warn if GLSL_DEBUG differs from _DEBUG (i.e.. if the
+/// lines above are not used)
 #ifdef _WIN32
   #ifndef _DEBUG
     #ifdef GLSL_DEBUG
@@ -70,11 +74,6 @@ typedef enum {
 #include "../../StdTuvokDefines.h"
 #include "GLObject.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-
 class MasterController;
 
 /**
@@ -88,50 +87,93 @@ class MasterController;
  */
 class GLSLProgram : public GLObject {
 public:
-  GLSLProgram(MasterController* pMasterController);                                             ///< Standard Constructor.
-  GLSLProgram(MasterController* pMasterController, const char *VSFile, const char *FSFile,GLSLPROGRAM_SOURCE src=GLSLPROGRAM_DISK);  ///< Constructor. Loads any combination of vertex (VPFile) and fragment (FPFile) shaders either from disk or from a C-string.
-  virtual ~GLSLProgram();                                                                       ///< Destructor. Automatic clean-up.
-  void Load(const char *VSFile, const char *FSFile,GLSLPROGRAM_SOURCE src=GLSLPROGRAM_DISK);    ///< Loads any combination of vertex (VPFile) and fragment (FPFile) shaders either from disk or from a C-string.
-  void Enable(void);                                                                            ///< Enables this shader for rendering.
-  void Disable(void);                                                                           ///< Disables this shader for rendering (using fixed function pipeline again).
-  operator GLuint(void) const;                                                                  ///< Returns the handle of this shader.
+  /// Standard Constructor.
+  GLSLProgram(MasterController* pMasterController);
+  /// Constructor. Loads any combination of vertex (VPFile) and
+  /// fragment (FPFile) shaders either from disk or from a C-string.
+  GLSLProgram(MasterController* pMasterController,
+              const char *VSFile, const char *FSFile,
+              GLSLPROGRAM_SOURCE src = GLSLPROGRAM_DISK);
+  virtual ~GLSLProgram();
 
-  bool IsValid(void) const;    ///< returns true if this program is valid
+  /// Loads any combination of vertex (VPFile) and fragment (FPFile)
+  /// shaders either from disk or from a C-string.
+  void Load(const char *VSFile, const char *FSFile,
+            GLSLPROGRAM_SOURCE src=GLSLPROGRAM_DISK);
+  /// Enables this shader for rendering.
+  void Enable(void);
+  /// Disables this shader for rendering (using fixed function pipeline again)
+  void Disable(void);
 
-  void SetUniformVector(const char *name,float x=0.0f, float y=0.0f, float z=0.0f, float w=0.0f) const;  ///< Sets an uniform parameter.
-  void SetUniformVector(const char *name,int x=0, int y=0, int z=0, int w=0) const;            ///< Sets an uniform parameter.
-  void SetUniformVector(const char *name,bool x=false, bool y=false,  bool z=false, bool w=false) const;  ///< Sets an uniform parameter.
-  void SetUniformVector(const char *name,const float *v) const;    ///< Sets an uniform parameter.
-  void SetUniformVector(const char *name,const int *i) const;    ///< Sets an uniform parameter.
-  void SetUniformVector(const char *name,const bool *b) const;    ///< Sets an uniform parameter.
+  /// Returns the handle of this shader.
+  operator GLuint(void) const;
+  /// returns true if this program is valid
+  bool IsValid(void) const;
 
-  void SetUniformMatrix(const char *name,const float *m,bool bTranspose=false) const;    ///< Sets an uniform matrix. Matrices are always float.
+  /// Sets an uniform parameter.
+  void SetUniformVector(const char *name,
+                        float x=0.0f, float y=0.0f,
+                        float z=0.0f, float w=0.0f) const;
+  /// Sets an uniform parameter.
+  void SetUniformVector(const char *name,
+                        int x=0, int y=0, int z=0, int w=0) const;
+  /// Sets an uniform parameter.
+  void SetUniformVector(const char *name,
+                        bool x=false, bool y=false,
+                        bool z=false, bool w=false) const;
+  /// Sets an uniform parameter.
+  void SetUniformVector(const char *name, const float *v) const;
+  /// Sets an uniform parameter.
+  void SetUniformVector(const char *name, const int *i) const;
+  /// Sets an uniform parameter.
+  void SetUniformVector(const char *name, const bool *b) const;
+
+  /// Sets an uniform matrix. Matrices are always float.
+  void SetUniformMatrix(const char *name, const float *m,
+                        bool bTranspose=false) const;
 
 #ifdef GLSL_ALLOW_IMPLICIT_CASTS
-  void SetUniformMatrix(const char *name,const int *m,bool bTranspose=false) const;    ///< Sets an uniform matrix. Matrices are always float.
-  void SetUniformMatrix(const char *name,const bool *m,bool bTranspose=false) const;    ///< Sets an uniform matrix. Matrices are always float.
+  /// Sets an uniform matrix. Matrices are always float.
+  void SetUniformMatrix(const char *name, const int *m,
+                        bool bTranspose=false) const;
+  /// Sets an uniform matrix. Matrices are always float.
+  void SetUniformMatrix(const char *name, const bool *m,
+                        bool bTranspose=false) const;
 #endif
 
-  void SetUniformArray(const char *name,const float *a) const;    ///< Sets an uniform array. User has to take care that a is large enough.
-  void SetUniformArray(const char *name,const int   *a) const;    ///< Sets an uniform array. User has to take care that a is large enough.
-  void SetUniformArray(const char *name,const bool  *a) const;    ///< Sets an uniform array. User has to take care that a is large enough.
+  /// Sets an uniform array. User has to take care that a is large enough.
+  void SetUniformArray(const char *name, const float *a) const;
+  /// Sets an uniform array. User has to take care that a is large enough.
+  void SetUniformArray(const char *name, const int   *a) const;
+  /// Sets an uniform array. User has to take care that a is large enough.
+  void SetUniformArray(const char *name, const bool  *a) const;
 
-  virtual UINT64 GetCPUSize() {return 1;}  ///< assume near zero CPU memory cost for shaders to avoid any memory manager from paging out shaders, the 1 is basically only to detect mem-leaks
-  virtual UINT64 GetGPUSize() {return 1;}  ///< assume near zero GPU memory cost for shaders to avoid any memory manager from paging out shaders, the 1 is basically only to detect mem-leaks
+  /// assume near zero CPU memory cost for shaders to avoid any memory
+  /// manager from paging out shaders, the 1 is basically only to
+  /// detect memory leaks
+  virtual UINT64 GetCPUSize() {return 1;}
+  /// assume near zero GPU memory cost for shaders to avoid any memory
+  /// manager from paging out shaders, the 1 is basically only to
+  /// detect memory leaks
+  virtual UINT64 GetGPUSize() {return 1;}
+
+  static bool         m_bGLUseARB;
 
 private:
   bool    Initialize(void);
-  GLuint  LoadShader(const char*,GLenum,GLSLPROGRAM_SOURCE src);
+  GLuint  LoadShader(const char*, GLenum, GLSLPROGRAM_SOURCE src);
   bool    WriteInfoLog(const char*, GLuint, bool);
   bool    WriteError(GLhandleARB hObject);
-  bool    CheckGLError(const char *pcError=NULL,const char *pcAdditional=NULL) const;
+  bool    CheckGLError(const char *pcError=NULL,
+                       const char *pcAdditional=NULL) const;
   MasterController*   m_pMasterController;
   bool                m_bInitialized;
   bool                m_bEnabled;
   GLuint              m_hProgram;
   static bool         m_bGlewInitialized;
   static bool         m_bGLChecked;
-  static bool         m_bGLUseARB;
+  std::string         m_sVS;
+  std::string         m_sFS;
 };
 
 #ifdef GLSL_ALLOW_IMPLICIT_CASTS

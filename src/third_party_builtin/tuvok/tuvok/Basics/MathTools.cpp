@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -82,8 +82,8 @@ UINT32 MathTools::GaussianSum(UINT32 n) {
   return n*(n+1)/2;
 }
 
-bool MathTools::IsPow2(UINT32 n) { 
-    return ((n&(n-1))==0); 
+bool MathTools::IsPow2(UINT32 n) {
+    return ((n&(n-1))==0);
 };
 
 UINT32 MathTools::NextPow2(UINT32 n, bool bReturn_ID_on_Pow2) {

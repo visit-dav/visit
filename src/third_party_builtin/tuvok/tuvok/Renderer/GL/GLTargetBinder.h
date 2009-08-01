@@ -33,16 +33,15 @@
            University of Utah
   \date    Januray 2009
 */
-
-
 #pragma once
 
 #ifndef GLTARGETBINDER_H
 #define GLTARGETBINDER_H
 
+#include <vector>
 #include "../../StdTuvokDefines.h"
-#include "GLFBOTex.h"
-#include "../../Basics/Vectors.h"
+class GLFBOTex;
+class MasterController;
 
 class GLBufferID {
 public:
@@ -54,8 +53,6 @@ public:
   GLFBOTex* pBuffer;
   UINT32 iSubBuffer;
 };
-
-
 
 class GLTargetBinder {
   public:
@@ -77,5 +74,4 @@ class GLTargetBinder {
 
     void UnbindInternal();
 };
-
 #endif // GLTARGETBINDER_H

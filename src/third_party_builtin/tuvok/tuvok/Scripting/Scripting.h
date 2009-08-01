@@ -34,7 +34,6 @@
 //!    Date   : January 2009
 //
 //!    Copyright (C) 2008 SCI Institute
-
 #pragma once
 
 #ifndef SCRIPTING_H
@@ -42,6 +41,7 @@
 
 #include "../StdTuvokDefines.h"
 #include "Scriptable.h"
+#include <list>
 #include <string>
 #include <vector>
 
@@ -49,14 +49,17 @@ class MasterController;
 
 class ScriptableListElement {
   public:
-    ScriptableListElement(Scriptable* source, const std::string& strCommand, const std::string& strParameters, const std::string& strDescription);
+    ScriptableListElement(Scriptable* const source,
+                          const std::string& strCommand,
+                          const std::string& strParameters,
+                          std::string strDescription);
 
-    Scriptable* m_source;
-    std::string m_strCommand;
+    Scriptable* const m_source;
+    const std::string m_strCommand;
     std::vector<std::string> m_vParameters;
     UINT32 m_iMaxParam;
     UINT32 m_iMinParam;
-    std::string m_strDescription;
+    const std::string m_strDescription;
 };
 
 class Scripting : public Scriptable
@@ -69,17 +72,20 @@ class Scripting : public Scriptable
     bool ParseLine(const std::string& strLine);
     bool ParseFile(const std::string& strFilename);
 
-    bool RegisterCommand(Scriptable* source, const std::string& strCommand, const std::string& strParameters, const std::string& strDescription);
+    bool RegisterCommand(Scriptable* source, const std::string& strCommand,
+                         const std::string& strParameters,
+                         std::string strDescription);
 
     // Scriptable
     virtual void RegisterCalls(Scripting* pScriptEngine);
-    virtual bool Execute(const std::string& strCommand, const std::vector< std::string >& strParams, std::string& strMessage);
-
+    virtual bool Execute(const std::string& strCommand,
+                         const std::vector<std::string>& strParams,
+                         std::string& strMessage);
 
   private:
-    std::vector<ScriptableListElement*> m_ScriptableList;
+    typedef std::list<ScriptableListElement*> ScriptList;
+    ScriptList                          m_ScriptableList;
+    bool                                m_bSorted;
     bool                                m_bEcho;
-
 };
-
 #endif // SCRIPTING_H

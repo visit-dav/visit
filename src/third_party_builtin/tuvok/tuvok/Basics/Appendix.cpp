@@ -36,8 +36,7 @@
 
 #include "Appendix.h"
 #include "SysTools.h"
-#include "../IO/UVF/LargeRAWFile.h"
-
+#include "LargeRAWFile.h"
 
 using namespace std;
 

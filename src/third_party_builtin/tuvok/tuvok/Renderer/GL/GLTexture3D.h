@@ -33,8 +33,6 @@
            University of Utah
   \date    August 2008
 */
-
-
 #pragma once
 
 #ifndef GLTEXTURE3D_H

@@ -1,0 +1,7 @@
+This is a special version of bzip2 1.0.5 meant for use only within the
+Tuvok volume rendering library.  Tuvok and bzip2 are distributed under
+different but compatible licenses; please see the `LICENSE' file in the
+current directory for details.
+
+Please report issues with the library to the Tuvok developers; do NOT report
+problems to the bzip2 developers!

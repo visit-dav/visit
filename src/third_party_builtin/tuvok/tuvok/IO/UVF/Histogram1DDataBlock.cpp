@@ -1,9 +1,8 @@
 #include "Histogram1DDataBlock.h"
 
-#include <memory.h>
+#include "RasterDataBlock.h"
 using namespace std;
 using namespace UVFTables;
-
 
 Histogram1DDataBlock::Histogram1DDataBlock() : DataBlock() {
   ulBlockSemantics = BS_1D_Histogram;
@@ -69,35 +68,34 @@ bool Histogram1DDataBlock::Compute(RasterDataBlock* source) {
   if (vTmpHist.size() != iValueRange) return false;
   for (size_t i = 0;i<iValueRange;i++) vTmpHist[i] = 0;
 
-  // find smalest brick in hirarchy
-  unsigned char *pcSourceData = NULL;
+  // find smallest brick in hierarchy
+  std::vector<unsigned char> vcSourceData;
   vector<UINT64> vLOD = source->GetSmallestBrickIndex();
   vector<UINT64> vOneAndOnly;
   for (size_t i = 0;i<vBricks.size();i++) vOneAndOnly.push_back(0);
-  if (!source->GetData(&pcSourceData, vLOD, vOneAndOnly)) return false;
+  if (!source->GetData(vcSourceData, vLOD, vOneAndOnly)) return false;
 
   vector<UINT64> vSize  = source->GetSmallestBrickSize();
 
   UINT64 iDataSize = 1;
   for (size_t i = 0;i<vSize.size();i++) iDataSize*=vSize[i];
 
-  // TODO: right now only 8 and 16 bit integer data is supported this should be changed to a more general approach
+  /// @todo only 8 and 16 bit integer data are supported.  this should be
+  ///       changed to use a more general approach.
   if (source->ulElementBitSize[0][0] == 8) {
     for (UINT64 i = 0;i<iDataSize;i++) {
-       vTmpHist[pcSourceData[i]]++;
+       vTmpHist[vcSourceData[size_t(i)]]++;
     }
   } else {
     if (source->ulElementBitSize[0][0] == 16) {
-      unsigned short *psSourceData = (unsigned short*)pcSourceData;
+      unsigned short *psSourceData = (unsigned short*)(&(vcSourceData.at(0)));
       for (UINT64 i = 0;i<iDataSize;i++) {
-        vTmpHist[psSourceData[i]]++;
+        vTmpHist[psSourceData[size_t(i)]]++;
       }
     } else {
-      delete [] pcSourceData;
       return false;
     }
   }
-  delete [] pcSourceData;
 
   // find maximum-index non zero entry
   size_t iSize = 0;

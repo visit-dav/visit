@@ -40,10 +40,16 @@
 #include <IO/Tuvok_QtPlugins.h>
 #include <IO/IOManager.h>
 #include <Renderer/GPUMemMan/GPUMemMan.h>
+#include "Basics/MathTools.h"
+#include "Basics/GeometryGenerator.h"
+#include "IO/uvfMetadata.h"
 
 using namespace std;
+using namespace tuvok;
 
-AbstrRenderer::AbstrRenderer(MasterController* pMasterController, bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits, bool bDisableBorder) :
+AbstrRenderer::AbstrRenderer(MasterController* pMasterController,
+                             bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits,
+                             bool bDisableBorder, enum ScalingMethod sm) :
   m_pMasterController(pMasterController),
   m_bPerformRedraw(true),
   m_eRenderMode(RM_1DTRANS),
@@ -70,7 +76,9 @@ AbstrRenderer::AbstrRenderer(MasterController* pMasterController, bool bUseOnlyP
   m_iFrameCounter(0),
   m_iCheckCounter(0),
   m_iMaxLODIndex(0),
+  m_iPerformanceBasedLODSkip(0),
   m_iCurrentLODOffset(0),
+  m_iStartLODOffset(0),
   m_bClearFramebuffer(true),
   m_iCurrentLOD(0),
   m_iBricksRenderedInThisSubFrame(0),
@@ -79,6 +87,7 @@ AbstrRenderer::AbstrRenderer(MasterController* pMasterController, bool bUseOnlyP
   m_fMIPRotationAngle(0.0f),
   m_bOrthoView(false),
   m_bRenderCoordArrows(false),
+  m_bRenderPlanesIn3D(false),
   m_bDoClearView(false),
   m_fCVIsovalue(0.8f),
   m_vCVColor(1,0,0),
@@ -95,17 +104,26 @@ AbstrRenderer::AbstrRenderer(MasterController* pMasterController, bool bUseOnlyP
   m_bDownSampleTo8Bits(bDownSampleTo8Bits),
   m_bDisableBorder(bDisableBorder),
   m_bAvoidSeperateCompositing(true),
+  m_TFScalingMethod(sm),
   m_bClipPlaneOn(false),
   m_bClipPlaneDisplayed(true),
-  m_bClipPlaneLocked(false)
+  m_bClipPlaneLocked(true),
+  m_vEye(0,0,1.6f),
+  m_vAt(0,0,0),
+  m_vUp(0,1,0),
+  m_fFOV(50.0f),
+  m_fZNear(0.1f),
+  m_fZFar(100.0f)
 {
   m_vBackgroundColors[0] = FLOATVECTOR3(0,0,0);
   m_vBackgroundColors[1] = FLOATVECTOR3(0,0,0);
 
   m_e2x2WindowMode[0] = WM_3D;
-  m_e2x2WindowMode[1] = WM_CORONAL;
+  m_e2x2WindowMode[1] = WM_SAGITTAL;
   m_e2x2WindowMode[2] = WM_AXIAL;
-  m_e2x2WindowMode[3] = WM_SAGITTAL;
+  m_e2x2WindowMode[3] = WM_CORONAL;
+  m_fMsecPassed[0] = 0.0f;
+  m_fMsecPassed[1] = 0.0f;
 
   m_eFullWindowMode   = WM_3D;
 
@@ -126,17 +144,17 @@ AbstrRenderer::AbstrRenderer(MasterController* pMasterController, bool bUseOnlyP
   m_bRedrawMask[2] = true;
   m_bRedrawMask[3] = true;
 
-  m_vShaderSearchDirs.push_back("../../../Tuvok/Shaders");
-  m_vShaderSearchDirs.push_back("../../Tuvok/Shaders");
-  m_vShaderSearchDirs.push_back("../Tuvok/Shaders");
-  m_vShaderSearchDirs.push_back("Tuvok/Shaders");
   m_vShaderSearchDirs.push_back("Shaders");
+  m_vShaderSearchDirs.push_back("Tuvok/Shaders");
+  m_vShaderSearchDirs.push_back("../Tuvok/Shaders");
+  m_vShaderSearchDirs.push_back("../../Tuvok/Shaders");
+  m_vShaderSearchDirs.push_back("../../../Tuvok/Shaders");
 
   m_vArrowGeometry = GeometryGenerator::GenArrow(0.3f,0.8f,0.006f,0.012f,20);
 }
 
 bool AbstrRenderer::Initialize() {
-  return true; // not too much can go wrong here :-)
+  return m_pDataset != NULL;
 }
 
 bool AbstrRenderer::LoadDataset(const string& strFilename) {
@@ -156,24 +174,37 @@ bool AbstrRenderer::LoadDataset(const string& strFilename) {
 
   MESSAGE("Load successful, initializing renderer!");
 
+  Controller::Instance().Provenance("file", "open", strFilename);
+
   // find the maximum LOD index
-  std::vector<UINT64> vSmallestLOD = m_pDataset->GetInfo()->GetLODLevelCountND();
+  const UVFMetadata &md = dynamic_cast<const UVFMetadata &>
+                                      (m_pDataset->GetInfo());
+  std::vector<UINT64> vSmallestLOD = md.GetLODLevelCountND();
   for (size_t i = 0;i<vSmallestLOD.size();i++) {
     vSmallestLOD[i]--;
   }
   m_iMaxLODIndex = *std::min_element(vSmallestLOD.begin(), vSmallestLOD.end());
 
-  m_piSlice[size_t(WM_SAGITTAL)] = m_pDataset->GetInfo()->GetDomainSize()[0]/2;
-  m_piSlice[size_t(WM_CORONAL)]  = m_pDataset->GetInfo()->GetDomainSize()[1]/2;
-  m_piSlice[size_t(WM_AXIAL)]    = m_pDataset->GetInfo()->GetDomainSize()[2]/2;
+  m_piSlice[size_t(WM_CORONAL)] = m_pDataset->GetInfo().GetDomainSize()[0]/2;
+  m_piSlice[size_t(WM_SAGITTAL)]  = m_pDataset->GetInfo().GetDomainSize()[1]/2;
+  m_piSlice[size_t(WM_AXIAL)]    = m_pDataset->GetInfo().GetDomainSize()[2]/2;
 
   return true;
 }
 
 AbstrRenderer::~AbstrRenderer() {
-  m_pMasterController->MemMan()->FreeDataset(m_pDataset, this);
-  m_pMasterController->MemMan()->Free1DTrans(m_p1DTrans, this);
-  m_pMasterController->MemMan()->Free2DTrans(m_p2DTrans, this);
+  if (m_pDataset) m_pMasterController->MemMan()->FreeDataset(m_pDataset, this);
+  if (m_p1DTrans) m_pMasterController->MemMan()->Free1DTrans(m_p1DTrans, this);
+  if (m_p2DTrans) m_pMasterController->MemMan()->Free2DTrans(m_p2DTrans, this);
+}
+
+static std::string render_mode(AbstrRenderer::ERenderMode mode) {
+  switch(mode) {
+    case AbstrRenderer::RM_1DTRANS: return "mode1d";
+    case AbstrRenderer::RM_2DTRANS: return "mode2d";
+    case AbstrRenderer::RM_ISOSURFACE: return "modeiso";
+    default: return "invalid";
+  };
 }
 
 void AbstrRenderer::SetRendermode(ERenderMode eRenderMode)
@@ -181,6 +212,16 @@ void AbstrRenderer::SetRendermode(ERenderMode eRenderMode)
   if (m_eRenderMode != eRenderMode) {
     m_eRenderMode = eRenderMode;
     ScheduleCompleteRedraw();
+    Controller::Instance().Provenance("mode", render_mode(eRenderMode));
+  }
+}
+
+static std::string view_mode(AbstrRenderer::EViewMode mode) {
+  switch(mode) {
+    case AbstrRenderer::VM_SINGLE: return "single"; break;
+    case AbstrRenderer::VM_TWOBYTWO: return "two-by-two"; break;
+    case AbstrRenderer::VM_INVALID: /* fall-through */
+    default: return "invalid"; break;
   }
 }
 
@@ -189,6 +230,8 @@ void AbstrRenderer::SetViewmode(EViewMode eViewMode)
   if (m_eViewMode != eViewMode) {
     m_eViewMode = eViewMode;
     ScheduleCompleteRedraw();
+    Controller::Instance().Provenance("vmode", "viewmode",
+                                      view_mode(eViewMode));
   }
 }
 
@@ -212,6 +255,7 @@ void AbstrRenderer::SetUseLighting(bool bUseLighting) {
   if (m_bUseLighting != bUseLighting) {
     m_bUseLighting = bUseLighting;
     ScheduleWindowRedraw(WM_3D);
+    Controller::Instance().Provenance("light", "lighting");
   }
 }
 
@@ -222,13 +266,20 @@ void AbstrRenderer::SetBlendPrecision(EBlendPrecision eBlendPrecision) {
   }
 }
 
-void AbstrRenderer::SetDataSet(VolumeDataset *vds)
+void AbstrRenderer::SetDataset(Dataset *vds)
 {
   if(m_pDataset) {
     delete m_pDataset;
   }
   m_pDataset = vds;
   ScheduleCompleteRedraw();
+  Controller::Instance().Provenance("file", "open", "<in_memory_buffer>");
+}
+
+void AbstrRenderer::Set1DTrans(const std::vector<unsigned char>&)
+{
+  GPUMemMan& mm = *(Controller::Instance().MemMan());
+  mm.Free1DTrans(m_p1DTrans, this);
 }
 
 void AbstrRenderer::Changed1DTrans() {
@@ -240,6 +291,8 @@ void AbstrRenderer::Changed1DTrans() {
   } else {
     dbg->Message(_func_, "complete redraw scheduled");
     ScheduleCompleteRedraw();
+    // No provenance; as a mechanism to filter out too many updates, we place
+    // the onus on updating this in the UI which is driving us.
   }
 }
 
@@ -252,6 +305,7 @@ void AbstrRenderer::Changed2DTrans() {
   } else {
     dbg->Message(_func_, "complete redraw scheduled");
     ScheduleCompleteRedraw();
+    // No provenance; handled by application, not Tuvok lib.
   }
 }
 
@@ -273,7 +327,8 @@ void AbstrRenderer::SetIsoValue(float fIsovalue) {
 bool AbstrRenderer::CheckForRedraw() {
   if (m_vCurrentBrickList.size() > m_iBricksRenderedInThisSubFrame || m_iCurrentLODOffset > m_iMinLODForCurrentView) {
     if (m_iCheckCounter == 0)  {
-      MESSAGE("Still drawing...");
+      AbstrDebugOut *dbg = m_pMasterController->DebugOut();
+      dbg->Message(_func_,"Still drawing...");
       return true;
     } else m_iCheckCounter--;
   }
@@ -351,18 +406,21 @@ void AbstrRenderer::EnableClipPlane() {
   if(!m_bClipPlaneOn) {
     m_bClipPlaneOn = true;
     ScheduleWindowRedraw(WM_3D);
+    Controller::Instance().Provenance("clip", "clip", "enable");
   }
 }
 void AbstrRenderer::DisableClipPlane() {
   if(m_bClipPlaneOn) {
     m_bClipPlaneOn = false;
     ScheduleWindowRedraw(WM_3D);
+    Controller::Instance().Provenance("clip", "clip", "disable");
   }
 }
 void AbstrRenderer::ShowClipPlane(bool bShown) {
   m_bClipPlaneDisplayed = bShown;
   if(m_bClipPlaneOn) {
     ScheduleWindowRedraw(WM_3D);
+    Controller::Instance().Provenance("clip", "showclip", "enable");
   }
 }
 void AbstrRenderer::ClipPlaneRelativeLock(bool bRel) {
@@ -371,8 +429,11 @@ void AbstrRenderer::ClipPlaneRelativeLock(bool bRel) {
 
 void AbstrRenderer::SetSliceDepth(EWindowMode eWindow, UINT64 iSliceDepth) {
   if (eWindow < WM_3D) {
-    m_piSlice[size_t(eWindow)] = iSliceDepth;
-    ScheduleWindowRedraw(eWindow);
+    if (m_piSlice[size_t(eWindow)] != iSliceDepth) {
+      m_piSlice[size_t(eWindow)] = iSliceDepth;
+      ScheduleWindowRedraw(eWindow);
+      if (m_bRenderPlanesIn3D) ScheduleWindowRedraw(WM_3D);
+    }
   }
 }
 
@@ -386,11 +447,13 @@ UINT64 AbstrRenderer::GetSliceDepth(EWindowMode eWindow) {
 void AbstrRenderer::SetGlobalBBox(bool bRenderBBox) {
   m_bRenderGlobalBBox = bRenderBBox;
   ScheduleWindowRedraw(WM_3D);
+  Controller::Instance().Provenance("boundingbox", "global_bbox");
 }
 
 void AbstrRenderer::SetLocalBBox(bool bRenderBBox) {
   m_bRenderLocalBBox = bRenderBBox;
   ScheduleWindowRedraw(WM_3D);
+  Controller::Instance().Provenance("boundingbox", "local_bbox");
 }
 
 void AbstrRenderer::ScheduleCompleteRedraw() {
@@ -420,14 +483,44 @@ void AbstrRenderer::ScheduleRecompose() {
   }
 }
 
+void AbstrRenderer::ComputeMaxLODForCurrentView() {
+
+  if (m_fMsecPassed[0] > 1000.0f/float(m_iMinFramerate)) {
+    UINT64 iPerformanceBasedLODSkip = m_iPerformanceBasedLODSkip;
+    m_iPerformanceBasedLODSkip = std::max<UINT64>(1,m_iPerformanceBasedLODSkip)-1;
+    if (m_iPerformanceBasedLODSkip != iPerformanceBasedLODSkip)
+      MESSAGE("Increasing start LOD by %i as it took %g ms to render the first LOD level (max is %g) ",int(m_iPerformanceBasedLODSkip), m_fMsecPassed[0], 1000.0f/float(m_iMinFramerate));
+  } else {
+    if (m_vCurrentBrickList.size() == m_iBricksRenderedInThisSubFrame && m_fMsecPassed[1] != 0.0f && m_fMsecPassed[1] <= 1000.0f/float(m_iMinFramerate)) {
+      UINT64 iPerformanceBasedLODSkip = m_iPerformanceBasedLODSkip;
+      m_iPerformanceBasedLODSkip = std::min<UINT64>(m_iMaxLODIndex-m_iMinLODForCurrentView,m_iPerformanceBasedLODSkip+1);
+      if (m_iPerformanceBasedLODSkip != iPerformanceBasedLODSkip)
+        MESSAGE("Decreasing start LOD by %i as it took only %g ms to render the second LOD level",int(m_iPerformanceBasedLODSkip), m_fMsecPassed[1]);
+    }
+  }
+  if (m_iStartLODOffset == m_iMinLODForCurrentView ||
+     (m_vCurrentBrickList.size() == m_iBricksRenderedInThisSubFrame && m_fMsecPassed[1] != 0.0f)) {
+    m_fMsecPassed[0] = 0.0f;
+    m_fMsecPassed[1] = 0.0f;
+  }
+
+  if (!m_bCaptureMode) {
+    m_iStartLODOffset = m_iMaxLODIndex-m_iPerformanceBasedLODSkip;
+  } else {
+    m_iStartLODOffset = m_iMinLODForCurrentView;
+  }
+
+  m_iCurrentLODOffset = m_iStartLODOffset+1;  // +1 since m_iCurrentLODOffset is decremented before the rendering
+}
+
 void AbstrRenderer::ComputeMinLODForCurrentView() {
-  UINTVECTOR3  viVoxelCount = UINTVECTOR3(m_pDataset->GetInfo()->GetDomainSize());
-  FLOATVECTOR3 vfExtend     = (FLOATVECTOR3(viVoxelCount) / viVoxelCount.maxVal()) * FLOATVECTOR3(m_pDataset->GetInfo()->GetScale() / m_pDataset->GetInfo()->GetScale().maxVal() );
+  UINTVECTOR3  viVoxelCount = UINTVECTOR3(m_pDataset->GetInfo().GetDomainSize());
+  FLOATVECTOR3 vfExtend     = (FLOATVECTOR3(viVoxelCount) / viVoxelCount.maxVal()) * FLOATVECTOR3(m_pDataset->GetInfo().GetScale() / m_pDataset->GetInfo().GetScale().maxVal() );
 
   // TODO consider real extent not center
 
   FLOATVECTOR3 vfCenter(0,0,0);
-  m_iMinLODForCurrentView = max(0, min<int>(m_pDataset->GetInfo()->GetLODLevelCount()-1,m_FrustumCullingLOD.GetLODLevel(vfCenter,vfExtend,viVoxelCount)));
+  m_iMinLODForCurrentView = max(0, min<int>(m_pDataset->GetInfo().GetLODLevelCount()-1,m_FrustumCullingLOD.GetLODLevel(vfCenter,vfExtend,viVoxelCount)));
 }
 
 /// Calculates the distance to a given brick given the current view
@@ -488,12 +581,12 @@ vector<Brick> AbstrRenderer::BuildLeftEyeSubFrameBrickList(
 vector<Brick> AbstrRenderer::BuildSubFrameBrickList(bool bUseResidencyAsDistanceCriterion) {
   vector<Brick> vBrickList;
 
-  UINT64VECTOR3 vOverlap = m_pDataset->GetInfo()->GetBrickOverlapSize();
-  UINT64VECTOR3 vBrickDimension = m_pDataset->GetInfo()->GetBrickCount(m_iCurrentLOD);
-  UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo()->GetDomainSize(m_iCurrentLOD);
-  FLOATVECTOR3 vScale(m_pDataset->GetInfo()->GetScale().x,
-                      m_pDataset->GetInfo()->GetScale().y,
-                      m_pDataset->GetInfo()->GetScale().z);
+  UINT64VECTOR3 vOverlap = m_pDataset->GetInfo().GetBrickOverlapSize();
+  UINT64VECTOR3 vBrickDimension = m_pDataset->GetInfo().GetBrickCount(m_iCurrentLOD);
+  UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo().GetDomainSize(m_iCurrentLOD);
+  FLOATVECTOR3 vScale(m_pDataset->GetInfo().GetScale().x,
+                      m_pDataset->GetInfo().GetScale().y,
+                      m_pDataset->GetInfo().GetScale().z);
 
   FLOATVECTOR3 vDomainExtend = vScale * FLOATVECTOR3(vDomainSize);
   float fDownscale = vDomainExtend.maxVal();
@@ -505,12 +598,18 @@ vector<Brick> AbstrRenderer::BuildSubFrameBrickList(bool bUseResidencyAsDistance
     Brick b;
     for (UINT64 y = 0;y<vBrickDimension.y;y++) {
       for (UINT64 x = 0;x<vBrickDimension.x;x++) {
-        UINT64VECTOR3 vSize = m_pDataset->GetInfo()->GetBrickSize(m_iCurrentLOD, UINT64VECTOR3(x,y,z));
+        UINT64VECTOR3 vSize = m_pDataset->GetInfo().GetBrickSize(
+                                Metadata::BrickKey(m_iCurrentLOD,
+                                                   UINT64VECTOR3(x,y,z))
+                              );
         b = Brick(x,y,z, UINT32(vSize.x), UINT32(vSize.y), UINT32(vSize.z));
 
-        FLOATVECTOR3 vEffectiveSize = m_pDataset->GetInfo()->GetEffectiveBrickSize(m_iCurrentLOD,UINT64VECTOR3(x,y,z));
+        UINT64VECTOR3 vEffectiveSize =
+          m_pDataset->GetInfo().GetEffectiveBrickSize(
+            Metadata::BrickKey(m_iCurrentLOD, UINT64VECTOR3(x,y,z))
+          );
 
-        b.vExtension = (vEffectiveSize* vScale)/fDownscale;
+        b.vExtension = (FLOATVECTOR3(vEffectiveSize)* vScale)/fDownscale;
 
         // compute center of the brick
         b.vCenter = (vBrickCorner + b.vExtension/2.0f)-vDomainExtend*0.5f;
@@ -524,7 +623,7 @@ vector<Brick> AbstrRenderer::BuildSubFrameBrickList(bool bUseResidencyAsDistance
 
         // skip the brick if it is clipped by the clipping plane
         if (m_bClipPlaneOn) {
-          
+
           FLOATVECTOR3 vBrickVertices[8] = {
             b.vCenter + FLOATVECTOR3(-b.vExtension.x,-b.vExtension.y,-b.vExtension.z) * 0.5f,
             b.vCenter + FLOATVECTOR3(-b.vExtension.x,-b.vExtension.y,+b.vExtension.z) * 0.5f,
@@ -546,16 +645,41 @@ vector<Brick> AbstrRenderer::BuildSubFrameBrickList(bool bUseResidencyAsDistance
               break;
             }
           }
-          if (bClip) 
+          if (bClip)
             continue;
         }
 
         bool bContainsData;
+        const Metadata& md = m_pDataset->GetInfo();
         switch (m_eRenderMode) {
-          case RM_1DTRANS    :  bContainsData = m_pDataset->GetInfo()->ContainsData(m_iCurrentLOD, UINT64VECTOR3(x,y,z), double(m_p1DTrans->GetNonZeroLimits().x), double(m_p1DTrans->GetNonZeroLimits().y)); break;
-          case RM_2DTRANS    :  bContainsData = m_pDataset->GetInfo()->ContainsData(m_iCurrentLOD, UINT64VECTOR3(x,y,z), double(m_p2DTrans->GetNonZeroLimits().x), double(m_p2DTrans->GetNonZeroLimits().y),double(m_p2DTrans->GetNonZeroLimits().z), double(m_p2DTrans->GetNonZeroLimits().w)); break;
-          case RM_ISOSURFACE :  bContainsData = m_pDataset->GetInfo()->ContainsData(m_iCurrentLOD, UINT64VECTOR3(x,y,z), m_fIsovalue*m_p1DTrans->GetSize()); break;
-          default            :  bContainsData = false; break;
+          case RM_1DTRANS:
+            bContainsData = md.ContainsData(
+                              Metadata::BrickKey(m_iCurrentLOD,
+                                                 UINT64VECTOR3(x,y,z)),
+                              double(m_p1DTrans->GetNonZeroLimits().x),
+                              double(m_p1DTrans->GetNonZeroLimits().y)
+                            );
+            break;
+          case RM_2DTRANS:
+            bContainsData = md.ContainsData(
+                              Metadata::BrickKey(m_iCurrentLOD,
+                                                 UINT64VECTOR3(x,y,z)),
+                              double(m_p2DTrans->GetNonZeroLimits().x),
+                              double(m_p2DTrans->GetNonZeroLimits().y),
+                              double(m_p2DTrans->GetNonZeroLimits().z),
+                              double(m_p2DTrans->GetNonZeroLimits().w)
+                            );
+            break;
+          case RM_ISOSURFACE:
+            bContainsData = md.ContainsData(
+                              Metadata::BrickKey(m_iCurrentLOD,
+                                                 UINT64VECTOR3(x,y,z)),
+                              m_fIsovalue*m_p1DTrans->GetSize()
+                            );
+            break;
+          default:
+            bContainsData = false;
+            break;
         }
 
         // if the brick is visible under the current transfer function continue processing
@@ -644,26 +768,30 @@ void AbstrRenderer::Plan3DFrame() {
     m_FrustumCullingLOD.SetViewMatrix(m_matModelView[0]);
     m_FrustumCullingLOD.Update();
 
-    ComputeMinLODForCurrentView();
-    if (!m_bCaptureMode) {
-      m_iCurrentLODOffset = m_iMaxLODIndex+1;
-    } else {
-      m_iCurrentLODOffset = m_iMinLODForCurrentView+1;
-    }
+    ComputeMinLODForCurrentView();  // figure out how fine we need to draw the data for the current view
+                                    // this method takes the size of a voxel in screen space into account
+    ComputeMaxLODForCurrentView();  // figure out at wat coarse level we need to start for the current view
+                                    // this method takes the rendermode (capture or not) and the time it took
+                                    // to render the last subframe into account
   }
 
   // plan if the frame is to be redrawn
   // or if we have completed the last subframe but not the entire frame
   if (m_bPerformRedraw ||
-     (m_vCurrentBrickList.size() == m_iBricksRenderedInThisSubFrame && m_iCurrentLODOffset > m_iMinLODForCurrentView)) {
-
+      (m_vCurrentBrickList.size() == m_iBricksRenderedInThisSubFrame &&
+       m_iCurrentLODOffset > m_iMinLODForCurrentView)) {
     // compute current LOD level
     m_iCurrentLODOffset--;
-    m_iCurrentLOD = std::min<UINT64>(m_iCurrentLODOffset,m_pDataset->GetInfo()->GetLODLevelCount()-1);
-    UINT64VECTOR3 vBrickCount = m_pDataset->GetInfo()->GetBrickCount(m_iCurrentLOD);
+    m_iCurrentLOD = std::min<UINT64>(m_iCurrentLODOffset,m_pDataset->GetInfo().GetLODLevelCount()-1);
+    UINT64VECTOR3 vBrickCount = m_pDataset->GetInfo().GetBrickCount(m_iCurrentLOD);
 
     // build new brick todo-list
+    MESSAGE("Building new brick list for LOD with %u bricks",
+            static_cast<UINT32>(
+              vBrickCount[0] * vBrickCount[1] * vBrickCount[2]
+            ));
     m_vCurrentBrickList = BuildSubFrameBrickList();
+    MESSAGE("%u bricks made the cut.", m_vCurrentBrickList.size());
 
     if (m_bDoStereoRendering)
       m_vLeftEyeBrickList = BuildLeftEyeSubFrameBrickList(m_vCurrentBrickList);
@@ -684,7 +812,7 @@ void AbstrRenderer::PlanHQMIPFrame() {
 
   m_FrustumCullingLOD.SetPassAll(true);
 
-  UINTVECTOR3  viVoxelCount = UINTVECTOR3(m_pDataset->GetInfo()->GetDomainSize());
+  UINTVECTOR3  viVoxelCount = UINTVECTOR3(m_pDataset->GetInfo().GetDomainSize());
 
   m_iCurrentLODOffset = 0;
   m_iCurrentLOD = 0;
@@ -697,7 +825,7 @@ void AbstrRenderer::PlanHQMIPFrame() {
   }
 
   if (m_iCurrentLOD > 0) {
-    m_iCurrentLOD = min<int>(m_pDataset->GetInfo()->GetLODLevelCount()-1,m_iCurrentLOD-1);
+    m_iCurrentLOD = min<int>(m_pDataset->GetInfo().GetLODLevelCount()-1,m_iCurrentLOD-1);
   }
 
   // build new brick todo-list
@@ -740,10 +868,19 @@ void AbstrRenderer::SetRenderCoordArrows(bool bRenderCoordArrows) {
   }
 }
 
+void AbstrRenderer::Set2DPlanesIn3DView(bool bRenderPlanesIn3D) {
+  if (m_bRenderPlanesIn3D != bRenderPlanesIn3D) {
+    m_bRenderPlanesIn3D = bRenderPlanesIn3D;
+    ScheduleWindowRedraw(WM_3D);
+  }
+}
+
 void AbstrRenderer::SetCVIsoValue(float fIsovalue) {
   if (m_fCVIsovalue != fIsovalue) {
     m_fCVIsovalue = fIsovalue;
     if (m_bDoClearView && m_eRenderMode == RM_ISOSURFACE) ScheduleWindowRedraw(WM_3D);
+    std::ostringstream prov;
+    prov << "setcviso " << fIsovalue << std::endl;
   }
 }
 
@@ -795,21 +932,21 @@ void AbstrRenderer::SetLogoParams(string strLogoFilename, int iLogoPos) {
 
 void AbstrRenderer::Set2DFlipMode(EWindowMode eWindow, bool bFlipX, bool bFlipY) {
   // flipping is only possible for 2D views
-  if (eWindow > WM_SAGITTAL) return;
+  if (eWindow > WM_CORONAL) return;
   m_bFlipView[size_t(eWindow)] = VECTOR2<bool>(bFlipX, bFlipY);
   ScheduleWindowRedraw(eWindow);
 }
 
 void AbstrRenderer::Get2DFlipMode(EWindowMode eWindow, bool& bFlipX, bool& bFlipY) const {
   // flipping is only possible for 2D views
-  if (eWindow > WM_SAGITTAL) return;
+  if (eWindow > WM_CORONAL) return;
   bFlipX = m_bFlipView[size_t(eWindow)].x;
   bFlipY = m_bFlipView[size_t(eWindow)].y;
 }
 
 bool AbstrRenderer::GetUseMIP(EWindowMode eWindow) const {
   // MIP is only possible for 2D views
-  if (eWindow > WM_SAGITTAL)
+  if (eWindow > WM_CORONAL)
     return false;
   else
     return m_bUseMIP[size_t(eWindow)];
@@ -817,7 +954,7 @@ bool AbstrRenderer::GetUseMIP(EWindowMode eWindow) const {
 
 void AbstrRenderer::SetUseMIP(EWindowMode eWindow, bool bUseMIP) {
   // MIP is only possible for 2D views
-  if (eWindow > WM_SAGITTAL) return;
+  if (eWindow > WM_CORONAL) return;
   m_bUseMIP[size_t(eWindow)] = bUseMIP;
   ScheduleWindowRedraw(eWindow);
 }

@@ -35,6 +35,7 @@
 */
 
 #include "GLTexture1D.h"
+#include "Controller/Controller.h"
 
 
 GLTexture1D::GLTexture1D(UINT32 iSize, GLint internalformat, GLenum format,
@@ -50,19 +51,22 @@ GLTexture1D::GLTexture1D(UINT32 iSize, GLint internalformat, GLenum format,
   glGenTextures(1, &m_iGLID);
   glBindTexture(GL_TEXTURE_1D, m_iGLID);
 
-  glPixelStorei(GL_PACK_ALIGNMENT ,1);
-  glPixelStorei(GL_UNPACK_ALIGNMENT ,1);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, wrap);
   glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, iMagFilter);
   glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, iMinFilter);
-  glTexImage1D(GL_TEXTURE_1D, 0, m_internalformat, GLuint(m_iSize), 0, m_format, m_type, (GLvoid*)pixels);
+  glTexImage1D(GL_TEXTURE_1D, 0, m_internalformat, m_iSize, 0, m_format,
+               m_type, (GLvoid*)pixels);
 }
 
 void GLTexture1D::SetData(const void *pixels) {
-  glPixelStorei(GL_PACK_ALIGNMENT ,1);
-  glPixelStorei(GL_UNPACK_ALIGNMENT ,1);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+  MESSAGE("Uploading new %u element 1D texture.", static_cast<UINT32>(m_iSize));
   glBindTexture(GL_TEXTURE_1D, m_iGLID);
-  glTexImage1D(GL_TEXTURE_1D, 0, m_internalformat, m_iSize, 0, m_format, m_type, (GLvoid*)pixels);
+  glTexImage1D(GL_TEXTURE_1D, 0, m_internalformat, m_iSize, 0, m_format,
+               m_type, (GLvoid*)pixels);
 }

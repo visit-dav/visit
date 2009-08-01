@@ -269,7 +269,7 @@ void DXRenderer::NewFrameClear(ERenderArea eREnderArea) {
 void DXRenderer::RenderCoordArrows() {
 }
 
-bool DXRenderer::Execute3DFrame(ERenderArea eREnderArea) {
+bool DXRenderer::Execute3DFrame(ERenderArea eREnderArea, float &fMsecPassed) {
   return true;
 }
 
@@ -309,6 +309,12 @@ void DXRenderer::BBoxPreRender() {
 void DXRenderer::BBoxPostRender() {
 }
 
+void DXRenderer::PlaneIn3DPreRender() {
+}
+
+void DXRenderer::PlaneIn3DPostRender() {
+}
+
 bool DXRenderer::LoadDataset(const string& strFilename) {
   if (AbstrRenderer::LoadDataset(strFilename)) {
     // TODO
@@ -319,7 +325,8 @@ bool DXRenderer::LoadDataset(const string& strFilename) {
 void DXRenderer::Recompose3DView(ERenderArea eArea) {
 }
 
-void DXRenderer::Render3DView() {
+float DXRenderer::Render3DView() {
+  return 0.0f;
 }
 
 void DXRenderer::SetLogoParams(std::string strLogoFilename, int iLogoPos) {

@@ -43,10 +43,13 @@
 #   Fix C file flags + object file names.
 #   Build new VisItDebugOut.C file && add + simplify includes.
 #   Assume a shared Qt...
-#   Cripple Tuvok IO subsystem to avoid a Qt dependence.
+#   Cripple Tuvok IO subsystem to avoid some Qt dependence.
 #
 #   Tom Fogal, Fri Mar  6 15:33:45 MST 2009
 #   Add GLEW to the include paths.
+#
+#   Tom Fogal, Sat Jul 18 20:33:57 MDT 2009
+#   Fix include paths for new tuvok.
 #
 ##############################################################################
 
@@ -60,8 +63,9 @@
 include source_files
 TUVOK_SRCS := $(TUVOK_SRCS) VisItDebugOut.C
 
-INCLUDE:=-I./tuvok -I./tuvok/3rdParty -I$(TOPDIR)/include/visit \
-         -I$(TOPDIR)/include/glew
+INCLUDE:=-I./tuvok -I./tuvok/3rdParty -I./tuvok/IO/3rdParty/boost \
+         -I./tuvok/IO/3rdParty \
+         -I$(TOPDIR)/include/visit -I$(TOPDIR)/include/glew
 DEFINES:=-DQT_SHARED -DTUVOK_NO_IO -DGLSL_DEBUG
 CXXFLAGS += $(QT_CXXFLAGS) $(INCLUDE) $(DEFINES)
 CFLAGS += -I./tuvok $(DEFINES)

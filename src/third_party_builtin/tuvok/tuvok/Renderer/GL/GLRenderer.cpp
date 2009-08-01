@@ -34,15 +34,23 @@
   \date    August 2008
 */
 
+#include <ctime>
+#include <typeinfo>
 #include "GLInclude.h"
+#include "GLFBOTex.h"
 #include "GLRenderer.h"
+#include "GLSLProgram.h"
+#include "GLTexture1D.h"
+#include "GLTexture2D.h"
+#include "GLTexture3D.h"
 #include <Controller/Controller.h>
 #include <Basics/SysTools.h>
-#include <ctime>
+#include "IO/uvfDataset.h"
 #include "../GPUMemMan/GPUMemMan.h"
-#include "GLDebug.h"
+#include "../../Basics/GeometryGenerator.h"
 
 using namespace std;
+using namespace tuvok;
 
 GLRenderer::GLRenderer(MasterController* pMasterController, bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits, bool bDisableBorder) :
   AbstrRenderer(pMasterController, bUseOnlyPowerOfTwo, bDownSampleTo8Bits, bDisableBorder),
@@ -51,19 +59,22 @@ GLRenderer::GLRenderer(MasterController* pMasterController, bool bUseOnlyPowerOf
   m_TargetBinder(pMasterController),
   m_p1DTransTex(NULL),
   m_p2DTransTex(NULL),
-  m_p1DData(NULL),
   m_p2DData(NULL),
   m_pFBO3DImageLast(NULL),
   m_iFilledBuffers(0),
   m_pLogoTex(NULL),
   m_pProgramIso(NULL),
+  m_pProgramColor(NULL),
   m_pProgramHQMIPRot(NULL),
   m_pProgramTrans(NULL),
   m_pProgram1DTransSlice(NULL),
   m_pProgram2DTransSlice(NULL),
+  m_pProgram1DTransSlice3D(NULL),
+  m_pProgram2DTransSlice3D(NULL),
   m_pProgramMIPSlice(NULL),
   m_pProgramTransMIP(NULL),
   m_pProgramIsoCompose(NULL),
+  m_pProgramColorCompose(NULL),
   m_pProgramCVCompose(NULL),
   m_pProgramComposeAnaglyphs(NULL)
 {
@@ -82,7 +93,6 @@ GLRenderer::GLRenderer(MasterController* pMasterController, bool bUseOnlyPowerOf
 }
 
 GLRenderer::~GLRenderer() {
-  delete [] m_p1DData;
   delete [] m_p2DData;
 }
 
@@ -92,23 +102,40 @@ bool GLRenderer::Initialize() {
     return false;
   }
 
-  string strPotential1DTransName = SysTools::ChangeExt(m_pDataset->Filename(), "1dt");
-  string strPotential2DTransName = SysTools::ChangeExt(m_pDataset->Filename(), "2dt");
+  // Try to guess filenames for a transfer functions.  We guess based on the
+  // filename of the dataset, but it could be the case that our client gave us
+  // an in-memory dataset.
+  std::string strPotential1DTransName;
+  std::string strPotential2DTransName;
+  try {
+    UVFDataset& ds = dynamic_cast<UVFDataset&>(*m_pDataset);
+    strPotential1DTransName = SysTools::ChangeExt(ds.Filename(), "1dt");
+    strPotential2DTransName = SysTools::ChangeExt(ds.Filename(), "2dt");
+  } catch(std::bad_cast) {
+    // Will happen when we don't have a file-backed dataset; just disable the
+    // filename-guessing / automatic TF loading feature.
+    strPotential1DTransName = "";
+    strPotential2DTransName = "";
+  }
 
   GPUMemMan &mm = *(Controller::Instance().MemMan());
   if (SysTools::FileExists(strPotential1DTransName)) {
-    mm.Get1DTransFromFile(strPotential1DTransName, this, &m_p1DTrans,
-                                                         &m_p1DTransTex);
+    MESSAGE("Loading 1D TF from file.");
+    mm.Get1DTransFromFile(strPotential1DTransName, this,
+                          &m_p1DTrans, &m_p1DTransTex,
+                          m_pDataset->Get1DHistogram().GetFilledSize());
   } else {
-    mm.GetEmpty1DTrans(m_pDataset->Get1DHistogram()->GetFilledSize(), this,
+    MESSAGE("Creating empty 1D TF.");
+    mm.GetEmpty1DTrans(m_pDataset->Get1DHistogram().GetFilledSize(), this,
                        &m_p1DTrans, &m_p1DTransTex);
   }
 
   if (SysTools::FileExists(strPotential2DTransName)) {
-    mm.Get2DTransFromFile(strPotential2DTransName, this, &m_p2DTrans,
-                                                         &m_p2DTransTex);
+    mm.Get2DTransFromFile(strPotential2DTransName, this,
+                          &m_p2DTrans, &m_p2DTransTex,
+                          m_pDataset->Get2DHistogram().GetFilledSize());
   } else {
-    mm.GetEmpty2DTrans(m_pDataset->Get2DHistogram()->GetFilledSize(), this,
+    mm.GetEmpty2DTrans(m_pDataset->Get2DHistogram().GetFilledSize(), this,
                        &m_p2DTrans, &m_p2DTransTex);
 
     // Setup a default polygon in the 2D TF, so it doesn't look like they're
@@ -139,10 +166,16 @@ bool GLRenderer::Initialize() {
                            m_vShaderSearchDirs, &(m_pProgram2DTransSlice)) ||
       !LoadAndVerifyShader("Transfer-VS.glsl", "MIP-slice-FS.glsl",
                            m_vShaderSearchDirs, &(m_pProgramMIPSlice))     ||
+      !LoadAndVerifyShader("SlicesIn3D.glsl", "1D-slice-FS.glsl",
+                           m_vShaderSearchDirs, &(m_pProgram1DTransSlice3D)) ||
+      !LoadAndVerifyShader("SlicesIn3D.glsl", "2D-slice-FS.glsl",
+                           m_vShaderSearchDirs, &(m_pProgram2DTransSlice3D)) ||
       !LoadAndVerifyShader("Transfer-VS.glsl", "Transfer-MIP-FS.glsl",
                            m_vShaderSearchDirs, &(m_pProgramTransMIP))     ||
       !LoadAndVerifyShader("Transfer-VS.glsl", "Compose-FS.glsl",
                            m_vShaderSearchDirs, &(m_pProgramIsoCompose))   ||
+      !LoadAndVerifyShader("Transfer-VS.glsl", "Compose-Color-FS.glsl",
+                           m_vShaderSearchDirs, &(m_pProgramColorCompose))   ||
       !LoadAndVerifyShader("Transfer-VS.glsl", "Compose-CV-FS.glsl",
                            m_vShaderSearchDirs, &(m_pProgramCVCompose))    ||
       !LoadAndVerifyShader("Transfer-VS.glsl", "Compose-Anaglyphs-FS.glsl",
@@ -166,6 +199,16 @@ bool GLRenderer::Initialize() {
     m_pProgram2DTransSlice->SetUniformVector("texTrans2D",1);
     m_pProgram2DTransSlice->Disable();
 
+    m_pProgram1DTransSlice3D->Enable();
+    m_pProgram1DTransSlice3D->SetUniformVector("texVolume",0);
+    m_pProgram1DTransSlice3D->SetUniformVector("texTrans1D",1);
+    m_pProgram1DTransSlice3D->Disable();
+
+    m_pProgram2DTransSlice3D->Enable();
+    m_pProgram2DTransSlice3D->SetUniformVector("texVolume",0);
+    m_pProgram2DTransSlice3D->SetUniformVector("texTrans2D",1);
+    m_pProgram2DTransSlice3D->Disable();
+
     m_pProgramMIPSlice->Enable();
     m_pProgramMIPSlice->SetUniformVector("texVolume",0);
     m_pProgramMIPSlice->Disable();
@@ -186,6 +229,14 @@ bool GLRenderer::Initialize() {
     m_pProgramIsoCompose->SetUniformVector("vLightDir",0.0f,0.0f,-1.0f);
     m_pProgramIsoCompose->SetUniformVector("vProjParam",vParams.x, vParams.y);
     m_pProgramIsoCompose->Disable();
+
+    m_pProgramColorCompose->Enable();
+    m_pProgramColorCompose->SetUniformVector("texRayHitPos",0);
+    m_pProgramColorCompose->SetUniformVector("texRayHitNormal",1);
+    m_pProgramColorCompose->SetUniformVector("vLightAmbient",0.2f,0.2f,0.2f);
+    m_pProgramColorCompose->SetUniformVector("vLightDir",0.0f,0.0f,-1.0f);
+    m_pProgramColorCompose->SetUniformVector("vProjParam",vParams.x, vParams.y);
+    m_pProgramColorCompose->Disable();
 
     m_pProgramCVCompose->Enable();
     m_pProgramCVCompose->SetUniformVector("texRayHitPos",0);
@@ -208,9 +259,23 @@ bool GLRenderer::Initialize() {
   return true;
 }
 
+void GLRenderer::Set1DTrans(const std::vector<unsigned char>& rgba)
+{
+  AbstrRenderer::Set1DTrans(rgba);
+
+  GPUMemMan& mm = *(Controller::Instance().MemMan());
+  std::pair<TransferFunction1D*, GLTexture1D*> tf;
+  tf = mm.SetExternal1DTrans(rgba, this);
+
+  m_p1DTrans = tf.first;
+  m_p1DTransTex = tf.second;
+}
+
 void GLRenderer::Changed1DTrans() {
-  m_p1DTrans->GetByteArray(&m_p1DData);
-  m_p1DTransTex->SetData(m_p1DData);
+  assert(m_p1DTransTex->GetSize() == m_p1DTrans->GetSize());
+
+  m_p1DTrans->GetByteArray(m_p1DData);
+  m_p1DTransTex->SetData(&m_p1DData.at(0));
 
   AbstrRenderer::Changed1DTrans();
 }
@@ -262,34 +327,32 @@ void GLRenderer::RenderSeperatingLines() {
 }
 
 void GLRenderer::ClearDepthBuffer() {
-  GL(glClear(GL_DEPTH_BUFFER_BIT));
+  glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void GLRenderer::ClearColorBuffer() {
-  GL(glDepthMask(GL_FALSE));
+  glDepthMask(GL_FALSE);
   if (m_bDoStereoRendering) {
-    // render anaglyphs against a black background only
-    GL(glClearColor(0,0,0,0));
-    GL(glClear(GL_COLOR_BUFFER_BIT));
+    // render anaglyphs agains a black background only
+    glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT);
   } else {
     if (m_vBackgroundColors[0] == m_vBackgroundColors[1]) {
-      GL(glClearColor(m_vBackgroundColors[0].x,m_vBackgroundColors[0].y,m_vBackgroundColors[0].z,0));
-      GL(glClear(GL_COLOR_BUFFER_BIT));
+      glClearColor(m_vBackgroundColors[0].x,m_vBackgroundColors[0].y,m_vBackgroundColors[0].z,0);
+      glClear(GL_COLOR_BUFFER_BIT);
     } else {
-      GL(glDisable(GL_BLEND));
+      glDisable(GL_BLEND);
       DrawBackGradient();
     }
   }
   DrawLogo();
-  GL(glDepthMask(GL_TRUE));
+  glDepthMask(GL_TRUE);
 }
 
 
 void GLRenderer::StartFrame() {
   // clear the framebuffer (if requested)
   if (m_bClearFramebuffer) ClearDepthBuffer();
-  GL(glEnable(GL_TEXTURE_3D));
-  assert(glIsEnabled(GL_TEXTURE_3D) != GL_FALSE);
 
   if (m_eRenderMode == RM_ISOSURFACE) {
     FLOATVECTOR2 vfWinSize = FLOATVECTOR2(m_vWinSize);
@@ -298,16 +361,19 @@ void GLRenderer::StartFrame() {
       m_pProgramCVCompose->SetUniformVector("vScreensize",vfWinSize.x, vfWinSize.y);
       m_pProgramCVCompose->Disable();
     } else {
-      m_pProgramIsoCompose->Enable();
-      m_pProgramIsoCompose->SetUniformVector("vScreensize",vfWinSize.x, vfWinSize.y);
-      m_pProgramIsoCompose->Disable();
+      GLSLProgram* shader = (m_pDataset->GetInfo().GetComponentCount() == 1) ? m_pProgramIsoCompose : m_pProgramColorCompose;
+
+      shader->Enable();
+      shader->SetUniformVector("vScreensize",vfWinSize.x, vfWinSize.y);
+      shader->Disable();
     }
 
     size_t iMaxValue        = m_p1DTrans->GetSize();
-    UINT32 iMaxRange        = UINT32(1<<m_pDataset->GetInfo()->GetBitWidth());
+    UINT32 iMaxRange        = UINT32(1<<m_pDataset->GetInfo().GetBitWidth());
     // if m_bDownSampleTo8Bits is enabled the full range from 0..255 -> 0..1 is used
-    m_fScaledIsovalue       = (m_pDataset->GetInfo()->GetBitWidth() != 8 && m_bDownSampleTo8Bits) ? 1.0f : m_fIsovalue * float(iMaxValue)/float(iMaxRange);
-    m_fScaledCVIsovalue     = (m_pDataset->GetInfo()->GetBitWidth() != 8 && m_bDownSampleTo8Bits) ? 1.0f : m_fCVIsovalue * float(iMaxValue)/float(iMaxRange);
+    m_fScaledIsovalue       = (m_pDataset->GetInfo().GetBitWidth() != 8 && m_bDownSampleTo8Bits) ? 1.0f : m_fIsovalue * float(iMaxValue)/float(iMaxRange);
+    m_fScaledCVIsovalue     = (m_pDataset->GetInfo().GetBitWidth() != 8 && m_bDownSampleTo8Bits) ? 1.0f : m_fCVIsovalue * float(iMaxValue)/float(iMaxRange);
+
   }
 }
 
@@ -330,13 +396,18 @@ void GLRenderer::Paint() {
                                 // plan the frame
                                 Plan3DFrame();
                                 // execute the frame
-                                bNewDataToShow = Execute3DFrame(RA_FULLSCREEN);
+                                float fMsecPassed = 0.0;
+                                bNewDataToShow = Execute3DFrame(RA_FULLSCREEN, fMsecPassed);
+                                if (m_iCurrentLODOffset == m_iStartLODOffset)
+                                  m_fMsecPassed[0] += fMsecPassed;
+                                if (m_iCurrentLODOffset == m_iStartLODOffset-1)
+                                  m_fMsecPassed[1] += fMsecPassed;
                               }
                               break;
                           }
-       case WM_SAGITTAL :
+       case WM_CORONAL :
        case WM_AXIAL    :
-       case WM_CORONAL  : if (m_bPerformRedraw) bNewDataToShow = Render2DView(RA_FULLSCREEN, m_eFullWindowMode, m_piSlice[size_t(m_eFullWindowMode)]); break;
+       case WM_SAGITTAL  : if (m_bPerformRedraw) bNewDataToShow = Render2DView(RA_FULLSCREEN, m_eFullWindowMode, m_piSlice[size_t(m_eFullWindowMode)]); break;
        default          : T_ERROR("Invalid Windowmode");
                           bNewDataToShow = false;
                           break;
@@ -363,15 +434,18 @@ void GLRenderer::Paint() {
                                   // plan the frame
                                   Plan3DFrame();
                                   // execute the frame
-                                  bLocalNewDataToShow = Execute3DFrame(eArea);
+                                  float fMsecPassed = 0.0;
+                                  bLocalNewDataToShow = Execute3DFrame(eArea, fMsecPassed);
+                                  if (m_iCurrentLODOffset == m_iStartLODOffset) m_fMsecPassed[0] += fMsecPassed;
+                                  if (m_iCurrentLODOffset == m_iStartLODOffset-1) m_fMsecPassed[1] += fMsecPassed;
                                 }
                                 // are we done traversing the LOD levels
                                 m_bRedrawMask[size_t(m_e2x2WindowMode[i])] = (m_vCurrentBrickList.size() > m_iBricksRenderedInThisSubFrame) || (m_iCurrentLODOffset > m_iMinLODForCurrentView);
                                 break;
                               }
-           case WM_SAGITTAL :
+           case WM_CORONAL :
            case WM_AXIAL    :
-           case WM_CORONAL  : bLocalNewDataToShow= Render2DView(eArea, m_e2x2WindowMode[i], m_piSlice[size_t(m_e2x2WindowMode[i])]);
+           case WM_SAGITTAL  : bLocalNewDataToShow= Render2DView(eArea, m_e2x2WindowMode[i], m_piSlice[size_t(m_e2x2WindowMode[i])]);
                               m_bRedrawMask[size_t(m_e2x2WindowMode[i])] = false;
                               break;
            default          : T_ERROR("Invalid Windowmode");
@@ -411,7 +485,7 @@ void GLRenderer::EndFrame(bool bNewDataToShow) {
       m_pFBO3DImageCurrent[1]->Read(1);
 
       m_TargetBinder.Bind(m_pFBO3DImageLast);
-      GL(glClear(GL_COLOR_BUFFER_BIT));
+      glClear(GL_COLOR_BUFFER_BIT);
 
       m_pProgramComposeAnaglyphs->Enable();
       glDisable(GL_DEPTH_TEST);
@@ -474,28 +548,30 @@ void GLRenderer::SetViewPort(UINTVECTOR2 viLowerLeft, UINTVECTOR2 viUpperRight) 
   UINTVECTOR2 viSize = viUpperRight-viLowerLeft;
 
   float fAspect =(float)viSize.x/(float)viSize.y;
-  float fFOVY  = 50.0f;
-  float fZNear = 0.1f;
-  float fZFar  = 100.0f;
-  FLOATVECTOR3 vEye(0,0,1.6f), vAt(0,0,0), vUp(0,1,0);
 
   // viewport
   glViewport(viLowerLeft.x,viLowerLeft.y,viSize.x,viSize.y);
 
   if (m_bDoStereoRendering) {
-    FLOATMATRIX4::BuildStereoLookAtAndProjection(vEye, vAt, vUp, fFOVY, fAspect, fZNear, fZFar, m_fStereoFocalLength, m_fStereoEyeDist, m_mView[0], m_mView[1], m_mProjection[0], m_mProjection[1]);
+    FLOATMATRIX4::BuildStereoLookAtAndProjection(m_vEye, m_vAt, m_vUp, m_fFOV,
+                                                 fAspect, m_fZNear, m_fZFar,
+                                                 m_fStereoFocalLength,
+                                                 m_fStereoEyeDist, m_mView[0],
+                                                 m_mView[1], m_mProjection[0],
+                                                 m_mProjection[1]);
   } else {
     // view matrix
-    m_mView[0].BuildLookAt(vEye, vAt, vUp);
+    m_mView[0].BuildLookAt(m_vEye, m_vAt, m_vUp);
 
     // projection matrix
-    m_mProjection[0].Perspective(fFOVY,fAspect,fZNear,fZFar);
+    m_mProjection[0].Perspective(m_fFOV, fAspect, m_fZNear, m_fZFar);
     m_mProjection[0].setProjection();
   }
 
   // forward the projection matrix to the culling object
   m_FrustumCullingLOD.SetProjectionMatrix(m_mProjection[0]);
-  m_FrustumCullingLOD.SetScreenParams(fFOVY,fAspect,fZNear,fZFar,viSize.y);
+  m_FrustumCullingLOD.SetScreenParams(m_fFOV, fAspect, m_fZNear, m_fZFar,
+                                      viSize.y);
 }
 
 
@@ -505,7 +581,7 @@ void GLRenderer::RenderSlice(EWindowMode eDirection, UINT64 iSliceIndex,
                              DOUBLEVECTOR2 vWinAspectRatio) {
 
   switch (eDirection) {
-    case WM_CORONAL : {
+    case WM_AXIAL : {
                           if (m_bFlipView[int(eDirection)].x) {
                               float fTemp = vMinCoords.x;
                               vMinCoords.x = vMaxCoords.x;
@@ -533,7 +609,7 @@ void GLRenderer::RenderSlice(EWindowMode eDirection, UINT64 iSliceIndex,
                           glEnd();
                           break;
                       }
-    case WM_AXIAL : {
+    case WM_CORONAL : {
                           if (m_bFlipView[int(eDirection)].x) {
                               float fTemp = vMinCoords.x;
                               vMinCoords.x = vMaxCoords.x;
@@ -633,10 +709,10 @@ bool GLRenderer::Render2DView(ERenderArea eREnderArea, EWindowMode eDirection, U
     UINT64 iCurrentLOD = 0;
     UINTVECTOR3 vVoxelCount;
 
-    for (UINT64 i = 0;i<m_pDataset->GetInfo()->GetLODLevelCount();i++) {
-      if (m_pDataset->GetInfo()->GetBrickCount(i).volume() == 1) {
+    for (UINT64 i = 0;i<m_pDataset->GetInfo().GetLODLevelCount();i++) {
+      if (m_pDataset->GetInfo().GetBrickCount(i).volume() == 1) {
           iCurrentLOD = i;
-          vVoxelCount = UINTVECTOR3(m_pDataset->GetInfo()->GetDomainSize(i));
+          vVoxelCount = UINTVECTOR3(m_pDataset->GetInfo().GetDomainSize(i));
       }
     }
 
@@ -660,8 +736,8 @@ bool GLRenderer::Render2DView(ERenderArea eREnderArea, EWindowMode eDirection, U
     FLOATVECTOR3 vMinCoords(0.5f/FLOATVECTOR3(vVoxelCount));
     FLOATVECTOR3 vMaxCoords(1.0f-vMinCoords);
 
-    UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo()->GetDomainSize();
-    DOUBLEVECTOR3 vAspectRatio = m_pDataset->GetInfo()->GetScale() * DOUBLEVECTOR3(vDomainSize);
+    UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo().GetDomainSize();
+    DOUBLEVECTOR3 vAspectRatio = m_pDataset->GetInfo().GetScale() * DOUBLEVECTOR3(vDomainSize);
 
     DOUBLEVECTOR2 vWinAspectRatio = 1.0 / DOUBLEVECTOR2(m_vWinSize);
     vWinAspectRatio = vWinAspectRatio / vWinAspectRatio.maxVal();
@@ -687,7 +763,7 @@ bool GLRenderer::Render2DView(ERenderArea eREnderArea, EWindowMode eDirection, U
   } else {
     if (m_bOrthoView) {
       FLOATMATRIX4 maOrtho;
-      UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo()->GetDomainSize();
+      UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo().GetDomainSize();
       DOUBLEVECTOR2 vWinAspectRatio = 1.0 / DOUBLEVECTOR2(m_vWinSize);
       vWinAspectRatio = vWinAspectRatio / vWinAspectRatio.maxVal();
       float fRoot2Scale = (vWinAspectRatio.x < vWinAspectRatio.y) ? max(1.0,1.414213f * vWinAspectRatio.x/vWinAspectRatio.y) : 1.414213f;
@@ -764,14 +840,14 @@ void GLRenderer::RenderHQMIPPreLoop(EWindowMode eDirection) {
   double dPI = 3.141592653589793238462643383;
   FLOATMATRIX4 matRotDir, matFlipX, matFlipY;
   switch (eDirection) {
-    case WM_CORONAL : {
+    case WM_SAGITTAL : {
                         matRotDir.RotationX(-dPI/2.0);
                         break;
                       }
     case WM_AXIAL : {
                         break;
                       }
-    case WM_SAGITTAL : {
+    case WM_CORONAL : {
                          FLOATMATRIX4 matTemp;
                          matRotDir.RotationX(-dPI/2.0);
                          matTemp.RotationY(-dPI/2.0);
@@ -791,8 +867,8 @@ void GLRenderer::RenderHQMIPPreLoop(EWindowMode eDirection) {
 }
 
 void GLRenderer::RenderBBox(const FLOATVECTOR4 vColor) {
-  UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo()->GetDomainSize();
-  FLOATVECTOR3 vScale = FLOATVECTOR3(m_pDataset->GetInfo()->GetScale());
+  UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo().GetDomainSize();
+  FLOATVECTOR3 vScale = FLOATVECTOR3(m_pDataset->GetInfo().GetScale());
   FLOATVECTOR3 vExtend = FLOATVECTOR3(vDomainSize) * vScale;
   vExtend /= vExtend.maxVal();
 
@@ -973,11 +1049,13 @@ void GLRenderer::PreSubframe(ERenderArea eRenderArea)
   m_mProjection[0].setProjection();
   m_matModelView[0].setModelview();
   BBoxPreRender();
+  PlaneIn3DPreRender();
   if (m_bDoStereoRendering) {
     m_TargetBinder.Bind(m_pFBO3DImageCurrent[1]);
     m_mProjection[1].setProjection();
     m_matModelView[1].setModelview();
     BBoxPreRender();
+    PlaneIn3DPreRender();
   }
   m_TargetBinder.Unbind();
 }
@@ -991,20 +1069,23 @@ void GLRenderer::PostSubframe()
   m_mProjection[0].setProjection();
   m_matModelView[0].setModelview();
   BBoxPostRender();
+  PlaneIn3DPostRender();
   RenderClipPlane(0);
   if (m_bDoStereoRendering) {
     m_TargetBinder.Bind(m_pFBO3DImageCurrent[1]);
     m_mProjection[1].setProjection();
     m_matModelView[1].setModelview();
     BBoxPostRender();
+    PlaneIn3DPostRender();
     RenderClipPlane(1);
   }
   m_TargetBinder.Unbind();
 }
 
-bool GLRenderer::Execute3DFrame(ERenderArea eRenderArea) {
+bool GLRenderer::Execute3DFrame(ERenderArea eRenderArea, float &fMsecPassed) {
   // are we starting a new LOD level?
   if (m_iBricksRenderedInThisSubFrame == 0) {
+    fMsecPassed = 0;
     PreSubframe(eRenderArea);
   }
 
@@ -1024,8 +1105,8 @@ bool GLRenderer::Execute3DFrame(ERenderArea eRenderArea) {
     // setup shaders vars
     SetDataDepShaderVars();
 
-    // Render a few bricks
-    Render3DView();
+    // Render a few bricks and return the time it took
+    fMsecPassed += Render3DView();
 
     // if there is nothing left todo in this subframe -> present the result
     if (m_vCurrentBrickList.size() == m_iBricksRenderedInThisSubFrame) {
@@ -1174,19 +1255,23 @@ void GLRenderer::Cleanup() {
     if (m_pFBOCVHit[i])            {m_pMasterController->MemMan()->FreeFBO(m_pFBOCVHit[i]);m_pFBOCVHit[i] = NULL;}
   }
 
-  if (m_pProgramTrans)        {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramTrans); m_pProgramTrans =NULL;}
-  if (m_pProgram1DTransSlice) {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram1DTransSlice); m_pProgram1DTransSlice =NULL;}
-  if (m_pProgram2DTransSlice) {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram2DTransSlice); m_pProgram2DTransSlice =NULL;}
-  if (m_pProgramMIPSlice)     {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramMIPSlice); m_pProgramMIPSlice =NULL;}
-  if (m_pProgramHQMIPRot)     {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramHQMIPRot); m_pProgramHQMIPRot =NULL;}
-  if (m_pProgramTransMIP)     {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramTransMIP); m_pProgramTransMIP =NULL;}
-  if (m_pProgram1DTrans[0])   {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram1DTrans[0]); m_pProgram1DTrans[0] =NULL;}
-  if (m_pProgram1DTrans[1])   {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram1DTrans[1]); m_pProgram1DTrans[1] =NULL;}
-  if (m_pProgram2DTrans[0])   {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram2DTrans[0]); m_pProgram2DTrans[0] =NULL;}
-  if (m_pProgram2DTrans[1])   {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram2DTrans[1]); m_pProgram2DTrans[1] =NULL;}
-  if (m_pProgramIso)          {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramIso); m_pProgramIso =NULL;}
-  if (m_pProgramIsoCompose)   {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramIsoCompose); m_pProgramIsoCompose = NULL;}
-  if (m_pProgramCVCompose)    {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramCVCompose); m_pProgramCVCompose = NULL;}
+  if (m_pProgramTrans)         {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramTrans); m_pProgramTrans =NULL;}
+  if (m_pProgram1DTransSlice)  {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram1DTransSlice); m_pProgram1DTransSlice =NULL;}
+  if (m_pProgram2DTransSlice)  {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram2DTransSlice); m_pProgram2DTransSlice =NULL;}
+  if (m_pProgram1DTransSlice3D){m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram1DTransSlice3D); m_pProgram1DTransSlice3D =NULL;}
+  if (m_pProgram2DTransSlice3D){m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram2DTransSlice3D); m_pProgram2DTransSlice3D =NULL;}
+  if (m_pProgramMIPSlice)      {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramMIPSlice); m_pProgramMIPSlice =NULL;}
+  if (m_pProgramHQMIPRot)      {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramHQMIPRot); m_pProgramHQMIPRot =NULL;}
+  if (m_pProgramTransMIP)      {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramTransMIP); m_pProgramTransMIP =NULL;}
+  if (m_pProgram1DTrans[0])    {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram1DTrans[0]); m_pProgram1DTrans[0] =NULL;}
+  if (m_pProgram1DTrans[1])    {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram1DTrans[1]); m_pProgram1DTrans[1] =NULL;}
+  if (m_pProgram2DTrans[0])    {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram2DTrans[0]); m_pProgram2DTrans[0] =NULL;}
+  if (m_pProgram2DTrans[1])    {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgram2DTrans[1]); m_pProgram2DTrans[1] =NULL;}
+  if (m_pProgramIso)           {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramIso); m_pProgramIso =NULL;}
+  if (m_pProgramColor)         {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramColor); m_pProgramColor =NULL;}
+  if (m_pProgramIsoCompose)    {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramIsoCompose); m_pProgramIsoCompose = NULL;}
+  if (m_pProgramColorCompose)  {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramColorCompose); m_pProgramColorCompose = NULL;}
+  if (m_pProgramCVCompose)     {m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramCVCompose); m_pProgramCVCompose = NULL;}
   if (m_pProgramComposeAnaglyphs){m_pMasterController->MemMan()->FreeGLSLProgram(m_pProgramComposeAnaglyphs); m_pProgramComposeAnaglyphs = NULL;}
 
   if (m_pLogoTex)             {m_pMasterController->MemMan()->FreeTexture(m_pLogoTex); m_pLogoTex =NULL;}
@@ -1271,14 +1356,13 @@ void GLRenderer::CreateOffscreenBuffers() {
                         break;
       }
       m_pFBOIsoHit[i]   = mm.GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP,
-                                    m_vWinSize.x, m_vWinSize.y, GL_RGBA16F_ARB,
-                                    2*4, true, 2);
+                                    m_vWinSize.x, m_vWinSize.y, GL_RGBA32F_ARB,
+                                    4*4, true, 2);
+
       m_pFBOCVHit[i]    = mm.GetFBO(GL_NEAREST, GL_NEAREST, GL_CLAMP,
                                     m_vWinSize.x, m_vWinSize.y, GL_RGBA16F_ARB,
                                     2*4, true, 2);
     }
-  } else {
-    WARNING("Window has no area; could not create FBOs.");
   }
 }
 
@@ -1291,14 +1375,14 @@ void GLRenderer::SetBrickDepShaderVarsSlice(const UINTVECTOR3& vVoxelCount) {
 
 // If we're downsampling the data, no scaling is needed, but otherwise we need
 // to scale the TF in the same manner that we've scaled the data.
-float GLRenderer::CalculateScaling() const
+float GLRenderer::CalculateScaling()
 {
-  size_t iMaxValue     = (m_pDataset->GetInfo()->GetBitWidth() != 8 &&
+  size_t iMaxValue     = (m_pDataset->GetInfo().GetBitWidth() != 8 &&
                           m_bDownSampleTo8Bits) ? 65536
                                                 : m_p1DTrans->GetSize();
-  UINT32 iMaxRange     = UINT32(1<<m_pDataset->GetInfo()->GetBitWidth());
+  UINT32 iMaxRange     = UINT32(1<<m_pDataset->GetInfo().GetBitWidth());
 
-  return (m_pDataset->GetInfo()->GetBitWidth() != 8 && m_bDownSampleTo8Bits)
+  return (m_pDataset->GetInfo().GetBitWidth() != 8 && m_bDownSampleTo8Bits)
          ? 1.0f
          : float(iMaxRange)/float(iMaxValue);
 }
@@ -1308,7 +1392,8 @@ void GLRenderer::SetDataDepShaderVars() {
 
   // if m_bDownSampleTo8Bits is enabled the full range from 0..255 -> 0..1 is used
   float fScale         = CalculateScaling();
-  float fGradientScale = 1.0f/m_pDataset->GetMaxGradMagnitude();
+  float fGradientScale = (m_pDataset->MaxGradientMagnitude() == 0) ?
+                          1.0f : 1.0f/m_pDataset->MaxGradientMagnitude();
 
   MESSAGE("Transfer function scaling factor: %5.3f", fScale);
   MESSAGE("Gradient scaling factor: %5.3f", fGradientScale);
@@ -1318,43 +1403,56 @@ void GLRenderer::SetDataDepShaderVars() {
   m_pProgramTransMIP->Disable();
 
   switch (m_eRenderMode) {
-    case RM_1DTRANS    :  {
-                            m_pProgram1DTransSlice->Enable();
-                            m_pProgram1DTransSlice->SetUniformVector("fTransScale",fScale);
-                            m_pProgram1DTransSlice->Disable();
+    case RM_1DTRANS: {
+      m_pProgram1DTransSlice->Enable();
+      m_pProgram1DTransSlice->SetUniformVector("fTransScale",fScale);
+      m_pProgram1DTransSlice->Disable();
 
-                            m_pProgram1DTrans[m_bUseLighting ? 1 : 0]->Enable();
-                            m_pProgram1DTrans[m_bUseLighting ? 1 : 0]->SetUniformVector("fTransScale",fScale);
-                            m_pProgram1DTrans[m_bUseLighting ? 1 : 0]->Disable();
-                            break;
-                          }
-    case RM_2DTRANS    :  {
-                            m_pProgram2DTransSlice->Enable();
-                            m_pProgram2DTransSlice->SetUniformVector("fTransScale",fScale);
-                            m_pProgram2DTransSlice->SetUniformVector("fGradientScale",fGradientScale);
-                            m_pProgram2DTransSlice->Disable();
+      m_pProgram1DTransSlice3D->Enable();
+      m_pProgram1DTransSlice3D->SetUniformVector("fTransScale",fScale);
+      m_pProgram1DTransSlice3D->Disable();
 
-                            m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->Enable();
-                            m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->SetUniformVector("fTransScale",fScale);
-                            m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->SetUniformVector("fGradientScale",fGradientScale);
-                            m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->Disable();
-                            break;
-                          }
-    case RM_ISOSURFACE : {
-                            // since we are rendering the 2 slices with the 1d
-                            // transfer function in iso mode, update that
-                            // shader also
-                            m_pProgram1DTransSlice->Enable();
-                            m_pProgram1DTransSlice->SetUniformVector("fTransScale",fScale);
-                            m_pProgram1DTransSlice->Disable();
+      m_pProgram1DTrans[m_bUseLighting ? 1 : 0]->Enable();
+      m_pProgram1DTrans[m_bUseLighting ? 1 : 0]->SetUniformVector("fTransScale",fScale);
+      m_pProgram1DTrans[m_bUseLighting ? 1 : 0]->Disable();
+      break;
+    }
+    case RM_2DTRANS: {
+      m_pProgram2DTransSlice->Enable();
+      m_pProgram2DTransSlice->SetUniformVector("fTransScale",fScale);
+      m_pProgram2DTransSlice->SetUniformVector("fGradientScale",fGradientScale);
+      m_pProgram2DTransSlice->Disable();
 
-                            m_pProgramIso->Enable();
-                            m_pProgramIso->SetUniformVector("fIsoval",m_fScaledIsovalue);
-                            m_pProgramIso->Disable();
-                            break;
-                          }
-    case RM_INVALID    :  T_ERROR("Invalid rendermode set");
-                          break;
+      m_pProgram2DTransSlice3D->Enable();
+      m_pProgram2DTransSlice3D->SetUniformVector("fTransScale",fScale);
+      m_pProgram2DTransSlice3D->SetUniformVector("fGradientScale",fGradientScale);
+      m_pProgram2DTransSlice3D->Disable();
+
+      m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->Enable();
+      m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->SetUniformVector("fTransScale",fScale);
+      m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->SetUniformVector("fGradientScale",fGradientScale);
+      m_pProgram2DTrans[m_bUseLighting ? 1 : 0]->Disable();
+      break;
+    }
+    case RM_ISOSURFACE: {
+      // as we are rendering the 2 slices with the 1d transferfunction
+      // in iso mode update that shader also
+      m_pProgram1DTransSlice->Enable();
+      m_pProgram1DTransSlice->SetUniformVector("fTransScale",fScale);
+      m_pProgram1DTransSlice->Disable();
+
+      m_pProgram1DTransSlice3D->Enable();
+      m_pProgram1DTransSlice3D->SetUniformVector("fTransScale",fScale);
+      m_pProgram1DTransSlice3D->Disable();
+
+      GLSLProgram* shader = (m_pDataset->GetInfo().GetComponentCount() == 1) ? m_pProgramIso : m_pProgramColor;
+
+      shader->Enable();
+      shader->SetUniformVector("fIsoval",m_fScaledIsovalue);
+      shader->Disable();
+      break;
+    }
+    case RM_INVALID: T_ERROR("Invalid rendermode set"); break;
   }
 
   MESSAGE("Done");
@@ -1372,14 +1470,19 @@ bool GLRenderer::LoadAndVerifyShader(string strVSFile, string strFSFile, const s
   for (size_t i = 0;i<strDirs.size();i++) {
     string strCompleteVSFile = strDirs[i] + "/" + strVSFile;
     string strCompleteFSFile = strDirs[i] + "/" + strFSFile;
+    MESSAGE("Searching for shaders in %s ...", strDirs[i].c_str());
 
-    if (LoadAndVerifyShader(strCompleteVSFile, strCompleteFSFile, pShaderProgram, false))
+    if (LoadAndVerifyShader(strCompleteVSFile, strCompleteFSFile,
+                            pShaderProgram, false)) {
       return true;
-
-    MESSAGE("Shader %s not found.", strCompleteVSFile.c_str());
+    }
   }
 
   // if all else fails probe current directory and all of its subdirectories
+  WARNING("Shader combination %s and %s not found "
+          "in any of the given search directories, "
+          "now scanning current diretory and all of its subdirectories "
+          "as a final attempt.", strVSFile.c_str(), strFSFile.c_str());
   if (LoadAndVerifyShader(strVSFile, strFSFile, pShaderProgram, true))
     return true;
   else
@@ -1388,7 +1491,7 @@ bool GLRenderer::LoadAndVerifyShader(string strVSFile, string strFSFile, const s
 
 bool GLRenderer::LoadAndVerifyShader(string strVSFile, string strFSFile, GLSLProgram** pShaderProgram, bool bSearchSubdirs) {
 
-#ifdef TUVOK_OS_APPLE
+#ifdef DETECTED_OS_APPLE
   if (SysTools::FileExists(SysTools::GetFromResourceOnMac(strVSFile))) strVSFile = SysTools::GetFromResourceOnMac(strVSFile);
   if (SysTools::FileExists(SysTools::GetFromResourceOnMac(strFSFile))) strFSFile = SysTools::GetFromResourceOnMac(strFSFile);
 #endif
@@ -1518,6 +1621,162 @@ void GLRenderer::BBoxPostRender() {
   }
 }
 
+void GLRenderer::PlaneIn3DPreRender() {
+  if (!m_bRenderPlanesIn3D) return;
+
+  // for rendering modes other than isosurface render the planes in the first
+  // pass once to init the depth buffer.  for isosurface rendering we can go
+  // ahead and render the planes directly as isosurfacing writes out correct
+  // depth values
+  if (m_eRenderMode != RM_ISOSURFACE || m_bDoClearView ||
+      m_bAvoidSeperateCompositing) {
+    glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+    RenderPlanesIn3D(true);
+    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+  } else {
+    glDisable(GL_BLEND);
+    RenderPlanesIn3D(false);
+  }
+}
+
+void GLRenderer::PlaneIn3DPostRender() {
+  if (!m_bRenderPlanesIn3D) return;
+  // Not required for isosurfacing, since we use the depth buffer for
+  // occluding/showing the planes
+  if (m_eRenderMode != RM_ISOSURFACE || m_bDoClearView || m_bAvoidSeperateCompositing) {
+    glEnable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    RenderPlanesIn3D(false);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+  }
+}
+
+void GLRenderer::RenderPlanesIn3D(bool bDepthPassOnly) {
+
+
+  UINT64VECTOR3 vDomainSize = m_pDataset->GetInfo().GetDomainSize();
+  FLOATVECTOR3 vScale = FLOATVECTOR3(m_pDataset->GetInfo().GetScale());
+  FLOATVECTOR3 vExtend = FLOATVECTOR3(vDomainSize) * vScale;
+  vExtend /= vExtend.maxVal();
+
+
+  FLOATVECTOR3 vMinPoint = -vExtend/2.0, vMaxPoint = vExtend/2.0;
+
+  FLOATVECTOR3 vfSliceIndex = FLOATVECTOR3(m_piSlice[0],m_piSlice[1],m_piSlice[2])/FLOATVECTOR3(vDomainSize);
+
+
+  FLOATVECTOR3 vfPlanePos = vMinPoint * (1.0f-vfSliceIndex) + vMaxPoint * vfSliceIndex;
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_DEPTH_TEST);
+
+  glDepthFunc(GL_LEQUAL);
+  glLineWidth(2);
+
+  glBegin(GL_LINE_LOOP);
+    if (!bDepthPassOnly) glColor4f(1,1,1,1);
+    glVertex3f(vfPlanePos.x, vMinPoint.y, vMaxPoint.z);
+    glVertex3f(vfPlanePos.x, vMinPoint.y, vMinPoint.z);
+    glVertex3f(vfPlanePos.x, vMaxPoint.y, vMinPoint.z);
+    glVertex3f(vfPlanePos.x, vMaxPoint.y, vMaxPoint.z);
+  glEnd();
+  glBegin(GL_LINE_LOOP);
+    glVertex3f(vMaxPoint.x, vfPlanePos.y, vMinPoint.z);
+    glVertex3f(vMinPoint.x, vfPlanePos.y, vMinPoint.z);
+    glVertex3f(vMinPoint.x, vfPlanePos.y, vMaxPoint.z);
+    glVertex3f(vMaxPoint.x, vfPlanePos.y, vMaxPoint.z);
+  glEnd();
+  glBegin(GL_LINE_LOOP);
+    glVertex3f(vMaxPoint.x, vMinPoint.y, vfPlanePos.z);
+    glVertex3f(vMinPoint.x, vMinPoint.y, vfPlanePos.z);
+    glVertex3f(vMinPoint.x, vMaxPoint.y, vfPlanePos.z);
+    glVertex3f(vMaxPoint.x, vMaxPoint.y, vfPlanePos.z);
+  glEnd();
+
+  glLineWidth(1);
+
+  /*
+
+  /// \todo fix this: this code fills the clip planes in 3D
+            view with the 3D texture sice, while this works
+            fine with the SBVR it does not work at present
+            with the ray-caster until the raycaster takes
+            the depth buffer into account for transferfunction
+            rendering (iso-surfaces work)
+
+  GLTexture3D* t = NULL;
+
+  if (!bDepthPassOnly) {
+    switch (m_eRenderMode) {
+      case RM_2DTRANS    :  m_p2DTransTex->Bind(1);
+                            m_pProgram2DTransSlice3D->Enable();
+                            break;
+      default            :  m_p1DTransTex->Bind(1);
+                            m_pProgram1DTransSlice3D->Enable();
+                            break;
+    }
+
+    UINT64 iCurrentLOD = 0;
+    UINTVECTOR3 vVoxelCount;
+    for (UINT64 i = 0;i<m_pDataset->GetInfo().GetLODLevelCount();i++) {
+      if (m_pDataset->GetInfo().GetBrickCount(i).volume() == 1) {
+          iCurrentLOD = i;
+          vVoxelCount = UINTVECTOR3(m_pDataset->GetInfo().GetDomainSize(i));
+      }
+    }
+    // convert 3D variables to the more general ND scheme used in the memory manager, i.e. convert 3-vectors to stl vectors
+    vector<UINT64> vLOD; vLOD.push_back(iCurrentLOD);
+    vector<UINT64> vBrick;
+    vBrick.push_back(0);vBrick.push_back(0);vBrick.push_back(0);
+
+    // get the 3D texture from the memory manager
+    t = m_pMasterController->MemMan()->Get3DTexture(m_pDataset, vLOD, vBrick, m_bUseOnlyPowerOfTwo, m_bDownSampleTo8Bits, m_bDisableBorder, 0, m_iFrameCounter);
+    if(t) t->Bind(0);
+  }
+
+  glBegin(GL_QUADS);
+    glTexCoord3f(vfSliceIndex.x,0,1);
+    glVertex3f(vfPlanePos.x, vMinPoint.y, vMaxPoint.z);
+    glTexCoord3f(vfSliceIndex.x,0,0);
+    glVertex3f(vfPlanePos.x, vMinPoint.y, vMinPoint.z);
+    glTexCoord3f(vfSliceIndex.x,1,0);
+    glVertex3f(vfPlanePos.x, vMaxPoint.y, vMinPoint.z);
+    glTexCoord3f(vfSliceIndex.x,1,1);
+    glVertex3f(vfPlanePos.x, vMaxPoint.y, vMaxPoint.z);
+  glEnd();
+  glBegin(GL_QUADS);
+    glTexCoord3f(1,vfSliceIndex.y,0);
+    glVertex3f(vMaxPoint.x, vfPlanePos.y, vMinPoint.z);
+    glTexCoord3f(0,vfSliceIndex.y,0);
+    glVertex3f(vMinPoint.x, vfPlanePos.y, vMinPoint.z);
+    glTexCoord3f(0,vfSliceIndex.y,1);
+    glVertex3f(vMinPoint.x, vfPlanePos.y, vMaxPoint.z);
+    glTexCoord3f(1,vfSliceIndex.y,1);
+    glVertex3f(vMaxPoint.x, vfPlanePos.y, vMaxPoint.z);
+  glEnd();
+  glBegin(GL_QUADS);
+    glTexCoord3f(1,0,vfSliceIndex.z);
+    glVertex3f(vMaxPoint.x, vMinPoint.y, vfPlanePos.z);
+    glTexCoord3f(0,0,vfSliceIndex.z);
+    glVertex3f(vMinPoint.x, vMinPoint.y, vfPlanePos.z);
+    glTexCoord3f(0,1,vfSliceIndex.z);
+    glVertex3f(vMinPoint.x, vMaxPoint.y, vfPlanePos.z);
+    glTexCoord3f(1,1,vfSliceIndex.z);
+    glVertex3f(vMaxPoint.x, vMaxPoint.y, vfPlanePos.z);
+  glEnd();
+
+  if (!bDepthPassOnly) {
+    switch (m_eRenderMode) {
+      case RM_2DTRANS    :  m_pProgram2DTransSlice3D->Disable(); break;
+      default            :  m_pProgram1DTransSlice3D->Disable(); break;
+    }
+
+    m_pMasterController->MemMan()->Release3DTexture(t);
+  }
+*/
+  glDepthFunc(GL_LESS);
+}
+
 /** Renders the currently configured clip plane.
  * The plane logic is mostly handled by ExtendedPlane::Quad: though we only
  * need the plane's normal to clip things, we store an orthogonal vector for
@@ -1596,10 +1855,12 @@ void GLRenderer::Recompose3DView(ERenderArea eArea) {
   m_mProjection[0].setProjection();
   m_matModelView[0].setModelview();
   BBoxPreRender();
+  PlaneIn3DPreRender();
   Render3DPreLoop();
   Render3DPostLoop();
   ComposeSurfaceImage(0);
   BBoxPostRender();
+  PlaneIn3DPostRender();
   RenderClipPlane(0);
 
   if (m_bDoStereoRendering) {
@@ -1607,26 +1868,33 @@ void GLRenderer::Recompose3DView(ERenderArea eArea) {
     m_mProjection[1].setProjection();
     m_matModelView[1].setModelview();
     BBoxPreRender();
+    PlaneIn3DPreRender();
     Render3DPreLoop();
     Render3DPostLoop();
     ComposeSurfaceImage(1);
     BBoxPostRender();
+    PlaneIn3DPostRender();
     RenderClipPlane(1);
   }
   m_TargetBinder.Unbind();
 }
 
-void GLRenderer::Render3DView() {
+float GLRenderer::Render3DView() {
   Render3DPreLoop();
 
   // loop over all bricks in the current LOD level
   clock_t timeStart, timeProbe;
   timeStart = timeProbe = clock();
+  UINT32 bricks_this_call = 0;
+  float fMsecPassed = 0;
 
-  while (m_vCurrentBrickList.size() > m_iBricksRenderedInThisSubFrame && float(timeProbe-timeStart)*1000.0f/float(CLOCKS_PER_SEC) < m_iTimeSliceMSecs) {
-    MESSAGE("  Brick %i of %i", int(m_iBricksRenderedInThisSubFrame+1),int(m_vCurrentBrickList.size()));
+  while (m_vCurrentBrickList.size() > m_iBricksRenderedInThisSubFrame &&
+         fMsecPassed < m_iTimeSliceMSecs) {
+    MESSAGE("  Brick %i of %i", int(m_iBricksRenderedInThisSubFrame+1),
+                                int(m_vCurrentBrickList.size()));
 
-    // convert 3D variables to the more general ND scheme used in the memory manager, e.i. convert 3-vectors to stl vectors
+    // convert 3D variables to the more general ND scheme used in the
+    // memory manager, i.e. convert 3-vectors to STL vectors
     vector<UINT64> vLOD; vLOD.push_back(m_iCurrentLOD);
     vector<UINT64> vBrick;
     vBrick.push_back(m_vCurrentBrickList[m_iBricksRenderedInThisSubFrame].vCoords.x);
@@ -1634,38 +1902,50 @@ void GLRenderer::Render3DView() {
     vBrick.push_back(m_vCurrentBrickList[m_iBricksRenderedInThisSubFrame].vCoords.z);
 
     // get the 3D texture from the memory manager
-    GLTexture3D* t = m_pMasterController->MemMan()->Get3DTexture(m_pDataset, vLOD, vBrick, m_bUseOnlyPowerOfTwo, m_bDownSampleTo8Bits, m_bDisableBorder, m_iIntraFrameCounter++, m_iFrameCounter);
-    if(t) t->Bind(0);
+    GPUMemMan &mm = *(m_pMasterController->MemMan());
+    GLTexture3D* t = mm.Get3DTexture(m_pDataset, vLOD, vBrick,
+                                     m_bUseOnlyPowerOfTwo,
+                                     m_bDownSampleTo8Bits, m_bDisableBorder,
+                                     m_iIntraFrameCounter++, m_iFrameCounter);
+
+    if(t) { t->Bind(0); }
 
     Render3DInLoop(m_iBricksRenderedInThisSubFrame,0);
     if (m_bDoStereoRendering) {
-
-      if (m_vLeftEyeBrickList[m_iBricksRenderedInThisSubFrame].vCoords != m_vCurrentBrickList[m_iBricksRenderedInThisSubFrame].vCoords) {
+      if (m_vLeftEyeBrickList[m_iBricksRenderedInThisSubFrame].vCoords !=
+          m_vCurrentBrickList[m_iBricksRenderedInThisSubFrame].vCoords) {
         vBrick.clear();
         vBrick.push_back(m_vLeftEyeBrickList[m_iBricksRenderedInThisSubFrame].vCoords.x);
         vBrick.push_back(m_vLeftEyeBrickList[m_iBricksRenderedInThisSubFrame].vCoords.y);
         vBrick.push_back(m_vLeftEyeBrickList[m_iBricksRenderedInThisSubFrame].vCoords.z);
 
-        m_pMasterController->MemMan()->Release3DTexture(t);
-        t = m_pMasterController->MemMan()->Get3DTexture(m_pDataset, vLOD, vBrick, m_bUseOnlyPowerOfTwo, m_bDownSampleTo8Bits, m_bDisableBorder, m_iIntraFrameCounter++, m_iFrameCounter);
-        if(t) t->Bind(0);
+        mm.Release3DTexture(t);
+        t = mm.Get3DTexture(m_pDataset, vLOD, vBrick, m_bUseOnlyPowerOfTwo,
+                            m_bDownSampleTo8Bits, m_bDisableBorder,
+                            m_iIntraFrameCounter++, m_iFrameCounter);
+        if(t) { t->Bind(0); }
       }
+
       Render3DInLoop(m_iBricksRenderedInThisSubFrame,1);
     }
 
     // release the 3D texture
-    m_pMasterController->MemMan()->Release3DTexture(t);
+    mm.Release3DTexture(t);
 
     // count the bricks rendered
     m_iBricksRenderedInThisSubFrame++;
 
     // time this loop
     if (!m_bCaptureMode) timeProbe = clock();
+    ++bricks_this_call;
+
+    fMsecPassed += float(timeProbe-timeStart)*1000.0f/float(CLOCKS_PER_SEC);
   }
 
   Render3DPostLoop();
 
-  if (m_eRenderMode == RM_ISOSURFACE && m_vCurrentBrickList.size() == m_iBricksRenderedInThisSubFrame) {
+  if (m_eRenderMode == RM_ISOSURFACE &&
+      m_vCurrentBrickList.size() ==m_iBricksRenderedInThisSubFrame) {
     m_TargetBinder.Bind(m_pFBO3DImageCurrent[0]);
     ComposeSurfaceImage(0);
     if (m_bDoStereoRendering) {
@@ -1674,14 +1954,20 @@ void GLRenderer::Render3DView() {
     }
     m_TargetBinder.Unbind();
   }
+
+  return fMsecPassed;
 }
 
 void GLRenderer::SetLogoParams(std::string strLogoFilename, int iLogoPos) {
   AbstrRenderer::SetLogoParams(strLogoFilename, iLogoPos);
 
-  if (m_pLogoTex) {m_pMasterController->MemMan()->FreeTexture(m_pLogoTex); m_pLogoTex =NULL;}
+  GPUMemMan &mm = *(m_pMasterController->MemMan());
+  if (m_pLogoTex) {
+    mm.FreeTexture(m_pLogoTex);
+    m_pLogoTex =NULL;
+  }
   if (m_strLogoFilename != "")
-  m_pLogoTex = m_pMasterController->MemMan()->Load2DTextureFromFile(m_strLogoFilename);
+    m_pLogoTex = mm.Load2DTextureFromFile(m_strLogoFilename);
   ScheduleWindowRedraw(WM_3D);
 }
 
@@ -1693,16 +1979,25 @@ void GLRenderer::ComposeSurfaceImage(int iStereoID) {
 
   if (m_bDoClearView) {
     m_pProgramCVCompose->Enable();
-    m_pProgramCVCompose->SetUniformVector("vLightDiffuse",m_vIsoColor.x, m_vIsoColor.y, m_vIsoColor.z);
-    m_pProgramCVCompose->SetUniformVector("vLightDiffuse2",m_vCVColor.x, m_vCVColor.y, m_vCVColor.z);
-    m_pProgramCVCompose->SetUniformVector("vCVParam",m_fCVSize, m_fCVContextScale, m_fCVBorderScale);
-    m_pProgramCVCompose->SetUniformVector("vCVPickPos", m_vCVPos.x, m_vCVPos.y);
+    m_pProgramCVCompose->SetUniformVector("vLightDiffuse", m_vIsoColor.x,
+                                          m_vIsoColor.y, m_vIsoColor.z);
+    m_pProgramCVCompose->SetUniformVector("vLightDiffuse2",m_vCVColor.x,
+                                          m_vCVColor.y, m_vCVColor.z);
+    m_pProgramCVCompose->SetUniformVector("vCVParam",m_fCVSize,
+                                          m_fCVContextScale, m_fCVBorderScale);
+    m_pProgramCVCompose->SetUniformVector("vCVPickPos", m_vCVPos.x,
+                                                        m_vCVPos.y);
     m_pFBOCVHit[iStereoID]->Read(2, 0);
     m_pFBOCVHit[iStereoID]->Read(3, 1);
     glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
   } else {
-    m_pProgramIsoCompose->Enable();
-    m_pProgramIsoCompose->SetUniformVector("vLightDiffuse",m_vIsoColor.x, m_vIsoColor.y, m_vIsoColor.z);
+    if (m_pDataset->GetInfo().GetComponentCount() == 1) {
+      m_pProgramIsoCompose->Enable();
+      m_pProgramIsoCompose->SetUniformVector("vLightDiffuse",m_vIsoColor.x,
+                                             m_vIsoColor.y, m_vIsoColor.z);
+    } else {
+      m_pProgramColorCompose->Enable();
+    }
   }
 
   glBegin(GL_QUADS);
@@ -1720,7 +2015,12 @@ void GLRenderer::ComposeSurfaceImage(int iStereoID) {
     m_pFBOCVHit[iStereoID]->FinishRead(0);
     m_pFBOCVHit[iStereoID]->FinishRead(1);
     m_pProgramCVCompose->Disable();
-  } else m_pProgramIsoCompose->Disable();
+  } else {
+    if (m_pDataset->GetInfo().GetComponentCount() == 1)
+      m_pProgramIsoCompose->Disable();
+    else
+      m_pProgramColorCompose->Disable();
+  }
 
   m_pFBOIsoHit[iStereoID]->FinishRead(1);
   m_pFBOIsoHit[iStereoID]->FinishRead(0);

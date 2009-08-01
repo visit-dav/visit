@@ -33,26 +33,40 @@
            University of Utah
   \date    August 2008
 */
-
 #pragma once
 
-#ifndef GPUMEMMAN_H
-#define GPUMEMMAN_H
+#ifndef TUVOK_GPUMEMMAN_H
+#define TUVOK_GPUMEMMAN_H
 
+#include <deque>
+#include <utility>
 #include "../../StdTuvokDefines.h"
+#include "GL/glew.h"
+#include "Basics/Vectors.h"
 #include "GPUMemManDataStructs.h"
 
+class AbstrRenderer;
+class GLFBOTex;
+class GLSLProgram;
+class GLTexture1D;
+class GLTexture2D;
+class GLTexture3D;
 class MasterController;
 class SystemInfo;
+class TransferFunction1D;
+class TransferFunction2D;
+namespace tuvok {
+  class Dataset;
+};
 
 class GPUMemMan {
   public:
     GPUMemMan(MasterController* masterController);
     virtual ~GPUMemMan();
 
-    VolumeDataset* LoadDataset(const std::string& strFilename,
-                               AbstrRenderer* requester);
-    void FreeDataset(VolumeDataset* pVolumeDataset, AbstrRenderer* requester);
+    tuvok::Dataset* LoadDataset(const std::string& strFilename,
+                                AbstrRenderer* requester);
+    void FreeDataset(tuvok::Dataset* pVolumeDataset, AbstrRenderer* requester);
 
     void Changed1DTrans(AbstrRenderer* requester,
                         TransferFunction1D* pTransferFunction1D);
@@ -62,7 +76,10 @@ class GPUMemMan {
     void Get1DTransFromFile(const std::string& strFilename,
                             AbstrRenderer* requester,
                             TransferFunction1D** ppTransferFunction1D,
-                            GLTexture1D** tex);
+                            GLTexture1D** tex, size_t iSize=0);
+    std::pair<TransferFunction1D*, GLTexture1D*>
+    SetExternal1DTrans(const std::vector<unsigned char>& rgba,
+                       AbstrRenderer* requester);
     GLTexture1D* Access1DTrans(TransferFunction1D* pTransferFunction1D,
                                AbstrRenderer* requester);
     void Free1DTrans(TransferFunction1D* pTransferFunction1D,
@@ -70,14 +87,14 @@ class GPUMemMan {
 
     void Changed2DTrans(AbstrRenderer* requester,
                         TransferFunction2D* pTransferFunction2D);
-    void GetEmpty2DTrans(const VECTOR2<size_t>& iSize,
+    void GetEmpty2DTrans(const VECTOR2<size_t>& vSize,
                          AbstrRenderer* requester,
                          TransferFunction2D** ppTransferFunction2D,
                          GLTexture2D** tex);
     void Get2DTransFromFile(const std::string& strFilename,
                             AbstrRenderer* requester,
                             TransferFunction2D** ppTransferFunction2D,
-                            GLTexture2D** tex);
+                            GLTexture2D** tex, const VECTOR2<size_t>& iSize = VECTOR2<size_t>(0,0));
     GLTexture2D* Access2DTrans(TransferFunction2D* pTransferFunction2D,
                                AbstrRenderer* requester);
     void Free2DTrans(TransferFunction2D* pTransferFunction2D,
@@ -86,13 +103,21 @@ class GPUMemMan {
     GLTexture2D* Load2DTextureFromFile(const std::string& strFilename);
     void FreeTexture(GLTexture2D* pTexture);
 
-    GLTexture3D* Get3DTexture(VolumeDataset* pDataset,
+    GLTexture3D* Get3DTexture(tuvok::Dataset* pDataset,
                               const std::vector<UINT64>& vLOD,
                               const std::vector<UINT64>& vBrick,
                               bool bUseOnlyPowerOfTwo, bool bDownSampleTo8Bits,
                               bool bDisableBorder, UINT64 iIntraFrameCounter,
                               UINT64 iFrameCounter);
-    bool IsResident(const VolumeDataset* pDataset,
+    GLTexture3D* AllocOrGet3DTexture(tuvok::Dataset* pDataset,
+                                     const std::vector<UINT64>& vLOD,
+                                     const std::vector<UINT64>& vBrick,
+                                     bool bUseOnlyPowerOfTwo,
+                                     bool bDownSampleTo8Bits,
+                                     bool bDisableBorder,
+                                     UINT64 iIntraFrameCounter,
+                                     UINT64 iFrameCounter);
+    bool IsResident(const tuvok::Dataset* pDataset,
                     const std::vector<UINT64>& vLOD,
                     const std::vector<UINT64>& vBrick, bool bUseOnlyPowerOfTwo,
                     bool bDownSampleTo8Bits, bool bDisableBorder) const;
@@ -141,8 +166,13 @@ class GPUMemMan {
     UINT64            m_iAllocatedCPUMemory;
     UINT64            m_iFrameCounter;
 
-    void FreeAssociatedTextures(VolumeDataset* pDataset);
+    std::vector<unsigned char> m_vUploadHub;
+
+    size_t DeleteUnusedBricks();
+    void DeleteArbitraryBrick();
+    void FreeAssociatedTextures(tuvok::Dataset* pDataset);
     void Delete3DTexture(size_t iIndex);
+    void Delete3DTexture(const Texture3DListIter &tex);
 };
 
-#endif // GPUMEMMAN_H
+#endif // TUVOK_GPUMEMMAN_H
