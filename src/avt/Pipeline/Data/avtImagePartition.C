@@ -94,6 +94,10 @@ void          QuicksortTuple3(Tuple3 *, int);
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Tom Fogal, Wed Jun 17 19:05:26 MDT 2009
+//    Account for change to vectors.
+//
 // ****************************************************************************
 
 avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
@@ -124,20 +128,16 @@ avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
     }
     thisPartition = thisProcessor;
 
-    ptpAssignments   = new int[numProcessors];
+    ptpAssignments.resize(numProcessors);
     for (i = 0 ; i < numProcessors ; i++)
     {
         ptpAssignments[i] = i;
     }
 
-    stpAssignments   = new int[height];
-    for (i = 0 ; i < height ; i++)
-    {
-        stpAssignments[i] = 0;
-    }
+    stpAssignments.resize(height, 0);
 
-    partitionStartsOnScanline = new int[numProcessors];
-    partitionStopsOnScanline  = new int[numProcessors];
+    partitionStartsOnScanline.resize(numProcessors);
+    partitionStopsOnScanline.resize(numProcessors);
     for (i = 0 ; i < numProcessors ; i++)
     {
         partitionStartsOnScanline[i] = -1;
@@ -161,33 +161,13 @@ avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
 //    Hank Childs, Tue Jan  1 11:24:10 PST 2002
 //    Clean up new data members.
 //
+//    Tom Fogal, Wed Jun 17 19:17:59 MDT 2009
+//    Account for change to vectors.
+//
 // ****************************************************************************
 
 avtImagePartition::~avtImagePartition()
 {
-    if (ptpAssignments != NULL)
-    {
-        delete [] ptpAssignments;
-        ptpAssignments = NULL;
-    }
-
-    if (stpAssignments != NULL)
-    {
-        delete [] stpAssignments;
-        stpAssignments = NULL;
-    }
-
-    if (partitionStartsOnScanline != NULL)
-    {
-        delete [] partitionStartsOnScanline;
-        partitionStartsOnScanline = NULL;
-    }
-
-    if (partitionStopsOnScanline != NULL)
-    {
-        delete [] partitionStopsOnScanline;
-        partitionStopsOnScanline = NULL;
-    }
 }
 
 
@@ -315,6 +295,7 @@ avtImagePartition::GetPartition(int part, int &minW, int &maxW, int &minH,
 //
 //    Tom Fogal, Wed Jun 17 15:54:31 MDT 2009
 //    Fix size of array, preventing access to uninitialized values.
+//    Ensure the `scanline to partition' vector is large enough.
 //
 // ****************************************************************************
 
@@ -331,6 +312,7 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
     //
     const int n_scanlines = last_scanline - first_scanline;
     std::vector<int> allSamples(n_scanlines);
+    stpAssignments.resize(n_scanlines, 0);
     SumIntArrayAcrossAllProcessors(samples, &allSamples[0], n_scanlines);
 
     //
