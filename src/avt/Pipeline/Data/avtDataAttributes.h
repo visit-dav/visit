@@ -251,6 +251,9 @@ class     avtWebpage;
 //    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
 //    Added support for unit cell origin (previously assumed to be 0,0,0);
 //
+//    Tom Fogal, Tue Jun 23 20:10:40 MDT 2009
+//    Marked some trivial accessors as const.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -270,41 +273,41 @@ class PIPELINE_API avtDataAttributes
                                    const avtDataObjectWriter *);
     int                      Read(char *);
 
-    int                      GetCycle(void) { return cycle; };
+    int                      GetCycle(void) const { return cycle; };
     void                     SetCycle(int);
     bool                     CycleIsAccurate(void) { return cycleIsAccurate; };
-    double                   GetTime(void) { return dtime; };
+    double                   GetTime(void) const { return dtime; };
     void                     SetTime(double);
     bool                     TimeIsAccurate(void) { return timeIsAccurate; };
 
     void                     SetDynamicDomainDecomposition(bool);
-    bool                     GetDynamicDomainDecomposition(void) 
+    bool                     GetDynamicDomainDecomposition(void) const
                                         { return dynamicDomainDecomposition; };
 
-    avtExtents              *GetTrueSpatialExtents(void)
+    avtExtents              *GetTrueSpatialExtents(void) const
                                     { return trueSpatial; };
     avtExtents              *GetTrueDataExtents(const char * = NULL);
 
-    avtExtents              *GetCumulativeTrueSpatialExtents(void)
+    avtExtents              *GetCumulativeTrueSpatialExtents(void) const
                                     { return cumulativeTrueSpatial; };
     avtExtents              *GetCumulativeTrueDataExtents(const char * = NULL);
 
-    avtExtents              *GetEffectiveSpatialExtents(void)
+    avtExtents              *GetEffectiveSpatialExtents(void) const
                                     { return effectiveSpatial; };
     avtExtents              *GetEffectiveDataExtents(const char * = NULL);
 
-    avtExtents              *GetCurrentSpatialExtents(void)
+    avtExtents              *GetCurrentSpatialExtents(void) const
                                     { return currentSpatial; };
     avtExtents              *GetCurrentDataExtents(const char * = NULL);
 
-    avtExtents              *GetCumulativeCurrentSpatialExtents(void)
+    avtExtents              *GetCumulativeCurrentSpatialExtents(void) const
                                     { return cumulativeCurrentSpatial; };
     avtExtents              *GetCumulativeCurrentDataExtents(const char * 
                                                              = NULL);
 
     void                     SetCanUseCumulativeAsTrueOrCurrent(bool canUse)
                                 { canUseCumulativeAsTrueOrCurrent = canUse; }
-    bool                     GetCanUseCumulativeAsTrueOrCurrent(void)
+    bool                     GetCanUseCumulativeAsTrueOrCurrent(void) const
                                 { return canUseCumulativeAsTrueOrCurrent; }
 
     void                     SetTopologicalDimension(int);
@@ -430,15 +433,15 @@ class PIPELINE_API avtDataAttributes
 
     bool                     HasInvTransform(void); 
     void                     SetInvTransform(const double *);
-    const avtMatrix         *GetInvTransform(void) { return invTransform;};
-    bool                     GetCanUseInvTransform(void) 
+    const avtMatrix         *GetInvTransform(void) const { return invTransform;};
+    bool                     GetCanUseInvTransform(void) const
                                                     { return canUseInvTransform;};
     void                     SetCanUseInvTransform(bool b) { canUseInvTransform =b;};
 
-    bool                     HasTransform(void); 
+    bool                     HasTransform(void);
     void                     SetTransform(const double *);
-    const avtMatrix         *GetTransform(void) { return transform;};
-    bool                     GetCanUseTransform(void) 
+    const avtMatrix         *GetTransform(void) const { return transform;};
+    bool                     GetCanUseTransform(void) const
                                                     { return canUseTransform;};
     void                     SetCanUseTransform(bool b) { canUseTransform =b;};
 
