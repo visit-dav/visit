@@ -113,6 +113,9 @@ class     avtWebpage;
 //    Hank Childs, Mon Apr  6 12:58:50 PDT 2009
 //    Add another method for handling named selections.
 //
+//    Tom Fogal, Tue Jun 23 20:21:15 MDT 2009
+//    Made spatial extent methods const.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -180,8 +183,8 @@ class PIPELINE_API avtFilter
                                                        const char * = NULL);
     void                                GetDataExtents(double *,
                                                        const char * = NULL);
-    bool                                TrySpatialExtents(double *);
-    void                                GetSpatialExtents(double *);
+    bool                                TrySpatialExtents(double *) const;
+    void                                GetSpatialExtents(double *) const;
     bool                                TryCurrentDataExtents(double *);
     void                                GetCurrentDataExtents(double *);
     bool                                TryCurrentSpatialExtents(double *);
@@ -201,7 +204,4 @@ class PIPELINE_API avtFilter
     void                                FinalizeWebpage(void);
 };
 
-
 #endif
-
-
