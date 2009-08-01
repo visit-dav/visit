@@ -34,27 +34,21 @@
   \version  1.2
   \date    September 2008
 */
-
-
 #pragma once
 
 #ifndef IMAGEPARSER_H
 #define IMAGEPARSER_H
 
+#include <string>
 #include "../../StdTuvokDefines.h"
 #include <IO/DirectoryParser.h>
+#include "../../Basics/Vectors.h"
 
 // if the following define is set, the DICOM parser putputs detailed parsing information
 // be carfull with this option it may create a huge amount of output
 #ifndef DEBUG
   //#define DEBUG_DICOM
 #endif
-
-#include <string>
-#include <vector>
-#include <fstream>
-#include "../../Basics/Vectors.h"
-#include "../../Basics/EndianConvert.h"
 
 class SimpleImageFileInfo : public SimpleFileInfo {
 public:

@@ -32,9 +32,14 @@
            SCI Institute
            University of Utah
 */
+#include <cstring>
+#include "boost/cstdint.hpp"
+#ifndef TUVOK_NO_IO
+# include "../3rdParty/tiff/tiffio.h"
+#else
+  struct TIFF;
+#endif
 #include "TiffVolumeConverter.h"
-#include "../3rdParty/boost/cstdint.hpp"
-#include "../3rdParty/tiff/tiffio.h"
 #include "../StdTuvokDefines.h"
 #include "../Controller/Controller.h"
 #include "../Basics/SysTools.h"
@@ -47,20 +52,16 @@
 
 static void tv_dimensions(TIFF *, size_t dims[3]);
 _malloc static BYTE* tv_read_slice(TIFF *);
-#if 0
-// currently disabled -- mistakenly thought I was reading 4-component data for
-// a while.  left in because we'll probably want to be able to convert
-// 4-component data to 1-component data at some point.
-_malloc static UINT32* tv_vector_to_scalar_magnitude(UINT32 *, size_t, size_t);
-#endif
 
 TiffVolumeConverter::TiffVolumeConverter()
 {
   m_vConverterDesc = "TIFF Volume (Image stack)";
+#ifndef TUVOK_NO_IO
   m_vSupportedExt.push_back("OME.TIF");
   m_vSupportedExt.push_back("OME.TIFF");
   m_vSupportedExt.push_back("TIF");
   m_vSupportedExt.push_back("TIFF");
+#endif
 }
 
 // converts a TiffVolume to a `raw' file.  We'll read through the TIFF
@@ -79,7 +80,7 @@ TiffVolumeConverter::ConvertToRAW(const std::string& strSourceFilename,
                                   std::string& strIntermediateFile,
                                   bool& bDeleteIntermediateFile)
 {
-#if 0
+#ifndef TUVOK_NO_IO
   MESSAGE("Attempting to convert TiffVolume: %s", strSourceFilename.c_str());
 
   TIFF *tif = TIFFOpen(strSourceFilename.c_str(), "r");
@@ -95,7 +96,7 @@ TiffVolumeConverter::ConvertToRAW(const std::string& strSourceFilename,
     vVolumeSize[0] = UINT32(dims[0]);
     vVolumeSize[1] = UINT32(dims[1]);
     vVolumeSize[2] = UINT32(dims[2]);
-    MESSAGE("TiffVolume dimensions: %zux%zux%zu", dims[0], dims[1], dims[2]);
+    MESSAGE("TiffVolume dimensions: %ux%ux%u", UINT32(dims[0]), UINT32(dims[1]), UINT32(dims[2]));
     if(dims[2] <= 1) {
       T_ERROR("TIFF is not a volume; use "
             "`Load Dataset from Directory' instead!");
@@ -167,8 +168,11 @@ TiffVolumeConverter::ConvertToRAW(const std::string& strSourceFilename,
   binary.Close();
 
   TIFFClose(tif);
-#endif
   return true;
+#else
+  T_ERROR("Tuvok was not built with IO support!");
+  return false;
+#endif
 }
 
 // unimplemented!
@@ -184,13 +188,14 @@ TiffVolumeConverter::ConvertToNative(const std::string&,
 {
   return false;
 }
-#if 0
+
 // Reads the dimensions of the TIFF volume.  X and Y come from the dimensions
 // of the first image in the stack: we assume that this stays constant
 // throughout the volume.  Z comes from the number of images in the stack.
 static void
 tv_dimensions(TIFF *tif, size_t dims[3])
 {
+#ifndef TUVOK_NO_IO
   UINT32 x,y;
   size_t z=0;
 
@@ -206,11 +211,15 @@ tv_dimensions(TIFF *tif, size_t dims[3])
   dims[0] = x;
   dims[1] = y;
   dims[2] = z;
+#endif
 }
 
 _malloc static BYTE*
 tv_read_slice(TIFF *tif)
 {
+#ifdef TUVOK_NO_IO
+  return NULL;
+#else
   BYTE *slice;
   UINT32 width;
   UINT32 height;
@@ -232,31 +241,12 @@ tv_read_slice(TIFF *tif)
       /// There's a `compression scheme' tag which probably details this.
       tsize_t n_bytes = TIFFReadRawStrip(tif, s, buf,
                                          static_cast<tsize_t>(-1));
-      memcpy(data, buf, n_bytes);
+      std::memcpy(data, buf, n_bytes);
       data += TIFFStripSize(tif);
     }
     _TIFFfree(buf);
   }
 
   return slice;
-}
-
-#if 0
-// Converts an RGBA vector `field' to a scalar field of the "vector"'s
-// magnitude.  Ignores the alpha component.
-_malloc static UINT32*
-tv_vector_to_scalar_magnitude(UINT32 *field, size_t w, size_t h)
-{
-  UINT32* ret = new UINT32[w*h];
-  for(size_t i=0; i < w*h; ++i) {
-    unsigned char r = field[i] & 0xFF000000;
-    unsigned char g = field[i] & 0x00FF0000;
-    unsigned char b = field[i] & 0x0000FF00;
-    ret[i] = (static_cast<UINT32>(r) +
-              static_cast<UINT32>(g) +
-              static_cast<UINT32>(b)) / 3;
-  }
-  return ret;
-}
 #endif
-#endif
+}

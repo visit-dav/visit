@@ -34,6 +34,7 @@
   \date    August 2008
 */
 
+#include "Basics/Vectors.h"
 #include "GLFrameCapture.h"
 #include "GLInclude.h"
 
@@ -50,4 +51,16 @@ bool GLFrameCapture::CaptureSingleFrame(const std::string& strFilename, bool bPr
   delete[] image;
 
   return bResult;
+}
+
+/// Reads the image into an in-memory buffer.  Image data is 32bpp RGBA.
+void GLFrameCapture::CaptureSingleFrame(std::vector<unsigned char>& image) const
+{
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  image.resize(viewport[2]*viewport[3]*4);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glReadPixels(0,0,viewport[2],viewport[3],GL_RGBA,GL_UNSIGNED_BYTE,&image.at(0));
 }

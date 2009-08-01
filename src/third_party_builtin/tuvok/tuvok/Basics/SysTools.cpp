@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -36,27 +36,28 @@
   \date    Dec 2008
 */
 
-#include "SysTools.h"
 #include <algorithm>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <iostream>
+#include <cctype>
+#include <functional>
+#include <iterator>
 #include <sstream>
-
-#include <errno.h>
 #include <sys/stat.h>
 
+#include "StdDefines.h"
 #ifndef _WIN32
   #include <regex.h>
   #include <dirent.h>
   #include <unistd.h>
 #endif
 
-#ifdef TUVOK_OS_APPLE
+#ifdef DETECTED_OS_APPLE
   #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-// define MAX / MIN 
+// define MAX / MIN
 #ifndef MAX
   #define MAX(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
@@ -64,15 +65,16 @@
   #define MIN(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
+#include "SysTools.h"
+
 using namespace std;
-#include "../DebugOut/AbstrDebugOut.h"
 
 namespace SysTools {
 
   vector< string > Tokenize(const string& strInput, bool bQuoteprotect) {
     if (bQuoteprotect) {
       string buf;
-      stringstream ss(strInput); 
+      stringstream ss(strInput);
       vector<string> strElements;
       bool bProtected = false;
       while (ss >> buf) {
@@ -95,7 +97,7 @@ namespace SysTools {
       return strElements;
     } else {
       string buf;
-      stringstream ss(strInput); 
+      stringstream ss(strInput);
       vector<string> strElements;
       while (ss >> buf) strElements.push_back(buf);
       return strElements;
@@ -105,7 +107,7 @@ namespace SysTools {
   vector< wstring > Tokenize(const wstring& strInput, bool bQuoteprotect) {
     if (bQuoteprotect) {
       wstring buf;
-      wstringstream ss(strInput); 
+      wstringstream ss(strInput);
       vector<wstring> strElements;
       bool bProtected = false;
       while (ss >> buf) {
@@ -124,7 +126,7 @@ namespace SysTools {
       return strElements;
     } else {
       wstring buf;
-      wstringstream ss(strInput); 
+      wstringstream ss(strInput);
       vector<wstring> strElements;
       while (ss >> buf) strElements.push_back(buf);
       return strElements;
@@ -132,11 +134,9 @@ namespace SysTools {
   }
 
   string GetFromResourceOnMac(const string& strFileName) {
-
-
-    #ifdef TUVOK_OS_APPLE
-      CFStringRef cfFilename = CFStringCreateWithCString(kCFAllocatorDefault, RemoveExt(GetFilename(strFileName)).c_str(), CFStringGetSystemEncoding());   
-      CFStringRef cfExt = CFStringCreateWithCString(kCFAllocatorDefault, GetExt(GetFilename(strFileName)).c_str(), CFStringGetSystemEncoding());   
+    #ifdef DETECTED_OS_APPLE
+      CFStringRef cfFilename = CFStringCreateWithCString(kCFAllocatorDefault, RemoveExt(GetFilename(strFileName)).c_str(), CFStringGetSystemEncoding());
+      CFStringRef cfExt = CFStringCreateWithCString(kCFAllocatorDefault, GetExt(GetFilename(strFileName)).c_str(), CFStringGetSystemEncoding());
 
       CFURLRef    imageURL = CFBundleCopyResourceURL( CFBundleGetMainBundle(), cfFilename, cfExt, NULL );
       if (imageURL == NULL) return "";
@@ -153,7 +153,7 @@ namespace SysTools {
   }
 
   wstring GetFromResourceOnMac(const wstring& wstrFileName) {
-    #ifdef TUVOK_OS_APPLE
+    #ifdef DETECTED_OS_APPLE
       // for now just call the string method by converting the unicode string down to an 8bit string
       string strFileName(wstrFileName.begin(), wstrFileName.end());
       string strResult = GetFromResourceOnMac(strFileName);
@@ -173,7 +173,7 @@ namespace SysTools {
       if(pos==std::string::npos) break;
       input.replace(pos,search.size(),replace);
       pos +=replace.size();
-    }    
+    }
   }
 
   void ReplaceAll(wstring& input, const wstring& search, const wstring& replace) {
@@ -184,14 +184,14 @@ namespace SysTools {
       if(pos==std::string::npos) break;
       input.replace(pos,search.size(),replace);
       pos +=replace.size();
-    }    
+    }
   }
 
-  inline int myTolower(int c) {return tolower(static_cast<unsigned char>(c));} 
-  inline int myToupper(int c) {return toupper(static_cast<unsigned char>(c));} 
+  inline int myTolower(int c) {return tolower(static_cast<unsigned char>(c));}
+  inline int myToupper(int c) {return toupper(static_cast<unsigned char>(c));}
 
   void RemoveLeadingWhitespace(wstring &str) {
-    while (int(str.find_first_not_of(L" ")) > 0 || int(str.find_first_not_of(L"\t")) > 0 
+    while (int(str.find_first_not_of(L" ")) > 0 || int(str.find_first_not_of(L"\t")) > 0
            || int(str.find_first_not_of(L"\r")) > 0 || int(str.find_first_not_of(L"\n")) > 0)  {
       str = str.substr(str.find_first_not_of(L" "), str.length());
       str = str.substr(str.find_first_not_of(L"\t"), str.length());
@@ -221,24 +221,6 @@ namespace SysTools {
     reverse(str.begin(), str.end());
     RemoveLeadingWhitespace(str);
     reverse(str.begin(), str.end());
-  }
-
-  /// Uses remove(3) to remove the file.
-  /// @return true if the remove succeeded.
-  bool Remove(const std::string &path, AbstrDebugOut &dbg)
-  {
-    if(std::remove(path.c_str()) == -1) {
-#ifdef _WIN32
-      char buffer[200];
-      strerror_s(buffer, 200, errno);
-      dbg.Warning(_func_, "Could not remove `%s': %s", path.c_str(), buffer);
-#else
-      dbg.Warning(_func_, "Could not remove `%s': %s", path.c_str(),
-                  strerror(errno));
-#endif
-      return false;
-    }
-    return true;
   }
 
   bool GetFileStats(const string& strFileName, struct ::stat& stat_buf) {
@@ -330,7 +312,7 @@ namespace SysTools {
 
     if (fileName[0] != '/' && fileName[0] != '\\' && path[path.length()-1] != '/' && path[path.length()-1] != '\\') {
       slash = "/";
-    } 
+    }
 
 
     // search in the given path
@@ -355,11 +337,11 @@ namespace SysTools {
     wstring searchFile;
     wstring slash = L"";
 
-    if (fileName[0]         != '/' && fileName[0]         != '\\' && 
+    if (fileName[0]         != '/' && fileName[0]         != '\\' &&
       path[path.length()-1] != '/' && path[path.length()-1] != '\\') {
 
       slash = L"/";
-    } 
+    }
 
 
     // search in the given path
@@ -396,24 +378,24 @@ namespace SysTools {
   string  CheckExt(const string& fileName, const std::string& newext) {
     string currentExt = GetExt(fileName);
 #ifdef _WIN32  // do a case insensitive check on windows systems
-    if (ToLowerCase(currentExt) != ToLowerCase(newext)) 
+    if (ToLowerCase(currentExt) != ToLowerCase(newext))
 #else
-    if (currentExt != newext) 
+    if (currentExt != newext)
 #endif
       return fileName + "." + newext;
-    else 
+    else
       return fileName;
   }
 
   wstring CheckExt(const std::wstring& fileName, const std::wstring& newext) {
     wstring currentExt = GetExt(fileName);
 #ifdef _WIN32  // do a case insensitive check on windows systems
-    if (ToLowerCase(currentExt) != ToLowerCase(newext)) 
+    if (ToLowerCase(currentExt) != ToLowerCase(newext))
 #else
-    if (currentExt != newext) 
+    if (currentExt != newext)
 #endif
       return fileName + L"." + newext;
-    else 
+    else
       return fileName;
   }
 
@@ -478,14 +460,14 @@ namespace SysTools {
   if (dirData != NULL) {
 
     struct dirent *inode;
-  
+
     while ((inode=readdir(dirData)) != NULL) {
       string strFilenameLocal = inode->d_name;
       wstring wstrFilename(strFilenameLocal.begin(), strFilenameLocal.end());
       string strFilename = strDir + strFilenameLocal;
 
       struct ::stat st;
-      if (::stat(strFilename.c_str(), &st) != -1) 
+      if (::stat(strFilename.c_str(), &st) != -1)
         if (S_ISDIR(st.st_mode) && strFilenameLocal != "." && strFilenameLocal != "..") {
           subDirs.push_back(wstrFilename);
         }
@@ -503,7 +485,7 @@ namespace SysTools {
       }
     }
 
-    return completeSubDirs; 
+    return completeSubDirs;
   }
 
 
@@ -551,13 +533,13 @@ namespace SysTools {
   if (dirData != NULL) {
 
     struct dirent *inode;
-  
+
     while ((inode=readdir(dirData)) != NULL) {
       string strFilenameLocal = inode->d_name;
       string strFilename = rootdir + strFilenameLocal;
 
       struct ::stat st;
-      if (::stat(strFilename.c_str(), &st) != -1) 
+      if (::stat(strFilename.c_str(), &st) != -1)
         if (S_ISDIR(st.st_mode) && strFilenameLocal != "." && strFilenameLocal != "..") {
           subDirs.push_back(strFilenameLocal);
         }
@@ -577,27 +559,34 @@ namespace SysTools {
     return completeSubDirs;
   }
 
-  vector<wstring> GetDirContents(const wstring& dir, const wstring& fileName, const wstring& ext) {
+  vector<wstring> GetDirContents(const wstring& dir,
+                                 const wstring& fileName,
+                                 const wstring& ext) {
     vector<wstring> files;
     wstringstream s;
 
 #ifdef _WIN32
+    wstring wstrDir;
     if (dir == L"") {
       WCHAR path[4096];
       GetCurrentDirectoryW(4096, path);
-      s << path << "/" << fileName << "." << ext;
+      s << path << L"/" << fileName << L"." << ext;
+      wstrDir = wstring(path);
     } else {
-      s << dir << "/" << fileName << "." << ext;
+      s << dir << L"/" << fileName << L"." << ext;
+      wstrDir = dir;
     }
+
     WIN32_FIND_DATAW FindFileData;
     HANDLE hFind;
+
 
     hFind=FindFirstFileW(s.str().c_str(), &FindFileData);
 
     if (hFind != INVALID_HANDLE_VALUE) {
       do {
         if( 0 == (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ) {
-          files.push_back(FindFileData.cFileName);
+          files.push_back(wstrDir + L"/" + wstring(FindFileData.cFileName));
         }
       }while ( FindNextFileW(hFind, &FindFileData) );
     }
@@ -610,6 +599,8 @@ namespace SysTools {
   } else {
     wstrDir = dir + L"/";
   }
+  string strDir(wstrDir.begin(), wstrDir.end());
+
 
   // filter files via regexpr
   string regExpr = "^";
@@ -635,22 +626,19 @@ namespace SysTools {
   if (regcomp(&preg, regExpr.c_str(), REG_EXTENDED | REG_NOSUB) != 0) return files;
 
 
-  string strDir(wstrDir.begin(), wstrDir.end());
-
   DIR* dirData=opendir(strDir.c_str());
 
   if (dirData != NULL) {
+    struct dirent *finfo;
 
-    struct dirent *inode;
-  
-    while ((inode=readdir(dirData)) != NULL) {
-      string strFilename = inode->d_name;
+    while ((finfo=readdir(dirData)) != NULL) {
+      string strFilename = finfo->d_name;
       wstring wstrFilename(strFilename.begin(), strFilename.end());
       strFilename = strDir + strFilename;
 
       struct ::stat st;
-      if (::stat(strFilename.c_str(), &st) != -1) 
-        if (!S_ISDIR(st.st_mode) && !regexec(&preg, inode->d_name, size_t(0), NULL, 0)) {
+      if (::stat(strFilename.c_str(), &st) != -1)
+        if (!S_ISDIR(st.st_mode) && !regexec(&preg, finfo->d_name, size_t(0), NULL, 0)) {
           files.push_back(wstrFilename);
         }
     }
@@ -662,7 +650,9 @@ namespace SysTools {
     return files;
   }
 
-  vector<string> GetDirContents(const string& dir, const string& fileName, const string& ext) {
+  vector<string> GetDirContents(const string& dir,
+                                const string& fileName,
+                                const string& ext) {
     vector<string> files;
 
     stringstream s;
@@ -672,12 +662,15 @@ namespace SysTools {
     WIN32_FIND_DATAA FindFileData;
     HANDLE hFind;
 
+    string strDir;
     if (dir == "") {
       char path[4096];
       GetCurrentDirectoryA(4096, path);
       s << path << "/" << fileName << "." << ext;
+      strDir = string(path);
     } else {
       s << dir << "/" << fileName << "." << ext;
+      strDir = dir;
     }
 
     hFind=FindFirstFileA(s.str().c_str(), &FindFileData);
@@ -685,7 +678,7 @@ namespace SysTools {
     if (hFind != INVALID_HANDLE_VALUE) {
       do {
         if( 0 == (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ) {
-          files.push_back(FindFileData.cFileName);
+          files.push_back(strDir + "/" + string(FindFileData.cFileName));
         }
       }while ( FindNextFileA(hFind, &FindFileData) );
     }
@@ -720,21 +713,21 @@ namespace SysTools {
     regExpr = regExpr + "\\." + tmpext + "$";
   }
   if (regcomp(&preg, regExpr.c_str(), REG_EXTENDED | REG_NOSUB) != 0) return files;
-    
+
   DIR* dirData=opendir(strDir.c_str());
 
   if (dirData != NULL) {
-    struct dirent *inode;
-  
-    while ((inode=readdir(dirData)) != NULL) {
-      string strFilename = inode->d_name;
+    struct dirent *finfo;
+
+    while ((finfo=readdir(dirData)) != NULL) {
+      string strFilename = finfo->d_name;
       strFilename = strDir + strFilename;
 
       struct ::stat st;
       if (::stat(strFilename.c_str(), &st) != -1) {
         if (!S_ISDIR(st.st_mode) &&
-            !regexec(&preg, inode->d_name, size_t(0), NULL, 0)) {
-          files.push_back(strdup(strFilename.c_str()));
+            !regexec(&preg, finfo->d_name, size_t(0), NULL, 0)) {
+          files.push_back(std::string(strFilename.c_str()));
         }
       }
     }
@@ -753,7 +746,7 @@ namespace SysTools {
 
     return FindNextSequenceName(fileName, ext, dir);
   }
-  
+
   std::wstring FindNextSequenceName(const std::wstring& wStrFilename) {
     std::wstring dir = SysTools::GetPath(wStrFilename);
     std::wstring fileName = SysTools::RemoveExt(SysTools::GetFilename(wStrFilename));
@@ -762,32 +755,44 @@ namespace SysTools {
     return FindNextSequenceName(fileName, ext, dir);
   }
 
-  string  FindNextSequenceName(const string& fileName, const string& ext, const string& dir) {
+  // Functor to identify the numeric ID appended to a given filename.
+  template <typename T> struct fileNumber : public std::unary_function<T, size_t> {
+    size_t operator()(const T& filename) const {
+      // get just the filename itself, without extension or path information.
+      T fn = RemoveExt(GetFilename(filename));
+
+      // Find where the numbers start.
+      typename T::const_iterator numerals = fn.end()-1;
+	  while (numerals != fn.begin() && ::isdigit(*(numerals-1))) --numerals;
+
+      // convert it to a size_t and return that.
+      size_t retval = 0;
+      FromString(retval, T(&*numerals));
+      return retval;
+    }
+  };
+
+  // Given a filename model and a directory, identify the next filename in the
+  // sequence.  Sequences start at 0 and increment.
+  string FindNextSequenceName(const string& fileName, const string& ext,
+                              const string& dir) {
     stringstream out;
     vector<string> files = GetDirContents(dir, fileName+"*", ext);
 
-    UINT32 iMaxIndex = 0;
-    for (size_t i = 0; i<files.size();i++) {
-      string curFilename = RemoveExt(files[i]);
+    // Get a list of all the trailing numeric values.
+    std::vector<size_t> values;
+    values.reserve(files.size());
+    std::transform(files.begin(), files.end(), std::back_inserter(values),
+                   fileNumber<std::string>());
 
-      string rest = RemoveExt(curFilename).substr(fileName.length());
-      for (size_t j = 0; j<rest.size();j++) {
-        if (rest[j] != '0' && rest[j] != '1' && rest[j] != '2' && rest[j] != '3' &&
-            rest[j] != '4' && rest[j] != '5' && rest[j] != '6' && rest[j] != '7' &&
-            rest[j] != '8' && rest[j] != '9') {
-              rest.clear();
-              break;
-        }
-      }
-      if (rest.length() == 0) continue;
-      UINT32 iCurrIndex = UINT32(atoi(rest.c_str()));
-      iMaxIndex = (iMaxIndex <= iCurrIndex) ? iCurrIndex+1 : iMaxIndex;
+    // No files in the dir?  Default to 0.
+    if(values.empty()) {
+      out << dir << fileName << 0 << "." << ext;
+    } else {
+      // Otherwise, the next number is the current max + 1.
+      size_t max_val = *(std::max_element(values.begin(), values.end()));
+      out << dir << fileName << max_val+1 << "." << ext;
     }
-
-    if (dir == "" || dir[dir.size()-1] == '\\' ||  dir[dir.size()-1] == '/') 
-      out << dir << fileName << iMaxIndex << "." << ext;
-    else
-      out << dir << "/" << fileName << iMaxIndex << "." << ext;
 
     return out.str();
   }
@@ -796,30 +801,20 @@ namespace SysTools {
     wstringstream out;
     vector<wstring> files = GetDirContents(dir, fileName+L"*", ext);
 
-    UINT32 iMaxIndex = 0;
-    for (size_t i = 0; i<files.size();i++) {
-      wstring wcurFilename = RemoveExt(files[i]);
-      string curFilename(wcurFilename.begin(), wcurFilename.end());
+    // Get a list of all the trailing numeric values.
+    std::vector<size_t> values;
+    values.reserve(files.size());
+    std::transform(files.begin(), files.end(), std::back_inserter(values),
+                   fileNumber<std::wstring>());
 
-      string rest = RemoveExt(curFilename).substr(fileName.length());
-      for (size_t j = 0; j<rest.size();j++) {
-        if (rest[j] != '0' && rest[j] != '1' && rest[j] != '2' && rest[j] != '3' &&
-            rest[j] != '4' && rest[j] != '5' && rest[j] != '6' && rest[j] != '7' &&
-            rest[j] != '8' && rest[j] != '9') {
-              rest.clear();
-              break;
-        }
-      }
-      if (rest.length() == 0) continue;
-
-      UINT32 iCurrIndex = UINT32(atoi(rest.c_str()));
-      iMaxIndex = (iMaxIndex <= iCurrIndex) ? iCurrIndex+1 : iMaxIndex;
+    // No files in the dir?  Default to 0.
+    if(values.empty()) {
+      out << dir << fileName << 0 << L"." << ext;
+    } else {
+      // Otherwise, the next number is the current max + 1.
+      size_t max_val = *(std::max_element(values.begin(), values.end()));
+      out << dir << fileName << max_val+1 << L"." << ext;
     }
-
-    if (dir == L"" || dir[dir.size()-1] == L'\\' ||  dir[dir.size()-1] == L'/') 
-      out << dir << fileName << iMaxIndex << L"." << ext;
-    else
-      out << dir << L"/" << fileName << iMaxIndex << L"." << ext;
 
     return out.str();
   }
@@ -837,7 +832,7 @@ namespace SysTools {
 
     return iMaxIndex;
   }
-   
+
   UINT32 FindNextSequenceIndex(const wstring& fileName, const wstring& ext, const wstring& dir) {
     vector<wstring> files = GetDirContents(dir, fileName+L"*", ext);
 
@@ -852,19 +847,56 @@ namespace SysTools {
     return iMaxIndex;
   }
 
+  bool GetTempDirectory(std::string& path) {
+  #ifdef DETECTED_OS_WINDOWS
+    DWORD result = ::GetTempPathA(0, "");
+    if(result == 0) return false;
+    std::vector<char> tempPath(result + 1);
+    result = ::GetTempPathA(static_cast<DWORD>(tempPath.size()), &tempPath[0]);
+    if((result == 0) || (result >= tempPath.size())) return false;
+    path = std::string( tempPath.begin(), tempPath.begin() + static_cast<std::size_t>(result)  );
+    return true;
+  #else
+    char * pointer;
+    pointer = tmpnam(NULL);
+    path = GetPath(std::string( pointer ));
+    return true;
+  #endif
+  }
+
+
+  bool GetTempDirectory(std::wstring& path) {
+  #ifdef DETECTED_OS_WINDOWS
+      DWORD result = ::GetTempPathW(0, L"");
+      if(result == 0) return false;
+      std::vector<WCHAR> tempPath(result + 1);
+      result = ::GetTempPathW(static_cast<DWORD>(tempPath.size()), &tempPath[0]);
+      if((result == 0) || (result >= tempPath.size())) return false;
+      path = std::wstring( tempPath.begin(), tempPath.begin() + static_cast<std::size_t>(result)  );
+      return true;
+  #else 
+      // too lazy to find the unicode version for linux and mac
+      std::string astrPath;
+      if (!GetTempDirectory(astrPath)) return false;    
+      path = std::wstring( astrPath.begin(), astrPath.end());
+      return true;
+  #endif
+  }
+
+
 #ifdef _WIN32
   bool GetFilenameDialog(const string& lpstrTitle, const CHAR* lpstrFilter, string &filename, const bool save, HWND owner, DWORD* nFilterIndex) {
     BOOL result;
     OPENFILENAMEA ofn;
     ZeroMemory(&ofn,sizeof(OPENFILENAMEA));
-    
+
     static CHAR szFile[MAX_PATH];
 
     char szDir[MAX_PATH];
     if (filename.length()>0) {
       errno_t err=strcpy_s(szDir,MAX_PATH,filename.c_str());
       filename.clear();
-      if (err) return false;                  
+      if (err) return false;
     } else szDir[0]=0;
     ofn.lpstrInitialDir = szDir;
 
@@ -903,7 +935,7 @@ namespace SysTools {
     BOOL result;
     OPENFILENAMEW ofn;
     ZeroMemory(&ofn,sizeof(OPENFILENAMEW));
-    
+
     static WCHAR szFile[MAX_PATH];
     szFile[0] = 0;
 
@@ -912,7 +944,7 @@ namespace SysTools {
     if (filename.length()>0) {
       errno_t err=wcscpy_s(szDir,MAX_PATH,filename.c_str());
       filename.clear();
-      if (err) return false;                  
+      if (err) return false;
     } else szDir[0]=0;
     ofn.lpstrInitialDir = szDir;
 
@@ -983,7 +1015,7 @@ namespace SysTools {
       {
         m_strArrayParameters.push_back(argv[a]+1);
 
-        if (a+1<argc && argv[a+1][0] != '-') {
+        if (a+1<argc) {
           m_strArrayValues.push_back(argv[a+1]);
           ++a;
         } else m_strArrayValues.push_back("");
@@ -1062,7 +1094,7 @@ namespace SysTools {
   }
 
   bool CmdLineParams::GetValue(const std::wstring& parameter, std::wstring& value) {
-    string sParameter(parameter.begin(), parameter.end()), 
+    string sParameter(parameter.begin(), parameter.end()),
          sValue(value.begin(), value.end());
 
     if (GetValue(sParameter, sValue)) {

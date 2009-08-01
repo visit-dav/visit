@@ -35,9 +35,11 @@
   \date    September 2008
 */
 
-#include <cassert>
+#include <cstdlib>
 #include <fstream>
+#include <iterator>
 #include <memory.h>
+#include <sstream>
 #include "TransferFunction1D.h"
 #include "Controller/Controller.h"
 
@@ -66,58 +68,56 @@ float TransferFunction1D::Smoothstep(float x) const {
 }
 
 void TransferFunction1D::SetStdFunction(float fCenterPoint, float fInvGradient) {
-  SetStdFunction(fCenterPoint, fInvGradient,0);
-  SetStdFunction(fCenterPoint, fInvGradient,1);
-  SetStdFunction(fCenterPoint, fInvGradient,2);
-  SetStdFunction(fCenterPoint, fInvGradient,3);
+  SetStdFunction(fCenterPoint, fInvGradient,0, false);
+  SetStdFunction(fCenterPoint, fInvGradient,1, false);
+  SetStdFunction(fCenterPoint, fInvGradient,2, false);
+  SetStdFunction(fCenterPoint, fInvGradient,3, false);
 }
 
-void TransferFunction1D::SetStdFunction(float fCenterPoint, float fInvGradient, int iComponent) {
+void TransferFunction1D::SetStdFunction(float fCenterPoint, float fInvGradient, int iComponent, bool bInvertedStep) {
   size_t iCenterPoint = size_t((vColorData.size()-1) * float(std::min<float>(std::max<float>(0,fCenterPoint),1)));
   size_t iInvGradient = size_t((vColorData.size()-1) * float(std::min<float>(std::max<float>(0,fInvGradient),1)));
 
   size_t iRampStartPoint = (iInvGradient/2 > iCenterPoint)                      ? 0                 : iCenterPoint-(iInvGradient/2); 
   size_t iRampEndPoint   = (iInvGradient/2 + iCenterPoint > vColorData.size())  ? vColorData.size() : iCenterPoint+(iInvGradient/2);
 
-  for (size_t i = 0;i<iRampStartPoint;i++)                  
-    vColorData[i][iComponent] = 0;
+  if (bInvertedStep) {
+    for (size_t i = 0;i<iRampStartPoint;i++)                  
+      vColorData[i][iComponent] = 1;
 
-  for (size_t i = iRampStartPoint;i<iRampEndPoint;i++) {
-    float fValue = Smoothstep(float(i-iCenterPoint+(iInvGradient/2))/float(iInvGradient));
-    vColorData[i][iComponent] = fValue;
+    for (size_t i = iRampStartPoint;i<iRampEndPoint;i++) {
+      float fValue = Smoothstep(float(i-iCenterPoint+(iInvGradient/2))/float(iInvGradient));
+      vColorData[i][iComponent] = 1.0f-fValue;
+    }
+
+    for (size_t i = iRampEndPoint;i<vColorData.size();i++)
+      vColorData[i][iComponent] = 0;
+  } else {
+    for (size_t i = 0;i<iRampStartPoint;i++)                  
+      vColorData[i][iComponent] = 0;
+
+    for (size_t i = iRampStartPoint;i<iRampEndPoint;i++) {
+      float fValue = Smoothstep(float(i-iCenterPoint+(iInvGradient/2))/float(iInvGradient));
+      vColorData[i][iComponent] = fValue;
+    }
+
+    for (size_t i = iRampEndPoint;i<vColorData.size();i++)
+      vColorData[i][iComponent] = 1;
   }
-
-  for (size_t i = iRampEndPoint;i<vColorData.size();i++)
-    vColorData[i][iComponent] = 1;
 
   ComputeNonZeroLimits();
 }
 
 template<typename T>
-bool is_nan(T) { abort(); } // Rely on specialization.
+static bool is_nan(T) { std::abort(); } // Rely on specialization.
 template<>
 bool is_nan(float v) {
   // This is only valid for ieee754.
   return (v != v);
-#if 0
-  union NaN {
-    float f;
-    char bits[4];
-    unsigned int cmp;
-  };
-  union NaN nan;
-  nan.bits[0] = 0x7F;
-  nan.bits[1] = 0x80;
-  nan.bits[2] = 0x00;
-  nan.bits[3] = 0x00;
-  union NaN value;
-  value.f = v;
-  return (value.cmp & nan.cmp);
-#endif
 }
 
 template<typename T>
-bool is_infinite(T) { abort(); } // Rely on specialization.
+static bool is_infinite(T) { abort(); } // Rely on specialization.
 template<>
 bool is_infinite(float v) {
   return (v ==  std::numeric_limits<float>::infinity() ||
@@ -128,9 +128,12 @@ template<typename in, typename out>
 static inline out
 lerp(in value, in imin, in imax, out omin, out omax)
 {
-  out ret = omin + (value-imin) * (static_cast<double>(omax-omin) /
-                                                      (imax-imin));
+  out ret = out(omin + (value-imin) * (static_cast<double>(omax-omin) /
+                                                      (imax-imin)));
+#if 0
+  // Very useful while debugging.
   if(is_nan(ret) || is_infinite(ret)) { return 0; }
+#endif
   return ret;
 }
 
@@ -148,10 +151,10 @@ void minmax_component4(ForwardIter first, ForwardIter last,
     if(*(first+2) < c_min[2]) { c_min[2] = *(first+2); }
     if(*(first+3) < c_min[3]) { c_min[3] = *(first+3); }
 
-    if(*(first+0) > c_max[0]) { c_max[0] = *(first+0); } 
-    if(*(first+1) > c_max[1]) { c_max[1] = *(first+1); } 
-    if(*(first+2) > c_max[2]) { c_max[2] = *(first+2); } 
-    if(*(first+3) > c_max[3]) { c_max[3] = *(first+3); } 
+    if(*(first+0) > c_max[0]) { c_max[0] = *(first+0); }
+    if(*(first+1) > c_max[1]) { c_max[1] = *(first+1); }
+    if(*(first+2) > c_max[2]) { c_max[2] = *(first+2); }
+    if(*(first+3) > c_max[3]) { c_max[3] = *(first+3); }
 
     // Ugh.  Bail out if incrementing the iterator would go beyond the end.
     // We'd never actually deref the iterator in that case (because of the
@@ -184,10 +187,6 @@ void TransferFunction1D::Set(const std::vector<unsigned char>& tf)
   assert(tfmin[1] <= tfmax[1]);
   assert(tfmin[2] <= tfmax[2]);
   assert(tfmin[3] <= tfmax[3]);
-  MESSAGE("r min/max: %zu:%zu", size_t(tfmin[0]), size_t(tfmax[0]));
-  MESSAGE("g min/max: %zu:%zu", size_t(tfmin[1]), size_t(tfmax[1]));
-  MESSAGE("b min/max: %zu:%zu", size_t(tfmin[2]), size_t(tfmax[2]));
-  MESSAGE("a min/max: %zu:%zu", size_t(tfmin[3]), size_t(tfmax[3]));
 
   for(size_t i=0; i < vColorData.size(); ++i) {
     vColorData[i] = FLOATVECTOR4(
@@ -197,12 +196,6 @@ void TransferFunction1D::Set(const std::vector<unsigned char>& tf)
       lerp(tf[4*i+3], static_cast<unsigned char>(0),
                       static_cast<unsigned char>(255), fmin,fmax)
     );
-#if 0
-    MESSAGE("tf(%zu): [ %4.3f %4.3f %4.3f %4.3f ]", i, vColorData[i][0],
-                                                       vColorData[i][1],
-                                                       vColorData[i][2],
-                                                       vColorData[i][3]);
-#endif
   }
 
   ComputeNonZeroLimits();
@@ -275,8 +268,8 @@ bool TransferFunction1D::Load(const std::string& filename) {
   return true;
 }
 
-bool TransferFunction1D::Load(ifstream& file, size_t iTargetSize) {
-  if (!Load(file)) {
+bool TransferFunction1D::Load(std::istream& tf, size_t iTargetSize) {
+  if (!Load(tf)) {
     return false;
   } else {
     Resample(iTargetSize);
@@ -291,14 +284,14 @@ bool TransferFunction1D::Save(const std::string& filename) const {
   return true;
 }
 
-bool TransferFunction1D::Load(ifstream& file) {
+bool TransferFunction1D::Load(std::istream& tf) {
   UINT32 iSize;
-  file >> iSize;
+  tf >> iSize;
   vColorData.resize(iSize);
 
   for(size_t i=0;i<vColorData.size();++i){
     for(size_t j=0;j<4;++j){
-      file >> vColorData[i][j];
+      tf >> vColorData[i][j];
     }
   }
 
@@ -306,9 +299,7 @@ bool TransferFunction1D::Load(ifstream& file) {
 }
 
 
-bool TransferFunction1D::Save(ofstream& file) const {
-  if (!file.is_open()) return false;
-
+bool TransferFunction1D::Save(std::ostream& file) const {
   file << vColorData.size() << endl;
 
   for(size_t i=0;i<vColorData.size();++i){
@@ -321,23 +312,14 @@ bool TransferFunction1D::Save(ofstream& file) const {
   return true;
 }
 
-
-void TransferFunction1D::GetByteArray(unsigned char** pcData,
+void TransferFunction1D::GetByteArray(std::vector<unsigned char>& vData,
                                       unsigned char cUsedRange) const {
   // bail out immediately if we've got no data
   if(vColorData.empty()) { return; }
 
-  if (*pcData == NULL) {
-    MESSAGE("allocating array argument");
-    *pcData = new unsigned char[vColorData.size()*4];
-  } else {
-    MESSAGE("RE-allocating array argument");
-    delete[] (*pcData);
-    *pcData = new unsigned char[vColorData.size()*4];
-  }
+  vData.resize(vColorData.size() * 4);
 
-  unsigned char *pcDataIterator = *pcData;
-  MESSAGE("byte array sz: %zu", vColorData.size());
+  unsigned char *pcDataIterator = &vData.at(0);
   for (size_t i = 0;i<vColorData.size();i++) {
     *pcDataIterator++ = (unsigned char)(vColorData[i][0]*cUsedRange);
     *pcDataIterator++ = (unsigned char)(vColorData[i][1]*cUsedRange);

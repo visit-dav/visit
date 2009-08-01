@@ -27,33 +27,49 @@
 */
 
 /**
-  \file    GLSBVR-1D-FS.glsl
-  \author    Jens Krueger
-        SCI Institute
-        University of Utah
-  \version  1.0
-  \date    October 2008
-*/
+ * \file    GLSBVR-1D-FS.glsl
+ * \author  Jens Krueger
+ *          SCI Institute
+ *          University of Utah
+ */
+#define BIAS_SCALE 1
 
 uniform sampler3D texVolume;  ///< the data volume
 uniform sampler1D texTrans1D; ///< the 1D Transfer function
 uniform float fTransScale;    ///< scale for 1D Transfer function lookup
 uniform float fStepScale;     ///< opacity correction quotient
+#ifdef BIAS_SCALE
+  uniform float TFuncBias;    ///< bias amount for transfer func
+#endif
+
+/* bias and scale method for mapping a TF to a value. */
+vec4 bias_scale(const float bias, const float scale)
+{
+  float vol_val = texture3D(texVolume, gl_TexCoord[0].xyz).x;
+  vol_val = (vol_val + bias) / scale;
+
+  return texture1D(texTrans1D, vol_val);
+}
+
+vec4 bit_width(const float tf_scale)
+{
+  float fVolumVal = texture3D(texVolume, gl_TexCoord[0].xyz).x;
+  return texture1D(texTrans1D, fVolumVal * tf_scale);
+}
 
 void main(void)
 {
-  /// get volume value
-	float fVolumVal = texture3D(texVolume, gl_TexCoord[0].xyz).x;	
+#if defined(BIAS_SCALE)
+  vec4 vTransVal = bias_scale(TFuncBias, fTransScale);
+#else
+  vec4 vTransVal = bit_width(fTransScale);
+#endif
 
-  /// apply 1D transfer function
-	vec4  vTransVal = texture1D(texTrans1D, fVolumVal*fTransScale);
-
-  /// apply opacity correction
+  // opacity correction
   vTransVal.a = 1.0 - pow(1.0 - vTransVal.a, fStepScale);
-  
-  // premultiply color with alpha (for front to back)
+
+  // premultiply color with alpha
   vTransVal.xyz *= vTransVal.a;
 
-  /// write result to fragment color
-	gl_FragColor    = vTransVal;
+	gl_FragColor = vTransVal;
 }

@@ -34,9 +34,9 @@
   \date    August 2008
 */
 
-#include <cassert>
 #include "GLTexture3D.h"
-#include "GLDebug.h"
+#include "GLError.h"
+#include "Controller/Controller.h"
 
 GLTexture3D::GLTexture3D(UINT32 iSizeX, UINT32 iSizeY, UINT32 iSizeZ,
                          GLint internalformat, GLenum format, GLenum type,
@@ -51,10 +51,6 @@ GLTexture3D::GLTexture3D(UINT32 iSizeX, UINT32 iSizeY, UINT32 iSizeZ,
   m_format(format),
   m_type(type)
 {
-  GL();
-  GL(glEnable(GL_TEXTURE_3D));
-  assert(glIsEnabled(GL_TEXTURE_3D) != GL_FALSE);
-
   glGenTextures(1, &m_iGLID);
   glBindTexture(GL_TEXTURE_3D, m_iGLID);
 
@@ -70,6 +66,14 @@ GLTexture3D::GLTexture3D(UINT32 iSizeX, UINT32 iSizeY, UINT32 iSizeZ,
   glTexImage3D(GL_TEXTURE_3D, 0, m_internalformat,
                m_iSizeX, m_iSizeY, m_iSizeZ,
                0, m_format, m_type, (GLvoid*)pixels);
+  GLenum err = glGetError();
+  if(err == GL_OUT_OF_MEMORY) {
+    this->Delete();
+    throw OUT_OF_MEMORY("allocating 3d texture");
+  } else if(err != GL_NO_ERROR) {
+    WARNING("Unknown error (%x) occurred while setting 3D texture.",
+            static_cast<unsigned int>(err));
+  }
 }
 
 void GLTexture3D::SetData(const void *pixels) {
@@ -80,4 +84,12 @@ void GLTexture3D::SetData(const void *pixels) {
   glTexImage3D(GL_TEXTURE_3D, 0, m_internalformat,
                m_iSizeX, m_iSizeY, m_iSizeZ,
                0, m_format, m_type, (GLvoid*)pixels);
+  GLenum err = glGetError();
+  if(err == GL_OUT_OF_MEMORY) {
+    this->Delete();
+    throw OUT_OF_MEMORY("allocating 3d texture");
+  } else if(err != GL_NO_ERROR) {
+    WARNING("Unknown error (%x) occurred while setting 3D texture.",
+            static_cast<unsigned int>(err));
+  }
 }

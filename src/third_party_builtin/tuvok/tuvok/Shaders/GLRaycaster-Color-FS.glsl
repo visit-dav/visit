@@ -42,7 +42,6 @@ uniform float fRayStepsize;    ///< stepsize along the ray
 uniform float fIsoval;         ///< the isovalue
 uniform vec2 vScreensize;      ///< the size of the screen in pixels
 uniform vec2 vProjParam;       ///< X = far / (far - near)  / Y = (far * near / (near - far))
-uniform int  iTileID;          ///< ID of the current tile
 
 varying vec3 vEyePos;
 uniform vec4 vClipPlane;

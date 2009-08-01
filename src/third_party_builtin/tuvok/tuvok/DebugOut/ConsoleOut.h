@@ -40,7 +40,6 @@
 #ifndef CONSOLEOUT_H
 #define CONSOLEOUT_H
 
-#include "../StdTuvokDefines.h"
 #include "AbstrDebugOut.h"
 
 class ConsoleOut : public AbstrDebugOut {

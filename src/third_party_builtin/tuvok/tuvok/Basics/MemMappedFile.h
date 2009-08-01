@@ -40,9 +40,8 @@
 #ifndef MEMMAPPEDFILE_H
 #define MEMMAPPEDFILE_H
 
-#include "../StdTuvokDefines.h"
 #include <string>
-#include "../Basics/MathTools.h"
+#include "StdDefines.h"
 
 #ifdef _WIN32
   #include <windows.h>

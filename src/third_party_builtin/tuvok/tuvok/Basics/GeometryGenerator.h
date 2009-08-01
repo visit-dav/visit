@@ -40,8 +40,8 @@
 #ifndef GEOMETRYGENERATOR_H
 #define GEOMETRYGENERATOR_H
 
-#include "../StdTuvokDefines.h"
 #include <vector>
+#include "../Basics/StdDefines.h"
 #include "../Basics/Vectors.h"
 
 class PosNormalVertex {

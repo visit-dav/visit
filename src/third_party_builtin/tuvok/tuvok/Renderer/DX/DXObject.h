@@ -43,7 +43,7 @@
 
 #include "../../StdTuvokDefines.h"
 #include "../GPUObject.h"
-#include "DXInclude.h"
+#include "../../Basics/DynamicDX.h"
 
 /** Base for all DirectX types which will utilize GPU memory.
  * Forces children to keep track of memory use on both the CPU and GPU,

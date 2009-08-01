@@ -41,16 +41,25 @@
 
 #include <deque>
 #include <string>
+#include <vector>
+#include "GL/glew.h"
+#include "boost/noncopyable.hpp"
+#include "Basics/Vectors.h"
+#include "../Context.h"
 #include "../../StdTuvokDefines.h"
-#include "../AbstrRenderer.h"
-#include "../GL/GLTexture1D.h"
-#include "../GL/GLTexture2D.h"
-#include "../GL/GLTexture3D.h"
 #include "../GL/GLFBOTex.h"
 #include "../GL/GLSLProgram.h"
-#include "../../IO/VolumeDataset.h"
-#include "../../IO/TransferFunction1D.h"
-#include "../../IO/TransferFunction2D.h"
+
+class AbstrRenderer;
+class GLTexture1D;
+class GLTexture2D;
+class GLTexture3D;
+class TransferFunction1D;
+class TransferFunction2D;
+class VolumeDataset;
+namespace tuvok {
+  class Dataset;
+};
 
 typedef std::deque< AbstrRenderer* > AbstrRendererList;
 typedef AbstrRendererList::iterator AbstrRendererListIter;
@@ -58,13 +67,13 @@ typedef AbstrRendererList::iterator AbstrRendererListIter;
 // volume datasets
 class VolDataListElem {
 public:
-  VolDataListElem(VolumeDataset* _pVolumeDataset, AbstrRenderer* pUser) :
+  VolDataListElem(tuvok::Dataset* _pVolumeDataset, AbstrRenderer* pUser) :
     pVolumeDataset(_pVolumeDataset)
   {
     qpUser.push_back(pUser);
   }
 
-  VolumeDataset*  pVolumeDataset;
+  tuvok::Dataset*   pVolumeDataset;
   AbstrRendererList qpUser;
 };
 typedef std::deque<VolDataListElem> VolDataList;
@@ -121,36 +130,57 @@ typedef std::deque<Trans2DListElem> Trans2DList;
 typedef Trans2DList::iterator Trans2DListIter;
 
 // 3D textures
-class Texture3DListElem {
+/// For equivalent contexts, it might actually be valid to copy a 3D texture
+/// object.  However, for one, this is untested.  Secondly, this object may
+/// hold the chunk of data for the 3D texture, so copying it in the general
+/// case would be a bad idea -- the copy might be large.
+class Texture3DListElem : boost::noncopyable {
 public:
-  Texture3DListElem(VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD,
+  Texture3DListElem(tuvok::Dataset* _pDataset,
+                    const std::vector<UINT64>& _vLOD,
                     const std::vector<UINT64>& _vBrick,
                     bool bIsPaddedToPowerOfTwo, bool bDisableBorder,
                     bool bIsDownsampledTo8Bits, UINT64 iIntraFrameCounter,
-                    UINT64 iFrameCounter, MasterController* pMasterController);
+                    UINT64 iFrameCounter, MasterController* pMasterController,
+                    const tuvok::CTContext &,
+                    std::vector<unsigned char>& vUploadHub);
   ~Texture3DListElem();
 
-  bool Equals(const VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD,
+  bool Equals(const tuvok::Dataset* _pDataset,
+              const std::vector<UINT64>& _vLOD,
               const std::vector<UINT64>& _vBrick, bool bIsPaddedToPowerOfTwo,
-              bool bIsDownsampledTo8Bits, bool bDisableBorder);
-  bool Replace(VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD,
+              bool bIsDownsampledTo8Bits, bool bDisableBorder,
+              const tuvok::CTContext &);
+  bool Replace(tuvok::Dataset* _pDataset, const std::vector<UINT64>& _vLOD,
                const std::vector<UINT64>& _vBrick, bool bIsPaddedToPowerOfTwo,
                bool bIsDownsampledTo8Bits, bool bDisableBorder,
-               UINT64 iIntraFrameCounter, UINT64 iFrameCounter);
+               UINT64 iIntraFrameCounter, UINT64 iFrameCounter,
+               const tuvok::CTContext &,
+               std::vector<unsigned char>& vUploadHub);
   bool BestMatch(const std::vector<UINT64>& vDimension,
                  bool bIsPaddedToPowerOfTwo, bool bIsDownsampledTo8Bits,
                  bool bDisableBorder, UINT64& iIntraFrameCounter,
-                 UINT64& iFrameCounter);
+                 UINT64& iFrameCounter, const tuvok::CTContext &);
+  bool BestMatch(const UINT64VECTOR3& vDimension,
+                 bool bIsPaddedToPowerOfTwo, bool bIsDownsampledTo8Bits,
+                 bool bDisableBorder, UINT64& iIntraFrameCounter,
+                 UINT64& iFrameCounter, const tuvok::CTContext &ctx);
+  void GetCounters(UINT64& iIntraFrameCounter, UINT64& iFrameCounter) {
+    iIntraFrameCounter = m_iIntraFrameCounter;
+    iFrameCounter = m_iFrameCounter;
+  }
+
   GLTexture3D* Access(UINT64& iIntraFrameCounter, UINT64& iFrameCounter);
 
-  bool LoadData();
+  bool LoadData(std::vector<unsigned char>& vUploadHub);
   void  FreeData();
-  bool CreateTexture(bool bDeleteOldTexture=true);
+  bool CreateTexture(std::vector<unsigned char>& vUploadHub,
+                     bool bDeleteOldTexture=true);
   void  FreeTexture();
 
-  unsigned char*      pData;
+  std::vector<unsigned char> vData;
   GLTexture3D*        pTexture;
-  VolumeDataset*      pDataset;
+  tuvok::Dataset*     pDataset;
   UINT32              iUserCount;
 
   UINT64 GetIntraFrameCounter() const {return m_iIntraFrameCounter;}
@@ -162,12 +192,14 @@ private:
   UINT64 m_iIntraFrameCounter;
   UINT64 m_iFrameCounter;
   MasterController* m_pMasterController;
+  const tuvok::CTContext m_Context;
 
   std::vector<UINT64> vLOD;
   std::vector<UINT64> vBrick;
   bool m_bIsPaddedToPowerOfTwo;
   bool m_bIsDownsampledTo8Bits;
   bool m_bDisableBorder;
+  bool m_bUsingHub;
 };
 
 typedef std::deque<Texture3DListElem*> Texture3DList;

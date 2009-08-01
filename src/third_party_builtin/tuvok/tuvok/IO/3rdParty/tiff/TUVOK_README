@@ -1,0 +1,12 @@
+This is a special version of libtiff-3.8.2.  The original version is available
+from:
+  ftp://ftp.remotesensing.org/pub/libtiff
+
+This distribution is missing critical files required to use libtiff.
+It is meant only for use with the Tuvok volume rendering library.
+Tuvok and libtiff are distributed under different but compatible
+licenses.  If you want to use libtiff in your own projects, this is not
+the source you should use: see the above link.
+
+Please report issues with this library to the Tuvok developers; do NOT report
+problems to the libtiff developers!

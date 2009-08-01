@@ -33,21 +33,26 @@
 //!             University of Utah
 //!    Date   : January 2009
 //
-//!    Copyright (C) 2008 SCI Institute
+//!    Copyright (C) 2009 SCI Institute
 
-#include "Scripting.h"
-#include <Controller/Controller.h>
-#include <Basics/SysTools.h>
-#include <QtCore/QTime>
-#include <QtCore/QDate>
-
-#include <sstream>
+#include <algorithm>
+#include <fstream>
 #include <limits>
+#ifndef TUVOK_NO_QT
+# include <QtCore/QTime>
+# include <QtCore/QDate>
+#endif
+#include "Scripting.h"
+
+#include "Basics/SysTools.h"
+#include "Controller/Controller.h"
 
 using namespace std;
 
-
-ScriptableListElement::ScriptableListElement(Scriptable* source, const std::string& strCommand, const std::string& strParameters, const std::string& strDescription) :
+ScriptableListElement::ScriptableListElement(Scriptable* source,
+                                             const std::string& strCommand,
+                                             const std::string& strParameters,
+                                             std::string strDescription) :
       m_source(source),
       m_strCommand(strCommand),
       m_strDescription(strDescription)
@@ -76,29 +81,43 @@ ScriptableListElement::ScriptableListElement(Scriptable* source, const std::stri
 
 
 Scripting::Scripting() :
+  m_bSorted(false),
   m_bEcho(false)
 {
   RegisterCalls(this);
 }
 
+template<class T> static void Delete(T* t) { delete t; }
+
 Scripting::~Scripting() {
-  for (size_t i = 0;i<m_ScriptableList.size();i++) delete m_ScriptableList[i];
+  std::for_each(m_ScriptableList.begin(), m_ScriptableList.end(),
+                Delete<ScriptableListElement>);
 }
 
 
-bool Scripting::RegisterCommand(Scriptable* source, const std::string& strCommand, const std::string& strParameters, const std::string& strDescription) {
+bool Scripting::RegisterCommand(Scriptable* source,
+                                const std::string& strCommand,
+                                const std::string& strParameters,
+                                std::string strDescription) {
   // commands may not contain whitespaces
   vector<string> strTest = SysTools::Tokenize(strCommand, false);
   if (strTest.size() != 1) return false;
 
   // commands must be unique
-  for (size_t i = 0;i<m_ScriptableList.size();i++) {
-    if (m_ScriptableList[i]->m_strCommand == strCommand) return false;
+  for(ScriptList::const_iterator iter = m_ScriptableList.begin();
+      iter != m_ScriptableList.end(); ++iter) {
+    if((*iter)->m_strCommand == strCommand) {
+      WARNING("Command '%s' is not unique, ignoring.", strCommand.c_str());
+      return false;
+    }
   }
 
   // ok, all seems fine: add the command to the list
-  ScriptableListElement* elem = new ScriptableListElement(source, strCommand, strParameters, strDescription);
-  m_ScriptableList.push_back(elem);
+  ScriptableListElement* elem = new ScriptableListElement(source, strCommand,
+                                                          strParameters,
+                                                          strDescription);
+  m_bSorted = false;
+  m_ScriptableList.push_front(elem);
   return true;
 }
 
@@ -116,11 +135,19 @@ bool Scripting::ParseLine(const string& strLine) {
       Controller::Debug::Out().printf("Input \"%s\" not understood, try \"help\"!", strLine.c_str());
     else
       Controller::Debug::Out().printf(strMessage.c_str());
-  } else 
+  } else
     if (m_bEcho) Controller::Debug::Out().printf("OK (%s)", strLine.c_str());
 
   return bResult;
 }
+
+struct CmpByCmdName: public std::binary_function<bool, ScriptableListElement*,
+                                                 ScriptableListElement*> {
+  bool operator()(const ScriptableListElement* a,
+                  const ScriptableListElement* b) const {
+    return a->m_strCommand <= b->m_strCommand;
+  }
+};
 
 bool Scripting::ParseCommand(const vector<string>& strTokenized, string& strMessage) {
 
@@ -128,12 +155,19 @@ bool Scripting::ParseCommand(const vector<string>& strTokenized, string& strMess
   string strCommand = strTokenized[0];
   vector<string> strParams(strTokenized.begin()+1, strTokenized.end());
 
+  if(!m_bSorted) {
+    MESSAGE("Sorting command list...");
+    m_ScriptableList.sort(CmpByCmdName());
+    m_bSorted = true;
+  }
+
   strMessage = "";
-  for (size_t i = 0;i<m_ScriptableList.size();i++) {
-    if (m_ScriptableList[i]->m_strCommand == strCommand) {
-      if (strParams.size() >= m_ScriptableList[i]->m_iMinParam &&
-          strParams.size() <= m_ScriptableList[i]->m_iMaxParam) {
-        return m_ScriptableList[i]->m_source->Execute(strCommand, strParams, strMessage);
+  for(ScriptList::const_iterator cmd = m_ScriptableList.begin();
+      cmd != m_ScriptableList.end(); ++cmd) {
+    if((*cmd)->m_strCommand == strCommand) {
+      if (strParams.size() >= (*cmd)->m_iMinParam &&
+          strParams.size() <= (*cmd)->m_iMaxParam) {
+        return (*cmd)->m_source->Execute(strCommand, strParams, strMessage);
       } else {
          strMessage = "Parameter mismatch for command \""+strCommand+"\"";
          return false;
@@ -146,7 +180,7 @@ bool Scripting::ParseCommand(const vector<string>& strTokenized, string& strMess
 
 bool Scripting::ParseFile(const std::string& strFilename) {
   string line;
-  ifstream fileData(strFilename.c_str());
+  std::ifstream fileData(strFilename.c_str());
 
   UINT32 iLine=0;
   if (fileData.is_open())
@@ -177,7 +211,7 @@ bool Scripting::ParseFile(const std::string& strFilename) {
 void Scripting::RegisterCalls(Scripting* pScriptEngine) {
   pScriptEngine->RegisterCommand(this, "help", "", "show all commands");
   pScriptEngine->RegisterCommand(this, "execute", "filename", "run the script saved as 'filename'");
-  pScriptEngine->RegisterCommand(this, "echo", "on/off", "turn feedback on succesfull command execution on or off");
+  pScriptEngine->RegisterCommand(this, "echo", "on/off", "turn feedback on successful command execution on or off");
   pScriptEngine->RegisterCommand(this, "time", "","print out the current time");
   pScriptEngine->RegisterCommand(this, "date", "","print out the current date");
   pScriptEngine->RegisterCommand(this, "write", "test","print out 'text'");
@@ -186,43 +220,57 @@ void Scripting::RegisterCalls(Scripting* pScriptEngine) {
 
 bool Scripting::Execute(const std::string& strCommand, const std::vector< std::string >& strParams, std::string& strMessage) {
   strMessage = "";
-  if (strCommand == "echo") { 
+  if (strCommand == "echo") {
     m_bEcho = SysTools::ToLowerCase(strParams[0]) == "on";
     return true;
-  } else 
-  if (strCommand == "execute") { 
+  } else
+  if (strCommand == "execute") {
     return ParseFile(strParams[0]);
-  } else 
+  } else
   if (strCommand == "help") {
     Controller::Debug::Out().printf("Command Listing:");
-    for (size_t i = 0;i<m_ScriptableList.size();i++) {
+    for(ScriptList::const_iterator cmd = m_ScriptableList.begin();
+        cmd != m_ScriptableList.end(); ++cmd) {
       string strParams = "";
-      UINT32 iMin = m_ScriptableList[i]->m_iMinParam;
-      for (size_t j = 0;j<m_ScriptableList[i]->m_vParameters.size();j++) {
+      UINT32 iMin = (*cmd)->m_iMinParam;
+      for (size_t j = 0; j < (*cmd)->m_vParameters.size(); j++) {
         if (j < iMin) {
-          if (m_ScriptableList[i]->m_vParameters[j] == "...") iMin++;
-          strParams = strParams + m_ScriptableList[i]->m_vParameters[j];
+          if ((*cmd)->m_vParameters[j] == "...") iMin++;
+          strParams = strParams + (*cmd)->m_vParameters[j];
         } else {
-          strParams = strParams + "["+m_ScriptableList[i]->m_vParameters[j]+"]";
+          strParams = strParams + "[" + (*cmd)->m_vParameters[j]+  "]";
         }
-        if (j != m_ScriptableList[i]->m_vParameters.size()-1) strParams = strParams + " ";
+        if (j != (*cmd)->m_vParameters.size()-1) strParams = strParams + " ";
       }
 
-      Controller::Debug::Out().printf("\"%s\" %s: %s", m_ScriptableList[i]->m_strCommand.c_str(), strParams.c_str(), m_ScriptableList[i]->m_strDescription.c_str());
+      Controller::Debug::Out().printf("\"%s\" %s: %s",
+                                      (*cmd)->m_strCommand.c_str(),
+                                      strParams.c_str(),
+                                      (*cmd)->m_strDescription.c_str());
     }
     return true;
   } else
-  if (strCommand == "time") { 
-    string strTime(QTime::currentTime().toString().toAscii()); 
-    Controller::Debug::Out().printf(strTime.c_str());
+  if (strCommand == "time") {
+#ifndef TUVOK_NO_QT
+    static QTime qt;
+    if(!qt.isNull() && qt.secsTo(QTime::currentTime()) < 1) {
+      Controller::Debug::Out().printf("To get a watch!");
+    } else {
+      qt = QTime::currentTime();
+      std::string strTime(qt.toString().toAscii());
+      Controller::Debug::Out().printf(strTime.c_str());
+    }
+#endif
     return true;
-  } else 
-  if (strCommand == "date") { 
-    string strDate(QDate::currentDate().toString().toAscii()); 
+  } else
+  if (strCommand == "date") {
+#ifndef TUVOK_NO_QT
+    string strDate(QDate::currentDate().toString().toAscii());
     Controller::Debug::Out().printf(strDate.c_str());
+#endif
     return true;
-  } else 
-  if (strCommand == "write") { 
+  } else
+  if (strCommand == "write") {
     Controller::Debug::Out().printf(strParams[0].c_str());
     return true;
   }

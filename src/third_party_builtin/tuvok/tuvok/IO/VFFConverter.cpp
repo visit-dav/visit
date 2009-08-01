@@ -34,14 +34,12 @@
   \date    December 2008
 */
 
+#include <fstream>
 #include "VFFConverter.h"
-#include "IOManager.h"  // for the size defines
 #include <Controller/Controller.h>
-#include <Basics/SysTools.h>
 #include <IO/KeyValueFileParser.h>
 
 using namespace std;
-
 
 VFFConverter::VFFConverter()
 {

@@ -41,9 +41,8 @@
 #ifndef TEXTFILEOUT_H
 #define TEXTFILEOUT_H
 
-#include "../StdTuvokDefines.h"
-#include "AbstrDebugOut.h"
 #include <string>
+#include "AbstrDebugOut.h"
 
 class TextfileOut : public AbstrDebugOut{
   public:
@@ -53,10 +52,17 @@ class TextfileOut : public AbstrDebugOut{
     virtual void Message(const char* source, const char* format, ...);
     virtual void Warning(const char* source, const char* format, ...);
     virtual void Error(const char* source, const char* format, ...);
+
+    const std::string& GetFileName() const {return m_strFilename;}
+
+  private:
+    TextfileOut(const TextfileOut &); ///< unimplemented.
+
   private:
     std::string m_strFilename;
 
-    void _printf(const char* format, ...) const; //< same as printf above but does regard m_bShowOther
+    /// same as printf above but does regard m_bShowOther
+    void _printf(const char* format, ...) const;
 };
 
 #endif // TEXTFILEOUT_H

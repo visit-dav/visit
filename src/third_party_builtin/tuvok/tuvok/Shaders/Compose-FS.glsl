@@ -62,7 +62,7 @@ void main(void){
 	vec3 vViewDir    = normalize(vec3(0.0,0.0,0.0)-vPosition.xyz);
 	vec3 vReflection = normalize(reflect(vViewDir, vNormal));
 	vec3 vLightColor = vLightAmbient+
-					   vLightDiffuse*max(dot(vNormal, -vLightDir),0.0)+
+					   vLightDiffuse*max(abs(dot(vNormal, -vLightDir)),0.0)+
 					   vLightSpecular*pow(max(dot(vReflection, vLightDir),0.0),8.0);
 
 	/// write result to fragment color

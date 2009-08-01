@@ -1,0 +1,25 @@
+This is a subset of the IJG's JPEG library, version 6, with some additional
+patches for reading lossless JPEGs, and some other modifications taken from the
+GDCM library.  The IJG library can be found at:
+
+  ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v6b.tar.gz
+
+The applied patch can be found at:
+
+  ftp://ftp.graphicsmagick.org/pub/GraphicsMagick/delegates/ljpeg-6b.tar.gz
+
+The GDCM homepage is:
+
+  http://gdcm.sourceforge.net/
+
+We strongly discourage you from using the version that exists here in
+your own software.  You probably want to download the full IJG source
+distribution and use that.  If you have a particular need to read
+losslessly-encoded JPEGs, the aforementioned patch or GDCM's version of
+the library would be of use to you.  Do note that (so far) we have only
+encountered such images in evil DICOM files, so if you're wondering
+whether or not you need the patch in your application, you probably
+don't.
+
+Tuvok and IJG are distributed under different but compatible licenses.  See the
+README document in this directory for details.

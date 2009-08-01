@@ -40,12 +40,11 @@
 #ifndef DIRECTORYPARSER_H
 #define DIRECTORYPARSER_H
 
-#include "../StdTuvokDefines.h"
-#include <string>
-#include <vector>
 #include <fstream>
+#include <vector>
+#include <string>
+#include "../StdTuvokDefines.h"
 #include "../Basics/Vectors.h"
-#include "../Basics/EndianConvert.h"
 
 class SimpleFileInfo {
 public:

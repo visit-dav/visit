@@ -66,7 +66,7 @@ bool DynamicDX::InitializeDX() {
 #endif
 
   // try a few different D3DX10 DLLs
-  for (int i = 40; i>=33; i--) {
+  for (int i = 42; i>=33; i--) {
     wstringstream wstrD3DX10DLL;
     wstrD3DX10DLL << wstrD3DX10DLL_prefix << i << ".dll";
     m_iD3DX10Version = i;

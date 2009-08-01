@@ -53,11 +53,9 @@
   #ifdef min
   #undef min
   #endif
-#else
-  // #include "../../3rdParty/GLEW/glxew.h" // glxew and QT do not really like each other
 #endif
 
-#ifdef TUVOK_OS_APPLE
+#ifdef DETECTED_OS_APPLE
   #include <OpenGL/gl.h>
 #else
   #include <GL/gl.h>

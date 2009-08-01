@@ -33,7 +33,6 @@
            University of Utah
   \date    September 2008
 */
-
 #pragma once
 
 #include <vector>

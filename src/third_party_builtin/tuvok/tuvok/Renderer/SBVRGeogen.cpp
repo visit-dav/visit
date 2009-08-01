@@ -39,8 +39,7 @@
 #include <functional>
 #include <limits>
 #include "SBVRGeogen.h"
-
-#include <Basics/MathTools.h>
+#include "Controller/Controller.h"
 
 static bool CheckOrdering(const FLOATVECTOR3& a, const FLOATVECTOR3& b,
                           const FLOATVECTOR3& c);
@@ -387,6 +386,8 @@ void SBVRGeogen::ComputeGeometry() {
     const float d = transformed.d();
     m_vSliceTriangles = ClipTriangles(m_vSliceTriangles, normal, d);
   }
+  MESSAGE("%u triangles generated.",
+          static_cast<UINT32>(m_vSliceTriangles.size()));
 }
 
 void SBVRGeogen::SetVolumeData(const FLOATVECTOR3& vAspect, const UINTVECTOR3& vSize) {
@@ -398,7 +399,6 @@ void SBVRGeogen::SetLODData(const UINTVECTOR3& vSize) {
   m_vLODSize = vSize;
 }
 
-#include "Controller/Controller.h"
 void SBVRGeogen::SetBrickData(const FLOATVECTOR3& vAspect,
                               const UINTVECTOR3& vSize,
                               const FLOATVECTOR3& vTexCoordMin,
@@ -407,10 +407,6 @@ void SBVRGeogen::SetBrickData(const FLOATVECTOR3& vAspect,
   m_vSize         = vSize;
   m_vTexCoordMin  = vTexCoordMin;
   m_vTexCoordMax  = vTexCoordMax;
-  MESSAGE("SBVRgeom: aspect (%f,%f,%f)", vAspect.x, vAspect.y, vAspect.z);
-  MESSAGE("SBVRgeom: size   (%u,%u,%u)", vSize.x, vSize.y, vSize.z);
-  MESSAGE("SBVRgeom: texmin (%f,%f,%f)", vTexCoordMin.x, vTexCoordMin.y, vTexCoordMin.z);
-  MESSAGE("SBVRgeom: texmax (%f,%f,%f)", vTexCoordMax.x, vTexCoordMax.y, vTexCoordMax.z);
   InitBBOX();
 }
 

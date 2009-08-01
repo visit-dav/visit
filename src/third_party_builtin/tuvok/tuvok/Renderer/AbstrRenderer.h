@@ -34,8 +34,6 @@
   \version 1.0
   \date    August 2008
 */
-
-
 #pragma once
 
 #ifndef ABSTRRENDERER_H
@@ -44,10 +42,11 @@
 #include <string>
 
 #include "../StdTuvokDefines.h"
-#include "../IO/VolumeDataset.h"
 #include "../Renderer/CullingLOD.h"
-#include "../Basics/GeometryGenerator.h"
+#include "../IO/Metadata.h"
+#include "../IO/Dataset.h"
 #include "../Basics/Plane.h"
+#include "../Basics/GeometryGenerator.h"
 
 class TransferFunction1D;
 class TransferFunction2D;
@@ -91,6 +90,14 @@ class MasterController;
 class AbstrRenderer {
   public:
 
+    enum ERendererType {
+      RT_SBVR = 0,
+      RT_RC,
+      RT_INVALID
+    };
+
+    virtual ERendererType GetRendererType() {return RT_INVALID;}
+
     enum ERenderArea {
       RA_TOPLEFT = 0,
       RA_TOPRIGHT,
@@ -118,12 +125,13 @@ class AbstrRenderer {
     virtual void SetViewmode(EViewMode eViewMode);
 
     enum EWindowMode {
-      WM_CORONAL = 0,
+      WM_SAGITTAL = 0,
       WM_AXIAL,
-      WM_SAGITTAL,
+      WM_CORONAL,
       WM_3D,
       WM_INVALID
     };
+
     EWindowMode Get2x2Windowmode(ERenderArea eArea) const
         { return m_e2x2WindowMode[size_t(eArea)]; }
     virtual void Set2x2Windowmode(ERenderArea eArea, EWindowMode eWindowMode);
@@ -144,6 +152,10 @@ class AbstrRenderer {
     bool GetUseLighting() const { return m_bUseLighting; }
     virtual void SetUseLighting(bool bUseLighting);
 
+    enum ScalingMethod {
+      SMETH_BIT_WIDTH=0,    ///< scaled based on DS and TF bit width
+      SMETH_BIAS_AND_SCALE  ///< bias + scale factors of DS calculated
+    };
     /** Default settings: 1D transfer function, single-image view, white text,
      * black BG.
      * @param pMasterController message router
@@ -151,9 +163,12 @@ class AbstrRenderer {
      *                           do not support npot textures.
      * @param bDownSampleTo8Bits force 8bit textures, for systems that do not
      *                           support 16bit textures (or 16bit linear
-     *                           interpolation). */
+     *                           interpolation).
+     * @param bDisableBorder     don't use OpenGL borders for textures.
+     * @param smeth              method to scale values into TF range */
     AbstrRenderer(MasterController* pMasterController, bool bUseOnlyPowerOfTwo,
-                  bool bDownSampleTo8Bits, bool bDisableBorder);
+                  bool bDownSampleTo8Bits, bool bDisableBorder,
+                  enum ScalingMethod smeth = SMETH_BIT_WIDTH);
     /** Deallocates dataset and transfer functions. */
     virtual ~AbstrRenderer();
     /** Sends a message to the master to ask for a dataset to be loaded.
@@ -179,13 +194,14 @@ class AbstrRenderer {
 
     /// Sets the dataset from external source; only meant to be used by clients
     /// which don't want to use the LOD subsystem.
-    void SetDataSet(VolumeDataset *vds);
+    void SetDataset(tuvok::Dataset *vds);
 
-    VolumeDataset&       GetDataSet()       { return *m_pDataset; }
-    const VolumeDataset& GetDataSet() const { return *m_pDataset; }
+    tuvok::Dataset&       GetDataset()       { return *m_pDataset; }
+    const tuvok::Dataset& GetDataset() const { return *m_pDataset; }
 
     TransferFunction1D* Get1DTrans() {return m_p1DTrans;}
     TransferFunction2D* Get2DTrans() {return m_p2DTrans;}
+    virtual void Set1DTrans(const std::vector<unsigned char>& rgba);
 
     /** Notify renderer that 1D TF has changed.  In most cases, this will cause
      * the renderer to start anew. */
@@ -233,6 +249,9 @@ class AbstrRenderer {
 
     virtual void SetRenderCoordArrows(bool bRenderCoordArrows);
     virtual bool GetRenderCoordArrows() const {return m_bRenderCoordArrows;}
+    
+    virtual void Set2DPlanesIn3DView(bool bRenderPlanesIn3D);
+    virtual bool Get2DPlanesIn3DView() const {return m_bRenderPlanesIn3D;}
 
     /** Change the size of the render window.  Any previous image is
      * destroyed, causing a full redraw on the next render.
@@ -246,6 +265,7 @@ class AbstrRenderer {
     virtual void DisableClipPlane();
     virtual void ShowClipPlane(bool);
     virtual void ClipPlaneRelativeLock(bool);
+    virtual bool CanDoClipPlane() {return true;}
     bool ClipPlaneEnabled() const { return m_bClipPlaneOn; }
     bool ClipPlaneShown() const   { return m_bClipPlaneDisplayed; }
     bool ClipPlaneLocked() const  { return m_bClipPlaneLocked; }
@@ -295,10 +315,10 @@ class AbstrRenderer {
       m_iMinFramerate = iMinFramerate; m_iStartDelay = iStartDelay;
     }
     void SetRescaleFactors(const DOUBLEVECTOR3& vfRescale) {
-      m_pDataset->GetInfo()->SetRescaleFactors(vfRescale); ScheduleCompleteRedraw();
+      m_pDataset->GetInfo().SetRescaleFactors(vfRescale); ScheduleCompleteRedraw();
     }
     DOUBLEVECTOR3 GetRescaleFactors() {
-      return m_pDataset->GetInfo()->GetRescaleFactors();
+      return m_pDataset->GetInfo().GetRescaleFactors();
     }
 
     void SetCaptureMode(bool bCaptureMode) {m_bCaptureMode = bCaptureMode;}
@@ -345,15 +365,32 @@ class AbstrRenderer {
       m_bPerformRedraw = true;
     }
 
-    /// Appends the given directory to the list of paths Tuvok will try to find
-    /// shaders in.
+    /// Prepends the given directory to the list of paths Tuvok will
+    /// try to find shaders in.
     void AddShaderPath(const std::string &path) {
-      m_vShaderSearchDirs.push_back(path);
+      m_vShaderSearchDirs.insert(m_vShaderSearchDirs.begin(), path);
+    }
+
+    void SetViewParameters(float angle, float znear, float zfar,
+                           const FLOATVECTOR3& eye,
+                           const FLOATVECTOR3& ref,
+                           const FLOATVECTOR3& vup) {
+      m_vEye = eye;
+      m_vAt = ref;
+      m_vUp = vup;
+      m_fFOV = angle;
+      m_fZNear = znear;
+      m_fZFar = zfar;
+    }
+
+    void SetScalingMethod(enum ScalingMethod sm) {
+      this->m_TFScalingMethod = sm;
     }
 
   protected:
     MasterController*   m_pMasterController;
     bool                m_bPerformRedraw;
+    float               m_fMsecPassed[2];
     bool                m_bRedrawMask[4];
     ERenderMode         m_eRenderMode;
     EViewMode           m_eViewMode;
@@ -364,7 +401,7 @@ class AbstrRenderer {
     UINT64              m_piSlice[3];
     EBlendPrecision     m_eBlendPrecision;
     bool                m_bUseLighting;
-    VolumeDataset*      m_pDataset;
+    tuvok::Dataset*     m_pDataset;
     TransferFunction1D* m_p1DTrans;
     TransferFunction2D* m_p2DTrans;
     float               m_fSampleRateModifier;
@@ -389,7 +426,9 @@ class AbstrRenderer {
     UINT64              m_iFrameCounter;
     UINT32              m_iCheckCounter;
     UINT64              m_iMaxLODIndex;
+    UINT64              m_iPerformanceBasedLODSkip;
     UINT64              m_iCurrentLODOffset;
+    UINT64              m_iStartLODOffset;
     CullingLOD          m_FrustumCullingLOD;
     bool                m_bClearFramebuffer;
     UINT64              m_iCurrentLOD;
@@ -402,6 +441,7 @@ class AbstrRenderer {
     FLOATMATRIX4        m_maMIPRotation;
     bool                m_bOrthoView;
     bool                m_bRenderCoordArrows;
+    bool                m_bRenderPlanesIn3D;
 
     bool                m_bDoClearView;
     float               m_fCVIsovalue;
@@ -422,6 +462,7 @@ class AbstrRenderer {
     bool                m_bDownSampleTo8Bits;
     bool                m_bDisableBorder;
     bool                m_bAvoidSeperateCompositing;
+    enum ScalingMethod  m_TFScalingMethod;
 
     FLOATMATRIX4        m_mProjection[2];
     FLOATMATRIX4        m_mView[2];
@@ -433,8 +474,16 @@ class AbstrRenderer {
     bool                m_bClipPlaneDisplayed;
     bool                m_bClipPlaneLocked;
 
+    /// view parameters.
+    ///@{
+    FLOATVECTOR3        m_vEye, m_vAt, m_vUp;
+    float               m_fFOV;
+    float               m_fZNear, m_fZFar;
+    ///@}
+
     virtual void        ScheduleRecompose();
     void                ComputeMinLODForCurrentView();
+    void                ComputeMaxLODForCurrentView();
     void                Plan3DFrame();
     void                PlanHQMIPFrame();
     std::vector<Brick>  BuildSubFrameBrickList(bool bUseResidencyAsDistanceCriterion=false);

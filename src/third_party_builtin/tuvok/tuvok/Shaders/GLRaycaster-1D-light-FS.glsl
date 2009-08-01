@@ -139,7 +139,7 @@ void main(void)
       vec3 vViewDir    = normalize(vec3(0,0,0)-vCurrentPos);
       vec3 vReflection = normalize(reflect(vViewDir, vNormal));
       vec3 vLightColor = vLightAmbient+
-                         vLightDiffuse*max(dot(vNormal, -vLightDir),0.0)*vTransVal.xyz+
+                         vLightDiffuse*max(abs(dot(vNormal, -vLightDir)),0.0)*vTransVal.xyz+
                          vLightSpecular*pow(max(dot(vReflection, vLightDir),0.0),8.0);
       
       

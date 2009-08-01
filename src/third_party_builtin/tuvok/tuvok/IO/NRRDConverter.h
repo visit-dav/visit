@@ -61,8 +61,6 @@ public:
                                UINT64 iComponentSize, UINT64 iComponentCount, bool bSigned, bool bFloatingPoint, 
                                UINTVECTOR3 vVolumeSize,FLOATVECTOR3 vVolumeAspect, bool bNoUserInteraction);
 
-protected:
-
+  virtual bool CanExportData() const {return true;}
 };
-
 #endif // NRRDCONVERTER_H

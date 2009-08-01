@@ -35,12 +35,10 @@
            tum.3D, Muenchen
   \date    August 2008
 */
-#ifndef GLFBOTEX_H_
-#define GLFBOTEX_H_
+#ifndef TUVOK_GLFBOTEX_H_
+#define TUVOK_GLFBOTEX_H_
 
 #include "../../StdTuvokDefines.h"
-#include <assert.h>
-#include <stdlib.h>
 #include "GLObject.h"
 
 class MasterController;
@@ -59,31 +57,18 @@ public:
   virtual operator GLuint*(void) { return m_hTexture; }
 
   /// \todo check how much mem an FBO really occupies
-  virtual UINT64 GetCPUSize() {return m_iNumBuffers*m_iSizeX*m_iSizeY*m_iSizePerElement + ((m_hDepthBuffer) ? m_iSizeX*m_iSizeY*4 : 0);}
-  virtual UINT64 GetGPUSize() {return GetCPUSize();}
+  virtual UINT64 GetCPUSize() {return EstimateCPUSize(m_iSizeX, m_iSizeY, m_iSizePerElement, m_hDepthBuffer!=0, m_iNumBuffers);}
+  virtual UINT64 GetGPUSize() {return EstimateGPUSize(m_iSizeX, m_iSizeY, m_iSizePerElement, m_hDepthBuffer!=0, m_iNumBuffers);}
 
-  static void NoDrawBuffer() { glDrawBuffer(GL_NONE); }
-  static void OneDrawBuffer() { glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT); }
-  static void TwoDrawBuffers() {
-    GLenum twobuffers[]  = { GL_COLOR_ATTACHMENT0_EXT,
-                             GL_COLOR_ATTACHMENT1_EXT };
-    glDrawBuffers(2, twobuffers);
-  }
-  static void ThreeDrawBuffers() {
-    GLenum threebuffers[]  = { GL_COLOR_ATTACHMENT0_EXT,
-                              GL_COLOR_ATTACHMENT1_EXT,
-                              GL_COLOR_ATTACHMENT2_EXT};
-    glDrawBuffers(3, threebuffers);
-  }
-  static void FourDrawBuffers() {
-    GLenum fourbuffers[]  = { GL_COLOR_ATTACHMENT0_EXT,
-                              GL_COLOR_ATTACHMENT1_EXT,
-                              GL_COLOR_ATTACHMENT2_EXT,
-                              GL_COLOR_ATTACHMENT3_EXT};
-    glDrawBuffers(4, fourbuffers);
-  }
+  static UINT64 EstimateCPUSize(GLsizei width, GLsizei height, unsigned int iSizePerElement, bool bHaveDepth=false, int iNumBuffers=1) {return iNumBuffers*width*height*iSizePerElement + ((bHaveDepth) ? width*height*4 : 0);}
+  static UINT64 EstimateGPUSize(GLsizei width, GLsizei height, unsigned int iSizePerElement, bool bHaveDepth=false, int iNumBuffers=1) {return EstimateCPUSize(width, height, iSizePerElement, bHaveDepth, iNumBuffers);}
 
 
+  static void NoDrawBuffer();
+  static void OneDrawBuffer();
+  static void TwoDrawBuffers();
+  static void ThreeDrawBuffers();
+  static void FourDrawBuffers();
 
 private:
   MasterController*   m_pMasterController;
@@ -104,6 +89,4 @@ private:
   void                initFBO(void);
   void                initTextures(GLenum minfilter, GLenum magfilter, GLenum wrapmode, GLsizei width, GLsizei height, GLenum intformat);
 };
-
-
-#endif  // GLFBOTEX_H_
+#endif  // TUVOK_GLFBOTEX_H_

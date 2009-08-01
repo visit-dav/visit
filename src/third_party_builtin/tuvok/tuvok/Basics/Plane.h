@@ -38,7 +38,6 @@
 #ifndef TUVOK_PLANE_H 
 #define TUVOK_PLANE_H
 
-#include <cassert>
 #include <vector>
 #include "Vectors.h"
 
@@ -101,5 +100,4 @@ class ExtendedPlane {
     FLOATVECTOR3 m_Perpendicular; ///< a vector perpendicular to the normal
     FLOATVECTOR3 m_Point;         ///< a point on the plane
 };
-
 #endif // TUVOK_PLANE_H

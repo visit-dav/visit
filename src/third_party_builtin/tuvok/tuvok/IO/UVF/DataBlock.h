@@ -4,7 +4,6 @@
 #define DATABLOCK_H
 
 #include <string>
-#include <vector>
 #include "UVFTables.h"
 
 class DataBlock {

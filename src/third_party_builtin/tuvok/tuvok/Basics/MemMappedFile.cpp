@@ -44,7 +44,6 @@ using namespace std;
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
-#include <iostream>
 #include <stdlib.h>
 #include <memory.h>
 

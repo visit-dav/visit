@@ -40,14 +40,20 @@
 #ifndef TRANSFERFUNCTION2D
 #define TRANSFERFUNCTION2D
 
-#include "../StdTuvokDefines.h"
 #include <fstream>
 #include <string>
 #include <vector>
+/// @todo FIXME remove this dependency:
+#ifdef TUVOK_NO_QT
+typedef void* QImage;
+typedef void* QPainter;
+#else
+# include <QtGui/QImage>
+# include <QtGui/QPainter>
+#endif
+#include "../StdTuvokDefines.h"
 #include "../Basics/Vectors.h"
 #include "../Basics/Grids.h"
-
-#include <QtGui/QPainter>
 
 #include "TransferFunction1D.h"
 
@@ -61,11 +67,12 @@ typedef std::pair< float, FLOATVECTOR4 > GradientStop;
 
 class TFPolygon {
   public:
-    TFPolygon() {}
+    TFPolygon() : bRadial(false) {}
 
     void Load(std::ifstream& file);
     void Save(std::ofstream& file) const;
 
+    bool                        bRadial;
     std::vector< FLOATVECTOR2 > pPoints;
     FLOATVECTOR2 pGradientCoords[2];
     std::vector< GradientStop > pGradientStops;
@@ -84,6 +91,8 @@ public:
   void Resize(const NormalizedHistogram2D& hist) {Resize(hist.GetSize());}
   void Resize(const VECTOR2<size_t>& iSize);
 
+  void Resample(const VECTOR2<size_t>& iSize);
+
   bool Load(const std::string& filename);
   bool Load(const std::string& filename, const VECTOR2<size_t>& vTargetSize);
   bool Save(const std::string& filename) const;
@@ -98,6 +107,11 @@ public:
   std::vector< TFPolygon > m_Swatches;
 
   const VECTOR2<size_t> GetSize() const {return m_iSize;}
+  const VECTOR2<size_t> GetRenderSize() const {
+    return m_iSize.x > m_iSize.y ?
+           VECTOR2<size_t>(m_iSize.x, static_cast<size_t>(m_iSize.x/2.0)) :
+           VECTOR2<size_t>(m_iSize.y*2, m_iSize.y);
+  }
 
   void ComputeNonZeroLimits();
   const UINT64VECTOR4& GetNonZeroLimits() { return m_vValueBBox;}
@@ -109,15 +123,16 @@ public:
 protected:
   TransferFunction1D m_Trans1D;
   QImage             m_Trans1DImage;
-  VECTOR2<size_t> m_iSize;
+  VECTOR2<size_t>    m_iSize;
   ColorData2D* RenderTransferFunction();
   unsigned char* RenderTransferFunction8Bit();
-  INTVECTOR2 Rel2Abs(FLOATVECTOR2 vfCoord) const;
+  INTVECTOR2 Normalized2Offscreen(FLOATVECTOR2 vfCoord, VECTOR2<size_t> iSize) const;
 
 private:
   ColorData2D*      m_pColorData;
-  QImage*           m_pCanvas;
-  QPainter*         m_pPainter;
+  unsigned char*    m_pPixelData;
+  QPainter          m_Painter;
+  QImage*           m_pRCanvas;
   UINT64VECTOR4     m_vValueBBox;
   bool              m_bUseCachedData;
 

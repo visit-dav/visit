@@ -1,7 +1,5 @@
 #include "KeyValuePairDataBlock.h"
 
-#include "UVF.h"
-
 using namespace std;
 using namespace UVFTables;
 

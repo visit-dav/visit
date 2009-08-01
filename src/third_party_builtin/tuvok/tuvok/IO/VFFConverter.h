@@ -34,8 +34,6 @@
   \version 1.0
   \date    December 2008
 */
-
-
 #pragma once
 
 #ifndef VFFCONVERTER_H
@@ -63,8 +61,7 @@ public:
                                UINT64 iComponentSize, UINT64 iComponentCount, bool bSigned, bool bFloatingPoint,
                                UINTVECTOR3 vVolumeSize,FLOATVECTOR3 vVolumeAspect, bool bNoUserInteraction);
 
-protected:
-
+  virtual bool CanExportData() const {return true;}
 };
 
 #endif // VFFCONVERTER_H

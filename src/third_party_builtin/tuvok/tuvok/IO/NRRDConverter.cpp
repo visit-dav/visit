@@ -34,8 +34,8 @@
   \date    December 2008
 */
 
+#include <fstream>
 #include "NRRDConverter.h"
-#include "IOManager.h"  // for the size defines
 #include <Controller/Controller.h>
 #include <Basics/SysTools.h>
 #include <IO/KeyValueFileParser.h>
@@ -137,10 +137,12 @@ bool NRRDConverter::ConvertToRAW(const std::string& strSourceFilename,
       bSigned = true;
       bIsFloat = true;
       iComponentSize = 32;
+      MESSAGE("Floating point nrrd.");
     } else if (kvpType->strValueUpper == "DOUBLE") {
       bSigned = true;
       bIsFloat = true;
       iComponentSize = 64;
+      MESSAGE("Double-precision nrrd.");
     } else {
       T_ERROR("Unsupported \"type\" in file %s", strSourceFilename.c_str());
       return false;
@@ -242,7 +244,7 @@ bool NRRDConverter::ConvertToRAW(const std::string& strSourceFilename,
     iLineSkip = 0;
   }
 
-  int iLineSkipBytes = 0;
+  std::streamoff iLineSkipBytes = 0;
   if (iLineSkip != 0) {
     ifstream fileData(strRAWFile.c_str(),ios::binary);  
     string line;

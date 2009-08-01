@@ -6,7 +6,7 @@
    Copyright (c) 2008 Scientific Computing and Imaging Institute,
    University of Utah.
 
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
    to deal in the Software without restriction, including without limitation
@@ -45,8 +45,8 @@
   are Paul Bourke, based on code by Cory Gene Bloyd.
 
   The indexing of vertices and edges in a cube are defined
-  as: 
-  
+  as:
+
                 _4____________4_____________5
                /|                           /
               / |                          /|
@@ -55,7 +55,7 @@
            /    |                       /5  |
           /     |                      /    |
          /      8                     /     9
-    /       |                    /      |
+        /       |                    /      |
       7/________|______6____________/6      |
        |        |                   |       |
        |        |                   |       |
@@ -70,7 +70,7 @@
        | /                          |/
        |/3____________2_____________|2
 
- 
+
 
 
 For purposes of calculating vertices along the edges and the
@@ -385,7 +385,7 @@ template <class T> MarchingCubes<T>::~MarchingCubes(void)
   delete m_Isosurface;
 }
 
-template <class T> void MarchingCubes<T>::SetVolume(int iSizeX, int iSizeY, int iSizeZ, T* pTVolume) 
+template <class T> void MarchingCubes<T>::SetVolume(int iSizeX, int iSizeY, int iSizeZ, T* pTVolume)
 {
   m_pTVolume  = pTVolume;
   m_vVolSize  = INTVECTOR3(iSizeX, iSizeY, iSizeZ);
@@ -457,84 +457,84 @@ template <class T> void MarchingCubes<T>::MarchLayer(LayerTempData<T> *layer, in
 
       // get the coordinates for the vertices, compute the triangulation and interpolate the normals
       if (ms_edgeTable[cellIndex] &    1) {
-        if (layer->piEdges[EDGE_INDEX(0, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(0, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[0]  = m_Isosurface->iVertices + MakeVertex(0, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[0] = layer->piEdges[EDGE_INDEX(0, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    2) {
-        if (layer->piEdges[EDGE_INDEX(1, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(1, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[1]  = m_Isosurface->iVertices+MakeVertex(1, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[1] = layer->piEdges[EDGE_INDEX(1, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    4) {
-        if (layer->piEdges[EDGE_INDEX(2, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(2, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[2]  = m_Isosurface->iVertices +MakeVertex(2, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[2] = layer->piEdges[EDGE_INDEX(2, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    8) {
-        if (layer->piEdges[EDGE_INDEX(3, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(3, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[3]  = m_Isosurface->iVertices+MakeVertex(3, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[3] = layer->piEdges[EDGE_INDEX(3, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    16) {
-        if (layer->piEdges[EDGE_INDEX(4, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(4, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[4]  = m_Isosurface->iVertices+MakeVertex(4, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[4] = layer->piEdges[EDGE_INDEX(4, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    32) {
-        if (layer->piEdges[EDGE_INDEX(5, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(5, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[5]  = m_Isosurface->iVertices+MakeVertex(5, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[5] = layer->piEdges[EDGE_INDEX(5, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    64) {
-        if (layer->piEdges[EDGE_INDEX(6, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(6, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[6]  = m_Isosurface->iVertices +MakeVertex(6, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[6] = layer->piEdges[EDGE_INDEX(6, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    128) {
-        if (layer->piEdges[EDGE_INDEX(7, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(7, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[7]  = m_Isosurface->iVertices +MakeVertex(7, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[7] = layer->piEdges[EDGE_INDEX(7, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    256) {
-        if (layer->piEdges[EDGE_INDEX(8, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(8, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[8]  = m_Isosurface->iVertices +MakeVertex(8, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[8] = layer->piEdges[EDGE_INDEX(8, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    512) {
-        if (layer->piEdges[EDGE_INDEX(9, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(9, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[9]  = m_Isosurface->iVertices +MakeVertex(9, i, j, iLayer, sliceIsosurface);
         } else {
         cellVerts[9] = layer->piEdges[EDGE_INDEX(9, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    1024) {
-        if (layer->piEdges[EDGE_INDEX(10, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(10, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[10]  = m_Isosurface->iVertices +MakeVertex(10, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[10] = layer->piEdges[EDGE_INDEX(10, i, j, m_vVolSize.x-1)];
         }
       }
       if (ms_edgeTable[cellIndex] &    2048) {
-        if (layer->piEdges[EDGE_INDEX(11, i, j, m_vVolSize.x-1)] == NO_EDGE) {     
+        if (layer->piEdges[EDGE_INDEX(11, i, j, m_vVolSize.x-1)] == NO_EDGE) {
           cellVerts[11]  = m_Isosurface->iVertices +MakeVertex(11, i, j, iLayer, sliceIsosurface);
         } else {
           cellVerts[11] = layer->piEdges[EDGE_INDEX(11, i, j, m_vVolSize.x-1)];
@@ -548,8 +548,8 @@ template <class T> void MarchingCubes<T>::MarchLayer(LayerTempData<T> *layer, in
           }
       }
 
-      // now propagate the vertex/normal tags to the adjacent cells to 
-      // the right and behind in this layer. 
+      // now propagate the vertex/normal tags to the adjacent cells to
+      // the right and behind in this layer.
       if (i < m_vVolSize.x - 2) { // we should propagate to the right
         layer->piEdges[EDGE_INDEX( 3, i+1, j, m_vVolSize.x-1)] = cellVerts[1];
         layer->piEdges[EDGE_INDEX( 7, i+1, j, m_vVolSize.x-1)] = cellVerts[5];
@@ -561,8 +561,8 @@ template <class T> void MarchingCubes<T>::MarchLayer(LayerTempData<T> *layer, in
         layer->piEdges[EDGE_INDEX( 2, i, j+1, m_vVolSize.x-1)] = cellVerts[0];
         layer->piEdges[EDGE_INDEX( 6, i, j+1, m_vVolSize.x-1)] = cellVerts[4];
         layer->piEdges[EDGE_INDEX(11, i, j+1, m_vVolSize.x-1)] = cellVerts[8];
-        layer->piEdges[EDGE_INDEX(10, i, j+1, m_vVolSize.x-1)] = cellVerts[9];      
-      }      
+        layer->piEdges[EDGE_INDEX(10, i, j+1, m_vVolSize.x-1)] = cellVerts[9];
+      }
 
       // store the vertex indices in the triangle data structure
       int iTableIndex = 0;
@@ -572,8 +572,6 @@ template <class T> void MarchingCubes<T>::MarchLayer(LayerTempData<T> *layer, in
                        cellVerts[ms_triTable[cellIndex][iTableIndex+2]]);
         iTableIndex+=3;
       }
-
-      
     }
   }
 
@@ -614,8 +612,8 @@ template <class T> int MarchingCubes<T>::MakeVertex(int iEdgeIndex, int i, int j
   // interpolate the vertex
   FLOATVECTOR3  vVertex  = FLOATVECTOR3(vFrom) + d * FLOATVECTOR3(vTo - vFrom);
 
-  // now determine the gradients at the endpoints of the edge 
-  // and interpolate the normal for the isosurface vertex     
+  // now determine the gradients at the endpoints of the edge
+  // and interpolate the normal for the isosurface vertex
   FLOATVECTOR3  vNormFrom = InterpolateNormal(fFromValue,vFrom);
   FLOATVECTOR3  vNormTo   = InterpolateNormal(  fToValue,  vTo);
 
@@ -635,11 +633,11 @@ template <class T> FLOATVECTOR3 MarchingCubes<T>::InterpolateNormal(T fValueAtPo
   // on the boundaries of the dataset, where forward or backward
   // differencing is used (three point form)
 
-  FLOATVECTOR3 result;
+  DOUBLEVECTOR3 result;
 
   // the x component
   if (vPosition.x == 0) {              // left border -> forward diff
-    result.x = 0.5f * float(-3.0f * fValueAtPos + 
+    result.x = 0.5f * float(-3.0f * fValueAtPos +
                  4.0f * m_pTVolume[DATA_INDEX(vPosition.x+1, vPosition.y, vPosition.z, m_vVolSize.x, m_vVolSize.y)] +
                 -1.0f * m_pTVolume[DATA_INDEX(vPosition.x+2, vPosition.y, vPosition.z, m_vVolSize.x, m_vVolSize.y)]);
   } else if (vPosition.x == m_vVolSize.x - 1) {  // right border -> forward diff
@@ -653,7 +651,7 @@ template <class T> FLOATVECTOR3 MarchingCubes<T>::InterpolateNormal(T fValueAtPo
 
   // the y component
   if (vPosition.y == 0) {              //forward diff
-    result.y = 0.5f * (-3.0f * fValueAtPos + 
+    result.y = 0.5f * (-3.0f * fValueAtPos +
                  4.0f * m_pTVolume[DATA_INDEX(vPosition.x, vPosition.y+1, vPosition.z, m_vVolSize.x, m_vVolSize.y)] +
                 -1.0f * m_pTVolume[DATA_INDEX(vPosition.x, vPosition.y+2, vPosition.z, m_vVolSize.x, m_vVolSize.y)]);
   } else if (vPosition.y == m_vVolSize.y - 1) {  // forward diff
@@ -667,7 +665,7 @@ template <class T> FLOATVECTOR3 MarchingCubes<T>::InterpolateNormal(T fValueAtPo
 
   // the z component
   if (vPosition.z == 0) {              //forward diff
-    result.z = 0.5f * (-3.0f * fValueAtPos + 
+    result.z = 0.5f * (-3.0f * fValueAtPos +
                  4.0f * m_pTVolume[DATA_INDEX(vPosition.x, vPosition.y, vPosition.z+1, m_vVolSize.x, m_vVolSize.y)] +
                 -1.0f * m_pTVolume[DATA_INDEX(vPosition.x, vPosition.y, vPosition.z+2, m_vVolSize.x, m_vVolSize.y)]);
   } else if (vPosition.z == m_vVolSize.z - 1) {  // forward diff
@@ -679,7 +677,10 @@ template <class T> FLOATVECTOR3 MarchingCubes<T>::InterpolateNormal(T fValueAtPo
                 m_pTVolume[DATA_INDEX(vPosition.x, vPosition.y, vPosition.z-1, m_vVolSize.x, m_vVolSize.y)]);
   }
 
-  return result;
+  FLOATVECTOR3 ret(static_cast<float>(result.x),
+				   static_cast<float>(result.y),
+				   static_cast<float>(result.z));
+  return ret;
 }
 
 

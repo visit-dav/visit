@@ -34,24 +34,46 @@
   \date    August 2008
 */
 
+#include <cstring>
+#include <new>
+#include <typeinfo>
+#include <IO/IOManager.h>
+#include <boost/algorithm/minmax_element.hpp>
 #include "GPUMemManDataStructs.h"
-#include <Controller/Controller.h>
+#include "Basics/MathTools.h"
+#include "Controller/Controller.h"
+#include "IO/uvfDataset.h"
+#include "IO/uvfMetadata.h"
+#include "Renderer/GL/GLTexture3D.h"
+using namespace tuvok;
 
-Texture3DListElem::Texture3DListElem(VolumeDataset* _pDataset, const std::vector<UINT64>& _vLOD, const std::vector<UINT64>& _vBrick, bool bIsPaddedToPowerOfTwo, bool bIsDownsampledTo8Bits, bool bDisableBorder, UINT64 iIntraFrameCounter, UINT64 iFrameCounter, MasterController* pMasterController) :
-  pData(NULL),
+
+Texture3DListElem::Texture3DListElem(Dataset* _pDataset,
+                                     const std::vector<UINT64>& _vLOD,
+                                     const std::vector<UINT64>& _vBrick,
+                                     bool bIsPaddedToPowerOfTwo,
+                                     bool bIsDownsampledTo8Bits,
+                                     bool bDisableBorder,
+                                     UINT64 iIntraFrameCounter,
+                                     UINT64 iFrameCounter,
+                                     MasterController* pMasterController,
+                                     const CTContext &ctx,
+                                     std::vector<unsigned char>& vUploadHub) :
   pTexture(NULL),
   pDataset(_pDataset),
   iUserCount(1),
   m_iIntraFrameCounter(iIntraFrameCounter),
   m_iFrameCounter(iFrameCounter),
   m_pMasterController(pMasterController),
+  m_Context(ctx),
   vLOD(_vLOD),
   vBrick(_vBrick),
   m_bIsPaddedToPowerOfTwo(bIsPaddedToPowerOfTwo),
   m_bIsDownsampledTo8Bits(bIsDownsampledTo8Bits),
-  m_bDisableBorder(bDisableBorder)
+  m_bDisableBorder(bDisableBorder),
+  m_bUsingHub(false)
 {
-  if (!CreateTexture()) {
+  if (!CreateTexture(vUploadHub) && pTexture) {
     pTexture->Delete();
     delete pTexture;
     pTexture = NULL;
@@ -63,18 +85,22 @@ Texture3DListElem::~Texture3DListElem() {
   FreeTexture();
 }
 
-bool Texture3DListElem::Equals(const VolumeDataset* _pDataset,
+bool Texture3DListElem::Equals(const Dataset* _pDataset,
                                const std::vector<UINT64>& _vLOD,
                                const std::vector<UINT64>& _vBrick,
                                bool bIsPaddedToPowerOfTwo,
-                               bool bIsDownsampledTo8Bits, bool bDisableBorder)
+                               bool bIsDownsampledTo8Bits, bool bDisableBorder,
+                               const CTContext &cid)
 {
   if (_pDataset != pDataset ||
       _vLOD.size() != vLOD.size() ||
       _vBrick.size() != vBrick.size() ||
       m_bIsPaddedToPowerOfTwo != bIsPaddedToPowerOfTwo ||
       m_bIsDownsampledTo8Bits != bIsDownsampledTo8Bits ||
-      m_bDisableBorder != bDisableBorder) return false;
+      m_bDisableBorder != bDisableBorder ||
+      m_Context != cid) {
+    return false;
+  }
 
   for (size_t i = 0;i<vLOD.size();i++)   if (vLOD[i] != _vLOD[i]) return false;
   for (size_t i = 0;i<vBrick.size();i++) if (vBrick[i] != _vBrick[i]) return false;
@@ -90,11 +116,21 @@ GLTexture3D* Texture3DListElem::Access(UINT64& iIntraFrameCounter, UINT64& iFram
   return pTexture;
 }
 
-bool Texture3DListElem::BestMatch(const std::vector<UINT64>& vDimension, bool bIsPaddedToPowerOfTwo, bool bIsDownsampledTo8Bits, bool bDisableBorder, UINT64& iIntraFrameCounter, UINT64& iFrameCounter) {
+bool Texture3DListElem::BestMatch(const std::vector<UINT64>& vDimension,
+                                  bool bIsPaddedToPowerOfTwo,
+                                  bool bIsDownsampledTo8Bits,
+                                  bool bDisableBorder,
+                                  UINT64& iIntraFrameCounter,
+                                  UINT64& iFrameCounter,
+                                  const CTContext &cid)
+{
   if (!Match(vDimension) || iUserCount > 0
       || m_bIsPaddedToPowerOfTwo != bIsPaddedToPowerOfTwo
       || m_bIsDownsampledTo8Bits != bIsDownsampledTo8Bits
-      || m_bDisableBorder != bDisableBorder) return false;
+      || m_bDisableBorder != bDisableBorder
+      || m_Context != cid) {
+    return false;
+  }
 
   // framewise older data as before found -> use this object
   if (iFrameCounter > m_iFrameCounter) {
@@ -117,26 +153,56 @@ bool Texture3DListElem::BestMatch(const std::vector<UINT64>& vDimension, bool bI
   return false;
 }
 
+bool Texture3DListElem::BestMatch(const UINT64VECTOR3& vDimension,
+                                  bool bIsPaddedToPowerOfTwo,
+                                  bool bIsDownsampledTo8Bits,
+                                  bool bDisableBorder,
+                                  UINT64& iIntraFrameCounter,
+                                  UINT64& iFrameCounter,
+                                  const tuvok::CTContext &ctx) {
+  std::vector<UINT64> dim(3);
+  dim[0] = vDimension[0];
+  dim[1] = vDimension[1];
+  dim[2] = vDimension[2];
+  return this->BestMatch(dim, bIsPaddedToPowerOfTwo, bIsDownsampledTo8Bits,
+                         bDisableBorder, iIntraFrameCounter, iFrameCounter,
+                         ctx);
+}
+
 
 bool Texture3DListElem::Match(const std::vector<UINT64>& vDimension) {
   if (pTexture == NULL) return false;
 
-  const std::vector<UINT64> vSize = pDataset->GetInfo()->GetBrickSizeND(vLOD, vBrick);
+  const UVFMetadata& md = dynamic_cast<const UVFMetadata&>
+                                      (pDataset->GetInfo());
+  const std::vector<UINT64> vSize = md.GetBrickSizeND(vLOD, vBrick);
 
-  if (vDimension.size() != vSize.size()) return false;
-  for (size_t i = 0;i<vSize.size();i++)   if (vSize[i] != vDimension[i]) return false;
+  if (vDimension.size() != vSize.size()) {
+    return false;
+  }
+  for (size_t i=0; i < vSize.size(); i++) {
+    if (vSize[i] != vDimension[i]) {
+      return false;
+    }
+  }
 
   return true;
 }
 
-bool Texture3DListElem::Replace(VolumeDataset* _pDataset,
+bool Texture3DListElem::Replace(Dataset* _pDataset,
                                 const std::vector<UINT64>& _vLOD,
                                 const std::vector<UINT64>& _vBrick,
                                 bool bIsPaddedToPowerOfTwo,
                                 bool bIsDownsampledTo8Bits,
                                 bool bDisableBorder, UINT64 iIntraFrameCounter,
-                                UINT64 iFrameCounter) {
+                                UINT64 iFrameCounter, const CTContext &cid,
+                                std::vector<unsigned char>& vUploadHub) {
   if (pTexture == NULL) return false;
+  if (m_Context != cid) {
+    T_ERROR("Trying to replace texture in one context"
+            "with a texture from a second context!");
+    return false;
+  }
 
   pDataset = _pDataset;
   vLOD     = _vLOD;
@@ -148,54 +214,74 @@ bool Texture3DListElem::Replace(VolumeDataset* _pDataset,
   m_iIntraFrameCounter = iIntraFrameCounter;
   m_iFrameCounter = iFrameCounter;
 
-  LoadData();
-  glGetError();
-  pTexture->SetData(pData);
+  if (!LoadData(vUploadHub)) {
+    T_ERROR("LoadData call failed, system may be out of memory");
+    return false;
+  }
+  glGetError();  // clear gl error flags
+  pTexture->SetData(m_bUsingHub ? &vUploadHub.at(0) : &vData.at(0));
+
   return GL_NO_ERROR==glGetError();
 }
 
 
-bool Texture3DListElem::LoadData() {
-  FreeData();
-  return pDataset->GetBrick(&pData, vLOD, vBrick);
+bool Texture3DListElem::LoadData(std::vector<unsigned char>& vUploadHub) {
+  const Metadata& md = pDataset->GetInfo();
+  const UINT64VECTOR3 brick(vBrick[0], vBrick[1], vBrick[2]);
+  const UINT64VECTOR3 vSize = md.GetBrickSize(Metadata::BrickKey(vLOD[0],
+                                                                 brick));
+  UINT64 iByteWidth  = pDataset->GetInfo().GetBitWidth()/8;
+  UINT64 iCompCount = pDataset->GetInfo().GetComponentCount();
+
+  UINT64 iBrickSize = vSize[0]*vSize[1]*vSize[2]*iByteWidth * iCompCount;
+
+  if (!vUploadHub.empty() && iBrickSize <= UINT64(INCORESIZE*4)) {
+    m_bUsingHub = true;
+    try {
+      UVFDataset& ds = dynamic_cast<UVFDataset&>(*(this->pDataset));
+      return ds.GetBrick(UVFDataset::NDBrickKey(vLOD, vBrick), vUploadHub);
+    } catch(std::bad_cast) {
+      return this->pDataset->GetBrick(Dataset::BrickKey(0,0), vUploadHub);
+    }
+  } else {
+    try {
+      UVFDataset& ds = dynamic_cast<UVFDataset&>(*(this->pDataset));
+      return ds.GetBrick(UVFDataset::NDBrickKey(vLOD, vBrick), vData);
+    } catch(std::bad_cast) {
+      return this->pDataset->GetBrick(Dataset::BrickKey(0,0), vData);
+    }
+  }
 }
 
 void  Texture3DListElem::FreeData() {
-  delete [] pData;
-  pData = NULL;
+  vData.resize(0);
 }
 
-
-#include <sstream>
-bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
+bool Texture3DListElem::CreateTexture(std::vector<unsigned char>& vUploadHub,
+                                      bool bDeleteOldTexture) {
   if (bDeleteOldTexture) FreeTexture();
 
-  if (pData == NULL)
-    if (!LoadData()) return false;
-
-  const std::vector<UINT64> vSize = pDataset->GetInfo()->GetBrickSizeND(vLOD, vBrick);
-  {
-    std::ostringstream oss;
-    oss << "vsize: " << vSize.size() << " elements, [";
-    for(std::vector<UINT64>::const_iterator iter = vSize.begin();
-        iter != vSize.end(); ++iter) {
-      oss << *iter << ", ";
-    }
-    oss << "]";
-    MESSAGE("%s", oss.str().c_str());
+  if (vData.empty()) {
+    if (!LoadData(vUploadHub)) { return false; }
   }
 
-  bool bToggleEndian = !pDataset->GetInfo()->IsSameEndianess();
+  unsigned char* pRawData = (m_bUsingHub) ? &vUploadHub.at(0) : &vData.at(0);
 
-  UINT64 iBitWidth  = pDataset->GetInfo()->GetBitWidth();
-  UINT64 iCompCount = pDataset->GetInfo()->GetComponentCount();
+  // Figure out how big this is going to be.
+  const Metadata& md = pDataset->GetInfo();
+  const UINT64VECTOR3 brick(vBrick[0], vBrick[1], vBrick[2]);
+  const UINT64VECTOR3 vSize = md.GetBrickSize(Metadata::BrickKey(vLOD[0],
+                                                                 brick));
+
+  bool bToggleEndian = !pDataset->GetInfo().IsSameEndianness();
+  UINT64 iBitWidth  = pDataset->GetInfo().GetBitWidth();
+  UINT64 iCompCount = pDataset->GetInfo().GetComponentCount();
 
   MESSAGE("%llu components of width %llu", iCompCount, iBitWidth);
 
   GLint glInternalformat;
   GLenum glFormat;
   GLenum glType;
-
 
   if (m_bIsDownsampledTo8Bits && iBitWidth != 8) {
     // here we assume that data which is not 8 bit is 16 bit
@@ -204,23 +290,20 @@ bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
       return false;
     }
 
-    unsigned char* pTmpData = new unsigned char[vSize[0]*vSize[1]*vSize[2]*iCompCount];
-
-    size_t iMax = pDataset->Get1DHistogram()->GetFilledSize();
+    size_t iMax = pDataset->Get1DHistogram().GetFilledSize();
+    MESSAGE("Downsampling to 8bits; max val: %u", static_cast<UINT32>(iMax));
 
     for (size_t i = 0;i<vSize[0]*vSize[1]*vSize[2]*iCompCount;i++) {
-      unsigned char iQuantizedVal = (unsigned char)(255.0*((unsigned short*)pData)[i]/float(iMax));
-      pTmpData[i] = iQuantizedVal;
+      unsigned char iQuantizedVal = (unsigned char)(255.0*((unsigned short*)pRawData)[i]/float(iMax));
+      pRawData[i] = iQuantizedVal;
     }
 
-    delete [] pData;
-    pData = pTmpData;
     iBitWidth = 8;
   }
 
 
   switch (iCompCount) {
-    case 1 : glFormat = GL_LUMINANCE; break;
+    case 1 : glFormat = GL_INTENSITY; break;
     case 3 : glFormat = GL_RGB; break;
     case 4 : glFormat = GL_RGBA; break;
     default : FreeData(); return false;
@@ -239,9 +322,10 @@ bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
       glType = GL_UNSIGNED_SHORT;
 
       if (bToggleEndian) {
-        UINT64 iElemCount = vSize[0];
-        for (size_t i = 1;i<vSize.size();i++) iElemCount *= vSize[i];
-        short* pShorData = (short*)pData;
+        /// @todo BROKEN for N-dimensional data; we're assuming we only get 3D
+        /// data here.
+        UINT64 iElemCount = vSize[0] * vSize[1] * vSize[2];
+        short* pShorData = (short*)pRawData;
         for (UINT64 i = 0;i<iCompCount*iElemCount;i++) {
           EndianConvert::Swap<short>(pShorData+i);
         }
@@ -255,8 +339,21 @@ bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
       }
     } else {
       if(iBitWidth == 32) {
+        MESSAGE("32bit FP dataset.");
         glType = GL_FLOAT;
-        glInternalformat = GL_LUMINANCE;
+        glInternalformat = 1;
+        glInternalformat = GL_INTENSITY;
+        glFormat = GL_RED;
+
+        // testing hacks
+        glInternalformat = GL_LUMINANCE32F_ARB;
+        glFormat = GL_LUMINANCE;
+        glType = GL_FLOAT;
+        UINT64 iElemCount = vSize[0] * vSize[1] * vSize[2];
+        float *begin = reinterpret_cast<float*>(pRawData);
+        float *end = (reinterpret_cast<float*>(pRawData)) + iElemCount;
+        std::pair<float*,float*> mmax = boost::minmax_element(begin,end);
+        MESSAGE("GPU minmax: %5.3f, %5.3f", *mmax.first, *mmax.second);
       } else {
         T_ERROR("Cannot handle data of width %d", iBitWidth);
         FreeData();
@@ -273,7 +370,7 @@ bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
     pTexture = new GLTexture3D(UINT32(vSize[0]), UINT32(vSize[1]),
                                UINT32(vSize[2]),
                                glInternalformat, glFormat, glType,
-                               UINT32(iBitWidth/8*iCompCount), pData,
+                               UINT32(iBitWidth/8*iCompCount), pRawData,
                                GL_LINEAR, GL_LINEAR,
                                m_bDisableBorder ? GL_CLAMP_TO_EDGE : GL_CLAMP,
                                m_bDisableBorder ? GL_CLAMP_TO_EDGE : GL_CLAMP,
@@ -288,12 +385,19 @@ bool Texture3DListElem::CreateTexture(bool bDeleteOldTexture) {
     size_t iRowSizeSource = vSize[0]*iElementSize;
     size_t iRowSizeTarget = vPaddedSize[0]*iElementSize;
 
-    unsigned char* pPaddedData = new unsigned char[iRowSizeTarget*vPaddedSize[1]*vPaddedSize[2]];
+    unsigned char* pPaddedData;
+    try {
+      pPaddedData = new unsigned char[iRowSizeTarget *
+                                      vPaddedSize[1] *
+                                      vPaddedSize[2]];
+    } catch(std::bad_alloc&) {
+      return false;
+    }
     memset(pPaddedData, 0, iRowSizeTarget*vPaddedSize[1]*vPaddedSize[2]);
 
     for (size_t z = 0;z<vSize[2];z++) {
       for (size_t y = 0;y<vSize[1];y++) {
-        memcpy(pPaddedData+iTarget, pData+iSource, iRowSizeSource);
+        memcpy(pPaddedData+iTarget, pRawData+iSource, iRowSizeSource);
 
         // if the x sizes differ, duplicate the last element to make the
         // texture behave like clamp

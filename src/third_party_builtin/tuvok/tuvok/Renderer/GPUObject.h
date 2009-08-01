@@ -33,13 +33,11 @@
            University of Utah
   \date    September 2008
 */
-
 #pragma once
 
 #ifndef GPUOBJECT_H
 #define GPUOBJECT_H
 
-#include "../Basics/MathTools.h"
 #include "../StdTuvokDefines.h"
 
 /** Base for all types which will utilize GPU memory.

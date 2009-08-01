@@ -121,7 +121,9 @@ void main(void)
       float fVolumValYm = texture3D(texVolume, vCurrentPosTex+vec3(0,+vVoxelStepsize.y,0)).x;
       float fVolumValZp = texture3D(texVolume, vCurrentPosTex+vec3(0,0,+vVoxelStepsize.z)).x;
       float fVolumValZm = texture3D(texVolume, vCurrentPosTex+vec3(0,0,-vVoxelStepsize.z)).x;
-      vec3  vGradient = vec3(fVolumValXm-fVolumValXp, fVolumValYp-fVolumValYm, fVolumValZm-fVolumValZp); 
+      vec3  vGradient = vec3((fVolumValXm-fVolumValXp)/2.0,
+                             (fVolumValYp-fVolumValYm)/2.0,
+                             (fVolumValZm-fVolumValZp)/2.0);
       float fGradientMag = length(vGradient); 
 
       /// apply 2D transfer function
@@ -133,7 +135,7 @@ void main(void)
       vec3 vViewDir    = normalize(vec3(0,0,0)-vCurrentPos);
       vec3 vReflection = normalize(reflect(vViewDir, vNormal));
       vec3 vLightColor = vLightAmbient+
-                         vLightDiffuse*max(dot(vNormal, -vLightDir),0.0)*vTransVal.xyz+
+                         vLightDiffuse*max(abs(dot(vNormal, -vLightDir)),0.0)*vTransVal.xyz+
                          vLightSpecular*pow(max(dot(vReflection, vLightDir),0.0),8.0);
 
       /// apply opacity correction

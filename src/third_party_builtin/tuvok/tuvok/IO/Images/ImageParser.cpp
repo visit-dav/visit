@@ -36,9 +36,12 @@
 */
 
 #include "ImageParser.h"
-#include <QtGui/QImage>
-#include <QtGui/QColor>
+#ifndef TUVOK_NO_QT
+# include <QtGui/QImage>
+# include <QtGui/QColor>
+#endif
 #include <Basics/SysTools.h>
+#include <Controller/Controller.h>
 
 using namespace std;
 
@@ -87,11 +90,12 @@ SimpleImageFileInfo::SimpleImageFileInfo(const SimpleImageFileInfo* info) :
 {}
 
 bool SimpleImageFileInfo::GetData(void* pData, UINT32 iLength, UINT32 iOffset) {
+#ifndef TUVOK_NO_QT
   QImage qImage(m_strFileName.c_str()); 
   if (qImage.isNull()) return false;
 
   int iCount = 0;
-  for (int y = 0;y<qImage.height();y++)
+  for (int y = 0;y<qImage.height();y++) {
     for (int x = 0;x<qImage.width();x++) {
       if (int(iOffset) > iCount) continue;
       QColor pixel(qImage.pixel(x,y));
@@ -100,8 +104,13 @@ bool SimpleImageFileInfo::GetData(void* pData, UINT32 iLength, UINT32 iOffset) {
       if (int(iLength) == iCount-int(iOffset)) break;
       iCount++;
     }
+  }
 
   return true;
+#else
+  T_ERROR("Qt needed/used to load image data!");
+  return false;
+#endif
 }
 
 SimpleFileInfo* SimpleImageFileInfo::clone() {
@@ -172,12 +181,12 @@ ImageParser::~ImageParser(void)
 void ImageParser::GetDirInfo(string  strDirectory) {
   vector<string> files = SysTools::GetDirContents(strDirectory);
   vector<ImageFileInfo> fileInfos;
-  for (size_t i = 0;i<files.size();i++) {
-    files[i] = strDirectory+"/"+files[i]; 
-  }
 
+#ifndef TUVOK_NO_QT
   // query directory for image files
   for (size_t i = 0;i<files.size();i++) {
+    MESSAGE("Looking for image data in file %s", files[i].c_str());
+
     QImage qImage(files[i].c_str()); 
     if (!qImage.isNull()) {
       ImageFileInfo info(files[i]);
@@ -190,6 +199,9 @@ void ImageParser::GetDirInfo(string  strDirectory) {
       fileInfos.push_back(info);
     }
   }
+#else
+  T_ERROR("Images loaded/verified through Qt, which is disabled!");
+#endif
 
   // sort results into stacks
   for (size_t i = 0; i<m_FileStacks.size(); i++) delete m_FileStacks[i];

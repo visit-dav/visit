@@ -3,7 +3,8 @@
 #ifndef HISTOGRAM2DDATABLOCK_H
 #define HISTOGRAM2DDATABLOCK_H
 
-#include "RasterDataBlock.h"
+#include "DataBlock.h"
+class RasterDataBlock;
 
 class Histogram2DDataBlock : public DataBlock
 {

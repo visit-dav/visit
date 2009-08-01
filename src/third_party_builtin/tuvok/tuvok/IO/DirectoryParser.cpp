@@ -37,11 +37,9 @@
 
 #include "DirectoryParser.h"
 
-#include <sys/stat.h>
-#include <Basics/SysTools.h>
 #include <algorithm>
+#include <sys/stat.h>
 #include <memory.h>
-
 
 using namespace std;
 
