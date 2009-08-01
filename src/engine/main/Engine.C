@@ -81,6 +81,7 @@
 #include <ParsingExprList.h>
 #include <QueryAttributes.h>
 #include <RemoteProcess.h>
+#include <RuntimeSetting.h>
 #include <SILAttributes.h>
 #include <SimulationCommand.h>
 #include <SocketConnection.h>
@@ -473,6 +474,9 @@ Engine *Engine::Instance()
 //    I moved the xfer set input connection code for non-UI procs to 
 //    ConnectToViewer where the UI proc sets its xfer input connection.
 //
+//    Tom Fogal, Sun Jun 28 12:48:33 MDT 2009
+//    Call RuntimeSettings to allow overriding command line options.
+//
 // ****************************************************************************
 
 void
@@ -506,6 +510,9 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     VisItInit::SetComponentName("engine");
     VisItInit::Initialize(*argc, *argv, 0,1, true, sigs);
 #endif
+
+    // Configure external options.
+    RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
 
     //
     // Set a different new handler for the engine
