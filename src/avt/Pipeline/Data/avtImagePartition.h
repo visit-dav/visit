@@ -76,6 +76,9 @@
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Tom Fogal, Wed Jun 17 19:04:46 MDT 2009
+//    Switch to vectors for easier debugging.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImagePartition
@@ -99,9 +102,9 @@ class PIPELINE_API avtImagePartition
     void                    DetermineAssignments(int *);
 
     const int              *GetPartitionToProcessorAssignments(void) 
-                                 { return ptpAssignments; };
+                                 { return &ptpAssignments[0]; };
     const int              *GetScanlineToPartitionAssignemnts(void)
-                                 { return stpAssignments; };
+                                 { return &stpAssignments[0]; };
 
     int                     GetWidth(void)  { return width; };
     int                     GetHeight(void) { return height; };
@@ -130,10 +133,10 @@ class PIPELINE_API avtImagePartition
 
     bool                    establishedPartitionBoundaries;
 
-    int                    *ptpAssignments;
-    int                    *stpAssignments;
-    int                    *partitionStartsOnScanline;
-    int                    *partitionStopsOnScanline;
+    std::vector<int>        ptpAssignments;
+    std::vector<int>        stpAssignments;
+    std::vector<int>        partitionStartsOnScanline;
+    std::vector<int>        partitionStopsOnScanline;
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy
@@ -283,7 +286,4 @@ avtImagePartition::PartitionList(const int &minW, const int &maxW,
     return (max-min+1);
 }
 
-
 #endif
-
-
