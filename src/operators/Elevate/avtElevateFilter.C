@@ -175,3 +175,21 @@ avtElevateFilter::GetFacadedFilter(void)
 {
     return surface_filter;
 }
+
+
+// ****************************************************************************
+//  Method: avtResamplePluginFilter::GetFacadedFilter
+//
+//  Purpose:
+//      Gets the filter that the filter that we are a facade of.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+
+const avtFilter *
+avtElevateFilter::GetFacadedFilter(void) const
+{
+    return surface_filter;
+}

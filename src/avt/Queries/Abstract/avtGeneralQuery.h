@@ -64,6 +64,9 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Tom Fogal, Tue Jun 23 20:29:54 MDT 2009
+//    Added const version of GetInput.
+//
 // ****************************************************************************
 
 class QUERY_API avtGeneralQuery : public avtDataObjectQuery
@@ -78,6 +81,7 @@ class QUERY_API avtGeneralQuery : public avtDataObjectQuery
     void                       SetTypedInput(avtDataObject_p in)
                                      { input = in; };
     avtDataObject_p            GetInput(void)  { return input; };
+    const avtDataObject_p      GetInput(void) const { return input; }
 };
 
 

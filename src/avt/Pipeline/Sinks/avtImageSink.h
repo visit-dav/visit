@@ -72,6 +72,9 @@
 //    Moved inlined destructor definition to .C file because certain compilers 
 //    have problems with them.
 //
+//    Tom Fogal, Tue Jun 23 20:01:31 MDT 2009
+//    Added const version of GetInput.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImageSink : virtual public avtDataObjectSink
@@ -82,6 +85,7 @@ class PIPELINE_API avtImageSink : virtual public avtDataObjectSink
 
   protected:
     virtual avtDataObject_p         GetInput(void);
+    virtual const avtDataObject_p   GetInput(void) const;
     virtual void                    SetTypedInput(avtDataObject_p);
     avtImageRepresentation         &GetImageRep(void);
     avtImage_p                      GetTypedInput(void) { return input; };

@@ -169,3 +169,19 @@ avtDisplacePluginFilter::GetFacadedFilter(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtDisplacePluginFilter::GetFacadedFilter
+//
+//  Purpose:
+//      Gets the filter that the filter that we are a facade of.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+
+const avtFilter *
+avtDisplacePluginFilter::GetFacadedFilter(void) const
+{
+    return displacer;
+}

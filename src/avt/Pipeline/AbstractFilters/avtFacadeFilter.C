@@ -104,6 +104,24 @@ avtFacadeFilter::GetInput(void)
     return GetIthFacadedFilter(0)->GetInput();
 }
 
+// ****************************************************************************
+//  Method: avtFacadeFilter::GetInput
+//
+//  Purpose:
+//      Gets the input for this filter.  Since this is a facade, it goes to the
+//      first input in the pipeline and gets its filter.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+
+const avtDataObject_p
+avtFacadeFilter::GetInput(void) const
+{
+    return GetIthFacadedFilter(0)->GetInput();
+}
+
 
 // ****************************************************************************
 //  Method: avtFacadeFilter::GetOutput

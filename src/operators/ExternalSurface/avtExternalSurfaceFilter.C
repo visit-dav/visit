@@ -195,3 +195,24 @@ avtExternalSurfaceFilter::GetFacadedFilter(void)
     // Stupid compilers dislike this one...
     // return (atts.GetRemoveGhosts() ? gz_and_ff : ff);
 }
+
+// ****************************************************************************
+//  Method: avtExternalSurfaceFilter::GetFacadedFilter
+//
+//  Purpose:
+//      Gets the filter that we are a facade of.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+
+const avtFilter *
+avtExternalSurfaceFilter::GetFacadedFilter(void) const
+{
+    if (atts.GetRemoveGhosts())
+        return gz_and_ff;
+    return ff;
+}

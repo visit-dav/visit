@@ -75,29 +75,45 @@ avtCurveFilter::~avtCurveFilter()
 // ****************************************************************************
 //  Method: avtCurveFilter::GetFacadedFilter
 //
-//  Purpose: 
+//  Purpose:
 //      Gets the facaded filter
 //
 //  Programmer: Hank Childs
 //  Creation:   October 3, 2003
 //
 // ****************************************************************************
- 
+
 avtFilter *
 avtCurveFilter::GetFacadedFilter(void)
 {
     return ccf;
 }
 
+// ****************************************************************************
+//  Method: avtCurveFilter::GetFacadedFilter
+//
+//  Purpose:
+//      Gets the facaded filter
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+
+const avtFilter *
+avtCurveFilter::GetFacadedFilter(void) const
+{
+    return ccf;
+}
 
 // ****************************************************************************
 //  Method: avtCurveFilter::ModifyContract
 //
 //  Purpose:
-//    Indicates that we cannot do streaming with this filter.  
+//    Indicates that we cannot do streaming with this filter.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   April 26, 2002 
+//  Creation:   April 26, 2002
 //
 //  Modifications:
 //
@@ -123,7 +139,7 @@ avtCurveFilter::ModifyContract(avtContract_p spec)
 //      is a description of the data object.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   December 23, 2002 
+//  Creation:   December 23, 2002
 //
 // ****************************************************************************
 

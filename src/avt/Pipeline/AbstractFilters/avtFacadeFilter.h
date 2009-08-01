@@ -70,6 +70,9 @@
 //    Add methods to access all facaded filters, as well as populating common
 //    avtFilter methods (release data, perform restriction).
 //
+//    Tom Fogal, Tue Jun 23 20:34:38 MDT 2009
+//    Added const version of GetInput and GetIthFacadedFilter.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFacadeFilter : virtual public avtFilter
@@ -79,6 +82,7 @@ class PIPELINE_API avtFacadeFilter : virtual public avtFilter
     virtual                       ~avtFacadeFilter();
 
     virtual avtDataObject_p        GetInput(void);
+    virtual const avtDataObject_p  GetInput(void) const;
     virtual avtDataObject_p        GetOutput(void);
 
     virtual avtOriginatingSource  *GetOriginatingSource(void);
@@ -91,16 +95,13 @@ class PIPELINE_API avtFacadeFilter : virtual public avtFilter
 
     virtual int                    GetNumberOfFacadedFilters(void) = 0;
     virtual avtFilter             *GetIthFacadedFilter(int) = 0;
+    virtual const avtFilter       *GetIthFacadedFilter(int) const = 0;
 
     virtual void                   Execute(void);
 
-    virtual avtContract_p ModifyContract(
-                                                  avtContract_p);
+    virtual avtContract_p          ModifyContract(avtContract_p);
     virtual void                   UpdateDataObjectInfo(void);
 };
 
 
 #endif
-
-
-

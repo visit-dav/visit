@@ -287,3 +287,24 @@ avtTransformFilter::GetFacadedFilter(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtTransformFilter::GetFacadedFilter
+//
+//  Purpose:
+//      Gets the filter we are facading (the similarity transform filter).
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+
+const avtFilter *
+avtTransformFilter::GetFacadedFilter(void) const
+{
+    if (atts.GetTransformType() == TransformAttributes::Similarity)
+        return stf;
+    else if (atts.GetTransformType() == TransformAttributes::Coordinate)
+        return csc;
+    else
+        return ltf;
+}

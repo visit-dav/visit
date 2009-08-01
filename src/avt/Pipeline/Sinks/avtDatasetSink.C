@@ -144,6 +144,26 @@ avtDatasetSink::GetInput(void)
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtDatasetSink::GetInput
+//
+//  Purpose:
+//      Gets the input of the sink (properly typed as an avtDataObject).
+//
+//  Returns:    The input of the sink.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2009
+//
+// ****************************************************************************
+const avtDataObject_p
+avtDatasetSink::GetInput(void) const
+{
+    avtDataObject_p rv;
+    CopyTo(rv, input);
+    return rv;
+}
+
 
 // ****************************************************************************
 //  Method: avtDatasetSink::GetInputDataTree
