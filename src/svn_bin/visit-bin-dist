@@ -1511,7 +1511,7 @@ cp $VisItDir/include/qt/private/*.h             $incdir/qt/private
 if (-e $VisItDir/help && "$gui_exists" == "TRUE") then
    set tmpDir = `pwd`
    cd $VisItDir/help
-   set translations=`find . -type d`
+   set translations=`find . -maxdepth 1 -type d`
    cd $tmpDir
    foreach t1 ($translations)
        set translation=`echo $t1 | sed "s/.\///g"`
@@ -1547,7 +1547,7 @@ if (-e $VisItDir/help && "$gui_exists" == "TRUE") then
               cp $VisItDir/help/$translation/visit.helpml $helpdir/$translation
            endif
        endif
-   endif
+   end
 endif
 
 #
