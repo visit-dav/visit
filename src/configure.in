@@ -3482,7 +3482,7 @@ if test "$no_x" != "yes"; then
     X_CPPFLAGS="-DHAVE_XLIB"
 else
     X_LIBS=""
-    X_CPPFLAGS="-DHAVE_XLIB"
+    X_CPPFLAGS=""
 fi
 AC_SUBST(X_LIBS)
 AC_SUBST(X_CPPFLAGS)

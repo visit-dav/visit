@@ -58,7 +58,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windows.h>
 #elif defined(__APPLE__)
 #include <Carbon/Carbon.h>
-#elif defined(HAVE_X11)
+#elif defined(HAVE_XLIB)
 #include <X11/Intrinsic.h>
 #endif
 
@@ -358,7 +358,7 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
     // Free the info that we received from the vtkQt window.
     delete info;
 
-#elif defined(HAVE_X11)
+#elif defined(HAVE_XLIB)
 // ***************************************************************************
 //
 // X11 coding and macros
@@ -437,7 +437,7 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
     SET_FOREGROUND_D(actorColor);
 #endif
 
-#if defined(_WIN32) || defined(_APPLE__) || defined(HAVE_X11)
+#if defined(_WIN32) || defined(__APPLE__) || defined(HAVE_XLIB)
     int numPts;
     vtkPolyData *input= vtkPolyData::SafeDownCast(this->GetInput());
     vtkIdType npts, *pts;
