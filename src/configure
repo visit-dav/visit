@@ -11088,7 +11088,7 @@ fi
     X_CPPFLAGS="-DHAVE_XLIB"
 else
     X_LIBS=""
-    X_CPPFLAGS="-DHAVE_XLIB"
+    X_CPPFLAGS=""
 fi
 
 
