@@ -404,6 +404,10 @@
 #    Use/copy libtcmalloc_minimal instead of libtcmalloc to avoid dependency
 #    on libunwind on 64-bit machines.
 #
+#    Eric Brugger, Tue Aug  4 16:13:48 PDT 2009
+#    I modified the logic that packages up the help files to avoid using
+#    the "-maxdepth" option to find, since it is not supported on AIX.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -1511,11 +1515,12 @@ cp $VisItDir/include/qt/private/*.h             $incdir/qt/private
 if (-e $VisItDir/help && "$gui_exists" == "TRUE") then
    set tmpDir = `pwd`
    cd $VisItDir/help
-   set translations=`find . -maxdepth 1 -type d`
+   set translations=`find . -type d`
    cd $tmpDir
    foreach t1 ($translations)
-       set translation=`echo $t1 | sed "s/.\///g"`
-       if ("$translation" != "." && "$translation" != ".svn") then
+       set t2=`echo $t1 | sed "s/.\///g"`
+       set translation=`echo $t2 | grep -v "\.svn"`
+       if ("$translation" != ""  && "$translation" != ".") then
            echo "Copying $translation help files to the distribution..." 
            mkdir $helpdir/$translation
 
