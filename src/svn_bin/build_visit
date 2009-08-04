@@ -665,6 +665,11 @@
 #     Tom Fogal, Tue Aug  4 11:24:29 MDT 2009
 #     Make VTK link against mangled Mesa.
 #
+#     Mark C. Miller, Tue Aug  4 13:24:24 PDT 2009
+#     Changed MESA_MIRRORS to MESA_URL to make consistent with other symbols.
+#     Added $MESA_URL to ensure_built_or_ready invokation. I also made it
+#     possible to specify value for VISITDIR external to script so you can
+#     essentially tell build_visit where to install its libs to.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -943,7 +948,7 @@ export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.4.5"}
 export MESA_FILE=${MESA_FILE:-"MesaLib-7.5.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.5"}
 export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.5"}
-export MESA_MIRRORS="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.5/MesaLib-7.5.tar.gz"
+export MESA_URL="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.5/MesaLib-7.5.tar.gz"
 
 # The old Python version at LLNL does not work on Mac, we need a newer version
 export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. 
@@ -1594,7 +1599,7 @@ function check_required_3rdparty
     fi
     
     if [[ "$DO_MESA" == "yes" ]] ; then
-        ensure_built_or_ready "mesa"   $MESA_VERSION   $MESA_BUILD_DIR   $MESA_FILE
+        ensure_built_or_ready "mesa"   $MESA_VERSION   $MESA_BUILD_DIR   $MESA_FILE $MESA_URL
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -8901,7 +8906,7 @@ cd "$THIRD_PARTY_PATH"
 if [[ $? != 0 ]] ; then
    error "Unable to access the third party location. Bailing out."
 fi
-export VISITDIR="$PWD"
+export VISITDIR=${VISITDIR:-$(pwd)}
 
 
 if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
