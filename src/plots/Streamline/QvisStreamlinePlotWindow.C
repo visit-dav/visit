@@ -196,8 +196,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
             this, SLOT(directionTypeChanged(int)));
     mainLayout->addWidget(directionType, 3,1);
 
-    pathlineFlag = new QCheckBox(tr("Pathlines"), central);
-    /*
+    /*pathlineFlag = new QCheckBox(tr("Pathlines"), central);
     connect(pathlineFlag, SIGNAL(toggled(bool)),
             this, SLOT(pathlineFlagChanged(bool)));
     mainLayout->addWidget(pathlineFlag, 4,0);

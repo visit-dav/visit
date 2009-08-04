@@ -63,6 +63,7 @@
 #include <avtParallel.h>
 #include <avtViewInfo.h>
 #include <DebugStream.h>
+#include <Environment.h>
 #include <FileFunctions.h>
 #include <ImproperUseException.h>
 #include <InstallationFunctions.h>
@@ -358,18 +359,32 @@ create_renderer(const VolumeAttributes &)
     // We need to know where Tuvok stores its shaders, since it must load them
     // at runtime.  They should be placed relative to the VisIt binary, but use
     // a RuntimeSetting to allow overrides.
-    const std::string shader_dir = RuntimeSetting::lookups("tuvok-shader-dir");
+    std::string shader_dir(RuntimeSetting::lookups("tuvok-shader-dir"));
     debug5 << "Adding shader path: " << shader_dir << std::endl;
     { // Make sure the shader path makes sense.
       VisItStat_t statbuf; // ignored, just want the return val.
       if(VisItStat(shader_dir.c_str(), &statbuf) != 0)
       {
-        std::ostringstream dir_error;
-        dir_error << "Tuvok cannot find its shaders in '" << shader_dir << "'"
+          if(Environment::exists("TUVOK_SHADER_DIR"))
+              shader_dir = Environment::get("TUVOK_SHADER_DIR");
+          else
+          {
+#ifdef WIN32
+              shader_dir = GetVisItArchitectureDirectory() + "/shaders";
+#else
+              shader_dir = GetVisItArchitectureDirectory() + "/bin/shaders";
+#endif
+          }
+
+          if(VisItStat(shader_dir.c_str(), &statbuf) != 0)
+          {
+              std::ostringstream dir_error;
+              dir_error << "Tuvok cannot find its shaders in '" << shader_dir << "'"
                   << "!  Try using the --tuvoks-shaders command line option, "
                   << "or setting the VISIT_TUVOK_SHADER_DIR environment "
                   << "variable.";
-        EXCEPTION1(ImproperUseException, dir_error.str().c_str());
+              EXCEPTION1(ImproperUseException, dir_error.str().c_str());
+          }
       }
     }
     ren->AddShaderPath(shader_dir.c_str());
