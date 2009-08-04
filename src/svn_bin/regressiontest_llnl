@@ -92,6 +92,9 @@
 #    with what 'svn update' needs to do. Also, I removed several non-LLNL
 #    developers from logrecipients and filtered emails so that only LLNL
 #    developers get them.
+#
+#    Mark C. Miller, Tue Aug  4 11:58:13 PDT 2009
+#    Fixed problem cd'ing to correct dirs resulting from above changes.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -279,7 +282,7 @@ checkAndHandleError "`nezero $pingWorks`" fatal "dropped packets to $svnHost"
 checkAndHandleError $scriptWasChanged warning "regressiontest_nersc was changed"
 
 # configure visit
-cd src
+cd $rootTestDir/src
 rm -f config.log config.status config.cache config_log.txt make_log.txt
 #find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*.d' -exec rm {} \;
 echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> config_log.txt 2>&1
@@ -323,7 +326,7 @@ if test -n "$undistcleanedFilesCount" -a $undistcleanedFilesCount -ne 0; then
 fi
 
 # Update our current 'checkout' of visit trunk from NERSC
-pushd $rootTestDir 1> /dev/null 2>&1
+cd $rootTestDir
 rm -f nersc_repo_update_$dateTag
 rm -f nersc_repo_modifiers_$dateTag
 touch nersc_repo_update_$dateTag
@@ -379,6 +382,7 @@ conflictFiles=`grep '^C' nersc_repo_update_$dateTag | tr -s ' ' | cut -d' ' -f2`
 checkAndHandleError "`eqzero $conflictFiles`" fatal "conflicting files" "$conflictFiles"
 
 # ok, now really go ahead and configure and build VisIt
+cd src
 ./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-buildall --with-google-perftools=no 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "Post-update configure failed" config_log.txt 
 gmake -j 4 1>> make_log.txt 2>&1
