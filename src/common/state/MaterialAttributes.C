@@ -44,21 +44,21 @@
 //
 
 static const char *Algorithm_strings[] = {
-"Tetrahedral", "ZooClipping", "Isovolume"
-};
+"Tetrahedral", "ZooClipping", "Isovolume", 
+"Youngs"};
 
 std::string
 MaterialAttributes::Algorithm_ToString(MaterialAttributes::Algorithm t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return Algorithm_strings[index];
 }
 
 std::string
 MaterialAttributes::Algorithm_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return Algorithm_strings[index];
 }
 
@@ -66,7 +66,7 @@ bool
 MaterialAttributes::Algorithm_FromString(const std::string &s, MaterialAttributes::Algorithm &val)
 {
     val = MaterialAttributes::Tetrahedral;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == Algorithm_strings[i])
         {
@@ -531,7 +531,7 @@ MaterialAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetAlgorithm(Algorithm(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

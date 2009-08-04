@@ -98,6 +98,7 @@ SRC=InitVTKNoGraphics.C \
     vtkUnstructuredGridBoundaryFilter.C \
     vtkUnstructuredGridFacelistFilter.C \
     vtkVisItPointLocator.C \
+    vtkVisItPointDataToCellData.C \
     vtkVisItCellLocator.C \
     vtkVisItUtility.C 
 

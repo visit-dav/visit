@@ -101,6 +101,7 @@
 #ifndef DBIO_ONLY
 #include <TetMIR.h>
 #include <ZooMIR.h>
+#include <YoungsMIR.h>
 #endif
 
 #include <DebugStream.h>
@@ -4379,6 +4380,10 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //
 //    Mark C. Miller, Wed Mar  4 18:00:58 PST 2009
 //    Adjusted for dbio-only build
+//
+//    Jeremy Meredith, Tue Aug  4 10:50:03 EDT 2009
+//    Added Youngs algorihtm.
+//
 // ****************************************************************************
 
 void_ref_ptr
@@ -4410,7 +4415,10 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             simplifyHeavilyMixedZones    ? "Simplify"   : "NoSimplify",
             maxMatsPerZone,
             isovolumeMIRVF,
-            mirAlgorithm==0 ? "TetMIR" : (mirAlgorithm==1 ? "ZooMIR" : "IsovolumeMIR"),
+            mirAlgorithm==0 ? "TetMIR" :
+            (mirAlgorithm==1 ? "ZooMIR" :
+             (mirAlgorithm==2 ? "IsovolumeMIR" :
+              "YoungsMIR")),
             mirNumIterations,
             mirIterationDamping);
             
@@ -4452,6 +4460,10 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             // Both the recursive clipping and isovolume clipping
             // use the Zoo clipping MIR
             mir = new ZooMIR;
+            break;
+ 
+          case 3:
+            mir = new YoungsMIR;
             break;
  
           default:

@@ -4,6 +4,7 @@
       Tetrahedral
       ZooClipping
       Isovolume
+      Youngs
     </Enum>
     <Field name="smoothing" label="Enable interface smoothing" type="bool">
       false

@@ -59,16 +59,19 @@
 #   Brad Whitlock, Thu Jan 26 15:30:52 PST 2006
 #   Added libs for MacOS X.
 #
-#    Thomas R. Treadway, Wed Feb  7 17:53:04 PST 2007
-#    Added $(GLEW_LIBS) for MacOS X.
+#   Thomas R. Treadway, Wed Feb  7 17:53:04 PST 2007
+#   Added $(GLEW_LIBS) for MacOS X.
+#
+#   Jeremy Meredith, Tue Aug  4 10:52:45 EDT 2009
+#   Added Youngs algorithm.
 #
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Base Tet Zoo
-SRC=$(Base_src) $(Tet_src) $(Zoo_src)
+SUBDIRS=Base Tet Zoo Youngs
+SRC=$(Base_src) $(Tet_src) $(Zoo_src) $(Youngs_src)
 
 Base_src= \
   Base/MIR.C \
@@ -91,6 +94,14 @@ Zoo_src= \
   Zoo/RecursiveCellReconstructor.C \
   Zoo/ResampledMat.C \
   Zoo/ZooMIR.C
+Youngs_src= \
+  Youngs/CellInterface2D.C \
+  Youngs/CellInterface3D.C \
+  Youngs/CellInterface.C \
+  Youngs/vtkCQS.C \
+  Youngs/vtkDataSetGradient.C \
+  Youngs/vtkYoungsMaterialInterface.C \
+  Youngs/YoungsMIR.C \
 
 CPPFLAGS=-I../../include -I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
