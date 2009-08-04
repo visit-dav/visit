@@ -48,6 +48,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string>
+#include <limits.h>
 
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
@@ -87,6 +88,7 @@ using     std::string;
 using     std::map;
 
 #define ALL_LINES -1
+#define INVALID_MAT_ID -INT_MAX
 
 // ****************************************************************************
 //  Method: avtNASTRANFileFormat constructor
@@ -332,6 +334,15 @@ static int Geti(const char *s)
 //    Mark C. Miller, Mon Jul 27 20:52:42 PDT 2009
 //    Moved re-setting of matCountOpt from -1 (which means to search) to
 //    OUTSIDE of conditional compilation for !mdserver.
+//
+//    Mark C. Miller, Tue Aug  4 11:30:07 PDT 2009
+//    Added logic to loop over lines of input to handle iterations in which
+//    a material id is NOT actually defined. Previously, at the end of
+//    every iteration through the loop REGARDLESS of which line of input
+//    was observed, it would take the resulting material id -- which defaulted
+//    to zero -- and put it into the list of unique material ids. Now, it
+//    keeps track of whether a 'valid' material id has been seen before
+//    updating the list of unique material ids.
 // ****************************************************************************
 
 bool
@@ -383,11 +394,12 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
     char  line[1024];
     float pt[3];
     int verts[8];
-    int matid = 0;
     bool recognized = false;
     bool titleRead = false;
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
     {
+        int matid = INVALID_MAT_ID;
+
         if(nLines != ALL_LINES && lineIndex >= nLines)
             break;
 
@@ -866,7 +878,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             recognized = true;
         }
 
-        uniqMatIds[matid] = 1;
+        if (matid != INVALID_MAT_ID)
+            uniqMatIds[matid] = 1;
     }
 
     visitTimer->StopTimer(readingFile, "Interpreting NASTRAN file");
@@ -918,6 +931,9 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 //    Mark C. Miller, Wed May 13 23:12:41 PDT 2009
 //    Added materials using new MaterialMetaData constructor that takes only
 //    number of materials.
+//
+//    Mark C. Miller, Tue Aug  4 11:32:31 PDT 2009
+//    Modified generated names to use actual material ids found in the data.
 // ****************************************************************************
 
 void
@@ -930,10 +946,19 @@ avtNASTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, NULL, 1, 1,
                       sdim, tdim);
 
-    if (matCountOpt > 0)
+    if (uniqMatIds.size() > 0)
     {
+        vector<string> names;
+        for (map<int,int>::iterator mit = uniqMatIds.begin();
+             mit != uniqMatIds.end(); mit++)
+        {
+            char tmpn[32];
+            SNPRINTF(tmpn,sizeof(tmpn),"mat_%d",mit->first);
+            names.push_back(tmpn);
+        }
+
         avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", "mesh",
-                                           matCountOpt);
+                                           matCountOpt, names);
         md->Add(mmd);
     }
 
@@ -1006,6 +1031,12 @@ avtNASTRANFileFormat::GetMesh(const char *meshname)
 //  Programmer: Mark C. Miller 
 //  Creation:   Wed May 13 17:51:17 PDT 2009
 //
+//  Modifications:
+//    Mark C. Miller, Tue Aug  4 11:33:58 PDT 2009
+//    Fixed some leaks and unnecessary copies of matlist array. Changed
+//    constructor to one that supports specification of the list of material
+//    numbers. Changed name generation to use actual material numbers found
+//    in the input data.
 // ****************************************************************************
 
 avtMaterial *
@@ -1024,24 +1055,28 @@ avtNASTRANFileFormat::GetMaterial(const char *mat)
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    vector<string> names;
-    for (int i = 0; i < matCountOpt; i++)
+    char **names = new char*[uniqMatIds.size()];
+    int *matnos = new int[uniqMatIds.size()];
+    int mno = 0;
+    for (map<int,int>::iterator mit = uniqMatIds.begin();
+         mit != uniqMatIds.end(); mno++, mit++)
     {
         char tmpn[32];
-        SNPRINTF(tmpn,sizeof(tmpn),"mat_%d",i);
-        names.push_back(tmpn);
+        SNPRINTF(tmpn,sizeof(tmpn),"mat_%d",mit->first);
+        names[mno] = strdup(tmpn);
+        matnos[mno] = mit->first;
     }
 
-    //
-    // We have to do this copy because VisIt is expecting to be able to delete
-    // the avtMaterial object and we can't override it with our own variant
-    // that DOES NOT delete the matlist part of it because that member is
-    // private.
-    //
-    int *matlist = new int[matList.size()];
-    memcpy(matlist, &matList[0], matList.size() * sizeof(int));
-    return new avtMaterial(matCountOpt, names, matList.size(),
-                             &matList[0], 0, 0, 0, 0, 0);
+    int dims = matList.size();
+    avtMaterial *retval = new avtMaterial((int)uniqMatIds.size(), matnos,
+        names, 1, &dims, 0, &matList[0], 0, 0, 0, 0, 0, 0, 0);
+
+    delete [] matnos;
+    for (mno = 0; mno < uniqMatIds.size(); mno++)
+        delete [] names[mno];
+    delete [] names;
+
+    return retval;
 }
 
 // ****************************************************************************
