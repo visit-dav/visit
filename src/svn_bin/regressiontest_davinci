@@ -139,6 +139,10 @@
 #    Mark C. Miller, Tue Aug  4 11:58:13 PDT 2009
 #    Fixed problem cd'ing to correct dirs resulting from above changes. Added
 #    option (-test <email>) to facilitate testing of this script itself.
+#
+#    Mark C. Miller, Tue Aug  4 15:22:44 PDT 2009
+#    Making so that for a test run (e.g. -test arg given), we don't attempt
+#    to post any results.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -521,10 +525,11 @@ for m in $modes; do
     echo "http://portal.nersc.gov/project/visit/${dateTag}/${theMode}/index.html" >> short_summary
     grep 'category\|failed' summary >> short_summary
     checkAndHandleError $curerror warning "test mode $m failed" short_summary 
-
     failedPyFiles=`grep failed short_summary | cut -d':' -f1`
-    #if test -n "$failedPyFiles"; then
-    if test 1; then
+
+    # Do the work to copy html results and post them only if this is NOT
+    # a test of the regressiontest script itself.
+    if test -z "$testEmail"; then
 
         mkdir html_$dateTag
         cp html/index.html html_$dateTag/.
