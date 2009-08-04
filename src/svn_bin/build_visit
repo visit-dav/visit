@@ -670,6 +670,11 @@
 #     Added $MESA_URL to ensure_built_or_ready invokation. I also made it
 #     possible to specify value for VISITDIR external to script so you can
 #     essentially tell build_visit where to install its libs to.
+# 
+#     Cyrus Harrison,  Tue Aug  4 16:06:20 PDT 2009
+#     Fixed a typo w/ MESA_URL - it was providing the full path for the sourceforge
+#     download, and because of this build_visit was putting the tarball in the path twice.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -948,7 +953,7 @@ export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.4.5"}
 export MESA_FILE=${MESA_FILE:-"MesaLib-7.5.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.5"}
 export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.5"}
-export MESA_URL="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.5/MesaLib-7.5.tar.gz"
+export MESA_URL="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.5"
 
 # The old Python version at LLNL does not work on Mac, we need a newer version
 export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. 
