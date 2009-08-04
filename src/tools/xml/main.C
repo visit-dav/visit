@@ -1,8 +1,8 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-400142
+* LLNL-CODE-400124
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -76,9 +76,9 @@ QString preHeaderLeader = "pre_";
 const char *copyright_str = 
 "/*****************************************************************************\n"
 "*\n"
-"* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC\n"
+"* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC\n"
 "* Produced at the Lawrence Livermore National Laboratory\n"
-"* LLNL-CODE-400142\n"
+"* LLNL-CODE-400124\n"
 "* All rights reserved.\n"
 "*\n"
 "* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The\n"
@@ -115,9 +115,9 @@ const char *copyright_str =
 const char *java_copyright_str = 
 "// ***************************************************************************\n"
 "//\n"
-"// Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC\n"
+"// Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC\n"
 "// Produced at the Lawrence Livermore National Laboratory\n"
-"// LLNL-CODE-400142\n"
+"// LLNL-CODE-400124\n"
 "// All rights reserved.\n"
 "//\n"
 "// This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The\n"
