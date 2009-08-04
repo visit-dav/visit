@@ -662,6 +662,9 @@
 #     Tom Fogal, Thu Jul 30 19:20:29 MDT 2009
 #     Unset CDPATH to make sure we don't inherit a bad setting.
 #
+#     Tom Fogal, Tue Aug  4 11:24:29 MDT 2009
+#     Make VTK link against mangled Mesa.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -2767,12 +2770,12 @@ function build_mesa
     # VTK, we'll build a mangled+glX version, but then we'll build the
     # offscreen one that we really want.  This ensures we have the 'MesaGL'
     # that VTK needs to link, but if we use 'OSMesa' we get a real, OSMesa
-    # library with no glX dependence.
+    # library with no glX dependency.
     #
-    # Due to this issue, it is critical that one links "-lOSMesa -lMesaGL" when
-    # they want to render/link to an offscreen Mesa context.  The two libraries
-    # will have a host of duplicate symbols, and it is important that we pick
-    # up the ones from OSMesa.
+    # Due to this issue, it is imperative that one links "-lOSMesa
+    # -lMesaGL" when they want to render/link to an offscreen Mesa
+    # context.  The two libraries will have a host of duplicate
+    # symbols, and it is important that we pick up the ones from OSMesa.
     info "Configuring Mesa (Mangled glX) ..."
     ./configure \
       CFLAGS="${CFLAGS} -DUSE_MGL_NAMESPACE"     \
@@ -3494,6 +3497,9 @@ function build_vtk
     #
     # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
     #
+    # Linking OSMesa for MANGLED_MESA_LIBRARY is correct here; we'll never use
+    # MesaGL, as that is a xlib-based software path.  If we have an X context,
+    # we always want to use the 'system's GL library.
     info "Executing CMake on VTK"
     cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
     CMAKE_BIN=${CMAKE_INSTALL}/cmake
@@ -3510,7 +3516,7 @@ function build_vtk
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
         -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
@@ -3529,7 +3535,7 @@ function build_vtk
         -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
         -DCMAKE_SHARED_LINKER_FLAGS:STRING=-LANG:std -64\
         -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
@@ -3558,7 +3564,7 @@ function build_vtk
                -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-               -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+               -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
                -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
                -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
                .
@@ -7309,7 +7315,7 @@ function build_icet
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
         -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         -DCMAKE_C_FLAGS:STRING="-DUSE_MGL_NAMESPACE ${C_OPT_FLAGS}"\
         -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
         -DMPI_LIBRARY:FILEPATH="./fakempi.so"\
