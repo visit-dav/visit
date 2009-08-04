@@ -170,6 +170,9 @@ using     std::map;
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Jeremy Meredith, Tue Aug  4 10:48:26 EDT 2009
+//    Added comment for Youngs algorithm.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -192,7 +195,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
-    mirAlgorithm = 1; // 0=Tet 1==Zoo 2=Isovolume
+    mirAlgorithm = 1; // 0=Tet 1=Zoo 2=Isovolume 3=Youngs
     mirNumIterations = 0; // 0 = no iteration
     mirIterationDamping = .2; // the multiplier of the vf diff when iterating
     isovolumeMIRVF = 0.5;
@@ -327,6 +330,9 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Jeremy Meredith, Tue Aug  4 10:48:26 EDT 2009
+//    Added comment for Youngs algorithm.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
@@ -348,7 +354,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
-    mirAlgorithm = 1; // 0=Tet 1==Zoo 2=Isovolume
+    mirAlgorithm = 1; // 0=Tet 1=Zoo 2=Isovolume 3=Youngs
     mirNumIterations = 0; // 0 = no iteration
     mirIterationDamping = .2; // the multiplier of the vf diff when iterating
     isovolumeMIRVF = 0.5;
@@ -1763,6 +1769,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Jeremy Meredith, Tue Aug  4 10:49:32 EDT 2009
+//    Added MIR algorithm enumeration values to page.
+//
 // ****************************************************************************
 
 static const char *
@@ -1816,7 +1825,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("needMixedVariableReconstruction", YesOrNo(needMixedVariableReconstruction));
     webpage->AddTableEntry2("needSmoothMaterialInterfaces", YesOrNo(needSmoothMaterialInterfaces));
     webpage->AddTableEntry2("needCleanZonesOnly", YesOrNo(needCleanZonesOnly));
-    sprintf(str, "%d", mirAlgorithm);
+    sprintf(str, "%d (0=Tet 1=Zoo 2=Isovolume 3=Youngs)", mirAlgorithm);
     webpage->AddTableEntry2("mirAlgorithm", str);
     sprintf(str, "%d", mirNumIterations);
     webpage->AddTableEntry2("mirNumIterations", str);

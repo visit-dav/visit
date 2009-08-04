@@ -138,6 +138,10 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
 //    Added material iteration capability.
 //
+//    Jeremy Meredith, Tue Aug  4 10:47:50 EDT 2009
+//    Added Youngs algorithm choice.
+//    Added hints for algorithm specificity of some options.
+//
 // ****************************************************************************
 
 void
@@ -155,17 +159,18 @@ QvisMaterialWindow::CreateWindowContents()
     algorithm->addItem(tr("Tetrahedral (obsolete)"));
     algorithm->addItem(tr("Zoo-based (default)"));
     algorithm->addItem(tr("Isovolume (special-purpose)"));
+    algorithm->addItem(tr("Youngs (accurate/discontinuous)"));
     algLayout->addWidget(algorithm);
     connect(algorithm, SIGNAL(activated(int)),
             this, SLOT(algorithmChanged(int)));
     mainLayout->addLayout(algLayout, 0,0, 1,2);
 
-    smoothing = new QCheckBox(tr("Enable interface smoothing"), central);
+    smoothing = new QCheckBox(tr("Enable interface smoothing (Zoo/Tet only)"), central);
     connect(smoothing, SIGNAL(toggled(bool)),
             this, SLOT(smoothingChanged(bool)));
     mainLayout->addWidget(smoothing, 1,0);
 
-    forceFullConnectivity = new QCheckBox(tr("Force full connectivity"), central);
+    forceFullConnectivity = new QCheckBox(tr("Force full connectivity (Tet only)"), central);
     connect(forceFullConnectivity, SIGNAL(toggled(bool)),
             this, SLOT(forceFullConnectivityChanged(bool)));
     mainLayout->addWidget(forceFullConnectivity, 2,0);
@@ -258,6 +263,9 @@ QvisMaterialWindow::CreateWindowContents()
 //    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
 //    Added material iteration capability.
 //
+//    Jeremy Meredith, Tue Aug  4 13:49:49 EDT 2009
+//    Added better sensitivity setting based on algorithm.
+//
 // ****************************************************************************
 
 void
@@ -312,6 +320,11 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
                 isoVolumeFraction->setEnabled(false);
                 isoVolumeFractionLabel->setEnabled(false);
             }
+            smoothing->setEnabled(
+                   atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::Tetrahedral);
+            forceFullConnectivity->setEnabled(
+                   atts->GetAlgorithm()==MaterialAttributes::Tetrahedral);
             enableIteration->setEnabled(
                    atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume);

@@ -64,7 +64,8 @@ public:
     {
         Tetrahedral,
         ZooClipping,
-        Isovolume
+        Isovolume,
+        Youngs
     };
 
     MaterialAttributes();

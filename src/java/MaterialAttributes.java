@@ -60,6 +60,7 @@ public class MaterialAttributes extends AttributeSubject
     public final static int ALGORITHM_TETRAHEDRAL = 0;
     public final static int ALGORITHM_ZOOCLIPPING = 1;
     public final static int ALGORITHM_ISOVOLUME = 2;
+    public final static int ALGORITHM_YOUNGS = 3;
 
 
     public MaterialAttributes()
@@ -279,6 +280,8 @@ public class MaterialAttributes extends AttributeSubject
             str = str + "ALGORITHM_ZOOCLIPPING";
         if(algorithm == ALGORITHM_ISOVOLUME)
             str = str + "ALGORITHM_ISOVOLUME";
+        if(algorithm == ALGORITHM_YOUNGS)
+            str = str + "ALGORITHM_YOUNGS";
         str = str + "\n";
         str = str + boolToString("iterationEnabled", iterationEnabled, indent) + "\n";
         str = str + intToString("numIterations", numIterations, indent) + "\n";
