@@ -813,6 +813,11 @@ StoreValues(float *dest, const T * const src, int ti, const int * const sdims,
 // Creation:   Wed Nov 12 13:50:02 PST 2008
 //
 // Modifications:
+//   Eric Brugger, Wed Aug  5 15:15:01 PDT 2009
+//   I replaced a call to free_mem with delete to avoid a run time link error
+//   when using the intel compiler.  An alternative fix would have been to
+//   include the header file that defines the function, but I thought this
+//   was a better solution since it wasn't used anywhere else in the file.
 //   
 // ****************************************************************************
 
@@ -867,7 +872,7 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
                 debug4 << "Unsupported type" << endl;
 
             free_void_mem(val, t);
-            free_mem(dims);
+            delete [] dims;
         }
 
         // Close the file so we don't get too many files open.
