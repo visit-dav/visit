@@ -3570,13 +3570,17 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     void_ref_ptr vr_mir = GetMIR(dom, var, ts, ds, mat, topoDim,
                                  needValidConnectivity,
                                  needSmoothMaterialInterfaces,
-                                 needCleanZonesOnly, simplifyHeavilyMixedZones,
-                                 maxMatsPerZone, mirAlgorithm,
-                                 mirNumIterations, mirIterationDamping,
+                                 needCleanZonesOnly,
+                                 simplifyHeavilyMixedZones,
+                                 maxMatsPerZone,
+                                 mirAlgorithm,
+                                 mirNumIterations,
+                                 mirIterationDamping,
                                  isovolumeMIRVF,
                                  didGhosts,
                                  subdivisionOccurred,
-                                 notAllCellsSubdivided, reUseMIR, 
+                                 notAllCellsSubdivided,
+                                 reUseMIR, 
                                  material_used);
     MIR *mir = (MIR *) (*vr_mir);
 
@@ -4384,6 +4388,12 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Jeremy Meredith, Tue Aug  4 10:50:03 EDT 2009
 //    Added Youngs algorihtm.
 //
+//    Jeremy Meredith, Wed Aug  5 13:59:58 EDT 2009
+//    Force algorithm to Zoo if we're asked for clean zones only.  Only ZooMIR
+//    supports this option.  Really, this a higher level choice than which
+//    algorithm to use, so it doesn't matter that we're calling Zoo code;
+//    it's not really doing interface reconstruction at all.
+//
 // ****************************************************************************
 
 void_ref_ptr
@@ -4405,6 +4415,19 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
     void_ref_ptr vr = void_ref_ptr();
 #ifndef DBIO_ONLY
     mat_to_use = mat;
+
+    //
+    // The Youngs and Tetrahedral MIR algorithms do not support
+    // clean zones only.  Force it to use the Zoo MIR algorithm.
+    // (This hardly counts as interface reconstruction, so algorithm
+    // is meaningless.)
+    //
+    if (needCleanZonesOnly)
+    {
+        debug1 << "Note: asked for MIR requiring clean zones. "
+               << "Forcing algorithm to ZooMIR.\n";
+        mirAlgorithm = 1;
+    }
 
     char cacheLbl[1000];
     sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s_%d_%f",
