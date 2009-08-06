@@ -10013,8 +10013,8 @@ GLenum glewInit ()
   /* Initialize GLX .  If we're using a `system' GL, then that's the only
    * init we can/want to do.  Otherwise, it's allowed to fail, since we can
    * load GL function pointers through other means. */
-  GLenum ctx_init = glxewContextInit();
   if(glew_convention == GLEW_NAME_CONVENTION_GL) {
+    GLenum ctx_init = glxewContextInit();
     return ctx_init;
   }
   return r;
