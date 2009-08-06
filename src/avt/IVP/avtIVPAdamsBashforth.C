@@ -53,7 +53,7 @@ static const double epsilon = std::numeric_limits<double>::epsilon();
 static const double bashforth[] = { 1901.0, -2774.0, 2616.0, -1274.0, 251.0 };
 static const double divisor = 1.0 / 720.0;
 
-#define STEPS sizeof(bashforth)/sizeof(bashforth[0])
+#define NSTEPS sizeof(bashforth)/sizeof(bashforth[0])
 
 // helper function
 // returns a with the same sign as b
@@ -400,7 +400,7 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
     // Calculate the predictor using the Adams-Bashforth formula
     yNew = yCur;
 
-    for (size_t i = 0; i < STEPS; i++)
+    for (size_t i = 0; i < NSTEPS; i++)
         yNew += h*divisor*bashforth[i] * history[i];
 
     return avtIVPSolver::OK;
@@ -449,7 +449,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 
     if (termType == TIME)
         t_max = end;
-    else if (termType == DISTANCE || termType == STEP)
+    else if (termType == DISTANCE || termType == STEPS)
     {
         t_max = std::numeric_limits<double>::max();
         if (end < 0)
@@ -475,7 +475,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
     avtIVPSolver::Result res;
     avtVec yNew(yCur.dim());
     // Use a forth order Runga Kutta integration to seed the Adams-Bashforth.
-    if ( initialized < STEPS )
+    if ( initialized < NSTEPS )
     {
         // Save the first vector values in the history. 
         if( initialized == 0 )
@@ -532,7 +532,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 
             d = d+len;
         }
-        else if (termType == STEP &&
+        else if (termType == STEPS &&
                  numStep >= (int)fabs(end))
             return TERMINATE;
 

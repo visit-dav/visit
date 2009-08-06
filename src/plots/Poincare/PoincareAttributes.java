@@ -67,7 +67,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public final static int TERMINATIONTYPE_DISTANCE = 0;
     public final static int TERMINATIONTYPE_TIME = 1;
-    public final static int TERMINATIONTYPE_STEP = 2;
+    public final static int TERMINATIONTYPE_STEPS = 2;
+    public final static int TERMINATIONTYPE_PUCTURES = 3;
 
     public final static int COLORBY_ORIGINALVALUE = 0;
     public final static int COLORBY_INPUTORDER = 1;
@@ -96,7 +97,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public PoincareAttributes()
     {
-        super(35);
+        super(36);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -129,11 +130,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pointDensity = 1;
         colorTableName = new String("Default");
         singleColor = new ColorAttribute(0, 0, 0);
+        verboseFlag = true;
         legendFlag = true;
         lightingFlag = true;
         relTol = 0.0001;
         absTol = 1e-05;
-        terminationType = TERMINATIONTYPE_STEP;
+        terminationType = TERMINATIONTYPE_STEPS;
         integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         showStreamlines = false;
         showPoints = false;
@@ -155,7 +157,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public PoincareAttributes(PoincareAttributes obj)
     {
-        super(35);
+        super(36);
 
         int i;
 
@@ -196,6 +198,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pointDensity = obj.pointDensity;
         colorTableName = new String(obj.colorTableName);
         singleColor = new ColorAttribute(obj.singleColor);
+        verboseFlag = obj.verboseFlag;
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
         relTol = obj.relTol;
@@ -270,6 +273,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (pointDensity == obj.pointDensity) &&
                 (colorTableName.equals(obj.colorTableName)) &&
                 (singleColor == obj.singleColor) &&
+                (verboseFlag == obj.verboseFlag) &&
                 (legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
                 (relTol == obj.relTol) &&
@@ -436,136 +440,142 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(12);
     }
 
+    public void SetVerboseFlag(boolean verboseFlag_)
+    {
+        verboseFlag = verboseFlag_;
+        Select(13);
+    }
+
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(13);
+        Select(14);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(14);
+        Select(15);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(15);
+        Select(16);
     }
 
     public void SetAbsTol(double absTol_)
     {
         absTol = absTol_;
-        Select(16);
+        Select(17);
     }
 
     public void SetTerminationType(int terminationType_)
     {
         terminationType = terminationType_;
-        Select(17);
+        Select(18);
     }
 
     public void SetIntegrationType(int integrationType_)
     {
         integrationType = integrationType_;
-        Select(18);
+        Select(19);
     }
 
     public void SetShowStreamlines(boolean showStreamlines_)
     {
         showStreamlines = showStreamlines_;
-        Select(19);
+        Select(20);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(20);
+        Select(21);
     }
 
     public void SetNumberPlanes(int numberPlanes_)
     {
         numberPlanes = numberPlanes_;
-        Select(21);
+        Select(22);
     }
 
     public void SetColorBy(int colorBy_)
     {
         colorBy = colorBy_;
-        Select(22);
+        Select(23);
     }
 
     public void SetMaxToroidalWinding(int maxToroidalWinding_)
     {
         maxToroidalWinding = maxToroidalWinding_;
-        Select(23);
+        Select(24);
     }
 
     public void SetOverrideToroidalWinding(int overrideToroidalWinding_)
     {
         overrideToroidalWinding = overrideToroidalWinding_;
-        Select(24);
+        Select(25);
     }
 
     public void SetHitRate(double hitRate_)
     {
         hitRate = hitRate_;
-        Select(25);
+        Select(26);
     }
 
     public void SetShowCurves(int showCurves_)
     {
         showCurves = showCurves_;
-        Select(26);
+        Select(27);
     }
 
     public void SetAdjustPlane(int adjustPlane_)
     {
         adjustPlane = adjustPlane_;
-        Select(27);
+        Select(28);
     }
 
     public void SetShowIslands(boolean showIslands_)
     {
         showIslands = showIslands_;
-        Select(28);
+        Select(29);
     }
 
     public void SetOverlaps(int overlaps_)
     {
         overlaps = overlaps_;
-        Select(29);
+        Select(30);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(30);
+        Select(31);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(31);
+        Select(32);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(32);
+        Select(33);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(33);
+        Select(34);
     }
 
     public void SetColorType(int colorType_)
     {
         colorType = colorType_;
-        Select(34);
+        Select(35);
     }
 
     // Property getting methods
@@ -582,6 +592,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetPointDensity() { return pointDensity; }
     public String         GetColorTableName() { return colorTableName; }
     public ColorAttribute GetSingleColor() { return singleColor; }
+    public boolean        GetVerboseFlag() { return verboseFlag; }
     public boolean        GetLegendFlag() { return legendFlag; }
     public boolean        GetLightingFlag() { return lightingFlag; }
     public double         GetRelTol() { return relTol; }
@@ -635,48 +646,50 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(12, buf))
             singleColor.Write(buf);
         if(WriteSelect(13, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteBool(verboseFlag);
         if(WriteSelect(14, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(15, buf))
-            buf.WriteDouble(relTol);
+            buf.WriteBool(lightingFlag);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(absTol);
+            buf.WriteDouble(relTol);
         if(WriteSelect(17, buf))
-            buf.WriteInt(terminationType);
+            buf.WriteDouble(absTol);
         if(WriteSelect(18, buf))
-            buf.WriteInt(integrationType);
+            buf.WriteInt(terminationType);
         if(WriteSelect(19, buf))
-            buf.WriteBool(showStreamlines);
+            buf.WriteInt(integrationType);
         if(WriteSelect(20, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteBool(showStreamlines);
         if(WriteSelect(21, buf))
-            buf.WriteInt(numberPlanes);
+            buf.WriteBool(showPoints);
         if(WriteSelect(22, buf))
-            buf.WriteInt(colorBy);
+            buf.WriteInt(numberPlanes);
         if(WriteSelect(23, buf))
-            buf.WriteInt(maxToroidalWinding);
+            buf.WriteInt(colorBy);
         if(WriteSelect(24, buf))
-            buf.WriteInt(overrideToroidalWinding);
+            buf.WriteInt(maxToroidalWinding);
         if(WriteSelect(25, buf))
-            buf.WriteDouble(hitRate);
+            buf.WriteInt(overrideToroidalWinding);
         if(WriteSelect(26, buf))
-            buf.WriteInt(showCurves);
+            buf.WriteDouble(hitRate);
         if(WriteSelect(27, buf))
-            buf.WriteInt(adjustPlane);
+            buf.WriteInt(showCurves);
         if(WriteSelect(28, buf))
-            buf.WriteBool(showIslands);
+            buf.WriteInt(adjustPlane);
         if(WriteSelect(29, buf))
-            buf.WriteInt(overlaps);
+            buf.WriteBool(showIslands);
         if(WriteSelect(30, buf))
-            buf.WriteDouble(min);
+            buf.WriteInt(overlaps);
         if(WriteSelect(31, buf))
-            buf.WriteDouble(max);
+            buf.WriteDouble(min);
         if(WriteSelect(32, buf))
-            buf.WriteBool(minFlag);
+            buf.WriteDouble(max);
         if(WriteSelect(33, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteBool(minFlag);
         if(WriteSelect(34, buf))
+            buf.WriteBool(maxFlag);
+        if(WriteSelect(35, buf))
             buf.WriteInt(colorType);
     }
 
@@ -728,69 +741,72 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 Select(12);
                 break;
             case 13:
-                SetLegendFlag(buf.ReadBool());
+                SetVerboseFlag(buf.ReadBool());
                 break;
             case 14:
-                SetLightingFlag(buf.ReadBool());
+                SetLegendFlag(buf.ReadBool());
                 break;
             case 15:
-                SetRelTol(buf.ReadDouble());
+                SetLightingFlag(buf.ReadBool());
                 break;
             case 16:
-                SetAbsTol(buf.ReadDouble());
+                SetRelTol(buf.ReadDouble());
                 break;
             case 17:
-                SetTerminationType(buf.ReadInt());
+                SetAbsTol(buf.ReadDouble());
                 break;
             case 18:
-                SetIntegrationType(buf.ReadInt());
+                SetTerminationType(buf.ReadInt());
                 break;
             case 19:
-                SetShowStreamlines(buf.ReadBool());
+                SetIntegrationType(buf.ReadInt());
                 break;
             case 20:
-                SetShowPoints(buf.ReadBool());
+                SetShowStreamlines(buf.ReadBool());
                 break;
             case 21:
-                SetNumberPlanes(buf.ReadInt());
+                SetShowPoints(buf.ReadBool());
                 break;
             case 22:
-                SetColorBy(buf.ReadInt());
+                SetNumberPlanes(buf.ReadInt());
                 break;
             case 23:
-                SetMaxToroidalWinding(buf.ReadInt());
+                SetColorBy(buf.ReadInt());
                 break;
             case 24:
-                SetOverrideToroidalWinding(buf.ReadInt());
+                SetMaxToroidalWinding(buf.ReadInt());
                 break;
             case 25:
-                SetHitRate(buf.ReadDouble());
+                SetOverrideToroidalWinding(buf.ReadInt());
                 break;
             case 26:
-                SetShowCurves(buf.ReadInt());
+                SetHitRate(buf.ReadDouble());
                 break;
             case 27:
-                SetAdjustPlane(buf.ReadInt());
+                SetShowCurves(buf.ReadInt());
                 break;
             case 28:
-                SetShowIslands(buf.ReadBool());
+                SetAdjustPlane(buf.ReadInt());
                 break;
             case 29:
-                SetOverlaps(buf.ReadInt());
+                SetShowIslands(buf.ReadBool());
                 break;
             case 30:
-                SetMin(buf.ReadDouble());
+                SetOverlaps(buf.ReadInt());
                 break;
             case 31:
-                SetMax(buf.ReadDouble());
+                SetMin(buf.ReadDouble());
                 break;
             case 32:
-                SetMinFlag(buf.ReadBool());
+                SetMax(buf.ReadDouble());
                 break;
             case 33:
-                SetMaxFlag(buf.ReadBool());
+                SetMinFlag(buf.ReadBool());
                 break;
             case 34:
+                SetMaxFlag(buf.ReadBool());
+                break;
+            case 35:
                 SetColorType(buf.ReadInt());
                 break;
             }
@@ -820,6 +836,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + intToString("pointDensity", pointDensity, indent) + "\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
+        str = str + boolToString("verboseFlag", verboseFlag, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         str = str + doubleToString("relTol", relTol, indent) + "\n";
@@ -829,8 +846,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "TERMINATIONTYPE_DISTANCE";
         if(terminationType == TERMINATIONTYPE_TIME)
             str = str + "TERMINATIONTYPE_TIME";
-        if(terminationType == TERMINATIONTYPE_STEP)
-            str = str + "TERMINATIONTYPE_STEP";
+        if(terminationType == TERMINATIONTYPE_STEPS)
+            str = str + "TERMINATIONTYPE_STEPS";
+        if(terminationType == TERMINATIONTYPE_PUCTURES)
+            str = str + "TERMINATIONTYPE_PUCTURES";
         str = str + "\n";
         str = str + indent + "integrationType = ";
         if(integrationType == INTEGRATIONTYPE_DORMANDPRINCE)
@@ -910,6 +929,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            pointDensity;
     private String         colorTableName;
     private ColorAttribute singleColor;
+    private boolean        verboseFlag;
     private boolean        legendFlag;
     private boolean        lightingFlag;
     private double         relTol;

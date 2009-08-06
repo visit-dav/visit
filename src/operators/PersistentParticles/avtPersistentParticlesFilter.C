@@ -266,6 +266,26 @@ avtPersistentParticlesFilter::Execute(void)
          SetStartFrame(myStart);
          SetEndFrame(myStop);
     }
+    // Check if the times are valid and correct if needed
+    if (myStart < 0)
+      myStart = 0;
+    
+    if( myStart >= numStates )
+      myStart = numStates-1;
+    
+    if( myStop < 0 )
+      myStop = 0;
+    
+    if (myStop >= numStates)
+      myStop = numStates-1;
+    
+//     if( myStart == myStop )
+//     {
+//       std::string msg(GetType());
+//       msg = msg + ":  Start and stop indexes are the same. The start time " +
+//         "must be smaller than the stop time.";
+//       avtCallback::IssueWarning(msg.c_str());
+//     }
 
     //Iterate over the time series
     avtExecuteThenTimeLoopFilter::Execute();

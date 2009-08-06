@@ -85,21 +85,21 @@ PoincareAttributes::SourceType_FromString(const std::string &s, PoincareAttribut
 //
 
 static const char *TerminationType_strings[] = {
-"Distance", "Time", "Step"
-};
+"Distance", "Time", "Steps", 
+"Puctures"};
 
 std::string
 PoincareAttributes::TerminationType_ToString(PoincareAttributes::TerminationType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return TerminationType_strings[index];
 }
 
 std::string
 PoincareAttributes::TerminationType_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return TerminationType_strings[index];
 }
 
@@ -107,7 +107,7 @@ bool
 PoincareAttributes::TerminationType_FromString(const std::string &s, PoincareAttributes::TerminationType &val)
 {
     val = PoincareAttributes::Distance;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == TerminationType_strings[i])
         {
@@ -308,7 +308,7 @@ PoincareAttributes::ColoringMethod_FromString(const std::string &s, PoincareAttr
 }
 
 // Type map format string
-const char *PoincareAttributes::TypeMapFormatString = "iddDDDDDDdisabbddiibbiiiidiibiddbbi";
+const char *PoincareAttributes::TypeMapFormatString = "iddDDDDDDdisabbbddiibbiiiidiibiddbbi";
 
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
@@ -352,11 +352,12 @@ PoincareAttributes::PoincareAttributes() :
     planeUpAxis[2] = 0;
     planeRadius = 1;
     pointDensity = 1;
+    verboseFlag = true;
     legendFlag = true;
     lightingFlag = true;
     relTol = 0.0001;
     absTol = 1e-05;
-    terminationType = Step;
+    terminationType = Steps;
     integrationType = AdamsBashforth;
     showStreamlines = false;
     showPoints = false;
@@ -425,6 +426,7 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
     pointDensity = obj.pointDensity;
     colorTableName = obj.colorTableName;
     singleColor = obj.singleColor;
+    verboseFlag = obj.verboseFlag;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     relTol = obj.relTol;
@@ -521,6 +523,7 @@ PoincareAttributes::operator = (const PoincareAttributes &obj)
     pointDensity = obj.pointDensity;
     colorTableName = obj.colorTableName;
     singleColor = obj.singleColor;
+    verboseFlag = obj.verboseFlag;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     relTol = obj.relTol;
@@ -610,6 +613,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (pointDensity == obj.pointDensity) &&
             (colorTableName == obj.colorTableName) &&
             (singleColor == obj.singleColor) &&
+            (verboseFlag == obj.verboseFlag) &&
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
             (relTol == obj.relTol) &&
@@ -829,6 +833,7 @@ PoincareAttributes::SelectAll()
     Select(ID_pointDensity,            (void *)&pointDensity);
     Select(ID_colorTableName,          (void *)&colorTableName);
     Select(ID_singleColor,             (void *)&singleColor);
+    Select(ID_verboseFlag,             (void *)&verboseFlag);
     Select(ID_legendFlag,              (void *)&legendFlag);
     Select(ID_lightingFlag,            (void *)&lightingFlag);
     Select(ID_relTol,                  (void *)&relTol);
@@ -963,6 +968,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         }
         else
             delete singleColorNode;
+    if(completeSave || !FieldsEqual(ID_verboseFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("verboseFlag", verboseFlag));
+    }
+
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
     {
         addToParent = true;
@@ -1171,6 +1182,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetColorTableName(node->AsString());
     if((node = searchNode->GetNode("singleColor")) != 0)
         singleColor.SetFromNode(node);
+    if((node = searchNode->GetNode("verboseFlag")) != 0)
+        SetVerboseFlag(node->AsBool());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
@@ -1185,7 +1198,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetTerminationType(TerminationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1406,6 +1419,13 @@ PoincareAttributes::SetSingleColor(const ColorAttribute &singleColor_)
 {
     singleColor = singleColor_;
     Select(ID_singleColor, (void *)&singleColor);
+}
+
+void
+PoincareAttributes::SetVerboseFlag(bool verboseFlag_)
+{
+    verboseFlag = verboseFlag_;
+    Select(ID_verboseFlag, (void *)&verboseFlag);
 }
 
 void
@@ -1693,6 +1713,12 @@ PoincareAttributes::GetSingleColor()
 }
 
 bool
+PoincareAttributes::GetVerboseFlag() const
+{
+    return verboseFlag;
+}
+
+bool
 PoincareAttributes::GetLegendFlag() const
 {
     return legendFlag;
@@ -1913,6 +1939,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_pointDensity:            return "pointDensity";
     case ID_colorTableName:          return "colorTableName";
     case ID_singleColor:             return "singleColor";
+    case ID_verboseFlag:             return "verboseFlag";
     case ID_legendFlag:              return "legendFlag";
     case ID_lightingFlag:            return "lightingFlag";
     case ID_relTol:                  return "relTol";
@@ -1972,6 +1999,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_pointDensity:            return FieldType_int;
     case ID_colorTableName:          return FieldType_colortable;
     case ID_singleColor:             return FieldType_color;
+    case ID_verboseFlag:             return FieldType_bool;
     case ID_legendFlag:              return FieldType_bool;
     case ID_lightingFlag:            return FieldType_bool;
     case ID_relTol:                  return FieldType_double;
@@ -2031,6 +2059,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_pointDensity:            return "int";
     case ID_colorTableName:          return "colortable";
     case ID_singleColor:             return "color";
+    case ID_verboseFlag:             return "bool";
     case ID_legendFlag:              return "bool";
     case ID_lightingFlag:            return "bool";
     case ID_relTol:                  return "double";
@@ -2172,6 +2201,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_singleColor:
         {  // new scope
         retval = (singleColor == obj.singleColor);
+        }
+        break;
+    case ID_verboseFlag:
+        {  // new scope
+        retval = (verboseFlag == obj.verboseFlag);
         }
         break;
     case ID_legendFlag:
@@ -2397,6 +2431,9 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            numberPlanes != obj.numberPlanes ||
            overrideToroidalWinding != obj.overrideToroidalWinding ||
            colorBy != obj.colorBy ||
-           showCurves != obj.showCurves;
+           showIslands != obj.showIslands ||
+           showCurves != obj.showCurves ||
+           showPoints != obj.showPoints ||
+           verboseFlag != obj.verboseFlag;
 }
 

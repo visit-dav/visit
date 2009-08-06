@@ -629,8 +629,10 @@ avtStreamlineFilter::SetTermination(int type, double term)
         terminationType = avtIVPSolver::DISTANCE;
     else if (type == STREAMLINE_TERMINATE_TIME)
         terminationType = avtIVPSolver::TIME;
-    else if (type == STREAMLINE_TERMINATE_STEP)
-        terminationType = avtIVPSolver::STEP;
+    else if (type == STREAMLINE_TERMINATE_STEPS)
+        terminationType = avtIVPSolver::STEPS;
+    else if (type == STREAMLINE_TERMINATE_INTERSECTIONS)
+        terminationType = avtIVPSolver::INTERSECTIONS;
 
     termination = term;
 }
@@ -2250,21 +2252,44 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
 
     else if(sourceType == STREAMLINE_SOURCE_LINE)
     {
-        vtkLineSource* line = vtkLineSource::New();
         double z0 = (dataSpatialDimension > 2) ? lineStart[2] : 0.;
         double z1 = (dataSpatialDimension > 2) ? lineEnd[2] : 0.;
-        line->SetPoint1(lineStart[0], lineStart[1], z0);
-        line->SetPoint2(lineEnd[0], lineEnd[1], z1);
-        line->SetResolution(pointDensity1);
-        line->Update();
 
-        for (int i = 0; i< line->GetOutput()->GetNumberOfPoints(); i++)
-        {
-            double *pt = line->GetOutput()->GetPoint(i);
+	if( pointDensity1 == 1 ) 
+	{
+	  avtVector p((lineStart[0] + lineEnd[0]) / 2,
+		      (lineStart[1] + lineEnd[1]) / 2,
+		      (z0 + z1) / 2 );
+	  candidatePts.push_back(p);
+	}
+
+	else if( pointDensity1 == 2 ) 
+	{
+	  avtVector p0(lineStart[0], lineStart[1], z0 );
+	  candidatePts.push_back(p0);
+
+	  avtVector p1(lineEnd[0], lineEnd[1], z1);
+	  candidatePts.push_back(p1);
+	}
+
+	else
+	{
+	  vtkLineSource* line = vtkLineSource::New();
+
+	  line->SetPoint1(lineStart[0], lineStart[1], z0);
+	  line->SetPoint2(lineEnd[0], lineEnd[1], z1);
+	  line->SetResolution(pointDensity1-1); // Resolution is segments
+	  line->Update();
+	  
+	  for (int i = 0; i< line->GetOutput()->GetNumberOfPoints(); i++)
+	  {
+	    double *pt = line->GetOutput()->GetPoint(i);
             avtVector p(pt[0], pt[1], pt[2]);
             candidatePts.push_back(p);
-        }
-        line->Delete();
+	  }
+
+	  line->Delete();
+	}
     }
     else if(sourceType == STREAMLINE_SOURCE_PLANE)
     {
@@ -2288,7 +2313,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         plane->SetPoint1(P2.x, P2.y, P2.z);
         plane->SetNormal(N.x, N.y, N.z);
         plane->SetCenter(O.x, O.y, O.z);
-        plane->SetResolution(pointDensity1,pointDensity2);
+        plane->SetResolution(pointDensity1-1,pointDensity2-1);
         plane->Update();
 
         for (int i = 0; i< plane->GetOutput()->GetNumberOfPoints(); i++)

@@ -211,6 +211,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            numberPlanes != obj.numberPlanes ||
            overrideToroidalWinding != obj.overrideToroidalWinding ||
            colorBy != obj.colorBy ||
-           showCurves != obj.showCurves;
+           showCurves != obj.showCurves ||
+           verbose != obj.verbose;
 }
 

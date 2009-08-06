@@ -15,7 +15,8 @@
       <Enum name="TerminationType">
         Distance
         Time
-        Step
+        Steps
+	Puctures
       </Enum>
       <Enum name="ColorBy">
         OriginalValue
@@ -100,6 +101,9 @@
         0
         255
       </Field>
+      <Field name="verboseFlag" label="verbose" type="bool">
+        true
+      </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
@@ -113,7 +117,7 @@
         0.000010
       </Field>
       <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
-        Step
+        Steps
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         AdamsBashforth
