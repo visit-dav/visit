@@ -20,22 +20,22 @@ Detailed description of class vtkCQS ...
 */
 class vtkCQS : public vtkDataSetAlgorithm
 {
-   public:
+  public:
 
-      static vtkCQS* New();
-      vtkTypeRevisionMacro(vtkCQS,vtkDataSetAlgorithm);
-      ~vtkCQS ();
+    static vtkCQS* New();
+    vtkTypeRevisionMacro(vtkCQS,vtkDataSetAlgorithm);
+    ~vtkCQS ();
 
-   protected:
-      vtkCQS ();
-      virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  protected:
+    vtkCQS ();
+    virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
 
-   private:
-     //! Unimplemented copy constructor
-      vtkCQS (const vtkCQS &);
+  private:
+    //! Unimplemented copy constructor
+    vtkCQS (const vtkCQS &);
 
-     //! Unimplemented operator
-      vtkCQS & operator= (const vtkCQS &);
+    //! Unimplemented operator
+    vtkCQS & operator= (const vtkCQS &);
 } ;
 
 #endif /* VTK_C_Q_S_H */

@@ -6,34 +6,34 @@
 /*
  * Copyright 1993-2007 NVIDIA Corporation.  All rights reserved.
  *
- * NOTICE TO USER:   
+ * NOTICE TO USER:
  *
- * This source code is subject to NVIDIA ownership rights under U.S. and 
- * international Copyright laws.  Users and possessors of this source code 
- * are hereby granted a nonexclusive, royalty-free license to use this code 
+ * This source code is subject to NVIDIA ownership rights under U.S. and
+ * international Copyright laws.  Users and possessors of this source code
+ * are hereby granted a nonexclusive, royalty-free license to use this code
  * in individual and commercial software.
  *
- * NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE 
- * CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR 
- * IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH 
- * REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF 
+ * NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
+ * CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR
+ * IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL, 
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS 
- * OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE 
- * OR OTHER TORTIOUS ACTION,  ARISING OUT OF OR IN CONNECTION WITH THE USE 
- * OR PERFORMANCE OF THIS SOURCE CODE.  
+ * IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL,
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION,  ARISING OUT OF OR IN CONNECTION WITH THE USE
+ * OR PERFORMANCE OF THIS SOURCE CODE.
  *
- * U.S. Government End Users.   This source code is a "commercial item" as 
- * that term is defined at  48 C.F.R. 2.101 (OCT 1995), consisting  of 
- * "commercial computer  software"  and "commercial computer software 
- * documentation" as such terms are  used in 48 C.F.R. 12.212 (SEPT 1995) 
- * and is provided to the U.S. Government only as a commercial end item.  
- * Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through 
- * 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the 
- * source code with only those rights set forth herein. 
+ * U.S. Government End Users.   This source code is a "commercial item" as
+ * that term is defined at  48 C.F.R. 2.101 (OCT 1995), consisting  of
+ * "commercial computer  software"  and "commercial computer software
+ * documentation" as such terms are  used in 48 C.F.R. 12.212 (SEPT 1995)
+ * and is provided to the U.S. Government only as a commercial end item.
+ * Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through
+ * 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the
+ * source code with only those rights set forth herein.
  *
- * Any use of this source code in individual and commercial software must 
+ * Any use of this source code in individual and commercial software must
  * include, in the user documentation and internal comments to the code,
  * the above Disclaimer and U.S. Government End Users Notice.
  */
@@ -54,18 +54,18 @@ struct uchar4 {unsigned char x,y,z,w; };
 struct uchar3 {unsigned char x,y,z; };
 FUNC_DECL float2 make_float2(float x,float y)
 {
-   float2 v = {x,y};
-   return v;
+    float2 v = {x,y};
+    return v;
 }
 FUNC_DECL float3 make_float3(float x,float y,float z)
 {
-   float3 v = {x,y,z};
-   return v;
+    float3 v = {x,y,z};
+    return v;
 }
 FUNC_DECL float4 make_float4(float x,float y,float z,float w)
 {
-   float4 v = {x,y,z,w};
-   return v;
+    float4 v = {x,y,z,w};
+    return v;
 }
 template<typename T> static inline T min(T a, T b){ return (a<b)?a:b; }
 template<typename T> static inline T max(T a, T b){ return (a>b)?a:b; }
@@ -230,9 +230,9 @@ FUNC_DECL float3 normalize(float3 v)
 
 FUNC_DECL float3 cross( float3 A, float3 B)
 {
-   return make_float3( A.y * B.z - A.z * B.y ,
-		      A.z * B.x - A.x * B.z ,
-		      A.x * B.y - A.y * B.x );
+    return make_float3( A.y * B.z - A.z * B.y ,
+                        A.z * B.x - A.x * B.z ,
+                        A.x * B.y - A.y * B.x );
 }
 
 
@@ -248,20 +248,20 @@ struct double4 { double x,y,z,w; };
 
 FUNC_DECL double2 make_double2(double x,double y)
 {
-   double2 v = {x,y};
-   return v;
+    double2 v = {x,y};
+    return v;
 }
 
 FUNC_DECL double3 make_double3(double x,double y,double z)
 {
-   double3 v = {x,y,z};
-   return v;
+    double3 v = {x,y,z};
+    return v;
 }
 
 FUNC_DECL double4 make_double4(double x,double y,double z,double w)
 {
-   double4 v = {x,y,z,w};
-   return v;
+    double4 v = {x,y,z,w};
+    return v;
 }
 
 FUNC_DECL  double3 operator *(double3 a, double3 b)
@@ -349,7 +349,7 @@ FUNC_DECL void operator -= (double3 & b, double3 a)
 
 FUNC_DECL double3 operator / (double3 v, double f)
 {
-   return make_double3( v.x/f, v.y/f, v.z/f );
+    return make_double3( v.x/f, v.y/f, v.z/f );
 }
 
 FUNC_DECL void operator /=(double2 & b, double f)
@@ -409,9 +409,9 @@ FUNC_DECL double2 normalize(double2 v)
 
 FUNC_DECL double3 cross( double3 A, double3 B)
 {
-   return make_double3( A.y * B.z - A.z * B.y ,
-			A.z * B.x - A.x * B.z ,
-			A.x * B.y - A.y * B.x );
+    return make_double3( A.y * B.z - A.z * B.y ,
+                         A.z * B.x - A.x * B.z ,
+                         A.x * B.y - A.y * B.x );
 }
 
 
@@ -425,21 +425,21 @@ struct ldouble4 { long double x,y,z,w; };
 
 FUNC_DECL ldouble2 make_ldouble2(long double x,long double y)
 {
-   ldouble2 v = {x,y};
-   return v;
+    ldouble2 v = {x,y};
+    return v;
 }
 
 
 FUNC_DECL ldouble3 make_ldouble3(long double x,long double y,long double z)
 {
-   ldouble3 v = {x,y,z};
-   return v;
+    ldouble3 v = {x,y,z};
+    return v;
 }
 
 FUNC_DECL ldouble4 make_ldouble4(long double x,long double y,long double z,long double w)
 {
-   ldouble4 v = {x,y,z,w};
-   return v;
+    ldouble4 v = {x,y,z,w};
+    return v;
 }
 
 FUNC_DECL  ldouble3 operator *(ldouble3 a, ldouble3 b)
@@ -582,9 +582,9 @@ FUNC_DECL ldouble3 normalize(ldouble3 v)
 
 FUNC_DECL ldouble3 cross( ldouble3 A, ldouble3 B)
 {
-   return make_ldouble3( A.y * B.z - A.z * B.y ,
-			 A.z * B.x - A.x * B.z ,
-			 A.x * B.y - A.y * B.x );
+    return make_ldouble3( A.y * B.z - A.z * B.y ,
+                          A.z * B.x - A.x * B.z ,
+                          A.x * B.y - A.y * B.x );
 }
 
 
