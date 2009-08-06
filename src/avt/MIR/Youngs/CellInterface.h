@@ -27,63 +27,63 @@ the two provided fonctions find the placement of an interface plane given a tria
 */
 class CellInterface
 {
-   public:
+  public:
 
-      enum {
-	 MAX_CELL_POINTS = 128,
-	 MAX_CELL_TETRAS = 128
-      };
-
-
-     // ------------------------------------
-     //         ####     ####
-     //             #    #   #
-     //          ###     #   #
-     //             #    #   #
-     //         ####     ####
-     // ------------------------------------
-
-      static void cellInterface3D( 
-	 
-	// Inputs
-	 int ncoords,
-	 double coords[][3],
-	 int nedge,
-	 int cellEdges[][2],
-	 int ntetra,
-	 int tetraPointIds[][4],
-	 double fraction, double normal[3] , 
-	 bool useFractionAsDistance,
-
-	// Outputs
-	 int & np, int eids[], double weights[] ,
-	 int & nInside, int inPoints[],
-	 int & nOutside, int outPoints[] );
+    enum {
+        MAX_CELL_POINTS = 128,
+        MAX_CELL_TETRAS = 128
+    };
 
 
-     // ------------------------------------
-     //         ####     ####
-     //             #    #   #
-     //          ###     #   #
-     //         #        #   #
-     //        #####     ####
-     // ------------------------------------
+    // ------------------------------------
+    //         ####     ####
+    //             #    #   #
+    //          ###     #   #
+    //             #    #   #
+    //         ####     ####
+    // ------------------------------------
 
-      static bool cellInterface2D( 
+    static void cellInterface3D(
 
-	// Inputs
-	 double points[][3],
-	 int nPoints,
-	 int triangles[][3], 
-	 int nTriangles,
-	 double fraction, double normal[3] ,
-	 bool axisSymetric,
-	 bool useFractionAsDistance,
+        // Inputs
+         int ncoords,
+         double coords[][3],
+         int nedge,
+         int cellEdges[][2],
+         int ntetra,
+         int tetraPointIds[][4],
+         double fraction, double normal[3] ,
+         bool useFractionAsDistance,
 
-	// Outputs
-	 int eids[4], double weights[2] ,
-	 int &polygonPoints, int polygonIds[],
-	 int &nRemPoints, int remPoints[] );
+        // Outputs
+         int & np, int eids[], double weights[] ,
+         int & nInside, int inPoints[],
+         int & nOutside, int outPoints[] );
+
+
+    // ------------------------------------
+    //         ####     ####
+    //             #    #   #
+    //          ###     #   #
+    //         #        #   #
+    //        #####     ####
+    // ------------------------------------
+
+    static bool cellInterface2D(
+
+        // Inputs
+         double points[][3],
+         int nPoints,
+         int triangles[][3],
+         int nTriangles,
+         double fraction, double normal[3] ,
+         bool axisSymetric,
+         bool useFractionAsDistance,
+
+        // Outputs
+         int eids[4], double weights[2] ,
+         int &polygonPoints, int polygonIds[],
+         int &nRemPoints, int remPoints[] );
 
 } ;
 

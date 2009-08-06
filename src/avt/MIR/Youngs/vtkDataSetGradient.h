@@ -47,31 +47,31 @@ const static char * VTK_DATA_SET_GRADIENT_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   
 
 class vtkDataSetGradient : public vtkDataSetAlgorithm
 {
-   public:
+  public:
 
-      static vtkDataSetGradient* New();
-      vtkTypeRevisionMacro(vtkDataSetGradient,vtkDataSetAlgorithm);
-      ~vtkDataSetGradient();
-      
-     // Description:
-     // Set/Get the name of computed vector array.
-      vtkSetStringMacro(GradientArrayName);
-      vtkGetStringMacro(GradientArrayName);
+    static vtkDataSetGradient* New();
+    vtkTypeRevisionMacro(vtkDataSetGradient,vtkDataSetAlgorithm);
+    ~vtkDataSetGradient();
 
-   protected:
-      vtkDataSetGradient ();
+    // Description:
+    // Set/Get the name of computed vector array.
+    vtkSetStringMacro(GradientArrayName);
+    vtkGetStringMacro(GradientArrayName);
 
-      virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  protected:
+    vtkDataSetGradient ();
 
-      char* GradientArrayName;
+    virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
 
-   private:
+    char* GradientArrayName;
 
-     //! Unimplemented copy constructor
-      vtkDataSetGradient (const vtkDataSetGradient &);
+  private:
 
-     //! Unimplemented operator
-      vtkDataSetGradient & operator= (const vtkDataSetGradient &);
+    //! Unimplemented copy constructor
+    vtkDataSetGradient (const vtkDataSetGradient &);
+
+    //! Unimplemented operator
+    vtkDataSetGradient & operator= (const vtkDataSetGradient &);
 } ;
 
 #endif /* VTK_DATA_SET_GRADIENT_H */
