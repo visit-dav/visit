@@ -20,6 +20,7 @@
 //    The gcc-4.x compiler no longer just warns about automatic type conversion.
 //
 =========================================================================*/
+#include <avtGLEWInitializer.h>
 #include "vtkOpenGLRectilinearGridMapper.h"
 
 #include <vtkPoints.h>
@@ -49,9 +50,6 @@ static const int dlSize = 8192;
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
   #include <visit-config.h>
-  #ifdef HAVE_LIBGLEW
-    #include <GL/glew.h>
-  #endif
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
   #else
@@ -125,9 +123,6 @@ vtkOpenGLRectilinearGridMapper::vtkOpenGLRectilinearGridMapper()
   this->ColorTextureSize = 0;
   this->ColorTextureLooksDiscrete = false;
   this->OpenGLSupportsVersion1_2 = false;
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  this->GLEW_initialized = false;
-#endif
 
   this->LastOpacity = -1;
 }
@@ -415,6 +410,9 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 //    Added support for rectilinear grids with an inherent  transform.
 //    These will have a new field array in the data set.
 //
+//    Tom Fogal, Thu Aug  6 16:45:28 MDT 2009
+//    Make sure GLEW is initialized.
+//
 // ****************************************************************************
 
 int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
@@ -426,6 +424,8 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    bool transform = false;
    if (input->GetFieldData()->GetArray("RectilinearGridTransform"))
        transform = true;
+
+   avt::glew::initialize();
 
    int dims[3];
    input->GetDimensions(dims);
@@ -875,6 +875,9 @@ vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport(double opacity)
 //    Thomas R. Treadway, Wed Feb  7 16:18:28 PST 2007
 //    The gcc-4.x compiler no longer just warns about automatic type conversion.
 //
+//    Tom Fogal, Thu Aug  6 16:46:55 MDT 2009
+//    Simplify; GLEW is always present.
+//
 // ****************************************************************************
 
 void
@@ -948,24 +951,11 @@ vtkOpenGLRectilinearGridMapper::BeginColorTexturing()
     // after texturing. This ensures that the specular highlights look
     // right when we're in texturing mode.
     //
-#ifdef VTK_IMPLEMENT_MESA_CXX
-    // Mesa
-    glEnable(GL_COLOR_SUM_EXT);
-    glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-#else
-    // OpenGL
-#ifdef HAVE_LIBGLEW
-    if(!this->GLEW_initialized)
-    {
-        this->GLEW_initialized = glewInit() == GLEW_OK;
-    }
-    if(this->GLEW_initialized && GLEW_EXT_secondary_color)
+    if(GLEW_EXT_secondary_color)
     {
         glEnable(GL_COLOR_SUM_EXT);
         glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
     }
-#endif
-#endif
 }
 
 
@@ -983,6 +973,9 @@ vtkOpenGLRectilinearGridMapper::BeginColorTexturing()
 //
 // Modifications:
 //
+//   Tom Fogal, Thu Aug  6 16:46:34 MDT 2009
+//   Simplify; GLEW is always present.
+//
 // ****************************************************************************
 
 void
@@ -997,16 +990,10 @@ vtkOpenGLRectilinearGridMapper::EndColorTexturing()
         glDisable(GL_TEXTURE_1D);
     }
 
-#ifdef VTK_IMPLEMENT_MESA_CXX
-    // Mesa
-    glDisable(GL_COLOR_SUM_EXT);
-#else
-    // OpenGL
-#ifdef HAVE_LIBGLEW
-    if(this->GLEW_initialized && GLEW_EXT_secondary_color)
+    if(GLEW_EXT_secondary_color)
+    {
         glDisable(GL_COLOR_SUM_EXT);
-#endif
-#endif
+    }
 }
 
 
