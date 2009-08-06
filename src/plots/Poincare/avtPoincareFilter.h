@@ -80,9 +80,8 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual const char       *GetDescription(void)
                                   { return "Performing Poincare"; };
 
-    void                      SetShowStreamlines( bool v ) {showStreamlines=v;}
-    void                      SetShowPoints( bool v ) {showPoints=v;}
-
+    void SetVerboseFlag( unsigned int val )  {verboseFlag=val;}
+    void SetShowPoints( unsigned int val ) {showPoints=val;}
     void SetColorBy( unsigned int value );
     void SetMaxToroidalWinding( unsigned int value );
     void SetOverrideToroidalWinding( unsigned int value);
@@ -105,6 +104,14 @@ class avtPoincareFilter : public avtStreamlineFilter
 
   virtual void loadCurve( avtDataTree *dt,
                           vector< vector < vector < Point > > > &nodes,
+                          unsigned int nnodes,
+                          unsigned int islands,
+                          unsigned int skip,
+                          unsigned int color,
+                          double color_value );
+  
+  virtual void loadCurve( avtDataTree *dt,
+                          vector< vector < vector < Point > > > &nodes,
                           unsigned int color,
                           double color_value );
   
@@ -120,7 +127,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     void                      ClassifyStreamlines();
     avtDataTree               *CreatePoincareOutput();
 
-    bool                      showStreamlines, showPoints;
+    bool                      verboseFlag, showPoints;
 
     FusionPSE::FieldlineLib FLlib;         
 

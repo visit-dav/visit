@@ -147,6 +147,10 @@ avtMiliFileFormat::IssueWarning(const char *msg, int key)
 //
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Added initialization of structures having to do with free nodes mesh
+//
+//    Kathleen Bonnell, Wed Aug 5 17:44:22 PDT 2009 
+//    Test for windows-style slashes when scanning filename.
+//     
 // ****************************************************************************
 
 avtMiliFileFormat::avtMiliFileFormat(const char *fname)
@@ -249,13 +253,13 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
     for ( p_c = fname ; *p_c != '\0'; p_c++ );
  
     /* Scan backward to last non-slash character. */
-    for ( p_c--; *p_c == '/' && p_c != fname; p_c-- );
+    for ( p_c--; (*p_c == '/' || *p_c == '\\') && p_c != fname; p_c-- );
     p_root_end = p_c;
  
     /* Scan backward to last slash character preceding last non-slash char. */
-    for ( ; *p_c != '/' && p_c != fname; p_c-- );
+    for ( ; (*p_c != '/' && *p_c != '\\') && p_c != fname; p_c-- );
  
-    p_root_start = ( *p_c == '/' ) ? p_c + 1 : p_c;
+    p_root_start = ( *p_c == '/' || *p_c == '\\' ) ? p_c + 1 : p_c;
  
     /* Generate the path argument to mc_open(). */
     if ( p_root_start == fname )

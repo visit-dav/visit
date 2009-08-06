@@ -180,7 +180,9 @@ avtFITSFileFormat::GetKeywordValue(const char *keyword, char *value)
 // Creation:   Wed Jul 19 10:49:46 PDT 2006
 //
 // Modifications:
-//   
+//    Kathleen Bonnell, Wed Aug 05 18:04:02 PDT 2009 
+//    Test cs not empty before accesing cs[cs.size()-1].
+//
 // ****************************************************************************
 
 void
@@ -267,7 +269,7 @@ avtFITSFileFormat::Initialize(avtDatabaseMetaData *md)
                         PrintError(status);
                     std::string cs(card);
                     fileComment += cs;
-                    if(cs[cs.size()-1] != '\n')
+                    if(cs.size() > 0 && cs[cs.size()-1] != '\n')
                         fileComment += "\n";
                 }
                 fileComment += "\n\n";
@@ -446,7 +448,7 @@ avtFITSFileFormat::Initialize(avtDatabaseMetaData *md)
                     if(fits_read_record(fits, jj, card, &status))
                         PrintError(status);
                     std::string cs(card);
-                    if(cs[cs.size()-1] != '\n')
+                    if(cs.size() > 0 && cs[cs.size()-1] != '\n')
                         cs += "\n";
                     debug4 << "\t" << cs.c_str();
                 }

@@ -1931,6 +1931,12 @@ avtBoxlibFileFormat::GetAuxiliaryData(const char *var, int dom,
 //    Hank Childs, Tue Feb  5 16:37:58 PST 2008
 //    Fix memory leaks.
 //
+//    Kathleen Bonnell, Wed Aug 5 12:01 PDT 2009 
+//    Fix crash on windows -- cast std::vectors to pointers before passing
+//    as args to avtMaterial, so can catch the case where the vector is empty
+//    and therefore pass NULL, because attempting to  dereference an empty 
+//    vector's 0'th item crashes on windows.
+//
 // ****************************************************************************
     
 void *
@@ -2033,10 +2039,26 @@ avtBoxlibFileFormat::GetMaterial(const char *var, int patch,
     }
 
     int mixed_size = mix_zone.size();
-    avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells,
-                                        &(material_list[0]), mixed_size,
-                                        &(mix_mat[0]), &(mix_next[0]),
-                                        &(mix_zone[0]), &(mix_vf[0]));
+
+    // get pointers to pass to avtMaterial
+    int *ml = NULL, *mixm = NULL, *mixn = NULL, *mixz = NULL;
+    float *mixv = NULL;
+
+    if (material_list.size() > 0)
+        ml = &(material_list[0]);
+    if (mix_mat.size() > 0)
+        mixm = &(mix_mat[0]);
+    if (mix_mat.size() > 0)
+        mixm = &(mix_mat[0]);
+    if (mix_next.size() > 0)
+        mixn = &(mix_next[0]);
+    if (mix_zone.size() > 0)
+        mixz = &(mix_zone[0]);
+    if (mix_vf.size() > 0)
+        mixv = &(mix_vf[0]);
+
+    avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells, ml, 
+                                        mixed_size, mixm, mixn, mixz, mixv);
      
     df = avtMaterial::Destruct;
     return (void*) mat;

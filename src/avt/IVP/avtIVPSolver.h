@@ -274,7 +274,8 @@ class avtIVPSolver
     {
         TIME,
         DISTANCE,
-        STEP
+        STEPS,
+	INTERSECTIONS
     };
     
     virtual void    Reset(const double& t_start, const avtVecRef& y_start) = 0;

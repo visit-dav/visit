@@ -175,6 +175,7 @@ H5NimrodGeneralPluginInfo::GetDfltExtsFromGen() const
 {
     std::vector<std::string> defaultExtensions;
     defaultExtensions.push_back(".h5nimrod");
+    defaultExtensions.push_back(".h5");
 
     return defaultExtensions;
 }

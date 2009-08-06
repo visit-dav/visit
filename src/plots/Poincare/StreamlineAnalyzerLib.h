@@ -213,6 +213,8 @@ public:
                 unsigned int poloidalWinding,
                 unsigned int skip,
                 unsigned int island );
+
+  bool verboseFlag;
 };
 
 } // End namespace FusionPSE

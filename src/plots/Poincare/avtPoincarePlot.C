@@ -337,8 +337,10 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         poincareFilter->SetTermination(STREAMLINE_TERMINATE_DISTANCE, atts.GetTermination());
     else if (atts.GetTerminationType() == PoincareAttributes::Time)
         poincareFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
-    else if (atts.GetTerminationType() == PoincareAttributes::Step)
-        poincareFilter->SetTermination(STREAMLINE_TERMINATE_STEP, atts.GetTermination());
+    else if (atts.GetTerminationType() == PoincareAttributes::Steps)
+        poincareFilter->SetTermination(STREAMLINE_TERMINATE_STEPS, atts.GetTermination());
+//    else if (atts.GetTerminationType() == PoincareAttributes::Puctures)
+//        poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS, atts.GetTermination());
     
     poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
     poincareFilter->SetShowStart(false);
@@ -367,15 +369,14 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         break;
     }
 
-    poincareFilter->SetShowStreamlines(atts.GetShowStreamlines());
     poincareFilter->SetShowPoints(atts.GetShowPoints());
-
+    poincareFilter->SetShowIslands( atts.GetShowIslands() );
+    poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
 
     poincareFilter->SetColorBy( atts.GetColorBy() );
     poincareFilter->SetMaxToroidalWinding( atts.GetMaxToroidalWinding() );
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetHitRate( atts.GetHitRate() );
-    poincareFilter->SetShowIslands( atts.GetShowIslands() );
     poincareFilter->SetOverlaps( atts.GetOverlaps() );
     poincareFilter->SetShowCurves( atts.GetShowCurves() == 0 );
     poincareFilter->SetAdjustPlane( atts.GetAdjustPlane() );

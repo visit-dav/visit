@@ -775,7 +775,7 @@ vtkUnstructuredGrid * avtOpenFOAMFileFormat::MakeInternalMesh()
         for(k = 0; k < (int)FacePoints[
           FacesOfCell[i][j].faceIndex].size(); k++)
           {
-          for(l = 0; l < (int)cellPoints.size(); l++);
+          for(l = 0; l < (int)cellPoints.size(); l++)
             {
             if(cellPoints[l] == FacePoints[
               FacesOfCell[i][j].faceIndex][k])
@@ -2870,7 +2870,7 @@ vtkUnstructuredGrid * avtOpenFOAMFileFormat::GetCellZoneMesh(int timeState, int 
         for(k = 0; k < (int)FacePoints[
           FacesOfCell[i][j].faceIndex].size(); k++)
           {
-          for(l = 0; l < (int)cellPoints.size(); l++);
+          for(l = 0; l < (int)cellPoints.size(); l++)
             {
             if(cellPoints[l] == FacePoints[FacesOfCell[
               cellZone[i]][j].faceIndex][k])

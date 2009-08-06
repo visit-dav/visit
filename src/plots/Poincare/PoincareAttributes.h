@@ -70,7 +70,8 @@ public:
     {
         Distance,
         Time,
-        Step
+        Steps,
+        Puctures
     };
     enum ColorBy
     {
@@ -145,6 +146,7 @@ public:
     void SetPointDensity(int pointDensity_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetSingleColor(const ColorAttribute &singleColor_);
+    void SetVerboseFlag(bool verboseFlag_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetRelTol(double relTol_);
@@ -190,6 +192,7 @@ public:
           std::string    &GetColorTableName();
     const ColorAttribute &GetSingleColor() const;
           ColorAttribute &GetSingleColor();
+    bool                 GetVerboseFlag() const;
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     double               GetRelTol() const;
@@ -280,6 +283,7 @@ public:
         ID_pointDensity,
         ID_colorTableName,
         ID_singleColor,
+        ID_verboseFlag,
         ID_legendFlag,
         ID_lightingFlag,
         ID_relTol,
@@ -318,6 +322,7 @@ private:
     int            pointDensity;
     std::string    colorTableName;
     ColorAttribute singleColor;
+    bool           verboseFlag;
     bool           legendFlag;
     bool           lightingFlag;
     double         relTol;

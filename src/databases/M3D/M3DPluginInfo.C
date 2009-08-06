@@ -174,7 +174,8 @@ std::vector<std::string>
 M3DGeneralPluginInfo::GetDfltExtsFromGen() const
 {
     std::vector<std::string> defaultExtensions;
-    defaultExtensions.push_back("m3d");
+    defaultExtensions.push_back(".m3d");
+    defaultExtensions.push_back(".h5");
 
     return defaultExtensions;
 }
