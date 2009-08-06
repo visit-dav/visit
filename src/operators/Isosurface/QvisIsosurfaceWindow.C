@@ -184,12 +184,7 @@ QvisIsosurfaceWindow::CreateWindowContents()
             this, SLOT(processMinLimitText()));
     limitsLayout->addWidget(minLineEdit, 2, 2);
  
-    //
-    // Create the variable stuff
-    //
-    QLabel *variableLabel = new QLabel(tr("Variable"), central, "variableLabel");
-    limitsLayout->addWidget(variableLabel,3,0);
-
+    limitsLayout->addWidget(new QLabel(tr("Variable"), central),3,0);
     variable = new QvisVariableButton(true, true, true, 
                                       QvisVariableButton::Scalars, central);
     connect(variable, SIGNAL(activated(const QString &)),
@@ -222,34 +217,7 @@ QvisIsosurfaceWindow::CreateWindowContents()
     // Each time a radio button is clicked, call the scaleClicked slot.
     connect(scalingButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(scaleClicked(int)));
-
-    //
-    // Create the scale radio buttons
-    //
-    QHBoxLayout *scaleLayout = new QHBoxLayout(topLayout);
- 
-    // Create a group of radio buttons
-    scalingButtons = new QButtonGroup( central, "scaleRadioGroup" );
-    scalingButtons->setFrameStyle(QFrame::NoFrame);
-    QLabel *scaleLabel = new QLabel(scalingButtons, tr("Scale"), central,
-        "scaleLabel");
-    scaleLayout->addWidget(scaleLabel);
- 
-    QHBoxLayout *scaleButtonsLayout = new QHBoxLayout(scalingButtons);
-    scaleButtonsLayout->setSpacing(10);
-    QRadioButton *rb = new QRadioButton(tr("Linear"), scalingButtons );
-    rb->setChecked( TRUE );
-    scaleButtonsLayout->addWidget(rb);
-    rb = new QRadioButton( scalingButtons );
-    rb->setText( tr("Log") );
-    scaleButtonsLayout->addWidget(rb);
-    scaleLayout->addWidget( scalingButtons );
-    scaleLayout->addStretch(0);
-    // Each time a radio button is clicked, call the scaleClicked slot.
-    connect(scalingButtons, SIGNAL(clicked(int)),
-            this, SLOT(scaleClicked(int)));
- 
- }
+}
 
 
 // ****************************************************************************
