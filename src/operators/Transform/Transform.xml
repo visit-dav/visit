@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Transform" type="operator" label="Transform" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="Transform.xpm">
-    <Attribute name="TransformAttributes" purpose="This class contains attributes for the transform operator." persistent="true" codefile="TransformAttributes.code">
+  <Plugin name="Transform" type="operator" label="Transform" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Transform.xpm">
+    <Attribute name="TransformAttributes" purpose="This class contains attributes for the transform operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="TransformAttributes.code">
       <Enum name="AngleType">
         Deg
         Rad
@@ -14,6 +14,12 @@
         Cartesian
         Cylindrical
         Spherical
+      </Enum>
+      <Enum name="VectorTransformMethod">
+        None
+        AsPoint
+        AsDisplacement
+        AsDirection
       </Enum>
       <Field name="doRotate" label="Rotate" type="bool">
         false
@@ -101,6 +107,9 @@
       </Field>
       <Field name="invertLinearTransform" label="invertLinearTransform" type="bool">
         false
+      </Field>
+      <Field name="vectorTransformMethod" label="Method for transforming vectors" type="enum" subtype="VectorTransformMethod" enabler="transformType:Coordinate">
+        AsDirection
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

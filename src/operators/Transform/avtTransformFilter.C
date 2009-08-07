@@ -154,6 +154,11 @@ avtTransformFilter::Create()
 //    Jeremy Meredith, Tue Apr 15 13:17:33 EDT 2008
 //    Added linear transform.
 //
+//    Jeremy Meredith, Fri Aug  7 15:32:06 EDT 2009
+//    Added selectable vector transform method.
+//    Made coordinate system convert filter's coordinate type enum be
+//    within the filter's namespace.
+//
 // ****************************************************************************
 
 void
@@ -194,26 +199,41 @@ avtTransformFilter::SetAtts(const AttributeGroup *a)
         switch (atts.GetInputCoordSys())
         {
            case TransformAttributes::Cartesian:
-             csc->SetInputCoordSys(CARTESIAN);
+             csc->SetInputCoordSys(avtCoordSystemConvert::CARTESIAN);
              break;
            case TransformAttributes::Cylindrical:
-             csc->SetInputCoordSys(CYLINDRICAL);
+             csc->SetInputCoordSys(avtCoordSystemConvert::CYLINDRICAL);
              break;
            case TransformAttributes::Spherical:
-             csc->SetInputCoordSys(SPHERICAL);
+             csc->SetInputCoordSys(avtCoordSystemConvert::SPHERICAL);
              break;
         }
         switch (atts.GetOutputCoordSys())
         {
            case TransformAttributes::Cartesian:
-             csc->SetOutputCoordSys(CARTESIAN);
+             csc->SetOutputCoordSys(avtCoordSystemConvert::CARTESIAN);
              break;
            case TransformAttributes::Cylindrical:
-             csc->SetOutputCoordSys(CYLINDRICAL);
+             csc->SetOutputCoordSys(avtCoordSystemConvert::CYLINDRICAL);
              break;
            case TransformAttributes::Spherical:
-             csc->SetOutputCoordSys(SPHERICAL);
+             csc->SetOutputCoordSys(avtCoordSystemConvert::SPHERICAL);
              break;
+        }
+        switch (atts.GetVectorTransformMethod())
+        {
+          case TransformAttributes::None:
+            csc->SetVectorTransformMethod(avtCoordSystemConvert::None);
+            break;
+          case TransformAttributes::AsPoint:
+            csc->SetVectorTransformMethod(avtCoordSystemConvert::AsPoint);
+            break;
+          case TransformAttributes::AsDisplacement:
+            csc->SetVectorTransformMethod(avtCoordSystemConvert::AsDisplacement);
+            break;
+          case TransformAttributes::AsDirection:
+            csc->SetVectorTransformMethod(avtCoordSystemConvert::AsDirection);
+            break;
         }
     }
     else

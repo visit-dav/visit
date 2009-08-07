@@ -71,10 +71,15 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     public final static int COORDINATESYSTEM_CYLINDRICAL = 1;
     public final static int COORDINATESYSTEM_SPHERICAL = 2;
 
+    public final static int VECTORTRANSFORMMETHOD_NONE = 0;
+    public final static int VECTORTRANSFORMMETHOD_ASPOINT = 1;
+    public final static int VECTORTRANSFORMMETHOD_ASDISPLACEMENT = 2;
+    public final static int VECTORTRANSFORMMETHOD_ASDIRECTION = 3;
+
 
     public TransformAttributes()
     {
-        super(27);
+        super(28);
 
         doRotate = false;
         rotateOrigin = new float[3];
@@ -112,11 +117,12 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         m21 = 0;
         m22 = 1;
         invertLinearTransform = false;
+        vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
     }
 
     public TransformAttributes(TransformAttributes obj)
     {
-        super(27);
+        super(28);
 
         int i;
 
@@ -159,6 +165,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         m21 = obj.m21;
         m22 = obj.m22;
         invertLinearTransform = obj.invertLinearTransform;
+        vectorTransformMethod = obj.vectorTransformMethod;
 
         SelectAll();
     }
@@ -209,7 +216,8 @@ public class TransformAttributes extends AttributeSubject implements Plugin
                 (m20 == obj.m20) &&
                 (m21 == obj.m21) &&
                 (m22 == obj.m22) &&
-                (invertLinearTransform == obj.invertLinearTransform));
+                (invertLinearTransform == obj.invertLinearTransform) &&
+                (vectorTransformMethod == obj.vectorTransformMethod));
     }
 
     public String GetName() { return "Transform"; }
@@ -408,6 +416,12 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(26);
     }
 
+    public void SetVectorTransformMethod(int vectorTransformMethod_)
+    {
+        vectorTransformMethod = vectorTransformMethod_;
+        Select(27);
+    }
+
     // Property getting methods
     public boolean GetDoRotate() { return doRotate; }
     public float[] GetRotateOrigin() { return rotateOrigin; }
@@ -436,6 +450,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     public double  GetM21() { return m21; }
     public double  GetM22() { return m22; }
     public boolean GetInvertLinearTransform() { return invertLinearTransform; }
+    public int     GetVectorTransformMethod() { return vectorTransformMethod; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -494,6 +509,8 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(m22);
         if(WriteSelect(26, buf))
             buf.WriteBool(invertLinearTransform);
+        if(WriteSelect(27, buf))
+            buf.WriteInt(vectorTransformMethod);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -584,6 +601,9 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             case 26:
                 SetInvertLinearTransform(buf.ReadBool());
                 break;
+            case 27:
+                SetVectorTransformMethod(buf.ReadInt());
+                break;
             }
         }
     }
@@ -644,6 +664,16 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("m21", m21, indent) + "\n";
         str = str + doubleToString("m22", m22, indent) + "\n";
         str = str + boolToString("invertLinearTransform", invertLinearTransform, indent) + "\n";
+        str = str + indent + "vectorTransformMethod = ";
+        if(vectorTransformMethod == VECTORTRANSFORMMETHOD_NONE)
+            str = str + "VECTORTRANSFORMMETHOD_NONE";
+        if(vectorTransformMethod == VECTORTRANSFORMMETHOD_ASPOINT)
+            str = str + "VECTORTRANSFORMMETHOD_ASPOINT";
+        if(vectorTransformMethod == VECTORTRANSFORMMETHOD_ASDISPLACEMENT)
+            str = str + "VECTORTRANSFORMMETHOD_ASDISPLACEMENT";
+        if(vectorTransformMethod == VECTORTRANSFORMMETHOD_ASDIRECTION)
+            str = str + "VECTORTRANSFORMMETHOD_ASDIRECTION";
+        str = str + "\n";
         return str;
     }
 
@@ -676,5 +706,6 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     private double  m21;
     private double  m22;
     private boolean invertLinearTransform;
+    private int     vectorTransformMethod;
 }
 

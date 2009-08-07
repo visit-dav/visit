@@ -76,6 +76,13 @@ public:
         Cylindrical,
         Spherical
     };
+    enum VectorTransformMethod
+    {
+        None,
+        AsPoint,
+        AsDisplacement,
+        AsDirection
+    };
 
     TransformAttributes();
     TransformAttributes(const TransformAttributes &obj);
@@ -124,6 +131,7 @@ public:
     void SetM21(double m21_);
     void SetM22(double m22_);
     void SetInvertLinearTransform(bool invertLinearTransform_);
+    void SetVectorTransformMethod(VectorTransformMethod vectorTransformMethod_);
 
     // Property getting methods
     bool        GetDoRotate() const;
@@ -156,6 +164,7 @@ public:
     double      GetM21() const;
     double      GetM22() const;
     bool        GetInvertLinearTransform() const;
+    VectorTransformMethod GetVectorTransformMethod() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -176,6 +185,11 @@ public:
     static bool CoordinateSystem_FromString(const std::string &, CoordinateSystem &);
 protected:
     static std::string CoordinateSystem_ToString(int);
+public:
+    static std::string VectorTransformMethod_ToString(VectorTransformMethod);
+    static bool VectorTransformMethod_FromString(const std::string &, VectorTransformMethod &);
+protected:
+    static std::string VectorTransformMethod_ToString(int);
 public:
 
     // Keyframing methods
@@ -213,7 +227,8 @@ public:
         ID_m20,
         ID_m21,
         ID_m22,
-        ID_invertLinearTransform
+        ID_invertLinearTransform,
+        ID_vectorTransformMethod
     };
 
 private:
@@ -244,6 +259,7 @@ private:
     double m21;
     double m22;
     bool   invertLinearTransform;
+    int    vectorTransformMethod;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

@@ -43,6 +43,7 @@
 
 #include <QButtonGroup>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
@@ -126,6 +127,11 @@ QvisTransformWindow::~QvisTransformWindow()
 //
 //    Brad Whitlock, Wed Aug 13 20:51:47 PDT 2008
 //    Qt 4.
+//
+//    Jeremy Meredith, Fri Aug  7 14:42:15 EDT 2009
+//    Renamed Spherical coordinate help text to match ISO 31-11 and our
+//    new interpretation of them.  Added vector transform method
+//    selection to coordinate system conversions.
 //
 // ****************************************************************************
 
@@ -268,7 +274,7 @@ QvisTransformWindow::CreateWindowContents()
     QRadioButton *iCyl  = new QRadioButton(tr("Cylindrical (r,phi,z)"), inputFrame);
     inputCoord->addButton(iCyl, 1);
     inputCoordLayout->addWidget(iCyl);
-    QRadioButton *iSph  = new QRadioButton(tr("Spherical (r,phi,theta)"), inputFrame);
+    QRadioButton *iSph  = new QRadioButton(tr("Spherical (r,theta,phi)"), inputFrame);
     inputCoord->addButton(iSph, 2);
     inputCoordLayout->addWidget(iSph);
 
@@ -284,9 +290,24 @@ QvisTransformWindow::CreateWindowContents()
     QRadioButton *oCyl  = new QRadioButton(tr("Cylindrical (r,phi,z)"), outputFrame);
     outputCoord->addButton(oCyl, 1);
     outputCoordLayout->addWidget(oCyl);
-    QRadioButton *oSph  = new QRadioButton(tr("Spherical (r,phi,theta)"), outputFrame);
+    QRadioButton *oSph  = new QRadioButton(tr("Spherical (r,theta,phi)"), outputFrame);
     outputCoord->addButton(oSph, 2);
     outputCoordLayout->addWidget(oSph);
+
+    QFrame *vectorMethodFrame = new QFrame(secondPage);
+    secondPageLayout->addWidget(vectorMethodFrame);
+    QHBoxLayout *vectorMethodLayout = new QHBoxLayout(vectorMethodFrame);
+    QLabel *vectorMethodLabel = new QLabel(tr("Vector transform method:"),
+                                           secondPage);
+    vectorMethodCombo = new QComboBox(secondPage);
+    vectorMethodCombo->addItem(tr("No transformation"));
+    vectorMethodCombo->addItem(tr("Treat as point coordinates"));
+    vectorMethodCombo->addItem(tr("Treat as coordinate displacements"));
+    vectorMethodCombo->addItem(tr("Treat as instantaneous directions"));
+    connect(vectorMethodCombo, SIGNAL(activated(int)),
+           this, SLOT(vectorMethodChanged(int)));
+    vectorMethodLayout->addWidget(vectorMethodLabel);
+    vectorMethodLayout->addWidget(vectorMethodCombo);
 
     secondPageLayout->addStretch(100);
 
@@ -364,6 +385,9 @@ QvisTransformWindow::CreateWindowContents()
 //
 //    Brad Whitlock, Wed Aug 13 21:09:50 PDT 2008
 //    Qt 4
+//
+//    Jeremy Meredith, Fri Aug  7 14:42:15 EDT 2009
+//    Added vector transform method selection to coordinate system conversions.
 //
 // ****************************************************************************
 void
@@ -563,6 +587,12 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             linearInvert->setChecked(atts->GetInvertLinearTransform());
             linearInvert->blockSignals(false);
             break;
+
+          case TransformAttributes::ID_vectorTransformMethod:
+            vectorMethodCombo->blockSignals(true);
+            vectorMethodCombo->setCurrentIndex(
+                                       int(atts->GetVectorTransformMethod()));
+            vectorMethodCombo->blockSignals(false);
         }
     }
 }
@@ -917,5 +947,11 @@ QvisTransformWindow::linearInvertChanged(bool val)
 {
     atts->SetInvertLinearTransform(val);
     Apply();
+}
+
+void QvisTransformWindow::vectorMethodChanged(int v)
+{
+    atts->SetVectorTransformMethod(
+                                TransformAttributes::VectorTransformMethod(v));
 }
 
