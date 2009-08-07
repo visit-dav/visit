@@ -467,6 +467,10 @@ QvisSliceWindow::CreateWindowContents()
 //   Hank Childs, Thu Oct  9 11:13:19 PDT 2008
 //   Update test for what is "orthogonal" (theta-phi is not!).
 //
+//   Jeremy Meredith, Fri Aug  7 14:46:35 EDT 2009
+//   The doAll flag shouldn't cause this function to exit early.
+//   (First window initialization wasn't updating this window.)
+//
 // ****************************************************************************
 
 void
@@ -474,7 +478,7 @@ QvisSliceWindow::UpdateWindow(bool doAll)
 {
     QString temp;
 
-    if (selectedSubject == fileServer)
+    if (!doAll && selectedSubject == fileServer)
     {
         UpdateMeshNames();
         return;
