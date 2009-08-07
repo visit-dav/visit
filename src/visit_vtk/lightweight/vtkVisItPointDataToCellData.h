@@ -38,10 +38,11 @@
 
 #ifndef __vtkVisItPointDataToCellData_h
 #define __vtkVisItPointDataToCellData_h
+#include <visit_vtk_light_exports.h>
 
 #include "vtkDataSetAlgorithm.h"
 
-class VTK_GRAPHICS_EXPORT vtkVisItPointDataToCellData : public vtkDataSetAlgorithm
+class VISIT_VTK_LIGHT_API vtkVisItPointDataToCellData : public vtkDataSetAlgorithm
 {
 public:
   static vtkVisItPointDataToCellData *New();
