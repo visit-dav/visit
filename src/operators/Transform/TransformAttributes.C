@@ -153,8 +153,46 @@ TransformAttributes::CoordinateSystem_FromString(const std::string &s, Transform
     return false;
 }
 
+//
+// Enum conversion methods for TransformAttributes::VectorTransformMethod
+//
+
+static const char *VectorTransformMethod_strings[] = {
+"None", "AsPoint", "AsDisplacement", 
+"AsDirection"};
+
+std::string
+TransformAttributes::VectorTransformMethod_ToString(TransformAttributes::VectorTransformMethod t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return VectorTransformMethod_strings[index];
+}
+
+std::string
+TransformAttributes::VectorTransformMethod_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return VectorTransformMethod_strings[index];
+}
+
+bool
+TransformAttributes::VectorTransformMethod_FromString(const std::string &s, TransformAttributes::VectorTransformMethod &val)
+{
+    val = TransformAttributes::None;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == VectorTransformMethod_strings[i])
+        {
+            val = (VectorTransformMethod)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // Type map format string
-const char *TransformAttributes::TypeMapFormatString = "bFFfibFfffbfffiiidddddddddb";
+const char *TransformAttributes::TypeMapFormatString = "bFFfibFfffbfffiiidddddddddbi";
 
 // ****************************************************************************
 // Method: TransformAttributes::TransformAttributes
@@ -207,6 +245,7 @@ TransformAttributes::TransformAttributes() :
     m21 = 0;
     m22 = 1;
     invertLinearTransform = false;
+    vectorTransformMethod = AsDirection;
 }
 
 // ****************************************************************************
@@ -263,6 +302,7 @@ TransformAttributes::TransformAttributes(const TransformAttributes &obj) :
     m21 = obj.m21;
     m22 = obj.m22;
     invertLinearTransform = obj.invertLinearTransform;
+    vectorTransformMethod = obj.vectorTransformMethod;
 
     SelectAll();
 }
@@ -342,6 +382,7 @@ TransformAttributes::operator = (const TransformAttributes &obj)
     m21 = obj.m21;
     m22 = obj.m22;
     invertLinearTransform = obj.invertLinearTransform;
+    vectorTransformMethod = obj.vectorTransformMethod;
 
     SelectAll();
     return *this;
@@ -407,7 +448,8 @@ TransformAttributes::operator == (const TransformAttributes &obj) const
             (m20 == obj.m20) &&
             (m21 == obj.m21) &&
             (m22 == obj.m22) &&
-            (invertLinearTransform == obj.invertLinearTransform));
+            (invertLinearTransform == obj.invertLinearTransform) &&
+            (vectorTransformMethod == obj.vectorTransformMethod));
 }
 
 // ****************************************************************************
@@ -613,6 +655,7 @@ TransformAttributes::SelectAll()
     Select(ID_m21,                   (void *)&m21);
     Select(ID_m22,                   (void *)&m22);
     Select(ID_invertLinearTransform, (void *)&invertLinearTransform);
+    Select(ID_vectorTransformMethod, (void *)&vectorTransformMethod);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -807,6 +850,12 @@ TransformAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("invertLinearTransform", invertLinearTransform));
     }
 
+    if(completeSave || !FieldsEqual(ID_vectorTransformMethod, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("vectorTransformMethod", VectorTransformMethod_ToString(vectorTransformMethod)));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -953,6 +1002,22 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
         SetM22(node->AsDouble());
     if((node = searchNode->GetNode("invertLinearTransform")) != 0)
         SetInvertLinearTransform(node->AsBool());
+    if((node = searchNode->GetNode("vectorTransformMethod")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetVectorTransformMethod(VectorTransformMethod(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            VectorTransformMethod value;
+            if(VectorTransformMethod_FromString(node->AsString(), value))
+                SetVectorTransformMethod(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1154,6 +1219,13 @@ TransformAttributes::SetInvertLinearTransform(bool invertLinearTransform_)
     Select(ID_invertLinearTransform, (void *)&invertLinearTransform);
 }
 
+void
+TransformAttributes::SetVectorTransformMethod(TransformAttributes::VectorTransformMethod vectorTransformMethod_)
+{
+    vectorTransformMethod = vectorTransformMethod_;
+    Select(ID_vectorTransformMethod, (void *)&vectorTransformMethod);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1338,6 +1410,12 @@ TransformAttributes::GetInvertLinearTransform() const
     return invertLinearTransform;
 }
 
+TransformAttributes::VectorTransformMethod
+TransformAttributes::GetVectorTransformMethod() const
+{
+    return VectorTransformMethod(vectorTransformMethod);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1411,6 +1489,7 @@ TransformAttributes::GetFieldName(int index) const
     case ID_m21:                   return "m21";
     case ID_m22:                   return "m22";
     case ID_invertLinearTransform: return "invertLinearTransform";
+    case ID_vectorTransformMethod: return "vectorTransformMethod";
     default:  return "invalid index";
     }
 }
@@ -1462,6 +1541,7 @@ TransformAttributes::GetFieldType(int index) const
     case ID_m21:                   return FieldType_double;
     case ID_m22:                   return FieldType_double;
     case ID_invertLinearTransform: return FieldType_bool;
+    case ID_vectorTransformMethod: return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1513,6 +1593,7 @@ TransformAttributes::GetFieldTypeName(int index) const
     case ID_m21:                   return "double";
     case ID_m22:                   return "double";
     case ID_invertLinearTransform: return "bool";
+    case ID_vectorTransformMethod: return "enum";
     default:  return "invalid index";
     }
 }
@@ -1687,6 +1768,11 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_invertLinearTransform:
         {  // new scope
         retval = (invertLinearTransform == obj.invertLinearTransform);
+        }
+        break;
+    case ID_vectorTransformMethod:
+        {  // new scope
+        retval = (vectorTransformMethod == obj.vectorTransformMethod);
         }
         break;
     default: retval = false;

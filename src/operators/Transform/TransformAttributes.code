@@ -42,7 +42,6 @@ TransformAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
-
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -93,3 +92,4 @@ TransformAttributes::CreateCompatible(const std::string &tname) const
 
     return retval;
 }
+

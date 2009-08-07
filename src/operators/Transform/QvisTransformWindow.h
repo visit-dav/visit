@@ -48,6 +48,7 @@ class QButtonGroup;
 class QCheckBox;
 class QLabel;
 class QTabWidget;
+class QComboBox;
 
 // ****************************************************************************
 //  Class:  QNarrowLineEdit
@@ -104,6 +105,10 @@ class QNarrowLineEdit : public QLineEdit
 //    Jeremy Meredith, Tue Apr 15 13:26:09 EDT 2008
 //    Added support for linear transforms.
 //
+//    Jeremy Meredith, Fri Aug  7 16:12:05 EDT 2009
+//    Added choice for multiple ways one might want to transform a vector
+//    in coordinate system conversions.
+//
 // ****************************************************************************
 
 class QvisTransformWindow : public QvisOperatorWindow
@@ -140,6 +145,7 @@ class QvisTransformWindow : public QvisOperatorWindow
     void outputCoordChanged(int);
     void ltElementtChanged();
     void linearInvertChanged(bool val);
+    void vectorMethodChanged(int);
   private:
     QTabWidget      *transformTypeTabs;
 
@@ -184,6 +190,7 @@ class QvisTransformWindow : public QvisOperatorWindow
 
     QButtonGroup    *inputCoord;
     QButtonGroup    *outputCoord;
+    QComboBox       *vectorMethodCombo;
 
     TransformAttributes *atts;
     QWidget *firstPage;

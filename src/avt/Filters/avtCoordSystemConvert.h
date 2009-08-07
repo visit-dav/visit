@@ -47,14 +47,6 @@
 #include <avtDataTreeIterator.h>
 
 
-typedef enum
-{
-    CARTESIAN       = 0,
-    CYLINDRICAL,   /* 1 */
-    SPHERICAL      /* 2 */
-} CoordSystem;
-
- 
 // ****************************************************************************
 //  Class: avtCoordSystemConvert
 //
@@ -69,11 +61,30 @@ typedef enum
 //    Hank Childs, Wed Jun  8 14:50:52 PDT 2005
 //    Added UpdateDataObjectInfo.
 //
+//    Jeremy Meredith, Fri Aug  7 15:33:18 EDT 2009
+//    Added selectable vector transform method.
+//    Made the coord system enum be within the class namespace.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCoordSystemConvert : public avtDataTreeIterator
 {
   public:
+    enum CoordSystem
+    {
+        CARTESIAN       = 0,
+        CYLINDRICAL,   /* 1 */
+        SPHERICAL      /* 2 */
+    };
+
+    enum VectorTransformMethod
+    {
+        None,
+        AsPoint,
+        AsDisplacement,
+        AsDirection
+    };
+
                          avtCoordSystemConvert();
     virtual             ~avtCoordSystemConvert();
 
@@ -83,10 +94,13 @@ class AVTFILTERS_API avtCoordSystemConvert : public avtDataTreeIterator
 
     void                 SetInputCoordSys(CoordSystem a) { inputSys = a; };
     void                 SetOutputCoordSys(CoordSystem a) { outputSys = a; };
+    void                 SetVectorTransformMethod(VectorTransformMethod m)
+                                               { vectorTransformMethod = m; }
 
   protected:
     CoordSystem           inputSys;
     CoordSystem           outputSys;
+    VectorTransformMethod vectorTransformMethod;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
     virtual void          PostExecute(void);
