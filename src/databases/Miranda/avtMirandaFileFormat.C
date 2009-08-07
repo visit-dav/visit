@@ -544,6 +544,11 @@ avtMirandaFileFormat::FreeUpResources(void)
 //
 //    Dave Bremer, June 25, 2009
 //    Updated to set up curvilinear or rectilinear data.
+//
+//    Cyrus Harrison, Fri Aug  7 10:16:34 PDT 2009
+//    Fixed an error with 2d mesh boundary info causing the domain boundary 
+//    object calcuate a logical z-extent off by one.
+//
 // ****************************************************************************
 
 void
@@ -643,7 +648,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         matmd->materialNames = aMatNames;
         md->Add(matmd);
     }
-    
+
     // Find domain boundaries
     if (!avtDatabase::OnlyServeUpMetaData() && nblocks > 1)
     {
@@ -676,6 +681,13 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
                 if (iBlockZ == iNumBlocks[2]-1)
                     bbox[5]--;
+            }
+
+            // VisIt expects the 2d case to have flat logical z extent (0,0).
+            if(dim == 2)
+            {
+                bbox[4] = 0;
+                bbox[5] = 0;
             }
 
             rdb->SetIndicesForRectGrid(ii, bbox);
