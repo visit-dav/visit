@@ -162,6 +162,12 @@ void vtkOpenGLRectilinearGridMapper::ReleaseGraphicsResources(vtkWindow *win)
     }
 }
 
+// Modifications:
+//
+//   Tom Fogal, Fri Aug  7 12:15:21 MDT 2009
+//   Initialize GLEW after the RW gets made current.
+
+
 void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 {
   vtkIdType numPts;
@@ -206,6 +212,8 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 
 // make sure our window is current
   ren->GetRenderWindow()->MakeCurrent();
+
+  avt::glew::initialize();
 
   clipPlanes = this->ClippingPlanes;
 
