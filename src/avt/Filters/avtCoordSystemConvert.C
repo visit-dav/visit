@@ -61,6 +61,7 @@
 
 
 typedef void(*xformFunc)(double *, const double *);
+static vtkDataSet *CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts);
 
 // ****************************************************************************
 //  Method: avtCoordSystemConvert constructor
