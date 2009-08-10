@@ -143,10 +143,17 @@
 #    Mark C. Miller, Tue Aug  4 15:22:44 PDT 2009
 #    Making so that for a test run (e.g. -test arg given), we don't attempt
 #    to post any results.
+#
+#    Mark C. Miller, Mon Aug 10 15:33:15 PDT 2009
+#    Added option to truncate error details in checkAndHandleError() func.    
+#    Made calls to checkAndHandleError that include make_log.txt truncate to
+#    last 1000 lines of output to make emails smaller. Changed path of
+#    rootTestDir because the testing dir structure has been moved to
+#    projectdir.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
-rootTestDir=/usr/common/homes/m/miller86/visit/trunk
+rootTestDir=/project/projectdirs/visit/test/trunk
 errorLogFile=$rootTestDir/testLogFile_$dateTag
 modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass
 modifiersEmails=
@@ -190,6 +197,7 @@ nezero() {
 #     $2 <select warning/fatal/email behavior (other behaviors could be added)>
 #     $3 <short-subject-text>
 #     $4 <optional file or string containing details>
+#     $5 <number of lines to truncate details to>
 #
 checkAndHandleError() {
 
@@ -197,6 +205,7 @@ checkAndHandleError() {
     local handlerBehavior=$2
     local shortSubject=$3
     local errorDetails=$4
+    local truncateDetails=$5
     local timeOfError=`date '+%l:%M:%S %p'`
 
     # there is nothing to do if the error status flag is zero
@@ -211,7 +220,11 @@ checkAndHandleError() {
     if test -n "$errorDetails"; then
         echo "Details follow..." >> $errorLogFile
         if test -e $errorDetails; then
-            cat $errorDetails >> $errorLogFile 
+            if test -n "$truncateDetails"; then
+                cat $errorDetails | tail -n $truncateDetails >> $errorLogFile 
+            else
+                cat $errorDetails >> $errorLogFile 
+            fi
         else
             echo "$errorDetails" >> $errorLogFile 
         fi
@@ -438,7 +451,7 @@ cd src
 ./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-viewer-mesa-stub=no --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "Post-Update configure failed" config_log.txt 
 gmake -j 6 1>> make_log.txt 2>&1
-checkAndHandleError $? fatal "gmake -j 6 failed in src" make_log.txt
+checkAndHandleError $? fatal "gmake -j 6 failed in src" make_log.txt 1000
 cd ..
 
 # build data
@@ -446,7 +459,7 @@ cd data
 rm -f make_log.txt
 gmake clean 1> /dev/null 2>&1
 gmake -j 6 test 1>> make_log.txt 2>&1
-checkAndHandleError $? fatal "gmake -j 6 failed in data" make_log.txt 
+checkAndHandleError $? fatal "gmake -j 6 failed in data" make_log.txt  1000
 cd ..
 
 # set the datestamp used for all test modes
