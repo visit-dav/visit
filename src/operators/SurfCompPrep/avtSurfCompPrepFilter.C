@@ -160,6 +160,9 @@ avtSurfCompPrepFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Tue Jul  8 22:20:30 PDT 2003
 //    Fix parallel problem.
 //
+//    Jeremy Meredith, Mon Aug 10 11:17:31 EDT 2009
+//    avtCoordSystemConvert has systems in its namespace now.
+//
 // ****************************************************************************
 
 void
@@ -176,17 +179,17 @@ avtSurfCompPrepFilter::Execute(void)
     // system -- cartesian, cylindrical, or spherical.
     //
     avtCoordSystemConvert toCoordSys;
-    toCoordSys.SetInputCoordSys(CARTESIAN);
+    toCoordSys.SetInputCoordSys(avtCoordSystemConvert::CARTESIAN);
     switch (atts.GetCoordSystem())
     {
       case SurfCompPrepAttributes::Cartesian:
-        toCoordSys.SetOutputCoordSys(CARTESIAN);
+        toCoordSys.SetOutputCoordSys(avtCoordSystemConvert::CARTESIAN);
         break;
       case SurfCompPrepAttributes::Cylindrical:
-        toCoordSys.SetOutputCoordSys(CYLINDRICAL);
+        toCoordSys.SetOutputCoordSys(avtCoordSystemConvert::CYLINDRICAL);
         break;
       case SurfCompPrepAttributes::Spherical:
-        toCoordSys.SetOutputCoordSys(SPHERICAL);
+        toCoordSys.SetOutputCoordSys(avtCoordSystemConvert::SPHERICAL);
         break;
     }
     toCoordSys.SetInput(data);
@@ -477,16 +480,16 @@ avtSurfCompPrepFilter::Execute(void)
     switch (atts.GetCoordSystem())
     {
       case SurfCompPrepAttributes::Cartesian:
-        backToCartesian.SetInputCoordSys(CARTESIAN);
+        backToCartesian.SetInputCoordSys(avtCoordSystemConvert::CARTESIAN);
         break;
       case SurfCompPrepAttributes::Cylindrical:
-        backToCartesian.SetInputCoordSys(CYLINDRICAL);
+        backToCartesian.SetInputCoordSys(avtCoordSystemConvert::CYLINDRICAL);
         break;
       case SurfCompPrepAttributes::Spherical:
-        backToCartesian.SetInputCoordSys(SPHERICAL);
+        backToCartesian.SetInputCoordSys(avtCoordSystemConvert::SPHERICAL);
         break;
     }
-    backToCartesian.SetOutputCoordSys(CARTESIAN);
+    backToCartesian.SetOutputCoordSys(avtCoordSystemConvert::CARTESIAN);
     backToCartesian.SetInput(outOfFrustum.GetOutput());
 
     //
