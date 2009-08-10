@@ -130,6 +130,9 @@
 #   Jeremy Meredith, Tue Nov 18 15:58:11 EST 2008
 #   Added AxesArray.java.
 #
+#   Brad Whitlock, Mon Aug 10 14:26:49 PDT 2009
+#   Added MakeHostProfile.java
+#
 ##############################################################################
 
 ##
@@ -258,7 +261,7 @@ ViewerState.java \
 Xfer.java \
 Yielder.java
 
-MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.java GetMetaData.java TryAnnotations.java
+MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.java GetMetaData.java TryAnnotations.java MakeHostProfile.java
 MAIN_CLASS = $(MAIN_SRC:.java=.class)
 
 VERSIONWRITER = versionwriter
