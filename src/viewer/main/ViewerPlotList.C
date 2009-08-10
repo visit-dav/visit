@@ -4104,6 +4104,9 @@ ViewerPlotList::SetPlotVar(const std::string &variable)
 //    Brad Whitlock, Tue Apr 29 16:01:34 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Mon Aug 10 16:20:39 PDT 2009
+//    Clarify an error message.
+//
 // ****************************************************************************
 
 void
@@ -4177,9 +4180,11 @@ ViewerPlotList::SetPlotAtts(const int plotType)
 
         QString msg;
         msg = tr("VisIt cannot set the %1 plot attributes since no plots "
-                 "of that type are selected. Please select a %2 plot "
+                 "of that type are selected. This can either mean that you "
+                 "have no plots selected or you have more than one instance "
+                 "of the %1 plot in your plot list. Please select a %1 plot "
                  "before trying to modify its plot attributes.").
-              arg(plotName).arg(plotName);
+              arg(plotName);
         Warning(msg);
     }
 }
@@ -6765,7 +6770,7 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
     int       i;
     ViewerPlotFactory *plotFactory = viewerSubject->GetPlotFactory();
     int       nPlotType = plotFactory->GetNPlotTypes();
-    int       *plotCount = new int[nPlotType];
+    int       *plotsIndex = new int[nPlotType];
     ViewerOperatorFactory *operatorFactory =
                viewerSubject->GetOperatorFactory();
     int       nOperatorType = operatorFactory->GetNOperatorTypes();
@@ -6773,7 +6778,7 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
     ViewerOperator **operatorForType = new ViewerOperator*[nOperatorType];
 
     for (i = 0; i < nPlotType; i++)
-        plotCount[i] = 0;
+        plotsIndex[i] = -1;
     for (i = 0; i < nOperatorType; i++)
         operatorForType[i] = 0;
 
@@ -6787,88 +6792,100 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
         // the count and set the plot attributes if this is the first
         // frame the plot type is encountered.
         //
-        if (plot->IsInRange() && plots[i].active)
+        if (plot->IsInRange())
         {
-            plotCount[plotType]++;
-            if (plotCount[plotType] == 1)
+            if(plotsIndex[plotType] == -1)
             {
-                plot->SetClientAttsFromPlot();
-                plot->UpdatePlotInformation();
+                // This is the first plot of this type we've seen. Save its index.
+                plotsIndex[plotType] = i;
             }
-
-            // Reset the count array for this plot.
-            int j;
-            for (j = 0; j < nOperatorType; ++j)
-                operatorCountInCurrentPlot[j] = 0;
-
-            //
-            // Loop over all the operators, counting the types of operators
-            // that are applied to this plot.
-            //
-            for (j = 0; j < plot->GetNOperators(); j++)
+            if(plots[i].active)
             {
-                ViewerOperator *oper = plot->GetOperator(j);
-                int             operType = oper->GetType();
-                operatorCountInCurrentPlot[operType]++;
-            }
-
-            //
-            // Now that we have a count of how many operators of each type are
-            // applied to the current plot, pick the correct operator to send
-            // back to the client.
-            //
-            for (j = 0; j < plot->GetNOperators(); ++j)
-            {
-                ViewerOperator *oper = plot->GetOperator(j);
-                int             operType = oper->GetType();
-
-                // If we already have a pointer to the operator that we want,
-                // skip to the next operator for consideration.
-                if(operatorForType[operType])
-                    continue;
-
-                if (operatorCountInCurrentPlot[operType] > 1)
+                if(plotsIndex[plotType] == i)
                 {
-                    int firstIndex = -1;
-                    int activeIndex = -1; 
+                    // We saved the index for this plot already.
+                }
+                else if(!plots[plotsIndex[plotType]].active)
+                {
+                    // The last plot index was not active so we can replace it
+                    // since this plot is active.
+                    plotsIndex[plotType] = i;
+                }
 
-                    //
-                    // We have more than one operator of this type, we need to
-                    // go through and see if one of these operators is the
-                    // active operator. If one of these operators is the
-                    // active operator, set the attributes using it. Otherwise, 
-                    // if none of these operators is the active operator, use
-                    // the first one of this type.
-                    //
-                    for(int k = 0; k < plot->GetNOperators(); ++k)
+                // Reset the count array for this plot.
+                int j;
+                for (j = 0; j < nOperatorType; ++j)
+                    operatorCountInCurrentPlot[j] = 0;
+
+                //
+                // Loop over all the operators, counting the types of operators
+                // that are applied to this plot.
+                //
+                for (j = 0; j < plot->GetNOperators(); j++)
+                {
+                    ViewerOperator *oper = plot->GetOperator(j);
+                    int             operType = oper->GetType();
+                    operatorCountInCurrentPlot[operType]++;
+                }
+
+                //
+                // Now that we have a count of how many operators of each type are
+                // applied to the current plot, pick the correct operator to send
+                // back to the client.
+                //
+                for (j = 0; j < plot->GetNOperators(); ++j)
+                {
+                    ViewerOperator *oper = plot->GetOperator(j);
+                    int             operType = oper->GetType();
+
+                    // If we already have a pointer to the operator that we want,
+                    // skip to the next operator for consideration.
+                    if(operatorForType[operType])
+                        continue;
+
+                    if (operatorCountInCurrentPlot[operType] > 1)
                     {
-                        oper = plot->GetOperator(k);
-                        int operType2 = oper->GetType();
+                        int firstIndex = -1;
+                        int activeIndex = -1; 
 
-                        if(operType == operType2)
+                        //
+                        // We have more than one operator of this type, we need to
+                        // go through and see if one of these operators is the
+                        // active operator. If one of these operators is the
+                        // active operator, set the attributes using it. Otherwise, 
+                        // if none of these operators is the active operator, use
+                        // the first one of this type.
+                        //
+                        for(int k = 0; k < plot->GetNOperators(); ++k)
                         {
-                            if(firstIndex == -1)
-                                firstIndex = k;
-                            if(k == plot->GetActiveOperatorIndex())
+                            oper = plot->GetOperator(k);
+                            int operType2 = oper->GetType();
+
+                            if(operType == operType2)
                             {
-                                activeIndex = k;
-                                break;
+                                if(firstIndex == -1)
+                                    firstIndex = k;
+                                if(k == plot->GetActiveOperatorIndex())
+                                {
+                                    activeIndex = k;
+                                    break;
+                                }
                             }
                         }
+
+                        //
+                        // None of the operators of this type were the active
+                        // operator so use the first instance of this operator type.
+                        //
+                        if(activeIndex == -1)
+                            activeIndex = firstIndex;
+
+                        operatorForType[operType] = plot->GetOperator(activeIndex);
                     }
-
-                    //
-                    // None of the operators of this type were the active
-                    // operator so use the first instance of this operator type.
-                    //
-                    if(activeIndex == -1)
-                        activeIndex = firstIndex;
-
-                    operatorForType[operType] = plot->GetOperator(activeIndex);
-                }
-                else if(operatorCountInCurrentPlot[operType] > 0)
-                {
-                    operatorForType[operType] = plot->GetOperator(j);
+                    else if(operatorCountInCurrentPlot[operType] > 0)
+                    {
+                        operatorForType[operType] = plot->GetOperator(j);
+                    }
                 }
             }
         }
@@ -6879,12 +6896,26 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
     // referenced in the plot list in we're sending updates for plots
     // that have not been referenced.
     //
-    if(updateThoseNotRepresented)
+    for (i = 0; i < nPlotType; i++)
     {
-        for (i = 0; i < nPlotType; i++)
+        if (plotsIndex[i] == -1)
         {
-            if (plotCount[i] == 0)
+            // There was no plot of this type.
+            if(updateThoseNotRepresented)
+            {
+                //
+                // Send the default attributes for any plots which have not been
+                // referenced in the plot list in we're sending updates for plots
+                // that have not been referenced.
+                //
                 plotFactory->SetClientAttsFromDefault(i);
+            }
+        }
+        else
+        {
+            // Send the plot attributes
+            plots[plotsIndex[i]].plot->SetClientAttsFromPlot();
+            plots[plotsIndex[i]].plot->UpdatePlotInformation();
         }
     }
 
@@ -6893,7 +6924,7 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
     //
     for (i = 0; i < nPlotType; i++)
     {
-        if (plotCount[i] == 0)
+        if (plotsIndex[i] == -1)
         {
             // Let's empty out the plot info atts too if they are not 
             // already empty.
@@ -6919,7 +6950,7 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
             operatorFactory->SetClientAttsFromDefault(i);
     }
 
-    delete [] plotCount;
+    delete [] plotsIndex;
     delete [] operatorForType;
     delete [] operatorCountInCurrentPlot;
 }
