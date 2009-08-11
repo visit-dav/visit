@@ -247,6 +247,9 @@ avtSLAlgorithm::PostExecute()
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Tue Aug 11 13:44:44 EDT 2009
+//   Fix compiler warning.
+//
 // ****************************************************************************
 
 void
@@ -258,7 +261,7 @@ avtSLAlgorithm::SortStreamlines(list<avtStreamlineWrapper *> &sl)
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=sl.begin(); s != sl.end(); ++s)
     {
-        long d = (*s)->domain.domain, t = (*s)->domain.timeStep;
+        long long d = (*s)->domain.domain, t = (*s)->domain.timeStep;
         long long key = (d<<32) + t;
         key = (*s)->domain.domain;
         if ( DomainLoaded((*s)->domain))
