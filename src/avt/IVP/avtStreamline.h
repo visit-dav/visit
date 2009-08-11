@@ -47,6 +47,9 @@
 #include <MemStream.h>
 #include <string>
 #include <list>
+#include <avtVector.h>
+
+class vtkObject;
 
 // ****************************************************************************
 //  Class: avtStreamline
@@ -102,6 +105,9 @@
 //   with a scalarValueType which can be 'or'-d together to specify what to
 //   compute.
 //
+//   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
+//   Add new termination criterion: Number of intersections with an object.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -119,10 +125,8 @@ class IVP_API avtStreamline
                                  avtIVPSolver::TerminateType termType,
                                  double end);
 
-    void      SetScalarValueType( ScalarValueType t )
-    {
-        scalarValueType = t;
-    }
+    void      SetScalarValueType(ScalarValueType t) {scalarValueType = t;}
+    void      SetIntersectionObject(vtkObject *obj);
     
     // Min/Max T of integrated streamlines.
     double    TMin() const;
@@ -156,9 +160,20 @@ class IVP_API avtStreamline
                                    double end);
 
     void      HandleGhostZones(bool forward, double *extents);
+    void      HandleIntersections(bool forward,
+                                  avtIVPStep *step,
+                                  avtIVPSolver::TerminateType termType,
+                                  double end,
+                                  avtIVPSolver::Result *result);
+    bool      IntersectPlane( double *p0, double *p1, double *x);
 
     // Integration steps.
     std::list<avtIVPStep*> _steps;
+
+    // Intersection points.
+    bool intersectionsSet;
+    std::list<avtVec> intersections;
+    avtVector  intersectPlanePt, intersectPlaneNorm;
 
     // Initial T and seed point.
     double _t0;

@@ -48,6 +48,7 @@
 #include <avtVariableMapper.h>
 #include <avtPoincareFilter.h>
 #include <InvalidLimitsException.h>
+#include <vtkPlane.h>
 
 // ****************************************************************************
 //  Method: avtPoincarePlot constructor
@@ -309,6 +310,9 @@ avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
 //
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
 //    Call ChangesRequireRecalculation. Fix color table display.
+//
+//    Dave Pugmire, Tue Aug 11 10:33:05 EDT 2009
+//    Add number of intersections termination criterion
 //    
 // ****************************************************************************
 
@@ -339,12 +343,26 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         poincareFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
     else if (atts.GetTerminationType() == PoincareAttributes::Steps)
         poincareFilter->SetTermination(STREAMLINE_TERMINATE_STEPS, atts.GetTermination());
-//    else if (atts.GetTerminationType() == PoincareAttributes::Puctures)
-//        poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS, atts.GetTermination());
+    else if (atts.GetTerminationType() == PoincareAttributes::Intersections)
+    {
+        poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS, 2.0*atts.GetTermination());
+        
+        vtkPlane *intPlane = vtkPlane::New();
+        intPlane->SetOrigin(atts.GetIntersectPlaneOrigin()[0],
+                            atts.GetIntersectPlaneOrigin()[1],
+                            atts.GetIntersectPlaneOrigin()[2]);
+        intPlane->SetNormal(atts.GetIntersectPlaneNormal()[0],
+                            atts.GetIntersectPlaneNormal()[1],
+                            atts.GetIntersectPlaneNormal()[2]);
+        
+        poincareFilter->SetIntersectionObject(intPlane);
+        
+        intPlane->Delete();
+    }
     
     poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
     poincareFilter->SetShowStart(false);
-    poincareFilter->SetPointDensity(atts.GetPointDensity());
+    poincareFilter->SetPointDensity(atts.GetPointDensity()-1);
     poincareFilter->SetStreamlineDirection(0);
     poincareFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
 

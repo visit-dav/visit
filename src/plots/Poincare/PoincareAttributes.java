@@ -68,7 +68,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int TERMINATIONTYPE_DISTANCE = 0;
     public final static int TERMINATIONTYPE_TIME = 1;
     public final static int TERMINATIONTYPE_STEPS = 2;
-    public final static int TERMINATIONTYPE_PUCTURES = 3;
+    public final static int TERMINATIONTYPE_INTERSECTIONS = 3;
 
     public final static int COLORBY_ORIGINALVALUE = 0;
     public final static int COLORBY_INPUTORDER = 1;
@@ -97,7 +97,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public PoincareAttributes()
     {
-        super(36);
+        super(38);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -153,11 +153,19 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         minFlag = false;
         maxFlag = false;
         colorType = COLORINGMETHOD_COLORBYSINGLECOLOR;
+        intersectPlaneOrigin = new double[3];
+        intersectPlaneOrigin[0] = 0;
+        intersectPlaneOrigin[1] = 0;
+        intersectPlaneOrigin[2] = 0;
+        intersectPlaneNormal = new double[3];
+        intersectPlaneNormal[0] = 1;
+        intersectPlaneNormal[1] = 0;
+        intersectPlaneNormal[2] = 0;
     }
 
     public PoincareAttributes(PoincareAttributes obj)
     {
-        super(36);
+        super(38);
 
         int i;
 
@@ -221,6 +229,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         minFlag = obj.minFlag;
         maxFlag = obj.maxFlag;
         colorType = obj.colorType;
+        intersectPlaneOrigin = new double[3];
+        intersectPlaneOrigin[0] = obj.intersectPlaneOrigin[0];
+        intersectPlaneOrigin[1] = obj.intersectPlaneOrigin[1];
+        intersectPlaneOrigin[2] = obj.intersectPlaneOrigin[2];
+
+        intersectPlaneNormal = new double[3];
+        intersectPlaneNormal[0] = obj.intersectPlaneNormal[0];
+        intersectPlaneNormal[1] = obj.intersectPlaneNormal[1];
+        intersectPlaneNormal[2] = obj.intersectPlaneNormal[2];
+
 
         SelectAll();
     }
@@ -259,6 +277,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 3 && planeUpAxis_equal; ++i)
             planeUpAxis_equal = (planeUpAxis[i] == obj.planeUpAxis[i]);
 
+        // Compare the intersectPlaneOrigin arrays.
+        boolean intersectPlaneOrigin_equal = true;
+        for(i = 0; i < 3 && intersectPlaneOrigin_equal; ++i)
+            intersectPlaneOrigin_equal = (intersectPlaneOrigin[i] == obj.intersectPlaneOrigin[i]);
+
+        // Compare the intersectPlaneNormal arrays.
+        boolean intersectPlaneNormal_equal = true;
+        for(i = 0; i < 3 && intersectPlaneNormal_equal; ++i)
+            intersectPlaneNormal_equal = (intersectPlaneNormal[i] == obj.intersectPlaneNormal[i]);
+
         // Create the return value
         return ((sourceType == obj.sourceType) &&
                 (maxStepLength == obj.maxStepLength) &&
@@ -295,7 +323,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (max == obj.max) &&
                 (minFlag == obj.minFlag) &&
                 (maxFlag == obj.maxFlag) &&
-                (colorType == obj.colorType));
+                (colorType == obj.colorType) &&
+                intersectPlaneOrigin_equal &&
+                intersectPlaneNormal_equal);
     }
 
     public String GetName() { return "Poincare"; }
@@ -578,6 +608,38 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(35);
     }
 
+    public void SetIntersectPlaneOrigin(double[] intersectPlaneOrigin_)
+    {
+        intersectPlaneOrigin[0] = intersectPlaneOrigin_[0];
+        intersectPlaneOrigin[1] = intersectPlaneOrigin_[1];
+        intersectPlaneOrigin[2] = intersectPlaneOrigin_[2];
+        Select(36);
+    }
+
+    public void SetIntersectPlaneOrigin(double e0, double e1, double e2)
+    {
+        intersectPlaneOrigin[0] = e0;
+        intersectPlaneOrigin[1] = e1;
+        intersectPlaneOrigin[2] = e2;
+        Select(36);
+    }
+
+    public void SetIntersectPlaneNormal(double[] intersectPlaneNormal_)
+    {
+        intersectPlaneNormal[0] = intersectPlaneNormal_[0];
+        intersectPlaneNormal[1] = intersectPlaneNormal_[1];
+        intersectPlaneNormal[2] = intersectPlaneNormal_[2];
+        Select(37);
+    }
+
+    public void SetIntersectPlaneNormal(double e0, double e1, double e2)
+    {
+        intersectPlaneNormal[0] = e0;
+        intersectPlaneNormal[1] = e1;
+        intersectPlaneNormal[2] = e2;
+        Select(37);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double         GetMaxStepLength() { return maxStepLength; }
@@ -615,6 +677,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public boolean        GetMinFlag() { return minFlag; }
     public boolean        GetMaxFlag() { return maxFlag; }
     public int            GetColorType() { return colorType; }
+    public double[]       GetIntersectPlaneOrigin() { return intersectPlaneOrigin; }
+    public double[]       GetIntersectPlaneNormal() { return intersectPlaneNormal; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -691,6 +755,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(maxFlag);
         if(WriteSelect(35, buf))
             buf.WriteInt(colorType);
+        if(WriteSelect(36, buf))
+            buf.WriteDoubleArray(intersectPlaneOrigin);
+        if(WriteSelect(37, buf))
+            buf.WriteDoubleArray(intersectPlaneNormal);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -809,6 +877,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             case 35:
                 SetColorType(buf.ReadInt());
                 break;
+            case 36:
+                SetIntersectPlaneOrigin(buf.ReadDoubleArray());
+                break;
+            case 37:
+                SetIntersectPlaneNormal(buf.ReadDoubleArray());
+                break;
             }
         }
     }
@@ -848,8 +922,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "TERMINATIONTYPE_TIME";
         if(terminationType == TERMINATIONTYPE_STEPS)
             str = str + "TERMINATIONTYPE_STEPS";
-        if(terminationType == TERMINATIONTYPE_PUCTURES)
-            str = str + "TERMINATIONTYPE_PUCTURES";
+        if(terminationType == TERMINATIONTYPE_INTERSECTIONS)
+            str = str + "TERMINATIONTYPE_INTERSECTIONS";
         str = str + "\n";
         str = str + indent + "integrationType = ";
         if(integrationType == INTEGRATIONTYPE_DORMANDPRINCE)
@@ -911,6 +985,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(colorType == COLORINGMETHOD_COLORBYCOLORTABLE)
             str = str + "COLORINGMETHOD_COLORBYCOLORTABLE";
         str = str + "\n";
+        str = str + doubleArrayToString("intersectPlaneOrigin", intersectPlaneOrigin, indent) + "\n";
+        str = str + doubleArrayToString("intersectPlaneNormal", intersectPlaneNormal, indent) + "\n";
         return str;
     }
 
@@ -952,5 +1028,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private boolean        minFlag;
     private boolean        maxFlag;
     private int            colorType;
+    private double[]       intersectPlaneOrigin;
+    private double[]       intersectPlaneNormal;
 }
 

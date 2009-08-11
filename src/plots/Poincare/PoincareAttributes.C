@@ -86,7 +86,7 @@ PoincareAttributes::SourceType_FromString(const std::string &s, PoincareAttribut
 
 static const char *TerminationType_strings[] = {
 "Distance", "Time", "Steps", 
-"Puctures"};
+"Intersections"};
 
 std::string
 PoincareAttributes::TerminationType_ToString(PoincareAttributes::TerminationType t)
@@ -308,7 +308,7 @@ PoincareAttributes::ColoringMethod_FromString(const std::string &s, PoincareAttr
 }
 
 // Type map format string
-const char *PoincareAttributes::TypeMapFormatString = "iddDDDDDDdisabbbddiibbiiiidiibiddbbi";
+const char *PoincareAttributes::TypeMapFormatString = "iddDDDDDDdisabbbddiibbiiiidiibiddbbiDD";
 
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
@@ -375,6 +375,12 @@ PoincareAttributes::PoincareAttributes() :
     minFlag = false;
     maxFlag = false;
     colorType = ColorBySingleColor;
+    intersectPlaneOrigin[0] = 0;
+    intersectPlaneOrigin[1] = 0;
+    intersectPlaneOrigin[2] = 0;
+    intersectPlaneNormal[0] = 1;
+    intersectPlaneNormal[1] = 0;
+    intersectPlaneNormal[2] = 0;
 }
 
 // ****************************************************************************
@@ -449,6 +455,14 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
     minFlag = obj.minFlag;
     maxFlag = obj.maxFlag;
     colorType = obj.colorType;
+    intersectPlaneOrigin[0] = obj.intersectPlaneOrigin[0];
+    intersectPlaneOrigin[1] = obj.intersectPlaneOrigin[1];
+    intersectPlaneOrigin[2] = obj.intersectPlaneOrigin[2];
+
+    intersectPlaneNormal[0] = obj.intersectPlaneNormal[0];
+    intersectPlaneNormal[1] = obj.intersectPlaneNormal[1];
+    intersectPlaneNormal[2] = obj.intersectPlaneNormal[2];
+
 
     SelectAll();
 }
@@ -546,6 +560,14 @@ PoincareAttributes::operator = (const PoincareAttributes &obj)
     minFlag = obj.minFlag;
     maxFlag = obj.maxFlag;
     colorType = obj.colorType;
+    intersectPlaneOrigin[0] = obj.intersectPlaneOrigin[0];
+    intersectPlaneOrigin[1] = obj.intersectPlaneOrigin[1];
+    intersectPlaneOrigin[2] = obj.intersectPlaneOrigin[2];
+
+    intersectPlaneNormal[0] = obj.intersectPlaneNormal[0];
+    intersectPlaneNormal[1] = obj.intersectPlaneNormal[1];
+    intersectPlaneNormal[2] = obj.intersectPlaneNormal[2];
+
 
     SelectAll();
     return *this;
@@ -599,6 +621,16 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
     for(int i = 0; i < 3 && planeUpAxis_equal; ++i)
         planeUpAxis_equal = (planeUpAxis[i] == obj.planeUpAxis[i]);
 
+    // Compare the intersectPlaneOrigin arrays.
+    bool intersectPlaneOrigin_equal = true;
+    for(int i = 0; i < 3 && intersectPlaneOrigin_equal; ++i)
+        intersectPlaneOrigin_equal = (intersectPlaneOrigin[i] == obj.intersectPlaneOrigin[i]);
+
+    // Compare the intersectPlaneNormal arrays.
+    bool intersectPlaneNormal_equal = true;
+    for(int i = 0; i < 3 && intersectPlaneNormal_equal; ++i)
+        intersectPlaneNormal_equal = (intersectPlaneNormal[i] == obj.intersectPlaneNormal[i]);
+
     // Create the return value
     return ((sourceType == obj.sourceType) &&
             (maxStepLength == obj.maxStepLength) &&
@@ -635,7 +667,9 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (max == obj.max) &&
             (minFlag == obj.minFlag) &&
             (maxFlag == obj.maxFlag) &&
-            (colorType == obj.colorType));
+            (colorType == obj.colorType) &&
+            intersectPlaneOrigin_equal &&
+            intersectPlaneNormal_equal);
 }
 
 // ****************************************************************************
@@ -856,6 +890,8 @@ PoincareAttributes::SelectAll()
     Select(ID_minFlag,                 (void *)&minFlag);
     Select(ID_maxFlag,                 (void *)&maxFlag);
     Select(ID_colorType,               (void *)&colorType);
+    Select(ID_intersectPlaneOrigin,    (void *)intersectPlaneOrigin, 3);
+    Select(ID_intersectPlaneNormal,    (void *)intersectPlaneNormal, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1106,6 +1142,18 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("colorType", ColoringMethod_ToString(colorType)));
     }
 
+    if(completeSave || !FieldsEqual(ID_intersectPlaneOrigin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("intersectPlaneOrigin", intersectPlaneOrigin, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_intersectPlaneNormal, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("intersectPlaneNormal", intersectPlaneNormal, 3));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1312,6 +1360,10 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
                 SetColorType(value);
         }
     }
+    if((node = searchNode->GetNode("intersectPlaneOrigin")) != 0)
+        SetIntersectPlaneOrigin(node->AsDoubleArray());
+    if((node = searchNode->GetNode("intersectPlaneNormal")) != 0)
+        SetIntersectPlaneNormal(node->AsDoubleArray());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1582,6 +1634,24 @@ PoincareAttributes::SetColorType(PoincareAttributes::ColoringMethod colorType_)
     Select(ID_colorType, (void *)&colorType);
 }
 
+void
+PoincareAttributes::SetIntersectPlaneOrigin(const double *intersectPlaneOrigin_)
+{
+    intersectPlaneOrigin[0] = intersectPlaneOrigin_[0];
+    intersectPlaneOrigin[1] = intersectPlaneOrigin_[1];
+    intersectPlaneOrigin[2] = intersectPlaneOrigin_[2];
+    Select(ID_intersectPlaneOrigin, (void *)intersectPlaneOrigin, 3);
+}
+
+void
+PoincareAttributes::SetIntersectPlaneNormal(const double *intersectPlaneNormal_)
+{
+    intersectPlaneNormal[0] = intersectPlaneNormal_[0];
+    intersectPlaneNormal[1] = intersectPlaneNormal_[1];
+    intersectPlaneNormal[2] = intersectPlaneNormal_[2];
+    Select(ID_intersectPlaneNormal, (void *)intersectPlaneNormal, 3);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1850,6 +1920,30 @@ PoincareAttributes::GetColorType() const
     return ColoringMethod(colorType);
 }
 
+const double *
+PoincareAttributes::GetIntersectPlaneOrigin() const
+{
+    return intersectPlaneOrigin;
+}
+
+double *
+PoincareAttributes::GetIntersectPlaneOrigin()
+{
+    return intersectPlaneOrigin;
+}
+
+const double *
+PoincareAttributes::GetIntersectPlaneNormal() const
+{
+    return intersectPlaneNormal;
+}
+
+double *
+PoincareAttributes::GetIntersectPlaneNormal()
+{
+    return intersectPlaneNormal;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1900,6 +1994,18 @@ void
 PoincareAttributes::SelectSingleColor()
 {
     Select(ID_singleColor, (void *)&singleColor);
+}
+
+void
+PoincareAttributes::SelectIntersectPlaneOrigin()
+{
+    Select(ID_intersectPlaneOrigin, (void *)intersectPlaneOrigin, 3);
+}
+
+void
+PoincareAttributes::SelectIntersectPlaneNormal()
+{
+    Select(ID_intersectPlaneNormal, (void *)intersectPlaneNormal, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1962,6 +2068,8 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_minFlag:                 return "minFlag";
     case ID_maxFlag:                 return "maxFlag";
     case ID_colorType:               return "colorType";
+    case ID_intersectPlaneOrigin:    return "intersectPlaneOrigin";
+    case ID_intersectPlaneNormal:    return "intersectPlaneNormal";
     default:  return "invalid index";
     }
 }
@@ -2022,6 +2130,8 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_minFlag:                 return FieldType_bool;
     case ID_maxFlag:                 return FieldType_bool;
     case ID_colorType:               return FieldType_enum;
+    case ID_intersectPlaneOrigin:    return FieldType_doubleArray;
+    case ID_intersectPlaneNormal:    return FieldType_doubleArray;
     default:  return FieldType_unknown;
     }
 }
@@ -2082,6 +2192,8 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_minFlag:                 return "bool";
     case ID_maxFlag:                 return "bool";
     case ID_colorType:               return "enum";
+    case ID_intersectPlaneOrigin:    return "doubleArray";
+    case ID_intersectPlaneNormal:    return "doubleArray";
     default:  return "invalid index";
     }
 }
@@ -2318,6 +2430,26 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (colorType == obj.colorType);
         }
         break;
+    case ID_intersectPlaneOrigin:
+        {  // new scope
+        // Compare the intersectPlaneOrigin arrays.
+        bool intersectPlaneOrigin_equal = true;
+        for(int i = 0; i < 3 && intersectPlaneOrigin_equal; ++i)
+            intersectPlaneOrigin_equal = (intersectPlaneOrigin[i] == obj.intersectPlaneOrigin[i]);
+
+        retval = intersectPlaneOrigin_equal;
+        }
+        break;
+    case ID_intersectPlaneNormal:
+        {  // new scope
+        // Compare the intersectPlaneNormal arrays.
+        bool intersectPlaneNormal_equal = true;
+        for(int i = 0; i < 3 && intersectPlaneNormal_equal; ++i)
+            intersectPlaneNormal_equal = (intersectPlaneNormal[i] == obj.intersectPlaneNormal[i]);
+
+        retval = intersectPlaneNormal_equal;
+        }
+        break;
     default: retval = false;
     }
 
@@ -2385,6 +2517,9 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
                                 POINT_DIFFERS(planeNormal, obj.planeNormal) ||
                                 POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
                                 planeRadius != obj.planeRadius));
+    bool intPlaneDiffers = ((terminationType == Intersections) &&
+                            (POINT_DIFFERS(intersectPlaneOrigin, obj.intersectPlaneOrigin) ||
+                             POINT_DIFFERS(intersectPlaneNormal, obj.intersectPlaneNormal)));
 
     // Other things need to be true before we start paying attention to
     // point density.
@@ -2404,6 +2539,7 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||
+           intPlaneDiffers ||
            densityMatters ||
            radiusMatters;
 }
@@ -2431,9 +2567,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            numberPlanes != obj.numberPlanes ||
            overrideToroidalWinding != obj.overrideToroidalWinding ||
            colorBy != obj.colorBy ||
-           showIslands != obj.showIslands ||
            showCurves != obj.showCurves ||
-           showPoints != obj.showPoints ||
            verboseFlag != obj.verboseFlag;
 }
 

@@ -469,6 +469,10 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
+//
+//    Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
+//    Add new termination criterion: Number of intersections with an object.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -479,7 +483,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
 {
     if (termType == TIME)
         t_max = end;
-    else if (termType == DISTANCE || termType == STEPS)
+    else if (termType == DISTANCE || termType == STEPS || termType == INTERSECTIONS)
     {
         t_max = std::numeric_limits<double>::max();
         if (end < 0)

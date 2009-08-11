@@ -71,7 +71,7 @@ public:
         Distance,
         Time,
         Steps,
-        Puctures
+        Intersections
     };
     enum ColorBy
     {
@@ -131,6 +131,8 @@ public:
     void SelectPlaneUpAxis();
     void SelectColorTableName();
     void SelectSingleColor();
+    void SelectIntersectPlaneOrigin();
+    void SelectIntersectPlaneNormal();
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
@@ -169,6 +171,8 @@ public:
     void SetMinFlag(bool minFlag_);
     void SetMaxFlag(bool maxFlag_);
     void SetColorType(ColoringMethod colorType_);
+    void SetIntersectPlaneOrigin(const double *intersectPlaneOrigin_);
+    void SetIntersectPlaneNormal(const double *intersectPlaneNormal_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -215,6 +219,10 @@ public:
     bool                 GetMinFlag() const;
     bool                 GetMaxFlag() const;
     ColoringMethod       GetColorType() const;
+    const double         *GetIntersectPlaneOrigin() const;
+          double         *GetIntersectPlaneOrigin();
+    const double         *GetIntersectPlaneNormal() const;
+          double         *GetIntersectPlaneNormal();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -305,7 +313,9 @@ public:
         ID_max,
         ID_minFlag,
         ID_maxFlag,
-        ID_colorType
+        ID_colorType,
+        ID_intersectPlaneOrigin,
+        ID_intersectPlaneNormal
     };
 
 private:
@@ -345,6 +355,8 @@ private:
     bool           minFlag;
     bool           maxFlag;
     int            colorType;
+    double         intersectPlaneOrigin[3];
+    double         intersectPlaneNormal[3];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
