@@ -155,6 +155,9 @@
 #    Changed dir to which 'links' to current baselines are done to the
 #    main test dir hierarchy instead of one in the www dir. Also, changed
 #    from symbolic to hard links.
+#
+#    Mark C. Miller, Mon Aug 10 19:21:12 PDT 2009
+#    Added usage for '-test' argument. Made '-test' imply '-force'.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -326,6 +329,7 @@ do
       -test)
          testEmail=$2
          shift 2
+         skipIfNoChanges=0; # treat a test like a -force
          ;;
       -*)
          echo "Unknown option $1"
@@ -341,6 +345,8 @@ if test $optError -eq 1; then
     echo "        -help             display this help message"
     echo "        -force            force a test even if no files have changed since last run."
     echo "        -changed          Used to tell this script to issue the 'changed' log message."
+    echo "        -test <email-addr>Used run this script in 'test' mode and email results to"
+    echo "                          specified address. Implies -force, too."
     exit 1
 fi
 
