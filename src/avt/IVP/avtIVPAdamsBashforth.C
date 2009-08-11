@@ -437,6 +437,9 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
 //    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //    Bug fix in parallel communication of solver state.
 //
+//   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
+//   Add new termination criterion: Number of intersections with an object.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -449,7 +452,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 
     if (termType == TIME)
         t_max = end;
-    else if (termType == DISTANCE || termType == STEPS)
+    else if (termType == DISTANCE || termType == STEPS || termType == INTERSECTIONS)
     {
         t_max = std::numeric_limits<double>::max();
         if (end < 0)

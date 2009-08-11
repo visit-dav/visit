@@ -192,6 +192,9 @@ class DomainType;
 //   Hank Childs, Sun May  3 12:32:13 CDT 2009
 //   Added point list source type.
 // 
+//   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
+//   Add new termination criterion: Number of intersections with an object.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -210,6 +213,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      SetSourceType(int sourceType);
     void                      SetMaxStepLength(double len);
     void                      SetTermination(int type, double term);
+    void                      SetIntersectionObject(vtkObject *obj);
     void                      SetPathlines(bool pathlines, double time0=0.0);
     void                      SetIntegrationType(int algo);
     void                      SetStreamlineAlgorithm(int algo, int maxCnt,
@@ -277,6 +281,8 @@ class AVTFILTERS_API avtStreamlineFilter :
     double boxExtents[6];
     std::vector<double> pointList;
     bool   useWholeBox;
+
+    vtkObject *intersectObj;
 
     // Data retrieved from contract
     int activeTimeStep;

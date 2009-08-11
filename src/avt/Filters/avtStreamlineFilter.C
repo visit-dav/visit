@@ -62,6 +62,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <vtkFloatArray.h>
 #include <vtkLineSource.h>
 #include <vtkPlaneSource.h>
+#include <vtkPlane.h>
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -159,6 +160,9 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
 //   Initialize seedTimeStep0 and seedTime0.
 //
+//   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
+//   Add new termination criterion: Number of intersections with an object.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -207,6 +211,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     InitialIOTime = 0.0;
     InitialDomLoads = 0;
     activeTimeStep = -1;
+    intersectObj = NULL;
 }
 
 
@@ -229,6 +234,9 @@ avtStreamlineFilter::avtStreamlineFilter()
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
+//   Add new termination criterion: Number of intersections with an object.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::~avtStreamlineFilter()
@@ -236,6 +244,9 @@ avtStreamlineFilter::~avtStreamlineFilter()
     std::map<DomainType, vtkVisItCellLocator*>::const_iterator it;
     for ( it = domainToCellLocatorMap.begin(); it != domainToCellLocatorMap.end(); it++ )
         it->second->Delete();
+
+    if (intersectObj)
+        intersectObj->Delete();
 }
 
 // ****************************************************************************
@@ -637,6 +648,31 @@ avtStreamlineFilter::SetTermination(int type, double term)
     termination = term;
 }
 
+// ****************************************************************************
+// Method: avtStreamlineFilter::SetIntersectionObject
+//
+// Purpose: 
+//   Sets the intersection object.
+//
+// Arguments:
+//   obj : Intersection object.
+//
+// Programmer: Dave Pugmire
+// Creation:   11 August 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetIntersectionObject(vtkObject *obj)
+{
+    if (obj)
+    {
+        intersectObj = obj;
+        intersectObj->Register(NULL);
+    }
+}
 
 // ****************************************************************************
 // Method: avtStreamlineFilter::SetPathlines
@@ -1780,6 +1816,9 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Added color by secondary variable. Remove vorticity/ghostzones flags.
 //
+//   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
+//   Add new termination criterion: Number of intersections with an object.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1843,6 +1882,9 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     //slSeg->Debug();
     int numSteps = slSeg->sl->size();
     avtIVPSolver::Result result;
+
+    if (intersectObj)
+        slSeg->sl->SetIntersectionObject(intersectObj);
 
     if (doPathlines)
     {
@@ -2252,44 +2294,21 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
 
     else if(sourceType == STREAMLINE_SOURCE_LINE)
     {
+        vtkLineSource* line = vtkLineSource::New();
         double z0 = (dataSpatialDimension > 2) ? lineStart[2] : 0.;
         double z1 = (dataSpatialDimension > 2) ? lineEnd[2] : 0.;
+        line->SetPoint1(lineStart[0], lineStart[1], z0);
+        line->SetPoint2(lineEnd[0], lineEnd[1], z1);
+        line->SetResolution(pointDensity1);
+        line->Update();
 
-	if( pointDensity1 == 1 ) 
-	{
-	  avtVector p((lineStart[0] + lineEnd[0]) / 2,
-		      (lineStart[1] + lineEnd[1]) / 2,
-		      (z0 + z1) / 2 );
-	  candidatePts.push_back(p);
-	}
-
-	else if( pointDensity1 == 2 ) 
-	{
-	  avtVector p0(lineStart[0], lineStart[1], z0 );
-	  candidatePts.push_back(p0);
-
-	  avtVector p1(lineEnd[0], lineEnd[1], z1);
-	  candidatePts.push_back(p1);
-	}
-
-	else
-	{
-	  vtkLineSource* line = vtkLineSource::New();
-
-	  line->SetPoint1(lineStart[0], lineStart[1], z0);
-	  line->SetPoint2(lineEnd[0], lineEnd[1], z1);
-	  line->SetResolution(pointDensity1-1); // Resolution is segments
-	  line->Update();
-	  
-	  for (int i = 0; i< line->GetOutput()->GetNumberOfPoints(); i++)
-	  {
+        for (int i = 0; i< line->GetOutput()->GetNumberOfPoints(); i++)
+        {
 	    double *pt = line->GetOutput()->GetPoint(i);
             avtVector p(pt[0], pt[1], pt[2]);
             candidatePts.push_back(p);
-	  }
-
-	  line->Delete();
-	}
+        }
+        line->Delete();
     }
     else if(sourceType == STREAMLINE_SOURCE_PLANE)
     {
@@ -2313,7 +2332,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         plane->SetPoint1(P2.x, P2.y, P2.z);
         plane->SetNormal(N.x, N.y, N.z);
         plane->SetCenter(O.x, O.y, O.z);
-        plane->SetResolution(pointDensity1-1,pointDensity2-1);
+        plane->SetResolution(pointDensity1,pointDensity2);
         plane->Update();
 
         for (int i = 0; i< plane->GetOutput()->GetNumberOfPoints(); i++)

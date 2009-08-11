@@ -16,7 +16,7 @@
         Distance
         Time
         Steps
-	Puctures
+        Intersections
       </Enum>
       <Enum name="ColorBy">
         OriginalValue
@@ -169,6 +169,16 @@
       </Field>
       <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
         ColorBySingleColor
+      </Field>
+      <Field name="intersectPlaneOrigin" label="intersectPlaneOrigin" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="intersectPlaneNormal" label="intersectPlaneNormal" type="doubleArray" length="3">
+        1.000000
+        0.000000
+        0.000000
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
