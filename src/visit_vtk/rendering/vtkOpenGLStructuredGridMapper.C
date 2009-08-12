@@ -48,7 +48,7 @@ static const int dlSize = 8192;
 #ifndef VTK_IMPLEMENT_MESA_CXX
   #include <visit-config.h>
   #ifdef HAVE_LIBGLEW
-    #include <GL/glew.h>
+    #include <avtGLEWInitializer.h>
   #endif
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
@@ -145,6 +145,11 @@ vtkOpenGLStructuredGridMapper::~vtkOpenGLStructuredGridMapper()
 // ****************************************************************************
 // Release the graphics resources used by this mapper.  In this case, release
 // the display list if any.
+//
+// Modifications:
+//   Brad Whitlock, Wed Aug 12 15:13:22 PDT 2009
+//   Added avt::glew::initialize to prevent a crash.
+//
 // ****************************************************************************
 
 void vtkOpenGLStructuredGridMapper::ReleaseGraphicsResources(vtkWindow *win)
@@ -209,6 +214,10 @@ void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 
 // make sure our window is current
   ren->GetRenderWindow()->MakeCurrent();
+
+#ifdef HAVE_LIBGLEW
+  avt::glew::initialize();
+#endif
 
   clipPlanes = this->ClippingPlanes;
 
