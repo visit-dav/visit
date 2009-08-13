@@ -7,7 +7,7 @@ import urllib
 from PyQt4 import QtCore,QtGui
 
 # TODO take a command line argument to replace the "09Aug12" part.
-davinci_serial="http://portal.nersc.gov/project/visit/09Aug12/davinci_serial"
+davinci_serial="http://portal.nersc.gov/project/visit/09Aug13/davinci_serial"
 
 class MW(QtGui.QMainWindow):
   def __init__(self, parent=None):
@@ -18,16 +18,31 @@ def current_from_baseline(path):
   splitpath = path.split('/', 1)
   return os.path.join("current/", splitpath[1])
 
+def in_svn_repo():
+  a = subprocess.Popen("svn stat", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  result = a.communicate()[0]
+  if result.find('not a working copy') >= 0:
+    return False
+  return True
+
 # TODO: take a command line argument to dictate whether we care about the
 # vcs_diff case.  It's certainly cheaper than having a human run through the
 # files, but it makes this function very slow.
-def investigate(fileA, fileB):
+def investigate_git(fileA, fileB):
   """Indicate whether or not an image is worth investigating more deeply."""
   # if the VCS says there the file is modified locally, say there aren't
   # differences.  This covers the case that the file has been rebaselined, but
   # only here -- davinci doesn't know yet!
   vcs_diff = subprocess.call(["git", "diff", "--quiet", fileA])
   if vcs_diff == 1:
+    print fileA, " is locally modified, ignoring."
+    return False
+
+def investigate_svn(fileA, fileB):
+  """Indicate whether or not an image is worth investigating more deeply."""
+  a = subprocess.Popen("svn stat %s"%fileA, shell=True, stdout=subprocess.PIPE)
+  diff = a.communicate()[0]
+  if diff != '':
     print fileA, " is locally modified, ignoring."
     return False
 
@@ -167,6 +182,13 @@ class Layout(QtGui.QWidget):
     """Figures out the next set of images to display.  Downloads 'current' and
        'diff' results from davinci.  Sets filenames corresponding to baseline,
        current and diff images."""
+
+    # use the right investigate routine
+    if in_svn_repo():
+      investigate = investigate_svn
+    else:
+      investigate = investigate_git
+
     if self._baseline is None:  # first call, build list.
       self._images = []
       print "Building initial file list... please wait."
