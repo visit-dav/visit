@@ -43,8 +43,7 @@
 #       You must have:
 #          Qt		qt-x11-opensource-4.4.3.tar.gz
 #                    or qt-mac-opensource-4.4.3.tar.gz (Mac)
-#          Mesa         MesaLib-6.4.2.tar.gz
-#                    or Mesa-5.0-mangled.tar.gz (Linux)
+#          Mesa         MesaLib-7.5.tar.gz
 #          Python	Python-2.5.tgz
 #          VTK		vtk-5.0.0c.tar.gz
 #          CMake	cmake-2.4.5.tar.gz
@@ -2726,11 +2725,50 @@ function apply_mesa_642_patch
    return 0
 }
 
+function apply_mesa_75_patch
+{
+   patch -p0 <<\EOF
+diff -p -r Mesa-7.5.orig/src/mesa/main/config.h Mesa-7.5/src/mesa/main/config.h
+*** Mesa-7.5.orig/src/mesa/main/config.h	2009-06-26 18:41:04.000000000 -0400
+--- Mesa-7.5/src/mesa/main/config.h	2009-08-13 16:38:09.000000000 -0400
+***************
+*** 138,146 ****
+  /** 
+   * Maximum viewport/image width. Must accomodate all texture sizes too. 
+   */
+! #define MAX_WIDTH 4096
+  /** Maximum viewport/image height */
+! #define MAX_HEIGHT 4096
+  
+  /** Maxmimum size for CVA.  May be overridden by the drivers.  */
+  #define MAX_ARRAY_LOCK_SIZE 3000
+--- 138,146 ----
+  /** 
+   * Maximum viewport/image width. Must accomodate all texture sizes too. 
+   */
+! #define MAX_WIDTH 16384
+  /** Maximum viewport/image height */
+! #define MAX_HEIGHT 16384
+  
+  /** Maxmimum size for CVA.  May be overridden by the drivers.  */
+  #define MAX_ARRAY_LOCK_SIZE 3000
+EOF
+   if [[ $? != 0 ]] ; then
+       warn "Unable to apply patch to Mesa 7.5."
+       return 1
+   fi
+
+   return 0
+}
+
 function apply_mesa_patch
 {
    info "Patching Mesa . . ."
    if [[ ${MESA_VERSION} == 6.4.2 ]] ; then
       apply_mesa_642_patch
+   fi
+   if [[ ${MESA_VERSION} == 7.5 ]] ; then
+      apply_mesa_75_patch
    fi
 
    return 0
