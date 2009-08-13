@@ -71,6 +71,7 @@
 
 using std::string;
 using std::ostringstream;
+using std::vector;
 
 //
 // Static members
@@ -941,7 +942,11 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    I changed the naming scheme so the numbers come first, making the
 //    resulting files sorted by default in "ls" results.
 //
-// **************************************************************************** 
+//    Cyrus Harrison, Thu Aug 13 08:06:21 PDT 2009
+//    Changed 'avt' prefixed array names to a use a "dump_internal_" prefix
+//    for dump output.
+//
+// ****************************************************************************
 
 const char *
 avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
@@ -950,20 +955,20 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     {
         return "EMPTY DATA SET";
     }
-    
+
     const int strsize = 4096;
     static char str[strsize];
 
     ostringstream oss;
-    
+
     bool dataset_dump = avtDebugDumpOptions::DatasetDumpEnabled();
     string vtk_fname ="";
-    
+
     if (dataset_dump)
     {
         int  i;
         static int times = 0;
-        
+
         // Construct a data set where all mis-sized arrays are added as
         // field data.  This prevents array bounds reads.  It is also
         // necessary for the way we do singletons with constant expressions.
@@ -989,9 +994,65 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
                 newDS->GetFieldData()->AddArray(arr);
             }
         }
-        
+        int nfield = newDS->GetFieldData()->GetNumberOfArrays();
+        // rename internal avt prefix("avt") to "dump_avt"
+
+        vector<string> orig_names;
+        vector<string> dump_names;
+
+        // loop over field, point, and cell arrays
+
+        for(int i = 0; i < nfield; i++)
+        {
+            vtkDataArray *arr = newDS->GetFieldData()->GetArray(i);
+            string cur_name = arr->GetName();
+            string dmp_name = cur_name;
+            orig_names.push_back(cur_name);
+            if( cur_name.find("avt") == 0 )
+            {
+                dmp_name = "dump_internal_" + dmp_name.substr(3);
+                arr->SetName(dmp_name.c_str());
+                dump_names.push_back(dmp_name);
+            }
+            else
+                dump_names.push_back(cur_name);
+        }
+
+        for(int i = 0; i < npt; i++)
+        {
+            vtkDataArray *arr = newDS->GetPointData()->GetArray(i);
+            string cur_name = arr->GetName();
+            string dmp_name = cur_name;
+            orig_names.push_back(cur_name);
+            if( cur_name.find("avt") == 0 )
+            {
+                dmp_name = "dump_internal_" + dmp_name.substr(3);
+                arr->SetName(dmp_name.c_str());
+                dump_names.push_back(dmp_name);
+            }
+            else
+                dump_names.push_back(cur_name);
+        }
+
+        for(int i = 0; i < ncell; i++)
+        {
+            vtkDataArray *arr = newDS->GetCellData()->GetArray(i);
+            string cur_name = arr->GetName();
+            string dmp_name = cur_name;
+            orig_names.push_back(cur_name);
+            if( cur_name.find("avt") == 0 )
+            {
+                dmp_name = "dump_internal_" + dmp_name.substr(3);
+                arr->SetName(dmp_name.c_str());
+                dump_names.push_back(dmp_name);
+            }
+            else
+                dump_names.push_back(cur_name);
+        }
+
+
         const string &dump_dir = avtDebugDumpOptions::GetDumpDirectory();
-        
+
         ostringstream oss_vtk_fname;
         if (PAR_Size() > 1)
         {
@@ -1014,12 +1075,35 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         times++;
         vtk_fname = oss_vtk_fname.str();
         string vtk_fpath = dump_dir + vtk_fname;
-        
+
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
         wrtr->SetInput(newDS);
         wrtr->SetFileName(vtk_fpath.c_str());
         wrtr->Write();
         wrtr->Delete();
+
+
+        // change back any array names we altered
+
+        int idx = 0;
+        for(int i = 0; i < nfield; i++, idx++)
+        {
+            if(orig_names[idx] != dump_names[idx])
+                newDS->GetFieldData()->GetArray(i)->SetName(orig_names[idx].c_str());
+        }
+
+        for(int i = 0; i < npt; i++, idx++)
+        {
+            if(orig_names[idx] != dump_names[idx])
+                newDS->GetPointData()->GetArray(i)->SetName(orig_names[idx].c_str());
+        }
+
+        for(int i = 0; i < ncell; i++, idx++)
+        {
+            if(orig_names[idx] != dump_names[idx])
+                newDS->GetCellData()->GetArray(i)->SetName(orig_names[idx].c_str());
+        }
+
         newDS->Delete();
     }
 
@@ -1059,7 +1143,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         const string &dump_dir = avtDebugDumpOptions::GetDumpDirectory();
         oss << "<a href=\"" << (dump_dir + vtk_fname) << "\">" << vtk_fname << "</a><br> " << mesh_type << " ";
     }
-    
+
     if (dims[0] > 0)
     {
         oss << "ncells = " << nzones << " npts = " <<  nnodes 
@@ -1069,9 +1153,9 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     {
         oss << "ncells = " << nzones << " npts = " <<  nnodes;
     }
-    
+
     oss << "<br>";
-   
+
     if (ptcnt >= 0)
     {
         oss << "Refs to mesh = " << asVTK->GetReferenceCount() 
@@ -1153,7 +1237,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             oss << "</ul>";
         }
     }
-    
+
     SNPRINTF(str,strsize,oss.str().c_str());
     return str;
 }
