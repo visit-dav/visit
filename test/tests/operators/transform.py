@@ -38,6 +38,10 @@
 #    Allow the clipped vector plot to show all vectors (even ones not from
 #    from original cells/nodes) to match the old behavior.
 #
+#    Jeremy Meredith, Thu Aug 13 13:34:42 EDT 2009
+#    Made transform04 test be explicit about the coord sys it chooses.
+#    Made transform05 use Cyl instead of Spher coords; it's a 2D problem!
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -119,6 +123,8 @@ AddPlot("Contour", "d")
 AddOperator("Transform")
 trans = TransformAttributes() # Get reset version.
 trans.transformType = trans.Coordinate
+trans.inputCoordSys = trans.Cartesian
+trans.outputCoordSys = trans.Spherical
 SetOperatorOptions(trans)
 DrawPlots()
 SetViewExtentsType("actual")
@@ -131,6 +137,9 @@ DeleteAllPlots()
 OpenDatabase("../data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("Transform")
+trans.transformType = trans.Coordinate
+trans.inputCoordSys = trans.Cartesian
+trans.outputCoordSys = trans.Cylindrical
 SetOperatorOptions(trans)
 DrawPlots()
 Test("ops_transform05")
