@@ -812,6 +812,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int elNum)
 //    Kathleen Bonnell, Fri Jun  9 09:59:49 PDT 2006 
 //    Fix UMR.
 //
+//    Cyrus Harrison, Fri Aug 14 11:10:03 PDT 2009
+//    Expanded use of 'Treat As ASCII' to handle label string case, removed
+//    use of avtLabelVariableSize.
+
 // ****************************************************************************
 
 void
@@ -884,16 +888,15 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 foundData = false;
             }
         }
-
+    
         bool labelData = false;
         if (foundData)
         {
             nComponents = varArray->GetNumberOfComponents(); 
 
-            // Determine if the data is a label. All label variables have
-            // this marker in their field data.
+            // Determine if the data is a label.
             labelData = (nComponents > 1) && 
-                   (ds->GetFieldData()->GetArray("avtLabelVariableSize") != 0);
+                        data.GetTreatAsASCII(vName.c_str());
 
             temp = new double[nComponents];
             intVector globalIncEl = pickAtts.GetGlobalIncidentElements();
