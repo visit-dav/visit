@@ -518,9 +518,6 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //    Hank Childs, Wed Dec 31 13:47:37 PST 2008
 //    Renamed ResampleAtts to InternalResampleAtts.
 //
-//    Tom Fogal, Sun Jul 26 15:21:25 MDT 2009
-//    Enable distributed resampling.
-//
 // ****************************************************************************
 
 avtDataObject_p
@@ -557,7 +554,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     else
     {
         InternalResampleAttributes resampleAtts;
-        resampleAtts.SetDistributedResample(true);
+        resampleAtts.SetDistributedResample(false);
         resampleAtts.SetTargetVal(atts.GetResampleTarget());
         resampleAtts.SetUseTargetVal(true);
         resampleAtts.SetPrefersPowersOfTwo(
