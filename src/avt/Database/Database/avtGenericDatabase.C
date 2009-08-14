@@ -1998,6 +1998,11 @@ avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
 //
 //    Mark C. Miller, Thu Aug 10 11:36:57 PDT 2006
 //    Fixed leak of lvs
+//
+//    Cyrus Harrison, Fri Aug 14 11:10:03 PDT 2009
+//    Removed creation of lvs, it is no longer necessary to communicate
+//    that we have a label string.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2048,17 +2053,6 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
     {
         mesh->GetCellData()->SetScalars(var);
     }
-
-    //
-    // Add some field data that indicates this dataset is a set of labels.
-    //
-    vtkUnsignedIntArray *lvs = vtkUnsignedIntArray::New();
-    lvs->SetNumberOfTuples(1);
-    lvs->SetName("avtLabelVariableSize");
-    unsigned int *uintptr = (unsigned int *)lvs->GetVoidPointer(0);
-    *uintptr = var->GetNumberOfComponents();
-    mesh->GetFieldData()->AddArray(lvs);
-    lvs->Delete();
 
     return mesh;
 }

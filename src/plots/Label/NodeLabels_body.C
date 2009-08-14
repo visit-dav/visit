@@ -48,6 +48,10 @@
 //    Brad Whitlock, Thu Dec 13 15:10:54 PST 2007
 //    Added support for node origin.
 //
+//    Cyrus Harrison, Fri Aug 14 11:10:03 PDT 2009
+//    Expanded use of 'Treat As ASCII' to handle label string case, removed
+//    use of avtLabelVariableSize.
+//
 // ****************************************************************************
 
 
@@ -106,11 +110,23 @@
                    << ", while the #points is: " << npts << endl;
         }
 
-        if(input->GetFieldData()->GetArray("avtLabelVariableSize") != 0)
+        if(treatAsASCII)
         {
-debug3 << "Labelling nodes with label data" << endl;
+            debug3 << "Labelling nodes with label data" << endl;
+
             int labelLength = data->GetNumberOfComponents();
-            if(data->IsA("vtkUnsignedCharArray"))
+
+            if(labelLength == 1)
+            {
+                for(vtkIdType id = 0; id < npts; ++id)
+                {
+                    BEGIN_LABEL
+                        unsigned char scalarVal = (unsigned char)data->GetTuple1(id);
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%c", scalarVal);
+                    END_LABEL
+                }
+            }
+            else if(data->IsA("vtkUnsignedCharArray"))
             {
                 unsigned char *label = (unsigned char *)data->GetVoidPointer(0);
                 for(vtkIdType id = 0; id < npts; ++id)
@@ -145,26 +161,13 @@ debug3 << "*** WARNING - VisIt turned the Label data into floats. That is not ef
         }
         else if(data->GetNumberOfComponents() == 1)
         {
-debug3 << "Labelling nodes with scalar data" << endl;
-            if(treatAsASCII)
+            debug3 << "Labelling nodes with scalar data" << endl;
+            for(vtkIdType id = 0; id < npts; ++id)
             {
-                for(vtkIdType id = 0; id < npts; ++id)
-                {
-                    BEGIN_LABEL
-                        unsigned char scalarVal = (unsigned char)data->GetTuple1(id);
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%c", scalarVal);
-                    END_LABEL
-                }
-            }
-            else
-            {
-                for(vtkIdType id = 0; id < npts; ++id)
-                {
-                    BEGIN_LABEL
-                        double scalarVal = data->GetTuple1(id);
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, atts.GetFormatTemplate().c_str(), scalarVal);
-                    END_LABEL
-                }
+                BEGIN_LABEL
+                    double scalarVal = data->GetTuple1(id);
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, atts.GetFormatTemplate().c_str(), scalarVal);
+                END_LABEL
             }
         }
         else if(data->GetNumberOfComponents() == 2)

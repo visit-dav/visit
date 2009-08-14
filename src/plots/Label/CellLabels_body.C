@@ -47,6 +47,10 @@
 //    Brad Whitlock, Thu Dec 13 15:10:26 PST 2007
 //    Added support for cell origin.
 //
+//    Cyrus Harrison, Fri Aug 14 11:10:03 PDT 2009
+//    Expanded use of 'Treat As ASCII' to handle label string case, removed
+//    use of avtLabelVariableSize.
+
 // ****************************************************************************
 
 //
@@ -123,11 +127,22 @@
                  << ", while the #cells is: " << nCells << endl;
         }
 
-        if(input->GetFieldData()->GetArray("avtLabelVariableSize") != 0)
+        if(treatAsASCII)
         {
             debug3 << "Labelling cells with label data" << endl;
             int labelLength = data->GetNumberOfComponents();
-            if(data->IsA("vtkUnsignedCharArray"))
+
+            if(labelLength == 1)  // handle the single char case
+            {
+                for(vtkIdType id = 0; id < nCells; id += skipIncrement)
+                {
+                    BEGIN_LABEL
+                        unsigned char scalarVal = (unsigned char)data->GetTuple1(id);
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%c", scalarVal);
+                    END_LABEL
+                }
+            }
+            else if(data->IsA("vtkUnsignedCharArray"))
             {
                 unsigned char *label = (unsigned char *)data->GetVoidPointer(0);
                 for(vtkIdType id = 0; id < nCells; id += skipIncrement)
@@ -164,27 +179,13 @@
         {
             debug3 << "Labelling cells with scalar data" << endl;
 
-            if(treatAsASCII)
+            for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
-                for(vtkIdType id = 0; id < nCells; id += skipIncrement)
-                {
-                    // float *vert = cellCenters->GetTuple3(id);
-                    BEGIN_LABEL
-                        unsigned char scalarVal = (unsigned char)data->GetTuple1(id);
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%c", scalarVal);
-                    END_LABEL
-                }
-            }
-            else
-            {
-                for(vtkIdType id = 0; id < nCells; id += skipIncrement)
-                {
-                    // float *vert = cellCenters->GetTuple3(id);
-                    BEGIN_LABEL
-                        float scalarVal = data->GetTuple1(id);
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, atts.GetFormatTemplate().c_str(), scalarVal);
-                    END_LABEL
-                }
+                // float *vert = cellCenters->GetTuple3(id);
+                BEGIN_LABEL
+                    float scalarVal = data->GetTuple1(id);
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, atts.GetFormatTemplate().c_str(), scalarVal);
+                END_LABEL
             }
         }
         else if(data->GetNumberOfComponents() == 2)
