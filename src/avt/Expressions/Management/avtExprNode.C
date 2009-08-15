@@ -50,6 +50,7 @@
 
 #include <avtApplyDDFExpression.h>
 #include <avtApplyEnumerationExpression.h>
+#include <avtApplyMapExpression.h>
 #include <avtArrayComposeExpression.h>
 #include <avtArrayComposeWithBinsExpression.h>
 #include <avtArrayDecomposeExpression.h>
@@ -447,6 +448,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    I separated out lots of related functions into methods in another file
 //    to make this file easier to compile.
 //
+//    Cyrus Harrison, Tue Aug 11 10:34:08 PDT 2009
+//    Added the "map" expression.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -474,6 +478,8 @@ avtFunctionExpr::CreateFilters(string functionName)
 
     if (functionName == "enumerate")
         return new avtApplyEnumerationExpression();
+    if (functionName == "map")
+        return new avtApplyMapExpression();
     if (functionName == "array_compose")
         return new avtArrayComposeExpression();
     if (functionName == "array_compose_with_bins")

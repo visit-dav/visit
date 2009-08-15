@@ -283,6 +283,71 @@ ListExpr::AddListElem(ListElemExpr *e)
     elems->push_back(e);
 }
 
+//    Cyrus Harrison, Mon Aug 10 10:14:53 PDT 2009
+//    Added helpers for use in processing argments.
+//    These return true if all elements conform to
+//    the desired type (numeric, or string)
+
+bool
+ListExpr::ExtractNumericElements(vector<double> &output)
+{
+    bool all_numeric = true;
+    double val = 0.0;
+    output.clear();
+
+    std::vector<ListElemExpr*> *elems = GetElems();
+
+    for (int i = 0 ; i < elems->size() ; i++)
+    {
+        ExprNode *item = (*elems)[i]->GetItem();
+        if (item->GetTypeName() == "FloatConst")
+        {
+            ConstExpr *c = dynamic_cast<ConstExpr*>(item);
+            val = (double) dynamic_cast<FloatConstExpr*>(c)->GetValue();
+            output.push_back(val);
+        }
+        else if (item->GetTypeName() == "IntegerConst")
+        {
+            ConstExpr *c = dynamic_cast<ConstExpr*>(item);
+            val = (double) dynamic_cast<IntegerConstExpr*>(c)->GetValue();
+            output.push_back(val);
+        }
+        else
+        {
+            all_numeric = false;
+        }
+    }
+
+    return all_numeric;
+}
+
+bool
+ListExpr::ExtractStringElements(vector<std::string> &output)
+{
+    bool all_string = true;
+    output.clear();
+
+    std::vector<ListElemExpr*> *elems = GetElems();
+
+    for (int i = 0 ; i < elems->size() ; i++)
+    {
+        ExprNode *item = (*elems)[i]->GetItem();
+        if (item->GetTypeName() == "StringConst")
+        {
+            ConstExpr *c = dynamic_cast<ConstExpr*>(item);
+            output.push_back(dynamic_cast<StringConstExpr*>(c)->GetValue());
+        }
+        else
+        {
+            all_string = false;
+        }
+    }
+
+    return all_string;
+}
+
+
+
 //    Jeremy Meredith, Thu Aug  7 16:21:24 EDT 2008
 //    Use %ld for longs.
 void
