@@ -111,6 +111,9 @@ class Pos;
 //    Jeremy Meredith, Mon Dec 15 12:50:38 EST 2008
 //    Added GetOp to MathExpr.
 //
+//    Cyrus Harrison, Fri Aug 14 15:22:43 PDT 2009
+//    Added helpers for processing numeric & string lists.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -295,6 +298,10 @@ class EXPR_API ListExpr : public ExprParseTreeNode
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "List"; }
     std::vector<ListElemExpr*> *GetElems(void) { return elems; }
+
+    bool  ExtractNumericElements(std::vector<double> &output);
+    bool  ExtractStringElements(std::vector<std::string> &output);
+
     virtual std::vector<std::string> GetVarLeaves();
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
   protected:
