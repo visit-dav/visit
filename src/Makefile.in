@@ -171,6 +171,12 @@
 #    Added ability to override env-make var collision test and changed its
 #    warning message to indicate that.
 #
+#    Mark C. Miller, Mon Aug 17 14:07:30 PDT 2009
+#    Made env-make var collision check sensitive to whether or not make is
+#    being run from inside build_visit. If so, BUILD_VISIT_ENV will have
+#    been defined by build_visit and it will contain the user's env. just
+#    after starting build_visit but before build_visit starts adding things
+#    to the user's environment.
 ##############################################################################
 
 @SET_MAKE@
@@ -238,7 +244,11 @@ check-make-and-env-vars:
 	if test -z "$$isdbg" -a -z "$(VISIT_NOCKENV)"; then \
 	    echo "Checking for possible collisions between environment"; \
 	    echo -n "and VisIt's Make variables..."; \
-	    env | cut -d'=' -f1 | sort | uniq > env_vars.txt; \
+	    if test -z "$(BUILD_VISIT_ENV)"; then \
+	        env | cut -d'=' -f1 | sort | uniq | grep . > env_vars.txt; \
+            else \
+                echo $(BUILD_VISIT_ENV) | tr ' ' '\n' | grep . > env_vars.txt; \
+            fi; \
 	    os=$$(uname -s); \
 	    if test "$$os" = "Darwin"; then \
 	        find . -name .svn -prune -o -name Makefile | grep -v .svn | xargs -n 1 -I '{}' cat '{}' | tr ' ' '\n'| grep '$$([A-Z_]*)' | sed -e 's#.*$$(\(.*\)).*#\1#' | sort | uniq > make_vars.txt; \
@@ -254,11 +264,12 @@ check-make-and-env-vars:
 	        echo "------------------------------------------------------------"; \
 	        echo $$em_vars | tr ' ' '\n'; \
 	        echo "------------------------------------------------------------"; \
-                echo "Please temporarily remove these variables from your enviornment"; \
+                echo "Please temporarily remove these variables from your environment"; \
 	        echo "using unsetenv (csh) or unset (sh) before proceeding. Or,"; \
 	        echo "you may instead and at your own risk, override this error by"; \
-                echo "adding 'VISIT_NOCKENV=1' to your make command line or set."; \
-                echo "set VISIT_NOCKENV to 1 in your enviornment."; \
+                echo "adding 'VISIT_NOCKENV=1' to your make command line"; \
+                echo "(e.g. 'make VISIT_NOCKENV=1 ...') or set VISIT_NOCKENV to 1";\
+                echo "in your environment."; \
 	        exit 1; \
 	    else \
 	        echo "OK"; \

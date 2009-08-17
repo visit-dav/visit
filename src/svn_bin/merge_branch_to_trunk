@@ -25,6 +25,9 @@
 #    Hank Childs, Sun Aug  3 12:18:05 PDT 2008
 #    Allow merging from other developer's branches.
 #
+#    Mark C. Miller, Mon Aug 17 15:18:30 PDT 2009
+#    Made it give a useful error message if it appears to have been
+#    invoked for an RC merge.
 # *****************************************************************************
 
 issueHelp="no"
@@ -115,9 +118,20 @@ if [[ "$issueHelp" != "yes" ]] ; then
    BRANCH=${VISIT_SVN_BRANCHES}/${user}/${BRANCHNAME}${ROOTPATH}
    svn ls $BRANCH 2>/dev/null > /dev/null
    if [[ $? != 0 ]] ; then
-      echo "The branch $1 does not appear to exist."
-      echo "(Looking for it at $BRANCH)"
-      echo "Try using the script ls_branches to locate your branch."
+      svn ls ${VISIT_SVN_BRANCHES}/${BRANCHNAME}${ROOTPATH} 2>/dev/null > /dev/null
+      if [[ $? == 0 ]] ; then
+          echo "Although the branch $1 does not appear to exist in"
+          echo "${VISIT_SVN_BRANCHES}/${user}"
+          echo "it does appear to exist in"
+          echo "${VISIT_SVN_BRANCHES}"
+          echo "If you are trying to merge a release candidate (RC) branch,"
+          echo "remember to use the merge_rctrunk_to_trunk script and not the"
+          echo "merge_branch_to_trunk script."
+      else 
+          echo "The branch $1 does not appear to exist."
+          echo "(Looking for it at $BRANCH)"
+          echo "Try using the script ls_branches to locate your branch."
+      fi
       issueHelp="yes"
    fi
 fi
