@@ -248,40 +248,30 @@ fi
 #
 # Build on up, both serial and parallel versions.
 #
-rm -f up
-cat <<EOF > up
+rm -f up32
+cat <<EOF > up32
 #!/bin/sh
 PATH=/usr/local/bin:\$PATH
 if test ! -d /p/gup1/$user ; then
    mkdir /p/gup1/$user
 fi
-if test ! -d /p/gup1/$user/up ; then
-   mkdir /p/gup1/$user/up
+if test ! -d /p/gup1/$user/up32 ; then
+   mkdir /p/gup1/$user/up32
 fi
-rm -rf /p/gup1/$user/up/visitbuild
-mkdir /p/gup1/$user/up/visitbuild
-mv up_$dist.tar.gz /p/gup1/$user/up/visitbuild/$dist.tar.gz
-cd /p/gup1/$user/up/visitbuild
+rm -rf /p/gup1/$user/up32/visitbuild
+mkdir /p/gup1/$user/up32/visitbuild
+mv up32_$dist.tar.gz /p/gup1/$user/up32/visitbuild/$dist.tar.gz
+cd /p/gup1/$user/up32/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-mv $dist ${dist}_32
-cd ${dist}_32/src
+cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 OBJECT_MODE=32
 export OBJECT_MODE
 env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/up041_32.conf --enable-visitmodule >> ../../buildlog 2>&1
-gmake -j 4 >> ../../buildlog 2>&1
+gmake -j 3 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ../..
-cd ../..
-gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
-cd $dist/src
-OBJECT_MODE=64
-export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
-gmake -j 4 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
-mv visit\$ver2.aix64.tar.gz ../..
 cd ../..
 echo "        build of visit on up"           > resultlog 2>&1
 echo "       ----------------------"          >> resultlog 2>&1
@@ -290,12 +280,44 @@ ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "            32 bit build"               >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls ${dist}_32/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls ${dist}_32/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls ${dist}_32/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls ${dist}/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls ${dist}/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls ${dist}/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls ${dist}_32/src/plugins/databases/libI* | sed "s/${dist}_32\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls ${dist}/src/plugins/databases/libI* | sed "s/${dist}\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): up32" $emailName < resultlog
+EOF
+
+rm -f up64
+cat <<EOF > up64
+#!/bin/sh
+PATH=/usr/local/bin:\$PATH
+if test ! -d /p/gup1/$user ; then
+   mkdir /p/gup1/$user
+fi
+if test ! -d /p/gup1/$user/up64 ; then
+   mkdir /p/gup1/$user/up64
+fi
+rm -rf /p/gup1/$user/up64/visitbuild
+mkdir /p/gup1/$user/up64/visitbuild
+mv up64_$dist.tar.gz /p/gup1/$user/up64/visitbuild/$dist.tar.gz
+cd /p/gup1/$user/up64/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+OBJECT_MODE=64
+export OBJECT_MODE
+env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
+gmake -j 3 >> ../../buildlog 2>&1
+svn_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
+mv visit\$ver2.aix64.tar.gz ../..
+cd ../..
+echo "        build of visit on up"           > resultlog 2>&1
+echo "       ----------------------"          >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "            64 bit build"               >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -305,7 +327,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): up" $emailName < resultlog
+mail  -s "VisIt build ($dist): up64" $emailName < resultlog
 EOF
 
 if [ $up = true ]
@@ -313,9 +335,12 @@ then
    if [ $test = no ]
    then
       echo "Building on up"
-      scp up up:up_buildit
-      scp $dist.tar.gz up:up_$dist.tar.gz
-      ssh up "chmod 750 up_buildit;./up_buildit" &
+      scp up32 up:up32_buildit
+      scp up64 up:up64_buildit
+      scp $dist.tar.gz up:up32_$dist.tar.gz
+      scp $dist.tar.gz up:up64_$dist.tar.gz
+      ssh up "chmod 750 up32_buildit;./up32_buildit" &
+      ssh up "chmod 750 up64_buildit;./up64_buildit" &
    fi
 fi
 
@@ -598,5 +623,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth up yana alastor xchem davinci ellipse
+   rm -f hoth up32 up64 yana alastor xchem davinci ellipse
 fi
