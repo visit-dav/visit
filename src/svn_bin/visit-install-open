@@ -235,8 +235,8 @@ if [ $up = true ]
 then
    if [ $test = no ]
    then
-      scp up:/p/gup1/$user/up/visitbuild/visit$ver2.aix.tar.gz .
-      scp up:/p/gup1/$user/up/visitbuild/visit$ver2.aix64.tar.gz .
+      scp up:/p/gup1/$user/up32/visitbuild/visit$ver2.aix.tar.gz .
+      scp up:/p/gup1/$user/up64/visitbuild/visit$ver2.aix64.tar.gz .
       scp visit$ver2.aix.tar.gz yana:
       scp visit$ver2.aix64.tar.gz yana:
       scp visit-install yana:
