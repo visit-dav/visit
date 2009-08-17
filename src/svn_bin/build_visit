@@ -674,6 +674,10 @@
 #     Fixed a typo w/ MESA_URL - it was providing the full path for the sourceforge
 #     download, and because of this build_visit was putting the tarball in the path twice.
 #
+#     Mark C. Miller, Mon Aug 17 14:08:38 PDT 2009
+#     Added BUILD_VISIT_ENV to facilitate correct behavior of top-level
+#     Makefile's env-make var collision check when it is being run from within
+#     build_visit.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -684,8 +688,13 @@
 # etc.  Note that this script is really only known to work with gcc.          #
 # *************************************************************************** #
 
+# This env. variable is NOT to be overriden by user. It is intended to
+# contain user's env. just prior to running build_visit.
+export BUILD_VISIT_ENV=$(env | cut -d'=' -f1 | sort | uniq)
+
 # Can cause problems in some build systems.
 unset CDPATH
+
 export OPSYS=${OPSYS:-$(uname -s)}
 export PROC=${PROC:-$(uname -p)}
 export REL=${REL:-$(uname -r)}
