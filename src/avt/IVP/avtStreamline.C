@@ -67,6 +67,9 @@
 //
 //   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
 //   Add new termination criterion: Number of intersections with an object.
+//
+//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
+//   Don't record intersection points, just count them.
 //  
 // ****************************************************************************
 
@@ -78,6 +81,7 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
     _p0 = p_start;
     id = ID;
     intersectionsSet = false;
+    numIntersections = 0;
     
     _ivpSolver = model->Clone();
     _ivpSolver->Reset(_t0, _p0);
@@ -98,6 +102,9 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
 //   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
 //   Add new termination criterion: Number of intersections with an object.
 //
+//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
+//   Don't record intersection points, just count them.
+//
 // ****************************************************************************
 
 avtStreamline::avtStreamline() :
@@ -105,6 +112,7 @@ avtStreamline::avtStreamline() :
 {
     intersectionsSet = false;
     _ivpSolver = NULL;
+    numIntersections = 0;
 }
 
 
@@ -568,6 +576,10 @@ avtStreamline::PtEnd(avtVec &end)
 //  Programmer: Dave Pugmire
 //  Creation:   August 10, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
+//   Store plane equation.
 //
 // ****************************************************************************
 
@@ -579,8 +591,14 @@ avtStreamline::SetIntersectionObject(vtkObject *obj)
         EXCEPTION1(ImproperUseException, "Only plane supported.");
 
     intersectionsSet = true;
-    intersectPlanePt = avtVector(((vtkPlane *)obj)->GetOrigin());
-    intersectPlaneNorm = avtVector(((vtkPlane *)obj)->GetNormal());
+    avtVector intersectPlanePt = avtVector(((vtkPlane *)obj)->GetOrigin());
+    avtVector intersectPlaneNorm = avtVector(((vtkPlane *)obj)->GetNormal());
+
+    intersectPlaneNorm.normalize();
+    intersectPlaneEq[0] = intersectPlaneNorm.x;
+    intersectPlaneEq[1] = intersectPlaneNorm.y;
+    intersectPlaneEq[2] = intersectPlaneNorm.z;
+    intersectPlaneEq[3] = intersectPlanePt.length();
 }
 
 // ****************************************************************************
@@ -592,6 +610,10 @@ avtStreamline::SetIntersectionObject(vtkObject *obj)
 //  Programmer: Dave Pugmire
 //  Creation:   August 10, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
+//   Don't record intersection points, just count them.
 //
 // ****************************************************************************
 
@@ -606,20 +628,12 @@ avtStreamline::HandleIntersections(bool forward,
         return;
     
     avtIVPStep *step0 = (forward ? _steps.back() : _steps.front());
-    double p0[3] = {step0->front().values()[0],
-                    step0->front().values()[1],
-                    step0->front().values()[2]};
-    double p1[3] = {step->front().values()[0],
-                    step->front().values()[1],
-                    step->front().values()[2]};
-    
-    double x[3];
-    if (IntersectPlane(p0, p1, x))
+
+    if (IntersectPlane(step0->front(), step->front()))
     {
-        avtVec pt(x[0], x[1], x[2]);
-        intersections.push_back(pt);
+        numIntersections++;
         if (termType == avtIVPSolver::INTERSECTIONS &&
-            (double)intersections.size() >= end)
+            numIntersections >= (int)end)
         {
             *result = avtIVPSolver::TERMINATE;
         }
@@ -636,20 +650,32 @@ avtStreamline::HandleIntersections(bool forward,
 //  Programmer: Dave Pugmire
 //  Creation:   August 10, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
+//   Don't record intersection points, just count them.
 //
 // ****************************************************************************
 
 bool
-avtStreamline::IntersectPlane(double *p0, double *p1, double *x)
+avtStreamline::IntersectPlane(const avtVec &p0, const avtVec &p1)
 {
-    //Plane defn.
-    double pt[3] = {intersectPlanePt.x,intersectPlanePt.y,intersectPlanePt.z};
-    double n[3] = {intersectPlaneNorm.x,intersectPlaneNorm.y,intersectPlaneNorm.z};
-    
-    //Intersect with plane.
-    double t = -1.0;
-    if (vtkPlane::IntersectWithLine(p0, p1, n, pt, t, x) != 0 &&
-        t >= 0.0 && t <= 1.0)
+    double distP0 = intersectPlaneEq[0] * p0.values()[0] +
+                    intersectPlaneEq[1] * p0.values()[1] +
+                    intersectPlaneEq[2] * p0.values()[2] +
+                    intersectPlaneEq[3];
+
+    double distP1 = intersectPlaneEq[0] * p1.values()[0] +
+                    intersectPlaneEq[1] * p1.values()[1] +
+                    intersectPlaneEq[2] * p1.values()[2] +
+                    intersectPlaneEq[3];
+
+#define SIGN(x) ((x) < 0.0 ? -1 : 1)
+
+    // If either point on the plane, or points on opposite
+    // sides of the plane, the line intersects.
+    if (distP0 == 0.0 || distP1 == 0.0 ||
+        SIGN(distP0) != SIGN(distP1))
     {
         return true;
     }
@@ -687,6 +713,10 @@ avtStreamline::IntersectPlane(double *p0, double *p1, double *x)
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
+//
+//    Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
+//    Don't record intersection points, just count them.
+//
 // ****************************************************************************
 
 void
@@ -696,6 +726,7 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, _p0);
     buff.io(mode, _t0);
     buff.io(mode, scalarValueType);
+    buff.io(mode, numIntersections);
 
     // R/W the steps.
     if ( mode == MemStream::WRITE )
@@ -717,28 +748,6 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
             avtIVPStep *s = new avtIVPStep;
             s->Serialize( mode, buff );
             _steps.push_back( s );
-        }
-    }
-
-    // R/W the intersections.
-    if (mode == MemStream::WRITE)
-    {
-        size_t sz = intersections.size();
-        buff.io(mode, sz);
-        std::list<avtVec>::iterator i;
-        for (i = intersections.begin(); i != intersections.end(); i++)
-            buff.io(mode, *i);
-    }
-    else
-    {
-        intersections.clear();
-        size_t sz = 0;
-        buff.io(mode, sz);
-        for (size_t i = 0; i < sz; i++)
-        {
-            avtVec v;
-            buff.io(mode, v);
-            intersections.push_back(v);
         }
     }
 

@@ -172,6 +172,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     seedTime0 = 0.0;
     pathlineNextTimeVar = "__pathlineNextTimeVar__";
     pathlineVar = "";
+    avtSLAlgorithm *slAlgo = NULL;
 
     maxStepLength = 0.;
     terminationType = avtIVPSolver::TIME;
@@ -1219,6 +1220,9 @@ avtStreamlineFilter::CheckOnDemandViability(void)
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
 //   Initialize the initial domain load count and timer.
 //
+//   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//   Add ability to restart integration of streamlines.
+//
 // ****************************************************************************
 
 void
@@ -1229,7 +1233,6 @@ avtStreamlineFilter::Execute(void)
     GetSeedPoints(seedpoints);
     numSeedPts = seedpoints.size();
 
-    avtSLAlgorithm *slAlgo = NULL;
     SetMaxQueueLength(cacheQLen);
 
 #ifdef PARALLEL
@@ -1251,6 +1254,13 @@ avtStreamlineFilter::Execute(void)
     InitialIOTime = visitTimer->LookupTimer("Reading dataset");
     slAlgo->Initialize(seedpoints);
     slAlgo->Execute();
+    
+    while (ContinueExecute())
+    {
+        slAlgo->ResetStreamlinesForContinueExecute();
+        slAlgo->Execute();
+    }
+    
     slAlgo->PostExecute();
 
     delete slAlgo;
@@ -1819,6 +1829,9 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
 //   Add new termination criterion: Number of intersections with an object.
 //
+//   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//   Add ability to restart integration of streamlines.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1890,8 +1903,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     {
         avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
         result = slSeg->sl->Advance(&field,
-                                    terminationType,
-                                    end);
+                                    slSeg->terminationType,
+                                    slSeg->termination);
 
         if (result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE)
             if (t2 < end)
@@ -1901,8 +1914,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     {
         avtIVPVTKField field(velocity1);
         result = slSeg->sl->Advance(&field,
-                                    terminationType,
-                                    end);
+                                    slSeg->terminationType,
+                                    slSeg->termination);
     }
     
     numSteps = slSeg->sl->size() - numSteps;
@@ -2023,8 +2036,6 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
                 debug5<<avtIVPSolver::OUTSIDE_DOMAIN<<endl;
             }
             slSeg->status = avtStreamlineWrapper::TERMINATE;
-            slSeg->domain.domain = -1;
-            slSeg->domain.timeStep = -1;
         }
     }
     
@@ -2276,6 +2287,9 @@ randMinus1_1()
 //
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Set what scalars to compute on the avtStreamline object.
+//
+//   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//   Add ability to restart integration of streamlines.
 //
 // ****************************************************************************
 
@@ -2542,6 +2556,8 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
                                              ptDom[i].id);
             slSeg->domain.domain = ptDom[i].domain;
             slSeg->domain.timeStep = seedTimeStep0;
+            slSeg->termination = termination;
+            slSeg->terminationType = terminationType;
             pts.push_back(slSeg);
         }
         
@@ -2557,6 +2573,8 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
                                              ptDom[i].id);
             slSeg->domain = ptDom[i].domain;
             slSeg->domain.timeStep = seedTimeStep0;
+            slSeg->termination = termination;
+            slSeg->terminationType = terminationType;
             pts.push_back(slSeg);
         }
     }
@@ -2736,4 +2754,26 @@ avtStreamlineFilter::ExamineContract(avtContract_p in_contract)
 {
     avtDatasetOnDemandFilter::ExamineContract(in_contract);
     activeTimeStep = in_contract->GetDataRequest()->GetTimestep();
+}
+
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GetTerminatedStreamlines
+//
+//  Purpose:
+//      Return list of terminated streamlines.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Mon Aug 17 09:23:32 EDT 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::GetTerminatedStreamlines(vector<avtStreamlineWrapper *> &sls)
+{
+    sls.resize(0);
+    if (slAlgo)
+        slAlgo->GetTerminatedSLs(sls);
 }

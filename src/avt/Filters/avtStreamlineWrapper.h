@@ -47,6 +47,7 @@
 #include <visitstream.h>
 #include <MemStream.h>
 #include <filters_exports.h>
+#include <avtIVPSolver.h>
 
 class avtStreamline;
 class vtkPolyData;
@@ -119,6 +120,9 @@ class AVTFILTERS_API DomainType
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time.
 //
+//   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//   Add ability to restart integration of streamlines.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineWrapper
@@ -151,6 +155,8 @@ class AVTFILTERS_API avtStreamlineWrapper
     void Debug();
     void Serialize(MemStream::Mode mode, MemStream &buff, avtIVPSolver *solver);
 
+    double termination;
+    avtIVPSolver::TerminateType terminationType;
     avtStreamline *sl;
 
     // Helpers needed for computing streamlines

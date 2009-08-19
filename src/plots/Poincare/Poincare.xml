@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Poincare" type="plot" label="Poincare" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="vector" iconFile="Poincare.xpm">
+  <Plugin name="Poincare" type="plot" label="Poincare" version="2.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="vector" iconFile="Poincare.xpm">
     <Files components="V">
     </Files>
     <Files components="E">

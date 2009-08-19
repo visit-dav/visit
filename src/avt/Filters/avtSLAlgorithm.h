@@ -75,6 +75,9 @@
 //   Dave Pugmire, Thu Mar 26 12:02:27 EDT 2009
 //   Add counters for domain loading
 //
+//   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//   Add ability to restart integration of streamlines.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -86,7 +89,9 @@ class avtSLAlgorithm
     //Execution of the algorithm.
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
     virtual void              Execute() = 0;
+    virtual void              ResetStreamlinesForContinueExecute() {} //= 0;
     virtual void              PostExecute();
+    virtual void              GetTerminatedSLs(vector<avtStreamlineWrapper *> &v) {} //= 0;
 
   protected:
     avtStreamlineFilter *streamlineFilter;

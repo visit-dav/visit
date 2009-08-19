@@ -161,10 +161,12 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *planeUpAxis;
     QLineEdit *planeRadius;
     QSpinBox  *pointDensity;
+    /*
     QLineEdit *intPlnLocation;
     QLineEdit *intPlnNormal;
     QLabel *intPlnLocationLabel;
     QLabel *intPlnNormalLabel;
+    */
     QComboBox *terminationType;
     QComboBox *integrationType;
 
