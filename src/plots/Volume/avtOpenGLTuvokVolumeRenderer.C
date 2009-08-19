@@ -88,7 +88,28 @@ static void tuvok_set_data(AbstrRenderer *, vtkRectilinearGrid *,
                            vtkDataArray *, float *, size_t);
 static void tuvok_set_transfer_fqn(AbstrRenderer &, const VolumeAttributes &);
 static void tuvok_set_view(AbstrRenderer &, const avtViewInfo &);
+static void tuvok_one_time_init();
 
+// ****************************************************************************
+//  Function: tuvok_one_time_init
+//
+//  Purpose: initialization the tuvok library
+//
+//  Programmer: Tom Fogal
+//  Creation:   Tue Aug 18 20:36:05 MDT 2009
+//
+// ****************************************************************************
+static void tuvok_one_time_init()
+{
+    static bool tuvok_initialized = false;
+    if(!tuvok_initialized)
+    {
+        Controller::Instance().AddDebugOut(new VisItDebugOut());
+        // enable tuvok logging output -- very slow, do not leave enabled!
+        Controller::Debug::Out().SetOutput(true, true, true, true);
+        tuvok_initialized = true;
+    }
+}
 // ****************************************************************************
 //  Method: avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer
 //
@@ -106,14 +127,15 @@ static void tuvok_set_view(AbstrRenderer &, const avtViewInfo &);
 //    Tom Fogal, Tue Jul  7 12:01:34 MDT 2009
 //    Use initializer list.
 //
+//    Tom Fogal, Tue Aug 18 20:37:09 MDT 2009
+//    Use external function/state to avoid creating too many debug outs.
+//
 // ****************************************************************************
 
 avtOpenGLTuvokVolumeRenderer::avtOpenGLTuvokVolumeRenderer()
   : renderer(NULL)
 {
-    Controller::Instance().AddDebugOut(new VisItDebugOut());
-    // enable tuvok logging output -- very slow, do not leave enabled!
-    Controller::Debug::Out().SetOutput(true, true, true, true);
+    tuvok_one_time_init();
 }
 
 // ****************************************************************************
