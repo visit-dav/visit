@@ -224,3 +224,52 @@ avtSerialSLAlgorithm::Execute()
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
 
+// ****************************************************************************
+//  Method: avtSerialSLAlgorithm::GetTerminatedSLs
+//
+//  Purpose:
+//      Return an array of terminated streamlines.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue Aug 18 08:59:40 EDT 2009
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void
+avtSerialSLAlgorithm::GetTerminatedSLs(vector<avtStreamlineWrapper *> &v)
+{
+    list<avtStreamlineWrapper *>::const_iterator s;
+    
+    for (s=terminatedSLs.begin(); s != terminatedSLs.end(); ++s)
+        v.push_back(*s);
+}
+
+// ****************************************************************************
+//  Method: avtSerialSLAlgorithm::ResetStreamlinesForContinueExecute
+//
+//  Purpose:
+//      Reset for continued streamline integration.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue Aug 18 08:59:40 EDT 2009
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void
+avtSerialSLAlgorithm::ResetStreamlinesForContinueExecute()
+{
+    while (! terminatedSLs.empty())
+    {
+        avtStreamlineWrapper *s = terminatedSLs.front();
+        terminatedSLs.pop_front();
+        
+        activeSLs.push_back(s);
+    }
+}
+

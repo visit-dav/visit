@@ -65,6 +65,9 @@
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
 //    Removed GetStreamlinePoints().
 //
+//    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//    Add ability to restart streamline integration.
+//
 // ****************************************************************************
 
 #include "StreamlineAnalyzerLib.h"
@@ -95,12 +98,13 @@ class avtPoincareFilter : public avtStreamlineFilter
   protected:
     // Streamline overides.
     virtual void              Execute(void);
+    virtual bool              ContinueExecute();
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
     virtual avtContract_p     ModifyContract(avtContract_p);
     virtual void              UpdateDataObjectInfo(void);
     virtual void              CreateStreamlineOutput( 
-                                   vector<avtStreamlineWrapper *> &streamlines);
+                                   vector<avtStreamlineWrapper *> &sls);
 
   virtual void loadCurve( avtDataTree *dt,
                           vector< vector < vector < Point > > > &nodes,
@@ -124,7 +128,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                             double color_value);
 
     // Poincare filter methods.
-    void                      ClassifyStreamlines();
+    bool                      ClassifyStreamlines();
     avtDataTree               *CreatePoincareOutput();
 
     bool                      verboseFlag, showPoints;
@@ -144,8 +148,17 @@ class avtPoincareFilter : public avtStreamlineFilter
     bool is_curvemesh;
     int adjust_plane;
 
-    std::vector< std::vector<avtVector> > streamlinePts;
-    std::vector<  FieldlineInfo > poincareClassification;
+    class SLHelper
+    {
+      public:
+        SLHelper() {}
+        ~SLHelper() {}
+        avtStreamlineWrapper *slSeg;
+        std::vector<avtVector> streamlinePts;
+    };
+
+    std::vector<SLHelper> streamlines;
+    std::vector<FieldlineInfo> poincareClassification;
 };
 
 

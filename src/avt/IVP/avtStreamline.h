@@ -108,6 +108,9 @@ class vtkObject;
 //   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
 //   Add new termination criterion: Number of intersections with an object.
 //
+//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
+//   Don't record intersection points, just count them.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -165,15 +168,15 @@ class IVP_API avtStreamline
                                   avtIVPSolver::TerminateType termType,
                                   double end,
                                   avtIVPSolver::Result *result);
-    bool      IntersectPlane( double *p0, double *p1, double *x);
+    bool      IntersectPlane(const avtVec &p0, const avtVec &p1);
 
     // Integration steps.
     std::list<avtIVPStep*> _steps;
 
     // Intersection points.
     bool intersectionsSet;
-    std::list<avtVec> intersections;
-    avtVector  intersectPlanePt, intersectPlaneNorm;
+    int numIntersections;
+    double     intersectPlaneEq[4];
 
     // Initial T and seed point.
     double _t0;

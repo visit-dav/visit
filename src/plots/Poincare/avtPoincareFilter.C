@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtPoincareFilter.h>
+#include <avtSLAlgorithm.h>
 #include <avtStreamlineWrapper.h>
 
 #include <vtkDataSet.h>
@@ -95,6 +96,9 @@ static const int COLOR_Solid = 9;
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
 //    Initialize streamlinePts.
 //
+//    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//    Add ability to restart streamline integration.
+//
 // ****************************************************************************
 
 avtPoincareFilter::avtPoincareFilter() :
@@ -111,7 +115,7 @@ avtPoincareFilter::avtPoincareFilter() :
 {
     planes.resize(1);
     planes[0] = 0;
-    streamlinePts.resize(0);
+    streamlines.resize(0);
 }
 
 
@@ -130,7 +134,7 @@ avtPoincareFilter::avtPoincareFilter() :
 
 avtPoincareFilter::~avtPoincareFilter()
 {
-    streamlinePts.resize(0);
+    streamlines.resize(0);
 }
 
 static vtkPolyData *
@@ -415,30 +419,34 @@ avtPoincareFilter::PostExecute(void)
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
 //    Moved GetStreamlinePoints to this method.
 //
+//    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//    Add ability to restart streamline integration.
+//
 // ****************************************************************************
 
 void
-avtPoincareFilter::CreateStreamlineOutput( vector<avtStreamlineWrapper *> &streamlines)
+avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamlineWrapper *> &sls)
 {
-    streamlinePts.resize(streamlines.size());
+    streamlines.resize(sls.size());
     
-    for ( int i=0; i<streamlines.size(); ++i )
+    for ( int i=0; i<sls.size(); ++i )
     {
-        avtStreamline *sl = streamlines[i]->sl;
+        streamlines[i].slSeg = sls[i];
+        avtStreamline::iterator siter = sls[i]->sl->begin();
+        streamlines[i].streamlinePts.resize(0);
         
-        avtStreamline::iterator siter = sl->begin();
-        
-        while( siter != sl->end() )
+        while (siter != sls[i]->sl->end())
         {
             avtVector pt;
             pt.x = (*siter)->front()[0];
             pt.y = (*siter)->front()[1];
             pt.z = (*siter)->front()[2];
             
-            streamlinePts[i].push_back(pt);
+            streamlines[i].streamlinePts.push_back(pt);
             
             ++siter;
         }
+        //cerr<<"CreateStreamlineOutput: "<<streamlines[i].slSeg->id<<" pts= "<<streamlines[i].streamlinePts.size()<<" term= "<<streamlines[i].slSeg->termination<<endl;
     }
 }
 
@@ -494,6 +502,9 @@ avtPoincareFilter::ModifyContract(avtContract_p in_contract)
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
 //    Re-organization. GetStreamlinePoints removed.
 //
+//    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//    Add ability to restart streamline integration.
+//
 // ****************************************************************************
 
 void
@@ -502,9 +513,39 @@ avtPoincareFilter::Execute()
     FLlib.verboseFlag = verboseFlag;
 
     avtStreamlineFilter::Execute();
-    ClassifyStreamlines();
     avtDataTree *dt = CreatePoincareOutput();
     SetOutputDataTree(dt);
+}
+
+// ****************************************************************************
+//  Method: avtPoincareFilter::ContinueExecute
+//
+//  Purpose:
+//      See if execution needs to continue.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Mon Aug 17 08:30:06 EDT 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtPoincareFilter::ContinueExecute()
+{
+    vector<avtStreamlineWrapper *> sls;
+    
+    GetTerminatedStreamlines(sls);
+    CreateStreamlineOutput(sls);
+
+    if (! ClassifyStreamlines())
+    {
+        //Modify termination criteria.
+        return true;
+    }
+    
+    //Analysis complete, no need to continue.
+    return false;
 }
 
 
@@ -567,19 +608,36 @@ avtPoincareFilter::UpdateDataObjectInfo(void)
 //    Dave Pugmire (for Allen Sanderson), Wed Feb 25 09:52:11 EST 2009
 //    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
 //
+//    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
+//    Add ability to restart streamline integration.
+//
 // ****************************************************************************
 
-void
+bool
 avtPoincareFilter::ClassifyStreamlines()
 {
-    for ( int i = 0; i < streamlinePts.size(); i++ )
+    bool analysisComplete = true;
+    poincareClassification.resize(streamlines.size());
+    
+    for ( int i = 0; i < streamlines.size(); i++ )
     {
-        FieldlineInfo fi = FLlib.fieldlineProperties( streamlinePts[i],
+        bool needMoreInfo = false; // <<< Allen: Pass this below.
+        
+        FieldlineInfo fi = FLlib.fieldlineProperties( streamlines[i].streamlinePts,
                                                       override,
                                                       maxToroidalWinding,
                                                       hitrate );
 
-        poincareClassification.push_back( fi );
+        if (needMoreInfo)
+        {
+            analysisComplete = false;
+            //cerr<<streamlines[i].slSeg->id<<": terminations= "<<streamlines[i].slSeg->termination<<" pts= "<<streamlines[i].streamlinePts.size()<<endl;
+            
+            //Allen: modify termination here.
+            streamlines[i].slSeg->termination += 30.0;
+        }
+
+        poincareClassification[i] = fi;
         
         double safetyFactor;
         
@@ -588,9 +646,9 @@ avtPoincareFilter::ClassifyStreamlines()
         else
             safetyFactor = 0;
 
-        if( verboseFlag ) 
-          cerr <<"Classify Streamline: "<<i
-               << "  ptCnt = " << streamlinePts[i].size()
+        if(verboseFlag ) 
+          cerr <<"Classify Streamline: "<<i<<" id= "<<streamlines[i].slSeg->id
+               << "  ptCnt = " << streamlines[i].streamlinePts.size()
                << "  toroidal windings = " <<  fi.toroidalWinding
                << "  poloidal windings = " << fi.poloidalWinding
                << "  islands = " << fi.islands
@@ -598,6 +656,8 @@ avtPoincareFilter::ClassifyStreamlines()
                << "  nodes = " << fi.nnodes
                << endl << endl;
     }
+
+    return analysisComplete;
 }
 
 // ****************************************************************************
@@ -633,7 +693,7 @@ avtPoincareFilter::CreatePoincareOutput()
 {
     avtDataTree *dt = new avtDataTree();
     
-    for ( int i=0; i<streamlinePts.size(); ++i )
+    for ( int i=0; i<streamlines.size(); ++i )
     {
         FieldlineType type           = poincareClassification[i].type;
         unsigned int toroidalWinding = poincareClassification[i].toroidalWinding;
@@ -667,8 +727,8 @@ avtPoincareFilter::CreatePoincareOutput()
         }
         
         // Get the direction of the streamline toroidalWinding.
-        Point lastPt = streamlinePts[i][0];
-        Point currPt = streamlinePts[i][1];
+        Point lastPt = streamlines[i].streamlinePts[0];
+        Point currPt = streamlines[i].streamlinePts[1];
         
         bool CCWstreamline = (atan2( lastPt.y, lastPt.x ) <
                               atan2( currPt.y, currPt.x ));
@@ -717,13 +777,13 @@ avtPoincareFilter::CreatePoincareOutput()
             
             // So to get the winding groups consistant start examining the
             // streamline in the same place for each plane.
-            Vector lastPt, currPt( streamlinePts[i][startIndex] );
+            Vector lastPt, currPt( streamlines[i].streamlinePts[startIndex] );
             double lastDist, currDist = planeN.dot( currPt ) - plane[3];
             
-            for( unsigned int j=startIndex+1; j<streamlinePts[i].size(); ++j )
+            for( unsigned int j=startIndex+1; j<streamlines[i].streamlinePts.size(); ++j )
             {
                 lastPt = currPt;
-                currPt = Vector(streamlinePts[i][j]);
+                currPt = Vector(streamlines[i].streamlinePts[j]);
                 
                 lastDist = currDist;
                 currDist = Dot( planeN, currPt ) - plane[3];
@@ -1061,7 +1121,7 @@ avtPoincareFilter::CreatePoincareOutput()
     }
     
     if( verboseFlag ) 
-      cerr << endl << endl << "count " << streamlinePts.size() << endl << endl;
+        cerr << endl << endl << "count " << streamlines.size() << endl << endl;
     
     return dt;
 }
