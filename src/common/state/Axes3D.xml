@@ -36,10 +36,10 @@
     <Field name="bboxFlag" label="bboxFlag" type="bool">
       true
     </Field>
-    <Field name="xAxis" label="X axis" type="att" subtype="AxisAttributes" init="xAxis">
+    <Field name="xAxis" label="X axis" type="att" subtype="AxisAttributes" init="true">
     </Field>
-    <Field name="yAxis" label="Y axis" type="att" subtype="AxisAttributes" init="yAxis">
+    <Field name="yAxis" label="Y axis" type="att" subtype="AxisAttributes" init="true">
     </Field>
-    <Field name="zAxis" label="Z axis" type="att" subtype="AxisAttributes" init="zAxis">
+    <Field name="zAxis" label="Z axis" type="att" subtype="AxisAttributes" init="true">
     </Field>
   </Attribute>

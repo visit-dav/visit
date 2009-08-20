@@ -15,6 +15,6 @@
     <Field name="lineWidth" label="lineWidth" type="linewidth">
       0
     </Field>
-    <Field name="axes" label="Axes" type="att" subtype="AxisAttributes" init="axes">
+    <Field name="axes" label="Axes" type="att" subtype="AxisAttributes" init="true">
     </Field>
   </Attribute>
