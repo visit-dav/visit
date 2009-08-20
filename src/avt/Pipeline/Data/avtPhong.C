@@ -103,6 +103,10 @@ avtPhong::~avtPhong()
 //      Sean Ahern, Wed Sep  3 11:27:43 EDT 2008
 //      Added support for camera lights.
 //
+//      Hank Childs, Wed Aug 19 19:09:08 PDT 2009
+//      If the gradient is 0 magnitude, then don't apply lighting to that 
+//      sample.
+//
 // ****************************************************************************
 
 void
@@ -172,7 +176,12 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
             double mag = sqrt(grad[0]*grad[0] + grad[1]*grad[1] +
                               grad[2]*grad[2]);
             if (mag == 0.)
+            {
+                r += brightness*rgb[0];
+                g += brightness*rgb[1];
+                b += brightness*rgb[2];
                 continue;
+            }
             grad[0] /= mag;
             grad[1] /= mag;
             grad[2] /= mag;
