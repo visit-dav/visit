@@ -30,8 +30,8 @@
     <Field name="tickAxes" label="Tick axes" type="enum" subtype="Ticks">
       BottomLeft
     </Field>
-    <Field name="xAxis" label="X axis" type="att" subtype="AxisAttributes" init="xAxis">
+    <Field name="xAxis" label="X axis" type="att" subtype="AxisAttributes" init="true">
     </Field>
-    <Field name="yAxis" label="Y axis" type="att" subtype="AxisAttributes" init="yAxis">
+    <Field name="yAxis" label="Y axis" type="att" subtype="AxisAttributes" init="true">
     </Field>
   </Attribute>
