@@ -247,6 +247,10 @@ avtVolumeFilter::Execute(void)
 //    Hank Childs, Mon Jan 26 11:44:40 PST 2009
 //    Make sure the min and max for log and skew are set right.
 //
+//    Hank Childs, Wed Aug 19 18:24:46 PDT 2009
+//    Lighting queues should be taken from the gradient of the opacity var,
+//    not the color var.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -350,7 +354,10 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     int gradIndex = -1;
     int count = 0;
     char gradName[128];
-    SNPRINTF(gradName, 128, "_%s_gradient", primaryVariable);
+    const char *gradvar = atts.GetOpacityVariable().c_str();
+    if (strcmp(gradvar, "default") == 0)
+        gradvar = primaryVariable;
+    SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
     
     for (int i = 0 ; i < vl.nvars ; i++)
     {
@@ -702,6 +709,10 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Hank Childs, Fri Jan  9 17:01:39 PST 2009
 //    Use the fast gradient as we don't care as much about accuracy.
 //
+//    Hank Childs, Wed Aug 19 18:24:46 PDT 2009
+//    Lighting queues should be taken from the gradient of the opacity var,
+//    not the color var.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -781,16 +792,19 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     if (atts.GetLightingFlag())
     {
         char exprName[128];
-        SNPRINTF(exprName, 128, "_%s_gradient", primaryVariable);
+        const char *gradvar = atts.GetOpacityVariable().c_str();
+        if (strcmp(gradvar, "default") == 0)
+            gradvar = primaryVariable;
+
+        SNPRINTF(exprName, 128, "_%s_gradient", gradvar);
         char exprDef[512];
         if (atts.GetSmoothData())
         {
-            SNPRINTF(exprDef, 512, "gradient(recenter(<%s>, \"nodal\"), \"fast\")", 
-                                   primaryVariable);
+            SNPRINTF(exprDef, 512, "gradient(recenter(<%s>, \"nodal\"), \"fast\")", gradvar);
         }
         else
         {
-            SNPRINTF(exprDef, 512, "gradient(<%s>, \"fast\")", primaryVariable);
+            SNPRINTF(exprDef, 512, "gradient(<%s>, \"fast\")", gradvar);
         }
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
