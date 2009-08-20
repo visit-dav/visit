@@ -656,9 +656,6 @@ ProcessFile(QString file)
     QString    docType;
     Plugin    *plugin    = NULL;
     Attribute *attribute = NULL;
-    QTextStream cOut(stdout);
-    QTextStream cErr(stderr);
-    QString     Endl("\n");
 
     EnumType::enums.clear();
 
