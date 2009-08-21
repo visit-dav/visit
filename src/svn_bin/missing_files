@@ -16,8 +16,10 @@ visitlog.py\|\
 include/visit-config.h\|\
 include/visit/fwav.h\|\
 include/visit/gzlib.h\|\
-include/visit/bow.h\
-"
+include/visit/bow.h\|\
+\.o$\|\
+\.d$\|\
+_moc.C$"
 
 # Filename patterns to include (mainly using extension) as possible
 # NON-versioned source code files.
@@ -33,8 +35,7 @@ includePatterns="\
 \.java$\|\
 \.bz2$\|\
 \.ini$\|\
-\.conf$\
-"
+\.conf$"
 
 # Handle tmpdir setting
 tmpDir=$TMPDIR
