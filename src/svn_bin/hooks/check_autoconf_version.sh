@@ -33,6 +33,10 @@
 #   Changed logic to simply record the configure file in one variable
 #   and all other files that serve as input to configure in another
 #   variable.
+#
+#   Tom Fogal, Sat Aug 22 16:21:30 MDT 2009
+#   Ignore the check on any of my branches.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -52,6 +56,9 @@ while read fline; do
     # We're looking for only these specific files
     # for this hook.
     case $fname in
+        *fogal1*)
+            # nothing.
+            ;;
         *src/configure)
             theConfigureFile=$fname
             ;;
