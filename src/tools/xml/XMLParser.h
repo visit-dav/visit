@@ -368,7 +368,7 @@ class XMLParser : public QXmlDefaultHandler
             {
                 QStringList targets, names, first, second;
                 currentAttribute->codeFile->GetAllCodes(targets, names, first, second);
-                for(size_t i = 0; i < targets.size(); ++i)
+                for(int i = 0; i < targets.size(); ++i)
                 {
                     currentAttribute->codes.push_back(new Code(names[i],
                                                                first[i],
@@ -410,7 +410,7 @@ class XMLParser : public QXmlDefaultHandler
             QStringList targets, first, second;
             codeFile->GetConstant(name, targets, first, second);
             currentConstants = new Constant *[targets.size() + 1];
-            for(size_t i = 0; i < targets.size(); ++i)
+            for(int i = 0; i < targets.size(); ++i)
             {
                 currentConstants[i] = new Constant(name,
                                                    first[i],
@@ -447,7 +447,7 @@ class XMLParser : public QXmlDefaultHandler
             QStringList targets, first, second;
             codeFile->GetFunction(name, targets, first, second);
             currentFunctions = new Function*[targets.size()+1];
-            for(size_t i = 0; i < targets.size(); ++i)
+            for(int i = 0; i < targets.size(); ++i)
             {
                 currentFunctions[i] = new Function(name,
                                                    first[i],
@@ -624,7 +624,7 @@ class XMLParser : public QXmlDefaultHandler
 
                 QStringList targets, defs;
                 currentAttribute->codeFile->GetInit(name, targets, defs);
-                for(size_t i = 0; i < targets.size(); ++i)
+                for(int i = 0; i < targets.size(); ++i)
                     currentField->SetInitCode(targets[i], defs[i]);
             }
 

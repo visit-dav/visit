@@ -211,7 +211,7 @@ class Field
         QStringList lines(value.split("\n"));
         QString currentTarget("xml2atts");
         QString currentInit;
-        for(size_t i = 0; i < lines.size(); ++i)
+        for(int i = 0; i < lines.size(); ++i)
         {
             if(lines[i].left(7) == QString("Target:"))
             {
@@ -295,7 +295,7 @@ class Field
         QStringList targets, prefix, postfix;
         if(codeFile!=NULL && codeFile->GetCode(cName, targets, prefix, postfix))
         {
-            for (size_t i=0; i<targets.size(); i++)
+            for (int i=0; i<targets.size(); i++)
                 if(generatorName.isEmpty() || generatorName == targets[i])
                 {
                     if(part == 0)
@@ -313,7 +313,7 @@ class Field
         QStringList targets, prefix, postfix;
         if(codeFile!=NULL && codeFile->GetCode(cName, targets, prefix, postfix))
         {
-            for (size_t i=0; i<targets.size(); i++)
+            for (int i=0; i<targets.size(); i++)
                 if(generatorName.isEmpty() || generatorName == targets[i])
                 {
                     if(part == 0)
@@ -1186,7 +1186,7 @@ class VariableName : public virtual Field
                 const char *val = v.toStdString().c_str();
                 int m = 1;
                 varTypes = 0;
-                for(size_t i = 0; i < v.length(); ++i)
+                for(int i = 0; i < v.length(); ++i)
                 {
                     if(val[i] == '1')
                         varTypes |= m;
