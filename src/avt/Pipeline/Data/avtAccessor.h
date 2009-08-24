@@ -21,38 +21,49 @@
 //   
 // ****************************************************************************
 
-template <class T, int N = 1>
+template <class T>
 class avtDirectAccessor
 {
 public:
     avtDirectAccessor(vtkDataArray *arr)
     {
         array = arr;
+        N = arr->GetNumberOfComponents();
         ptr = start = (T *)arr->GetVoidPointer(0);
         end = ptr + (N * arr->GetNumberOfTuples());
     }
-    ~avtDirectAccessor()                     { }
 
-    int GetNumberOfTuples()                  { return array->GetNumberOfTuples(); }
+    ~avtDirectAccessor()                                      { }
 
-    void SetTuple1(T val)                    { *ptr = val;                            }
-    void SetTuple1(vtkIdType i, T val)       { start[i*N] = val;                      }
-    void SetTuple(vtkIdType i, const T *val) { memcpy(start + i*N, val, sizeof(T)*N); }
+    int GetNumberOfTuples() const                             { return array->GetNumberOfTuples(); }
+    int GetNumberOfComponents() const                         { return N; }
 
-    T GetTuple1() const                      { return *ptr;        }
-    T GetTuple1(vtkIdType i) const           { return start[i*N];  }
-    T *GetTuple(vtkIdType i) const           { return start + i*N; }
+    void SetTuple1(T val)                                     { *ptr = val;                            }
+    void SetTuple1(vtkIdType i, T val)                        { start[i*N] = val;                      }
+    void SetTuple(vtkIdType i, const T *val)                  { memcpy(start + i*N, val, sizeof(T)*N); }
 
-    void InitTraversal()                     { ptr = start; }
-    bool Iterating() const                   { return ptr < end; }
+    T GetTuple1() const                                       { return *ptr;        }
+    T GetTuple1(vtkIdType i) const                            { return start[i*N];  }
+    T *GetTuple(vtkIdType i) const                            { return start + i*N; }
+    T *GetTuple() const                                       { return ptr; }
 
-    void operator ++()                       { ptr += N; }
-    void operator ++(int i)                  { ptr += N; }
+    void SetComponent(vtkIdType tuple, int comp, T val)       { start[tuple * N + comp] = val; }
+    void SetComponent(int comp, T val)                        { ptr[comp] = val; }
+
+    T GetComponent(vtkIdType tuple, int comp) const           { return start[tuple * N + comp]; }
+    T GetComponent(int comp) const                            { return ptr[comp]; }
+
+    void InitTraversal()                                      { ptr = start; }
+    bool Iterating() const                                    { return ptr < end; }
+
+    void operator ++()                                        { ptr += N; }
+    void operator ++(int i)                                   { ptr += N; }
 private:
     vtkDataArray *array;
     T *start;
     T *ptr;
     T *end;
+    int N;
 };
 
 // ****************************************************************************
@@ -84,7 +95,8 @@ public:
     }
     ~avtTupleAccessor()                      { }
     
-    int GetNumberOfTuples()                  { return array->GetNumberOfTuples(); }
+    int GetNumberOfTuples() const            { return array->GetNumberOfTuples(); }
+    int GetNumberOfComponents() const        { return array->GetNumberOfComponents(); }
 
     void SetTuple1(double val)               { array->SetTuple1(index, val);   }
     void SetTuple1(vtkIdType i, double val)  { array->SetTuple1(i, val);       }
@@ -93,6 +105,12 @@ public:
     double GetTuple1()                       { return array->GetTuple1(index); }
     double GetTuple1(vtkIdType i)            { return array->GetTuple1(i);     }
     double *GetTuple(vtkIdType i)            { return array->GetTuple(i);      }//does this work?
+
+    void SetComponent(vtkIdType tuple, int comp, double val) { array->SetComponent(tuple, comp, val); }
+    void SetComponent(int comp, double val)                  { array->SetComponent(index, comp, val); }
+
+    double GetComponent(vtkIdType tuple, int comp) const     { return array->GetComponent(tuple, comp); }
+    double GetComponent(int comp) const                      { return array->GetComponent(index, comp); }
 
     void InitTraversal()                     { index = 0; }
     bool Iterating() const                   { return index < size; }
