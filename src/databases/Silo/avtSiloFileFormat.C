@@ -58,6 +58,7 @@
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
+#include <vtkLongArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
@@ -137,7 +138,7 @@ static void TranslateSiloTetrahedronToVTKTetrahedron(const int *,
 static bool TetsAreInverted(const int *siloTetrahedron,
                             vtkUnstructuredGrid *ugrid);
 
-static int  ComputeNumZonesSkipped(vector<int>& zoneRangesSkipped);
+static int  ComputeNumZonesSkipped(const vector<int>& zoneRangesSkipped);
 
 template<class T>
 static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
@@ -6476,6 +6477,78 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     return rv;
 }
 
+// ****************************************************************************
+// Method: CopyUcdVectorVar
+//
+// Purpose: 
+//   Copies a ucdvar vector into a vtkDataArray.
+//
+// Arguments:
+//   uv                : The input ucdvar.
+//   zonesRangesToSkip : The zones to remove from the resulting data array.
+//
+// Returns:    A suitably typed VTK data array.
+//
+// Note:       I took this code from GetUcdVectorVar and templated it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug  7 12:01:12 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T, typename Tarr>
+vtkDataArray *
+CopyUcdVectorVar(const DBucdvar *uv, const vector<int> &zonesRangesToSkip)
+{
+    Tarr *vectors = Tarr::New();
+    vectors->SetNumberOfComponents(3);
+
+    //
+    // Handle cases where we need to remove values for zone types we don't
+    // understand
+    //
+    T *vals[3];
+    vals[0] = (T*) uv->vals[0];
+    vals[1] = (T*) uv->vals[1];
+    if (uv->nvals == 3)
+       vals[2] = (T*) uv->vals[2];
+    int numSkipped = 0;
+    if (zonesRangesToSkip.size() > 0)
+    {
+        numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
+        vals[0] = new T[uv->nels - numSkipped];
+        vals[1] = new T[uv->nels - numSkipped];
+        if (uv->nvals == 3)
+            vals[2] = new T[uv->nels - numSkipped];
+
+        RemoveValuesForSkippedZones(zonesRangesToSkip,
+            ((T**)uv->vals)[0], uv->nels, vals[0]);
+        RemoveValuesForSkippedZones(zonesRangesToSkip,
+            ((T**)uv->vals)[1], uv->nels, vals[1]);
+        if (uv->nvals == 3)
+            RemoveValuesForSkippedZones(zonesRangesToSkip,
+                ((T**)uv->vals)[2], uv->nels, vals[2]);
+    }
+
+    vectors->SetNumberOfTuples(uv->nels - numSkipped);
+    for (int i = 0 ; i < uv->nels - numSkipped; i++)
+    {
+        T v3 = (uv->nvals == 3 ? vals[2][i] : 0.);
+        vectors->SetTuple3(i, vals[0][i], vals[1][i], v3);
+    }
+
+    if (vals[0] != uv->vals[0])
+    {
+        delete [] vals[0];
+        delete [] vals[1];
+        if (uv->nvals == 3)
+            delete [] vals[2];
+    }
+
+    return vectors;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetUcdVectorVar
@@ -6527,61 +6600,75 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkFloatArray   *vectors = vtkFloatArray::New();
-    vectors->SetNumberOfComponents(3);
-
-    //
-    // Handle cases where we need to remove values for zone types we don't
-    // understand
-    //
-    float *vals[3];
-    vals[0] = (float*) uv->vals[0];
-    vals[1] = (float*) uv->vals[1];
-    if (uv->nvals == 3)
-       vals[2] = (float*) uv->vals[2];
-    int numSkipped = 0;
+    vector<int> noskips;
+    vector<int> &zoneRangesToSkip = noskips;
     if (uv->centering == DB_ZONECENT && metadata != NULL)
     {
         string meshName = metadata->MeshForVar(tvn);
-        vector<int> zonesRangesToSkip = arbMeshZoneRangesToSkip[meshName];
-        if (zonesRangesToSkip.size() > 0)
-        {
-            numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
-            vals[0] = new float[uv->nels - numSkipped];
-            vals[1] = new float[uv->nels - numSkipped];
-            if (uv->nvals == 3)
-                vals[2] = new float[uv->nels - numSkipped];
-
-            RemoveValuesForSkippedZones(zonesRangesToSkip,
-                ((float**)uv->vals)[0], uv->nels, vals[0]);
-            RemoveValuesForSkippedZones(zonesRangesToSkip,
-                ((float**)uv->vals)[1], uv->nels, vals[1]);
-            if (uv->nvals == 3)
-                RemoveValuesForSkippedZones(zonesRangesToSkip,
-                    ((float**)uv->vals)[2], uv->nels, vals[2]);
-        }
+        zoneRangesToSkip = arbMeshZoneRangesToSkip[meshName];
     }
 
-    vectors->SetNumberOfTuples(uv->nels - numSkipped);
-    for (int i = 0 ; i < uv->nels - numSkipped; i++)
-    {
-        float v3 = (uv->nvals == 3 ? vals[2][i] : 0.);
-        vectors->SetTuple3(i, vals[0][i], vals[1][i], v3);
-    }
-
-    if (vals[0] != uv->vals[0])
-    {
-        delete [] vals[0];
-        delete [] vals[1];
-        if (uv->nvals == 3)
-            delete [] vals[2];
-    }
+    vtkDataArray *vectors = 0;
+    if(uv->datatype == DB_DOUBLE)
+        vectors = CopyUcdVectorVar<double,vtkDoubleArray>(uv, zoneRangesToSkip);
+    else if(uv->datatype == DB_FLOAT)
+        vectors = CopyUcdVectorVar<float,vtkFloatArray>(uv, zoneRangesToSkip);
+    else if(uv->datatype == DB_INT)
+        vectors = CopyUcdVectorVar<int,vtkIntArray>(uv, zoneRangesToSkip);
+    else if(uv->datatype == DB_SHORT)
+        vectors = CopyUcdVectorVar<short,vtkShortArray>(uv, zoneRangesToSkip);
+    else if(uv->datatype == DB_CHAR)
+        vectors = CopyUcdVectorVar<char,vtkCharArray>(uv, zoneRangesToSkip);
 
     DBFreeUcdvar(uv);
 
     return vectors;
 }
 
+// ****************************************************************************
+// Method: CopyQuadVectorVar
+//
+// Purpose: 
+//   Copy quadvar vectors into a vtkDataArray.
+//
+// Arguments:
+//   qv : The vector to copy.
+//
+// Returns:    A vtkDataArray.
+//
+// Note:       I took this code from GetQuadVectorVar and templated it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug  6 15:37:55 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T, typename Tarr>
+vtkDataArray *
+CopyQuadVectorVar(const DBquadvar *qv)
+{
+    Tarr *vectors = Tarr::New();
+    vectors->SetNumberOfComponents(3);
+    vectors->SetNumberOfTuples(qv->nels);
+
+    const T *v1 = (const T *)qv->vals[0];
+    const T *v2 = (const T *)qv->vals[1];
+    if(qv->nvals == 3)
+    {
+        const T *v3 = (const T*)qv->vals[2];
+        for (int i = 0 ; i < qv->nels ; i++)
+            vectors->SetTuple3(i, v1[i], v2[i], v3[i]);
+    }
+    else
+    {
+        for (int i = 0 ; i < qv->nels ; i++)
+            vectors->SetTuple3(i, v1[i], v2[i], 0.);
+    }
+
+    return vectors;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetQuadVectorVar
@@ -6635,35 +6722,66 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    vtkDataArray *vectors;
-    if (qv->datatype == DB_DOUBLE)
-        vectors = vtkDoubleArray::New();
-    else
-        vectors = vtkFloatArray::New();
-    vectors->SetNumberOfComponents(3);
-    vectors->SetNumberOfTuples(qv->nels);
-    if (qv->datatype == DB_DOUBLE)
-    {
-        double *v1 = (double *) qv->vals[0];
-        double *v2 = (double *) qv->vals[1];
-        double *v3 = (double *) (qv->nvals == 3 ? qv->vals[2] : 0);
-        for (int i = 0 ; i < qv->nels ; i++)
-            vectors->SetTuple3(i, v1[i], v2[i], v3 ? v3[i] : 0.);
-    }
-    else
-    {
-        for (int i = 0 ; i < qv->nels ; i++)
-        {
-            float v3 = (qv->nvals == 3 ? ((float**)qv->vals)[2][i] : 0.);
-            vectors->SetTuple3(i, ((float**)qv->vals)[0][i], ((float**)qv->vals)[1][i], v3);
-        }
-    }
+    vtkDataArray *vectors = 0;
+    if(qv->datatype == DB_DOUBLE)
+        vectors = CopyQuadVectorVar<double,vtkDoubleArray>(qv);
+    else if(qv->datatype == DB_FLOAT)
+        vectors = CopyQuadVectorVar<float,vtkFloatArray>(qv);
+    else if(qv->datatype == DB_INT)
+        vectors = CopyQuadVectorVar<int,vtkIntArray>(qv);
+    else if(qv->datatype == DB_SHORT)
+        vectors = CopyQuadVectorVar<short,vtkShortArray>(qv);
+    else if(qv->datatype == DB_CHAR)
+        vectors = CopyQuadVectorVar<char,vtkCharArray>(qv);
 
     DBFreeQuadvar(qv);
 
     return vectors;
 }
 
+// ****************************************************************************
+// Method: CopyPointVectorVar
+//
+// Purpose: 
+//   Copy Silo point data into a vtkDataArray.
+//
+// Arguments:
+//   mv : The DBmeshvar object that contains the data.
+//
+// Returns:    A vtkDataArray of the appropriate type.
+//
+// Note:       I took this code body from GetPointVectorVar and templated it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug  6 15:12:29 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T, typename Tarr>
+vtkDataArray *
+CopyPointVectorVar(const DBmeshvar *mv)
+{
+    Tarr *vectors = Tarr::New();
+    vectors->SetNumberOfComponents(3);
+    vectors->SetNumberOfTuples(mv->nels);
+    const T *v1 = ((const T**)mv->vals)[0];
+    const T *v2 = ((const T**)mv->vals)[1];
+    if(mv->nels == 3)
+    {
+        const T *v3 = ((const T**)mv->vals)[2];
+        for (int i = 0 ; i < mv->nels ; i++)
+            vectors->SetTuple3(i, v1[i], v2[i], v3[i]);
+    }
+    else
+    {
+        for (int i = 0 ; i < mv->nels ; i++)
+            vectors->SetTuple3(i, v1[i], v2[i], 0.);
+    }
+
+    return vectors;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetPointVectorVar
@@ -6688,6 +6806,10 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Brad Whitlock, Thu Aug  6 14:55:49 PDT 2009
+//    I added support for non-float data types.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -6708,14 +6830,17 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkFloatArray   *vectors = vtkFloatArray::New();
-    vectors->SetNumberOfComponents(3);
-    vectors->SetNumberOfTuples(mv->nels);
-    for (int i = 0 ; i < mv->nels ; i++)
-    {
-        float v3 = (mv->nvals == 3 ? ((float**)mv->vals)[2][i] : 0.);
-        vectors->SetTuple3(i, ((float**)mv->vals)[0][i], ((float**)mv->vals)[1][i], v3);
-    }
+    vtkDataArray *vectors = 0;
+    if(mv->datatype == DB_DOUBLE)
+        vectors = CopyPointVectorVar<double,vtkDoubleArray>(mv);
+    else if(mv->datatype == DB_FLOAT)
+        vectors = CopyPointVectorVar<float,vtkFloatArray>(mv);
+    else if(mv->datatype == DB_INT)
+        vectors = CopyPointVectorVar<int,vtkIntArray>(mv);
+    else if(mv->datatype == DB_SHORT)
+        vectors = CopyPointVectorVar<short,vtkShortArray>(mv);
+    else if(mv->datatype == DB_CHAR)
+        vectors = CopyPointVectorVar<char,vtkCharArray>(mv);
 
     DBFreeMeshvar(mv);
 
@@ -6991,6 +7116,190 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     return rv;
 }
 
+// ****************************************************************************
+// Method: CreateDataArray
+//
+// Purpose: 
+//   Creates a vtkDataArray suitable for the given Silo type. Also return the
+//   size of 1 element.
+//
+// Arguments:
+//   silotype : The Silo type.
+//   sz       : The size of 1 element.
+//
+// Returns:    A suitable vtkDataArray instance.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug  7 10:39:35 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static vtkDataArray *
+CreateDataArray(int silotype, size_t &sz)
+{ 
+    vtkDataArray *d = 0;
+    switch(silotype)
+    {
+    case DB_DOUBLE:
+        d = vtkDoubleArray::New();
+        sz = sizeof(double);
+        break;
+    case DB_INT:
+        d = vtkIntArray::New();
+        sz = sizeof(int);
+        break;
+    case DB_LONG:
+        d = vtkLongArray::New();
+        sz = sizeof(long);
+        break;
+    case DB_SHORT:
+        d = vtkShortArray::New();
+        sz = sizeof(short);
+        break;
+    case DB_CHAR:
+        d = vtkCharArray::New();
+        sz = sizeof(char);
+        break;
+    case DB_FLOAT:
+    default:
+        d = vtkFloatArray::New();
+        sz = sizeof(float);
+        break;
+    }
+
+    return d;
+}
+
+// ****************************************************************************
+// Method: ConvertToFloat
+//
+// Purpose: 
+//   Converts the input array to float, returning a new float array that must
+//   be freed by the caller. The exception is if the input was already float.
+//   In that case, the input array is returned unmodified.
+//
+// Arguments:
+//   silotype : The type of data stored in the data array.
+//   data     : The data array.
+//   nels     : The number of elements in the data array.
+//
+// Returns:    A float array.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug  7 10:51:03 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static float *
+ConvertToFloat(int silotype, void *data, int nels)
+{ 
+    float *retval = 0;
+    
+    switch(silotype)
+    {
+    case DB_DOUBLE:
+        { const double *ptr = (const double *)data;
+        retval = new float[nels];
+        for(int i = 0; i < nels; ++i)
+            retval[i] = (float)ptr[i];
+        }
+        break;
+    case DB_INT:
+        { const int *ptr = (const int *)data;
+        retval = new float[nels];
+        for(int i = 0; i < nels; ++i)
+            retval[i] = (float)ptr[i];
+        }
+        break;
+    case DB_LONG:
+        { const long *ptr = (const long *)data;
+        retval = new float[nels];
+        for(int i = 0; i < nels; ++i)
+            retval[i] = (float)ptr[i];
+        }
+        break;
+    case DB_SHORT:
+        { const short *ptr = (const short *)data;
+        retval = new float[nels];
+        for(int i = 0; i < nels; ++i)
+            retval[i] = (float)ptr[i];
+        }
+        break;
+    case DB_CHAR:
+        { const char *ptr = (const char *)data;
+        retval = new float[nels];
+        for(int i = 0; i < nels; ++i)
+            retval[i] = (float)ptr[i];
+        }
+        break;
+    case DB_FLOAT:
+        retval = (float*)data;
+        break;
+    default:
+        break;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: CopyUcdVar
+//
+// Purpose: 
+//   Copies data from a ucdvar into a new vtkDataArray.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       I moved this code from GetUcdVar and I templated it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug  7 10:19:52 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T, typename Tarr>
+vtkDataArray *
+CopyUcdVar(const DBucdvar *uv, const vector<int> &zonesRangesToSkip)
+{
+    Tarr *scalars = Tarr::New();
+
+    //
+    // Handle stripping out values for zone types we don't understand
+    //
+    if (zonesRangesToSkip.size() > 0)
+    {
+        int numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
+
+        scalars->SetNumberOfTuples(uv->nels - numSkipped);
+        T *ptr = (T *) scalars->GetVoidPointer(0);
+        RemoveValuesForSkippedZones(zonesRangesToSkip,
+            ((T**)uv->vals)[0], uv->nels, ptr);
+    }
+    else
+    {
+        //
+        // Populate the variable as we normally would.
+        // This assumes it is a scalar variable.
+        //
+        scalars->SetNumberOfTuples(uv->nels);
+        T *ptr = (T *) scalars->GetVoidPointer(0);
+        memcpy(ptr, uv->vals[0], sizeof(T)*uv->nels);
+    }
+
+    return scalars;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetUcdVar
@@ -7038,6 +7347,10 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Brad Whitlock, Fri Aug  7 10:19:32 PDT 2009
+//    I added support for non-float types.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -7059,46 +7372,37 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkFloatArray   *scalars = vtkFloatArray::New();
-
-    //
-    // Handle stripping out values for zone types we don't understand
-    //
-    bool arrayWasRemapped = false;
+    vector<int> noskips;
+    vector<int> &zoneRangesToSkip = noskips;
     if (uv->centering == DB_ZONECENT && metadata != NULL)
     {
         string meshName = metadata->MeshForVar(tvn);
-        vector<int> zonesRangesToSkip = arbMeshZoneRangesToSkip[meshName];
-        if (zonesRangesToSkip.size() > 0)
-        {
-            int numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
-
-            scalars->SetNumberOfTuples(uv->nels - numSkipped);
-            float *ptr = (float *) scalars->GetVoidPointer(0);
-            RemoveValuesForSkippedZones(zonesRangesToSkip,
-                ((float**)uv->vals)[0], uv->nels, ptr);
-            arrayWasRemapped = true;
-        }
+        zoneRangesToSkip = arbMeshZoneRangesToSkip[meshName];
     }
 
-    //
-    // Populate the variable as we normally would.
-    // This assumes it is a scalar variable.
-    //
-    if (arrayWasRemapped == false)
-    {
-        scalars->SetNumberOfTuples(uv->nels);
-        float        *ptr     = (float *) scalars->GetVoidPointer(0);
-        memcpy(ptr, uv->vals[0], sizeof(float)*uv->nels);
-    }
+    vtkDataArray *scalars = 0;
+    if(uv->datatype == DB_DOUBLE)
+        scalars = CopyUcdVar<double,vtkDoubleArray>(uv, zoneRangesToSkip);
+    else if(uv->datatype == DB_FLOAT)
+        scalars = CopyUcdVar<float,vtkFloatArray>(uv, zoneRangesToSkip);
+    else if(uv->datatype == DB_INT)
+        scalars = CopyUcdVar<int,vtkIntArray>(uv, zoneRangesToSkip);
+    else if(uv->datatype == DB_SHORT)
+        scalars = CopyUcdVar<short,vtkShortArray>(uv, zoneRangesToSkip);
+    else if(uv->datatype == DB_CHAR)
+        scalars = CopyUcdVar<char,vtkCharArray>(uv, zoneRangesToSkip);
 
     if (uv->mixvals != NULL && uv->mixvals[0] != NULL)
     {
-        avtMixedVariable *mv = new avtMixedVariable(((float**)uv->mixvals)[0], uv->mixlen,
-                                                    tvn);
+        float *mixvals = ConvertToFloat(uv->datatype, uv->mixvals[0], uv->mixlen);
+
+        avtMixedVariable *mv = new avtMixedVariable(mixvals, uv->mixlen, tvn);
         void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
         cache->CacheVoidRef(tvn, AUXILIARY_DATA_MIXED_VARIABLE, timestep, 
                             domain, vr);
+
+        if(mixvals != (float *)uv->mixvals[0])
+            delete [] mixvals;
     }
 
     DBFreeUcdvar(uv);
@@ -7159,6 +7463,10 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Brad Whitlock, Fri Aug  7 10:33:26 PDT 2009
+//    I created more types of vtkDataArray to add support beyond float/double.
+//
 // ****************************************************************************
 
 template <class T>
@@ -7202,19 +7510,13 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    vtkDataArray *scalars = 0;
-    if (qv->datatype == DB_DOUBLE)
-        scalars = vtkDoubleArray::New();
-    else
-        scalars = vtkFloatArray::New();
+    size_t sz = 0;
+    vtkDataArray *scalars = CreateDataArray(qv->datatype, sz);
     scalars->SetNumberOfTuples(qv->nels);
+
     if (qv->major_order == DB_ROWMAJOR || qv->ndims <= 1)
     {
-        int size = sizeof(float);
-        if (qv->datatype == DB_DOUBLE)
-            size = sizeof(double);
-        void *ptr = scalars->GetVoidPointer(0);
-        memcpy(ptr, qv->vals[0], size*qv->nels);
+        memcpy(scalars->GetVoidPointer(0), qv->vals[0], sz*qv->nels);
     }
     else
     {
@@ -7240,11 +7542,15 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
 
     if (qv->mixvals != NULL && qv->mixvals[0] != NULL)
     {
-        avtMixedVariable *mv = new avtMixedVariable(((float**)qv->mixvals)[0], qv->mixlen,
-                                                    tvn);
+        float *mixvals = ConvertToFloat(qv->datatype, qv->mixvals[0], qv->mixlen);
+
+        avtMixedVariable *mv = new avtMixedVariable(mixvals, qv->mixlen, tvn);
         void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
         cache->CacheVoidRef(tvn, AUXILIARY_DATA_MIXED_VARIABLE, timestep, 
                             domain, vr);
+
+        if(mixvals != (float*)qv->mixvals[0])
+            delete [] mixvals;
     }
 
     DBFreeQuadvar(qv);
@@ -7281,6 +7587,9 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray 
 //    and vtkFloatArray instead.
 //
+//    Brad Whitlock, Fri Aug  7 10:38:34 PDT 2009
+//    I added support for non-float data types.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -7301,13 +7610,18 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
         EXCEPTION1(InvalidVariableException, varname);
     }
 
+    if(mv->ndims > 1)
+    {
+        EXCEPTION1(InvalidVariableException, "Pointvar with more than 1 component. Fix Silo reader.");
+    }
+
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    vtkFloatArray   *scalars = vtkFloatArray::New();
+    size_t sz = 0;
+    vtkDataArray *scalars = CreateDataArray(mv->datatype, sz);
     scalars->SetNumberOfTuples(mv->nels);
-    float        *ptr     = (float *) scalars->GetVoidPointer(0);
-    memcpy(ptr, mv->vals[0], sizeof(float)*mv->nels);
+    memcpy(scalars->GetVoidPointer(0), mv->vals[0], sz*mv->nels);
 
     DBFreeMeshvar(mv);
 
@@ -7322,7 +7636,12 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 //
+//  Modifications:
+//    Brad Whitlock, Fri Aug  7 11:01:59 PDT 2009
+//    I added non-float support.
+//
 // ****************************************************************************
+
 vtkDataArray *
 avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
 {
@@ -7344,16 +7663,76 @@ avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    vtkFloatArray   *scalars = vtkFloatArray::New();
+    size_t sz = 0;
+    vtkDataArray *scalars = CreateDataArray(csgv->datatype, sz);
     scalars->SetNumberOfTuples(csgv->nels);
-    float        *ptr     = (float *) scalars->GetVoidPointer(0);
-    memcpy(ptr, csgv->vals[0], sizeof(float)*csgv->nels);
+    memcpy(scalars->GetVoidPointer(0), csgv->vals[0], sz*csgv->nels);
 
     DBFreeCsgvar(csgv);
 
     return scalars;
 }
 
+// ****************************************************************************
+// Method: CopyUnstructuredMeshCoordinates
+//
+// Purpose: 
+//   This function copies ucdmesh coordinates into an interleaved vtkPoints array.
+//
+// Arguments:
+//   T : The destination array.
+//   um : The ucdmesh.
+//
+// Returns:    
+//
+// Note:       I moved this code from avtSiloFileFormat::GetUnstructuredMesh
+//             and templated it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug  6 11:59:25 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T>
+void
+CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
+{
+    int nnodes = um->nnodes;
+    bool dim3 = (um->coords[2] != NULL ? true : false);
+    T *tmp = pts;
+    const T *coords0 = (T*) um->coords[0];
+    const T *coords1 = (T*) um->coords[1];
+    if (um->coords[2] != NULL)
+    {
+        const T *coords2 = (T*) um->coords[2];
+        for (int i = 0 ; i < nnodes ; i++)
+        {
+            *tmp++ = *coords0++;
+            *tmp++ = *coords1++;
+            *tmp++ = *coords2++;
+        }
+    }
+    else if (um->coords[1] != NULL)
+    {
+        for (int i = 0 ; i < nnodes ; i++)
+        {
+            *tmp++ = *coords0++;
+            *tmp++ = *coords1++;
+            *tmp++ = 0.;
+        }
+    }
+    else if (um->coords[0] != NULL)
+    {
+        for (int i = 0 ; i < nnodes ; i++)
+        {
+            *tmp++ = *coords0++;
+            *tmp++ = 0.;
+            *tmp++ = 0.;
+        }
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetUnstructuredMesh
@@ -7437,6 +7816,10 @@ avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
 //
 //    Mark C. Miller, Wed Feb 11 23:22:37 PST 2009
 //    Added support for 1D unstructured mesh, mainly to test funky curves
+//
+//    Brad Whitlock, Thu Aug  6 12:00:39 PDT 2009
+//    I added support for double coordinates.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -7464,46 +7847,30 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         EXCEPTION1(InvalidVariableException, meshname);
     }
 
+    vtkPoints *points  = vtkPoints::New();
+
+    //
+    // vtkPoints assumes float data type
+    //
+    if (um->datatype == DB_DOUBLE)
+        points->SetDataTypeToDouble();
+
     //
     // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
     //
-    vtkPoints            *points  = vtkPoints::New();
     points->SetNumberOfPoints(um->nnodes);
-    float *pts = (float *) points->GetVoidPointer(0);
-    int nnodes = um->nnodes;
-    bool dim3 = (um->coords[2] != NULL ? true : false);
-    float *tmp = pts;
-    const float *coords0 = (float*) um->coords[0];
-    const float *coords1 = (float*) um->coords[1];
-    if (um->coords[2] != NULL)
+    if(um->datatype == DB_DOUBLE)
+        CopyUnstructuredMeshCoordinates((double *)points->GetVoidPointer(0), um);
+    else if(um->datatype == DB_FLOAT)
+        CopyUnstructuredMeshCoordinates((float *)points->GetVoidPointer(0), um);
+    else
     {
-        const float *coords2 = (float*) um->coords[2];
-        for (int i = 0 ; i < nnodes ; i++)
-        {
-            *tmp++ = *coords0++;
-            *tmp++ = *coords1++;
-            *tmp++ = *coords2++;
-        }
+        points->Delete();
+        DBFreeUcdmesh(um);
+        EXCEPTION1(InvalidVariableException, "The Silo reader supports only "
+            "float and double precision coordinates in unstructured meshes.");
     }
-    else if (um->coords[1] != NULL)
-    {
-        for (int i = 0 ; i < nnodes ; i++)
-        {
-            *tmp++ = *coords0++;
-            *tmp++ = *coords1++;
-            *tmp++ = 0.;
-        }
-    }
-    else if (um->coords[0] != NULL)
-    {
-        for (int i = 0 ; i < nnodes ; i++)
-        {
-            *tmp++ = *coords0++;
-            *tmp++ = 0.;
-            *tmp++ = 0.;
-        }
-    }
-
+    
     //
     // We already got the facelist read in free of charge.  Let's use it.
     // This is done before constructing the connectivity because this is used
@@ -7531,9 +7898,9 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         //
         vtkIntArray *arr = vtkIntArray::New();
         arr->SetNumberOfComponents(1);
-        arr->SetNumberOfTuples(nnodes);
+        arr->SetNumberOfTuples(um->nnodes);
         int *ptr = arr->GetPointer(0);
-        memcpy(ptr, um->gnodeno, nnodes*sizeof(int));
+        memcpy(ptr, um->gnodeno, um->nnodes*sizeof(int));
 
         //
         // Cache this VTK object but in the VoidRefCache, not the VTK cache
@@ -8038,6 +8405,10 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
 //    Mark C. Miller, Tue Mar  3 19:35:35 PST 2009
 //    Predicated addition of "group_id" as field data on it having
 //    non-negative value.
+//
+//    Brad Whitlock, Fri Aug  7 11:11:29 PDT 2009
+//    I added some exception handling.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -8067,14 +8438,19 @@ avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn, int domain)
     VerifyQuadmesh(qm, meshname);
 
     vtkDataSet *ds = NULL;
-    if (qm->coordtype == DB_COLLINEAR)
+    TRY
     {
-        ds = CreateRectilinearMesh(qm);
+        if (qm->coordtype == DB_COLLINEAR)
+            ds = CreateRectilinearMesh(qm);
+        else
+            ds = CreateCurvilinearMesh(qm);
     }
-    else
+    CATCH(VisItException)
     {
-        ds = CreateCurvilinearMesh(qm);
+        DBFreeQuadmesh(qm);
+        RETHROW;
     }
+    ENDTRY
 
     GetQuadGhostZones(qm, ds);
 
@@ -8360,6 +8736,53 @@ avtSiloFileFormat::VerifyQuadmesh(DBquadmesh *qm, const char *meshname)
 }
 
 // ****************************************************************************
+// Method: CreateCurve
+//
+// Purpose: 
+//   Creates a curve from a DBcurve.
+//
+// Arguments:
+//   cur : The curve
+//   curvename : The curve name.
+//   vtkType   : The type of coordinates to create.
+//
+// Returns:    A new vtkRectilinearGrid.
+//
+// Note:       
+//
+// Programmer: Mark Miller
+// Creation:   Thu Aug  6 12:16:00 PDT 2009
+//
+// Modifications:
+//   Brad Whitlock, Thu Aug  6 12:16:09 PDT 2009
+//   I moved this block out from GetCurve and I templated it.
+//
+// ****************************************************************************
+
+template <typename T, typename Tarr>
+vtkRectilinearGrid *
+CreateCurve(DBcurve *cur, const char *curvename, int vtkType)
+{
+    T *px = (T *) cur->x;
+    T *py = (T *) cur->y;
+    vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(cur->npts, vtkType);
+    Tarr *xc = Tarr::SafeDownCast(rg->GetXCoordinates());
+    Tarr *yv = Tarr::New();
+    yv->SetNumberOfComponents(1);
+    yv->SetNumberOfTuples(cur->npts);
+    yv->SetName(curvename);
+    for (int i = 0 ; i < cur->npts; i++)
+    {
+        xc->SetValue(i, px[i]);
+        yv->SetValue(i, py[i]);
+    }
+    rg->GetPointData()->SetScalars(yv);
+    yv->Delete();
+
+    return rg;
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::GetCurve
 //
 //  Purpose: Read a Silo curve object and return a vtkDataSet for it
@@ -8380,6 +8803,10 @@ avtSiloFileFormat::VerifyQuadmesh(DBquadmesh *qm, const char *meshname)
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Brad Whitlock, Thu Aug  6 12:15:50 PDT 2009
+//    Use templates.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -8401,96 +8828,18 @@ avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
     {
         EXCEPTION1(InvalidVariableException, curvename);
     }
-    vtkRectilinearGrid *rg;
 
-    // DBForceSingle assures that all double data is converted to float
-    // So, both are handled as float, here
+    vtkRectilinearGrid *rg = 0;
     if (cur->datatype == DB_FLOAT)
-    {
-        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_FLOAT);
-        vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
-        vtkFloatArray *yv= vtkFloatArray::New();
-        yv->SetNumberOfComponents(1);
-        yv->SetNumberOfTuples(cur->npts);
-        yv->SetName(curvename);
-        for (i = 0 ; i < cur->npts; i++)
-        {
-            xc->SetValue(i, ((float*)cur->x)[i]);
-            yv->SetValue(i, ((float*)cur->y)[i]);
-        }
-        rg->GetPointData()->SetScalars(yv);
-        yv->Delete();
-    }
+        rg = CreateCurve<float,vtkFloatArray>(cur, curvename, VTK_FLOAT);
     else if (cur->datatype == DB_DOUBLE)
-    {
-        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_DOUBLE);
-        vtkDoubleArray *xc =vtkDoubleArray::SafeDownCast(rg->GetXCoordinates());
-        vtkDoubleArray *yv =vtkDoubleArray::New();
-        yv->SetNumberOfComponents(1);
-        yv->SetNumberOfTuples(cur->npts);
-        yv->SetName(curvename);
-        for (i = 0 ; i < cur->npts; i++)
-        {
-            xc->SetValue(i, ((double*)cur->x)[i]);
-            yv->SetValue(i, ((double*)cur->y)[i]);
-        }
-        rg->GetPointData()->SetScalars(yv);
-        yv->Delete();
-    }
+        rg = CreateCurve<double,vtkDoubleArray>(cur, curvename, VTK_DOUBLE);
     else if (cur->datatype == DB_INT)
-    {
-        int *px = (int *) cur->x;
-        int *py = (int *) cur->y;
-        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_INT);
-        vtkIntArray *xc = vtkIntArray::SafeDownCast(rg->GetXCoordinates());
-        vtkIntArray *yv = vtkIntArray::New();
-        yv->SetNumberOfComponents(1);
-        yv->SetNumberOfTuples(cur->npts);
-        yv->SetName(curvename);
-        for (i = 0 ; i < cur->npts; i++)
-        {
-            xc->SetValue(i, px[i]);
-            yv->SetValue(i, py[i]);
-        }
-        rg->GetPointData()->SetScalars(yv);
-        yv->Delete();
-    }
+        rg = CreateCurve<int,vtkIntArray>(cur, curvename, VTK_INT);
     else if (cur->datatype == DB_SHORT)
-    {
-        short *px = (short *) cur->x;
-        short *py = (short *) cur->y;
-        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_SHORT);
-        vtkShortArray *xc = vtkShortArray::SafeDownCast(rg->GetXCoordinates());
-        vtkShortArray *yv = vtkShortArray::New();
-        yv->SetNumberOfComponents(1);
-        yv->SetNumberOfTuples(cur->npts);
-        yv->SetName(curvename);
-        for (i = 0 ; i < cur->npts; i++)
-        {
-            xc->SetValue(i, px[i]);
-            yv->SetValue(i, py[i]);
-        }
-        rg->GetPointData()->SetScalars(yv);
-        yv->Delete();
-    }
+        rg = CreateCurve<short,vtkShortArray>(cur, curvename, VTK_SHORT);
     else if (cur->datatype == DB_CHAR)
-    {
-        char *px = (char *) cur->x;
-        char *py = (char *) cur->y;
-        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_CHAR);
-        vtkCharArray *xc = vtkCharArray::SafeDownCast(rg->GetXCoordinates());
-        vtkCharArray *yv = vtkCharArray::New();
-        yv->SetNumberOfComponents(1);
-        yv->SetNumberOfTuples(cur->npts);
-        yv->SetName(curvename);
-        for (i = 0 ; i < cur->npts; i++)
-        {
-            xc->SetValue(i, px[i]);
-            yv->SetValue(i, py[i]);
-        }
-        rg->GetPointData()->SetScalars(yv);
-        yv->Delete();
-    }
+        rg = CreateCurve<char,vtkCharArray>(cur, curvename, VTK_CHAR);
 
     DBFreeCurve(cur);
 
@@ -8520,6 +8869,10 @@ avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Brad Whitlock, Thu Aug  6 11:38:58 PDT 2009
+//    Use doubles for the coordinates if they are doubles.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -8527,25 +8880,40 @@ avtSiloFileFormat::CreateRectilinearMesh(DBquadmesh *qm)
 {
     int   i, j;
 
+    if(qm->datatype != DB_FLOAT && qm->datatype != DB_DOUBLE)
+    {
+        EXCEPTION1(InvalidVariableException, "The Silo reader expects float or "
+            "double precision coordinates for rectilinear meshes.");
+    }
+
     vtkRectilinearGrid   *rgrid   = vtkRectilinearGrid::New(); 
 
     //
     // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
     //
     int           dims[3];
-    vtkFloatArray   *coords[3];
+    vtkDataArray   *coords[3];
     for (i = 0 ; i < 3 ; i++)
     {
         // Default number of components for an array is 1.
-        coords[i] = vtkFloatArray::New();
+        if(qm->datatype == DB_DOUBLE)
+            coords[i] = vtkDoubleArray::New();
+        else
+            coords[i] = vtkFloatArray::New();
 
         if (i < qm->ndims)
         {
             dims[i] = qm->dims[i];
             coords[i]->SetNumberOfTuples(dims[i]);
-            for (j = 0 ; j < dims[i] ; j++)
+            if(qm->datatype == DB_DOUBLE)
             {
-                coords[i]->SetComponent(j, 0, ((float**)qm->coords)[i][j]);
+                for (j = 0 ; j < dims[i] ; j++)
+                    coords[i]->SetComponent(j, 0, ((double**)qm->coords)[i][j]);
+            }
+            else
+            {
+                for (j = 0 ; j < dims[i] ; j++)
+                    coords[i]->SetComponent(j, 0, ((float**)qm->coords)[i][j]);
             }
         }
         else
@@ -8555,6 +8923,7 @@ avtSiloFileFormat::CreateRectilinearMesh(DBquadmesh *qm)
             coords[i]->SetComponent(0, 0, 0.);
         }
     }
+
     rgrid->SetDimensions(dims);
     rgrid->SetXCoordinates(coords[0]);
     coords[0]->Delete();
@@ -8596,41 +8965,37 @@ avtSiloFileFormat::CreateRectilinearMesh(DBquadmesh *qm)
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added support for double precision coordinates in a quad mesh
+//
+//    Brad Whitlock, Fri Aug  7 11:21:16 PDT 2009
+//    I modified the row major case so it just uses increment for index
+//    calculations. Use unsigned int.
+//
 // ****************************************************************************
 
 template <class T>
 static void CopyQuadCoordinates(T *dest, int nx, int ny, int nz, int morder,
     const T *const c0, const T *const c1, const T *const c2)
 {
-    int i, j, k;
-
     if (morder == DB_ROWMAJOR)
     {
-        int nxy = nx * ny; 
-        for (k = 0; k < nz; k++)
+        unsigned int nxnynz = nx * ny * nz;
+        for (unsigned int idx = 0; idx < nxnynz; ++idx)
         {
-            for (j = 0; j < ny; j++)
-            {
-                for (i = 0; i < nx; i++)
-                {
-                    int idx = k*nxy + j*nx + i;
-                    *dest++ = c0 ? c0[idx] : 0.;
-                    *dest++ = c1 ? c1[idx] : 0.;
-                    *dest++ = c2 ? c2[idx] : 0.;
-                }
-            }
+            *dest++ = c0 ? c0[idx] : 0.;
+            *dest++ = c1 ? c1[idx] : 0.;
+            *dest++ = c2 ? c2[idx] : 0.;
         }
     }
     else
     {
-        int nyz = ny * nz; 
-        for (k = 0; k < nz; k++)
+        unsigned int nyz = ny * nz; 
+        for (unsigned int k = 0; k < nz; k++)
         {
-            for (j = 0; j < ny; j++)
+            for (unsigned int j = 0; j < ny; j++)
             {
-                for (i = 0; i < nx; i++)
+                for (unsigned int i = 0; i < nx; i++)
                 {
-                    int idx = k + j*nz + i*nyz;
+                    unsigned int idx = k + j*nz + i*nyz;
                     *dest++ = c0 ? c0[idx] : 0.;
                     *dest++ = c1 ? c1[idx] : 0.;
                     *dest++ = c2 ? c2[idx] : 0.;
@@ -8643,6 +9008,12 @@ static void CopyQuadCoordinates(T *dest, int nx, int ny, int nz, int morder,
 vtkDataSet *
 avtSiloFileFormat::CreateCurvilinearMesh(DBquadmesh *qm)
 {
+    if(qm->datatype != DB_FLOAT && qm->datatype != DB_DOUBLE)
+    {
+        EXCEPTION1(InvalidVariableException, "The Silo reader expects float or "
+            "double precision coordinates for curvilinear meshes.");
+    }
+
     //
     // Create the VTK objects and connect them up.
     //
@@ -8840,6 +9211,53 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
     }
 }
 
+// ****************************************************************************
+// Method: CopyPointMeshCoordinates
+//
+// Purpose: 
+//   Copies DBpointmesh coordinates into an interleaved form for vtkPoints.
+//
+// Arguments:
+//   T : The destination array for the point data.
+//   pm : The source point mesh.
+//
+// Returns:    
+//
+// Note:       I moved this block from avtSiloFileFormat::GetPointMesh and
+//             templated it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug  6 11:48:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T>
+void
+CopyPointMeshCoordinates(T *pts, const DBpointmesh *pm)
+{
+    for (int i = 0 ; i < 3 ; i++)
+    {
+        T *tmp = pts + i;
+        if (pm->coords[i] != NULL)
+        {
+            for (int j = 0 ; j < pm->nels ; j++)
+            {
+                *tmp = ((T**)pm->coords)[i][j];
+                tmp += 3;
+            }
+        }
+        else
+        {
+            for (int j = 0 ; j < pm->nels ; j++)
+            {
+                *tmp = 0.;
+                tmp += 3;
+            }
+        }
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetPointMesh
@@ -8871,13 +9289,15 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Brad Whitlock, Thu Aug  6 11:50:13 PDT 2009
+//    I added support for double coordinates.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
 {
-    int   i, j;
-
     //
     // Allow empty data sets
     //
@@ -8899,32 +9319,29 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
         EXCEPTION1(InvalidVariableException, meshname);
     }
 
+    if(pm->datatype != DB_FLOAT && pm->datatype != DB_DOUBLE)
+    {
+        DBFreePointmesh(pm);
+        EXCEPTION1(InvalidVariableException, "The Silo reader expects float or "
+            "double precision coordinates for point meshes.");
+    }
+
+    vtkPoints *points  = vtkPoints::New();
+
+    //
+    // vtkPoints assumes float data type
+    //
+    if (pm->datatype == DB_DOUBLE)
+        points->SetDataTypeToDouble();
+
     //
     // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
     //
-    vtkPoints *points  = vtkPoints::New();
     points->SetNumberOfPoints(pm->nels);
-    float *pts = (float *) points->GetVoidPointer(0);
-    for (i = 0 ; i < 3 ; i++)
-    {
-        float *tmp = pts + i;
-        if (pm->coords[i] != NULL)
-        {
-            for (j = 0 ; j < pm->nels ; j++)
-            {
-                *tmp = ((float**)pm->coords)[i][j];
-                tmp += 3;
-            }
-        }
-        else
-        {
-            for (j = 0 ; j < pm->nels ; j++)
-            {
-                *tmp = 0.;
-                tmp += 3;
-            }
-        }
-    }
+    if(pm->datatype == DB_DOUBLE)
+        CopyPointMeshCoordinates((double *)points->GetVoidPointer(0), pm);
+    else
+        CopyPointMeshCoordinates((float *)points->GetVoidPointer(0), pm);
 
     //
     // Create the VTK objects and connect them up.
@@ -8933,7 +9350,7 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
     ugrid->SetPoints(points);
     ugrid->Allocate(pm->nels);
     vtkIdType onevertex[1];
-    for (i = 0 ; i < pm->nels ; i++)
+    for (int i = 0 ; i < pm->nels ; i++)
     {
         onevertex[0] = i;
         ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
@@ -10436,6 +10853,10 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //
 //    Mark C. Miller, Thu Jun  4 20:43:29 PDT 2009
 //    Fixed a slew of syntax errors preventing compilation.
+//
+//    Brad Whitlock, Fri Aug  7 11:40:37 PDT 2009
+//    Convert double mix_vf to float for now since avtMaterial can't store it.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -10562,6 +10983,13 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
         matnos = mm->matnos;
 #endif
 #endif
+    if(silomat->datatype != DB_FLOAT)
+    {
+        debug5 << "IMPORTANT: The Silo reader is converting mix_vf data for "
+               << matname << " to single precision." << endl;
+    }
+    float *mix_vf = ConvertToFloat(silomat->datatype, silomat->mix_vf, silomat->mixlen);
+
     avtMaterial *mat = new avtMaterial(nummats, 
                                        matnos,
                                        matnames,
@@ -10573,13 +11001,15 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
                                        silomat->mix_mat,
                                        silomat->mix_next,
                                        silomat->mix_zone,
-                                       (float*)silomat->mix_vf,
+                                       mix_vf,
                                        dom_string
 #ifdef DBOPT_ALLOWMAT0
                                        ,silomat->allowmat0
 #endif
                                        );
 
+    if(mix_vf != (float*)silomat->mix_vf)
+        delete [] mix_vf;
     if (matList != silomat->matlist)
         delete [] matList;
     DBFreeMaterial(silomat);
@@ -10611,6 +11041,11 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Brad Whitlock, Fri Aug  7 11:48:39 PDT 2009
+//    Convert other data types to float for now since avtSpecies can't 
+//    store them.
+//
 // ****************************************************************************
 
 avtSpecies *
@@ -10622,6 +11057,14 @@ avtSiloFileFormat::CalcSpecies(DBfile *dbfile, char *specname)
         EXCEPTION1(InvalidVariableException, specname);
     }
 
+    if(silospec->datatype != DB_FLOAT)
+    {
+        debug5 << "IMPORTANT: The Silo reader is converting species_mf data for "
+               << specname << " to single precision." << endl;
+    }
+    float *species_mf = ConvertToFloat(silospec->datatype, silospec->species_mf,
+                                       silospec->mixlen);
+
     avtSpecies *spec = new avtSpecies(silospec->nmat,
                                       silospec->nmatspec,
                                       silospec->ndims,
@@ -10630,7 +11073,10 @@ avtSiloFileFormat::CalcSpecies(DBfile *dbfile, char *specname)
                                       silospec->mixlen,
                                       silospec->mix_speclist,
                                       silospec->nspecies_mf,
-                                      (float*)silospec->species_mf);
+                                      species_mf);
+
+    if(species_mf != (float*)silospec->species_mf)
+        delete [] species_mf;
 
     DBFreeMatspecies(silospec);
 
@@ -11844,7 +12290,7 @@ TetsAreInverted(const int *siloTetrahedron, vtkUnstructuredGrid *ugrid)
 // ****************************************************************************
 
 int
-ComputeNumZonesSkipped(vector<int>& zoneRangesSkipped)
+ComputeNumZonesSkipped(const vector<int> &zoneRangesSkipped)
 {
    int retVal = 0;
    for (int i = 0; i < zoneRangesSkipped.size(); i+=2)
@@ -11861,10 +12307,15 @@ ComputeNumZonesSkipped(vector<int>& zoneRangesSkipped)
 //  Programmer: Mark C. Miller 
 //  Creation:   October 21, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Thu Aug  6 15:53:29 PDT 2009
+//    I added some consts.
+//
 // ****************************************************************************
-template<class T>
-static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
-                T *inArray, int inArraySize, T *outArray)
+
+template <class T>
+static void RemoveValuesForSkippedZones(const vector<int>& zoneRangesSkipped,
+    const T *inArray, int inArraySize, T *outArray)
 {
     int skipRangeIndexToUse = 0;
     int inArrayIndex = 0;
