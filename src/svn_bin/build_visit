@@ -674,10 +674,15 @@
 #     Fixed a typo w/ MESA_URL - it was providing the full path for the sourceforge
 #     download, and because of this build_visit was putting the tarball in the path twice.
 #
+#     Brad Whitlock, Mon Aug 17 12:49:11 PDT 2009
+#     Use the regular build path for NetCDF on Darwin but fixup the library
+#     names after installation. Don't always assume szip for hdf5 on Darwin.
+#
 #     Mark C. Miller, Mon Aug 17 14:08:38 PDT 2009
 #     Added BUILD_VISIT_ENV to facilitate correct behavior of top-level
 #     Makefile's env-make var collision check when it is being run from within
 #     build_visit.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -4293,17 +4298,21 @@ function build_hdf5
     #
     info "Configuring HDF5 . . ."
     cd $HDF5_BUILD_DIR || error "Can't cd to HDF5 build dir."
+    cf_darwin=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+        cf_darwin="--enable-shared --disable-static"
     else
         export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
     fi
     info "Invoking command to configure HDF5"
     cf_szip=""
+    darwin_szip=""
     if test "x${DO_SZIP}" = "xyes"; then
         info "SZip requested.  Configuring HDF5 with SZip support."
         sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
         cf_szip="--with-szlib=${sz_dir}"
+        darwin_szip="-L\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib\" -lsz"
     fi
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
@@ -4314,7 +4323,7 @@ function build_hdf5
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
-        ${cf_szip}
+        ${cf_szip} ${cf_darwin}
     if [[ $? != 0 ]] ; then
        warn "HDF5 configure failed.  Giving up"
        return 1
@@ -4346,32 +4355,10 @@ function build_hdf5
         # version information.
         #
         info "Creating dynamic libraries for HDF5 . . ."
-
-        if [[ $ABS_PATH == "Yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
+        if [[ $ABS_PATH != "Yes" ]]; then
+            install_name_tool -id @executable_path/../lib/libhdf5.$SO_EXT $VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH/lib/libhdf5.$SO_EXT
+            install_name_tool -id @executable_path/../lib/libhdf5_hl.$SO_EXT $VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH/lib/libhdf5_hl.$SO_EXT
         fi
-## go back to gcc bacause if "external relocation entries" restFP saveFP
-##      /usr/bin/libtool -o libhdf5.${SO_EXT} -dynamic src/.libs/libhdf5.a \
-##      -lSystem -lz -headerpad_max_install_names \
-##      -install_name $INSTALLNAMEPATH/libhdf5.${SO_EXT} \
-##      -compatibility_version $HDF5_COMPATIBILITY_VERSION \
-##      -current_version $HDF5_VERSION
-        $C_COMPILER -dynamiclib -o libhdf5.${SO_EXT} src/*.o \
-           -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libhdf5.${SO_EXT} \
-           -Wl,-compatibility_version,$HDF5_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$HDF5_VERSION \
-           -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" -lSystem -lsz -lz
-        if [[ $? != 0 ]] ; then
-           warn "HDF5 dynamic library build failed.  Giving up"
-           return 1
-        fi
-        rm -f "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}"
-        cp libhdf5.${SO_EXT} "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
-        ln -s "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.${SO_EXT}" \
-        "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libsz.${SO_EXT}"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -5717,7 +5704,7 @@ function build_netcdf
     cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
     info "Invoking command to configure NetCDF"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        EXTRA_FLAGS="--enable-largefile"
+        EXTRA_FLAGS="--enable-largefile --enable-shared --disable-static"
     else
         EXTRA_FLAGS=""
     fi
@@ -5734,71 +5721,30 @@ function build_netcdf
     # Build NetCDF
     #
     info "Building NetCDF . . . (~2 minutes)"
-
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        cd libsrc
-        $C_COMPILER -c $C_OPT_FLAGS -DVERSION=`cat ../VERSION` libvers.c
-        $C_COMPILER -c $C_OPT_FLAGS attr.c dim.c error.c nc.c ncio.c \
-           ncx.c putget.c string.c v1hpg.c v2i.c var.c
-        if [[ $ABS_PATH == "Yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
-        $C_COMPILER -dynamiclib -o ../libnetcdf.${SO_EXT} *.o \
-           -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libnetcdf.${SO_EXT} \
-           -Wl,-compatibility_version,$NETCDF_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$NETCDF_VERSION
-        if [[ $? != 0 ]] ; then
-           warn "NetCDF dynamic library build failed.  Giving up"
-           return 1
-        fi
-        cd ../cxx
-        $CXX_COMPILER -c $CXX_OPT_FLAGS -I../libsrc -I. netcdf.cpp
-        $CXX_COMPILER -c $CXX_OPT_FLAGS -I../libsrc -I. ncvalues.cpp
-        $CXX_COMPILER -dynamiclib -o ../libnetcdf_c++.${SO_EXT} \
-           netcdf.o ncvalues.o -L.. -lnetcdf \
-           -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libnetcdf_c++.${SO_EXT} \
-           -Wl,-compatibility_version,$NETCDF_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$NETCDF_VERSION
-        if [[ $? != 0 ]] ; then
-           warn "NetCDF dynamic library build failed.  Giving up"
-           return 1
-        fi
-        cd ..
-    else
-        $MAKE
-        if [[ $? != 0 ]] ; then
-           warn "NetCDF build failed.  Giving up"
-           return 1
-        fi
+    $MAKE
+    if [[ $? != 0 ]] ; then
+        warn "NetCDF build failed.  Giving up"
+        return 1
     fi
+
     #
     # Install into the VisIt third party location.
     #
     info "Installing NetCDF . . ."
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "NetCDF install failed.  Giving up"
+        return 1
+    fi
 
-    mkdir "$VISITDIR/netcdf"
-    mkdir "$VISITDIR/netcdf/$NETCDF_VERSION"
-    mkdir "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
-    mkdir "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
-    mkdir "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
+    #
+    # Patch up the library names on Darwin.
+    #
     if [[ "$OPSYS" == "Darwin" ]]; then
-        cp cxx/ncvalues.h  "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
-        cp cxx/netcdf.hh   "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
-        cp cxx/netcdfcpp.h "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
-        cp libsrc/netcdf.h "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
-
-        cp libnetcdf.${SO_EXT} "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
-        cp libnetcdf_c++.${SO_EXT} \
-           "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
-    else
-        $MAKE install
-        if [[ $? != 0 ]] ; then
-           warn "NetCDF install failed.  Giving up"
-           return 1
+        info "Creating dynamic libraries for NetCDF . . ."
+        if [[ $ABS_PATH != "Yes" ]]; then
+           install_name_tool -id @executable_path/../lib/libnetcdf.$SO_EXT $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.$SO_EXT
+           install_name_tool -id @executable_path/../lib/libnetcdf_c++.$SO_EXT $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf_c++.$SO_EXT
         fi
     fi
 
