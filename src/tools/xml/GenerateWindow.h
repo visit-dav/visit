@@ -1423,7 +1423,7 @@ class WindowGeneratorAttribute : public GeneratorBase
     bool RequiresGetCurrentValues() const
     {
         int n = 0;
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal || !fields[i]->providesSourceGetCurrent())
                 continue;
