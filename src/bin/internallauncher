@@ -517,6 +517,9 @@ $0 = shift @ARGV;
 #    ensure that current directory is visible to compute nodes making it
 #    possible to write log files etc. from compute nodes.
 #
+#    Tom Fogal, Mon Aug 24 11:27:50 MDT 2009
+#    gdb: allow pending breakpoints.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2727,7 +2730,6 @@ else
             }
             print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Database\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Pipeline\n";
-            print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/VisWindow\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/comm\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/state\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/misc\n";
@@ -2820,6 +2822,7 @@ else
                 print GDBFILE "set args @visitargs -dograb \n";
             }
 
+            print GDBFILE "set breakpoint pending on\n";
             # Set up any breakpoints
             if($#breakpoints eq -1)
             {
@@ -2828,18 +2831,15 @@ else
             }
             else
             {
-                # See if the user wants to break in main.
-                $breakmain = grep /^main$/, @breakpoints;
-                print GDBFILE "break main\n";
-                print GDBFILE "run\n";
-                # Print the breakpoints that are not main.
                 foreach (@breakpoints)
                 {
-                    if($_ ne "main") { print GDBFILE "break $_\n"; }
+                    print GDBFILE "break $_\n";
                 }
-                # If the user did not break in main, continue.
-                if($breakmain eq 0) { print GDBFILE "continue\n"; }
+                print GDBFILE "run\n";
             }
+            # Our gdb isn't interactive in this case, so default to giving a
+            # backtrace; that's what someone would want in 90% of the cases.
+            # If you really want to control gdb, use -xterm.
             if(!$gdb_xterm)
             {
                 print GDBFILE "bt full\n";
@@ -2852,7 +2852,8 @@ else
             {
                 # Run GDB under an xterm
                 $debugtitle = "\"Debug $real_exe\"";
-                @debugcmd = ("xterm", "-title", $debugtitle, "-e", "gdb", $real_exe, "-x", $gdbfilename);
+                @debugcmd = ("xterm", "-title", $debugtitle, "-e");
+                push @debugcmd, "gdb", "-q", $real_exe, "-x", $gdbfilename;
             }
 
             print STDERR "Running: @debugcmd\n" if (! $quiet);
