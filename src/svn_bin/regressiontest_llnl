@@ -95,6 +95,10 @@
 #
 #    Mark C. Miller, Tue Aug  4 11:58:13 PDT 2009
 #    Fixed problem cd'ing to correct dirs resulting from above changes.
+#
+#    Mark C. Miller, Tue Aug 25 08:26:49 PDT 2009
+#    Added support for truncating error details. Fixed filter for sending
+#    emails to LLNL developers only.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -148,6 +152,7 @@ checkAndHandleError() {
     local handlerBehavior=$2
     local shortSubject=$3
     local errorDetails=$4
+    local truncateDetails=$5
     local timeOfError=`date '+%l:%M:%S %p'`
 
     # there is nothing to do if the error status flag is zero
@@ -162,7 +167,11 @@ checkAndHandleError() {
     if test -n "$errorDetails"; then
         echo "Details follow..." >> $errorLogFile
         if test -e $errorDetails; then
-            cat $errorDetails >> $errorLogFile 
+            if test -n "$truncateDetails"; then
+                cat $errorDetails | tail -n $truncateDetails >> $errorLogFile
+            else
+                cat $errorDetails >> $errorLogFile
+            fi
         else
             echo "$errorDetails" >> $errorLogFile 
         fi
@@ -211,7 +220,7 @@ EOF
     # Make sure we don't wind up including a user from logrecipients
     # and modifiers twice.
     # Ensure this email distribution is sent ONLY to LLNL developers.
-    emailList="`echo $logrecipients` `echo $modifiersEmails | grep 'llnl.gov'`"
+    emailList="`echo $logrecipients` `echo $modifiersEmails | tr ' ' '\n' | grep 'llnl.gov' | tr '\n' ' '`"
     emailList=`echo $emailList | tr ' ' '\n' | sort | uniq`
 
     cat mailmsg | /usr/sbin/sendmail $emailList
@@ -386,14 +395,14 @@ cd src
 ./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-buildall --with-google-perftools=no 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "Post-update configure failed" config_log.txt 
 gmake -j 4 1>> make_log.txt 2>&1
-checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
+checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt 1000
 
 # build data
 cd ../data
 rm -f make_log.txt
 gmake clean 1> /dev/null 2>&1
 gmake -j 4 test 1>> make_log.txt 2>&1
-checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt 
+checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt  1000
 cd ../src
 
 # set the datestamp used for all test modes
