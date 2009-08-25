@@ -140,10 +140,6 @@ static bool TetsAreInverted(const int *siloTetrahedron,
 
 static int  ComputeNumZonesSkipped(const vector<int>& zoneRangesSkipped);
 
-template<class T>
-static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
-                T *inArray, int inArraySize, T *outArray); 
-
 static string GuessCodeNameFromTopLevelVars(DBfile *dbfile);
 static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
 
@@ -6478,6 +6474,45 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 }
 
 // ****************************************************************************
+//  Function: RemoveValuesForSkippedZones
+//
+//  Purpose: Given an input and output array, remove values from the input
+//  array that are for zones that are in the skip ranges.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 21, 2004 
+//
+//  Modifications:
+//    Brad Whitlock, Thu Aug  6 15:53:29 PDT 2009
+//    I added some consts.
+//
+// ****************************************************************************
+
+template <class T>
+static void RemoveValuesForSkippedZones(const vector<int>& zoneRangesSkipped,
+    const T *inArray, int inArraySize, T *outArray)
+{
+    int skipRangeIndexToUse = 0;
+    int inArrayIndex = 0;
+    int outArrayIndex = 0;
+
+    while (inArrayIndex < inArraySize)
+    {
+        while (inArrayIndex == zoneRangesSkipped[skipRangeIndexToUse])
+        {
+            inArrayIndex += (zoneRangesSkipped[skipRangeIndexToUse+1] -
+                             zoneRangesSkipped[skipRangeIndexToUse] + 1);
+            skipRangeIndexToUse += 2;
+        }
+
+        outArray[outArrayIndex] = inArray[inArrayIndex];
+
+        outArrayIndex++;
+        inArrayIndex++;
+    }
+}
+
+// ****************************************************************************
 // Method: CopyUcdVectorVar
 //
 // Purpose: 
@@ -6535,11 +6570,11 @@ CopyUcdVectorVar(const DBucdvar *uv, const vector<int> &zonesRangesToSkip)
     vectors->SetNumberOfTuples(uv->nels - numSkipped);
     for (int i = 0 ; i < uv->nels - numSkipped; i++)
     {
-        T v3 = (uv->nvals == 3 ? vals[2][i] : 0.);
-        vectors->SetTuple3(i, vals[0][i], vals[1][i], v3);
+        double v3 = (uv->nvals == 3 ? vals[2][i] : 0.);
+        vectors->SetTuple3(i, (double)vals[0][i], (double)vals[1][i], v3);
     }
 
-    if (vals[0] != uv->vals[0])
+    if (vals[0] != (T*)uv->vals[0])
     {
         delete [] vals[0];
         delete [] vals[1];
@@ -12296,45 +12331,6 @@ ComputeNumZonesSkipped(const vector<int> &zoneRangesSkipped)
    for (int i = 0; i < zoneRangesSkipped.size(); i+=2)
        retVal += (zoneRangesSkipped[i+1] - zoneRangesSkipped[i] + 1);
    return retVal;
-}
-
-// ****************************************************************************
-//  Function: RemoveValuesForSkippedZones
-//
-//  Purpose: Given an input and output array, remove values from the input
-//  array that are for zones that are in the skip ranges.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   October 21, 2004 
-//
-//  Modifications:
-//    Brad Whitlock, Thu Aug  6 15:53:29 PDT 2009
-//    I added some consts.
-//
-// ****************************************************************************
-
-template <class T>
-static void RemoveValuesForSkippedZones(const vector<int>& zoneRangesSkipped,
-    const T *inArray, int inArraySize, T *outArray)
-{
-    int skipRangeIndexToUse = 0;
-    int inArrayIndex = 0;
-    int outArrayIndex = 0;
-
-    while (inArrayIndex < inArraySize)
-    {
-        while (inArrayIndex == zoneRangesSkipped[skipRangeIndexToUse])
-        {
-            inArrayIndex += (zoneRangesSkipped[skipRangeIndexToUse+1] -
-                             zoneRangesSkipped[skipRangeIndexToUse] + 1);
-            skipRangeIndexToUse += 2;
-        }
-
-        outArray[outArrayIndex] = inArray[inArrayIndex];
-
-        outArrayIndex++;
-        inArrayIndex++;
-    }
 }
 
 // ****************************************************************************
